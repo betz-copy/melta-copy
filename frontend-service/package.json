@@ -1,0 +1,78 @@
+{
+  "name": "ui-ts-template",
+  "version": "1.0.0",
+  "description": "",
+  "main": "",
+  "author": "Itay Marder",
+  "license": "ISC",
+  "dependencies": {
+    "@emotion/cache": "^11.7.1",
+    "@emotion/react": "^11.7.1",
+    "@emotion/styled": "^11.6.0",
+    "@mui/icons-material": "^5.2.5",
+    "@mui/material": "^5.2.6",
+    "@mui/styles": "^5.2.3",
+    "@reduxjs/toolkit": "^1.7.1",
+    "axios": "^0.24.0",
+    "axios-hooks": "^3.0.0",
+    "axios-mock-adapter": "^1.19.0",
+    "eslint-config-airbnb": "^19.0.4",
+    "eslint-config-prettier": "^8.3.0",
+    "faker": "^5.5.3",
+    "i18next": "^21.3.3",
+    "js-cookie": "^3.0.1",
+    "jwt-decode": "^3.1.2",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "react-i18next": "^11.11.0",
+    "react-redux": "^7.2.6",
+    "react-router": "^6.2.1",
+    "react-router-dom": "^6.2.1",
+    "react-scripts": "5.0.0",
+    "react-toastify": "^8.1.0",
+    "redux": "^4.1.2",
+    "stylis": "^4.0.13",
+    "stylis-plugin-rtl": "^2.1.1",
+    "typescript": "^4.3.4"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "start:docker": "export REACT_APP_IS_DOCKER=true && react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "lint": "eslint . --ext .ts",
+    "lint:fix": "eslint . --ext .ts --fix"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ]
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^5.14.1",
+    "@testing-library/react": "^12.1.2",
+    "@testing-library/user-event": "^13.1.9",
+    "@types/faker": "^5.5.6",
+    "@types/js-cookie": "^3.0.0",
+    "@types/react-router": "^5.1.15",
+    "@types/react-router-dom": "^5.1.7",
+    "@typescript-eslint/eslint-plugin": "^5.9.0",
+    "@typescript-eslint/parser": "^5.9.0",
+    "@types/jest": "^27.0.2",
+    "@types/node": "^17.0.7",
+    "@types/react": "^17.0.11",
+    "@types/react-dom": "^17.0.8",
+    "eslint-plugin-jest": "^25.2.2",
+    "eslint-plugin-prettier": "^4.0.0",
+    "eslint-plugin-react-hooks": "^4.3.0",
+    "prettier": "^2.3.1"
+  }
+}
