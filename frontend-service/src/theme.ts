@@ -6,13 +6,4 @@ export const globalTheme = (paletteMode: PaletteMode) =>
         palette: {
             mode: paletteMode,
         },
-        components: {
-            MuiDialog: {
-                styleOverrides: {
-                    root: {
-                        direction: 'rtl',
-                    },
-                },
-            },
-        },
     });

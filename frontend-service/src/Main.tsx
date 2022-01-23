@@ -26,7 +26,7 @@ const Main = () => {
     return (
         <CacheProvider value={cacheRtl}>
             <Router>
-                <Box display="flex" dir="rtl">
+                <Box display="flex">
                     <CssBaseline />
                     <Header toggleDrawer={toggleDrawer} isDrawerOpen={open} />
                     <SideBar toggleDrawer={toggleDrawer} isDrawerOpen={open} />
