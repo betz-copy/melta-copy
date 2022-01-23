@@ -9,6 +9,9 @@ module.exports = {
         ecmaVersion: 2020,
         sourceType: 'module',
     },
+    globals: {
+        JSX: 'readonly',
+    },
     settings: {
         'import/resolver': {
             node: {
@@ -59,5 +62,6 @@ module.exports = {
             },
         ],
         'react/jsx-key': ['error'],
+        'no-underscore-dangle': ['error', { allow: ['_id'] }],
     },
 };
