@@ -284,23 +284,20 @@ if (process.env.NODE_ENV === 'development' && !process.env.REACT_APP_IS_DOCKER) 
                 properties: {
                     type: 'object',
                     properties: {
-                        type: 'object',
-                        properties: {
-                            airportName: {
-                                type: 'string',
-                                title: 'שם',
-                            },
-                            airportId: {
-                                type: 'string',
-                                title: 'מזהה',
-                            },
-                            country: {
-                                type: 'string',
-                                title: 'מדינה',
-                            },
+                        airportName: {
+                            type: 'string',
+                            title: 'שם',
                         },
-                        required: ['airportName', 'airportId', 'country'],
+                        airportId: {
+                            type: 'string',
+                            title: 'מזהה',
+                        },
+                        country: {
+                            type: 'string',
+                            title: 'מדינה',
+                        },
                     },
+                    required: ['airportName', 'airportId', 'country'],
                 },
             },
             {
@@ -308,36 +305,34 @@ if (process.env.NODE_ENV === 'development' && !process.env.REACT_APP_IS_DOCKER) 
                 name: 'hotel',
                 displayName: 'בית מלון',
                 category: '61e3d8384d51a83e87e83c76',
+
                 properties: {
                     type: 'object',
                     properties: {
-                        type: 'object',
-                        properties: {
-                            hotelName: {
-                                type: 'string',
-                                title: 'שם',
-                            },
-                            hotelChain: {
-                                type: 'string',
-                                title: 'שם',
-                            },
-                            checkInDate: {
-                                type: 'string',
-                                title: 'תאריך הגעה',
-                                format: 'date-time',
-                            },
-                            checkOutDate: {
-                                type: 'string',
-                                title: 'תאריך עזזיבה',
-                                format: 'date-time',
-                            },
-                            country: {
-                                type: 'string',
-                                title: 'מדינה',
-                            },
+                        hotelName: {
+                            type: 'string',
+                            title: 'שם',
                         },
-                        required: ['hotelName', 'checkInDate', 'checkOutDate', 'country'],
+                        hotelChain: {
+                            type: 'string',
+                            title: 'שם',
+                        },
+                        checkInDate: {
+                            type: 'string',
+                            title: 'תאריך הגעה',
+                            format: 'date-time',
+                        },
+                        checkOutDate: {
+                            type: 'string',
+                            title: 'תאריך עזזיבה',
+                            format: 'date-time',
+                        },
+                        country: {
+                            type: 'string',
+                            title: 'מדינה',
+                        },
                     },
+                    required: ['hotelName', 'checkInDate', 'checkOutDate', 'country'],
                 },
             },
             {
@@ -345,32 +340,30 @@ if (process.env.NODE_ENV === 'development' && !process.env.REACT_APP_IS_DOCKER) 
                 name: 'airbnb',
                 displayName: 'אייר-ב.נ.ב',
                 category: '61e3d8384d51a83e87e83c76',
+
                 properties: {
                     type: 'object',
                     properties: {
-                        type: 'object',
-                        properties: {
-                            name: {
-                                type: 'string',
-                                title: 'שם',
-                            },
-                            checkInDate: {
-                                type: 'string',
-                                title: 'תאריך הגעה',
-                                format: 'date-time',
-                            },
-                            checkOutDate: {
-                                type: 'string',
-                                title: 'תאריך עזזיבה',
-                                format: 'date-time',
-                            },
-                            country: {
-                                type: 'string',
-                                title: 'מדינה',
-                            },
+                        name: {
+                            type: 'string',
+                            title: 'שם',
                         },
-                        required: ['name', 'checkInDate', 'checkOutDate', 'country'],
+                        checkInDate: {
+                            type: 'string',
+                            title: 'תאריך הגעה',
+                            format: 'date-time',
+                        },
+                        checkOutDate: {
+                            type: 'string',
+                            title: 'תאריך עזזיבה',
+                            format: 'date-time',
+                        },
+                        country: {
+                            type: 'string',
+                            title: 'מדינה',
+                        },
                     },
+                    required: ['name', 'checkInDate', 'checkOutDate', 'country'],
                 },
             },
             {
@@ -535,6 +528,13 @@ if (process.env.NODE_ENV === 'development' && !process.env.REACT_APP_IS_DOCKER) 
             name: 'trip',
             sourceEntityId: '61e3ea6e4d51653e87e83c7e',
             destinationEntityId: '61e3ea6e4d5143e87e83c7e',
+        },
+    ]);
+
+    mock.onPost('/api/entities').reply(() => [
+        200,
+        {
+            _id: '61e3ea6e4d51a83e87e83c7e',
         },
     ]);
 }

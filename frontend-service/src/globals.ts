@@ -5,6 +5,7 @@ export const environment = {
         categories: '/api/categories',
         entityTemplates: '/api/entities/templates',
         relationshipTemplates: '/api/relationships/templates',
+        entities: '/api/entities',
     },
     accessTokenName: 'rabaz-access-token',
 };

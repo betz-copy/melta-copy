@@ -3,11 +3,13 @@ import { Card, CardContent, CardActions, Button, Typography } from '@mui/materia
 import { EntityTemplateWizard } from '../../common/wizards/entityTemplate';
 import { CategoryWizard } from '../../common/wizards/category';
 import { RelationshipTemplateWizard } from '../../common/wizards/relationshipTemplate';
+import { EntityWizard } from '../../common/wizards/entity';
 
 const Page = () => {
     const [isTemplateOpen, setIsTemplateOpen] = useState(false);
     const [isCategoryOpen, setIsCategoryOpen] = useState(false);
     const [isRelTemplateOpen, setIsRelTemplateOpen] = useState(false);
+    const [isEntityOpen, setIsEntityOpen] = useState(true);
 
     const closeTemplate = () => {
         setIsTemplateOpen(false);
@@ -19,6 +21,10 @@ const Page = () => {
 
     const closeRel = () => {
         setIsRelTemplateOpen(false);
+    };
+
+    const closeEntity = () => {
+        setIsEntityOpen(false);
     };
 
     return (
@@ -60,6 +66,19 @@ const Page = () => {
                         open
                     </Button>
                     <RelationshipTemplateWizard open={isRelTemplateOpen} handleClose={closeRel} />
+                </CardActions>
+            </Card>
+            <Card>
+                <CardContent>
+                    <Typography gutterBottom variant="h5" component="div">
+                        relationship template
+                    </Typography>
+                </CardContent>
+                <CardActions>
+                    <Button size="small" onClick={() => setIsEntityOpen(true)}>
+                        open
+                    </Button>
+                    <EntityWizard open={isEntityOpen} handleClose={closeEntity} />
                 </CardActions>
             </Card>
         </>
