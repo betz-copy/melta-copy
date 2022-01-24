@@ -9,7 +9,7 @@ const Page = () => {
     const [isTemplateOpen, setIsTemplateOpen] = useState(false);
     const [isCategoryOpen, setIsCategoryOpen] = useState(false);
     const [isRelTemplateOpen, setIsRelTemplateOpen] = useState(false);
-    const [isEntityOpen, setIsEntityOpen] = useState(true);
+    const [isEntityOpen, setIsEntityOpen] = useState(false);
 
     const closeTemplate = () => {
         setIsTemplateOpen(false);
