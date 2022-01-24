@@ -63,5 +63,7 @@ module.exports = {
         ],
         'react/jsx-key': ['error'],
         'no-underscore-dangle': ['error', { allow: ['_id'] }],
+        'react/require-default-props': 'off',
+        'react/jsx-props-no-spreading': 'off',
     },
 };

@@ -4,8 +4,6 @@ import { Formik, Form, FormikProps } from 'formik';
 import * as Yup from 'yup';
 // eslint-disable-next-line import/no-unresolved
 import { ObjectShape } from 'yup/lib/object';
-import { Method } from 'axios';
-import { useAxios } from '../../axios';
 
 export type StepsType<T extends object> = { label: string; component: (formikProps: FormikProps<T>) => JSX.Element; validation: ObjectShape }[];
 
@@ -16,19 +14,18 @@ const Wizard = <T extends object>({
     steps,
     initialValues,
     submitOptions,
+    initalStep = 0,
 }: PropsWithChildren<{
     open: boolean;
     handleClose: () => void;
     title: string;
     steps: StepsType<T>;
     initialValues: T;
-    submitOptions: { method: Method; url: string; bodyFormatter: (values: T) => any };
+    submitOptions: { func: (values: T) => Promise<any>; loading: boolean };
+    initalStep?: number;
 }>): JSX.Element | null => {
-    const [activeStep, setActiveStep] = React.useState(0);
+    const [activeStep, setActiveStep] = React.useState(initalStep);
     const isLastStep = activeStep === steps.length - 1;
-
-    const { method, url, bodyFormatter } = submitOptions;
-    const [{ loading }, executeRequest] = useAxios({ method, url }, { manual: true });
 
     const handleBack = () => {
         setActiveStep((prevActiveStep) => prevActiveStep - 1);
@@ -43,7 +40,7 @@ const Wizard = <T extends object>({
                     validationSchema={Yup.object(steps[activeStep].validation)}
                     onSubmit={async (values, actions) => {
                         if (isLastStep) {
-                            await executeRequest(bodyFormatter(values));
+                            await submitOptions.func(values);
                         } else {
                             setActiveStep(activeStep + 1);
                             actions.setTouched({});
@@ -60,11 +57,11 @@ const Wizard = <T extends object>({
                                         <StepContent>
                                             {step.component(formikProps)}
                                             <Box>
-                                                {loading ? (
+                                                {submitOptions.loading ? (
                                                     <CircularProgress size={24} />
                                                 ) : (
                                                     <>
-                                                        <Button variant="contained" type="submit" disabled={loading}>
+                                                        <Button variant="contained" type="submit" disabled={submitOptions.loading}>
                                                             {isLastStep ? 'Finish' : 'Continue'}
                                                         </Button>
                                                         <Button disabled={index === 0} onClick={handleBack}>
