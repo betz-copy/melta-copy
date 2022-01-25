@@ -7,6 +7,7 @@ import { toast } from 'react-toastify';
 import { useAxios } from '../../../axios';
 import { environment } from '../../../globals';
 import { RelationshipTemplateWizardValues } from './index';
+import { IMongoEntityTemplate } from '../../../interfaces';
 
 const chooseTemplateSchema = (fieldName: string) => {
     return {
@@ -24,7 +25,9 @@ const ChooseTemplate: React.FC<FormikProps<RelationshipTemplateWizardValues> & {
     setFieldValue,
     fieldName,
 }) => {
-    const [{ data: entityTemplates, loading: entityTemplatesLoading, error: entityTemplatesError }] = useAxios(environment.api.entityTemplates);
+    const [{ data: entityTemplates, loading: entityTemplatesLoading, error: entityTemplatesError }] = useAxios<IMongoEntityTemplate[]>(
+        environment.api.entityTemplates,
+    );
 
     useEffect(() => {
         if (entityTemplatesError) {
@@ -35,7 +38,7 @@ const ChooseTemplate: React.FC<FormikProps<RelationshipTemplateWizardValues> & {
     return (
         <Autocomplete
             id={fieldName}
-            options={(entityTemplates || []) as { _id: string; displayName: string }[]}
+            options={entityTemplates || []}
             onChange={(e, value) => setFieldValue(fieldName, value || '')}
             loading={entityTemplatesLoading}
             value={values[fieldName]._id ? values[fieldName] : null}

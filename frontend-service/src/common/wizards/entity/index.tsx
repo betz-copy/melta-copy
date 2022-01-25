@@ -6,13 +6,10 @@ import { environment } from '../../../globals';
 import { useAxios } from '../../../axios';
 import { ChooseTemplate, chooseTemplateSchema } from './ChooseTemplate';
 import { FillFields, fillFieldsSchema } from './FillFields';
+import { IMongoEntityTemplate } from '../../../interfaces';
 
 export interface EntityWizardValues {
-    template: {
-        _id: string;
-        displayName: string;
-        properties: object;
-    };
+    template: IMongoEntityTemplate;
     properties: object;
 }
 
@@ -37,7 +34,13 @@ const EntityWizard: React.FC<{ open: boolean; handleClose: () => void; initalSte
         template: {
             _id: '',
             displayName: '',
-            properties: {},
+            name: '',
+            category: '',
+            properties: {
+                properties: {},
+                required: [],
+                type: 'object',
+            },
         },
         properties: {},
     },

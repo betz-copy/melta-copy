@@ -5,11 +5,9 @@ import { StepsType, Wizard } from '../index';
 import { environment } from '../../../globals';
 import { CreateCategoryName, createCategoryNameSchema } from './CreateCategoryName';
 import { useAxios } from '../../../axios';
+import { ICategory as CategoryWizardValues } from '../../../interfaces';
 
-export interface CategoryWizardValues {
-    name: string;
-    displayName: string;
-}
+export type { CategoryWizardValues };
 
 const steps: StepsType<CategoryWizardValues> = [
     {

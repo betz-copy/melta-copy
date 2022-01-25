@@ -7,6 +7,7 @@ import { toast } from 'react-toastify';
 import { useAxios } from '../../../axios';
 import { environment } from '../../../globals';
 import { EntityWizardValues } from './index';
+import { IMongoEntityTemplate } from '../../../interfaces';
 
 const chooseTemplateSchema = {
     template: Yup.object({
@@ -17,7 +18,9 @@ const chooseTemplateSchema = {
 };
 
 const ChooseTemplate: React.FC<FormikProps<EntityWizardValues>> = ({ values, touched, errors, setFieldValue }) => {
-    const [{ data: entityTemplates, loading: entityTemplatesLoading, error: entityTemplatesError }] = useAxios(environment.api.entityTemplates);
+    const [{ data: entityTemplates, loading: entityTemplatesLoading, error: entityTemplatesError }] = useAxios<IMongoEntityTemplate[]>(
+        environment.api.entityTemplates,
+    );
 
     useEffect(() => {
         if (entityTemplatesError) {
@@ -28,7 +31,7 @@ const ChooseTemplate: React.FC<FormikProps<EntityWizardValues>> = ({ values, tou
     return (
         <Autocomplete
             id="template"
-            options={(entityTemplates || []) as { _id: string; displayName: string }[]}
+            options={entityTemplates || []}
             onChange={(e, value) => setFieldValue('template', value || '')}
             loading={entityTemplatesLoading}
             value={values.template._id ? values.template : null}

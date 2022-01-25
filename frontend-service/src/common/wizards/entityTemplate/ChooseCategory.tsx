@@ -7,6 +7,7 @@ import { toast } from 'react-toastify';
 import { useAxios } from '../../../axios';
 import { environment } from '../../../globals';
 import { EntityTemplateWizardValues } from './index';
+import { IMongoCategory } from '../../../interfaces';
 
 const chooseCategorySchema = {
     category: Yup.object({
@@ -17,7 +18,7 @@ const chooseCategorySchema = {
 };
 
 const ChooseCategory: React.FC<FormikProps<EntityTemplateWizardValues>> = ({ values, touched, errors, setFieldValue }) => {
-    const [{ data: categories, loading: categoriesLoading, error: getCategoriesError }] = useAxios(environment.api.categories);
+    const [{ data: categories, loading: categoriesLoading, error: getCategoriesError }] = useAxios<IMongoCategory[]>(environment.api.categories);
 
     useEffect(() => {
         if (getCategoriesError) {
@@ -28,7 +29,7 @@ const ChooseCategory: React.FC<FormikProps<EntityTemplateWizardValues>> = ({ val
     return (
         <Autocomplete
             id="category"
-            options={(categories || []) as { displayName: string }[]}
+            options={categories || []}
             onChange={(e, value) => setFieldValue('category', value || '')}
             loading={categoriesLoading}
             value={values.category._id ? values.category : null}

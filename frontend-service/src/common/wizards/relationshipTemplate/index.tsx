@@ -6,17 +6,12 @@ import { environment } from '../../../globals';
 import { useAxios } from '../../../axios';
 import { CreateRelationshipTemplateName, createRelationshipTemplateNameSchema } from './CreateRelationshipTemplateName';
 import { ChooseTemplate, chooseTemplateSchema } from './ChooseTemplate';
+import { IMongoCategory } from '../../../interfaces';
 
 export interface RelationshipTemplateWizardValues {
     name: string;
-    sourceEntity: {
-        _id: string;
-        displayName: string;
-    };
-    destinationEntity: {
-        _id: string;
-        displayName: string;
-    };
+    sourceEntity: IMongoCategory;
+    destinationEntity: IMongoCategory;
 }
 
 const steps: StepsType<RelationshipTemplateWizardValues> = [
@@ -46,7 +41,7 @@ const RelationshipTemplateWizard: React.FC<{
     open,
     handleClose,
     initalStep = 0,
-    initialValues = { name: '', sourceEntity: { _id: '', displayName: '' }, destinationEntity: { _id: '', displayName: '' } },
+    initialValues = { name: '', sourceEntity: { _id: '', displayName: '', name: '' }, destinationEntity: { _id: '', displayName: '', name: '' } },
 }) => {
     const [{ loading, error, data }, executeRequest] = useAxios({ method: 'POST', url: environment.api.relationshipTemplates }, { manual: true });
 

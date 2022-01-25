@@ -7,15 +7,9 @@ import { ChooseCategory, chooseCategorySchema } from './ChooseCategory';
 import { CreateTemplateName, createTemplateNameSchema } from './CreateTemplateName';
 import { AddFields, addFieldsSchema } from './AddFields';
 import { useAxios } from '../../../axios';
+import { IEntityTemplatePopulated } from '../../../interfaces';
 
-export interface EntityTemplateWizardValues {
-    name: string;
-    displayName: string;
-    category: {
-        _id: string;
-        name: string;
-        displayName: string;
-    };
+export interface EntityTemplateWizardValues extends Omit<IEntityTemplatePopulated, 'properties'> {
     properties: { name: string; displayName: string; type: string; isRequired: boolean }[];
 }
 

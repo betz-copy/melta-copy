@@ -12,14 +12,14 @@ import { globalTheme } from './theme';
 import Main from './Main';
 import { RootState } from './store';
 import { setUser } from './store/user';
-import { setConfig } from './store/backendConfig';
+import { BackendConfigState, setConfig } from './store/backendConfig';
 import { environment } from './globals';
 
 const App = () => {
     const currentUser = useSelector((state: RootState) => state.user);
     const paletteMode = useSelector((state: RootState) => state.userPreferences.paletteMode);
     const dispatch = useDispatch();
-    const [{ data: configData, error: configError }] = useAxios(environment.api.config);
+    const [{ data: configData, error: configError }] = useAxios<BackendConfigState>(environment.api.config);
 
     const [isLoading, setIsLoading] = useState(true);
 
@@ -36,7 +36,7 @@ const App = () => {
     }, [dispatch]);
 
     useEffect(() => {
-        dispatch(setConfig(configData));
+        dispatch(setConfig(configData!));
     }, [configData, dispatch]);
 
     useEffect(() => {
