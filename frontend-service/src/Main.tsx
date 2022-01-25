@@ -1,9 +1,10 @@
-import * as React from 'react';
+import React, { useEffect } from 'react';
 import { CssBaseline, Box, Toolbar } from '@mui/material';
 import { Route, Routes, BrowserRouter as Router } from 'react-router-dom';
 import rtlPlugin from 'stylis-plugin-rtl';
 import { CacheProvider } from '@emotion/react';
 import createCache from '@emotion/cache';
+import { useDispatch } from 'react-redux';
 import { Header } from './common/Header';
 import { SideBar } from './common/SideBar';
 import { Info } from './pages/Info';
@@ -11,6 +12,11 @@ import { Home } from './pages/Home';
 import { Page } from './pages/Page';
 import { MainBox } from './Main.styled';
 import { Unavailable } from './pages/Unavailable/Unavailable';
+import { SystemManagement } from './pages/SystemManagement';
+import { setCategories, setEntityTemplates } from './store/globalState';
+import { useAxios } from './axios';
+import { IMongoCategory, IMongoEntityTemplatePopulated } from './interfaces';
+import { environment } from './globals';
 
 const cacheRtl = createCache({
     key: 'muirtl',
@@ -18,6 +24,25 @@ const cacheRtl = createCache({
 });
 
 const Main = () => {
+    const [{ loading: _categoriesLoading, error: _categoriesError, data: categories }] = useAxios<IMongoCategory[]>(environment.api.categories);
+    const [{ loading: _entityTemplatesLoading, error: _entityTemplatesError, data: entityTemplates }] = useAxios<IMongoEntityTemplatePopulated[]>(
+        environment.api.entityTemplates,
+    );
+
+    const dispatch = useDispatch();
+
+    useEffect(() => {
+        if (categories) {
+            dispatch(setCategories(categories));
+        }
+    }, [categories, dispatch]);
+
+    useEffect(() => {
+        if (entityTemplates) {
+            dispatch(setEntityTemplates(entityTemplates));
+        }
+    }, [entityTemplates, dispatch]);
+
     const [open, setOpen] = React.useState(false);
     const toggleDrawer = () => {
         setOpen(!open);
@@ -36,6 +61,7 @@ const Main = () => {
                             <Routes>
                                 <Route path="/info" element={<Info />} />
                                 <Route path="/page" element={<Page />} />
+                                <Route path="/system-management" element={<SystemManagement />} />
                                 <Route path="/unavailable" element={<Unavailable />} />
                                 <Route path="/" element={<Home />} />
                                 <Route path="*" element={<Home />} />

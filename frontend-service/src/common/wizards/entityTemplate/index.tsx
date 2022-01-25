@@ -1,13 +1,15 @@
 import React, { useEffect } from 'react';
 
 import { toast } from 'react-toastify';
+import { useDispatch } from 'react-redux';
 import { StepsType, Wizard } from '../index';
 import { environment } from '../../../globals';
 import { ChooseCategory, chooseCategorySchema } from './ChooseCategory';
 import { CreateTemplateName, createTemplateNameSchema } from './CreateTemplateName';
 import { AddFields, addFieldsSchema } from './AddFields';
 import { useAxios } from '../../../axios';
-import { IEntityTemplatePopulated } from '../../../interfaces';
+import { IEntityTemplatePopulated, IMongoEntityTemplatePopulated } from '../../../interfaces';
+import { addEntityTemplate } from '../../../store/globalState';
 
 export interface EntityTemplateWizardValues extends Omit<IEntityTemplatePopulated, 'properties'> {
     properties: { name: string; displayName: string; type: string; isRequired: boolean }[];
@@ -37,7 +39,11 @@ const EntityTemplateWizard: React.FC<{ open: boolean; handleClose: () => void; i
     initalStep = 0,
     initialValues = { name: '', displayName: '', category: { displayName: '', name: '', _id: '' }, properties: [] },
 }) => {
-    const [{ loading, error, data }, executeRequest] = useAxios({ method: 'POST', url: environment.api.entityTemplates }, { manual: true });
+    const [{ loading, error, data }, executeRequest] = useAxios<IMongoEntityTemplatePopulated>(
+        { method: 'POST', url: environment.api.entityTemplates },
+        { manual: true },
+    );
+    const dispatch = useDispatch();
 
     useEffect(() => {
         if (error) {
@@ -48,8 +54,9 @@ const EntityTemplateWizard: React.FC<{ open: boolean; handleClose: () => void; i
     useEffect(() => {
         if (data) {
             toast.success('created template successfully');
+            dispatch(addEntityTemplate(data));
         }
-    }, [data]);
+    }, [data, dispatch]);
 
     return (
         <Wizard
@@ -60,7 +67,10 @@ const EntityTemplateWizard: React.FC<{ open: boolean; handleClose: () => void; i
             title="יצירת תבנית יישות"
             steps={steps}
             submitOptions={{
-                func: (values: EntityTemplateWizardValues) => executeRequest({ data: values }),
+                func: async (values: EntityTemplateWizardValues) => {
+                    await executeRequest({ data: values });
+                    handleClose();
+                },
                 loading,
             }}
         />

@@ -105,7 +105,7 @@ if (process.env.NODE_ENV === 'development' && !process.env.REACT_APP_IS_DOCKER) 
     mock.onPost('/api/categories').reply(() => [
         200,
         {
-            _id: '61e3d8384d51a83e87e83c74',
+            _id: '61e328384d51a83e87e83c74',
             name: 'pepole',
             displayName: 'אנשים',
         },
@@ -117,7 +117,11 @@ if (process.env.NODE_ENV === 'development' && !process.env.REACT_APP_IS_DOCKER) 
             _id: '61e3ea6e4d51a83e87e83c7e',
             name: 'trip',
             displayName: 'טיול',
-            category: '61e3dee74d51a83e87e83c7b',
+            category: {
+                _id: '61e3dee74d51a83e87e83c7b',
+                name: 'trips',
+                displayName: 'טיולים',
+            },
             properties: {
                 type: 'object',
                 properties: {
@@ -152,7 +156,11 @@ if (process.env.NODE_ENV === 'development' && !process.env.REACT_APP_IS_DOCKER) 
                 _id: '61e3ea6e4d51a83e87e83c7e',
                 name: 'trip',
                 displayName: 'טיול',
-                category: '61e3dee74d51a83e87e83c7b',
+                category: {
+                    _id: '61e3dee74d51a83e87e83c7b',
+                    name: 'trips',
+                    displayName: 'טיולים',
+                },
                 properties: {
                     type: 'object',
                     properties: {
@@ -182,7 +190,11 @@ if (process.env.NODE_ENV === 'development' && !process.env.REACT_APP_IS_DOCKER) 
                 _id: '61e3ea6e4d51a83e87e83c7f',
                 name: 'tourist',
                 displayName: 'תייר',
-                category: '61e3d8384d51a83e87e83c74',
+                category: {
+                    _id: '61e3d8384d51a83e87e83c74',
+                    name: 'pepole',
+                    displayName: 'אנשים',
+                },
                 properties: {
                     type: 'object',
                     properties: {
@@ -210,7 +222,11 @@ if (process.env.NODE_ENV === 'development' && !process.env.REACT_APP_IS_DOCKER) 
                 _id: '61e3ea6e4d51a83e87e83c80',
                 name: 'travelAgent',
                 displayName: 'סוכן נסיעות',
-                category: '61e3d8384d51a83e87e83c74',
+                category: {
+                    _id: '61e3d8384d51a83e87e83c74',
+                    name: 'pepole',
+                    displayName: 'אנשים',
+                },
                 properties: {
                     type: 'object',
                     properties: {
@@ -242,7 +258,11 @@ if (process.env.NODE_ENV === 'development' && !process.env.REACT_APP_IS_DOCKER) 
                 _id: '61e3ea6e4d51a83e87e83c81',
                 name: 'flight',
                 displayName: 'טיסה',
-                category: '61e3d8384d51a83e87e83c75',
+                category: {
+                    _id: '61e3d8384d51a83e87e83c75',
+                    name: 'flights',
+                    displayName: 'טיסות',
+                },
                 properties: {
                     type: 'object',
                     properties: {
@@ -280,7 +300,11 @@ if (process.env.NODE_ENV === 'development' && !process.env.REACT_APP_IS_DOCKER) 
                 _id: '61e3ea6e4d51a83e87e83c82',
                 name: 'airport',
                 displayName: 'שדה תעופה',
-                category: '61e3d8384d51a83e87e83c75',
+                category: {
+                    _id: '61e3d8384d51a83e87e83c75',
+                    name: 'flights',
+                    displayName: 'טיסות',
+                },
                 properties: {
                     type: 'object',
                     properties: {
@@ -304,8 +328,11 @@ if (process.env.NODE_ENV === 'development' && !process.env.REACT_APP_IS_DOCKER) 
                 _id: '61e3ea6e4d51a83e87e83c83',
                 name: 'hotel',
                 displayName: 'בית מלון',
-                category: '61e3d8384d51a83e87e83c76',
-
+                category: {
+                    _id: '61e3d8384d51a83e87e83c76',
+                    name: 'hotels',
+                    displayName: 'מלונות',
+                },
                 properties: {
                     type: 'object',
                     properties: {
@@ -339,8 +366,11 @@ if (process.env.NODE_ENV === 'development' && !process.env.REACT_APP_IS_DOCKER) 
                 _id: '61e3ea6e4d51a83e87e83c84',
                 name: 'airbnb',
                 displayName: 'אייר-ב.נ.ב',
-                category: '61e3d8384d51a83e87e83c76',
-
+                category: {
+                    _id: '61e3d8384d51a83e87e83c76',
+                    name: 'hotels',
+                    displayName: 'מלונות',
+                },
                 properties: {
                     type: 'object',
                     properties: {
@@ -370,7 +400,11 @@ if (process.env.NODE_ENV === 'development' && !process.env.REACT_APP_IS_DOCKER) 
                 _id: '61e3ea6e4d51a83e87e83c85',
                 name: 'creditCard',
                 displayName: 'כרטיס אשראי',
-                category: '61e3d8384d51a83e87e83c77',
+                category: {
+                    _id: '61e3d8384d51a83e87e83c77',
+                    name: 'money',
+                    displayName: 'כסף',
+                },
                 properties: {
                     type: 'object',
                     properties: {
@@ -400,7 +434,11 @@ if (process.env.NODE_ENV === 'development' && !process.env.REACT_APP_IS_DOCKER) 
                 name: 'check',
                 // eslint-disable-next-line quotes
                 displayName: "צ'ק",
-                category: '61e3d8384d51a83e87e83c77',
+                category: {
+                    _id: '61e3d8384d51a83e87e83c77',
+                    name: 'money',
+                    displayName: 'כסף',
+                },
                 properties: {
                     type: 'object',
                     properties: {
@@ -420,7 +458,11 @@ if (process.env.NODE_ENV === 'development' && !process.env.REACT_APP_IS_DOCKER) 
                 _id: '61e3ea6e4d51a83e87e83c87',
                 name: 'phone',
                 displayName: 'טלפון',
-                category: '61e3d8384d51a83e87e83c79',
+                category: {
+                    _id: '61e3d8384d51a83e87e83c79',
+                    name: 'communcation',
+                    displayName: 'תקשורת',
+                },
                 properties: {
                     type: 'object',
                     properties: {
@@ -444,7 +486,11 @@ if (process.env.NODE_ENV === 'development' && !process.env.REACT_APP_IS_DOCKER) 
                 _id: '61e3ea6e4d51a83e87e83c88',
                 name: 'sim',
                 displayName: 'סים',
-                category: '61e3d8384d51a83e87e83c79',
+                category: {
+                    _id: '61e3d8384d51a83e87e83c79',
+                    name: 'communcation',
+                    displayName: 'תקשורת',
+                },
                 properties: {
                     type: 'object',
                     properties: {
@@ -464,7 +510,11 @@ if (process.env.NODE_ENV === 'development' && !process.env.REACT_APP_IS_DOCKER) 
                 _id: '61e3ea6e4d51a83e87e83c89',
                 name: 'suitcase',
                 displayName: 'מזוודה',
-                category: '61e3d8384d51a83e87e83c78',
+                category: {
+                    _id: '61e3d8384d51a83e87e83c78',
+                    name: 'things',
+                    displayName: 'דברים',
+                },
                 properties: {
                     type: 'object',
                     properties: {
@@ -493,7 +543,11 @@ if (process.env.NODE_ENV === 'development' && !process.env.REACT_APP_IS_DOCKER) 
             _id: '61e3ea6e4d51a83e87e83c7e',
             name: 'trip',
             displayName: 'טיול',
-            category: '61e3dee74d51a83e87e83c7b',
+            category: {
+                _id: '61e3dee74d51a83e87e83c7b',
+                name: 'trips',
+                displayName: 'טיולים',
+            },
             properties: {
                 type: 'object',
                 properties: {

@@ -58,7 +58,7 @@ const Wizard = <T extends object>({
                                             {step.component(formikProps)}
                                             <Box>
                                                 {submitOptions.loading ? (
-                                                    <CircularProgress size={24} />
+                                                    <CircularProgress size={20} />
                                                 ) : (
                                                     <>
                                                         <Button variant="contained" type="submit" disabled={submitOptions.loading}>

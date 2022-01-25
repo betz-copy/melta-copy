@@ -1,11 +1,13 @@
 import React, { useEffect } from 'react';
 
 import { toast } from 'react-toastify';
+import { useDispatch } from 'react-redux';
 import { StepsType, Wizard } from '../index';
 import { environment } from '../../../globals';
 import { CreateCategoryName, createCategoryNameSchema } from './CreateCategoryName';
 import { useAxios } from '../../../axios';
-import { ICategory as CategoryWizardValues } from '../../../interfaces';
+import { ICategory as CategoryWizardValues, IMongoCategory } from '../../../interfaces';
+import { addCategory } from '../../../store/globalState';
 
 export type { CategoryWizardValues };
 
@@ -23,7 +25,11 @@ const CategoryWizard: React.FC<{ open: boolean; handleClose: () => void; initalS
     initalStep = 0,
     initialValues = { name: '', displayName: '' },
 }) => {
-    const [{ loading, error, data }, executeRequest] = useAxios({ method: 'POST', url: environment.api.categories }, { manual: true });
+    const [{ loading, error, data }, executeRequest] = useAxios<IMongoCategory>(
+        { method: 'POST', url: environment.api.categories },
+        { manual: true },
+    );
+    const dispatch = useDispatch();
 
     useEffect(() => {
         if (error) {
@@ -34,8 +40,9 @@ const CategoryWizard: React.FC<{ open: boolean; handleClose: () => void; initalS
     useEffect(() => {
         if (data) {
             toast.success('created category successfully');
+            dispatch(addCategory(data));
         }
-    }, [data]);
+    }, [data, dispatch]);
 
     return (
         <Wizard
@@ -46,7 +53,10 @@ const CategoryWizard: React.FC<{ open: boolean; handleClose: () => void; initalS
             title="יצירת קטגוריה"
             steps={steps}
             submitOptions={{
-                func: (values: CategoryWizardValues) => executeRequest({ data: values }),
+                func: async (values: CategoryWizardValues) => {
+                    await executeRequest({ data: values });
+                    handleClose();
+                },
                 loading,
             }}
         />
