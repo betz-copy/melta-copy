@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { Grid } from '@mui/material';
+import { Grid, Typography } from '@mui/material';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../store';
 import { IMongoCategory, IMongoEntityTemplatePopulated } from '../../interfaces';
 import { CategoryWizard } from '../../common/wizards/category';
 import { EntityTemplateWizard } from '../../common/wizards/entityTemplate';
-import { CardRow } from './components/CardRow';
+import { InfoCard } from './components/InfoCard';
+import { AddCard } from './components/AddCard';
 
 const SystemManagement = () => {
     const { entityTemplates, categories } = useSelector((state: RootState) => state.globalState);
@@ -41,9 +42,25 @@ const SystemManagement = () => {
 
     return (
         <Grid container>
-            <CardRow text="קטגוריות" rowValues={categories} onClick={openCategoryWizard} />
+            <Grid item xs={12}>
+                <Typography variant="h2">קטגוריות</Typography>
+                <Grid container spacing={4} textAlign="center">
+                    {categories.map((category) => (
+                        <InfoCard key={category._id} text={category.displayName} />
+                    ))}
+                    <AddCard onClick={openCategoryWizard} />
+                </Grid>
+            </Grid>
             {entityTemplatesByCategory.map((category) => (
-                <CardRow key={category._id} text={category.displayName} rowValues={category.entityTemplates} onClick={openEntityTemplateWizard} />
+                <Grid item xs={12} key={category._id}>
+                    <Typography variant="h2">{category.displayName}</Typography>
+                    <Grid container spacing={4} textAlign="center">
+                        {category.entityTemplates.map((entityTemplate) => (
+                            <InfoCard key={entityTemplate._id} text={entityTemplate.displayName} />
+                        ))}
+                        <AddCard onClick={openEntityTemplateWizard} />
+                    </Grid>
+                </Grid>
             ))}
             <CategoryWizard open={isCategoryWizardOpen} handleClose={closeCategoryWizard} />
             <EntityTemplateWizard open={isEntityTemplateWizardOpen} handleClose={closeEntityTemplateWizard} />
