@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 
 import { toast } from 'react-toastify';
-import { StepsType, Wizard } from '../index';
+import { StepsType, Wizard, WizardBaseType } from '../index';
 import { environment } from '../../../globals';
 import { useAxios } from '../../../axios';
 import { CreateRelationshipTemplateName, createRelationshipTemplateNameSchema } from './CreateRelationshipTemplateName';
@@ -32,16 +32,12 @@ const steps: StepsType<RelationshipTemplateWizardValues> = [
     },
 ];
 
-const RelationshipTemplateWizard: React.FC<{
-    open: boolean;
-    handleClose: () => void;
-    initalStep?: number;
-    initialValues?: RelationshipTemplateWizardValues;
-}> = ({
+const RelationshipTemplateWizard: React.FC<WizardBaseType<RelationshipTemplateWizardValues>> = ({
     open,
     handleClose,
     initalStep = 0,
     initialValues = { name: '', sourceEntity: { _id: '', displayName: '', name: '' }, destinationEntity: { _id: '', displayName: '', name: '' } },
+    isEditMode = false,
 }) => {
     const [{ loading, error, data }, executeRequest] = useAxios({ method: 'POST', url: environment.api.relationshipTemplates }, { manual: true });
 
@@ -63,6 +59,7 @@ const RelationshipTemplateWizard: React.FC<{
             handleClose={handleClose}
             initialValues={initialValues}
             initalStep={initalStep}
+            isEditMode={isEditMode}
             title="יצירת תבנית קשר"
             steps={steps}
             submitOptions={{

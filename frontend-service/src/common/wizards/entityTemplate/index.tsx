@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 
 import { toast } from 'react-toastify';
 import { useDispatch } from 'react-redux';
-import { StepsType, Wizard } from '../index';
+import { StepsType, Wizard, WizardBaseType } from '../index';
 import { environment } from '../../../globals';
 import { ChooseCategory, chooseCategorySchema } from './ChooseCategory';
 import { CreateTemplateName, createTemplateNameSchema } from './CreateTemplateName';
@@ -33,11 +33,12 @@ const steps: StepsType<EntityTemplateWizardValues> = [
     },
 ];
 
-const EntityTemplateWizard: React.FC<{ open: boolean; handleClose: () => void; initalStep?: number; initialValues?: EntityTemplateWizardValues }> = ({
+const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>> = ({
     open,
     handleClose,
     initalStep = 0,
     initialValues = { name: '', displayName: '', category: { displayName: '', name: '', _id: '' }, properties: [] },
+    isEditMode = false,
 }) => {
     const [{ loading, error, data }, executeRequest] = useAxios<IMongoEntityTemplatePopulated>(
         { method: 'POST', url: environment.api.entityTemplates },
@@ -64,6 +65,7 @@ const EntityTemplateWizard: React.FC<{ open: boolean; handleClose: () => void; i
             handleClose={handleClose}
             initialValues={initialValues}
             initalStep={initalStep}
+            isEditMode={isEditMode}
             title="יצירת תבנית יישות"
             steps={steps}
             submitOptions={{

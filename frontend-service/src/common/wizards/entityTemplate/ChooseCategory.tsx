@@ -1,13 +1,12 @@
 import React, { useEffect } from 'react';
 import { TextField, Autocomplete, CircularProgress } from '@mui/material';
-import { FormikProps } from 'formik';
 import * as Yup from 'yup';
-
 import { toast } from 'react-toastify';
 import { useAxios } from '../../../axios';
 import { environment } from '../../../globals';
 import { EntityTemplateWizardValues } from './index';
 import { IMongoCategory } from '../../../interfaces';
+import { StepComponentProps } from '../index';
 
 const chooseCategorySchema = {
     category: Yup.object({
@@ -17,7 +16,7 @@ const chooseCategorySchema = {
     }).required('חובה'),
 };
 
-const ChooseCategory: React.FC<FormikProps<EntityTemplateWizardValues>> = ({ values, touched, errors, setFieldValue }) => {
+const ChooseCategory: React.FC<StepComponentProps<EntityTemplateWizardValues>> = ({ values, touched, errors, setFieldValue }) => {
     const [{ data: categories, loading: categoriesLoading, error: getCategoriesError }] = useAxios<IMongoCategory[]>(environment.api.categories);
 
     useEffect(() => {

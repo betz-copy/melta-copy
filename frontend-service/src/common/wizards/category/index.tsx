@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 
 import { toast } from 'react-toastify';
 import { useDispatch } from 'react-redux';
-import { StepsType, Wizard } from '../index';
+import { StepsType, Wizard, WizardBaseType } from '../index';
 import { environment } from '../../../globals';
 import { CreateCategoryName, createCategoryNameSchema } from './CreateCategoryName';
 import { useAxios } from '../../../axios';
@@ -19,11 +19,12 @@ const steps: StepsType<CategoryWizardValues> = [
     },
 ];
 
-const CategoryWizard: React.FC<{ open: boolean; handleClose: () => void; initalStep?: number; initialValues?: CategoryWizardValues }> = ({
+const CategoryWizard: React.FC<WizardBaseType<CategoryWizardValues>> = ({
     open,
     handleClose,
     initalStep = 0,
     initialValues = { name: '', displayName: '' },
+    isEditMode = false,
 }) => {
     const [{ loading, error, data }, executeRequest] = useAxios<IMongoCategory>(
         { method: 'POST', url: environment.api.categories },
@@ -50,6 +51,7 @@ const CategoryWizard: React.FC<{ open: boolean; handleClose: () => void; initalS
             handleClose={handleClose}
             initialValues={initialValues}
             initalStep={initalStep}
+            isEditMode={isEditMode}
             title="יצירת קטגוריה"
             steps={steps}
             submitOptions={{

@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react';
 import { TextField, Autocomplete, CircularProgress } from '@mui/material';
-import { FormikProps } from 'formik';
 import * as Yup from 'yup';
 
 import { toast } from 'react-toastify';
@@ -8,6 +7,7 @@ import { useAxios } from '../../../axios';
 import { environment } from '../../../globals';
 import { EntityWizardValues } from './index';
 import { IMongoEntityTemplate } from '../../../interfaces';
+import { StepComponentProps } from '../index';
 
 const chooseTemplateSchema = {
     template: Yup.object({
@@ -17,7 +17,7 @@ const chooseTemplateSchema = {
     }).required('חובה'),
 };
 
-const ChooseTemplate: React.FC<FormikProps<EntityWizardValues>> = ({ values, touched, errors, setFieldValue }) => {
+const ChooseTemplate: React.FC<StepComponentProps<EntityWizardValues>> = ({ values, touched, errors, setFieldValue }) => {
     const [{ data: entityTemplates, loading: entityTemplatesLoading, error: entityTemplatesError }] = useAxios<IMongoEntityTemplate[]>(
         environment.api.entityTemplates,
     );

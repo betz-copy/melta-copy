@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 
 import { toast } from 'react-toastify';
-import { StepsType, Wizard } from '../index';
+import { StepsType, Wizard, WizardBaseType } from '../index';
 import { environment } from '../../../globals';
 import { useAxios } from '../../../axios';
 import { ChooseTemplate, chooseTemplateSchema } from './ChooseTemplate';
@@ -26,7 +26,7 @@ const steps: StepsType<EntityWizardValues> = [
     },
 ];
 
-const EntityWizard: React.FC<{ open: boolean; handleClose: () => void; initalStep?: number; initialValues?: EntityWizardValues }> = ({
+const EntityWizard: React.FC<WizardBaseType<EntityWizardValues>> = ({
     open,
     handleClose,
     initalStep = 0,
@@ -44,6 +44,7 @@ const EntityWizard: React.FC<{ open: boolean; handleClose: () => void; initalSte
         },
         properties: {},
     },
+    isEditMode = false,
 }) => {
     const [{ loading, error, data }, executeRequest] = useAxios({ method: 'POST', url: environment.api.entities }, { manual: true });
 
@@ -65,6 +66,7 @@ const EntityWizard: React.FC<{ open: boolean; handleClose: () => void; initalSte
             handleClose={handleClose}
             initialValues={initialValues}
             initalStep={initalStep}
+            isEditMode={isEditMode}
             title="יצירת יישות"
             steps={steps}
             submitOptions={{

@@ -1,16 +1,15 @@
 import React from 'react';
-import { FormikProps } from 'formik';
 import Form from '@rjsf/core';
-
 import * as Yup from 'yup';
 
 import { EntityWizardValues } from './index';
+import { StepComponentProps } from '../index';
 
 const fillFieldsSchema = {
     properties: Yup.object().required('חובה'),
 };
 
-const FillFields: React.FC<FormikProps<EntityWizardValues>> = ({ values, setFieldValue }) => {
+const FillFields: React.FC<StepComponentProps<EntityWizardValues>> = ({ values, setFieldValue }) => {
     return (
         <Form
             tagName="div"

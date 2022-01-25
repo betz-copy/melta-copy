@@ -1,9 +1,10 @@
 import React from 'react';
 import { TextField, Box, MenuItem, FormControlLabel, Checkbox, Button } from '@mui/material';
-import { FieldArray, FormikProps, getIn } from 'formik';
+import { FieldArray, getIn } from 'formik';
 import * as Yup from 'yup';
 
 import { EntityTemplateWizardValues } from './index';
+import { StepComponentProps } from '../index';
 
 const basePropertyTypes = ['string', 'number', 'boolean'];
 const stringTypes = ['date', 'time', 'date-time', 'email', 'hostname', 'ipv4', 'ipv6', 'uri'];
@@ -22,7 +23,7 @@ const addFieldsSchema = {
         .required('חובה'),
 };
 
-const AddFields: React.FC<FormikProps<EntityTemplateWizardValues>> = ({ values, touched, errors, handleChange }) => {
+const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues>> = ({ values, touched, errors, handleChange }) => {
     return (
         <FieldArray name="properties">
             {({ push, remove }) => (

@@ -5,7 +5,21 @@ import * as Yup from 'yup';
 // eslint-disable-next-line import/no-unresolved
 import { ObjectShape } from 'yup/lib/object';
 
-export type StepsType<T extends object> = { label: string; component: (formikProps: FormikProps<T>) => JSX.Element; validation: ObjectShape }[];
+export type StepComponentProps<T extends object> = FormikProps<T> & { isEditMode?: boolean };
+
+export type WizardBaseType<T extends object> = {
+    open: boolean;
+    handleClose: () => void;
+    initialValues?: T;
+    initalStep?: number;
+    isEditMode?: boolean;
+};
+
+export type StepsType<T extends object> = {
+    label: string;
+    component: (formikProps: StepComponentProps<T>) => JSX.Element;
+    validation: ObjectShape;
+}[];
 
 const Wizard = <T extends object>({
     open,
@@ -15,15 +29,15 @@ const Wizard = <T extends object>({
     initialValues,
     submitOptions,
     initalStep = 0,
-}: PropsWithChildren<{
-    open: boolean;
-    handleClose: () => void;
-    title: string;
-    steps: StepsType<T>;
-    initialValues: T;
-    submitOptions: { func: (values: T) => Promise<any>; loading: boolean };
-    initalStep?: number;
-}>): JSX.Element | null => {
+    isEditMode = false,
+}: PropsWithChildren<
+    WizardBaseType<T> & {
+        initialValues: T;
+        title: string;
+        steps: StepsType<T>;
+        submitOptions: { func: (values: T) => Promise<any>; loading: boolean };
+    }
+>): JSX.Element | null => {
     const [activeStep, setActiveStep] = React.useState(initalStep);
     const isLastStep = activeStep === steps.length - 1;
 
@@ -55,7 +69,7 @@ const Wizard = <T extends object>({
                                     <Step key={step.label}>
                                         <StepLabel>{step.label}</StepLabel>
                                         <StepContent>
-                                            {step.component(formikProps)}
+                                            {step.component({ ...formikProps, isEditMode })}
                                             <Box>
                                                 {submitOptions.loading ? (
                                                     <CircularProgress size={20} />

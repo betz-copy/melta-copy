@@ -1,13 +1,12 @@
 import React, { useEffect } from 'react';
 import { TextField, Autocomplete, CircularProgress } from '@mui/material';
-import { FormikProps } from 'formik';
 import * as Yup from 'yup';
-
 import { toast } from 'react-toastify';
 import { useAxios } from '../../../axios';
 import { environment } from '../../../globals';
 import { RelationshipTemplateWizardValues } from './index';
 import { IMongoEntityTemplate } from '../../../interfaces';
+import { StepComponentProps } from '../index';
 
 const chooseTemplateSchema = (fieldName: string) => {
     return {
@@ -18,7 +17,7 @@ const chooseTemplateSchema = (fieldName: string) => {
     };
 };
 
-const ChooseTemplate: React.FC<FormikProps<RelationshipTemplateWizardValues> & { fieldName: 'sourceEntity' | 'destinationEntity' }> = ({
+const ChooseTemplate: React.FC<StepComponentProps<RelationshipTemplateWizardValues> & { fieldName: 'sourceEntity' | 'destinationEntity' }> = ({
     values,
     touched,
     errors,
