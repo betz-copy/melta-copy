@@ -81,7 +81,7 @@ const SystemManagement = () => {
             </Grid>
             {entityTemplatesByCategory.map((category) => (
                 <Grid item xs={12} key={category._id}>
-                    <Typography variant="h2">{category.displayName}</Typography>
+                    <Typography variant="h3">{category.displayName}</Typography>
                     <Grid container spacing={4} textAlign="center">
                         {category.entityTemplates.map((entityTemplate) => (
                             <InfoCard

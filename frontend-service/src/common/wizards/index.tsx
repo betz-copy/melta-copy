@@ -1,4 +1,4 @@
-import React, { PropsWithChildren } from 'react';
+import React, { PropsWithChildren, useEffect } from 'react';
 import { Dialog, DialogTitle, DialogContent, Stepper, Step, StepLabel, StepContent, Button, Box, CircularProgress } from '@mui/material';
 import { Formik, Form, FormikProps } from 'formik';
 import * as Yup from 'yup';
@@ -46,6 +46,10 @@ const Wizard = <T extends object>({
     const handleBack = () => {
         setActiveStep((prevActiveStep) => prevActiveStep - 1);
     };
+
+    useEffect(() => {
+        setActiveStep(initalStep);
+    }, [open, initalStep]);
 
     return (
         <Dialog open={open} onClose={handleClose}>
