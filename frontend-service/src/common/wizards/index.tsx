@@ -27,15 +27,17 @@ const Wizard = <T extends object>({
     title,
     steps,
     initialValues,
-    submitOptions,
     initalStep = 0,
     isEditMode = false,
+    isLoading,
+    submitFucntion,
 }: PropsWithChildren<
     WizardBaseType<T> & {
         initialValues: T;
         title: string;
         steps: StepsType<T>;
-        submitOptions: { func: (values: T) => Promise<any>; loading: boolean };
+        isLoading: boolean;
+        submitFucntion: (values: T) => Promise<any>;
     }
 >): JSX.Element | null => {
     const [activeStep, setActiveStep] = React.useState(initalStep);
@@ -54,7 +56,7 @@ const Wizard = <T extends object>({
                     validationSchema={Yup.object(steps[activeStep].validation)}
                     onSubmit={async (values, actions) => {
                         if (isLastStep) {
-                            await submitOptions.func(values);
+                            await submitFucntion(values);
                         } else {
                             setActiveStep(activeStep + 1);
                             actions.setTouched({});
@@ -71,11 +73,11 @@ const Wizard = <T extends object>({
                                         <StepContent>
                                             {step.component({ ...formikProps, isEditMode })}
                                             <Box>
-                                                {submitOptions.loading ? (
+                                                {isLoading ? (
                                                     <CircularProgress size={20} />
                                                 ) : (
                                                     <>
-                                                        <Button variant="contained" type="submit" disabled={submitOptions.loading}>
+                                                        <Button variant="contained" type="submit" disabled={isLoading}>
                                                             {isLastStep ? 'Finish' : 'Continue'}
                                                         </Button>
                                                         <Button disabled={index === 0} onClick={handleBack}>

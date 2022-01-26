@@ -7,7 +7,7 @@ import { environment } from '../../../globals';
 import { CreateCategoryName, createCategoryNameSchema } from './CreateCategoryName';
 import { useAxios } from '../../../axios';
 import { ICategory as CategoryWizardValues, IMongoCategory } from '../../../interfaces';
-import { addCategory } from '../../../store/globalState';
+import { addCategory, updateCategory } from '../../../store/globalState';
 
 export type { CategoryWizardValues };
 
@@ -27,7 +27,9 @@ const CategoryWizard: React.FC<WizardBaseType<CategoryWizardValues>> = ({
     isEditMode = false,
 }) => {
     const [{ loading, error, data }, executeRequest] = useAxios<IMongoCategory>(
-        { method: 'POST', url: environment.api.categories },
+        isEditMode
+            ? { method: 'PUT', url: `${environment.api.categories}/${(initialValues as IMongoCategory)._id}` }
+            : { method: 'POST', url: environment.api.categories },
         { manual: true },
     );
     const dispatch = useDispatch();
@@ -40,10 +42,17 @@ const CategoryWizard: React.FC<WizardBaseType<CategoryWizardValues>> = ({
 
     useEffect(() => {
         if (data) {
-            toast.success('created category successfully');
-            dispatch(addCategory(data));
+            if (isEditMode) {
+                toast.success('updated category successfully');
+                dispatch(updateCategory(data));
+            } else {
+                toast.success('created category successfully');
+                dispatch(addCategory(data));
+            }
+            handleClose();
         }
-    }, [data, dispatch]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [data, dispatch]); // removed isEditMode, handleClose because of race-condition with close
 
     return (
         <Wizard
@@ -54,13 +63,8 @@ const CategoryWizard: React.FC<WizardBaseType<CategoryWizardValues>> = ({
             isEditMode={isEditMode}
             title="יצירת קטגוריה"
             steps={steps}
-            submitOptions={{
-                func: async (values: CategoryWizardValues) => {
-                    await executeRequest({ data: values });
-                    handleClose();
-                },
-                loading,
-            }}
+            isLoading={loading}
+            submitFucntion={(values) => executeRequest({ data: values })}
         />
     );
 };

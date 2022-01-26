@@ -9,11 +9,37 @@ import { CreateTemplateName, createTemplateNameSchema } from './CreateTemplateNa
 import { AddFields, addFieldsSchema } from './AddFields';
 import { useAxios } from '../../../axios';
 import { IEntityTemplatePopulated, IMongoEntityTemplatePopulated } from '../../../interfaces';
-import { addEntityTemplate } from '../../../store/globalState';
+import { addEntityTemplate, updateEntityTemplate } from '../../../store/globalState';
 
 export interface EntityTemplateWizardValues extends Omit<IEntityTemplatePopulated, 'properties'> {
-    properties: { name: string; displayName: string; type: string; isRequired: boolean }[];
+    properties: { name: string; title: string; type: string; isRequired: boolean }[];
 }
+
+const basePropertyTypes = ['string', 'number', 'boolean'];
+
+const formToJSONSchema = (values: EntityTemplateWizardValues) => {
+    const schema = {
+        type: 'object',
+        properties: {} as any,
+        required: [] as string[],
+    };
+
+    const { properties } = values;
+
+    properties.forEach(({ name, title, type, isRequired }) => {
+        schema.properties[name] = {
+            title,
+            type: basePropertyTypes.includes(type) ? type : 'string',
+            format: basePropertyTypes.includes(type) ? undefined : type,
+        };
+
+        if (isRequired) {
+            schema.required.push(name);
+        }
+    });
+
+    return { ...values, properties: schema };
+};
 
 const steps: StepsType<EntityTemplateWizardValues> = [
     {
@@ -41,7 +67,9 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
     isEditMode = false,
 }) => {
     const [{ loading, error, data }, executeRequest] = useAxios<IMongoEntityTemplatePopulated>(
-        { method: 'POST', url: environment.api.entityTemplates },
+        isEditMode
+            ? { method: 'PUT', url: `${environment.api.entityTemplates}/${(initialValues as EntityTemplateWizardValues & { _id: string })._id}` }
+            : { method: 'POST', url: environment.api.entityTemplates },
         { manual: true },
     );
     const dispatch = useDispatch();
@@ -54,10 +82,16 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
 
     useEffect(() => {
         if (data) {
-            toast.success('created template successfully');
-            dispatch(addEntityTemplate(data));
+            if (isEditMode) {
+                toast.success('updated template successfully');
+                dispatch(updateEntityTemplate(data));
+            } else {
+                toast.success('created template successfully');
+                dispatch(addEntityTemplate(data));
+            }
         }
-    }, [data, dispatch]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [data, dispatch]); // removed isEditMode, handleClose because of race-condition with close
 
     return (
         <Wizard
@@ -68,12 +102,10 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
             isEditMode={isEditMode}
             title="יצירת תבנית יישות"
             steps={steps}
-            submitOptions={{
-                func: async (values: EntityTemplateWizardValues) => {
-                    await executeRequest({ data: values });
-                    handleClose();
-                },
-                loading,
+            isLoading={loading}
+            submitFucntion={async (values) => {
+                await executeRequest({ data: formToJSONSchema(values) });
+                handleClose();
             }}
         />
     );

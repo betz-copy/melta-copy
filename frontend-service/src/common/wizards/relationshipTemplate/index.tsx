@@ -62,10 +62,8 @@ const RelationshipTemplateWizard: React.FC<WizardBaseType<RelationshipTemplateWi
             isEditMode={isEditMode}
             title="יצירת תבנית קשר"
             steps={steps}
-            submitOptions={{
-                func: (values: RelationshipTemplateWizardValues) => executeRequest({ data: values }),
-                loading,
-            }}
+            isLoading={loading}
+            submitFucntion={(values) => executeRequest({ data: values })}
         />
     );
 };

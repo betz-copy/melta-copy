@@ -43,6 +43,14 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                         <ListItemText primary="Page" />
                     </ListItem>
                 </StyledLink>
+                <StyledLink to="/system-management">
+                    <ListItem button>
+                        <ListItemIcon>
+                            <InboxIcon />
+                        </ListItemIcon>
+                        <ListItemText primary="System Management" />
+                    </ListItem>
+                </StyledLink>
             </List>
             <Divider />
             <List>

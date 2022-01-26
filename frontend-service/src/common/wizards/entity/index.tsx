@@ -69,10 +69,8 @@ const EntityWizard: React.FC<WizardBaseType<EntityWizardValues>> = ({
             isEditMode={isEditMode}
             title="יצירת יישות"
             steps={steps}
-            submitOptions={{
-                func: (values: EntityWizardValues) => executeRequest({ data: values }),
-                loading,
-            }}
+            isLoading={loading}
+            submitFucntion={(values) => executeRequest({ data: values })}
         />
     );
 };

@@ -15,7 +15,7 @@ const addFieldsSchema = {
         .of(
             Yup.object({
                 name: Yup.string().required('חובה'),
-                displayName: Yup.string().required('חובה'),
+                title: Yup.string().required('חובה'),
                 type: Yup.string().oneOf(validPropertyTypes, 'סוג שדה לא תקין').required('חובה'),
                 isRequired: Yup.boolean(),
             }),
@@ -33,9 +33,9 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues>> = ({ v
                         const touchedName = getIn(touched, name);
                         const errorName = getIn(errors, name);
 
-                        const displayName = `properties[${index}].displayName`;
-                        const touchedDisplayName = getIn(touched, displayName);
-                        const errorDisplayName = getIn(errors, displayName);
+                        const title = `properties[${index}].title`;
+                        const touchedTitle = getIn(touched, title);
+                        const errorTitle = getIn(errors, title);
 
                         const type = `properties[${index}].type`;
                         const touchedType = getIn(touched, type);
@@ -58,11 +58,11 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues>> = ({ v
                                 <Box margin={1}>
                                     <TextField
                                         label="prop display name"
-                                        name={displayName}
-                                        value={p.displayName}
+                                        name={title}
+                                        value={p.title}
                                         onChange={handleChange}
-                                        error={touchedDisplayName && Boolean(errorDisplayName)}
-                                        helperText={touchedDisplayName && errorDisplayName}
+                                        error={touchedTitle && Boolean(errorTitle)}
+                                        helperText={touchedTitle && errorTitle}
                                     />
                                 </Box>
                                 <Box margin={1}>
@@ -98,7 +98,7 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues>> = ({ v
                     <Button
                         type="button"
                         variant="outlined"
-                        onClick={() => push({ id: Math.random(), name: '', displayName: '', type: '', isRequired: false })}
+                        onClick={() => push({ id: Math.random(), name: '', title: '', type: '', isRequired: false })}
                     >
                         Add
                     </Button>

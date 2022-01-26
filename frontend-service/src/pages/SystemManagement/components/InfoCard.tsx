@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { MouseEventHandler } from 'react';
 import { Card, CardContent, Grid, Typography } from '@mui/material';
 
-const InfoCard: React.FC<{ key: string; text: string }> = ({ key, text }) => {
+const InfoCard: React.FC<{ text: string; onClick?: MouseEventHandler }> = ({ text, onClick = () => {} }) => {
     return (
-        <Grid item key={key}>
+        <Grid item onClick={onClick}>
             <Card>
                 <CardContent>
                     <Typography variant="h3">{text}</Typography>

@@ -111,6 +111,15 @@ if (process.env.NODE_ENV === 'development' && !process.env.REACT_APP_IS_DOCKER) 
         },
     ]);
 
+    mock.onPut(/\/api\/categories\/[0-9a-fA-F]{24}/).reply(() => [
+        200,
+        {
+            _id: '61e3d8384d51a83e87e83c74',
+            name: 'pepole',
+            displayName: 'אנששדגשדגים',
+        },
+    ]);
+
     mock.onGet(/\/api\/entities\/templates\/[0-9a-fA-F]{24}/).reply(() => [
         200,
         {
@@ -540,9 +549,47 @@ if (process.env.NODE_ENV === 'development' && !process.env.REACT_APP_IS_DOCKER) 
     mock.onPost('/api/entities/templates').reply(() => [
         200,
         {
-            _id: '61e3ea6e4d51a83e87e83c7e',
+            _id: '61e3ea6e4151a83e87e83c7e',
             name: 'trip',
             displayName: 'טיול',
+            category: {
+                _id: '61e3dee74d51a83e87e83c7b',
+                name: 'trips',
+                displayName: 'טיולים',
+            },
+            properties: {
+                type: 'object',
+                properties: {
+                    name: {
+                        type: 'string',
+                        title: 'שם',
+                    },
+                    destination: {
+                        type: 'string',
+                        title: 'יעד',
+                    },
+                    startDate: {
+                        type: 'string',
+                        title: 'תאריך התחלה',
+                        format: 'date',
+                    },
+                    endDate: {
+                        type: 'string',
+                        title: 'תאריך התחלה',
+                        format: 'date',
+                    },
+                },
+                required: ['name', 'destination'],
+            },
+        },
+    ]);
+
+    mock.onPut(/\/api\/entities\/templates\/[0-9a-fA-F]{24}/).reply(() => [
+        200,
+        {
+            _id: '61e3ea6e4d51a83e87e83c7e',
+            name: 'trip',
+            displayName: 'טיולייי',
             category: {
                 _id: '61e3dee74d51a83e87e83c7b',
                 name: 'trips',
