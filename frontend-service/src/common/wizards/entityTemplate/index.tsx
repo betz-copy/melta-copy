@@ -38,7 +38,7 @@ const formToJSONSchema = (values: EntityTemplateWizardValues) => {
         }
     });
 
-    return { ...values, properties: schema };
+    return { ...values, properties: schema, category: values.category._id };
 };
 
 const steps: StepsType<EntityTemplateWizardValues> = [

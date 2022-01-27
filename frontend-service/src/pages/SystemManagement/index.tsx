@@ -54,15 +54,14 @@ const SystemManagement = () => {
     const [categoryWizardState, dispatchCategoryWizard] = useReducer(categoryWizardReducer, { showWizard: false });
     const [entityTemplateState, dispatchEntityTemplateWizard] = useReducer(entityTemplateWizardReducer, { showWizard: false });
 
-    const entityTemplatesByCategory: (IMongoCategory & { entityTemplates: IMongoEntityTemplatePopulated[] })[] = Object.values(
-        entityTemplates.reduce((group: any, product) => {
-            const { category } = product;
-            // eslint-disable-next-line no-param-reassign
-            group[category._id] = group[category._id] ?? { ...category, entityTemplates: [] };
-            group[category._id].entityTemplates.push(product);
-            return group;
-        }, {}),
-    );
+    const entityTemplatesByCategory: { [id: string]: IMongoCategory & { entityTemplates: IMongoEntityTemplatePopulated[] } } = {};
+    categories.forEach((category) => {
+        // eslint-disable-next-line no-param-reassign
+        entityTemplatesByCategory[category._id] = {
+            ...category,
+            entityTemplates: entityTemplates.filter((entityTemplate) => entityTemplate.category._id === category._id),
+        };
+    });
 
     return (
         <Grid container>
@@ -79,7 +78,7 @@ const SystemManagement = () => {
                     <AddCard onClick={() => dispatchCategoryWizard({ type: 'show' })} />
                 </Grid>
             </Grid>
-            {entityTemplatesByCategory.map((category) => (
+            {Object.values(entityTemplatesByCategory).map((category) => (
                 <Grid item xs={12} key={category._id}>
                     <Typography variant="h3">{category.displayName}</Typography>
                     <Grid container spacing={4} textAlign="center">
