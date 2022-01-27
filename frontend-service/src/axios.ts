@@ -158,6 +158,80 @@ if (process.env.NODE_ENV === 'development' && !process.env.REACT_APP_IS_DOCKER) 
         },
     ]);
 
+    mock.onGet(/\/api\/entities\/templates\?category=[0-9a-fA-F]{24}/).reply(() => [
+        200,
+        [
+            {
+                _id: '61e3ea6e4d51a83e87e83c7f',
+                name: 'tourist',
+                displayName: 'תייר',
+                category: {
+                    _id: '61e3d8384d51a83e87e83c74',
+                    name: 'pepole',
+                    displayName: 'אנשים',
+                },
+                properties: {
+                    type: 'object',
+                    properties: {
+                        firstName: {
+                            type: 'string',
+                            title: 'שם פרטי',
+                        },
+                        lastName: {
+                            type: 'string',
+                            title: 'שם משפחה',
+                        },
+                        age: {
+                            type: 'integer',
+                            title: 'גיל',
+                        },
+                        gender: {
+                            type: 'boolean',
+                            title: 'זכר',
+                        },
+                    },
+                    required: ['firstName', 'lastName'],
+                },
+            },
+            {
+                _id: '61e3ea6e4d51a83e87e83c80',
+                name: 'travelAgent',
+                displayName: 'סוכן נסיעות',
+                category: {
+                    _id: '61e3d8384d51a83e87e83c74',
+                    name: 'pepole',
+                    displayName: 'אנשים',
+                },
+                properties: {
+                    type: 'object',
+                    properties: {
+                        firstName: {
+                            type: 'string',
+                            title: 'שם פרטי',
+                        },
+                        lastName: {
+                            type: 'string',
+                            title: 'שם משפחה',
+                        },
+                        age: {
+                            type: 'integer',
+                            title: 'גיל',
+                        },
+                        gender: {
+                            type: 'boolean',
+                            title: 'זכר',
+                        },
+                        agentId: {
+                            type: 'string',
+                            title: 'מזהה סוכן',
+                        },
+                    },
+                    required: ['firstName', 'lastName', 'agentId'],
+                },
+            },
+        ],
+    ]);
+
     mock.onGet(/\/api\/entities\/templates.*/).reply(() => [
         200,
         [
@@ -637,6 +711,158 @@ if (process.env.NODE_ENV === 'development' && !process.env.REACT_APP_IS_DOCKER) 
         {
             _id: '61e3ea6e4d51a83e87e83c7e',
         },
+    ]);
+
+    mock.onGet(/\/api\/entities\?category=[0-9a-fA-F]{24}/).reply(() => [
+        200,
+        [
+            {
+                _id: '61f28035d372f97e321b1ceb',
+                templateId: '61e3ea6e4d51a83e87e83c80',
+                categoryId: '61e3d8384d51a83e87e83c74',
+                properties: {
+                    firstName: 'איילה',
+                    lastName: 'נסיעות',
+                    age: 40,
+                    gender: false,
+                    agentId: 'a1b2c3',
+                },
+            },
+            {
+                _id: '61f28035d372f97e321b1cec',
+                templateId: '61e3ea6e4d51a83e87e83c80',
+                categoryId: '61e3d8384d51a83e87e83c74',
+                properties: {
+                    firstName: 'ארנון',
+                    lastName: 'פז',
+                    age: 46,
+                    gender: true,
+                    agentId: 'd4e5f6',
+                },
+            },
+            {
+                _id: '61f28035d372f97e321b1ced',
+                templateId: '61e3ea6e4d51a83e87e83c80',
+                categoryId: '61e3d8384d51a83e87e83c74',
+                properties: {
+                    firstName: 'סקי',
+                    lastName: 'דיל',
+                    age: 35,
+                    gender: true,
+                    agentId: 'g7h8i9',
+                },
+            },
+            {
+                _id: '61f28042d372f97e321b1cee',
+                templateId: '61e3ea6e4d51a83e87e83c7f',
+                categoryId: '61e3d8384d51a83e87e83c74',
+                properties: {
+                    firstName: 'איתי',
+                    lastName: 'לוי',
+                    age: 30,
+                    gender: true,
+                },
+            },
+            {
+                _id: '61f28042d372f97e321b1cef',
+                templateId: '61e3ea6e4d51a83e87e83c7f',
+                categoryId: '61e3d8384d51a83e87e83c74',
+                properties: {
+                    firstName: 'אייל',
+                    lastName: 'גולן',
+                    age: 42,
+                    gender: true,
+                },
+            },
+            {
+                _id: '61f28042d372f97e321b1cf0',
+                templateId: '61e3ea6e4d51a83e87e83c7f',
+                categoryId: '61e3d8384d51a83e87e83c74',
+                properties: {
+                    firstName: 'נועה',
+                    lastName: 'קירל',
+                    age: 20,
+                    gender: false,
+                },
+            },
+            {
+                _id: '61f28042d372f97e321b1cf1',
+                templateId: '61e3ea6e4d51a83e87e83c7f',
+                categoryId: '61e3d8384d51a83e87e83c74',
+                properties: {
+                    firstName: 'סטטיק',
+                    lastName: 'זה חזק',
+                    age: 28,
+                    gender: true,
+                },
+            },
+            {
+                _id: '61f28042d372f97e321b1cf2',
+                templateId: '61e3ea6e4d51a83e87e83c7f',
+                categoryId: '61e3d8384d51a83e87e83c74',
+                properties: {
+                    firstName: 'גל',
+                    lastName: 'גדות',
+                    age: 35,
+                    gender: false,
+                },
+            },
+            {
+                _id: '61f28042d372f97e321b1cf3',
+                templateId: '61e3ea6e4d51a83e87e83c7f',
+                categoryId: '61e3d8384d51a83e87e83c74',
+                properties: {
+                    firstName: 'בר',
+                    lastName: 'רפאלי',
+                    age: 36,
+                    gender: false,
+                },
+            },
+            {
+                _id: '61f28042d372f97e321b1cf4',
+                templateId: '61e3ea6e4d51a83e87e83c7f',
+                categoryId: '61e3d8384d51a83e87e83c74',
+                properties: {
+                    firstName: 'סבא',
+                    lastName: 'טוביה',
+                    age: 76,
+                    gender: true,
+                },
+            },
+            {
+                _id: '61f28042d372f97e321b1cf5',
+                templateId: '61e3ea6e4d51a83e87e83c7f',
+                categoryId: '61e3d8384d51a83e87e83c74',
+                properties: {
+                    firstName: 'אדיר',
+                    lastName: 'מילר',
+                    age: 43,
+                    gender: true,
+                },
+            },
+            {
+                _id: '61f28042d372f97e321b1cf6',
+                templateId: '61e3ea6e4d51a83e87e83c7f',
+                categoryId: '61e3d8384d51a83e87e83c74',
+                properties: {
+                    firstName: 'עודד',
+                    lastName: 'פז',
+                    age: 36,
+                    gender: true,
+                },
+            },
+            {
+                _id: '61f28042d372f97e321b1cf7',
+                templateId: '61e3ea6e4d51a83e87e83c7f',
+                categoryId: '61e3d8384d51a83e87e83c74',
+                properties: {
+                    firstName: 'אלונה',
+                    lastName: 'טל',
+                    age: 38,
+                    gender: false,
+                },
+            },
+        ],
     ]);
 }
 

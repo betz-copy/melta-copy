@@ -17,6 +17,7 @@ import { setCategories, setEntityTemplates } from './store/globalState';
 import { useAxios } from './axios';
 import { IMongoCategory, IMongoEntityTemplatePopulated } from './interfaces';
 import { environment } from './globals';
+import { Category } from './pages/Category';
 
 const cacheRtl = createCache({
     key: 'muirtl',
@@ -63,6 +64,7 @@ const Main = () => {
                                 <Route path="/page" element={<Page />} />
                                 <Route path="/system-management" element={<SystemManagement />} />
                                 <Route path="/unavailable" element={<Unavailable />} />
+                                <Route path="/category" element={<Category />} />
                                 <Route path="/" element={<Home />} />
                                 <Route path="*" element={<Home />} />
                             </Routes>

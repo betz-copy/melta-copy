@@ -36,3 +36,10 @@ export interface IMongoEntityTemplate extends IEntityTemplate {
 export interface IMongoEntityTemplatePopulated extends IEntityTemplatePopulated {
     _id: string;
 }
+
+export interface IEntityInstance {
+    _id: string;
+    templateId: string;
+    categroyId: string;
+    properties: object;
+}
