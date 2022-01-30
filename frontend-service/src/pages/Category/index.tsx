@@ -1,9 +1,9 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useEffect } from 'react';
 import { Navigate, useSearchParams } from 'react-router-dom';
 import { useAxios } from '../../axios';
 import { environment } from '../../globals';
 import { IEntityInstance, IMongoEntityTemplatePopulated } from '../../interfaces';
+import { TemplateTable } from './components/TemplateTable';
 
 const Category: React.FC = () => {
     const [searchParams] = useSearchParams();
@@ -42,14 +42,9 @@ const Category: React.FC = () => {
         return (
             <>
                 <h1>{categoryId}</h1>
-                {Object.values(entitiesByTemplate).map((template) => {
-                    return (
-                        <div key={template._id}>
-                            <h1> {template.displayName}</h1>
-                            {template.entities.map((entity) => JSON.stringify(entity.properties))}
-                        </div>
-                    );
-                })}
+                {Object.values(entitiesByTemplate).map((template) => (
+                    <TemplateTable key={template._id} template={template} />
+                ))}
             </>
         );
     }
