@@ -4,14 +4,14 @@ environments:
 repositories:
   - name: yesodot
     url: https://harborreg-2.northeurope.cloudapp.azure.com/chartrepo/library
-    username: { { requiredEnv "HARBOR_USER" } }
-    password: { { requiredEnv "HARBOR_PASSWORD" } }
+    username: {{ requiredEnv "HARBOR_USER" }}
+    password: {{ requiredEnv "HARBOR_PASSWORD" }}
 
 releases:
   - name: frontend
     namespace: jaws
     chart: yesodot/common
-    version: { { env "COMMON_VERSION" | default "0.6.1" } }
+    version: {{ env "COMMON_VERSION" | default "0.6.1" }}
     values:
       - ./values.yaml
 
