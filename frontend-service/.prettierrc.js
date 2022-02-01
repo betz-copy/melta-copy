@@ -19,5 +19,11 @@ module.exports = {
                 tabWidth: 2,
             },
         },
+        {
+            files: '*.yaml',
+            options: {
+                tabWidth: 2,
+            },
+        },
     ],
 };
