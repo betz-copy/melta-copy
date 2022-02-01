@@ -1,0 +1,29 @@
+version: '3.4'
+
+services:
+  mongo:
+    image: mongo
+    ports:
+      - 27017:27017
+
+  entity-template-manager:
+    # image: registry.gitlab.com/yesodot/rnd/terminal-rabaz/jaws/microservices/entity-template-manager
+    build: ./entity-template-manager
+    environment:
+      PORT: 8000
+      MONGO_URI: mongodb+srv://rabaz:123@cluster0.a3nvz.mongodb.net/myFirstDatabase?retryWrites=true&w=majority
+      MONGO_ENTITY_TEMPLATE_COLLECTION_NAME: entityTemplates
+      MONGO_CATEGORY_COLLECTION_NAME: categories
+    ports:
+      - 8001:8000
+
+  relationship-template-manager:
+    # image: registry.gitlab.com/yesodot/rnd/terminal-rabaz/jaws/microservices/relationship-template-manager
+    build: ./relationship-template-manager
+    environment:
+      PORT: 8000
+      MONGO_URI: mongodb+srv://rabaz:123@cluster0.a3nvz.mongodb.net/myFirstDatabase?retryWrites=true&w=majority
+      MONGO_RELATIONSHIP_TEMPLATE_COLLECTION_NAME: relationships
+      ENTITY_TEMPLATE_MANAGER_URI: http://entity-template-manager
+    ports:
+      - 8002:8000

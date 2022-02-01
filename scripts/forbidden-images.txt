@@ -1,0 +1,4 @@
+mongo
+rabbit
+elastic
+redis
