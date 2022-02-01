@@ -4,3 +4,6 @@
 [submodule "entity-template-manager"]
 	path = entity-template-manager
 	url = git@gitlab.com:yesodot/rnd/terminal-rabaz/jaws/microservices/entity-template-manager.git
+[submodule "integration-tests"]
+	path = integration-tests
+	url = git@gitlab.com:yesodot/rnd/terminal-rabaz/jaws/integration-tests.git
