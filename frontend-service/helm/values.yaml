@@ -17,7 +17,7 @@ ingress:
     - host: jaws.branch-yesodot.org
       paths:
         - path: /
-          service: http
+          service: frontend
           port: '8000'
 
 config:
