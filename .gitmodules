@@ -1,0 +1,6 @@
+[submodule "relationship-template-manager"]
+	path = relationship-template-manager
+	url = git@gitlab.com:yesodot/rnd/terminal-rabaz/jaws/microservices/relationship-template-manager.git
+[submodule "entity-template-manager"]
+	path = entity-template-manager
+	url = git@gitlab.com:yesodot/rnd/terminal-rabaz/jaws/microservices/entity-template-manager.git
