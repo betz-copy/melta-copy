@@ -1,0 +1,33 @@
+name: "backend"
+replicaCount: 1
+
+images:
+  PullSecrets: [jawsreg]
+  repository: jawsproject.azurecr.io/backend
+  tag: latest
+
+service:
+  ports:
+  - name: http
+    port: "8000"
+
+config:
+  configmaps: []
+  env:
+    - name: PORT
+      value: "'8000'"
+    - name: TOKEN_SECRET
+      value: "secret"
+    - name: ENTITY_TEMPLATE_MANAGER_URL
+      value: "http://entity-template-manager:8000"
+
+ingress:
+  enabled: true
+  hosts:
+    - host: jaws.branch-yesodot.org
+      paths:
+        - path: /api
+          service: backend
+          port: '8000'
+
+
