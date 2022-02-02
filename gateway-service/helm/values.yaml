@@ -18,7 +18,7 @@ config:
       value: "'8000'"
     - name: TOKEN_SECRET
       value: "secret"
-    - name: ENTITY_TEMPLATE_MANAGER_URL
+    - name: ENTITY_TEMPLATE_MANAGER_URI
       value: "http://entity-template-manager:8000"
 
 ingress:
