@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { createProxyMiddleware } from 'http-proxy-middleware';
+import { createProxyMiddleware, fixRequestBody } from 'http-proxy-middleware';
 import config from '../config';
 
 const appRouter = Router();
@@ -15,7 +15,10 @@ appRouter.use('/isAlive', (_req, res) => {
     res.status(200).send('alive');
 });
 
-appRouter.use(['/api/categories', '/api/entities/templates'], createProxyMiddleware({ target: config.service.entityTemplateManagerUrl }));
+appRouter.use(
+    ['/api/categories', '/api/entities/templates'],
+    createProxyMiddleware({ target: config.service.entityTemplateManagerUrl, onProxyReq: fixRequestBody }),
+);
 
 appRouter.use('*', (_req, res) => {
     res.status(404).send('Invalid Route');
