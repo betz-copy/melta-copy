@@ -23,6 +23,6 @@ export const initializePassport = (secret: string) => {
 };
 
 export const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
-    if (['/isAlive', '/health'].includes(req.path)) return next();
+    if (['/isAlive', '/isalive', '/health'].includes(req.path)) return next();
     return passport.authenticate('jwt', { session: false })(req, res, next);
 };

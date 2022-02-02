@@ -11,7 +11,7 @@ appRouter.use('/api/config', (_req, res) =>
     }),
 );
 
-appRouter.use('/isAlive', (_req, res) => {
+appRouter.use(['/isAlive', '/isalive', '/health'], (_req, res) => {
     res.status(200).send('alive');
 });
 
