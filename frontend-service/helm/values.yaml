@@ -1,6 +1,16 @@
 name: 'frontend'
 replicaCount: 1
 
+livenessProbe:
+  httpGet:
+    path: /health
+    port: 8000
+
+readinessProbe:
+  httpGet:
+    path: /health
+    port: 8000
+
 images:
   PullSecrets: [jawsreg]
   repository: jawsproject.azurecr.io/frontend
