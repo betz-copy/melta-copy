@@ -17,7 +17,7 @@ appRouter.use('/isAlive', (_req, res) => {
 
 appRouter.use(
     ['/api/categories', '/api/entities/templates'],
-    createProxyMiddleware({ target: config.service.entityTemplateManagerUrl, onProxyReq: fixRequestBody }),
+    createProxyMiddleware({ target: config.entityTemplateManager.uri, onProxyReq: fixRequestBody }),
 );
 
 appRouter.use('*', (_req, res) => {
