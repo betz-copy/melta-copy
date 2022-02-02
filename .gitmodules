@@ -7,3 +7,12 @@
 [submodule "integration-tests"]
 	path = integration-tests
 	url = git@gitlab.com:yesodot/rnd/terminal-rabaz/jaws/integration-tests.git
+[submodule "backend"]
+	path = backend
+	url = git@gitlab.com:yesodot/rnd/terminal-rabaz/jaws/microservices/backend.git
+[submodule "frontend"]
+	path = frontend
+	url = git@gitlab.com:yesodot/rnd/terminal-rabaz/jaws/microservices/frontend.git
+[submodule "authentication-service"]
+	path = authentication-service
+	url = git@gitlab.com:yesodot/rnd/terminal-rabaz/jaws/microservices/authentication-service.git

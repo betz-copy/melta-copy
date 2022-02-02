@@ -1,29 +1,47 @@
 version: '3.4'
 
 services:
-  mongo:
-    image: mongo
-    ports:
-      - 27017:27017
-
   entity-template-manager:
-    # image: registry.gitlab.com/yesodot/rnd/terminal-rabaz/jaws/microservices/entity-template-manager
-    build: ./entity-template-manager
+    image: jawsproject.azurecr.io/entity-template-manager
+    # build: ./entity-template-manager
     environment:
       PORT: 8000
-      MONGO_URI: mongodb+srv://rabaz:123@cluster0.a3nvz.mongodb.net/myFirstDatabase?retryWrites=true&w=majority
-      MONGO_ENTITY_TEMPLATE_COLLECTION_NAME: entityTemplates
-      MONGO_CATEGORY_COLLECTION_NAME: categories
-    ports:
-      - 8001:8000
+      MONGO_URI: ${ENTITY_TEMPLATE_MANAGER_MONGO_URI}
+      MONGO_ENTITY_TEMPLATE_COLLECTION_NAME: ${MONGO_ENTITY_TEMPLATE_COLLECTION_NAME}
+      MONGO_CATEGORY_COLLECTION_NAME: ${MONGO_CATEGORY_COLLECTION_NAME}
 
   relationship-template-manager:
-    # image: registry.gitlab.com/yesodot/rnd/terminal-rabaz/jaws/microservices/relationship-template-manager
+    # image: jawsproject.azurecr.io/relationship-template-manager
     build: ./relationship-template-manager
     environment:
       PORT: 8000
-      MONGO_URI: mongodb+srv://rabaz:123@cluster0.a3nvz.mongodb.net/myFirstDatabase?retryWrites=true&w=majority
-      MONGO_RELATIONSHIP_TEMPLATE_COLLECTION_NAME: relationships
-      ENTITY_TEMPLATE_MANAGER_URI: http://entity-template-manager
-    ports:
-      - 8002:8000
+      MONGO_URI: ${RELATIONSHIP_TEMPLATE_MANAGER_MONGO_URI}
+      MONGO_RELATIONSHIP_TEMPLATE_COLLECTION_NAME: ${MONGO_RELATIONSHIP_TEMPLATE_COLLECTION_NAME}
+      ENTITY_TEMPLATE_MANAGER_URI: ${ENTITY_TEMPLATE_MANAGER_URI}
+
+  backend:
+    image: jawsproject.azurecr.io/backend
+    # build: ./backend
+    environment:
+      PORT: 8000
+      TOKEN_SECRET: ${TOKEN_SECRET}
+      ENTITY_TEMPLATE_MANAGER_URI: ${ENTITY_TEMPLATE_MANAGER_URI}
+
+  frontend:
+    image: jawsproject.azurecr.io/frontend
+    # build: ./frontend
+
+  authentication-service:
+    image: jawsproject.azurecr.io/authentication-service
+    # build: ./authentication-service
+    environment:
+      PORT: 8000
+      CALLBACK_URL: ${CALLBACK_URL}
+      SHRAGA_URL: ${SHRAGA_URL}
+      ACCESS_TOKEN_NAME: ${ACCESS_TOKEN_NAME}
+      SYSTEM_UNAVAILABLE_URL: ${SYSTEM_UNAVAILABLE_URL}
+  
+  gateway:
+    image: nginx:alpine
+    volumes:
+      - ./nginx:/etc/nginx/conf.d

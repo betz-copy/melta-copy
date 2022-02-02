@@ -1,0 +1,58 @@
+version: "3.4"
+
+services:
+  #-------------------------------------------#
+  #*   Service infrastructure dependencies:   #
+  #-------------------------------------------#
+
+  mongo1:
+    image: mongo
+    restart: always
+    entrypoint: ['/usr/bin/mongod', '--bind_ip_all', '--replSet', 'rs0']
+    ports:
+      - 27017:27017
+
+  mongo2:
+    image: mongo
+    restart: always
+    entrypoint: ['/usr/bin/mongod', '--bind_ip_all', '--replSet', 'rs0']
+
+  mongo3:
+    image: mongo
+    restart: always
+    entrypoint: ['/usr/bin/mongod', '--bind_ip_all', '--replSet', 'rs0']
+
+  mongosetup:
+    image: mongo
+    depends_on:
+      - mongo1
+      - mongo2
+      - mongo3
+    volumes:
+      - ./scripts:/scripts
+    restart: "no"
+    entrypoint: [ "bash", "/scripts/setup_mongo.sh"]
+
+  #-------------------------------------------#
+  #        microservices:                     #
+  #-------------------------------------------#
+
+  entity-template-manager:
+    ports:
+      - 8001:8000
+
+  relationship-template-manager:
+    ports:
+      - 8002:8000
+
+  backend:
+    ports:
+      - 8003:8000
+
+  authentication-service:
+    ports:
+      - 8004:8000
+  
+  gateway:
+    ports:
+      - 80:80
