@@ -21,6 +21,16 @@ config:
     - name: ENTITY_TEMPLATE_MANAGER_URI
       value: "http://entity-template-manager:8000"
 
+livenessProbe:
+  httpGet:
+    path: /health
+    port: 8000
+
+readinessProbe:
+  httpGet:
+    path: /health
+    port: 8000
+
 ingress:
   enabled: true
   hosts:
