@@ -11,7 +11,7 @@ releases:
   - name: frontend
     namespace: jaws
     chart: yesodot/common
-    version: {{ env "COMMON_VERSION" | default "0.6.1" }}
+    version: {{ env "COMMON_VERSION" | default "0.7.0" }}
     values:
       - ./values.yaml
 
