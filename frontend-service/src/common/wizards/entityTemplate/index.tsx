@@ -11,8 +11,14 @@ import { useAxios } from '../../../axios';
 import { IEntityTemplatePopulated, IMongoEntityTemplatePopulated } from '../../../interfaces';
 import { addEntityTemplate, updateEntityTemplate } from '../../../store/globalState';
 
+export interface EntityTemplateFormInputProperties {
+    name: string;
+    title: string;
+    type: string;
+}
 export interface EntityTemplateWizardValues extends Omit<IEntityTemplatePopulated, 'properties'> {
-    properties: { name: string; title: string; type: string; isRequired: boolean }[];
+    requiredProrerites: EntityTemplateFormInputProperties[];
+    optionalProrerites: EntityTemplateFormInputProperties[];
 }
 
 const basePropertyTypes = ['string', 'number', 'boolean'];
@@ -24,18 +30,24 @@ const formToJSONSchema = (values: EntityTemplateWizardValues) => {
         required: [] as string[],
     };
 
-    const { properties } = values;
+    const { requiredProrerites, optionalProrerites } = values;
 
-    properties.forEach(({ name, title, type, isRequired }) => {
+    requiredProrerites.forEach(({ name, title, type }) => {
         schema.properties[name] = {
             title,
             type: basePropertyTypes.includes(type) ? type : 'string',
             format: basePropertyTypes.includes(type) ? undefined : type,
         };
 
-        if (isRequired) {
-            schema.required.push(name);
-        }
+        schema.required.push(name);
+    });
+
+    optionalProrerites.forEach(({ name, title, type }) => {
+        schema.properties[name] = {
+            title,
+            type: basePropertyTypes.includes(type) ? type : 'string',
+            format: basePropertyTypes.includes(type) ? undefined : type,
+        };
     });
 
     return { ...values, properties: schema, category: values.category._id };
@@ -53,9 +65,14 @@ const steps: StepsType<EntityTemplateWizardValues> = [
         validation: createTemplateNameSchema,
     },
     {
-        label: 'שדות',
-        component: (props) => <AddFields {...props} />,
-        validation: addFieldsSchema,
+        label: 'שדות חובה',
+        component: (props) => <AddFields formValueName="requiredProrerites" {...props} />,
+        validation: addFieldsSchema('requiredProrerites'),
+    },
+    {
+        label: 'שדות אופציונליים ',
+        component: (props) => <AddFields formValueName="optionalProrerites" {...props} />,
+        validation: addFieldsSchema('optionalProrerites'),
     },
 ];
 
@@ -63,7 +80,7 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
     open,
     handleClose,
     initalStep = 0,
-    initialValues = { name: '', displayName: '', category: { displayName: '', name: '', _id: '' }, properties: [] },
+    initialValues = { name: '', displayName: '', category: { displayName: '', name: '', _id: '' }, requiredProrerites: [], optionalProrerites: [] },
     isEditMode = false,
 }) => {
     const [{ loading, error, data }, executeRequest] = useAxios<IMongoEntityTemplatePopulated>(

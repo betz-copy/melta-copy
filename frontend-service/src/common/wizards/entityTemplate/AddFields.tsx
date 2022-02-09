@@ -1,5 +1,5 @@
 import React from 'react';
-import { TextField, Box, MenuItem, FormControlLabel, Checkbox, Button } from '@mui/material';
+import { TextField, Box, MenuItem, Button } from '@mui/material';
 import { FieldArray, getIn } from 'formik';
 import * as Yup from 'yup';
 
@@ -10,38 +10,43 @@ const basePropertyTypes = ['string', 'number', 'boolean'];
 const stringTypes = ['date', 'time', 'date-time', 'email', 'hostname', 'ipv4', 'ipv6', 'uri'];
 const validPropertyTypes = [...basePropertyTypes, ...stringTypes];
 
-const addFieldsSchema = {
-    properties: Yup.array()
-        .of(
-            Yup.object({
-                name: Yup.string().required('חובה'),
-                title: Yup.string().required('חובה'),
-                type: Yup.string().oneOf(validPropertyTypes, 'סוג שדה לא תקין').required('חובה'),
-                isRequired: Yup.boolean(),
-            }),
-        )
-        .required('חובה'),
+const addFieldsSchema = (formValueName: 'requiredProrerites' | 'optionalProrerites') => {
+    return {
+        [formValueName]: Yup.array()
+            .of(
+                Yup.object({
+                    name: Yup.string().required('חובה'),
+                    title: Yup.string().required('חובה'),
+                    type: Yup.string().oneOf(validPropertyTypes, 'סוג שדה לא תקין').required('חובה'),
+                }),
+            )
+            .required('חובה'),
+    };
 };
 
-const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues>> = ({ values, touched, errors, handleChange }) => {
+const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues> & { formValueName: 'requiredProrerites' | 'optionalProrerites' }> = ({
+    formValueName,
+    values,
+    touched,
+    errors,
+    handleChange,
+}) => {
     return (
-        <FieldArray name="properties">
+        <FieldArray name={formValueName}>
             {({ push, remove }) => (
                 <>
-                    {values.properties.map((p, index) => {
-                        const name = `properties[${index}].name`;
+                    {values[formValueName].map((p, index) => {
+                        const name = `${formValueName}[${index}].name`;
                         const touchedName = getIn(touched, name);
                         const errorName = getIn(errors, name);
 
-                        const title = `properties[${index}].title`;
+                        const title = `${formValueName}[${index}].title`;
                         const touchedTitle = getIn(touched, title);
                         const errorTitle = getIn(errors, title);
 
-                        const type = `properties[${index}].type`;
+                        const type = `${formValueName}[${index}].type`;
                         const touchedType = getIn(touched, type);
                         const errorType = getIn(errors, type);
-
-                        const isRequired = `properties[${index}].isRequired`;
 
                         return (
                             <div key={name}>
@@ -83,23 +88,13 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues>> = ({ v
                                         ))}
                                     </TextField>
                                 </Box>
-                                <Box margin={1}>
-                                    <FormControlLabel
-                                        control={<Checkbox name={isRequired} value={p.isRequired} onChange={handleChange} />}
-                                        label="is required"
-                                    />
-                                </Box>
                                 <Button type="button" color="secondary" variant="outlined" onClick={() => remove(index)}>
                                     x
                                 </Button>
                             </div>
                         );
                     })}
-                    <Button
-                        type="button"
-                        variant="outlined"
-                        onClick={() => push({ id: Math.random(), name: '', title: '', type: '', isRequired: false })}
-                    >
+                    <Button type="button" variant="outlined" onClick={() => push({ id: Math.random(), name: '', title: '', type: '' })}>
                         Add
                     </Button>
                 </>

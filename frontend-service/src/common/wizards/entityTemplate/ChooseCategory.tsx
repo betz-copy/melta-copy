@@ -33,6 +33,7 @@ const ChooseCategory: React.FC<StepComponentProps<EntityTemplateWizardValues>> =
             loading={categoriesLoading}
             value={values.category._id ? values.category : null}
             getOptionLabel={(option) => option.displayName}
+            isOptionEqualToValue={(option, value) => option._id === value._id}
             renderInput={(params) => (
                 <TextField
                     {...params}

@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux';
 import { RootState } from '../../store';
 import { IMongoCategory, IMongoEntityTemplatePopulated } from '../../interfaces';
 import { CategoryWizard } from '../../common/wizards/category';
-import { EntityTemplateWizard } from '../../common/wizards/entityTemplate';
+import { EntityTemplateFormInputProperties, EntityTemplateWizard } from '../../common/wizards/entityTemplate';
 import { InfoCard } from './components/InfoCard';
 import { AddCard } from './components/AddCard';
 
@@ -39,14 +39,18 @@ const entityTemplateWizardReducer: Reducer<
 const entityTemplateObjectToEntityTemplateForm = (entityTemplate?: IMongoEntityTemplatePopulated) => {
     if (!entityTemplate) return undefined;
     const { required } = entityTemplate.properties;
-    const properties = Object.keys(entityTemplate.properties.properties).map((key) => {
-        return {
-            name: key,
-            ...entityTemplate.properties.properties[key],
-            isRequired: !!required.includes(key),
-        };
+
+    const requiredProrerites: EntityTemplateFormInputProperties[] = [];
+    const optionalProrerites: EntityTemplateFormInputProperties[] = [];
+
+    Object.keys(entityTemplate.properties.properties).forEach((key) => {
+        if (required.includes(key)) {
+            requiredProrerites.push({ name: key, ...entityTemplate.properties.properties[key] });
+        } else {
+            optionalProrerites.push({ name: key, ...entityTemplate.properties.properties[key] });
+        }
     });
-    return { ...entityTemplate, properties };
+    return { ...entityTemplate, requiredProrerites, optionalProrerites };
 };
 
 const SystemManagement = () => {

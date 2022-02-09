@@ -182,7 +182,7 @@ if (process.env.NODE_ENV === 'development' && !process.env.REACT_APP_IS_DOCKER) 
                             title: 'שם משפחה',
                         },
                         age: {
-                            type: 'integer',
+                            type: 'number',
                             title: 'גיל',
                         },
                         gender: {
@@ -214,7 +214,7 @@ if (process.env.NODE_ENV === 'development' && !process.env.REACT_APP_IS_DOCKER) 
                             title: 'שם משפחה',
                         },
                         age: {
-                            type: 'integer',
+                            type: 'number',
                             title: 'גיל',
                         },
                         gender: {
@@ -290,7 +290,7 @@ if (process.env.NODE_ENV === 'development' && !process.env.REACT_APP_IS_DOCKER) 
                             title: 'שם משפחה',
                         },
                         age: {
-                            type: 'integer',
+                            type: 'number',
                             title: 'גיל',
                         },
                         gender: {
@@ -322,7 +322,7 @@ if (process.env.NODE_ENV === 'development' && !process.env.REACT_APP_IS_DOCKER) 
                             title: 'שם משפחה',
                         },
                         age: {
-                            type: 'integer',
+                            type: 'number',
                             title: 'גיל',
                         },
                         gender: {
@@ -582,7 +582,7 @@ if (process.env.NODE_ENV === 'development' && !process.env.REACT_APP_IS_DOCKER) 
                             title: 'חברה',
                         },
                         number: {
-                            type: 'integer',
+                            type: 'number',
                             title: 'מספר',
                         },
                     },
@@ -610,7 +610,7 @@ if (process.env.NODE_ENV === 'development' && !process.env.REACT_APP_IS_DOCKER) 
                             title: 'צבע',
                         },
                         weight: {
-                            type: 'integer',
+                            type: 'number',
                             title: 'משקל',
                         },
                     },
