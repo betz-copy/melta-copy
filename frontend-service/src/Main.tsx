@@ -7,9 +7,7 @@ import createCache from '@emotion/cache';
 import { useDispatch } from 'react-redux';
 import { Header } from './common/Header';
 import { SideBar } from './common/SideBar';
-import { Info } from './pages/Info';
 import { Home } from './pages/Home';
-import { Page } from './pages/Page';
 import { MainBox } from './Main.styled';
 import { Unavailable } from './pages/Unavailable/Unavailable';
 import { SystemManagement } from './pages/SystemManagement';
@@ -60,8 +58,6 @@ const Main = () => {
                         <Toolbar />
                         <Box margin={4}>
                             <Routes>
-                                <Route path="/info" element={<Info />} />
-                                <Route path="/page" element={<Page />} />
                                 <Route path="/system-management" element={<SystemManagement />} />
                                 <Route path="/unavailable" element={<Unavailable />} />
                                 <Route path="/category" element={<Category />} />

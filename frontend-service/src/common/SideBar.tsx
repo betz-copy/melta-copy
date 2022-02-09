@@ -27,22 +27,6 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                         <ListItemText primary="Home" />
                     </ListItem>
                 </StyledLink>
-                <StyledLink to="/info">
-                    <ListItem button>
-                        <ListItemIcon>
-                            <InboxIcon />
-                        </ListItemIcon>
-                        <ListItemText primary="Info" />
-                    </ListItem>
-                </StyledLink>
-                <StyledLink to="/page">
-                    <ListItem button>
-                        <ListItemIcon>
-                            <InboxIcon />
-                        </ListItemIcon>
-                        <ListItemText primary="Page" />
-                    </ListItem>
-                </StyledLink>
                 <StyledLink to="/system-management">
                     <ListItem button>
                         <ListItemIcon>
