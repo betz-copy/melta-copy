@@ -25,13 +25,13 @@ export interface EntityTemplateWizardValues extends Omit<IEntityTemplatePopulate
 const basePropertyTypes = ['string', 'number', 'boolean'];
 
 const formToJSONSchema = (values: EntityTemplateWizardValues) => {
+    const { requiredProrerites, optionalProrerites, ...restOfProperties } = values;
+
     const schema = {
         type: 'object',
         properties: {} as any,
         required: [] as string[],
     };
-
-    const { requiredProrerites, optionalProrerites } = values;
 
     requiredProrerites.forEach(({ name, title, type }) => {
         schema.properties[name] = {
@@ -51,7 +51,7 @@ const formToJSONSchema = (values: EntityTemplateWizardValues) => {
         };
     });
 
-    return { ...values, properties: schema, category: values.category._id };
+    return { ...restOfProperties, properties: schema, category: values.category._id };
 };
 
 const steps: StepsType<EntityTemplateWizardValues> = [
