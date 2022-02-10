@@ -2,12 +2,13 @@ import React from 'react';
 import { TextField, Box } from '@mui/material';
 import * as Yup from 'yup';
 
+import i18next from 'i18next';
 import { CategoryWizardValues } from './index';
 import { StepComponentProps } from '../index';
 
 const createCategoryNameSchema = {
-    name: Yup.string().required('חובה'),
-    displayName: Yup.string().required('חובה'),
+    name: Yup.string().required(i18next.t('validation.required')),
+    displayName: Yup.string().required(i18next.t('validation.required')),
 };
 
 const CreateCategoryName: React.FC<StepComponentProps<CategoryWizardValues>> = ({ values, touched, errors, handleChange }) => {
@@ -16,7 +17,7 @@ const CreateCategoryName: React.FC<StepComponentProps<CategoryWizardValues>> = (
             <Box margin={1}>
                 <TextField
                     name="name"
-                    label="name"
+                    label={i18next.t('wizard.name')}
                     value={values.name}
                     onChange={handleChange}
                     error={touched.name && Boolean(errors.name)}
@@ -26,7 +27,7 @@ const CreateCategoryName: React.FC<StepComponentProps<CategoryWizardValues>> = (
             <Box margin={1}>
                 <TextField
                     name="displayName"
-                    label="displayName"
+                    label={i18next.t('wizard.displayName')}
                     value={values.displayName}
                     onChange={handleChange}
                     error={touched.displayName && Boolean(errors.displayName)}

@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 
 import { toast } from 'react-toastify';
 import { useDispatch } from 'react-redux';
+import i18next from 'i18next';
 import { StepsType, Wizard, WizardBaseType } from '../index';
 import { environment } from '../../../globals';
 import { CreateCategoryName, createCategoryNameSchema } from './CreateCategoryName';
@@ -13,7 +14,7 @@ export type { CategoryWizardValues };
 
 const steps: StepsType<CategoryWizardValues> = [
     {
-        label: 'בחר שם קטגוריה',
+        label: i18next.t('wizard.chooseCategoryName'),
         component: (props) => <CreateCategoryName {...props} />,
         validation: createCategoryNameSchema,
     },
@@ -61,7 +62,7 @@ const CategoryWizard: React.FC<WizardBaseType<CategoryWizardValues>> = ({
             initialValues={initialValues}
             initalStep={initalStep}
             isEditMode={isEditMode}
-            title="יצירת קטגוריה"
+            title={i18next.t('wizard.createCategory')}
             steps={steps}
             isLoading={loading}
             submitFucntion={(values) => executeRequest({ data: values })}

@@ -1,11 +1,10 @@
 import React, { useEffect } from 'react';
-
 import { toast } from 'react-toastify';
+import i18next from 'i18next';
 import { StepsType, Wizard, WizardBaseType } from '../index';
 import { environment } from '../../../globals';
 import { useAxios } from '../../../axios';
-import { CreateRelationshipTemplateName, createRelationshipTemplateNameSchema } from './CreateRelationshipTemplateName';
-import { ChooseTemplate, chooseTemplateSchema } from './ChooseTemplate';
+import { CreateRelationshipTemplateName, createRelationshipTemplateNameSchema } from './CreateRelationshipTemplate';
 import { IMongoCategory } from '../../../interfaces';
 
 export interface RelationshipTemplateWizardValues {
@@ -16,19 +15,9 @@ export interface RelationshipTemplateWizardValues {
 
 const steps: StepsType<RelationshipTemplateWizardValues> = [
     {
-        label: 'בחר שם תבנית קשר',
+        label: i18next.t('wizard.createRelationshipTemplate'),
         component: (props) => <CreateRelationshipTemplateName {...props} />,
         validation: createRelationshipTemplateNameSchema,
-    },
-    {
-        label: 'בחר תבנית מקור',
-        component: (props) => <ChooseTemplate {...props} fieldName="sourceEntity" />,
-        validation: chooseTemplateSchema('sourceEntity'),
-    },
-    {
-        label: 'בחר תבנית יעד',
-        component: (props) => <ChooseTemplate {...props} fieldName="destinationEntity" />,
-        validation: chooseTemplateSchema('destinationEntity'),
     },
 ];
 
@@ -60,7 +49,7 @@ const RelationshipTemplateWizard: React.FC<WizardBaseType<RelationshipTemplateWi
             initialValues={initialValues}
             initalStep={initalStep}
             isEditMode={isEditMode}
-            title="יצירת תבנית קשר"
+            title={i18next.t('wizard.createRelationshipTemplate')}
             steps={steps}
             isLoading={loading}
             submitFucntion={(values) => executeRequest({ data: values })}

@@ -6,12 +6,13 @@ import i18next from 'i18next';
 const StepperActions: React.FC<{
     handleBack: () => void;
     isLastStep: boolean;
+    isFirstStep: boolean;
     isLoading: boolean;
-}> = ({ handleBack, isLastStep, isLoading }) => {
+}> = ({ handleBack, isLastStep, isFirstStep, isLoading }) => {
     return (
         <Grid container justifyContent="space-between">
             <Grid item>
-                <Button variant="outlined" onClick={handleBack} disabled={isLoading}>
+                <Button variant="outlined" onClick={handleBack} disabled={isLoading || isFirstStep}>
                     <ArrowBackIcon
                         style={{
                             transform: 'scaleX(-1)',

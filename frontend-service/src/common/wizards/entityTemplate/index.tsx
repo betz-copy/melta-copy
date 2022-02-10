@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 
 import { toast } from 'react-toastify';
 import { useDispatch } from 'react-redux';
+import i18next from 'i18next';
 import { StepsType, Wizard, WizardBaseType } from '../index';
 import { environment } from '../../../globals';
 import { ChooseCategory, chooseCategorySchema } from './ChooseCategory';
@@ -55,22 +56,22 @@ const formToJSONSchema = (values: EntityTemplateWizardValues) => {
 
 const steps: StepsType<EntityTemplateWizardValues> = [
     {
-        label: 'בחר קטגוריה',
+        label: i18next.t('wizard.chooseCategroy'),
         component: (props) => <ChooseCategory {...props} />,
         validation: chooseCategorySchema,
     },
     {
-        label: 'בחר שם תבנית',
+        label: i18next.t('wizard.chooseEntityTemplateName'),
         component: (props) => <CreateTemplateName {...props} />,
         validation: createTemplateNameSchema,
     },
     {
-        label: 'שדות חובה',
+        label: i18next.t('wizard.requiredProrerites'),
         component: (props) => <AddFields formValueName="requiredProrerites" {...props} />,
         validation: addFieldsSchema('requiredProrerites'),
     },
     {
-        label: 'שדות אופציונליים ',
+        label: i18next.t('wizard.optionalProrerites'),
         component: (props) => <AddFields formValueName="optionalProrerites" {...props} />,
         validation: addFieldsSchema('optionalProrerites'),
     },
@@ -117,7 +118,7 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
             initialValues={initialValues}
             initalStep={initalStep}
             isEditMode={isEditMode}
-            title="יצירת תבנית יישות"
+            title={i18next.t('wizard.createEntityTemplate')}
             steps={steps}
             isLoading={loading}
             submitFucntion={async (values) => {

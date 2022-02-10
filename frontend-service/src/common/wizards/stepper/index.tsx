@@ -30,7 +30,12 @@ const Stepper = <T extends object>({
                         <>{steps[activeStep].component(formikProps)}</>
                     </Grid>
                     <Grid item width="80%">
-                        <StepperActions handleBack={handleBack} isLastStep={activeStep === steps.length - 1} isLoading={isLoading} />
+                        <StepperActions
+                            handleBack={handleBack}
+                            isLastStep={activeStep === steps.length - 1}
+                            isFirstStep={activeStep === 0}
+                            isLoading={isLoading}
+                        />
                     </Grid>
                 </Grid>
             </Grid>

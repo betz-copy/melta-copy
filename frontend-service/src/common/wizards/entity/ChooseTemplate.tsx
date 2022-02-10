@@ -3,6 +3,7 @@ import { TextField, Autocomplete, CircularProgress } from '@mui/material';
 import * as Yup from 'yup';
 
 import { toast } from 'react-toastify';
+import i18next from 'i18next';
 import { useAxios } from '../../../axios';
 import { environment } from '../../../globals';
 import { EntityWizardValues } from './index';
@@ -11,10 +12,10 @@ import { StepComponentProps } from '../index';
 
 const chooseTemplateSchema = {
     template: Yup.object({
-        _id: Yup.string().required('חובה'),
-        displayName: Yup.string().required('חובה'),
-        properties: Yup.object().required('חובה'),
-    }).required('חובה'),
+        _id: Yup.string().required(i18next.t('validation.required')),
+        displayName: Yup.string().required(i18next.t('validation.required')),
+        properties: Yup.object().required(i18next.t('validation.required')),
+    }).required(i18next.t('validation.required')),
 };
 
 const ChooseTemplate: React.FC<StepComponentProps<EntityWizardValues>> = ({ values, touched, errors, setFieldValue }) => {

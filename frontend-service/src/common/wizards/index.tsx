@@ -69,7 +69,7 @@ const Wizard = <T extends object>({
                         onClick={handleClose}
                         sx={{
                             position: 'absolute',
-                            left: 12,
+                            right: 12,
                             top: 12,
                             color: (theme) => theme.palette.grey[500],
                         }}

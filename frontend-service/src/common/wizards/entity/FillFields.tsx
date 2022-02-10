@@ -1,12 +1,12 @@
 import React from 'react';
 import Form from '@rjsf/core';
 import * as Yup from 'yup';
-
+import i18next from 'i18next';
 import { EntityWizardValues } from './index';
 import { StepComponentProps } from '../index';
 
 const fillFieldsSchema = {
-    properties: Yup.object().required('חובה'),
+    properties: Yup.object().required(i18next.t('validation.required')),
 };
 
 const FillFields: React.FC<StepComponentProps<EntityWizardValues>> = ({ values, setFieldValue }) => {
