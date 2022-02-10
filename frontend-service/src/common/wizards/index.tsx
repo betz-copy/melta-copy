@@ -1,9 +1,12 @@
-import React, { PropsWithChildren, useEffect } from 'react';
-import { Dialog, DialogTitle, DialogContent, Stepper, Step, StepLabel, StepContent, Button, Box, CircularProgress } from '@mui/material';
+import React, { PropsWithChildren, useEffect, useState } from 'react';
+import { Dialog, DialogTitle, DialogContent, Divider, IconButton, Typography } from '@mui/material';
+import { Close as CloseIcon } from '@mui/icons-material';
 import { Formik, Form, FormikProps } from 'formik';
 import * as Yup from 'yup';
 // eslint-disable-next-line import/no-unresolved
 import { ObjectShape } from 'yup/lib/object';
+
+import { Stepper } from './stepper';
 
 export type StepComponentProps<T extends object> = FormikProps<T> & { isEditMode?: boolean };
 
@@ -28,7 +31,6 @@ const Wizard = <T extends object>({
     steps,
     initialValues,
     initalStep = 0,
-    isEditMode = false,
     isLoading,
     submitFucntion,
 }: PropsWithChildren<
@@ -40,11 +42,17 @@ const Wizard = <T extends object>({
         submitFucntion: (values: T) => Promise<any>;
     }
 >): JSX.Element | null => {
-    const [activeStep, setActiveStep] = React.useState(initalStep);
+    const [activeStep, setActiveStep] = useState(initalStep);
     const isLastStep = activeStep === steps.length - 1;
 
     const handleBack = () => {
-        setActiveStep((prevActiveStep) => prevActiveStep - 1);
+        setActiveStep((prevActiveStep) => {
+            if (prevActiveStep > 0) {
+                return prevActiveStep - 1;
+            }
+
+            return prevActiveStep;
+        });
     };
 
     useEffect(() => {
@@ -52,8 +60,25 @@ const Wizard = <T extends object>({
     }, [open, initalStep]);
 
     return (
-        <Dialog open={open} onClose={handleClose}>
-            <DialogTitle>{title}</DialogTitle>
+        <Dialog open={open} onClose={handleClose} maxWidth="lg">
+            <DialogTitle>
+                <>
+                    <Typography variant="h4">{title}</Typography>
+                    <IconButton
+                        aria-label="close"
+                        onClick={handleClose}
+                        sx={{
+                            position: 'absolute',
+                            left: 12,
+                            top: 12,
+                            color: (theme) => theme.palette.grey[500],
+                        }}
+                    >
+                        <CloseIcon />
+                    </IconButton>
+                </>
+            </DialogTitle>
+            <Divider />
             <DialogContent>
                 <Formik
                     initialValues={initialValues}
@@ -70,30 +95,7 @@ const Wizard = <T extends object>({
                 >
                     {(formikProps: FormikProps<T>) => (
                         <Form>
-                            <Stepper activeStep={activeStep} orientation="vertical">
-                                {steps.map((step, index) => (
-                                    <Step key={step.label}>
-                                        <StepLabel>{step.label}</StepLabel>
-                                        <StepContent>
-                                            {step.component({ ...formikProps, isEditMode })}
-                                            <Box>
-                                                {isLoading ? (
-                                                    <CircularProgress size={20} />
-                                                ) : (
-                                                    <>
-                                                        <Button variant="contained" type="submit" disabled={isLoading}>
-                                                            {isLastStep ? 'Finish' : 'Continue'}
-                                                        </Button>
-                                                        <Button disabled={index === 0} onClick={handleBack}>
-                                                            Back
-                                                        </Button>
-                                                    </>
-                                                )}
-                                            </Box>
-                                        </StepContent>
-                                    </Step>
-                                ))}
-                            </Stepper>
+                            <Stepper activeStep={activeStep} handleBack={handleBack} steps={steps} isLoading={isLoading} formikProps={formikProps} />
                         </Form>
                     )}
                 </Formik>

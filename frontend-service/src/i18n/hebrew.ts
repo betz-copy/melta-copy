@@ -21,4 +21,9 @@ export default {
         // eslint-disable-next-line quotes
         contactByChat: "פנייה בהיי צ'אט",
     },
+    wizard: {
+        next: 'הבא',
+        back: 'הקודם',
+        finish: 'סיים',
+    },
 };
