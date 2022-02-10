@@ -62,6 +62,7 @@ const Main = () => {
                                 <Route path="/unavailable" element={<Unavailable />} />
                                 <Route path="/category" element={<Category />} />
                                 <Route path="/" element={<Home />} />
+                                <Route path="/graph/:instanceId" element={<Home />} />
                                 <Route path="*" element={<Home />} />
                             </Routes>
                         </Box>
