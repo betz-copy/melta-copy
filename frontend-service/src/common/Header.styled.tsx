@@ -11,7 +11,7 @@ const AppBarComponent = styled(AppBar, {
         duration: theme.transitions.duration.leavingScreen,
     }),
     ...(open && {
-        marginLeft: drawerWidth,
+        marginRight: drawerWidth,
         width: `calc(100% - ${drawerWidth}px)`,
         transition: theme.transitions.create(['width', 'margin'], {
             easing: theme.transitions.easing.sharp,
@@ -24,7 +24,7 @@ const MenuIconButton = styled(
     IconButton,
     {},
 )<{ open: boolean }>(({ open }) => ({
-    marginRight: '36px',
+    marginLeft: '36px',
     ...(open && {
         display: 'none',
     }),

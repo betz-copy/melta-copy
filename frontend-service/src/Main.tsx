@@ -1,9 +1,6 @@
 import React, { useEffect } from 'react';
 import { CssBaseline, Box, Toolbar } from '@mui/material';
 import { Route, Routes, BrowserRouter as Router } from 'react-router-dom';
-import rtlPlugin from 'stylis-plugin-rtl';
-import { CacheProvider } from '@emotion/react';
-import createCache from '@emotion/cache';
 import { useDispatch } from 'react-redux';
 import { Header } from './common/Header';
 import { SideBar } from './common/SideBar';
@@ -16,11 +13,6 @@ import { useAxios } from './axios';
 import { IMongoCategory, IMongoEntityTemplatePopulated } from './interfaces';
 import { environment } from './globals';
 import { Category } from './pages/Category';
-
-const cacheRtl = createCache({
-    key: 'muirtl',
-    stylisPlugins: [rtlPlugin],
-});
 
 const Main = () => {
     const [{ loading: _categoriesLoading, error: _categoriesError, data: categories }] = useAxios<IMongoCategory[]>(environment.api.categories);
@@ -48,28 +40,26 @@ const Main = () => {
     };
 
     return (
-        <CacheProvider value={cacheRtl}>
-            <Router>
-                <Box display="flex">
-                    <CssBaseline />
-                    <Header toggleDrawer={toggleDrawer} isDrawerOpen={open} />
-                    <SideBar toggleDrawer={toggleDrawer} isDrawerOpen={open} />
-                    <MainBox>
-                        <Toolbar />
-                        <Box margin={4}>
-                            <Routes>
-                                <Route path="/system-management" element={<SystemManagement />} />
-                                <Route path="/unavailable" element={<Unavailable />} />
-                                <Route path="/category" element={<Category />} />
-                                <Route path="/" element={<Home />} />
-                                <Route path="/graph/:instanceId" element={<Home />} />
-                                <Route path="*" element={<Home />} />
-                            </Routes>
-                        </Box>
-                    </MainBox>
-                </Box>
-            </Router>
-        </CacheProvider>
+        <Router>
+            <Box display="flex">
+                <CssBaseline />
+                <Header toggleDrawer={toggleDrawer} isDrawerOpen={open} />
+                <SideBar toggleDrawer={toggleDrawer} isDrawerOpen={open} />
+                <MainBox>
+                    <Toolbar />
+                    <Box margin={4}>
+                        <Routes>
+                            <Route path="/system-management" element={<SystemManagement />} />
+                            <Route path="/unavailable" element={<Unavailable />} />
+                            <Route path="/category" element={<Category />} />
+                            <Route path="/" element={<Home />} />
+                            <Route path="/graph/:instanceId" element={<Home />} />
+                            <Route path="*" element={<Home />} />
+                        </Routes>
+                    </Box>
+                </MainBox>
+            </Box>
+        </Router>
     );
 };
 export default Main;
