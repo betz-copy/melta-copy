@@ -8,7 +8,7 @@ const StepNumberTypography = styled(Typography)<{ type: 'currentStep' | 'finishe
     alignItems: 'center',
     borderRadius: '0.475rem',
     justifyContent: 'center',
-    marginLeft: '1.5rem',
+    marginRight: '1.5rem',
     ...(type === 'currentStep' && {
         backgroundColor: '#009ef7',
         color: 'white',
@@ -30,10 +30,10 @@ const StepNameTypography = styled(Typography)<{ type: 'currentStep' | 'finishedS
 }));
 
 const DashedVerticalLine = styled('div')({
-    borderRight: '2px dashed #e4e6ef',
+    borderLeft: '2px dashed #e4e6ef',
     height: '40px',
-    marginRight: '18px',
-    left: '50%',
+    marginLeft: '18px',
+    right: '50%',
 });
 
 export { StepNumberTypography, StepNameTypography, DashedVerticalLine };
