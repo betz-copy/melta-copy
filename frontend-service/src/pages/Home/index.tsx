@@ -47,7 +47,11 @@ const Home = () => {
     }, [entitiesData]);
 
     if (loading) {
-        return <CircularProgress size={80} />;
+        return (
+            <div style={{ textAlign: 'center', marginTop: '35vh' }}>
+                <CircularProgress size={80} />
+            </div>
+        );
     }
 
     return <Graph data={data} centerOn={Number(instanceId)} />;

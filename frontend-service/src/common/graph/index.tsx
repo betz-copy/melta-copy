@@ -76,7 +76,7 @@ const Graph: React.FC<{ data: { nodes: any[]; links: any[] }; centerOn?: number 
                 return (
                     <>
                         <ForceGraph
-                            height={800}
+                            height={750}
                             ref={forceRef}
                             graphData={data}
                             width={size.width!}
@@ -85,8 +85,12 @@ const Graph: React.FC<{ data: { nodes: any[]; links: any[] }; centerOn?: number 
                             linkDirectionalArrowRelPos={1}
                             linkDirectionalArrowLength={3}
                             nodeAutoColorBy={(node) => node.data.templateId}
-                            onNodeClick={(node) => dispatchNodeDialog({ type: 'show', data: node.data })}
+                            onNodeClick={(node) => {
+                                forceRef.current?.pauseAnimation();
+                                dispatchNodeDialog({ type: 'show', data: node.data });
+                            }}
                             onNodeRightClick={(node, event) => {
+                                forceRef.current?.pauseAnimation();
                                 dispatchNodeMenu({ type: 'show', top: event.clientY, left: event.clientX, node });
                             }}
                             onEngineStop={() => {
@@ -100,10 +104,19 @@ const Graph: React.FC<{ data: { nodes: any[]; links: any[] }; centerOn?: number 
                             node={nodeMenuState.node!}
                             onShowDialog={onShowDialog}
                             showMenu={nodeMenuState.showMenu}
-                            onCloseMenu={() => dispatchNodeMenu({ type: 'hide' })}
+                            onCloseMenu={() => {
+                                forceRef.current?.resumeAnimation();
+                                dispatchNodeMenu({ type: 'hide' });
+                            }}
                             location={{ top: nodeMenuState.top!, left: nodeMenuState.left! }}
                         />
-                        <Dialog onClose={() => dispatchNodeDialog({ type: 'hide' })} open={nodeDailogState.showDialog}>
+                        <Dialog
+                            onClose={() => {
+                                forceRef.current?.resumeAnimation();
+                                dispatchNodeDialog({ type: 'hide' });
+                            }}
+                            open={nodeDailogState.showDialog}
+                        >
                             <DialogTitle>Set backup account</DialogTitle>
                             <Typography>{JSON.stringify(nodeDailogState.data)}</Typography>
                         </Dialog>
