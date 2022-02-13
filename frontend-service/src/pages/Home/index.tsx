@@ -26,10 +26,19 @@ const sizeByConnectons = (id: number, arr: { source: number; target: number }[])
 
 const Home = () => {
     const { instanceId } = useParams();
-    const [{ data: entitiesData, loading }] = useAxios<{ nodes: any[]; links: any[] }>(
+    const [{ data: entitiesData, loading }, getEntities] = useAxios<{ nodes: any[]; links: any[] }>(
         instanceId ? `${environment.api.entities}/${instanceId}` : `${environment.api.entities}/all`,
+        { manual: true },
     );
     const [data, setData] = useState<{ nodes: any[]; links: any[] }>({ nodes: [], links: [] });
+
+    useEffect(() => {
+        getEntities();
+    }, [getEntities]);
+
+    useEffect(() => {
+        getEntities();
+    }, [instanceId, getEntities]);
 
     useEffect(() => {
         if (entitiesData) {
