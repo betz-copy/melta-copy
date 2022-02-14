@@ -8,14 +8,9 @@ import { TemplateTable } from './components/TemplateTable';
 const Category: React.FC = () => {
     const [searchParams] = useSearchParams();
     const categoryId = searchParams.get('categoryId');
-    const [{ data: instances }, getEntitiesByCategory] = useAxios<IEntityInstance[]>(`${environment.api.entities}?category=${categoryId}`, {
-        manual: true,
-    });
+    const [{ data: instances }, getEntitiesByCategory] = useAxios<IEntityInstance[]>(`${environment.api.entities}?category=${categoryId}`);
     const [{ data: templates }, getTemplatesByCategory] = useAxios<IMongoEntityTemplatePopulated[]>(
         `${environment.api.entityTemplates}?category=${categoryId}`,
-        {
-            manual: true,
-        },
     );
 
     useEffect(() => {

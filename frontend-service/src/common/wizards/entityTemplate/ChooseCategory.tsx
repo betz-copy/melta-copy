@@ -18,7 +18,13 @@ const chooseCategorySchema = {
 };
 
 const ChooseCategory: React.FC<StepComponentProps<EntityTemplateWizardValues>> = ({ values, touched, errors, setFieldValue }) => {
-    const [{ data: categories, loading: categoriesLoading, error: getCategoriesError }] = useAxios<IMongoCategory[]>(environment.api.categories);
+    const [{ data: categories, loading: categoriesLoading, error: getCategoriesError }, getCategories] = useAxios<IMongoCategory[]>(
+        environment.api.categories,
+    );
+
+    useEffect(() => {
+        getCategories();
+    }, [getCategories]);
 
     useEffect(() => {
         if (getCategoriesError) {

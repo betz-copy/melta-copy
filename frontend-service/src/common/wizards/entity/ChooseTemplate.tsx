@@ -19,9 +19,13 @@ const chooseTemplateSchema = {
 };
 
 const ChooseTemplate: React.FC<StepComponentProps<EntityWizardValues>> = ({ values, touched, errors, setFieldValue }) => {
-    const [{ data: entityTemplates, loading: entityTemplatesLoading, error: entityTemplatesError }] = useAxios<IMongoEntityTemplate[]>(
-        environment.api.entityTemplates,
-    );
+    const [{ data: entityTemplates, loading: entityTemplatesLoading, error: entityTemplatesError }, getEntityTemplates] = useAxios<
+        IMongoEntityTemplate[]
+    >(environment.api.entityTemplates);
+
+    useEffect(() => {
+        getEntityTemplates();
+    }, [getEntityTemplates]);
 
     useEffect(() => {
         if (entityTemplatesError) {

@@ -1,11 +1,11 @@
 export const environment = {
     api: {
-        login: '/api/auth/login',
-        config: '/api/config',
-        categories: '/api/categories',
-        entityTemplates: '/api/entities/templates',
-        relationshipTemplates: '/api/relationships/templates',
-        entities: '/api/entities',
+        login: '/auth/login',
+        config: '/config',
+        categories: '/categories',
+        entityTemplates: '/entities/templates',
+        relationshipTemplates: '/relationships/templates',
+        entities: '/entities',
     },
     accessTokenName: 'rabaz-access-token',
 };

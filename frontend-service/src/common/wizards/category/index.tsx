@@ -31,7 +31,6 @@ const CategoryWizard: React.FC<WizardBaseType<CategoryWizardValues>> = ({
         isEditMode
             ? { method: 'PUT', url: `${environment.api.categories}/${(initialValues as IMongoCategory)._id}` }
             : { method: 'POST', url: environment.api.categories },
-        { manual: true },
     );
     const dispatch = useDispatch();
 

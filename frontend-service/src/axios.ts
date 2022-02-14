@@ -9,6 +9,7 @@ import { AuthService } from './services/authService';
 const axios = axiosInstance.create({
     withCredentials: true,
     timeout: 5000,
+    baseURL: '/api',
 });
 
 axios.interceptors.request.use(
@@ -1529,7 +1530,12 @@ if (process.env.NODE_ENV === 'development' && !process.env.REACT_APP_IS_DOCKER) 
     });
 }
 
-configure({ axios });
+configure({
+    axios,
+    defaultOptions: {
+        manual: true,
+    },
+});
 
 export { useAxios };
 

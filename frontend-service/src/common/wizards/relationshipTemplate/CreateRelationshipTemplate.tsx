@@ -30,9 +30,13 @@ const CreateRelationshipTemplateName: React.FC<StepComponentProps<RelationshipTe
     handleChange,
     setFieldValue,
 }) => {
-    const [{ data: entityTemplates, loading: entityTemplatesLoading, error: entityTemplatesError }] = useAxios<IMongoEntityTemplate[]>(
-        environment.api.entityTemplates,
-    );
+    const [{ data: entityTemplates, loading: entityTemplatesLoading, error: entityTemplatesError }, getEntityTemplates] = useAxios<
+        IMongoEntityTemplate[]
+    >(environment.api.entityTemplates);
+
+    useEffect(() => {
+        getEntityTemplates();
+    }, [getEntityTemplates]);
 
     useEffect(() => {
         if (entityTemplatesError) {

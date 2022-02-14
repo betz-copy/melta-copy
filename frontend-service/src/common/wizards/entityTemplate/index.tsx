@@ -88,7 +88,6 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
         isEditMode
             ? { method: 'PUT', url: `${environment.api.entityTemplates}/${(initialValues as EntityTemplateWizardValues & { _id: string })._id}` }
             : { method: 'POST', url: environment.api.entityTemplates },
-        { manual: true },
     );
     const dispatch = useDispatch();
 

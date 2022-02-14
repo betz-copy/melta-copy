@@ -18,8 +18,8 @@ import { environment } from './globals';
 const App = () => {
     const currentUser = useSelector((state: RootState) => state.user);
     const paletteMode = useSelector((state: RootState) => state.userPreferences.paletteMode);
+    const [{ data: configData, error: configError }, getConfig] = useAxios<BackendConfigState>(environment.api.config);
     const dispatch = useDispatch();
-    const [{ data: configData, error: configError }] = useAxios<BackendConfigState>(environment.api.config);
 
     const [isLoading, setIsLoading] = useState(true);
 
@@ -32,8 +32,9 @@ const App = () => {
             }
         };
 
+        getConfig();
         initUser();
-    }, [dispatch]);
+    }, [dispatch, getConfig]);
 
     useEffect(() => {
         dispatch(setConfig(configData!));

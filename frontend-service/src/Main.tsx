@@ -24,12 +24,19 @@ const cacheRtl = createCache({
 });
 
 const Main = () => {
-    const [{ loading: _categoriesLoading, error: _categoriesError, data: categories }] = useAxios<IMongoCategory[]>(environment.api.categories);
-    const [{ loading: _entityTemplatesLoading, error: _entityTemplatesError, data: entityTemplates }] = useAxios<IMongoEntityTemplatePopulated[]>(
-        environment.api.entityTemplates,
+    const [{ loading: _categoriesLoading, error: _categoriesError, data: categories }, getCategories] = useAxios<IMongoCategory[]>(
+        environment.api.categories,
     );
+    const [{ loading: _entityTemplatesLoading, error: _entityTemplatesError, data: entityTemplates }, getEntityTemplates] = useAxios<
+        IMongoEntityTemplatePopulated[]
+    >(environment.api.entityTemplates);
 
     const dispatch = useDispatch();
+
+    useEffect(() => {
+        getCategories();
+        getEntityTemplates();
+    }, [getCategories, getEntityTemplates]);
 
     useEffect(() => {
         if (categories) {

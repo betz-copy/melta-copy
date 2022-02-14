@@ -28,7 +28,7 @@ const RelationshipTemplateWizard: React.FC<WizardBaseType<RelationshipTemplateWi
     initialValues = { name: '', sourceEntity: { _id: '', displayName: '', name: '' }, destinationEntity: { _id: '', displayName: '', name: '' } },
     isEditMode = false,
 }) => {
-    const [{ loading, error, data }, executeRequest] = useAxios({ method: 'POST', url: environment.api.relationshipTemplates }, { manual: true });
+    const [{ loading, error, data }, executeRequest] = useAxios({ method: 'POST', url: environment.api.relationshipTemplates });
 
     useEffect(() => {
         if (error) {

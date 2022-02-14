@@ -46,7 +46,7 @@ const EntityWizard: React.FC<WizardBaseType<EntityWizardValues>> = ({
     },
     isEditMode = false,
 }) => {
-    const [{ loading, error, data }, executeRequest] = useAxios({ method: 'POST', url: environment.api.entities }, { manual: true });
+    const [{ loading, error, data }, executeRequest] = useAxios({ method: 'POST', url: environment.api.entities });
 
     useEffect(() => {
         if (error) {
