@@ -1,6 +1,6 @@
 export const environment = {
     api: {
-        login: '/auth/login',
+        login: '/api/auth/login',
         config: '/config',
         categories: '/categories',
         entityTemplates: '/entities/templates',
