@@ -6,6 +6,7 @@ import { CacheProvider } from '@emotion/react';
 import createCache from '@emotion/cache';
 import { prefixer } from 'stylis';
 import { useDispatch } from 'react-redux';
+import { useQuery } from 'react-query';
 import { Header } from './common/Header';
 import { SideBar } from './common/SideBar';
 import { Home } from './pages/Home';
@@ -13,10 +14,9 @@ import { MainBox } from './Main.styled';
 import { Unavailable } from './pages/Unavailable/Unavailable';
 import { SystemManagement } from './pages/SystemManagement';
 import { setCategories, setEntityTemplates } from './store/globalState';
-import { useAxios } from './axios';
-import { IMongoCategory, IMongoEntityTemplatePopulated } from './interfaces';
-import { environment } from './globals';
 import { Category } from './pages/Category';
+import { getEntityTemplatesRequest } from './services/enitityTemplatesService';
+import { getCategoriesRequest } from './services/categoriesService';
 
 const cacheRtl = createCache({
     key: 'muirtl',
@@ -24,19 +24,10 @@ const cacheRtl = createCache({
 });
 
 const Main = () => {
-    const [{ loading: _categoriesLoading, error: _categoriesError, data: categories }, getCategories] = useAxios<IMongoCategory[]>(
-        environment.api.categories,
-    );
-    const [{ loading: _entityTemplatesLoading, error: _entityTemplatesError, data: entityTemplates }, getEntityTemplates] = useAxios<
-        IMongoEntityTemplatePopulated[]
-    >(environment.api.entityTemplates);
+    const { data: entityTemplates } = useQuery('getEntityTemplates', getEntityTemplatesRequest);
+    const { data: categories } = useQuery('getCategories', getCategoriesRequest);
 
     const dispatch = useDispatch();
-
-    useEffect(() => {
-        getCategories();
-        getEntityTemplates();
-    }, [getCategories, getEntityTemplates]);
 
     useEffect(() => {
         if (categories) {

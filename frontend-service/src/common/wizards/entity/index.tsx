@@ -1,15 +1,15 @@
 import React, { useEffect } from 'react';
 
 import { toast } from 'react-toastify';
+import { useMutation } from 'react-query';
 import { StepsType, Wizard, WizardBaseType } from '../index';
-import { environment } from '../../../globals';
-import { useAxios } from '../../../axios';
 import { ChooseTemplate, chooseTemplateSchema } from './ChooseTemplate';
 import { FillFields, fillFieldsSchema } from './FillFields';
-import { IMongoEntityTemplate } from '../../../interfaces';
+import { createEntityInstanceRequest } from '../../../services/instancesService';
+import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 
 export interface EntityWizardValues {
-    template: IMongoEntityTemplate;
+    template: IMongoEntityTemplatePopulated;
     properties: object;
 }
 
@@ -35,7 +35,11 @@ const EntityWizard: React.FC<WizardBaseType<EntityWizardValues>> = ({
             _id: '',
             displayName: '',
             name: '',
-            category: '',
+            category: {
+                _id: '',
+                name: '',
+                displayName: '',
+            },
             properties: {
                 properties: {},
                 required: [],
@@ -46,7 +50,7 @@ const EntityWizard: React.FC<WizardBaseType<EntityWizardValues>> = ({
     },
     isEditMode = false,
 }) => {
-    const [{ loading, error, data }, executeRequest] = useAxios({ method: 'POST', url: environment.api.entities });
+    const { isLoading, error, data, mutateAsync } = useMutation((entityInstance: any) => createEntityInstanceRequest(entityInstance));
 
     useEffect(() => {
         if (error) {
@@ -69,8 +73,8 @@ const EntityWizard: React.FC<WizardBaseType<EntityWizardValues>> = ({
             isEditMode={isEditMode}
             title="יצירת יישות"
             steps={steps}
-            isLoading={loading}
-            submitFucntion={(values) => executeRequest({ data: values })}
+            isLoading={isLoading}
+            submitFucntion={(values) => mutateAsync(values)}
         />
     );
 };

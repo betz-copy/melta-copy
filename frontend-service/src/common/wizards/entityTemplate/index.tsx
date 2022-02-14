@@ -1,16 +1,15 @@
 import React, { useEffect } from 'react';
-
 import { toast } from 'react-toastify';
 import { useDispatch } from 'react-redux';
 import i18next from 'i18next';
+import { useMutation } from 'react-query';
 import { StepsType, Wizard, WizardBaseType } from '../index';
-import { environment } from '../../../globals';
 import { ChooseCategory, chooseCategorySchema } from './ChooseCategory';
 import { CreateTemplateName, createTemplateNameSchema } from './CreateTemplateName';
 import { AddFields, addFieldsSchema } from './AddFields';
-import { useAxios } from '../../../axios';
-import { IEntityTemplatePopulated, IMongoEntityTemplatePopulated } from '../../../interfaces';
 import { addEntityTemplate, updateEntityTemplate } from '../../../store/globalState';
+import { createEntityTemplateRequest, updateEntityTemplateRequest } from '../../../services/enitityTemplatesService';
+import { IEntityTemplate, IEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 
 export interface EntityTemplateFormInputProperties {
     name: string;
@@ -51,7 +50,7 @@ const formToJSONSchema = (values: EntityTemplateWizardValues) => {
         };
     });
 
-    return { ...restOfProperties, properties: schema, category: values.category._id };
+    return { ...restOfProperties, properties: schema, category: values.category._id } as IEntityTemplate;
 };
 
 const steps: StepsType<EntityTemplateWizardValues> = [
@@ -84,10 +83,10 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
     initialValues = { name: '', displayName: '', category: { displayName: '', name: '', _id: '' }, requiredProrerites: [], optionalProrerites: [] },
     isEditMode = false,
 }) => {
-    const [{ loading, error, data }, executeRequest] = useAxios<IMongoEntityTemplatePopulated>(
+    const { isLoading, error, data, mutateAsync } = useMutation((enitiyTemplate: IEntityTemplate) =>
         isEditMode
-            ? { method: 'PUT', url: `${environment.api.entityTemplates}/${(initialValues as EntityTemplateWizardValues & { _id: string })._id}` }
-            : { method: 'POST', url: environment.api.entityTemplates },
+            ? updateEntityTemplateRequest((initialValues as EntityTemplateWizardValues & { _id: string })._id, enitiyTemplate)
+            : createEntityTemplateRequest(enitiyTemplate),
     );
     const dispatch = useDispatch();
 
@@ -119,9 +118,9 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
             isEditMode={isEditMode}
             title={i18next.t('wizard.createEntityTemplate')}
             steps={steps}
-            isLoading={loading}
+            isLoading={isLoading}
             submitFucntion={async (values) => {
-                await executeRequest({ data: formToJSONSchema(values) });
+                await mutateAsync(formToJSONSchema(values));
                 handleClose();
             }}
         />

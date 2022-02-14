@@ -1,9 +1,9 @@
 import { CircularProgress } from '@mui/material';
 import React, { useEffect, useState } from 'react';
+import { useQuery } from 'react-query';
 import { useParams } from 'react-router-dom';
-import { useAxios } from '../../axios';
 import { Graph } from '../../common/graph';
-import { environment } from '../../globals';
+import { getInstancesRequest, getRelatedInstancesByIdRequest } from '../../services/instancesService';
 
 const sizeByConnectons = (id: number, arr: { source: number; target: number }[]) => {
     let counter = 0;
@@ -26,18 +26,14 @@ const sizeByConnectons = (id: number, arr: { source: number; target: number }[])
 
 const Home = () => {
     const { instanceId } = useParams();
-    const [{ data: entitiesData, loading }, getEntities] = useAxios<{ nodes: any[]; links: any[] }>(
-        instanceId ? `${environment.api.entities}/${instanceId}` : `${environment.api.entities}/all`,
-    );
+    const {
+        data: entitiesData,
+        isLoading,
+        isFetching,
+    } = useQuery(['getGraphInstances', instanceId], () => (instanceId ? getRelatedInstancesByIdRequest(instanceId) : getInstancesRequest()), {
+        refetchOnWindowFocus: false,
+    });
     const [data, setData] = useState<{ nodes: any[]; links: any[] }>({ nodes: [], links: [] });
-
-    useEffect(() => {
-        getEntities();
-    }, [getEntities]);
-
-    useEffect(() => {
-        getEntities();
-    }, [instanceId, getEntities]);
 
     useEffect(() => {
         if (entitiesData) {
@@ -54,7 +50,7 @@ const Home = () => {
         }
     }, [entitiesData]);
 
-    if (loading) {
+    if (isLoading || isFetching) {
         return (
             <div style={{ textAlign: 'center', marginTop: '35vh' }}>
                 <CircularProgress size={80} />

@@ -2,7 +2,8 @@
 import React, { useEffect } from 'react';
 import { Accordion, AccordionDetails, AccordionSummary, Typography } from '@mui/material';
 import { ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
-import { IEntityInstance, IMongoEntityTemplatePopulated } from '../../../interfaces';
+import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { IEntityInstance } from '../../../interfaces/instances';
 
 const TemplateTable: React.FC<{ template: IMongoEntityTemplatePopulated & { entities: IEntityInstance[] } }> = ({ template }) => {
     return (

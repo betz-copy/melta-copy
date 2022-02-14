@@ -1,6 +1,5 @@
 import axiosInstance from 'axios';
 import MockAdapter from 'axios-mock-adapter';
-import useAxios, { configure } from 'axios-hooks';
 import cookies from 'js-cookie';
 import { environment } from './globals';
 import { AuthService } from './services/authService';
@@ -1529,14 +1528,5 @@ if (process.env.NODE_ENV === 'development' && !process.env.REACT_APP_IS_DOCKER) 
         ];
     });
 }
-
-configure({
-    axios,
-    defaultOptions: {
-        manual: true,
-    },
-});
-
-export { useAxios };
 
 export default axios;

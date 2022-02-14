@@ -1,15 +1,11 @@
-import React, { useEffect } from 'react';
-import { TextField, Box, Autocomplete, CircularProgress } from '@mui/material';
+import React from 'react';
+import { TextField, Box, Autocomplete } from '@mui/material';
 import * as Yup from 'yup';
-
 import i18next from 'i18next';
-import { toast } from 'react-toastify';
+import { useSelector } from 'react-redux';
 import { RelationshipTemplateWizardValues } from './index';
 import { StepComponentProps } from '../index';
-import { environment } from '../../../globals';
-
-import { useAxios } from '../../../axios';
-import { IMongoEntityTemplate } from '../../../interfaces';
+import { RootState } from '../../../store';
 
 const createRelationshipTemplateNameSchema = {
     name: Yup.string().required(i18next.t('validation.required')),
@@ -30,19 +26,7 @@ const CreateRelationshipTemplateName: React.FC<StepComponentProps<RelationshipTe
     handleChange,
     setFieldValue,
 }) => {
-    const [{ data: entityTemplates, loading: entityTemplatesLoading, error: entityTemplatesError }, getEntityTemplates] = useAxios<
-        IMongoEntityTemplate[]
-    >(environment.api.entityTemplates);
-
-    useEffect(() => {
-        getEntityTemplates();
-    }, [getEntityTemplates]);
-
-    useEffect(() => {
-        if (entityTemplatesError) {
-            toast.error('failed to get templates');
-        }
-    }, [entityTemplatesError]);
+    const entityTemplates = useSelector((state: RootState) => state.globalState.entityTemplates);
 
     return (
         <>
@@ -61,7 +45,6 @@ const CreateRelationshipTemplateName: React.FC<StepComponentProps<RelationshipTe
                     id="sourceEntity"
                     options={entityTemplates || []}
                     onChange={(e, value) => setFieldValue('sourceEntity', value || '')}
-                    loading={entityTemplatesLoading}
                     value={values.sourceEntity._id ? values.sourceEntity : null}
                     getOptionLabel={(option) => option.displayName}
                     renderInput={(params) => (
@@ -73,15 +56,6 @@ const CreateRelationshipTemplateName: React.FC<StepComponentProps<RelationshipTe
                             name="sourceEntity"
                             variant="outlined"
                             label={i18next.t('wizard.sourceEntity')}
-                            InputProps={{
-                                ...params.InputProps,
-                                endAdornment: (
-                                    <>
-                                        {entityTemplatesLoading ? <CircularProgress color="inherit" size={20} /> : null}
-                                        {params.InputProps.endAdornment}
-                                    </>
-                                ),
-                            }}
                         />
                     )}
                 />
@@ -91,7 +65,6 @@ const CreateRelationshipTemplateName: React.FC<StepComponentProps<RelationshipTe
                     id="destinationEntity"
                     options={entityTemplates || []}
                     onChange={(e, value) => setFieldValue('destinationEntity', value || '')}
-                    loading={entityTemplatesLoading}
                     value={values.destinationEntity._id ? values.destinationEntity : null}
                     getOptionLabel={(option) => option.displayName}
                     renderInput={(params) => (
@@ -103,15 +76,6 @@ const CreateRelationshipTemplateName: React.FC<StepComponentProps<RelationshipTe
                             name="destinationEntity"
                             variant="outlined"
                             label={i18next.t('wizard.destinationEntity')}
-                            InputProps={{
-                                ...params.InputProps,
-                                endAdornment: (
-                                    <>
-                                        {entityTemplatesLoading ? <CircularProgress color="inherit" size={20} /> : null}
-                                        {params.InputProps.endAdornment}
-                                    </>
-                                ),
-                            }}
                         />
                     )}
                 />

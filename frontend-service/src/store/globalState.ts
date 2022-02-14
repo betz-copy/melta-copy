@@ -1,5 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { IMongoCategory, IMongoEntityTemplatePopulated } from '../interfaces';
+import { IMongoCategory } from '../interfaces/categories';
+import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 
 export interface GlobalState {
     categories: IMongoCategory[];

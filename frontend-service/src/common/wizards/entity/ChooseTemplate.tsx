@@ -1,14 +1,12 @@
-import React, { useEffect } from 'react';
-import { TextField, Autocomplete, CircularProgress } from '@mui/material';
+import React from 'react';
+import { TextField, Autocomplete } from '@mui/material';
 import * as Yup from 'yup';
 
-import { toast } from 'react-toastify';
 import i18next from 'i18next';
-import { useAxios } from '../../../axios';
-import { environment } from '../../../globals';
+import { useSelector } from 'react-redux';
 import { EntityWizardValues } from './index';
-import { IMongoEntityTemplate } from '../../../interfaces';
 import { StepComponentProps } from '../index';
+import { RootState } from '../../../store';
 
 const chooseTemplateSchema = {
     template: Yup.object({
@@ -19,26 +17,13 @@ const chooseTemplateSchema = {
 };
 
 const ChooseTemplate: React.FC<StepComponentProps<EntityWizardValues>> = ({ values, touched, errors, setFieldValue }) => {
-    const [{ data: entityTemplates, loading: entityTemplatesLoading, error: entityTemplatesError }, getEntityTemplates] = useAxios<
-        IMongoEntityTemplate[]
-    >(environment.api.entityTemplates);
-
-    useEffect(() => {
-        getEntityTemplates();
-    }, [getEntityTemplates]);
-
-    useEffect(() => {
-        if (entityTemplatesError) {
-            toast.error('failed to get templates');
-        }
-    }, [entityTemplatesError]);
+    const entityTemplates = useSelector((state: RootState) => state.globalState.entityTemplates);
 
     return (
         <Autocomplete
             id="template"
             options={entityTemplates || []}
             onChange={(e, value) => setFieldValue('template', value || '')}
-            loading={entityTemplatesLoading}
             value={values.template._id ? values.template : null}
             getOptionLabel={(option) => option.displayName}
             renderInput={(params) => (
@@ -50,15 +35,6 @@ const ChooseTemplate: React.FC<StepComponentProps<EntityWizardValues>> = ({ valu
                     name="template"
                     variant="outlined"
                     label="template"
-                    InputProps={{
-                        ...params.InputProps,
-                        endAdornment: (
-                            <>
-                                {entityTemplatesLoading ? <CircularProgress color="inherit" size={20} /> : null}
-                                {params.InputProps.endAdornment}
-                            </>
-                        ),
-                    }}
                 />
             )}
         />

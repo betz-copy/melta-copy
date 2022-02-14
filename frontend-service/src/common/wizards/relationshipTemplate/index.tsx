@@ -1,11 +1,11 @@
 import React, { useEffect } from 'react';
 import { toast } from 'react-toastify';
 import i18next from 'i18next';
+import { useMutation } from 'react-query';
 import { StepsType, Wizard, WizardBaseType } from '../index';
-import { environment } from '../../../globals';
-import { useAxios } from '../../../axios';
 import { CreateRelationshipTemplateName, createRelationshipTemplateNameSchema } from './CreateRelationshipTemplate';
-import { IMongoCategory } from '../../../interfaces';
+import { createRelationshipTemplateRequest } from '../../../services/relationshipTemplatesService';
+import { IMongoCategory } from '../../../interfaces/categories';
 
 export interface RelationshipTemplateWizardValues {
     name: string;
@@ -28,7 +28,9 @@ const RelationshipTemplateWizard: React.FC<WizardBaseType<RelationshipTemplateWi
     initialValues = { name: '', sourceEntity: { _id: '', displayName: '', name: '' }, destinationEntity: { _id: '', displayName: '', name: '' } },
     isEditMode = false,
 }) => {
-    const [{ loading, error, data }, executeRequest] = useAxios({ method: 'POST', url: environment.api.relationshipTemplates });
+    const { isLoading, error, data, mutateAsync } = useMutation((relationshipTemplate: any) =>
+        createRelationshipTemplateRequest(relationshipTemplate),
+    );
 
     useEffect(() => {
         if (error) {
@@ -51,8 +53,8 @@ const RelationshipTemplateWizard: React.FC<WizardBaseType<RelationshipTemplateWi
             isEditMode={isEditMode}
             title={i18next.t('wizard.createRelationshipTemplate')}
             steps={steps}
-            isLoading={loading}
-            submitFucntion={(values) => executeRequest({ data: values })}
+            isLoading={isLoading}
+            submitFucntion={(values) => mutateAsync({ data: values })}
         />
     );
 };

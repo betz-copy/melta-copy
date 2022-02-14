@@ -3,22 +3,21 @@ import { ThemeProvider, CircularProgress } from '@mui/material';
 import i18next from 'i18next';
 import { useSelector, useDispatch } from 'react-redux';
 import { toast, ToastContainer } from 'react-toastify';
+import { useQuery } from 'react-query';
 import 'react-toastify/dist/ReactToastify.css';
-
-import { useAxios } from './axios';
-
 import { AuthService } from './services/authService';
 import { globalTheme } from './theme';
 import Main from './Main';
 import { RootState } from './store';
 import { setUser } from './store/user';
-import { BackendConfigState, setConfig } from './store/backendConfig';
-import { environment } from './globals';
+import { setConfig } from './store/backendConfig';
+import { getBackendConfigRequest } from './services/backendConfigService';
 
-const App = () => {
+const App: React.FC = () => {
     const currentUser = useSelector((state: RootState) => state.user);
     const paletteMode = useSelector((state: RootState) => state.userPreferences.paletteMode);
-    const [{ data: configData, error: configError }, getConfig] = useAxios<BackendConfigState>(environment.api.config);
+    const { data: configData, error: configError } = useQuery('getBackendConfig', getBackendConfigRequest);
+
     const dispatch = useDispatch();
 
     const [isLoading, setIsLoading] = useState(true);
@@ -32,9 +31,8 @@ const App = () => {
             }
         };
 
-        getConfig();
         initUser();
-    }, [dispatch, getConfig]);
+    }, [dispatch]);
 
     useEffect(() => {
         dispatch(setConfig(configData!));

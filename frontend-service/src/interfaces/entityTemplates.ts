@@ -1,11 +1,4 @@
-export interface ICategory {
-    name: string;
-    displayName: string;
-}
-
-export interface IMongoCategory extends ICategory {
-    _id: string;
-}
+import { IMongoCategory } from './categories';
 
 export interface IEntityTemplate {
     name: string;
@@ -35,11 +28,4 @@ export interface IMongoEntityTemplate extends IEntityTemplate {
 
 export interface IMongoEntityTemplatePopulated extends IEntityTemplatePopulated {
     _id: string;
-}
-
-export interface IEntityInstance {
-    _id: string;
-    templateId: string;
-    categroyId: string;
-    properties: object;
 }

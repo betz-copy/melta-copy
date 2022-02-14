@@ -3,16 +3,16 @@ import React, { useEffect } from 'react';
 import { toast } from 'react-toastify';
 import { useDispatch } from 'react-redux';
 import i18next from 'i18next';
+import { useMutation, useQueryClient } from 'react-query';
 import { StepsType, Wizard, WizardBaseType } from '../index';
-import { environment } from '../../../globals';
 import { CreateCategoryName, createCategoryNameSchema } from './CreateCategoryName';
-import { useAxios } from '../../../axios';
-import { ICategory as CategoryWizardValues, IMongoCategory } from '../../../interfaces';
 import { addCategory, updateCategory } from '../../../store/globalState';
+import { createCategoryRequest } from '../../../services/categoriesService';
+import { ICategory } from '../../../interfaces/categories';
 
-export type { CategoryWizardValues };
+export type { ICategory as CategoryWizardValues };
 
-const steps: StepsType<CategoryWizardValues> = [
+const steps: StepsType<ICategory> = [
     {
         label: i18next.t('wizard.chooseCategoryName'),
         component: (props) => <CreateCategoryName {...props} />,
@@ -20,19 +20,20 @@ const steps: StepsType<CategoryWizardValues> = [
     },
 ];
 
-const CategoryWizard: React.FC<WizardBaseType<CategoryWizardValues>> = ({
+const CategoryWizard: React.FC<WizardBaseType<ICategory>> = ({
     open,
     handleClose,
     initalStep = 0,
     initialValues = { name: '', displayName: '' },
     isEditMode = false,
 }) => {
-    const [{ loading, error, data }, executeRequest] = useAxios<IMongoCategory>(
-        isEditMode
-            ? { method: 'PUT', url: `${environment.api.categories}/${(initialValues as IMongoCategory)._id}` }
-            : { method: 'POST', url: environment.api.categories },
-    );
+    const queryClient = useQueryClient();
     const dispatch = useDispatch();
+    const { isLoading, error, data, mutateAsync } = useMutation((category: ICategory) => createCategoryRequest(category), {
+        onSuccess: () => {
+            queryClient.invalidateQueries('getCategories');
+        },
+    });
 
     useEffect(() => {
         if (error) {
@@ -63,8 +64,8 @@ const CategoryWizard: React.FC<WizardBaseType<CategoryWizardValues>> = ({
             isEditMode={isEditMode}
             title={i18next.t('wizard.createCategory')}
             steps={steps}
-            isLoading={loading}
-            submitFucntion={(values) => executeRequest({ data: values })}
+            isLoading={isLoading}
+            submitFucntion={(values) => mutateAsync(values)}
         />
     );
 };

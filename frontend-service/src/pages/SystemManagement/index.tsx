@@ -2,11 +2,12 @@ import React, { useReducer, Reducer } from 'react';
 import { Grid, Typography } from '@mui/material';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../store';
-import { IMongoCategory, IMongoEntityTemplatePopulated } from '../../interfaces';
 import { CategoryWizard } from '../../common/wizards/category';
 import { EntityTemplateFormInputProperties, EntityTemplateWizard } from '../../common/wizards/entityTemplate';
 import { InfoCard } from './components/InfoCard';
 import { AddCard } from './components/AddCard';
+import { IMongoCategory } from '../../interfaces/categories';
+import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 
 const categoryWizardReducer: Reducer<
     { showWizard: boolean; initialValues?: IMongoCategory },

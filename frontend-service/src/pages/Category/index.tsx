@@ -1,24 +1,17 @@
-import React, { useEffect } from 'react';
+import React from 'react';
+import { useQuery } from 'react-query';
 import { Navigate, useSearchParams } from 'react-router-dom';
-import { useAxios } from '../../axios';
-import { environment } from '../../globals';
-import { IEntityInstance, IMongoEntityTemplatePopulated } from '../../interfaces';
+import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IEntityInstance } from '../../interfaces/instances';
+import { getEntityTemplatesByCategoryRequest } from '../../services/enitityTemplatesService';
+import { getInstancesByCategoryRequest } from '../../services/instancesService';
 import { TemplateTable } from './components/TemplateTable';
 
 const Category: React.FC = () => {
     const [searchParams] = useSearchParams();
     const categoryId = searchParams.get('categoryId');
-    const [{ data: instances }, getEntitiesByCategory] = useAxios<IEntityInstance[]>(`${environment.api.entities}?category=${categoryId}`);
-    const [{ data: templates }, getTemplatesByCategory] = useAxios<IMongoEntityTemplatePopulated[]>(
-        `${environment.api.entityTemplates}?category=${categoryId}`,
-    );
-
-    useEffect(() => {
-        if (categoryId) {
-            getTemplatesByCategory();
-            getEntitiesByCategory();
-        }
-    }, [categoryId, getTemplatesByCategory, getEntitiesByCategory]);
+    const { data: instances } = useQuery(['getInstancesByCategory', categoryId], () => getInstancesByCategoryRequest(categoryId!));
+    const { data: templates } = useQuery(['getEntityTemplatesByCategory', categoryId], () => getEntityTemplatesByCategoryRequest(categoryId!));
 
     if (!categoryId) {
         return <Navigate to="/" />;
