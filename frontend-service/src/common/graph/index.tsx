@@ -1,7 +1,7 @@
 import React, { Reducer, useReducer, useRef, useState } from 'react';
 import { Dialog, DialogTitle, Typography } from '@mui/material';
 import ForceGraph, { ForceGraphMethods, NodeObject } from 'react-force-graph-2d';
-import { forceManyBody } from 'd3-force';
+import { forceLink, forceManyBody } from 'd3-force';
 import { SizeMe } from 'react-sizeme';
 import { useSelector } from 'react-redux';
 import { Menu } from './Menu';
@@ -47,11 +47,12 @@ const Graph: React.FC<{ data: { nodes: any[]; links: any[] }; centerOn?: number 
     // manage forces in graph
     forceRef.current?.d3Force(
         'charge',
-        // @ts-ignore
         forceManyBody()
             .strength(data.nodes.length > 30 ? -20 : -30)
             .distanceMax(100),
     );
+
+    forceRef.current?.d3Force('link', forceLink().distance(60));
 
     if (centerOn) {
         const nodeToCenter = data.nodes.find((item) => item.id === centerOn);
