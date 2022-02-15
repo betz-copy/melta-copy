@@ -1387,6 +1387,10 @@ if (process.env.NODE_ENV === 'development' && !process.env.REACT_APP_IS_DOCKER) 
         },
     ]);
 
+    mock.onDelete(/\/api\/entities\/[0-9]{3}/).reply(() => {
+        return [200, {}];
+    });
+
     mock.onGet(/\/api\/entities\/[0-9]{3}/).reply((config) => {
         return [
             200,

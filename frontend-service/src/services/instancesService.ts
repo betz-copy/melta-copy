@@ -23,4 +23,16 @@ const createEntityInstanceRequest = async (entityInstance: IEntityInstance) => {
     const { data } = await axios.post<IEntityInstance>(entities, entityInstance);
     return data;
 };
-export { getInstancesRequest, getInstancesByCategoryRequest, getRelatedInstancesByIdRequest, createEntityInstanceRequest };
+
+const deleteEntityInstanceRequest = async (instanceId: string) => {
+    const { data } = await axios.delete(`${entities}/${instanceId}`);
+    return data;
+};
+
+export {
+    getInstancesRequest,
+    getInstancesByCategoryRequest,
+    getRelatedInstancesByIdRequest,
+    createEntityInstanceRequest,
+    deleteEntityInstanceRequest,
+};
