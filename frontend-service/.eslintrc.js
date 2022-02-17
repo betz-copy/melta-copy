@@ -30,21 +30,15 @@ module.exports = {
         'no-empty': 'warn',
         'no-use-before-define': 'off',
         '@typescript-eslint/no-use-before-define': ['error'],
+        'react/jsx-key': ['error'],
+        'no-underscore-dangle': ['error', { allow: ['_id'] }],
+        'react/require-default-props': 'off',
+        'react/jsx-props-no-spreading': 'off',
+        'no-plusplus': 'off',
         'react/jsx-filename-extension': [
             2,
             {
                 extensions: ['.tsx'],
-            },
-        ],
-        '@typescript-eslint/no-unused-vars': [
-            'error',
-            {
-                vars: 'all',
-                args: 'after-used',
-                ignoreRestSiblings: false,
-                argsIgnorePattern: '^_',
-                varsIgnorePattern: '^_',
-                caughtErrorsIgnorePattern: '^_',
             },
         ],
         'react/function-component-definition': [
@@ -61,10 +55,5 @@ module.exports = {
                 ignorePropertyModificationsFor: ['state'],
             },
         ],
-        'react/jsx-key': ['error'],
-        'no-underscore-dangle': ['error', { allow: ['_id'] }],
-        'react/require-default-props': 'off',
-        'react/jsx-props-no-spreading': 'off',
-        'no-plusplus': 'off',
     },
 };
