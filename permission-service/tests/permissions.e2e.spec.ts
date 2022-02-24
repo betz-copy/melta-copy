@@ -233,7 +233,7 @@ describe('e2e permissions tests', () => {
 
             it('should return false because of permission doesnt exists', async () => {
                 const checkAuthorizationData = {
-                    resourceType: 'All',
+                    resourceType: 'Permissions',
                     relatedCategories: ['People'],
                     operation: 'GET',
                 };

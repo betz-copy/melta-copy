@@ -1,6 +1,6 @@
 import * as assert from 'assert';
 import PermissionModel from './model';
-import { CheckAuthorizationBody, IPermission, ResourceType, Scope } from './interface';
+import { CheckAuthorizationBody, IPermission, Scope } from './interface';
 import config from '../../config';
 import { ServiceError } from '../error';
 
@@ -76,7 +76,7 @@ export class PermissionsManager {
         const relevantPermissionsQuery = {
             userId,
             category: { $in: [...relatedCategories, 'All'] },
-            resourceType: { $in: ['All', resourceType] as ResourceType[] },
+            resourceType,
             scopes: scope,
         };
 
