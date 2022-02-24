@@ -1,0 +1,34 @@
+name: "storage-service"
+replicaCount: 1
+
+images:
+  PullSecrets: [jawsreg]
+  repository: jawsproject.azurecr.io/storage-service
+  tag: latest
+
+service:
+  ports:
+  - name: http
+    port: "8000"
+
+livenessProbe:
+  httpGet:
+    path: /health
+    port: 8000
+
+readinessProbe:
+  httpGet:
+    path: /health
+    port: 8000
+
+config:
+  configmaps: []
+  env:
+    - MINIO_ENDPOINT: PORT
+      value: minio
+    - name: RABBIT_URI
+      value: amqp://rabbit
+    - name: MINIO_BUCKET_NAME
+      value: files
+    - name: DELETE_FILES_DELAY
+      value: '"60000"'
