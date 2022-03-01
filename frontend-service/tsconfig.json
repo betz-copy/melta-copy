@@ -15,7 +15,7 @@
     "isolatedModules": true,
     "noEmit": true,
     "typeRoots": ["./node_modules/@types", "./src/customTypes"],
-    "jsx": "react-jsx",
+    "jsx": "react",
     "sourceMap": true,
     "removeComments": true,
     "noImplicitAny": false,

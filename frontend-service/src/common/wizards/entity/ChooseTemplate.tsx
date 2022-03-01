@@ -23,7 +23,7 @@ const ChooseTemplate: React.FC<StepComponentProps<EntityWizardValues>> = ({ valu
         <Autocomplete
             id="template"
             options={entityTemplates || []}
-            onChange={(e, value) => setFieldValue('template', value || '')}
+            onChange={(_e, value) => setFieldValue('template', value || '')}
             value={values.template._id ? values.template : null}
             getOptionLabel={(option) => option.displayName}
             renderInput={(params) => (

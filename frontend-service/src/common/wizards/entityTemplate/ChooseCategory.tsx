@@ -22,7 +22,7 @@ const ChooseCategory: React.FC<StepComponentProps<EntityTemplateWizardValues>> =
         <Autocomplete
             id="category"
             options={categories || []}
-            onChange={(e, value) => setFieldValue('category', value || '')}
+            onChange={(_e, value) => setFieldValue('category', value || '')}
             value={values.category._id ? values.category : null}
             getOptionLabel={(option) => option.displayName}
             isOptionEqualToValue={(option, value) => option._id === value._id}

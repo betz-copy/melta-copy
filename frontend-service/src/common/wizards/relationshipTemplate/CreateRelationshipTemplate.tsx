@@ -44,7 +44,7 @@ const CreateRelationshipTemplateName: React.FC<StepComponentProps<RelationshipTe
                 <Autocomplete
                     id="sourceEntity"
                     options={entityTemplates || []}
-                    onChange={(e, value) => setFieldValue('sourceEntity', value || '')}
+                    onChange={(_e, value) => setFieldValue('sourceEntity', value || '')}
                     value={values.sourceEntity._id ? values.sourceEntity : null}
                     getOptionLabel={(option) => option.displayName}
                     renderInput={(params) => (
@@ -64,7 +64,7 @@ const CreateRelationshipTemplateName: React.FC<StepComponentProps<RelationshipTe
                 <Autocomplete
                     id="destinationEntity"
                     options={entityTemplates || []}
-                    onChange={(e, value) => setFieldValue('destinationEntity', value || '')}
+                    onChange={(_e, value) => setFieldValue('destinationEntity', value || '')}
                     value={values.destinationEntity._id ? values.destinationEntity : null}
                     getOptionLabel={(option) => option.displayName}
                     renderInput={(params) => (
