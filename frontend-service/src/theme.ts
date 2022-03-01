@@ -1,9 +1,8 @@
-import { createTheme, PaletteMode } from '@mui/material';
+import { createTheme } from '@mui/material';
 
-export const globalTheme = (paletteMode: PaletteMode) =>
-    createTheme({
-        direction: 'rtl',
-        palette: {
-            mode: paletteMode,
-        },
-    });
+export const globalTheme = createTheme({
+    direction: 'rtl',
+    palette: {
+        mode: 'light',
+    },
+});

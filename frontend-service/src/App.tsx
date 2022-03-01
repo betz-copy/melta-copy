@@ -15,7 +15,6 @@ import { getBackendConfigRequest } from './services/backendConfigService';
 
 const App: React.FC = () => {
     const currentUser = useSelector((state: RootState) => state.user);
-    const paletteMode = useSelector((state: RootState) => state.userPreferences.paletteMode);
     const { data: configData, error: configError } = useQuery('getBackendConfig', getBackendConfigRequest);
 
     const dispatch = useDispatch();
@@ -57,9 +56,9 @@ const App: React.FC = () => {
     }
 
     return (
-        <ThemeProvider theme={globalTheme(paletteMode)}>
+        <ThemeProvider theme={globalTheme}>
             <Main />
-            <ToastContainer theme={paletteMode} position="bottom-right" autoClose={5000} limit={5} pauseOnFocusLoss={false} rtl newestOnTop />
+            <ToastContainer theme="light" position="bottom-right" autoClose={5000} limit={5} pauseOnFocusLoss={false} rtl newestOnTop />
         </ThemeProvider>
     );
 };
