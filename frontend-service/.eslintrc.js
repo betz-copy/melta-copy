@@ -35,6 +35,7 @@ module.exports = {
         'react/require-default-props': 'off',
         'react/jsx-props-no-spreading': 'off',
         'no-plusplus': 'off',
+        'react/no-unused-prop-types': 'off',
         'react/jsx-filename-extension': [
             2,
             {
