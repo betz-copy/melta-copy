@@ -4,4 +4,4 @@ const Unavailable = () => {
     return <div>Unavailable</div>;
 };
 
-export { Unavailable };
+export default Unavailable;

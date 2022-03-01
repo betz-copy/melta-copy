@@ -114,4 +114,4 @@ const SystemManagement = () => {
     );
 };
 
-export { SystemManagement };
+export default SystemManagement;

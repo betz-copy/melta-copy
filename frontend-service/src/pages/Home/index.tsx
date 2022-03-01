@@ -61,4 +61,4 @@ const Home = () => {
     return <Graph data={data} centerOn={Number(instanceId)} />;
 };
 
-export { Home };
+export default Home;

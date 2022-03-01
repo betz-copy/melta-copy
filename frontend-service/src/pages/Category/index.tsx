@@ -45,4 +45,4 @@ const Category: React.FC = () => {
     );
 };
 
-export { Category };
+export default Category;

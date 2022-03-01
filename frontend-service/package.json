@@ -42,6 +42,7 @@
     "yup": "^0.32.11"
   },
   "scripts": {
+    "analyze": "npm run build && source-map-explorer 'build/static/js/*.js' --html analyzedBuild.html",
     "start": "react-scripts start",
     "start:docker": "export REACT_APP_IS_DOCKER=true && react-scripts start",
     "build": "react-scripts build",
@@ -81,6 +82,7 @@
     "eslint-plugin-jest": "^25.2.2",
     "eslint-plugin-prettier": "^4.0.0",
     "eslint-plugin-react-hooks": "^4.3.0",
-    "prettier": "^2.3.1"
+    "prettier": "^2.3.1",
+    "source-map-explorer": "^2.5.2"
   }
 }
