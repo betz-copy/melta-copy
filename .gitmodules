@@ -16,3 +16,9 @@
 [submodule "authentication-service"]
 	path = authentication-service
 	url = git@gitlab.com:yesodot/rnd/terminal-rabaz/jaws/microservices/authentication-service.git
+[submodule "permissions-api"]
+	path = permissions-api
+	url = git@gitlab.com:yesodot/rnd/terminal-rabaz/jaws/microservices/permissions-api.git
+[submodule "storage-service"]
+	path = storage-service
+	url = git@gitlab.com:yesodot/rnd/terminal-rabaz/jaws/microservices/storage-service.git
