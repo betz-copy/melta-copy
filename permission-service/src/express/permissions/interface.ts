@@ -15,5 +15,5 @@ export interface IPermission {
 export interface CheckAuthorizationBody {
     resourceType: ResourceType;
     relatedCategories: string[];
-    operation: string;
+    operation: Scope;
 }

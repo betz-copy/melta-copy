@@ -31,7 +31,7 @@ export const checkUserAuthorizationRequestSchema = Joi.object({
     body: {
         resourceType: ResourceTypeSchema.required(),
         relatedCategories: Joi.array().items(Joi.string()).min(1).required(),
-        operation: Joi.string().required(), // maybe the backend will need to translate it to scope and give here scope ( READ | WRITE ) instead of giving GET
+        operation: ScopeSchema.required(),
     },
     params: {
         userId: MongoIdSchema.required(),
