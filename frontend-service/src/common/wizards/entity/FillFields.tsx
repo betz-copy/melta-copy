@@ -1,5 +1,5 @@
 import React from 'react';
-import Form from '@rjsf/core';
+import { MuiForm5 as Form } from '@rjsf/material-ui';
 import * as Yup from 'yup';
 import i18next from 'i18next';
 import { EntityWizardValues } from './index';
