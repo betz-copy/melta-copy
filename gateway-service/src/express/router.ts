@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import { createProxyMiddleware, fixRequestBody } from 'http-proxy-middleware';
 import config from '../config';
+import { wrapMiddleware } from '../utils/express';
+import { validateAuthorization } from './permissions/middleware';
 
 const appRouter = Router();
 
@@ -20,7 +22,7 @@ appRouter.use(
     createProxyMiddleware({ target: config.entityTemplateManager.uri, onProxyReq: fixRequestBody }),
 );
 
-appRouter.use('*', (_req, res) => {
+appRouter.use('*', wrapMiddleware(validateAuthorization), (_req, res) => {
     res.status(404).send('Invalid Route');
 });
 
