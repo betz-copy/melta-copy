@@ -11,6 +11,15 @@ services:
       MONGO_CATEGORY_COLLECTION_NAME: ${MONGO_CATEGORY_COLLECTION_NAME}
       RELATIONSHIP_TEMPLATE_MANAGER_URI: ${RELATIONSHIP_TEMPLATE_MANAGER_URI}
 
+  permission-api:
+    build: ./permissions-api
+    environment:
+      PORT: 8000
+      MONGO_URI: ${PERMISSION_API_MONGO_URI}
+      MONGO_PERMISSIONS_COLLECTION_NAME: permissions
+    ports:
+      - 8000:8000
+
   relationship-template-manager:
     # image: jawsproject.azurecr.io/relationship-template-manager
     build: ./relationship-template-manager
@@ -21,12 +30,13 @@ services:
       ENTITY_TEMPLATE_MANAGER_URI: ${ENTITY_TEMPLATE_MANAGER_URI}
 
   backend:
-    image: jawsproject.azurecr.io/backend
-    # build: ./backend
+    # image: jawsproject.azurecr.io/backend
+    build: ./backend
     environment:
       PORT: 8000
       TOKEN_SECRET: ${TOKEN_SECRET}
       ENTITY_TEMPLATE_MANAGER_URI: ${ENTITY_TEMPLATE_MANAGER_URI}
+      PERMISSION_API_URL: ${PERMISSION_API_URL}
 
   frontend:
     image: jawsproject.azurecr.io/frontend
