@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 
 import { toast } from 'react-toastify';
 import { useMutation } from 'react-query';
@@ -50,19 +50,14 @@ const EntityWizard: React.FC<WizardBaseType<EntityWizardValues>> = ({
     },
     isEditMode = false,
 }) => {
-    const { isLoading, error, data, mutateAsync } = useMutation((entityInstance: any) => createEntityInstanceRequest(entityInstance));
-
-    useEffect(() => {
-        if (error) {
-            toast.error('failed to create entity instance');
-        }
-    }, [error]);
-
-    useEffect(() => {
-        if (data) {
+    const { isLoading, mutateAsync } = useMutation((entityInstance: any) => createEntityInstanceRequest(entityInstance), {
+        onSuccess: () => {
             toast.success('created entity instance successfully');
-        }
-    }, [data]);
+        },
+        onError: () => {
+            toast.error('failed to create entity instance');
+        },
+    });
 
     return (
         <Wizard

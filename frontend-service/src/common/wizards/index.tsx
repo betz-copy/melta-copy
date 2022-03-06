@@ -1,5 +1,5 @@
-import React, { PropsWithChildren, useEffect, useState } from 'react';
-import { Dialog, DialogTitle, DialogContent, Divider, IconButton, Typography } from '@mui/material';
+import React, { PropsWithChildren, useState } from 'react';
+import { Dialog, DialogTitle, DialogContent, Divider, IconButton } from '@mui/material';
 import { Close as CloseIcon } from '@mui/icons-material';
 import { Formik, Form, FormikProps } from 'formik';
 import * as Yup from 'yup';
@@ -46,37 +46,25 @@ const Wizard = <T extends object>({
     const isLastStep = activeStep === steps.length - 1;
 
     const handleBack = () => {
-        setActiveStep((prevActiveStep) => {
-            if (prevActiveStep > 0) {
-                return prevActiveStep - 1;
-            }
-
-            return prevActiveStep;
-        });
+        setActiveStep((prevActiveStep) => prevActiveStep - 1);
     };
-
-    useEffect(() => {
-        setActiveStep(initalStep);
-    }, [open, initalStep]);
 
     return (
         <Dialog open={open} onClose={handleClose} maxWidth="lg">
             <DialogTitle>
-                <>
-                    <Typography variant="h4">{title}</Typography>
-                    <IconButton
-                        aria-label="close"
-                        onClick={handleClose}
-                        sx={{
-                            position: 'absolute',
-                            right: 12,
-                            top: 12,
-                            color: (theme) => theme.palette.grey[500],
-                        }}
-                    >
-                        <CloseIcon />
-                    </IconButton>
-                </>
+                {title}
+                <IconButton
+                    aria-label="close"
+                    onClick={handleClose}
+                    sx={{
+                        position: 'absolute',
+                        right: 12,
+                        top: 12,
+                        color: (theme) => theme.palette.grey[500],
+                    }}
+                >
+                    <CloseIcon />
+                </IconButton>
             </DialogTitle>
             <Divider />
             <DialogContent>
@@ -87,7 +75,7 @@ const Wizard = <T extends object>({
                         if (isLastStep) {
                             await submitFucntion(values);
                         } else {
-                            setActiveStep(activeStep + 1);
+                            setActiveStep((prevActiveStep) => prevActiveStep + 1);
                             actions.setTouched({});
                             actions.setSubmitting(false);
                         }

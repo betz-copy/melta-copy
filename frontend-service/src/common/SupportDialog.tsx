@@ -1,9 +1,9 @@
 import React from 'react';
 import { Dialog, DialogTitle, DialogContent, DialogContentText, Button, DialogActions, Link } from '@mui/material';
-import { useSelector } from 'react-redux';
 import i18next from 'i18next';
+import { useQueryClient } from 'react-query';
 import { BoldText } from './SupportDialog.styled';
-import { RootState } from '../store';
+import { BackendConfigState } from '../services/backendConfigService';
 
 type SupportDialogProps = {
     handleClose: () => void;
@@ -11,7 +11,8 @@ type SupportDialogProps = {
 };
 
 const SupportDialog: React.FC<SupportDialogProps> = ({ open, handleClose }) => {
-    const config = useSelector((state: RootState) => state.backendConfig);
+    const queryClient = useQueryClient();
+    const config = queryClient.getQueryData<BackendConfigState>('getBackendConfig');
 
     return (
         <Dialog open={open} onClose={handleClose} fullWidth maxWidth="xs">

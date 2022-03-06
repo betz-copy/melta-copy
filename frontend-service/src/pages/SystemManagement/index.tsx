@@ -1,7 +1,6 @@
 import React, { useReducer, Reducer } from 'react';
 import { Grid, Typography } from '@mui/material';
-import { useSelector } from 'react-redux';
-import { RootState } from '../../store';
+import { useQueryClient } from 'react-query';
 import { CategoryWizard } from '../../common/wizards/category';
 import { EntityTemplateFormInputProperties, EntityTemplateWizard } from '../../common/wizards/entityTemplate';
 import { InfoCard } from './components/InfoCard';
@@ -55,16 +54,19 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate?: IMongoEntityT
 };
 
 const SystemManagement = () => {
-    const { entityTemplates, categories } = useSelector((state: RootState) => state.globalState);
+    const queryClient = useQueryClient();
     const [categoryWizardState, dispatchCategoryWizard] = useReducer(categoryWizardReducer, { showWizard: false });
     const [entityTemplateState, dispatchEntityTemplateWizard] = useReducer(entityTemplateWizardReducer, { showWizard: false });
 
+    const entityTemplates = queryClient.getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates');
+    const categories = queryClient.getQueryData<IMongoCategory[]>('getCategories');
+
     const entityTemplatesByCategory: { [id: string]: IMongoCategory & { entityTemplates: IMongoEntityTemplatePopulated[] } } = {};
-    categories.forEach((category) => {
+    categories?.forEach((category) => {
         // eslint-disable-next-line no-param-reassign
         entityTemplatesByCategory[category._id] = {
             ...category,
-            entityTemplates: entityTemplates.filter((entityTemplate) => entityTemplate.category._id === category._id),
+            entityTemplates: entityTemplates!.filter((entityTemplate) => entityTemplate.category._id === category._id),
         };
     });
 
@@ -73,7 +75,7 @@ const SystemManagement = () => {
             <Grid item xs={12}>
                 <Typography variant="h2">קטגוריות</Typography>
                 <Grid container spacing={4} textAlign="center">
-                    {categories.map((category) => (
+                    {categories?.map((category) => (
                         <InfoCard
                             key={category._id}
                             text={category.displayName}

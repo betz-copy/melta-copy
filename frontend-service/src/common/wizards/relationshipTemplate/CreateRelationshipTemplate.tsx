@@ -2,10 +2,10 @@ import React from 'react';
 import { TextField, Box, Autocomplete } from '@mui/material';
 import * as Yup from 'yup';
 import i18next from 'i18next';
-import { useSelector } from 'react-redux';
+import { useQueryClient } from 'react-query';
 import { RelationshipTemplateWizardValues } from './index';
 import { StepComponentProps } from '../index';
-import { RootState } from '../../../store';
+import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 
 const createRelationshipTemplateNameSchema = {
     name: Yup.string().required(i18next.t('validation.required')),
@@ -26,7 +26,9 @@ const CreateRelationshipTemplateName: React.FC<StepComponentProps<RelationshipTe
     handleChange,
     setFieldValue,
 }) => {
-    const entityTemplates = useSelector((state: RootState) => state.globalState.entityTemplates);
+    const queryClient = useQueryClient();
+
+    const entityTemplates = queryClient.getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates');
 
     return (
         <>

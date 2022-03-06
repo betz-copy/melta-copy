@@ -1,12 +1,11 @@
 import React from 'react';
 import { TextField, Autocomplete } from '@mui/material';
 import * as Yup from 'yup';
-
 import i18next from 'i18next';
-import { useSelector } from 'react-redux';
+import { useQueryClient } from 'react-query';
 import { EntityWizardValues } from './index';
 import { StepComponentProps } from '../index';
-import { RootState } from '../../../store';
+import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 
 const chooseTemplateSchema = {
     template: Yup.object({
@@ -17,7 +16,9 @@ const chooseTemplateSchema = {
 };
 
 const ChooseTemplate: React.FC<StepComponentProps<EntityWizardValues>> = ({ values, touched, errors, setFieldValue }) => {
-    const entityTemplates = useSelector((state: RootState) => state.globalState.entityTemplates);
+    const queryClient = useQueryClient();
+
+    const entityTemplates = queryClient.getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates');
 
     return (
         <Autocomplete

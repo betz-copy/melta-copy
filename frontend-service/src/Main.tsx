@@ -1,16 +1,15 @@
-import React, { useEffect, lazy, Suspense } from 'react';
+import React, { useState, lazy, Suspense } from 'react';
 import { CssBaseline, Box, Toolbar } from '@mui/material';
 import { Route, Routes, BrowserRouter as Router } from 'react-router-dom';
 import rtlPlugin from 'stylis-plugin-rtl';
 import { CacheProvider } from '@emotion/react';
 import createCache from '@emotion/cache';
 import { prefixer } from 'stylis';
-import { useDispatch } from 'react-redux';
 import { useQuery } from 'react-query';
+import { toast } from 'react-toastify';
 import { Header } from './common/Header';
 import { SideBar } from './common/SideBar';
 import { MainBox } from './Main.styled';
-import { setCategories, setEntityTemplates } from './store/globalState';
 import { getEntityTemplatesRequest } from './services/enitityTemplatesService';
 import { getCategoriesRequest } from './services/categoriesService';
 
@@ -25,24 +24,18 @@ const cacheRtl = createCache({
 });
 
 const Main = () => {
-    const { data: entityTemplates } = useQuery('getEntityTemplates', getEntityTemplatesRequest);
-    const { data: categories } = useQuery('getCategories', getCategoriesRequest);
+    const [open, setOpen] = useState(false);
+    useQuery('getEntityTemplates', getEntityTemplatesRequest, {
+        onError: () => {
+            toast.error('failed to get entityTemplates');
+        },
+    });
+    useQuery('getCategories', getCategoriesRequest, {
+        onError: () => {
+            toast.error('failed to get categories');
+        },
+    });
 
-    const dispatch = useDispatch();
-
-    useEffect(() => {
-        if (categories) {
-            dispatch(setCategories(categories));
-        }
-    }, [categories, dispatch]);
-
-    useEffect(() => {
-        if (entityTemplates) {
-            dispatch(setEntityTemplates(entityTemplates));
-        }
-    }, [entityTemplates, dispatch]);
-
-    const [open, setOpen] = React.useState(false);
     const toggleDrawer = () => {
         setOpen(!open);
     };

@@ -10,12 +10,15 @@ import { globalTheme } from './theme';
 import Main from './Main';
 import { RootState } from './store';
 import { setUser } from './store/user';
-import { setConfig } from './store/backendConfig';
-import { getBackendConfigRequest } from './services/backendConfigService';
+import { BackendConfigState, getBackendConfigRequest } from './services/backendConfigService';
 
 const App: React.FC = () => {
     const currentUser = useSelector((state: RootState) => state.user);
-    const { data: configData, error: configError } = useQuery('getBackendConfig', getBackendConfigRequest);
+    useQuery<BackendConfigState>('getBackendConfig', getBackendConfigRequest, {
+        onError: () => {
+            toast.error(i18next.t('error.config'));
+        },
+    });
 
     const dispatch = useDispatch();
 
@@ -32,16 +35,6 @@ const App: React.FC = () => {
 
         initUser();
     }, [dispatch]);
-
-    useEffect(() => {
-        dispatch(setConfig(configData!));
-    }, [configData, dispatch]);
-
-    useEffect(() => {
-        if (configError) {
-            toast.error(i18next.t('error.config'));
-        }
-    }, [configError]);
 
     if (isLoading) {
         return (

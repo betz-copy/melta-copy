@@ -3,9 +3,9 @@ import { Dialog, DialogTitle, Typography } from '@mui/material';
 import ForceGraph, { ForceGraphMethods, NodeObject } from 'react-force-graph-2d';
 import { forceLink, forceManyBody } from 'd3-force';
 import { SizeMe } from 'react-sizeme';
-import { useSelector } from 'react-redux';
+import { useQueryClient } from 'react-query';
 import { Menu } from './Menu';
-import { RootState } from '../../store';
+import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 
 const menuContextReducer: Reducer<
     { showMenu: boolean; top?: number; left?: number; node?: NodeObject },
@@ -38,11 +38,13 @@ const nodeDialogReducer: Reducer<
 const transtionTime = 1000;
 
 const Graph: React.FC<{ data: { nodes: any[]; links: any[] }; centerOn?: number }> = ({ data, centerOn }) => {
-    const { entityTemplates } = useSelector((state: RootState) => state.globalState);
     const forceRef = useRef<ForceGraphMethods | undefined>(undefined);
     const [nodeMenuState, dispatchNodeMenu] = useReducer(menuContextReducer, { showMenu: false });
     const [nodeDailogState, dispatchNodeDialog] = useReducer(nodeDialogReducer, { showDialog: false });
     const [shouldZoomToFit, setShouldZoomToFit] = useState(true);
+    const queryClient = useQueryClient();
+
+    const entityTemplates = queryClient.getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates');
 
     // manage forces in graph
     forceRef.current?.d3Force(
@@ -67,7 +69,7 @@ const Graph: React.FC<{ data: { nodes: any[]; links: any[] }; centerOn?: number 
     };
 
     const renderTooltip = (node: NodeObject) => {
-        const templateDisplayName = entityTemplates.find((entityTemplate) => entityTemplate._id === node.data.templateId)!.displayName;
+        const templateDisplayName = entityTemplates!.find((entityTemplate) => entityTemplate._id === node.data.templateId)!.displayName;
         return `<div style><b>${templateDisplayName}</b>: <span>מזהה - ${node.id}</span></div>`;
     };
 

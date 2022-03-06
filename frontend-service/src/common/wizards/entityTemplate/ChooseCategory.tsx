@@ -2,10 +2,10 @@ import React from 'react';
 import { TextField, Autocomplete } from '@mui/material';
 import * as Yup from 'yup';
 import i18next from 'i18next';
-import { useSelector } from 'react-redux';
+import { useQueryClient } from 'react-query';
 import { EntityTemplateWizardValues } from './index';
 import { StepComponentProps } from '../index';
-import { RootState } from '../../../store';
+import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 
 const chooseCategorySchema = {
     category: Yup.object({
@@ -16,7 +16,9 @@ const chooseCategorySchema = {
 };
 
 const ChooseCategory: React.FC<StepComponentProps<EntityTemplateWizardValues>> = ({ values, touched, errors, setFieldValue }) => {
-    const categories = useSelector((state: RootState) => state.globalState.categories);
+    const queryClient = useQueryClient();
+
+    const categories = queryClient.getQueryData<IMongoEntityTemplatePopulated[]>('getCategories');
 
     return (
         <Autocomplete

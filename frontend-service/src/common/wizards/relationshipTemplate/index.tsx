@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { toast } from 'react-toastify';
 import i18next from 'i18next';
 import { useMutation } from 'react-query';
@@ -28,21 +28,14 @@ const RelationshipTemplateWizard: React.FC<WizardBaseType<RelationshipTemplateWi
     initialValues = { name: '', sourceEntity: { _id: '', displayName: '', name: '' }, destinationEntity: { _id: '', displayName: '', name: '' } },
     isEditMode = false,
 }) => {
-    const { isLoading, error, data, mutateAsync } = useMutation((relationshipTemplate: any) =>
-        createRelationshipTemplateRequest(relationshipTemplate),
-    );
-
-    useEffect(() => {
-        if (error) {
-            toast.error('failed to create rel template');
-        }
-    }, [error]);
-
-    useEffect(() => {
-        if (data) {
+    const { isLoading, mutateAsync } = useMutation((relationshipTemplate: any) => createRelationshipTemplateRequest(relationshipTemplate), {
+        onSuccess: () => {
             toast.success('created rel template successfully');
-        }
-    }, [data]);
+        },
+        onError: () => {
+            toast.error('failed to create rel template');
+        },
+    });
 
     return (
         <Wizard

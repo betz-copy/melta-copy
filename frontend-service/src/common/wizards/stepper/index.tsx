@@ -3,7 +3,7 @@ import { Grid } from '@mui/material';
 import { FormikProps } from 'formik';
 
 import { StepsType } from '..';
-import { StepperActions } from './Actions';
+import { StepperActions } from './StepperActions';
 import { StepperSideBar } from './StepperSideBar';
 
 const Stepper = <T extends object>({

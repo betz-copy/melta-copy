@@ -104,12 +104,7 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues> & { for
                             );
                         })}
                     </Grid>
-                    <Button
-                        type="button"
-                        variant="contained"
-                        style={{ margin: '8px' }}
-                        onClick={() => push({ id: Math.random(), name: '', title: '', type: '' })}
-                    >
+                    <Button type="button" variant="contained" style={{ margin: '8px' }} onClick={() => push({ name: '', title: '', type: '' })}>
                         {i18next.t('wizard.addProperty')}
                     </Button>
                 </>

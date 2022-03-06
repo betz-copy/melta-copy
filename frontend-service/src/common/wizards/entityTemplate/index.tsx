@@ -1,15 +1,13 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { toast } from 'react-toastify';
-import { useDispatch } from 'react-redux';
 import i18next from 'i18next';
-import { useMutation } from 'react-query';
+import { useMutation, useQueryClient } from 'react-query';
 import { StepsType, Wizard, WizardBaseType } from '../index';
 import { ChooseCategory, chooseCategorySchema } from './ChooseCategory';
 import { CreateTemplateName, createTemplateNameSchema } from './CreateTemplateName';
 import { AddFields, addFieldsSchema } from './AddFields';
-import { addEntityTemplate, updateEntityTemplate } from '../../../store/globalState';
-import { createEntityTemplateRequest, updateEntityTemplateRequest } from '../../../services/enitityTemplatesService';
-import { IEntityTemplate, IEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { createEntityTemplateRequest } from '../../../services/enitityTemplatesService';
+import { IEntityTemplate, IEntityTemplatePopulated, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 
 export interface EntityTemplateFormInputProperties {
     name: string;
@@ -83,31 +81,21 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
     initialValues = { name: '', displayName: '', category: { displayName: '', name: '', _id: '' }, requiredProrerites: [], optionalProrerites: [] },
     isEditMode = false,
 }) => {
-    const { isLoading, error, data, mutateAsync } = useMutation((enitiyTemplate: IEntityTemplate) =>
-        isEditMode
-            ? updateEntityTemplateRequest((initialValues as EntityTemplateWizardValues & { _id: string })._id, enitiyTemplate)
-            : createEntityTemplateRequest(enitiyTemplate),
-    );
-    const dispatch = useDispatch();
-
-    useEffect(() => {
-        if (error) {
+    const queryClient = useQueryClient();
+    const { isLoading, mutateAsync } = useMutation((enitiyTemplate: IEntityTemplate) => createEntityTemplateRequest(enitiyTemplate), {
+        onSuccess: (data) => {
+            queryClient.setQueryData<IMongoEntityTemplatePopulated[]>(
+                'getEntityTemplates',
+                (prevData: IMongoEntityTemplatePopulated[] | undefined) => {
+                    return [...(prevData || []), data];
+                },
+            );
+            toast.success('created template successfully');
+        },
+        onError: () => {
             toast.error('failed to create template');
-        }
-    }, [error]);
-
-    useEffect(() => {
-        if (data) {
-            if (isEditMode) {
-                toast.success('updated template successfully');
-                dispatch(updateEntityTemplate(data));
-            } else {
-                toast.success('created template successfully');
-                dispatch(addEntityTemplate(data));
-            }
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [data, dispatch]); // removed isEditMode, handleClose because of race-condition with close
+        },
+    });
 
     return (
         <Wizard

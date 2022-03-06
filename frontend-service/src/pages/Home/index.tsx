@@ -1,5 +1,5 @@
 import { CircularProgress } from '@mui/material';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useQuery } from 'react-query';
 import { useParams } from 'react-router-dom';
 import { Graph } from '../../common/graph';
@@ -26,29 +26,27 @@ const sizeByConnectons = (id: number, arr: { source: number; target: number }[])
 
 const Home = () => {
     const { instanceId } = useParams();
-    const {
-        data: entitiesData,
-        isLoading,
-        isFetching,
-    } = useQuery(['getGraphInstances', instanceId], () => (instanceId ? getRelatedInstancesByIdRequest(instanceId) : getInstancesRequest()), {
-        refetchOnWindowFocus: false,
-    });
     const [data, setData] = useState<{ nodes: any[]; links: any[] }>({ nodes: [], links: [] });
 
-    useEffect(() => {
-        if (entitiesData) {
-            setData({
-                nodes: entitiesData.nodes.map((item) => {
-                    return {
-                        data: { ...item },
-                        id: item.id,
-                        val: sizeByConnectons(item.id, entitiesData.links),
-                    };
-                }),
-                links: entitiesData.links,
-            });
-        }
-    }, [entitiesData]);
+    const { isLoading, isFetching } = useQuery(
+        ['getGraphInstances', instanceId],
+        () => (instanceId ? getRelatedInstancesByIdRequest(instanceId) : getInstancesRequest()),
+        {
+            refetchOnWindowFocus: false,
+            onSuccess: (entitiesData) => {
+                setData({
+                    nodes: entitiesData.nodes.map((item) => {
+                        return {
+                            data: { ...item },
+                            id: item.id,
+                            val: sizeByConnectons(item.id, entitiesData.links),
+                        };
+                    }),
+                    links: entitiesData.links,
+                });
+            },
+        },
+    );
 
     if (isLoading || isFetching) {
         return (
