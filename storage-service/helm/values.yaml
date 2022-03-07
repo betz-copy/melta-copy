@@ -29,4 +29,4 @@ config:
     - name: MINIO_BUCKET_NAME
       value: files
     - name: DELETE_FILES_DELAY
-      value: '"60000"'
+      value: "'60000'"
