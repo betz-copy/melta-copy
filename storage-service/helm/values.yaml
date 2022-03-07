@@ -26,8 +26,6 @@ config:
   env:
     - MINIO_ENDPOINT: PORT
       value: minio
-    - name: RABBIT_URI
-      value: amqp://rabbit
     - name: MINIO_BUCKET_NAME
       value: files
     - name: DELETE_FILES_DELAY
