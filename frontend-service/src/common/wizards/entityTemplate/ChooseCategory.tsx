@@ -5,7 +5,7 @@ import i18next from 'i18next';
 import { useQueryClient } from 'react-query';
 import { EntityTemplateWizardValues } from './index';
 import { StepComponentProps } from '../index';
-import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { IMongoCategory } from '../../../interfaces/categories';
 
 const chooseCategorySchema = {
     category: Yup.object({
@@ -18,7 +18,7 @@ const chooseCategorySchema = {
 const ChooseCategory: React.FC<StepComponentProps<EntityTemplateWizardValues>> = ({ values, touched, errors, setFieldValue }) => {
     const queryClient = useQueryClient();
 
-    const categories = queryClient.getQueryData<IMongoEntityTemplatePopulated[]>('getCategories');
+    const categories = queryClient.getQueryData<IMongoCategory[]>('getCategories');
 
     return (
         <Autocomplete
