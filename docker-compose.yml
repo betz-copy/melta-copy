@@ -20,6 +20,19 @@ services:
     ports:
       - 8000:8000
 
+  storage-service:
+    image: storage-service
+    build: .
+    depends_on:
+      - minio
+    ports: 
+      - "8000:8000"
+    environment: 
+      MINIO_ENDPOINT: 'minio'
+      MINIO_BUCKET_NAME: 'test'
+      DELETE_FILES_DELAY: 60000
+    restart: "always"
+
   relationship-template-manager:
     # image: jawsproject.azurecr.io/relationship-template-manager
     build: ./relationship-template-manager
