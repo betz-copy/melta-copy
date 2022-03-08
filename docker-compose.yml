@@ -17,15 +17,11 @@ services:
       PORT: 8000
       MONGO_URI: ${PERMISSION_API_MONGO_URI}
       MONGO_PERMISSIONS_COLLECTION_NAME: permissions
-    ports:
-      - 8000:8000
 
   storage-service:
     build: ./storage-service
     depends_on:
       - minio
-    ports: 
-      - "8000:8000"
     environment: 
       MINIO_ENDPOINT: 'minio'
       MINIO_BUCKET_NAME: 'test'
