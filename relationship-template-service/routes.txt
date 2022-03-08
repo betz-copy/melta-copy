@@ -1,0 +1,33 @@
+interface ICategory {
+    name: string;
+    displayName: string;
+}
+
+interface IEntityTemplate {
+    name: string;
+    displayName: string;
+    category: CategoryId;
+    properties: object;
+    disabled: boolean;
+}
+
+GET /api/entities/templates?search=name
+GET /api/entities/templates/:templateId
+POST /api/entities/templates/:templateId/validate
+PUT /api/entities/templates/:templateId
+DELETE /api/entities/templates/:templateId
+
+interface IRelationshipTemplate {
+    name: string  // combination of SE+DE+name is unique  
+    sourceEntity: EntityId,
+    destinationEntity: EntityId,
+    // properties: Map<string (unique), any (types)>,
+    // rule: (Option 1) Object - logical equation with rule engine (Option 2) id  - Neo4j decision tree
+}
+
+GET /api/relationship/templates?search=name - get relationships by name 
+GET /api/relationships/templates/:templateId
+POST /api/relationships/templates
+POST /api/relationships/templates/search {  }
+PUT /api/relationships/templates/:templateId
+DELETE /api/relationships/templates/:templateId
