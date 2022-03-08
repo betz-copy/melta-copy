@@ -7,7 +7,7 @@ const main = async () => {
     const { uri: endPoint, port, accessKey, secretKey, bucketName, useSSL } = config.minio;
     await minioClient.initialize(endPoint, port, accessKey, secretKey, bucketName, useSSL);
 
-    console.log(`Storage connection established`);
+    console.log(`Storage connection established!`);
 
     await initializeRabbit();
     console.log('Rabbit initialized successfully');
