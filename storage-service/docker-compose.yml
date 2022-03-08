@@ -10,7 +10,6 @@ services:
       - "8000:8000"
     environment: 
       MINIO_ENDPOINT: 'minio'
-      RABBIT_URI: 'amqp://rabbit'
       MINIO_BUCKET_NAME: 'test'
       DELETE_FILES_DELAY: 60000
     restart: "always"
