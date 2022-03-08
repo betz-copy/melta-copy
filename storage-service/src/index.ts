@@ -10,7 +10,7 @@ const main = async () => {
     console.log(`Storage connection established`);
 
     await initializeRabbit();
-    console.log('rabbit initialized successfully');
+    console.log('Rabbit initialized successfully');
 
     const { port: serverPort } = config.service;
     const server = new Server(serverPort);
