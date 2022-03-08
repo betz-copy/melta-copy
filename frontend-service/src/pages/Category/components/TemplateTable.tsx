@@ -1,4 +1,4 @@
-import React, { useRef, MouseEventHandler, useEffect } from 'react';
+import React, { useRef, MouseEventHandler } from 'react';
 import { Grid, Typography, IconButton } from '@mui/material';
 import { AddCircle, FileDownloadOutlined } from '@mui/icons-material';
 import { AgGridColumn, AgGridReact } from 'ag-grid-react';
@@ -12,15 +12,10 @@ import 'ag-grid-community/dist/styles/ag-theme-material.css';
 import '../../../css/components/templateTable.css';
 
 const TemplateTable: React.FC<{
-    template: IMongoEntityTemplatePopulated & { entities: IEntityInstance[] };
-}> = ({ template }) => {
+    template: IMongoEntityTemplatePopulated;
+    entities: IEntityInstance[];
+}> = ({ template, entities }) => {
     const gridRef = useRef<any>(null);
-    const [rowHeight, setRowHeight] = React.useState(460);
-
-    useEffect(() => {
-        setRowHeight(50 * template.entities.length + 110);
-    }, [template]);
-
     const headerNames: { [key: string]: string } = {};
 
     Object.keys(template.properties.properties).forEach((name) => {
@@ -66,9 +61,7 @@ const TemplateTable: React.FC<{
             <div
                 className="ag-theme-material"
                 style={{
-                    height: rowHeight,
-                    maxHeight: 460,
-                    minHeight: 260,
+                    height: 610,
                     width: '100%',
                     marginBottom: '30px',
                     fontFamily: 'Rubik',
@@ -78,9 +71,9 @@ const TemplateTable: React.FC<{
                 <AgGridReact
                     ref={gridRef}
                     pagination
-                    paginationPageSize={7}
+                    paginationPageSize={10}
                     rowHeight={50}
-                    rowData={template.entities.map((entity) => entity.properties)}
+                    rowData={entities.map((entity) => entity.properties)}
                     columnHoverHighlight
                     enableRtl
                     enableCellTextSelection

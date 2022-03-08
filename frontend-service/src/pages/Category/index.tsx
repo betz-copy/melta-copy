@@ -1,55 +1,37 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
-import { Navigate, useSearchParams } from 'react-router-dom';
-import { Grid, ToggleButton, ToggleButtonGroup, IconButton, Typography } from '@mui/material';
+import { useParams } from 'react-router-dom';
+import { Grid, ToggleButton, ToggleButtonGroup, IconButton, Typography, CircularProgress } from '@mui/material';
 import { TableChartOutlined, AccountTreeOutlined, AddCircle } from '@mui/icons-material';
-import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
-import { IEntityInstance } from '../../interfaces/instances';
-import { getEntityTemplatesByCategoryRequest } from '../../services/enitityTemplatesService';
 import { getInstancesByCategoryRequest } from '../../services/instancesService';
 import { TemplateTable } from './components/TemplateTable';
 import { Header } from './components/Header';
 import { IMongoCategory } from '../../interfaces/categories';
+import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 
 const Category: React.FC = () => {
-    const [searchParams] = useSearchParams();
     const queryClient = useQueryClient();
-    const categoryId = searchParams.get('categoryId');
-    const { data: instances } = useQuery(['getInstancesByCategory', categoryId], () => getInstancesByCategoryRequest(categoryId!));
-    const { data: templates } = useQuery(['getEntityTemplatesByCategory', categoryId], () => getEntityTemplatesByCategoryRequest(categoryId!));
-    const [templateToDisplay, setTemplatesToDisplay] = useState<string[]>([]);
+    const params = useParams();
+    const { categoryId } = params;
     const [viewType, setViewType] = useState<'table' | 'graph'>('table');
+    const [templateToDisplay, setTemplatesToDisplay] = useState<string[]>([]);
 
-    const categories = queryClient.getQueryData<IMongoCategory[]>('getCategories');
+    const { data: instances } = useQuery(['getInstancesByCategory', categoryId], () => getInstancesByCategoryRequest(categoryId!));
+    const templates = queryClient
+        .getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates')
+        ?.filter((template) => template.category._id === categoryId);
 
-    const category = categories?.filter((oneCategory) => oneCategory._id === categoryId)[0];
-
-    useEffect(() => {
-        if (templates) {
-            setTemplatesToDisplay(templates.map((template) => template.displayName));
-        }
-    }, [templates]);
-
-    if (!categoryId) {
-        return <Navigate to="/" />;
-    }
+    const categoryDisplayName = queryClient
+        .getQueryData<IMongoCategory[]>('getCategories')
+        ?.find((oneCategory) => oneCategory._id === categoryId)?.displayName;
 
     if (templates) {
-        const entitiesByTemplate: { [id: string]: IMongoEntityTemplatePopulated & { entities: IEntityInstance[] } } = {};
-        templates.forEach((template) => {
-            // eslint-disable-next-line no-param-reassign
-            entitiesByTemplate[template._id] = {
-                ...template,
-                entities: instances?.filter((instance) => instance.templateId === template._id) || [],
-            };
-        });
-
         return (
             <Grid container>
                 <Grid container justifyContent="center" marginBottom="1vh">
                     <Header
                         templateToDisplay={templateToDisplay}
-                        category={category ? category.displayName : ''}
+                        category={categoryDisplayName || ''}
                         setTemplatesToDisplay={setTemplatesToDisplay}
                         templatesNames={templates.map((template) => template.displayName)}
                     />
@@ -86,10 +68,14 @@ const Category: React.FC = () => {
                 <Grid container paddingLeft="10%" paddingRight="10%">
                     {viewType === 'table' ? (
                         <Grid container>
-                            {Object.values(entitiesByTemplate)
+                            {templates
                                 .filter((template) => templateToDisplay.includes(template.displayName))
                                 .map((template) => (
-                                    <TemplateTable key={template._id} template={template} />
+                                    <TemplateTable
+                                        key={template._id}
+                                        template={template}
+                                        entities={instances?.filter((instance) => instance.templateId === template._id) || []}
+                                    />
                                 ))}
                         </Grid>
                     ) : (
@@ -100,12 +86,7 @@ const Category: React.FC = () => {
         );
     }
 
-    return (
-        <>
-            <h1>{categoryId}</h1>
-            <div />
-        </>
-    );
+    return <CircularProgress size={20} />;
 };
 
 export default Category;

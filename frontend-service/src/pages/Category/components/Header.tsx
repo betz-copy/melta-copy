@@ -1,4 +1,4 @@
-import React, { SetStateAction, Dispatch } from 'react';
+import React, { useEffect, SetStateAction, Dispatch } from 'react';
 import { Grid, Typography } from '@mui/material';
 import { EntityCheckBox } from './CheckBox';
 
@@ -8,6 +8,10 @@ const Header: React.FC<{
     setTemplatesToDisplay: Dispatch<SetStateAction<string[]>>;
     templateToDisplay: string[];
 }> = ({ templateToDisplay, category, templatesNames, setTemplatesToDisplay }) => {
+    useEffect(() => {
+        setTemplatesToDisplay(templatesNames);
+    }, [setTemplatesToDisplay]);
+
     return (
         <Grid item container justifyContent="space-evenly" style={{ height: '8vh', borderBottom: '1px solid #00000027' }}>
             <Grid item>

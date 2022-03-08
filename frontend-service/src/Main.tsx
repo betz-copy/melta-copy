@@ -1,5 +1,5 @@
 import React, { useState, lazy, Suspense } from 'react';
-import { CssBaseline, Box, Toolbar } from '@mui/material';
+import { CssBaseline, Box } from '@mui/material';
 import { Route, Routes, BrowserRouter as Router } from 'react-router-dom';
 import rtlPlugin from 'stylis-plugin-rtl';
 import { CacheProvider } from '@emotion/react';
@@ -7,8 +7,7 @@ import createCache from '@emotion/cache';
 import { prefixer } from 'stylis';
 import { useQuery } from 'react-query';
 import { toast } from 'react-toastify';
-import { Header } from './common/Header';
-import { SideBar } from './common/SideBar';
+import { SideBar } from './common/sideBar';
 import { MainBox } from './Main.styled';
 import { getEntityTemplatesRequest } from './services/enitityTemplatesService';
 import { getCategoriesRequest } from './services/categoriesService';
@@ -45,19 +44,17 @@ const Main = () => {
             <Router>
                 <Box display="flex">
                     <CssBaseline />
-                    <Header toggleDrawer={toggleDrawer} isDrawerOpen={open} />
                     <SideBar toggleDrawer={toggleDrawer} isDrawerOpen={open} />
                     <MainBox>
-                        <Toolbar />
-                        <Box>
+                        <Box marginLeft={4} marginRight={4}>
                             <Suspense fallback={<div />}>
                                 <Routes>
                                     <Route path="/system-management" element={<SystemManagement />} />
                                     <Route path="/unavailable" element={<Unavailable />} />
-                                    <Route path="/category" element={<Category />} />
+                                    <Route path="/category/:categoryId" element={<Category />} />
                                     <Route path="/" element={<Home />} />
-                                    <Route path="*" element={<Home />} />
                                     <Route path="/graph/:instanceId" element={<Home />} />
+                                    <Route path="*" element={<h1>404</h1>} />
                                 </Routes>
                             </Suspense>
                         </Box>
