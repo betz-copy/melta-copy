@@ -1,34 +1,23 @@
-import React, { useEffect, useState } from 'react';
-import { useQuery, useQueryClient } from 'react-query';
+import React, { useState } from 'react';
 import { Navigate, useSearchParams } from 'react-router-dom';
 import { Grid, ToggleButton, ToggleButtonGroup, IconButton, Typography } from '@mui/material';
 import { TableChartOutlined, AccountTreeOutlined, AddCircle } from '@mui/icons-material';
-import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
-import { IEntityInstance } from '../../interfaces/instances';
+import { useQuery } from 'react-query';
+import { TemplateTable } from './components/TemplateTable';
+import { SideBar } from './components/SideBar';
 import { getEntityTemplatesByCategoryRequest } from '../../services/enitityTemplatesService';
 import { getInstancesByCategoryRequest } from '../../services/instancesService';
-import { TemplateTable } from './components/TemplateTable';
-import { Header } from './components/Header';
-import { IMongoCategory } from '../../interfaces/categories';
+import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IEntityInstance } from '../../interfaces/instances';
 
 const Category: React.FC = () => {
     const [searchParams] = useSearchParams();
-    const queryClient = useQueryClient();
     const categoryId = searchParams.get('categoryId');
-    const { data: instances } = useQuery(['getInstancesByCategory', categoryId], () => getInstancesByCategoryRequest(categoryId!));
-    const { data: templates } = useQuery(['getEntityTemplatesByCategory', categoryId], () => getEntityTemplatesByCategoryRequest(categoryId!));
-    const [templateToDisplay, setTemplatesToDisplay] = useState<string[]>([]);
+    const [templateToDisplay, setTemplatesToDisplay] = useState(['']);
     const [viewType, setViewType] = useState<'table' | 'graph'>('table');
 
-    const categories = queryClient.getQueryData<IMongoCategory[]>('getCategories');
-
-    const category = categories?.filter((oneCategory) => oneCategory._id === categoryId)[0];
-
-    useEffect(() => {
-        if (templates) {
-            setTemplatesToDisplay(templates.map((template) => template.displayName));
-        }
-    }, [templates]);
+    const { data: instances } = useQuery(['getInstancesByCategory', categoryId], () => getInstancesByCategoryRequest(categoryId!));
+    const { data: templates } = useQuery(['getEntityTemplatesByCategory', categoryId], () => getEntityTemplatesByCategoryRequest(categoryId!));
 
     if (!categoryId) {
         return <Navigate to="/" />;
@@ -46,16 +35,18 @@ const Category: React.FC = () => {
 
         return (
             <Grid container>
-                <Grid container justifyContent="center" marginBottom="1vh">
-                    <Header
+                <Grid item xs={12}>
+                    <SideBar
                         templateToDisplay={templateToDisplay}
-                        category={category ? category.displayName : ''}
+                        categoryId={categoryId}
                         setTemplatesToDisplay={setTemplatesToDisplay}
                         templatesNames={templates.map((template) => template.displayName)}
                     />
                 </Grid>
-                <Grid container justifyContent="end" paddingRight="10%" marginBottom="3vh">
-                    <Grid item paddingRight="1%">
+                <Grid item xs={12} style={{ height: '1vh' }} />
+                <Grid container alignItems="flex-end" style={{ height: '2vh' }}>
+                    <Grid item xs={10} />
+                    <Grid item xs={1}>
                         <IconButton style={{ background: 'white', borderRadius: '7px' }}>
                             <AddCircle color="primary" />
                             <Typography fontSize={14} style={{ fontWeight: '500', paddingRight: '5px' }}>
@@ -63,7 +54,8 @@ const Category: React.FC = () => {
                             </Typography>
                         </IconButton>
                     </Grid>
-                    <Grid item>
+
+                    <Grid item xs={0.5}>
                         <ToggleButtonGroup
                             style={{ backgroundColor: 'white' }}
                             size="small"
@@ -83,15 +75,20 @@ const Category: React.FC = () => {
                         </ToggleButtonGroup>
                     </Grid>
                 </Grid>
-                <Grid container paddingLeft="10%" paddingRight="10%">
+                <Grid item xs={12} style={{ height: '3vh' }} />
+
+                <Grid item xs={11}>
                     {viewType === 'table' ? (
-                        <Grid container>
-                            {Object.values(entitiesByTemplate)
-                                .filter((template) => templateToDisplay.includes(template.displayName))
-                                .map((template) => (
-                                    <TemplateTable key={template._id} template={template} />
-                                ))}
-                        </Grid>
+                        <div style={{ display: 'flex', flexDirection: 'column' }}>
+                            {Object.values(entitiesByTemplate).map((template) => (
+                                <Grid key={template._id} container>
+                                    <Grid item xs={1.5} />
+                                    <Grid item xs={10}>
+                                        <TemplateTable key={template._id} template={template} templateToDisplay={templateToDisplay} />
+                                    </Grid>
+                                </Grid>
+                            ))}
+                        </div>
                     ) : (
                         <>graph</>
                     )}
@@ -108,4 +105,4 @@ const Category: React.FC = () => {
     );
 };
 
-export default Category;
+export { Category };

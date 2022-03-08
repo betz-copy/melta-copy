@@ -5,7 +5,7 @@ export interface IEntityTemplate {
     displayName: string;
     properties: {
         type: 'object';
-        properties: { [n: string]: { type: 'string' | 'number' | 'boolean'; title: string; fromat?: string } };
+        properties: { [n: string]: { type: 'string' | 'integer' | 'boolean'; title: string; fromat?: string } };
         required: string[];
     };
     category: IMongoCategory['_id'];
@@ -16,7 +16,7 @@ export interface IEntityTemplatePopulated {
     displayName: string;
     properties: {
         type: 'object';
-        properties: { [n: string]: { type: 'string' | 'number' | 'boolean'; title: string; fromat?: string } };
+        properties: { [n: string]: { type: 'string' | 'integer' | 'boolean'; title: string; format?: string } };
         required: string[];
     };
     category: IMongoCategory;

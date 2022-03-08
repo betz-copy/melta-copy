@@ -5,4 +5,7 @@ export const globalTheme = createTheme({
     palette: {
         mode: 'light',
     },
+    typography: {
+        fontFamily: 'Rubik',
+    },
 });

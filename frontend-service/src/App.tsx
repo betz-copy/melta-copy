@@ -11,6 +11,7 @@ import Main from './Main';
 import { RootState } from './store';
 import { setUser } from './store/user';
 import { BackendConfigState, getBackendConfigRequest } from './services/backendConfigService';
+import './css/index.css';
 
 const App: React.FC = () => {
     const currentUser = useSelector((state: RootState) => state.user);

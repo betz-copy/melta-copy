@@ -49,7 +49,7 @@ const Main = () => {
                     <SideBar toggleDrawer={toggleDrawer} isDrawerOpen={open} />
                     <MainBox>
                         <Toolbar />
-                        <Box margin={4}>
+                        <Box>
                             <Suspense fallback={<div />}>
                                 <Routes>
                                     <Route path="/system-management" element={<SystemManagement />} />
