@@ -16,7 +16,7 @@ class MinioStorage {
 
     async handleFile(_req: Request, file: Express.Multer.File) {
         let path = generatePath();
-        path = path.split('-').join('');
+        path = path.split('-').join('') + file.filename;
 
         await this.client.uploadFileStream(file.stream, path);
         return { ...(await this.client.statFile(path)), path };
