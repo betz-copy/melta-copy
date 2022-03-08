@@ -4,7 +4,7 @@ export const defaultSchema = Joi.object({
     query: {},
     body: {},
     params: {
-        path: Joi.string().alphanum(),
+        path: Joi.string().required(),
     },
 });
 
