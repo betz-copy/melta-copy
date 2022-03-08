@@ -21,8 +21,7 @@ services:
       - 8000:8000
 
   storage-service:
-    image: storage-service
-    build: .
+    build: ./storage-service
     depends_on:
       - minio
     ports: 
