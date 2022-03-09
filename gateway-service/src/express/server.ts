@@ -28,12 +28,13 @@ class Server {
         app.use(express.json());
         app.use(express.urlencoded({ extended: true }));
 
+        app.use(logger('dev'));
+
         if (config.authentication.isRequired) {
             app.use(initializePassport(config.authentication.tokenSecret));
             app.use(authMiddleware);
         }
 
-        app.use(logger('dev'));
         app.use(appRouter);
 
         app.use(errorMiddleware);
