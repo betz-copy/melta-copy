@@ -1,7 +1,9 @@
 import * as Joi from 'joi';
 
 export const defaultSchema = Joi.object({
-    query: {},
+    query: {
+        token: Joi.string(),
+    },
     body: {},
     params: {
         path: Joi.string().required(),
