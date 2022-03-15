@@ -20,6 +20,11 @@ appRouter.use(
     createProxyMiddleware({ target: config.entityTemplateManager.uri, onProxyReq: fixRequestBody }),
 );
 
+appRouter.use(
+    '/api/files',
+    createProxyMiddleware({ target: config.storageService.uri, onProxyReq: fixRequestBody, pathRewrite: { '^/api/files': '/api' } }),
+);
+
 appRouter.use('*', (_req, res) => {
     res.status(404).send('Invalid Route');
 });

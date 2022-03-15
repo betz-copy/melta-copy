@@ -12,6 +12,9 @@ const config = {
     entityTemplateManager: {
         uri: env.get('ENTITY_TEMPLATE_MANAGER_URI').required().asUrlString(),
     },
+    storageService: {
+        uri: env.get('STORAGE_SERVICE_URI').required().asUrlString(),
+    },
 };
 
 export default config;

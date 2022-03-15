@@ -1,4 +1,4 @@
-import { Strategy, ExtractJwt, VerifiedCallback } from 'passport-jwt';
+import { ExtractJwt, Strategy, VerifiedCallback } from 'passport-jwt';
 import * as passport from 'passport';
 import { Request, Response, NextFunction } from 'express';
 
@@ -7,7 +7,10 @@ export const initializePassport = (secret: string) => {
         'jwt',
         new Strategy(
             {
-                jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+                jwtFromRequest: (req: Request) => {
+                    return ExtractJwt.fromAuthHeaderAsBearerToken()(req) || (req.query.token as string) || null;
+                },
+
                 secretOrKey: secret,
             },
             (payload: any, next: VerifiedCallback) => {
