@@ -16,4 +16,8 @@ export class FilesManager {
     static fileStat(filePath: string) {
         return minioClient.statFile(filePath);
     }
+
+    static deleteFile(filePath: string) {
+        return minioClient.removeFile(filePath);
+    }
 }

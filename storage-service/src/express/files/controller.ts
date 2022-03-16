@@ -20,4 +20,10 @@ export class FilesController {
         const { path } = req.params;
         res.json(await FilesManager.fileStat(path.toString()));
     }
+
+    static async deleteFile(req: express.Request, res: express.Response){        
+        const { path } = req.params;
+        res.json(await FilesManager.deleteFile(path));
+
+    }
 }

@@ -16,5 +16,7 @@ filesRouter.get('/downloadFile/:path', ValidateRequest(defaultSchema), wrapContr
 
 filesRouter.get('/file/:path', ValidateRequest(defaultSchema), wrapController(FilesController.fileStat));
 filesRouter.get('/list', wrapController(FilesController.listFiles));
+filesRouter.delete('/:path', ValidateRequest(defaultSchema),wrapController(FilesController.deleteFile));
+
 
 export { filesRouter };
