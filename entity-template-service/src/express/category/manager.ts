@@ -1,6 +1,7 @@
 import CategoryModel from './model';
 import { ICategory } from './interface';
 import { ServiceError } from '../error';
+import { uploadFile, deleteFile } from '../../utils/storageService';
 import { EntityTemplateManager } from '../entityTemplate/manager';
 
 class CategoryManager {
@@ -14,8 +15,13 @@ class CategoryManager {
         return CategoryModel.findById(id).orFail(new ServiceError(404, 'Category not found')).lean().exec();
     }
 
-    static createCategory(categoryData: ICategory) {
-        return CategoryModel.create(categoryData);
+    static async createCategory(categoryData: ICategory, file?: Express.Multer.File) {
+        if (file) {
+            const newFile = await uploadFile(file);
+            return CategoryModel.create({ ...categoryData, iconFileId: newFile.data.path });
+        }
+
+        return CategoryModel.create({ ...categoryData, iconFileId: null });
     }
 
     static async deleteCategory(id: string) {
@@ -24,10 +30,34 @@ class CategoryManager {
             throw new ServiceError(403, 'category still has entity templates');
         }
 
+        const category = await CategoryManager.getCategoryById(id);
+        if (category.iconFileId !== null) {
+            await deleteFile(category.iconFileId);
+        }
+
         return CategoryModel.findByIdAndDelete(id).orFail(new ServiceError(404, 'Category not found')).lean().exec();
     }
 
-    static updateCategory(id: string, updatedData: Partial<ICategory>) {
+    static async updateCategory(id: string, updatedData: Partial<ICategory> & { file?: string }, file?: Express.Multer.File) {
+        const { file: categoryFile } = updatedData;
+
+        if (file || categoryFile === null) {
+            const category = await CategoryManager.getCategoryById(id);
+            if (category.iconFileId !== null) {
+                await deleteFile(category.iconFileId);
+            }
+
+            let iconFileId = null;
+            if (file) {
+                const newFile = await uploadFile(file);
+                iconFileId = newFile.data.path;
+            }
+
+            return CategoryModel.findByIdAndUpdate(id, { ...updatedData, iconFileId }, { new: true })
+                .orFail(new ServiceError(404, 'Category not found'))
+                .lean()
+                .exec();
+        }
         return CategoryModel.findByIdAndUpdate(id, updatedData, { new: true }).orFail(new ServiceError(404, 'Category not found')).lean().exec();
     }
 }

@@ -14,6 +14,9 @@ const CategorySchema = new mongoose.Schema(
             required: true,
             unique: true,
         },
+        iconFileId: {
+            type: String,
+        },
     },
     {
         timestamps: true,

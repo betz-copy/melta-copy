@@ -27,6 +27,7 @@ export const createCategorySchema = Joi.object({
         displayName: Joi.string().required(),
     },
     params: {},
+    file: Joi.object(),
 });
 
 // DELETE /api/categories/:categoryId
@@ -44,8 +45,10 @@ export const updateCategorySchema = Joi.object({
     body: {
         name: Joi.string(),
         displayName: Joi.string(),
+        file: Joi.allow(null),
     },
     params: {
         categoryId: MongoIdSchema.required(),
     },
+    file: Joi.object(),
 });

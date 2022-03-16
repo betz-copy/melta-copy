@@ -12,3 +12,5 @@ coverage/
 
 # Package lock
 package-lock.json
+
+public/uploads

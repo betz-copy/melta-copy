@@ -11,7 +11,7 @@ class CategoriesController {
     }
 
     static async createCategory(req: Request, res: Response) {
-        res.json(await CategoryManager.createCategory(req.body));
+        res.json(await CategoryManager.createCategory(req.body, req.file));
     }
 
     static async deleteCategory(req: Request, res: Response) {
@@ -19,7 +19,7 @@ class CategoriesController {
     }
 
     static async updateCategory(req: Request, res: Response) {
-        res.json(await CategoryManager.updateCategory(req.params.categoryId, req.body));
+        res.json(await CategoryManager.updateCategory(req.params.categoryId, req.body, req.file));
     }
 }
 
