@@ -11,12 +11,10 @@ const { fileKeyName } = config.multer;
 
 const filesRouter: Router = Router();
 
-filesRouter.post('/uploadFile', UploadToMinio(fileKeyName), ValidateRequest(uploadFileRequestSchema), wrapController(FilesController.uploadFile));
-filesRouter.get('/downloadFile/:path', ValidateRequest(defaultSchema), wrapController(FilesController.downloadFile));
-
-filesRouter.get('/file/:path', ValidateRequest(defaultSchema), wrapController(FilesController.fileStat));
-filesRouter.get('/list', wrapController(FilesController.listFiles));
-filesRouter.delete('/:path', ValidateRequest(defaultSchema),wrapController(FilesController.deleteFile));
-
+filesRouter.get('/', wrapController(FilesController.listFiles));
+filesRouter.post('/', UploadToMinio(fileKeyName), ValidateRequest(uploadFileRequestSchema), wrapController(FilesController.uploadFile));
+filesRouter.get('/:path', ValidateRequest(defaultSchema), wrapController(FilesController.downloadFile));
+filesRouter.get('/:path/stats', ValidateRequest(defaultSchema), wrapController(FilesController.fileStat));
+filesRouter.delete('/:path', ValidateRequest(defaultSchema), wrapController(FilesController.deleteFile));
 
 export { filesRouter };
