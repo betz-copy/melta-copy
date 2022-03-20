@@ -9,10 +9,10 @@ import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplat
 import 'ag-grid-community/dist/styles/ag-grid.css';
 import 'ag-grid-community/dist/styles/ag-theme-material.css';
 import '../../../css/components/templateTable.css';
-import { IEntityInstance } from '../../../interfaces/instances';
+import { IEntity } from '../../../interfaces/entities';
 
 const TemplateTable: React.FC<{
-    template: IMongoEntityTemplatePopulated & { entities: IEntityInstance[] };
+    template: IMongoEntityTemplatePopulated & { entities: IEntity[] };
     templateToDisplay: string[];
 }> = ({ template, templateToDisplay }) => {
     const gridRef = React.useRef<any>(null);

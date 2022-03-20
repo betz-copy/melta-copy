@@ -3,9 +3,9 @@ import React, { useState } from 'react';
 import { useQuery } from 'react-query';
 import { useParams } from 'react-router-dom';
 import { Graph } from '../../common/graph';
-import { getInstancesRequest, getRelatedInstancesByIdRequest } from '../../services/instancesService';
+import { getAllEntitiesRequest, getRelatedEntitiesByIdRequest } from '../../services/entitiesService';
 
-const sizeByConnectons = (id: number, arr: { source: number; target: number }[]) => {
+const sizeByConnectons = (id: string, arr: { source: string; target: string }[]) => {
     let counter = 0;
     arr.forEach((curr) => {
         if (curr.target === id || curr.source === id) {
@@ -25,12 +25,12 @@ const sizeByConnectons = (id: number, arr: { source: number; target: number }[])
 };
 
 const Home = () => {
-    const { instanceId } = useParams();
+    const { entityId } = useParams();
     const [data, setData] = useState<{ nodes: any[]; links: any[] }>({ nodes: [], links: [] });
 
     const { isLoading, isFetching } = useQuery(
-        ['getGraphInstances', instanceId],
-        () => (instanceId ? getRelatedInstancesByIdRequest(instanceId) : getInstancesRequest()),
+        ['getGraphEntities', entityId],
+        () => (entityId ? getRelatedEntitiesByIdRequest(entityId) : getAllEntitiesRequest()),
         {
             refetchOnWindowFocus: false,
             onSuccess: (entitiesData) => {
@@ -38,8 +38,8 @@ const Home = () => {
                     nodes: entitiesData.nodes.map((item) => {
                         return {
                             data: { ...item },
-                            id: item.id,
-                            val: sizeByConnectons(item.id, entitiesData.links),
+                            id: item._id,
+                            val: sizeByConnectons(item._id, entitiesData.links),
                         };
                     }),
                     links: entitiesData.links,
@@ -56,7 +56,7 @@ const Home = () => {
         );
     }
 
-    return <Graph data={data} centerOn={Number(instanceId)} />;
+    return <Graph data={data} centerOn={Number(entityId)} />;
 };
 
 export default Home;

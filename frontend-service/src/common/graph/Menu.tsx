@@ -3,7 +3,7 @@ import { CircularProgress, Menu as MuiMenu, MenuItem } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { NodeObject } from 'react-force-graph-2d';
 import { useMutation } from 'react-query';
-import { deleteEntityInstanceRequest } from '../../services/instancesService';
+import { deleteEntityRequest } from '../../services/entitiesService';
 import { AreYouSureDialog } from '../dialogs/AreYouSureDialog';
 
 const Menu: React.FC<{
@@ -13,7 +13,7 @@ const Menu: React.FC<{
     onCloseMenu: () => void;
     location: { top: number; left: number };
 }> = ({ onShowDialog, showMenu, node, onCloseMenu, location }) => {
-    const { isLoading, mutateAsync } = useMutation((instanceId: string) => deleteEntityInstanceRequest(instanceId));
+    const { isLoading, mutateAsync } = useMutation((entityId: string) => deleteEntityRequest(entityId));
     const navigate = useNavigate();
 
     const [openDeleteDialog, setOpenDeleteDialog] = useState(false);

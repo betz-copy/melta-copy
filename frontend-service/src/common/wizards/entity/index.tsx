@@ -5,7 +5,7 @@ import { useMutation } from 'react-query';
 import { StepsType, Wizard, WizardBaseType } from '../index';
 import { ChooseTemplate, chooseTemplateSchema } from './ChooseTemplate';
 import { FillFields, fillFieldsSchema } from './FillFields';
-import { createEntityInstanceRequest } from '../../../services/instancesService';
+import { createEntityRequest } from '../../../services/entitiesService';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 
 export interface EntityWizardValues {
@@ -50,12 +50,12 @@ const EntityWizard: React.FC<WizardBaseType<EntityWizardValues>> = ({
     },
     isEditMode = false,
 }) => {
-    const { isLoading, mutateAsync } = useMutation((entityInstance: any) => createEntityInstanceRequest(entityInstance), {
+    const { isLoading, mutateAsync } = useMutation((entity: any) => createEntityRequest(entity), {
         onSuccess: () => {
-            toast.success('created entity instance successfully');
+            toast.success('created entity successfully');
         },
         onError: () => {
-            toast.error('failed to create entity instance');
+            toast.error('failed to create entity');
         },
     });
 

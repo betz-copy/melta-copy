@@ -1,6 +1,5 @@
-export interface IEntityInstance {
+export interface IEntity {
     _id: string;
     templateId: string;
-    categroyId: string;
     properties: object;
 }

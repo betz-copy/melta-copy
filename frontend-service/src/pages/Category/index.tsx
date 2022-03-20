@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from 'react-query';
 import { useParams } from 'react-router-dom';
 import { Grid, ToggleButton, ToggleButtonGroup, IconButton, Typography, CircularProgress } from '@mui/material';
 import { TableChartOutlined, AccountTreeOutlined, AddCircle } from '@mui/icons-material';
-import { getInstancesByCategoryRequest } from '../../services/instancesService';
+import { getEntitiesByCategoryRequest } from '../../services/entitiesService';
 import { TemplateTable } from './components/TemplateTable';
 import { Header } from './components/Header';
 import { IMongoCategory } from '../../interfaces/categories';
@@ -16,7 +16,7 @@ const Category: React.FC = () => {
     const [viewType, setViewType] = useState<'table' | 'graph'>('table');
     const [templateToHide, setTemplatesToHide] = useState<string[]>([]);
 
-    const { data: instances } = useQuery(['getInstancesByCategory', categoryId], () => getInstancesByCategoryRequest(categoryId!));
+    const { data: entities } = useQuery(['getEntitiesByCategory', categoryId], () => getEntitiesByCategoryRequest(categoryId!));
     const templates = queryClient
         .getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates')
         ?.filter((template) => template.category._id === categoryId);
@@ -74,7 +74,7 @@ const Category: React.FC = () => {
                                     <TemplateTable
                                         key={template._id}
                                         template={template}
-                                        entities={instances?.filter((instance) => instance.templateId === template._id) || []}
+                                        entities={entities?.filter((entity) => entity.templateId === template._id) || []}
                                     />
                                 ))}
                         </Grid>

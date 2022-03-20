@@ -2,34 +2,36 @@ import React, { useState } from 'react';
 import { Navigate, useSearchParams } from 'react-router-dom';
 import { Grid, ToggleButton, ToggleButtonGroup, IconButton, Typography } from '@mui/material';
 import { TableChartOutlined, AccountTreeOutlined, AddCircle } from '@mui/icons-material';
-import { useQuery } from 'react-query';
+import { useQuery, useQueryClient } from 'react-query';
 import { TemplateTable } from './components/TemplateTable';
 import { SideBar } from './components/SideBar';
-import { getEntityTemplatesByCategoryRequest } from '../../services/enitityTemplatesService';
-import { getInstancesByCategoryRequest } from '../../services/instancesService';
+import { getEntitiesByCategoryRequest } from '../../services/entitiesService';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
-import { IEntityInstance } from '../../interfaces/instances';
+import { IEntity } from '../../interfaces/entities';
 
 const Category: React.FC = () => {
     const [searchParams] = useSearchParams();
     const categoryId = searchParams.get('categoryId');
+    const queryClient = useQueryClient();
     const [templateToDisplay, setTemplatesToDisplay] = useState(['']);
     const [viewType, setViewType] = useState<'table' | 'graph'>('table');
 
-    const { data: instances } = useQuery(['getInstancesByCategory', categoryId], () => getInstancesByCategoryRequest(categoryId!));
-    const { data: templates } = useQuery(['getEntityTemplatesByCategory', categoryId], () => getEntityTemplatesByCategoryRequest(categoryId!));
+    const { data: entities } = useQuery(['getEntitiesByCategory', categoryId], () => getEntitiesByCategoryRequest(categoryId!));
+    const templates = queryClient
+        .getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates')
+        ?.filter((template) => template.category._id === categoryId);
 
     if (!categoryId) {
         return <Navigate to="/" />;
     }
 
     if (templates) {
-        const entitiesByTemplate: { [id: string]: IMongoEntityTemplatePopulated & { entities: IEntityInstance[] } } = {};
+        const entitiesByTemplate: { [id: string]: IMongoEntityTemplatePopulated & { entities: IEntity[] } } = {};
         templates.forEach((template) => {
             // eslint-disable-next-line no-param-reassign
             entitiesByTemplate[template._id] = {
                 ...template,
-                entities: instances?.filter((instance) => instance.templateId === template._id) || [],
+                entities: entities?.filter((entity) => entity.templateId === template._id) || [],
             };
         });
 

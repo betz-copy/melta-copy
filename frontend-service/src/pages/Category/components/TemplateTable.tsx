@@ -4,7 +4,7 @@ import { AddCircle, FileDownloadOutlined } from '@mui/icons-material';
 import { AgGridColumn, AgGridReact } from 'ag-grid-react';
 import 'ag-grid-enterprise';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { IEntityInstance } from '../../../interfaces/instances';
+import { IEntity } from '../../../interfaces/entities';
 import { agGridLocaleText } from '../../../utils/agGridLocaleText';
 
 import 'ag-grid-community/dist/styles/ag-grid.css';
@@ -13,7 +13,7 @@ import '../../../css/components/templateTable.css';
 
 const TemplateTable: React.FC<{
     template: IMongoEntityTemplatePopulated;
-    entities: IEntityInstance[];
+    entities: IEntity[];
 }> = ({ template, entities }) => {
     const gridRef = useRef<any>(null);
     const headerNames: { [key: string]: string } = {};

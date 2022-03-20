@@ -9,11 +9,6 @@ const getEntityTemplatesRequest = async () => {
     return data;
 };
 
-const getEntityTemplatesByCategoryRequest = async (categoryId: string) => {
-    const { data } = await axios.get<IMongoEntityTemplatePopulated[]>(`${entityTemplates}?category=${categoryId}`);
-    return data;
-};
-
 const createEntityTemplateRequest = async (newEntityTemplate: IEntityTemplate) => {
     const { data } = await axios.post<IMongoEntityTemplatePopulated>(entityTemplates, newEntityTemplate);
     return data;
@@ -24,4 +19,4 @@ const updateEntityTemplateRequest = async (entityTemplateId: string, updatedEnti
     return data;
 };
 
-export { getEntityTemplatesRequest, getEntityTemplatesByCategoryRequest, createEntityTemplateRequest, updateEntityTemplateRequest };
+export { getEntityTemplatesRequest, createEntityTemplateRequest, updateEntityTemplateRequest };

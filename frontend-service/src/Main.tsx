@@ -52,8 +52,8 @@ const Main = () => {
                                     <Route path="/system-management" element={<SystemManagement />} />
                                     <Route path="/unavailable" element={<Unavailable />} />
                                     <Route path="/category/:categoryId" element={<Category />} />
+                                    <Route path="/graph/:entityId" element={<Home />} />
                                     <Route path="/" element={<Home />} />
-                                    <Route path="/graph/:instanceId" element={<Home />} />
                                     <Route path="*" element={<h1>404</h1>} />
                                 </Routes>
                             </Suspense>
