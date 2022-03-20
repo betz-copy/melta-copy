@@ -15,21 +15,21 @@ config:
   configmaps: []
   env:
     - name: PORT
-      value: "'8000'"
+      value: 8000
     - name: TOKEN_SECRET
-      value: "secret"
+      value: secret
     - name: ENTITY_TEMPLATE_MANAGER_URI
-      value: "http://entity-template-manager:8000"
+      value: http://entity-template-manager:8000
     - name: STORAGE_SERVICE_URI
-      value: "http://storage-service:8000"
+      value: http://storage-service:8000
     - name: CALLBACK_URL
-      value: "http://jaws.branch-yesodot.org/api/auth/callback"
+      value: http://jaws.branch-yesodot.org/api/auth/callback
     - name: SHRAGA_URL
-      value: "https://shraga.shraga.branch-yesodot.org"
+      value: https://shraga.shraga.branch-yesodot.org
     - name: ACCESS_TOKEN_NAME
-      value: "rabaz-access-token"
+      value: rabaz-access-token
     - name: SYSTEM_UNAVAILABLE_URL
-      value: "/unavailable"
+      value: /unavailable
 
 livenessProbe:
   httpGet:
