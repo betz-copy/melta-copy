@@ -13,9 +13,6 @@
 [submodule "frontend"]
 	path = frontend
 	url = git@gitlab.com:yesodot/rnd/terminal-rabaz/jaws/microservices/frontend.git
-[submodule "authentication-service"]
-	path = authentication-service
-	url = git@gitlab.com:yesodot/rnd/terminal-rabaz/jaws/microservices/authentication-service.git
 [submodule "permissions-api"]
 	path = permissions-api
 	url = git@gitlab.com:yesodot/rnd/terminal-rabaz/jaws/microservices/permissions-api.git
