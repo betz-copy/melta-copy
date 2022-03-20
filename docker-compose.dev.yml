@@ -4,7 +4,6 @@ services:
   #-------------------------------------------#
   #*   Service infrastructure dependencies:   #
   #-------------------------------------------#
-
   mongo1:
     image: mongo
     restart: always
@@ -43,10 +42,10 @@ services:
       MINIO_ROOT_USER: "minioadmin"
       MINIO_ROOT_PASSWORD: "minioadmin"
     command: "minio server --console-address :4000 /data"
+
   #-------------------------------------------#
   #        microservices:                     #
   #-------------------------------------------#
-
   entity-template-manager:
     ports:
       - 8001:8000
