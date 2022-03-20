@@ -16,8 +16,8 @@ services:
       STORAGE_SERVICE_DELETE_FILE_ROUTE: ${STORAGE_SERVICE_DELETE_FILE_ROUTE}
 
   permission-api:
-    image: jawsproject.azurecr.io/permissions-api
-    # build: ./permissions-api
+    # image: jawsproject.azurecr.io/permissions-api // TODO: fix permissions vs permission
+    build: ./permissions-api
     environment:
       PORT: 8000
       MONGO_URI: ${PERMISSION_API_MONGO_URI}
@@ -33,8 +33,8 @@ services:
       MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
 
   relationship-template-manager:
-    image: jawsproject.azurecr.io/relationship-template-manager
-    # build: ./relationship-template-manager
+    # image: jawsproject.azurecr.io/relationship-template-manager
+    build: ./relationship-template-manager
     environment:
       PORT: 8000
       MONGO_URI: ${RELATIONSHIP_TEMPLATE_MANAGER_MONGO_URI}
