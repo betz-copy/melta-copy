@@ -53,6 +53,18 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate?: IMongoEntityT
     return { ...entityTemplate, requiredProrerites, optionalProrerites };
 };
 
+const categoryObjectToCategoryForm = (category?: IMongoCategory) => {
+    if (!category) return undefined;
+    const { iconFileId, ...restOfCategory } = category;
+
+    if (iconFileId) {
+        const file: Partial<File> = { name: iconFileId };
+        return { ...restOfCategory, file };
+    }
+
+    return restOfCategory;
+};
+
 const SystemManagement = () => {
     const queryClient = useQueryClient();
     const [categoryWizardState, dispatchCategoryWizard] = useReducer(categoryWizardReducer, { showWizard: false });
@@ -66,7 +78,7 @@ const SystemManagement = () => {
         // eslint-disable-next-line no-param-reassign
         entityTemplatesByCategory[category._id] = {
             ...category,
-            entityTemplates: entityTemplates!.filter((entityTemplate) => entityTemplate.category._id === category._id),
+            entityTemplates: entityTemplates?.filter((entityTemplate) => entityTemplate.category._id === category._id) || [],
         };
     });
 
@@ -103,7 +115,7 @@ const SystemManagement = () => {
             <CategoryWizard
                 open={categoryWizardState.showWizard}
                 handleClose={() => dispatchCategoryWizard({ type: 'hide' })}
-                initialValues={categoryWizardState.initialValues}
+                initialValues={categoryObjectToCategoryForm(categoryWizardState.initialValues)}
                 isEditMode={!!categoryWizardState.initialValues}
             />
             <EntityTemplateWizard

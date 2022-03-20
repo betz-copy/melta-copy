@@ -1,4 +1,5 @@
 import axios from '../axios';
+import { CategoryWizardValues } from '../common/wizards/category';
 import { environment } from '../globals';
 import { ICategory, IMongoCategory } from '../interfaces/categories';
 
@@ -9,8 +10,16 @@ const getCategoriesRequest = async () => {
     return data;
 };
 
-const createCategoryRequest = async (newCategory: ICategory) => {
-    const { data } = await axios.post<IMongoCategory>(categories, newCategory);
+const createCategoryRequest = async (newCategory: CategoryWizardValues) => {
+    const formData = new FormData();
+
+    if (newCategory.file) {
+        formData.append('file', newCategory.file as File);
+    }
+    formData.append('displayName', newCategory.displayName);
+    formData.append('name', newCategory.name);
+
+    const { data } = await axios.post(categories, formData);
     return data;
 };
 

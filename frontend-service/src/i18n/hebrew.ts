@@ -28,6 +28,7 @@ export default {
         category: 'קטגוריה',
         name: 'שם באנגלית',
         displayName: 'שם תצוגה',
+        file: 'הוסף קובץ',
         propertyName: 'שם שדה באנגלית',
         propertyDisplayName: 'שם שדה לתצוגה',
         propertyType: 'סוג שדה',

@@ -6,6 +6,7 @@ export const environment = {
         entityTemplates: '/entities/templates',
         relationshipTemplates: '/relationships/templates',
         entities: '/entities',
+        storage: '/files',
     },
     accessTokenName: 'rabaz-access-token',
 };

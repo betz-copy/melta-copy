@@ -5,12 +5,12 @@ import { useMutation } from 'react-query';
 import { StepsType, Wizard, WizardBaseType } from '../index';
 import { CreateRelationshipTemplateName, createRelationshipTemplateNameSchema } from './CreateRelationshipTemplate';
 import { createRelationshipTemplateRequest } from '../../../services/relationshipTemplatesService';
-import { IMongoCategory } from '../../../interfaces/categories';
+import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 
 export interface RelationshipTemplateWizardValues {
     name: string;
-    sourceEntity: IMongoCategory;
-    destinationEntity: IMongoCategory;
+    sourceEntity: IMongoEntityTemplatePopulated;
+    destinationEntity: IMongoEntityTemplatePopulated;
 }
 
 const steps: StepsType<RelationshipTemplateWizardValues> = [
@@ -25,7 +25,27 @@ const RelationshipTemplateWizard: React.FC<WizardBaseType<RelationshipTemplateWi
     open,
     handleClose,
     initalStep = 0,
-    initialValues = { name: '', sourceEntity: { _id: '', displayName: '', name: '' }, destinationEntity: { _id: '', displayName: '', name: '' } },
+    initialValues = {
+        name: '',
+        sourceEntity: {
+            _id: '',
+            displayName: '',
+            name: '',
+            properties: {
+                type: 'object',
+                properties: {},
+                required: [],
+            },
+            category: { _id: '', displayName: '', name: '' },
+        },
+        destinationEntity: {
+            _id: '',
+            displayName: '',
+            name: '',
+            properties: { type: 'object', properties: {}, required: [] },
+            category: { _id: '', displayName: '', name: '' },
+        },
+    },
     isEditMode = false,
 }) => {
     const { isLoading, mutateAsync } = useMutation((relationshipTemplate: any) => createRelationshipTemplateRequest(relationshipTemplate), {

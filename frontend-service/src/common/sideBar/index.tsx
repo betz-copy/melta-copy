@@ -1,11 +1,12 @@
 import React from 'react';
 import { List, Divider, IconButton, Typography, Grid } from '@mui/material';
 import { useQueryClient } from 'react-query';
+import cookies from 'js-cookie';
 import {
     ChevronRight as ChevronRightIcon,
     ChevronLeft as ChevronLeftIcon,
     AccountCircle as AccountCircleIcon,
-    Inbox as InboxIcon,
+    Hive as HiveIcon,
     Search as SearchIcon,
     Public as PublicIcon,
 } from '@mui/icons-material';
@@ -13,6 +14,7 @@ import {
 import { Drawer, Toolbar } from './SideBar.styled';
 import { IMongoCategory } from '../../interfaces/categories';
 import { NavButton } from './NavButton';
+import { environment } from '../../globals';
 
 type SideBarProps = {
     toggleDrawer: () => any;
@@ -44,7 +46,18 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                                         text={category.displayName}
                                         isDrawerOpen={isDrawerOpen}
                                     >
-                                        <InboxIcon fontSize="large" />
+                                        {category?.iconFileId ? (
+                                            <img
+                                                src={`/api${environment.api.storage}/downloadFile/${category.iconFileId}?token=${cookies.get(
+                                                    environment.accessTokenName,
+                                                )}`}
+                                                height="40px"
+                                                width="40px"
+                                                alt={category.displayName}
+                                            />
+                                        ) : (
+                                            <HiveIcon fontSize="large" />
+                                        )}
                                     </NavButton>
                                 );
                             })}

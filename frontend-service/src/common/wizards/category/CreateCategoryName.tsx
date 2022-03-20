@@ -1,8 +1,8 @@
 import React from 'react';
 import { TextField, Box } from '@mui/material';
 import * as Yup from 'yup';
-
 import i18next from 'i18next';
+import FileInput from '../../inputs/FileInput';
 import { CategoryWizardValues } from './index';
 import { StepComponentProps } from '../index';
 
@@ -10,8 +10,7 @@ const createCategoryNameSchema = {
     name: Yup.string().required(i18next.t('validation.required')),
     displayName: Yup.string().required(i18next.t('validation.required')),
 };
-
-const CreateCategoryName: React.FC<StepComponentProps<CategoryWizardValues>> = ({ values, touched, errors, handleChange }) => {
+const CreateCategoryName: React.FC<StepComponentProps<CategoryWizardValues>> = ({ values, touched, errors, handleChange, setFieldValue }) => {
     return (
         <>
             <Box margin={1}>
@@ -32,6 +31,20 @@ const CreateCategoryName: React.FC<StepComponentProps<CategoryWizardValues>> = (
                     onChange={handleChange}
                     error={touched.displayName && Boolean(errors.displayName)}
                     helperText={touched.displayName && errors.displayName}
+                />
+            </Box>
+            <Box margin={1}>
+                <FileInput
+                    onDeleteFile={() => {
+                        setFieldValue('file', null);
+                    }}
+                    onDropFile={(acceptedFiles) => {
+                        setFieldValue('file', acceptedFiles[0]);
+                    }}
+                    filePath={values.file?.name}
+                    multipleFiles={false}
+                    inputText={i18next.t('wizard.file')}
+                    acceptedFilesTypes="image/png"
                 />
             </Box>
         </>

@@ -8,9 +8,10 @@ import { CreateCategoryName, createCategoryNameSchema } from './CreateCategoryNa
 import { createCategoryRequest } from '../../../services/categoriesService';
 import { ICategory, IMongoCategory } from '../../../interfaces/categories';
 
-export type { ICategory as CategoryWizardValues };
-
-const steps: StepsType<ICategory> = [
+export interface CategoryWizardValues extends Omit<ICategory, 'iconFileId'> {
+    file?: Partial<File>;
+}
+const steps: StepsType<CategoryWizardValues> = [
     {
         label: i18next.t('wizard.chooseCategoryName'),
         component: (props) => <CreateCategoryName {...props} />,
@@ -18,11 +19,11 @@ const steps: StepsType<ICategory> = [
     },
 ];
 
-const CategoryWizard: React.FC<WizardBaseType<ICategory>> = ({
+const CategoryWizard: React.FC<WizardBaseType<CategoryWizardValues>> = ({
     open,
     handleClose,
     initalStep = 0,
-    initialValues = { name: '', displayName: '' },
+    initialValues = { name: '', displayName: '', file: undefined },
     isEditMode = false,
 }) => {
     const queryClient = useQueryClient();
