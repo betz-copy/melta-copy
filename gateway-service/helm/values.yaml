@@ -23,7 +23,7 @@ config:
     - name: STORAGE_SERVICE_URI
       value: "http://storage-service:8000"
     - name: CALLBACK_URL
-      value: "http://localhost/api/auth/callback"
+      value: "http://jaws.branch-yesodot.org/api/auth/callback"
     - name: SHRAGA_URL
       value: "https://shraga.shraga.branch-yesodot.org"
     - name: ACCESS_TOKEN_NAME
