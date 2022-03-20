@@ -16,23 +16,25 @@ services:
       STORAGE_SERVICE_DELETE_FILE_ROUTE: ${STORAGE_SERVICE_DELETE_FILE_ROUTE}
 
   permission-api:
-    build: ./permissions-api
+    image: jawsproject.azurecr.io/permissions-api
+    # build: ./permissions-api
     environment:
       PORT: 8000
       MONGO_URI: ${PERMISSION_API_MONGO_URI}
       MONGO_PERMISSIONS_COLLECTION_NAME: permissions
 
   storage-service:
-    build: ./storage-service
+    image: jawsproject.azurecr.io/storage-service
+    # build: ./storage-service
     environment: 
-      MINIO_ENDPOINT: 'minio'
-      MINIO_BUCKET_NAME: 'test'
-      DELETE_FILES_DELAY: 60000
-    restart: "always"
+      MINIO_ENDPOINT: ${MINIO_ENDPOINT}
+      MINIO_BUCKET_NAME: ${MINIO_BUCKET_NAME}
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
 
   relationship-template-manager:
-    # image: jawsproject.azurecr.io/relationship-template-manager
-    build: ./relationship-template-manager
+    image: jawsproject.azurecr.io/relationship-template-manager
+    # build: ./relationship-template-manager
     environment:
       PORT: 8000
       MONGO_URI: ${RELATIONSHIP_TEMPLATE_MANAGER_MONGO_URI}
@@ -40,8 +42,8 @@ services:
       ENTITY_TEMPLATE_MANAGER_URI: ${ENTITY_TEMPLATE_MANAGER_URI}
 
   backend:
-    # image: jawsproject.azurecr.io/backend
-    build: ./backend
+    image: jawsproject.azurecr.io/backend
+    # build: ./backend
     environment:
       PORT: 8000
       TOKEN_SECRET: ${TOKEN_SECRET}
