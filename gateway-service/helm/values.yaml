@@ -22,6 +22,14 @@ config:
       value: "http://entity-template-manager:8000"
     - name: STORAGE_SERVICE_URI
       value: "http://storage-service:8000"
+    - name: CALLBACK_URL
+      value: "http://localhost/api/auth/callback"
+    - name: SHRAGA_URL
+      value: "https://shraga.shraga.branch-yesodot.org"
+    - name: ACCESS_TOKEN_NAME
+      value: "rabaz-access-token"
+    - name: SYSTEM_UNAVAILABLE_URL
+      value: "/unavailable"
 
 livenessProbe:
   httpGet:

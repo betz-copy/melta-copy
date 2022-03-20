@@ -2,11 +2,14 @@ import * as http from 'http';
 import * as express from 'express';
 import * as helmet from 'helmet';
 import * as logger from 'morgan';
-
+import * as session from 'express-session';
+import * as passport from 'passport';
+import * as cookieParser from 'cookie-parser';
 import { once } from 'events';
+
+import { initPassport } from '../utils/express/passport';
 import { errorMiddleware } from './error';
 import appRouter from './router';
-import { initializePassport, authMiddleware } from '../utils/express/auth';
 import config from '../config';
 
 class Server {
@@ -27,13 +30,21 @@ class Server {
         app.use(helmet());
         app.use(express.json());
         app.use(express.urlencoded({ extended: true }));
+        app.use(cookieParser());
 
         app.use(logger('dev'));
 
-        if (config.authentication.isRequired) {
-            app.use(initializePassport(config.authentication.tokenSecret));
-            app.use(authMiddleware);
-        }
+        app.use(
+            session({
+                secret: config.authentication.sessionSecret,
+                resave: false,
+                saveUninitialized: true,
+            }),
+        );
+
+        app.use(passport.initialize());
+        app.use(passport.session());
+        initPassport();
 
         app.use(appRouter);
 
