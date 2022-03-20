@@ -20,8 +20,6 @@ services:
 
   storage-service:
     build: ./storage-service
-    depends_on:
-      - minio
     environment: 
       MINIO_ENDPOINT: 'minio'
       MINIO_BUCKET_NAME: 'test'
@@ -45,20 +43,15 @@ services:
       TOKEN_SECRET: ${TOKEN_SECRET}
       ENTITY_TEMPLATE_MANAGER_URI: ${ENTITY_TEMPLATE_MANAGER_URI}
       PERMISSION_API_URL: ${PERMISSION_API_URL}
-
-  frontend:
-    image: jawsproject.azurecr.io/frontend
-    # build: ./frontend
-
-  authentication-service:
-    image: jawsproject.azurecr.io/authentication-service
-    # build: ./authentication-service
-    environment:
-      PORT: 8000
+      STORAGE_SERVICE_URI: ${STORAGE_SERVICE_URI}
       CALLBACK_URL: ${CALLBACK_URL}
       SHRAGA_URL: ${SHRAGA_URL}
       ACCESS_TOKEN_NAME: ${ACCESS_TOKEN_NAME}
       SYSTEM_UNAVAILABLE_URL: ${SYSTEM_UNAVAILABLE_URL}
+
+  frontend:
+    image: jawsproject.azurecr.io/frontend
+    # build: ./frontend
   
   gateway:
     image: nginx:alpine

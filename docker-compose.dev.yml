@@ -42,7 +42,7 @@ services:
     environment: 
       MINIO_ROOT_USER: "minioadmin"
       MINIO_ROOT_PASSWORD: "minioadmin"
-    command: "minio server --console-address :3000 /data"
+    command: "minio server --console-address :4000 /data"
   #-------------------------------------------#
   #        microservices:                     #
   #-------------------------------------------#
@@ -58,10 +58,6 @@ services:
   backend:
     ports:
       - 8003:8000
-
-  authentication-service:
-    ports:
-      - 8004:8000
 
   permission-api:
     ports:
