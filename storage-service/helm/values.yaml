@@ -24,9 +24,11 @@ readinessProbe:
 config:
   configmaps: []
   env:
-    - MINIO_ENDPOINT: PORT
-      value: minio
+    - name: MINIO_PORT
+      value: 9000
+    - name: MINIO_ACCESS_KEY
+      value: minioadmin
+    - name: MINIO_SECRET_KEY
+      value: minioadmin
     - name: MINIO_BUCKET_NAME
       value: files
-    - name: DELETE_FILES_DELAY
-      value: "'60000'"
