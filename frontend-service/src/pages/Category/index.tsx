@@ -14,7 +14,7 @@ const Category: React.FC = () => {
     const params = useParams();
     const { categoryId } = params;
     const [viewType, setViewType] = useState<'table' | 'graph'>('table');
-    const [templateToDisplay, setTemplatesToDisplay] = useState<string[]>([]);
+    const [templateToHide, setTemplatesToHide] = useState<string[]>([]);
 
     const { data: instances } = useQuery(['getInstancesByCategory', categoryId], () => getInstancesByCategoryRequest(categoryId!));
     const templates = queryClient
@@ -30,9 +30,9 @@ const Category: React.FC = () => {
             <Grid container>
                 <Grid container justifyContent="center" marginBottom="1vh">
                     <Header
-                        templateToDisplay={templateToDisplay}
+                        templateToHide={templateToHide}
                         category={categoryDisplayName || ''}
-                        setTemplatesToDisplay={setTemplatesToDisplay}
+                        setTemplatesToHide={setTemplatesToHide}
                         templatesNames={templates.map((template) => template.displayName)}
                     />
                 </Grid>
@@ -69,7 +69,7 @@ const Category: React.FC = () => {
                     {viewType === 'table' ? (
                         <Grid container>
                             {templates
-                                .filter((template) => templateToDisplay.includes(template.displayName))
+                                .filter((template) => !templateToHide.includes(template.displayName))
                                 .map((template) => (
                                     <TemplateTable
                                         key={template._id}

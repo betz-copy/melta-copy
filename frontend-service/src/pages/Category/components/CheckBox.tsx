@@ -2,13 +2,13 @@ import React, { Dispatch, SetStateAction } from 'react';
 import { Checkbox, FormControl, FormGroup, Select, MenuItem, Input, ListItemText, Typography, SelectChangeEvent } from '@mui/material';
 
 const EntityCheckBox: React.FC<{
-    templateToDisplay: string[];
+    templateToHide: string[];
     templatesNames: string[];
-    setTemplatesToDisplay: Dispatch<SetStateAction<string[]>>;
-}> = ({ templatesNames, templateToDisplay, setTemplatesToDisplay }) => {
+    setTemplatesToHide: Dispatch<SetStateAction<string[]>>;
+}> = ({ templatesNames, templateToHide, setTemplatesToHide }) => {
     const handleChange = (event: SelectChangeEvent<string[]>) => {
         const updateName = event.target.value as string[];
-        setTemplatesToDisplay(updateName);
+        setTemplatesToHide(updateName);
     };
 
     return (
@@ -16,14 +16,15 @@ const EntityCheckBox: React.FC<{
             <FormGroup>
                 <Select
                     onChange={handleChange}
-                    value={templateToDisplay}
+                    value={templateToHide}
                     multiple
+                    displayEmpty
                     input={<Input style={{ height: '5vh', marginRight: '20px', fontWeight: '100' }} disableUnderline />}
                     renderValue={() => 'תבניות'}
                 >
                     {templatesNames.map((name) => (
                         <MenuItem key={name} value={name}>
-                            <Checkbox checked={templateToDisplay.includes(name)} />
+                            <Checkbox checked={!templateToHide.includes(name)} />
                             <ListItemText primary={<Typography style={{ fontWeight: '100' }}> {name}</Typography>} />
                         </MenuItem>
                     ))}
