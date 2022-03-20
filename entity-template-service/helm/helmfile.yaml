@@ -11,7 +11,7 @@ releases:
 - name: entity-template-manager
   namespace: jaws
   chart: yesodot/common
-  version: {{ env "COMMON_VERSION" | default "0.7.0" }}
+  version: {{ env "COMMON_VERSION" | default "0.8.0" }}
   values:
     - ./values.yaml
 

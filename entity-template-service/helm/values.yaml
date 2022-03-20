@@ -25,7 +25,7 @@ config:
   configmaps: []
   env:
     - name: PORT
-      value: "'8000'"
+      value: 8000
     - name: MONGO_URI
       value: mongodb+srv://jaws:jcfVBJQW73BobDvr@cluster0.t8onr.mongodb.net/templates?retryWrites=true&w=majority
     - name: MONGO_ENTITY_TEMPLATE_COLLECTION_NAME
@@ -33,4 +33,12 @@ config:
     - name: MONGO_CATEGORY_COLLECTION_NAME
       value: category
     - name: RELATIONSHIP_TEMPLATE_MANAGER_URI
-      value: http://localhost:8080
+      value: http://relationship-template-manager:8080
+    - name: STORAGE_SERVICE_URI
+      value: http://storage-service:8080
+    - name: STORAGE_SERVICE_UPLOAD_FILE_ROUTE
+      value: api/files
+    - name: STORAGE_SERVICE_DOWNLOAD_FILE_ROUTE
+      value: api/files
+    - name: STORAGE_SERVICE_DELETE_FILE_ROUTE
+      value: api/files
