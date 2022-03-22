@@ -30,7 +30,7 @@ appRouter.use(
 
 appRouter.use(
     '/api/files',
-    createProxyMiddleware({ target: config.storageService.uri, onProxyReq: fixRequestBody, pathRewrite: { '^/api/files': '/api' } }),
+    createProxyMiddleware({ target: config.storageService.uri, onProxyReq: fixRequestBody }),
 );
 
 appRouter.use('*', (_req, res) => {
