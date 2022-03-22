@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import * as multer from 'multer';
 import EntityTemplateController from './controller';
 import { wrapController } from '../../utils/express';
 import ValidateRequest from '../../utils/joi';
@@ -9,6 +10,9 @@ import {
     createEntityTemplateSchema,
     updateEntityTemplateSchema,
 } from './validator.schema';
+import config from '../../config';
+
+const { uploadsFolderPath } = config.service;
 
 const entityTemplateRouter: Router = Router();
 
@@ -20,7 +24,12 @@ entityTemplateRouter.get(
     wrapController(EntityTemplateController.getEntityTemplateById),
 );
 
-entityTemplateRouter.post('/', ValidateRequest(createEntityTemplateSchema), wrapController(EntityTemplateController.createEntityTemplate));
+entityTemplateRouter.post(
+    '/',
+    multer({ dest: uploadsFolderPath }).single('file'),
+    ValidateRequest(createEntityTemplateSchema),
+    wrapController(EntityTemplateController.createEntityTemplate),
+);
 
 entityTemplateRouter.delete(
     '/:templateId',
@@ -28,6 +37,11 @@ entityTemplateRouter.delete(
     wrapController(EntityTemplateController.deleteEntityTemplate),
 );
 
-entityTemplateRouter.put('/:templateId', ValidateRequest(updateEntityTemplateSchema), wrapController(EntityTemplateController.updateEntityTemplate));
+entityTemplateRouter.put(
+    '/:templateId',
+    multer({ dest: uploadsFolderPath }).single('file'),
+    ValidateRequest(updateEntityTemplateSchema),
+    wrapController(EntityTemplateController.updateEntityTemplate),
+);
 
 export default entityTemplateRouter;

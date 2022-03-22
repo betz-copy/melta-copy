@@ -4,4 +4,5 @@ export interface IEntityTemplate {
     category: string;
     properties: object;
     disabled: boolean;
+    iconFileId: string | null;
 }

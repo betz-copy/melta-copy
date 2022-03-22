@@ -5,6 +5,7 @@ const config = {
     service: {
         port: env.get('PORT').required().asPortNumber(),
         uploadsFolderPath: env.get('UPLOADS_FOLDER_PATH').default('public/uploads/').asString(),
+        supportedFilesTypes: env.get('SUPPORTED_FILES_TYPES').default(['png']).asJsonArray(),
     },
     mongo: {
         uri: env.get('MONGO_URI').required().asUrlString(),

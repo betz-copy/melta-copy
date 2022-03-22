@@ -3,6 +3,7 @@ import EntityTemplateModel from './model';
 import { IEntityTemplate } from './interface';
 import { ServiceError } from '../error';
 import { escapeRegExp } from '../../utils';
+import { uploadFile, deleteFile } from '../../utils/storageService';
 import { getRelationshipTemplates } from '../../relationshipTemplateManager';
 import CategoryManager from '../category/manager';
 
@@ -30,10 +31,15 @@ export class EntityTemplateManager {
         return EntityTemplateModel.find({ category }).lean().exec();
     }
 
-    static async createTemplate(templateData: IEntityTemplate) {
+    static async createTemplate(templateData: IEntityTemplate, file?: Express.Multer.File) {
         await CategoryManager.getCategoryById(templateData.category);
 
-        return EntityTemplateModel.create(templateData);
+        if (file) {
+            const newFile = await uploadFile(file);
+            return EntityTemplateModel.create({ ...templateData, iconFileId: newFile.data.path });
+        }
+
+        return EntityTemplateModel.create({ ...templateData, iconFileId: null });
     }
 
     static async throwIfEntityHasRelationships(id: string) {
@@ -50,12 +56,39 @@ export class EntityTemplateManager {
     static async deleteTemplate(id: string) {
         await EntityTemplateManager.throwIfEntityHasRelationships(id);
 
+        const { iconFileId } = await EntityTemplateManager.getTemplateById(id);
+        if (iconFileId) {
+            await deleteFile(iconFileId);
+        }
+
         return EntityTemplateModel.findByIdAndDelete(id).orFail(new ServiceError(404, 'Entity Template not found')).lean().exec();
     }
 
-    static async updateEntityTemplate(id: string, updatedTemplate: Partial<IEntityTemplate>) {
+    static async updateEntityTemplate(id: string, updatedTemplate: Partial<IEntityTemplate> & { file?: string }, file?: Express.Multer.File) {
         if (updatedTemplate.category) {
             await CategoryManager.getCategoryById(updatedTemplate.category);
+        }
+
+        const { file: templateFile } = updatedTemplate;
+
+        if (file || templateFile === null) {
+            const template = await EntityTemplateManager.getTemplateById(id);
+
+            if (template.iconFileId !== null) {
+                await deleteFile(template.iconFileId);
+            }
+
+            let iconFileId = null;
+            if (file) {
+                const newFile = await uploadFile(file);
+                iconFileId = newFile.data.path;
+            }
+
+            return EntityTemplateModel.findByIdAndUpdate(id, { ...updatedTemplate, iconFileId }, { new: true })
+                .populate('category')
+                .orFail(new ServiceError(404, 'Entity Template not found'))
+                .lean()
+                .exec();
         }
 
         return EntityTemplateModel.findByIdAndUpdate(id, updatedTemplate, { new: true })

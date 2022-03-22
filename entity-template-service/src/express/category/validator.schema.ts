@@ -1,6 +1,5 @@
 import * as Joi from 'joi';
-
-const MongoIdSchema = Joi.string().regex(/^[0-9a-fA-F]{24}$/, 'valid MongoId');
+import { MongoIdSchema, fileSchema } from '../../utils/joi';
 
 // GET /api/categories/:categoryId
 export const getCategoryByIdSchema = Joi.object({
@@ -27,7 +26,7 @@ export const createCategorySchema = Joi.object({
         displayName: Joi.string().required(),
     },
     params: {},
-    file: Joi.object(),
+    file: fileSchema,
 });
 
 // DELETE /api/categories/:categoryId
@@ -50,5 +49,5 @@ export const updateCategorySchema = Joi.object({
     params: {
         categoryId: MongoIdSchema.required(),
     },
-    file: Joi.object(),
+    file: fileSchema,
 });

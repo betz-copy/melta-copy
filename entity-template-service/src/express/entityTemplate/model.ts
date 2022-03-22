@@ -30,6 +30,9 @@ const EntityTemplateSchema = new mongoose.Schema(
             required: true,
             index: true,
         },
+        iconFileId: {
+            type: String,
+        },
     },
     {
         timestamps: true,
