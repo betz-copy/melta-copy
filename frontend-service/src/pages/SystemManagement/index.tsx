@@ -38,19 +38,25 @@ const entityTemplateWizardReducer: Reducer<
 
 const entityTemplateObjectToEntityTemplateForm = (entityTemplate?: IMongoEntityTemplatePopulated) => {
     if (!entityTemplate) return undefined;
-    const { required } = entityTemplate.properties;
+    const { iconFileId, properties, ...restOfEntityTemplate } = entityTemplate;
+    const { required } = properties;
 
     const requiredProrerites: EntityTemplateFormInputProperties[] = [];
     const optionalProrerites: EntityTemplateFormInputProperties[] = [];
 
-    Object.keys(entityTemplate.properties.properties).forEach((key) => {
+    Object.keys(properties.properties).forEach((key) => {
         if (required.includes(key)) {
-            requiredProrerites.push({ name: key, ...entityTemplate.properties.properties[key] });
+            requiredProrerites.push({ name: key, ...properties.properties[key] });
         } else {
-            optionalProrerites.push({ name: key, ...entityTemplate.properties.properties[key] });
+            optionalProrerites.push({ name: key, ...properties.properties[key] });
         }
     });
-    return { ...entityTemplate, requiredProrerites, optionalProrerites };
+
+    if (iconFileId) {
+        const file: Partial<File> = { name: iconFileId };
+        return { ...restOfEntityTemplate, file, requiredProrerites, optionalProrerites };
+    }
+    return { ...restOfEntityTemplate, requiredProrerites, optionalProrerites };
 };
 
 const categoryObjectToCategoryForm = (category?: IMongoCategory) => {

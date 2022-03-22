@@ -3,6 +3,7 @@ import { IMongoCategory } from './categories';
 export interface IEntityTemplate {
     name: string;
     displayName: string;
+    iconFileId?: string;
     properties: {
         type: 'object';
         properties: { [n: string]: { type: 'string' | 'integer' | 'boolean'; title: string; fromat?: string } };
@@ -14,6 +15,7 @@ export interface IEntityTemplate {
 export interface IEntityTemplatePopulated {
     name: string;
     displayName: string;
+    iconFileId?: string;
     properties: {
         type: 'object';
         properties: { [n: string]: { type: 'string' | 'integer' | 'boolean'; title: string; format?: string } };

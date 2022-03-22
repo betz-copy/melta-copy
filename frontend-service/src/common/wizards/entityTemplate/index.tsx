@@ -7,49 +7,18 @@ import { ChooseCategory, chooseCategorySchema } from './ChooseCategory';
 import { CreateTemplateName, createTemplateNameSchema } from './CreateTemplateName';
 import { AddFields, addFieldsSchema } from './AddFields';
 import { createEntityTemplateRequest } from '../../../services/enitityTemplatesService';
-import { IEntityTemplate, IEntityTemplatePopulated, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { IEntityTemplatePopulated, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 
 export interface EntityTemplateFormInputProperties {
     name: string;
     title: string;
     type: string;
 }
-export interface EntityTemplateWizardValues extends Omit<IEntityTemplatePopulated, 'properties'> {
+export interface EntityTemplateWizardValues extends Omit<IEntityTemplatePopulated, 'properties' | 'iconFileId'> {
     requiredProrerites: EntityTemplateFormInputProperties[];
     optionalProrerites: EntityTemplateFormInputProperties[];
+    file?: Partial<File>;
 }
-
-const basePropertyTypes = ['string', 'number', 'boolean'];
-
-const formToJSONSchema = (values: EntityTemplateWizardValues) => {
-    const { requiredProrerites, optionalProrerites, ...restOfProperties } = values;
-
-    const schema = {
-        type: 'object',
-        properties: {} as any,
-        required: [] as string[],
-    };
-
-    requiredProrerites.forEach(({ name, title, type }) => {
-        schema.properties[name] = {
-            title,
-            type: basePropertyTypes.includes(type) ? type : 'string',
-            format: basePropertyTypes.includes(type) ? undefined : type,
-        };
-
-        schema.required.push(name);
-    });
-
-    optionalProrerites.forEach(({ name, title, type }) => {
-        schema.properties[name] = {
-            title,
-            type: basePropertyTypes.includes(type) ? type : 'string',
-            format: basePropertyTypes.includes(type) ? undefined : type,
-        };
-    });
-
-    return { ...restOfProperties, properties: schema, category: values.category._id } as IEntityTemplate;
-};
 
 const steps: StepsType<EntityTemplateWizardValues> = [
     {
@@ -78,11 +47,18 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
     open,
     handleClose,
     initalStep = 0,
-    initialValues = { name: '', displayName: '', category: { displayName: '', name: '', _id: '' }, requiredProrerites: [], optionalProrerites: [] },
+    initialValues = {
+        name: '',
+        displayName: '',
+        file: undefined,
+        category: { displayName: '', name: '', _id: '' },
+        requiredProrerites: [],
+        optionalProrerites: [],
+    },
     isEditMode = false,
 }) => {
     const queryClient = useQueryClient();
-    const { isLoading, mutateAsync } = useMutation((enitiyTemplate: IEntityTemplate) => createEntityTemplateRequest(enitiyTemplate), {
+    const { isLoading, mutateAsync } = useMutation((enitiyTemplate: EntityTemplateWizardValues) => createEntityTemplateRequest(enitiyTemplate), {
         onSuccess: (data) => {
             queryClient.setQueryData<IMongoEntityTemplatePopulated[]>(
                 'getEntityTemplates',
@@ -108,7 +84,7 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
             steps={steps}
             isLoading={isLoading}
             submitFucntion={async (values) => {
-                await mutateAsync(formToJSONSchema(values));
+                await mutateAsync(values);
                 handleClose();
             }}
         />
