@@ -14,6 +14,10 @@
     width: 200px !important;
 }
 
+.ag-theme-material .ag-checkbox-input-wrapper.ag-checked::after {
+    color: #1976d2;
+}
+
 .ag-body-viewport,
 .ag-layout-normal,
 .ag-row-no-animation {

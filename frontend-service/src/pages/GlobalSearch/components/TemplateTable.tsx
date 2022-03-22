@@ -53,7 +53,7 @@ const TemplateTable: React.FC<{
         <>
             <Grid container paddingLeft={3}>
                 <Grid item xs={1.5}>
-                    <Typography variant="h6" style={{ fontFamily: 'Rubik', fontWeight: '500' }}>
+                    <Typography variant="h6" style={{ fontWeight: '500' }}>
                         {template.displayName}
                     </Typography>
                 </Grid>

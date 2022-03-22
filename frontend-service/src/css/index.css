@@ -18,7 +18,3 @@
     font-weight: 400;
     src: local('Rubik'), url(../assets/Rubik/Rubik-VariableFont_wght.ttf) format('woff');
 }
-
-.ag-theme-material .ag-checkbox-input-wrapper.ag-checked::after {
-    color: #1976d2;
-}
