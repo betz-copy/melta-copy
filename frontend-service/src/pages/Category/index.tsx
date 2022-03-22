@@ -36,7 +36,7 @@ const Category: React.FC = () => {
                         templatesNames={templates.map((template) => template.displayName)}
                     />
                 </Grid>
-                <Grid container justifyContent="end" paddingRight="10%" marginBottom="3vh">
+                <Grid container justifyContent="end" paddingRight="5%" marginBottom="3vh">
                     <Grid item paddingRight="1%">
                         <IconButton style={{ background: 'white', borderRadius: '7px' }}>
                             <AddCircle color="primary" />
