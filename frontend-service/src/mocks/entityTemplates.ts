@@ -195,7 +195,7 @@ const mockEntityTemplates = (mock: MockAdapter) => {
                         },
                         hotelChain: {
                             type: 'string',
-                            title: 'שם',
+                            title: 'שם רשת',
                         },
                         checkInDate: {
                             type: 'string',
@@ -204,7 +204,7 @@ const mockEntityTemplates = (mock: MockAdapter) => {
                         },
                         checkOutDate: {
                             type: 'string',
-                            title: 'תאריך עזזיבה',
+                            title: 'תאריך עזיבה',
                             format: 'date-time',
                         },
                         country: {
@@ -238,7 +238,7 @@ const mockEntityTemplates = (mock: MockAdapter) => {
                         },
                         checkOutDate: {
                             type: 'string',
-                            title: 'תאריך עזזיבה',
+                            title: 'תאריך עזיבה',
                             format: 'date-time',
                         },
                         country: {

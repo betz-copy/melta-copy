@@ -27,7 +27,7 @@ const CategoryWizard: React.FC<WizardBaseType<CategoryWizardValues>> = ({
     isEditMode = false,
 }) => {
     const queryClient = useQueryClient();
-    const { isLoading, mutateAsync } = useMutation((category: ICategory) => createCategoryRequest(category), {
+    const { isLoading, mutateAsync } = useMutation((category: CategoryWizardValues) => createCategoryRequest(category), {
         onSuccess: (data) => {
             queryClient.setQueryData<IMongoCategory[]>('getCategories', (prevData: IMongoCategory[] | undefined) => {
                 return [...(prevData || []), data];

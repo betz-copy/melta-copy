@@ -788,6 +788,119 @@ const mockEntites = (mock: MockAdapter) => {
         ],
     ]);
 
+    mock.onGet(/\/api\/entities\/[0-9]{3}\?expanded=true/).reply((config) => [
+        200,
+        {
+            entity: {
+                templateId: '61e3ea6e4d51a83e87e83c7f',
+                properties: {
+                    firstName: 'נועה',
+                    lastName: 'קירל',
+                    age: 20,
+                    gender: false,
+                },
+                _id: config.url!.split('/')[2].split('?')[0],
+            },
+            connections: [
+                {
+                    relationship: {
+                        templateId: '61e3ea6e4d51a83e87e83c7e',
+                    },
+                    entity: {
+                        templateId: '61e3ea6e4d51a83e87e83c7e',
+                        properties: {
+                            name: 'טיול בר מצווה ללונדון',
+                            destination: 'לונדון',
+                            startDate: '2013-01-01',
+                            endDate: '2013-01-10',
+                        },
+                        _id: '100',
+                    },
+                },
+                {
+                    relationship: {
+                        templateId: '61e3ea6e4d51a83e87e83c7c',
+                    },
+                    entity: {
+                        templateId: '61e3ea6e4d51a83e87e83c80',
+                        properties: {
+                            firstName: 'איילה',
+                            lastName: 'נסיעות',
+                            age: 40,
+                            gender: false,
+                            agentId: 'a1b2c3',
+                        },
+                        _id: '105',
+                    },
+                },
+                {
+                    relationship: {
+                        templateId: '61e3ea6e4d51a83e87e43c7c',
+                    },
+                    entity: {
+                        templateId: '61e3ea6e4d51a83e87e83c81',
+                        properties: {
+                            flightNumber: 'AA123',
+                            departureDate: '2020-01-19T13:30:00.000Z',
+                            landingDate: '2020-01-19T14:30:00.000Z',
+                            from: 'NYC',
+                            to: 'ORL',
+                            planeType: 'B747-300',
+                        },
+                        _id: '140',
+                    },
+                },
+                {
+                    relationship: {
+                        templateId: '61e3ea6e4d51a83e87e43c7c',
+                    },
+                    entity: {
+                        templateId: '61e3ea6e4d51a83e87e83c81',
+                        properties: {
+                            flightNumber: 'ACA156',
+                            departureDate: '2020-03-20T13:30:00.000Z',
+                            landingDate: '2020-03-20T15:30:00.000Z',
+                            from: 'TLV',
+                            to: 'CYP',
+                            planeType: 'A380-400',
+                        },
+                        _id: '141',
+                    },
+                },
+                {
+                    relationship: {
+                        templateId: '61e3ea6e4d51a23e87e43c7c',
+                    },
+                    entity: {
+                        templateId: '61e3ea6e4d51a83e87e83c83',
+                        properties: {
+                            hotelName: 'hotel la butique',
+                            checkInDate: '2020-08-10',
+                            checkOutDate: '2020-08-16',
+                            country: 'קפריסין',
+                        },
+                        _id: '135',
+                    },
+                },
+                {
+                    relationship: {
+                        templateId: '61e3ea6e3d51a83e87e43c7c',
+                    },
+                    entity: {
+                        templateId: '61e3ea6e4d51a83e87e83c84',
+                        properties: {
+                            name: 'hara dira',
+                            checkInDate: '2018-05-12',
+                            checkOutDate: '2018-05-16',
+                            country: 'שומקום',
+                        },
+                    },
+                    _id: '160',
+                },
+            ],
+        },
+    ]);
+
     // Get specific entity
     mock.onGet(/\/api\/entities\/[0-9]{3}/).reply((config) => {
         return [

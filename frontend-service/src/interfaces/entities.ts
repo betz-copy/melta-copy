@@ -3,3 +3,8 @@ export interface IEntity {
     templateId: string;
     properties: object;
 }
+
+export interface IRelationshipEntity {
+    _id: string;
+    templateId: string;
+}

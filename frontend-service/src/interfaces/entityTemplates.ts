@@ -6,21 +6,13 @@ export interface IEntityTemplate {
     iconFileId?: string;
     properties: {
         type: 'object';
-        properties: { [n: string]: { type: 'string' | 'integer' | 'boolean'; title: string; fromat?: string } };
+        properties: { [n: string]: { type: 'string' | 'integer' | 'boolean'; title: string; format?: string } };
         required: string[];
     };
     category: IMongoCategory['_id'];
 }
 
-export interface IEntityTemplatePopulated {
-    name: string;
-    displayName: string;
-    iconFileId?: string;
-    properties: {
-        type: 'object';
-        properties: { [n: string]: { type: 'string' | 'integer' | 'boolean'; title: string; format?: string } };
-        required: string[];
-    };
+export interface IEntityTemplatePopulated extends Omit<IEntityTemplate, 'category'> {
     category: IMongoCategory;
 }
 
