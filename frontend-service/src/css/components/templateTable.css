@@ -2,6 +2,14 @@
     border-radius: 7px;
 }
 
+.ag-theme-material .ag-side-buttons {
+    padding-top: 0;
+}
+
+.ag-theme-material .ag-header-row {
+    font-size: 16px;
+}
+
 .ag-body-viewport,
 .ag-layout-normal,
 .ag-row-no-animation {

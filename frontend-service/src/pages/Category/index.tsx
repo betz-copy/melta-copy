@@ -65,7 +65,7 @@ const Category: React.FC = () => {
                         </ToggleButtonGroup>
                     </Grid>
                 </Grid>
-                <Grid container paddingLeft="10%" paddingRight="10%">
+                <Grid container paddingLeft="5%" paddingRight="5%">
                     {viewType === 'table' ? (
                         <Grid container>
                             {templates

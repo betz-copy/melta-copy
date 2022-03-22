@@ -9,7 +9,14 @@ const Header: React.FC<{
     templateToHide: string[];
 }> = ({ templateToHide, category, templatesNames, setTemplatesToHide }) => {
     return (
-        <Grid item container justifyContent="space-evenly" style={{ height: '8vh', borderBottom: '1px solid #00000027' }}>
+        <Grid
+            item
+            container
+            justifyContent="space-between"
+            marginRight="5%"
+            marginLeft="5%"
+            style={{ height: '9vh', borderBottom: '1px solid #00000027' }}
+        >
             <Grid item>
                 <Typography
                     style={{

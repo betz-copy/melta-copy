@@ -66,6 +66,7 @@ const TemplateTable: React.FC<{
                     marginBottom: '30px',
                     fontFamily: 'Rubik',
                     fontWeight: '400',
+                    fontSize: '16px',
                 }}
             >
                 <AgGridReact
