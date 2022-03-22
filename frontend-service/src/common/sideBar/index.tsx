@@ -48,7 +48,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                                     >
                                         {category?.iconFileId ? (
                                             <img
-                                                src={`/api${environment.api.storage}/downloadFile/${category.iconFileId}?token=${cookies.get(
+                                                src={`/api${environment.api.storage}/${category.iconFileId}?token=${cookies.get(
                                                     environment.accessTokenName,
                                                 )}`}
                                                 height="40px"
