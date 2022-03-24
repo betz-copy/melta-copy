@@ -1,7 +1,8 @@
 import React, { useRef, MouseEventHandler } from 'react';
 import { Grid, Typography, IconButton } from '@mui/material';
 import { AddCircle, FileDownloadOutlined } from '@mui/icons-material';
-import { AgGridColumn, AgGridReact } from 'ag-grid-react';
+import { AgGridReact } from 'ag-grid-react';
+import { ColDef, ValueFormatterParams } from 'ag-grid-community';
 import 'ag-grid-enterprise';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IEntity } from '../../../interfaces/entities';
@@ -16,25 +17,29 @@ const TemplateTable: React.FC<{
     entities: IEntity[];
 }> = ({ template, entities }) => {
     const gridRef = useRef<any>(null);
-    const headerNames: { [key: string]: string } = {};
-
-    Object.keys(template.properties.properties).forEach((name) => {
-        headerNames[name] = template.properties.properties[name].title;
-    });
 
     const handleExport: MouseEventHandler<HTMLButtonElement> = () => {
         gridRef.current.api.exportDataAsExcel();
     };
 
-    const handleValueFormatter = (params: any) => {
-        if (template.properties.properties[params.colDef.field].type === 'boolean') return params.value === false ? 'לא' : 'כן';
+    const valueFormatter = (params: ValueFormatterParams) => {
+        if (template.properties.properties[params.colDef.field!].type === 'boolean') return params.value === 'false' ? 'לא' : 'כן';
         return params.value;
     };
 
-    const stringFormatter = (params: any) => {
-        if (template.properties.properties[params.colDef.field].type === 'boolean') return params.value === 'false' ? 'לא' : 'כן';
-        return params.value;
-    };
+    const columnDefs: ColDef[] = Object.entries(template.properties.properties).map(([key, value]) => {
+        const { type, format } = value;
+        let filter = 'agTextColumnFilter';
+        if (type === 'string' && format === 'Date') filter = 'agDateColumnFilter';
+        if (type === 'integer') filter = 'agNumberColumnFilter';
+        if (type === 'boolean') filter = 'agSetColumnFilter';
+
+        return {
+            headerName: value.title,
+            field: key,
+            filter,
+        };
+    });
 
     return (
         <Grid container>
@@ -57,78 +62,53 @@ const TemplateTable: React.FC<{
                     </Grid>
                 </Grid>
             </Grid>
-
-            <div
+            <AgGridReact
                 className="ag-theme-material"
-                style={{
-                    height: 610,
-                    width: '100%',
-                    marginBottom: '30px',
-                    fontFamily: 'Rubik',
-                    fontWeight: '400',
-                    fontSize: '16px',
+                containerStyle={{ height: 360, width: '100%', marginBottom: '30px', fontFamily: 'Rubik', fontSize: '16px', borderRadius: '70px' }}
+                domLayout="autoHeight"
+                ref={gridRef}
+                columnDefs={columnDefs}
+                pagination
+                paginationPageSize={5}
+                rowHeight={50}
+                rowData={entities.map((entity) => entity.properties)}
+                columnHoverHighlight
+                enableRtl
+                enableCellTextSelection
+                suppressCellFocus
+                suppressCsvExport
+                suppressContextMenu
+                defaultColDef={{
+                    filterParams: {
+                        suppressAndOrCondition: true,
+                        buttons: ['reset'],
+                        valueFormatter,
+                    },
+                    valueFormatter,
+                    sortable: true,
+                    menuTabs: ['filterMenuTab'],
+                    minWidth: 200,
+                    flex: 1,
                 }}
-            >
-                <AgGridReact
-                    ref={gridRef}
-                    pagination
-                    paginationPageSize={10}
-                    rowHeight={50}
-                    rowData={entities.map((entity) => entity.properties)}
-                    columnHoverHighlight
-                    enableRtl
-                    enableCellTextSelection
-                    suppressCellSelection
-                    suppressCsvExport
-                    suppressContextMenu
-                    defaultColDef={{
-                        filterParams: {
-                            suppressAndOrCondition: true,
-                            buttons: ['reset'],
-                        },
-                    }}
-                    sideBar={{
-                        toolPanels: [
-                            {
-                                id: 'columns',
-                                labelDefault: 'Columns',
-                                labelKey: 'columns',
-                                iconKey: 'columns',
-                                toolPanel: 'agColumnsToolPanel',
-                                toolPanelParams: {
-                                    suppressRowGroups: true,
-                                    suppressValues: true,
-                                    suppressPivotMode: true,
-                                },
+                sideBar={{
+                    toolPanels: [
+                        {
+                            id: 'columns',
+                            labelDefault: 'Columns',
+                            labelKey: 'columns',
+                            iconKey: 'columns',
+                            toolPanel: 'agColumnsToolPanel',
+                            toolPanelParams: {
+                                suppressRowGroups: true,
+                                suppressValues: true,
+                                suppressPivotMode: true,
                             },
-                        ],
-                        position: 'left',
-                    }}
-                    localeText={agGridLocaleText}
-                >
-                    {Object.keys(template.properties.properties).map((name) => {
-                        const { type, format } = template.properties.properties[name];
-                        let filter = 'agTextColumnFilter';
-                        if (type === 'string' && format === 'Date') filter = 'agDateColumnFilter';
-                        if (type === 'integer') filter = 'agNumberColumnFilter';
-                        if (type === 'boolean') filter = 'agSetColumnFilter';
-                        return (
-                            <AgGridColumn
-                                field={name}
-                                headerName={headerNames[name]}
-                                key={name}
-                                sortable
-                                menuTabs={['filterMenuTab']}
-                                filter={filter}
-                                minWidth={200}
-                                flex={1}
-                                valueFormatter={handleValueFormatter}
-                                filterParams={{ buttons: ['reset'], valueFormatter: stringFormatter }}
-                            />
-                        );
-                    })}
-                </AgGridReact>
-            </div>
+                        },
+                    ],
+                    position: 'left',
+                }}
+                localeText={agGridLocaleText}
+            />
         </Grid>
     );
 };

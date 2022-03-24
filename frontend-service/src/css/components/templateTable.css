@@ -10,10 +10,6 @@
     font-size: 16px;
 }
 
-.ag-theme-material .ag-tool-panel-wrapper {
-    width: 200px !important;
-}
-
 .ag-theme-material .ag-checkbox-input-wrapper.ag-checked::after {
     color: #1976d2;
 }
@@ -26,10 +22,6 @@
 
 .ag-theme-material .ag-checkbox-input-wrapper.ag-checked::after {
     color: #1976d2;
-}
-
-.ag-tool-panel-wrapper {
-    width: 170px !important;
 }
 
 .ag-body-horizontal-scroll-viewport::-webkit-scrollbar {
