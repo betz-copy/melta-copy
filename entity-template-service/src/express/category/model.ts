@@ -17,6 +17,9 @@ const CategorySchema = new mongoose.Schema(
         iconFileId: {
             type: String,
         },
+        color: {
+            type: String,
+        },
     },
     {
         timestamps: true,

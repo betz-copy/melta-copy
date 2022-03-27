@@ -48,6 +48,8 @@ const propertiesArraySchema = Joi.array()
 
 export const MongoIdSchema = Joi.string().regex(/^[0-9a-fA-F]{24}$/, 'valid MongoId');
 
+export const ColorSchema = Joi.string().regex(/^#[A-Fa-f0-9]{6}$/);
+
 export const innerPropertiesSchema = ExtendedJoi.stringToObject()
     .keys({
         type: Joi.string().valid('object').required(),

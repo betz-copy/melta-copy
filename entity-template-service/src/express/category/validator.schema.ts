@@ -1,5 +1,5 @@
 import * as Joi from 'joi';
-import { MongoIdSchema, fileSchema } from '../../utils/joi';
+import { MongoIdSchema, fileSchema, ColorSchema } from '../../utils/joi';
 
 // GET /api/categories/:categoryId
 export const getCategoryByIdSchema = Joi.object({
@@ -24,6 +24,7 @@ export const createCategorySchema = Joi.object({
     body: {
         name: Joi.string().required(),
         displayName: Joi.string().required(),
+        color: ColorSchema.required(),
     },
     params: {},
     file: fileSchema,
@@ -45,6 +46,7 @@ export const updateCategorySchema = Joi.object({
         name: Joi.string(),
         displayName: Joi.string(),
         file: Joi.allow(null),
+        color: ColorSchema,
     },
     params: {
         categoryId: MongoIdSchema.required(),
