@@ -51,7 +51,7 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
         name: '',
         displayName: '',
         file: undefined,
-        category: { displayName: '', name: '', _id: '' },
+        category: { displayName: '', name: '', _id: '', color: '' },
         requiredProrerites: [],
         optionalProrerites: [],
     },

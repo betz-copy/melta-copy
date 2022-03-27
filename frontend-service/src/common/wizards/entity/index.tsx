@@ -39,6 +39,7 @@ const EntityWizard: React.FC<WizardBaseType<EntityWizardValues>> = ({
                 _id: '',
                 name: '',
                 displayName: '',
+                color: '',
             },
             properties: {
                 properties: {},

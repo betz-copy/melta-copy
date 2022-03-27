@@ -5,12 +5,15 @@ import i18next from 'i18next';
 import FileInput from '../../inputs/FileInput';
 import { CategoryWizardValues } from './index';
 import { StepComponentProps } from '../index';
+import ColorPicker from '../../inputs/ColorPicker';
 
 const createCategoryNameSchema = {
     name: Yup.string().required(i18next.t('validation.required')),
     displayName: Yup.string().required(i18next.t('validation.required')),
 };
 const CreateCategoryName: React.FC<StepComponentProps<CategoryWizardValues>> = ({ values, touched, errors, handleChange, setFieldValue }) => {
+    const colors = ['#B80000', '#E65100', '#FCDC00', '#F78DA7', '#7B1FA2', '#0D47A1', '#B3E5FC', '#C8E6C9', '#33691E', '#607D8B'];
+
     return (
         <>
             <Box margin={1}>
@@ -45,6 +48,14 @@ const CreateCategoryName: React.FC<StepComponentProps<CategoryWizardValues>> = (
                     multipleFiles={false}
                     inputText={i18next.t('wizard.file')}
                     acceptedFilesTypes="image/png"
+                />
+            </Box>
+            <Box margin={1}>
+                <ColorPicker
+                    colors={colors}
+                    color={values.color}
+                    setColor={(value) => setFieldValue('color', value)}
+                    text={i18next.t('wizard.color')}
                 />
             </Box>
         </>

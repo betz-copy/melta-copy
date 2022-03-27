@@ -18,6 +18,7 @@ const createCategoryRequest = async (newCategory: CategoryWizardValues) => {
     }
     formData.append('displayName', newCategory.displayName);
     formData.append('name', newCategory.name);
+    formData.append('color', newCategory.color);
 
     const { data } = await axios.post(categories, formData);
     return data;
@@ -31,6 +32,7 @@ const updateCategoryRequest = async (categoryId: string, updatedCategory: Catego
     }
     formData.append('displayName', updatedCategory.displayName);
     formData.append('name', updatedCategory.name);
+    formData.append('color', updatedCategory.color);
 
     const { data } = await axios.put<IMongoCategory>(`${categories}/${categoryId}`, updatedCategory);
     return data;
