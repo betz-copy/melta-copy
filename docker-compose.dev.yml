@@ -43,6 +43,14 @@ services:
       MINIO_ROOT_PASSWORD: "minioadmin"
     command: "minio server --console-address :4000 /data"
 
+  neo4j:
+    image: neo4j:latest
+    environment:
+      - NEO4J_AUTH=neo4j/pass
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+
   #-------------------------------------------#
   #        microservices:                     #
   #-------------------------------------------#

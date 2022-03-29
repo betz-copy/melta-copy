@@ -19,3 +19,6 @@
 [submodule "storage-service"]
 	path = storage-service
 	url = git@gitlab.com:yesodot/rnd/terminal-rabaz/jaws/microservices/storage-service.git
+[submodule "instance-manager"]
+	path = instance-manager
+	url = git@gitlab.com:yesodot/rnd/terminal-rabaz/jaws/microservices/instance-manager.git
