@@ -28,10 +28,11 @@ appRouter.use(
     createProxyMiddleware({ target: config.entityTemplateManager.uri, onProxyReq: fixRequestBody }),
 );
 
-appRouter.use(
-    '/api/files',
-    createProxyMiddleware({ target: config.storageService.uri, onProxyReq: fixRequestBody }),
-);
+appRouter.use('/api/relationships/templates', createProxyMiddleware({ target: config.relationshipTemplateManager.uri, onProxyReq: fixRequestBody }));
+
+appRouter.use(['/api/entities', '/api/relationships'], createProxyMiddleware({ target: config.instanceManager.uri, onProxyReq: fixRequestBody }));
+
+appRouter.use('/api/files', createProxyMiddleware({ target: config.storageService.uri, onProxyReq: fixRequestBody }));
 
 appRouter.use('*', (_req, res) => {
     res.status(404).send('Invalid Route');
