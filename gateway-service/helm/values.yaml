@@ -20,6 +20,10 @@ config:
       value: secret
     - name: ENTITY_TEMPLATE_MANAGER_URI
       value: http://entity-template-manager:8000
+    - name: RELATIONSHIP_TEMPLATE_MANAGER_URI
+      value: http://relationship-template-manager:8000
+    - name: INSTANCE_MANAGER_URI
+      value: http://instance-manager:8000
     - name: STORAGE_SERVICE_URI
       value: http://storage-service:8000
     - name: CALLBACK_URL
@@ -30,6 +34,7 @@ config:
       value: rabaz-access-token
     - name: SYSTEM_UNAVAILABLE_URL
       value: /unavailable
+
 
 livenessProbe:
   httpGet:
