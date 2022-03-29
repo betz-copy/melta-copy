@@ -21,3 +21,9 @@ export const createCategories = async (categories: ICategory[]) => {
 
     return results.map((result) => result.data);
 };
+
+export const getCategories = async () => {
+    const result = await axios.get<IMongoCategory[]>(uri + createCategoryRoute);
+
+    return result.data;
+};
