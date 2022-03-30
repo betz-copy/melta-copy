@@ -4,6 +4,8 @@ import { AddCircle, FileDownloadOutlined } from '@mui/icons-material';
 import { AgGridReact } from 'ag-grid-react';
 import { ColDef, ValueFormatterParams } from 'ag-grid-community';
 import 'ag-grid-enterprise';
+import { useQuery } from 'react-query';
+import { getEntitiesByTemplateRequest } from '../../../services/entitiesService';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IEntity } from '../../../interfaces/entities';
 import { agGridLocaleText } from '../../../utils/agGridLocaleText';
@@ -14,9 +16,12 @@ import '../../../css/components/templateTable.css';
 
 const TemplateTable: React.FC<{
     template: IMongoEntityTemplatePopulated;
-    entities: IEntity[];
-}> = ({ template, entities }) => {
+}> = ({ template }) => {
     const gridRef = useRef<any>(null);
+
+    const { data: entities } = useQuery<IEntity[]>(['getEntitiesByTemplate', template._id], () => getEntitiesByTemplateRequest(template._id), {
+        placeholderData: [],
+    });
 
     const handleExport: MouseEventHandler<HTMLButtonElement> = () => {
         gridRef.current.api.exportDataAsExcel();
@@ -71,7 +76,7 @@ const TemplateTable: React.FC<{
                 pagination
                 paginationPageSize={5}
                 rowHeight={50}
-                rowData={entities.map((entity) => entity.properties)}
+                rowData={entities?.map((entity) => entity.properties)}
                 columnHoverHighlight
                 enableRtl
                 enableCellTextSelection

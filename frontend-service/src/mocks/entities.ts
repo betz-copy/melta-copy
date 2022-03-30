@@ -649,7 +649,7 @@ const mockEntites = (mock: MockAdapter) => {
     ]);
 
     // Get entities by category
-    mock.onGet(/\/api\/entities\?category=[0-9a-fA-F]{24}/).reply(() => [
+    mock.onPost(/\/api\/entities\/filter/).reply(() => [
         200,
         [
             {
@@ -683,106 +683,6 @@ const mockEntites = (mock: MockAdapter) => {
                     age: 35,
                     gender: true,
                     agentId: 'g7h8i9',
-                },
-            },
-            {
-                _id: '61f28042d372f97e321b1cee',
-                templateId: '61e3ea6e4d51a83e87e83c7f',
-                properties: {
-                    firstName: 'איתי',
-                    lastName: 'לוי',
-                    age: 30,
-                    gender: true,
-                },
-            },
-            {
-                _id: '61f28042d372f97e321b1cef',
-                templateId: '61e3ea6e4d51a83e87e83c7f',
-                properties: {
-                    firstName: 'אייל',
-                    lastName: 'גולן',
-                    age: 42,
-                    gender: true,
-                },
-            },
-            {
-                _id: '61f28042d372f97e321b1cf0',
-                templateId: '61e3ea6e4d51a83e87e83c7f',
-                properties: {
-                    firstName: 'נועה',
-                    lastName: 'קירל',
-                    age: 20,
-                    gender: false,
-                },
-            },
-            {
-                _id: '61f28042d372f97e321b1cf1',
-                templateId: '61e3ea6e4d51a83e87e83c7f',
-                properties: {
-                    firstName: 'סטטיק',
-                    lastName: 'זה חזק',
-                    age: 28,
-                    gender: true,
-                },
-            },
-            {
-                _id: '61f28042d372f97e321b1cf2',
-                templateId: '61e3ea6e4d51a83e87e83c7f',
-                properties: {
-                    firstName: 'גל',
-                    lastName: 'גדות',
-                    age: 35,
-                    gender: false,
-                },
-            },
-            {
-                _id: '61f28042d372f97e321b1cf3',
-                templateId: '61e3ea6e4d51a83e87e83c7f',
-                properties: {
-                    firstName: 'בר',
-                    lastName: 'רפאלי',
-                    age: 36,
-                    gender: false,
-                },
-            },
-            {
-                _id: '61f28042d372f97e321b1cf4',
-                templateId: '61e3ea6e4d51a83e87e83c7f',
-                properties: {
-                    firstName: 'סבא',
-                    lastName: 'טוביה',
-                    age: 76,
-                    gender: true,
-                },
-            },
-            {
-                _id: '61f28042d372f97e321b1cf5',
-                templateId: '61e3ea6e4d51a83e87e83c7f',
-                properties: {
-                    firstName: 'אדיר',
-                    lastName: 'מילר',
-                    age: 43,
-                    gender: true,
-                },
-            },
-            {
-                _id: '61f28042d372f97e321b1cf6',
-                templateId: '61e3ea6e4d51a83e87e83c7f',
-                properties: {
-                    firstName: 'עודד',
-                    lastName: 'פז',
-                    age: 36,
-                    gender: true,
-                },
-            },
-            {
-                _id: '61f28042d372f97e321b1cf7',
-                templateId: '61e3ea6e4d51a83e87e83c7f',
-                properties: {
-                    firstName: 'אלונה',
-                    lastName: 'טל',
-                    age: 38,
-                    gender: false,
                 },
             },
         ],

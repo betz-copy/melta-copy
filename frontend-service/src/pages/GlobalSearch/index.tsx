@@ -2,10 +2,9 @@ import React, { useState } from 'react';
 import { Navigate, useSearchParams } from 'react-router-dom';
 import { Grid, ToggleButton, ToggleButtonGroup, IconButton, Typography } from '@mui/material';
 import { TableChartOutlined, AccountTreeOutlined, AddCircle } from '@mui/icons-material';
-import { useQuery, useQueryClient } from 'react-query';
+import { useQueryClient } from 'react-query';
 import { TemplateTable } from './components/TemplateTable';
 import { SideBar } from './components/SideBar';
-import { getEntitiesByCategoryRequest } from '../../services/entitiesService';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IEntity } from '../../interfaces/entities';
 
@@ -16,7 +15,6 @@ const Category: React.FC = () => {
     const [templateToDisplay, setTemplatesToDisplay] = useState(['']);
     const [viewType, setViewType] = useState<'table' | 'graph'>('table');
 
-    const { data: entities } = useQuery(['getEntitiesByCategory', categoryId], () => getEntitiesByCategoryRequest(categoryId!));
     const templates = queryClient
         .getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates')
         ?.filter((template) => template.category._id === categoryId);
@@ -31,7 +29,7 @@ const Category: React.FC = () => {
             // eslint-disable-next-line no-param-reassign
             entitiesByTemplate[template._id] = {
                 ...template,
-                entities: entities?.filter((entity) => entity.templateId === template._id) || [],
+                entities: [],
             };
         });
 

@@ -9,8 +9,10 @@ const getAllEntitiesRequest = async () => {
     return data;
 };
 
-const getEntitiesByCategoryRequest = async (categoryId: string) => {
-    const { data } = await axios.get<IEntity[]>(`${entities}?category=${categoryId}`);
+const getEntitiesByTemplateRequest = async (templateId: string) => {
+    const { data } = await axios.post<IEntity[]>(`${entities}/filter`, {
+        templateId,
+    });
     return data;
 };
 
@@ -38,7 +40,7 @@ const deleteEntityRequest = async (entityId: string) => {
 
 export {
     getAllEntitiesRequest,
-    getEntitiesByCategoryRequest,
+    getEntitiesByTemplateRequest,
     getRelatedEntitiesByIdRequest,
     createEntityRequest,
     deleteEntityRequest,
