@@ -73,6 +73,10 @@ services:
   storage-service:
     ports:
       - 8006:8000
+
+  instance-manager:
+    ports:
+      - 8007:8000
   
   gateway:
     ports:
