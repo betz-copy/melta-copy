@@ -20,6 +20,7 @@ const config = {
         maxNumberOfRelationships: env.get('MAX_NUMBER_OF_RELATIONSHIPS').default(100).asInt(),
         minNumberOfRelationships: env.get('MIN_NUMBER_OF_RELATIONSHIPS').default(0).asInt(),
     },
+    requestLimit: env.get('REQUEST_LIMIT').default(10).asInt(),
 };
 
 export default config;

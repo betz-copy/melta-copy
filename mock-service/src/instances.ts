@@ -2,9 +2,12 @@
 import axios from 'axios';
 // @ts-ignore
 import { generate, extend } from 'json-schema-faker';
+import * as pLimit from 'p-limit';
 import config from './config';
 import { IMongoEntityTemplate } from './entityTemplates';
 import { IMongoRealtionshipTemplate } from './relationshipTemplates';
+
+const limit = pLimit(config.requestLimit);
 
 const {
     uri,
@@ -20,10 +23,12 @@ export const createInstances = async (entityTemplates: IMongoEntityTemplate[]) =
     const promises = entityTemplates
         .map((entityTemplate) => {
             return Array.from({ length: Math.floor(Math.random() * (maxNumberOfEntities - minNumberOfEntities + 1)) + minNumberOfEntities }, () =>
-                axios.post(uri + createEntityRoute, {
-                    properties: generate(entityTemplate.properties),
-                    templateId: entityTemplate._id,
-                }),
+                limit(() =>
+                    axios.post(uri + createEntityRoute, {
+                        properties: generate(entityTemplate.properties),
+                        templateId: entityTemplate._id,
+                    }),
+                ),
             );
         })
         .flat();
@@ -49,11 +54,13 @@ export const createRelationshipInstances = async (
                     const destinationEntityId =
                         relevantDestinationEntities[Math.floor(Math.random() * relevantDestinationEntities.length)].properties.id;
 
-                    return axios.post(uri + createRelationshipRoute, {
-                        sourceEntityId,
-                        destinationEntityId,
-                        templateId: relationshipTemplate._id,
-                    });
+                    return limit(() =>
+                        axios.post(uri + createRelationshipRoute, {
+                            sourceEntityId,
+                            destinationEntityId,
+                            templateId: relationshipTemplate._id,
+                        }),
+                    );
                 },
             );
         })
