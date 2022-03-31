@@ -51,6 +51,19 @@ services:
       - "7474:7474"
       - "7687:7687"
 
+  mock:
+    image: jawsproject.azurecr.io/mock
+    # build: ./mock
+    environment:
+      ENTITY_TEMPLATE_MANAGER_URI: ${ENTITY_TEMPLATE_MANAGER_URI}
+      RELATIONSHIP_TEMPLATE_MANAGER_URI: ${RELATIONSHIP_TEMPLATE_MANAGER_URI}
+      INSTANCE_MANAGER_URI: ${INSTANCE_MANAGER_URI}
+    depends_on:
+      - neo4j
+      - entity-template-manager
+      - relationship-template-manager
+      - instance-manager
+
   #-------------------------------------------#
   #        microservices:                     #
   #-------------------------------------------#

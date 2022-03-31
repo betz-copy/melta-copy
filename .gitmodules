@@ -22,3 +22,6 @@
 [submodule "instance-manager"]
 	path = instance-manager
 	url = git@gitlab.com:yesodot/rnd/terminal-rabaz/jaws/microservices/instance-manager.git
+[submodule "mock"]
+	path = mock
+	url = git@gitlab.com:yesodot/rnd/terminal-rabaz/jaws/microservices/mock.git
