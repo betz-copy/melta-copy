@@ -6,6 +6,9 @@ images:
   repository: jawsproject.azurecr.io/mock
   tag: latest
 
+service:
+  ports: 
+
 config:
   configmaps: []
   env:
