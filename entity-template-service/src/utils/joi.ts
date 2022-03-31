@@ -17,7 +17,11 @@ const ExtendedJoi = Joi.extend(
         base: Joi.object(),
         type: 'stringToObject',
         coerce: (value: string, _helpers) => {
-            return { value: JSON.parse(value) };
+            try {
+                return { value: JSON.parse(value) };
+            } catch {
+                return { value };
+            }
         },
     },
     {
