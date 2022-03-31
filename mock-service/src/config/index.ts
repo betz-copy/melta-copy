@@ -4,19 +4,19 @@ import './dotenv';
 const config = {
     entityTemplateManager: {
         uri: env.get('ENTITY_TEMPLATE_MANAGER_URI').required().asString(),
-        createEntityTemplateRoute: env.get('CREATE_ENTITY_TEMPLATE_ROUTE').default('api/entities/templates').asString(),
-        createCategoryRoute: env.get('CREATE_CATEGORY_ROUTE').default('api/categories').asString(),
+        createEntityTemplateRoute: env.get('CREATE_ENTITY_TEMPLATE_ROUTE').default('/api/entities/templates').asString(),
+        createCategoryRoute: env.get('CREATE_CATEGORY_ROUTE').default('/api/categories').asString(),
     },
     relationshipTemplateManager: {
         uri: env.get('RELATIONSHIP_TEMPLATE_MANAGER_URI').required().asString(),
-        createrelationshipTemplateRoute: env.get('CREATE_ENTITY_TEMPLATE_ROUTE').default('api/relationships/templates').asString(),
+        createrelationshipTemplateRoute: env.get('CREATE_ENTITY_TEMPLATE_ROUTE').default('/api/relationships/templates').asString(),
     },
     instacnceManager: {
         uri: env.get('INSTANCE_MANAGER_URI').required().asString(),
-        createEntityRoute: env.get('CREATE_ENTITY_ROUTE').default('api/entities').asString(),
+        createEntityRoute: env.get('CREATE_ENTITY_ROUTE').default('/api/entities').asString(),
         maxNumberOfEntities: env.get('MAX_NUMBER_OF_ENTITIES').default(100).asInt(),
         minNumberOfEntities: env.get('MIN_NUMBER_OF_ENTITIES').default(0).asInt(),
-        createRelationshipRoute: env.get('CREATE_RELATIONSHIP_ROUTE').default('api/relationships').asString(),
+        createRelationshipRoute: env.get('CREATE_RELATIONSHIP_ROUTE').default('/api/relationships').asString(),
         maxNumberOfRelationships: env.get('MAX_NUMBER_OF_RELATIONSHIPS').default(100).asInt(),
         minNumberOfRelationships: env.get('MIN_NUMBER_OF_RELATIONSHIPS').default(0).asInt(),
     },
