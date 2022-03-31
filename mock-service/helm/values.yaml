@@ -1,0 +1,17 @@
+name: "mock"
+replicaCount: 1
+
+images:
+  PullSecrets: [jawsreg]
+  repository: jawsproject.azurecr.io/mock
+  tag: latest
+
+config:
+  configmaps: []
+  env:
+    - name: ENTITY_TEMPLATE_MANAGER_URI
+      value: http://entity-template-manager:8000
+    - name: RELATIONSHIP_TEMPLATE_MANAGER_URI
+      value: http://relationship-template-manager:8000
+    - name: INSTANCE_MANAGER_URI
+      value: http://instance-manager:8000
