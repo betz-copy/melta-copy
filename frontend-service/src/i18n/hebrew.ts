@@ -1,3 +1,5 @@
+import { agGridLocaleText } from '../utils/agGridLocaleText';
+
 export default {
     error: {
         config: 'שגיאה בתקשורת לשרת',
@@ -20,6 +22,50 @@ export default {
         contactByMail: 'פנייה במייל',
         // eslint-disable-next-line quotes
         contactByChat: "פנייה בהיי צ'אט",
+    },
+    areYouSureDialog: {
+        title: 'האם אתה בטוח',
+        yes: 'אשר',
+        no: 'בטל',
+    },
+    userAutocomplete: {
+        label: 'משתמש',
+        failedToSearchUsers: 'נכשל לחפש משתמשים',
+        loading: 'טוען...',
+        noOptions: 'אין תוצאות',
+    },
+    searchLabel: 'חפש...',
+    permissions: {
+        failedToLoadMyPermissions: 'נכשל לטעון הרשאות',
+        tableBoolean: {
+            yes: 'כן',
+            no: 'לא',
+        },
+        userHeaderName: 'משתמש',
+        permissionsManagement: 'ניהול הרשאות',
+        templatesManagement: 'ניהול תבניות',
+        permissionsManagmentPageTitle: 'ניהול הרשאות',
+        failedToDeleteUser: 'נכשל למחוק הרשאות של משתמש',
+        succeededToDeleteUser: 'נמחק הרשאות של משתמש בהצלחה',
+        failedToLoadAllPermissions: 'נכשל לטעון את כל ההרשאות',
+        permissionsOfUserDialog: {
+            readTitle: 'ההרשאות שלי',
+            createTitle: 'הוסף משתמש',
+            editTitle: 'ערוך משתמש',
+            closeBtn: 'סגור',
+            saveBtn: 'שמור',
+            createBtn: 'הוסף',
+            failedToCreatePermissionsOfUser: 'נכשל להוסיף הרשאות למשתמש',
+            failedToEditPermissionsOfUser: 'נכשל לערוך הרשאות של משתמש',
+            succeededToCreatePermission: 'נוצר הרשאות משתמש בהצלחה',
+            succeededToUpdatePermission: 'עודכן הרשאות משתמש בהצלחה',
+            userAlreadyExistOnCreateMessage: 'היוזר כבר קיים',
+            managementTitle: 'ניהול',
+            permissionsManagement: 'ניהול הרשאות',
+            templatesManagement: 'ניהול תבניות',
+            instancesPermissions: 'הרשאות על קטגוריות',
+            allCategories: 'הכל',
+        },
     },
     wizard: {
         next: 'הבא',
@@ -48,4 +94,5 @@ export default {
     validation: {
         required: 'חובה',
     },
+    agGridLocaleText,
 };

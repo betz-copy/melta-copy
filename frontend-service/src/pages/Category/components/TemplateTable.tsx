@@ -1,4 +1,5 @@
 import React, { useRef, MouseEventHandler } from 'react';
+import i18next from 'i18next';
 import { Grid, Typography, IconButton } from '@mui/material';
 import { AddCircle, FileDownloadOutlined } from '@mui/icons-material';
 import { AgGridReact } from 'ag-grid-react';
@@ -8,7 +9,6 @@ import { useQuery } from 'react-query';
 import { getEntitiesByTemplateRequest } from '../../../services/entitiesService';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IEntity } from '../../../interfaces/entities';
-import { agGridLocaleText } from '../../../utils/agGridLocaleText';
 
 import 'ag-grid-community/dist/styles/ag-grid.css';
 import 'ag-grid-community/dist/styles/ag-theme-material.css';
@@ -112,7 +112,7 @@ const TemplateTable: React.FC<{
                     ],
                     position: 'left',
                 }}
-                localeText={agGridLocaleText}
+                localeText={i18next.t('agGridLocaleText', { returnObjects: true })}
             />
         </Grid>
     );

@@ -15,13 +15,12 @@ module.exports = {
     settings: {
         'import/resolver': {
             node: {
-                extensions: ['.ts', '.tsx'],
+                extensions: ['.js', '.jsx', '.ts', '.tsx'],
             },
         },
     },
     rules: {
         quotes: ['error', 'single'],
-        indent: ['error', 4, { SwitchCase: 1 }],
         'import/prefer-default-export': 'off',
         'import/extensions': 'off',
         'no-unused-vars': 'off',

@@ -8,6 +8,7 @@ import { mockEntites } from './mocks/entities';
 import { mockEntityTemplates } from './mocks/entityTemplates';
 import { mockRelationshipTemplates } from './mocks/relationshipTemplates';
 import { AuthService } from './services/authService';
+import { mockPermissions } from './mocks/permissions';
 // import faker from 'faker';
 
 const axios = axiosInstance.create({
@@ -58,6 +59,8 @@ if (process.env.NODE_ENV === 'development' && !process.env.REACT_APP_IS_DOCKER) 
     mockRelationshipTemplates(mock);
 
     mockEntites(mock);
+
+    mockPermissions(mock);
 }
 
 export default axios;

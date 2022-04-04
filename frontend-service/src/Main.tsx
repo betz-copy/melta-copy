@@ -7,14 +7,17 @@ import createCache from '@emotion/cache';
 import { prefixer } from 'stylis';
 import { useQuery } from 'react-query';
 import { toast } from 'react-toastify';
+import i18next from 'i18next';
 import { SideBar } from './common/sideBar';
 import { MainBox } from './Main.styled';
 import { getEntityTemplatesRequest } from './services/enitityTemplatesService';
 import { getCategoriesRequest } from './services/categoriesService';
+import { getMyPermissionsRequest } from './services/permissionsService';
 
 const Home = lazy(() => import('./pages/Home'));
 const Category = lazy(() => import('./pages/Category'));
 const SystemManagement = lazy(() => import('./pages/SystemManagement'));
+const PermissionsManagement = lazy(() => import('./pages/PermissionsManagement'));
 const Unavailable = lazy(() => import('./pages/Unavailable'));
 
 const cacheRtl = createCache({
@@ -35,6 +38,13 @@ const Main = () => {
         },
     });
 
+    useQuery('getMyPermissions', getMyPermissionsRequest, {
+        onError: (error) => {
+            console.log('failed loading my permissions:', error);
+            toast.error(i18next.t('permissions.failedToLoadMyPermissions'));
+        },
+    });
+
     const toggleDrawer = () => {
         setOpen(!open);
     };
@@ -50,6 +60,7 @@ const Main = () => {
                             <Suspense fallback={<div />}>
                                 <Routes>
                                     <Route path="/system-management" element={<SystemManagement />} />
+                                    <Route path="/permissions-management" element={<PermissionsManagement />} />
                                     <Route path="/unavailable" element={<Unavailable />} />
                                     <Route path="/category/:categoryId" element={<Category />} />
                                     <Route path="/graph/:entityId" element={<Home />} />

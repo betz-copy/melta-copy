@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CircularProgress, Menu as MuiMenu, MenuItem } from '@mui/material';
+import { Menu as MuiMenu, MenuItem } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { NodeObject } from 'react-force-graph-2d';
 import { useMutation } from 'react-query';
@@ -65,12 +65,7 @@ const Menu: React.FC<{
                     closeDeleteDialog();
                     onCloseMenu();
                 }}
-                yesComponent={
-                    <>
-                        yes
-                        {isLoading && <CircularProgress size={20} />}
-                    </>
-                }
+                isLoading={isLoading}
             />
         </MuiMenu>
     );

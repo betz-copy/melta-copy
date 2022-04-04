@@ -1,9 +1,9 @@
 import React from 'react';
+import i18next from 'i18next';
 import 'ag-grid-enterprise';
 import { AgGridColumn, AgGridReact } from 'ag-grid-react';
 import { Grid, Typography, Box, Input, IconButton } from '@mui/material';
 import { SearchRounded, CloseOutlined, AddCircle, FileDownloadOutlined } from '@mui/icons-material';
-import { agGridLocaleText } from '../../../utils/agGridLocaleText';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 
 import 'ag-grid-community/dist/styles/ag-grid.css';
@@ -108,7 +108,7 @@ const TemplateTable: React.FC<{
                     rowData={template.entities.map((entity) => entity.properties)}
                     columnHoverHighlight
                     enableRtl
-                    localeText={agGridLocaleText}
+                    localeText={i18next.t('agGridLocaleText', { returnObjects: true })}
                 >
                     {Object.keys(template.properties.properties).map((name) => {
                         const { type, format } = template.properties.properties[name];

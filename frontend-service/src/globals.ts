@@ -7,6 +7,11 @@ export const environment = {
         relationshipTemplates: '/relationships/templates',
         entities: '/entities',
         storage: '/files',
+        getMyPermissions: '/permissions/my',
+        getAllPermissions: '/permissions',
+        createPermissionsBulk: '/permissions/bulk',
+        deletePermissionsBulk: '/permissions',
+        searchUsers: '/users/search',
     },
     accessTokenName: 'rabaz-access-token',
 };
