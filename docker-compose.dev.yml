@@ -4,29 +4,17 @@ services:
   #-------------------------------------------#
   #*   Service infrastructure dependencies:   #
   #-------------------------------------------#
-  mongo1:
+  mongo:
     image: mongo
     restart: always
     entrypoint: ['/usr/bin/mongod', '--bind_ip_all', '--replSet', 'rs0']
     ports:
       - 27017:27017
 
-  mongo2:
-    image: mongo
-    restart: always
-    entrypoint: ['/usr/bin/mongod', '--bind_ip_all', '--replSet', 'rs0']
-
-  mongo3:
-    image: mongo
-    restart: always
-    entrypoint: ['/usr/bin/mongod', '--bind_ip_all', '--replSet', 'rs0']
-
   mongosetup:
     image: mongo
     depends_on:
-      - mongo1
-      - mongo2
-      - mongo3
+      - mongo
     volumes:
       - ./scripts:/scripts
     restart: "no"
