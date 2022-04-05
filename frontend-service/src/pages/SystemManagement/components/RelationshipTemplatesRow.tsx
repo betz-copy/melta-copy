@@ -72,7 +72,7 @@ const RelationshipTemplatesRow: React.FC<{
                         <TextField
                             style={{ backgroundColor: 'white' }}
                             variant="outlined"
-                            title={i18next.t('searchLabel')}
+                            placeholder={i18next.t('searchLabel')}
                             onChange={(event) => setSearchText(event.target.value)}
                         />
                     </Grid>
