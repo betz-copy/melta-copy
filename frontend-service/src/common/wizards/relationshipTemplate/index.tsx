@@ -1,21 +1,24 @@
 import React from 'react';
 import { toast } from 'react-toastify';
 import i18next from 'i18next';
-import { useMutation } from 'react-query';
+import { useMutation, useQueryClient } from 'react-query';
 import { StepsType, Wizard, WizardBaseType } from '../index';
 import { CreateRelationshipTemplateName, createRelationshipTemplateNameSchema } from './CreateRelationshipTemplate';
-import { createRelationshipTemplateRequest } from '../../../services/relationshipTemplatesService';
+import { createRelationshipTemplateRequest, updateRelationshipTemplateRequest } from '../../../services/relationshipTemplatesService';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { replaceItemById } from '../../../utils/reactQuery';
+import { IMongoRelationshipTemplate } from '../../../interfaces/relationshipTemplates';
 
 export interface RelationshipTemplateWizardValues {
     name: string;
+    displayName: string;
     sourceEntity: IMongoEntityTemplatePopulated;
     destinationEntity: IMongoEntityTemplatePopulated;
 }
 
 const steps: StepsType<RelationshipTemplateWizardValues> = [
     {
-        label: i18next.t('wizard.createRelationshipTemplate'),
+        label: i18next.t('wizard.relationshipTemplate.title'),
         component: (props) => <CreateRelationshipTemplateName {...props} />,
         validation: createRelationshipTemplateNameSchema,
     },
@@ -27,6 +30,7 @@ const RelationshipTemplateWizard: React.FC<WizardBaseType<RelationshipTemplateWi
     initalStep = 0,
     initialValues = {
         name: '',
+        displayName: '',
         sourceEntity: {
             _id: '',
             displayName: '',
@@ -48,14 +52,28 @@ const RelationshipTemplateWizard: React.FC<WizardBaseType<RelationshipTemplateWi
     },
     isEditMode = false,
 }) => {
-    const { isLoading, mutateAsync } = useMutation((relationshipTemplate: any) => createRelationshipTemplateRequest(relationshipTemplate), {
-        onSuccess: () => {
-            toast.success('created rel template successfully');
+    const queryClient = useQueryClient();
+    const { isLoading, mutateAsync } = useMutation(
+        (relationshipTemplate: any) =>
+            isEditMode
+                ? updateRelationshipTemplateRequest((initialValues as RelationshipTemplateWizardValues & { _id: string })._id, relationshipTemplate)
+                : createRelationshipTemplateRequest(relationshipTemplate),
+        {
+            onSuccess: (data) => {
+                if (isEditMode) {
+                    queryClient.setQueryData<IMongoRelationshipTemplate[]>('getRelationshipTemplates', (prevData) => replaceItemById(data, prevData));
+                    toast.success(i18next.t('wizard.relationshipTemplate.editedSuccefully'));
+                } else {
+                    queryClient.setQueryData<IMongoRelationshipTemplate[]>('getRelationshipTemplates', (prevData) => [...(prevData || []), data]);
+                    toast.success(i18next.t('wizard.relationshipTemplate.createdSuccessfully'));
+                }
+                handleClose();
+            },
+            onError: () => {
+                toast.error(i18next.t('wizard.relationshipTemplate.failedToCreate'));
+            },
         },
-        onError: () => {
-            toast.error('failed to create rel template');
-        },
-    });
+    );
 
     return (
         <Wizard
@@ -64,7 +82,7 @@ const RelationshipTemplateWizard: React.FC<WizardBaseType<RelationshipTemplateWi
             initialValues={initialValues}
             initalStep={initalStep}
             isEditMode={isEditMode}
-            title={i18next.t('wizard.createRelationshipTemplate')}
+            title={i18next.t('wizard.relationshipTemplate.title')}
             steps={steps}
             isLoading={isLoading}
             submitFucntion={(values) => mutateAsync({ data: values })}

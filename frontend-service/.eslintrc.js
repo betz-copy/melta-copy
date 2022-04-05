@@ -35,6 +35,7 @@ module.exports = {
         'react/jsx-props-no-spreading': 'off',
         'no-plusplus': 'off',
         'react/no-unused-prop-types': 'off',
+        'jsx-a11y/alt-text': 'off',
         'react/jsx-filename-extension': [
             2,
             {

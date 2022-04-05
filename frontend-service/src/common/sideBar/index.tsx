@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { List, Divider, IconButton, Typography, Grid } from '@mui/material';
 import { useQueryClient } from 'react-query';
-import cookies from 'js-cookie';
 import {
     ChevronRight as ChevronRightIcon,
     ChevronLeft as ChevronLeftIcon,
@@ -16,9 +15,9 @@ import i18next from 'i18next';
 import { Drawer, Toolbar } from './SideBar.styled';
 import { IMongoCategory } from '../../interfaces/categories';
 import { NavButton } from './NavButton';
-import { environment } from '../../globals';
 import { IPermissionsOfUser } from '../../services/permissionsService';
 import PermissionsOfUserDialog from '../permissionsOfUserDialog';
+import { CustomIcon } from '../CustomIcon';
 
 type SideBarProps = {
     toggleDrawer: () => any;
@@ -38,7 +37,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                 <Grid item>
                     <Grid item display="flex" flexDirection="column" alignItems="center" marginTop="10px" marginBottom="10px" width="100%">
                         <Typography color="#225AA7" fontSize={25} fontWeight="bold">
-                            מלתעות
+                            {i18next.t('sideBar.title')}
                         </Typography>
                         <IconButton onClick={() => setIsMyPermissionsDialogOpen(true)}>
                             <AccountCircleIcon sx={{ color: '#225AA7' }} />
@@ -56,14 +55,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                                         isDrawerOpen={isDrawerOpen}
                                     >
                                         {category?.iconFileId ? (
-                                            <img
-                                                src={`/api${environment.api.storage}/${category.iconFileId}?token=${cookies.get(
-                                                    environment.accessTokenName,
-                                                )}`}
-                                                height="40px"
-                                                width="40px"
-                                                alt={category.displayName}
-                                            />
+                                            <CustomIcon iconUrl={category.iconFileId} height="40px" width="40px" />
                                         ) : (
                                             <HiveIcon fontSize="large" />
                                         )}

@@ -62,8 +62,8 @@ const mockRelationshipTemplates = (mock: MockAdapter) => {
         },
     ]);
 
-    // Create
-    mock.onPut('/api/relationships/templates').reply(() => [
+    // Update
+    mock.onPut(/\/api\/relationships\/templates\/[0-9a-fA-F]{24}/).reply(() => [
         200,
         {
             _id: '61e3ea6e4d51a83e87e83c7e',
@@ -73,6 +73,9 @@ const mockRelationshipTemplates = (mock: MockAdapter) => {
             destinationEntityId: '61e3ea6e4d51a83e87e83c7e',
         },
     ]);
+
+    // Delete
+    mock.onDelete(/\/api\/relationships\/templates\/[0-9a-fA-F]{24}/).reply(() => [200, {}]);
 };
 
 export { mockRelationshipTemplates };

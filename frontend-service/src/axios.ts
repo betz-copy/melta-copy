@@ -1,7 +1,5 @@
 import axiosInstance from 'axios';
 import MockAdapter from 'axios-mock-adapter';
-import cookies from 'js-cookie';
-import { environment } from './globals';
 import { mockCategories } from './mocks/categories';
 import { mockConfig } from './mocks/config';
 import { mockEntites } from './mocks/entities';
@@ -16,21 +14,6 @@ const axios = axiosInstance.create({
     timeout: 5000,
     baseURL: '/api',
 });
-
-axios.interceptors.request.use(
-    async (config) => {
-        const accessToken = cookies.get(environment.accessTokenName);
-        if (accessToken) {
-            // eslint-disable-next-line no-param-reassign
-            config.headers!.Authorization = `Bearer ${accessToken}`;
-        }
-
-        return config;
-    },
-    (error) => {
-        Promise.reject(error);
-    },
-);
 
 axios.interceptors.response.use(
     (response) => {

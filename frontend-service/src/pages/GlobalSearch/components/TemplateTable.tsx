@@ -114,7 +114,7 @@ const TemplateTable: React.FC<{
                         const { type, format } = template.properties.properties[name];
                         let filter = 'agTextColumnFilter';
                         if (type === 'string' && format === 'Date') filter = 'agDateColumnFilter';
-                        if (type === 'integer') filter = 'agNumberColumnFilter';
+                        if (type === 'number') filter = 'agNumberColumnFilter';
                         return (
                             <AgGridColumn
                                 field={name}

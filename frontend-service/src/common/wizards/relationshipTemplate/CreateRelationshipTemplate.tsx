@@ -9,6 +9,7 @@ import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplat
 
 const createRelationshipTemplateNameSchema = {
     name: Yup.string().required(i18next.t('validation.required')),
+    displayName: Yup.string().required(i18next.t('validation.required')),
     sourceEntity: Yup.object({
         _id: Yup.string().required(i18next.t('validation.required')),
         displayName: Yup.string().required(i18next.t('validation.required')),
@@ -43,6 +44,16 @@ const CreateRelationshipTemplateName: React.FC<StepComponentProps<RelationshipTe
                 />
             </Box>
             <Box margin={1}>
+                <TextField
+                    name="displayName"
+                    label={i18next.t('wizard.displayName')}
+                    value={values.displayName}
+                    onChange={handleChange}
+                    error={touched.displayName && Boolean(errors.displayName)}
+                    helperText={touched.displayName && errors.displayName}
+                />
+            </Box>
+            <Box margin={1}>
                 <Autocomplete
                     id="sourceEntity"
                     options={entityTemplates || []}
@@ -57,7 +68,7 @@ const CreateRelationshipTemplateName: React.FC<StepComponentProps<RelationshipTe
                             helperText={touched.sourceEntity && errors.sourceEntity?._id}
                             name="sourceEntity"
                             variant="outlined"
-                            label={i18next.t('wizard.sourceEntity')}
+                            label={i18next.t('wizard.relationshipTemplate.sourceEntity')}
                         />
                     )}
                 />
@@ -77,7 +88,7 @@ const CreateRelationshipTemplateName: React.FC<StepComponentProps<RelationshipTe
                             helperText={touched.sourceEntity && errors.destinationEntity?._id}
                             name="destinationEntity"
                             variant="outlined"
-                            label={i18next.t('wizard.destinationEntity')}
+                            label={i18next.t('wizard.relationshipTemplate.destinationEntity')}
                         />
                     )}
                 />

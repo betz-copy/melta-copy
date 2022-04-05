@@ -28,7 +28,8 @@ const TemplateTable: React.FC<{
     };
 
     const valueFormatter = (params: ValueFormatterParams) => {
-        if (template.properties.properties[params.colDef.field!].type === 'boolean') return params.value === 'false' ? 'לא' : 'כן';
+        if (template.properties.properties[params.colDef.field!].type === 'boolean')
+            return String(params.value) === 'true' ? i18next.t('booleanOptions.yes') : i18next.t('booleanOptions.no');
         return params.value;
     };
 
@@ -36,7 +37,7 @@ const TemplateTable: React.FC<{
         const { type, format } = value;
         let filter = 'agTextColumnFilter';
         if (type === 'string' && format === 'Date') filter = 'agDateColumnFilter';
-        if (type === 'integer') filter = 'agNumberColumnFilter';
+        if (type === 'number') filter = 'agNumberColumnFilter';
         if (type === 'boolean') filter = 'agSetColumnFilter';
 
         return {

@@ -1,134 +1,44 @@
-import React, { useReducer, Reducer } from 'react';
-import { Grid, Typography } from '@mui/material';
+import React, { useState } from 'react';
+import { Grid } from '@mui/material';
 import { useQueryClient } from 'react-query';
-import { CategoryWizard } from '../../common/wizards/category';
-import { EntityTemplateFormInputProperties, EntityTemplateWizard } from '../../common/wizards/entityTemplate';
-import { InfoCard } from './components/InfoCard';
-import { AddCard } from './components/AddCard';
-import { IMongoCategory } from '../../interfaces/categories';
+
+import i18next from 'i18next';
+import { IMongoRelationshipTemplate } from '../../interfaces/relationshipTemplates';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
-
-const categoryWizardReducer: Reducer<
-    { showWizard: boolean; initialValues?: IMongoCategory },
-    { type: 'show'; initialValues?: IMongoCategory } | { type: 'hide' }
-> = (_state, action) => {
-    switch (action.type) {
-        case 'show':
-            return { showWizard: true, initialValues: action.initialValues };
-        case 'hide':
-            return { showWizard: false, initialValues: undefined };
-        default:
-            throw new Error('Unknown action type');
-    }
-};
-
-const entityTemplateWizardReducer: Reducer<
-    { showWizard: boolean; initialValues?: IMongoEntityTemplatePopulated },
-    { type: 'show'; initialValues?: IMongoEntityTemplatePopulated } | { type: 'hide' }
-> = (_state, action) => {
-    switch (action.type) {
-        case 'show':
-            return { showWizard: true, initialValues: action.initialValues };
-        case 'hide':
-            return { showWizard: false, initialValues: undefined };
-        default:
-            throw new Error('Unknown action type');
-    }
-};
-
-const entityTemplateObjectToEntityTemplateForm = (entityTemplate?: IMongoEntityTemplatePopulated) => {
-    if (!entityTemplate) return undefined;
-    const { iconFileId, properties, ...restOfEntityTemplate } = entityTemplate;
-    const { required } = properties;
-
-    const requiredProrerites: EntityTemplateFormInputProperties[] = [];
-    const optionalProrerites: EntityTemplateFormInputProperties[] = [];
-
-    Object.keys(properties.properties).forEach((key) => {
-        if (required.includes(key)) {
-            requiredProrerites.push({ name: key, ...properties.properties[key] });
-        } else {
-            optionalProrerites.push({ name: key, ...properties.properties[key] });
-        }
-    });
-
-    if (iconFileId) {
-        const file: Partial<File> = { name: iconFileId };
-        return { ...restOfEntityTemplate, file, requiredProrerites, optionalProrerites };
-    }
-    return { ...restOfEntityTemplate, requiredProrerites, optionalProrerites };
-};
-
-const categoryObjectToCategoryForm = (category?: IMongoCategory) => {
-    if (!category) return undefined;
-    const { iconFileId, ...restOfCategory } = category;
-
-    if (iconFileId) {
-        const file: Partial<File> = { name: iconFileId };
-        return { ...restOfCategory, file };
-    }
-
-    return restOfCategory;
-};
+import { IMongoCategory } from '../../interfaces/categories';
+import { CategoriesRow } from './components/CategoriesRow';
+import { EntityTemplatesRow } from './components/EntityTemplatesRow';
+import { RelationshipTemplatesRow } from './components/RelationshipTemplatesRow';
+import { BlueTitle } from '../../common/BlueTitle';
 
 const SystemManagement = () => {
     const queryClient = useQueryClient();
-    const [categoryWizardState, dispatchCategoryWizard] = useReducer(categoryWizardReducer, { showWizard: false });
-    const [entityTemplateState, dispatchEntityTemplateWizard] = useReducer(entityTemplateWizardReducer, { showWizard: false });
 
-    const entityTemplates = queryClient.getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates');
-    const categories = queryClient.getQueryData<IMongoCategory[]>('getCategories');
+    const [categoriesToHide, setCategoriesToHide] = useState<string[]>([]);
+    const [sourceEntityTemplatesToHide, setSourceEntityTemplatesToHide] = useState<string[]>([]);
+    const [destinationEntityTemplatesToHide, setDestinationEntityTemplatesToHide] = useState<string[]>([]);
 
-    const entityTemplatesByCategory: { [id: string]: IMongoCategory & { entityTemplates: IMongoEntityTemplatePopulated[] } } = {};
-    categories?.forEach((category) => {
-        // eslint-disable-next-line no-param-reassign
-        entityTemplatesByCategory[category._id] = {
-            ...category,
-            entityTemplates: entityTemplates?.filter((entityTemplate) => entityTemplate.category._id === category._id) || [],
-        };
-    });
+    const categories = queryClient.getQueryData<IMongoCategory[]>('getCategories')!;
+    const entityTemplates = queryClient.getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates')!;
+    const relationshipTemplates = queryClient.getQueryData<IMongoRelationshipTemplate[]>('getRelationshipTemplates')!;
 
     return (
-        <Grid container>
-            <Grid item xs={12}>
-                <Typography variant="h2">קטגוריות</Typography>
-                <Grid container spacing={4} textAlign="center">
-                    {categories?.map((category) => (
-                        <InfoCard
-                            key={category._id}
-                            text={category.displayName}
-                            onClick={() => dispatchCategoryWizard({ type: 'show', initialValues: category })}
-                        />
-                    ))}
-                    <AddCard onClick={() => dispatchCategoryWizard({ type: 'show' })} />
-                </Grid>
-            </Grid>
-            {Object.values(entityTemplatesByCategory).map((category) => (
-                <Grid item xs={12} key={category._id}>
-                    <Typography variant="h3">{category.displayName}</Typography>
-                    <Grid container spacing={4} textAlign="center">
-                        {category.entityTemplates?.map((entityTemplate) => (
-                            <InfoCard
-                                key={entityTemplate._id}
-                                text={entityTemplate.displayName}
-                                onClick={() => dispatchEntityTemplateWizard({ type: 'show', initialValues: entityTemplate })}
-                            />
-                        ))}
-                        <AddCard onClick={() => dispatchEntityTemplateWizard({ type: 'show' })} />
-                    </Grid>
-                </Grid>
-            ))}
-            <CategoryWizard
-                open={categoryWizardState.showWizard}
-                handleClose={() => dispatchCategoryWizard({ type: 'hide' })}
-                initialValues={categoryObjectToCategoryForm(categoryWizardState.initialValues)}
-                isEditMode={!!categoryWizardState.initialValues}
+        <Grid container spacing={4}>
+            <BlueTitle title={i18next.t('pages.systemManagement')} component="h3" variant="h3" style={{ paddingTop: '32px', paddingRight: '32px' }} />
+            <CategoriesRow categories={categories} />
+            <EntityTemplatesRow
+                categories={categories}
+                entityTemplates={entityTemplates}
+                categoriesToHide={categoriesToHide}
+                setCategoriesToHide={setCategoriesToHide}
             />
-            <EntityTemplateWizard
-                open={entityTemplateState.showWizard}
-                handleClose={() => dispatchEntityTemplateWizard({ type: 'hide' })}
-                initialValues={entityTemplateObjectToEntityTemplateForm(entityTemplateState.initialValues)}
-                isEditMode={!!entityTemplateState.initialValues}
+            <RelationshipTemplatesRow
+                relationshipTemplates={relationshipTemplates}
+                entityTemplates={entityTemplates}
+                sourceEntityTemplatesToHide={sourceEntityTemplatesToHide}
+                setSourceEntityTemplatesToHide={setSourceEntityTemplatesToHide}
+                destinationEntityTemplatesToHide={destinationEntityTemplatesToHide}
+                setDestinationEntityTemplatesToHide={setDestinationEntityTemplatesToHide}
             />
         </Grid>
     );

@@ -13,6 +13,7 @@ import { MainBox } from './Main.styled';
 import { getEntityTemplatesRequest } from './services/enitityTemplatesService';
 import { getCategoriesRequest } from './services/categoriesService';
 import { getMyPermissionsRequest } from './services/permissionsService';
+import { getRelationshipTemplatesRequest } from './services/relationshipTemplatesService';
 
 const Home = lazy(() => import('./pages/Home'));
 const Category = lazy(() => import('./pages/Category'));
@@ -31,11 +32,19 @@ const Main = () => {
         onError: () => {
             toast.error('failed to get entityTemplates');
         },
+        initialData: [],
+    });
+    useQuery('getRelationshipTemplates', getRelationshipTemplatesRequest, {
+        onError: () => {
+            toast.error('failed to get relationshipTemplates');
+        },
+        initialData: [],
     });
     useQuery('getCategories', getCategoriesRequest, {
         onError: () => {
             toast.error('failed to get categories');
         },
+        initialData: [],
     });
 
     useQuery('getMyPermissions', getMyPermissionsRequest, {

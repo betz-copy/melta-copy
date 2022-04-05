@@ -27,7 +27,7 @@ const defaultColDef: ColDef = {
     menuTabs: ['filterMenuTab'],
 };
 
-const booleanToTextFormatter = (value: boolean) => (value ? i18next.t('permissions.tableBoolean.yes') : i18next.t('permissions.tableBoolean.no'));
+const booleanToTextFormatter = (value: boolean) => (value ? i18next.t('booleanOptions.yes') : i18next.t('booleanOptions.no'));
 
 const nullableStringToBooleanColDefs = (field: string, headerName: string): ColDef => ({
     colId: field, // used for autoSizeColumns onFirstDataRendered

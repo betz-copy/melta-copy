@@ -2,11 +2,13 @@ import React, { useState } from 'react';
 import { useQueryClient } from 'react-query';
 import { useParams } from 'react-router-dom';
 import { Grid, ToggleButton, ToggleButtonGroup, IconButton, Typography, CircularProgress } from '@mui/material';
-import { TableChartOutlined, AccountTreeOutlined, AddCircle } from '@mui/icons-material';
+import { TableChartOutlined, AccountTreeOutlined, AddCircle as AddIcon } from '@mui/icons-material';
+import i18next from 'i18next';
 import { TemplateTable } from './components/TemplateTable';
-import { Header } from './components/Header';
+import { Header } from '../../common/Header';
 import { IMongoCategory } from '../../interfaces/categories';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { SelectCheckbox } from '../../common/SelectCheckbox';
 
 const Category: React.FC = () => {
     const queryClient = useQueryClient();
@@ -27,19 +29,21 @@ const Category: React.FC = () => {
         return (
             <Grid container>
                 <Grid container justifyContent="center" marginBottom="1vh">
-                    <Header
-                        templateToHide={templateToHide}
-                        category={categoryDisplayName || ''}
-                        setTemplatesToHide={setTemplatesToHide}
-                        templatesNames={templates.map((template) => template.displayName)}
-                    />
+                    <Header title={categoryDisplayName || ''}>
+                        <SelectCheckbox
+                            title={i18next.t('entityTemplates')}
+                            handleChange={(event) => setTemplatesToHide(event.target.value as string[])}
+                            options={templates.map((template) => template.displayName)}
+                            optionsToHide={templateToHide}
+                        />
+                    </Header>
                 </Grid>
-                <Grid container justifyContent="end" paddingRight="5%" marginBottom="3vh">
+                <Grid container justifyContent="end" marginBottom="3vh">
                     <Grid item paddingRight="1%">
                         <IconButton style={{ background: 'white', borderRadius: '7px' }}>
-                            <AddCircle color="primary" />
+                            <AddIcon color="primary" />
                             <Typography fontSize={14} style={{ fontWeight: '500', paddingRight: '5px' }}>
-                                הוספת יישות
+                                {i18next.t('addEntity')}
                             </Typography>
                         </IconButton>
                     </Grid>
@@ -63,7 +67,7 @@ const Category: React.FC = () => {
                         </ToggleButtonGroup>
                     </Grid>
                 </Grid>
-                <Grid container paddingLeft="5%" paddingRight="5%">
+                <Grid container>
                     {viewType === 'table' ? (
                         <Grid container>
                             {templates

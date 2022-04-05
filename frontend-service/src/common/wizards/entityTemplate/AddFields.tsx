@@ -18,7 +18,9 @@ const addFieldsSchema = (formValueName: 'requiredProrerites' | 'optionalProrerit
                 Yup.object({
                     name: Yup.string().required(i18next.t('validation.required')),
                     title: Yup.string().required(i18next.t('validation.required')),
-                    type: Yup.string().oneOf(validPropertyTypes, 'סוג שדה לא תקין').required(i18next.t('validation.required')),
+                    type: Yup.string()
+                        .oneOf(validPropertyTypes, i18next.t('validation.invalidPropertyType'))
+                        .required(i18next.t('validation.required')),
                 }),
             )
             .required(i18next.t('validation.required')),
@@ -54,7 +56,7 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues> & { for
                                 <div key={name}>
                                     <Box margin={1}>
                                         <TextField
-                                            label={i18next.t('wizard.propertyName')}
+                                            label={i18next.t('wizard.entityTemplate.propertyName')}
                                             name={name}
                                             value={p.name}
                                             onChange={handleChange}
@@ -64,7 +66,7 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues> & { for
                                     </Box>
                                     <Box margin={1}>
                                         <TextField
-                                            label={i18next.t('wizard.propertyDisplayName')}
+                                            label={i18next.t('wizard.entityTemplate.propertyDisplayName')}
                                             name={title}
                                             value={p.title}
                                             onChange={handleChange}
@@ -76,7 +78,7 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues> & { for
                                         <TextField
                                             select
                                             type="text"
-                                            label={i18next.t('wizard.propertyType')}
+                                            label={i18next.t('wizard.entityTemplate.propertyType')}
                                             name={type}
                                             value={p.type}
                                             onChange={handleChange}
@@ -105,7 +107,7 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues> & { for
                         })}
                     </Grid>
                     <Button type="button" variant="contained" style={{ margin: '8px' }} onClick={() => push({ name: '', title: '', type: '' })}>
-                        {i18next.t('wizard.addProperty')}
+                        {i18next.t('wizard.entityTemplate.addProperty')}
                     </Button>
                 </>
             )}

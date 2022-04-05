@@ -6,7 +6,7 @@ export interface IEntityTemplate {
     iconFileId?: string;
     properties: {
         type: 'object';
-        properties: { [n: string]: { type: 'string' | 'integer' | 'boolean'; title: string; format?: string } };
+        properties: { [n: string]: { type: 'string' | 'number' | 'boolean'; title: string; format?: string } };
         required: string[];
     };
     category: IMongoCategory['_id'];

@@ -37,7 +37,7 @@ const ChooseCategory: React.FC<StepComponentProps<EntityTemplateWizardValues>> =
                     helperText={(touched.category && errors.category?._id) || errors.category?.displayName || errors.category?.name}
                     name="category"
                     variant="outlined"
-                    label={i18next.t('wizard.category')}
+                    label={i18next.t('category')}
                 />
             )}
         />

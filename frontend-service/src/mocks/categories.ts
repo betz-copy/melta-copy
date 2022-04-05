@@ -68,6 +68,9 @@ const mockCategories = (mock: MockAdapter) => {
             displayName: 'אנששדגשדגים',
         },
     ]);
+
+    // Delete
+    mock.onDelete(/\/api\/categories\/[0-9a-fA-F]{24}/).reply(() => [200, {}]);
 };
 
 export { mockCategories, categories };

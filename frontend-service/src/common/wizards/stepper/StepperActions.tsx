@@ -18,7 +18,7 @@ const StepperActions: React.FC<{
                             transform: 'scaleX(-1)',
                         }}
                     />
-                    הקודם
+                    {i18next.t('wizard.back')}
                 </Button>
             </Grid>
             <Grid item>

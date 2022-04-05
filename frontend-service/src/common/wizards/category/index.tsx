@@ -5,15 +5,16 @@ import i18next from 'i18next';
 import { useMutation, useQueryClient } from 'react-query';
 import { StepsType, Wizard, WizardBaseType } from '../index';
 import { CreateCategoryName, createCategoryNameSchema } from './CreateCategoryName';
-import { createCategoryRequest } from '../../../services/categoriesService';
+import { createCategoryRequest, updateCategoryRequest } from '../../../services/categoriesService';
 import { ICategory, IMongoCategory } from '../../../interfaces/categories';
+import { replaceItemById } from '../../../utils/reactQuery';
 
 export interface CategoryWizardValues extends Omit<ICategory, 'iconFileId'> {
     file?: Partial<File>;
 }
 const steps: StepsType<CategoryWizardValues> = [
     {
-        label: i18next.t('wizard.chooseCategoryName'),
+        label: i18next.t('wizard.category.title'),
         component: (props) => <CreateCategoryName {...props} />,
         validation: createCategoryNameSchema,
     },
@@ -27,17 +28,27 @@ const CategoryWizard: React.FC<WizardBaseType<CategoryWizardValues>> = ({
     isEditMode = false,
 }) => {
     const queryClient = useQueryClient();
-    const { isLoading, mutateAsync } = useMutation((category: CategoryWizardValues) => createCategoryRequest(category), {
-        onSuccess: (data) => {
-            queryClient.setQueryData<IMongoCategory[]>('getCategories', (prevData: IMongoCategory[] | undefined) => {
-                return [...(prevData || []), data];
-            });
-            toast.success('created category successfully');
+    const { isLoading, mutateAsync } = useMutation(
+        (category: CategoryWizardValues) =>
+            isEditMode === true
+                ? updateCategoryRequest((initialValues as CategoryWizardValues & { _id: string })._id, category)
+                : createCategoryRequest(category),
+        {
+            onSuccess: (data) => {
+                if (isEditMode) {
+                    queryClient.setQueryData<IMongoCategory[]>('getCategories', (prevData) => replaceItemById(data, prevData));
+                    toast.success(i18next.t('wizard.category.editedSuccefully'));
+                } else {
+                    queryClient.setQueryData<IMongoCategory[]>('getCategories', (prevData) => [...(prevData || []), data]);
+                    toast.success(i18next.t('wizard.category.createdSuccessfully'));
+                }
+                handleClose();
+            },
+            onError: () => {
+                toast.error(i18next.t('wizard.category.title'));
+            },
         },
-        onError: () => {
-            toast.error('failed to create category');
-        },
-    });
+    );
 
     return (
         <Wizard
@@ -46,7 +57,7 @@ const CategoryWizard: React.FC<WizardBaseType<CategoryWizardValues>> = ({
             initialValues={initialValues}
             initalStep={initalStep}
             isEditMode={isEditMode}
-            title={i18next.t('wizard.createCategory')}
+            title={i18next.t('wizard.category.title')}
             steps={steps}
             isLoading={isLoading}
             submitFucntion={(values) => mutateAsync(values)}

@@ -1,10 +1,33 @@
 import axios from '../axios';
-import { EntityTemplateWizardValues } from '../common/wizards/entityTemplate';
+import { EntityTemplateFormInputProperties, EntityTemplateWizardValues } from '../common/wizards/entityTemplate';
 import { environment } from '../globals';
 import { IEntityTemplate, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 
 const { entityTemplates } = environment.api;
 const basePropertyTypes = ['string', 'number', 'boolean'];
+
+const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTemplatePopulated | null): EntityTemplateWizardValues | undefined => {
+    if (!entityTemplate) return undefined;
+    const { iconFileId, properties, ...restOfEntityTemplate } = entityTemplate;
+    const { required } = properties;
+
+    const requiredProrerites: EntityTemplateFormInputProperties[] = [];
+    const optionalProrerites: EntityTemplateFormInputProperties[] = [];
+
+    Object.keys(properties.properties).forEach((key) => {
+        if (required.includes(key)) {
+            requiredProrerites.push({ name: key, ...properties.properties[key] });
+        } else {
+            optionalProrerites.push({ name: key, ...properties.properties[key] });
+        }
+    });
+
+    if (iconFileId) {
+        const file: Partial<File> = { name: iconFileId };
+        return { ...restOfEntityTemplate, file, requiredProrerites, optionalProrerites };
+    }
+    return { ...restOfEntityTemplate, requiredProrerites, optionalProrerites };
+};
 
 const formToJSONSchema = (values: EntityTemplateWizardValues) => {
     const { requiredProrerites, optionalProrerites, ...restOfProperties } = values;
@@ -77,4 +100,15 @@ const updateEntityTemplateRequest = async (entityTemplateId: string, updatedEnti
     return data;
 };
 
-export { getEntityTemplatesRequest, createEntityTemplateRequest, updateEntityTemplateRequest };
+const deleteEntityTemplateRequest = async (entityTemplateId: string) => {
+    const { data } = await axios.delete(`${entityTemplates}/${entityTemplateId}`);
+    return data;
+};
+
+export {
+    getEntityTemplatesRequest,
+    createEntityTemplateRequest,
+    updateEntityTemplateRequest,
+    entityTemplateObjectToEntityTemplateForm,
+    deleteEntityTemplateRequest,
+};

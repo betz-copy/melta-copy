@@ -1,4 +1,4 @@
-import React, { PropsWithChildren, useState } from 'react';
+import React, { PropsWithChildren, useEffect, useState } from 'react';
 import { Dialog, DialogTitle, DialogContent, Divider, IconButton } from '@mui/material';
 import { Close as CloseIcon } from '@mui/icons-material';
 import { Formik, Form, FormikProps } from 'formik';
@@ -48,6 +48,10 @@ const Wizard = <T extends object>({
     const handleBack = () => {
         setActiveStep((prevActiveStep) => prevActiveStep - 1);
     };
+
+    useEffect(() => {
+        setActiveStep(initalStep);
+    }, [open, initalStep]);
 
     return (
         <Dialog open={open} onClose={handleClose} maxWidth="lg">

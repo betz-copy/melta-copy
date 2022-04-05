@@ -2,6 +2,7 @@ import React from 'react';
 
 import { toast } from 'react-toastify';
 import { useMutation } from 'react-query';
+import i18next from 'i18next';
 import { StepsType, Wizard, WizardBaseType } from '../index';
 import { ChooseTemplate, chooseTemplateSchema } from './ChooseTemplate';
 import { FillFields, fillFieldsSchema } from './FillFields';
@@ -15,12 +16,12 @@ export interface EntityWizardValues {
 
 const steps: StepsType<EntityWizardValues> = [
     {
-        label: 'בחר תבנית',
+        label: i18next.t('wizard.entity.chooseEntityTemplate'),
         component: (props) => <ChooseTemplate {...props} />,
         validation: chooseTemplateSchema,
     },
     {
-        label: 'מלא פרטים',
+        label: i18next.t('wizard.entity.fillFields'),
         component: (props) => <FillFields {...props} />,
         validation: fillFieldsSchema,
     },
@@ -53,10 +54,10 @@ const EntityWizard: React.FC<WizardBaseType<EntityWizardValues>> = ({
 }) => {
     const { isLoading, mutateAsync } = useMutation((entity: any) => createEntityRequest(entity), {
         onSuccess: () => {
-            toast.success('created entity successfully');
+            toast.success(i18next.t('wizard.entity.createdSuccessfully'));
         },
         onError: () => {
-            toast.error('failed to create entity');
+            toast.error(i18next.t('wizard.entity.failedToCreate'));
         },
     });
 
@@ -67,7 +68,7 @@ const EntityWizard: React.FC<WizardBaseType<EntityWizardValues>> = ({
             initialValues={initialValues}
             initalStep={initalStep}
             isEditMode={isEditMode}
-            title="יצירת יישות"
+            title={i18next.t('wizard.entity.title')}
             steps={steps}
             isLoading={isLoading}
             submitFucntion={(values) => mutateAsync(values)}

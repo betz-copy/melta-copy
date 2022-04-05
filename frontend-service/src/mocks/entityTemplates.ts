@@ -467,6 +467,9 @@ const mockEntityTemplates = (mock: MockAdapter) => {
             },
         },
     ]);
+
+    // Delete
+    mock.onDelete(/\/api\/entities\/templates\/[0-9a-fA-F]{24}/).reply(() => [200, {}]);
 };
 
 export { mockEntityTemplates };

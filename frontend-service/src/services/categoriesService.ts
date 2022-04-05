@@ -5,6 +5,18 @@ import { IMongoCategory } from '../interfaces/categories';
 
 const { categories } = environment.api;
 
+const categoryObjectToCategoryForm = (category: IMongoCategory | null): CategoryWizardValues | undefined => {
+    if (!category) return undefined;
+    const { iconFileId, ...restOfCategory } = category;
+
+    if (iconFileId) {
+        const file: Partial<File> = { name: iconFileId };
+        return { ...restOfCategory, file };
+    }
+
+    return restOfCategory;
+};
+
 const getCategoriesRequest = async () => {
     const { data } = await axios.get<IMongoCategory[]>(categories);
     return data;
@@ -38,4 +50,9 @@ const updateCategoryRequest = async (categoryId: string, updatedCategory: Catego
     return data;
 };
 
-export { getCategoriesRequest, createCategoryRequest, updateCategoryRequest };
+const deleteCategoryRequest = async (categoryId: string) => {
+    const { data } = await axios.delete(`${categories}/${categoryId}`);
+    return data;
+};
+
+export { getCategoriesRequest, createCategoryRequest, updateCategoryRequest, categoryObjectToCategoryForm, deleteCategoryRequest };
