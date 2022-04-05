@@ -1,12 +1,12 @@
 import * as passport from 'passport';
 import * as jwt from 'jsonwebtoken';
 import { Strategy } from 'passport-shraga';
-import { Strategy as JWTStrategy, ExtractJwt, VerifiedCallback } from 'passport-jwt';
+import { Strategy as JWTStrategy, VerifiedCallback } from 'passport-jwt';
 
 import { Request } from 'express';
 import config from '../../config/index';
 
-const { shragaURL, callbackURL, useEnrichId, shragaTokenSecret } = config.authentication;
+const { shragaURL, callbackURL, useEnrichId, shragaTokenSecret, accessTokenName, tokenSecret } = config.authentication;
 
 const serialize = (user: any, done: (err?: Error, id?: string) => void) => {
     done(undefined, jwt.sign({ ...user }, shragaTokenSecret));
@@ -25,10 +25,9 @@ export const initPassport = () => {
         new JWTStrategy(
             {
                 jwtFromRequest: (req: Request) => {
-                    return ExtractJwt.fromAuthHeaderAsBearerToken()(req) || (req.query.token as string) || null;
+                    return req.cookies[accessTokenName] || null;
                 },
-
-                secretOrKey: config.authentication.tokenSecret,
+                secretOrKey: tokenSecret,
             },
             (payload: any, next: VerifiedCallback) => {
                 if (payload) {
