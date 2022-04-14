@@ -3,7 +3,7 @@ const agGridLocaleText = {
     selectAll: 'בחר הכל',
     selectAllSearchResults: '(Select All Search Results)',
     searchOoo: 'חיפוש...',
-    blanks: '(Blanks)',
+    blanks: '(ריק)',
     noMatches: 'אין תוצאות',
 
     // Number Filter & Text Filter

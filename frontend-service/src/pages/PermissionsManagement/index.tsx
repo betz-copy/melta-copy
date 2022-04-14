@@ -21,7 +21,6 @@ const PermissionsManagement = () => {
             console.log('failed loading all permissions:', error);
             toast.error(i18next.t('permissions.failedToLoadAllPermissions'));
         },
-        refetchOnWindowFocus: false,
     });
 
     const [isCreatePermissionDialogOpen, setIsCreatePermissionDialogOpen] = useState<boolean>(false);

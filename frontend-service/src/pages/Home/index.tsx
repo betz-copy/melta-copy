@@ -32,7 +32,6 @@ const Home = () => {
         ['getGraphEntities', entityId],
         () => (entityId ? getRelatedEntitiesByIdRequest(entityId) : getAllEntitiesRequest()),
         {
-            refetchOnWindowFocus: false,
             onSuccess: (entitiesData) => {
                 setData({
                     nodes: entitiesData.nodes.map((item) => {

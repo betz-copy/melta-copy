@@ -1,4 +1,4 @@
-import { agGridLocaleText } from '../utils/agGridLocaleText';
+import { agGridLocaleText } from '../utils/agGrid/agGridLocaleText';
 
 export default {
     category: 'קטגוריה',
@@ -88,13 +88,17 @@ export default {
             deletedSuccessfully: 'תבנית יישות נמחקה בהצלחה',
             failedToDelete: 'נכשל למחוק תבנית יישות',
             propertyName: 'שם שדה באנגלית',
+            attachmentName: 'שם קובץ באנגלית',
             propertyDisplayName: 'שם שדה לתצוגה',
+            attachmentDisplayName: 'שם קובץ לתצוגה',
             propertyType: 'סוג שדה',
             addProperty: 'הוסף שדה',
+            addAttachment: 'הוסף קובץ',
             chooseCategroy: 'בחירת קטגוריה',
             chooseEntityTemplateName: 'בחירת שם תבנית',
             requiredProrerites: 'שדות חובה',
             optionalProrerites: 'שדות אופציונליים',
+            attachments: 'קבצים',
         },
         relationshipTemplate: {
             title: 'יצירת תבנית קשר',
@@ -119,6 +123,9 @@ export default {
     validation: {
         required: 'חובה',
         invalidPropertyType: 'סוג שדה לא תקין',
+        english: 'אנגלית',
+        hebrew: 'עברית',
+        oneField: 'לפחות שדה חובה אחד',
     },
     agGridLocaleText,
 };

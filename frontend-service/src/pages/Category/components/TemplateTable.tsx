@@ -3,12 +3,13 @@ import i18next from 'i18next';
 import { Grid, Typography, IconButton } from '@mui/material';
 import { AddCircle, FileDownloadOutlined } from '@mui/icons-material';
 import { AgGridReact } from 'ag-grid-react';
-import { ColDef, ValueFormatterParams } from 'ag-grid-community';
+import { ColDef, IServerSideDatasource } from 'ag-grid-community';
 import 'ag-grid-enterprise';
-import { useQuery } from 'react-query';
+
 import { getEntitiesByTemplateRequest } from '../../../services/entitiesService';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { IEntity } from '../../../interfaces/entities';
+import { booleanColDef, dateColDef, numberColDef, stringColDef } from '../../../utils/agGrid/commonColDefs';
+import { DateFilterComponent } from '../../../utils/agGrid/DateFilterComponent';
 
 import 'ag-grid-community/dist/styles/ag-grid.css';
 import 'ag-grid-community/dist/styles/ag-theme-material.css';
@@ -19,33 +20,26 @@ const TemplateTable: React.FC<{
 }> = ({ template }) => {
     const gridRef = useRef<any>(null);
 
-    const { data: entities } = useQuery<IEntity[]>(['getEntitiesByTemplate', template._id], () => getEntitiesByTemplateRequest(template._id), {
-        placeholderData: [],
-    });
-
     const handleExport: MouseEventHandler<HTMLButtonElement> = () => {
         gridRef.current.api.exportDataAsExcel();
     };
 
-    const valueFormatter = (params: ValueFormatterParams) => {
-        if (template.properties.properties[params.colDef.field!].type === 'boolean')
-            return String(params.value) === 'true' ? i18next.t('booleanOptions.yes') : i18next.t('booleanOptions.no');
-        return params.value;
-    };
-
     const columnDefs: ColDef[] = Object.entries(template.properties.properties).map(([key, value]) => {
         const { type, format } = value;
-        let filter = 'agTextColumnFilter';
-        if (type === 'string' && format === 'Date') filter = 'agDateColumnFilter';
-        if (type === 'number') filter = 'agNumberColumnFilter';
-        if (type === 'boolean') filter = 'agSetColumnFilter';
 
-        return {
-            headerName: value.title,
-            field: key,
-            filter,
-        };
+        if (type === 'number') return numberColDef(key, value);
+        if (type === 'boolean') return booleanColDef(key, value);
+        if (format === 'date' || format === 'date-time') return dateColDef(key, value);
+        return stringColDef(key, value);
     });
+
+    const datasource: IServerSideDatasource = {
+        async getRows(params) {
+            const { sortModel, startRow, endRow, filterModel } = params.request;
+            const data = await getEntitiesByTemplateRequest(template._id, { sortModel, startRow, endRow, filterModel });
+            params.success({ rowData: data.rows.map((entity) => entity.properties), rowCount: 100 }); // TODO: change row count
+        },
+    };
 
     return (
         <Grid container>
@@ -77,7 +71,12 @@ const TemplateTable: React.FC<{
                 pagination
                 paginationPageSize={5}
                 rowHeight={50}
-                rowData={entities?.map((entity) => entity.properties)}
+                rowModelType="serverSide"
+                serverSideDatasource={datasource}
+                serverSideStoreType="partial"
+                components={{
+                    agDateInput: DateFilterComponent,
+                }}
                 columnHoverHighlight
                 enableRtl
                 enableCellTextSelection
@@ -88,9 +87,7 @@ const TemplateTable: React.FC<{
                     filterParams: {
                         suppressAndOrCondition: true,
                         buttons: ['reset'],
-                        valueFormatter,
                     },
-                    valueFormatter,
                     sortable: true,
                     menuTabs: ['filterMenuTab'],
                     minWidth: 200,

@@ -3,13 +3,13 @@ import { TextField, Box } from '@mui/material';
 import * as Yup from 'yup';
 import i18next from 'i18next';
 import FileInput from '../../inputs/FileInput';
-
+import { hebrewValidation, englishValidation } from '../../../utils/validation';
 import { EntityTemplateWizardValues } from './index';
 import { StepComponentProps } from '../index';
 
 const createTemplateNameSchema = {
-    name: Yup.string().required(i18next.t('validation.required')),
-    displayName: Yup.string().required(i18next.t('validation.required')),
+    name: Yup.string().matches(englishValidation, i18next.t('validation.english')).required(i18next.t('validation.required')),
+    displayName: Yup.string().matches(hebrewValidation, i18next.t('validation.hebrew')).required(i18next.t('validation.required')),
 };
 
 const CreateTemplateName: React.FC<StepComponentProps<EntityTemplateWizardValues>> = ({ values, touched, errors, handleChange, setFieldValue }) => {

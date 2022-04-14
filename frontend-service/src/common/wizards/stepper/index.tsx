@@ -20,25 +20,19 @@ const Stepper = <T extends object>({
     formikProps: FormikProps<T>;
 }): JSX.Element | null => {
     return (
-        <Grid container minWidth="80vh" minHeight="30vh">
-            <Grid item xs={4}>
+        <Grid container minWidth="80vh">
+            <Grid container marginBottom="5%">
                 <StepperSideBar steps={steps} activeStep={activeStep} />
             </Grid>
-            <Grid item xs={8} paddingTop="5px">
-                <Grid container direction="column" justifyContent="space-between" alignItems="center" height="100%">
-                    <Grid item>
-                        <>{steps[activeStep].component(formikProps)}</>
-                    </Grid>
-                    <Grid item width="80%">
-                        <StepperActions
-                            handleBack={handleBack}
-                            isLastStep={activeStep === steps.length - 1}
-                            isFirstStep={activeStep === 0}
-                            isLoading={isLoading}
-                        />
-                    </Grid>
-                </Grid>
+            <Grid container direction="column" justifyContent="space-between" alignItems="center" height="100%" marginBottom="5%">
+                {steps[activeStep].component(formikProps)}
             </Grid>
+            <StepperActions
+                handleBack={handleBack}
+                isLastStep={activeStep === steps.length - 1}
+                isFirstStep={activeStep === 0}
+                isLoading={isLoading}
+            />
         </Grid>
     );
 };

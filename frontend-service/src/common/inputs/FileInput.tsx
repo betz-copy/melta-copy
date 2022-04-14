@@ -22,13 +22,21 @@ const FileInput: React.FC<{
                     borderRadius: '5px',
                     paddingTop: '11px',
                     paddingBottom: '11px',
+                    width: '220px',
+                    alignItems: 'center',
                 }}
             >
-                <FileIcon fontSize="medium" style={{ marginRight: '10px', marginLeft: '5px' }} />
-                {filePath}
-                <IconButton onClick={onDeleteFile} size="small">
-                    <DeleteIcon fontSize="small" />
-                </IconButton>
+                <Grid item>
+                    <FileIcon fontSize="medium" style={{ marginRight: '10px', marginLeft: '5px' }} />
+                </Grid>
+                <Grid item style={{ overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis', width: '140px' }}>
+                    {filePath}
+                </Grid>
+                <Grid item>
+                    <IconButton onClick={onDeleteFile} size="small">
+                        <DeleteIcon fontSize="small" />
+                    </IconButton>
+                </Grid>
             </Grid>
         );
     }
@@ -50,7 +58,7 @@ const FileInput: React.FC<{
                 <Grid style={{ border, borderRadius: '5px' }}>
                     <Grid {...getRootProps()}>
                         <input {...getInputProps()} name="iconFile" />
-                        <p style={{ color: '#666666', paddingRight: '10px' }}>{inputText}</p>
+                        <p style={{ color: '#666666', paddingRight: '10px', width: '220px' }}>{inputText}</p>
                     </Grid>
                 </Grid>
             )}

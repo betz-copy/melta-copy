@@ -9,15 +9,17 @@ import { AddFields, addFieldsSchema } from './AddFields';
 import { createEntityTemplateRequest, updateEntityTemplateRequest } from '../../../services/enitityTemplatesService';
 import { IEntityTemplatePopulated, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { replaceItemById } from '../../../utils/reactQuery';
+import { AttachmentsField, attachmentsFieldSchema } from './AttachmentsField';
 
 export interface EntityTemplateFormInputProperties {
     name: string;
     title: string;
     type: string;
+    required: boolean;
 }
 export interface EntityTemplateWizardValues extends Omit<IEntityTemplatePopulated, 'properties' | 'iconFileId'> {
-    requiredProrerites: EntityTemplateFormInputProperties[];
-    optionalProrerites: EntityTemplateFormInputProperties[];
+    properties: EntityTemplateFormInputProperties[];
+    attachmentProperties: EntityTemplateFormInputProperties[];
     file?: Partial<File>;
 }
 
@@ -34,13 +36,13 @@ const steps: StepsType<EntityTemplateWizardValues> = [
     },
     {
         label: i18next.t('wizard.entityTemplate.requiredProrerites'),
-        component: (props) => <AddFields formValueName="requiredProrerites" {...props} />,
-        validation: addFieldsSchema('requiredProrerites'),
+        component: (props) => <AddFields {...props} />,
+        validation: addFieldsSchema,
     },
     {
-        label: i18next.t('wizard.entityTemplate.optionalProrerites'),
-        component: (props) => <AddFields formValueName="optionalProrerites" {...props} />,
-        validation: addFieldsSchema('optionalProrerites'),
+        label: i18next.t('wizard.entityTemplate.attachments'),
+        component: (props) => <AttachmentsField {...props} />,
+        validation: attachmentsFieldSchema,
     },
 ];
 
@@ -53,8 +55,8 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
         displayName: '',
         file: undefined,
         category: { displayName: '', name: '', _id: '', color: '' },
-        requiredProrerites: [],
-        optionalProrerites: [],
+        properties: [],
+        attachmentProperties: [],
     },
     isEditMode = false,
 }) => {

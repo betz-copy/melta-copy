@@ -1,3 +1,4 @@
+import { IServerSideGetRowsRequest } from 'ag-grid-community';
 import axios from '../axios';
 import { environment } from '../globals';
 import { IEntity, IRelationshipEntity } from '../interfaces/entities';
@@ -9,10 +10,8 @@ const getAllEntitiesRequest = async () => {
     return data;
 };
 
-const getEntitiesByTemplateRequest = async (templateId: string) => {
-    const { data } = await axios.post<IEntity[]>(`${entities}/filter`, {
-        templateId,
-    });
+const getEntitiesByTemplateRequest = async (templateId: string, params: Partial<IServerSideGetRowsRequest>) => {
+    const { data } = await axios.post<{ rows: IEntity[] }>(`${entities}/filter/${templateId}`, params);
     return data;
 };
 

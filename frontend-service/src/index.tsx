@@ -7,7 +7,13 @@ import { Provider } from 'react-redux';
 import { store } from './store';
 import App from './App';
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+    defaultOptions: {
+        queries: {
+            refetchOnWindowFocus: false,
+        },
+    },
+});
 
 ReactDOM.render(
     <Provider store={store}>

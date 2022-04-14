@@ -17,7 +17,7 @@ const ColorPicker: React.FC<{
                         return !curr;
                     })
                 }
-                style={{ backgroundColor: color, height: '30px', width: '220px' }}
+                style={{ backgroundColor: color, height: '50px', width: '220px', border: '1px solid rgb(196, 196, 196)' }}
             >
                 <Typography style={{ color: 'black' }}>{text}</Typography>
             </Button>

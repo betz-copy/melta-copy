@@ -649,43 +649,45 @@ const mockEntites = (mock: MockAdapter) => {
     ]);
 
     // Get entities by category
-    mock.onPost(/\/api\/entities\/filter/).reply(() => [
+    mock.onPost(/\/api\/entities\/filter\/[0-9a-fA-F]{24}/).reply(() => [
         200,
-        [
-            {
-                _id: '61f28035d372f97e321b1ceb',
-                templateId: '61e3ea6e4d51a83e87e83c80',
-                properties: {
-                    firstName: 'איילה',
-                    lastName: 'נסיעות',
-                    age: 40,
-                    gender: false,
-                    agentId: 'a1b2c3',
+        {
+            rows: [
+                {
+                    _id: '61f28035d372f97e321b1ceb',
+                    templateId: '61e3ea6e4d51a83e87e83c80',
+                    properties: {
+                        firstName: 'איילה',
+                        lastName: 'נסיעות',
+                        age: 40,
+                        gender: false,
+                        agentId: 'a1b2c3',
+                    },
                 },
-            },
-            {
-                _id: '61f28035d372f97e321b1cec',
-                templateId: '61e3ea6e4d51a83e87e83c80',
-                properties: {
-                    firstName: 'ארנון',
-                    lastName: 'פז',
-                    age: 46,
-                    gender: true,
-                    agentId: 'd4e5f6',
+                {
+                    _id: '61f28035d372f97e321b1cec',
+                    templateId: '61e3ea6e4d51a83e87e83c80',
+                    properties: {
+                        firstName: 'ארנון',
+                        lastName: 'פז',
+                        age: 46,
+                        gender: true,
+                        agentId: 'd4e5f6',
+                    },
                 },
-            },
-            {
-                _id: '61f28035d372f97e321b1ced',
-                templateId: '61e3ea6e4d51a83e87e83c80',
-                properties: {
-                    firstName: 'סקי',
-                    lastName: 'דיל',
-                    age: 35,
-                    gender: true,
-                    agentId: 'g7h8i9',
+                {
+                    _id: '61f28035d372f97e321b1ced',
+                    templateId: '61e3ea6e4d51a83e87e83c80',
+                    properties: {
+                        firstName: 'סקי',
+                        lastName: 'דיל',
+                        age: 35,
+                        gender: true,
+                        agentId: 'g7h8i9',
+                    },
                 },
-            },
-        ],
+            ],
+        },
     ]);
 
     mock.onGet(/\/api\/entities\/[0-9]{3}\?expanded=true/).reply((config) => [

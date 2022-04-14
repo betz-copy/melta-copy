@@ -9,28 +9,24 @@ const basePropertyTypes = ['string', 'number', 'boolean'];
 const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTemplatePopulated | null): EntityTemplateWizardValues | undefined => {
     if (!entityTemplate) return undefined;
     const { iconFileId, properties, ...restOfEntityTemplate } = entityTemplate;
-    const { required } = properties;
 
-    const requiredProrerites: EntityTemplateFormInputProperties[] = [];
-    const optionalProrerites: EntityTemplateFormInputProperties[] = [];
+    const propertiesArray: EntityTemplateFormInputProperties[] = [];
+    const attachmentProperties: EntityTemplateFormInputProperties[] = [];
 
-    Object.keys(properties.properties).forEach((key) => {
-        if (required.includes(key)) {
-            requiredProrerites.push({ name: key, ...properties.properties[key] });
-        } else {
-            optionalProrerites.push({ name: key, ...properties.properties[key] });
-        }
+    Object.entries(properties.properties).forEach(([key, value]) => {
+        propertiesArray.push({ name: key, ...value, required: properties.required.includes(key) });
     });
 
     if (iconFileId) {
         const file: Partial<File> = { name: iconFileId };
-        return { ...restOfEntityTemplate, file, requiredProrerites, optionalProrerites };
+        return { ...restOfEntityTemplate, file, properties: propertiesArray, attachmentProperties };
     }
-    return { ...restOfEntityTemplate, requiredProrerites, optionalProrerites };
+
+    return { ...restOfEntityTemplate, properties: propertiesArray, attachmentProperties };
 };
 
 const formToJSONSchema = (values: EntityTemplateWizardValues) => {
-    const { requiredProrerites, optionalProrerites, ...restOfProperties } = values;
+    const { properties, attachmentProperties, ...restOfProperties } = values;
 
     const schema = {
         type: 'object',
@@ -38,21 +34,21 @@ const formToJSONSchema = (values: EntityTemplateWizardValues) => {
         required: [] as string[],
     };
 
-    requiredProrerites.forEach(({ name, title, type }) => {
+    properties.forEach(({ name, title, type, required }) => {
         schema.properties[name] = {
             title,
             type: basePropertyTypes.includes(type) ? type : 'string',
             format: basePropertyTypes.includes(type) ? undefined : type,
         };
 
-        schema.required.push(name);
+        if (required) schema.required.push(name);
     });
 
-    optionalProrerites.forEach(({ name, title, type }) => {
+    attachmentProperties.forEach(({ name, title }) => {
         schema.properties[name] = {
             title,
-            type: basePropertyTypes.includes(type) ? type : 'string',
-            format: basePropertyTypes.includes(type) ? undefined : type,
+            type: 'string',
+            format: 'fileId',
         };
     });
 
