@@ -96,7 +96,7 @@ const updateEntityTemplateRequest = async (entityTemplateId: string, updatedEnti
     formData.append('category', entityTemplate.category);
     formData.append('properties', JSON.stringify(entityTemplate.properties));
 
-    const { data } = await axios.put<IMongoEntityTemplatePopulated>(`${entityTemplates}/${entityTemplateId}`, updatedEntityTemplate);
+    const { data } = await axios.put<IMongoEntityTemplatePopulated>(`${entityTemplates}/${entityTemplateId}`, formData);
     return data;
 };
 
