@@ -22,7 +22,7 @@ const generateUser = () => {
     ]);
     const fullName = `${faker.name.firstName()} ${faker.name.lastName()}`;
     return {
-        _id: generateMongoId(), // kartoffelId
+        id: generateMongoId(), // kartoffelId
         displayName: `${fullName}${hierarchy ? ` - ${hierarchy}` : ''}`,
         digitalIdentities: generateUserDigitalIdentities(),
     };

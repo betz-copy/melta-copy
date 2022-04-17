@@ -7,9 +7,8 @@ const { getMyPermissions, getAllPermissions, createPermissionsBulk, deletePermis
 
 export interface IPermission {
     _id: string;
-    user: string;
-    resourceType: 'permissions' | 'templates' | 'instances';
-    // scope: 'read' | 'write'; // not used
+    userId: string;
+    resourceType: 'Permissions' | 'Templates' | 'Instances';
     category: string;
 }
 
@@ -36,7 +35,7 @@ const createPermissionsBulkRequest = async (permissionsToCreate: Omit<IPermissio
 };
 
 const deletePermissionsBulkRequest = async (ids: string[]) => {
-    const { data } = await axios.delete<IPermission>(deletePermissionsBulk, { params: { ids } });
+    const { data } = await axios.delete<IPermission[]>(deletePermissionsBulk, { params: { ids } });
     return data;
 };
 

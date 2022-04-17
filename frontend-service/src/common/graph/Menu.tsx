@@ -58,8 +58,6 @@ const Menu: React.FC<{
             <AreYouSureDialog
                 open={openDeleteDialog}
                 handleClose={closeDeleteDialog}
-                title="Are You Sure?"
-                onNo={closeDeleteDialog}
                 onYes={async () => {
                     await mutateAsync(String(node.id));
                     closeDeleteDialog();

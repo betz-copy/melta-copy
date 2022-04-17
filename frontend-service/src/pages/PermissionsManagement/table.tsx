@@ -64,8 +64,8 @@ const columnDefs = (
         filter: 'agTextColumnFilter',
         filterValueGetter: (params) => (params.data.user.displayName as string).toLowerCase(),
         getQuickFilterText: (params) => {
-            const { _id, displayName, digitalIdentities } = params.data.user as IUser;
-            return `${_id} ${displayName} ${digitalIdentities.map(({ uniqueId }) => uniqueId).join(' ')}`;
+            const { id, displayName, digitalIdentities } = params.data.user as IUser;
+            return `${id} ${displayName} ${digitalIdentities.map(({ uniqueId }) => uniqueId).join(' ')}`;
         },
     },
     nullableStringToBooleanColDefs('permissionsManagementId', i18next.t('permissions.permissionsManagement')),
@@ -182,7 +182,7 @@ const Table: React.FC<{
             defaultColDef={defaultColDef}
             columnDefs={columnDefs(categories, onDeletePermissionsOfUser, onEditPermissionsOfUser)}
             rowModelType="clientSide"
-            getRowId={({ data: permissionsOfUser }) => permissionsOfUser.user._id}
+            getRowId={({ data: permissionsOfUser }) => (permissionsOfUser as IPermissionsOfUser).user.id}
             pagination
             paginationAutoPageSize
             rowHeight={50}

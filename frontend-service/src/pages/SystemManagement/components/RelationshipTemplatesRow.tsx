@@ -152,8 +152,6 @@ const RelationshipTemplatesRow: React.FC<{
             <AreYouSureDialog
                 open={deleteRelationshipTemplateDialogState.isDialogOpen}
                 handleClose={() => setDeleteRelationshipTemplateDialogState({ isDialogOpen: false, relationshipTemplateId: null })}
-                title="Are You Sure?"
-                onNo={() => setDeleteRelationshipTemplateDialogState({ isDialogOpen: false, relationshipTemplateId: null })}
                 onYes={() => mutateAsync(deleteRelationshipTemplateDialogState.relationshipTemplateId!)}
                 isLoading={isLoading}
             />

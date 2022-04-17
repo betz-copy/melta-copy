@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import i18next from 'i18next';
 
-import { CircularProgress, Grid, IconButton, TextField, Typography } from '@mui/material';
+import { CircularProgress, Grid, IconButton, TextField } from '@mui/material';
 
 import { useQuery, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
@@ -11,6 +11,7 @@ import { getAllPermissionsOfUsersRequest, IPermissionsOfUser } from '../../servi
 import { IMongoCategory } from '../../interfaces/categories';
 import DeletePermissionsOfUserDialog from './deleteDialog';
 import PermissionsOfUserDialog from '../../common/permissionsOfUserDialog';
+import { BlueTitle } from '../../common/BlueTitle';
 
 const PermissionsManagement = () => {
     const queryClient = useQueryClient();
@@ -44,18 +45,12 @@ const PermissionsManagement = () => {
     return (
         <Grid container spacing={3}>
             <Grid item xs={12}>
-                {/* todo: copied from roni, make common component */}
-                <Typography
-                    style={{
-                        color: '#1976d2',
-                        fontWeight: '800',
-                    }}
+                <BlueTitle
+                    title={i18next.t('permissions.permissionsManagmentPageTitle')}
                     variant="h2"
                     component="h1"
-                    align="center"
-                >
-                    {i18next.t('permissions.permissionsManagmentPageTitle')}
-                </Typography>
+                    style={{ textAlign: 'center' }}
+                />
             </Grid>
             <Grid item container xs={12} spacing={1}>
                 <Grid item xs={12} container justifyContent="space-between" alignItems="center">

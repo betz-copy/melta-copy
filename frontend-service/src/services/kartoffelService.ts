@@ -4,7 +4,7 @@ import { environment } from '../globals';
 const { searchUsers } = environment.api;
 
 export interface IUser {
-    _id: string;
+    id: string;
     displayName: string; // custom displayName, not of kartoffel: `${fullName} - ${hierarchy}/${jobTitle}`
     digitalIdentities: { uniqueId: string }[];
 }

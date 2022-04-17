@@ -13,7 +13,8 @@ const UserAutocomplete: React.FC<{
     disabled: boolean;
     isError: boolean;
     helperText?: string;
-}> = ({ value, onChange, onBlur, disabled, isError, helperText }) => {
+    minInputLengthToSearch?: number;
+}> = ({ value, onChange, onBlur, disabled, isError, helperText, minInputLengthToSearch = 2 }) => {
     const [inputValue, setInputValue] = useState<string>(value ? value.displayName : '');
     const {
         data: usersOptions,
@@ -25,6 +26,7 @@ const UserAutocomplete: React.FC<{
             toast.error(i18next.t('userAutocomplete.failedToSearchUsers'));
         },
         enabled: false,
+        retry: false,
         initialData: [],
     });
 
@@ -37,7 +39,7 @@ const UserAutocomplete: React.FC<{
             onChange={onChange}
             onInputChange={(_e, newValue, reason) => {
                 setInputValue(newValue);
-                if (reason === 'input') {
+                if (reason === 'input' && newValue.length >= minInputLengthToSearch) {
                     searchUsersOptionsDebounced();
                 }
             }}
@@ -45,7 +47,7 @@ const UserAutocomplete: React.FC<{
             onBlur={onBlur}
             filterOptions={(o) => o} // the "autoComplete" is done at server side
             getOptionLabel={(option) => option.displayName}
-            isOptionEqualToValue={(option, currValue) => option._id === currValue._id}
+            isOptionEqualToValue={(option, currValue) => option.id === currValue.id}
             options={usersOptions!}
             loading={isFetchingUsersOptions}
             loadingText={i18next.t('userAutocomplete.loading')}

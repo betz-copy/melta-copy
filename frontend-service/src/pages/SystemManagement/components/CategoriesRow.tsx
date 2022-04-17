@@ -77,8 +77,6 @@ const CategoriesRow: React.FC<{ categories: IMongoCategory[] }> = ({ categories 
             <AreYouSureDialog
                 open={deleteCategoryDialogState.isDialogOpen}
                 handleClose={() => setDeleteCategoryDialogState({ isDialogOpen: false, categoryId: null })}
-                title="Are You Sure?"
-                onNo={() => setDeleteCategoryDialogState({ isDialogOpen: false, categoryId: null })}
                 onYes={() => mutateAsync(deleteCategoryDialogState.categoryId!)}
                 isLoading={isLoading}
             />
