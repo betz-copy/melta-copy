@@ -1,7 +1,7 @@
 /* eslint-disable react/jsx-no-useless-fragment */
 import React from 'react';
 import { TextField, Box, MenuItem, Button, Grid, Card, CardContent, Switch, FormControlLabel, IconButton } from '@mui/material';
-import { FieldArray, getIn } from 'formik';
+import { Field, FieldArray, getIn } from 'formik';
 import * as Yup from 'yup';
 import i18next from 'i18next';
 import { Delete as DeleteIcon } from '@mui/icons-material';
@@ -54,7 +54,15 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues>> = ({ v
                                         <CardContent>
                                             <Grid container margin={1} justifyContent="space-between">
                                                 <FormControlLabel
-                                                    control={<Switch onChange={handleChange} name={required} />}
+                                                    control={
+                                                        <Field
+                                                            id={required}
+                                                            name={required}
+                                                            component={Switch}
+                                                            onChange={handleChange}
+                                                            checked={p.required}
+                                                        />
+                                                    }
                                                     label={i18next.t('validation.required') as string}
                                                 />
                                                 <IconButton onClick={() => remove(index)}>
@@ -106,7 +114,12 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues>> = ({ v
                             );
                         })}
                     </Grid>
-                    <Button type="button" variant="contained" style={{ margin: '8px' }} onClick={() => push({ name: '', title: '', type: '' })}>
+                    <Button
+                        type="button"
+                        variant="contained"
+                        style={{ margin: '8px' }}
+                        onClick={() => push({ name: '', title: '', type: '', required: false })}
+                    >
                         {i18next.t('wizard.entityTemplate.addProperty')}
                     </Button>
 
