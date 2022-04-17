@@ -100,8 +100,6 @@ const EntityTemplatesRow: React.FC<{
             <AreYouSureDialog
                 open={deleteEntityTemplateDialogState.isDialogOpen}
                 handleClose={() => setDeleteEntityTemplateDialogState({ isDialogOpen: false, entityTemplateId: null })}
-                title="Are You Sure?"
-                onNo={() => setDeleteEntityTemplateDialogState({ isDialogOpen: false, entityTemplateId: null })}
                 onYes={() => mutateAsync(deleteEntityTemplateDialogState.entityTemplateId!)}
                 isLoading={isLoading}
             />

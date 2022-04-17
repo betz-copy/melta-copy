@@ -48,13 +48,13 @@ const getPermissionsToDeleteAndCreate = (
     const permissionsToCreate: Omit<IPermission, '_id'>[] = [];
 
     if (formPermissionsOfUser.doesHavePermissionsManagement && !existingPermissionsOfUser?.permissionsManagementId) {
-        permissionsToCreate.push({ user: formPermissionsOfUser.user._id, resourceType: 'permissions', category: 'all' });
+        permissionsToCreate.push({ userId: formPermissionsOfUser.user.id, resourceType: 'Permissions', category: 'All' });
     } else if (!formPermissionsOfUser.doesHavePermissionsManagement && existingPermissionsOfUser?.permissionsManagementId) {
         permissonsIdsToDelete.push(existingPermissionsOfUser.permissionsManagementId);
     }
 
     if (formPermissionsOfUser.doesHaveTemplatesManagement && !existingPermissionsOfUser?.templatesManagementId) {
-        permissionsToCreate.push({ user: formPermissionsOfUser.user._id, resourceType: 'templates', category: 'all' });
+        permissionsToCreate.push({ userId: formPermissionsOfUser.user.id, resourceType: 'Templates', category: 'All' });
     } else if (!formPermissionsOfUser.doesHaveTemplatesManagement && existingPermissionsOfUser?.templatesManagementId) {
         permissonsIdsToDelete.push(existingPermissionsOfUser.templatesManagementId);
     }
@@ -68,7 +68,7 @@ const getPermissionsToDeleteAndCreate = (
         );
 
         if (permissionsOfUserDialogStateForCategory && !existingPermissionsOfUserForCategory) {
-            permissionsToCreate.push({ user: formPermissionsOfUser.user._id, resourceType: 'instances', category: category._id });
+            permissionsToCreate.push({ userId: formPermissionsOfUser.user.id, resourceType: 'Instances', category: category._id });
         } else if (!permissionsOfUserDialogStateForCategory && existingPermissionsOfUserForCategory) {
             permissonsIdsToDelete.push(existingPermissionsOfUserForCategory._id);
         }
@@ -93,8 +93,8 @@ const createOrEditPermissionsOfUserRequest = async (
     }
     const createdPermissions = await createPermissionsBulkRequest(permissionsToCreate);
 
-    const createdPermissionsManagement = createdPermissions.find(({ resourceType }) => resourceType === 'permissions');
-    const createdTemplatesManagement = createdPermissions.find(({ resourceType }) => resourceType === 'templates');
+    const createdPermissionsManagement = createdPermissions.find(({ resourceType }) => resourceType === 'Permissions');
+    const createdTemplatesManagement = createdPermissions.find(({ resourceType }) => resourceType === 'Templates');
 
     const newPermissionsOfUser: IPermissionsOfUser = {
         user: formPermissionsOfUser.user,
@@ -164,7 +164,7 @@ const PermissionsOfUserDialog: React.FC<{
                     const newPermissions = oldPermissions.slice();
 
                     if (existingPermissionsOfUser) {
-                        const existingPermissionsOfUserIndex = newPermissions.findIndex(({ user }) => user._id === newPermissionsOfUser.user._id);
+                        const existingPermissionsOfUserIndex = newPermissions.findIndex(({ user }) => user.id === newPermissionsOfUser.user.id);
                         const doesUserShouldHaveNoPermissions =
                             !newPermissionsOfUser.permissionsManagementId &&
                             !newPermissionsOfUser.templatesManagementId &&
@@ -204,7 +204,7 @@ const PermissionsOfUserDialog: React.FC<{
                     user: Yup.object().nullable().required(i18next.t('validation.required')),
                 }).unknown(true)}
                 validate={(formPermissionsOfUser) => {
-                    if (mode === 'create' && allPermissions?.some(({ user }) => user._id === formPermissionsOfUser.user?._id)) {
+                    if (mode === 'create' && allPermissions?.some(({ user }) => user.id === formPermissionsOfUser.user?.id)) {
                         return { user: i18next.t('permissions.permissionsOfUserDialog.userAlreadyExistOnCreateMessage') };
                     }
 

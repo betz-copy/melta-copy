@@ -34,7 +34,7 @@ const DeletePermissionsOfUserDialog: React.FC<{ isOpen: boolean; permissionsOfUs
             onSuccess: (_data) => {
                 queryClient.setQueryData<IPermissionsOfUser[]>('getAllPermissions', (oldPermissions) => {
                     if (!oldPermissions) throw new Error('should contain existing permissions when deleting');
-                    return oldPermissions.filter(({ user }) => user._id !== permissionsOfUser?.user._id);
+                    return oldPermissions.filter(({ user }) => user.id !== permissionsOfUser?.user.id);
                 });
                 toast.success(i18next.t('permissions.succeededToDeleteUser'));
             },
@@ -45,8 +45,6 @@ const DeletePermissionsOfUserDialog: React.FC<{ isOpen: boolean; permissionsOfUs
         <AreYouSureDialog
             open={isOpen}
             handleClose={handleClose}
-            title={i18next.t('areYouSureDialog.title')}
-            onNo={handleClose}
             onYes={async () => {
                 await deleteAllPermissionsOfUser();
                 handleClose();
