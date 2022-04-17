@@ -28,23 +28,25 @@ const cacheRtl = createCache({
 
 const Main = () => {
     const [open, setOpen] = useState(false);
-    useQuery('getEntityTemplates', getEntityTemplatesRequest, {
+    const { data: categories } = useQuery('getCategories', getCategoriesRequest, {
+        onError: () => {
+            toast.error('failed to get categories');
+        },
+        initialData: [],
+    });
+    const { data: entityTemplates } = useQuery('getEntityTemplates', getEntityTemplatesRequest, {
         onError: () => {
             toast.error('failed to get entityTemplates');
         },
         initialData: [],
+        enabled: Boolean(categories),
     });
     useQuery('getRelationshipTemplates', getRelationshipTemplatesRequest, {
         onError: () => {
             toast.error('failed to get relationshipTemplates');
         },
         initialData: [],
-    });
-    useQuery('getCategories', getCategoriesRequest, {
-        onError: () => {
-            toast.error('failed to get categories');
-        },
-        initialData: [],
+        enabled: Boolean(entityTemplates),
     });
 
     useQuery('getMyPermissions', getMyPermissionsRequest, {

@@ -22,14 +22,14 @@ const FileInput: React.FC<{
                     borderRadius: '5px',
                     paddingTop: '11px',
                     paddingBottom: '11px',
-                    width: '220px',
+                    width: '245px',
                     alignItems: 'center',
                 }}
             >
                 <Grid item>
                     <FileIcon fontSize="medium" style={{ marginRight: '10px', marginLeft: '5px' }} />
                 </Grid>
-                <Grid item style={{ overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis', width: '140px' }}>
+                <Grid item style={{ overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis', width: '145px' }}>
                     {filePath}
                 </Grid>
                 <Grid item>
@@ -58,7 +58,7 @@ const FileInput: React.FC<{
                 <Grid style={{ border, borderRadius: '5px' }}>
                     <Grid {...getRootProps()}>
                         <input {...getInputProps()} name="iconFile" />
-                        <p style={{ color: '#666666', paddingRight: '10px', width: '220px' }}>{inputText}</p>
+                        <p style={{ color: '#666666', paddingRight: '10px', width: '245px' }}>{inputText}</p>
                     </Grid>
                 </Grid>
             )}

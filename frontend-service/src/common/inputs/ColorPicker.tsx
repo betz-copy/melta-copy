@@ -8,26 +8,26 @@ const ColorPicker: React.FC<{
     setColor: React.Dispatch<React.SetStateAction<string>>;
     text: string;
 }> = ({ colors, color, setColor, text }) => {
-    const [open, setopen] = useState(false);
+    const [open, setOpen] = useState(false);
     return (
         <>
             <Button
                 onClick={(_ev) =>
-                    setopen((curr) => {
+                    setOpen((curr) => {
                         return !curr;
                     })
                 }
-                style={{ backgroundColor: color, height: '50px', width: '220px', border: '1px solid rgb(196, 196, 196)' }}
+                style={{ backgroundColor: color, height: '50px', width: '245px', border: '1px solid rgb(196, 196, 196)' }}
             >
                 <Typography style={{ color: 'black' }}>{text}</Typography>
             </Button>
-            {open ? (
+            {open && (
                 <TwitterPicker
                     colors={colors}
                     color={color}
                     onChange={(col) => {
                         setColor(col.hex);
-                        setopen(false);
+                        setOpen(false);
                     }}
                     triangle="top-right"
                     styles={{
@@ -42,9 +42,6 @@ const ColorPicker: React.FC<{
                         },
                     }}
                 />
-            ) : (
-                // eslint-disable-next-line react/jsx-no-useless-fragment
-                <></>
             )}
         </>
     );
