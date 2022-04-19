@@ -1,6 +1,6 @@
 import React from 'react';
 import i18next from 'i18next';
-import 'ag-grid-enterprise';
+import '@noam7700/ag-grid-enterprise';
 import { AgGridColumn, AgGridReact } from 'ag-grid-react';
 import { Grid, Typography, Box, Input, IconButton } from '@mui/material';
 import { SearchRounded, CloseOutlined, AddCircle, FileDownloadOutlined } from '@mui/icons-material';

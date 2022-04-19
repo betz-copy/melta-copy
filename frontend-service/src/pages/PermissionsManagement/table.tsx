@@ -1,7 +1,7 @@
 import React from 'react';
 import i18next from 'i18next';
 
-import 'ag-grid-enterprise';
+import '@noam7700/ag-grid-enterprise';
 import { AgGridReact } from 'ag-grid-react';
 import { ColDef, ICellRendererParams, ValueFormatterParams } from 'ag-grid-community';
 import 'ag-grid-community/dist/styles/ag-grid.css';

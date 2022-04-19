@@ -4,7 +4,7 @@ import { Grid, Typography, IconButton } from '@mui/material';
 import { AddCircle, FileDownloadOutlined } from '@mui/icons-material';
 import { AgGridReact } from 'ag-grid-react';
 import { ColDef, IServerSideDatasource } from 'ag-grid-community';
-import 'ag-grid-enterprise';
+import '@noam7700/ag-grid-enterprise';
 
 import { getEntitiesByTemplateRequest } from '../../../services/entitiesService';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
