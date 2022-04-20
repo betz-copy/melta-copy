@@ -1,6 +1,6 @@
 FROM node:16.12-alpine as build
 WORKDIR /usr/src/app
-COPY ["package.json", "./"]
+COPY ["package.json", ".npmrc", "./"]
 RUN npm install --silent
 COPY . .
 RUN npm run build --prod
