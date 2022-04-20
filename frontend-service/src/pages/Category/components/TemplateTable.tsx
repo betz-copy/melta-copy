@@ -17,7 +17,8 @@ import '../../../css/components/templateTable.css';
 
 const TemplateTable: React.FC<{
     template: IMongoEntityTemplatePopulated;
-}> = ({ template }) => {
+    onAddEntity: MouseEventHandler<HTMLButtonElement>;
+}> = ({ template, onAddEntity }) => {
     const gridRef = useRef<any>(null);
 
     const handleExport: MouseEventHandler<HTMLButtonElement> = () => {
@@ -56,7 +57,7 @@ const TemplateTable: React.FC<{
                         <IconButton size="medium" onClick={handleExport}>
                             <FileDownloadOutlined color="primary" fontSize="medium" />
                         </IconButton>
-                        <IconButton>
+                        <IconButton onClick={onAddEntity}>
                             <AddCircle color="primary" fontSize="large" />
                         </IconButton>
                     </Grid>

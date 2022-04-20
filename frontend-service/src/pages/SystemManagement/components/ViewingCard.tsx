@@ -10,7 +10,7 @@ const ViewingCard: React.FC<{ title: string; icon?: React.ReactNode; onEditClick
 }) => {
     return (
         <Grid item>
-            <Card sx={{ minWidth: '250px' }}>
+            <Card sx={{ minWidth: '250px', ':hover': { transform: 'scale(1.05)' } }}>
                 <CardHeader avatar={icon} title={title} titleTypographyProps={{ fontSize: '1.5rem' }} />
                 <CardActions sx={{ justifyContent: 'space-between' }}>
                     <IconButton onClick={onEditClick}>
