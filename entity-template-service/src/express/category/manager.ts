@@ -15,7 +15,7 @@ class CategoryManager {
         return CategoryModel.findById(id).orFail(new ServiceError(404, 'Category not found')).lean().exec();
     }
 
-    static async createCategory(categoryData: ICategory, file?: Express.Multer.File) {
+    static async createCategory(categoryData: Omit<ICategory, 'iconFileId'>, file?: Express.Multer.File) {
         if (file) {
             const newFile = await uploadFile(file);
             return CategoryModel.create({ ...categoryData, iconFileId: newFile.data.path });
@@ -25,7 +25,7 @@ class CategoryManager {
     }
 
     static async deleteCategory(id: string) {
-        const templates = await EntityTemplateManager.getTemplates({ categoryId: id, limit: 0, skip: 0 });
+        const templates = await EntityTemplateManager.getTemplates({ categoryIds: [id], limit: 0, skip: 0 });
         if (templates.length > 0) {
             throw new ServiceError(403, 'category still has entity templates');
         }
@@ -38,7 +38,7 @@ class CategoryManager {
         return CategoryModel.findByIdAndDelete(id).orFail(new ServiceError(404, 'Category not found')).lean().exec();
     }
 
-    static async updateCategory(id: string, updatedData: Partial<ICategory> & { file?: string }, file?: Express.Multer.File) {
+    static async updateCategory(id: string, updatedData: Partial<Omit<ICategory, 'iconFileId'>> & { file?: string }, file?: Express.Multer.File) {
         const { file: categoryFile } = updatedData;
 
         if (file || categoryFile === null) {

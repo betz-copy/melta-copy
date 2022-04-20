@@ -5,7 +5,7 @@ import { MongoIdSchema, fileSchema, innerPropertiesSchema } from '../../utils/jo
 export const getEntityTemplatesSchema = Joi.object({
     query: {
         search: Joi.string(),
-        categoryId: MongoIdSchema,
+        categoryIds: Joi.array().items(MongoIdSchema).min(1),
         limit: Joi.number().integer().min(0).default(0),
         skip: Joi.number().integer().min(0).default(0),
     },

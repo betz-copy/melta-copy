@@ -4,7 +4,9 @@ import { EntityTemplateManager } from './manager';
 class EntityTemplateController {
     static async getEntityTemplates(req: Request, res: Response) {
         res.json(
-            await EntityTemplateManager.getTemplates(req.query as unknown as { search?: string; categoryId?: string; limit: number; skip: number }),
+            await EntityTemplateManager.getTemplates(
+                req.query as unknown as { search?: string; categoryIds?: string[]; limit: number; skip: number },
+            ),
         );
     }
 
