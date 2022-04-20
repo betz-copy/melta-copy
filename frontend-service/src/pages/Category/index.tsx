@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useQueryClient } from 'react-query';
 import { useParams } from 'react-router-dom';
 import { Grid, ToggleButton, ToggleButtonGroup, IconButton, Typography, CircularProgress } from '@mui/material';
-import { TableChartOutlined, AccountTreeOutlined, AddCircle as AddIcon } from '@mui/icons-material';
+import { TableChartOutlined, AccountTreeOutlined, AddCircle as AddIcon, DownloadForOffline as DonwloadIcon } from '@mui/icons-material';
 import i18next from 'i18next';
+import { exportMultipleSheetsAsExcel } from 'ag-grid-enterprise';
 import { TemplateTable } from './components/TemplateTable';
 import { Header } from '../../common/Header';
 import { IMongoCategory } from '../../interfaces/categories';
@@ -20,6 +21,7 @@ const Category: React.FC = () => {
     const [addEntityWizardState, setAddEntityWizardState] = useState<{ isOpen: boolean; initialStep?: number; initialValues?: EntityWizardValues }>({
         isOpen: false,
     });
+    const templateTablesRef = useRef<any>([]);
 
     const templates = queryClient
         .getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates')
@@ -28,6 +30,13 @@ const Category: React.FC = () => {
     const categoryDisplayName = queryClient
         .getQueryData<IMongoCategory[]>('getCategories')
         ?.find((oneCategory) => oneCategory._id === categoryId)?.displayName;
+
+    const onExcelExport = () => {
+        exportMultipleSheetsAsExcel({
+            data: templateTablesRef.current.map((item) => item.getExcelData()),
+            fileName: `${categoryDisplayName}.xlsx`,
+        });
+    };
 
     if (templates) {
         return (
@@ -43,6 +52,14 @@ const Category: React.FC = () => {
                     </Header>
                 </Grid>
                 <Grid container justifyContent="end" marginBottom="3vh">
+                    <Grid item paddingRight="1%">
+                        <IconButton style={{ background: 'white', borderRadius: '7px' }} onClick={onExcelExport}>
+                            <DonwloadIcon color="primary" />
+                            <Typography fontSize={14} style={{ fontWeight: '500', paddingRight: '5px' }}>
+                                {i18next.t('downloadMultipleTables')}
+                            </Typography>
+                        </IconButton>
+                    </Grid>
                     <Grid item paddingRight="1%">
                         <IconButton onClick={() => setAddEntityWizardState({ isOpen: true })} style={{ background: 'white', borderRadius: '7px' }}>
                             <AddIcon color="primary" />
@@ -76,8 +93,10 @@ const Category: React.FC = () => {
                         <Grid container>
                             {templates
                                 .filter((template) => !templateToHide.includes(template.displayName))
-                                .map((template) => (
+                                .map((template, index) => (
                                     <TemplateTable
+                                        // eslint-disable-next-line no-return-assign
+                                        ref={(el) => (templateTablesRef.current[index] = el)}
                                         key={template._id}
                                         template={template}
                                         onAddEntity={() =>

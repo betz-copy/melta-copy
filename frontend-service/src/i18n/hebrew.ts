@@ -8,6 +8,7 @@ export default {
     relationshipTemplate: 'תבנית קשר',
     relationshipTemplates: 'תבניות קשר',
     addEntity: 'הוסף יישות',
+    downloadMultipleTables: 'הורד טבלאות',
     searchLabel: 'חפש...',
     booleanOptions: { yes: 'כן', no: 'לא' },
     pages: {
