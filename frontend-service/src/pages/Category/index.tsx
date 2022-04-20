@@ -4,7 +4,7 @@ import { useParams } from 'react-router-dom';
 import { Grid, ToggleButton, ToggleButtonGroup, IconButton, Typography, CircularProgress } from '@mui/material';
 import { TableChartOutlined, AccountTreeOutlined, AddCircle as AddIcon, DownloadForOffline as DonwloadIcon } from '@mui/icons-material';
 import i18next from 'i18next';
-import { exportMultipleSheetsAsExcel } from 'ag-grid-enterprise';
+import { exportMultipleSheetsAsExcel } from '@noam7700/ag-grid-enterprise';
 import { TemplateTable } from './components/TemplateTable';
 import { Header } from '../../common/Header';
 import { IMongoCategory } from '../../interfaces/categories';
