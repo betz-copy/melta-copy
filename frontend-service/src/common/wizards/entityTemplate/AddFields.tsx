@@ -103,7 +103,7 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues>> = ({ v
                                                 >
                                                     {validPropertyTypes.map((validType) => (
                                                         <MenuItem key={validType} value={validType}>
-                                                            {validType}
+                                                            {i18next.t(`propertyTypes.${validType}`)}
                                                         </MenuItem>
                                                     ))}
                                                 </TextField>

@@ -22,7 +22,7 @@ const FileInput: React.FC<{
                     borderRadius: '5px',
                     paddingTop: '11px',
                     paddingBottom: '11px',
-                    width: '245px',
+                    width: '220px',
                     alignItems: 'center',
                 }}
             >
@@ -58,7 +58,7 @@ const FileInput: React.FC<{
                 <Grid style={{ border, borderRadius: '5px' }}>
                     <Grid {...getRootProps()}>
                         <input {...getInputProps()} name="iconFile" />
-                        <p style={{ color: '#666666', paddingRight: '10px', width: '245px' }}>{inputText}</p>
+                        <p style={{ color: '#666666', paddingRight: '10px', width: '220px' }}>{inputText}</p>
                     </Grid>
                 </Grid>
             )}

@@ -70,7 +70,7 @@ export default {
         finish: 'סיים',
         name: 'שם באנגלית',
         displayName: 'שם תצוגה',
-        file: 'הוסף קובץ',
+        file: 'הוסף אייקון',
         color: 'בחר צבע',
         category: {
             title: 'יצירת קטגוריה',
@@ -127,6 +127,15 @@ export default {
         english: 'אנגלית',
         hebrew: 'עברית',
         oneField: 'לפחות שדה חובה אחד',
+    },
+    propertyTypes: {
+        string: 'מחרוזת',
+        number: 'מספר',
+        boolean: 'בולאני',
+        date: 'תאריך',
+        time: 'שעה',
+        'date-time': 'תאריך ושעה',
+        email: 'כתובת מייל',
     },
     agGridLocaleText,
 };
