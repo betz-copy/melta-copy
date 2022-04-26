@@ -17,7 +17,7 @@ const FillFields: React.FC<StepComponentProps<EntityWizardValues>> = ({ values, 
             onChange={({ formData }) => setFieldValue('properties', formData)}
             formData={values.properties}
         >
-            <div />
+            <div /> {/* remove the built in submit button */}
         </Form>
     );
 };

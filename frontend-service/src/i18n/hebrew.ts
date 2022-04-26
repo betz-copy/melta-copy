@@ -13,6 +13,7 @@ export default {
     booleanOptions: { yes: 'כן', no: 'לא' },
     pages: {
         systemManagement: 'ניהול מערכת',
+        entityView: 'עמוד פרט',
     },
     systemManagement: {
         search: 'חיפוש',
@@ -116,6 +117,7 @@ export default {
             createdSuccessfully: 'יישות נוצרה בהצלחה',
             editedSuccefully: 'יישות עודכנה בהצלחה',
             failedToCreate: 'נכשל ליצור יישות',
+            failedToEdit: 'נכשל בעריכת יישות',
             deletedSuccessfully: 'יישות נמחקה בהצלחה',
             chooseEntityTemplate: 'בחירת תבנית יישות',
             fillFields: 'מלא פרטים',

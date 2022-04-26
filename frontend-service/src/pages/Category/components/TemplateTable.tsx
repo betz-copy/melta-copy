@@ -1,13 +1,14 @@
-import React, { useRef, MouseEventHandler, forwardRef, useImperativeHandle } from 'react';
+import React, { useRef, MouseEventHandler, forwardRef, useImperativeHandle, memo } from 'react';
 import i18next from 'i18next';
 import { Grid, Typography, IconButton } from '@mui/material';
-import { AddCircle, FileDownloadOutlined } from '@mui/icons-material';
+import { AddCircle, FileDownloadOutlined, ReadMore as ReadMoreIcon } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
 import { AgGridReact } from 'ag-grid-react';
-import { ColDef, IServerSideDatasource } from 'ag-grid-community';
-import '@noam7700/ag-grid-enterprise';
+import { ColDef, IServerSideDatasource } from '@noam7700/ag-grid-enterprise';
 
 import { getEntitiesByTemplateRequest } from '../../../services/entitiesService';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { IEntity } from '../../../interfaces/entities';
 import { booleanColDef, dateColDef, numberColDef, stringColDef } from '../../../utils/agGrid/commonColDefs';
 import { DateFilterComponent } from '../../../utils/agGrid/DateFilterComponent';
 
@@ -18,6 +19,7 @@ import '../../../css/components/templateTable.css';
 const TemplateTable = forwardRef(
     ({ template, onAddEntity }: { template: IMongoEntityTemplatePopulated; onAddEntity: MouseEventHandler<HTMLButtonElement> }, ref) => {
         const gridRef = useRef<any>(null);
+        const navigate = useNavigate();
 
         const handleExport: MouseEventHandler<HTMLButtonElement> = () => {
             gridRef.current.api.exportDataAsExcel({ sheetName: template.displayName, fileName: `${template.displayName}.xlsx` });
@@ -42,9 +44,35 @@ const TemplateTable = forwardRef(
             async getRows(params) {
                 const { sortModel, startRow, endRow, filterModel } = params.request;
                 const data = await getEntitiesByTemplateRequest(template._id, { sortModel, startRow, endRow, filterModel });
-                params.success({ rowData: data.rows.map((entity) => entity.properties), rowCount: 100 }); // TODO: change row count
+                params.success({
+                    rowData: data.rows.map((entity) => {
+                        return { ...entity.properties, _id: entity._id };
+                    }),
+                    rowCount: 100, // TODO: change row count
+                });
             },
         };
+
+        const addedColumns: ColDef[] = [
+            {
+                colId: 'actions',
+                headerName: i18next.t('pages.entityView'),
+                pinned: 'left',
+                field: '_id',
+                menuTabs: [],
+                sortable: false,
+                minWidth: 0,
+                cellRenderer: memo<{ value: string }>(({ value }) => (
+                    <IconButton onClick={() => navigate(`/entity/${value}`)}>
+                        <ReadMoreIcon
+                            style={{
+                                transform: 'scaleX(-1)',
+                            }}
+                        />
+                    </IconButton>
+                )),
+            },
+        ];
 
         return (
             <Grid container>
@@ -72,7 +100,8 @@ const TemplateTable = forwardRef(
                     containerStyle={{ height: 360, width: '100%', marginBottom: '30px', fontFamily: 'Rubik', fontSize: '16px', borderRadius: '70px' }}
                     domLayout="autoHeight"
                     ref={gridRef}
-                    columnDefs={columnDefs}
+                    getRowId={({ data: entity }) => (entity as IEntity['properties'] & { _id: string })._id}
+                    columnDefs={[...columnDefs, ...addedColumns]}
                     pagination
                     paginationPageSize={5}
                     rowHeight={50}
@@ -81,6 +110,9 @@ const TemplateTable = forwardRef(
                     serverSideStoreType="partial"
                     components={{
                         agDateInput: DateFilterComponent,
+                    }}
+                    onFirstDataRendered={(params) => {
+                        params.columnApi.autoSizeColumns(['actions']);
                     }}
                     columnHoverHighlight
                     enableRtl

@@ -690,7 +690,7 @@ const mockEntites = (mock: MockAdapter) => {
         },
     ]);
 
-    mock.onGet(/\/api\/entities\/[0-9]{3}\?expanded=true/).reply((config) => [
+    mock.onGet(/\/api\/entities\/[0-9a-fA-F]{24}\?expanded=true/).reply((config) => [
         200,
         {
             entity: {
@@ -716,7 +716,7 @@ const mockEntites = (mock: MockAdapter) => {
                             startDate: '2013-01-01',
                             endDate: '2013-01-10',
                         },
-                        _id: '100',
+                        _id: '61e3ea6e4d51a82e87e83c7f',
                     },
                 },
                 {
@@ -732,7 +732,7 @@ const mockEntites = (mock: MockAdapter) => {
                             gender: false,
                             agentId: 'a1b2c3',
                         },
-                        _id: '105',
+                        _id: '61e3ea6e4d51582e87e83c7f',
                     },
                 },
                 {
@@ -749,7 +749,7 @@ const mockEntites = (mock: MockAdapter) => {
                             to: 'ORL',
                             planeType: 'B747-300',
                         },
-                        _id: '140',
+                        _id: '61e3ea8e4d51a82e87e83c7f',
                     },
                 },
                 {
@@ -766,7 +766,7 @@ const mockEntites = (mock: MockAdapter) => {
                             to: 'CYP',
                             planeType: 'A380-400',
                         },
-                        _id: '141',
+                        _id: '61e3ea8e4d51a82e77e83c7f',
                     },
                 },
                 {
@@ -781,7 +781,7 @@ const mockEntites = (mock: MockAdapter) => {
                             checkOutDate: '2020-08-16',
                             country: 'קפריסין',
                         },
-                        _id: '135',
+                        _id: '61e3ea8e4d51a82e77183c7f',
                     },
                 },
                 {
@@ -797,14 +797,14 @@ const mockEntites = (mock: MockAdapter) => {
                             country: 'שומקום',
                         },
                     },
-                    _id: '160',
+                    _id: '61e32a8e4d51a82e77e83c7f',
                 },
             ],
         },
     ]);
 
     // Get specific entity
-    mock.onGet(/\/api\/entities\/[0-9]{3}/).reply((config) => {
+    mock.onGet(/\/api\/entities\/[0-9a-fA-F]{24}/).reply((config) => {
         return [
             200,
             {
@@ -989,8 +989,25 @@ const mockEntites = (mock: MockAdapter) => {
         },
     ]);
 
+    // Update
+    mock.onPut(/\/api\/entities\/[0-9a-fA-F]{24}/).reply((config) => {
+        return [
+            200,
+            {
+                templateId: '61e3ea6e4d51a83e87e83c7f',
+                properties: {
+                    firstName: 'נועה',
+                    lastName: 'קירללללל',
+                    age: 20,
+                    gender: false,
+                },
+                _id: config.url!.split('/')[2].split('?')[0],
+            },
+        ];
+    });
+
     // Delete
-    mock.onDelete(/\/api\/entities\/[0-9]{3}/).reply(() => {
+    mock.onDelete(/\/api\/entities\/[0-9a-fA-F]{24}/).reply(() => {
         return [200, {}];
     });
 };

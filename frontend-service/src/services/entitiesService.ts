@@ -1,7 +1,7 @@
 import { IServerSideGetRowsRequest } from 'ag-grid-community';
 import axios from '../axios';
 import { environment } from '../globals';
-import { IEntity, IRelationshipEntity } from '../interfaces/entities';
+import { IEntity, IEntityExpanded } from '../interfaces/entities';
 
 const { entities } = environment.api;
 
@@ -21,14 +21,17 @@ const getRelatedEntitiesByIdRequest = async (entityId: string) => {
 };
 
 const getExpandedEntityByIdRequest = async (entityId: string) => {
-    const { data } = await axios.get<{ entity: IEntity; connections: { relationship: IRelationshipEntity; entity: IEntity }[] }>(
-        `${entities}/${entityId}?expanded=true`,
-    );
+    const { data } = await axios.get<IEntityExpanded>(`${entities}/${entityId}?expanded=true`);
     return data;
 };
 
 const createEntityRequest = async (entity: IEntity) => {
     const { data } = await axios.post<IEntity>(entities, entity);
+    return data;
+};
+
+const updateEntityRequest = async (entityId: string, newEntityData: IEntity) => {
+    const { data } = await axios.put(`${entities}/${entityId}`, newEntityData);
     return data;
 };
 
@@ -44,4 +47,5 @@ export {
     createEntityRequest,
     deleteEntityRequest,
     getExpandedEntityByIdRequest,
+    updateEntityRequest,
 };
