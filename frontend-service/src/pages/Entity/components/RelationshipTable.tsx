@@ -39,9 +39,7 @@ const RelationshipTable: React.FC<{ connectedEntities: IEntity[]; entityTemplate
             pagination
             paginationPageSize={5}
             rowHeight={50}
-            rowData={connectedEntities.map((entity) => {
-                return { ...entity.properties, _id: entity._id };
-            })}
+            rowData={connectedEntities.map((entity) => entity.properties)}
             columnHoverHighlight
             enableRtl
             enableCellTextSelection

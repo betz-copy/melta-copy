@@ -1,7 +1,8 @@
 export interface IEntity {
-    _id: string;
     templateId: string;
-    properties: object;
+    properties: object & {
+        _id: string;
+    };
 }
 
 export interface IRelationshipEntity {

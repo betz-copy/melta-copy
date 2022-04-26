@@ -45,9 +45,7 @@ const TemplateTable = forwardRef(
                 const { sortModel, startRow, endRow, filterModel } = params.request;
                 const data = await getEntitiesByTemplateRequest(template._id, { sortModel, startRow, endRow, filterModel });
                 params.success({
-                    rowData: data.rows.map((entity) => {
-                        return { ...entity.properties, _id: entity._id };
-                    }),
+                    rowData: data.rows.map((entity) => entity.properties),
                     rowCount: 100, // TODO: change row count
                 });
             },

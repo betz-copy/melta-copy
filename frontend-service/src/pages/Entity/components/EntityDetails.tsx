@@ -27,7 +27,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
         setOpenDeleteDialog(false);
     };
 
-    const { isLoading: isDeleteLoading, mutateAsync: deleteMutation } = useMutation(() => deleteEntityRequest(entity._id), {
+    const { isLoading: isDeleteLoading, mutateAsync: deleteMutation } = useMutation(() => deleteEntityRequest(entity.properties._id), {
         onError: () => {
             closeDeleteDialog();
         },
@@ -38,10 +38,10 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
     });
 
     const { isLoading: isUpdateLoading, mutateAsync: updateMutation } = useMutation(
-        (newEntityDate: IEntity) => updateEntityRequest(entity._id, newEntityDate),
+        (newEntityDate: IEntity) => updateEntityRequest(entity.properties._id, newEntityDate),
         {
             onSuccess: (data) => {
-                queryClient.setQueryData(['getExpandedEntity', entity._id], () => {
+                queryClient.setQueryData(['getExpandedEntity', entity.properties._id], () => {
                     return {
                         ...expandedEntity,
                         entity: data,
@@ -89,7 +89,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                             </IconButton>
                         ) : (
                             <Grid container direction="column">
-                                <IconButton onClick={() => navigate(`/entity/${entity._id}/graph`, { state: expandedEntity })}>
+                                <IconButton onClick={() => navigate(`/entity/${entity.properties._id}/graph`, { state: expandedEntity })}>
                                     <GraphIcon />
                                 </IconButton>
                                 <IconButton onClick={() => setIsEditMode(true)}>

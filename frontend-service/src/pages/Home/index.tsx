@@ -37,8 +37,8 @@ const Home = () => {
                     nodes: entitiesData.nodes.map((item) => {
                         return {
                             data: { ...item },
-                            id: item._id,
-                            val: sizeByConnectons(item._id, entitiesData.links),
+                            id: item.properties._id,
+                            val: sizeByConnectons(item.properties._id, entitiesData.links),
                         };
                     }),
                     links: entitiesData.links,
