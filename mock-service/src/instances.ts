@@ -39,7 +39,7 @@ export const createInstances = async (entityTemplates: IMongoEntityTemplate[]) =
 };
 
 export const createRelationshipInstances = async (
-    entities: { properties: { id: string }; templateId: string }[],
+    entities: { properties: { _id: string }; templateId: string }[],
     relationsipTemplates: IMongoRealtionshipTemplate[],
 ) => {
     const promises = relationsipTemplates
@@ -50,9 +50,9 @@ export const createRelationshipInstances = async (
             return Array.from(
                 { length: Math.floor(Math.random() * (maxNumberOfRelationships - minNumberOfRelationships + 1)) + minNumberOfRelationships },
                 () => {
-                    const sourceEntityId = relevantSourceEntities[Math.floor(Math.random() * relevantSourceEntities.length)].properties.id;
+                    const sourceEntityId = relevantSourceEntities[Math.floor(Math.random() * relevantSourceEntities.length)].properties._id;
                     const destinationEntityId =
-                        relevantDestinationEntities[Math.floor(Math.random() * relevantDestinationEntities.length)].properties.id;
+                        relevantDestinationEntities[Math.floor(Math.random() * relevantDestinationEntities.length)].properties._id;
 
                     return limit(() =>
                         axios.post(uri + createRelationshipRoute, {
