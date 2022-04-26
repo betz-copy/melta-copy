@@ -54,6 +54,7 @@ const CategoriesRow: React.FC<{ categories: IMongoCategory[] }> = ({ categories 
             <Grid container spacing={4}>
                 {categories.map((category) => (
                     <ViewingCard
+                        minWidth={250}
                         key={category._id}
                         title={category.displayName}
                         icon={

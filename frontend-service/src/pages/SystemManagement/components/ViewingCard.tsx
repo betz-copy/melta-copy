@@ -2,15 +2,16 @@ import React, { MouseEventHandler } from 'react';
 import { Grid, IconButton, Card, CardHeader, CardActions } from '@mui/material';
 import { Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
 
-const ViewingCard: React.FC<{ title: string; icon?: React.ReactNode; onEditClick: MouseEventHandler; onDeleteClick: MouseEventHandler }> = ({
-    title,
-    icon,
-    onEditClick,
-    onDeleteClick,
-}) => {
+const ViewingCard: React.FC<{
+    title: React.ReactNode;
+    icon?: React.ReactNode;
+    onEditClick: MouseEventHandler;
+    onDeleteClick: MouseEventHandler;
+    minWidth: number;
+}> = ({ title, icon, onEditClick, onDeleteClick, minWidth }) => {
     return (
         <Grid item>
-            <Card sx={{ minWidth: '250px', ':hover': { transform: 'scale(1.05)' } }}>
+            <Card sx={{ minWidth: `${minWidth}px`, ':hover': { transform: 'scale(1.05)' } }}>
                 <CardHeader avatar={icon} title={title} titleTypographyProps={{ fontSize: '1.5rem' }} />
                 <CardActions sx={{ justifyContent: 'space-between' }}>
                     <IconButton onClick={onEditClick}>

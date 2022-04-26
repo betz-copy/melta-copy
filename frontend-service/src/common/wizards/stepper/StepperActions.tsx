@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button, CircularProgress, Grid } from '@mui/material';
-import { ArrowForward as ArrowForwardIcon, ArrowBack as ArrowBackIcon } from '@mui/icons-material';
+import { ArrowForward as ArrowForwardIcon, ArrowBack as ArrowBackIcon, Done as DoneIcon } from '@mui/icons-material';
 import i18next from 'i18next';
 
 const StepperActions: React.FC<{
@@ -24,8 +24,9 @@ const StepperActions: React.FC<{
             <Grid item>
                 <Button type="submit" variant="contained" disabled={isLoading}>
                     {i18next.t(isLastStep ? 'wizard.finish' : 'wizard.next')}
-                    {isLoading ? (
-                        <CircularProgress size={20} />
+                    {isLoading && <CircularProgress size={20} />}
+                    {isLastStep ? (
+                        <DoneIcon />
                     ) : (
                         <ArrowForwardIcon
                             style={{

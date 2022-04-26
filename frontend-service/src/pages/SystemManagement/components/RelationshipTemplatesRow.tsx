@@ -17,6 +17,7 @@ import {
 } from '../../../services/relationshipTemplatesService';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
 import { removeItemById } from '../../../utils/reactQuery';
+import { RelationshipTitle } from '../../../common/RelationshipTitle';
 
 const RelationshipTemplatesRow: React.FC<{
     relationshipTemplates: IMongoRelationshipTemplate[];
@@ -131,8 +132,15 @@ const RelationshipTemplatesRow: React.FC<{
                     )
                     .map((relationshipTemplate) => (
                         <ViewingCard
+                            minWidth={350}
                             key={relationshipTemplate._id}
-                            title={`${relationshipTemplate.sourceEntityTemplate.displayName} -> ${relationshipTemplate.displayName} -> ${relationshipTemplate.destinationEntityTemplate.displayName}`}
+                            title={
+                                <RelationshipTitle
+                                    sourceEntityTemplateDisplayName={relationshipTemplate.sourceEntityTemplate.displayName}
+                                    relationshipTemplateDisplayName={relationshipTemplate.displayName}
+                                    destinationEntityTemplateDisplayName={relationshipTemplate.destinationEntityTemplate.displayName}
+                                />
+                            }
                             onEditClick={() => setRelationshipTemplateWizardDialogState({ isWizardOpen: true, relationshipTemplate })}
                             onDeleteClick={() =>
                                 setDeleteRelationshipTemplateDialogState({ isDialogOpen: true, relationshipTemplateId: relationshipTemplate._id })

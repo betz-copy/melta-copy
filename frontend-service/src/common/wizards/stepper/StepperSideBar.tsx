@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 import { Grid } from '@mui/material';
 import { Done as DoneIcon } from '@mui/icons-material';
 
@@ -13,8 +13,8 @@ const StepperSideBar = <T extends object>({ activeStep, steps }: { activeStep: n
                 const type = activeStep < index ? 'futureStep' : activeStep === index ? 'currentStep' : 'finishedStep';
 
                 return (
-                    <>
-                        <Grid key={step.label}>
+                    <Fragment key={step.label}>
+                        <Grid>
                             <Grid container justifyContent="center" alignItems="center">
                                 <Grid item>
                                     <StepNumberTypography type={type}>
@@ -27,7 +27,7 @@ const StepperSideBar = <T extends object>({ activeStep, steps }: { activeStep: n
                             </Grid>
                         </Grid>
                         {index !== steps.length - 1 && <DashedHorizontalLine />}
-                    </>
+                    </Fragment>
                 );
             })}
         </Grid>

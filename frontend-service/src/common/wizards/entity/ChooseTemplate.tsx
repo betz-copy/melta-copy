@@ -32,10 +32,11 @@ const ChooseTemplate: React.FC<StepComponentProps<EntityWizardValues>> = ({ valu
                     {...params}
                     error={Boolean(touched.template && errors.template)}
                     fullWidth
+                    sx={{ width: 300 }}
                     helperText={(touched.template && errors.template?._id) || errors.template?.displayName || errors.template?.properties}
                     name="template"
                     variant="outlined"
-                    label="template"
+                    label={i18next.t('entityTemplate')}
                 />
             )}
         />

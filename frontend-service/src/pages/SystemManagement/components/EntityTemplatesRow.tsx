@@ -77,6 +77,7 @@ const EntityTemplatesRow: React.FC<{
                     .filter((entityTemplate) => searchText === '' || entityTemplate.displayName.includes(searchText))
                     .map((entityTemplate) => (
                         <ViewingCard
+                            minWidth={250}
                             key={entityTemplate._id}
                             title={entityTemplate.displayName}
                             icon={
