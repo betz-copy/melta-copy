@@ -48,6 +48,7 @@ const TemplateTable = forwardRef(
                     rowData: data.rows.map((entity) => entity.properties),
                     rowCount: 100, // TODO: change row count
                 });
+                params.columnApi.autoSizeColumns(['actions']);
             },
         };
 
@@ -108,9 +109,6 @@ const TemplateTable = forwardRef(
                     serverSideStoreType="partial"
                     components={{
                         agDateInput: DateFilterComponent,
-                    }}
-                    onFirstDataRendered={(params) => {
-                        params.columnApi.autoSizeColumns(['actions']);
                     }}
                     columnHoverHighlight
                     enableRtl
