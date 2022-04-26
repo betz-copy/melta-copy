@@ -18,7 +18,7 @@ const RelationshipTitle: React.FC<{
             <Grid item>
                 <Grid container>
                     <Grid item style={{ position: 'relative' }}>
-                        <HorizontalRuleIcon fontSize="small" style={{ position: 'relative', top: '5px' }} />
+                        <HorizontalRuleIcon fontSize="medium" style={{ position: 'relative', top: '6px' }} />
                     </Grid>
                     <Grid item>
                         <Typography
@@ -35,7 +35,7 @@ const RelationshipTitle: React.FC<{
                         </Typography>
                     </Grid>
                     <Grid item style={{ position: 'relative', top: '1px' }}>
-                        <ArrowBackIcon fontSize="medium" style={{ position: 'relative', top: '5px' }} />
+                        <ArrowBackIcon fontSize="medium" style={{ position: 'relative', top: '6px' }} />
                     </Grid>
                 </Grid>
             </Grid>

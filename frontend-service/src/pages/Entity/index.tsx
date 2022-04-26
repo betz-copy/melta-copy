@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, CircularProgress, Grid, IconButton, Tab, Typography } from '@mui/material';
+import { Box, CircularProgress, Grid, IconButton, Tab } from '@mui/material';
 import { useQuery, useQueryClient } from 'react-query';
 import { useParams } from 'react-router-dom';
 import { AddCircle } from '@mui/icons-material';
@@ -15,6 +15,7 @@ import 'ag-grid-community/dist/styles/ag-theme-material.css';
 import '../../css/components/templateTable.css';
 
 import { IMongoCategory } from '../../interfaces/categories';
+import { RelationshipTitle } from '../../common/RelationshipTitle';
 
 const Entity: React.FC = () => {
     const params = useParams();
@@ -89,20 +90,17 @@ const Entity: React.FC = () => {
                                 return (
                                     <Grid key={currRelationshipTemplate._id}>
                                         <Grid container item justifyContent="space-between">
-                                            <Grid>
-                                                <Grid item>
-                                                    <Typography variant="h6" style={{ fontWeight: '500' }}>
-                                                        {currRelationshipTemplate.src.displayName} {'->'} {currRelationshipTemplate.displayName}{' '}
-                                                        {'->'} {currRelationshipTemplate.dest.displayName}
-                                                    </Typography>
-                                                </Grid>
+                                            <Grid xs={3.5}>
+                                                <RelationshipTitle
+                                                    sourceEntityTemplateDisplayName={currRelationshipTemplate.src.displayName}
+                                                    relationshipTemplateDisplayName={currRelationshipTemplate.displayName}
+                                                    destinationEntityTemplateDisplayName={currRelationshipTemplate.dest.displayName}
+                                                />
                                             </Grid>
                                             <Grid>
-                                                <Grid item>
-                                                    <IconButton>
-                                                        <AddCircle color="primary" fontSize="large" />
-                                                    </IconButton>
-                                                </Grid>
+                                                <IconButton>
+                                                    <AddCircle color="primary" fontSize="large" />
+                                                </IconButton>
                                             </Grid>
                                         </Grid>
                                         <RelationshipTable
