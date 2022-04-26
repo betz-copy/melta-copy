@@ -3,6 +3,7 @@ import { TextField, Autocomplete } from '@mui/material';
 import * as Yup from 'yup';
 import i18next from 'i18next';
 import { useQueryClient } from 'react-query';
+import { useParams } from 'react-router-dom';
 import { EntityWizardValues } from './index';
 import { StepComponentProps } from '../index';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
@@ -16,9 +17,13 @@ const chooseTemplateSchema = {
 };
 
 const ChooseTemplate: React.FC<StepComponentProps<EntityWizardValues>> = ({ values, touched, errors, setFieldValue }) => {
+    const param = useParams();
+    const { categoryId } = param;
     const queryClient = useQueryClient();
 
-    const entityTemplates = queryClient.getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates');
+    const entityTemplates = queryClient
+        .getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates')
+        ?.filter((entity) => entity.category._id === categoryId);
 
     return (
         <Autocomplete
