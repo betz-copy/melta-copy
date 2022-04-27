@@ -1,0 +1,60 @@
+import Neo4jClient from '../../utils/neo4j';
+import { generateDefaultProperties, getNeo4jDate, normalizeReturnedRelationship } from '../../utils/neo4j/lib';
+import { IRelationship } from './interface';
+import { NotFoundError, ServiceError } from '../error';
+
+export class RelationshipManager {
+    static async createRelationshipByEntityIds(relationship: IRelationship) {
+        const { templateId, properties, sourceEntityId, destinationEntityId } = relationship;
+        const defaultProperties = generateDefaultProperties();
+
+        const relProps = {
+            ...properties,
+            ...defaultProperties,
+        };
+
+        const edge = await Neo4jClient.writeTransaction(
+            `MATCH (s {_id: '${sourceEntityId}'}),(d {_id: '${destinationEntityId}'}) CREATE (s)-[r: \`${templateId}\` $relProps]->(d) RETURN r`,
+            normalizeReturnedRelationship,
+            { relProps },
+        );
+
+        if (!edge) {
+            throw new ServiceError(404, `[NEO4J] relationship not created. Source/destination entity node not found.`);
+        }
+
+        return edge;
+    }
+
+    static async deleteRelationshipById(id: string) {
+        const relationship = await Neo4jClient.writeTransaction(
+            `MATCH ()-[r]-() WHERE r._id='${id}' DELETE r RETURN r`,
+            normalizeReturnedRelationship,
+        );
+
+        if (!relationship) {
+            throw new NotFoundError(`[NEO4J] relationship "${id}" not found`);
+        }
+    }
+
+    static async updateRelationshipPropertiesById(id: string, relationshipProperties: object) {
+        const edge = await Neo4jClient.writeTransaction(
+            `MATCH ()-[r]->() WHERE r._id='${id}' SET r += $props RETURN r`,
+            normalizeReturnedRelationship,
+            {
+                props: {
+                    ...relationshipProperties,
+                    updatedAt: getNeo4jDate(),
+                },
+            },
+        );
+
+        if (!edge) {
+            throw new NotFoundError(`[NEO4J] relationship "${id}" not found`);
+        }
+
+        return edge;
+    }
+}
+
+export default RelationshipManager;
