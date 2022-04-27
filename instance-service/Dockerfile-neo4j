@@ -1,0 +1,2 @@
+FROM neo4j:4.3
+RUN cp ./labs/apoc-4.3.0.4-core.jar ./plugins/
