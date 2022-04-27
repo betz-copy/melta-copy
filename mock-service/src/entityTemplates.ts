@@ -2,8 +2,9 @@
 import axios from 'axios';
 import { IMongoCategory } from './categories';
 import config from './config';
+import { trycatch } from './utils';
 
-const { uri, createEntityTemplateRoute } = config.entityTemplateManager;
+const { uri, createEntityTemplateRoute, isAliveRoute } = config.entityTemplateManager;
 
 export interface IEntityTemplate {
     name: string;
@@ -29,4 +30,10 @@ export const createEntityTemplates = async (entityTemplates: IEntityTemplate[], 
     const results = await Promise.all(promises);
 
     return results.map((result) => result.data);
+};
+
+export const isEntityTemplateManagerAlive = async () => {
+    const { result, err } = await trycatch(() => axios.get(uri + isAliveRoute));
+
+    return { result, err };
 };

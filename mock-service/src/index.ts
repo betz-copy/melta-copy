@@ -1,15 +1,30 @@
 /* eslint-disable no-console */
 import config from './config';
 import { createCategories, getCategories } from './categories';
-import { createEntityTemplates } from './entityTemplates';
+import { createEntityTemplates, isEntityTemplateManagerAlive } from './entityTemplates';
 import { categories } from './mocks/categories';
 import { entityTemplates } from './mocks/entityTemplates';
-import { createInstances, createRelationshipInstances } from './instances';
-import { createRealtionshipTemplates } from './relationshipTemplates';
+import { createInstances, createRelationshipInstances, isInstanceManagerAlive } from './instances';
+import { createRealtionshipTemplates, isRelationshipTemplateManagerAlive } from './relationshipTemplates';
 import { relationshipTemplates } from './mocks/relationshipTemplates';
 
 const main = async () => {
     console.log(`Mock started ${JSON.stringify(config, null, 4)}`);
+
+    if ((await isEntityTemplateManagerAlive()).err) {
+        console.log('Entity Template Manager is not alive');
+        return;
+    }
+
+    if ((await isRelationshipTemplateManagerAlive()).err) {
+        console.log('Relationship Template Manager is not alive');
+        return;
+    }
+
+    if ((await isInstanceManagerAlive()).err) {
+        console.log('Instance Manager is not alive');
+        return;
+    }
 
     if ((await getCategories()).length !== 0) {
         console.log('DB not empty');

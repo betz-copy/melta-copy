@@ -4,15 +4,18 @@ import './dotenv';
 const config = {
     entityTemplateManager: {
         uri: env.get('ENTITY_TEMPLATE_MANAGER_URI').required().asString(),
+        isAliveRoute: env.get('CATEGORY_IS_ALIVE_ROUTE').default('/isAlive').asString(),
         createEntityTemplateRoute: env.get('CREATE_ENTITY_TEMPLATE_ROUTE').default('/api/entities/templates').asString(),
         createCategoryRoute: env.get('CREATE_CATEGORY_ROUTE').default('/api/categories').asString(),
     },
     relationshipTemplateManager: {
         uri: env.get('RELATIONSHIP_TEMPLATE_MANAGER_URI').required().asString(),
+        isAliveRoute: env.get('RELATIONSHIP_TEMPLATE_MANAGER_IS_ALIVE_ROUTE').default('/isAlive').asString(),
         createrelationshipTemplateRoute: env.get('CREATE_ENTITY_TEMPLATE_ROUTE').default('/api/relationships/templates').asString(),
     },
     instacnceManager: {
         uri: env.get('INSTANCE_MANAGER_URI').required().asString(),
+        isAliveRoute: env.get('INSTANCE_MANAGER_IS_ALIVE_ROUTE').default('/isAlive').asString(),
         createEntityRoute: env.get('CREATE_ENTITY_ROUTE').default('/api/entities').asString(),
         maxNumberOfEntities: env.get('MAX_NUMBER_OF_ENTITIES').default(100).asInt(),
         minNumberOfEntities: env.get('MIN_NUMBER_OF_ENTITIES').default(0).asInt(),

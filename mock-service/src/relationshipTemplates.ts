@@ -2,8 +2,9 @@
 import axios from 'axios';
 import config from './config';
 import { IMongoEntityTemplate } from './entityTemplates';
+import { trycatch } from './utils';
 
-const { uri, createrelationshipTemplateRoute } = config.relationshipTemplateManager;
+const { uri, createrelationshipTemplateRoute, isAliveRoute } = config.relationshipTemplateManager;
 
 export interface IRelationshipTemplate {
     name: string;
@@ -30,4 +31,10 @@ export const createRealtionshipTemplates = async (relationshipTemplates: IRelati
     const results = await Promise.all(promises);
 
     return results.map((result) => result.data);
+};
+
+export const isRelationshipTemplateManagerAlive = async () => {
+    const { result, err } = await trycatch(() => axios.get(uri + isAliveRoute));
+
+    return { result, err };
 };

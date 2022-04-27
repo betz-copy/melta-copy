@@ -6,6 +6,7 @@ import * as pLimit from 'p-limit';
 import config from './config';
 import { IMongoEntityTemplate } from './entityTemplates';
 import { IMongoRealtionshipTemplate } from './relationshipTemplates';
+import { trycatch } from './utils';
 
 const limit = pLimit(config.requestLimit);
 
@@ -17,6 +18,7 @@ const {
     createRelationshipRoute,
     maxNumberOfRelationships,
     minNumberOfRelationships,
+    isAliveRoute,
 } = config.instacnceManager;
 
 export const createInstances = async (entityTemplates: IMongoEntityTemplate[]) => {
@@ -69,4 +71,10 @@ export const createRelationshipInstances = async (
     const results = await Promise.all(promises);
 
     return results.map((result) => result.data);
+};
+
+export const isInstanceManagerAlive = async () => {
+    const { result, err } = await trycatch(() => axios.get(uri + isAliveRoute));
+
+    return { result, err };
 };
