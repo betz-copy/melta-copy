@@ -46,7 +46,7 @@ const TemplateTable = forwardRef(
                 const data = await getEntitiesByTemplateRequest(template._id, { sortModel, startRow, endRow, filterModel });
                 params.success({
                     rowData: data.rows.map((entity) => entity.properties),
-                    rowCount: 100, // TODO: change row count
+                    rowCount: data.lastRowIndex,
                 });
                 params.columnApi.autoSizeColumns(['actions']);
             },
