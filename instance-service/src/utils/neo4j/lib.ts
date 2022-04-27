@@ -20,7 +20,6 @@ export const normalizeReturnedEntity =
             const { labels, properties } = record.get(0);
 
             return {
-                id: properties._id,
                 templateId: labels[0],
                 properties: normalizeDateFields(properties),
             };

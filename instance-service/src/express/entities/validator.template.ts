@@ -17,6 +17,9 @@ interface IEntityTemplate {
 const { templateManager } = config;
 const { url, getByIdRoute, timeout } = templateManager;
 
+const ajv = new Ajv();
+addFormats(ajv);
+
 export const getEntityTemplateById = async (templateId: string) => {
     const { result, err } = await trycatch(() => axios.get<IEntityTemplate>(`${url}${getByIdRoute}/${templateId}`, { timeout }));
 
@@ -29,9 +32,6 @@ export const getEntityTemplateById = async (templateId: string) => {
 
 export const validateEntity = async (req: Request) => {
     const entityTemplate = await getEntityTemplateById(req.body.templateId);
-
-    const ajv = new Ajv();
-    addFormats(ajv);
 
     const validate = ajv.compile(entityTemplate.properties);
     const valid = validate(req.body.properties);
