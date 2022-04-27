@@ -8,6 +8,7 @@ import config from '../config';
 
 const { supportedFilesTypes } = config.service;
 const ajv = new Ajv();
+ajv.addFormat('fileId', /.*/);
 addFormats(ajv);
 
 const stringFormats = ['date', 'time', 'date-time', 'email', 'hostname', 'ipv4', 'ipv6', 'uri'];
