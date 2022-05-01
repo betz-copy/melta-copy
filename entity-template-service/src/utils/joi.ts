@@ -11,7 +11,7 @@ const ajv = new Ajv();
 ajv.addFormat('fileId', /.*/);
 addFormats(ajv);
 
-const stringFormats = ['date', 'time', 'date-time', 'email', 'hostname', 'ipv4', 'ipv6', 'uri'];
+const stringFormats = ['date', 'date-time', 'email', 'fileId'];
 const allowedJSONSchemaTypes = ['string', 'number', 'boolean'];
 const ExtendedJoi = Joi.extend(
     {
