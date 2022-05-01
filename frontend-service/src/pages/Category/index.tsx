@@ -10,7 +10,7 @@ import { Header } from '../../common/Header';
 import { IMongoCategory } from '../../interfaces/categories';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { SelectCheckbox } from '../../common/SelectCheckbox';
-import { EntityWizard, EntityWizardValues } from '../../common/wizards/entity';
+import { AddEntityButton } from './components/AddEntityButton';
 
 const Category: React.FC = () => {
     const queryClient = useQueryClient();
@@ -18,9 +18,7 @@ const Category: React.FC = () => {
     const { categoryId } = params;
     const [viewType, setViewType] = useState<'table' | 'graph'>('table');
     const [templateToHide, setTemplatesToHide] = useState<string[]>([]);
-    const [addEntityWizardState, setAddEntityWizardState] = useState<{ isOpen: boolean; initialStep?: number; initialValues?: EntityWizardValues }>({
-        isOpen: false,
-    });
+
     const templateTablesRef = useRef<any>([]);
 
     const templates = queryClient
@@ -61,12 +59,12 @@ const Category: React.FC = () => {
                         </IconButton>
                     </Grid>
                     <Grid item paddingRight="1%">
-                        <IconButton onClick={() => setAddEntityWizardState({ isOpen: true })} style={{ background: 'white', borderRadius: '7px' }}>
+                        <AddEntityButton style={{ background: 'white', borderRadius: '7px' }}>
                             <AddIcon color="primary" />
                             <Typography fontSize={14} style={{ fontWeight: '500', paddingRight: '5px' }}>
                                 {i18next.t('addEntity')}
                             </Typography>
-                        </IconButton>
+                        </AddEntityButton>
                     </Grid>
                     <Grid item>
                         <ToggleButtonGroup
@@ -99,9 +97,6 @@ const Category: React.FC = () => {
                                         ref={(el) => (templateTablesRef.current[index] = el)}
                                         key={template._id}
                                         template={template}
-                                        onAddEntity={() =>
-                                            setAddEntityWizardState({ isOpen: true, initialStep: 1, initialValues: { template, properties: {} } })
-                                        }
                                     />
                                 ))}
                         </Grid>
@@ -109,16 +104,6 @@ const Category: React.FC = () => {
                         <>graph</>
                     )}
                 </Grid>
-                <EntityWizard
-                    open={addEntityWizardState.isOpen}
-                    handleClose={() =>
-                        setAddEntityWizardState({
-                            isOpen: false,
-                        })
-                    }
-                    initalStep={addEntityWizardState.initialStep}
-                    initialValues={addEntityWizardState.initialValues}
-                />
             </Grid>
         );
     }
