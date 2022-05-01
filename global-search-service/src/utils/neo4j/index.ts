@@ -30,27 +30,21 @@ class Neo4jClient {
         this.isInitialized = true;
     }
 
-    async readTransaction(cypherQuery: string, normalizeResultFunction: Function, parameters = {}, database = 'neo4j') {
-        return this.performTransaction('readTransaction', normalizeResultFunction, cypherQuery, parameters, database);
+    async readTransaction(cypherQuery: string, parameters = {}, database = 'neo4j') {
+        return this.performTransaction('readTransaction', cypherQuery, parameters, database);
     }
 
-    async writeTransaction(cypherQuery: string, normalizeResultFunction: Function, parameters = {}, database = 'neo4j') {
-        return this.performTransaction('writeTransaction', normalizeResultFunction, cypherQuery, parameters, database);
+    async writeTransaction(cypherQuery: string, parameters = {}, database = 'neo4j') {
+        return this.performTransaction('writeTransaction', cypherQuery, parameters, database);
     }
 
-    async performTransaction(
-        transactionType: TransactionType,
-        normalizeResultFunction: Function,
-        cypherQuery: string,
-        parameters = {},
-        database = 'neo4j',
-    ) {
+    async performTransaction(transactionType: TransactionType, cypherQuery: string, parameters = {}, database = 'neo4j') {
         const session = this.driver.session({ database });
 
         try {
             const result = await session[transactionType]((tx) => tx.run(cypherQuery, parameters));
 
-            return normalizeResultFunction(result);
+            return result;
         } finally {
             const { err } = await trycatch(() => session.close());
 

@@ -13,11 +13,11 @@ const createIndex = async (indexName: string, labels: string[], properties: stri
     ON EACH
     [${properties.map((property) => `n.${property}`).join(', ')}]`;
 
-    await Neo4jClient.writeTransaction(createFullTextIndexCommand, () => {});
+    await Neo4jClient.writeTransaction(createFullTextIndexCommand);
 };
 
 const dropIndex = (indexName: string) => {
-    return Neo4jClient.writeTransaction(`DROP INDEX \`${indexName}\``, () => {});
+    return Neo4jClient.writeTransaction(`DROP INDEX \`${indexName}\``);
 };
 
 const updateIndexWithTemplates = async (labels: string[], properties: string[]) => {
@@ -49,7 +49,6 @@ const fetchTemplatesAndCreateIndex = async () => {
 
     const templateIds = templates.map((template) => template.name);
     const templateProperties = templates.map((template) => Object.keys(template.properties.properties));
-
     const properties = [...new Set(templateProperties.flat())];
 
     await updateIndexWithTemplates(templateIds, properties);
