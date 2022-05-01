@@ -31,6 +31,8 @@ const main = async () => {
         return;
     }
 
+    console.log('All services alive!');
+
     console.log('Createing categories');
 
     const createdCategories = await createCategories(categories);

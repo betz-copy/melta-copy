@@ -1,7 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 import axios from 'axios';
 // @ts-ignore
-import { generate, extend } from 'json-schema-faker';
+import { generate, format } from 'json-schema-faker';
 import * as pLimit from 'p-limit';
 import config from './config';
 import { IMongoEntityTemplate } from './entityTemplates';
@@ -20,6 +20,8 @@ const {
     minNumberOfRelationships,
     isAliveRoute,
 } = config.instacnceManager;
+
+format('fileId', (_value) => 'asosaf8sfbla bla.docx');
 
 export const createInstances = async (entityTemplates: IMongoEntityTemplate[]) => {
     const promises = entityTemplates

@@ -26,6 +26,11 @@ export const entityTemplates = [
                     title: 'תאריך סיום',
                     format: 'date',
                 },
+                firstFile: {
+                    type: 'string',
+                    title: 'קובץ ראשון',
+                    format: 'fileId',
+                },
             },
             required: ['name', 'destination'],
         },
