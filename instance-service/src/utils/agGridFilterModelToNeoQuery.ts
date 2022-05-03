@@ -2,20 +2,20 @@ import assert from 'assert';
 
 export interface IAGGridTextFilter {
     filterType: 'text';
-    type: 'equals' | 'notEqual' | 'contains' | 'notContains' | 'startsWith' | 'endsWith';
+    type: 'equals' | 'notEqual' | 'contains' | 'notContains' | 'startsWith' | 'endsWith' | 'blank' | 'notBlank';
     filter: string;
 }
 
 export interface IAGGidNumberFilter {
     filterType: 'number';
-    type: 'equals' | 'notEqual' | 'lessThan' | 'lessThanOrEqual' | 'greaterThan' | 'greaterThanOrEqual' | 'inRange';
+    type: 'equals' | 'notEqual' | 'lessThan' | 'lessThanOrEqual' | 'greaterThan' | 'greaterThanOrEqual' | 'inRange' | 'blank' | 'notBlank';
     filter: number;
     filterTo?: number; // only inRange type
 }
 
 export interface IAGGridDateFilter {
     filterType: 'date';
-    type: 'equals' | 'notEqual' | 'lessThan' | 'lessThanOrEqual' | 'greaterThan' | 'greaterThanOrEqual' | 'inRange';
+    type: 'equals' | 'notEqual' | 'lessThan' | 'lessThanOrEqual' | 'greaterThan' | 'greaterThanOrEqual' | 'inRange' | 'blank' | 'notBlank';
     dateFrom: string;
     dateTo?: string; // only inRange type
 }
@@ -43,23 +43,27 @@ export interface IAGGridRequest {
 }
 
 export const setFilterToQuery = (field: string, { values }: IAGGridSetFilter) => {
-    return `e.${field} IN [${values}]`;
+    return `node.${field} IN [${values.map((value) => `\`${value}\``).join(',')}]`;
 };
 
 export const textFilterToQuery = (field: string, { type, filter }: IAGGridTextFilter) => {
     switch (type) {
         case 'equals':
-            return `e.${field} = '${filter}'`;
+            return `node.${field} = '${filter}'`;
         case 'notEqual':
-            return `e.${field} != '${filter}'`;
+            return `node.${field} != '${filter}'`;
         case 'contains':
-            return `e.${field} CONTAINS '${filter}'`;
+            return `node.${field} CONTAINS '${filter}'`;
         case 'notContains':
-            return `e.${field} NOT CONTAINS '${filter}'`;
+            return `node.${field} NOT CONTAINS '${filter}'`;
         case 'startsWith':
-            return `e.${field} STARTS WITH '${filter}'`;
+            return `node.${field} STARTS WITH '${filter}'`;
         case 'endsWith':
-            return `e.${field} ENDS WITH '${filter}'`; // TODO: verify hebrew
+            return `node.${field} ENDS WITH '${filter}'`;
+        case 'blank':
+            return `node.${field} IS NULL`;
+        case 'notBlank':
+            return `node.${field} IS NOT NULL`;
         default:
             throw new Error('Invalid supported ag-grid filter type method');
     }
@@ -68,20 +72,24 @@ export const textFilterToQuery = (field: string, { type, filter }: IAGGridTextFi
 export const numberFilterToQuery = (field: string, { type, filter, filterTo }: IAGGidNumberFilter) => {
     switch (type) {
         case 'equals':
-            return `e.${field} = ${filter}`;
+            return `node.${field} = ${filter}`;
         case 'notEqual':
-            return `e.${field} != ${filter}`;
+            return `node.${field} != ${filter}`;
         case 'lessThan':
-            return `e.${field} < ${filter}`;
+            return `node.${field} < ${filter}`;
         case 'lessThanOrEqual':
-            return `e.${field} <= ${filter}`;
+            return `node.${field} <= ${filter}`;
         case 'greaterThan':
-            return `e.${field} > ${filter}`;
+            return `node.${field} > ${filter}`;
         case 'greaterThanOrEqual':
-            return `e.${field} >= ${filter}`;
+            return `node.${field} >= ${filter}`;
         case 'inRange':
             assert(filterTo, 'inRange must have filter & filterTo');
-            return `${filter} <= e.${field} <= ${filterTo}`;
+            return `${filter} <= node.${field} <= ${filterTo}`;
+        case 'blank':
+            return `node.${field} IS NULL`;
+        case 'notBlank':
+            return `node.${field} IS NOT NULL`;
         default:
             throw new Error('Invalid supported ag-grid filter type method');
     }
@@ -101,20 +109,24 @@ export const dateFilterToQuery = (field: string, { type, dateFrom: dateFromStrin
 
     switch (type) {
         case 'equals':
-            return `date(e.${field}) = date('${dateFrom}')`;
+            return `date(node.${field}) = date('${dateFrom}')`;
         case 'notEqual':
-            return `date(e.${field}) != date('${dateFrom}')`;
+            return `date(node.${field}) != date('${dateFrom}')`;
         case 'lessThan':
-            return `date(e.${field}) < date('${dateFrom}')`;
+            return `date(node.${field}) < date('${dateFrom}')`;
         case 'lessThanOrEqual':
-            return `date(e.${field}) <= date('${dateFrom}')`;
+            return `date(node.${field}) <= date('${dateFrom}')`;
         case 'greaterThan':
-            return `date(e.${field}) > date('${dateFrom}')`;
+            return `date(node.${field}) > date('${dateFrom}')`;
         case 'greaterThanOrEqual':
-            return `date(e.${field}) >= date('${dateFrom}')`;
+            return `date(node.${field}) >= date('${dateFrom}')`;
         case 'inRange':
             assert(dateToString, 'inRange must have dateFrom & dateTo');
-            return `date('${dateFrom}') <= e.${field} <= date('${formatDate(dateToString)}')`;
+            return `date('${dateFrom}') <= node.${field} <= date('${formatDate(dateToString)}')`;
+        case 'blank':
+            return `node.${field} IS NULL`;
+        case 'notBlank':
+            return `node.${field} IS NOT NULL`;
         default:
             throw new Error('Invalid supported ag-grid filter type method');
     }
@@ -138,28 +150,65 @@ export const filterModelToQuery = (filterModel: IAGGridFilterModel) => {
         }
     });
 
-    return queries.length > 0 ? `WHERE ${queries.join(' AND ')}` : '';
+    return queries.length > 0 ? queries.join(' AND ') : '';
 };
 
 export const sortModelToNeo4JSort = (sortModel: IAGGridSort[]) => {
-    const sortOptions = sortModel.map(({ colId, sort }) => `e.${colId} ${sort}`);
+    const sortOptions = sortModel.map(({ colId, sort }) => `node.${colId} ${sort}`);
 
     return sortOptions.join(',');
 };
 
-export const agGridRequestToNeo4JRequest = (templateId: string, agGridRequest: IAGGridRequest, calculateOverallCount = false) => {
-    if (calculateOverallCount) {
+const constructFilterQuery = (templateId: string, filterModel: IAGGridFilterModel) => {
+    return `
+        WHERE node:\`${templateId}\`
+        ${Object.keys(filterModel).length ? `AND ${filterModelToQuery(filterModel)}` : ''}`;
+};
+
+const constructSearchQuery = (agGridRequest: IAGGridRequest, filterQuery: string) => {
+    return `
+        CALL db.index.fulltext.queryNodes('globalSearch', '*${agGridRequest.quickFilter}*')
+        YIELD node, score
+        ${filterQuery}
+        RETURN node, score
+        ORDER BY score ${agGridRequest.sortModel.length ? `,${sortModelToNeo4JSort(agGridRequest.sortModel)}` : ''} 
+        SKIP ${agGridRequest.startRow}
+        LIMIT ${agGridRequest.endRow - agGridRequest.startRow + 1}`;
+};
+
+const constructOverallCountQuery = (filterQuery: string, quickFilter?: string) => {
+    if (quickFilter) {
         return `
-        MATCH (e: \`${templateId}\`) ${filterModelToQuery(agGridRequest.filterModel)}
-        RETURN count(e)`;
+            CALL db.index.fulltext.queryNodes('globalSearch', '*${quickFilter}*')
+            YIELD node
+            ${filterQuery}
+            RETURN count(node)`;
     }
 
-    const sortQuery = agGridRequest.sortModel.length > 0 ? `ORDER BY ${sortModelToNeo4JSort(agGridRequest.sortModel)}` : '';
+    return `
+        MATCH (node) 
+        ${filterQuery}
+        RETURN count(node)`;
+};
+
+export const agGridRequestToNeo4JRequest = (templateId: string, agGridRequest: IAGGridRequest, calculateOverallCount = false) => {
+    const filterQuery = constructFilterQuery(templateId, agGridRequest.filterModel);
+
+    if (calculateOverallCount) {
+        return constructOverallCountQuery(filterQuery, agGridRequest.quickFilter);
+    }
+
+    if (agGridRequest.quickFilter) {
+        return constructSearchQuery(agGridRequest, filterQuery);
+    }
+
+    const sortQuery = agGridRequest.sortModel.length ? `ORDER BY ${sortModelToNeo4JSort(agGridRequest.sortModel)}` : '';
 
     return `
-    MATCH (e: \`${templateId}\`) ${filterModelToQuery(agGridRequest.filterModel)}
-    RETURN e 
-    ${sortQuery}
-    SKIP ${agGridRequest.startRow}
-    LIMIT ${agGridRequest.endRow - agGridRequest.startRow + 1}`;
+        MATCH (node) 
+        ${filterQuery}
+        RETURN node 
+        ${sortQuery}
+        SKIP ${agGridRequest.startRow}
+        LIMIT ${agGridRequest.endRow - agGridRequest.startRow + 1}`;
 };

@@ -43,25 +43,45 @@ export const createEntityRequestSchema = Joi.object({
 
 const agGridSetFilterSchema = Joi.object({
     filterType: Joi.valid('set').required(),
-    values: Joi.array().items(Joi.string()),
+    values: Joi.array().items(Joi.string().allow(null)),
 });
 
 const agGridNumberFilterSchema = Joi.object({
     filterType: Joi.valid('number').required(),
-    type: Joi.valid('equals', 'notEqual', 'lessThan', 'lessThanOrEqual', 'greaterThan', 'greaterThanOrEqual', 'inRange').required(),
+    type: Joi.valid(
+        'equals',
+        'notEqual',
+        'lessThan',
+        'lessThanOrEqual',
+        'greaterThan',
+        'greaterThanOrEqual',
+        'inRange',
+        'blank',
+        'notBlank',
+    ).required(),
     filter: Joi.number().required(),
     filterTo: Joi.number(),
 });
 
 const agGridTextFilterSchema = Joi.object({
     filterType: Joi.valid('text').required(),
-    type: Joi.valid('equals', 'notEqual', 'contains', 'notContains', 'startsWith', 'endsWith').required(),
+    type: Joi.valid('equals', 'notEqual', 'contains', 'notContains', 'startsWith', 'endsWith', 'blank', 'notBlank').required(),
     filter: Joi.string().required(),
 });
 
 const agGridDateFilterSchema = Joi.object({
     filterType: Joi.valid('date').required(),
-    type: Joi.valid('equals', 'notEqual', 'lessThan', 'lessThanOrEqual', 'greaterThan', 'greaterThanOrEqual', 'inRange').required(),
+    type: Joi.valid(
+        'equals',
+        'notEqual',
+        'lessThan',
+        'lessThanOrEqual',
+        'greaterThan',
+        'greaterThanOrEqual',
+        'inRange',
+        'blank',
+        'notBlank',
+    ).required(),
     dateFrom: Joi.string().required(),
     dateTo: Joi.when('type', {
         is: 'inRange',
