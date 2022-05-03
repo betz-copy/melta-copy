@@ -26,6 +26,7 @@ const { templateManager } = config;
 const { url, getByIdRoute, timeout } = templateManager;
 
 const ajv = new Ajv();
+ajv.addFormat('fileId', /.*/);
 addFormats(ajv);
 
 export const getEntityTemplateById = async (templateId: string) => {
