@@ -9,7 +9,8 @@ import {
 } from '../../utils/neo4j/lib';
 import { IEntity } from './interface';
 import { NotFoundError, ServiceError } from '../error';
-import { agGridRequestToNeo4JRequest, IAGGridRequest } from '../../utils/agGridFilterModelToNeoQuery';
+import { agGridRequestToNeo4JRequest, agGridSearchRequestToNeo4JRequest, IAGGridRequest } from '../../utils/agGridFilterModelToNeoQuery';
+import RedisClient from '../../utils/redis';
 
 export class EntityManager {
     static createEntity(entity: IEntity) {
@@ -24,9 +25,35 @@ export class EntityManager {
     }
 
     static async getEntities(templateId: string, agGridRequest: IAGGridRequest) {
+        if (agGridRequest.quickFilter) {
+            return EntityManager.getEntitiesWithSearch(templateId, agGridRequest);
+        }
+
         const [nodes, nodesOverallCount] = await Promise.all([
             Neo4jClient.readTransaction(agGridRequestToNeo4JRequest(templateId, agGridRequest), normalizeReturnedEntity('multipleResponses')),
             Neo4jClient.readTransaction(agGridRequestToNeo4JRequest(templateId, agGridRequest, true), normalizeReturnedEntitiesCount),
+        ]);
+
+        return { rows: nodes, lastRowIndex: nodesOverallCount };
+    }
+
+    private static async getEntitiesWithSearch(templateId: string, agGridRequest: IAGGridRequest) {
+        const redisClient = RedisClient.getClient();
+        const latestIndex = await redisClient.get('latestIndex');
+
+        if (!latestIndex) {
+            throw new ServiceError(400, `[NEO4J] Global search index not found.`);
+        }
+
+        const [nodes, nodesOverallCount] = await Promise.all([
+            Neo4jClient.readTransaction(
+                agGridSearchRequestToNeo4JRequest(templateId, latestIndex, agGridRequest),
+                normalizeReturnedEntity('multipleResponses'),
+            ),
+            Neo4jClient.readTransaction(
+                agGridSearchRequestToNeo4JRequest(templateId, latestIndex, agGridRequest, true),
+                normalizeReturnedEntitiesCount,
+            ),
         ]);
 
         return { rows: nodes, lastRowIndex: nodesOverallCount };

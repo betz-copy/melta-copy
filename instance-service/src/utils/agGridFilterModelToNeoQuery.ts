@@ -163,9 +163,24 @@ const constructFilterQuery = (templateId: string, filterModel: IAGGridFilterMode
     return `WHERE node:\`${templateId}\` ${Object.keys(filterModel).length ? `AND ${filterModelToQuery(filterModel)}` : ''}`;
 };
 
-const constructSearchQuery = (agGridRequest: IAGGridRequest, filterQuery: string) => {
+export const agGridSearchRequestToNeo4JRequest = (
+    templateId: string,
+    latestIndex: string,
+    agGridRequest: IAGGridRequest,
+    calculateOverallCount = false,
+) => {
+    const filterQuery = constructFilterQuery(templateId, agGridRequest.filterModel);
+
+    if (calculateOverallCount) {
+        return `
+            CALL db.index.fulltext.queryNodes('${latestIndex}', '*${agGridRequest.quickFilter}*')
+            YIELD node
+            ${filterQuery}
+            RETURN count(node)`;
+    }
+
     return `
-        CALL db.index.fulltext.queryNodes('globalSearch', '*${agGridRequest.quickFilter}*')
+        CALL db.index.fulltext.queryNodes('${latestIndex}', '*${agGridRequest.quickFilter}*')
         YIELD node, score
         ${filterQuery}
         RETURN node, score
@@ -174,30 +189,14 @@ const constructSearchQuery = (agGridRequest: IAGGridRequest, filterQuery: string
         LIMIT ${agGridRequest.endRow - agGridRequest.startRow + 1}`;
 };
 
-const constructOverallCountQuery = (filterQuery: string, quickFilter?: string) => {
-    if (quickFilter) {
-        return `
-            CALL db.index.fulltext.queryNodes('globalSearch', '*${quickFilter}*')
-            YIELD node
-            ${filterQuery}
-            RETURN count(node)`;
-    }
-
-    return `
-        MATCH (node) 
-        ${filterQuery}
-        RETURN count(node)`;
-};
-
 export const agGridRequestToNeo4JRequest = (templateId: string, agGridRequest: IAGGridRequest, calculateOverallCount = false) => {
     const filterQuery = constructFilterQuery(templateId, agGridRequest.filterModel);
 
     if (calculateOverallCount) {
-        return constructOverallCountQuery(filterQuery, agGridRequest.quickFilter);
-    }
-
-    if (agGridRequest.quickFilter) {
-        return constructSearchQuery(agGridRequest, filterQuery);
+        return `
+            MATCH (node) 
+            ${filterQuery}
+            RETURN count(node)`;
     }
 
     const sortQuery = agGridRequest.sortModel.length ? `ORDER BY ${sortModelToNeo4JSort(agGridRequest.sortModel)}` : '';

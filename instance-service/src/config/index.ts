@@ -25,6 +25,9 @@ const config = {
         getByIdRoute: env.get('RELATIONSHIP_MANAGER_GET_BY_ID_ROUTE').default('/api/templates/relationships').asString(),
         timeout: env.get('RELATIONSHIP_MANAGER_TIMEOUT').default(5000).asIntPositive(),
     },
+    redis: {
+        url: env.get('REDIS_HOST').default('redis://redis:6379').asString(),
+    },
 };
 
 export default config;
