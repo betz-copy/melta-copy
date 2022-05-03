@@ -43,7 +43,7 @@ export interface IAGGridRequest {
 }
 
 export const setFilterToQuery = (field: string, { values }: IAGGridSetFilter) => {
-    return `node.${field} IN [${values.map((value) => `\`${value}\``).join(',')}]`;
+    return `node.${field} IN [${values.map((value) => `'${value}'`).join(',')}]`;
 };
 
 export const textFilterToQuery = (field: string, { type, filter }: IAGGridTextFilter) => {
@@ -160,9 +160,7 @@ export const sortModelToNeo4JSort = (sortModel: IAGGridSort[]) => {
 };
 
 const constructFilterQuery = (templateId: string, filterModel: IAGGridFilterModel) => {
-    return `
-        WHERE node:\`${templateId}\`
-        ${Object.keys(filterModel).length ? `AND ${filterModelToQuery(filterModel)}` : ''}`;
+    return `WHERE node:\`${templateId}\` ${Object.keys(filterModel).length ? `AND ${filterModelToQuery(filterModel)}` : ''}`;
 };
 
 const constructSearchQuery = (agGridRequest: IAGGridRequest, filterQuery: string) => {
