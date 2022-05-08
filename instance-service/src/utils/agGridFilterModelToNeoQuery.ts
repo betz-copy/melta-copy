@@ -179,12 +179,14 @@ export const agGridSearchRequestToNeo4JRequest = (
             RETURN count(node)`;
     }
 
+    const sortQuery = `ORDER BY score ${agGridRequest.sortModel.length ? `,${sortModelToNeo4JSort(agGridRequest.sortModel)}` : ''} `;
+
     return `
         CALL db.index.fulltext.queryNodes('${latestIndex}', '*${agGridRequest.quickFilter}*')
         YIELD node, score
         ${filterQuery}
         RETURN node, score
-        ORDER BY score ${agGridRequest.sortModel.length ? `,${sortModelToNeo4JSort(agGridRequest.sortModel)}` : ''} 
+        ${sortQuery}
         SKIP ${agGridRequest.startRow}
         LIMIT ${agGridRequest.endRow - agGridRequest.startRow + 1}`;
 };

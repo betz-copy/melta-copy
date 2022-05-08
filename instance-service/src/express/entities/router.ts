@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import EntityController from './controller';
-import { wrapController, wrapMiddleware } from '../../utils/express';
+import { wrapController, wrapMiddleware, wrapMiddlewareSync } from '../../utils/express';
+import ValidateRequest from '../../utils/joi';
+import { normalizeEntityInRequest, validateEntity } from './validator.template';
 import {
     deleteEntityByIdRequestSchema,
     deleteEntityByTemplateIdRequestSchema,
@@ -9,12 +11,16 @@ import {
     updateEntityByIdRequestSchema,
     getEntitiesRequestSchema,
 } from './validator.schema';
-import ValidateRequest from '../../utils/joi';
-import { validateEntity } from './validator.template';
 
 const entityRouter: Router = Router();
 
-entityRouter.post('/', ValidateRequest(createEntityRequestSchema), wrapMiddleware(validateEntity), wrapController(EntityController.createEntity));
+entityRouter.post(
+    '/',
+    ValidateRequest(createEntityRequestSchema),
+    wrapMiddleware(validateEntity),
+    wrapMiddlewareSync(normalizeEntityInRequest),
+    wrapController(EntityController.createEntity),
+);
 entityRouter.post('/search', ValidateRequest(getEntitiesRequestSchema), wrapController(EntityController.getEntities));
 entityRouter.get('/:id', ValidateRequest(getEntityByIdRequestSchema), wrapController(EntityController.getEntityById));
 entityRouter.delete('/:id', ValidateRequest(deleteEntityByIdRequestSchema), wrapController(EntityController.deleteEntityById));
@@ -23,6 +29,7 @@ entityRouter.put(
     '/:id',
     ValidateRequest(updateEntityByIdRequestSchema),
     wrapMiddleware(validateEntity),
+    wrapMiddlewareSync(normalizeEntityInRequest),
     wrapController(EntityController.updateEntityById),
 );
 

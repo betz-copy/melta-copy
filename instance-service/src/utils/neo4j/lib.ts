@@ -1,10 +1,14 @@
 import { v4 as uuidv4 } from 'uuid';
 import neo4j, { QueryResult } from 'neo4j-driver';
 
-const normalizeDateFields = (properties: object) => {
+const normalizeFields = (properties: object) => {
     const props = {};
 
     Object.entries(properties).forEach(([key, value]) => {
+        if (key.endsWith('_tostring')) {
+            return;
+        }
+
         props[key] = value instanceof neo4j.types.DateTime ? new Date(value.toString()) : value;
     });
 
@@ -21,7 +25,7 @@ export const normalizeReturnedEntity =
 
             return {
                 templateId: labels[0],
-                properties: normalizeDateFields(properties),
+                properties: normalizeFields(properties),
             };
         });
 
@@ -46,7 +50,7 @@ export const normalizeReturnedRelationship = (result: QueryResult) => {
 
     return {
         templateId: type,
-        properties: normalizeDateFields(properties),
+        properties: normalizeFields(properties),
     };
 };
 
@@ -72,11 +76,11 @@ export const normalizeReturnedRelAndEntities = (result: QueryResult) => {
         return {
             relationship: {
                 templateId: relationship.type,
-                properties: normalizeDateFields(relationship.properties),
+                properties: normalizeFields(relationship.properties),
             },
             entity: {
                 templateId: entityInstance.labels[0],
-                properties: normalizeDateFields(entityInstance.properties),
+                properties: normalizeFields(entityInstance.properties),
             },
         };
     });
@@ -84,13 +88,13 @@ export const normalizeReturnedRelAndEntities = (result: QueryResult) => {
     return {
         entity: {
             templateId: entity.labels[0],
-            properties: normalizeDateFields(entity.properties),
+            properties: normalizeFields(entity.properties),
         },
         connections: connections.filter(Boolean),
     };
 };
 
-export const getNeo4jDate = () => neo4j.types.DateTime.fromStandardDate(new Date());
+export const getNeo4jDate = (date = new Date()) => neo4j.types.DateTime.fromStandardDate(date);
 
 export const generateDefaultProperties = () => {
     const timestamp = getNeo4jDate();
