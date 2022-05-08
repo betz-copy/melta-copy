@@ -9,11 +9,39 @@ export default {
     relationshipTemplates: 'תבניות קשר',
     addEntity: 'הוסף יישות',
     downloadMultipleTables: 'הורד טבלאות',
+    entitiesTableOfTemplate: {
+        actionsHeaderName: 'פעולות',
+        navigateToEntityPage: 'עמוד פרט',
+        failedToLoadData: 'נכשל לטעון מידע',
+    },
+    entityPage: {
+        deleteRelationshipPopoverText: 'מחק קשר',
+        failedToDeleteRelationship: 'נכשל למחוק קשר',
+    },
+    addRelationshipDialog: {
+        title: 'הוסף קשר',
+        closeBtn: 'סגור',
+        createBtn: 'הוסף',
+        failedToCreateRelationship: 'נכשל ליצור קשר',
+        succeededToCreateRelationship: 'נוצר קשר בהצלחה',
+        switchSidesBtn: 'החלף מקור ויעד',
+        selectSourceEntityLabel: 'בחר יישות מקור',
+        selectDestinationEntityLabel: 'בחר יישות יעד',
+        entityDoesntFitRelationshipTemplateMessage: 'יישות אינה מתאימה לסוג קשר',
+        entityFirstMustChooseRelationshipTemplate: 'יש לבחור סוג קשר קודם',
+    },
+    templateTableSelect: {
+        disabledReasonMustChooseTemplate: 'יש לבחור סוג יישות',
+    },
+    relationshipTemplateAutocomplete: {
+        label: 'סוג קשר',
+        unknownEntity: 'לא ידוע',
+        noOptions: 'אין תוצאות',
+    },
     searchLabel: 'חפש...',
     booleanOptions: { yes: 'כן', no: 'לא' },
     pages: {
         systemManagement: 'ניהול מערכת',
-        entityView: 'עמוד פרט',
     },
     systemManagement: {
         search: 'חיפוש',

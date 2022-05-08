@@ -7,7 +7,7 @@ import _cloneDeep from 'lodash.clonedeep';
 import { Form, Formik, FormikProps } from 'formik';
 import * as Yup from 'yup';
 import { createPermissionsBulkRequest, deletePermissionsBulkRequest, IPermission, IPermissionsOfUser } from '../../services/permissionsService';
-import UserAutocomplete from '../UserAutocomplete';
+import UserAutocomplete from '../inputs/UserAutocomplete';
 import { IUser } from '../../services/kartoffelService';
 import { IMongoCategory } from '../../interfaces/categories';
 import ManagementPermissionsCard from './managementPermissionsCard';

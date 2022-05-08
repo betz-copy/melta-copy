@@ -19,7 +19,7 @@ const Category: React.FC = () => {
     const [viewType, setViewType] = useState<'table' | 'graph'>('table');
     const [templateToHide, setTemplatesToHide] = useState<string[]>([]);
 
-    const templateTablesRef = useRef<any>([]);
+    const templateTablesRef = useRef<Array<React.ComponentRef<typeof TemplateTable> | null>>([]);
 
     const templates = queryClient
         .getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates')
@@ -31,7 +31,7 @@ const Category: React.FC = () => {
 
     const onExcelExport = () => {
         exportMultipleSheetsAsExcel({
-            data: templateTablesRef.current.map((item) => item.getExcelData()),
+            data: templateTablesRef.current.map((item) => item!.getExcelData()),
             fileName: `${categoryDisplayName}.xlsx`,
         });
     };

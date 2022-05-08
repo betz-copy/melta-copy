@@ -1,0 +1,77 @@
+import React, { memo } from 'react';
+import { Delete as DeleteIcon, ReadMore as ReadMoreIcon } from '@mui/icons-material';
+import { ColDef, ValueGetterFunc } from 'ag-grid-community';
+import i18next from 'i18next';
+import { IEntity } from '../../interfaces/entities';
+import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { booleanColDef, dateColDef, numberColDef, stringColDef } from '../../utils/agGrid/commonColDefs';
+import IconButtonWithPopoverText from '../IconButtonWithPopover';
+
+export const getColumnDefs = <Data extends any>(
+    template: IMongoEntityTemplatePopulated,
+    actionsColumnId: string,
+    getEntityPropertiesData: (data: Data) => IEntity['properties'],
+    onNavigateToRow: ((entity: Data) => void) | undefined,
+    deleteRowButtonProps?: {
+        onClick: (entity: Data) => void;
+        popoverText: string;
+    },
+) => {
+    const columnDefs = Object.entries(template.properties.properties).map(([key, value]) => {
+        const { type, format } = value;
+
+        const valueGetter: ValueGetterFunc = ({ data }) => getEntityPropertiesData(data)[key];
+
+        if (type === 'number') return numberColDef(valueGetter, value);
+        if (type === 'boolean') return booleanColDef(valueGetter, value);
+        if (format === 'date' || format === 'date-time') return dateColDef(valueGetter, value);
+        return stringColDef(valueGetter, value);
+    });
+
+    if (onNavigateToRow || deleteRowButtonProps) {
+        const addedColumns: ColDef[] = [
+            {
+                colId: actionsColumnId, // used for autoSizeColumns onFirstDataRendered
+                headerName: i18next.t('entitiesTableOfTemplate.actionsHeaderName'),
+                pinned: 'left',
+                menuTabs: [],
+                sortable: false,
+                minWidth: 0,
+                cellRenderer: memo<{ data: Data }>(({ data }) => {
+                    return (
+                        <div>
+                            {onNavigateToRow && (
+                                <IconButtonWithPopoverText
+                                    iconButtonProps={{
+                                        onClick: () => onNavigateToRow(data),
+                                    }}
+                                    popoverText={i18next.t('entitiesTableOfTemplate.navigateToEntityPage')}
+                                >
+                                    <ReadMoreIcon
+                                        style={{
+                                            transform: 'scaleX(-1)',
+                                        }}
+                                    />
+                                </IconButtonWithPopoverText>
+                            )}
+                            {deleteRowButtonProps && (
+                                <IconButtonWithPopoverText
+                                    popoverText={deleteRowButtonProps.popoverText}
+                                    iconButtonProps={{
+                                        onClick: () => deleteRowButtonProps.onClick(data),
+                                    }}
+                                >
+                                    <DeleteIcon />
+                                </IconButtonWithPopoverText>
+                            )}
+                        </div>
+                    );
+                }),
+            },
+        ];
+
+        columnDefs.push(...addedColumns);
+    }
+
+    return columnDefs;
+};

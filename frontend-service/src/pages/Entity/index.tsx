@@ -1,21 +1,24 @@
 import React, { useState } from 'react';
 import { Box, CircularProgress, Grid, IconButton, Tab } from '@mui/material';
-import { useQuery, useQueryClient } from 'react-query';
+import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { useParams } from 'react-router-dom';
 import { AddCircle } from '@mui/icons-material';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
+import { toast } from 'react-toastify';
+import i18next from 'i18next';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { getExpandedEntityByIdRequest } from '../../services/entitiesService';
-import { IMongoRelationshipTemplate } from '../../interfaces/relationshipTemplates';
+import { IMongoRelationshipTemplate, IMongoRelationshipTemplatePopulated } from '../../interfaces/relationshipTemplates';
 import { EntityDetails } from './components/EntityDetails';
-import { RelationshipTable } from './components/RelationshipTable';
-
-import 'ag-grid-community/dist/styles/ag-grid.css';
-import 'ag-grid-community/dist/styles/ag-theme-material.css';
-import '../../css/components/templateTable.css';
 
 import { IMongoCategory } from '../../interfaces/categories';
 import { RelationshipTitle } from '../../common/RelationshipTitle';
+import CreateRelationshipDialog from '../../common/dialogs/createRelationshipDialog';
+import { IEntity, IEntityExpanded } from '../../interfaces/entities';
+import { IRelationship } from '../../interfaces/relationships';
+import { deleteRelationshipRequest } from '../../services/relationshipsService';
+import EntitiesTableOfTemplate from '../../common/EntitiesTableOfTemplate';
+import { AreYouSureDialog } from '../../common/dialogs/AreYouSureDialog';
 
 const Entity: React.FC = () => {
     const params = useParams();
@@ -25,6 +28,36 @@ const Entity: React.FC = () => {
     const { data: expandedEntity } = useQuery(['getExpandedEntity', entityId], () => getExpandedEntityByIdRequest(entityId!));
 
     const categories = queryClient.getQueryData<IMongoCategory[]>('getCategories');
+
+    const [createRelationshipDialogState, setCreateRelationshipDialogState] = useState<{
+        isOpen: boolean;
+        initialValues?: React.ComponentProps<typeof CreateRelationshipDialog>['initialValues'];
+    }>({ isOpen: false });
+
+    const [deleteRelationshipDialogState, setDeleteRelationshipDialogState] = useState<{
+        open: boolean;
+        connectionToDelete?: IEntityExpanded['connections'][number];
+    }>({ open: false });
+
+    const { mutateAsync: deleteRelationship, isLoading: isLoadingDeleteRelationship } = useMutation(deleteRelationshipRequest, {
+        onError: (error) => {
+            console.log('failed to delete relationship. error:', error);
+            toast.error(i18next.t('entityPage.failedToDeleteRelationship'));
+            setDeleteRelationshipDialogState({ open: false });
+        },
+        onSuccess: (_deletedRelationship, deletedRelationshipId) => {
+            queryClient.setQueryData<IEntityExpanded>(['getExpandedEntity', entityId], (prevEntityExpanded) => {
+                const connections = prevEntityExpanded!.connections.filter(
+                    ({ relationship }) => relationship.properties._id !== deletedRelationshipId,
+                );
+                return {
+                    ...prevEntityExpanded!,
+                    connections,
+                };
+            });
+            setDeleteRelationshipDialogState({ open: false });
+        },
+    });
 
     const [value, setValue] = useState('0');
 
@@ -49,26 +82,56 @@ const Entity: React.FC = () => {
                 relationshipTemplates:
                     relevantRelationshipTemplates
                         ?.map((currRelationshipTemplate) => {
-                            const src = entityTemplates.find(
+                            const sourceEntity = entityTemplates.find(
                                 (currEntityTemplate) => currEntityTemplate._id === currRelationshipTemplate.sourceEntityId,
                             )!;
-                            const dest = entityTemplates.find(
+                            const destinationEntity = entityTemplates.find(
                                 (currEntityTemplate) => currEntityTemplate._id === currRelationshipTemplate.destinationEntityId,
                             )!;
 
-                            const otherEntityTemplate = src._id === currentEntityTemplate._id ? dest : src;
+                            const otherEntityTemplate = sourceEntity._id === currentEntityTemplate._id ? destinationEntity : sourceEntity;
 
                             return {
-                                ...currRelationshipTemplate,
-                                src,
-                                dest,
+                                _id: currRelationshipTemplate._id,
+                                name: currRelationshipTemplate.name,
+                                displayName: currRelationshipTemplate.displayName,
+                                properties: currRelationshipTemplate.properties,
+                                sourceEntity,
+                                destinationEntity,
                                 otherEntityTemplate,
-                            };
+                            } as IMongoRelationshipTemplatePopulated & { otherEntityTemplate: IMongoEntityTemplatePopulated };
                         })
                         .filter((currRelationshipTemplate) => currRelationshipTemplate.otherEntityTemplate.category._id === category._id) || [],
             };
         })
         .filter((currCategory) => currCategory.relationshipTemplates?.length > 0);
+
+    const onCreateRelationship = (createdRelationship: IRelationship, sourceEntity: IEntity, destinationEntity: IEntity) => {
+        const doesCreatedRelationshipWithCurrEntity = [createdRelationship.sourceEntityId, createdRelationship.destinationEntityId].includes(
+            entityId!,
+        );
+
+        if (!doesCreatedRelationshipWithCurrEntity) {
+            return;
+        }
+        queryClient.setQueryData<IEntityExpanded>(['getExpandedEntity', entityId], (prevEntityExpanded) => {
+            const otherEntity = entityId !== sourceEntity.properties._id ? sourceEntity : destinationEntity;
+
+            return {
+                ...prevEntityExpanded!,
+                connections: [
+                    ...prevEntityExpanded!.connections,
+                    {
+                        entity: otherEntity,
+                        relationship: {
+                            templateId: createdRelationship.templateId,
+                            properties: createdRelationship.properties,
+                        },
+                    },
+                ],
+            };
+        });
+    };
 
     return (
         <Grid>
@@ -92,22 +155,56 @@ const Entity: React.FC = () => {
                                         <Grid container item justifyContent="space-between">
                                             <Grid xs={3.5}>
                                                 <RelationshipTitle
-                                                    sourceEntityTemplateDisplayName={currRelationshipTemplate.src.displayName}
+                                                    sourceEntityTemplateDisplayName={currRelationshipTemplate.sourceEntity.displayName}
                                                     relationshipTemplateDisplayName={currRelationshipTemplate.displayName}
-                                                    destinationEntityTemplateDisplayName={currRelationshipTemplate.dest.displayName}
+                                                    destinationEntityTemplateDisplayName={currRelationshipTemplate.destinationEntity.displayName}
                                                 />
                                             </Grid>
                                             <Grid>
-                                                <IconButton>
+                                                <IconButton
+                                                    onClick={() => {
+                                                        const { otherEntityTemplate, ...relationshipTemplatePopulated } = currRelationshipTemplate;
+                                                        setCreateRelationshipDialogState({
+                                                            isOpen: true,
+                                                            initialValues: {
+                                                                relationshipTemplate: relationshipTemplatePopulated,
+                                                                sourceEntity:
+                                                                    currentEntityTemplate._id === relationshipTemplatePopulated.sourceEntity._id
+                                                                        ? expandedEntity.entity
+                                                                        : null,
+                                                                destinationEntity:
+                                                                    currentEntityTemplate._id === relationshipTemplatePopulated.destinationEntity._id
+                                                                        ? expandedEntity.entity
+                                                                        : null,
+                                                            },
+                                                        });
+                                                    }}
+                                                >
                                                     <AddCircle color="primary" fontSize="large" />
                                                 </IconButton>
                                             </Grid>
                                         </Grid>
-                                        <RelationshipTable
-                                            connectedEntities={expandedEntity.connections
-                                                .filter((connection) => connection.relationship.templateId === currRelationshipTemplate._id)
-                                                .map((connection) => connection.entity)}
-                                            entityTemplate={currRelationshipTemplate.otherEntityTemplate}
+                                        <EntitiesTableOfTemplate
+                                            template={currRelationshipTemplate.otherEntityTemplate}
+                                            showNavigateToRowButton
+                                            deleteRowButtonProps={{
+                                                popoverText: i18next.t('entityPage.deleteRelationshipPopoverText'),
+                                                onClick: (connectionToDelete) => {
+                                                    setDeleteRelationshipDialogState({ open: true, connectionToDelete });
+                                                },
+                                            }}
+                                            getRowId={(connection) => {
+                                                return connection.relationship.properties._id;
+                                            }}
+                                            getEntityPropertiesData={(connection) => connection.entity.properties}
+                                            rowModelType="clientSide"
+                                            rowData={expandedEntity.connections.filter(
+                                                (connection) => connection.relationship.templateId === currRelationshipTemplate._id,
+                                            )}
+                                            height={360}
+                                            rowHeight={50}
+                                            fontSize="16px"
+                                            minColumnWidth={200}
                                         />
                                     </Grid>
                                 );
@@ -116,6 +213,18 @@ const Entity: React.FC = () => {
                     ))}
                 </TabContext>
             </Grid>
+            <CreateRelationshipDialog
+                isOpen={createRelationshipDialogState.isOpen}
+                handleClose={() => setCreateRelationshipDialogState({ isOpen: false })}
+                onSubmitSuccess={onCreateRelationship}
+                initialValues={createRelationshipDialogState.initialValues}
+            />
+            <AreYouSureDialog
+                open={deleteRelationshipDialogState.open}
+                handleClose={() => setDeleteRelationshipDialogState({ open: false })}
+                onYes={async () => deleteRelationship(deleteRelationshipDialogState.connectionToDelete!.relationship.properties._id)}
+                isLoading={isLoadingDeleteRelationship}
+            />
         </Grid>
     );
 };

@@ -10,7 +10,10 @@ const getAllEntitiesRequest = async () => {
     return data;
 };
 
-const getEntitiesByTemplateRequest = async (templateId: string, params: Partial<IServerSideGetRowsRequest>) => {
+const getEntitiesByTemplateRequest = async (
+    templateId: string,
+    params: Pick<IServerSideGetRowsRequest, 'startRow' | 'endRow' | 'sortModel' | 'filterModel'> & { quickFilterText?: string },
+) => {
     const { data } = await axios.post<{ rows: IEntity[]; lastRowIndex: number }>(`${entities}/filter/${templateId}`, params);
     return data;
 };

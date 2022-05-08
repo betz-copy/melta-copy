@@ -1,23 +1,23 @@
-import { ColDef, ValueFormatterParams } from 'ag-grid-community';
+import { ColDef, ValueFormatterParams, ValueGetterFunc } from 'ag-grid-community';
 import i18next from 'i18next';
 
-export const numberColDef = (key: string, value: { title: string }): ColDef => {
+export const numberColDef = (valueGetter: ValueGetterFunc, value: { title: string }): ColDef => {
     return {
         headerName: value.title,
-        field: key,
+        valueGetter,
         filter: 'agNumberColumnFilter',
     };
 };
 
-export const stringColDef = (key: string, value: { title: string }): ColDef => {
+export const stringColDef = (valueGetter: ValueGetterFunc, value: { title: string }): ColDef => {
     return {
         headerName: value.title,
-        field: key,
+        valueGetter,
         filter: 'agTextColumnFilter',
     };
 };
 
-export const booleanColDef = (key: string, value: { title: string }): ColDef => {
+export const booleanColDef = (valueGetter: ValueGetterFunc, value: { title: string }): ColDef => {
     const valueFormatter = (params: ValueFormatterParams) => {
         if (String(params.value) === 'true') return i18next.t('booleanOptions.yes');
         if (String(params.value) === 'false') return i18next.t('booleanOptions.no');
@@ -27,7 +27,7 @@ export const booleanColDef = (key: string, value: { title: string }): ColDef => 
 
     return {
         headerName: value.title,
-        field: key,
+        valueGetter,
         filter: 'agSetColumnFilter',
         valueFormatter,
         filterParams: {
@@ -37,7 +37,7 @@ export const booleanColDef = (key: string, value: { title: string }): ColDef => 
     };
 };
 
-export const dateColDef = (key: string, value: { title: string; format?: string }): ColDef => {
+export const dateColDef = (valueGetter: ValueGetterFunc, value: { title: string; format?: string }): ColDef => {
     const { format } = value;
 
     const valueFormatter = (params: ValueFormatterParams) => {
@@ -73,7 +73,7 @@ export const dateColDef = (key: string, value: { title: string; format?: string 
 
     return {
         headerName: value.title,
-        field: key,
+        valueGetter,
         filter: 'agDateColumnFilter',
         valueFormatter,
         filterParams: {

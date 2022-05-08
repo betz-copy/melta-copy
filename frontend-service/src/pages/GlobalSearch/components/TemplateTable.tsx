@@ -6,9 +6,6 @@ import { Grid, Typography, Box, Input, IconButton } from '@mui/material';
 import { SearchRounded, CloseOutlined, AddCircle, FileDownloadOutlined } from '@mui/icons-material';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 
-import 'ag-grid-community/dist/styles/ag-grid.css';
-import 'ag-grid-community/dist/styles/ag-theme-material.css';
-import '../../../css/components/templateTable.css';
 import { IEntity } from '../../../interfaces/entities';
 
 const TemplateTable: React.FC<{

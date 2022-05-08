@@ -687,6 +687,7 @@ const mockEntites = (mock: MockAdapter) => {
                     },
                 },
             ],
+            lastRowIndex: 3,
         },
     ]);
 
@@ -707,6 +708,10 @@ const mockEntites = (mock: MockAdapter) => {
                 {
                     relationship: {
                         templateId: '61e3ea6e4d51a83e87e83c7e',
+                        properties: {
+                            // todo: generated random ID. should I something else?
+                            _id: '016B6f4a5aE2FeA62882f5C5',
+                        },
                     },
                     entity: {
                         templateId: '61e3ea6e4d51a83e87e83c7e',
@@ -722,6 +727,9 @@ const mockEntites = (mock: MockAdapter) => {
                 {
                     relationship: {
                         templateId: '61e3ea6e4d51a83e87e83c7c',
+                        properties: {
+                            _id: 'Fb5DbEa1Ad4bbaa8DbEd3Dd8',
+                        },
                     },
                     entity: {
                         templateId: '61e3ea6e4d51a83e87e83c80',
@@ -738,6 +746,9 @@ const mockEntites = (mock: MockAdapter) => {
                 {
                     relationship: {
                         templateId: '61e3ea6e4d51a83e87e43c7c',
+                        properties: {
+                            _id: '5Be45BAeA16d6Ab8df171E62',
+                        },
                     },
                     entity: {
                         templateId: '61e3ea6e4d51a83e87e83c81',
@@ -755,6 +766,9 @@ const mockEntites = (mock: MockAdapter) => {
                 {
                     relationship: {
                         templateId: '61e3ea6e4d51a83e87e43c7c',
+                        properties: {
+                            _id: 'c15dFBF79C300d7f4F61bF4f',
+                        },
                     },
                     entity: {
                         templateId: '61e3ea6e4d51a83e87e83c81',
@@ -772,6 +786,9 @@ const mockEntites = (mock: MockAdapter) => {
                 {
                     relationship: {
                         templateId: '61e3ea6e4d51a23e87e43c7c',
+                        properties: {
+                            _id: '9aBA50AE3aeF36F0C0eab1B2',
+                        },
                     },
                     entity: {
                         templateId: '61e3ea6e4d51a83e87e83c83',
@@ -787,6 +804,9 @@ const mockEntites = (mock: MockAdapter) => {
                 {
                     relationship: {
                         templateId: '61e3ea6e3d51a83e87e43c7c',
+                        properties: {
+                            _id: '16b5ef0DaaF6CDF2ed624F12',
+                        },
                     },
                     entity: {
                         templateId: '61e3ea6e4d51a83e87e83c84',

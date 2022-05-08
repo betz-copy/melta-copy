@@ -1,3 +1,5 @@
+import { IRelationship } from './relationships';
+
 export interface IEntity {
     templateId: string;
     properties: object & {
@@ -5,12 +7,7 @@ export interface IEntity {
     };
 }
 
-export interface IRelationshipEntity {
-    _id: string;
-    templateId: string;
-}
-
 export interface IEntityExpanded {
     entity: IEntity;
-    connections: { relationship: IRelationshipEntity; entity: IEntity }[];
+    connections: { relationship: Pick<IRelationship, 'templateId' | 'properties'>; entity: IEntity }[];
 }

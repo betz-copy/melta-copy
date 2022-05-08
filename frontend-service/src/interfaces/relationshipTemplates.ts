@@ -1,3 +1,5 @@
+import { IMongoEntityTemplatePopulated } from './entityTemplates';
+
 export interface IRelationshipTemplate {
     name: string;
     displayName: string;
@@ -13,3 +15,8 @@ export interface IRelationshipTemplate {
 export interface IMongoRelationshipTemplate extends IRelationshipTemplate {
     _id: string;
 }
+
+export type IMongoRelationshipTemplatePopulated = Omit<IMongoRelationshipTemplate, 'sourceEntityId' | 'destinationEntityId'> & {
+    sourceEntity: IMongoEntityTemplatePopulated;
+    destinationEntity: IMongoEntityTemplatePopulated;
+};

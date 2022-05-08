@@ -3,6 +3,7 @@ import MockAdapter from 'axios-mock-adapter';
 import { mockCategories } from './mocks/categories';
 import { mockConfig } from './mocks/config';
 import { mockEntites } from './mocks/entities';
+import { mockRelationships } from './mocks/relationships';
 import { mockEntityTemplates } from './mocks/entityTemplates';
 import { mockRelationshipTemplates } from './mocks/relationshipTemplates';
 import { AuthService } from './services/authService';
@@ -42,6 +43,8 @@ if (process.env.NODE_ENV === 'development' && !process.env.REACT_APP_IS_DOCKER) 
     mockRelationshipTemplates(mock);
 
     mockEntites(mock);
+
+    mockRelationships(mock);
 
     mockPermissions(mock);
 }

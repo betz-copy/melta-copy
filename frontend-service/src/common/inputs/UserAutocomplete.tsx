@@ -4,7 +4,7 @@ import { useQuery } from 'react-query';
 import { toast } from 'react-toastify';
 import _debounce from 'lodash.debounce';
 import i18next from 'i18next';
-import { IUser, searchUsersRequest } from '../services/kartoffelService';
+import { IUser, searchUsersRequest } from '../../services/kartoffelService';
 
 const UserAutocomplete: React.FC<{
     value: IUser | null;
