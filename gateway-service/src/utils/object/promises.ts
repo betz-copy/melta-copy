@@ -1,0 +1,23 @@
+export type Awaited<T> = T extends PromiseLike<infer U> ? U : T;
+
+export const objectMap = async <T extends object, Func extends (key: string, value: T[keyof T]) => Promise<any>>(
+    obj: T,
+    func: Func,
+): Promise<Record<string, Awaited<ReturnType<Func>>>> => {
+    const entriesPromises = Object.entries(obj).map(async ([key, value]) => {
+        const result = await func(key, value);
+        return [key, result];
+    });
+    const entries = await Promise.all(entriesPromises);
+    return Object.fromEntries(entries);
+};
+
+export const objectFilter = async <T extends object, Func extends (key: string, value: T[keyof T]) => any>(obj: T, func: Func) => {
+    const entriesPromises = Object.entries(obj).map(async ([key, value]) => {
+        const result = await func(key, value);
+        return [key, result];
+    });
+    const entries = await Promise.all(entriesPromises);
+    const entriesFiltered = entries.filter(([_key, result]) => result);
+    return Object.fromEntries(entriesFiltered) as Partial<T>;
+};

@@ -2,7 +2,13 @@ import { Router } from 'express';
 import { createProxyMiddleware, fixRequestBody } from 'http-proxy-middleware';
 import * as passport from 'passport';
 import authenticationRouter from './authentication/router';
+import usersRouter from './users/router';
+import permissionsRouter from './permissions/router';
 import config from '../config';
+import { wrapMiddleware } from '../utils/express';
+import { validateUserHasAtLeastSomePermissions } from './permissions/validateAuthorizationMiddleware';
+import templatesRouter from './templates/router';
+import instancesRouter from './instances/router';
 
 const appRouter = Router();
 
@@ -23,16 +29,19 @@ appRouter.use('/api/config', (_req, res) =>
     }),
 );
 
+appRouter.use('/api/templates', templatesRouter);
+
+appRouter.use('/api/instances', instancesRouter);
+
 appRouter.use(
-    ['/api/categories', '/api/entities/templates'],
-    createProxyMiddleware({ target: config.entityTemplateManager.uri, onProxyReq: fixRequestBody }),
+    '/api/files',
+    wrapMiddleware(validateUserHasAtLeastSomePermissions),
+    createProxyMiddleware({ target: config.storageService.uri, onProxyReq: fixRequestBody }),
 );
 
-appRouter.use('/api/relationships/templates', createProxyMiddleware({ target: config.relationshipTemplateManager.uri, onProxyReq: fixRequestBody }));
+appRouter.use('/api/users', usersRouter);
 
-appRouter.use(['/api/entities', '/api/relationships'], createProxyMiddleware({ target: config.instanceManager.uri, onProxyReq: fixRequestBody }));
-
-appRouter.use('/api/files', createProxyMiddleware({ target: config.storageService.uri, onProxyReq: fixRequestBody }));
+appRouter.use('/api/permissions', permissionsRouter);
 
 appRouter.use('*', (_req, res) => {
     res.status(404).send('Invalid Route');

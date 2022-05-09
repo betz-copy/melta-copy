@@ -65,3 +65,11 @@ export interface ShragaUser {
     iat: number;
     jti: string;
 }
+
+declare global {
+    // These declaration are merged into express's Request type
+    // this extends @types/passport which extends @types/express
+    namespace Express {
+        export interface User extends ShragaUser {}
+    }
+}

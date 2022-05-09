@@ -1,11 +1,10 @@
 import * as express from 'express';
 
 export class ServiceError extends Error {
-    public code;
-
-    constructor(code: number, message: string) {
+    constructor(public code: number, message: string, public metadata: object = {}) {
         super(message);
         this.code = code;
+        this.metadata = metadata;
     }
 }
 
@@ -19,6 +18,7 @@ export const errorMiddleware = (error: Error, _req: express.Request, res: expres
         res.status(error.code).send({
             type: error.name,
             message: error.message,
+            metadata: error.metadata,
         });
     } else if (['TokenExpiredError', 'JsonWebTokenError'].includes(error.name)) {
         res.status(401).send({
@@ -27,12 +27,13 @@ export const errorMiddleware = (error: Error, _req: express.Request, res: expres
         });
     } else {
         res.status(500).send({
-            type: error.name,
-            message: error.message,
+            type: 'InternalServerError',
+            message: 'internal server error',
         });
-    }
 
-    // TODO: add some logging
+        // TODO: add some logging
+        console.error('Request failed with error: ', error);
+    }
 
     next();
 };

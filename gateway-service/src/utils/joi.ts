@@ -2,6 +2,19 @@ import { Request } from 'express';
 import * as Joi from 'joi';
 import { wrapValidator } from './express';
 
+export const MongoIdSchema = Joi.string().regex(/^[0-9a-fA-F]{24}$/, 'valid MongoId');
+
+export const ColorSchema = Joi.string().regex(/^#[A-Fa-f0-9]{6}$/);
+
+export const fileSchema = Joi.object({
+    filename: Joi.string().required(),
+    originalname: Joi.string().required(),
+    size: Joi.number().min(1).required(),
+    encoding: Joi.string().required(),
+    mimetype: Joi.string().required(),
+    path: Joi.string().required(),
+}).unknown(true);
+
 const defaultValidationOptions: Joi.ValidationOptions = {
     abortEarly: false,
     allowUnknown: false,

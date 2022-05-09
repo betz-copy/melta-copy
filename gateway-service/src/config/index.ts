@@ -18,16 +18,37 @@ const config = {
         accessTokenExpirationTime: env.get('ACCESS_TOKEN_EXPIRATION_TIME').default('1d').asString(),
     },
     entityTemplateManager: {
-        uri: env.get('ENTITY_TEMPLATE_MANAGER_URI').required().asUrlString(),
+        uri: env.get('ENTITY_TEMPLATE_MANAGER_URI').required().asString(),
+        baseEntitiesRoute: env.get('ENTITY_TEMPLATE_MANAGER_ENTITIES_BASE_ROUTE').default('/api/templates/entities').asString(),
+        baseCategoriesRoute: env.get('ENTITY_TEMPLATE_MANAGER_CATEGORIES_BASE_ROUTE').default('/api/templates/categories').asString(),
+        requestTimeout: env.get('ENTITY_TEMPLATE_MANAGER_REQUEST_TIMEOUT').default(10000).asIntPositive(),
     },
     relationshipTemplateManager: {
-        uri: env.get('RELATIONSHIP_TEMPLATE_MANAGER_URI').required().asUrlString(),
+        uri: env.get('RELATIONSHIP_TEMPLATE_MANAGER_URI').required().asString(),
+        baseRoute: env.get('RELATIONSHIP_TEMPLATE_MANAGER_BASE_ROUTE').default('/api/templates/relationships').asString(),
+        requestTimeout: env.get('RELATIONSHIP_TEMPLATE_MANAGER_REQUEST_TIMEOUT').default(10000).asIntPositive(),
     },
     storageService: {
-        uri: env.get('STORAGE_SERVICE_URI').required().asUrlString(),
+        uri: env.get('STORAGE_SERVICE_URI').required().asString(),
     },
     instanceManager: {
-        uri: env.get('INSTANCE_MANAGER_URI').required().asUrlString(),
+        uri: env.get('INSTANCE_MANAGER_URI').required().asString(),
+        baseEntitiesRoute: env.get('INSTANCE_MANAGER_BASE_ENTITIES_ROUTE').default('/api/instances/entities').asString(),
+        baseRelationshipsRoute: env.get('INSTANCE_MANAGER_BASE_RELATIONSHIPS_ROUTE').default('/api/instances/relationships').asString(),
+        requestTimeout: env.get('INSTANCE_MANAGER_REQUEST_TIMEOUT').default(10000).asIntPositive(),
+    },
+    permissionApi: {
+        baseUrl: env.get('PERMISSION_API_BASE_URL').required().asString(),
+        baseRoute: env.get('PERMISSION_API_BASE_ROUTE').default('/api/permissions').asString(),
+        checkAuthorizationRoute: env.get('PERMISSION_API_CHECK_AUTHERIZATION_ROUTE').default('authorization').asString(),
+        requestTimeout: env.get('PERMISSION_API_REQUEST_TIMEOUT').default(10000).asIntPositive(),
+    },
+    getUsersLimitForPermissionsOfUsers: env.get('GET_USERS_LIMIT_FOR_PERMISSIONS_OF_USERS').default(20).asIntPositive(),
+    kartoffel: {
+        baseUrl: env.get('KARTOFFEL_BASE_URL').required().asString(),
+        baseEntitiesRoute: env.get('KARTOFFEL_BASE_ENTITIES_ROUTE').default('/api/entities').asString(),
+        searchRoute: env.get('KARTOFFEL_SEARCH_ENTITIES').default('/search').asString(),
+        requestTimeout: env.get('KARTOFFEL_REQUEST_TIMEOUT').default(10000).asIntPositive(),
     },
 };
 
