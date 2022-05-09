@@ -30,7 +30,7 @@ export const getPermissionByIdRequestSchema = Joi.object({
 export const checkUserAuthorizationRequestSchema = Joi.object({
     body: {
         resourceType: ResourceTypeSchema.required(),
-        relatedCategories: Joi.array().items(Joi.string()).min(1).required(),
+        relatedCategories: Joi.array().items(Joi.string()).min(1).unique().required(),
         operation: ScopeSchema.required(),
     },
     params: {
