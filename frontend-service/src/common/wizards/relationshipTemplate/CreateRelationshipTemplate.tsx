@@ -29,7 +29,7 @@ const CreateRelationshipTemplateName: React.FC<StepComponentProps<RelationshipTe
 }) => {
     const queryClient = useQueryClient();
 
-    const entityTemplates = queryClient.getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates');
+    const entityTemplates = queryClient.getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates')!;
 
     return (
         <>
@@ -56,7 +56,7 @@ const CreateRelationshipTemplateName: React.FC<StepComponentProps<RelationshipTe
             <Box margin={1}>
                 <Autocomplete
                     id="sourceEntity"
-                    options={entityTemplates || []}
+                    options={entityTemplates}
                     onChange={(_e, value) => setFieldValue('sourceEntity', value || '')}
                     value={values.sourceEntity._id ? values.sourceEntity : null}
                     getOptionLabel={(option) => option.displayName}
@@ -76,7 +76,7 @@ const CreateRelationshipTemplateName: React.FC<StepComponentProps<RelationshipTe
             <Box margin={1}>
                 <Autocomplete
                     id="destinationEntity"
-                    options={entityTemplates || []}
+                    options={entityTemplates}
                     onChange={(_e, value) => setFieldValue('destinationEntity', value || '')}
                     value={values.destinationEntity._id ? values.destinationEntity : null}
                     getOptionLabel={(option) => option.displayName}

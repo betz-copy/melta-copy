@@ -2,7 +2,7 @@
 import { Chance } from 'chance';
 import faker from '@faker-js/faker';
 import MockAdapter from 'axios-mock-adapter';
-import { categories } from './categories';
+import { categories } from './templates/categories';
 
 const chance = new Chance();
 faker.locale = 'he';

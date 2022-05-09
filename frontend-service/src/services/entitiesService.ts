@@ -12,9 +12,9 @@ const getAllEntitiesRequest = async () => {
 
 const getEntitiesByTemplateRequest = async (
     templateId: string,
-    params: Pick<IServerSideGetRowsRequest, 'startRow' | 'endRow' | 'sortModel' | 'filterModel'> & { quickFilterText?: string },
+    agGridRequest: Pick<IServerSideGetRowsRequest, 'startRow' | 'endRow' | 'sortModel' | 'filterModel'> & { quickFilterText?: string },
 ) => {
-    const { data } = await axios.post<{ rows: IEntity[]; lastRowIndex: number }>(`${entities}/filter/${templateId}`, params);
+    const { data } = await axios.post<{ rows: IEntity[]; lastRowIndex: number }>(`${entities}/search`, agGridRequest, { params: { templateId } });
     return data;
 };
 

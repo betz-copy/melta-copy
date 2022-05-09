@@ -1,7 +1,7 @@
-import axios from '../axios';
-import { EntityTemplateFormInputProperties, EntityTemplateWizardValues } from '../common/wizards/entityTemplate';
-import { environment } from '../globals';
-import { IEntityTemplate, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
+import axios from '../../axios';
+import { EntityTemplateFormInputProperties, EntityTemplateWizardValues } from '../../common/wizards/entityTemplate';
+import { environment } from '../../globals';
+import { IEntityTemplate, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 
 const { entityTemplates } = environment.api;
 const basePropertyTypes = ['string', 'number', 'boolean'];
@@ -55,11 +55,6 @@ const formToJSONSchema = (values: EntityTemplateWizardValues) => {
     return { ...restOfProperties, properties: schema, category: values.category._id } as IEntityTemplate;
 };
 
-const getEntityTemplatesRequest = async () => {
-    const { data } = await axios.get<IMongoEntityTemplatePopulated[]>(entityTemplates);
-    return data;
-};
-
 const createEntityTemplateRequest = async (newEntityTemplate: EntityTemplateWizardValues) => {
     const formData = new FormData();
 
@@ -101,10 +96,4 @@ const deleteEntityTemplateRequest = async (entityTemplateId: string) => {
     return data;
 };
 
-export {
-    getEntityTemplatesRequest,
-    createEntityTemplateRequest,
-    updateEntityTemplateRequest,
-    entityTemplateObjectToEntityTemplateForm,
-    deleteEntityTemplateRequest,
-};
+export { createEntityTemplateRequest, updateEntityTemplateRequest, entityTemplateObjectToEntityTemplateForm, deleteEntityTemplateRequest };

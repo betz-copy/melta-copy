@@ -26,7 +26,7 @@ type SideBarProps = {
 
 const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
     const queryClient = useQueryClient();
-    const categories = queryClient.getQueryData<IMongoCategory[]>('getCategories');
+    const categories = queryClient.getQueryData<IMongoCategory[]>('getCategories')!;
     const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions');
 
     const [isMyPermissionsDialogOpen, setIsMyPermissionsDialogOpen] = useState<boolean>(false);
@@ -46,7 +46,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                     <Divider />
                     <Grid item>
                         <List>
-                            {categories?.map((category) => {
+                            {categories.map((category) => {
                                 return (
                                     <NavButton
                                         key={category._id}

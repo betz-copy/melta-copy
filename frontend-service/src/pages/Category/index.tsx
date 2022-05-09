@@ -22,12 +22,12 @@ const Category: React.FC = () => {
     const templateTablesRef = useRef<Array<React.ComponentRef<typeof TemplateTable> | null>>([]);
 
     const templates = queryClient
-        .getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates')
-        ?.filter((template) => template.category._id === categoryId);
+        .getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates')!
+        .filter((template) => template.category._id === categoryId);
 
     const categoryDisplayName = queryClient
-        .getQueryData<IMongoCategory[]>('getCategories')
-        ?.find((oneCategory) => oneCategory._id === categoryId)?.displayName;
+        .getQueryData<IMongoCategory[]>('getCategories')!
+        .find((oneCategory) => oneCategory._id === categoryId)?.displayName;
 
     const onExcelExport = () => {
         exportMultipleSheetsAsExcel({
@@ -36,79 +36,75 @@ const Category: React.FC = () => {
         });
     };
 
-    if (templates) {
-        return (
-            <Grid container>
-                <Grid container justifyContent="center" marginBottom="1vh">
-                    <Header title={categoryDisplayName || ''}>
-                        <SelectCheckbox
-                            title={i18next.t('entityTemplates')}
-                            handleChange={(event) => setTemplatesToHide(event.target.value as string[])}
-                            options={templates.map((template) => template.displayName)}
-                            optionsToHide={templateToHide}
-                        />
-                    </Header>
+    return (
+        <Grid container>
+            <Grid container justifyContent="center" marginBottom="1vh">
+                <Header title={categoryDisplayName || ''}>
+                    <SelectCheckbox
+                        title={i18next.t('entityTemplates')}
+                        handleChange={(event) => setTemplatesToHide(event.target.value as string[])}
+                        options={templates.map((template) => template.displayName)}
+                        optionsToHide={templateToHide}
+                    />
+                </Header>
+            </Grid>
+            <Grid container justifyContent="end" marginBottom="3vh">
+                <Grid item paddingRight="1%">
+                    <IconButton style={{ background: 'white', borderRadius: '7px' }} onClick={onExcelExport}>
+                        <DonwloadIcon color="primary" />
+                        <Typography fontSize={14} style={{ fontWeight: '500', paddingRight: '5px' }}>
+                            {i18next.t('downloadMultipleTables')}
+                        </Typography>
+                    </IconButton>
                 </Grid>
-                <Grid container justifyContent="end" marginBottom="3vh">
-                    <Grid item paddingRight="1%">
-                        <IconButton style={{ background: 'white', borderRadius: '7px' }} onClick={onExcelExport}>
-                            <DonwloadIcon color="primary" />
-                            <Typography fontSize={14} style={{ fontWeight: '500', paddingRight: '5px' }}>
-                                {i18next.t('downloadMultipleTables')}
-                            </Typography>
-                        </IconButton>
-                    </Grid>
-                    <Grid item paddingRight="1%">
-                        <AddEntityButton style={{ background: 'white', borderRadius: '7px' }}>
-                            <AddIcon color="primary" />
-                            <Typography fontSize={14} style={{ fontWeight: '500', paddingRight: '5px' }}>
-                                {i18next.t('addEntity')}
-                            </Typography>
-                        </AddEntityButton>
-                    </Grid>
-                    <Grid item>
-                        <ToggleButtonGroup
-                            style={{ backgroundColor: 'white' }}
-                            size="small"
-                            color="primary"
-                            exclusive
-                            value={viewType}
-                            onChange={(_ev, newValue) => {
-                                if (newValue !== null) setViewType(newValue);
-                            }}
-                        >
-                            <ToggleButton size="small" value="table">
-                                <TableChartOutlined fontSize="small" />
-                            </ToggleButton>
-                            <ToggleButton size="small" value="graph">
-                                <AccountTreeOutlined />
-                            </ToggleButton>
-                        </ToggleButtonGroup>
-                    </Grid>
+                <Grid item paddingRight="1%">
+                    <AddEntityButton style={{ background: 'white', borderRadius: '7px' }}>
+                        <AddIcon color="primary" />
+                        <Typography fontSize={14} style={{ fontWeight: '500', paddingRight: '5px' }}>
+                            {i18next.t('addEntity')}
+                        </Typography>
+                    </AddEntityButton>
                 </Grid>
-                <Grid container>
-                    {viewType === 'table' ? (
-                        <Grid container>
-                            {templates
-                                .filter((template) => !templateToHide.includes(template.displayName))
-                                .map((template, index) => (
-                                    <TemplateTable
-                                        // eslint-disable-next-line no-return-assign
-                                        ref={(el) => (templateTablesRef.current[index] = el)}
-                                        key={template._id}
-                                        template={template}
-                                    />
-                                ))}
-                        </Grid>
-                    ) : (
-                        <>graph</>
-                    )}
+                <Grid item>
+                    <ToggleButtonGroup
+                        style={{ backgroundColor: 'white' }}
+                        size="small"
+                        color="primary"
+                        exclusive
+                        value={viewType}
+                        onChange={(_ev, newValue) => {
+                            if (newValue !== null) setViewType(newValue);
+                        }}
+                    >
+                        <ToggleButton size="small" value="table">
+                            <TableChartOutlined fontSize="small" />
+                        </ToggleButton>
+                        <ToggleButton size="small" value="graph">
+                            <AccountTreeOutlined />
+                        </ToggleButton>
+                    </ToggleButtonGroup>
                 </Grid>
             </Grid>
-        );
-    }
-
-    return <CircularProgress size={20} />;
+            <Grid container>
+                {viewType === 'table' ? (
+                    <Grid container>
+                        {templates
+                            .filter((template) => !templateToHide.includes(template.displayName))
+                            .map((template, index) => (
+                                <TemplateTable
+                                    // eslint-disable-next-line no-return-assign
+                                    ref={(el) => (templateTablesRef.current[index] = el)}
+                                    key={template._id}
+                                    template={template}
+                                />
+                            ))}
+                    </Grid>
+                ) : (
+                    <>graph</>
+                )}
+            </Grid>
+        </Grid>
+    );
 };
 
 export default Category;

@@ -1,13 +1,14 @@
 import axiosInstance from 'axios';
 import MockAdapter from 'axios-mock-adapter';
-import { mockCategories } from './mocks/categories';
+import { mockCategories } from './mocks/templates/categories';
 import { mockConfig } from './mocks/config';
 import { mockEntites } from './mocks/entities';
 import { mockRelationships } from './mocks/relationships';
-import { mockEntityTemplates } from './mocks/entityTemplates';
-import { mockRelationshipTemplates } from './mocks/relationshipTemplates';
+import { mockEntityTemplates } from './mocks/templates/entityTemplates';
+import { mockRelationshipTemplates } from './mocks/templates/relationshipTemplates';
 import { AuthService } from './services/authService';
 import { mockPermissions } from './mocks/permissions';
+import { mockGetAllTemplates } from './mocks/templates/getAllTemplates';
 // import faker from 'faker';
 
 const axios = axiosInstance.create({
@@ -35,6 +36,8 @@ if (process.env.NODE_ENV === 'development' && !process.env.REACT_APP_IS_DOCKER) 
     const mock = new MockAdapter(axios, { delayResponse: 500 });
 
     mockConfig(mock);
+
+    mockGetAllTemplates(mock);
 
     mockCategories(mock);
 

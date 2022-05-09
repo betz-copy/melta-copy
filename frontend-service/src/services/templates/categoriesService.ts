@@ -1,7 +1,7 @@
-import axios from '../axios';
-import { CategoryWizardValues } from '../common/wizards/category';
-import { environment } from '../globals';
-import { IMongoCategory } from '../interfaces/categories';
+import axios from '../../axios';
+import { CategoryWizardValues } from '../../common/wizards/category';
+import { environment } from '../../globals';
+import { IMongoCategory } from '../../interfaces/categories';
 
 const { categories } = environment.api;
 
@@ -15,11 +15,6 @@ const categoryObjectToCategoryForm = (category: IMongoCategory | null): Category
     }
 
     return restOfCategory;
-};
-
-const getCategoriesRequest = async () => {
-    const { data } = await axios.get<IMongoCategory[]>(categories);
-    return data;
 };
 
 const createCategoryRequest = async (newCategory: CategoryWizardValues) => {
@@ -55,4 +50,4 @@ const deleteCategoryRequest = async (categoryId: string) => {
     return data;
 };
 
-export { getCategoriesRequest, createCategoryRequest, updateCategoryRequest, categoryObjectToCategoryForm, deleteCategoryRequest };
+export { createCategoryRequest, updateCategoryRequest, categoryObjectToCategoryForm, deleteCategoryRequest };

@@ -7,6 +7,7 @@ export default {
     entityTemplates: 'תבניות יישות',
     relationshipTemplate: 'תבנית קשר',
     relationshipTemplates: 'תבניות קשר',
+    failedToGetTemplates: 'נכשל לטעון תבניות',
     addEntity: 'הוסף יישות',
     downloadMultipleTables: 'הורד טבלאות',
     entitiesTableOfTemplate: {

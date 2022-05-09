@@ -6,7 +6,7 @@ import { StepsType, Wizard, WizardBaseType } from '../index';
 import { ChooseCategory, chooseCategorySchema } from './ChooseCategory';
 import { CreateTemplateName, createTemplateNameSchema } from './CreateTemplateName';
 import { AddFields, addFieldsSchema } from './AddFields';
-import { createEntityTemplateRequest, updateEntityTemplateRequest } from '../../../services/enitityTemplatesService';
+import { createEntityTemplateRequest, updateEntityTemplateRequest } from '../../../services/templates/enitityTemplatesService';
 import { IEntityTemplatePopulated, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { replaceItemById } from '../../../utils/reactQuery';
 import { AttachmentsField, attachmentsFieldSchema } from './AttachmentsField';
@@ -72,7 +72,7 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
                     queryClient.setQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates', (prevData) => replaceItemById(data, prevData));
                     toast.success(i18next.t('wizard.entityTemplate.editedSuccefully'));
                 } else {
-                    queryClient.setQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates', (prevData) => [...(prevData || []), data]);
+                    queryClient.setQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates', (prevData) => [...prevData!, data]);
                     toast.success(i18next.t('wizard.entityTemplate.createdSuccessfully'));
                 }
                 handleClose();

@@ -27,7 +27,7 @@ const Entity: React.FC = () => {
 
     const { data: expandedEntity } = useQuery(['getExpandedEntity', entityId], () => getExpandedEntityByIdRequest(entityId!));
 
-    const categories = queryClient.getQueryData<IMongoCategory[]>('getCategories');
+    const categories = queryClient.getQueryData<IMongoCategory[]>('getCategories')!;
 
     const [createRelationshipDialogState, setCreateRelationshipDialogState] = useState<{
         isOpen: boolean;
@@ -63,25 +63,25 @@ const Entity: React.FC = () => {
 
     if (!expandedEntity) return <CircularProgress />;
 
-    const entityTemplates = queryClient.getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates');
-    const currentEntityTemplate = entityTemplates?.find((currTemplate) => currTemplate._id === expandedEntity?.entity.templateId);
+    const entityTemplates = queryClient.getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates')!;
+    const currentEntityTemplate = entityTemplates.find((currTemplate) => currTemplate._id === expandedEntity?.entity.templateId);
     const relevantRelationshipTemplates = queryClient
-        .getQueryData<IMongoRelationshipTemplate[]>('getRelationshipTemplates')
-        ?.filter(
+        .getQueryData<IMongoRelationshipTemplate[]>('getRelationshipTemplates')!
+        .filter(
             (currTemplate) =>
                 currTemplate.sourceEntityId === expandedEntity?.entity.templateId ||
                 currTemplate.destinationEntityId === expandedEntity?.entity.templateId,
         );
 
-    if (!entityTemplates || !currentEntityTemplate) return <div>error</div>;
+    if (!currentEntityTemplate) return <div>error</div>;
 
     const categoriesWithRelationshipTemplates = categories
-        ?.map((category) => {
+        .map((category) => {
             return {
                 ...category,
                 relationshipTemplates:
                     relevantRelationshipTemplates
-                        ?.map((currRelationshipTemplate) => {
+                        .map((currRelationshipTemplate) => {
                             const sourceEntity = entityTemplates.find(
                                 (currEntityTemplate) => currEntityTemplate._id === currRelationshipTemplate.sourceEntityId,
                             )!;

@@ -18,12 +18,12 @@ const chooseCategorySchema = {
 const ChooseCategory: React.FC<StepComponentProps<EntityTemplateWizardValues>> = ({ values, touched, errors, setFieldValue }) => {
     const queryClient = useQueryClient();
 
-    const categories = queryClient.getQueryData<IMongoCategory[]>('getCategories');
+    const categories = queryClient.getQueryData<IMongoCategory[]>('getCategories')!;
 
     return (
         <Autocomplete
             id="category"
-            options={categories || []}
+            options={categories}
             onChange={(_e, value) => setFieldValue('category', value || '')}
             value={values.category._id ? values.category : null}
             getOptionLabel={(option) => option.displayName}

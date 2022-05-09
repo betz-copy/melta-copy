@@ -5,15 +5,8 @@ import rtlPlugin from 'stylis-plugin-rtl';
 import { CacheProvider } from '@emotion/react';
 import createCache from '@emotion/cache';
 import { prefixer } from 'stylis';
-import { useQuery } from 'react-query';
-import { toast } from 'react-toastify';
-import i18next from 'i18next';
 import { SideBar } from './common/sideBar';
 import { MainBox } from './Main.styled';
-import { getEntityTemplatesRequest } from './services/enitityTemplatesService';
-import { getCategoriesRequest } from './services/categoriesService';
-import { getMyPermissionsRequest } from './services/permissionsService';
-import { getRelationshipTemplatesRequest } from './services/relationshipTemplatesService';
 
 const Home = lazy(() => import('./pages/Home'));
 const Category = lazy(() => import('./pages/Category'));
@@ -29,33 +22,6 @@ const cacheRtl = createCache({
 
 const Main = () => {
     const [open, setOpen] = useState(false);
-    const { data: categories } = useQuery('getCategories', getCategoriesRequest, {
-        onError: () => {
-            toast.error('failed to get categories');
-        },
-        initialData: [],
-    });
-    const { data: entityTemplates } = useQuery('getEntityTemplates', getEntityTemplatesRequest, {
-        onError: () => {
-            toast.error('failed to get entityTemplates');
-        },
-        initialData: [],
-        enabled: Boolean(categories),
-    });
-    useQuery('getRelationshipTemplates', getRelationshipTemplatesRequest, {
-        onError: () => {
-            toast.error('failed to get relationshipTemplates');
-        },
-        initialData: [],
-        enabled: Boolean(entityTemplates),
-    });
-
-    useQuery('getMyPermissions', getMyPermissionsRequest, {
-        onError: (error) => {
-            console.log('failed loading my permissions:', error);
-            toast.error(i18next.t('permissions.failedToLoadMyPermissions'));
-        },
-    });
 
     const toggleDrawer = () => {
         setOpen(!open);

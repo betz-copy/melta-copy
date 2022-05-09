@@ -44,7 +44,7 @@ const Graph: React.FC<{ data: { nodes: any[]; links: any[] }; centerOn?: number 
     const [shouldZoomToFit, setShouldZoomToFit] = useState(true);
     const queryClient = useQueryClient();
 
-    const entityTemplates = queryClient.getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates');
+    const entityTemplates = queryClient.getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates')!;
 
     // manage forces in graph
     forceRef.current?.d3Force(
@@ -69,7 +69,7 @@ const Graph: React.FC<{ data: { nodes: any[]; links: any[] }; centerOn?: number 
     };
 
     const renderTooltip = (node: NodeObject) => {
-        const templateDisplayName = entityTemplates!.find((entityTemplate) => entityTemplate._id === node.data.templateId)!.displayName;
+        const templateDisplayName = entityTemplates.find((entityTemplate) => entityTemplate._id === node.data.templateId)!.displayName;
         return `<div style><b>${templateDisplayName}</b>: <span>מזהה - ${node.id}</span></div>`;
     };
 

@@ -4,7 +4,7 @@ import i18next from 'i18next';
 import { useMutation, useQueryClient } from 'react-query';
 import { StepsType, Wizard, WizardBaseType } from '../index';
 import { CreateRelationshipTemplateName, createRelationshipTemplateNameSchema } from './CreateRelationshipTemplate';
-import { createRelationshipTemplateRequest, updateRelationshipTemplateRequest } from '../../../services/relationshipTemplatesService';
+import { createRelationshipTemplateRequest, updateRelationshipTemplateRequest } from '../../../services/templates/relationshipTemplatesService';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { replaceItemById } from '../../../utils/reactQuery';
 import { IMongoRelationshipTemplate } from '../../../interfaces/relationshipTemplates';
@@ -64,7 +64,7 @@ const RelationshipTemplateWizard: React.FC<WizardBaseType<RelationshipTemplateWi
                     queryClient.setQueryData<IMongoRelationshipTemplate[]>('getRelationshipTemplates', (prevData) => replaceItemById(data, prevData));
                     toast.success(i18next.t('wizard.relationshipTemplate.editedSuccefully'));
                 } else {
-                    queryClient.setQueryData<IMongoRelationshipTemplate[]>('getRelationshipTemplates', (prevData) => [...(prevData || []), data]);
+                    queryClient.setQueryData<IMongoRelationshipTemplate[]>('getRelationshipTemplates', (prevData) => [...prevData!, data]);
                     toast.success(i18next.t('wizard.relationshipTemplate.createdSuccessfully'));
                 }
                 handleClose();

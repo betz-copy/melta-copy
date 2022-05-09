@@ -14,7 +14,7 @@ import { RelationshipTemplateWizard } from '../../../common/wizards/relationship
 import {
     deleteRelationshipTemplateRequest,
     relationshipTemplateObjectToRelationshipTemplateForm,
-} from '../../../services/relationshipTemplatesService';
+} from '../../../services/templates/relationshipTemplatesService';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
 import { removeItemById } from '../../../utils/reactQuery';
 import { RelationshipTitle } from '../../../common/RelationshipTitle';
@@ -56,7 +56,7 @@ const RelationshipTemplatesRow: React.FC<{
 
     const { isLoading, mutateAsync } = useMutation((id: string) => deleteRelationshipTemplateRequest(id), {
         onSuccess: (_data, id) => {
-            queryClient.setQueryData<IMongoRelationshipTemplate[]>('getEntityTemplates', (prevData) => removeItemById(id, prevData));
+            queryClient.setQueryData<IMongoRelationshipTemplate[]>('getRelationshipTemplates', (prevData) => removeItemById(id, prevData));
             setDeleteRelationshipTemplateDialogState({ isDialogOpen: false, relationshipTemplateId: null });
             toast.success(i18next.t('wizard.relationshipTemplate.deletedSuccessfully'));
         },

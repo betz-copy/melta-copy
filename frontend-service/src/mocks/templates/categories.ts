@@ -46,11 +46,8 @@ const categories = [
 ];
 
 const mockCategories = (mock: MockAdapter) => {
-    // Get All
-    mock.onGet('/api/categories').reply(() => [200, categories]);
-
     // Create
-    mock.onPost('/api/categories').reply(() => [
+    mock.onPost('/api/templates/categories').reply(() => [
         200,
         {
             _id: '61e328384d51a83e87e83c74',
@@ -60,7 +57,7 @@ const mockCategories = (mock: MockAdapter) => {
     ]);
 
     // Update
-    mock.onPut(/\/api\/categories\/[0-9a-fA-F]{24}/).reply(() => [
+    mock.onPut(/\/api\/templates\/categories\/[0-9a-fA-F]{24}/).reply(() => [
         200,
         {
             _id: '61e3d8384d51a83e87e83c74',
@@ -70,7 +67,7 @@ const mockCategories = (mock: MockAdapter) => {
     ]);
 
     // Delete
-    mock.onDelete(/\/api\/categories\/[0-9a-fA-F]{24}/).reply(() => [200, {}]);
+    mock.onDelete(/\/api\/templates\/categories\/[0-9a-fA-F]{24}/).reply(() => [200, {}]);
 };
 
 export { mockCategories, categories };

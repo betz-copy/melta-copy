@@ -5,7 +5,7 @@ import i18next from 'i18next';
 import { useMutation, useQueryClient } from 'react-query';
 import { StepsType, Wizard, WizardBaseType } from '../index';
 import { CreateCategoryName, createCategoryNameSchema } from './CreateCategoryName';
-import { createCategoryRequest, updateCategoryRequest } from '../../../services/categoriesService';
+import { createCategoryRequest, updateCategoryRequest } from '../../../services/templates/categoriesService';
 import { ICategory, IMongoCategory } from '../../../interfaces/categories';
 import { replaceItemById } from '../../../utils/reactQuery';
 
@@ -39,7 +39,7 @@ const CategoryWizard: React.FC<WizardBaseType<CategoryWizardValues>> = ({
                     queryClient.setQueryData<IMongoCategory[]>('getCategories', (prevData) => replaceItemById(data, prevData));
                     toast.success(i18next.t('wizard.category.editedSuccefully'));
                 } else {
-                    queryClient.setQueryData<IMongoCategory[]>('getCategories', (prevData) => [...(prevData || []), data]);
+                    queryClient.setQueryData<IMongoCategory[]>('getCategories', (prevData) => [...prevData!, data]);
                     toast.success(i18next.t('wizard.category.createdSuccessfully'));
                 }
                 handleClose();

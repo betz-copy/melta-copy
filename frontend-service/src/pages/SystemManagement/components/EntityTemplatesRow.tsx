@@ -12,7 +12,7 @@ import { Header } from '../../../common/Header';
 import { SelectCheckbox } from '../../../common/SelectCheckbox';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { EntityTemplateWizard } from '../../../common/wizards/entityTemplate';
-import { deleteEntityTemplateRequest, entityTemplateObjectToEntityTemplateForm } from '../../../services/enitityTemplatesService';
+import { deleteEntityTemplateRequest, entityTemplateObjectToEntityTemplateForm } from '../../../services/templates/enitityTemplatesService';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
 import { removeItemById } from '../../../utils/reactQuery';
 

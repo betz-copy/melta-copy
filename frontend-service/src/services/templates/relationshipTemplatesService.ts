@@ -1,8 +1,8 @@
-import axios from '../axios';
-import { RelationshipTemplateWizardValues } from '../common/wizards/relationshipTemplate';
-import { environment } from '../globals';
-import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
-import { IMongoRelationshipTemplate, IRelationshipTemplate } from '../interfaces/relationshipTemplates';
+import axios from '../../axios';
+import { RelationshipTemplateWizardValues } from '../../common/wizards/relationshipTemplate';
+import { environment } from '../../globals';
+import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IMongoRelationshipTemplate } from '../../interfaces/relationshipTemplates';
 
 const { relationshipTemplates } = environment.api;
 
@@ -17,11 +17,6 @@ const relationshipTemplateObjectToRelationshipTemplateForm = (
     const destinationEntity = entityTemplates.find((entityTemplate) => entityTemplate._id === destinationEntityId)!;
 
     return { sourceEntity, destinationEntity, ...restOfEntityTemplate };
-};
-
-const getRelationshipTemplatesRequest = async () => {
-    const { data } = await axios.get<IRelationshipTemplate[]>(relationshipTemplates);
-    return data;
 };
 
 const createRelationshipTemplateRequest = async (newRelationshipTemplate: any) => {
@@ -40,7 +35,6 @@ const deleteRelationshipTemplateRequest = async (relationshipTemplateId: string)
 };
 
 export {
-    getRelationshipTemplatesRequest,
     createRelationshipTemplateRequest,
     updateRelationshipTemplateRequest,
     deleteRelationshipTemplateRequest,

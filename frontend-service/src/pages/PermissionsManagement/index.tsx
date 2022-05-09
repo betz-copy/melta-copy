@@ -15,7 +15,7 @@ import { BlueTitle } from '../../common/BlueTitle';
 
 const PermissionsManagement = () => {
     const queryClient = useQueryClient();
-    const categories = queryClient.getQueryData<IMongoCategory[]>('getCategories')!; // todo: if getCategories fails dont show UI?
+    const categories = queryClient.getQueryData<IMongoCategory[]>('getCategories')!;
 
     const { data: permissionsOfUsers, isLoading: isLoadingPermissions } = useQuery('getAllPermissions', () => getAllPermissionsOfUsersRequest(), {
         onError: (error) => {

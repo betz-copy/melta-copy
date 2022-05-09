@@ -22,13 +22,13 @@ const ChooseTemplate: React.FC<StepComponentProps<EntityWizardValues>> = ({ valu
     const queryClient = useQueryClient();
 
     const entityTemplates = queryClient
-        .getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates')
-        ?.filter((entity) => entity.category._id === categoryId);
+        .getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates')!
+        .filter((entity) => entity.category._id === categoryId);
 
     return (
         <Autocomplete
             id="template"
-            options={entityTemplates || []}
+            options={entityTemplates}
             onChange={(_e, value) => setFieldValue('template', value || '')}
             value={values.template._id ? values.template : null}
             getOptionLabel={(option) => option.displayName}

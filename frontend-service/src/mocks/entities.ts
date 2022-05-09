@@ -2,7 +2,7 @@ import MockAdapter from 'axios-mock-adapter';
 
 const mockEntites = (mock: MockAdapter) => {
     // Get all entities, TODO: remove
-    mock.onGet('/api/entities/all').reply(() => [
+    mock.onGet('/api/instances/entities/all').reply(() => [
         200,
         {
             nodes: [
@@ -649,7 +649,7 @@ const mockEntites = (mock: MockAdapter) => {
     ]);
 
     // Get entities by category
-    mock.onPost(/\/api\/entities\/filter\/[0-9a-fA-F]{24}/).reply(() => [
+    mock.onPost('/api/instances/entities/search').reply(() => [
         200,
         {
             rows: [
@@ -691,7 +691,7 @@ const mockEntites = (mock: MockAdapter) => {
         },
     ]);
 
-    mock.onGet(/\/api\/entities\/[0-9a-fA-F]{24}\?expanded=true/).reply((config) => [
+    mock.onGet(/\/api\/instances\/entities\/[0-9a-fA-F]{24}\?expanded=true/).reply((config) => [
         200,
         {
             entity: {
@@ -701,7 +701,7 @@ const mockEntites = (mock: MockAdapter) => {
                     lastName: 'קירל',
                     age: 20,
                     gender: false,
-                    _id: config.url!.split('/')[2].split('?')[0],
+                    _id: config.url!.split('/').at(-1)!.split('?')[0],
                 },
             },
             connections: [
@@ -824,7 +824,7 @@ const mockEntites = (mock: MockAdapter) => {
     ]);
 
     // Get specific entity
-    mock.onGet(/\/api\/entities\/[0-9a-fA-F]{24}/).reply((config) => {
+    mock.onGet(/\/api\/instances\/entities\/[0-9a-fA-F]{24}/).reply((config) => {
         return [
             200,
             {
@@ -1002,7 +1002,7 @@ const mockEntites = (mock: MockAdapter) => {
     });
 
     // Create
-    mock.onPost('/api/entities').reply(() => [
+    mock.onPost('/api/instances/entities').reply(() => [
         200,
         {
             _id: '61e3ea6e4d51a83e87e83c7e',
@@ -1010,7 +1010,7 @@ const mockEntites = (mock: MockAdapter) => {
     ]);
 
     // Update
-    mock.onPut(/\/api\/entities\/[0-9a-fA-F]{24}/).reply((config) => {
+    mock.onPut(/\/api\/instances\/entities\/[0-9a-fA-F]{24}/).reply((config) => {
         return [
             200,
             {
@@ -1027,7 +1027,7 @@ const mockEntites = (mock: MockAdapter) => {
     });
 
     // Delete
-    mock.onDelete(/\/api\/entities\/[0-9a-fA-F]{24}/).reply(() => {
+    mock.onDelete(/\/api\/instances\/entities\/[0-9a-fA-F]{24}/).reply(() => {
         return [200, {}];
     });
 };

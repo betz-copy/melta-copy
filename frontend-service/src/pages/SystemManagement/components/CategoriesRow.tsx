@@ -10,7 +10,7 @@ import { ViewingCard } from './ViewingCard';
 import { CustomIcon } from '../../../common/CustomIcon';
 import { Header } from '../../../common/Header';
 import { CategoryWizard } from '../../../common/wizards/category';
-import { categoryObjectToCategoryForm, deleteCategoryRequest } from '../../../services/categoriesService';
+import { categoryObjectToCategoryForm, deleteCategoryRequest } from '../../../services/templates/categoriesService';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
 import { removeItemById } from '../../../utils/reactQuery';
 

@@ -1,7 +1,7 @@
 import MockAdapter from 'axios-mock-adapter';
 
 const mockRelationships = (mock: MockAdapter) => {
-    mock.onPost('/api/relationships').reply(({ data }) => {
+    mock.onPost('/api/instances/relationships').reply(({ data }) => {
         const relationshipToCreate = JSON.parse(data);
         return [
             200,
@@ -12,7 +12,7 @@ const mockRelationships = (mock: MockAdapter) => {
         ];
     });
 
-    mock.onDelete(/\/api\/relationships\/[0-9a-fA-F]{24}/).reply(() => [
+    mock.onDelete(/\/api\/instances\/relationships\/[0-9a-fA-F]{24}/).reply(() => [
         200,
         {}, // backend should return deleted relationship, but not used anyway in UI
     ]);
