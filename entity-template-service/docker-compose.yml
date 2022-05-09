@@ -13,3 +13,18 @@ services:
       MONGO_URI: mongodb://mongo:27017/entityTemplateManager
       MONGO_ENTITY_TEMPLATE_COLLECTION_NAME: entityTemplate
       MONGO_CATEGORY_COLLECTION_NAME : category
+      STORAGE_SERVICE_URI : http://localhost:8001
+      STORAGE_SERVICE_UPLOAD_FILE_ROUTE : /api/files
+      STORAGE_SERVICE_DOWNLOAD_FILE_ROUTE : /api/files
+      STORAGE_SERVICE_DELETE_FILE_ROUTE : /api/files
+      RELATIONSHIP_TEMPLATE_MANAGER_URI : http://relationship-template-manager:8000
+      RABBIT_URI : amqp://rabbit
+
+  rabbit:
+    image: rabbitmq:3-management
+    ports:
+      - 5672:5672
+      - 15672:15672
+
+      
+

@@ -42,3 +42,5 @@ config:
       value: api/files
     - name: STORAGE_SERVICE_DELETE_FILE_ROUTE
       value: api/files
+    - name: RABBIT_URI
+      value: amqp://user:McgIwOn8Yh@my-release-rabbitmq

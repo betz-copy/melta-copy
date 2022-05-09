@@ -23,6 +23,15 @@ const config = {
         downloadFileRoute: env.get('STORAGE_SERVICE_DOWNLOAD_FILE_ROUTE').required().asString(),
         deleteFileRoute: env.get('STORAGE_SERVICE_DELETE_FILE_ROUTE').required().asString(),
     },
+    rabbit: {
+        uri: env.get('RABBIT_URI').required().asUrlString(),
+        retryOptions: {
+            minTimeout: env.get('RABBIT_RETRY_MIN_TIMEOUT').default(1000).asIntPositive(),
+            retries: env.get('RABBIT_RETRY_RETRIES').default(10).asIntPositive(),
+            factor: env.get('RABBIT_RETRY_FACTOR').default(1.8).asFloatPositive(),
+        },
+        queueName: env.get('QUEUE_NAME').default('searchQueue').asString(),
+    },
 };
 
 export default config;

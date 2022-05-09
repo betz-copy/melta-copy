@@ -1,4 +1,5 @@
 import { FilterQuery, Document } from 'mongoose';
+import menash from 'menashmq';
 import EntityTemplateModel from './model';
 import { IEntityTemplate } from './interface';
 import { ServiceError } from '../error';
@@ -6,7 +7,9 @@ import { escapeRegExp } from '../../utils';
 import { uploadFile, deleteFile } from '../../utils/storageService';
 import { getRelationshipTemplates } from '../../relationshipTemplateManager';
 import CategoryManager from '../category/manager';
+import config from '../../config';
 
+const { rabbit } = config;
 export class EntityTemplateManager {
     static getTemplates(queryGetAll: { search?: string; categoryIds?: string[]; limit: number; skip: number }) {
         const { search: displayName, categoryIds, limit, skip } = queryGetAll;
@@ -36,9 +39,12 @@ export class EntityTemplateManager {
 
         if (file) {
             const newFile = await uploadFile(file);
+
+            await menash.send(rabbit.queueName, 'New Template Created.');
             return EntityTemplateModel.create({ ...templateData, iconFileId: newFile.data.path });
         }
 
+        await menash.send(rabbit.queueName, 'New Template Created.');
         return EntityTemplateModel.create({ ...templateData, iconFileId: null });
     }
 
@@ -61,6 +67,7 @@ export class EntityTemplateManager {
             await deleteFile(iconFileId);
         }
 
+        await menash.send(rabbit.queueName, 'Template Deleted.');
         return EntityTemplateModel.findByIdAndDelete(id).orFail(new ServiceError(404, 'Entity Template not found')).lean().exec();
     }
 
@@ -88,6 +95,7 @@ export class EntityTemplateManager {
                 iconFileId = newFile.data.path;
             }
 
+            await menash.send(rabbit.queueName, 'Template Updated.');
             return EntityTemplateModel.findByIdAndUpdate(id, { ...updatedTemplate, iconFileId }, { new: true })
                 .populate('category')
                 .orFail(new ServiceError(404, 'Entity Template not found'))
@@ -95,6 +103,7 @@ export class EntityTemplateManager {
                 .exec();
         }
 
+        await menash.send(rabbit.queueName, 'Template Updated.');
         return EntityTemplateModel.findByIdAndUpdate(id, updatedTemplate, { new: true })
             .populate('category')
             .orFail(new ServiceError(404, 'Entity Template not found'))
