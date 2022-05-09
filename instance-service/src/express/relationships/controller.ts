@@ -6,6 +6,10 @@ class RelationshipController {
         res.json(await RelationshipManager.createRelationshipByEntityIds(req.body));
     }
 
+    static async getRelationshipById(req: Request, res: Response) {
+        res.json(await RelationshipManager.getRelationshipById(req.params.id));
+    }
+
     static async deleteRelationshipById(req: Request, res: Response) {
         res.json(await RelationshipManager.deleteRelationshipById(req.params.id));
     }

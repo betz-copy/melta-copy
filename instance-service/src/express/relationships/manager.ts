@@ -4,6 +4,16 @@ import { IRelationship } from './interface';
 import { NotFoundError, ServiceError } from '../error';
 
 export class RelationshipManager {
+    static async getRelationshipById(id: string) {
+        const relationship = await Neo4jClient.writeTransaction(`MATCH ()-[r]-() WHERE r._id='${id}' RETURN r`, normalizeReturnedRelationship);
+
+        if (!relationship) {
+            throw new NotFoundError(`[NEO4J] relationship "${id}" not found`);
+        }
+
+        return relationship;
+    }
+
     static async createRelationshipByEntityIds(relationship: IRelationship) {
         const { templateId, properties, sourceEntityId, destinationEntityId } = relationship;
         const defaultProperties = generateDefaultProperties();

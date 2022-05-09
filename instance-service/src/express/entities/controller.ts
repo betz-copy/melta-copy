@@ -7,7 +7,7 @@ class EntityController {
     }
 
     static async getEntities(req: Request, res: Response) {
-        res.json(await EntityManager.getEntities(req.params.templateId, req.body));
+        res.json(await EntityManager.getEntities(req.query.templateId as string, req.body));
     }
 
     static async getEntityById(req: Request, res: Response) {

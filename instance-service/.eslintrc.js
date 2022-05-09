@@ -33,7 +33,7 @@ module.exports = {
                 json: 'never',
             },
         ],
-        'no-underscore-dangle': 'off',
+        'no-underscore-dangle': ['error', { allow: ['_id'] }],
         'no-console': 'off',
         'no-unused-vars': 'off', // Checked by typescript
         semi: [2, 'always'],
