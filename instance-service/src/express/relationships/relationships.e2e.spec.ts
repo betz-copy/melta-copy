@@ -58,7 +58,7 @@ describe('e2e relationships tests', () => {
     });
 
     afterAll(async () => {
-        await request(app).delete(`/api/entities?templateId=${TEMPLATE_ID}`).expect(200);
+        await request(app).delete(`/api/instances/entities?templateId=${TEMPLATE_ID}`).expect(200);
         await Neo4jClient.close();
     });
 
@@ -66,10 +66,10 @@ describe('e2e relationships tests', () => {
         app = Server.createExpressApp();
     });
 
-    describe('/api/relationships', () => {
+    describe('/api/instances/relationships', () => {
         let relationshipId: string;
 
-        describe('POST /api/relationships', () => {
+        describe('POST /api/instances/relationships', () => {
             it('Should create new relationship', async () => {
                 const firstNode = {
                     templateId: TEMPLATE_ID,
@@ -89,8 +89,8 @@ describe('e2e relationships tests', () => {
                     },
                 };
 
-                const createResponseForFirstNode = await request(app).post('/api/entities').send(firstNode).expect(200);
-                const createResponseForSecondNode = await request(app).post('/api/entities').send(secondNode).expect(200);
+                const createResponseForFirstNode = await request(app).post('/api/instances/entities').send(firstNode).expect(200);
+                const createResponseForSecondNode = await request(app).post('/api/instances/entities').send(secondNode).expect(200);
 
                 const { _id: firstNodeId } = createResponseForFirstNode.body.properties;
                 const { _id: secondNodeId } = createResponseForSecondNode.body.properties;
@@ -116,7 +116,7 @@ describe('e2e relationships tests', () => {
                     __v: 0,
                 });
 
-                const result = await request(app).post('/api/relationships').send(relationship).expect(200);
+                const result = await request(app).post('/api/instances/relationships').send(relationship).expect(200);
 
                 relationshipId = result.body.properties._id;
             });
@@ -142,11 +142,11 @@ describe('e2e relationships tests', () => {
                     __v: 0,
                 });
 
-                await request(app).post('/api/relationships').send(relationship).expect(404);
+                await request(app).post('/api/instances/relationships').send(relationship).expect(404);
             });
         });
 
-        describe('PUT /api/relationships/:id', () => {
+        describe('PUT /api/instances/relationships/:id', () => {
             it('Should update relationship properties', async () => {
                 const relationship = {
                     properties: {
@@ -154,7 +154,7 @@ describe('e2e relationships tests', () => {
                     },
                 };
 
-                const updateResponse = await request(app).put(`/api/relationships/${relationshipId}`).send(relationship);
+                const updateResponse = await request(app).put(`/api/instances/relationships/${relationshipId}`).send(relationship);
 
                 expect(updateResponse.body).toEqual(
                     expect.objectContaining({
@@ -178,17 +178,17 @@ describe('e2e relationships tests', () => {
                     },
                 };
 
-                await request(app).put(`/api/relationships/${uuidv4()}`).send(relationship).expect(404);
+                await request(app).put(`/api/instances/relationships/${uuidv4()}`).send(relationship).expect(404);
             });
         });
 
-        describe('DELETE /api/relationships/:id', () => {
+        describe('DELETE /api/instances/relationships/:id', () => {
             it('Should delete a relationship', async () => {
-                await request(app).delete(`/api/relationships/${relationshipId}`).expect(200);
+                await request(app).delete(`/api/instances/relationships/${relationshipId}`).expect(200);
             });
 
             it('Should fail to delete a relationship', async () => {
-                await request(app).delete(`/api/relationships/${uuidv4()}`).expect(404);
+                await request(app).delete(`/api/instances/relationships/${uuidv4()}`).expect(404);
             });
         });
     });

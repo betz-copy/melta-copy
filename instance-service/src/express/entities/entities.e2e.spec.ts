@@ -60,7 +60,7 @@ describe('e2e entities tests', () => {
     });
 
     afterAll(async () => {
-        await request(app).delete(`/api/entities?templateId=${TEMPLATE_ID}`).expect(200);
+        await request(app).delete(`/api/instances/entities?templateId=${TEMPLATE_ID}`).expect(200);
         await Neo4jClient.close();
     });
 
@@ -84,10 +84,10 @@ describe('e2e entities tests', () => {
         });
     });
 
-    describe('/api/entities', () => {
+    describe('/api/instances/entities', () => {
         let id: string;
 
-        describe('POST /api/entities', () => {
+        describe('POST /api/instances/entities', () => {
             it('Should create new node', async () => {
                 const node = {
                     templateId: TEMPLATE_ID,
@@ -98,7 +98,7 @@ describe('e2e entities tests', () => {
                     },
                 };
 
-                const createResponse = await request(app).post('/api/entities').send(node).expect(200);
+                const createResponse = await request(app).post('/api/instances/entities').send(node).expect(200);
                 id = createResponse.body.properties._id;
 
                 expect(createResponse.body).toEqual(
@@ -125,11 +125,11 @@ describe('e2e entities tests', () => {
                     },
                 };
 
-                await request(app).post('/api/entities').send(node).expect(400);
+                await request(app).post('/api/instances/entities').send(node).expect(400);
             });
         });
 
-        describe('PUT /api/entities', () => {
+        describe('PUT /api/instances/entities', () => {
             it('Should edit an existing node', async () => {
                 const node = {
                     templateId: TEMPLATE_ID,
@@ -140,7 +140,7 @@ describe('e2e entities tests', () => {
                     },
                 };
 
-                const createResponse = await request(app).post('/api/entities').send(node).expect(200);
+                const createResponse = await request(app).post('/api/instances/entities').send(node).expect(200);
 
                 const properties = {
                     ...createResponse.body.properties,
@@ -151,7 +151,7 @@ describe('e2e entities tests', () => {
 
                 const { _id: updatedEntityId } = createResponse.body.properties;
                 const updateResponse = await request(app)
-                    .put(`/api/entities/${updatedEntityId}`)
+                    .put(`/api/instances/entities/${updatedEntityId}`)
                     .send({ templateId: TEMPLATE_ID, properties })
                     .expect(200);
 
@@ -180,13 +180,13 @@ describe('e2e entities tests', () => {
                     },
                 };
 
-                await request(app).put(`/api/entities/${uuidv4()}`).send(node).expect(404);
+                await request(app).put(`/api/instances/entities/${uuidv4()}`).send(node).expect(404);
             });
         });
 
-        describe('GET /api/entities', () => {
+        describe('GET /api/instances/entities', () => {
             it('Should return an existing node', async () => {
-                const getResponse = await request(app).get(`/api/entities/${id}`).expect(200);
+                const getResponse = await request(app).get(`/api/instances/entities/${id}`).expect(200);
 
                 expect(getResponse.body).toEqual(
                     expect.objectContaining({
@@ -204,7 +204,7 @@ describe('e2e entities tests', () => {
             });
 
             it('Should not find node', async () => {
-                await request(app).get(`/api/entities/${uuidv4()}`).expect(404);
+                await request(app).get(`/api/instances/entities/${uuidv4()}`).expect(404);
             });
 
             it('Should return an existing node and its connections (expanded mode)', async () => {
@@ -217,10 +217,10 @@ describe('e2e entities tests', () => {
                     },
                 };
 
-                const createFirstNodeResponse = await request(app).post('/api/entities').send(node).expect(200);
+                const createFirstNodeResponse = await request(app).post('/api/instances/entities').send(node).expect(200);
                 const { _id: firstNodeId } = createFirstNodeResponse.body.properties;
 
-                const createSecondNodeResponse = await request(app).post('/api/entities').send(node).expect(200);
+                const createSecondNodeResponse = await request(app).post('/api/instances/entities').send(node).expect(200);
                 const { _id: secondNodeId } = createSecondNodeResponse.body.properties;
 
                 const firstRelationship = {
@@ -265,10 +265,10 @@ describe('e2e entities tests', () => {
                     __v: 0,
                 });
 
-                await request(app).post('/api/relationships').send(firstRelationship).expect(200);
-                await request(app).post('/api/relationships').send(secondRelationship).expect(200);
+                await request(app).post('/api/instances/relationships').send(firstRelationship).expect(200);
+                await request(app).post('/api/instances/relationships').send(secondRelationship).expect(200);
 
-                const getResponse = await request(app).get(`/api/entities/${id}?expanded=true`).expect(200);
+                const getResponse = await request(app).get(`/api/instances/entities/${id}?expanded=true`).expect(200);
 
                 expect(getResponse.body).toEqual(
                     expect.objectContaining({
@@ -304,10 +304,10 @@ describe('e2e entities tests', () => {
                     },
                 };
 
-                const createFirstNodeResponse = await request(app).post('/api/entities').send(node).expect(200);
+                const createFirstNodeResponse = await request(app).post('/api/instances/entities').send(node).expect(200);
                 const { _id: createdEntityId } = createFirstNodeResponse.body.properties;
 
-                const getResponse = await request(app).get(`/api/entities/${createdEntityId}?expanded=true`).expect(200);
+                const getResponse = await request(app).get(`/api/instances/entities/${createdEntityId}?expanded=true`).expect(200);
 
                 expect(getResponse.body).toEqual(
                     expect.objectContaining({
@@ -325,13 +325,13 @@ describe('e2e entities tests', () => {
             });
 
             it('Should not find node (expanded mode)', async () => {
-                await request(app).get(`/api/entities/${uuidv4()}?expanded=true`).expect(404);
+                await request(app).get(`/api/instances/entities/${uuidv4()}?expanded=true`).expect(404);
             });
         });
 
-        describe('DELETE /api/entities', () => {
+        describe('DELETE /api/instances/entities', () => {
             it('Should delete an existing node', async () => {
-                await request(app).delete(`/api/entities/${id}?deleteAllRelationships=true`).expect(200);
+                await request(app).delete(`/api/instances/entities/${id}?deleteAllRelationships=true`).expect(200);
             });
 
             it('Should fail to delete a node because it has existing relationships', async () => {
@@ -344,10 +344,10 @@ describe('e2e entities tests', () => {
                     },
                 };
 
-                const createFirstNodeResponse = await request(app).post('/api/entities').send(node).expect(200);
+                const createFirstNodeResponse = await request(app).post('/api/instances/entities').send(node).expect(200);
                 const { _id: firstNodeId } = createFirstNodeResponse.body.properties;
 
-                const createSecondNodeResponse = await request(app).post('/api/entities').send(node).expect(200);
+                const createSecondNodeResponse = await request(app).post('/api/instances/entities').send(node).expect(200);
                 const { _id: secondNodeId } = createSecondNodeResponse.body.properties;
 
                 const relationship = {
@@ -371,9 +371,9 @@ describe('e2e entities tests', () => {
                     __v: 0,
                 });
 
-                await request(app).post('/api/relationships').send(relationship).expect(200);
+                await request(app).post('/api/instances/relationships').send(relationship).expect(200);
 
-                const deleteResponse = await request(app).delete(`/api/entities/${firstNodeId}`);
+                const deleteResponse = await request(app).delete(`/api/instances/entities/${firstNodeId}`);
 
                 expect(deleteResponse.statusCode).toBe(400);
                 expect(deleteResponse.body).toEqual(
@@ -385,7 +385,7 @@ describe('e2e entities tests', () => {
             });
 
             it('Should not find node', async () => {
-                await request(app).delete(`/api/entities/${uuidv4()}`).expect(404);
+                await request(app).delete(`/api/instances/entities/${uuidv4()}`).expect(404);
             });
         });
     });
