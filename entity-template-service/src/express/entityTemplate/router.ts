@@ -4,7 +4,7 @@ import EntityTemplateController from './controller';
 import { wrapController } from '../../utils/express';
 import ValidateRequest from '../../utils/joi';
 import {
-    getEntityTemplatesSchema,
+    searchEntityTemplatesSchema,
     deleteEntityTemplateSchema,
     getEntityTemplateByIdSchema,
     createEntityTemplateSchema,
@@ -16,7 +16,7 @@ const { uploadsFolderPath } = config.service;
 
 const entityTemplateRouter: Router = Router();
 
-entityTemplateRouter.get('/', ValidateRequest(getEntityTemplatesSchema), wrapController(EntityTemplateController.getEntityTemplates));
+entityTemplateRouter.post('/search', ValidateRequest(searchEntityTemplatesSchema), wrapController(EntityTemplateController.searchEntityTemplates));
 
 entityTemplateRouter.get(
     '/:templateId',

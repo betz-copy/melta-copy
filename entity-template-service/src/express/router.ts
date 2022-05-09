@@ -4,8 +4,8 @@ import categoryRouter from './category/router';
 
 const appRouter = Router();
 
-appRouter.use('/api/entities/templates', entityTemplateRouter);
-appRouter.use('/api/categories', categoryRouter);
+appRouter.use('/api/templates/entities', entityTemplateRouter);
+appRouter.use('/api/templates/categories', categoryRouter);
 
 appRouter.use(['/isAlive', '/health', '/isalive'], (_req, res) => {
     res.status(200).send('alive');

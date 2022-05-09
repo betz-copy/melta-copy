@@ -11,15 +11,19 @@ import config from '../../config';
 
 const { rabbit } = config;
 export class EntityTemplateManager {
-    static getTemplates(queryGetAll: { search?: string; categoryIds?: string[]; limit: number; skip: number }) {
-        const { search: displayName, categoryIds, limit, skip } = queryGetAll;
+    static getTemplates(searchQuery: { search?: string; ids?: string[]; categoryIds?: string[]; limit: number; skip: number }) {
+        const { search: displayName, ids, categoryIds, limit, skip } = searchQuery;
         const query: FilterQuery<IEntityTemplate & Document<any, any, any>> = {};
 
         if (displayName) {
             query.displayName = { $regex: escapeRegExp(displayName) };
         }
 
-        if (categoryIds && categoryIds.length > 0) {
+        if (ids) {
+            query._id = { $in: ids };
+        }
+
+        if (categoryIds) {
             query.category = { $in: categoryIds };
         }
 

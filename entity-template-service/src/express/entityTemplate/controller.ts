@@ -2,12 +2,8 @@ import { Request, Response } from 'express';
 import { EntityTemplateManager } from './manager';
 
 class EntityTemplateController {
-    static async getEntityTemplates(req: Request, res: Response) {
-        res.json(
-            await EntityTemplateManager.getTemplates(
-                req.query as unknown as { search?: string; categoryIds?: string[]; limit: number; skip: number },
-            ),
-        );
+    static async searchEntityTemplates(req: Request, res: Response) {
+        res.json(await EntityTemplateManager.getTemplates(req.body));
     }
 
     static async getEntityTemplateById(req: Request, res: Response) {

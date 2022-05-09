@@ -1,15 +1,16 @@
 import * as Joi from 'joi';
 import { MongoIdSchema, fileSchema, innerPropertiesSchema } from '../../utils/joi';
 
-// GET /api/entities/templates?search=name&limit=0&skip=0&category=
-export const getEntityTemplatesSchema = Joi.object({
-    query: {
+// POST /api/entities/templates/search
+export const searchEntityTemplatesSchema = Joi.object({
+    query: {},
+    body: {
         search: Joi.string(),
-        categoryIds: Joi.array().items(MongoIdSchema).min(1),
+        ids: Joi.array().items(MongoIdSchema),
+        categoryIds: Joi.array().items(MongoIdSchema),
         limit: Joi.number().integer().min(0).default(0),
         skip: Joi.number().integer().min(0).default(0),
     },
-    body: {},
     params: {},
 });
 
