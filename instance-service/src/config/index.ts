@@ -17,12 +17,12 @@ const config = {
     },
     templateManager: {
         url: env.get('TEMPLATE_MANAGER_URL').required().asString(),
-        getByIdRoute: env.get('TEMPLATE_MANAGER_GET_BY_ID_ROUTE').default('/api/entities/templates').asString(),
+        getByIdRoute: env.get('TEMPLATE_MANAGER_GET_BY_ID_ROUTE').default('/api/templates/entities').asString(),
         timeout: env.get('TEMPLATE_MANAGER_TIMEOUT').default(5000).asIntPositive(),
     },
     relationshipManager: {
         url: env.get('RELATIONSHIP_MANAGER_URL').required().asString(),
-        getByIdRoute: env.get('RELATIONSHIP_MANAGER_GET_BY_ID_ROUTE').default('/api/relationships/templates').asString(),
+        getByIdRoute: env.get('RELATIONSHIP_MANAGER_GET_BY_ID_ROUTE').default('/api/templates/relationships').asString(),
         timeout: env.get('RELATIONSHIP_MANAGER_TIMEOUT').default(5000).asIntPositive(),
     },
 };

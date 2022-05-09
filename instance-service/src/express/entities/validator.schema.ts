@@ -69,7 +69,7 @@ const agGridDateFilterSchema = Joi.object({
     }),
 });
 
-// POST /api/entites/filter
+// POST /api/entites/search
 export const getEntitiesRequestSchema = Joi.object({
     body: {
         startRow: Joi.number().required(),
@@ -87,10 +87,10 @@ export const getEntitiesRequestSchema = Joi.object({
             )
             .required(),
     },
-    query: {},
-    params: {
+    query: {
         templateId: Joi.string().required(),
     },
+    params: {},
 });
 
 // PUT /api/entities/:id
