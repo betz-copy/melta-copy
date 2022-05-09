@@ -11,7 +11,7 @@ const config = {
     },
     entityTemplateManager: {
         uri: env.get('ENTITY_TEMPLATE_MANAGER_URI').required().asString(),
-        getByIdRoute: env.get('ENTITY_TEMPLATE_MANAGER_ROUTE_GET_BY_ID_ROUTE').default('/api/entities/templates/').asString(),
+        getByIdRoute: env.get('ENTITY_TEMPLATE_MANAGER_ROUTE_GET_BY_ID_ROUTE').default('/api/templates/entities/').asString(),
     },
 };
 

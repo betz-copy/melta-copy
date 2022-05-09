@@ -52,19 +52,25 @@ export class RelationshipTemplateManager {
         return RelationshipTemplateModel.create(relationshipTemplate);
     }
 
-    static getTemplates(queryGetAll: { search?: string; sourceEntityId?: string; destinationEntityId?: string; limit: number; skip: number }) {
-        const { search, sourceEntityId, destinationEntityId, limit, skip } = queryGetAll;
+    static searchTemplates(searchBody: {
+        search?: string;
+        sourceEntityIds?: string[];
+        destinationEntityIds?: string[];
+        limit: number;
+        skip: number;
+    }) {
+        const { search, sourceEntityIds, destinationEntityIds, limit, skip } = searchBody;
         const query: FilterQuery<IRelationshipTemplate & Document<any, any, any>> = {};
 
         if (search) {
             query.displayName = { $regex: escapeRegExp(search) };
         }
-        if (sourceEntityId) {
-            query.sourceEntityId = sourceEntityId;
+        if (sourceEntityIds) {
+            query.sourceEntityId = { $in: sourceEntityIds };
         }
 
-        if (destinationEntityId) {
-            query.destinationEntityId = destinationEntityId;
+        if (destinationEntityIds) {
+            query.destinationEntityId = { $in: destinationEntityIds };
         }
 
         return RelationshipTemplateModel.find(query).limit(limit).skip(skip).lean().exec();

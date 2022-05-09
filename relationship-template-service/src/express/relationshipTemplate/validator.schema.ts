@@ -46,14 +46,14 @@ export const deleteTemplateByIdRequestSchema = Joi.object({
 });
 
 // GET /api/relationship/templates?search=value
-export const getTemplatesRequestSchema = Joi.object({
-    body: {},
-    query: {
+export const searchTemplatesRequestSchema = Joi.object({
+    body: {
         search: Joi.string(),
-        sourceEntityId: MongoIdSchema,
-        destinationEntityId: MongoIdSchema,
+        sourceEntityIds: Joi.array().items(MongoIdSchema),
+        destinationEntityIds: Joi.array().items(MongoIdSchema),
         limit: Joi.number().integer().min(0).default(0),
         skip: Joi.number().integer().min(0).default(0),
     },
+    query: {},
     params: {},
 });

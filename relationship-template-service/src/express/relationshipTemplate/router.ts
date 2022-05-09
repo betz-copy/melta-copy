@@ -7,7 +7,7 @@ import {
     updateTemplateByIdRequestSchema,
     deleteTemplateByIdRequestSchema,
     createTemplateRequestSchema,
-    getTemplatesRequestSchema,
+    searchTemplatesRequestSchema,
 } from './validator.schema';
 
 const relationshipTemplateRouter: Router = Router();
@@ -28,6 +28,10 @@ relationshipTemplateRouter.delete(
     wrapController(RelationshipTemplateController.deleteTemplateById),
 );
 relationshipTemplateRouter.post('/', ValidateRequest(createTemplateRequestSchema), wrapController(RelationshipTemplateController.createTemplate));
-relationshipTemplateRouter.get('/', ValidateRequest(getTemplatesRequestSchema), wrapController(RelationshipTemplateController.getTemplates));
+relationshipTemplateRouter.post(
+    '/search',
+    ValidateRequest(searchTemplatesRequestSchema),
+    wrapController(RelationshipTemplateController.searchTemplates),
+);
 
 export default relationshipTemplateRouter;

@@ -18,12 +18,8 @@ class RelationshipTemplateController {
         res.json(await RelationshipTemplateManager.createTemplate(req.body));
     }
 
-    static async getTemplates(req: Request, res: Response) {
-        res.json(
-            await RelationshipTemplateManager.getTemplates(
-                req.query as unknown as { search?: string; sourceEntityId?: string; destinationEntityId?: string; limit: number; skip: number },
-            ),
-        );
+    static async searchTemplates(req: Request, res: Response) {
+        res.json(await RelationshipTemplateManager.searchTemplates(req.body));
     }
 }
 

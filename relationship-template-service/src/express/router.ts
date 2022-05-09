@@ -3,7 +3,7 @@ import relationshipTemplateRouter from './relationshipTemplate/router';
 
 const appRouter = Router();
 
-appRouter.use('/api/relationships/templates', relationshipTemplateRouter);
+appRouter.use('/api/templates/relationships', relationshipTemplateRouter);
 
 appRouter.use('/isAlive', (_req, res) => {
     res.status(200).send('alive');
