@@ -7,6 +7,8 @@ import { entityTemplates } from './mocks/entityTemplates';
 import { createInstances, createRelationshipInstances, isInstanceManagerAlive } from './instances';
 import { createRealtionshipTemplates, isRelationshipTemplateManagerAlive } from './relationshipTemplates';
 import { relationshipTemplates } from './mocks/relationshipTemplates';
+import { createPermissionsBulk, isPermissionsApiAlive } from './permissionsApi';
+import { getPermissionsToCreate } from './mocks/permissionsApi';
 
 const main = async () => {
     console.log(`Mock started ${JSON.stringify(config, null, 4)}`);
@@ -18,6 +20,11 @@ const main = async () => {
 
     if ((await isRelationshipTemplateManagerAlive()).err) {
         console.log('Relationship Template Manager is not alive');
+        return;
+    }
+
+    if ((await isPermissionsApiAlive()).err) {
+        console.log('Permissions API is not alive');
         return;
     }
 
@@ -33,19 +40,23 @@ const main = async () => {
 
     console.log('All services alive!');
 
-    console.log('Createing categories');
+    console.log('Creating categories');
 
     const createdCategories = await createCategories(categories);
 
-    console.log('Createing entity templates');
+    console.log('Creating entity templates');
 
     const createdEntityTemplates = await createEntityTemplates(entityTemplates, createdCategories);
 
-    console.log('Createing relationshipTemplates templates');
+    console.log('Creating relationshipTemplates templates');
 
     const createdRelationshipTemplates = await createRealtionshipTemplates(relationshipTemplates, createdEntityTemplates);
 
-    console.log('Createing entities');
+    console.log('Creating permissions');
+
+    await createPermissionsBulk(getPermissionsToCreate(createdCategories));
+
+    console.log('Creating entities');
 
     const createdEntityInstances = await createInstances(createdEntityTemplates);
 
