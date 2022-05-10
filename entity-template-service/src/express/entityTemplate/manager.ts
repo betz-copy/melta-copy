@@ -44,12 +44,14 @@ export class EntityTemplateManager {
         if (file) {
             const newFile = await uploadFile(file);
 
+            const entityTemplate = await EntityTemplateModel.create({ ...templateData, iconFileId: newFile.data.path });
             await menash.send(rabbit.queueName, 'New Template Created.');
-            return EntityTemplateModel.create({ ...templateData, iconFileId: newFile.data.path });
-        }
 
+            return entityTemplate;
+        }
+        const entityTemplate = await EntityTemplateModel.create({ ...templateData, iconFileId: null });
         await menash.send(rabbit.queueName, 'New Template Created.');
-        return EntityTemplateModel.create({ ...templateData, iconFileId: null });
+        return entityTemplate;
     }
 
     static async throwIfEntityHasRelationships(id: string) {
@@ -71,8 +73,13 @@ export class EntityTemplateManager {
             await deleteFile(iconFileId);
         }
 
+        const entityTemplate = await EntityTemplateModel.findByIdAndDelete(id)
+            .orFail(new ServiceError(404, 'Entity Template not found'))
+            .lean()
+            .exec();
+
         await menash.send(rabbit.queueName, 'Template Deleted.');
-        return EntityTemplateModel.findByIdAndDelete(id).orFail(new ServiceError(404, 'Entity Template not found')).lean().exec();
+        return entityTemplate;
     }
 
     static async updateEntityTemplate(
@@ -99,20 +106,22 @@ export class EntityTemplateManager {
                 iconFileId = newFile.data.path;
             }
 
-            await menash.send(rabbit.queueName, 'Template Updated.');
-            return EntityTemplateModel.findByIdAndUpdate(id, { ...updatedTemplate, iconFileId }, { new: true })
+            const entityTemplate = await EntityTemplateModel.findByIdAndUpdate(id, { ...updatedTemplate, iconFileId }, { new: true })
                 .populate('category')
                 .orFail(new ServiceError(404, 'Entity Template not found'))
                 .lean()
                 .exec();
-        }
 
-        await menash.send(rabbit.queueName, 'Template Updated.');
-        return EntityTemplateModel.findByIdAndUpdate(id, updatedTemplate, { new: true })
+            await menash.send(rabbit.queueName, 'Template Updated.');
+            return entityTemplate;
+        }
+        const entityTemplate = await EntityTemplateModel.findByIdAndUpdate(id, updatedTemplate, { new: true })
             .populate('category')
             .orFail(new ServiceError(404, 'Entity Template not found'))
             .lean()
             .exec();
+        await menash.send(rabbit.queueName, 'Template Updated.');
+        return entityTemplate;
     }
 }
 
