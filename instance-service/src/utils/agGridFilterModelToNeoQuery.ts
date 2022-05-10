@@ -3,21 +3,21 @@ import assert from 'assert';
 export interface IAGGridTextFilter {
     filterType: 'text';
     type: 'equals' | 'notEqual' | 'contains' | 'notContains' | 'startsWith' | 'endsWith' | 'blank' | 'notBlank';
-    filter: string;
+    filter?: string;
 }
 
 export interface IAGGidNumberFilter {
     filterType: 'number';
     type: 'equals' | 'notEqual' | 'lessThan' | 'lessThanOrEqual' | 'greaterThan' | 'greaterThanOrEqual' | 'inRange' | 'blank' | 'notBlank';
-    filter: number;
+    filter?: number;
     filterTo?: number; // only inRange type
 }
 
 export interface IAGGridDateFilter {
     filterType: 'date';
     type: 'equals' | 'notEqual' | 'lessThan' | 'lessThanOrEqual' | 'greaterThan' | 'greaterThanOrEqual' | 'inRange' | 'blank' | 'notBlank';
-    dateFrom: string;
-    dateTo?: string; // only inRange type
+    dateFrom: string | null;
+    dateTo: string | null; // only inRange type
 }
 
 export interface IAGGridSetFilter {
@@ -51,11 +51,11 @@ export const textFilterToQuery = (field: string, { type, filter }: IAGGridTextFi
         case 'equals':
             return `node.${field} = '${filter}'`;
         case 'notEqual':
-            return `node.${field} != '${filter}'`;
+            return `node.${field} <> '${filter}'`;
         case 'contains':
             return `node.${field} CONTAINS '${filter}'`;
         case 'notContains':
-            return `node.${field} NOT CONTAINS '${filter}'`;
+            return `NOT node.${field} CONTAINS '${filter}'`;
         case 'startsWith':
             return `node.${field} STARTS WITH '${filter}'`;
         case 'endsWith':
@@ -74,7 +74,7 @@ export const numberFilterToQuery = (field: string, { type, filter, filterTo }: I
         case 'equals':
             return `node.${field} = ${filter}`;
         case 'notEqual':
-            return `node.${field} != ${filter}`;
+            return `node.${field} <> ${filter}`;
         case 'lessThan':
             return `node.${field} < ${filter}`;
         case 'lessThanOrEqual':
@@ -105,28 +105,35 @@ const formatDate = (date: string) => {
 };
 
 export const dateFilterToQuery = (field: string, { type, dateFrom: dateFromString, dateTo: dateToString }: IAGGridDateFilter) => {
+    if (!dateFromString) {
+        switch (type) {
+            case 'blank':
+                return `node.${field} IS NULL`;
+            case 'notBlank':
+                return `node.${field} IS NOT NULL`;
+            default:
+                throw new Error('Invalid supported ag-grid filter type method');
+        }
+    }
+
     const dateFrom = formatDate(dateFromString);
 
     switch (type) {
         case 'equals':
-            return `date(node.${field}) = date('${dateFrom}')`;
+            return `date(datetime(node.${field})) = date('${dateFrom}')`;
         case 'notEqual':
-            return `date(node.${field}) != date('${dateFrom}')`;
+            return `date(datetime(node.${field})) <> date('${dateFrom}')`;
         case 'lessThan':
-            return `date(node.${field}) < date('${dateFrom}')`;
+            return `date(datetime(node.${field})) < date('${dateFrom}')`;
         case 'lessThanOrEqual':
-            return `date(node.${field}) <= date('${dateFrom}')`;
+            return `date(datetime(node.${field})) <= date('${dateFrom}')`;
         case 'greaterThan':
-            return `date(node.${field}) > date('${dateFrom}')`;
+            return `date(datetime(node.${field})) > date('${dateFrom}')`;
         case 'greaterThanOrEqual':
-            return `date(node.${field}) >= date('${dateFrom}')`;
+            return `date(datetime(node.${field})) >= date('${dateFrom}')`;
         case 'inRange':
             assert(dateToString, 'inRange must have dateFrom & dateTo');
-            return `date('${dateFrom}') <= node.${field} <= date('${formatDate(dateToString)}')`;
-        case 'blank':
-            return `node.${field} IS NULL`;
-        case 'notBlank':
-            return `node.${field} IS NOT NULL`;
+            return `date('${dateFrom}') <= date(datetime(node.${field})) <= date('${formatDate(dateToString)}')`;
         default:
             throw new Error('Invalid supported ag-grid filter type method');
     }

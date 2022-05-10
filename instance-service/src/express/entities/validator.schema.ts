@@ -66,7 +66,7 @@ const agGridNumberFilterSchema = Joi.object({
 const agGridTextFilterSchema = Joi.object({
     filterType: Joi.valid('text').required(),
     type: Joi.valid('equals', 'notEqual', 'contains', 'notContains', 'startsWith', 'endsWith', 'blank', 'notBlank').required(),
-    filter: Joi.string().required(),
+    filter: Joi.string().when('type', { is: Joi.invalid('blank', 'notBlank'), then: Joi.required() }),
 });
 
 const agGridDateFilterSchema = Joi.object({
