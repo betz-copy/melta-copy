@@ -22,10 +22,10 @@ export const getColumnDefs = <Data extends any>(
 
         const valueGetter: ValueGetterFunc = ({ data }) => getEntityPropertiesData(data)[key];
 
-        if (type === 'number') return numberColDef(valueGetter, value);
-        if (type === 'boolean') return booleanColDef(valueGetter, value);
-        if (format === 'date' || format === 'date-time') return dateColDef(valueGetter, value);
-        return stringColDef(valueGetter, value);
+        if (type === 'number') return numberColDef(key, valueGetter, value);
+        if (type === 'boolean') return booleanColDef(key, valueGetter, value);
+        if (format === 'date' || format === 'date-time') return dateColDef(key, valueGetter, value);
+        return stringColDef(key, valueGetter, value);
     });
 
     if (onNavigateToRow || deleteRowButtonProps) {
