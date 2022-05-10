@@ -24,8 +24,12 @@ config:
       value: http://relationship-template-manager:8000
     - name: INSTANCE_MANAGER_URI
       value: http://instance-manager:8000
+    - name: PERMISSION_API_BASE_URL
+      value: http://permission-api:8000
     - name: STORAGE_SERVICE_URI
       value: http://storage-service:8000
+    - name: KARTOFFEL_BASE_URL
+      value: https://kartoffel.branch-yesodot.org
     - name: CALLBACK_URL
       value: http://jaws.branch-yesodot.org/api/auth/callback
     - name: SHRAGA_URL
@@ -34,7 +38,8 @@ config:
       value: rabaz-access-token
     - name: SYSTEM_UNAVAILABLE_URL
       value: /unavailable
-
+    - name: NODE_TLS_REJECT_UNAUTHORIZED
+      value: '0'
 
 livenessProbe:
   httpGet:
