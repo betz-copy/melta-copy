@@ -20,6 +20,12 @@ services:
     restart: "no"
     entrypoint: [ "bash", "/scripts/setup_mongo.sh"]
 
+  rabbit:
+    image: rabbitmq:3-management
+    ports:
+      - 5672:5672
+      - 15672:15672
+
   minio:
     image: minio/minio
     ports: 
@@ -40,8 +46,8 @@ services:
       - "7687:7687"
 
   mock:
-    image: jawsproject.azurecr.io/mock
-    # build: ./mock
+    # image: jawsproject.azurecr.io/mock
+    build: ./mock
     environment:
       ENTITY_TEMPLATE_MANAGER_URI: ${ENTITY_TEMPLATE_MANAGER_URI}
       RELATIONSHIP_TEMPLATE_MANAGER_URI: ${RELATIONSHIP_TEMPLATE_MANAGER_URI}

@@ -14,6 +14,7 @@ services:
       STORAGE_SERVICE_UPLOAD_FILE_ROUTE: ${STORAGE_SERVICE_UPLOAD_FILE_ROUTE}
       STORAGE_SERVICE_DOWNLOAD_FILE_ROUTE: ${STORAGE_SERVICE_DOWNLOAD_FILE_ROUTE}
       STORAGE_SERVICE_DELETE_FILE_ROUTE: ${STORAGE_SERVICE_DELETE_FILE_ROUTE}
+      RABBIT_URI : amqp://rabbit
 
   permission-api:
     image: jawsproject.azurecr.io/permission-api # TODO: fix permissions vs permission
