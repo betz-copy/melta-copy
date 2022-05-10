@@ -13,12 +13,12 @@ service:
 
 livenessProbe:
   httpGet:
-    path: /health
+    path: /isAlive
     port: 8000
 
 readinessProbe:
   httpGet:
-    path: /health
+    path: /isAlive
     port: 8000
 
 config:
