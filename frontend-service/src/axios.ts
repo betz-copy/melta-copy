@@ -1,14 +1,7 @@
+/* eslint-disable global-require */
 import axiosInstance from 'axios';
 import MockAdapter from 'axios-mock-adapter';
-import { mockCategories } from './mocks/templates/categories';
-import { mockConfig } from './mocks/config';
-import { mockEntites } from './mocks/entities';
-import { mockRelationships } from './mocks/relationships';
-import { mockEntityTemplates } from './mocks/templates/entityTemplates';
-import { mockRelationshipTemplates } from './mocks/templates/relationshipTemplates';
 import { AuthService } from './services/authService';
-import { mockPermissions } from './mocks/permissions';
-import { mockGetAllTemplates } from './mocks/templates/getAllTemplates';
 // import faker from 'faker';
 
 const axios = axiosInstance.create({
@@ -32,6 +25,15 @@ axios.interceptors.response.use(
 
 if (process.env.NODE_ENV === 'development' && !process.env.REACT_APP_IS_DOCKER) {
     console.log('Development Environment, using axios mock');
+
+    const { mockCategories } = require('./mocks/templates/categories');
+    const { mockGetAllTemplates } = require('./mocks/templates/getAllTemplates');
+    const { mockConfig } = require('./mocks/config');
+    const { mockEntites } = require('./mocks/entities');
+    const { mockEntityTemplates } = require('./mocks/templates/entityTemplates');
+    const { mockRelationshipTemplates } = require('./mocks/templates/relationshipTemplates');
+    const { mockRelationships } = require('./mocks/relationships');
+    const { mockPermissions } = require('./mocks/permissions');
 
     const mock = new MockAdapter(axios, { delayResponse: 500 });
 

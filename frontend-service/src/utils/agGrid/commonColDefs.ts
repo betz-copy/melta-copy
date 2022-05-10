@@ -1,4 +1,4 @@
-import { ColDef, ValueFormatterParams, ValueGetterFunc } from 'ag-grid-community';
+import { ColDef, ValueFormatterParams, ValueGetterFunc } from '@ag-grid-community/core';
 import i18next from 'i18next';
 
 export const numberColDef = (field: string, valueGetter: ValueGetterFunc, value: { title: string }): ColDef => {
@@ -35,6 +35,7 @@ export const booleanColDef = (field: string, valueGetter: ValueGetterFunc, value
         valueFormatter,
         filterParams: {
             valueFormatter,
+            suppressMiniFilter: true,
             values: [true, false, undefined],
         },
     };

@@ -1,4 +1,3 @@
-// import { IServerSideGetRowsRequest } from 'ag-grid-community';
 import axios from '../axios';
 import { environment } from '../globals';
 import { IUser } from './kartoffelService';

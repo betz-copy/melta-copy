@@ -1,11 +1,14 @@
 import React from 'react';
 import i18next from 'i18next';
-import '@noam7700/ag-grid-enterprise';
-import { AgGridColumn, AgGridReact } from 'ag-grid-react';
+import '@noam7700/ag-grid-enterprise-core';
+import { AgGridColumn, AgGridReact } from '@ag-grid-community/react';
 import { Grid, Typography, Box, Input, IconButton } from '@mui/material';
 import { SearchRounded, CloseOutlined, AddCircle, FileDownloadOutlined } from '@mui/icons-material';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 
+import '@ag-grid-community/core/dist/styles/ag-grid.css';
+import '@ag-grid-community/core/dist/styles/ag-theme-material.css';
+import '../../../css/components/templateTable.css';
 import { IEntity } from '../../../interfaces/entities';
 
 const TemplateTable: React.FC<{

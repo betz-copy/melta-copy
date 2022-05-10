@@ -2,16 +2,21 @@ import React, { forwardRef, useImperativeHandle, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Box, GlobalStyles } from '@mui/material';
 
-import { ColDef, IServerSideDatasource } from 'ag-grid-community';
-import { AgGridReact } from 'ag-grid-react';
-import '@noam7700/ag-grid-enterprise';
-
+import { ColDef, IServerSideDatasource } from '@ag-grid-community/core';
+import { AgGridReact } from '@ag-grid-community/react';
+import '@noam7700/ag-grid-enterprise-core';
+import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
+import { ColumnsToolPanelModule } from '@noam7700/ag-grid-enterprise-column-tool-panel';
+import { MenuModule } from '@noam7700/ag-grid-enterprise-menu';
+import { ExcelExportModule } from '@noam7700/ag-grid-enterprise-excel-export';
+import { SetFilterModule } from '@noam7700/ag-grid-enterprise-set-filter';
+import { ServerSideRowModelModule } from '@noam7700/ag-grid-enterprise-server-side-row-model';
 import i18next from 'i18next';
 import { toast } from 'react-toastify';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 
-import 'ag-grid-community/dist/styles/ag-grid.css';
-import 'ag-grid-community/dist/styles/ag-theme-material.css';
+import '@ag-grid-community/core/dist/styles/ag-grid.css';
+import '@ag-grid-community/core/dist/styles/ag-theme-material.css';
 import './table.css';
 
 import { DateFilterComponent } from '../../utils/agGrid/DateFilterComponent';
@@ -155,6 +160,14 @@ const EntitiesTableOfTemplate = forwardRef(
                         fontSize,
                         // todo: removed marginBottom: 30px. check doesnt effect regular page
                     }}
+                    modules={[
+                        ServerSideRowModelModule,
+                        ExcelExportModule,
+                        ColumnsToolPanelModule,
+                        MenuModule,
+                        SetFilterModule,
+                        ClientSideRowModelModule,
+                    ]}
                     domLayout="autoHeight"
                     getRowId={({ data }) => getRowId(data)}
                     columnDefs={columnDefs}

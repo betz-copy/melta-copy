@@ -1,8 +1,7 @@
 import React, { useRef, forwardRef, useImperativeHandle } from 'react';
 import { Grid, Typography, IconButton, Box } from '@mui/material';
 import { AddCircle, FileDownloadOutlined } from '@mui/icons-material';
-import { exportMultipleSheetsAsExcel } from '@noam7700/ag-grid-enterprise';
-
+import { exportMultipleSheetsAsExcel } from '@noam7700/ag-grid-enterprise-excel-export';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { AddEntityButton } from './AddEntityButton';
 import EntitiesTableOfTemplate from '../../../common/EntitiesTableOfTemplate';

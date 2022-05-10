@@ -1,4 +1,4 @@
-import { IServerSideGetRowsRequest } from 'ag-grid-community';
+import { IServerSideGetRowsRequest } from '@ag-grid-community/core';
 import axios from '../axios';
 import { environment } from '../globals';
 import { IEntity, IEntityExpanded } from '../interfaces/entities';

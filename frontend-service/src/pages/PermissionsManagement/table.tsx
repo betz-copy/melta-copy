@@ -1,15 +1,15 @@
 import React from 'react';
 import i18next from 'i18next';
-
-import '@noam7700/ag-grid-enterprise';
-import { AgGridReact } from 'ag-grid-react';
-import { ColDef, ICellRendererParams, ValueFormatterParams } from 'ag-grid-community';
-import 'ag-grid-community/dist/styles/ag-grid.css';
-import 'ag-grid-community/dist/styles/ag-theme-material.css';
-
+import '@noam7700/ag-grid-enterprise-core';
+import { AgGridReact } from '@ag-grid-community/react';
+import { ColDef, ICellRendererParams, ValueFormatterParams } from '@ag-grid-community/core';
+import '@ag-grid-community/core/dist/styles/ag-grid.css';
+import '@ag-grid-community/core/dist/styles/ag-theme-material.css';
 import { Chip, Grid, IconButton } from '@mui/material';
 import { Delete as DeleteIcon, Edit as EditIcon } from '@mui/icons-material';
-
+import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
+import { MenuModule } from '@noam7700/ag-grid-enterprise-menu';
+import { SetFilterModule } from '@noam7700/ag-grid-enterprise-set-filter';
 import { IMongoCategory } from '../../interfaces/categories';
 import { IPermissionsOfUser } from '../../services/permissionsService';
 import { IUser } from '../../services/kartoffelService';
@@ -177,6 +177,7 @@ const Table: React.FC<{
     return (
         <AgGridReact
             className="ag-theme-material"
+            modules={[MenuModule, SetFilterModule, ClientSideRowModelModule]}
             containerStyle={{ height: '780px', width: '100%', marginBottom: '30px', fontFamily: 'Rubik', fontSize: '16px', borderRadius: '70px' }}
             rowData={permissionsOfUsers}
             defaultColDef={defaultColDef}

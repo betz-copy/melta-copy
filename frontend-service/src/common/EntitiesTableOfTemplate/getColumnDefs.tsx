@@ -1,6 +1,6 @@
 import React, { memo } from 'react';
 import { Delete as DeleteIcon, ReadMore as ReadMoreIcon } from '@mui/icons-material';
-import { ColDef, ValueGetterFunc } from 'ag-grid-community';
+import { ColDef, ValueGetterFunc } from '@ag-grid-community/core';
 import i18next from 'i18next';
 import { IEntity } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
