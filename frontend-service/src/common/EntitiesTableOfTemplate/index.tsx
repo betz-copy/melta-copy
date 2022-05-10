@@ -18,28 +18,36 @@ import { DateFilterComponent } from '../../utils/agGrid/DateFilterComponent';
 import { IEntity } from '../../interfaces/entities';
 import { getEntitiesByTemplateRequest } from '../../services/entitiesService';
 import { getColumnDefs } from './getColumnDefs';
-import { onCacheBlockLoaded } from './onCacheBlockLoaded';
 import { trycatch } from '../../utils/trycatch';
 
 export const getDatasource = (
     template: IMongoEntityTemplatePopulated,
     quickFilterText: string | undefined,
     onFail: ((err: unknown) => void) | undefined,
-): IServerSideDatasource => ({
-    async getRows(params) {
-        const { sortModel, startRow, endRow, filterModel } = params.request;
-        const { result: data, err } = await trycatch(() =>
-            getEntitiesByTemplateRequest(template._id, { sortModel, startRow, endRow, filterModel, quickFilterText }),
-        );
-        if (err || !data) {
-            onFail?.(err);
-            params.fail();
-            return;
-        }
+    actionsColumnId: string,
+): IServerSideDatasource => {
+    let isFirstDataFetched = false;
+    return {
+        async getRows(params) {
+            const { sortModel, startRow, endRow, filterModel } = params.request;
+            const { result: data, err } = await trycatch(() =>
+                getEntitiesByTemplateRequest(template._id, { sortModel, startRow, endRow, filterModel, quickFilterText }),
+            );
+            if (err || !data) {
+                onFail?.(err);
+                params.fail();
+                return;
+            }
 
-        params.success({ rowData: data.rows, rowCount: data.lastRowIndex });
-    },
-});
+            if (!isFirstDataFetched) {
+                isFirstDataFetched = true;
+                params.columnApi.autoSizeColumns([actionsColumnId]);
+            }
+
+            params.success({ rowData: data.rows, rowCount: data.lastRowIndex });
+        },
+    };
+};
 
 const getRowModelProps = <Data extends any>(
     rowModelType: 'serverSide' | 'clientSide',
@@ -48,13 +56,14 @@ const getRowModelProps = <Data extends any>(
     datasource: IServerSideDatasource | undefined,
     quickFilterText: string | undefined,
     datasourceOnFail: ((err: unknown) => void) | undefined,
+    actionsColumnId: string,
 ): React.ComponentProps<typeof AgGridReact> => {
     if (rowModelType === 'clientSide') {
         return { rowModelType, rowData };
     }
     return {
         rowModelType,
-        serverSideDatasource: datasource ?? getDatasource(template, quickFilterText, datasourceOnFail),
+        serverSideDatasource: datasource ?? getDatasource(template, quickFilterText, datasourceOnFail, actionsColumnId),
         serverSideStoreType: 'partial',
         cacheBlockSize: 50,
         maxBlocksInCache: 1000,
@@ -124,7 +133,7 @@ const EntitiesTableOfTemplate = forwardRef(
             toast.error(i18next.t('entitiesTableOfTemplate.failedToLoadData'));
             console.log('failed to load data from datasource. err:', err);
         };
-        const rowModelProps = getRowModelProps(rowModelType, template, rowData, datasource, quickFilterText, datasourceOnFail);
+        const rowModelProps = getRowModelProps(rowModelType, template, rowData, datasource, quickFilterText, datasourceOnFail, actionsColumnId);
 
         return (
             <Box>
@@ -164,13 +173,8 @@ const EntitiesTableOfTemplate = forwardRef(
                     suppressCellFocus
                     suppressCsvExport
                     suppressContextMenu
-                    // auto size actionsColumnId. onFirstDataRendered bug with SSRM. https://github.com/ag-grid/ag-grid/issues/2662#issuecomment-526591093
-                    onGridReady={(event) => {
-                        if (rowModelType === 'serverSide') {
-                            onCacheBlockLoaded(event, () => event.columnApi.autoSizeColumns([actionsColumnId]));
-                        }
-                    }}
                     onFirstDataRendered={(event) => {
+                        // auto size actionsColumnId. onFirstDataRendered bug with SSRM. https://github.com/ag-grid/ag-grid/issues/2662
                         if (rowModelType === 'clientSide') {
                             event.columnApi.autoSizeColumns([actionsColumnId]);
                         }
