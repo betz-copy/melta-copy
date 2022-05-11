@@ -60,7 +60,7 @@ const fetchEntityTemplateFromRequest = (req: any) => {
     return req.entityTemplate as IEntityTemplate;
 };
 
-export const normalizeEntityInRequest = (req: Request) => {
+export const addStringFieldsAndNormalizeDateValues = (req: Request) => {
     const entityTemplate = fetchEntityTemplateFromRequest(req);
     const normalizedEntity = {};
 

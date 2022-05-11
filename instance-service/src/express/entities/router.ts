@@ -2,7 +2,7 @@ import { Router } from 'express';
 import EntityController from './controller';
 import { wrapController, wrapMiddleware, wrapMiddlewareSync } from '../../utils/express';
 import ValidateRequest from '../../utils/joi';
-import { normalizeEntityInRequest, validateEntity } from './validator.template';
+import { addStringFieldsAndNormalizeDateValues, validateEntity } from './validator.template';
 import {
     deleteEntityByIdRequestSchema,
     deleteEntityByTemplateIdRequestSchema,
@@ -18,7 +18,7 @@ entityRouter.post(
     '/',
     ValidateRequest(createEntityRequestSchema),
     wrapMiddleware(validateEntity),
-    wrapMiddlewareSync(normalizeEntityInRequest),
+    wrapMiddlewareSync(addStringFieldsAndNormalizeDateValues),
     wrapController(EntityController.createEntity),
 );
 entityRouter.post('/search', ValidateRequest(getEntitiesRequestSchema), wrapController(EntityController.getEntities));
@@ -29,7 +29,7 @@ entityRouter.put(
     '/:id',
     ValidateRequest(updateEntityByIdRequestSchema),
     wrapMiddleware(validateEntity),
-    wrapMiddlewareSync(normalizeEntityInRequest),
+    wrapMiddlewareSync(addStringFieldsAndNormalizeDateValues),
     wrapController(EntityController.updateEntityById),
 );
 
