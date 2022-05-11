@@ -14,6 +14,7 @@ const SystemManagement = lazy(() => import('./pages/SystemManagement'));
 const PermissionsManagement = lazy(() => import('./pages/PermissionsManagement'));
 const Unavailable = lazy(() => import('./pages/Unavailable'));
 const Entity = lazy(() => import('./pages/Entity'));
+const Graph = lazy(() => import('./pages/Entity/components/Graph'));
 
 const cacheRtl = createCache({
     key: 'muirtl',
@@ -43,6 +44,7 @@ const Main = () => {
                                     <Route path="/category/:categoryId" element={<Category />} />
                                     <Route path="/graph/:entityId" element={<Home />} />
                                     <Route path="/entity/:entityId" element={<Entity />} />
+                                    <Route path="/entity/:entityId/graph" element={<Graph />} />
                                     <Route path="/" element={<Home />} />
                                     <Route path="*" element={<h1>404</h1>} />
                                 </Routes>

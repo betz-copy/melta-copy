@@ -41,6 +41,10 @@ export default {
     },
     searchLabel: 'חפש...',
     booleanOptions: { yes: 'כן', no: 'לא' },
+    graph: {
+        center: 'מרכז',
+        expand: 'הרחב', // הצג שכנים
+    },
     pages: {
         systemManagement: 'ניהול מערכת',
     },

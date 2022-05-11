@@ -1,8 +1,8 @@
 import React, { useState, useRef } from 'react';
 import { useQueryClient } from 'react-query';
 import { useParams } from 'react-router-dom';
-import { Grid, ToggleButton, ToggleButtonGroup, IconButton, Typography } from '@mui/material';
-import { TableChartOutlined, AccountTreeOutlined, AddCircle as AddIcon, DownloadForOffline as DonwloadIcon } from '@mui/icons-material';
+import { Grid, IconButton, Typography } from '@mui/material';
+import { AddCircle as AddIcon, DownloadForOffline as DonwloadIcon } from '@mui/icons-material';
 import i18next from 'i18next';
 import { exportMultipleSheetsAsExcel } from '@noam7700/ag-grid-enterprise-excel-export';
 import { TemplateTable } from './components/TemplateTable';
@@ -16,7 +16,6 @@ const Category: React.FC = () => {
     const queryClient = useQueryClient();
     const params = useParams();
     const { categoryId } = params;
-    const [viewType, setViewType] = useState<'table' | 'graph'>('table');
     const [templateToHide, setTemplatesToHide] = useState<string[]>([]);
 
     const templateTablesRef = useRef<Array<React.ComponentRef<typeof TemplateTable> | null>>([]);
@@ -65,43 +64,18 @@ const Category: React.FC = () => {
                         </Typography>
                     </AddEntityButton>
                 </Grid>
-                <Grid item>
-                    <ToggleButtonGroup
-                        style={{ backgroundColor: 'white' }}
-                        size="small"
-                        color="primary"
-                        exclusive
-                        value={viewType}
-                        onChange={(_ev, newValue) => {
-                            if (newValue !== null) setViewType(newValue);
-                        }}
-                    >
-                        <ToggleButton size="small" value="table">
-                            <TableChartOutlined fontSize="small" />
-                        </ToggleButton>
-                        <ToggleButton size="small" value="graph">
-                            <AccountTreeOutlined />
-                        </ToggleButton>
-                    </ToggleButtonGroup>
-                </Grid>
             </Grid>
             <Grid container>
-                {viewType === 'table' ? (
-                    <Grid container>
-                        {templates
-                            .filter((template) => !templateToHide.includes(template.displayName))
-                            .map((template, index) => (
-                                <TemplateTable
-                                    // eslint-disable-next-line no-return-assign
-                                    ref={(el) => (templateTablesRef.current[index] = el)}
-                                    key={template._id}
-                                    template={template}
-                                />
-                            ))}
-                    </Grid>
-                ) : (
-                    <>graph</>
-                )}
+                {templates
+                    .filter((template) => !templateToHide.includes(template.displayName))
+                    .map((template, index) => (
+                        <TemplateTable
+                            // eslint-disable-next-line no-return-assign
+                            ref={(el) => (templateTablesRef.current[index] = el)}
+                            key={template._id}
+                            template={template}
+                        />
+                    ))}
             </Grid>
         </Grid>
     );

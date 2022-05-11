@@ -34,6 +34,7 @@ module.exports = {
         'react/require-default-props': 'off',
         'react/jsx-props-no-spreading': 'off',
         'no-plusplus': 'off',
+        'react/prop-types': 'off',
         'react/no-unused-prop-types': 'off',
         'react/prop-types': 'off',
         'jsx-a11y/alt-text': 'off',
