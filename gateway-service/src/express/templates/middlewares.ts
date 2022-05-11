@@ -1,4 +1,5 @@
 import { Request } from 'express';
+import * as lodashUniqby from 'lodash.uniqby';
 import { EntityTemplateManagerService } from '../../externalServices/entityTemplateManager';
 import { IRelationshipTemplate, RelationshipsTemplateManagerService } from '../../externalServices/relationshipsTemplateManager';
 import { validateAuthorization } from '../permissions/validateAuthorizationMiddleware';
@@ -23,7 +24,7 @@ export const getRelatedCategoriesFromRelationshipTemplate = async (relationshipT
     const { category: srcCategory } = await EntityTemplateManagerService.getEntityTemplateById(sourceEntityId);
     const { category: dstCategory } = await EntityTemplateManagerService.getEntityTemplateById(destinationEntityId);
 
-    return [srcCategory._id, dstCategory._id];
+    return lodashUniqby([srcCategory._id, dstCategory._id], '_id');
 };
 
 export const validateUserCanCreateRelationshipTemplateUnderCategory = async (req: Request) => {
