@@ -10,7 +10,7 @@ import {
 import { IEntity } from './interface';
 import { NotFoundError, ServiceError } from '../error';
 import { agGridRequestToNeo4JRequest, agGridSearchRequestToNeo4JRequest, IAGGridRequest } from '../../utils/agGridFilterModelToNeoQuery';
-import RedisClient from '../../utils/redis';
+import getLatestIndex from '../../utils/redis/getLatestIndex';
 
 export class EntityManager {
     static createEntity(entity: IEntity) {
@@ -38,8 +38,7 @@ export class EntityManager {
     }
 
     private static async getEntitiesWithSearch(templateId: string, agGridRequest: IAGGridRequest) {
-        const redisClient = RedisClient.getClient();
-        const latestIndex = await redisClient.get('latestIndex');
+        const latestIndex = await getLatestIndex();
 
         if (!latestIndex) {
             throw new ServiceError(400, `[NEO4J] Global search index not found.`);

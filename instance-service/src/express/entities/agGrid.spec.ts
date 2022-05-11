@@ -1,10 +1,11 @@
 import config from '../../config';
 import { IAGGridRequest } from '../../utils/agGridFilterModelToNeoQuery';
 import Neo4jClient from '../../utils/neo4j';
+import RedisClient from '../../utils/redis';
 import { IEntity } from './interface';
 import EntityManager from './manager';
 
-const { neo4j } = config;
+const { neo4j, redis } = config;
 
 const defaultTemplateId = '1';
 const defaultProperties = { testProp: 'testProp' };
@@ -1138,6 +1139,229 @@ describe('e2e ag-grid entities tests', () => {
                 expect.objectContaining({
                     testProp: 'testProp',
                 }),
+            );
+        });
+    });
+
+    describe('Filter query edge cases', () => {
+        beforeEach(async () => {
+            await EntityManager.createEntity({ templateId: defaultTemplateId, properties: defaultProperties });
+        });
+
+        it('Check invalid filter query', async () => {
+            const agGridRequest = {
+                startRow: 0,
+                endRow: 0,
+                filterModel: {
+                    testProp: {
+                        filterType: 'unknown',
+                        values: [],
+                    },
+                },
+                sortModel: [],
+            };
+
+            expect(() => EntityManager.getEntities(defaultTemplateId, agGridRequest as IAGGridRequest)).rejects.toThrowError(
+                'Invalid supported ag-grid filter type',
+            );
+        });
+
+        it('Check empty filter query object', async () => {
+            const agGridRequest = {
+                startRow: 0,
+                endRow: 0,
+                filterModel: {},
+                sortModel: [],
+            };
+
+            const res = await EntityManager.getEntities(defaultTemplateId, agGridRequest);
+
+            expect(res).toBeDefined();
+            expect(res.lastRowIndex).toBe(1);
+            expect(res.rows).toHaveLength(1);
+
+            expect(res.rows[0].templateId).toBe(defaultTemplateId);
+            expect(res.rows[0].properties).toEqual(
+                expect.objectContaining({
+                    testProp: 'testProp',
+                }),
+            );
+        });
+    });
+
+    describe('Check global search', () => {
+        beforeAll(async () => {
+            // Configure global search index in neo4j
+            await Neo4jClient.writeTransaction('CREATE FULLTEXT INDEX globalSearchTest FOR (n:`1`) ON EACH [n.name]', () => {});
+
+            // Configure redis and set latest index
+            await RedisClient.initialize(redis.url);
+
+            const redisClient = RedisClient.getClient();
+
+            await redisClient.set(redis.globalSearchKeyName, 'globalSearchTest');
+        });
+
+        afterAll(async () => {
+            // Delete global search index in neo4j
+            await Neo4jClient.writeTransaction(`DROP INDEX globalSearchTest`, () => {});
+
+            // Delete latest index in redis
+            const redisClient = RedisClient.getClient();
+
+            await redisClient.del(redis.globalSearchKeyName);
+
+            redisClient.disconnect();
+        });
+
+        beforeEach(async () => {
+            await EntityManager.createEntity({ templateId: defaultTemplateId, properties: { name: 'Name', age: 1, lastName: 'lastName' } });
+            await EntityManager.createEntity({ templateId: defaultTemplateId, properties: { name: 'AnotherName', age: 2 } });
+        });
+
+        it('Check simple search query', async () => {
+            const agGridRequest: IAGGridRequest = {
+                startRow: 0,
+                endRow: 0,
+                filterModel: {},
+                sortModel: [],
+                quickFilter: 'Another',
+            };
+
+            const res = await EntityManager.getEntities(defaultTemplateId, agGridRequest);
+
+            expect(res).toBeDefined();
+            expect(res.lastRowIndex).toBe(1);
+            expect(res.rows).toHaveLength(1);
+            expect(res.rows[0].templateId).toBe(defaultTemplateId);
+            expect(res.rows[0].properties).toEqual(
+                expect.objectContaining({
+                    name: 'AnotherName',
+                }),
+            );
+        });
+
+        it('Check search with sort query', async () => {
+            const agGridRequest: IAGGridRequest = {
+                startRow: 0,
+                endRow: 1,
+                filterModel: {},
+                sortModel: [{ colId: 'age', sort: 'asc' }],
+                quickFilter: 'Name',
+            };
+
+            const res = await EntityManager.getEntities(defaultTemplateId, agGridRequest);
+
+            expect(res).toBeDefined();
+            expect(res.lastRowIndex).toBe(2);
+            expect(res.rows).toHaveLength(2);
+
+            expect(res.rows[0].templateId).toBe(defaultTemplateId);
+            expect(res.rows[0].properties).toEqual(
+                expect.objectContaining({
+                    age: 1,
+                    name: 'Name',
+                }),
+            );
+
+            expect(res.rows[1].templateId).toBe(defaultTemplateId);
+            expect(res.rows[1].properties).toEqual(
+                expect.objectContaining({
+                    age: 2,
+                    name: 'AnotherName',
+                }),
+            );
+        });
+
+        it('Check search with sort query and filter query', async () => {
+            const agGridRequest: IAGGridRequest = {
+                startRow: 0,
+                endRow: 1,
+                filterModel: {
+                    lastName: {
+                        filterType: 'text',
+                        type: 'equals',
+                        filter: 'lastName',
+                    },
+                },
+                sortModel: [{ colId: 'age', sort: 'asc' }],
+                quickFilter: 'Name',
+            };
+
+            const res = await EntityManager.getEntities(defaultTemplateId, agGridRequest);
+
+            expect(res).toBeDefined();
+            expect(res.lastRowIndex).toBe(1);
+            expect(res.rows).toHaveLength(1);
+
+            expect(res.rows[0].templateId).toBe(defaultTemplateId);
+            expect(res.rows[0].properties).toEqual(
+                expect.objectContaining({
+                    age: 1,
+                    name: 'Name',
+                    lastName: 'lastName',
+                }),
+            );
+        });
+    });
+
+    describe('Test skip and limit', () => {
+        beforeEach(async () => {
+            await Promise.all([
+                EntityManager.createEntity({ templateId: defaultTemplateId, properties: { num: 1 } }),
+                EntityManager.createEntity({ templateId: defaultTemplateId, properties: { num: 2 } }),
+                EntityManager.createEntity({ templateId: defaultTemplateId, properties: { num: 3 } }),
+                EntityManager.createEntity({ templateId: defaultTemplateId, properties: { num: 4 } }),
+            ]);
+        });
+
+        it('Check sort model query with start row and end row', async () => {
+            const agGridRequest: IAGGridRequest = {
+                startRow: 0,
+                endRow: 1,
+                filterModel: {},
+                sortModel: [{ colId: 'num', sort: 'asc' }],
+            };
+
+            const res = await EntityManager.getEntities(defaultTemplateId, agGridRequest);
+
+            expect(res).toBeDefined();
+            expect(res.lastRowIndex).toBe(4);
+            expect(res.rows).toHaveLength(2);
+
+            expect(res.rows.map((row: IEntity) => row.properties)).toEqual(
+                expect.arrayContaining([
+                    expect.objectContaining({
+                        num: 1,
+                    }),
+                    expect.objectContaining({
+                        num: 2,
+                    }),
+                ]),
+            );
+
+            const secondAgGridRequest: IAGGridRequest = {
+                startRow: 2,
+                endRow: 3,
+                filterModel: {},
+                sortModel: [{ colId: 'num', sort: 'asc' }],
+            };
+
+            const secondRes = await EntityManager.getEntities(defaultTemplateId, secondAgGridRequest);
+
+            expect(secondRes).toBeDefined();
+            expect(secondRes.lastRowIndex).toBe(4);
+            expect(secondRes.rows).toHaveLength(2);
+
+            expect(secondRes.rows.map((row: IEntity) => row.properties)).toEqual(
+                expect.arrayContaining([
+                    expect.objectContaining({
+                        num: 3,
+                    }),
+                    expect.objectContaining({
+                        num: 4,
+                    }),
+                ]),
             );
         });
     });

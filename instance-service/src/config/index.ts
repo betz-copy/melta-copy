@@ -27,6 +27,7 @@ const config = {
     },
     redis: {
         url: env.get('REDIS_HOST').default('redis://redis:6379').asString(),
+        globalSearchKeyName: env.get('GLOBAL_SEARCH_KEY_NAME').default('latestIndex').asString(),
     },
 };
 

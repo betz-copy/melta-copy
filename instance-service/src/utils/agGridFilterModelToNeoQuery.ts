@@ -157,7 +157,7 @@ export const filterModelToQuery = (filterModel: IAGGridFilterModel) => {
         }
     });
 
-    return queries.length > 0 ? queries.join(' AND ') : '';
+    return queries.join(' AND ');
 };
 
 export const sortModelToNeo4JSort = (sortModel: IAGGridSort[]) => {
