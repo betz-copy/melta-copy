@@ -1,3 +1,4 @@
+import axios from 'axios';
 import * as express from 'express';
 
 export class ServiceError extends Error {
@@ -24,6 +25,12 @@ export const errorMiddleware = (error: Error, _req: express.Request, res: expres
         res.status(401).send({
             type: error.name,
             message: error.message,
+        });
+    } else if (axios.isAxiosError(error) && error.response?.status) {
+        res.status(error.response?.status).send({
+            type: error.name,
+            message: error.message,
+            metadata: error.response.data,
         });
     } else {
         res.status(500).send({
