@@ -52,11 +52,13 @@ services:
       ENTITY_TEMPLATE_MANAGER_URI: ${ENTITY_TEMPLATE_MANAGER_URI}
       RELATIONSHIP_TEMPLATE_MANAGER_URI: ${RELATIONSHIP_TEMPLATE_MANAGER_URI}
       INSTANCE_MANAGER_URI: ${INSTANCE_MANAGER_URI}
+      PERMISSIONS_API_URI: ${PERMISSION_API_URL}
     depends_on:
       - neo4j
       - entity-template-manager
       - relationship-template-manager
       - instance-manager
+      - permission-api
 
   #-------------------------------------------#
   #        microservices:                     #
