@@ -5,7 +5,7 @@ import { IEntityTemplate } from './interface';
 import { ServiceError } from '../error';
 import { escapeRegExp } from '../../utils';
 import { uploadFile, deleteFile } from '../../utils/storageService';
-import { getRelationshipTemplates } from '../../relationshipTemplateManager';
+import { searchRelationshipTemplates } from '../../relationshipTemplateManager';
 import CategoryManager from '../category/manager';
 import config from '../../config';
 
@@ -55,11 +55,11 @@ export class EntityTemplateManager {
     }
 
     static async throwIfEntityHasRelationships(id: string) {
-        const outgoingRelationships = await getRelationshipTemplates({ sourceEntityId: id });
+        const outgoingRelationships = await searchRelationshipTemplates({ sourceEntityIds: [id] });
         if (outgoingRelationships.length > 0) {
             throw new ServiceError(403, 'entity template still has outgoing relationships');
         }
-        const incomingRelationships = await getRelationshipTemplates({ destinationEntityId: id });
+        const incomingRelationships = await searchRelationshipTemplates({ destinationEntityIds: [id] });
         if (incomingRelationships.length > 0) {
             throw new ServiceError(403, 'entity template still has incoming relationships');
         }

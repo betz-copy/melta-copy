@@ -14,8 +14,8 @@ const config = {
     },
     relationshipTemplateManager: {
         uri: env.get('RELATIONSHIP_TEMPLATE_MANAGER_URI').required().asString(),
-        getByIdRoute: env.get('RELATIONSHIP_TEMPLATE_MANAGER_GET_BY_ID_ROUTE').default('/api/relationships/templates/').asString(),
-        getManyRoute: env.get('RELATIONSHIP_TEMPLATE_MANAGER_GET_MANY_ROUTE').default('/api/relationships/templates/').asString(),
+        baseRoute: env.get('RELATIONSHIP_TEMPLATE_MANAGER_BASE_ROUTE').default('/api/templates/relationships').asString(),
+        searchRoute: env.get('RELATIONSHIP_TEMPLATE_MANAGER_SEARCH_ROUTE').default('/search').asString(),
     },
     storageService: {
         uri: env.get('STORAGE_SERVICE_URI').required().asString(),
