@@ -1192,7 +1192,7 @@ describe('e2e ag-grid entities tests', () => {
     describe('Check global search', () => {
         beforeAll(async () => {
             // Configure global search index in neo4j
-            await Neo4jClient.writeTransaction('CREATE FULLTEXT INDEX globalSearchTest FOR (n:`1`) ON EACH [n.name]', () => {});
+            await Neo4jClient.writeTransaction(`CREATE FULLTEXT INDEX globalSearchTest FOR (n: \`${defaultTemplateId}\`) ON EACH [n.name]`, () => {});
 
             // Configure redis and set latest index
             await RedisClient.initialize(redis.url);
