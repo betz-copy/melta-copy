@@ -5,9 +5,11 @@ import { Field, FieldArray, getIn } from 'formik';
 import * as Yup from 'yup';
 import i18next from 'i18next';
 import { Delete as DeleteIcon } from '@mui/icons-material';
+import { useQuery } from 'react-query';
 import { englishValidation } from '../../../utils/validation';
 import { EntityTemplateWizardValues } from './index';
 import { StepComponentProps } from '../index';
+import { getEntitiesByTemplateRequest } from '../../../services/entitiesService';
 
 const basePropertyTypes = ['string', 'number', 'boolean'];
 const stringTypes = ['date', 'date-time', 'email'];
@@ -27,7 +29,26 @@ const addFieldsSchema = {
         .required(i18next.t('validation.required')),
 };
 
-const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues>> = ({ values, touched, errors, handleChange }) => {
+const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues>> = ({ values, touched, errors, handleChange, isEditMode }) => {
+    const [disabled, setDisabled] = React.useState(!!isEditMode);
+
+    useQuery(
+        ['isThereInstancesByTemplateId', (values as EntityTemplateWizardValues & { _id: string })._id],
+        () =>
+            getEntitiesByTemplateRequest((values as EntityTemplateWizardValues & { _id: string })._id, {
+                startRow: 0,
+                endRow: 0,
+                filterModel: {},
+                sortModel: [],
+            }),
+        {
+            enabled: isEditMode,
+            onSuccess: (data) => {
+                setDisabled(Boolean(isEditMode && data?.lastRowIndex > 0));
+            },
+        },
+    );
+
     return (
         <FieldArray name="properties">
             {({ push, remove }) => (
@@ -61,11 +82,12 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues>> = ({ v
                                                             component={Switch}
                                                             onChange={handleChange}
                                                             checked={p.required}
+                                                            disabled={disabled}
                                                         />
                                                     }
                                                     label={i18next.t('validation.required') as string}
                                                 />
-                                                <IconButton onClick={() => remove(index)}>
+                                                <IconButton disabled={disabled} onClick={() => remove(index)}>
                                                     <DeleteIcon />
                                                 </IconButton>
                                             </Grid>
@@ -77,6 +99,7 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues>> = ({ v
                                                     onChange={handleChange}
                                                     error={touchedName && Boolean(errorName)}
                                                     helperText={touchedName && errorName}
+                                                    disabled={disabled}
                                                 />
                                             </Box>
                                             <Box margin={1}>
@@ -87,6 +110,7 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues>> = ({ v
                                                     onChange={handleChange}
                                                     error={touchedTitle && Boolean(errorTitle)}
                                                     helperText={touchedTitle && errorTitle}
+                                                    disabled={disabled}
                                                 />
                                             </Box>
                                             <Box margin={1}>
@@ -100,6 +124,7 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues>> = ({ v
                                                     onChange={handleChange}
                                                     error={touchedType && Boolean(errorType)}
                                                     helperText={touchedType && errorType}
+                                                    disabled={disabled}
                                                 >
                                                     {validPropertyTypes.map((validType) => (
                                                         <MenuItem key={validType} value={validType}>
@@ -118,6 +143,7 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues>> = ({ v
                         type="button"
                         variant="contained"
                         style={{ margin: '8px' }}
+                        disabled={disabled}
                         onClick={() => push({ name: '', title: '', type: '', required: false })}
                     >
                         {i18next.t('wizard.entityTemplate.addProperty')}

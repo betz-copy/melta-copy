@@ -20,7 +20,7 @@ export type WizardBaseType<T extends object> = {
 
 export type StepsType<T extends object> = {
     label: string;
-    component: (formikProps: StepComponentProps<T>) => JSX.Element;
+    component: (formikProps: StepComponentProps<T>, isEditMode?: boolean) => JSX.Element;
     validation: ObjectShape;
 }[];
 
@@ -33,6 +33,7 @@ const Wizard = <T extends object>({
     initalStep = 0,
     isLoading,
     submitFucntion,
+    isEditMode,
 }: PropsWithChildren<
     WizardBaseType<T> & {
         initialValues: T;
@@ -87,7 +88,14 @@ const Wizard = <T extends object>({
                 >
                     {(formikProps: FormikProps<T>) => (
                         <Form>
-                            <Stepper activeStep={activeStep} handleBack={handleBack} steps={steps} isLoading={isLoading} formikProps={formikProps} />
+                            <Stepper
+                                activeStep={activeStep}
+                                handleBack={handleBack}
+                                steps={steps}
+                                isLoading={isLoading}
+                                formikProps={formikProps}
+                                isEditMode={isEditMode}
+                            />
                         </Form>
                     )}
                 </Formik>

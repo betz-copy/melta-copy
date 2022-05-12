@@ -6,9 +6,9 @@ import {
     ChevronLeft as ChevronLeftIcon,
     AccountCircle as AccountCircleIcon,
     Hive as HiveIcon,
-    Search as SearchIcon,
     Public as PublicIcon,
-    Engineering as EngineeringIcon,
+    Widgets as WidgetsIcon,
+    ManageAccounts as ManageAccountsIcon,
 } from '@mui/icons-material';
 
 import i18next from 'i18next';
@@ -71,7 +71,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                                 <PublicIcon fontSize="large" />
                             </NavButton>
                             <NavButton to="/system-management" text="System Management" isDrawerOpen={isDrawerOpen}>
-                                <SearchIcon fontSize="large" />
+                                <WidgetsIcon fontSize="large" />
                             </NavButton>
                             {myPermissions?.permissionsManagementId && (
                                 <NavButton
@@ -79,7 +79,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                                     text={i18next.t('permissions.permissionsManagmentPageTitle')}
                                     isDrawerOpen={isDrawerOpen}
                                 >
-                                    <EngineeringIcon fontSize="large" />
+                                    <ManageAccountsIcon fontSize="large" />
                                 </NavButton>
                             )}
                         </List>

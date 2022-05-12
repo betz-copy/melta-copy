@@ -3,10 +3,12 @@ import * as Yup from 'yup';
 import { FieldArray, getIn } from 'formik';
 import { Box, Button, Grid, TextField, Card, CardContent, IconButton, FormControlLabel, Switch } from '@mui/material';
 import { Delete as DeleteIcon } from '@mui/icons-material';
+import { useQuery } from 'react-query';
 import i18next from 'i18next';
 import { StepComponentProps } from '../index';
 import { EntityTemplateWizardValues } from './index';
 import { englishValidation, hebrewValidation } from '../../../utils/validation';
+import { getEntitiesByTemplateRequest } from '../../../services/entitiesService';
 
 const attachmentsFieldSchema = {
     attachmentProperties: Yup.array().of(
@@ -18,7 +20,26 @@ const attachmentsFieldSchema = {
     ),
 };
 
-const AttachmentsField: React.FC<StepComponentProps<EntityTemplateWizardValues>> = ({ values, touched, errors, handleChange }) => {
+const AttachmentsField: React.FC<StepComponentProps<EntityTemplateWizardValues>> = ({ values, touched, errors, handleChange, isEditMode }) => {
+    const [disabled, setDisabled] = React.useState(!!isEditMode);
+
+    useQuery(
+        ['isThereInstancesByTemplateId', (values as EntityTemplateWizardValues & { _id: string })._id],
+        () =>
+            getEntitiesByTemplateRequest((values as EntityTemplateWizardValues & { _id: string })._id, {
+                startRow: 0,
+                endRow: 0,
+                filterModel: {},
+                sortModel: [],
+            }),
+        {
+            enabled: isEditMode,
+            onSuccess: (data) => {
+                setDisabled(Boolean(isEditMode && data?.lastRowIndex > 0));
+            },
+        },
+    );
+
     return (
         <FieldArray name="attachmentProperties">
             {({ push, remove }) => (
@@ -44,7 +65,7 @@ const AttachmentsField: React.FC<StepComponentProps<EntityTemplateWizardValues>>
                                                     control={<Switch onChange={handleChange} name={required} />}
                                                     label={i18next.t('validation.required') as string}
                                                 />
-                                                <IconButton onClick={() => remove(index)}>
+                                                <IconButton disabled={disabled} onClick={() => remove(index)}>
                                                     <DeleteIcon />
                                                 </IconButton>
                                             </Grid>
@@ -56,6 +77,7 @@ const AttachmentsField: React.FC<StepComponentProps<EntityTemplateWizardValues>>
                                                     onChange={handleChange}
                                                     error={touchedName && Boolean(errorName)}
                                                     helperText={touchedName && errorName}
+                                                    disabled={disabled}
                                                 />
                                             </Box>
                                             <Box margin={1}>
@@ -65,6 +87,7 @@ const AttachmentsField: React.FC<StepComponentProps<EntityTemplateWizardValues>>
                                                     value={p.title}
                                                     onChange={handleChange}
                                                     error={touchedTitle && Boolean(errorTitle)}
+                                                    disabled={disabled}
                                                     helperText={touchedTitle && errorTitle}
                                                 />
                                             </Box>
@@ -74,7 +97,13 @@ const AttachmentsField: React.FC<StepComponentProps<EntityTemplateWizardValues>>
                             );
                         })}
                     </Grid>
-                    <Button type="button" variant="contained" style={{ margin: '8px' }} onClick={() => push({ name: '', title: '', type: 'file' })}>
+                    <Button
+                        type="button"
+                        disabled={disabled}
+                        variant="contained"
+                        style={{ margin: '8px' }}
+                        onClick={() => push({ name: '', title: '', type: 'file' })}
+                    >
                         {i18next.t('wizard.entityTemplate.addAttachment')}
                     </Button>
                 </>

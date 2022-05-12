@@ -62,6 +62,7 @@ const CreateRelationshipTemplateName: React.FC<StepComponentProps<RelationshipTe
                     getOptionLabel={(option) => option.displayName}
                     renderInput={(params) => (
                         <TextField
+                            style={{ width: '220px' }}
                             {...params}
                             error={Boolean(touched.sourceEntity && errors.sourceEntity)}
                             fullWidth
@@ -82,6 +83,7 @@ const CreateRelationshipTemplateName: React.FC<StepComponentProps<RelationshipTe
                     getOptionLabel={(option) => option.displayName}
                     renderInput={(params) => (
                         <TextField
+                            style={{ width: '220px' }}
                             {...params}
                             error={Boolean(touched.destinationEntity && errors.destinationEntity)}
                             fullWidth

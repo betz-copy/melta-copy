@@ -12,12 +12,14 @@ const Stepper = <T extends object>({
     steps,
     isLoading,
     formikProps,
+    isEditMode,
 }: {
     activeStep: number;
     handleBack: () => void;
     steps: StepsType<T>;
     isLoading: boolean;
     formikProps: FormikProps<T>;
+    isEditMode?: boolean;
 }): JSX.Element | null => {
     return (
         <Grid container minWidth="80vh">
@@ -25,7 +27,7 @@ const Stepper = <T extends object>({
                 <StepperSideBar steps={steps} activeStep={activeStep} />
             </Grid>
             <Grid container direction="column" justifyContent="space-between" alignItems="center" height="100%" marginBottom="5%">
-                {steps[activeStep].component(formikProps)}
+                {steps[activeStep].component(formikProps, isEditMode)}
             </Grid>
             <StepperActions
                 handleBack={handleBack}

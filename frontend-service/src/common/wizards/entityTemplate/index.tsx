@@ -36,12 +36,12 @@ const steps: StepsType<EntityTemplateWizardValues> = [
     },
     {
         label: i18next.t('wizard.entityTemplate.requiredProrerites'),
-        component: (props) => <AddFields {...props} />,
+        component: (props, isEditMode) => <AddFields {...props} isEditMode={isEditMode} />,
         validation: addFieldsSchema,
     },
     {
         label: i18next.t('wizard.entityTemplate.attachments'),
-        component: (props) => <AttachmentsField {...props} />,
+        component: (props, isEditMode) => <AttachmentsField {...props} isEditMode={isEditMode} />,
         validation: attachmentsFieldSchema,
     },
 ];
