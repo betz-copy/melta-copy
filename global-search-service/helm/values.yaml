@@ -6,6 +6,11 @@ images:
   repository: jawsproject.azurecr.io/global-search-index-creator
   tag: latest
 
+service:
+  ports:
+  - name: http
+    port: "8000"
+
 config:
   configmaps: []
   env:
