@@ -30,7 +30,7 @@ const config = {
             retries: env.get('RABBIT_RETRY_RETRIES').default(10).asIntPositive(),
             factor: env.get('RABBIT_RETRY_FACTOR').default(1.8).asFloatPositive(),
         },
-        queueName: env.get('QUEUE_NAME').default('searchQueue').asString(),
+        queueName: env.get('QUEUE_NAME').default('search-queue').asString(),
     },
 };
 
