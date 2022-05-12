@@ -13,7 +13,7 @@ const config = {
     },
     templateManager: {
         url: env.get('TEMPLATE_MANAGER_URL').required().asString(),
-        getTemplatesRoute: env.get('TEMPLATE_MANAGER_GET_TEMPLATES_ROUTE').default('/api/entities/templates').asString(),
+        getTemplatesRoute: env.get('TEMPLATE_MANAGER_SEARCH_TEMPLATES_ROUTE').default('/api/templates/entities/search').asString(),
         timeout: env.get('TEMPLATE_MANAGER_TIMEOUT').default(5000).asIntPositive(),
     },
     neo4j: {

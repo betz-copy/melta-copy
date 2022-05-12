@@ -21,7 +21,7 @@ const { templateManager } = config;
 const { url, getTemplatesRoute, timeout } = templateManager;
 
 const getEntityTemplates = async () => {
-    const { result, err } = await trycatch(() => axios.get<IEntityTemplate[]>(`${url}${getTemplatesRoute}`, { timeout }));
+    const { result, err } = await trycatch(() => axios.post<IEntityTemplate[]>(`${url}${getTemplatesRoute}`, {}, { timeout }));
 
     if (err || !result) {
         throw new Error(`Failed to fetch entity templates: ${err}`);
