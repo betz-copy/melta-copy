@@ -1,0 +1,29 @@
+name: "global-search-index-creator"
+replicaCount: 1
+
+images:
+  PullSecrets: [jawsreg]
+  repository: jawsproject.azurecr.io/global-search-index-creator
+  tag: latest
+
+config:
+  configmaps: []
+  env:
+    - name: NEO4J_USERNAME
+      value: neo4j
+    - name: NEO4J_PASSWORD
+      value: qdftt5gfVy-GaoutZvpmv6MRN0hPXVBljEVxY6A69BU
+    - name: NEO4J_DATABASE
+      value: Neo
+    - name: NEO4J_URL
+      value: neo4j+s://4a2c637e.databases.neo4j.io
+    - name: TEMPLATE_MANAGER_URL
+      value: http://entity-template-manager:8000
+    - name: RELATIONSHIP_MANAGER_URL
+      value: http://relationship-template-manager:8000      
+    - name: REDIS_HOST
+      value: redis://:ZjtUJvwPOY@redis-master:6379  
+    - name: RABBIT_URI
+      value: amqp://user:McgIwOn8Yh@my-release-rabbitmq
+   
+       

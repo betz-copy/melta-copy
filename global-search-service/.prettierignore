@@ -1,1 +1,2 @@
-dist/
+dist
+helm/*.yaml
