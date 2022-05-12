@@ -36,6 +36,7 @@ const EntityTemplateSchema = new mongoose.Schema(
     },
     {
         timestamps: true,
+        versionKey: false,
         minimize: false,
     },
 );
