@@ -36,7 +36,13 @@ export const getDatasource = (
         async getRows(params) {
             const { sortModel, startRow, endRow, filterModel } = params.request;
             const { result: data, err } = await trycatch(() =>
-                getEntitiesByTemplateRequest(template._id, { sortModel, startRow, endRow, filterModel, quickFilterText }),
+                getEntitiesByTemplateRequest(template._id, {
+                    sortModel,
+                    startRow,
+                    endRow,
+                    filterModel,
+                    quickFilter: quickFilterText !== '' ? quickFilterText : undefined,
+                }),
             );
             if (err || !data) {
                 onFail?.(err);
