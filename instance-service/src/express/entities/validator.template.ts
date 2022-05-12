@@ -1,7 +1,7 @@
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 import axios from 'axios';
-import { Request } from 'express';
+import { Request, NextFunction, Response } from 'express';
 import config from '../../config';
 import { trycatch } from '../../utils/lib';
 import { getNeo4jDate } from '../../utils/neo4j/lib';
@@ -26,6 +26,7 @@ const { templateManager } = config;
 const { url, getByIdRoute, timeout } = templateManager;
 
 const ajv = new Ajv();
+
 ajv.addFormat('fileId', /.*/);
 addFormats(ajv);
 
@@ -60,20 +61,23 @@ const fetchEntityTemplateFromRequest = (req: any) => {
     return req.entityTemplate as IEntityTemplate;
 };
 
-export const addStringFieldsAndNormalizeDateValues = (req: Request) => {
+export const addStringFieldsAndNormalizeDateValues = (req: Request, _res: Response, next: NextFunction) => {
     const entityTemplate = fetchEntityTemplateFromRequest(req);
     const normalizedEntity = {};
 
     Object.entries(entityTemplate.properties.properties).forEach(([key, value]) => {
         const propertyValue = req.body.properties[key];
+        const { type, format } = value;
 
         // For Neo4j fulltext search (supports only string properties)
-        if (value.type !== 'string' || value?.format === 'date') {
+        if (type !== 'string' || format === 'date') {
             normalizedEntity[`${key}_tostring`] = String(propertyValue);
         }
 
-        normalizedEntity[key] = value.type === 'string' && value?.format === 'date' ? getNeo4jDate(new Date(propertyValue)) : propertyValue;
+        normalizedEntity[key] = type === 'string' && format === 'date' ? getNeo4jDate(new Date(propertyValue)) : propertyValue;
     });
 
     req.body.properties = normalizedEntity;
+
+    next();
 };

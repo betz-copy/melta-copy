@@ -8,17 +8,6 @@ export const wrapMiddleware = (func: (req: Request, res?: Response) => Promise<v
     };
 };
 
-export const wrapMiddlewareSync = (func: (req: Request, res?: Response) => void) => {
-    return (req: Request, res: Response, next: NextFunction) => {
-        try {
-            func(req, res);
-            next();
-        } catch (error) {
-            next(error);
-        }
-    };
-};
-
 export const wrapValidator = wrapMiddleware;
 
 export const wrapController = (func: (req: Request, res: Response, next?: NextFunction) => Promise<void>) => {
