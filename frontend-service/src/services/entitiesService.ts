@@ -29,7 +29,7 @@ const getExpandedEntityByIdRequest = async (entityId: string) => {
 };
 
 const createEntityRequest = async (entity: IEntity) => {
-    const { data } = await axios.post<IEntity>(entities, entity);
+    const { data } = await axios.post<IEntity>(entities, { templateId: entity.templateId, properties: entity.properties });
     return data;
 };
 
