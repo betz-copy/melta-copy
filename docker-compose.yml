@@ -44,7 +44,7 @@ services:
 
   instance-manager:
     image: jawsproject.azurecr.io/instance-manager
-    build: ./instance-manager
+    # build: ./instance-manager
     environment:
       PORT: 8000
       NEO4J_URL: ${NEO4J_URL}
