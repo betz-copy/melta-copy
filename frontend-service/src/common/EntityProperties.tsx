@@ -5,6 +5,10 @@ import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { IEntity } from '../interfaces/entities';
 
 export const formatToString = (value: any, valueType: 'string' | 'number' | 'boolean', format?: string) => {
+    if (value === null || value === undefined) {
+        return '-';
+    }
+
     if (valueType === 'boolean') {
         return value ? i18next.t('booleanOptions.yes') : i18next.t('booleanOptions.no');
     }
@@ -15,10 +19,6 @@ export const formatToString = (value: any, valueType: 'string' | 'number' | 'boo
 
     if (valueType === 'string' && format === 'date-time') {
         return new Date(value).toLocaleString('en-uk');
-    }
-
-    if (!value) {
-        return '-';
     }
 
     return value;
