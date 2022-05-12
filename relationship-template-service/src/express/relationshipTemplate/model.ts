@@ -22,7 +22,10 @@ const RelationshipTemplateSchema = new mongoose.Schema(
             required: true,
         },
     },
-    { timestamps: true },
+    {
+        timestamps: true,
+        versionKey: false,
+    },
 );
 
 RelationshipTemplateSchema.index({ name: 1, sourceEntityId: 1, destinationEntityId: 1 }, { unique: true });
