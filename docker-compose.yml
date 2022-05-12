@@ -14,7 +14,7 @@ services:
       STORAGE_SERVICE_UPLOAD_FILE_ROUTE: ${STORAGE_SERVICE_UPLOAD_FILE_ROUTE}
       STORAGE_SERVICE_DOWNLOAD_FILE_ROUTE: ${STORAGE_SERVICE_DOWNLOAD_FILE_ROUTE}
       STORAGE_SERVICE_DELETE_FILE_ROUTE: ${STORAGE_SERVICE_DELETE_FILE_ROUTE}
-      RABBIT_URI : amqp://rabbit
+      RABBIT_URI: ${RABBIT_URI} 
 
   permission-api:
     image: jawsproject.azurecr.io/permission-api # TODO: fix permissions vs permission
@@ -54,6 +54,18 @@ services:
       TEMPLATE_MANAGER_URL: ${ENTITY_TEMPLATE_MANAGER_URI}
       RELATIONSHIP_MANAGER_URL: ${RELATIONSHIP_TEMPLATE_MANAGER_URI}
       REDIS_HOST: ${REDIS_HOST}
+
+  global-search-index-creator:
+    image: jawsproject.azurecr.io/global-search-index-creator 
+    # build: ./global-search-index-creator
+    environment:
+      NEO4J_URL: ${NEO4J_URL}
+      NEO4J_USERNAME: ${NEO4J_USERNAME}
+      NEO4J_PASSWORD: ${NEO4J_PASSWORD}
+      NEO4J_DATABASE: ${NEO4J_DATABASE}
+      TEMPLATE_MANAGER_URL: ${ENTITY_TEMPLATE_MANAGER_URI}
+      REDIS_HOST: ${REDIS_HOST}
+      RABBIT_URI: ${RABBIT_URI}
 
   backend:
     image: jawsproject.azurecr.io/backend

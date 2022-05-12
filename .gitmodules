@@ -25,3 +25,6 @@
 [submodule "mock"]
 	path = mock
 	url = git@gitlab.com:yesodot/rnd/terminal-rabaz/jaws/microservices/mock.git
+[submodule "global-search-index-creator"]
+	path = global-search-index-creator
+	url = git@gitlab.com:yesodot/rnd/terminal-rabaz/jaws/microservices/global-search.git
