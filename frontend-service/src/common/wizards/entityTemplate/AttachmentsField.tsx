@@ -102,7 +102,7 @@ const AttachmentsField: React.FC<StepComponentProps<EntityTemplateWizardValues>>
                         disabled={disabled}
                         variant="contained"
                         style={{ margin: '8px' }}
-                        onClick={() => push({ name: '', title: '', type: 'file' })}
+                        onClick={() => push({ name: '', title: '', type: 'file', required: false })}
                     >
                         {i18next.t('wizard.entityTemplate.addAttachment')}
                     </Button>

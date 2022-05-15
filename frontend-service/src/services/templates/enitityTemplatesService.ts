@@ -44,12 +44,14 @@ const formToJSONSchema = (values: EntityTemplateWizardValues) => {
         if (required) schema.required.push(name);
     });
 
-    attachmentProperties.forEach(({ name, title }) => {
+    attachmentProperties.forEach(({ name, title, required }) => {
         schema.properties[name] = {
             title,
             type: 'string',
             format: 'fileId',
         };
+
+        if (required) schema.required.push(name);
     });
 
     return { ...restOfProperties, properties: schema, category: values.category._id } as IEntityTemplate;
