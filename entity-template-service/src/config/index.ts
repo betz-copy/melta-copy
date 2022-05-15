@@ -4,7 +4,6 @@ import './dotenv';
 const config = {
     service: {
         port: env.get('PORT').required().asPortNumber(),
-        uploadsFolderPath: env.get('UPLOADS_FOLDER_PATH').default('public/uploads/').asString(),
         supportedFilesTypes: env.get('SUPPORTED_FILES_TYPES').default(['png']).asJsonArray(),
     },
     mongo: {
@@ -16,12 +15,6 @@ const config = {
         uri: env.get('RELATIONSHIP_TEMPLATE_MANAGER_URI').required().asString(),
         baseRoute: env.get('RELATIONSHIP_TEMPLATE_MANAGER_BASE_ROUTE').default('/api/templates/relationships').asString(),
         searchRoute: env.get('RELATIONSHIP_TEMPLATE_MANAGER_SEARCH_ROUTE').default('/search').asString(),
-    },
-    storageService: {
-        uri: env.get('STORAGE_SERVICE_URI').required().asString(),
-        uploadFileRoute: env.get('STORAGE_SERVICE_UPLOAD_FILE_ROUTE').required().asString(),
-        downloadFileRoute: env.get('STORAGE_SERVICE_DOWNLOAD_FILE_ROUTE').required().asString(),
-        deleteFileRoute: env.get('STORAGE_SERVICE_DELETE_FILE_ROUTE').required().asString(),
     },
     rabbit: {
         uri: env.get('RABBIT_URI').required().asUrlString(),

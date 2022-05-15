@@ -12,7 +12,7 @@ class EntityTemplateController {
     }
 
     static async createEntityTemplate(req: Request, res: Response) {
-        res.json(await EntityTemplateManager.createTemplate(req.body, req.file));
+        res.json(await EntityTemplateManager.createTemplate(req.body));
     }
 
     static async deleteEntityTemplate(req: Request, res: Response) {
@@ -25,7 +25,7 @@ class EntityTemplateController {
     static async updateEntityTemplate(req: Request, res: Response) {
         const { templateId: id } = req.params;
 
-        res.json(await EntityTemplateManager.updateEntityTemplate(id, req.body, req.file));
+        res.json(await EntityTemplateManager.updateEntityTemplate(id, req.body));
     }
 }
 

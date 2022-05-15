@@ -1,5 +1,5 @@
 import * as Joi from 'joi';
-import { MongoIdSchema, fileSchema, innerPropertiesSchema } from '../../utils/joi';
+import { MongoIdSchema, innerPropertiesSchema } from '../../utils/joi';
 
 // POST /api/entities/templates/search
 export const searchEntityTemplatesSchema = Joi.object({
@@ -36,10 +36,10 @@ export const createEntityTemplateSchema = Joi.object({
         category: Joi.string().required(),
         disabled: Joi.boolean().default(false),
         properties: innerPropertiesSchema.required(),
+        iconFileId: Joi.string().allow(null),
     },
     query: {},
     params: {},
-    file: fileSchema,
 });
 
 // PUT /api/entities/templates/:templateId
@@ -50,11 +50,10 @@ export const updateEntityTemplateSchema = Joi.object({
         category: Joi.string(),
         disabled: Joi.boolean(),
         properties: innerPropertiesSchema,
-        file: Joi.allow(null),
+        iconFileId: Joi.string().allow(null),
     },
     query: {},
     params: {
         templateId: MongoIdSchema.required(),
     },
-    file: fileSchema,
 });

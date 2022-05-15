@@ -34,13 +34,5 @@ config:
       value: category
     - name: RELATIONSHIP_TEMPLATE_MANAGER_URI
       value: http://relationship-template-manager:8000
-    - name: STORAGE_SERVICE_URI
-      value: http://storage-service:8000
-    - name: STORAGE_SERVICE_UPLOAD_FILE_ROUTE
-      value: api/files
-    - name: STORAGE_SERVICE_DOWNLOAD_FILE_ROUTE
-      value: api/files
-    - name: STORAGE_SERVICE_DELETE_FILE_ROUTE
-      value: api/files
     - name: RABBIT_URI
       value: amqp://user:McgIwOn8Yh@my-release-rabbitmq
