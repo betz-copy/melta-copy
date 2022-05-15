@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import i18next from 'i18next';
 
 import { CircularProgress, Grid, IconButton, TextField } from '@mui/material';
@@ -11,14 +11,16 @@ import { getAllPermissionsOfUsersRequest, IPermissionsOfUser } from '../../servi
 import { IMongoCategory } from '../../interfaces/categories';
 import DeletePermissionsOfUserDialog from './deleteDialog';
 import PermissionsOfUserDialog from '../../common/permissionsOfUserDialog';
-import { BlueTitle } from '../../common/BlueTitle';
 
-const PermissionsManagement = () => {
+import '../../css/pages.css';
+
+const PermissionsManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> }> = ({ setTitle }) => {
     const queryClient = useQueryClient();
     const categories = queryClient.getQueryData<IMongoCategory[]>('getCategories')!;
 
     const { data: permissionsOfUsers, isLoading: isLoadingPermissions } = useQuery('getAllPermissions', () => getAllPermissionsOfUsersRequest(), {
         onError: (error) => {
+            // eslint-disable-next-line no-console
             console.log('failed loading all permissions:', error);
             toast.error(i18next.t('permissions.failedToLoadAllPermissions'));
         },
@@ -42,16 +44,10 @@ const PermissionsManagement = () => {
 
     const [quickFilterText, setQuickFilterText] = useState('');
 
+    useEffect(() => setTitle(i18next.t('permissions.permissionsManagmentPageTitle')), [setTitle]);
+
     return (
-        <Grid container spacing={3}>
-            <Grid item xs={12}>
-                <BlueTitle
-                    title={i18next.t('permissions.permissionsManagmentPageTitle')}
-                    variant="h2"
-                    component="h1"
-                    style={{ textAlign: 'center' }}
-                />
-            </Grid>
+        <Grid container className="pageMargin" spacing={3}>
             <Grid item container xs={12} spacing={1}>
                 <Grid item xs={12} container justifyContent="space-between" alignItems="center">
                     <Grid item flex={1} />

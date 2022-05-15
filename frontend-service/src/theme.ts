@@ -6,6 +6,6 @@ export const globalTheme = createTheme({
         mode: 'light',
     },
     typography: {
-        fontFamily: 'Rubik',
+        fontFamily: 'OpenSans',
     },
 });

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Grid } from '@mui/material';
 import { useQueryClient } from 'react-query';
 
@@ -9,9 +9,10 @@ import { IMongoCategory } from '../../interfaces/categories';
 import { CategoriesRow } from './components/CategoriesRow';
 import { EntityTemplatesRow } from './components/EntityTemplatesRow';
 import { RelationshipTemplatesRow } from './components/RelationshipTemplatesRow';
-import { BlueTitle } from '../../common/BlueTitle';
 
-const SystemManagement = () => {
+import '../../css/pages.css';
+
+const SystemManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> }> = ({ setTitle }) => {
     const queryClient = useQueryClient();
 
     const [categoriesToHide, setCategoriesToHide] = useState<string[]>([]);
@@ -22,9 +23,10 @@ const SystemManagement = () => {
     const entityTemplates = queryClient.getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates')!;
     const relationshipTemplates = queryClient.getQueryData<IMongoRelationshipTemplate[]>('getRelationshipTemplates')!;
 
+    useEffect(() => setTitle(i18next.t('pages.systemManagement')), [setTitle]);
+
     return (
-        <Grid container spacing={4}>
-            <BlueTitle title={i18next.t('pages.systemManagement')} component="h3" variant="h3" style={{ paddingTop: '32px', paddingRight: '32px' }} />
+        <Grid container className="pageMargin" spacing={4}>
             <CategoriesRow categories={categories} />
             <EntityTemplatesRow
                 categories={categories}

@@ -142,6 +142,7 @@ const EntitiesTableOfTemplate = forwardRef(
 
         const datasourceOnFail = (err: unknown) => {
             toast.error(i18next.t('entitiesTableOfTemplate.failedToLoadData'));
+            // eslint-disable-next-line no-console
             console.log('failed to load data from datasource. err:', err);
         };
         const rowModelProps = getRowModelProps(rowModelType, template, rowData, datasource, quickFilterText, datasourceOnFail, actionsColumnId);

@@ -18,3 +18,8 @@
     font-weight: 400;
     src: local('Rubik'), url(../assets/Rubik/Rubik-VariableFont_wght.ttf) format('woff');
 }
+
+@font-face {
+    font-family: 'OpenSans';
+    src: local('OpenSans'), url(../assets/OpenSans/OpenSans-VariableFont_wdth\,wght.ttf) format('woff');
+}

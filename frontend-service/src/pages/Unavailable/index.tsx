@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 
-const Unavailable = () => {
+const Unavailable: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> }> = ({ setTitle }) => {
+    useEffect(() => setTitle(''), [setTitle]);
+
     return <div>Unavailable</div>;
 };
 

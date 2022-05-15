@@ -6,20 +6,20 @@ const NavButton: React.FC<{ to: string; isDrawerOpen: boolean; text: string }> =
     return (
         <StyledLink to={to}>
             {({ isActive }) => (
-                <ListItemButton style={{ justifyContent: 'space-around' }}>
+                <ListItemButton style={{ justifyContent: 'space-around', direction: 'rtl' }}>
                     {isValidElement(children) &&
                         cloneElement(children, {
                             style: {
                                 filter: isActive
-                                    ? 'invert(30%) sepia(35%) saturate(1584%) hue-rotate(181deg) brightness(98%) contrast(97%)'
-                                    : 'invert(77%) sepia(0%) saturate(1%) hue-rotate(179deg) brightness(88%) contrast(89%)',
+                                    ? 'invert(100%) sepia(22%) saturate(353%) hue-rotate(311deg) brightness(122%) contrast(100%)'
+                                    : 'invert(85%) sepia(8%) saturate(21%) hue-rotate(323deg) brightness(81%) contrast(80%)',
                             },
                         })}
                     {isDrawerOpen && (
                         <StyledListItemText
                             primary={text}
                             sx={{
-                                color: isActive ? '#225AA7' : '#A9A9A9',
+                                color: isActive ? 'white' : '#A9A9A9',
                             }}
                         />
                     )}

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { List, Divider, IconButton, Typography, Grid } from '@mui/material';
+import { Divider, IconButton, Typography, Grid } from '@mui/material';
 import { useQueryClient } from 'react-query';
 import {
     ChevronRight as ChevronRightIcon,
@@ -12,7 +12,7 @@ import {
 } from '@mui/icons-material';
 
 import i18next from 'i18next';
-import { Drawer, Toolbar } from './SideBar.styled';
+import { Drawer } from './SideBar.styled';
 import { IMongoCategory } from '../../interfaces/categories';
 import { NavButton } from './NavButton';
 import { IPermissionsOfUser } from '../../services/permissionsService';
@@ -33,66 +33,75 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
 
     return (
         <Drawer variant="permanent" open={isDrawerOpen}>
-            <Grid container direction="column" height="100%" justifyContent="space-between">
-                <Grid item>
-                    <Grid item display="flex" flexDirection="column" alignItems="center" marginTop="10px" marginBottom="10px" width="100%">
-                        <Typography color="#225AA7" fontSize={25} fontWeight="bold">
-                            {i18next.t('sideBar.title')}
-                        </Typography>
-                        <IconButton onClick={() => setIsMyPermissionsDialogOpen(true)}>
-                            <AccountCircleIcon sx={{ color: '#225AA7' }} />
+            <Grid container direction="column" wrap="nowrap" height="100%" bgcolor="#225AA7">
+                <Grid item container direction="column" alignItems="center" marginTop="10px" marginBottom="10px">
+                    <Typography color="white" fontFamily="Rubik" fontSize={25} fontWeight="bold">
+                        MELTA
+                    </Typography>
+                    <IconButton onClick={() => setIsMyPermissionsDialogOpen(true)}>
+                        <AccountCircleIcon fontSize="large" sx={{ color: 'white' }} />
+                    </IconButton>
+                </Grid>
+
+                <Divider />
+
+                <Grid
+                    item
+                    container
+                    direction="column"
+                    alignItems="stretch"
+                    wrap="nowrap"
+                    sx={{
+                        overflowY: 'overlay',
+                        direction: 'rtl',
+                        '::-webkit-scrollbar': { background: 'transparent', width: 4 },
+                        '::-webkit-scrollbar-thumb': { background: 'lightgray', borderRadius: 20 },
+                    }}
+                >
+                    {categories?.map((category) => {
+                        return (
+                            <NavButton key={category._id} to={`/category/${category._id}`} text={category.displayName} isDrawerOpen={isDrawerOpen}>
+                                {category?.iconFileId ? (
+                                    <CustomIcon iconUrl={category.iconFileId} height="40px" width="40px" />
+                                ) : (
+                                    <HiveIcon fontSize="large" />
+                                )}
+                            </NavButton>
+                        );
+                    })}
+                </Grid>
+
+                <Grid item container direction="column" alignItems="stretch" marginTop="auto">
+                    <Divider />
+
+                    <NavButton to="/" text={i18next.t('pages.home')} isDrawerOpen={isDrawerOpen}>
+                        <PublicIcon fontSize="large" />
+                    </NavButton>
+
+                    <NavButton to="/system-management" text={i18next.t('pages.systemManagement')} isDrawerOpen={isDrawerOpen}>
+                        <WidgetsIcon fontSize="large" />
+                    </NavButton>
+
+                    {myPermissions?.permissionsManagementId && (
+                        <NavButton
+                            to="/permissions-management"
+                            text={i18next.t('permissions.permissionsManagmentPageTitle')}
+                            isDrawerOpen={isDrawerOpen}
+                        >
+                            <ManageAccountsIcon fontSize="large" />
+                        </NavButton>
+                    )}
+
+                    <Divider />
+
+                    <Grid item container direction="column" alignItems="center">
+                        <IconButton onClick={toggleDrawer} size="large" sx={{ color: '#A9A9A9' }}>
+                            {isDrawerOpen ? <ChevronRightIcon /> : <ChevronLeftIcon />}
                         </IconButton>
                     </Grid>
-                    <Divider />
-                    <Grid item>
-                        <List>
-                            {categories.map((category) => {
-                                return (
-                                    <NavButton
-                                        key={category._id}
-                                        to={`/category/${category._id}`}
-                                        text={category.displayName}
-                                        isDrawerOpen={isDrawerOpen}
-                                    >
-                                        {category?.iconFileId ? (
-                                            <CustomIcon iconUrl={category.iconFileId} height="40px" width="40px" />
-                                        ) : (
-                                            <HiveIcon fontSize="large" />
-                                        )}
-                                    </NavButton>
-                                );
-                            })}
-                        </List>
-                    </Grid>
-                    <Divider />
-                    <Grid item>
-                        <List>
-                            <NavButton to="/" text="Home" isDrawerOpen={isDrawerOpen}>
-                                <PublicIcon fontSize="large" />
-                            </NavButton>
-                            <NavButton to="/system-management" text="System Management" isDrawerOpen={isDrawerOpen}>
-                                <WidgetsIcon fontSize="large" />
-                            </NavButton>
-                            {myPermissions?.permissionsManagementId && (
-                                <NavButton
-                                    to="/permissions-management"
-                                    text={i18next.t('permissions.permissionsManagmentPageTitle')}
-                                    isDrawerOpen={isDrawerOpen}
-                                >
-                                    <ManageAccountsIcon fontSize="large" />
-                                </NavButton>
-                            )}
-                        </List>
-                    </Grid>
-                    <Divider />
-                </Grid>
-                <Grid item>
-                    <Divider />
-                    <Toolbar>
-                        <IconButton onClick={toggleDrawer}>{isDrawerOpen ? <ChevronRightIcon /> : <ChevronLeftIcon />}</IconButton>
-                    </Toolbar>
                 </Grid>
             </Grid>
+
             <PermissionsOfUserDialog
                 isOpen={isMyPermissionsDialogOpen}
                 mode="read"

@@ -7,6 +7,7 @@ import createCache from '@emotion/cache';
 import { prefixer } from 'stylis';
 import { SideBar } from './common/sideBar';
 import { MainBox } from './Main.styled';
+import { TopBar } from './common/TopBar';
 
 const Home = lazy(() => import('./pages/Home'));
 const Category = lazy(() => import('./pages/Category'));
@@ -23,6 +24,7 @@ const cacheRtl = createCache({
 
 const Main = () => {
     const [open, setOpen] = useState(false);
+    const [title, setTitle] = useState('');
 
     const toggleDrawer = () => {
         setOpen(!open);
@@ -35,17 +37,18 @@ const Main = () => {
                     <CssBaseline />
                     <SideBar toggleDrawer={toggleDrawer} isDrawerOpen={open} />
                     <MainBox>
-                        <Box marginLeft={4} marginRight={4}>
+                        <TopBar title={title} />
+                        <Box>
                             <Suspense fallback={<div />}>
                                 <Routes>
-                                    <Route path="/system-management" element={<SystemManagement />} />
-                                    <Route path="/permissions-management" element={<PermissionsManagement />} />
-                                    <Route path="/unavailable" element={<Unavailable />} />
-                                    <Route path="/category/:categoryId" element={<Category />} />
-                                    <Route path="/graph/:entityId" element={<Home />} />
-                                    <Route path="/entity/:entityId" element={<Entity />} />
-                                    <Route path="/entity/:entityId/graph" element={<Graph />} />
-                                    <Route path="/" element={<Home />} />
+                                    <Route path="/system-management" element={<SystemManagement setTitle={setTitle} />} />
+                                    <Route path="/permissions-management" element={<PermissionsManagement setTitle={setTitle} />} />
+                                    <Route path="/unavailable" element={<Unavailable setTitle={setTitle} />} />
+                                    <Route path="/category/:categoryId" element={<Category setTitle={setTitle} />} />
+                                    <Route path="/graph/:entityId" element={<Home setTitle={setTitle} />} />
+                                    <Route path="/entity/:entityId" element={<Entity setTitle={setTitle} />} />
+                                    <Route path="/entity/:entityId/graph" element={<Graph setTitle={setTitle} />} />
+                                    <Route path="/" element={<Home setTitle={setTitle} />} />
                                     <Route path="*" element={<h1>404</h1>} />
                                 </Routes>
                             </Suspense>

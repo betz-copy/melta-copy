@@ -1,0 +1,24 @@
+import React from 'react';
+import { Box } from '@mui/material';
+import { BlueTitle } from './BlueTitle';
+
+const TopBar: React.FC<{ title: string }> = ({ title }) => {
+    if (title.length) {
+        return (
+            <Box
+                bgcolor="#fcfeff"
+                boxShadow="0px 4px 4px #0000000D"
+                paddingTop="0.5rem"
+                paddingLeft="1rem"
+                paddingBottom="0.4rem"
+                marginBottom="1rem"
+            >
+                <BlueTitle title={title} component="h3" variant="h3" />
+            </Box>
+        );
+    }
+
+    return null;
+};
+
+export { TopBar };

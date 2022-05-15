@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Box, CircularProgress, Grid, IconButton, Tab } from '@mui/material';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { useParams } from 'react-router-dom';
@@ -20,7 +20,9 @@ import { deleteRelationshipRequest } from '../../services/relationshipsService';
 import EntitiesTableOfTemplate from '../../common/EntitiesTableOfTemplate';
 import { AreYouSureDialog } from '../../common/dialogs/AreYouSureDialog';
 
-const Entity: React.FC = () => {
+import '../../css/pages.css';
+
+const Entity: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> }> = ({ setTitle }) => {
     const params = useParams();
     const queryClient = useQueryClient();
     const { entityId } = params;
@@ -41,6 +43,7 @@ const Entity: React.FC = () => {
 
     const { mutateAsync: deleteRelationship, isLoading: isLoadingDeleteRelationship } = useMutation(deleteRelationshipRequest, {
         onError: (error) => {
+            // eslint-disable-next-line no-console
             console.log('failed to delete relationship. error:', error);
             toast.error(i18next.t('entityPage.failedToDeleteRelationship'));
             setDeleteRelationshipDialogState({ open: false });
@@ -60,11 +63,22 @@ const Entity: React.FC = () => {
     });
 
     const [value, setValue] = useState('0');
+    const [titleUpdated, setTitleUpdated] = useState(false);
+
+    let currentEntityTemplate;
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    useEffect(() => {
+        if (titleUpdated || !currentEntityTemplate) return;
+
+        setTitle(currentEntityTemplate.category.displayName);
+        setTitleUpdated(true);
+    });
 
     if (!expandedEntity) return <CircularProgress />;
 
     const entityTemplates = queryClient.getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates')!;
-    const currentEntityTemplate = entityTemplates.find((currTemplate) => currTemplate._id === expandedEntity?.entity.templateId);
+    currentEntityTemplate = entityTemplates.find((currTemplate) => currTemplate._id === expandedEntity?.entity.templateId);
     const relevantRelationshipTemplates = queryClient
         .getQueryData<IMongoRelationshipTemplate[]>('getRelationshipTemplates')!
         .filter(
@@ -133,7 +147,7 @@ const Entity: React.FC = () => {
     };
 
     return (
-        <Grid>
+        <Grid className="pageMargin">
             <Grid item marginTop="20px">
                 <EntityDetails entityTemplate={currentEntityTemplate} expandedEntity={expandedEntity} />
             </Grid>
@@ -152,14 +166,14 @@ const Entity: React.FC = () => {
                                 return (
                                     <Grid key={currRelationshipTemplate._id}>
                                         <Grid container item justifyContent="space-between">
-                                            <Grid xs={3.5}>
+                                            <Grid item xs={3.5}>
                                                 <RelationshipTitle
                                                     sourceEntityTemplateDisplayName={currRelationshipTemplate.sourceEntity.displayName}
                                                     relationshipTemplateDisplayName={currRelationshipTemplate.displayName}
                                                     destinationEntityTemplateDisplayName={currRelationshipTemplate.destinationEntity.displayName}
                                                 />
                                             </Grid>
-                                            <Grid>
+                                            <Grid item>
                                                 <IconButton
                                                     onClick={() => {
                                                         const { otherEntityTemplate, ...relationshipTemplatePopulated } = currRelationshipTemplate;

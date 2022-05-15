@@ -46,6 +46,7 @@ export default {
         expand: 'הרחב', // הצג שכנים
     },
     pages: {
+        home: 'בית',
         systemManagement: 'ניהול מערכת',
     },
     systemManagement: {
