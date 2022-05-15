@@ -1068,6 +1068,7 @@ describe('e2e ag-grid entities tests', () => {
     describe('Check set', () => {
         beforeEach(async () => {
             await EntityManager.createEntity({ templateId: defaultTemplateId, properties: defaultProperties });
+            await EntityManager.createEntity({ templateId: defaultTemplateId, properties: { doesWork: true } });
         });
 
         it('Check single sort', async () => {
@@ -1092,6 +1093,58 @@ describe('e2e ag-grid entities tests', () => {
             expect(res.rows[0].properties).toEqual(
                 expect.objectContaining({
                     testProp: 'testProp',
+                }),
+            );
+        });
+
+        it('Check single sort (boolean)', async () => {
+            const agGridRequest: IAGGridRequest = {
+                startRow: 0,
+                endRow: 0,
+                filterModel: {
+                    doesWork: {
+                        filterType: 'set',
+                        values: ['true'],
+                    },
+                },
+                sortModel: [],
+            };
+
+            const res = await EntityManager.getEntities(defaultTemplateId, agGridRequest);
+
+            expect(res).toBeDefined();
+            expect(res.lastRowIndex).toBe(1);
+            expect(res.rows).toHaveLength(1);
+            expect(res.rows[0].templateId).toBe(defaultTemplateId);
+            expect(res.rows[0].properties).toEqual(
+                expect.objectContaining({
+                    doesWork: true,
+                }),
+            );
+        });
+
+        it('Check single sort (null)', async () => {
+            const agGridRequest: IAGGridRequest = {
+                startRow: 0,
+                endRow: 0,
+                filterModel: {
+                    testProp: {
+                        filterType: 'set',
+                        values: [null],
+                    },
+                },
+                sortModel: [],
+            };
+
+            const res = await EntityManager.getEntities(defaultTemplateId, agGridRequest);
+
+            expect(res).toBeDefined();
+            expect(res.lastRowIndex).toBe(1);
+            expect(res.rows).toHaveLength(1);
+            expect(res.rows[0].templateId).toBe(defaultTemplateId);
+            expect(res.rows[0].properties).toEqual(
+                expect.objectContaining({
+                    doesWork: true,
                 }),
             );
         });
@@ -1139,6 +1192,37 @@ describe('e2e ag-grid entities tests', () => {
                 expect.objectContaining({
                     testProp: 'testProp',
                 }),
+            );
+        });
+
+        it('Check multiple sort options (with null)', async () => {
+            const agGridRequest: IAGGridRequest = {
+                startRow: 0,
+                endRow: 1,
+                filterModel: {
+                    testProp: {
+                        filterType: 'set',
+                        values: ['testProp', null],
+                    },
+                },
+                sortModel: [],
+            };
+
+            const res = await EntityManager.getEntities(defaultTemplateId, agGridRequest);
+
+            expect(res).toBeDefined();
+            expect(res.lastRowIndex).toBe(2);
+            expect(res.rows).toHaveLength(2);
+
+            expect(res.rows.map((row: IEntity) => row.properties)).toEqual(
+                expect.arrayContaining([
+                    expect.objectContaining({
+                        testProp: 'testProp',
+                    }),
+                    expect.objectContaining({
+                        doesWork: true,
+                    }),
+                ]),
             );
         });
     });

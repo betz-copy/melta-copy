@@ -22,7 +22,7 @@ export interface IAGGridDateFilter {
 
 export interface IAGGridSetFilter {
     filterType: 'set';
-    values: string[];
+    values: (string | null)[];
 }
 
 export interface IAGGridFilterModel {
@@ -42,8 +42,13 @@ export interface IAGGridRequest {
     sortModel: IAGGridSort[];
 }
 
+const isBoolean = (value: string) => value === 'true' || value === 'false';
+
 export const setFilterToQuery = (field: string, { values }: IAGGridSetFilter) => {
-    return `node.${field} IN [${values.map((value) => `'${value}'`).join(',')}]`;
+    const valuesWithoutNulls = values.filter(Boolean) as string[];
+    const nullFieldCheck = values.includes(null) ? `node.${field} IS NULL OR` : ``;
+
+    return `${nullFieldCheck} node.${field} IN [${valuesWithoutNulls.map((value) => (isBoolean(value) ? `${value}` : `'${value}'`)).join(',')}]`;
 };
 
 export const textFilterToQuery = (field: string, { type, filter }: IAGGridTextFilter) => {
