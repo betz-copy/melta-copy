@@ -27,7 +27,7 @@ const Category: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>
 
     const categoryDisplayName = queryClient
         .getQueryData<IMongoCategory[]>('getCategories')!
-        .find((oneCategory) => oneCategory._id === categoryId)?.displayName;
+        .find((oneCategory) => oneCategory._id === categoryId)!.displayName;
 
     const onExcelExport = () => {
         exportMultipleSheetsAsExcel({
@@ -36,7 +36,7 @@ const Category: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>
         });
     };
 
-    useEffect(() => setTitle(`${categoryDisplayName} - ${i18next.t('entityTemplates')}`), [categoryDisplayName, setTitle]);
+    useEffect(() => setTitle(categoryDisplayName), [categoryDisplayName, setTitle]);
 
     return (
         <Grid container className="pageMargin">
