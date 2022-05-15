@@ -11,6 +11,32 @@ class TemplatesController {
 
         res.json(await TemplatesManager.getAllAllowedTemplates(user.id));
     }
+
+    // categories
+    static async createCategory(req: Request, res: Response) {
+        res.json(await TemplatesManager.createCategory(req.body, req.file));
+    }
+
+    static async deleteCategory(req: Request, res: Response) {
+        res.json(await TemplatesManager.deleteCategory(req.params.id));
+    }
+
+    static async updateCategory(req: Request, res: Response) {
+        res.json(await TemplatesManager.updateCategory(req.params.id, req.body, req.file));
+    }
+
+    // entityTemlates
+    static async createTemplate(req: Request, res: Response) {
+        res.json(await TemplatesManager.createEntityTemplate(req.body, req.file));
+    }
+
+    static async deleteTemplate(req: Request, res: Response) {
+        res.json(await TemplatesManager.deleteEntityTemplate(req.params.id));
+    }
+
+    static async updateEntityTemplate(req: Request, res: Response) {
+        res.json(await TemplatesManager.updateEntityTemplate(req.params.id, req.body, req.file));
+    }
 }
 
 export default TemplatesController;

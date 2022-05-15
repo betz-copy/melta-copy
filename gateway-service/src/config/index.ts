@@ -5,6 +5,7 @@ const config = {
     service: {
         port: env.get('PORT').required().asPortNumber(),
         systemUnavailableURL: env.get('SYSTEM_UNAVAILABLE_URL').required().asString(),
+        uploadsFolderPath: env.get('UPLOADS_FOLDER_PATH').default('public/uploads/').asString(),
     },
     authentication: {
         tokenSecret: env.get('TOKEN_SECRET').required().asString(),
@@ -30,6 +31,9 @@ const config = {
     },
     storageService: {
         uri: env.get('STORAGE_SERVICE_URI').required().asString(),
+        uploadFileRoute: env.get('STORAGE_SERVICE_UPLOAD_FILE_ROUTE').default('api/files').asString(),
+        downloadFileRoute: env.get('STORAGE_SERVICE_DOWNLOAD_FILE_ROUTE').default('api/files').asString(),
+        deleteFileRoute: env.get('STORAGE_SERVICE_DELETE_FILE_ROUTE').default('api/files').asString(),
     },
     instanceManager: {
         uri: env.get('INSTANCE_MANAGER_URI').required().asString(),

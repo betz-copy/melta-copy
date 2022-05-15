@@ -63,6 +63,12 @@ export class EntityTemplateManagerService {
         return data;
     }
 
+    static async getCategoryById(categoryId: string) {
+        const { data } = await this.EntityTemplateManagerApi.get<ICategory>(`${baseCategoriesRoute}/${categoryId}`);
+
+        return data;
+    }
+
     // entity templates
     static async searchEntityTemplates(body: ISearchEntityTemplatesBody = {}) {
         const { data } = await this.EntityTemplateManagerApi.post<IEntityTemplatePopulated[]>(`${baseEntitiesRoute}/search`, body);
