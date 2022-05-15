@@ -4,12 +4,19 @@ import i18next from 'i18next';
 import { useMutation, useQueryClient } from 'react-query';
 import { StepsType, Wizard, WizardBaseType } from '../index';
 import { CreateRelationshipTemplateName, createRelationshipTemplateNameSchema } from './CreateRelationshipTemplate';
-import { createRelationshipTemplateRequest, updateRelationshipTemplateRequest } from '../../../services/templates/relationshipTemplatesService';
+import {
+    createRelationshipTemplateRequest,
+    updateRelationshipTemplateRequest,
+    relationshipTemplateFormToRelationshipTemplateObject,
+} from '../../../services/templates/relationshipTemplatesService';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { replaceItemById } from '../../../utils/reactQuery';
 import { IMongoRelationshipTemplate } from '../../../interfaces/relationshipTemplates';
 
 export interface RelationshipTemplateWizardValues {
+    _id?: string;
+    createdAt?: string;
+    updatedAt?: string;
     name: string;
     displayName: string;
     sourceEntity: IMongoEntityTemplatePopulated;
@@ -54,10 +61,14 @@ const RelationshipTemplateWizard: React.FC<WizardBaseType<RelationshipTemplateWi
 }) => {
     const queryClient = useQueryClient();
     const { isLoading, mutateAsync } = useMutation(
-        (relationshipTemplate: any) =>
-            isEditMode
-                ? updateRelationshipTemplateRequest((initialValues as RelationshipTemplateWizardValues & { _id: string })._id, relationshipTemplate)
-                : createRelationshipTemplateRequest(relationshipTemplate),
+        (relationshipTemplateForm: RelationshipTemplateWizardValues) => {
+            const { _id, createdAt, updatedAt, ...restOfRelationshipTemplateForm } = relationshipTemplateForm;
+            const relationshipTemplateBody = relationshipTemplateFormToRelationshipTemplateObject(restOfRelationshipTemplateForm);
+            if (isEditMode) {
+                return updateRelationshipTemplateRequest(_id!, relationshipTemplateBody);
+            }
+            return createRelationshipTemplateRequest(relationshipTemplateBody);
+        },
         {
             onSuccess: (data) => {
                 if (isEditMode) {
@@ -85,7 +96,7 @@ const RelationshipTemplateWizard: React.FC<WizardBaseType<RelationshipTemplateWi
             title={i18next.t('wizard.relationshipTemplate.title')}
             steps={steps}
             isLoading={isLoading}
-            submitFucntion={(values) => mutateAsync({ data: values })}
+            submitFucntion={mutateAsync}
         />
     );
 };

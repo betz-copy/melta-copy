@@ -9,7 +9,7 @@ import { ViewingCard } from './ViewingCard';
 import { Header } from '../../../common/Header';
 import { SelectCheckbox } from '../../../common/SelectCheckbox';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { IMongoRelationshipTemplate } from '../../../interfaces/relationshipTemplates';
+import { IMongoRelationshipTemplate, IMongoRelationshipTemplatePopulated } from '../../../interfaces/relationshipTemplates';
 import { RelationshipTemplateWizard } from '../../../common/wizards/relationshipTemplate';
 import {
     deleteRelationshipTemplateRequest,
@@ -103,45 +103,56 @@ const RelationshipTemplatesRow: React.FC<{
             <Grid container spacing={4}>
                 {relationshipTemplates
                     .map((relationshipTemplate) => {
-                        const sourceEntityTemplate = entityTemplates.find(
-                            (entityTemplate) => entityTemplate._id === relationshipTemplate.sourceEntityId,
-                        )!;
+                        const sourceEntity = entityTemplates.find((entityTemplate) => entityTemplate._id === relationshipTemplate.sourceEntityId)!;
 
-                        const destinationEntityTemplate = entityTemplates.find(
+                        const destinationEntity = entityTemplates.find(
                             (entityTemplate) => entityTemplate._id === relationshipTemplate.destinationEntityId,
                         )!;
 
+                        const { sourceEntityId, destinationEntityId, ...restOfRelationshipTemplate } = relationshipTemplate;
+
                         return {
-                            sourceEntityTemplate,
-                            destinationEntityTemplate,
-                            ...relationshipTemplate,
-                        };
+                            sourceEntity,
+                            destinationEntity,
+                            ...restOfRelationshipTemplate,
+                        } as IMongoRelationshipTemplatePopulated;
                     })
                     .filter((relationshipTemplate) => {
                         return (
-                            !sourceEntityTemplatesToHide.includes(relationshipTemplate.sourceEntityTemplate.displayName) &&
-                            !destinationEntityTemplatesToHide.includes(relationshipTemplate.destinationEntityTemplate.displayName)
+                            !sourceEntityTemplatesToHide.includes(relationshipTemplate.sourceEntity.displayName) &&
+                            !destinationEntityTemplatesToHide.includes(relationshipTemplate.destinationEntity.displayName)
                         );
                     })
-                    .filter(
-                        (relationshipTemplate) =>
+                    .filter((relationshipTemplate) => {
+                        return (
                             searchText === '' ||
                             relationshipTemplate.displayName.includes(searchText) ||
-                            relationshipTemplate.sourceEntityTemplate.displayName.includes(searchText) ||
-                            relationshipTemplate.destinationEntityTemplate.displayName.includes(searchText),
-                    )
+                            relationshipTemplate.sourceEntity.displayName.includes(searchText) ||
+                            relationshipTemplate.destinationEntity.displayName.includes(searchText)
+                        );
+                    })
                     .map((relationshipTemplate) => (
                         <ViewingCard
                             minWidth={350}
                             key={relationshipTemplate._id}
                             title={
                                 <RelationshipTitle
-                                    sourceEntityTemplateDisplayName={relationshipTemplate.sourceEntityTemplate.displayName}
+                                    sourceEntityTemplateDisplayName={relationshipTemplate.sourceEntity.displayName}
                                     relationshipTemplateDisplayName={relationshipTemplate.displayName}
-                                    destinationEntityTemplateDisplayName={relationshipTemplate.destinationEntityTemplate.displayName}
+                                    destinationEntityTemplateDisplayName={relationshipTemplate.destinationEntity.displayName}
                                 />
                             }
-                            onEditClick={() => setRelationshipTemplateWizardDialogState({ isWizardOpen: true, relationshipTemplate })}
+                            onEditClick={() => {
+                                const { sourceEntity, destinationEntity, ...restOfRelationshipTemplate } = relationshipTemplate;
+                                setRelationshipTemplateWizardDialogState({
+                                    isWizardOpen: true,
+                                    relationshipTemplate: {
+                                        sourceEntityId: sourceEntity._id,
+                                        destinationEntityId: destinationEntity._id,
+                                        ...restOfRelationshipTemplate,
+                                    },
+                                });
+                            }}
                             onDeleteClick={() =>
                                 setDeleteRelationshipTemplateDialogState({ isDialogOpen: true, relationshipTemplateId: relationshipTemplate._id })
                             }

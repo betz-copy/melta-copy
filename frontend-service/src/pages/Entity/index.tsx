@@ -95,7 +95,6 @@ const Entity: React.FC = () => {
                                 _id: currRelationshipTemplate._id,
                                 name: currRelationshipTemplate.name,
                                 displayName: currRelationshipTemplate.displayName,
-                                properties: currRelationshipTemplate.properties,
                                 sourceEntity,
                                 destinationEntity,
                                 otherEntityTemplate,

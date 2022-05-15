@@ -2,7 +2,7 @@ import axios from '../../axios';
 import { RelationshipTemplateWizardValues } from '../../common/wizards/relationshipTemplate';
 import { environment } from '../../globals';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
-import { IMongoRelationshipTemplate } from '../../interfaces/relationshipTemplates';
+import { IMongoRelationshipTemplate, IRelationshipTemplate } from '../../interfaces/relationshipTemplates';
 
 const { relationshipTemplates } = environment.api;
 
@@ -19,18 +19,29 @@ const relationshipTemplateObjectToRelationshipTemplateForm = (
     return { sourceEntity, destinationEntity, ...restOfEntityTemplate };
 };
 
-const createRelationshipTemplateRequest = async (newRelationshipTemplate: any) => {
-    const { data } = await axios.post(relationshipTemplates, newRelationshipTemplate);
+const relationshipTemplateFormToRelationshipTemplateObject = (
+    relationshipTemplateWizardValues: Omit<RelationshipTemplateWizardValues, '_id'>,
+): IRelationshipTemplate | IMongoRelationshipTemplate => {
+    const { sourceEntity, destinationEntity, ...restOfRelationshipWizardValues } = relationshipTemplateWizardValues;
+    return {
+        ...restOfRelationshipWizardValues,
+        sourceEntityId: sourceEntity._id,
+        destinationEntityId: destinationEntity._id,
+    };
+};
+
+const createRelationshipTemplateRequest = async (newRelationshipTemplate: IRelationshipTemplate) => {
+    const { data } = await axios.post<IMongoRelationshipTemplate>(relationshipTemplates, newRelationshipTemplate);
     return data;
 };
 
-const updateRelationshipTemplateRequest = async (relationshipTemplateId: string, newRelationshipTemplate: any) => {
-    const { data } = await axios.put(`${relationshipTemplates}/${relationshipTemplateId}`, newRelationshipTemplate);
+const updateRelationshipTemplateRequest = async (relationshipTemplateId: string, newRelationshipTemplate: IRelationshipTemplate) => {
+    const { data } = await axios.put<IMongoRelationshipTemplate>(`${relationshipTemplates}/${relationshipTemplateId}`, newRelationshipTemplate);
     return data;
 };
 
 const deleteRelationshipTemplateRequest = async (relationshipTemplateId: string) => {
-    const { data } = await axios.delete(`${relationshipTemplates}/${relationshipTemplateId}`);
+    const { data } = await axios.delete<IMongoRelationshipTemplate>(`${relationshipTemplates}/${relationshipTemplateId}`);
     return data;
 };
 
@@ -39,4 +50,5 @@ export {
     updateRelationshipTemplateRequest,
     deleteRelationshipTemplateRequest,
     relationshipTemplateObjectToRelationshipTemplateForm,
+    relationshipTemplateFormToRelationshipTemplateObject,
 };

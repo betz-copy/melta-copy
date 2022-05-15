@@ -12,16 +12,15 @@ const populateRelationshipTemplateOption = (
     relationshipTemplate: IMongoRelationshipTemplate,
     entityTemplates: IMongoEntityTemplatePopulated[],
 ): IMongoRelationshipTemplatePopulatedOption => {
-    const sourceEntity = entityTemplates.find(({ _id }) => _id === relationshipTemplate.sourceEntityId);
-    const destinationEntity = entityTemplates.find(({ _id }) => _id === relationshipTemplate.destinationEntityId);
+    const { sourceEntityId, destinationEntityId, ...restOfRelationshipTemplate } = relationshipTemplate;
+
+    const sourceEntity = entityTemplates.find(({ _id }) => _id === sourceEntityId);
+    const destinationEntity = entityTemplates.find(({ _id }) => _id === destinationEntityId);
 
     return {
-        _id: relationshipTemplate._id,
-        name: relationshipTemplate.name,
-        displayName: relationshipTemplate.displayName,
-        properties: relationshipTemplate.properties,
         sourceEntity,
         destinationEntity,
+        ...restOfRelationshipTemplate,
     };
 };
 
