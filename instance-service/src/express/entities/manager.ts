@@ -107,12 +107,17 @@ export class EntityManager {
     }
 
     static async updateEntityById(id: string, entityProperties: object) {
-        const node = await Neo4jClient.writeTransaction(`MATCH (e {_id: '${id}'}) SET e += $props RETURN e`, normalizeReturnedEntity(), {
-            props: {
-                ...entityProperties,
-                updatedAt: getNeo4jDate(),
+        const node = await Neo4jClient.writeTransaction(
+            `MATCH (e {_id: '${id}'}) WITH e.createdAt as createdAt, e AS e SET e = $props SET e.createdAt = createdAt RETURN e`,
+            normalizeReturnedEntity(),
+            {
+                props: {
+                    ...entityProperties,
+                    updatedAt: getNeo4jDate(),
+                    _id: id,
+                },
             },
-        });
+        );
 
         if (!node) {
             throw new NotFoundError(`[NEO4J] entity "${id}" not found`);

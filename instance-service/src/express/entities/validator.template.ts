@@ -69,6 +69,10 @@ export const addStringFieldsAndNormalizeDateValues = (req: Request, _res: Respon
         const propertyValue = req.body.properties[key];
         const { type, format } = value;
 
+        if (!propertyValue) {
+            return;
+        }
+
         // For Neo4j fulltext search (supports only string properties)
         if (type !== 'string' || format === 'date') {
             normalizedEntity[`${key}_tostring`] = String(propertyValue);
