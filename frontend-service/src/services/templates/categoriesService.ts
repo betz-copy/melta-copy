@@ -35,8 +35,13 @@ const updateCategoryRequest = async (categoryId: string, updatedCategory: Catego
     const formData = new FormData();
 
     if (updatedCategory.file) {
-        formData.append('file', updatedCategory.file as File);
+        if (updatedCategory.file instanceof File) {
+            formData.append('file', updatedCategory.file);
+        } else {
+            formData.append('iconFileId', updatedCategory.file.name!);
+        }
     }
+
     formData.append('displayName', updatedCategory.displayName);
     formData.append('name', updatedCategory.name);
     formData.append('color', updatedCategory.color);

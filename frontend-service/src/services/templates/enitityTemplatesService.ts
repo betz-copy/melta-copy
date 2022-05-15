@@ -81,7 +81,11 @@ const updateEntityTemplateRequest = async (entityTemplateId: string, updatedEnti
     const entityTemplate = formToJSONSchema(updatedEntityTemplate);
 
     if (updatedEntityTemplate.file) {
-        formData.append('file', updatedEntityTemplate.file as File);
+        if (updatedEntityTemplate.file instanceof File) {
+            formData.append('file', updatedEntityTemplate.file);
+        } else {
+            formData.append('iconFileId', updatedEntityTemplate.file.name!);
+        }
     }
 
     formData.append('displayName', entityTemplate.displayName);
