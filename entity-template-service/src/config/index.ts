@@ -7,7 +7,7 @@ const config = {
         supportedFilesTypes: env.get('SUPPORTED_FILES_TYPES').default(['png']).asJsonArray(),
     },
     mongo: {
-        uri: env.get('MONGO_URI').required().asUrlString(),
+        uri: env.get('MONGO_URI').required().asString(),
         entityTemplateCollectionName: env.get('MONGO_ENTITY_TEMPLATE_COLLECTION_NAME').required().asString(),
         categoryCollectionName: env.get('MONGO_CATEGORY_COLLECTION_NAME').required().asString(),
     },
