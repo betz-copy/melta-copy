@@ -165,6 +165,7 @@ const EntitiesTableOfTemplate = forwardRef(
                         width: '100%',
                         fontFamily: 'Rubik',
                         fontSize,
+                        fontWeight: 300,
                         // todo: removed marginBottom: 30px. check doesnt effect regular page
                     }}
                     modules={[
