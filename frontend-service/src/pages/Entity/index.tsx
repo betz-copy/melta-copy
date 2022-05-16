@@ -19,6 +19,7 @@ import { IRelationship } from '../../interfaces/relationships';
 import { deleteRelationshipRequest } from '../../services/relationshipsService';
 import EntitiesTableOfTemplate from '../../common/EntitiesTableOfTemplate';
 import { AreYouSureDialog } from '../../common/dialogs/AreYouSureDialog';
+import { IPermissionsOfUser } from '../../services/permissionsService';
 
 import '../../css/pages.css';
 
@@ -30,6 +31,7 @@ const Entity: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> 
     const { data: expandedEntity } = useQuery(['getExpandedEntity', entityId], () => getExpandedEntityByIdRequest(entityId!));
 
     const categories = queryClient.getQueryData<IMongoCategory[]>('getCategories')!;
+    const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
 
     const [createRelationshipDialogState, setCreateRelationshipDialogState] = useState<{
         isOpen: boolean;
@@ -160,70 +162,85 @@ const Entity: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> 
                             ))}
                         </TabList>
                     </Box>
-                    {categoriesWithRelationshipTemplates?.map(({ _id, relationshipTemplates }, index) => (
-                        <TabPanel key={_id} value={String(index)} sx={{ padding: 0 }}>
-                            {relationshipTemplates?.map((currRelationshipTemplate) => {
-                                return (
-                                    <Grid key={currRelationshipTemplate._id}>
-                                        <Grid container item justifyContent="space-between">
-                                            <Grid item xs={3.5}>
-                                                <RelationshipTitle
-                                                    sourceEntityTemplateDisplayName={currRelationshipTemplate.sourceEntity.displayName}
-                                                    relationshipTemplateDisplayName={currRelationshipTemplate.displayName}
-                                                    destinationEntityTemplateDisplayName={currRelationshipTemplate.destinationEntity.displayName}
-                                                />
+                    {categoriesWithRelationshipTemplates?.map(({ _id, relationshipTemplates }, index) => {
+                        const disabled = Boolean(!myPermissions.instancesPermissions.find((instance) => instance.category === _id));
+                        return (
+                            <TabPanel key={_id} value={String(index)} sx={{ padding: 0 }}>
+                                {relationshipTemplates?.map((currRelationshipTemplate) => {
+                                    return (
+                                        <Grid key={currRelationshipTemplate._id}>
+                                            <Grid container item justifyContent="space-between">
+                                                <Grid item xs={3.5}>
+                                                    <RelationshipTitle
+                                                        sourceEntityTemplateDisplayName={currRelationshipTemplate.sourceEntity.displayName}
+                                                        relationshipTemplateDisplayName={currRelationshipTemplate.displayName}
+                                                        destinationEntityTemplateDisplayName={currRelationshipTemplate.destinationEntity.displayName}
+                                                    />
+                                                </Grid>
+                                                <Grid item>
+                                                    <IconButton
+                                                        disabled={disabled}
+                                                        onClick={() => {
+                                                            const { otherEntityTemplate, ...relationshipTemplatePopulated } =
+                                                                currRelationshipTemplate;
+                                                            setCreateRelationshipDialogState({
+                                                                isOpen: true,
+                                                                initialValues: {
+                                                                    relationshipTemplate: relationshipTemplatePopulated,
+                                                                    sourceEntity:
+                                                                        currentEntityTemplate._id === relationshipTemplatePopulated.sourceEntity._id
+                                                                            ? expandedEntity.entity
+                                                                            : null,
+                                                                    destinationEntity:
+                                                                        currentEntityTemplate._id ===
+                                                                        relationshipTemplatePopulated.destinationEntity._id
+                                                                            ? expandedEntity.entity
+                                                                            : null,
+                                                                },
+                                                            });
+                                                        }}
+                                                    >
+                                                        <AddCircle
+                                                            color={
+                                                                !myPermissions.instancesPermissions.find((instance) => instance.category === _id)
+                                                                    ? 'disabled'
+                                                                    : 'primary'
+                                                            }
+                                                            fontSize="large"
+                                                        />
+                                                    </IconButton>
+                                                </Grid>
                                             </Grid>
-                                            <Grid item>
-                                                <IconButton
-                                                    onClick={() => {
-                                                        const { otherEntityTemplate, ...relationshipTemplatePopulated } = currRelationshipTemplate;
-                                                        setCreateRelationshipDialogState({
-                                                            isOpen: true,
-                                                            initialValues: {
-                                                                relationshipTemplate: relationshipTemplatePopulated,
-                                                                sourceEntity:
-                                                                    currentEntityTemplate._id === relationshipTemplatePopulated.sourceEntity._id
-                                                                        ? expandedEntity.entity
-                                                                        : null,
-                                                                destinationEntity:
-                                                                    currentEntityTemplate._id === relationshipTemplatePopulated.destinationEntity._id
-                                                                        ? expandedEntity.entity
-                                                                        : null,
-                                                            },
-                                                        });
-                                                    }}
-                                                >
-                                                    <AddCircle color="primary" fontSize="large" />
-                                                </IconButton>
-                                            </Grid>
+                                            <EntitiesTableOfTemplate
+                                                template={currRelationshipTemplate.otherEntityTemplate}
+                                                showNavigateToRowButton
+                                                deleteRowButtonProps={{
+                                                    popoverText: i18next.t('entityPage.deleteRelationshipPopoverText'),
+                                                    onClick: (connectionToDelete) => {
+                                                        setDeleteRelationshipDialogState({ open: true, connectionToDelete });
+                                                    },
+                                                    disabled,
+                                                }}
+                                                disabledEntity={disabled}
+                                                getRowId={(connection) => {
+                                                    return connection.relationship.properties._id;
+                                                }}
+                                                getEntityPropertiesData={(connection) => connection.entity.properties}
+                                                rowModelType="clientSide"
+                                                rowData={expandedEntity.connections.filter(
+                                                    (connection) => connection.relationship.templateId === currRelationshipTemplate._id,
+                                                )}
+                                                height={360}
+                                                rowHeight={50}
+                                                fontSize="16px"
+                                                minColumnWidth={200}
+                                            />
                                         </Grid>
-                                        <EntitiesTableOfTemplate
-                                            template={currRelationshipTemplate.otherEntityTemplate}
-                                            showNavigateToRowButton
-                                            deleteRowButtonProps={{
-                                                popoverText: i18next.t('entityPage.deleteRelationshipPopoverText'),
-                                                onClick: (connectionToDelete) => {
-                                                    setDeleteRelationshipDialogState({ open: true, connectionToDelete });
-                                                },
-                                            }}
-                                            getRowId={(connection) => {
-                                                return connection.relationship.properties._id;
-                                            }}
-                                            getEntityPropertiesData={(connection) => connection.entity.properties}
-                                            rowModelType="clientSide"
-                                            rowData={expandedEntity.connections.filter(
-                                                (connection) => connection.relationship.templateId === currRelationshipTemplate._id,
-                                            )}
-                                            height={360}
-                                            rowHeight={50}
-                                            fontSize="16px"
-                                            minColumnWidth={200}
-                                        />
-                                    </Grid>
-                                );
-                            })}
-                        </TabPanel>
-                    ))}
+                                    );
+                                })}
+                            </TabPanel>
+                        );
+                    })}
                 </TabContext>
             </Grid>
             <CreateRelationshipDialog

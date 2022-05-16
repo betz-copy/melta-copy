@@ -27,7 +27,7 @@ type SideBarProps = {
 const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
     const queryClient = useQueryClient();
     const categories = queryClient.getQueryData<IMongoCategory[]>('getCategories')!;
-    const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions');
+    const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
 
     const [isMyPermissionsDialogOpen, setIsMyPermissionsDialogOpen] = useState<boolean>(false);
 
@@ -60,7 +60,13 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                 >
                     {categories?.map((category) => {
                         return (
-                            <NavButton key={category._id} to={`/category/${category._id}`} text={category.displayName} isDrawerOpen={isDrawerOpen}>
+                            <NavButton
+                                key={category._id}
+                                to={`/category/${category._id}`}
+                                text={category.displayName}
+                                isDrawerOpen={isDrawerOpen}
+                                disabled={Boolean(!myPermissions.instancesPermissions.find((instance) => instance.category === category._id))}
+                            >
                                 {category?.iconFileId ? (
                                     <CustomIcon iconUrl={category.iconFileId} height="40px" width="40px" />
                                 ) : (
@@ -78,11 +84,13 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                         <PublicIcon fontSize="large" />
                     </NavButton>
 
-                    <NavButton to="/system-management" text={i18next.t('pages.systemManagement')} isDrawerOpen={isDrawerOpen}>
-                        <WidgetsIcon fontSize="large" />
-                    </NavButton>
+                    {myPermissions.templatesManagementId && (
+                        <NavButton to="/system-management" text="System Management" isDrawerOpen={isDrawerOpen}>
+                            <WidgetsIcon fontSize="large" />
+                        </NavButton>
+                    )}
 
-                    {myPermissions?.permissionsManagementId && (
+                    {myPermissions.permissionsManagementId && (
                         <NavButton
                             to="/permissions-management"
                             text={i18next.t('permissions.permissionsManagmentPageTitle')}

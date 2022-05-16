@@ -11,6 +11,7 @@ import { IEntity, IEntityExpanded } from '../../../interfaces/entities';
 import { updateEntityRequest, deleteEntityRequest } from '../../../services/entitiesService';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
 import { EntityProperties } from '../../../common/EntityProperties';
+import { IPermissionsOfUser } from '../../../services/permissionsService';
 
 const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; expandedEntity: IEntityExpanded }> = ({
     entityTemplate,
@@ -22,6 +23,8 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
     const [isEditMode, setIsEditMode] = useState(false);
     const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
     const [updateValues, setUpdateValues] = useState(entity.properties);
+
+    const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
 
     const closeDeleteDialog = () => {
         setOpenDeleteDialog(false);
@@ -56,6 +59,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
             },
         },
     );
+    const disabled = Boolean(!myPermissions.instancesPermissions.find((instance) => instance.category === entityTemplate.category._id));
 
     return (
         <Card>
@@ -92,10 +96,10 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                                 <IconButton onClick={() => navigate(`/entity/${entity.properties._id}/graph`, { state: expandedEntity })}>
                                     <GraphIcon />
                                 </IconButton>
-                                <IconButton onClick={() => setIsEditMode(true)}>
+                                <IconButton disabled={disabled} onClick={() => setIsEditMode(true)}>
                                     <EditIcon />
                                 </IconButton>
-                                <IconButton onClick={() => setOpenDeleteDialog(true)}>
+                                <IconButton disabled={disabled} onClick={() => setOpenDeleteDialog(true)}>
                                     <DeleteIcon />
                                 </IconButton>
                             </Grid>

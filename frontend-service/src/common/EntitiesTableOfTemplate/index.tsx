@@ -88,7 +88,9 @@ type EntitiesTableOfTemplateProps<Data> = {
     deleteRowButtonProps?: {
         onClick: (data: Data) => void;
         popoverText: string;
+        disabled: boolean;
     };
+    disabledEntity?: boolean;
     getRowId: (data: Data) => string;
     getEntityPropertiesData: (data: Data) => IEntity['properties'];
     rowModelType: 'serverSide' | 'clientSide';
@@ -108,6 +110,7 @@ const EntitiesTableOfTemplate = forwardRef(
             onRowSelected,
             showNavigateToRowButton,
             deleteRowButtonProps,
+            disabledEntity,
             getRowId,
             getEntityPropertiesData,
             rowModelType,
@@ -137,6 +140,7 @@ const EntitiesTableOfTemplate = forwardRef(
             actionsColumnId,
             getEntityPropertiesData,
             !showNavigateToRowButton ? undefined : (data) => navigate(`/entity/${getEntityPropertiesData(data)._id}`),
+            disabledEntity,
             deleteRowButtonProps,
         );
 

@@ -5,9 +5,18 @@ import rtlPlugin from 'stylis-plugin-rtl';
 import { CacheProvider } from '@emotion/react';
 import createCache from '@emotion/cache';
 import { prefixer } from 'stylis';
+import { useQueryClient } from 'react-query';
 import { SideBar } from './common/sideBar';
 import { MainBox } from './Main.styled';
 import { TopBar } from './common/TopBar';
+import { IPermissionsOfUser } from './services/permissionsService';
+import { IMongoEntityTemplatePopulated } from './interfaces/entityTemplates';
+import {
+    PermissionsManagementProtectedRoute,
+    SystemManagementProtectedRoute,
+    EntityProtectedRoute,
+    CategoryProtectedRoute,
+} from './utils/ProtectedRoutes';
 
 const Home = lazy(() => import('./pages/Home'));
 const Category = lazy(() => import('./pages/Category'));
@@ -25,6 +34,10 @@ const cacheRtl = createCache({
 const Main = () => {
     const [open, setOpen] = useState(false);
     const [title, setTitle] = useState('');
+    const queryClient = useQueryClient();
+
+    const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
+    const entityTemplates = queryClient.getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates')!;
 
     const toggleDrawer = () => {
         setOpen(!open);
@@ -41,13 +54,47 @@ const Main = () => {
                         <Box>
                             <Suspense fallback={<div />}>
                                 <Routes>
-                                    <Route path="/system-management" element={<SystemManagement setTitle={setTitle} />} />
-                                    <Route path="/permissions-management" element={<PermissionsManagement setTitle={setTitle} />} />
+                                    <Route
+                                        path="/system-management"
+                                        element={
+                                            <SystemManagementProtectedRoute permissions={myPermissions}>
+                                                <SystemManagement setTitle={setTitle} />
+                                            </SystemManagementProtectedRoute>
+                                        }
+                                    />
+                                    <Route
+                                        path="/permissions-management"
+                                        element={
+                                            <PermissionsManagementProtectedRoute permissions={myPermissions}>
+                                                <PermissionsManagement setTitle={setTitle} />
+                                            </PermissionsManagementProtectedRoute>
+                                        }
+                                    />
                                     <Route path="/unavailable" element={<Unavailable setTitle={setTitle} />} />
-                                    <Route path="/category/:categoryId" element={<Category setTitle={setTitle} />} />
-                                    <Route path="/graph/:entityId" element={<Home setTitle={setTitle} />} />
-                                    <Route path="/entity/:entityId" element={<Entity setTitle={setTitle} />} />
-                                    <Route path="/entity/:entityId/graph" element={<Graph setTitle={setTitle} />} />
+                                    <Route
+                                        path="/category/:categoryId"
+                                        element={
+                                            <CategoryProtectedRoute permissions={myPermissions}>
+                                                <Category setTitle={setTitle} />
+                                            </CategoryProtectedRoute>
+                                        }
+                                    />
+                                    <Route
+                                        path="/entity/:entityId"
+                                        element={
+                                            <EntityProtectedRoute permissions={myPermissions} entityTemplates={entityTemplates}>
+                                                <Entity setTitle={setTitle} />
+                                            </EntityProtectedRoute>
+                                        }
+                                    />
+                                    <Route
+                                        path="/entity/:entityId/graph"
+                                        element={
+                                            <EntityProtectedRoute permissions={myPermissions} entityTemplates={entityTemplates}>
+                                                <Graph setTitle={setTitle} />
+                                            </EntityProtectedRoute>
+                                        }
+                                    />
                                     <Route path="/" element={<Home setTitle={setTitle} />} />
                                     <Route path="*" element={<h1>404</h1>} />
                                 </Routes>

@@ -48,6 +48,7 @@ export default {
     pages: {
         home: 'בית',
         systemManagement: 'ניהול מערכת',
+        unavailable: 'המערכת אינה זמינה',
     },
     systemManagement: {
         search: 'חיפוש',

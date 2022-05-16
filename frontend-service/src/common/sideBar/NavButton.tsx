@@ -2,11 +2,17 @@ import React, { cloneElement, isValidElement } from 'react';
 import { ListItemButton } from '@mui/material';
 import { StyledLink, StyledListItemText } from './NavBar.styled';
 
-const NavButton: React.FC<{ to: string; isDrawerOpen: boolean; text: string }> = ({ to, isDrawerOpen, text, children }) => {
+const NavButton: React.FC<{ to: string; isDrawerOpen: boolean; text: string; disabled?: boolean }> = ({
+    to,
+    isDrawerOpen,
+    text,
+    children,
+    disabled = false,
+}) => {
     return (
-        <StyledLink to={to}>
+        <StyledLink to={to} disabled={disabled}>
             {({ isActive }) => (
-                <ListItemButton style={{ justifyContent: 'space-around', direction: 'rtl' }}>
+                <ListItemButton disabled={disabled} style={{ justifyContent: 'space-around', direction: 'rtl' }}>
                     {isValidElement(children) &&
                         cloneElement(children, {
                             style: {

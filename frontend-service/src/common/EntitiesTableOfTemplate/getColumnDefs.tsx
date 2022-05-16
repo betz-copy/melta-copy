@@ -12,9 +12,11 @@ export const getColumnDefs = <Data extends any>(
     actionsColumnId: string,
     getEntityPropertiesData: (data: Data) => IEntity['properties'],
     onNavigateToRow: ((entity: Data) => void) | undefined,
+    disabledEntity?: boolean,
     deleteRowButtonProps?: {
         onClick: (entity: Data) => void;
         popoverText: string;
+        disabled: boolean;
     },
 ) => {
     const columnDefs = Object.entries(template.properties.properties).map(([key, value]) => {
@@ -42,6 +44,7 @@ export const getColumnDefs = <Data extends any>(
                         <div>
                             {onNavigateToRow && (
                                 <IconButtonWithPopoverText
+                                    disabled={disabledEntity}
                                     iconButtonProps={{
                                         onClick: () => onNavigateToRow(data),
                                     }}
@@ -56,6 +59,7 @@ export const getColumnDefs = <Data extends any>(
                             )}
                             {deleteRowButtonProps && (
                                 <IconButtonWithPopoverText
+                                    disabled={deleteRowButtonProps.disabled}
                                     popoverText={deleteRowButtonProps.popoverText}
                                     iconButtonProps={{
                                         onClick: () => deleteRowButtonProps.onClick(data),

@@ -4,7 +4,8 @@ import { Box, IconButton, Popover, Typography } from '@mui/material';
 const IconButtonWithPopoverText: React.FC<{
     iconButtonProps: Omit<React.ComponentProps<typeof IconButton>, 'onMouseEnter' | 'onMouseLeave'>;
     popoverText: string;
-}> = ({ children, iconButtonProps, popoverText }) => {
+    disabled?: boolean;
+}> = ({ children, iconButtonProps, popoverText, disabled }) => {
     const [anchorEl, setAnchorEl] = React.useState<HTMLElement | null>(null);
 
     const closePopover = () => setAnchorEl(null);
@@ -14,7 +15,7 @@ const IconButtonWithPopoverText: React.FC<{
 
     return (
         <Box sx={{ display: 'inline' }}>
-            <IconButton {...iconButtonProps} onMouseEnter={openPopover} onMouseLeave={closePopover}>
+            <IconButton disabled={disabled} {...iconButtonProps} onMouseEnter={openPopover} onMouseLeave={closePopover}>
                 {children}
             </IconButton>
             <Popover
