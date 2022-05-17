@@ -44,11 +44,15 @@ export const getColumnDefs = <Data extends any>(
                         <div>
                             {onNavigateToRow && (
                                 <IconButtonWithPopoverText
-                                    disabled={disabledEntity}
                                     iconButtonProps={{
+                                        disabled: disabledEntity,
                                         onClick: () => onNavigateToRow(data),
                                     }}
-                                    popoverText={i18next.t('entitiesTableOfTemplate.navigateToEntityPage')}
+                                    popoverText={
+                                        disabledEntity
+                                            ? i18next.t('permissions.dontHavePermissionsToCategory')
+                                            : i18next.t('entitiesTableOfTemplate.navigateToEntityPage')
+                                    }
                                 >
                                     <ReadMoreIcon
                                         style={{
@@ -59,9 +63,9 @@ export const getColumnDefs = <Data extends any>(
                             )}
                             {deleteRowButtonProps && (
                                 <IconButtonWithPopoverText
-                                    disabled={deleteRowButtonProps.disabled}
                                     popoverText={deleteRowButtonProps.popoverText}
                                     iconButtonProps={{
+                                        disabled: deleteRowButtonProps.disabled,
                                         onClick: () => deleteRowButtonProps.onClick(data),
                                     }}
                                 >

@@ -12,6 +12,7 @@ import { updateEntityRequest, deleteEntityRequest } from '../../../services/enti
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
 import { EntityProperties } from '../../../common/EntityProperties';
 import { IPermissionsOfUser } from '../../../services/permissionsService';
+import IconButtonWithPopoverText from '../../../common/IconButtonWithPopover';
 
 const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; expandedEntity: IEntityExpanded }> = ({
     entityTemplate,
@@ -96,12 +97,20 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                                 <IconButton onClick={() => navigate(`/entity/${entity.properties._id}/graph`, { state: expandedEntity })}>
                                     <GraphIcon />
                                 </IconButton>
-                                <IconButton disabled={disabled} onClick={() => setIsEditMode(true)}>
+                                <IconButtonWithPopoverText
+                                    popoverText={i18next.t('permissions.dontHavePermissionsToCategory')}
+                                    disabledToolTip={!disabled}
+                                    iconButtonProps={{ onClick: () => setIsEditMode(true), disabled }}
+                                >
                                     <EditIcon />
-                                </IconButton>
-                                <IconButton disabled={disabled} onClick={() => setOpenDeleteDialog(true)}>
+                                </IconButtonWithPopoverText>
+                                <IconButtonWithPopoverText
+                                    popoverText={i18next.t('permissions.dontHavePermissionsToCategory')}
+                                    disabledToolTip={!disabled}
+                                    iconButtonProps={{ onClick: () => setOpenDeleteDialog(true), disabled }}
+                                >
                                     <DeleteIcon />
-                                </IconButton>
+                                </IconButtonWithPopoverText>
                             </Grid>
                         )}
                     </Grid>

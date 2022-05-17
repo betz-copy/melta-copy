@@ -1,43 +1,17 @@
 import React from 'react';
-import { Box, IconButton, Popover, Typography } from '@mui/material';
+import { IconButton, Tooltip } from '@mui/material';
 
 const IconButtonWithPopoverText: React.FC<{
-    iconButtonProps: Omit<React.ComponentProps<typeof IconButton>, 'onMouseEnter' | 'onMouseLeave'>;
+    iconButtonProps: React.ComponentProps<typeof IconButton>;
     popoverText: string;
-    disabled?: boolean;
-}> = ({ children, iconButtonProps, popoverText, disabled }) => {
-    const [anchorEl, setAnchorEl] = React.useState<HTMLElement | null>(null);
-
-    const closePopover = () => setAnchorEl(null);
-    const openPopover = (event: React.MouseEvent<HTMLElement>) => {
-        setAnchorEl(event.currentTarget);
-    };
-
+    disabledToolTip?: boolean;
+}> = ({ children, iconButtonProps, popoverText, disabledToolTip = false }) => {
     return (
-        <Box sx={{ display: 'inline' }}>
-            <IconButton disabled={disabled} {...iconButtonProps} onMouseEnter={openPopover} onMouseLeave={closePopover}>
-                {children}
-            </IconButton>
-            <Popover
-                open={Boolean(anchorEl)}
-                anchorEl={anchorEl}
-                anchorOrigin={{
-                    vertical: 'bottom',
-                    horizontal: 'center',
-                }}
-                transformOrigin={{
-                    vertical: 'top',
-                    horizontal: 'center',
-                }}
-                onClose={closePopover}
-                disableRestoreFocus
-                sx={{
-                    pointerEvents: 'none',
-                }}
-            >
-                <Typography sx={{ padding: '5px' }}>{popoverText}</Typography>
-            </Popover>
-        </Box>
+        <Tooltip title={popoverText} followCursor disableHoverListener={disabledToolTip}>
+            <span>
+                <IconButton {...iconButtonProps}>{children}</IconButton>
+            </span>
+        </Tooltip>
     );
 };
 

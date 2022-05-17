@@ -5,10 +5,9 @@ const StyledListItemText = styled(ListItemText)({
     marginLeft: '20px',
 });
 
-const StyledLink = styled(NavLink)<{ disabled: boolean }>(({ disabled }) => ({
+const StyledLink = styled(NavLink)({
     textDecoration: 'none',
     color: 'inherit',
-    pointerEvents: disabled ? 'none' : 'auto',
-}));
+});
 
 export { StyledListItemText, StyledLink };

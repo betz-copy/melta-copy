@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Box, CircularProgress, Grid, IconButton, Tab } from '@mui/material';
+import { Box, CircularProgress, Grid, Tab } from '@mui/material';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { useParams } from 'react-router-dom';
 import { AddCircle } from '@mui/icons-material';
@@ -22,6 +22,7 @@ import { AreYouSureDialog } from '../../common/dialogs/AreYouSureDialog';
 import { IPermissionsOfUser } from '../../services/permissionsService';
 
 import '../../css/pages.css';
+import IconButtonWithPopoverText from '../../common/IconButtonWithPopover';
 
 const Entity: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> }> = ({ setTitle }) => {
     const params = useParams();
@@ -178,26 +179,31 @@ const Entity: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> 
                                                     />
                                                 </Grid>
                                                 <Grid item>
-                                                    <IconButton
-                                                        disabled={disabled}
-                                                        onClick={() => {
-                                                            const { otherEntityTemplate, ...relationshipTemplatePopulated } =
-                                                                currRelationshipTemplate;
-                                                            setCreateRelationshipDialogState({
-                                                                isOpen: true,
-                                                                initialValues: {
-                                                                    relationshipTemplate: relationshipTemplatePopulated,
-                                                                    sourceEntity:
-                                                                        currentEntityTemplate._id === relationshipTemplatePopulated.sourceEntity._id
-                                                                            ? expandedEntity.entity
-                                                                            : null,
-                                                                    destinationEntity:
-                                                                        currentEntityTemplate._id ===
-                                                                        relationshipTemplatePopulated.destinationEntity._id
-                                                                            ? expandedEntity.entity
-                                                                            : null,
-                                                                },
-                                                            });
+                                                    <IconButtonWithPopoverText
+                                                        popoverText={i18next.t('permissions.dontHavePermissionsToCategory')}
+                                                        disabledToolTip={!disabled}
+                                                        iconButtonProps={{
+                                                            disabled,
+                                                            onClick: () => {
+                                                                const { otherEntityTemplate, ...relationshipTemplatePopulated } =
+                                                                    currRelationshipTemplate;
+                                                                setCreateRelationshipDialogState({
+                                                                    isOpen: true,
+                                                                    initialValues: {
+                                                                        relationshipTemplate: relationshipTemplatePopulated,
+                                                                        sourceEntity:
+                                                                            currentEntityTemplate._id ===
+                                                                            relationshipTemplatePopulated.sourceEntity._id
+                                                                                ? expandedEntity.entity
+                                                                                : null,
+                                                                        destinationEntity:
+                                                                            currentEntityTemplate._id ===
+                                                                            relationshipTemplatePopulated.destinationEntity._id
+                                                                                ? expandedEntity.entity
+                                                                                : null,
+                                                                    },
+                                                                });
+                                                            },
                                                         }}
                                                     >
                                                         <AddCircle
@@ -208,14 +214,16 @@ const Entity: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> 
                                                             }
                                                             fontSize="large"
                                                         />
-                                                    </IconButton>
+                                                    </IconButtonWithPopoverText>
                                                 </Grid>
                                             </Grid>
                                             <EntitiesTableOfTemplate
                                                 template={currRelationshipTemplate.otherEntityTemplate}
                                                 showNavigateToRowButton
                                                 deleteRowButtonProps={{
-                                                    popoverText: i18next.t('entityPage.deleteRelationshipPopoverText'),
+                                                    popoverText: disabled
+                                                        ? i18next.t('permissions.dontHavePermissionsToCategory')
+                                                        : i18next.t('entityPage.deleteRelationshipPopoverText'),
                                                     onClick: (connectionToDelete) => {
                                                         setDeleteRelationshipDialogState({ open: true, connectionToDelete });
                                                     },

@@ -49,6 +49,7 @@ export default {
         home: 'בית',
         systemManagement: 'ניהול מערכת',
         unavailable: 'המערכת אינה זמינה',
+        permissionsManagement: 'ניהול הרשאות ',
     },
     systemManagement: {
         search: 'חיפוש',
@@ -81,6 +82,7 @@ export default {
         failedToDeleteUser: 'נכשל למחוק הרשאות של משתמש',
         succeededToDeleteUser: 'נמחק הרשאות של משתמש בהצלחה',
         failedToLoadAllPermissions: 'נכשל לטעון את כל ההרשאות',
+        dontHavePermissionsToCategory: 'אין הרשאות לקטגוריה',
         permissionsOfUserDialog: {
             readTitle: 'ההרשאות שלי',
             createTitle: 'הוסף משתמש',
@@ -92,7 +94,7 @@ export default {
             failedToEditPermissionsOfUser: 'נכשל לערוך הרשאות של משתמש',
             succeededToCreatePermission: 'נוצר הרשאות משתמש בהצלחה',
             succeededToUpdatePermission: 'עודכן הרשאות משתמש בהצלחה',
-            userAlreadyExistOnCreateMessage: 'היוזר כבר קיים',
+            userAlreadyExistOnCreateMessage: 'המשתמש כבר קיים',
             managementTitle: 'ניהול',
             permissionsManagement: 'ניהול הרשאות',
             templatesManagement: 'ניהול תבניות',

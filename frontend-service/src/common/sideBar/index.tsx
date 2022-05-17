@@ -85,7 +85,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                     </NavButton>
 
                     {myPermissions.templatesManagementId && (
-                        <NavButton to="/system-management" text="System Management" isDrawerOpen={isDrawerOpen}>
+                        <NavButton to="/system-management" text={i18next.t('pages.systemManagement')} isDrawerOpen={isDrawerOpen}>
                             <WidgetsIcon fontSize="large" />
                         </NavButton>
                     )}
