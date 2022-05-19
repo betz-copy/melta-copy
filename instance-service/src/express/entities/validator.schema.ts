@@ -23,12 +23,12 @@ export const deleteEntityByIdRequestSchema = Joi.object({
 });
 
 // DELETE /api/entities/:templateId
-export const deleteEntityByTemplateIdRequestSchema = Joi.object({
-    query: {
+export const deleteEntitiesByTemplateIdRequestSchema = Joi.object({
+    query: {},
+    body: {},
+    params: {
         templateId: Joi.string().required(),
     },
-    body: {},
-    params: {},
 });
 
 // POST /api/entities

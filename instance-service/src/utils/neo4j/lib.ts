@@ -106,3 +106,12 @@ export const generateDefaultProperties = () => {
         updatedAt: timestamp,
     };
 };
+
+/**
+ *
+ * @param date
+ * @returns Date in YYYY-MM-DD Format
+ */
+export const formatDate = (date: string) => {
+    return new Date(date).toISOString().slice(0, 10);
+};

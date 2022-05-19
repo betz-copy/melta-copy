@@ -5,7 +5,7 @@ import ValidateRequest from '../../utils/joi';
 import { addStringFieldsAndNormalizeDateValues, validateEntity } from './validator.template';
 import {
     deleteEntityByIdRequestSchema,
-    deleteEntityByTemplateIdRequestSchema,
+    deleteEntitiesByTemplateIdRequestSchema,
     createEntityRequestSchema,
     getEntityByIdRequestSchema,
     updateEntityByIdRequestSchema,
@@ -24,7 +24,11 @@ entityRouter.post(
 entityRouter.post('/search', ValidateRequest(getEntitiesRequestSchema), wrapController(EntityController.getEntities));
 entityRouter.get('/:id', ValidateRequest(getEntityByIdRequestSchema), wrapController(EntityController.getEntityById));
 entityRouter.delete('/:id', ValidateRequest(deleteEntityByIdRequestSchema), wrapController(EntityController.deleteEntityById));
-entityRouter.delete('/', ValidateRequest(deleteEntityByTemplateIdRequestSchema), wrapController(EntityController.deleteEntitiesByTemplateId));
+entityRouter.delete(
+    '/:templateId',
+    ValidateRequest(deleteEntitiesByTemplateIdRequestSchema),
+    wrapController(EntityController.deleteEntitiesByTemplateId),
+);
 entityRouter.put(
     '/:id',
     ValidateRequest(updateEntityByIdRequestSchema),

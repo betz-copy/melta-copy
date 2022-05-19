@@ -1,4 +1,5 @@
 import assert from 'assert';
+import { formatDate } from './neo4j/lib';
 
 export interface IAGGridTextFilter {
     filterType: 'text';
@@ -46,9 +47,13 @@ const isBoolean = (value: string) => value === 'true' || value === 'false';
 
 export const setFilterToQuery = (field: string, { values }: IAGGridSetFilter) => {
     const valuesWithoutNulls = values.filter(Boolean) as string[];
-    const nullFieldCheck = values.includes(null) ? `node.${field} IS NULL OR` : ``;
+    const valuesQuery = valuesWithoutNulls.map((value) => (isBoolean(value) ? `${value}` : `'${value}'`)).join(',');
 
-    return `${nullFieldCheck} node.${field} IN [${valuesWithoutNulls.map((value) => (isBoolean(value) ? `${value}` : `'${value}'`)).join(',')}]`;
+    if (values.includes(null)) {
+        return `((node.${field} IS NULL) OR (node.${field} IN [${valuesQuery}]))`;
+    }
+
+    return `node.${field} IN [${valuesQuery}]`;
 };
 
 export const textFilterToQuery = (field: string, { type, filter }: IAGGridTextFilter) => {
@@ -98,15 +103,6 @@ export const numberFilterToQuery = (field: string, { type, filter, filterTo }: I
         default:
             throw new Error('Invalid supported ag-grid filter type method');
     }
-};
-
-/**
- *
- * @param date
- * @returns Date in YYYY-MM-DD Format
- */
-const formatDate = (date: string) => {
-    return new Date(date).toISOString().slice(0, 10);
 };
 
 export const dateFilterToQuery = (field: string, { type, dateFrom: dateFromString, dateTo: dateToString }: IAGGridDateFilter) => {

@@ -89,13 +89,13 @@ export class EntityManager {
             );
 
             if (!node) {
-                throw new NotFoundError(`[NEO4J] entity '${id}' not found`);
+                throw new NotFoundError(`[NEO4J] entity "${id}" not found`);
             }
 
             return id;
         } catch (error) {
             if (error instanceof Neo4jError && error.code === 'Neo.ClientError.Schema.ConstraintValidationFailed') {
-                throw new ServiceError(400, `[NEO4J] entity '${id}' has existing relationships. Delete them first.`);
+                throw new ServiceError(400, `[NEO4J] entity "${id}" has existing relationships. Delete them first.`);
             }
 
             throw error;
