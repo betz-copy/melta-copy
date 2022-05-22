@@ -70,7 +70,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                                 {category?.iconFileId ? (
                                     <CustomIcon iconUrl={category.iconFileId} height="40px" width="40px" />
                                 ) : (
-                                    <HiveIcon fontSize="large" />
+                                    <HiveIcon fontSize="large" sx={{ color: 'white' }} />
                                 )}
                             </NavButton>
                         );
@@ -81,12 +81,12 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                     <Divider />
 
                     <NavButton to="/" text={i18next.t('pages.home')} isDrawerOpen={isDrawerOpen}>
-                        <PublicIcon fontSize="large" />
+                        <PublicIcon fontSize="large" sx={{ color: 'white' }} />
                     </NavButton>
 
                     {myPermissions.templatesManagementId && (
                         <NavButton to="/system-management" text={i18next.t('pages.systemManagement')} isDrawerOpen={isDrawerOpen}>
-                            <WidgetsIcon fontSize="large" />
+                            <WidgetsIcon fontSize="large" sx={{ color: 'white' }} />
                         </NavButton>
                     )}
 
@@ -96,14 +96,14 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                             text={i18next.t('permissions.permissionsManagmentPageTitle')}
                             isDrawerOpen={isDrawerOpen}
                         >
-                            <ManageAccountsIcon fontSize="large" />
+                            <ManageAccountsIcon fontSize="large" sx={{ color: 'white' }} />
                         </NavButton>
                     )}
 
                     <Divider />
 
                     <Grid item container direction="column" alignItems="center">
-                        <IconButton onClick={toggleDrawer} size="large" sx={{ color: '#A9A9A9' }}>
+                        <IconButton onClick={toggleDrawer} size="large" sx={{ color: 'white' }}>
                             {isDrawerOpen ? <ChevronRightIcon /> : <ChevronLeftIcon />}
                         </IconButton>
                     </Grid>

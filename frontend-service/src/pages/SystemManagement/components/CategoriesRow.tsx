@@ -59,7 +59,7 @@ const CategoriesRow: React.FC<{ categories: IMongoCategory[] }> = ({ categories 
                         title={category.displayName}
                         icon={
                             category.iconFileId ? (
-                                <CustomIcon iconUrl={category.iconFileId} height="40px" width="40px" />
+                                <CustomIcon iconUrl={category.iconFileId} height="40px" width="40px" style={{ filter: 'invert(100%)' }} />
                             ) : (
                                 <HiveIcon fontSize="large" />
                             )
