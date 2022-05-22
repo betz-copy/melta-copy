@@ -3,7 +3,7 @@ import * as Yup from 'yup';
 import { FieldArray, getIn } from 'formik';
 import { Box, Button, Grid, TextField, Card, CardContent, IconButton, FormControlLabel, Switch } from '@mui/material';
 import { Delete as DeleteIcon } from '@mui/icons-material';
-import { useQuery } from 'react-query';
+import { useQuery, useQueryClient } from 'react-query';
 import i18next from 'i18next';
 import { StepComponentProps } from '../index';
 import { EntityTemplateWizardValues } from './index';
@@ -20,8 +20,15 @@ const attachmentsFieldSchema = {
     ),
 };
 
-const AttachmentsField: React.FC<StepComponentProps<EntityTemplateWizardValues>> = ({ values, touched, errors, handleChange, isEditMode }) => {
-    const [disabled, setDisabled] = React.useState(!!isEditMode);
+const AttachmentsField: React.FC<StepComponentProps<EntityTemplateWizardValues>> = ({
+    values,
+    touched,
+    errors,
+    handleChange,
+    isEditMode,
+    initialValues,
+}) => {
+    const queryClient = useQueryClient();
 
     useQuery(
         ['isThereInstancesByTemplateId', (values as EntityTemplateWizardValues & { _id: string })._id],
@@ -34,11 +41,15 @@ const AttachmentsField: React.FC<StepComponentProps<EntityTemplateWizardValues>>
             }),
         {
             enabled: isEditMode,
-            onSuccess: (data) => {
-                setDisabled(Boolean(isEditMode && data?.lastRowIndex > 0));
-            },
+            initialData: { lastRowIndex: 0, rows: [] },
         },
     );
+
+    const areThereAnyInstances =
+        queryClient.getQueryData<{ lastRowIndex: number }>([
+            'isThereInstancesByTemplateId',
+            (values as EntityTemplateWizardValues & { _id: string })._id,
+        ])!.lastRowIndex > 0;
 
     return (
         <FieldArray name="attachmentProperties">
@@ -55,6 +66,7 @@ const AttachmentsField: React.FC<StepComponentProps<EntityTemplateWizardValues>>
                             const errorTitle = getIn(errors, title);
 
                             const required = `attachmentProperties[${index}].required`;
+                            const isNewProperty = Boolean(initialValues.properties.find((property) => property.name === p.name));
 
                             return (
                                 <Grid item key={name}>
@@ -62,10 +74,19 @@ const AttachmentsField: React.FC<StepComponentProps<EntityTemplateWizardValues>>
                                         <CardContent>
                                             <Grid container margin={1} justifyContent="space-between">
                                                 <FormControlLabel
-                                                    control={<Switch onChange={handleChange} name={required} />}
+                                                    control={
+                                                        <Switch
+                                                            disabled={isEditMode && areThereAnyInstances}
+                                                            onChange={handleChange}
+                                                            name={required}
+                                                        />
+                                                    }
                                                     label={i18next.t('validation.required') as string}
                                                 />
-                                                <IconButton disabled={disabled} onClick={() => remove(index)}>
+                                                <IconButton
+                                                    disabled={isEditMode && areThereAnyInstances && isNewProperty}
+                                                    onClick={() => remove(index)}
+                                                >
                                                     <DeleteIcon />
                                                 </IconButton>
                                             </Grid>
@@ -77,7 +98,7 @@ const AttachmentsField: React.FC<StepComponentProps<EntityTemplateWizardValues>>
                                                     onChange={handleChange}
                                                     error={touchedName && Boolean(errorName)}
                                                     helperText={touchedName && errorName}
-                                                    disabled={disabled}
+                                                    disabled={isEditMode && isNewProperty}
                                                 />
                                             </Box>
                                             <Box margin={1}>
@@ -87,7 +108,6 @@ const AttachmentsField: React.FC<StepComponentProps<EntityTemplateWizardValues>>
                                                     value={p.title}
                                                     onChange={handleChange}
                                                     error={touchedTitle && Boolean(errorTitle)}
-                                                    disabled={disabled}
                                                     helperText={touchedTitle && errorTitle}
                                                 />
                                             </Box>
@@ -99,7 +119,6 @@ const AttachmentsField: React.FC<StepComponentProps<EntityTemplateWizardValues>>
                     </Grid>
                     <Button
                         type="button"
-                        disabled={disabled}
                         variant="contained"
                         style={{ margin: '8px' }}
                         onClick={() => push({ name: '', title: '', required: false })}

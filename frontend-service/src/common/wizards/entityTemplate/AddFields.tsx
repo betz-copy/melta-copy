@@ -5,7 +5,7 @@ import { Field, FieldArray, getIn } from 'formik';
 import * as Yup from 'yup';
 import i18next from 'i18next';
 import { Delete as DeleteIcon } from '@mui/icons-material';
-import { useQuery } from 'react-query';
+import { useQuery, useQueryClient } from 'react-query';
 import { englishValidation } from '../../../utils/validation';
 import { EntityTemplateWizardValues } from './index';
 import { StepComponentProps } from '../index';
@@ -29,8 +29,15 @@ const addFieldsSchema = {
         .required(i18next.t('validation.required')),
 };
 
-const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues>> = ({ values, touched, errors, handleChange, isEditMode }) => {
-    const [disabled, setDisabled] = React.useState(!!isEditMode);
+const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues>> = ({
+    values,
+    touched,
+    errors,
+    handleChange,
+    isEditMode,
+    initialValues,
+}) => {
+    const queryClient = useQueryClient();
 
     useQuery(
         ['isThereInstancesByTemplateId', (values as EntityTemplateWizardValues & { _id: string })._id],
@@ -43,11 +50,15 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues>> = ({ v
             }),
         {
             enabled: isEditMode,
-            onSuccess: (data) => {
-                setDisabled(Boolean(isEditMode && data?.lastRowIndex > 0));
-            },
+            initialData: { lastRowIndex: 0, rows: [] },
         },
     );
+
+    const areThereAnyInstances =
+        queryClient.getQueryData<{ lastRowIndex: number }>([
+            'isThereInstancesByTemplateId',
+            (values as EntityTemplateWizardValues & { _id: string })._id,
+        ])!.lastRowIndex > 0;
 
     return (
         <FieldArray name="properties">
@@ -68,6 +79,7 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues>> = ({ v
                             const errorType = getIn(errors, type);
 
                             const required = `properties[${index}].required`;
+                            const isNewProperty = Boolean(initialValues.properties.find((property) => property.name === p.name));
 
                             return (
                                 <Grid item key={name}>
@@ -82,12 +94,15 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues>> = ({ v
                                                             component={Switch}
                                                             onChange={handleChange}
                                                             checked={p.required}
-                                                            disabled={disabled}
+                                                            disabled={isEditMode && areThereAnyInstances}
                                                         />
                                                     }
                                                     label={i18next.t('validation.required') as string}
                                                 />
-                                                <IconButton disabled={disabled} onClick={() => remove(index)}>
+                                                <IconButton
+                                                    disabled={isEditMode && areThereAnyInstances && isNewProperty}
+                                                    onClick={() => remove(index)}
+                                                >
                                                     <DeleteIcon />
                                                 </IconButton>
                                             </Grid>
@@ -99,7 +114,7 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues>> = ({ v
                                                     onChange={handleChange}
                                                     error={touchedName && Boolean(errorName)}
                                                     helperText={touchedName && errorName}
-                                                    disabled={disabled}
+                                                    disabled={isEditMode && isNewProperty}
                                                 />
                                             </Box>
                                             <Box margin={1}>
@@ -110,7 +125,6 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues>> = ({ v
                                                     onChange={handleChange}
                                                     error={touchedTitle && Boolean(errorTitle)}
                                                     helperText={touchedTitle && errorTitle}
-                                                    disabled={disabled}
                                                 />
                                             </Box>
                                             <Box margin={1}>
@@ -124,7 +138,7 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues>> = ({ v
                                                     onChange={handleChange}
                                                     error={touchedType && Boolean(errorType)}
                                                     helperText={touchedType && errorType}
-                                                    disabled={disabled}
+                                                    disabled={isEditMode && areThereAnyInstances && isNewProperty}
                                                 >
                                                     {validPropertyTypes.map((validType) => (
                                                         <MenuItem key={validType} value={validType}>
@@ -143,7 +157,6 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues>> = ({ v
                         type="button"
                         variant="contained"
                         style={{ margin: '8px' }}
-                        disabled={disabled}
                         onClick={() => push({ name: '', title: '', type: '', required: false })}
                     >
                         {i18next.t('wizard.entityTemplate.addProperty')}

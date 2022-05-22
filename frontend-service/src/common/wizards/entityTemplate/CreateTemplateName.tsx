@@ -12,12 +12,20 @@ const createTemplateNameSchema = {
     displayName: Yup.string().matches(hebrewValidation, i18next.t('validation.hebrew')).required(i18next.t('validation.required')),
 };
 
-const CreateTemplateName: React.FC<StepComponentProps<EntityTemplateWizardValues>> = ({ values, touched, errors, handleChange, setFieldValue }) => {
+const CreateTemplateName: React.FC<StepComponentProps<EntityTemplateWizardValues>> = ({
+    values,
+    touched,
+    errors,
+    handleChange,
+    setFieldValue,
+    isEditMode,
+}) => {
     return (
         <>
             <Box margin={1}>
                 <TextField
                     name="name"
+                    disabled={isEditMode}
                     label={i18next.t('wizard.name')}
                     value={values.name}
                     onChange={handleChange}
