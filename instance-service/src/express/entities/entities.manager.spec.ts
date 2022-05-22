@@ -13,7 +13,7 @@ const defaultEntity = {
     properties: defaultProperties,
 };
 
-describe('Entity router', () => {
+describe('Entity manager', () => {
     beforeAll(async () => {
         await Neo4jClient.initialize(neo4j.url, neo4j.auth);
     });
