@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
-import { Divider, IconButton, Typography, Grid } from '@mui/material';
+import { Divider, IconButton, Typography, Grid, Avatar } from '@mui/material';
 import { useQueryClient } from 'react-query';
 import {
     ChevronRight as ChevronRightIcon,
     ChevronLeft as ChevronLeftIcon,
-    AccountCircle as AccountCircleIcon,
     Hive as HiveIcon,
     Public as PublicIcon,
     Widgets as WidgetsIcon,
@@ -12,12 +11,14 @@ import {
 } from '@mui/icons-material';
 
 import i18next from 'i18next';
+import { useSelector } from 'react-redux';
 import { Drawer } from './SideBar.styled';
 import { IMongoCategory } from '../../interfaces/categories';
 import { NavButton } from './NavButton';
 import { IPermissionsOfUser } from '../../services/permissionsService';
 import PermissionsOfUserDialog from '../permissionsOfUserDialog';
 import { CustomIcon } from '../CustomIcon';
+import { RootState } from '../../store';
 
 type SideBarProps = {
     toggleDrawer: () => any;
@@ -28,6 +29,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
     const queryClient = useQueryClient();
     const categories = queryClient.getQueryData<IMongoCategory[]>('getCategories')!;
     const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
+    const currentUser = useSelector((state: RootState) => state.user);
 
     const [isMyPermissionsDialogOpen, setIsMyPermissionsDialogOpen] = useState<boolean>(false);
 
@@ -39,7 +41,21 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                         MELTA
                     </Typography>
                     <IconButton onClick={() => setIsMyPermissionsDialogOpen(true)}>
-                        <AccountCircleIcon fontSize="large" sx={{ color: 'white' }} />
+                        <Avatar
+                            sx={{
+                                width: 48,
+                                height: 48,
+                                font: '28px Rubik',
+                                fontSize: 25,
+                                backgroundColor: '#fcfeff',
+                                fontWeight: 500,
+                                color: 'rgb(25, 118, 210)',
+                                '&:hover': { backgroundColor: '#dfe4e7' },
+                            }}
+                        >
+                            {currentUser.name?.firstName.charAt(0)}
+                            {currentUser.name?.lastName.charAt(0)}
+                        </Avatar>
                     </IconButton>
                 </Grid>
 
