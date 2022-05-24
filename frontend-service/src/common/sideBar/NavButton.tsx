@@ -1,5 +1,5 @@
 import React from 'react';
-import { ListItemButton, Tooltip } from '@mui/material';
+import { ListItemButton, Tooltip, tooltipClasses } from '@mui/material';
 import i18next from 'i18next';
 import { StyledLink, StyledListItemText } from './NavBar.styled';
 
@@ -18,8 +18,16 @@ const NavButton: React.FC<{ to: string; isDrawerOpen: boolean; text: string; dis
             }}
         >
             {({ isActive }) => (
-                <Tooltip title={disabled ? (i18next.t('permissions.dontHavePermissionsToCategory') as string) : text} followCursor>
-                    <span>
+                <Tooltip
+                    title={disabled ? (i18next.t('permissions.dontHavePermissionsToCategory') as string) : text}
+                    arrow
+                    placement="left"
+                    disableHoverListener={!disabled && isDrawerOpen} // when drawer is opened text is already shown, so no need for tooltip
+                    PopperProps={{
+                        sx: { [`& .${tooltipClasses.tooltip}`]: { fontSize: '1rem' } },
+                    }}
+                >
+                    <div>
                         <ListItemButton
                             disabled={disabled}
                             style={{
@@ -31,7 +39,7 @@ const NavButton: React.FC<{ to: string; isDrawerOpen: boolean; text: string; dis
                             {children}
                             {isDrawerOpen && <StyledListItemText primary={text} sx={{ color: 'white' }} />}
                         </ListItemButton>
-                    </span>
+                    </div>
                 </Tooltip>
             )}
         </StyledLink>
