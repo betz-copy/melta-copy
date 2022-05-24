@@ -9,7 +9,11 @@ export class FilesController {
     }
 
     static async uploadFile(req: express.Request, res: express.Response) {
-        res.json(await FilesManager.uploadFile(req.file));
+        res.json(FilesManager.uploadFile(req.file));
+    }
+
+    static async uploadFiles(req: express.Request, res: express.Response) {
+        res.json(FilesManager.uploadFiles(req.files as Express.Multer.File[]));
     }
 
     static async listFiles(_req: express.Request, res: express.Response) {
@@ -21,9 +25,13 @@ export class FilesController {
         res.json(await FilesManager.fileStat(path.toString()));
     }
 
-    static async deleteFile(req: express.Request, res: express.Response){        
+    static async deleteFile(req: express.Request, res: express.Response) {
         const { path } = req.params;
         res.json(await FilesManager.deleteFile(path));
+    }
 
+    static async deleteFiles(req: express.Request, res: express.Response) {
+        const { paths } = req.body;
+        res.json(await FilesManager.deleteFiles(paths));
     }
 }

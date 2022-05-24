@@ -10,9 +10,25 @@ export const defaultSchema = Joi.object({
     },
 });
 
-// POST /api/uploadFile/
+// POST /api/files
 export const uploadFileRequestSchema = Joi.object({
     file: Joi.required(),
     query: {},
     params: {},
+});
+
+// POST /api/files/bulk
+export const uploadFilesRequestSchema = Joi.object({
+    files: Joi.required(),
+    query: {},
+    params: {},
+});
+
+// POST /api/files/delete-bulk
+export const deleteFilesRequestSchema = Joi.object({
+    query: {},
+    params: {},
+    body: {
+        paths: Joi.array().items(Joi.string()).required(),
+    },
 });

@@ -4,6 +4,7 @@ import * as env from 'env-var';
 export const config = {
     multer: {
         fileKeyName: 'file',
+        filesKeyName: 'files',
     },
     service: {
         port: env.get('PORT').default(8000).asPortNumber(),

@@ -34,3 +34,7 @@ class MinioStorage {
 export const UploadToMinio = (fileKeyName: string) => {
     return Multer({ storage: new MinioStorage(minioClient) }).single(fileKeyName);
 };
+
+export const UploadBulkToMinio = (filesKeyName: string) => {
+    return Multer({ storage: new MinioStorage(minioClient) }).array(filesKeyName);
+};
