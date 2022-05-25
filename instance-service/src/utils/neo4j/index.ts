@@ -42,8 +42,8 @@ class Neo4jClient {
         transactionType: TransactionType,
         normalizeResultFunction: Function,
         cypherQuery: string,
-        parameters = {},
-        database = 'neo4j',
+        parameters: object,
+        database: string,
     ) {
         const session = this.driver.session({ database });
 

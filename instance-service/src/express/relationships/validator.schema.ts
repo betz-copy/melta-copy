@@ -1,6 +1,8 @@
 import Joi from 'joi';
 
-// GET /api/relationships/:id
+/**
+ * GET /api/instances/relationships/:id
+ */
 export const getRelationshipByIdRequestSchema = Joi.object({
     query: {},
     body: {},
@@ -9,7 +11,9 @@ export const getRelationshipByIdRequestSchema = Joi.object({
     },
 });
 
-// POST /api/relationships
+/**
+ * POST /api/instances/relationships
+ */
 export const createRelationshipRequestSchema = Joi.object({
     body: {
         templateId: Joi.string().required(),
@@ -21,7 +25,9 @@ export const createRelationshipRequestSchema = Joi.object({
     params: {},
 });
 
-// DELETE /api/relationships/:id
+/**
+ * DELETE /api/instances/relationships/:id
+ */
 export const deleteRelationshipByIdRequestSchema = Joi.object({
     query: {},
     body: {},
@@ -30,7 +36,9 @@ export const deleteRelationshipByIdRequestSchema = Joi.object({
     },
 });
 
-// PUT /api/relationships/:id
+/**
+ * PUT /api/instances/relationships/:id
+ */
 export const updateRelationshipByIdRequestSchema = Joi.object({
     body: {
         properties: Joi.object(),

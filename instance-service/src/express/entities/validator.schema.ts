@@ -1,6 +1,8 @@
 import Joi from 'joi';
 
-// GET /api/entities/:id
+/**
+ * GET /api/instances/entities/:id
+ */
 export const getEntityByIdRequestSchema = Joi.object({
     query: {
         expanded: Joi.boolean().default(false),
@@ -11,7 +13,9 @@ export const getEntityByIdRequestSchema = Joi.object({
     },
 });
 
-// DELETE /api/entities/:id?deleteAllRelationships=true
+/**
+ * DELETE /api/instances/entities/:id?deleteAllRelationships=true
+ */
 export const deleteEntityByIdRequestSchema = Joi.object({
     query: {
         deleteAllRelationships: Joi.boolean().default(false),
@@ -22,16 +26,20 @@ export const deleteEntityByIdRequestSchema = Joi.object({
     },
 });
 
-// DELETE /api/entities/:templateId
+/**
+ * DELETE /api/instances/entities/:templateId
+ */
 export const deleteEntitiesByTemplateIdRequestSchema = Joi.object({
-    query: {},
-    body: {},
-    params: {
+    query: {
         templateId: Joi.string().required(),
     },
+    body: {},
+    params: {},
 });
 
-// POST /api/entities
+/**
+ * POST /api/instances/entities
+ */
 export const createEntityRequestSchema = Joi.object({
     body: {
         templateId: Joi.string().required(),
@@ -89,7 +97,9 @@ const agGridDateFilterSchema = Joi.object({
     }),
 });
 
-// POST /api/entites/search
+/**
+ * POST /api/instances/entities/search
+ */
 export const getEntitiesRequestSchema = Joi.object({
     body: {
         startRow: Joi.number().required(),
@@ -113,7 +123,9 @@ export const getEntitiesRequestSchema = Joi.object({
     params: {},
 });
 
-// PUT /api/entities/:id
+/**
+ * PUT /api/instances/entities/:id
+ */
 export const updateEntityByIdRequestSchema = Joi.object({
     body: {
         properties: Joi.object().required(),
