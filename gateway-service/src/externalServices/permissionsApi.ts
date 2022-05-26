@@ -44,6 +44,11 @@ export const deletePermission = async (id: string) => {
 
     return data;
 };
+export const deletePermissionsUnderCategory = async (categoryId: string) => {
+    const { data } = await permissionsAxios.delete(`${permissionApi.baseRoute}`, { params: { category: categoryId } });
+
+    return data;
+};
 
 export const checkUserAuthorization = async (userId: string, resourceType: string, relatedCategories: string[], operation: Scope) => {
     const { data } = await permissionsAxios.post<ICheckAuthorizationResult>(

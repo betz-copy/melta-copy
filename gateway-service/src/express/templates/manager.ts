@@ -2,6 +2,7 @@ import * as lodashUniqby from 'lodash.uniqby';
 import { EntityTemplateManagerService, ICategory, IEntityTemplate, ISearchEntityTemplatesBody } from '../../externalServices/entityTemplateManager';
 import { IRelationshipTemplate, RelationshipsTemplateManagerService } from '../../externalServices/relationshipsTemplateManager';
 import { deleteFile, uploadFile } from '../../externalServices/storageService';
+import { trycatch } from '../../utils';
 import { removeTmpFile } from '../../utils/fs';
 import { ServiceError } from '../error';
 import PermissionsManager from '../permissions/manager';
@@ -84,18 +85,23 @@ export class TemplatesManager {
         return EntityTemplateManagerService.createCategory({ ...categoryData, iconFileId: null });
     }
 
+    // TODO: race condition here
     static async deleteCategory(id: string) {
         const templates = await EntityTemplateManagerService.searchEntityTemplates({ categoryIds: [id] });
         if (templates.length > 0) {
-            throw new ServiceError(403, 'category still has entity templates');
+            throw new ServiceError(400, 'category still has entity templates');
         }
 
         const category = await EntityTemplateManagerService.getCategoryById(id);
+
+        // deleting first the category so if it will fail, the icon and the permissions wont be deleted
+        await EntityTemplateManagerService.deleteCategory(id);
+
         if (category.iconFileId !== null) {
-            await deleteFile(category.iconFileId);
+            await trycatch(() => deleteFile(category.iconFileId!));
         }
 
-        return EntityTemplateManagerService.deleteCategory(id);
+        await trycatch(() => PermissionsManager.deletePermissionsOfCategory(id));
     }
 
     static async updateCategory(id: string, updatedData: Partial<ICategory> & { file?: string }, file?: Express.Multer.File) {
@@ -137,11 +143,11 @@ export class TemplatesManager {
     static async throwIfEntityHasRelationships(id: string) {
         const outgoingRelationships = await RelationshipsTemplateManagerService.searchRelationshipTemplates({ sourceEntityIds: [id] });
         if (outgoingRelationships.length > 0) {
-            throw new ServiceError(403, 'entity template still has outgoing relationships');
+            throw new ServiceError(400, 'entity template still has outgoing relationships');
         }
         const incomingRelationships = await RelationshipsTemplateManagerService.searchRelationshipTemplates({ destinationEntityIds: [id] });
         if (incomingRelationships.length > 0) {
-            throw new ServiceError(403, 'entity template still has incoming relationships');
+            throw new ServiceError(400, 'entity template still has incoming relationships');
         }
     }
 

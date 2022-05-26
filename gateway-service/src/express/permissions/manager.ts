@@ -1,5 +1,11 @@
 import * as pLimit from 'p-limit';
-import { IPermission, getPermissions, createPermission, deletePermission } from '../../externalServices/permissionsApi';
+import {
+    IPermission,
+    getPermissions,
+    createPermission,
+    deletePermission,
+    deletePermissionsUnderCategory,
+} from '../../externalServices/permissionsApi';
 import { IPermissionsOfUser, IPermission as IPermissionPopulated } from './interfaces';
 import UsersManager from '../users/manager';
 import config from '../../config';
@@ -99,6 +105,10 @@ export class PermissionsManager {
     static async deletePermissions(ids: string[]) {
         const deletedPermissions = await Promise.all(ids.map((id) => deletePermission(id)));
         return deletedPermissions.map((deletedPermission) => PermissionsManager.getPermissionPopulatedFromPermission(deletedPermission));
+    }
+
+    static deletePermissionsOfCategory(categoryId: string) {
+        return deletePermissionsUnderCategory(categoryId);
     }
 }
 
