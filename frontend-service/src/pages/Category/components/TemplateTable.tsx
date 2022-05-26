@@ -35,7 +35,7 @@ const TemplateTable = forwardRef<{ getExcelData: () => string }, { template: IMo
                         <IconButton size="medium" onClick={onExcelExport}>
                             <FileDownloadOutlined color="primary" fontSize="medium" />
                         </IconButton>
-                        <AddEntityButton initialStep={1} initialValues={{ template, properties: {} }}>
+                        <AddEntityButton initialStep={1} initialValues={{ template, properties: {}, attachmentsProperties: {} }}>
                             <AddCircle color="primary" fontSize="large" />
                         </AddEntityButton>
                     </Grid>

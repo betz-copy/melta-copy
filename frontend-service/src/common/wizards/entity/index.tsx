@@ -3,15 +3,18 @@ import React from 'react';
 import { toast } from 'react-toastify';
 import { useMutation } from 'react-query';
 import i18next from 'i18next';
+import { useNavigate } from 'react-router-dom';
 import { StepsType, Wizard, WizardBaseType } from '../index';
 import { ChooseTemplate, chooseTemplateSchema } from './ChooseTemplate';
 import { FillFields, fillFieldsSchema } from './FillFields';
+import { FileFields, fileFieldsSchema } from './FileFields';
 import { createEntityRequest } from '../../../services/entitiesService';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 
 export interface EntityWizardValues {
     template: IMongoEntityTemplatePopulated;
     properties: object;
+    attachmentsProperties: object;
 }
 
 const steps: StepsType<EntityWizardValues> = [
@@ -24,6 +27,11 @@ const steps: StepsType<EntityWizardValues> = [
         label: i18next.t('wizard.entity.fillFields'),
         component: (props) => <FillFields {...props} />,
         validation: fillFieldsSchema,
+    },
+    {
+        label: i18next.t('wizard.entity.fileFields'),
+        component: (props) => <FileFields {...props} />,
+        validation: fileFieldsSchema,
     },
 ];
 
@@ -49,12 +57,17 @@ const EntityWizard: React.FC<WizardBaseType<EntityWizardValues>> = ({
             },
         },
         properties: {},
+        attachmentsProperties: {},
     },
     isEditMode = false,
 }) => {
+    const navigate = useNavigate();
+
     const { isLoading, mutateAsync } = useMutation((entity: any) => createEntityRequest(entity), {
-        onSuccess: () => {
+        onSuccess: (newEntity) => {
             toast.success(i18next.t('wizard.entity.createdSuccessfully'));
+            handleClose();
+            navigate(`/entity/${newEntity.properties._id}`);
         },
         onError: () => {
             toast.error(i18next.t('wizard.entity.failedToCreate'));

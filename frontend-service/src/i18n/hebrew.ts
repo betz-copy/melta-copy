@@ -135,8 +135,7 @@ export default {
             addAttachment: 'הוסף קובץ',
             chooseCategroy: 'בחירת קטגוריה',
             chooseEntityTemplateName: 'בחירת שם תבנית',
-            requiredProrerites: 'שדות חובה',
-            optionalProrerites: 'שדות אופציונליים',
+            properties: 'שדות',
             attachments: 'קבצים',
         },
         relationshipTemplate: {
@@ -158,6 +157,7 @@ export default {
             deletedSuccessfully: 'יישות נמחקה בהצלחה',
             chooseEntityTemplate: 'בחירת תבנית יישות',
             fillFields: 'מלא פרטים',
+            fileFields: 'העלאת קבצים',
         },
     },
     validation: {
@@ -166,6 +166,8 @@ export default {
         english: 'אנגלית',
         hebrew: 'עברית',
         oneField: 'לפחות שדה חובה אחד',
+        requiredFile: 'קובץ חובה',
+        requiredFiles: 'קבצים חובה',
     },
     propertyTypes: {
         string: 'מחרוזת',

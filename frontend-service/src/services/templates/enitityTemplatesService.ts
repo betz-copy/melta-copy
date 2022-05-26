@@ -14,7 +14,11 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
     const attachmentProperties: EntityTemplateFormInputProperties[] = [];
 
     Object.entries(properties.properties).forEach(([key, value]) => {
-        propertiesArray.push({ name: key, ...value, required: properties.required.includes(key) });
+        if (value.format === 'fileId') {
+            attachmentProperties.push({ name: key, ...value, required: properties.required.includes(key), type: value.format || value.type });
+        } else {
+            propertiesArray.push({ name: key, ...value, required: properties.required.includes(key), type: value.format || value.type });
+        }
     });
 
     if (iconFileId) {

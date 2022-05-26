@@ -31,8 +31,13 @@ const entityTemplates = [
                     title: 'תאריך התחלה',
                     format: 'date',
                 },
+                firstFile: {
+                    type: 'string',
+                    title: 'kovez',
+                    format: 'fileId',
+                },
             },
-            required: ['name', 'destination'],
+            required: ['name', 'destination', 'firstFile'],
         },
     },
     {
@@ -63,8 +68,13 @@ const entityTemplates = [
                     type: 'boolean',
                     title: 'זכר',
                 },
+                firstFile: {
+                    type: 'string',
+                    title: 'kovez',
+                    format: 'fileId',
+                },
             },
-            required: ['firstName', 'lastName'],
+            required: ['firstName', 'lastName', 'firstFile'],
         },
     },
     {

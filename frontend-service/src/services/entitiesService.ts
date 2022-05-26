@@ -1,7 +1,9 @@
 import { IServerSideGetRowsRequest } from '@ag-grid-community/core';
+import partition from 'lodash.partition';
 import axios from '../axios';
 import { environment } from '../globals';
 import { IEntity, IEntityExpanded } from '../interfaces/entities';
+import { EntityWizardValues } from '../common/wizards/entity';
 
 const { entities } = environment.api;
 
@@ -28,13 +30,31 @@ const getExpandedEntityByIdRequest = async (entityId: string) => {
     return data;
 };
 
-const createEntityRequest = async (entity: any) => {
-    const { data } = await axios.post<IEntity>(entities, { templateId: entity.template._id, properties: entity.properties });
+const createEntityRequest = async (entity: EntityWizardValues) => {
+    const formData = new FormData();
+    Object.entries(entity.attachmentsProperties).forEach(([key, value]) => formData.append(key, value));
+    formData.append('properties', JSON.stringify(entity.properties));
+    formData.append('templateId', entity.template._id);
+    const { data } = await axios.post<IEntity>(entities, formData);
     return data;
 };
 
-const updateEntityRequest = async (entityId: string, newEntityData: IEntity) => {
-    const { data } = await axios.put(`${entities}/${entityId}`, newEntityData);
+const updateEntityRequest = async (entityId: string, newEntityData: EntityWizardValues) => {
+    const formData = new FormData();
+    const [fileToUpload, unchangedFiles] = partition(Object.entries(newEntityData.attachmentsProperties), ([_key, value]) => value instanceof File);
+
+    fileToUpload.forEach(([key, value]) => formData.append(key, value));
+    const fileProperties = {};
+    unchangedFiles.forEach(([key, value]) => {
+        if (value) {
+            fileProperties[key] = value.name;
+        }
+    });
+
+    formData.append('properties', JSON.stringify({ ...newEntityData.properties, ...fileProperties }));
+    formData.append('templateId', newEntityData.template._id);
+    const { data } = await axios.put<IEntity>(`${entities}/${entityId}`, formData);
+
     return data;
 };
 

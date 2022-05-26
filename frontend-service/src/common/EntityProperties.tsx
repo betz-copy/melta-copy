@@ -3,6 +3,7 @@ import { Box, Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
 import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { IEntity } from '../interfaces/entities';
+import { DownloadButton } from './DownloadButton';
 
 export const formatToString = (value: any, valueType: 'string' | 'number' | 'boolean', format?: string) => {
     if (value === null || value === undefined) {
@@ -19,6 +20,10 @@ export const formatToString = (value: any, valueType: 'string' | 'number' | 'boo
 
     if (valueType === 'string' && format === 'date-time') {
         return new Date(value).toLocaleString('en-uk');
+    }
+
+    if (valueType === 'string' && format === 'fileId') {
+        return <DownloadButton fileId={value} />;
     }
 
     return value;

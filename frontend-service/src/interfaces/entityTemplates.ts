@@ -1,12 +1,18 @@
 import { IMongoCategory } from './categories';
 
+interface IEntitySingleProperty {
+    type: 'string' | 'number' | 'boolean';
+    title: string;
+    format?: string;
+}
+
 export interface IEntityTemplate {
     name: string;
     displayName: string;
     iconFileId?: string;
     properties: {
         type: 'object';
-        properties: { [n: string]: { type: 'string' | 'number' | 'boolean'; title: string; format?: string } };
+        properties: Record<string, IEntitySingleProperty>;
         required: string[];
     };
     category: IMongoCategory['_id'];

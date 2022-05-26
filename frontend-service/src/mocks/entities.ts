@@ -701,6 +701,7 @@ const mockEntites = (mock: MockAdapter) => {
                     lastName: 'קירל',
                     age: 20,
                     gender: false,
+                    firstFile: 'blabla.docx',
                     _id: config.url!.split('/').at(-1)!.split('?')[0],
                 },
             },

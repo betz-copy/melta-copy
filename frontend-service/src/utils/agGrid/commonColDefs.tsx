@@ -1,5 +1,7 @@
+import React from 'react';
 import { ColDef, ValueFormatterParams, ValueGetterFunc } from '@ag-grid-community/core';
 import i18next from 'i18next';
+import { DownloadButton } from '../../common/DownloadButton';
 
 export const numberColDef = (field: string, valueGetter: ValueGetterFunc, value: { title: string }): ColDef => {
     return {
@@ -16,6 +18,16 @@ export const stringColDef = (field: string, valueGetter: ValueGetterFunc, value:
         headerName: value.title,
         valueGetter,
         filter: 'agTextColumnFilter',
+    };
+};
+
+export const fileColDef = (field: string, valueGetter: ValueGetterFunc, value: { title: string }): ColDef => {
+    return {
+        field,
+        headerName: value.title,
+        valueGetter,
+        menuTabs: [],
+        cellRenderer: (props) => <DownloadButton fileId={props.value} />,
     };
 };
 

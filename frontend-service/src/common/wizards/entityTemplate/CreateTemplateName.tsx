@@ -3,13 +3,13 @@ import { TextField, Box } from '@mui/material';
 import * as Yup from 'yup';
 import i18next from 'i18next';
 import FileInput from '../../inputs/FileInput';
-import { hebrewValidation, englishValidation } from '../../../utils/validation';
+import { englishValidation } from '../../../utils/validation';
 import { EntityTemplateWizardValues } from './index';
 import { StepComponentProps } from '../index';
 
 const createTemplateNameSchema = {
     name: Yup.string().matches(englishValidation, i18next.t('validation.english')).required(i18next.t('validation.required')),
-    displayName: Yup.string().matches(hebrewValidation, i18next.t('validation.hebrew')).required(i18next.t('validation.required')),
+    displayName: Yup.string().required(i18next.t('validation.required')),
 };
 
 const CreateTemplateName: React.FC<StepComponentProps<EntityTemplateWizardValues>> = ({
@@ -45,14 +45,14 @@ const CreateTemplateName: React.FC<StepComponentProps<EntityTemplateWizardValues
             </Box>
             <Box margin={1}>
                 <FileInput
+                    name="iconFile"
                     onDeleteFile={() => {
                         setFieldValue('file', null);
                     }}
-                    onDropFile={(acceptedFiles) => {
-                        setFieldValue('file', acceptedFiles[0]);
+                    onDropFile={(acceptedFile) => {
+                        setFieldValue('file', acceptedFile);
                     }}
                     filePath={values.file?.name}
-                    multipleFiles={false}
                     inputText={i18next.t('wizard.file')}
                     acceptedFilesTypes="image/png"
                 />

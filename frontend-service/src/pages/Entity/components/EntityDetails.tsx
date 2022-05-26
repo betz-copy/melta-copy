@@ -1,18 +1,18 @@
 import React, { useState } from 'react';
-import { Grid, Card, CardContent, IconButton, CircularProgress } from '@mui/material';
-import { Delete as DeleteIcon, Edit as EditIcon, Done as DoneIcon, AccountTreeOutlined as GraphIcon } from '@mui/icons-material';
+import { Grid, Card, CardContent, IconButton } from '@mui/material';
+import { Delete as DeleteIcon, Edit as EditIcon, AccountTreeOutlined as GraphIcon } from '@mui/icons-material';
 import { useMutation, useQueryClient } from 'react-query';
 import i18next from 'i18next';
 import { toast } from 'react-toastify';
-import { MuiForm5 as Form } from '@rjsf/material-ui';
 import { useNavigate } from 'react-router-dom';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { IEntity, IEntityExpanded } from '../../../interfaces/entities';
-import { updateEntityRequest, deleteEntityRequest } from '../../../services/entitiesService';
+import { IEntityExpanded } from '../../../interfaces/entities';
+import { deleteEntityRequest } from '../../../services/entitiesService';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
 import { EntityProperties } from '../../../common/EntityProperties';
 import { IPermissionsOfUser } from '../../../services/permissionsService';
 import IconButtonWithPopoverText from '../../../common/IconButtonWithPopover';
+import { EditEntityDetails } from './EditEntityDetails';
 
 const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; expandedEntity: IEntityExpanded }> = ({
     entityTemplate,
@@ -20,16 +20,18 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
 }) => {
     const { entity } = expandedEntity;
     const navigate = useNavigate();
-    const queryClient = useQueryClient();
     const [isEditMode, setIsEditMode] = useState(false);
     const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
-    const [updateValues, setUpdateValues] = useState(entity.properties);
+    const queryClient = useQueryClient();
 
     const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
 
     const closeDeleteDialog = () => {
         setOpenDeleteDialog(false);
     };
+
+    const entityTemplates = queryClient.getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates')!;
+    const currentEntityTemplate = entityTemplates.find((currTemplate) => currTemplate._id === expandedEntity?.entity.templateId);
 
     const { isLoading: isDeleteLoading, mutateAsync: deleteMutation } = useMutation(() => deleteEntityRequest(entity.properties._id), {
         onError: () => {
@@ -38,44 +40,19 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
         onSuccess: () => {
             toast.success(i18next.t('wizard.entity.deletedSuccessfully'));
             closeDeleteDialog();
+            navigate(`/category/${currentEntityTemplate?.category._id}`);
         },
     });
 
-    const { isLoading: isUpdateLoading, mutateAsync: updateMutation } = useMutation(
-        (newEntityDate: IEntity) => updateEntityRequest(entity.properties._id, newEntityDate),
-        {
-            onSuccess: (data) => {
-                queryClient.setQueryData(['getExpandedEntity', entity.properties._id], () => {
-                    return {
-                        ...expandedEntity,
-                        entity: data,
-                    };
-                });
+    if (isEditMode) return <EditEntityDetails entityTemplate={entityTemplate} setIsEditMode={setIsEditMode} expandedEntity={expandedEntity} />;
 
-                toast.success(i18next.t('wizard.entity.editedSuccefully'));
-                setIsEditMode(false);
-            },
-            onError: () => {
-                toast.error(i18next.t('wizard.entity.failedToEdit'));
-            },
-        },
-    );
     const disabled = Boolean(!myPermissions.instancesPermissions.find((instance) => instance.category === entityTemplate.category._id));
 
     return (
         <Card>
             <CardContent>
-                <Grid container justifyContent="space-between" alignItems="center">
-                    {isEditMode ? (
-                        <Form
-                            schema={entityTemplate.properties}
-                            formData={updateValues}
-                            onChange={({ formData }) => setUpdateValues(formData)}
-                            tagName="div"
-                        >
-                            <div /> {/* remove the built in submit button */}
-                        </Form>
-                    ) : (
+                <Grid container>
+                    <Grid item xs={11.5}>
                         <EntityProperties
                             entityTemplate={entityTemplate}
                             properties={entity.properties}
@@ -85,13 +62,14 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                                 columnRule: '2px solid #B1B1B1',
                             }}
                         />
-                    )}
+                    </Grid>
                     <Grid item>
                         {isEditMode ? (
-                            <IconButton onClick={() => updateMutation({ ...entity, properties: updateValues })}>
-                                <DoneIcon />
-                                {isUpdateLoading && <CircularProgress size={20} />}
-                            </IconButton>
+                            <Grid container direction="column">
+                                <IconButton onClick={() => navigate(`/entity/${entity.properties._id}/graph`, { state: expandedEntity })}>
+                                    <GraphIcon />
+                                </IconButton>
+                            </Grid>
                         ) : (
                             <Grid container direction="column">
                                 <IconButton onClick={() => navigate(`/entity/${entity.properties._id}/graph`, { state: expandedEntity })}>

@@ -6,11 +6,11 @@ import FileInput from '../../inputs/FileInput';
 import { CategoryWizardValues } from './index';
 import { StepComponentProps } from '../index';
 import ColorPicker from '../../inputs/ColorPicker';
-import { hebrewValidation, englishValidation } from '../../../utils/validation';
+import { englishValidation } from '../../../utils/validation';
 
 const createCategoryNameSchema = {
     name: Yup.string().matches(englishValidation, i18next.t('validation.english')).required(i18next.t('validation.required')),
-    displayName: Yup.string().matches(hebrewValidation, i18next.t('validation.hebrew')).required(i18next.t('validation.required')),
+    displayName: Yup.string().required(i18next.t('validation.required')),
 };
 const CreateCategoryName: React.FC<StepComponentProps<CategoryWizardValues>> = ({ values, touched, errors, handleChange, setFieldValue }) => {
     const colors = ['#B80000', '#E65100', '#FCDC00', '#F78DA7', '#7B1FA2', '#0D47A1', '#B3E5FC', '#C8E6C9', '#33691E', '#607D8B'];
@@ -39,14 +39,14 @@ const CreateCategoryName: React.FC<StepComponentProps<CategoryWizardValues>> = (
             </Box>
             <Box margin={1}>
                 <FileInput
+                    name="file"
                     onDeleteFile={() => {
                         setFieldValue('file', null);
                     }}
-                    onDropFile={(acceptedFiles) => {
-                        setFieldValue('file', acceptedFiles[0]);
+                    onDropFile={(acceptedFile) => {
+                        setFieldValue('file', acceptedFile);
                     }}
                     filePath={values.file?.name}
-                    multipleFiles={false}
                     inputText={i18next.t('wizard.file')}
                     acceptedFilesTypes="image/png"
                 />
