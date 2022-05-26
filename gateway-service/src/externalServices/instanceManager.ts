@@ -27,6 +27,24 @@ export class InstanceManagerService {
         return data;
     }
 
+    static async createEntityInstance(entity: IEntity) {
+        const { data } = await this.InstanceManagerApi.post<IEntity>(`${baseEntitiesRoute}`, entity);
+
+        return data;
+    }
+
+    static async updateEntityInstance(id: string, entity: IEntity) {
+        const { data } = await this.InstanceManagerApi.put<IEntity>(`${baseEntitiesRoute}/${id}`, entity);
+
+        return data;
+    }
+
+    static async deleteEntityInstance(id: string) {
+        const { data } = await this.InstanceManagerApi.delete<string>(`${baseEntitiesRoute}/${id}`);
+
+        return data;
+    }
+
     // relationships instances
     static async getRelationshipInstanceById(id: string) {
         const { data } = await this.InstanceManagerApi.get<IRelationship>(`${baseRelationshipsRoute}/${id}`);

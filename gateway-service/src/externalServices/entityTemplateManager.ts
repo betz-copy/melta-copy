@@ -13,12 +13,22 @@ export interface ICategory {
     color: string;
 }
 
+interface IEntitySingleProperty {
+    type: 'string' | 'number' | 'boolean';
+    title: string;
+    format?: string;
+}
+
 export interface IEntityTemplate {
     _id: string;
     name: string;
     displayName: string;
     category: string;
-    properties: object;
+    properties: {
+        type: 'object';
+        properties: Record<string, IEntitySingleProperty>;
+        required: string[];
+    };
     disabled: boolean;
     iconFileId: string | null;
 }
@@ -77,7 +87,7 @@ export class EntityTemplateManagerService {
     }
 
     static async getEntityTemplateById(id: string) {
-        const { data } = await this.EntityTemplateManagerApi.get(`${baseEntitiesRoute}/${id}`);
+        const { data } = await this.EntityTemplateManagerApi.get<IEntityTemplatePopulated>(`${baseEntitiesRoute}/${id}`);
 
         return data;
     }

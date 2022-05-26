@@ -1,7 +1,8 @@
 import { Router } from 'express';
 import { createProxyMiddleware, fixRequestBody } from 'http-proxy-middleware';
+import * as multer from 'multer';
 import config from '../../config';
-import { wrapMiddleware } from '../../utils/express';
+import { wrapController, wrapMiddleware } from '../../utils/express';
 import {
     validateUserCanCreateEntityInstance,
     validateUserCanCreateRelationshipInstance,
@@ -9,6 +10,9 @@ import {
     validateUserCanUpdateGetOrDeleteEntityInstance,
     validateUserCanUpdateOrDeleteRelationshipInstance,
 } from './middlewares';
+import InstancesController from './controller';
+import { createEntityInstanceSchema, deleteEntityInstanceSchema, updateEntityInstanceSchema } from './validator.schema';
+import ValidateRequest from '../../utils/joi';
 
 const { instanceManager } = config;
 const InstanceManagerProxy = createProxyMiddleware({
@@ -23,9 +27,26 @@ const InstancesRouter: Router = Router();
 InstancesRouter.post('/entities/search', wrapMiddleware(validateUserCanSearchEntityInstances), InstanceManagerProxy);
 
 InstancesRouter.get('/entities/:id', wrapMiddleware(validateUserCanUpdateGetOrDeleteEntityInstance), InstanceManagerProxy);
-InstancesRouter.post('/entities', wrapMiddleware(validateUserCanCreateEntityInstance), InstanceManagerProxy);
-InstancesRouter.put('/entities/:id', wrapMiddleware(validateUserCanUpdateGetOrDeleteEntityInstance), InstanceManagerProxy);
-InstancesRouter.delete('/entities/:id', wrapMiddleware(validateUserCanUpdateGetOrDeleteEntityInstance), InstanceManagerProxy);
+InstancesRouter.post(
+    '/entities',
+    multer({ dest: config.service.uploadsFolderPath }).any(),
+    ValidateRequest(createEntityInstanceSchema),
+    wrapMiddleware(validateUserCanCreateEntityInstance),
+    wrapController(InstancesController.createEntityInstance),
+);
+InstancesRouter.put(
+    '/entities/:id',
+    multer({ dest: config.service.uploadsFolderPath }).any(),
+    ValidateRequest(updateEntityInstanceSchema),
+    wrapMiddleware(validateUserCanUpdateGetOrDeleteEntityInstance),
+    wrapController(InstancesController.updateEntityInstance),
+);
+InstancesRouter.delete(
+    '/entities/:id',
+    ValidateRequest(deleteEntityInstanceSchema),
+    wrapMiddleware(validateUserCanUpdateGetOrDeleteEntityInstance),
+    wrapController(InstancesController.deleteEntityInstance),
+);
 
 // relationships (Instances)
 InstancesRouter.post('/relationships', wrapMiddleware(validateUserCanCreateRelationshipInstance), InstanceManagerProxy);

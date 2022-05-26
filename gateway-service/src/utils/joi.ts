@@ -2,6 +2,21 @@ import { Request } from 'express';
 import * as Joi from 'joi';
 import { wrapValidator } from './express';
 
+export const ExtendedJoi = Joi.extend({
+    base: Joi.object(),
+    type: 'stringToObject',
+    messages: {
+        'string.object': '{{#label}} is not a string of json object',
+    },
+    coerce: (value: string, helpers) => {
+        try {
+            return { value: JSON.parse(value) };
+        } catch {
+            return { errors: [helpers.error('string.object')] };
+        }
+    },
+});
+
 export const MongoIdSchema = Joi.string().regex(/^[0-9a-fA-F]{24}$/, 'valid MongoId');
 
 export const ColorSchema = Joi.string().regex(/^#[A-Fa-f0-9]{6}$/);
