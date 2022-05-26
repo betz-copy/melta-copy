@@ -41,6 +41,10 @@ export class PermissionsManager {
             .exec();
     }
 
+    static deletePermissions(query: Partial<Pick<IPermission, 'category' | 'userId'>>) {
+        return PermissionModel.deleteMany(query).exec();
+    }
+
     static doesPermissionsContainsAllCategoryPermission = (permissions: IPermission[]) => {
         // TODO: get 'All' from config + all the places
         return permissions.some((permission) => permission.category === 'All');

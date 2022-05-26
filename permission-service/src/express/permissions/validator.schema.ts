@@ -71,3 +71,13 @@ export const deletePermissionRequestSchema = Joi.object({
     body: {},
     query: {},
 });
+
+// DELETE /api/permissions/?category=123123
+export const deletePermissionsRequestSchema = Joi.object({
+    params: {},
+    body: {},
+    query: Joi.object({
+        category: MongoIdSchema,
+        userId: MongoIdSchema,
+    }).min(1),
+});

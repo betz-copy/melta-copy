@@ -34,6 +34,10 @@ class PermissionsController {
 
         res.json(await PermissionsManager.deletePermission(id));
     }
+
+    static async deletePermissions(req: Request, res: Response) {
+        res.json(await PermissionsManager.deletePermissions(req.query));
+    }
 }
 
 export default PermissionsController;

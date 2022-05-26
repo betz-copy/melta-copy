@@ -9,11 +9,10 @@ import {
     deletePermissionRequestSchema,
     updatePermissionRequestSchema,
     getPermissionByIdRequestSchema,
+    deletePermissionsRequestSchema,
 } from './validator.schema';
 
 const permissionsRouter: Router = Router();
-
-// TODO: add search
 
 permissionsRouter.get('/', ValidateRequest(getPermissionsRequestSchema), wrapController(PermissionsController.getPermissions));
 permissionsRouter.get('/:id', ValidateRequest(getPermissionByIdRequestSchema), wrapController(PermissionsController.getPermissionById));
@@ -27,7 +26,7 @@ permissionsRouter.post(
 
 permissionsRouter.put('/:id', ValidateRequest(updatePermissionRequestSchema), wrapController(PermissionsController.updatePermission));
 
-// TODO: add middleware of calling the manager of CheckUserAuthorization to check if user can delete/create/update permission!
 permissionsRouter.delete('/:id', ValidateRequest(deletePermissionRequestSchema), wrapController(PermissionsController.deletePermission));
+permissionsRouter.delete('/', ValidateRequest(deletePermissionsRequestSchema), wrapController(PermissionsController.deletePermissions));
 
 export default permissionsRouter;
