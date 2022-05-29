@@ -6,10 +6,10 @@ import FileInput from '../../inputs/FileInput';
 import { CategoryWizardValues } from './index';
 import { StepComponentProps } from '../index';
 import ColorPicker from '../../inputs/ColorPicker';
-import { englishValidation } from '../../../utils/validation';
+import { variableNameValidation } from '../../../utils/validation';
 
 const createCategoryNameSchema = {
-    name: Yup.string().matches(englishValidation, i18next.t('validation.english')).required(i18next.t('validation.required')),
+    name: Yup.string().matches(variableNameValidation, i18next.t('validation.variableName')).required(i18next.t('validation.required')),
     displayName: Yup.string().required(i18next.t('validation.required')),
 };
 const CreateCategoryName: React.FC<StepComponentProps<CategoryWizardValues>> = ({ values, touched, errors, handleChange, setFieldValue }) => {

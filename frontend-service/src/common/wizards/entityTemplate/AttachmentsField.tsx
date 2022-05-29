@@ -7,13 +7,13 @@ import { useQuery, useQueryClient } from 'react-query';
 import i18next from 'i18next';
 import { StepComponentProps } from '../index';
 import { EntityTemplateWizardValues } from './index';
-import { englishValidation } from '../../../utils/validation';
+import { variableNameValidation } from '../../../utils/validation';
 import { getEntitiesByTemplateRequest } from '../../../services/entitiesService';
 
 const attachmentsFieldSchema = {
     attachmentProperties: Yup.array().of(
         Yup.object({
-            name: Yup.string().matches(englishValidation, i18next.t('validation.english')).required(i18next.t('validation.required')),
+            name: Yup.string().matches(variableNameValidation, i18next.t('validation.variableName')).required(i18next.t('validation.required')),
             title: Yup.string().required(i18next.t('validation.required')),
             required: Yup.boolean().required(i18next.t('validation.required')),
         }),

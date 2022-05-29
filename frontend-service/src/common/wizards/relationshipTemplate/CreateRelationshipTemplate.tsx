@@ -6,9 +6,10 @@ import { useQueryClient } from 'react-query';
 import { RelationshipTemplateWizardValues } from './index';
 import { StepComponentProps } from '../index';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { variableNameValidation } from '../../../utils/validation';
 
 const createRelationshipTemplateNameSchema = {
-    name: Yup.string().required(i18next.t('validation.required')),
+    name: Yup.string().matches(variableNameValidation, i18next.t('validation.variableName')).required(i18next.t('validation.required')),
     displayName: Yup.string().required(i18next.t('validation.required')),
     sourceEntity: Yup.object({
         _id: Yup.string().required(i18next.t('validation.required')),

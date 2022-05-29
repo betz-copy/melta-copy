@@ -170,11 +170,11 @@ export default {
     validation: {
         required: 'חובה',
         invalidPropertyType: 'סוג שדה לא תקין',
-        english: 'אנגלית',
         hebrew: 'עברית',
         oneField: 'לפחות שדה חובה אחד',
         requiredFile: 'קובץ חובה',
         requiredFiles: 'קבצים חובה',
+        variableName: 'פורמט שם משתנה',
     },
     propertyTypes: {
         string: 'מחרוזת',

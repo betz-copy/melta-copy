@@ -6,7 +6,7 @@ import * as Yup from 'yup';
 import i18next from 'i18next';
 import { Delete as DeleteIcon } from '@mui/icons-material';
 import { useQuery, useQueryClient } from 'react-query';
-import { englishValidation } from '../../../utils/validation';
+import { variableNameValidation } from '../../../utils/validation';
 import { EntityTemplateWizardValues } from './index';
 import { StepComponentProps } from '../index';
 import { getEntitiesByTemplateRequest } from '../../../services/entitiesService';
@@ -19,7 +19,7 @@ const addFieldsSchema = {
     properties: Yup.array()
         .of(
             Yup.object({
-                name: Yup.string().matches(englishValidation, i18next.t('validation.english')).required(i18next.t('validation.required')),
+                name: Yup.string().matches(variableNameValidation, i18next.t('validation.variableName')).required(i18next.t('validation.required')),
                 title: Yup.string().required(i18next.t('validation.required')),
                 type: Yup.string().oneOf(validPropertyTypes, i18next.t('validation.invalidPropertyType')).required(i18next.t('validation.required')),
                 required: Yup.boolean().required(i18next.t('validation.required')),

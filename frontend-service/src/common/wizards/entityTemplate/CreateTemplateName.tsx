@@ -3,12 +3,12 @@ import { TextField, Box } from '@mui/material';
 import * as Yup from 'yup';
 import i18next from 'i18next';
 import FileInput from '../../inputs/FileInput';
-import { englishValidation } from '../../../utils/validation';
+import { variableNameValidation } from '../../../utils/validation';
 import { EntityTemplateWizardValues } from './index';
 import { StepComponentProps } from '../index';
 
 const createTemplateNameSchema = {
-    name: Yup.string().matches(englishValidation, i18next.t('validation.english')).required(i18next.t('validation.required')),
+    name: Yup.string().matches(variableNameValidation, i18next.t('validation.variableName')).required(i18next.t('validation.required')),
     displayName: Yup.string().required(i18next.t('validation.required')),
 };
 
