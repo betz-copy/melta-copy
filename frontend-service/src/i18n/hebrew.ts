@@ -19,6 +19,11 @@ export default {
         deleteRelationshipPopoverText: 'מחק קשר',
         failedToDeleteRelationship: 'נכשל למחוק קשר',
     },
+    errorPage: {
+        oops: 'אופס...',
+        reachedTheWrongPage: 'הגעתם לעמוד הלא נכון',
+        backToHome: 'לחזרה לעמוד הבית',
+    },
     addRelationshipDialog: {
         title: 'הוסף קשר',
         closeBtn: 'סגור',

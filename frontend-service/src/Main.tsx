@@ -6,6 +6,7 @@ import { CacheProvider } from '@emotion/react';
 import createCache from '@emotion/cache';
 import { prefixer } from 'stylis';
 import { useQueryClient } from 'react-query';
+import i18next from 'i18next';
 import { SideBar } from './common/sideBar';
 import { MainBox } from './Main.styled';
 import { TopBar } from './common/TopBar';
@@ -23,6 +24,7 @@ const Category = lazy(() => import('./pages/Category'));
 const SystemManagement = lazy(() => import('./pages/SystemManagement'));
 const PermissionsManagement = lazy(() => import('./pages/PermissionsManagement'));
 const Unavailable = lazy(() => import('./pages/Unavailable'));
+const ErrorPage = lazy(() => import('./pages/ErrorPage'));
 const Entity = lazy(() => import('./pages/Entity'));
 const Graph = lazy(() => import('./pages/Entity/components/Graph'));
 
@@ -96,7 +98,10 @@ const Main = () => {
                                         }
                                     />
                                     <Route path="/" element={<Home setTitle={setTitle} />} />
-                                    <Route path="*" element={<h1>404</h1>} />
+                                    <Route
+                                        path="*"
+                                        element={<ErrorPage setTitle={setTitle} errorText={i18next.t('errorPage.reachedTheWrongPage')} />}
+                                    />
                                 </Routes>
                             </Suspense>
                         </Box>
