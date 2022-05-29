@@ -18,6 +18,8 @@ export default {
     entityPage: {
         deleteRelationshipPopoverText: 'מחק קשר',
         failedToDeleteRelationship: 'נכשל למחוק קשר',
+        createdAt: 'תאריך יצירה',
+        updatedAt: 'תאריך עדכון',
     },
     errorPage: {
         oops: 'אופס...',

@@ -53,7 +53,7 @@ export const booleanColDef = (field: string, valueGetter: ValueGetterFunc, value
     };
 };
 
-export const dateColDef = (field: string, valueGetter: ValueGetterFunc, value: { title: string; format?: string }): ColDef => {
+export const dateColDef = (field: string, valueGetter: ValueGetterFunc, value: { title: string; format?: string }, hide = false): ColDef => {
     const { format } = value;
 
     const valueFormatter = (params: ValueFormatterParams) => {
@@ -67,20 +67,11 @@ export const dateColDef = (field: string, valueGetter: ValueGetterFunc, value: {
     };
 
     const comparator = (filterLocalDateAtMidnight: Date, cellValue: string) => {
-        if (cellValue == null) {
+        if (!cellValue) {
             return 0;
         }
 
-        const yearAndMonth = cellValue.split('-');
-        const dateAndTime = yearAndMonth[2].split('T');
-        yearAndMonth.pop();
-        const dateParts = [...yearAndMonth, ...dateAndTime];
-
-        const year = Number(dateParts[0]);
-        const month = Number(dateParts[1]) - 1;
-        const day = Number(dateParts[2]);
-
-        const cellDate = new Date(year, month, day);
+        const cellDate = new Date(cellValue);
 
         if (cellDate < filterLocalDateAtMidnight) return -1;
         if (cellDate > filterLocalDateAtMidnight) return 1;
@@ -97,5 +88,7 @@ export const dateColDef = (field: string, valueGetter: ValueGetterFunc, value: {
             valueFormatter,
             comparator,
         },
+        minWidth: format === 'date-time' ? 220 : undefined,
+        hide,
     };
 };

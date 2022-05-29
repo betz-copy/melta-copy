@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Grid, Card, CardContent, IconButton } from '@mui/material';
+import { Grid, Card, CardContent, IconButton, Typography, Box } from '@mui/material';
 import { Delete as DeleteIcon, Edit as EditIcon, AccountTreeOutlined as GraphIcon } from '@mui/icons-material';
 import { useMutation, useQueryClient } from 'react-query';
 import i18next from 'i18next';
@@ -50,18 +50,32 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
 
     return (
         <Card>
-            <CardContent>
-                <Grid container>
-                    <Grid item xs={11.5}>
-                        <EntityProperties
-                            entityTemplate={entityTemplate}
-                            properties={entity.properties}
-                            style={{
-                                columnCount: 3,
-                                columnGap: '40px',
-                                columnRule: '2px solid #B1B1B1',
-                            }}
-                        />
+            <CardContent sx={{ '&:last-child': { padding: 0 } }}>
+                <Grid item container justifyContent="space-between" alignItems="stretch" wrap="nowrap" overflow="auto" padding="1rem">
+                    <Grid item container direction="column" justifyContent="space-between">
+                        <Box padding="0.2rem">
+                            <EntityProperties
+                                entityTemplate={entityTemplate}
+                                properties={entity.properties}
+                                style={{
+                                    columnCount: 3,
+                                    columnGap: '40px',
+                                    columnRule: '2px solid #B1B1B1',
+                                }}
+                            />
+                        </Box>
+                        <Grid item container justifyContent="space-around">
+                            <Typography color="gray">
+                                {`${i18next.t('entityPage.createdAt')}: ${new Date(expandedEntity.entity.properties.createdAt).toLocaleString(
+                                    'en-uk',
+                                )}`}
+                            </Typography>
+                            <Typography color="gray">
+                                {`${i18next.t('entityPage.updatedAt')}: ${new Date(expandedEntity.entity.properties.updatedAt).toLocaleString(
+                                    'en-uk',
+                                )}`}
+                            </Typography>
+                        </Grid>
                     </Grid>
                     <Grid item>
                         {isEditMode ? (
@@ -71,7 +85,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                                 </IconButton>
                             </Grid>
                         ) : (
-                            <Grid container direction="column">
+                            <Grid container direction="column" justifyContent="space-evenly">
                                 <IconButton onClick={() => navigate(`/entity/${entity.properties._id}/graph`, { state: expandedEntity })}>
                                     <GraphIcon />
                                 </IconButton>

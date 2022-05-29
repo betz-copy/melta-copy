@@ -204,6 +204,9 @@ const EntitiesTableOfTemplate = forwardRef(
                             event.columnApi.autoSizeColumns([actionsColumnId]);
                         }
                     }}
+                    onGridReady={(params) => {
+                        params.columnApi.applyColumnState({ state: [{ colId: 'updatedAt', sort: 'desc' }] });
+                    }}
                     defaultColDef={{
                         filterParams: {
                             suppressAndOrCondition: true,
