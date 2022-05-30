@@ -74,7 +74,7 @@ templatesRouter.post(
     multer({ dest: uploadsFolderPath }).single('file'),
     ValidateRequest(createEntityTemplateSchema),
     wrapMiddleware(validateUserCanCreateEntityTemplateUnderCategory),
-    wrapController(TemplatesController.createTemplate),
+    wrapController(TemplatesController.createEntityTemplate),
 );
 templatesRouter.put(
     '/entities/:id',
@@ -87,7 +87,7 @@ templatesRouter.delete(
     '/entities/:id',
     ValidateRequest(deleteEntityTemplateSchema),
     wrapMiddleware(validateUserCanUpdateOrDeleteEntityTemplate),
-    wrapController(TemplatesController.deleteTemplate),
+    wrapController(TemplatesController.deleteEntityTemplate),
 );
 
 // relationships (templates)

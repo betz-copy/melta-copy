@@ -1,5 +1,6 @@
 import * as lodashUniqby from 'lodash.uniqby';
 import { EntityTemplateManagerService, ICategory, IEntityTemplate, ISearchEntityTemplatesBody } from '../../externalServices/entityTemplateManager';
+import { InstanceManagerService } from '../../externalServices/instanceManager';
 import { IRelationshipTemplate, RelationshipsTemplateManagerService } from '../../externalServices/relationshipsTemplateManager';
 import { deleteFile, uploadFile } from '../../externalServices/storageService';
 import { trycatch } from '../../utils';
@@ -151,8 +152,16 @@ export class TemplatesManager {
         }
     }
 
+    static async throwIfEntityTemplateHasInstances(id: string) {
+        const { rows } = await InstanceManagerService.getInstancesByTemplateId(id, { startRow: 0, endRow: 0, sortModel: [], filterModel: {} });
+        if (rows.length !== 0) {
+            throw new ServiceError(400, 'entity template still has instances');
+        }
+    }
+
     static async deleteEntityTemplate(id: string) {
         await TemplatesManager.throwIfEntityHasRelationships(id);
+        await TemplatesManager.throwIfEntityTemplateHasInstances(id);
 
         const { iconFileId } = await EntityTemplateManagerService.getEntityTemplateById(id);
         if (iconFileId) {
@@ -168,6 +177,32 @@ export class TemplatesManager {
         }
 
         const { iconFileId } = await EntityTemplateManagerService.getEntityTemplateById(id);
+
+        const { rows } = await InstanceManagerService.getInstancesByTemplateId(id, { startRow: 0, endRow: 0, sortModel: [], filterModel: {} });
+        const currTemplate = await EntityTemplateManagerService.getEntityTemplateById(id);
+
+        if (rows.length > 0) {
+            if (updatedTemplate.category) {
+                await EntityTemplateManagerService.getCategoryById(updatedTemplate.category);
+            }
+
+            if (updatedTemplate.name !== currTemplate.name) throw new ServiceError(400, 'can not change template name');
+
+            Object.entries(currTemplate.properties.properties).forEach(([key, value]) => {
+                const newValue = updatedTemplate.properties?.properties[key];
+
+                if (value.format !== newValue?.format) throw new ServiceError(400, 'can not change property format');
+                if (value.type !== newValue?.type) throw new ServiceError(400, 'can not change property type');
+            });
+
+            if (updatedTemplate.properties?.required.find((propertyName) => !currTemplate.properties.required.includes(propertyName))) {
+                throw new ServiceError(400, 'can not add required fields');
+            }
+
+            if (currTemplate.properties.required.find((propertyName) => !updatedTemplate.properties?.required.includes(propertyName))) {
+                throw new ServiceError(400, 'can not remove required fields');
+            }
+        }
 
         if (file) {
             if (iconFileId) {

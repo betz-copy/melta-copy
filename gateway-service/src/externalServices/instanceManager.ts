@@ -2,7 +2,7 @@ import axios from 'axios';
 import config from '../config';
 
 const {
-    instanceManager: { uri, baseEntitiesRoute, baseRelationshipsRoute, requestTimeout },
+    instanceManager: { uri, baseEntitiesRoute, baseRelationshipsRoute, requestTimeout, searchRoute },
 } = config;
 
 export interface IEntity {
@@ -10,6 +10,15 @@ export interface IEntity {
     properties: object;
 }
 
+interface IEntityFilterParams {
+    startRow?: number;
+    endRow?: number;
+    sortModel?: Array<{
+        colId: string;
+        sort: 'asc' | 'desc';
+    }>;
+    filterModel?: any;
+}
 export interface IRelationship {
     templateId: string;
     properties: object;
@@ -41,6 +50,16 @@ export class InstanceManagerService {
 
     static async deleteEntityInstance(id: string) {
         const { data } = await this.InstanceManagerApi.delete<string>(`${baseEntitiesRoute}/${id}`);
+
+        return data;
+    }
+
+    static async getInstancesByTemplateId(templateId: string, agGridRequest: IEntityFilterParams) {
+        const { data } = await this.InstanceManagerApi.post<{ rows: IEntity[]; lastRowIndex: number }>(
+            `${baseEntitiesRoute}/${searchRoute}`,
+            agGridRequest,
+            { params: { templateId } },
+        );
 
         return data;
     }

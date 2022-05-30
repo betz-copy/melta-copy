@@ -25,12 +25,12 @@ class TemplatesController {
         res.json(await TemplatesManager.updateCategory(req.params.id, req.body, req.file));
     }
 
-    // entityTemlates
-    static async createTemplate(req: Request, res: Response) {
+    // entityTemplates
+    static async createEntityTemplate(req: Request, res: Response) {
         res.json(await TemplatesManager.createEntityTemplate(req.body, req.file));
     }
 
-    static async deleteTemplate(req: Request, res: Response) {
+    static async deleteEntityTemplate(req: Request, res: Response) {
         res.json(await TemplatesManager.deleteEntityTemplate(req.params.id));
     }
 
