@@ -104,6 +104,7 @@ export const generateDefaultProperties = () => {
         _id: id,
         createdAt: timestamp,
         updatedAt: timestamp,
+        disabled: false,
     };
 };
 

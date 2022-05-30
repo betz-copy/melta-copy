@@ -11,6 +11,7 @@ import { formatDate } from '../../utils/neo4j/lib';
 const mockDate = new Date();
 const mockDateStr = mockDate.toISOString();
 
+const defaultRelationshipTemplateId = 'rel-entity-router';
 const defaultTemplateId = '3';
 const defaultProperties = { testProp: 'testProp' };
 const defaultEntity = {
@@ -72,6 +73,8 @@ describe('Entity router', () => {
 
     afterAll(async () => {
         await request(app).delete(`/api/instances/entities/${defaultTemplateId}`);
+
+        await Neo4jClient.writeTransaction(`MATCH ()-[r: \`${defaultRelationshipTemplateId}\`]-() DELETE r `, () => {});
         await Neo4jClient.close();
     });
 
@@ -250,10 +253,9 @@ describe('Entity router', () => {
                     .send({ templateId: defaultTemplateId, properties: secondEntityProperties });
 
                 const { url, getByIdRoute } = relationshipManager;
-                const relationshipTemplateId = 'rel';
 
                 // Mock get relationship template route
-                mock.onGet(`${url}${getByIdRoute}/${relationshipTemplateId}`).reply(200, {
+                mock.onGet(`${url}${getByIdRoute}/${defaultRelationshipTemplateId}`).reply(200, {
                     _id: '123',
                     name: 'RelationshipMock',
                     displayName: 'RelationshipMock',
@@ -266,7 +268,7 @@ describe('Entity router', () => {
 
                 // Create relationship between two entities
                 await request(app).post('/api/instances/relationships').send({
-                    templateId: relationshipTemplateId,
+                    templateId: defaultRelationshipTemplateId,
                     properties: defaultProperties,
                     sourceEntityId: id,
                     destinationEntityId: secondEntity.body.properties._id,
@@ -286,6 +288,18 @@ describe('Entity router', () => {
                 expect(res.statusCode).toBe(200);
                 expect(res.body).toStrictEqual(id);
             });
+        });
+    });
+
+    describe(`DELETE /api/instances/entities?templateId=${defaultTemplateId}`, () => {
+        beforeEach(async () => {
+            await request(app).post('/api/instances/entities').send(defaultEntity);
+        });
+
+        it('Should get an existing entity (expanded mode - without connections)', async () => {
+            const res = await request(app).delete(`/api/instances/entities?templateId=${defaultTemplateId}`);
+
+            expect(res.statusCode).toBe(200);
         });
     });
 });

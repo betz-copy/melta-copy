@@ -10,9 +10,9 @@ import config from '../../config';
 const mockDate = new Date();
 const mockDateStr = mockDate.toISOString();
 
+const defaultEntityTemplateId = '6';
+const defaultRelationshipTemplateId = 'rel-router';
 const unknownId = 'unkownId';
-const defaultRelationshipTemplateId = 'rel';
-const defaultEntityTemplateId = '5';
 const defaultProperties = { testProp: 'testProp' };
 const defaultEntity = {
     templateId: defaultEntityTemplateId,
@@ -73,7 +73,7 @@ describe('Relationship router', () => {
     });
 
     afterEach(async () => {
-        await Neo4jClient.writeTransaction(`match ()-[r:  \`${defaultRelationshipTemplateId}\`]-() delete r `, () => {});
+        await Neo4jClient.writeTransaction(`MATCH ()-[r: \`${defaultRelationshipTemplateId}\`]-() DELETE r `, () => {});
     });
 
     afterAll(async () => {

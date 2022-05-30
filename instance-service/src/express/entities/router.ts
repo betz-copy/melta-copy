@@ -24,11 +24,7 @@ entityRouter.post(
 entityRouter.post('/search', ValidateRequest(getEntitiesRequestSchema), wrapController(EntityController.getEntities));
 entityRouter.get('/:id', ValidateRequest(getEntityByIdRequestSchema), wrapController(EntityController.getEntityById));
 entityRouter.delete('/:id', ValidateRequest(deleteEntityByIdRequestSchema), wrapController(EntityController.deleteEntityById));
-entityRouter.delete(
-    '/:templateId',
-    ValidateRequest(deleteEntitiesByTemplateIdRequestSchema),
-    wrapController(EntityController.deleteEntitiesByTemplateId),
-);
+entityRouter.delete('/', ValidateRequest(deleteEntitiesByTemplateIdRequestSchema), wrapController(EntityController.deleteEntitiesByTemplateId));
 entityRouter.put(
     '/:id',
     ValidateRequest(updateEntityByIdRequestSchema),

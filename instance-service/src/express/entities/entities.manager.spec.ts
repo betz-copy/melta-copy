@@ -7,6 +7,7 @@ import RelationshipManager from '../relationships/manager';
 const { neo4j } = config;
 
 const defaultTemplateId = '2';
+const defaultRelationshipTemplateId = 'rel-entity';
 const defaultProperties = { testProp: 'testProp' };
 const defaultEntity = {
     templateId: defaultTemplateId,
@@ -24,6 +25,7 @@ describe('Entity manager', () => {
 
     afterEach(async () => {
         await EntityManager.deleteByTemplateId(defaultTemplateId);
+        await Neo4jClient.writeTransaction(`MATCH ()-[r: \`${defaultRelationshipTemplateId}\`]-() DELETE r `, () => {});
     });
 
     describe('Create entity', () => {
@@ -122,7 +124,7 @@ describe('Entity manager', () => {
 
                 // Create relationship between two entities
                 await RelationshipManager.createRelationshipByEntityIds({
-                    templateId: 'rel',
+                    templateId: defaultRelationshipTemplateId,
                     properties: defaultProperties,
                     sourceEntityId: id,
                     destinationEntityId: secondEntity.properties._id,
@@ -138,7 +140,7 @@ describe('Entity manager', () => {
 
                 expect(res.connections[0]).toBeDefined();
 
-                expect(res.connections[0].relationship.templateId).toBe('rel');
+                expect(res.connections[0].relationship.templateId).toBe(defaultRelationshipTemplateId);
                 expect(res.connections[0].relationship.properties).toEqual(expect.objectContaining(defaultProperties));
 
                 expect(res.connections[0].entity.templateId).toBe(defaultTemplateId);
@@ -171,7 +173,7 @@ describe('Entity manager', () => {
 
                 // Create relationship between two entities
                 await RelationshipManager.createRelationshipByEntityIds({
-                    templateId: 'rel',
+                    templateId: defaultRelationshipTemplateId,
                     properties: defaultProperties,
                     sourceEntityId: id,
                     destinationEntityId: secondEntity.properties._id,

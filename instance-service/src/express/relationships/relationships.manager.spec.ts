@@ -7,7 +7,7 @@ import RelationshipManager from './manager';
 const { neo4j } = config;
 
 const unknownId = 'unkownId';
-const defaultRelationshipTemplateId = 'rel';
+const defaultRelationshipTemplateId = 'rel-manager';
 const defaultEntityTemplateId = '5';
 const defaultProperties = { testProp: 'testProp' };
 const defaultEntity = {
@@ -29,7 +29,7 @@ describe('Relationship manager', () => {
 
     afterEach(async () => {
         await EntityManager.deleteByTemplateId(defaultEntityTemplateId);
-        await Neo4jClient.writeTransaction(`match ()-[r:  \`${defaultRelationshipTemplateId}\`]-() delete r `, () => {});
+        await Neo4jClient.writeTransaction(`MATCH ()-[r: \`${defaultRelationshipTemplateId}\`]-() DELETE r `, () => {});
     });
 
     beforeEach(async () => {
