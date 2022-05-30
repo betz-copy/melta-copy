@@ -11,7 +11,7 @@ const ViewingCard: React.FC<{
 }> = ({ title, icon, onEditClick, onDeleteClick, minWidth }) => {
     return (
         <Grid item>
-            <Card sx={{ minWidth: `${minWidth}px`, ':hover': { transform: 'scale(1.05)' } }}>
+            <Card sx={{ minWidth: `${minWidth}px`, borderRadius: '20px', ':hover': { transform: 'scale(1.05)' } }}>
                 <CardHeader avatar={icon} title={title} titleTypographyProps={{ fontSize: '1.5rem' }} />
                 <CardActions sx={{ justifyContent: 'space-between' }}>
                     <IconButton onClick={onEditClick}>
