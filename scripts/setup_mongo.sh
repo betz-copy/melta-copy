@@ -1,6 +1,6 @@
 #!/bin/bash
 
-MONGODB='mongo:27017'
+MONGODB='172.17.0.1:27017'
 
 sleep 10
 
