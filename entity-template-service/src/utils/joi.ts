@@ -26,6 +26,17 @@ const ExtendedJoi = Joi.extend(
         },
     },
     {
+        base: Joi.array(),
+        type: 'stringToArray',
+        coerce: (value: string, _helpers) => {
+            try {
+                return { value: JSON.parse(value) };
+            } catch {
+                return { value };
+            }
+        },
+    },
+    {
         base: Joi.string(),
         type: 'fileName',
         validate(value, _helpers) {
@@ -55,6 +66,16 @@ export const MongoIdSchema = Joi.string().regex(/^[0-9a-fA-F]{24}$/, 'valid Mong
 
 export const ColorSchema = Joi.string().regex(/^#[A-Fa-f0-9]{6}$/);
 
+const validatePropertiesArray = (value, propertiesKeys) => {
+    const isRequiredValid = value.every((item) => propertiesKeys.includes(item));
+
+    if (!isRequiredValid) {
+        throw new Error('not all items are properties');
+    }
+
+    return value;
+};
+
 export const innerPropertiesSchema = ExtendedJoi.stringToObject()
     .keys({
         type: Joi.string().valid('object').required(),
@@ -70,23 +91,34 @@ export const innerPropertiesSchema = ExtendedJoi.stringToObject()
             })
             .required(),
         required: Joi.array()
+            .unique()
             .items(Joi.string())
-            .custom((value, helpers) => {
-                const propertiesKeys = Object.keys(helpers.state.ancestors[0].properties);
-                const isRequiredValid = value.every((item) => propertiesKeys.includes(item));
-
-                if (!isRequiredValid) {
-                    throw new Error('Unknown required property');
-                }
-
-                return value;
-            }),
+            .custom((value, helpers) => validatePropertiesArray(value, Object.keys(helpers.state.ancestors[0].properties))),
     })
     .custom((value) => {
         ajv.compile(value); // throws an error if JSONSchema is invalid
 
         return value;
     });
+
+export const orderPropertiesSchema = ExtendedJoi.stringToArray()
+    .unique()
+    .items(Joi.string())
+    .custom((value, helpers) => {
+        const propertiesKeys = Object.keys(helpers.state.ancestors[0].properties.properties);
+
+        if (propertiesKeys.length !== value.length) {
+            throw new Error('not all fields are ordered');
+        }
+
+        return validatePropertiesArray(value, propertiesKeys);
+    })
+    .required();
+
+export const previewPropertiesSchema = ExtendedJoi.stringToArray()
+    .unique()
+    .items(Joi.string())
+    .custom((value, helpers) => validatePropertiesArray(value, Object.keys(helpers.state.ancestors[0].properties.properties)));
 
 export const fileSchema = Joi.object({
     filename: Joi.string().required(),
