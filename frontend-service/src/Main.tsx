@@ -1,6 +1,6 @@
 import React, { useState, lazy, Suspense } from 'react';
 import { CssBaseline, Box } from '@mui/material';
-import { Route, Routes, BrowserRouter as Router } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
 import rtlPlugin from 'stylis-plugin-rtl';
 import { CacheProvider } from '@emotion/react';
 import createCache from '@emotion/cache';
@@ -47,67 +47,62 @@ const Main = () => {
 
     return (
         <CacheProvider value={cacheRtl}>
-            <Router>
-                <Box display="flex">
-                    <CssBaseline />
-                    <SideBar toggleDrawer={toggleDrawer} isDrawerOpen={open} />
-                    <MainBox>
-                        <TopBar title={title} />
-                        <Box>
-                            <Suspense fallback={<div />}>
-                                <Routes>
-                                    <Route
-                                        path="/system-management"
-                                        element={
-                                            <SystemManagementProtectedRoute permissions={myPermissions}>
-                                                <SystemManagement setTitle={setTitle} />
-                                            </SystemManagementProtectedRoute>
-                                        }
-                                    />
-                                    <Route
-                                        path="/permissions-management"
-                                        element={
-                                            <PermissionsManagementProtectedRoute permissions={myPermissions}>
-                                                <PermissionsManagement setTitle={setTitle} />
-                                            </PermissionsManagementProtectedRoute>
-                                        }
-                                    />
-                                    <Route path="/unavailable" element={<Unavailable setTitle={setTitle} />} />
-                                    <Route
-                                        path="/category/:categoryId"
-                                        element={
-                                            <CategoryProtectedRoute permissions={myPermissions}>
-                                                <Category setTitle={setTitle} />
-                                            </CategoryProtectedRoute>
-                                        }
-                                    />
-                                    <Route
-                                        path="/entity/:entityId"
-                                        element={
-                                            <EntityProtectedRoute permissions={myPermissions} entityTemplates={entityTemplates}>
-                                                <Entity setTitle={setTitle} />
-                                            </EntityProtectedRoute>
-                                        }
-                                    />
-                                    <Route
-                                        path="/entity/:entityId/graph"
-                                        element={
-                                            <EntityProtectedRoute permissions={myPermissions} entityTemplates={entityTemplates}>
-                                                <Graph setTitle={setTitle} />
-                                            </EntityProtectedRoute>
-                                        }
-                                    />
-                                    <Route path="/" element={<Home setTitle={setTitle} />} />
-                                    <Route
-                                        path="*"
-                                        element={<ErrorPage setTitle={setTitle} errorText={i18next.t('errorPage.reachedTheWrongPage')} />}
-                                    />
-                                </Routes>
-                            </Suspense>
-                        </Box>
-                    </MainBox>
-                </Box>
-            </Router>
+            <Box display="flex">
+                <CssBaseline />
+                <SideBar toggleDrawer={toggleDrawer} isDrawerOpen={open} />
+                <MainBox>
+                    <TopBar title={title} />
+                    <Box>
+                        <Suspense fallback={<div />}>
+                            <Routes>
+                                <Route
+                                    path="/system-management"
+                                    element={
+                                        <SystemManagementProtectedRoute permissions={myPermissions}>
+                                            <SystemManagement setTitle={setTitle} />
+                                        </SystemManagementProtectedRoute>
+                                    }
+                                />
+                                <Route
+                                    path="/permissions-management"
+                                    element={
+                                        <PermissionsManagementProtectedRoute permissions={myPermissions}>
+                                            <PermissionsManagement setTitle={setTitle} />
+                                        </PermissionsManagementProtectedRoute>
+                                    }
+                                />
+                                <Route path="/unavailable" element={<Unavailable setTitle={setTitle} />} />
+                                <Route
+                                    path="/category/:categoryId"
+                                    element={
+                                        <CategoryProtectedRoute permissions={myPermissions}>
+                                            <Category setTitle={setTitle} />
+                                        </CategoryProtectedRoute>
+                                    }
+                                />
+                                <Route
+                                    path="/entity/:entityId"
+                                    element={
+                                        <EntityProtectedRoute permissions={myPermissions} entityTemplates={entityTemplates}>
+                                            <Entity setTitle={setTitle} />
+                                        </EntityProtectedRoute>
+                                    }
+                                />
+                                <Route
+                                    path="/entity/:entityId/graph"
+                                    element={
+                                        <EntityProtectedRoute permissions={myPermissions} entityTemplates={entityTemplates}>
+                                            <Graph setTitle={setTitle} />
+                                        </EntityProtectedRoute>
+                                    }
+                                />
+                                <Route path="/" element={<Home setTitle={setTitle} />} />
+                                <Route path="*" element={<ErrorPage setTitle={setTitle} errorText={i18next.t('errorPage.reachedTheWrongPage')} />} />
+                            </Routes>
+                        </Suspense>
+                    </Box>
+                </MainBox>
+            </Box>
         </CacheProvider>
     );
 };

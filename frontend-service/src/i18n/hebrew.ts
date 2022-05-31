@@ -25,6 +25,8 @@ export default {
         oops: 'אופס...',
         reachedTheWrongPage: 'הגעתם לעמוד הלא נכון',
         backToHome: 'לחזרה לעמוד הבית',
+        systemUnavailable: 'המערכת לא זמינה כרגע',
+        noPermissions: 'אין לך הרשאות לגשת לעמוד זה',
     },
     addRelationshipDialog: {
         title: 'הוסף קשר',

@@ -158,6 +158,9 @@ body {
     background-image: linear-gradient(45deg, #c9e5d9, #fff);
     border: 8px solid #a10532;
     z-index: 10;
+}
+
+.submarine__window__animation {
     animation: shadow-change 1s linear infinite;
 }
 

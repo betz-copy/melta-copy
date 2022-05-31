@@ -44,8 +44,8 @@ const ErrorPage: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string
                     <div className="submarine__sail-shadow dark2" />
                 </div>
                 <div className="submarine__body">
-                    <div className="submarine__window one" />
-                    <div className="submarine__window two" />
+                    <div className={`submarine__window one ${showEasterEgg ? '' : 'submarine__window__animation'}`} />
+                    <div className={`submarine__window two ${showEasterEgg ? '' : 'submarine__window__animation'}`} />
                     <div className="submarine__shadow-dark" />
                     <div className="submarine__shadow-light" />
                     <div className="submarine__shadow-arcLight" />

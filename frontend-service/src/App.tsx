@@ -16,6 +16,7 @@ import './css/index.css';
 import { IMongoCategory } from './interfaces/categories';
 import { IMongoEntityTemplatePopulated } from './interfaces/entityTemplates';
 import { IMongoRelationshipTemplate } from './interfaces/relationshipTemplates';
+import ErrorPage from './pages/ErrorPage';
 
 const App: React.FC = () => {
     const queryClient = useQueryClient();
@@ -84,9 +85,12 @@ const App: React.FC = () => {
         return <span>unauthorized</span>;
     }
 
-    const isError = isErrorAllTemplates || isErrorMyPermissions;
-    if (isError) {
-        return <span>error occurred</span>;
+    if (isErrorMyPermissions) {
+        return <ErrorPage setTitle={() => {}} errorText={i18next.t('errorPage.noPermissions')} />;
+    }
+
+    if (isErrorAllTemplates) {
+        return <ErrorPage setTitle={() => {}} errorText={i18next.t('errorPage.systemUnavailable')} />;
     }
 
     return <Main />;
