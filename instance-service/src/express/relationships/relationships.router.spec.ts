@@ -186,6 +186,20 @@ describe('Relationship router', () => {
             });
         });
 
+        describe('GET /api/instances/relationships/count?templateId', () => {
+            it('Should get a new relationship', async () => {
+                const relationshipsCount = await request(app).get(`/api/instances/relationships/count?templateId=${defaultRelationshipTemplateId}`);
+
+                expect(relationshipsCount.body).toStrictEqual(1);
+            });
+
+            it('Should fail to get an existing relationship', async () => {
+                const relationshipsCount = await request(app).get(`/api/instances/relationships/count?templateId=${unknownId}`);
+
+                expect(relationshipsCount.body).toStrictEqual(0);
+            });
+        });
+
         describe('PUT /api/instances/relationships/:id', () => {
             it('Should update a new relationship', async () => {
                 const relationship = await request(app)

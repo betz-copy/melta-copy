@@ -66,6 +66,20 @@ describe('Relationship manager', () => {
         });
     });
 
+    describe('Get relationship count by templateId', () => {
+        it('Should return number of relationships by templateId', async () => {
+            const relationshipsCount = await RelationshipManager.getRelationshipsCountByTemplateId(defaultRelationshipTemplateId);
+
+            expect(relationshipsCount).toStrictEqual(1);
+        });
+
+        it('Should fail to get an existing relationship', async () => {
+            const relationshipsCount = await RelationshipManager.getRelationshipsCountByTemplateId(unknownId);
+
+            expect(relationshipsCount).toStrictEqual(0);
+        });
+    });
+
     describe('Update relationship', () => {
         it('Should update an existing relationship', async () => {
             const relationship = await RelationshipManager.updateRelationshipPropertiesById(relId, { testProp: 'newTestProp' });

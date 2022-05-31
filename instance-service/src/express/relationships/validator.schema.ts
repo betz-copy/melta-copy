@@ -12,6 +12,17 @@ export const getRelationshipByIdRequestSchema = Joi.object({
 });
 
 /**
+ * GET /api/instances/relationships/count?templateId
+ */
+export const getRelationshipsCountRequestSchema = Joi.object({
+    query: {
+        templateId: Joi.string().required(),
+    },
+    body: {},
+    params: {},
+});
+
+/**
  * POST /api/instances/relationships
  */
 export const createRelationshipRequestSchema = Joi.object({

@@ -36,23 +36,28 @@ export const normalizeReturnedEntity =
         return entities;
     };
 
-export const normalizeReturnedEntitiesCount = (result: QueryResult) => {
+export const normalizeResponseCount = (result: QueryResult) => {
     return result.records[0].get(0).toNumber();
 };
 
-export const normalizeReturnedRelationship = (result: QueryResult) => {
-    if (!result.records.length) {
-        return null;
-    }
+export const normalizeReturnedRelationship =
+    (response: ResponseType = 'singleResponse') =>
+    (result: QueryResult) => {
+        const relationships = result.records.map((record) => {
+            const { type, properties } = record.get(0);
 
-    const relationshipRecord = result.records[0];
-    const { type, properties } = relationshipRecord.get(0);
+            return {
+                templateId: type,
+                properties: normalizeFields(properties),
+            };
+        });
 
-    return {
-        templateId: type,
-        properties: normalizeFields(properties),
+        if (response === 'singleResponse') {
+            return relationships.length > 0 ? relationships[0] : null;
+        }
+
+        return relationships;
     };
-};
 
 export const normalizeReturnedRelAndEntities = (result: QueryResult) => {
     if (!result.records.length) {

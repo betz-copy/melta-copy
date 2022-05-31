@@ -27,7 +27,7 @@ export const deleteEntityByIdRequestSchema = Joi.object({
 });
 
 /**
- * DELETE /api/instances/entities/:templateId
+ * DELETE /api/instances/entities?templateId
  */
 export const deleteEntitiesByTemplateIdRequestSchema = Joi.object({
     query: {

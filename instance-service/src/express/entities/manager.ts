@@ -5,7 +5,7 @@ import {
     getNeo4jDate,
     normalizeReturnedRelAndEntities,
     normalizeReturnedEntity,
-    normalizeReturnedEntitiesCount,
+    normalizeResponseCount,
 } from '../../utils/neo4j/lib';
 import { IEntity } from './interface';
 import { NotFoundError, ServiceError } from '../error';
@@ -31,7 +31,7 @@ export class EntityManager {
 
         const [nodes, nodesOverallCount] = await Promise.all([
             Neo4jClient.readTransaction(agGridRequestToNeo4JRequest(templateId, agGridRequest), normalizeReturnedEntity('multipleResponses')),
-            Neo4jClient.readTransaction(agGridRequestToNeo4JRequest(templateId, agGridRequest, true), normalizeReturnedEntitiesCount),
+            Neo4jClient.readTransaction(agGridRequestToNeo4JRequest(templateId, agGridRequest, true), normalizeResponseCount),
         ]);
 
         return { rows: nodes, lastRowIndex: nodesOverallCount };
@@ -49,10 +49,7 @@ export class EntityManager {
                 agGridSearchRequestToNeo4JRequest(templateId, latestIndex, agGridRequest),
                 normalizeReturnedEntity('multipleResponses'),
             ),
-            Neo4jClient.readTransaction(
-                agGridSearchRequestToNeo4JRequest(templateId, latestIndex, agGridRequest, true),
-                normalizeReturnedEntitiesCount,
-            ),
+            Neo4jClient.readTransaction(agGridSearchRequestToNeo4JRequest(templateId, latestIndex, agGridRequest, true), normalizeResponseCount),
         ]);
 
         return { rows: nodes, lastRowIndex: nodesOverallCount };

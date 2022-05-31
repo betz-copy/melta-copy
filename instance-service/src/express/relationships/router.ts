@@ -5,6 +5,7 @@ import {
     createRelationshipRequestSchema,
     deleteRelationshipByIdRequestSchema,
     updateRelationshipByIdRequestSchema,
+    getRelationshipsCountRequestSchema,
 } from './validator.schema';
 import ValidateRequest from '../../utils/joi';
 import RelationshipController from './controller';
@@ -12,8 +13,12 @@ import { validateRelationship } from './validator.template';
 
 const relationshipRouter: Router = Router();
 
+relationshipRouter.get(
+    '/count',
+    ValidateRequest(getRelationshipsCountRequestSchema),
+    wrapController(RelationshipController.getRelationshipsCountByTemplateId),
+);
 relationshipRouter.get('/:id', ValidateRequest(getRelationshipByIdRequestSchema), wrapController(RelationshipController.getRelationshipById));
-
 relationshipRouter.post(
     '/',
     ValidateRequest(createRelationshipRequestSchema),
