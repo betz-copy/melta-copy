@@ -16,6 +16,8 @@ export interface IEntityTemplate {
         required: string[];
     };
     category: IMongoCategory['_id'];
+    propertiesOrder: string[];
+    propertiesPreview: string[];
 }
 
 export interface IEntityTemplatePopulated extends Omit<IEntityTemplate, 'category'> {

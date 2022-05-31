@@ -1,15 +1,16 @@
-/* eslint-disable react/jsx-no-useless-fragment */
 import React from 'react';
-import { TextField, Box, MenuItem, Button, Grid, Card, CardContent, Switch, FormControlLabel, IconButton } from '@mui/material';
-import { Field, FieldArray, getIn } from 'formik';
+import { Button, Grid } from '@mui/material';
+import { FieldArray } from 'formik';
 import * as Yup from 'yup';
 import i18next from 'i18next';
-import { Delete as DeleteIcon } from '@mui/icons-material';
 import { useQuery, useQueryClient } from 'react-query';
+import { DragDropContext, Droppable } from 'react-beautiful-dnd';
+import { v4 as uuid } from 'uuid';
 import { variableNameValidation } from '../../../utils/validation';
 import { EntityTemplateWizardValues } from './index';
 import { StepComponentProps } from '../index';
 import { getEntitiesByTemplateRequest } from '../../../services/entitiesService';
+import FieldEditCard from './FieldEditCard';
 
 const basePropertyTypes = ['string', 'number', 'boolean'];
 const stringTypes = ['date', 'date-time', 'email'];
@@ -23,6 +24,7 @@ const addFieldsSchema = {
                 title: Yup.string().required(i18next.t('validation.required')),
                 type: Yup.string().oneOf(validPropertyTypes, i18next.t('validation.invalidPropertyType')).required(i18next.t('validation.required')),
                 required: Yup.boolean().required(i18next.t('validation.required')),
+                preview: Yup.boolean().required(i18next.t('validation.required')),
             }),
         )
         .min(1, i18next.t('validation.oneField'))
@@ -61,114 +63,55 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues>> = ({
         ])!.lastRowIndex > 0;
 
     return (
-        <FieldArray name="properties">
-            {({ push, remove }) => (
-                <>
-                    <Grid container maxWidth="950px" spacing={2}>
-                        {values.properties.map((p, index) => {
-                            const name = `properties[${index}].name`;
-                            const touchedName = getIn(touched, name);
-                            const errorName = getIn(errors, name);
+        <FieldArray name="properties" validateOnChange={false}>
+            {({ push, remove, move }) => (
+                <DragDropContext onDragEnd={(result) => result.destination && move(result.source.index, result.destination.index)}>
+                    <Droppable droppableId="fieldArea">
+                        {(droppableProvided) => (
+                            <Grid
+                                container
+                                ref={droppableProvided.innerRef}
+                                {...droppableProvided.droppableProps}
+                                direction="column"
+                                alignItems="center"
+                                maxWidth="80%"
+                            >
+                                {values.properties.map((property, index) => (
+                                    <FieldEditCard
+                                        key={property.id}
+                                        value={property}
+                                        index={index}
+                                        isEditMode={isEditMode}
+                                        initialValues={initialValues}
+                                        areThereAnyInstances={areThereAnyInstances}
+                                        touched={touched}
+                                        errors={errors}
+                                        handleChange={handleChange}
+                                        remove={remove}
+                                    />
+                                ))}
 
-                            const title = `properties[${index}].title`;
-                            const touchedTitle = getIn(touched, title);
-                            const errorTitle = getIn(errors, title);
+                                {droppableProvided.placeholder}
 
-                            const type = `properties[${index}].type`;
-                            const touchedType = getIn(touched, type);
-                            const errorType = getIn(errors, type);
+                                <Button
+                                    type="button"
+                                    variant="contained"
+                                    style={{ margin: '8px' }}
+                                    onClick={() => push({ id: uuid(), name: '', title: '', type: '', required: false, preview: false })}
+                                >
+                                    {i18next.t('wizard.entityTemplate.addProperty')}
+                                </Button>
 
-                            const required = `properties[${index}].required`;
-                            const isNewProperty = Boolean(initialValues.properties.find((property) => property.name === p.name));
-
-                            return (
-                                <Grid item key={name}>
-                                    <Card>
-                                        <CardContent>
-                                            <Grid container margin={1} justifyContent="space-between">
-                                                <FormControlLabel
-                                                    control={
-                                                        <Field
-                                                            id={required}
-                                                            name={required}
-                                                            component={Switch}
-                                                            onChange={handleChange}
-                                                            checked={p.required}
-                                                            disabled={isEditMode && areThereAnyInstances}
-                                                        />
-                                                    }
-                                                    label={i18next.t('validation.required') as string}
-                                                />
-                                                <IconButton
-                                                    disabled={isEditMode && areThereAnyInstances && isNewProperty}
-                                                    onClick={() => remove(index)}
-                                                >
-                                                    <DeleteIcon />
-                                                </IconButton>
-                                            </Grid>
-                                            <Box margin={1}>
-                                                <TextField
-                                                    label={i18next.t('wizard.entityTemplate.propertyName')}
-                                                    name={name}
-                                                    value={p.name}
-                                                    onChange={handleChange}
-                                                    error={touchedName && Boolean(errorName)}
-                                                    helperText={touchedName && errorName}
-                                                    disabled={isEditMode && isNewProperty}
-                                                />
-                                            </Box>
-                                            <Box margin={1}>
-                                                <TextField
-                                                    label={i18next.t('wizard.entityTemplate.propertyDisplayName')}
-                                                    name={title}
-                                                    value={p.title}
-                                                    onChange={handleChange}
-                                                    error={touchedTitle && Boolean(errorTitle)}
-                                                    helperText={touchedTitle && errorTitle}
-                                                />
-                                            </Box>
-                                            <Box margin={1}>
-                                                <TextField
-                                                    select
-                                                    fullWidth
-                                                    type="text"
-                                                    label={i18next.t('wizard.entityTemplate.propertyType')}
-                                                    name={type}
-                                                    value={p.type}
-                                                    onChange={handleChange}
-                                                    error={touchedType && Boolean(errorType)}
-                                                    helperText={touchedType && errorType}
-                                                    disabled={isEditMode && areThereAnyInstances && isNewProperty}
-                                                >
-                                                    {validPropertyTypes.map((validType) => (
-                                                        <MenuItem key={validType} value={validType}>
-                                                            {i18next.t(`propertyTypes.${validType}`)}
-                                                        </MenuItem>
-                                                    ))}
-                                                </TextField>
-                                            </Box>
-                                        </CardContent>
-                                    </Card>
-                                </Grid>
-                            );
-                        })}
-                    </Grid>
-                    <Button
-                        type="button"
-                        variant="contained"
-                        style={{ margin: '8px' }}
-                        onClick={() => push({ name: '', title: '', type: '', required: false })}
-                    >
-                        {i18next.t('wizard.entityTemplate.addProperty')}
-                    </Button>
-
-                    {errors.properties === i18next.t('validation.oneField') && (
-                        <div style={{ color: '#d32f2f' }}>{i18next.t('validation.oneField')}</div>
-                    )}
-                </>
+                                {errors.properties === i18next.t('validation.oneField') && (
+                                    <div style={{ color: '#d32f2f' }}>{i18next.t('validation.oneField')}</div>
+                                )}
+                            </Grid>
+                        )}
+                    </Droppable>
+                </DragDropContext>
             )}
         </FieldArray>
     );
 };
 
-export { AddFields, addFieldsSchema };
+export { AddFields, addFieldsSchema, validPropertyTypes };

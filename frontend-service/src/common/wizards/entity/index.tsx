@@ -55,6 +55,8 @@ const EntityWizard: React.FC<WizardBaseType<EntityWizardValues>> = ({
                 required: [],
                 type: 'object',
             },
+            propertiesOrder: [],
+            propertiesPreview: [],
         },
         properties: {},
         attachmentsProperties: {},

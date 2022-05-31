@@ -1,3 +1,4 @@
+import { v4 as uuid } from 'uuid';
 import axios from '../../axios';
 import { EntityTemplateFormInputProperties, EntityTemplateWizardValues } from '../../common/wizards/entityTemplate';
 import { environment } from '../../globals';
@@ -8,16 +9,32 @@ const basePropertyTypes = ['string', 'number', 'boolean'];
 
 const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTemplatePopulated | null): EntityTemplateWizardValues | undefined => {
     if (!entityTemplate) return undefined;
-    const { iconFileId, properties, ...restOfEntityTemplate } = entityTemplate;
+    const { iconFileId, properties, propertiesOrder, propertiesPreview, ...restOfEntityTemplate } = entityTemplate;
 
     const propertiesArray: EntityTemplateFormInputProperties[] = [];
     const attachmentProperties: EntityTemplateFormInputProperties[] = [];
 
-    Object.entries(properties.properties).forEach(([key, value]) => {
+    propertiesOrder.forEach((key) => {
+        const value = properties.properties[key];
+
         if (value.format === 'fileId') {
-            attachmentProperties.push({ name: key, ...value, required: properties.required.includes(key), type: value.format || value.type });
+            attachmentProperties.push({
+                id: uuid(),
+                name: key,
+                ...value,
+                required: properties.required.includes(key),
+                preview: propertiesPreview.includes(key),
+                type: value.format || value.type,
+            });
         } else {
-            propertiesArray.push({ name: key, ...value, required: properties.required.includes(key), type: value.format || value.type });
+            propertiesArray.push({
+                id: uuid(),
+                name: key,
+                ...value,
+                required: properties.required.includes(key),
+                preview: propertiesPreview.includes(key),
+                type: value.format || value.type,
+            });
         }
     });
 
@@ -29,23 +46,28 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
     return { ...restOfEntityTemplate, properties: propertiesArray, attachmentProperties };
 };
 
-const formToJSONSchema = (values: EntityTemplateWizardValues) => {
+const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTemplate => {
     const { properties, attachmentProperties, ...restOfProperties } = values;
 
+    const propertiesOrder: string[] = [];
+    const propertiesPreview: string[] = [];
     const schema = {
-        type: 'object',
+        type: 'object' as 'object',
         properties: {} as any,
         required: [] as string[],
     };
 
-    properties.forEach(({ name, title, type, required }) => {
+    properties.forEach(({ name, title, type, required, preview }) => {
         schema.properties[name] = {
             title,
             type: basePropertyTypes.includes(type) ? type : 'string',
             format: basePropertyTypes.includes(type) ? undefined : type,
         };
 
+        propertiesOrder.push(name);
+
         if (required) schema.required.push(name);
+        if (preview) propertiesPreview.push(name);
     });
 
     attachmentProperties.forEach(({ name, title, required }) => {
@@ -55,10 +77,12 @@ const formToJSONSchema = (values: EntityTemplateWizardValues) => {
             format: 'fileId',
         };
 
+        propertiesOrder.push(name);
+
         if (required) schema.required.push(name);
     });
 
-    return { ...restOfProperties, properties: schema, category: values.category._id } as IEntityTemplate;
+    return { ...restOfProperties, properties: schema, category: values.category._id, propertiesOrder, propertiesPreview };
 };
 
 const createEntityTemplateRequest = async (newEntityTemplate: EntityTemplateWizardValues) => {
@@ -74,6 +98,8 @@ const createEntityTemplateRequest = async (newEntityTemplate: EntityTemplateWiza
     formData.append('name', entityTemplate.name);
     formData.append('category', entityTemplate.category);
     formData.append('properties', JSON.stringify(entityTemplate.properties));
+    formData.append('propertiesOrder', JSON.stringify(entityTemplate.propertiesOrder));
+    formData.append('propertiesPreview', JSON.stringify(entityTemplate.propertiesPreview));
 
     const { data } = await axios.post<IMongoEntityTemplatePopulated>(entityTemplates, formData);
     return data;
@@ -96,6 +122,8 @@ const updateEntityTemplateRequest = async (entityTemplateId: string, updatedEnti
     formData.append('name', entityTemplate.name);
     formData.append('category', entityTemplate.category);
     formData.append('properties', JSON.stringify(entityTemplate.properties));
+    formData.append('propertiesOrder', JSON.stringify(entityTemplate.propertiesOrder));
+    formData.append('propertiesPreview', JSON.stringify(entityTemplate.propertiesPreview));
 
     const { data } = await axios.put<IMongoEntityTemplatePopulated>(`${entityTemplates}/${entityTemplateId}`, formData);
     return data;

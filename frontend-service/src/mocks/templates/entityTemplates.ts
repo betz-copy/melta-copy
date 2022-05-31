@@ -39,6 +39,8 @@ const entityTemplates = [
             },
             required: ['name', 'destination', 'firstFile'],
         },
+        propertiesOrder: ['name', 'destination', 'startDate', 'endDate', 'firstFile'],
+        propertiesPreview: ['name', 'destination', 'startDate', 'endDate'],
     },
     {
         _id: '61e3ea6e4d51a83e87e83c7f',
@@ -76,6 +78,8 @@ const entityTemplates = [
             },
             required: ['firstName', 'lastName', 'firstFile'],
         },
+        propertiesOrder: ['firstName', 'lastName', 'age', 'gender', 'firstFile'],
+        propertiesPreview: ['firstName', 'lastName', 'age'],
     },
     {
         _id: '61e3ea6e4d51a83e87e83c80',
@@ -112,6 +116,8 @@ const entityTemplates = [
             },
             required: ['firstName', 'lastName', 'agentId'],
         },
+        propertiesOrder: ['firstName', 'lastName', 'age', 'gender', 'agentId'],
+        propertiesPreview: ['firstName', 'lastName', 'age'],
     },
     {
         _id: '61e3ea6e4d51a83e87e83c81',
@@ -152,8 +158,10 @@ const entityTemplates = [
                     title: 'סוג המטוס',
                 },
             },
-            required: ['flightNumber', 'departureDate', 'landingDate'],
+            required: ['flightNumber', 'departureDate', 'landingDate', 'from'],
         },
+        propertiesOrder: ['flightNumber', 'departureDate', 'landingDate', 'from', 'to', 'planeType'],
+        propertiesPreview: ['flightNumber', 'from', 'to'],
     },
     {
         _id: '61e3ea6e4d51a83e87e83c82',
@@ -182,6 +190,8 @@ const entityTemplates = [
             },
             required: ['airportName', 'airportId', 'country'],
         },
+        propertiesOrder: ['airportName', 'airportId', 'country'],
+        propertiesPreview: ['airportName', 'country'],
     },
     {
         _id: '61e3ea6e4d51a83e87e83c83',
@@ -220,6 +230,8 @@ const entityTemplates = [
             },
             required: ['hotelName', 'checkInDate', 'checkOutDate', 'country'],
         },
+        propertiesOrder: ['hotelName', 'hotelChain', 'checkInDate', 'checkOutDate', 'country'],
+        propertiesPreview: ['hotelName', 'checkInDate', 'checkOutDate'],
     },
     {
         _id: '61e3ea6e4d51a83e87e83c84',
@@ -254,6 +266,8 @@ const entityTemplates = [
             },
             required: ['name', 'checkInDate', 'checkOutDate', 'country'],
         },
+        propertiesOrder: ['name', 'checkInDate', 'checkOutDate', 'country'],
+        propertiesPreview: ['name', 'checkInDate', 'checkOutDate'],
     },
     {
         _id: '61e3ea6e4d51a83e87e83c85',
@@ -287,6 +301,8 @@ const entityTemplates = [
             },
             required: ['name', 'company', 'expirtaionDate', 'monthlyAmount'],
         },
+        propertiesOrder: ['name', 'company', 'expirtaionDate', 'monthlyAmount'],
+        propertiesPreview: ['name', 'expirtaionDate'],
     },
     {
         _id: '61e3ea6e4d51a83e87e83c86',
@@ -312,6 +328,8 @@ const entityTemplates = [
             },
             required: ['name', 'amount'],
         },
+        propertiesOrder: ['name', 'amount'],
+        propertiesPreview: ['name', 'amount'],
     },
     {
         _id: '61e3ea6e4d51a83e87e83c87',
@@ -340,6 +358,8 @@ const entityTemplates = [
             },
             required: ['model', 'serialNumber'],
         },
+        propertiesOrder: ['model', 'color', 'serialNumber'],
+        propertiesPreview: ['model', 'serialNumber'],
     },
     {
         _id: '61e3ea6e4d51a83e87e83c88',
@@ -364,6 +384,8 @@ const entityTemplates = [
             },
             required: ['company', 'number'],
         },
+        propertiesOrder: ['company', 'number'],
+        propertiesPreview: ['company', 'number'],
     },
     {
         _id: '61e3ea6e4d51a83e87e83c89',
@@ -392,6 +414,8 @@ const entityTemplates = [
             },
             required: ['company', 'color'],
         },
+        propertiesOrder: ['company', 'color', 'weight'],
+        propertiesPreview: ['company', 'weight'],
     },
 ];
 const mockEntityTemplates = (mock: MockAdapter) => {
@@ -431,6 +455,8 @@ const mockEntityTemplates = (mock: MockAdapter) => {
                 },
                 required: ['name', 'destination'],
             },
+            propertiesOrder: ['name', 'destination', 'startDate', 'endDate'],
+            propertiesPreview: ['name', 'destination'],
         },
     ]);
 
@@ -470,6 +496,8 @@ const mockEntityTemplates = (mock: MockAdapter) => {
                 },
                 required: ['name', 'destination'],
             },
+            propertiesOrder: ['name', 'destination', 'startDate', 'endDate'],
+            propertiesPreview: ['name', 'destination'],
         },
     ]);
 

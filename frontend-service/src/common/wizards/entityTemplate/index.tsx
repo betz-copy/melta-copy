@@ -16,8 +16,11 @@ export interface EntityTemplateFormInputProperties {
     title: string;
     type: string;
     required: boolean;
+    preview: boolean;
+    id: string;
 }
-export interface EntityTemplateWizardValues extends Omit<IEntityTemplatePopulated, 'properties' | 'iconFileId'> {
+export interface EntityTemplateWizardValues
+    extends Omit<IEntityTemplatePopulated, 'properties' | 'iconFileId' | 'propertiesOrder' | 'propertiesPreview'> {
     properties: EntityTemplateFormInputProperties[];
     attachmentProperties: EntityTemplateFormInputProperties[];
     file?: Partial<File>;

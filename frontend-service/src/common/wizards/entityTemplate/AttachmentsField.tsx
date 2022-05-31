@@ -69,7 +69,7 @@ const AttachmentsField: React.FC<StepComponentProps<EntityTemplateWizardValues>>
                             const isNewProperty = Boolean(initialValues.properties.find((property) => property.name === p.name));
 
                             return (
-                                <Grid item key={name}>
+                                <Grid item key={name} margin="10px">
                                     <Card>
                                         <CardContent>
                                             <Grid container margin={1} justifyContent="space-between">

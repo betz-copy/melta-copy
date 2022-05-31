@@ -140,6 +140,7 @@ export default {
             propertyDisplayName: 'שם שדה לתצוגה',
             attachmentDisplayName: 'שם קובץ לתצוגה',
             propertyType: 'סוג שדה',
+            propertyPreview: 'תצוגה מצומצמת',
             addProperty: 'הוסף שדה',
             addAttachment: 'הוסף קובץ',
             chooseCategroy: 'בחירת קטגוריה',
@@ -171,6 +172,7 @@ export default {
     },
     validation: {
         required: 'חובה',
+        preview: 'תצוגה מצומצמת',
         invalidPropertyType: 'סוג שדה לא תקין',
         hebrew: 'עברית',
         oneField: 'לפחות שדה חובה אחד',
