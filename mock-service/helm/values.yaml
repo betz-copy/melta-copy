@@ -18,3 +18,5 @@ config:
       value: http://relationship-template-manager:8000
     - name: INSTANCE_MANAGER_URI
       value: http://instance-manager:8000
+    - name: PERMISSIONS_API_URI
+      value: http://permission-api:8000
