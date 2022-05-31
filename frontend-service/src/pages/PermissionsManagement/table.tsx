@@ -10,6 +10,7 @@ import { Delete as DeleteIcon, Edit as EditIcon } from '@mui/icons-material';
 import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
 import { MenuModule } from '@noam7700/ag-grid-enterprise-menu';
 import { SetFilterModule } from '@noam7700/ag-grid-enterprise-set-filter';
+import ScrollContainer from 'react-indiana-drag-scroll';
 import { IMongoCategory } from '../../interfaces/categories';
 import { IPermissionsOfUser } from '../../services/permissionsService';
 import { IUser } from '../../services/kartoffelService';
@@ -132,13 +133,15 @@ const columnDefs = (
             instancesPermissionsPopulated.sort((a, b) => a.category._id.localeCompare(b.category._id));
 
             return (
-                <Grid container spacing={1} wrap="nowrap">
-                    {instancesPermissionsPopulated.map(({ _id, category }) => (
-                        <Grid item key={_id}>
-                            <Chip label={category.displayName} />
-                        </Grid>
-                    ))}
-                </Grid>
+                <ScrollContainer horizontal vertical={false}>
+                    <Grid container spacing={1} wrap="nowrap">
+                        {instancesPermissionsPopulated.map(({ _id, category }) => (
+                            <Grid item key={_id}>
+                                <Chip label={category.displayName} />
+                            </Grid>
+                        ))}
+                    </Grid>
+                </ScrollContainer>
             );
         },
     },
