@@ -2,20 +2,36 @@ import { Request } from 'express';
 import * as Joi from 'joi';
 import { wrapValidator } from './express';
 
-export const ExtendedJoi = Joi.extend({
-    base: Joi.object(),
-    type: 'stringToObject',
-    messages: {
-        'string.object': '{{#label}} is not a string of json object',
+export const ExtendedJoi = Joi.extend(
+    {
+        base: Joi.object(),
+        type: 'stringToObject',
+        messages: {
+            'string.object': '{{#label}} is not a string of json object',
+        },
+        coerce: (value: string, helpers) => {
+            try {
+                return { value: JSON.parse(value) };
+            } catch {
+                return { errors: [helpers.error('string.object')] };
+            }
+        },
     },
-    coerce: (value: string, helpers) => {
-        try {
-            return { value: JSON.parse(value) };
-        } catch {
-            return { errors: [helpers.error('string.object')] };
-        }
+    {
+        base: Joi.array(),
+        type: 'stringToArray',
+        messages: {
+            'string.array': '{{#label}} is not a string of array',
+        },
+        coerce: (value: string, helpers) => {
+            try {
+                return { value: JSON.parse(value) };
+            } catch {
+                return { errors: [helpers.error('string.array')] };
+            }
+        },
     },
-});
+);
 
 export const MongoIdSchema = Joi.string().regex(/^[0-9a-fA-F]{24}$/, 'valid MongoId');
 

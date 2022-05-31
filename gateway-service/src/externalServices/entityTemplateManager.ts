@@ -29,6 +29,8 @@ export interface IEntityTemplate {
         properties: Record<string, IEntitySingleProperty>;
         required: string[];
     };
+    propertiesOrder: string[];
+    propertiesPreview: string[];
     disabled: boolean;
     iconFileId: string | null;
 }

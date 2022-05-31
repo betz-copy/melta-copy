@@ -1,5 +1,5 @@
 import * as Joi from 'joi';
-import { MongoIdSchema, fileSchema, ColorSchema } from '../../utils/joi';
+import { MongoIdSchema, fileSchema, ColorSchema, ExtendedJoi } from '../../utils/joi';
 
 // POST /api/templates/categories
 export const createCategorySchema = Joi.object({
@@ -44,7 +44,9 @@ export const createEntityTemplateSchema = Joi.object({
         displayName: Joi.string().required(),
         category: Joi.string().required(),
         disabled: Joi.boolean().default(false),
-        properties: Joi.string().required(),
+        properties: ExtendedJoi.stringToObject().required(),
+        propertiesOrder: ExtendedJoi.stringToArray().required(),
+        propertiesPreview: ExtendedJoi.stringToArray().required(),
     },
     query: {},
     params: {},
@@ -58,8 +60,10 @@ export const updateEntityTemplateSchema = Joi.object({
         displayName: Joi.string(),
         category: Joi.string(),
         disabled: Joi.boolean(),
-        properties: Joi.string(),
+        properties: ExtendedJoi.stringToObject(),
         iconFileId: Joi.string().allow(null),
+        propertiesOrder: ExtendedJoi.stringToArray(),
+        propertiesPreview: ExtendedJoi.stringToArray(),
     },
     query: {},
     params: {
