@@ -148,6 +148,7 @@ describe('Relationship router', () => {
 
     describe('Tests to perform after relationship is created', () => {
         let entityId: string;
+        let secondEntityId: string;
         let relId: string;
 
         beforeEach(async () => {
@@ -158,12 +159,14 @@ describe('Relationship router', () => {
             // Create second entities
             const secondEntity = await request(app).post('/api/instances/entities').send(defaultEntity);
 
+            secondEntityId = secondEntity.body.properties._id;
+
             // Create relationship between two entities
             const { body: relBody } = await request(app).post('/api/instances/relationships').send({
                 templateId: defaultRelationshipTemplateId,
                 properties: defaultProperties,
                 sourceEntityId: entityId,
-                destinationEntityId: secondEntity.body.properties._id,
+                destinationEntityId: secondEntityId,
             });
 
             relId = relBody.properties._id;
@@ -175,6 +178,8 @@ describe('Relationship router', () => {
 
                 expect(relationship.body.templateId).toStrictEqual(defaultRelationshipTemplateId);
                 expect(relationship.body.properties).toEqual(expect.objectContaining(defaultProperties));
+                expect(relationship.body.sourceEntityId).toStrictEqual(entityId);
+                expect(relationship.body.destinationEntityId).toStrictEqual(secondEntityId);
             });
 
             it('Should fail to get an existing relationship', async () => {
@@ -208,6 +213,8 @@ describe('Relationship router', () => {
 
                 expect(relationship.body.templateId).toStrictEqual(defaultRelationshipTemplateId);
                 expect(relationship.body.properties).toEqual(expect.objectContaining({ testProp: 'newTestProp' }));
+                expect(relationship.body.sourceEntityId).toStrictEqual(entityId);
+                expect(relationship.body.destinationEntityId).toStrictEqual(secondEntityId);
             });
 
             it('Should fail to update an existing relationship', async () => {

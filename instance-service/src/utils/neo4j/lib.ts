@@ -44,11 +44,15 @@ export const normalizeReturnedRelationship =
     (response: ResponseType = 'singleResponse') =>
     (result: QueryResult) => {
         const relationships = result.records.map((record) => {
-            const { type, properties } = record.get(0);
+            const { type, properties } = record.get('r');
+            const { properties: sourceEntityProps } = record.get('s');
+            const { properties: destEntityProps } = record.get('d');
 
             return {
                 templateId: type,
                 properties: normalizeFields(properties),
+                sourceEntityId: sourceEntityProps._id,
+                destinationEntityId: destEntityProps._id,
             };
         });
 

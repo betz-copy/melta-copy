@@ -5,7 +5,10 @@ import { NotFoundError, ServiceError } from '../error';
 
 export class RelationshipManager {
     static async getRelationshipById(id: string) {
-        const relationship = await Neo4jClient.readTransaction(`MATCH ()-[r]-() WHERE r._id='${id}' RETURN r`, normalizeReturnedRelationship());
+        const relationship = await Neo4jClient.readTransaction(
+            `MATCH (s)-[r]->(d) WHERE r._id='${id}' RETURN r, s, d`,
+            normalizeReturnedRelationship(),
+        );
 
         if (!relationship) {
             throw new NotFoundError(`[NEO4J] relationship "${id}" not found`);
@@ -28,7 +31,7 @@ export class RelationshipManager {
         };
 
         const edge = await Neo4jClient.writeTransaction(
-            `MATCH (s {_id: '${sourceEntityId}'}),(d {_id: '${destinationEntityId}'}) CREATE (s)-[r: \`${templateId}\` $relProps]->(d) RETURN r`,
+            `MATCH (s {_id: '${sourceEntityId}'}),(d {_id: '${destinationEntityId}'}) CREATE (s)-[r: \`${templateId}\` $relProps]->(d) RETURN r, s, d`,
             normalizeReturnedRelationship(),
             { relProps },
         );
@@ -42,7 +45,7 @@ export class RelationshipManager {
 
     static async deleteRelationshipById(id: string) {
         const relationship = await Neo4jClient.writeTransaction(
-            `MATCH ()-[r]-() WHERE r._id='${id}' DELETE r RETURN r`,
+            `MATCH (s)-[r]-(d) WHERE r._id='${id}' DELETE r RETURN r, s, d`,
             normalizeReturnedRelationship(),
         );
 
@@ -53,7 +56,7 @@ export class RelationshipManager {
 
     static async updateRelationshipPropertiesById(id: string, relationshipProperties: object) {
         const edge = await Neo4jClient.writeTransaction(
-            `MATCH ()-[r]->() WHERE r._id='${id}' SET r += $props RETURN r`,
+            `MATCH (s)-[r]->(d) WHERE r._id='${id}' SET r += $props RETURN r, s, d`,
             normalizeReturnedRelationship(),
             {
                 props: {

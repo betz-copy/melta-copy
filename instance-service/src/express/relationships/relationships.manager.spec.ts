@@ -17,6 +17,7 @@ const defaultEntity = {
 
 describe('Relationship manager', () => {
     let entityId: string;
+    let secondEntityId: string;
     let relId: string;
 
     beforeAll(async () => {
@@ -40,12 +41,14 @@ describe('Relationship manager', () => {
         // Create second entities
         const secondEntity = await EntityManager.createEntity(defaultEntity);
 
+        secondEntityId = secondEntity.properties._id;
+
         // Create relationship between two entities
         const { properties: relProperties } = await RelationshipManager.createRelationshipByEntityIds({
             templateId: defaultRelationshipTemplateId,
             properties: defaultProperties,
             sourceEntityId: entityId,
-            destinationEntityId: secondEntity.properties._id,
+            destinationEntityId: secondEntityId,
         });
 
         relId = relProperties._id;
@@ -57,6 +60,8 @@ describe('Relationship manager', () => {
 
             expect(relationship.templateId).toStrictEqual(defaultRelationshipTemplateId);
             expect(relationship.properties).toEqual(expect.objectContaining(defaultProperties));
+            expect(relationship.sourceEntityId).toStrictEqual(entityId);
+            expect(relationship.destinationEntityId).toStrictEqual(secondEntityId);
         });
 
         it('Should fail to get an existing relationship', async () => {
@@ -86,6 +91,8 @@ describe('Relationship manager', () => {
 
             expect(relationship.templateId).toStrictEqual(defaultRelationshipTemplateId);
             expect(relationship.properties).toEqual(expect.objectContaining({ testProp: 'newTestProp' }));
+            expect(relationship.sourceEntityId).toStrictEqual(entityId);
+            expect(relationship.destinationEntityId).toStrictEqual(secondEntityId);
         });
 
         it('Should fail to update an existing relationship', async () => {
