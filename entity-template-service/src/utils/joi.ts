@@ -13,42 +13,18 @@ addFormats(ajv);
 
 const stringFormats = ['date', 'date-time', 'email', 'fileId'];
 const allowedJSONSchemaTypes = ['string', 'number', 'boolean'];
-const ExtendedJoi = Joi.extend(
-    {
-        base: Joi.object(),
-        type: 'stringToObject',
-        coerce: (value: string, _helpers) => {
-            try {
-                return { value: JSON.parse(value) };
-            } catch {
-                return { value };
-            }
-        },
-    },
-    {
-        base: Joi.array(),
-        type: 'stringToArray',
-        coerce: (value: string, _helpers) => {
-            try {
-                return { value: JSON.parse(value) };
-            } catch {
-                return { value };
-            }
-        },
-    },
-    {
-        base: Joi.string(),
-        type: 'fileName',
-        validate(value, _helpers) {
-            const fileExtension = path.extname(value).slice(1).toLowerCase();
-            if (!supportedFilesTypes.includes(fileExtension)) {
-                throw new Joi.ValidationError('File type not supported', 'File type not supported', '');
-            }
+const ExtendedJoi = Joi.extend({
+    base: Joi.string(),
+    type: 'fileName',
+    validate(value, _helpers) {
+        const fileExtension = path.extname(value).slice(1).toLowerCase();
+        if (!supportedFilesTypes.includes(fileExtension)) {
+            throw new Joi.ValidationError('File type not supported', 'File type not supported', '');
+        }
 
-            return value;
-        },
+        return value;
     },
-);
+});
 
 const propertiesArraySchema = Joi.array()
     .items(
@@ -76,7 +52,11 @@ const validatePropertiesArray = (value, propertiesKeys) => {
     return value;
 };
 
-export const innerPropertiesSchema = ExtendedJoi.stringToObject()
+const customRequiredValidation = (value, helpers) => {
+    validatePropertiesArray(value, Object.keys(helpers.state.ancestors[0].properties));
+};
+
+export const innerPropertiesSchema = Joi.object()
     .keys({
         type: Joi.string().valid('object').required(),
         properties: Joi.object()
@@ -90,10 +70,7 @@ export const innerPropertiesSchema = ExtendedJoi.stringToObject()
                 return value;
             })
             .required(),
-        required: Joi.array()
-            .unique()
-            .items(Joi.string())
-            .custom((value, helpers) => validatePropertiesArray(value, Object.keys(helpers.state.ancestors[0].properties))),
+        required: Joi.array().unique().items(Joi.string()).custom(customRequiredValidation),
     })
     .custom((value) => {
         ajv.compile(value); // throws an error if JSONSchema is invalid
@@ -101,24 +78,27 @@ export const innerPropertiesSchema = ExtendedJoi.stringToObject()
         return value;
     });
 
-export const orderPropertiesSchema = ExtendedJoi.stringToArray()
-    .unique()
-    .items(Joi.string())
-    .custom((value, helpers) => {
-        const propertiesKeys = Object.keys(helpers.state.ancestors[0].properties.properties);
+const customOrderPropertiesValidation = (value, helpers) => {
+    const propertiesKeys = Object.keys(helpers.state.ancestors[0].properties.properties);
 
-        if (propertiesKeys.length !== value.length) {
-            throw new Error('not all fields are ordered');
-        }
+    if (propertiesKeys.length !== value.length) {
+        throw new Error('not all fields are ordered');
+    }
 
-        return validatePropertiesArray(value, propertiesKeys);
-    })
-    .required();
+    return validatePropertiesArray(value, propertiesKeys);
+};
+export const orderPropertiesSchema = ExtendedJoi.array().unique().items(Joi.string()).custom(customOrderPropertiesValidation).required();
 
-export const previewPropertiesSchema = ExtendedJoi.stringToArray()
-    .unique()
-    .items(Joi.string())
-    .custom((value, helpers) => validatePropertiesArray(value, Object.keys(helpers.state.ancestors[0].properties.properties)));
+const customPreviewPropertiesValidation = (value, helpers) => {
+    const propertiesKeys = Object.keys(helpers.state.ancestors[0].properties.properties);
+
+    if (propertiesKeys.length !== value.length) {
+        throw new Error('not all fields are ordered');
+    }
+
+    return validatePropertiesArray(value, propertiesKeys);
+};
+export const previewPropertiesSchema = ExtendedJoi.array().unique().items(Joi.string()).custom(customPreviewPropertiesValidation);
 
 export const fileSchema = Joi.object({
     filename: Joi.string().required(),

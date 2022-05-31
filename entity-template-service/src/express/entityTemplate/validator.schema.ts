@@ -46,7 +46,7 @@ export const createEntityTemplateSchema = Joi.object({
 
 // PUT /api/entities/templates/:templateId
 export const updateEntityTemplateSchema = Joi.object({
-    body: {
+    body: Joi.object({
         name: Joi.string(),
         displayName: Joi.string(),
         category: Joi.string(),
@@ -55,8 +55,7 @@ export const updateEntityTemplateSchema = Joi.object({
         iconFileId: Joi.string().allow(null),
         propertiesOrder: orderPropertiesSchema,
         propertiesPreview: previewPropertiesSchema,
-        file: Joi.allow(null),
-    },
+    }).min(1),
     query: {},
     params: {
         templateId: MongoIdSchema.required(),
