@@ -53,7 +53,7 @@ const validatePropertiesArray = (value, propertiesKeys) => {
 };
 
 const customRequiredValidation = (value, helpers) => {
-    validatePropertiesArray(value, Object.keys(helpers.state.ancestors[0].properties));
+    return validatePropertiesArray(value, Object.keys(helpers.state.ancestors[0].properties));
 };
 
 export const innerPropertiesSchema = Joi.object()
@@ -90,13 +90,7 @@ const customOrderPropertiesValidation = (value, helpers) => {
 export const orderPropertiesSchema = ExtendedJoi.array().unique().items(Joi.string()).custom(customOrderPropertiesValidation).required();
 
 const customPreviewPropertiesValidation = (value, helpers) => {
-    const propertiesKeys = Object.keys(helpers.state.ancestors[0].properties.properties);
-
-    if (propertiesKeys.length !== value.length) {
-        throw new Error('not all fields are ordered');
-    }
-
-    return validatePropertiesArray(value, propertiesKeys);
+    return validatePropertiesArray(value, Object.keys(helpers.state.ancestors[0].properties.properties));
 };
 export const previewPropertiesSchema = ExtendedJoi.array().unique().items(Joi.string()).custom(customPreviewPropertiesValidation);
 
