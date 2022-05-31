@@ -34,6 +34,8 @@ export const entityTemplates = [
             },
             required: ['name', 'destination'],
         },
+        propertiesOrder: ['name', 'destination', 'startDate', 'endDate', 'firstFile'],
+        propertiesPreview: ['name', 'destination', 'startDate', 'endDate'],
     },
     {
         name: 'tourist',
@@ -63,6 +65,8 @@ export const entityTemplates = [
             },
             required: ['firstName', 'lastName'],
         },
+        propertiesOrder: ['firstName', 'lastName', 'age', 'gender'],
+        propertiesPreview: ['firstName', 'lastName', 'age'],
     },
     {
         name: 'travelAgent',
@@ -96,6 +100,8 @@ export const entityTemplates = [
             },
             required: ['firstName', 'lastName', 'agentId'],
         },
+        propertiesOrder: ['firstName', 'lastName', 'age', 'gender', 'agentId'],
+        propertiesPreview: ['firstName', 'lastName', 'age'],
     },
     {
         name: 'flight',
@@ -135,6 +141,8 @@ export const entityTemplates = [
             },
             required: ['flightNumber', 'departureDate', 'landingDate'],
         },
+        propertiesOrder: ['flightNumber', 'departureDate', 'landingDate', 'from', 'to', 'planeType'],
+        propertiesPreview: ['flightNumber', 'from', 'to'],
     },
     {
         name: 'airport',
@@ -160,6 +168,8 @@ export const entityTemplates = [
             },
             required: ['airportName', 'airportId', 'country'],
         },
+        propertiesOrder: ['airportName', 'airportId', 'country'],
+        propertiesPreview: ['airportName', 'country'],
     },
     {
         name: 'hotel',
@@ -195,6 +205,8 @@ export const entityTemplates = [
             },
             required: ['hotelName', 'checkInDate', 'checkOutDate', 'country'],
         },
+        propertiesOrder: ['hotelName', 'hotelChain', 'checkInDate', 'checkOutDate', 'country'],
+        propertiesPreview: ['hotelName', 'checkInDate', 'checkOutDate'],
     },
     {
         name: 'airbnb',
@@ -226,6 +238,8 @@ export const entityTemplates = [
             },
             required: ['name', 'checkInDate', 'checkOutDate', 'country'],
         },
+        propertiesOrder: ['name', 'checkInDate', 'checkOutDate', 'country'],
+        propertiesPreview: ['name', 'checkInDate', 'checkOutDate'],
     },
     {
         name: 'creditCard',
@@ -256,6 +270,8 @@ export const entityTemplates = [
             },
             required: ['name', 'company', 'expirtaionDate', 'monthlyAmount'],
         },
+        propertiesOrder: ['name', 'company', 'expirtaionDate', 'monthlyAmount'],
+        propertiesPreview: ['name', 'expirtaionDate'],
     },
     {
         name: 'check',
@@ -278,6 +294,8 @@ export const entityTemplates = [
             },
             required: ['name', 'amount'],
         },
+        propertiesOrder: ['name', 'amount'],
+        propertiesPreview: ['name', 'amount'],
     },
     {
         name: 'phone',
@@ -303,6 +321,8 @@ export const entityTemplates = [
             },
             required: ['model', 'serialNumber'],
         },
+        propertiesOrder: ['model', 'color', 'serialNumber'],
+        propertiesPreview: ['model', 'serialNumber'],
     },
     {
         name: 'sim',
@@ -324,6 +344,8 @@ export const entityTemplates = [
             },
             required: ['company', 'number'],
         },
+        propertiesOrder: ['company', 'number'],
+        propertiesPreview: ['company', 'number'],
     },
     {
         name: 'suitcase',
@@ -349,5 +371,7 @@ export const entityTemplates = [
             },
             required: ['company', 'color'],
         },
+        propertiesOrder: ['company', 'color', 'weight'],
+        propertiesPreview: ['company', 'weight'],
     },
 ];
