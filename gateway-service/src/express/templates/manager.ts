@@ -1,3 +1,4 @@
+import { AxiosError } from 'axios';
 import * as lodashUniqby from 'lodash.uniqby';
 import { EntityTemplateManagerService, ICategory, IEntityTemplate, ISearchEntityTemplatesBody } from '../../externalServices/entityTemplateManager';
 import { InstanceManagerService } from '../../externalServices/instanceManager';
@@ -128,7 +129,7 @@ export class TemplatesManager {
         return EntityTemplateManagerService.updateCategory(id, updatedData);
     }
 
-    // templates
+    // entity templates
     static async createEntityTemplate(templateData: Omit<IEntityTemplate, 'iconFileId'>, file?: Express.Multer.File) {
         await EntityTemplateManagerService.getCategoryById(templateData.category);
 
@@ -222,6 +223,59 @@ export class TemplatesManager {
         }
 
         return EntityTemplateManagerService.updateEntityTemplate(id, updatedTemplate);
+    }
+
+    // relationship templates
+    private static async throwIfEntityTemplateDoesntExist(entityTemplateId: string, errorMessage: string) {
+        const { err: getEntityErr } = await trycatch(() => EntityTemplateManagerService.getEntityTemplateById(entityTemplateId));
+        if (getEntityErr) {
+            const { response } = getEntityErr as AxiosError;
+
+            if (response?.status === 404) {
+                throw new ServiceError(400, errorMessage);
+            }
+            throw getEntityErr;
+        }
+    }
+
+    static async createRelationshipTemplate(relationshipTemplate: IRelationshipTemplate) {
+        const { sourceEntityId, destinationEntityId } = relationshipTemplate;
+
+        await TemplatesManager.throwIfEntityTemplateDoesntExist(sourceEntityId, 'source entity of relation doesnt exist');
+        await TemplatesManager.throwIfEntityTemplateDoesntExist(destinationEntityId, 'destination entity of relation doesnt exist');
+
+        return RelationshipsTemplateManagerService.createRelationshipTemplate(relationshipTemplate);
+    }
+
+    static async updateRelationshipTemplate(templateId: string, updatedFields: Partial<IRelationshipTemplate>) {
+        if (updatedFields.sourceEntityId) {
+            await TemplatesManager.throwIfEntityTemplateDoesntExist(updatedFields.sourceEntityId, 'source entity of relation doesnt exist');
+        }
+
+        if (updatedFields.destinationEntityId) {
+            await TemplatesManager.throwIfEntityTemplateDoesntExist(updatedFields.destinationEntityId, 'destination entity of relation doesnt exist');
+        }
+
+        const relationshipCount = await InstanceManagerService.getRelationshipsCountByTemplateId(templateId);
+        const currTemplate = await RelationshipsTemplateManagerService.getRelationshipTemplateById(templateId);
+
+        if (relationshipCount > 0) {
+            if (updatedFields.name !== currTemplate.name) throw new ServiceError(400, 'can not change template name');
+            if (updatedFields.sourceEntityId !== currTemplate.sourceEntityId) throw new ServiceError(400, 'can not change source entity template');
+            if (updatedFields.destinationEntityId !== currTemplate.destinationEntityId)
+                throw new ServiceError(400, 'can not change destination entity template');
+        }
+
+        return RelationshipsTemplateManagerService.updateRelationshipTemplate(templateId, updatedFields);
+    }
+
+    static async deleteRelationshipTemplate(templateId: string) {
+        const relationshipCount = await InstanceManagerService.getRelationshipsCountByTemplateId(templateId);
+        if (relationshipCount !== 0) {
+            throw new ServiceError(400, 'relationship template still has instances');
+        }
+
+        return RelationshipsTemplateManagerService.deleteRelationshipTemplate(templateId);
     }
 
     // entities

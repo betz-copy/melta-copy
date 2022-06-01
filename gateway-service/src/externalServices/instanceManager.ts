@@ -70,4 +70,10 @@ export class InstanceManagerService {
 
         return data;
     }
+
+    static async getRelationshipsCountByTemplateId(templateId: string) {
+        const { data } = await this.InstanceManagerApi.get<number>(`${baseRelationshipsRoute}/count`, { params: { templateId } });
+
+        return data;
+    }
 }

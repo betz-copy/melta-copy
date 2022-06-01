@@ -37,6 +37,19 @@ class TemplatesController {
     static async updateEntityTemplate(req: Request, res: Response) {
         res.json(await TemplatesManager.updateEntityTemplate(req.params.id, req.body, req.file));
     }
+
+    // relationshipTemplates
+    static async createRelationshipTemplate(req: Request, res: Response) {
+        res.json(await TemplatesManager.createRelationshipTemplate(req.body));
+    }
+
+    static async deleteRelationshipTemplate(req: Request, res: Response) {
+        res.json(await TemplatesManager.deleteRelationshipTemplate(req.params.id));
+    }
+
+    static async updateRelationshipTemplate(req: Request, res: Response) {
+        res.json(await TemplatesManager.updateRelationshipTemplate(req.params.id, req.body));
+    }
 }
 
 export default TemplatesController;

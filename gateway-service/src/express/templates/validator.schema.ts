@@ -78,3 +78,36 @@ export const deleteEntityTemplateSchema = Joi.object({
     query: {},
     params: { id: MongoIdSchema.required() },
 });
+
+// POST /api/templates/relationships
+export const createRelationshipTemplateSchema = Joi.object({
+    body: {
+        name: Joi.string().required(),
+        displayName: Joi.string().required(),
+        sourceEntityId: MongoIdSchema.required(),
+        destinationEntityId: MongoIdSchema.required(),
+    },
+    query: {},
+    params: {},
+});
+
+// PUT /api/templates/relationships/:id
+export const updateRelationshipTemplateSchema = Joi.object({
+    body: {
+        name: Joi.string().required(),
+        displayName: Joi.string().required(),
+        sourceEntityId: MongoIdSchema.required(),
+        destinationEntityId: MongoIdSchema.required(),
+    },
+    query: {},
+    params: {
+        id: MongoIdSchema.required(),
+    },
+});
+
+// DELETE /api/templates/relationships/:id
+export const deleteRelationshipTemplateSchema = Joi.object({
+    body: {},
+    query: {},
+    params: { id: MongoIdSchema.required() },
+});

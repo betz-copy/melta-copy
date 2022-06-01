@@ -16,15 +16,17 @@ import ValidateRequest from '../../utils/joi';
 import {
     createCategorySchema,
     createEntityTemplateSchema,
+    createRelationshipTemplateSchema,
     deleteCategorySchema,
     deleteEntityTemplateSchema,
+    deleteRelationshipTemplateSchema,
     updateCategorySchema,
     updateEntityTemplateSchema,
+    updateRelationshipTemplateSchema,
 } from './validator.schema';
 
 const {
     entityTemplateManager,
-    relationshipTemplateManager,
     service: { uploadsFolderPath },
 } = config;
 
@@ -32,12 +34,6 @@ const EntityTemplatesManagerProxy = createProxyMiddleware({
     target: entityTemplateManager.uri,
     onProxyReq: fixRequestBody,
     proxyTimeout: entityTemplateManager.requestTimeout,
-});
-
-const RelationshipTemplatesManagerProxy = createProxyMiddleware({
-    target: relationshipTemplateManager.uri,
-    onProxyReq: fixRequestBody,
-    proxyTimeout: relationshipTemplateManager.requestTimeout,
 });
 
 const templatesRouter: Router = Router();
@@ -91,8 +87,23 @@ templatesRouter.delete(
 );
 
 // relationships (templates)
-templatesRouter.post('/relationships', wrapMiddleware(validateUserCanCreateRelationshipTemplateUnderCategory), RelationshipTemplatesManagerProxy);
-templatesRouter.put('/relationships/:id', wrapMiddleware(validateUserCanUpdateOrDeleteRelationshipTemplate), RelationshipTemplatesManagerProxy);
-templatesRouter.delete('/relationships/:id', wrapMiddleware(validateUserCanUpdateOrDeleteRelationshipTemplate), RelationshipTemplatesManagerProxy);
+templatesRouter.post(
+    '/relationships',
+    ValidateRequest(createRelationshipTemplateSchema),
+    wrapMiddleware(validateUserCanCreateRelationshipTemplateUnderCategory),
+    wrapController(TemplatesController.createRelationshipTemplate),
+);
+templatesRouter.put(
+    '/relationships/:id',
+    ValidateRequest(updateRelationshipTemplateSchema),
+    wrapMiddleware(validateUserCanUpdateOrDeleteRelationshipTemplate),
+    wrapController(TemplatesController.updateRelationshipTemplate),
+);
+templatesRouter.delete(
+    '/relationships/:id',
+    ValidateRequest(deleteRelationshipTemplateSchema),
+    wrapMiddleware(validateUserCanUpdateOrDeleteRelationshipTemplate),
+    wrapController(TemplatesController.deleteRelationshipTemplate),
+);
 
 export default templatesRouter;
