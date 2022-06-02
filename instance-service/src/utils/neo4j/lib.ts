@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import neo4j, { QueryResult } from 'neo4j-driver';
 
-const normalizeFields = (properties: object) => {
+const normalizeFields = (properties: Record<string, any>) => {
     const props = {};
 
     Object.entries(properties).forEach(([key, value]) => {
@@ -115,6 +115,13 @@ export const generateDefaultProperties = () => {
         updatedAt: timestamp,
         disabled: false,
     };
+};
+
+export const defaultJsonSchemaProperties: Record<string, any> = {
+    disabled: {
+        type: 'string',
+        title: 'disabled',
+    },
 };
 
 /**

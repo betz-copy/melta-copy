@@ -1,6 +1,6 @@
 export interface IRelationship {
     templateId: string;
-    properties: object;
+    properties: Record<string, any>;
     sourceEntityId: string;
     destinationEntityId: string;
 }

@@ -43,6 +43,7 @@ describe('Entity manager', () => {
 
         const newProperties = {
             testProp: 'newTestProp',
+            disabled: true,
         };
 
         beforeEach(async () => {

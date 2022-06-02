@@ -4,11 +4,11 @@ import axios from 'axios';
 import { Request, NextFunction, Response } from 'express';
 import config from '../../config';
 import { trycatch } from '../../utils/lib';
-import { getNeo4jDate } from '../../utils/neo4j/lib';
+import { defaultJsonSchemaProperties, getNeo4jDate } from '../../utils/neo4j/lib';
 import { ValidationError } from '../error';
 
 interface IJSONSchema {
-    properties: object;
+    properties: Record<string, any>;
     type: string;
     required: string[];
 }
@@ -64,8 +64,9 @@ const fetchEntityTemplateFromRequest = (req: any) => {
 export const addStringFieldsAndNormalizeDateValues = (req: Request, _res: Response, next: NextFunction) => {
     const entityTemplate = fetchEntityTemplateFromRequest(req);
     const normalizedEntity = {};
+    const jsonSchemaProperties = { ...entityTemplate.properties.properties, ...defaultJsonSchemaProperties } as IJSONSchema;
 
-    Object.entries(entityTemplate.properties.properties).forEach(([key, value]) => {
+    Object.entries(jsonSchemaProperties).forEach(([key, value]) => {
         const propertyValue = req.body.properties[key];
         const { type, format } = value;
 

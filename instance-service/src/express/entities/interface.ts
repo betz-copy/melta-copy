@@ -1,4 +1,4 @@
 export interface IEntity {
     templateId: string;
-    properties: object;
+    properties: Record<string, any>;
 }

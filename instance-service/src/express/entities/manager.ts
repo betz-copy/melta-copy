@@ -103,7 +103,7 @@ export class EntityManager {
         return Neo4jClient.writeTransaction(`MATCH (e: \`${templateId}\`) DETACH DELETE e`, normalizeReturnedEntity('multipleResponses'));
     }
 
-    static async updateEntityById(id: string, entityProperties: object) {
+    static async updateEntityById(id: string, entityProperties: Record<string, any>) {
         const node = await Neo4jClient.writeTransaction(
             `MATCH (e {_id: '${id}'}) WITH e.createdAt as createdAt, e AS e SET e = $props SET e.createdAt = createdAt RETURN e`,
             normalizeReturnedEntity(),
