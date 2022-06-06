@@ -53,13 +53,13 @@ const FieldEditCard: React.FC<FieldEditCardProps> = ({
                 <Grid item ref={draggableProvided.innerRef} {...draggableProvided.draggableProps} alignSelf="stretch" marginBottom="1rem">
                     <Card elevation={3} sx={{ padding: '0.5rem' }}>
                         <CardContent sx={{ '&:last-child': { padding: 0 } }}>
-                            <Grid container gap={1} justifyContent="space-between" wrap="nowrap" alignItems="center">
+                            <Grid container justifyContent="space-between" wrap="nowrap" alignItems="center">
                                 <Box {...draggableProvided.dragHandleProps}>
                                     <DragHandleIcon fontSize="large" />
                                 </Box>
 
-                                <Grid container direction="column" gap={1}>
-                                    <Grid container gap={1} wrap="nowrap">
+                                <Grid container direction="column">
+                                    <Grid container wrap="nowrap">
                                         <FastField
                                             component={TextField}
                                             label={i18next.t('wizard.entityTemplate.propertyName')}
@@ -70,7 +70,7 @@ const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                             error={touchedName && Boolean(errorName)}
                                             helperText={touchedName && errorName}
                                             disabled={isEditMode && isNewProperty}
-                                            sx={{ width: '33%' }}
+                                            sx={{ width: '33%', marginRight: '5px' }}
                                         />
                                         <FastField
                                             component={TextField}
@@ -81,7 +81,7 @@ const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                             onChange={handleChange}
                                             error={touchedTitle && Boolean(errorTitle)}
                                             helperText={touchedTitle && errorTitle}
-                                            sx={{ width: '33%' }}
+                                            sx={{ width: '33%', marginRight: '5px' }}
                                         />
                                         <TextField
                                             select

@@ -40,7 +40,7 @@ const Category: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>
 
     return (
         <Grid container className="pageMargin">
-            <Grid container justifyContent="end" marginBottom="3vh" alignItems="center" gap="1%">
+            <Grid container justifyContent="right" marginBottom="3vh" alignItems="center" spacing={1}>
                 <Grid item>
                     <IconButton style={{ background: 'white', borderRadius: '7px' }} onClick={onExcelExport}>
                         <DonwloadIcon color="primary" />
