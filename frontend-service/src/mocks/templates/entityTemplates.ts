@@ -33,7 +33,7 @@ const entityTemplates = [
                 },
                 firstFile: {
                     type: 'string',
-                    title: 'kovez',
+                    title: 'קובץ',
                     format: 'fileId',
                 },
             },
@@ -72,7 +72,7 @@ const entityTemplates = [
                 },
                 firstFile: {
                     type: 'string',
-                    title: 'kovez',
+                    title: 'קובץ',
                     format: 'fileId',
                 },
             },

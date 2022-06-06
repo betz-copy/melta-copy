@@ -7,9 +7,10 @@ import { useNavigate } from 'react-router-dom';
 import { StepsType, Wizard, WizardBaseType } from '../index';
 import { ChooseTemplate, chooseTemplateSchema } from './ChooseTemplate';
 import { FillFields, fillFieldsSchema } from './FillFields';
-import { FileFields, fileFieldsSchema } from './FileFields';
+import { Summary } from './Summary';
 import { createEntityRequest } from '../../../services/entitiesService';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { FileFields, fileFieldsSchema } from './FileFields';
 
 export interface EntityWizardValues {
     template: IMongoEntityTemplatePopulated;
@@ -32,6 +33,11 @@ const steps: StepsType<EntityWizardValues> = [
         label: i18next.t('wizard.entity.fileFields'),
         component: (props) => <FileFields {...props} />,
         validation: fileFieldsSchema,
+    },
+    {
+        label: i18next.t('wizard.entity.summary'),
+        component: (props) => <Summary {...props} />,
+        validation: {},
     },
 ];
 

@@ -8,7 +8,6 @@ import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplat
 
 import '@ag-grid-community/core/dist/styles/ag-grid.css';
 import '@ag-grid-community/core/dist/styles/ag-theme-material.css';
-import '../../../css/components/templateTable.css';
 import { IEntity } from '../../../interfaces/entities';
 
 const TemplateTable: React.FC<{

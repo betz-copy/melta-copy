@@ -168,6 +168,9 @@ export default {
             chooseEntityTemplate: 'בחירת תבנית יישות',
             fillFields: 'מלא פרטים',
             fileFields: 'העלאת קבצים',
+            summary: 'סיכום',
+            classificationCategory: 'סיווג לקטגוריה',
+            anotherParams: 'פרמטרים נוספים',
         },
     },
     validation: {
