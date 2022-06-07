@@ -1,8 +1,19 @@
-export interface IProperty {
+interface IPropertyTypes {
     title: string;
-    type: string;
-    format?: 'date' | 'time' | 'date-time' | 'email' | 'hostname' | 'ipv4' | 'ipv6' | 'uri';
+    type: 'string' | 'number' | 'boolean';
 }
+interface IPropertyFormat {
+    title: string;
+    type: 'string';
+    format: 'date' | 'date-time' | 'email' | 'fileId';
+}
+interface IPropertyEnum {
+    title: string;
+    type: 'string';
+    enum: [string];
+}
+
+export type IProperty = IPropertyTypes | IPropertyEnum | IPropertyFormat;
 
 export interface IProperties {
     type: 'object';
