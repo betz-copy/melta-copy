@@ -4,6 +4,8 @@ import i18next from 'i18next';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import _cloneDeep from 'lodash.clonedeep';
+import isEqualWith from 'lodash.isequalwith';
+import { useSelector } from 'react-redux';
 import { Form, Formik, FormikProps } from 'formik';
 import * as Yup from 'yup';
 import { createPermissionsBulkRequest, deletePermissionsBulkRequest, IPermission, IPermissionsOfUser } from '../../services/permissionsService';
@@ -12,6 +14,7 @@ import { IUser } from '../../services/kartoffelService';
 import { IMongoCategory } from '../../interfaces/categories';
 import ManagementPermissionsCard from './managementPermissionsCard';
 import InstancesPermissionsCard from './instancesPermissionsCard';
+import { RootState } from '../../store';
 
 const defaultEmptyPermissionsOfUser = {
     user: null,
@@ -25,6 +28,25 @@ type IFormPermissionsOfUser = {
     doesHavePermissionsManagement: boolean;
     doesHaveTemplatesManagement: boolean;
     instancesPermissions: Pick<IPermission, 'category'>[];
+};
+
+const doesUserHaveNoPermissions = (permissions: IFormPermissionsOfUser) => {
+    return !permissions.doesHavePermissionsManagement && !permissions.doesHaveTemplatesManagement && permissions.instancesPermissions.length === 0;
+};
+
+const isPermissionsChanged = (currentPermissions: IFormPermissionsOfUser, newPermissions: IFormPermissionsOfUser) => {
+    return isEqualWith(currentPermissions, newPermissions, (firstValue, secondValue) => {
+        if (Array.isArray(firstValue) && Array.isArray(secondValue)) {
+            const firstInstancesPermissions = firstValue as IFormPermissionsOfUser['instancesPermissions'];
+            const secondInstancesPermissions = secondValue as IFormPermissionsOfUser['instancesPermissions'];
+
+            const firstInstancesPermissionsSorted = firstInstancesPermissions.sort((a, b) => a.category.localeCompare(b.category));
+            const secondInstancesPermissionsSorted = secondInstancesPermissions.sort((a, b) => a.category.localeCompare(b.category));
+            return isEqualWith(firstInstancesPermissionsSorted, secondInstancesPermissionsSorted);
+        }
+
+        return undefined;
+    });
 };
 
 const permissionsToFormPermissions = ({
@@ -137,10 +159,7 @@ const PermissionsOfUserDialog: React.FC<{
     mode: 'create' | 'edit' | 'read';
     existingPermissionsOfUser?: IPermissionsOfUser;
 }> = ({ isOpen, handleClose, mode, existingPermissionsOfUser }) => {
-    // useEffect(() => {
-    //     setPermissionsOfUser(_cloneDeep(existingPermissionsOfUser) ?? defaultEmptyPermissionsOfUser);
-    //     // isOpen is in the list because: we want reset dialog state on reopen. dialog state is kept even after closing & reopening
-    // }, [isOpen, existingPermissionsOfUser]);
+    const currentUser = useSelector((state: RootState) => state.user);
 
     const queryClient = useQueryClient();
     const allPermissions = queryClient.getQueryData<IPermissionsOfUser[]>('getAllPermissions');
@@ -181,6 +200,10 @@ const PermissionsOfUserDialog: React.FC<{
 
                     return newPermissions;
                 });
+
+                if (newPermissionsOfUser.user.id === currentUser.id) {
+                    queryClient.setQueryData<IPermissionsOfUser>('getMyPermissions', newPermissionsOfUser);
+                }
 
                 if (mode === 'create') {
                     toast.success(i18next.t('permissions.permissionsOfUserDialog.succeededToCreatePermission'));
@@ -314,7 +337,15 @@ const PermissionsOfUserDialog: React.FC<{
                                 {i18next.t('permissions.permissionsOfUserDialog.closeBtn')}
                             </Button>
                             {mode !== 'read' && (
-                                <Button type="submit" disabled={formikProps.isSubmitting} variant="contained">
+                                <Button
+                                    type="submit"
+                                    disabled={
+                                        formikProps.isSubmitting ||
+                                        isPermissionsChanged(formikProps.initialValues, formikProps.values) ||
+                                        doesUserHaveNoPermissions(formikProps.values)
+                                    }
+                                    variant="contained"
+                                >
                                     {mode === 'create' && i18next.t('permissions.permissionsOfUserDialog.createBtn')}
                                     {mode === 'edit' && i18next.t('permissions.permissionsOfUserDialog.saveBtn')}
                                     {formikProps.isSubmitting && <CircularProgress size={20} />}
