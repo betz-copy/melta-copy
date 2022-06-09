@@ -180,7 +180,6 @@ const EntitiesTableOfTemplate = forwardRef(
                         SetFilterModule,
                         ClientSideRowModelModule,
                     ]}
-                    domLayout="autoHeight"
                     getRowId={({ data }) => getRowId(data)}
                     columnDefs={columnDefs}
                     {...rowModelProps}
