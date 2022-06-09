@@ -21,7 +21,7 @@ export type WizardBaseType<T extends object> = {
 export type StepsType<T extends object> = {
     label: string;
     component: (formikProps: StepComponentProps<T>, isEditMode?: boolean) => JSX.Element;
-    validation: ObjectShape;
+    validation: ObjectShape | Yup.ObjectSchema<ObjectShape>;
 }[];
 
 const Wizard = <T extends object>({
@@ -75,7 +75,11 @@ const Wizard = <T extends object>({
             <DialogContent>
                 <Formik
                     initialValues={initialValues}
-                    validationSchema={Yup.object(steps[activeStep].validation)}
+                    validationSchema={
+                        steps[activeStep].validation instanceof Yup.ObjectSchema
+                            ? steps[activeStep].validation
+                            : Yup.object(steps[activeStep].validation as ObjectShape)
+                    }
                     onSubmit={async (values, actions) => {
                         if (isLastStep) {
                             await submitFucntion(values);

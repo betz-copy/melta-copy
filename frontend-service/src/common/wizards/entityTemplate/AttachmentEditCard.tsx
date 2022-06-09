@@ -1,13 +1,12 @@
 import React from 'react';
 import { FastField, Field, FormikErrors, FormikHandlers, FormikTouched, getIn } from 'formik';
-import { TextField, Box, MenuItem, Grid, Card, CardContent, Switch, FormControlLabel, IconButton } from '@mui/material';
+import { TextField, Box, Grid, Card, CardContent, Switch, FormControlLabel, IconButton } from '@mui/material';
 import { Delete as DeleteIcon, DragHandle as DragHandleIcon } from '@mui/icons-material';
 import { Draggable } from 'react-beautiful-dnd';
 import i18next from 'i18next';
-import { validPropertyTypes } from './AddFields';
 import { EntityTemplateFormInputProperties, EntityTemplateWizardValues } from './index';
 
-interface FieldEditCardProps {
+interface AttachmentEditCardProps {
     value: EntityTemplateFormInputProperties;
     index: number;
     isEditMode?: Boolean;
@@ -19,7 +18,7 @@ interface FieldEditCardProps {
     remove: (index: number) => any;
 }
 
-const FieldEditCard: React.FC<FieldEditCardProps> = ({
+const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
     value,
     index,
     isEditMode,
@@ -30,22 +29,17 @@ const FieldEditCard: React.FC<FieldEditCardProps> = ({
     handleChange,
     remove,
 }) => {
-    const name = `properties[${index}].name`;
+    const name = `attachmentProperties[${index}].name`;
     const touchedName = getIn(touched, name);
     const errorName = getIn(errors, name);
 
-    const title = `properties[${index}].title`;
+    const title = `attachmentProperties[${index}].title`;
     const touchedTitle = getIn(touched, title);
     const errorTitle = getIn(errors, title);
 
-    const type = `properties[${index}].type`;
-    const touchedType = getIn(touched, type);
-    const errorType = getIn(errors, type);
+    const required = `attachmentProperties[${index}].required`;
 
-    const required = `properties[${index}].required`;
-    const preview = `properties[${index}].preview`;
-
-    const isNewProperty = Boolean(initialValues.properties.find((property) => property.id === value.id));
+    const isNewProperty = Boolean(initialValues.attachmentProperties.find((property) => property.id === value.id));
 
     return (
         <Draggable draggableId={value.id} index={index}>
@@ -62,7 +56,7 @@ const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                     <Grid container wrap="nowrap">
                                         <FastField
                                             component={TextField}
-                                            label={i18next.t('wizard.entityTemplate.propertyName')}
+                                            label={i18next.t('wizard.entityTemplate.attachmentName')}
                                             id={name}
                                             name={name}
                                             value={value.name}
@@ -70,39 +64,19 @@ const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                             error={touchedName && Boolean(errorName)}
                                             helperText={touchedName && errorName}
                                             disabled={isEditMode && isNewProperty}
-                                            sx={{ width: '33%', marginRight: '5px' }}
+                                            sx={{ width: '50%', marginRight: '5px' }}
                                         />
                                         <FastField
                                             component={TextField}
-                                            label={i18next.t('wizard.entityTemplate.propertyDisplayName')}
+                                            label={i18next.t('wizard.entityTemplate.attachmentDisplayName')}
                                             id={title}
                                             name={title}
                                             value={value.title}
                                             onChange={handleChange}
                                             error={touchedTitle && Boolean(errorTitle)}
                                             helperText={touchedTitle && errorTitle}
-                                            sx={{ width: '33%', marginRight: '5px' }}
+                                            sx={{ width: '50%', marginRight: '5px' }}
                                         />
-                                        <TextField
-                                            select
-                                            fullWidth
-                                            type="text"
-                                            label={i18next.t('wizard.entityTemplate.propertyType')}
-                                            id={type}
-                                            name={type}
-                                            value={value.type}
-                                            onChange={handleChange}
-                                            error={touchedType && Boolean(errorType)}
-                                            helperText={touchedType && errorType}
-                                            disabled={isEditMode && areThereAnyInstances && isNewProperty}
-                                            sx={{ width: '33%' }}
-                                        >
-                                            {validPropertyTypes.map((validType) => (
-                                                <MenuItem key={validType} value={validType}>
-                                                    {i18next.t(`propertyTypes.${validType}`)}
-                                                </MenuItem>
-                                            ))}
-                                        </TextField>
                                     </Grid>
                                     <Grid container justifyContent="space-between">
                                         <Box>
@@ -118,18 +92,6 @@ const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                     />
                                                 }
                                                 label={i18next.t('validation.required') as string}
-                                            />
-                                            <FormControlLabel
-                                                control={
-                                                    <Field
-                                                        id={preview}
-                                                        name={preview}
-                                                        component={Switch}
-                                                        onChange={handleChange}
-                                                        checked={value.preview}
-                                                    />
-                                                }
-                                                label={i18next.t('validation.preview') as string}
                                             />
                                         </Box>
 
@@ -147,4 +109,4 @@ const FieldEditCard: React.FC<FieldEditCardProps> = ({
     );
 };
 
-export default FieldEditCard;
+export default AttachmentEditCard;

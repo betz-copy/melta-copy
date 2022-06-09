@@ -9,7 +9,6 @@ import { AddFields, addFieldsSchema } from './AddFields';
 import { createEntityTemplateRequest, updateEntityTemplateRequest } from '../../../services/templates/enitityTemplatesService';
 import { IEntityTemplatePopulated, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { replaceItemById } from '../../../utils/reactQuery';
-import { AttachmentsField, attachmentsFieldSchema } from './AttachmentsField';
 
 export interface EntityTemplateFormInputProperties {
     name: string;
@@ -38,14 +37,9 @@ const steps: StepsType<EntityTemplateWizardValues> = [
         validation: createTemplateNameSchema,
     },
     {
-        label: i18next.t('wizard.entityTemplate.properties'),
+        label: i18next.t('wizard.entityTemplate.parameters'),
         component: (props, isEditMode) => <AddFields {...props} isEditMode={isEditMode} />,
         validation: addFieldsSchema,
-    },
-    {
-        label: i18next.t('wizard.entityTemplate.attachments'),
-        component: (props, isEditMode) => <AttachmentsField {...props} isEditMode={isEditMode} />,
-        validation: attachmentsFieldSchema,
     },
 ];
 

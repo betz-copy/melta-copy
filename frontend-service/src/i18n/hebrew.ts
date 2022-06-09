@@ -146,6 +146,7 @@ export default {
             chooseCategroy: 'בחירת קטגוריה',
             chooseEntityTemplateName: 'בחירת שם תבנית',
             properties: 'שדות',
+            parameters: 'פרמטרים',
             attachments: 'קבצים',
         },
         relationshipTemplate: {
@@ -182,6 +183,10 @@ export default {
         requiredFile: 'קובץ חובה',
         requiredFiles: 'קבצים חובה',
         variableName: 'פורמט שם משתנה',
+        fieldNameExists: 'קיים שם שדה באנגלית זהה',
+        fieldTitleExists: 'קיים שם שדה לתצוגה זהה',
+        attachmentFieldNameExists: 'קיים שם קובץ באנגלית זהה',
+        attachmentFieldTitleExists: 'קיים שם קובץ לתצוגה זהה',
     },
     propertyTypes: {
         string: 'מחרוזת',
