@@ -19,39 +19,30 @@ const InstancesPermissionsCard: React.FC<{
     return (
         <Card variant="outlined">
             <CardContent>
-                <Grid container direction="column" spacing={3}>
+                <Grid container direction="column" gap={2}>
                     <Grid item container justifyContent="space-between" alignItems="center">
-                        <Grid item>
-                            <Typography>{i18next.t('permissions.permissionsOfUserDialog.instancesPermissions')}</Typography>
-                        </Grid>
-                        <Grid item>
-                            {checkboxAllProps && (
-                                <FormControlLabel
-                                    label={i18next.t('permissions.permissionsOfUserDialog.allCategories') as string}
-                                    labelPlacement="start"
-                                    control={
-                                        <Checkbox
-                                            checked={checkboxAllProps.checked}
-                                            indeterminate={checkboxAllProps.indeterminate}
-                                            onChange={checkboxAllProps.onChange}
-                                        />
-                                    }
-                                />
-                            )}
-                        </Grid>
-                    </Grid>
-                    <Grid item>
+                        <Typography>{i18next.t('permissions.permissionsOfUserDialog.instancesPermissions')}</Typography>
+
                         <FormGroup row>
                             {categoriesCheckboxProps.map(({ categoryId, categoryDisplayName, disabled, checked, onChange }) => (
                                 <FormControlLabel
                                     key={categoryId}
                                     label={categoryDisplayName}
-                                    labelPlacement="top"
+                                    labelPlacement="bottom"
                                     disabled={disabled}
                                     control={<Checkbox checked={checked} onChange={onChange} />}
                                 />
                             ))}
                         </FormGroup>
+                    </Grid>
+
+                    <Grid item container justifyContent="space-between">
+                        {checkboxAllProps && (
+                            <FormControlLabel
+                                label={i18next.t('permissions.permissionsOfUserDialog.chooseAll')}
+                                control={<Checkbox checked={checkboxAllProps.checked} onChange={checkboxAllProps.onChange} size="medium" />}
+                            />
+                        )}
                     </Grid>
                 </Grid>
             </CardContent>

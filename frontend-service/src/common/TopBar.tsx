@@ -9,7 +9,7 @@ const TopBar: React.FC<{ title: string }> = ({ title }) => {
                 bgcolor="#fcfeff"
                 boxShadow="0px 4px 4px #0000000D"
                 paddingTop="0.5rem"
-                paddingLeft="1rem"
+                paddingLeft="2.5rem"
                 paddingBottom="0.4rem"
                 marginBottom="1rem"
             >

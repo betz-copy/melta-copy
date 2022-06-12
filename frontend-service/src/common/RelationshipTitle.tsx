@@ -9,16 +9,14 @@ const RelationshipTitle: React.FC<{
     destinationEntityTemplateDisplayName: string;
 }> = ({ sourceEntityTemplateDisplayName, relationshipTemplateDisplayName, destinationEntityTemplateDisplayName }) => {
     return (
-        <Grid container justifyContent="space-between">
+        <Grid container justifyContent="space-between" marginTop="10px" width="250px">
             <Grid item>
-                <Typography variant="h5" style={{ fontWeight: '400', fontSize: '25px' }}>
-                    {sourceEntityTemplateDisplayName}
-                </Typography>
+                <Typography variant="h6">{sourceEntityTemplateDisplayName}</Typography>
             </Grid>
             <Grid item>
-                <Grid container>
+                <Grid container marginTop="-3px">
                     <Grid item style={{ position: 'relative' }}>
-                        <HorizontalRuleIcon fontSize="medium" style={{ position: 'relative', top: '6px' }} />
+                        <HorizontalRuleIcon fontSize="small" style={{ position: 'relative', top: '6px' }} />
                     </Grid>
                     <Grid item>
                         <Typography
@@ -35,14 +33,12 @@ const RelationshipTitle: React.FC<{
                         </Typography>
                     </Grid>
                     <Grid item style={{ position: 'relative', top: '1px' }}>
-                        <ArrowBackIcon fontSize="medium" style={{ position: 'relative', top: '6px' }} />
+                        <ArrowBackIcon fontSize="small" style={{ position: 'relative', top: '6px' }} />
                     </Grid>
                 </Grid>
             </Grid>
             <Grid item>
-                <Typography variant="h5" style={{ fontWeight: '400', fontSize: '25px' }}>
-                    {destinationEntityTemplateDisplayName}
-                </Typography>
+                <Typography variant="h6">{destinationEntityTemplateDisplayName}</Typography>
             </Grid>
         </Grid>
     );

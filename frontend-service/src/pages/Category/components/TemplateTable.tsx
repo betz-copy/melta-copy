@@ -1,10 +1,11 @@
 import React, { useRef, forwardRef, useImperativeHandle } from 'react';
-import { Grid, Typography, IconButton, Box } from '@mui/material';
+import { Grid, IconButton, Box } from '@mui/material';
 import { AddCircle, FileDownloadOutlined } from '@mui/icons-material';
 import { exportMultipleSheetsAsExcel } from '@noam7700/ag-grid-enterprise-excel-export';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { AddEntityButton } from './AddEntityButton';
 import EntitiesTableOfTemplate from '../../../common/EntitiesTableOfTemplate';
+import { BlueTitle } from '../../../common/BlueTitle';
 
 const TemplateTable = forwardRef<{ getExcelData: () => string }, { template: IMongoEntityTemplatePopulated }>(({ template }, ref) => {
     const entitiesTableRef = useRef<{ getExcelData: () => string }>(null);
@@ -25,9 +26,7 @@ const TemplateTable = forwardRef<{ getExcelData: () => string }, { template: IMo
             <Grid container paddingLeft={3} justifyContent="space-between" width="100%">
                 <Grid>
                     <Grid item>
-                        <Typography variant="h6" style={{ fontWeight: '500' }}>
-                            {template.displayName}
-                        </Typography>
+                        <BlueTitle title={template.displayName} component="h6" variant="h6" />
                     </Grid>
                 </Grid>
                 <Grid>

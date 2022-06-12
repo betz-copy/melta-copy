@@ -10,7 +10,6 @@ import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates'
 import { getExpandedEntityByIdRequest } from '../../services/entitiesService';
 import { IMongoRelationshipTemplate, IMongoRelationshipTemplatePopulated } from '../../interfaces/relationshipTemplates';
 import { EntityDetails } from './components/EntityDetails';
-
 import { IMongoCategory } from '../../interfaces/categories';
 import { RelationshipTitle } from '../../common/RelationshipTitle';
 import CreateRelationshipDialog from '../../common/dialogs/createRelationshipDialog';
@@ -23,6 +22,7 @@ import { IPermissionsOfUser } from '../../services/permissionsService';
 
 import '../../css/pages.css';
 import IconButtonWithPopoverText from '../../common/IconButtonWithPopover';
+import { BlueTitle } from '../../common/BlueTitle';
 
 const Entity: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> }> = ({ setTitle }) => {
     const params = useParams();
@@ -154,7 +154,9 @@ const Entity: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> 
             <Grid item marginTop="20px">
                 <EntityDetails entityTemplate={currentEntityTemplate} expandedEntity={expandedEntity} />
             </Grid>
-            <Grid item marginTop="20px">
+
+            <BlueTitle title={i18next.t('entityPage.relationshipTitle')} component="h5" variant="h5" style={{ marginTop: '2rem' }} />
+            <Grid item>
                 <TabContext value={value}>
                     <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                         <TabList onChange={(_event, newValue) => setValue(newValue)}>

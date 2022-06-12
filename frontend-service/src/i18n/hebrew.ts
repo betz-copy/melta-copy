@@ -20,6 +20,7 @@ export default {
         failedToDeleteRelationship: 'נכשל למחוק קשר',
         createdAt: 'תאריך יצירה',
         updatedAt: 'תאריך עדכון',
+        relationshipTitle: 'קשרים',
     },
     errorPage: {
         oops: 'אופס...',
@@ -109,6 +110,7 @@ export default {
             templatesManagement: 'ניהול תבניות',
             instancesPermissions: 'הרשאות על קטגוריות',
             allCategories: 'הכל',
+            chooseAll: 'סמן הכל',
         },
     },
     wizard: {
