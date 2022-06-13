@@ -13,24 +13,28 @@ import { getPermissionsToCreate } from './mocks/permissionsApi';
 const main = async () => {
     console.log(`Mock started ${JSON.stringify(config, null, 4)}`);
 
-    if ((await isEntityTemplateManagerAlive()).err) {
+    const { err: entityTemplateManagerAliveErr } = await isEntityTemplateManagerAlive();
+    if (entityTemplateManagerAliveErr) {
         console.log('Entity Template Manager is not alive');
-        return;
+        throw entityTemplateManagerAliveErr;
     }
 
-    if ((await isRelationshipTemplateManagerAlive()).err) {
+    const { err: relationshipTemplateManagerAliveErr } = await isRelationshipTemplateManagerAlive();
+    if (relationshipTemplateManagerAliveErr) {
         console.log('Relationship Template Manager is not alive');
-        return;
+        throw relationshipTemplateManagerAliveErr;
     }
 
-    if ((await isPermissionsApiAlive()).err) {
+    const { err: permissionsApiAliveErr } = await isPermissionsApiAlive();
+    if (permissionsApiAliveErr) {
         console.log('Permissions API is not alive');
-        return;
+        throw permissionsApiAliveErr;
     }
 
-    if ((await isInstanceManagerAlive()).err) {
+    const { err: instanceManagerAliveErr } = await isInstanceManagerAlive();
+    if (instanceManagerAliveErr) {
         console.log('Instance Manager is not alive');
-        return;
+        throw instanceManagerAliveErr;
     }
 
     if ((await getCategories()).length !== 0) {
@@ -65,4 +69,4 @@ const main = async () => {
     console.log('Finished');
 };
 
-main().catch((err) => console.error(err));
+main();
