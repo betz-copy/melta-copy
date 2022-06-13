@@ -2,13 +2,13 @@ interface IBaseEntitySingleProperty {
     title: string;
     type: 'string' | 'number' | 'boolean';
 }
+
 interface IEntitySinglePropertyWithFormat extends IBaseEntitySingleProperty {
-    title: string;
     type: 'string';
     format: 'date' | 'date-time' | 'email' | 'fileId';
 }
+
 interface IEntitySinglePropertyWithEnum extends IBaseEntitySingleProperty {
-    title: string;
     type: 'string';
     enum: string[];
 }
