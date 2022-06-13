@@ -93,7 +93,7 @@ const Graph: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> }
 
     const renderTooltip = (node: NodeObject) => {
         const entityTemplate = entityTemplates.find((template) => template._id === node.templateId)!;
-        return ReactDOMServer.renderToString(<EntityProperties properties={node.data} entityTemplate={entityTemplate} />);
+        return ReactDOMServer.renderToString(<EntityProperties properties={node.data} showPreviewPropertiesOnly entityTemplate={entityTemplate} />);
     };
 
     const getNodeColor = (node: NodeObject) => {

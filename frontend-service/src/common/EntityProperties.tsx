@@ -29,22 +29,35 @@ export const formatToString = (value: any, valueType: 'string' | 'number' | 'boo
     return value;
 };
 
-const EntityProperties: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; properties: IEntity['properties']; style?: CSSProperties }> = ({
-    entityTemplate,
-    properties,
-    style,
-}) => {
+const EntityProperties: React.FC<{
+    entityTemplate: IMongoEntityTemplatePopulated;
+    properties: IEntity['properties'];
+    showPreviewPropertiesOnly?: boolean;
+    style?: CSSProperties;
+}> = ({ entityTemplate, properties, showPreviewPropertiesOnly = false, style }) => {
+    const propertiesOrderedToShow = showPreviewPropertiesOnly
+        ? entityTemplate.propertiesOrder.filter((propertyKey) => entityTemplate.propertiesPreview.includes(propertyKey))
+        : entityTemplate.propertiesOrder;
+
     return (
         <Box style={style}>
-            {Object.entries(entityTemplate.properties.properties).map(([key, value]) => {
+            {propertiesOrderedToShow.map((propertyKey) => {
+                const propertySchema = entityTemplate.properties.properties[propertyKey];
+                const propertyValue = properties[propertyKey];
                 return (
-                    <Grid key={key} item>
-                        <Typography display="inline" variant="h6" color="#B1B1B1" marginRight="10px">
-                            {value.title}:
-                        </Typography>
-                        <Typography display="inline" variant="h6">
-                            {formatToString(properties[key], value.type, value.format)}
-                        </Typography>
+                    <Grid key={propertyKey} item>
+                        <Grid container spacing={1}>
+                            <Grid item>
+                                <Typography display="inline" variant="h6" color="#B1B1B1">
+                                    {propertySchema.title}:
+                                </Typography>
+                            </Grid>
+                            <Grid item>
+                                <Typography display="inline" variant="h6">
+                                    {formatToString(propertyValue, propertySchema.type, propertySchema.format)}
+                                </Typography>
+                            </Grid>
+                        </Grid>
                     </Grid>
                 );
             })}
