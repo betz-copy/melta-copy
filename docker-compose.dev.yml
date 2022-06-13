@@ -25,11 +25,13 @@ services:
     ports:
       - 5672:5672
       - 15672:15672
+    restart: always
   
   redis: 
     image: redis:latest
     ports:
        - 6379:6379
+    restart: always
 
   minio:
     image: minio/minio
@@ -41,6 +43,7 @@ services:
       MINIO_ROOT_USER: "minioadmin"
       MINIO_ROOT_PASSWORD: "minioadmin"
     command: "minio server --console-address :4000 /data"
+    restart: always
 
   neo4j:
     image: neo4j:latest
@@ -49,6 +52,7 @@ services:
     ports:
       - "7474:7474"
       - "7687:7687"
+    restart: always
 
   mock:
     image: jawsproject.azurecr.io/mock
@@ -64,6 +68,7 @@ services:
       - relationship-template-manager
       - instance-manager
       - permission-api
+    restart: on-failure
 
   #-------------------------------------------#
   #        microservices:                     #
@@ -71,27 +76,37 @@ services:
   entity-template-manager:
     ports:
       - 8001:8000
+    restart: always
 
   relationship-template-manager:
     ports:
       - 8002:8000
+    restart: always
 
   backend:
     ports:
       - 8003:8000
+    restart: always
 
   permission-api:
     ports:
       - 8005:8000
+    restart: always
   
   storage-service:
     ports:
       - 8006:8000
+    restart: always
 
   instance-manager:
     ports:
       - 8007:8000
+    restart: always
   
   gateway:
     ports:
       - 80:80
+    restart: always
+
+  global-search-index-creator:
+    restart: always
