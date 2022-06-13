@@ -4,6 +4,7 @@ interface IEntitySingleProperty {
     type: 'string' | 'number' | 'boolean';
     title: string;
     format?: string;
+    enum?: string[];
 }
 
 export interface IEntityTemplate {

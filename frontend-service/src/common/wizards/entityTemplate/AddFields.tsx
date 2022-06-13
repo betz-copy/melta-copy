@@ -13,10 +13,9 @@ import { StepComponentProps } from '../index';
 import { getEntitiesByTemplateRequest } from '../../../services/entitiesService';
 import FieldEditCard from './FieldEditCard';
 import AttachmentEditCard from './AttachmentEditCard';
+import { basePropertyTypes, stringFormats } from '../../../services/templates/enitityTemplatesService';
 
-const basePropertyTypes = ['string', 'number', 'boolean'];
-const stringTypes = ['date', 'date-time', 'email'];
-const validPropertyTypes = [...basePropertyTypes, ...stringTypes];
+const validPropertyTypes = [...basePropertyTypes, ...stringFormats, 'enum'];
 
 const addFieldsSchema = Yup.object({
     properties: Yup.array()
@@ -27,6 +26,7 @@ const addFieldsSchema = Yup.object({
                 type: Yup.string().oneOf(validPropertyTypes, i18next.t('validation.invalidPropertyType')).required(i18next.t('validation.required')),
                 required: Yup.boolean().required(i18next.t('validation.required')),
                 preview: Yup.boolean().required(i18next.t('validation.required')),
+                options: Yup.array(Yup.string()).when('type', { is: 'enum', then: (schema) => schema.min(1, i18next.t('validation.required')) }),
             }),
         )
         .min(1, i18next.t('validation.oneField'))
@@ -44,6 +44,7 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues>> = ({
     values,
     touched,
     errors,
+    setFieldValue,
     handleChange,
     isEditMode,
     initialValues,
@@ -61,7 +62,7 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues>> = ({
             }),
         {
             enabled: isEditMode,
-            initialData: { lastRowIndex: 0, rows: [] },
+            initialData: { lastRowIndex: 1, rows: [] },
         },
     );
 
@@ -108,6 +109,7 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues>> = ({
                                                     errors={errors}
                                                     handleChange={handleChange}
                                                     remove={remove}
+                                                    setFieldValue={setFieldValue}
                                                 />
                                             ))}
 
@@ -118,7 +120,15 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues>> = ({
                                                 variant="contained"
                                                 style={{ margin: '8px' }}
                                                 onClick={() =>
-                                                    push({ id: uuid(), name: '', title: '', type: 'fileId', required: false, preview: false })
+                                                    push({
+                                                        id: uuid(),
+                                                        name: '',
+                                                        title: '',
+                                                        type: 'fileId',
+                                                        required: false,
+                                                        preview: false,
+                                                        options: [],
+                                                    })
                                                 }
                                             >
                                                 {i18next.t('wizard.entityTemplate.addProperty')}

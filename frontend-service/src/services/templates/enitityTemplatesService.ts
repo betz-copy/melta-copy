@@ -5,7 +5,8 @@ import { environment } from '../../globals';
 import { IEntityTemplate, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 
 const { entityTemplates } = environment.api;
-const basePropertyTypes = ['string', 'number', 'boolean'];
+export const basePropertyTypes = ['string', 'number', 'boolean'];
+export const stringFormats = ['date', 'date-time', 'email'];
 
 const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTemplatePopulated | null): EntityTemplateWizardValues | undefined => {
     if (!entityTemplate) return undefined;
@@ -24,16 +25,20 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
                 ...value,
                 required: properties.required.includes(key),
                 preview: propertiesPreview.includes(key),
-                type: value.format || value.type,
+                type: value.format,
+                options: [],
             });
         } else {
+            const type = value.enum ? 'enum' : value.format || value.type;
+
             propertiesArray.push({
                 id: uuid(),
                 name: key,
                 ...value,
                 required: properties.required.includes(key),
                 preview: propertiesPreview.includes(key),
-                type: value.format || value.type,
+                type,
+                options: value.enum || [],
             });
         }
     });
@@ -57,11 +62,12 @@ const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTemplate =
         required: [] as string[],
     };
 
-    properties.forEach(({ name, title, type, required, preview }) => {
+    properties.forEach(({ name, title, type, required, preview, options }) => {
         schema.properties[name] = {
             title,
             type: basePropertyTypes.includes(type) ? type : 'string',
-            format: basePropertyTypes.includes(type) ? undefined : type,
+            format: stringFormats.includes(type) ? type : undefined,
+            enum: type === 'enum' ? options : undefined,
         };
 
         propertiesOrder.push(name);

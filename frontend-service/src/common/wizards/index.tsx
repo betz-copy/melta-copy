@@ -55,7 +55,7 @@ const Wizard = <T extends object>({
     }, [open, initalStep]);
 
     return (
-        <Dialog open={open} onClose={handleClose} maxWidth="md" style={{ height: '80%', margin: 'auto' }}>
+        <Dialog open={open} onClose={handleClose} maxWidth="lg" style={{ height: '80%', margin: 'auto' }}>
             <DialogTitle>
                 {title}
                 <IconButton

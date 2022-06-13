@@ -36,10 +36,15 @@ const entityTemplates = [
                     title: 'קובץ',
                     format: 'fileId',
                 },
+                options: {
+                    type: 'string',
+                    title: 'אפשרויות',
+                    enum: ['אפשרות1', 'אפשרות2'],
+                },
             },
             required: ['name', 'destination', 'firstFile'],
         },
-        propertiesOrder: ['name', 'destination', 'startDate', 'endDate', 'firstFile'],
+        propertiesOrder: ['name', 'destination', 'startDate', 'endDate', 'options', 'firstFile'],
         propertiesPreview: ['name', 'destination', 'startDate', 'endDate'],
     },
     {

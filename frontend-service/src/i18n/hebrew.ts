@@ -198,6 +198,7 @@ export default {
         time: 'שעה',
         'date-time': 'תאריך ושעה',
         email: 'כתובת מייל',
+        enum: 'אפשרויות',
     },
     agGridLocaleText,
 };

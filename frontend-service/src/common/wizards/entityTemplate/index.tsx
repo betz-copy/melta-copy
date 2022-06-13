@@ -17,6 +17,7 @@ export interface EntityTemplateFormInputProperties {
     required: boolean;
     preview: boolean;
     id: string;
+    options: string[];
 }
 export interface EntityTemplateWizardValues
     extends Omit<IEntityTemplatePopulated, 'properties' | 'iconFileId' | 'propertiesOrder' | 'propertiesPreview'> {

@@ -1,6 +1,6 @@
 import React from 'react';
-import { FastField, Field, FormikErrors, FormikHandlers, FormikTouched, getIn } from 'formik';
-import { TextField, Box, MenuItem, Grid, Card, CardContent, Switch, FormControlLabel, IconButton } from '@mui/material';
+import { FastField, Field, FormikErrors, FormikHandlers, FormikHelpers, FormikTouched, getIn } from 'formik';
+import { TextField, Box, MenuItem, Grid, Card, CardContent, Switch, FormControlLabel, IconButton, Chip, Autocomplete } from '@mui/material';
 import { Delete as DeleteIcon, DragHandle as DragHandleIcon } from '@mui/icons-material';
 import { Draggable } from 'react-beautiful-dnd';
 import i18next from 'i18next';
@@ -15,6 +15,7 @@ interface FieldEditCardProps {
     areThereAnyInstances?: Boolean;
     touched: FormikTouched<EntityTemplateWizardValues>;
     errors: FormikErrors<EntityTemplateWizardValues>;
+    setFieldValue: FormikHelpers<EntityTemplateWizardValues>['setFieldValue'];
     handleChange: FormikHandlers['handleChange'];
     remove: (index: number) => any;
 }
@@ -27,6 +28,7 @@ const FieldEditCard: React.FC<FieldEditCardProps> = ({
     areThereAnyInstances,
     touched,
     errors,
+    setFieldValue,
     handleChange,
     remove,
 }) => {
@@ -42,10 +44,15 @@ const FieldEditCard: React.FC<FieldEditCardProps> = ({
     const touchedType = getIn(touched, type);
     const errorType = getIn(errors, type);
 
+    const options = `properties[${index}].options`;
     const required = `properties[${index}].required`;
     const preview = `properties[${index}].preview`;
 
-    const isNewProperty = Boolean(initialValues.properties.find((property) => property.id === value.id));
+    const initialEnumOptions = initialValues.properties.find((property) => property.id === value.id)?.options || [];
+
+    const isNewProperty = !initialValues.properties.find((property) => property.id === value.id);
+
+    const isDisabled = Boolean(isEditMode && !isNewProperty && areThereAnyInstances);
 
     return (
         <Draggable draggableId={value.id} index={index}>
@@ -69,8 +76,8 @@ const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                             onChange={handleChange}
                                             error={touchedName && Boolean(errorName)}
                                             helperText={touchedName && errorName}
-                                            disabled={isEditMode && isNewProperty}
-                                            sx={{ width: '33%', marginRight: '5px' }}
+                                            disabled={isDisabled}
+                                            sx={{ width: '25%', marginRight: '5px' }}
                                         />
                                         <FastField
                                             component={TextField}
@@ -81,7 +88,7 @@ const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                             onChange={handleChange}
                                             error={touchedTitle && Boolean(errorTitle)}
                                             helperText={touchedTitle && errorTitle}
-                                            sx={{ width: '33%', marginRight: '5px' }}
+                                            sx={{ width: '25%', marginRight: '5px' }}
                                         />
                                         <TextField
                                             select
@@ -94,8 +101,8 @@ const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                             onChange={handleChange}
                                             error={touchedType && Boolean(errorType)}
                                             helperText={touchedType && errorType}
-                                            disabled={isEditMode && areThereAnyInstances && isNewProperty}
-                                            sx={{ width: '33%' }}
+                                            disabled={isDisabled}
+                                            sx={{ width: value.type === 'enum' ? '20%' : '50%', marginRight: '5px' }}
                                         >
                                             {validPropertyTypes.map((validType) => (
                                                 <MenuItem key={validType} value={validType}>
@@ -103,6 +110,38 @@ const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                 </MenuItem>
                                             ))}
                                         </TextField>
+                                        {value.type === 'enum' && (
+                                            <Autocomplete
+                                                id={options}
+                                                multiple
+                                                options={value.options}
+                                                freeSolo
+                                                value={value.options}
+                                                onChange={(_e, currValue) => {
+                                                    if (isDisabled) {
+                                                        const newValues = currValue.filter((option) => initialEnumOptions.indexOf(option) === -1);
+
+                                                        setFieldValue(options, [...initialEnumOptions, ...newValues]);
+                                                    } else {
+                                                        setFieldValue(options, currValue);
+                                                    }
+                                                }}
+                                                renderTags={(tagValue, getTagProps) =>
+                                                    tagValue.map((option: string, tagIndex: number) => (
+                                                        // eslint-disable-next-line react/jsx-key
+                                                        <Chip
+                                                            variant="outlined"
+                                                            label={option}
+                                                            {...getTagProps({ index: tagIndex })}
+                                                            disabled={isDisabled && initialEnumOptions.includes(option)}
+                                                        />
+                                                    ))
+                                                }
+                                                filterSelectedOptions
+                                                renderInput={(params) => <TextField {...params} label={i18next.t('propertyTypes.enum')} />}
+                                                sx={{ width: '30%' }}
+                                            />
+                                        )}
                                     </Grid>
                                     <Grid container justifyContent="space-between">
                                         <Box>
@@ -133,7 +172,7 @@ const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                             />
                                         </Box>
 
-                                        <IconButton disabled={isEditMode && areThereAnyInstances && isNewProperty} onClick={() => remove(index)}>
+                                        <IconButton disabled={isDisabled} onClick={() => remove(index)}>
                                             <DeleteIcon />
                                         </IconButton>
                                     </Grid>

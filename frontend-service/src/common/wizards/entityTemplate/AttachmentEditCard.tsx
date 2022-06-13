@@ -39,7 +39,9 @@ const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
 
     const required = `attachmentProperties[${index}].required`;
 
-    const isNewProperty = Boolean(initialValues.attachmentProperties.find((property) => property.id === value.id));
+    const isNewProperty = !initialValues.attachmentProperties.find((property) => property.id === value.id);
+
+    const isDisabled = Boolean(isEditMode && !isNewProperty && areThereAnyInstances);
 
     return (
         <Draggable draggableId={value.id} index={index}>
@@ -63,7 +65,7 @@ const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
                                             onChange={handleChange}
                                             error={touchedName && Boolean(errorName)}
                                             helperText={touchedName && errorName}
-                                            disabled={isEditMode && isNewProperty}
+                                            disabled={isDisabled}
                                             sx={{ width: '50%', marginRight: '5px' }}
                                         />
                                         <FastField
@@ -95,7 +97,7 @@ const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
                                             />
                                         </Box>
 
-                                        <IconButton disabled={isEditMode && areThereAnyInstances && isNewProperty} onClick={() => remove(index)}>
+                                        <IconButton disabled={isDisabled} onClick={() => remove(index)}>
                                             <DeleteIcon />
                                         </IconButton>
                                     </Grid>
