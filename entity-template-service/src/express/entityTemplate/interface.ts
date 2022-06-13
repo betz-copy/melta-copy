@@ -1,19 +1,9 @@
-interface IBaseEntitySingleProperty {
+interface IEntitySingleProperty {
     title: string;
     type: 'string' | 'number' | 'boolean';
+    format?: 'date' | 'date-time' | 'email' | 'fileId';
+    enum?: string[];
 }
-
-interface IEntitySinglePropertyWithFormat extends IBaseEntitySingleProperty {
-    type: 'string';
-    format: 'date' | 'date-time' | 'email' | 'fileId';
-}
-
-interface IEntitySinglePropertyWithEnum extends IBaseEntitySingleProperty {
-    type: 'string';
-    enum: string[];
-}
-
-export type IEntitySingleProperty = IBaseEntitySingleProperty | IEntitySinglePropertyWithFormat | IEntitySinglePropertyWithEnum;
 
 export interface IProperties {
     type: 'object';
