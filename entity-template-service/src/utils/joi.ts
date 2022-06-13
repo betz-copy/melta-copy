@@ -35,9 +35,9 @@ const propertiesArraySchema = Joi.array()
                 .required(),
             format: Joi.string()
                 .valid(...stringFormats)
-                .when('type', { not: 'string', then: Joi.forbidden() })
+                .when('type', { not: Joi.string(), then: Joi.forbidden() })
                 .when('enum', { is: Joi.exist(), then: Joi.forbidden() }),
-            enum: Joi.array().items(Joi.string()).when('type', { not: 'string', then: Joi.forbidden() }),
+            enum: Joi.array().items(Joi.string()).when('type', { not: Joi.string(), then: Joi.forbidden() }),
         }),
     )
     .unique((a, b) => a.title === b.title);

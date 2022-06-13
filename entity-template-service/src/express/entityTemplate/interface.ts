@@ -1,23 +1,23 @@
-interface IPropertyTypes {
+interface IBaseEntitySingleProperty {
     title: string;
     type: 'string' | 'number' | 'boolean';
 }
-interface IPropertyFormat {
+interface IEntitySinglePropertyWithFormat extends IBaseEntitySingleProperty {
     title: string;
     type: 'string';
     format: 'date' | 'date-time' | 'email' | 'fileId';
 }
-interface IPropertyEnum {
+interface IEntitySinglePropertyWithEnum extends IBaseEntitySingleProperty {
     title: string;
     type: 'string';
-    enum: [string];
+    enum: string[];
 }
 
-export type IProperty = IPropertyTypes | IPropertyEnum | IPropertyFormat;
+export type IEntitySingleProperty = IBaseEntitySingleProperty | IEntitySinglePropertyWithFormat | IEntitySinglePropertyWithEnum;
 
 export interface IProperties {
     type: 'object';
-    properties: Record<string, IProperty>;
+    properties: Record<string, IEntitySingleProperty>;
     required: string[];
 }
 
