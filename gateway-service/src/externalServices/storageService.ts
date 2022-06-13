@@ -36,7 +36,7 @@ export const uploadFiles = async (files: Express.Multer.File[]) => {
 };
 
 export const deleteFile = (fileId: string) => {
-    return axios.delete(`${uri}/${deleteFileRoute}/${fileId}`);
+    return axios.delete(`${uri}/${deleteFileRoute}/${encodeURIComponent(fileId)}`);
 };
 
 export const deleteFiles = (paths: string[]) => {
