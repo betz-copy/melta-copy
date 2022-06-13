@@ -29,11 +29,11 @@ const Summary: React.FC<StepComponentProps<EntityWizardValues>> = ({ values }) =
     const entityTemplateName = values.template.displayName;
 
     const properties = Object.entries(values.template.properties.properties).map(([key, value]) => {
-        let valueName = formatToString(values.properties[key], value.type, value.format);
         if (value.format === 'fileId') {
-            valueName = values.attachmentsProperties[key].name;
+            return { title: value.title, value: values.attachmentsProperties[key] ? values.attachmentsProperties[key].name : '-' };
         }
-        return { title: value.title, value: valueName };
+
+        return { title: value.title, value: formatToString(values.properties[key], value.type, value.format) };
     });
 
     return (
