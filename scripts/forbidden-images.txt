@@ -2,3 +2,4 @@ mongo
 rabbit
 elastic
 redis
+neo4j
