@@ -47,7 +47,9 @@ const EditEntityDetails: React.FC<{
 
     const fieldProperties = objectFilter(entity.properties, (key) => !templateFileKeys.includes(key));
     const fileIdsProperties = objectFilter(entity.properties, (key) => templateFileKeys.includes(key));
-    const fileProperties = objectMap(fileIdsProperties, (key, value) => [key, { name: value }]);
+    const fileProperties = objectMap(fileIdsProperties, (_key, value) => {
+        return { name: value };
+    });
 
     return (
         <Formik
