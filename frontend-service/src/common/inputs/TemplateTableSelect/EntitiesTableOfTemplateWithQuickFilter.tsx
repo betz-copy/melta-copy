@@ -8,7 +8,8 @@ import EntitiesTableOfTemplate from '../../EntitiesTableOfTemplate';
 const EntitiesTableOfTemplateWithQuickFilter: React.FC<{
     entityTemplate: IMongoEntityTemplatePopulated;
     onRowSelected: (entity: IEntity) => void;
-}> = ({ entityTemplate, onRowSelected }) => {
+    hideNonPreview?: boolean;
+}> = ({ entityTemplate, onRowSelected, hideNonPreview }) => {
     const [quickFilterText, setQuickFilterText] = useState('');
 
     return (
@@ -38,7 +39,8 @@ const EntitiesTableOfTemplateWithQuickFilter: React.FC<{
                     height="250px"
                     rowHeight={25}
                     fontSize="14px"
-                    minColumnWidth={50}
+                    minColumnWidth={200}
+                    hideNonPreview={hideNonPreview}
                 />
             </div>
         </Box>

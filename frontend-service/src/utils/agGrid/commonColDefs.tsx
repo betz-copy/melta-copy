@@ -3,35 +3,38 @@ import { ColDef, ValueFormatterParams, ValueGetterFunc } from '@ag-grid-communit
 import i18next from 'i18next';
 import { DownloadButton } from '../../common/DownloadButton';
 
-export const numberColDef = (field: string, valueGetter: ValueGetterFunc, value: { title: string }): ColDef => {
+export const numberColDef = (field: string, valueGetter: ValueGetterFunc, value: { title: string }, hide = false): ColDef => {
     return {
         field,
         headerName: value.title,
         valueGetter,
         filter: 'agNumberColumnFilter',
+        hide,
     };
 };
 
-export const stringColDef = (field: string, valueGetter: ValueGetterFunc, value: { title: string }): ColDef => {
+export const stringColDef = (field: string, valueGetter: ValueGetterFunc, value: { title: string }, hide = false): ColDef => {
     return {
         field,
         headerName: value.title,
         valueGetter,
         filter: 'agTextColumnFilter',
+        hide,
     };
 };
 
-export const fileColDef = (field: string, valueGetter: ValueGetterFunc, value: { title: string }): ColDef => {
+export const fileColDef = (field: string, valueGetter: ValueGetterFunc, value: { title: string }, hide = false): ColDef => {
     return {
         field,
         headerName: value.title,
         valueGetter,
         menuTabs: [],
         cellRenderer: (props) => <DownloadButton fileId={props.value} />,
+        hide,
     };
 };
 
-export const booleanColDef = (field: string, valueGetter: ValueGetterFunc, value: { title: string }): ColDef => {
+export const booleanColDef = (field: string, valueGetter: ValueGetterFunc, value: { title: string }, hide = false): ColDef => {
     const valueFormatter = (params: ValueFormatterParams) => {
         if (String(params.value) === 'true') return i18next.t('booleanOptions.yes');
         if (String(params.value) === 'false') return i18next.t('booleanOptions.no');
@@ -50,6 +53,7 @@ export const booleanColDef = (field: string, valueGetter: ValueGetterFunc, value
             suppressMiniFilter: true,
             values: [true, false, undefined],
         },
+        hide,
     };
 };
 

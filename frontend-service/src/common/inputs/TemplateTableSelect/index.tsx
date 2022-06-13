@@ -15,7 +15,8 @@ const TemplateTableSelect: React.FC<{
     label: string;
     error?: boolean;
     helperText?: string;
-}> = ({ entityTemplate, value, onChange, onBlur, label, error, helperText }) => {
+    hideNonPreview?: boolean;
+}> = ({ entityTemplate, value, onChange, onBlur, label, error, helperText, hideNonPreview }) => {
     const [isSelectBoxEntityClicked, setIsSelectBoxEntityClicked] = useState(false);
 
     useEffect(() => {
@@ -73,7 +74,11 @@ const TemplateTableSelect: React.FC<{
                 )}
                 {!value && isSelectBoxEntityClicked && entityTemplate && (
                     <Box sx={{ paddingTop: 1, border: 'solid', borderColor: error ? 'error.main' : 'primary.main' }}>
-                        <EntitiesTableOfTemplateWithQuickFilter entityTemplate={entityTemplate} onRowSelected={onChange} />
+                        <EntitiesTableOfTemplateWithQuickFilter
+                            entityTemplate={entityTemplate}
+                            onRowSelected={onChange}
+                            hideNonPreview={hideNonPreview}
+                        />
                     </Box>
                 )}
             </Box>

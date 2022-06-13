@@ -101,6 +101,7 @@ type EntitiesTableOfTemplateProps<Data> = {
     rowHeight: number;
     fontSize: React.CSSProperties['fontSize'];
     minColumnWidth: number;
+    hideNonPreview?: boolean;
 };
 
 const EntitiesTableOfTemplate = forwardRef(
@@ -121,6 +122,7 @@ const EntitiesTableOfTemplate = forwardRef(
             rowHeight,
             fontSize,
             minColumnWidth,
+            hideNonPreview,
         }: EntitiesTableOfTemplateProps<Data>,
         ref,
     ) => {
@@ -142,6 +144,7 @@ const EntitiesTableOfTemplate = forwardRef(
             !showNavigateToRowButton ? undefined : (data) => navigate(`/entity/${getEntityPropertiesData(data)._id}`),
             disabledEntity,
             deleteRowButtonProps,
+            hideNonPreview,
         );
 
         const datasourceOnFail = (err: unknown) => {

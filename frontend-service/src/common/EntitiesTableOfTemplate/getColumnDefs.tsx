@@ -18,17 +18,20 @@ export const getColumnDefs = <Data extends any>(
         popoverText: string;
         disabled: boolean;
     },
+    hideNonPreview?: boolean,
 ) => {
     const columnDefs = Object.entries(template.properties.properties).map(([key, value]) => {
         const { type, format } = value;
 
         const valueGetter: ValueGetterFunc = ({ data }) => getEntityPropertiesData(data)[key];
 
-        if (type === 'number') return numberColDef(key, valueGetter, value);
-        if (type === 'boolean') return booleanColDef(key, valueGetter, value);
-        if (format === 'date' || format === 'date-time') return dateColDef(key, valueGetter, value);
-        if (format === 'fileId') return fileColDef(key, valueGetter, value);
-        return stringColDef(key, valueGetter, value);
+        const hide = hideNonPreview && !template.propertiesPreview.includes(key);
+
+        if (type === 'number') return numberColDef(key, valueGetter, value, hide);
+        if (type === 'boolean') return booleanColDef(key, valueGetter, value, hide);
+        if (format === 'date' || format === 'date-time') return dateColDef(key, valueGetter, value, hide);
+        if (format === 'fileId') return fileColDef(key, valueGetter, value, hide);
+        return stringColDef(key, valueGetter, value, hide);
     });
 
     columnDefs.push(

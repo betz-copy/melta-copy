@@ -160,6 +160,7 @@ const SourceOrDestinationEntityInput: React.FC<{
             error={Boolean(formikProps.touched[field] && formikProps.errors[field])}
             helperText={formikProps.touched[field] ? formikProps.errors[field] : ''}
             label={label}
+            hideNonPreview
         />
     );
 };
