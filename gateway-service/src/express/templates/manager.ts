@@ -191,9 +191,12 @@ export class TemplatesManager {
 
             Object.entries(currTemplate.properties.properties).forEach(([key, value]) => {
                 const newValue = updatedTemplate.properties?.properties[key];
+                if (!newValue) throw new ServiceError(400, 'can not remove property type');
 
-                if (value.format !== newValue?.format) throw new ServiceError(400, 'can not change property format');
-                if (value.type !== newValue?.type) throw new ServiceError(400, 'can not change property type');
+                if (value.type !== newValue.type) throw new ServiceError(400, 'can not change property type');
+                if (value.format !== newValue.format) throw new ServiceError(400, 'can not change property format');
+                if (value.enum && !value.enum?.every((val) => newValue.enum?.includes(val)))
+                    throw new ServiceError(400, 'can not remove options from enum');
             });
 
             if (updatedTemplate.properties?.required.find((propertyName) => !currTemplate.properties.required.includes(propertyName))) {

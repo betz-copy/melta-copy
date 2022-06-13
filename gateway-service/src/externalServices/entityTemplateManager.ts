@@ -14,9 +14,10 @@ export interface ICategory {
 }
 
 interface IEntitySingleProperty {
-    type: 'string' | 'number' | 'boolean';
     title: string;
-    format?: string;
+    type: 'string' | 'number' | 'boolean';
+    format?: 'date' | 'date-time' | 'email' | 'fileId';
+    enum?: string[];
 }
 
 export interface IEntityTemplate {
