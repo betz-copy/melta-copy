@@ -19,7 +19,7 @@ const InstancesPermissionsCard: React.FC<{
     return (
         <Card variant="outlined">
             <CardContent>
-                <Grid container direction="column" gap={2}>
+                <Grid container direction="column" spacing={3}>
                     <Grid item container justifyContent="space-between" alignItems="center">
                         <Typography>{i18next.t('permissions.permissionsOfUserDialog.instancesPermissions')}</Typography>
 
