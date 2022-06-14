@@ -78,33 +78,25 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                         </Grid>
                     </Grid>
                     <Grid item>
-                        {isEditMode ? (
-                            <Grid container direction="column">
-                                <IconButton onClick={() => navigate(`/entity/${entity.properties._id}/graph`, { state: expandedEntity })}>
-                                    <GraphIcon />
-                                </IconButton>
-                            </Grid>
-                        ) : (
-                            <Grid container direction="column" justifyContent="space-evenly">
-                                <IconButton onClick={() => navigate(`/entity/${entity.properties._id}/graph`, { state: expandedEntity })}>
-                                    <GraphIcon />
-                                </IconButton>
-                                <IconButtonWithPopoverText
-                                    popoverText={i18next.t('permissions.dontHavePermissionsToCategory')}
-                                    disabledToolTip={!disabled}
-                                    iconButtonProps={{ onClick: () => setIsEditMode(true), disabled }}
-                                >
-                                    <EditIcon />
-                                </IconButtonWithPopoverText>
-                                <IconButtonWithPopoverText
-                                    popoverText={i18next.t('permissions.dontHavePermissionsToCategory')}
-                                    disabledToolTip={!disabled}
-                                    iconButtonProps={{ onClick: () => setOpenDeleteDialog(true), disabled }}
-                                >
-                                    <DeleteIcon />
-                                </IconButtonWithPopoverText>
-                            </Grid>
-                        )}
+                        <Grid container direction="column" justifyContent="space-evenly">
+                            <IconButton onClick={() => navigate(`/entity/${entity.properties._id}/graph`, { state: expandedEntity })}>
+                                <GraphIcon />
+                            </IconButton>
+                            <IconButtonWithPopoverText
+                                popoverText={i18next.t('permissions.dontHavePermissionsToCategory')}
+                                disabledToolTip={!disabled}
+                                iconButtonProps={{ onClick: () => setIsEditMode(true), disabled }}
+                            >
+                                <EditIcon />
+                            </IconButtonWithPopoverText>
+                            <IconButtonWithPopoverText
+                                popoverText={i18next.t('permissions.dontHavePermissionsToCategory')}
+                                disabledToolTip={!disabled}
+                                iconButtonProps={{ onClick: () => setOpenDeleteDialog(true), disabled }}
+                            >
+                                <DeleteIcon />
+                            </IconButtonWithPopoverText>
+                        </Grid>
                     </Grid>
                 </Grid>
             </CardContent>
