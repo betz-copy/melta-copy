@@ -1,6 +1,6 @@
-import React, { Dispatch, SetStateAction, useState } from 'react';
-import { Grid, IconButton, TextField } from '@mui/material';
-import { AppRegistration as AppRegistrationIcon, AddCircle as AddIcon } from '@mui/icons-material';
+import React, { useState } from 'react';
+import { Grid, IconButton } from '@mui/material';
+import { AppRegistration as AppRegistrationIcon, AddCircle as AddIcon, Search as SearchIcon } from '@mui/icons-material';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 
@@ -15,14 +15,15 @@ import { EntityTemplateWizard } from '../../../common/wizards/entityTemplate';
 import { deleteEntityTemplateRequest, entityTemplateObjectToEntityTemplateForm } from '../../../services/templates/enitityTemplatesService';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
 import { removeItemById } from '../../../utils/reactQuery';
+import SearchInput from '../../../common/inputs/SearchInput';
 
-const EntityTemplatesRow: React.FC<{
-    entityTemplates: IMongoEntityTemplatePopulated[];
-    categories: IMongoCategory[];
-    categoriesToHide: string[];
-    setCategoriesToHide: Dispatch<SetStateAction<string[]>>;
-}> = ({ entityTemplates, categories, categoriesToHide, setCategoriesToHide }) => {
+const EntityTemplatesRow: React.FC = () => {
     const queryClient = useQueryClient();
+
+    const categories = queryClient.getQueryData<IMongoCategory[]>('getCategories')!;
+    const entityTemplates = queryClient.getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates')!;
+
+    const [categoriesToShow, setCategoriesToShow] = useState<IMongoCategory[]>(categories);
 
     const [searchText, setSearchText] = useState('');
     const [deleteEntityTemplateDialogState, setDeleteEntityTemplateDialogState] = useState<{
@@ -55,25 +56,31 @@ const EntityTemplatesRow: React.FC<{
     return (
         <Grid item container>
             <Header title={i18next.t('entityTemplates')}>
-                <TextField
-                    style={{ marginLeft: '20px', backgroundColor: 'white' }}
-                    variant="outlined"
-                    placeholder={i18next.t('searchLabel')}
-                    onChange={(event) => setSearchText(event.target.value)}
-                />
-                <SelectCheckbox
-                    title={i18next.t('categories')}
-                    handleChange={(event) => setCategoriesToHide(event.target.value as string[])}
-                    options={categories.map((category) => category.displayName)}
-                    optionsToHide={categoriesToHide}
-                />
-                <IconButton onClick={() => setEntityTemplateWizardDialogState({ isWizardOpen: true, entityTemplate: null })}>
-                    <AddIcon color="primary" fontSize="large" />
-                </IconButton>
+                <Grid container spacing={1} alignItems="center">
+                    <Grid item>
+                        <SearchInput onChange={setSearchText} endAdornmentChildren={<SearchIcon />} />
+                    </Grid>
+                    <Grid item>
+                        <SelectCheckbox
+                            title={i18next.t('categories')}
+                            options={categories}
+                            selectedOptions={categoriesToShow}
+                            setSelectedOptions={setCategoriesToShow}
+                            getOptionId={(category) => category._id}
+                            getOptionLabel={(category) => category.displayName}
+                            size="small"
+                        />
+                    </Grid>
+                    <Grid item>
+                        <IconButton onClick={() => setEntityTemplateWizardDialogState({ isWizardOpen: true, entityTemplate: null })}>
+                            <AddIcon color="primary" fontSize="large" />
+                        </IconButton>
+                    </Grid>
+                </Grid>
             </Header>
             <Grid container spacing={4}>
                 {entityTemplates
-                    .filter((entityTemplate) => !categoriesToHide.includes(entityTemplate.category.displayName))
+                    .filter((entityTemplate) => categoriesToShow.some((categoryToShow) => categoryToShow._id === entityTemplate.category._id))
                     .filter((entityTemplate) => searchText === '' || entityTemplate.displayName.includes(searchText))
                     .map((entityTemplate) => (
                         <ViewingCard

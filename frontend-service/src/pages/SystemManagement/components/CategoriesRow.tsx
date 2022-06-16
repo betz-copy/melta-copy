@@ -14,8 +14,10 @@ import { categoryObjectToCategoryForm, deleteCategoryRequest } from '../../../se
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
 import { removeItemById } from '../../../utils/reactQuery';
 
-const CategoriesRow: React.FC<{ categories: IMongoCategory[] }> = ({ categories }) => {
+const CategoriesRow: React.FC = () => {
     const queryClient = useQueryClient();
+
+    const categories = queryClient.getQueryData<IMongoCategory[]>('getCategories')!;
 
     const [deleteCategoryDialogState, setDeleteCategoryDialogState] = useState<{
         isDialogOpen: boolean;

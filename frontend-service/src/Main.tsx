@@ -19,7 +19,7 @@ import {
     CategoryProtectedRoute,
 } from './utils/ProtectedRoutes';
 
-const Home = lazy(() => import('./pages/Home'));
+const GlobalSearch = lazy(() => import('./pages/GlobalSearch'));
 const Category = lazy(() => import('./pages/Category'));
 const SystemManagement = lazy(() => import('./pages/SystemManagement'));
 const PermissionsManagement = lazy(() => import('./pages/PermissionsManagement'));
@@ -96,7 +96,7 @@ const Main = () => {
                                         </EntityProtectedRoute>
                                     }
                                 />
-                                <Route path="/" element={<Home setTitle={setTitle} />} />
+                                <Route path="/" element={<GlobalSearch setTitle={setTitle} />} />
                                 <Route path="*" element={<ErrorPage setTitle={setTitle} errorText={i18next.t('errorPage.reachedTheWrongPage')} />} />
                             </Routes>
                         </Suspense>

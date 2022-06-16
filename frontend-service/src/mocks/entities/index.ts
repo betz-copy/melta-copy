@@ -1,54 +1,27 @@
+/* eslint-disable import/no-extraneous-dependencies */
 import MockAdapter from 'axios-mock-adapter';
+import faker from '@faker-js/faker';
+import { allEntities } from './allEntities';
 
 const mockEntites = (mock: MockAdapter) => {
     // Get entities by category
-    mock.onPost('/api/instances/entities/search').reply(() => [
-        200,
-        {
-            rows: [
-                {
-                    templateId: '61e3ea6e4d51a83e87e83c80',
-                    properties: {
-                        _id: '61f28035d372f97e321b1ceb',
-                        firstName: 'איילה',
-                        lastName: 'נסיעות',
-                        age: 40,
-                        gender: false,
-                        agentId: 'a1b2c3',
-                        createdAt: new Date(3333, 10, 3),
-                        updatedAt: new Date(4444, 10, 4),
-                    },
-                },
-                {
-                    templateId: '61e3ea6e4d51a83e87e83c80',
-                    properties: {
-                        _id: '61f28035d372f97e321b1cec',
-                        firstName: 'ארנון',
-                        lastName: 'פז',
-                        age: 46,
-                        gender: true,
-                        agentId: 'd4e5f6',
-                        createdAt: new Date(1111, 10, 1),
-                        updatedAt: new Date(2222, 10, 2),
-                    },
-                },
-                {
-                    templateId: '61e3ea6e4d51a83e87e83c80',
-                    properties: {
-                        _id: '61f28035d372f97e321b1ced',
-                        firstName: 'סקי',
-                        lastName: 'דיל',
-                        age: 35,
-                        gender: true,
-                        agentId: 'g7h8i9',
-                        createdAt: new Date(5555, 10, 5),
-                        updatedAt: new Date(6666, 10, 6),
-                    },
-                },
-            ],
-            lastRowIndex: 3,
-        },
-    ]);
+    mock.onPost('/api/instances/entities/search').reply(({ params }) => {
+        const { templateId } = params;
+
+        const rowsOfTemplate = allEntities.filter((entity) => entity.templateId === templateId);
+
+        const countOfSearchedRows =
+            faker.datatype.boolean() || rowsOfTemplate.length === 0 ? 0 : faker.datatype.number({ min: 1, max: rowsOfTemplate.length });
+        const searchedRows = faker.helpers.arrayElements(rowsOfTemplate, countOfSearchedRows);
+
+        return [
+            200,
+            {
+                rows: searchedRows,
+                lastRowIndex: countOfSearchedRows,
+            },
+        ];
+    });
 
     mock.onGet(/\/api\/instances\/entities\/[0-9a-fA-F]{24}\?expanded=true/).reply((config) => [
         200,
@@ -60,10 +33,9 @@ const mockEntites = (mock: MockAdapter) => {
                     lastName: 'קירל',
                     age: 20,
                     gender: false,
-                    firstFile: 'blabla.docx',
                     _id: config.url!.split('/').at(-1)!.split('?')[0],
-                    createdAt: new Date(1111, 10, 1),
-                    updatedAt: new Date(2222, 10, 2),
+                    createdAt: new Date(2345, 10, 1).toISOString(),
+                    updatedAt: new Date(2346, 10, 1).toISOString(),
                 },
             },
             connections: [
@@ -82,9 +54,9 @@ const mockEntites = (mock: MockAdapter) => {
                             destination: 'לונדון',
                             startDate: '2013-01-01',
                             endDate: '2013-01-10',
-                            _id: '61e3ea6e4d51a82e87e83c7f',
-                            createdAt: new Date(1111, 10, 1),
-                            updatedAt: new Date(2222, 10, 2),
+                            _id: '123451234512345123451100',
+                            createdAt: new Date(1111, 10, 1).toISOString(),
+                            updatedAt: new Date(1111, 10, 1).toISOString(),
                         },
                     },
                 },
@@ -103,9 +75,9 @@ const mockEntites = (mock: MockAdapter) => {
                             age: 40,
                             gender: false,
                             agentId: 'a1b2c3',
-                            _id: '61e3ea6e4d51582e87e83c7f',
-                            createdAt: new Date(2222, 10, 1),
-                            updatedAt: new Date(3333, 10, 2),
+                            _id: '123451234512345123451105',
+                            createdAt: new Date(2345, 10, 1).toISOString(),
+                            updatedAt: new Date(2346, 10, 1).toISOString(),
                         },
                     },
                 },
@@ -120,14 +92,14 @@ const mockEntites = (mock: MockAdapter) => {
                         templateId: '61e3ea6e4d51a83e87e83c81',
                         properties: {
                             flightNumber: 'AA123',
-                            departureDate: '2020-01-19T13:30:00.000Z',
-                            landingDate: '2020-01-19T14:30:00.000Z',
+                            departureDate: '2020-01-15T13:30:00.000Z',
+                            landingDate: '2020-01-15T14:30:00.000Z',
                             from: 'NYC',
                             to: 'ORL',
-                            planeType: 'B747-300',
-                            _id: '61e3ea8e4d51a82e87e83c7f',
-                            createdAt: new Date(1111, 2, 1),
-                            updatedAt: new Date(2222, 2, 2),
+                            planeType: 'B747-400',
+                            _id: '123451234512345123451138',
+                            createdAt: new Date(2345, 10, 1).toISOString(),
+                            updatedAt: new Date(2346, 10, 1).toISOString(),
                         },
                     },
                 },
@@ -147,9 +119,9 @@ const mockEntites = (mock: MockAdapter) => {
                             from: 'TLV',
                             to: 'CYP',
                             planeType: 'A380-400',
-                            _id: '61e3ea8e4d51a82e77e83c7f',
-                            createdAt: new Date(2323, 10, 1),
-                            updatedAt: new Date(2424, 10, 2),
+                            _id: '123451234512345123451141',
+                            createdAt: new Date(2345, 10, 1).toISOString(),
+                            updatedAt: new Date(2346, 10, 1).toISOString(),
                         },
                     },
                 },
@@ -167,9 +139,9 @@ const mockEntites = (mock: MockAdapter) => {
                             checkInDate: '2020-08-10',
                             checkOutDate: '2020-08-16',
                             country: 'קפריסין',
-                            _id: '61e3ea8e4d51a82e77183c7f',
-                            createdAt: new Date(1111, 12, 1),
-                            updatedAt: new Date(1112, 10, 2),
+                            _id: '123451234512345123451135',
+                            createdAt: new Date(2345, 10, 1).toISOString(),
+                            updatedAt: new Date(2346, 10, 1).toISOString(),
                         },
                     },
                 },
@@ -187,9 +159,9 @@ const mockEntites = (mock: MockAdapter) => {
                             checkInDate: '2018-05-12',
                             checkOutDate: '2018-05-16',
                             country: 'שומקום',
-                            _id: '61e32a8e4d51a82e77e83c7f',
-                            createdAt: new Date(2345, 10, 1),
-                            updatedAt: new Date(2346, 10, 2),
+                            _id: '123451234512345123451160',
+                            createdAt: new Date(2345, 10, 1).toISOString(),
+                            updatedAt: new Date(2346, 10, 1).toISOString(),
                         },
                     },
                 },

@@ -1,6 +1,6 @@
 import React, { useState, CSSProperties } from 'react';
 import { IconButton } from '@mui/material';
-import { EntityWizard, EntityWizardValues } from '../../../common/wizards/entity';
+import { EntityWizard, EntityWizardValues } from '../wizards/entity';
 
 const AddEntityButton: React.FC<{ style?: CSSProperties; initialStep?: number; initialValues?: EntityWizardValues }> = ({
     style,

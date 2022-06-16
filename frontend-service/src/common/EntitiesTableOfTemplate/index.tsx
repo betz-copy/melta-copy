@@ -1,4 +1,4 @@
-import React, { forwardRef, useImperativeHandle, useRef } from 'react';
+import React, { forwardRef, ForwardedRef, useImperativeHandle, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Box, GlobalStyles } from '@mui/material';
 
@@ -26,17 +26,15 @@ import { getColumnDefs } from './getColumnDefs';
 import { trycatch } from '../../utils/trycatch';
 
 export const getDatasource = (
-    template: IMongoEntityTemplatePopulated,
+    templateId: IMongoEntityTemplatePopulated['_id'],
     quickFilterText: string | undefined,
     onFail: ((err: unknown) => void) | undefined,
-    actionsColumnId: string,
 ): IServerSideDatasource => {
-    let isFirstDataFetched = false;
     return {
         async getRows(params) {
             const { sortModel, startRow, endRow, filterModel } = params.request;
             const { result: data, err } = await trycatch(() =>
-                getEntitiesByTemplateRequest(template._id, {
+                getEntitiesByTemplateRequest(templateId, {
                     sortModel,
                     startRow,
                     endRow,
@@ -50,11 +48,6 @@ export const getDatasource = (
                 return;
             }
 
-            if (!isFirstDataFetched) {
-                isFirstDataFetched = true;
-                params.columnApi.autoSizeColumns([actionsColumnId]);
-            }
-
             params.success({ rowData: data.rows, rowCount: data.lastRowIndex });
         },
     };
@@ -62,26 +55,25 @@ export const getDatasource = (
 
 const getRowModelProps = <Data extends any>(
     rowModelType: 'serverSide' | 'clientSide',
-    template: IMongoEntityTemplatePopulated,
+    templateId: IMongoEntityTemplatePopulated['_id'],
     rowData: Data[] | undefined,
     datasource: IServerSideDatasource | undefined,
     quickFilterText: string | undefined,
     datasourceOnFail: ((err: unknown) => void) | undefined,
-    actionsColumnId: string,
 ): React.ComponentProps<typeof AgGridReact> => {
     if (rowModelType === 'clientSide') {
         return { rowModelType, rowData };
     }
     return {
         rowModelType,
-        serverSideDatasource: datasource ?? getDatasource(template, quickFilterText, datasourceOnFail, actionsColumnId),
+        serverSideDatasource: datasource ?? getDatasource(templateId, quickFilterText, datasourceOnFail),
         serverSideStoreType: 'partial',
         cacheBlockSize: 50,
         maxBlocksInCache: 1000,
     };
 };
 
-type EntitiesTableOfTemplateProps<Data> = {
+export type EntitiesTableOfTemplateProps<Data> = {
     template: IMongoEntityTemplatePopulated;
     onRowSelected?: (data: Data) => void;
     showNavigateToRowButton: boolean;
@@ -104,7 +96,11 @@ type EntitiesTableOfTemplateProps<Data> = {
     hideNonPreview?: boolean;
 };
 
-const EntitiesTableOfTemplate = forwardRef(
+export type EntitiesTableOfTemplateRef = {
+    getExcelData: () => string | undefined;
+};
+
+const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef, EntitiesTableOfTemplateProps<unknown>>(
     <Data extends any>(
         {
             template,
@@ -124,22 +120,22 @@ const EntitiesTableOfTemplate = forwardRef(
             minColumnWidth,
             hideNonPreview,
         }: EntitiesTableOfTemplateProps<Data>,
-        ref,
+        ref: ForwardedRef<EntitiesTableOfTemplateRef>,
     ) => {
         const navigate = useNavigate();
 
         const gridRef = useRef<AgGridReact>(null);
 
-        useImperativeHandle(ref, () => ({
-            getExcelData() {
-                return gridRef.current!.api.getSheetDataForExcel({ sheetName: template.displayName });
-            },
-        }));
+        useImperativeHandle(ref, () => {
+            return {
+                getExcelData() {
+                    return gridRef.current?.api.getSheetDataForExcel({ sheetName: template.displayName });
+                },
+            };
+        });
 
-        const actionsColumnId = 'actions';
         const columnDefs: ColDef[] = getColumnDefs(
             template,
-            actionsColumnId,
             getEntityPropertiesData,
             !showNavigateToRowButton ? undefined : (data) => navigate(`/entity/${getEntityPropertiesData(data)._id}`),
             disabledEntity,
@@ -152,7 +148,14 @@ const EntitiesTableOfTemplate = forwardRef(
             // eslint-disable-next-line no-console
             console.log('failed to load data from datasource. err:', err);
         };
-        const rowModelProps = getRowModelProps(rowModelType, template, rowData, datasource, quickFilterText, datasourceOnFail, actionsColumnId);
+
+        // useMemo because on SSRM if datasource prop changes it reloads rows (because maybe getRows is changed)
+        // because we recreate datasource object on every irrelevant render, we recreate only on dependencies
+        // usually only quickFilterText changes on deps
+        const rowModelProps = useMemo(
+            () => getRowModelProps(rowModelType, template._id, rowData, datasource, quickFilterText, datasourceOnFail),
+            [rowModelType, template._id, rowData, datasource, quickFilterText],
+        );
 
         return (
             <Box>
@@ -200,12 +203,6 @@ const EntitiesTableOfTemplate = forwardRef(
                     suppressCellFocus
                     suppressCsvExport
                     suppressContextMenu
-                    onFirstDataRendered={(event) => {
-                        // auto size actionsColumnId. onFirstDataRendered bug with SSRM. https://github.com/ag-grid/ag-grid/issues/2662
-                        if (rowModelType === 'clientSide') {
-                            event.columnApi.autoSizeColumns([actionsColumnId]);
-                        }
-                    }}
                     onGridReady={(params) => {
                         params.columnApi.applyColumnState({ state: [{ colId: 'updatedAt', sort: 'desc' }] });
                     }}
@@ -246,5 +243,5 @@ const EntitiesTableOfTemplate = forwardRef(
 
 // forwardRef loses generic type of component. see https://stackoverflow.com/questions/58469229/react-with-typescript-generics-while-using-react-forwardref
 export default EntitiesTableOfTemplate as <Data = IEntity>(
-    props: EntitiesTableOfTemplateProps<Data> & { ref?: React.ForwardedRef<unknown> },
+    props: EntitiesTableOfTemplateProps<Data> & { ref?: React.ForwardedRef<EntitiesTableOfTemplateRef> },
 ) => ReturnType<typeof EntitiesTableOfTemplate>;

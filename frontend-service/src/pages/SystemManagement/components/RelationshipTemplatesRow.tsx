@@ -1,6 +1,6 @@
-import React, { Dispatch, SetStateAction, useState } from 'react';
-import { Grid, IconButton, TextField } from '@mui/material';
-import { AddCircle as AddIcon } from '@mui/icons-material';
+import React, { useState } from 'react';
+import { Grid, IconButton } from '@mui/material';
+import { AddCircle as AddIcon, Search as SearchIcon } from '@mui/icons-material';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 
@@ -10,6 +10,7 @@ import { Header } from '../../../common/Header';
 import { SelectCheckbox } from '../../../common/SelectCheckbox';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IMongoRelationshipTemplate, IMongoRelationshipTemplatePopulated } from '../../../interfaces/relationshipTemplates';
+import { IMongoCategory } from '../../../interfaces/categories';
 import { RelationshipTemplateWizard } from '../../../common/wizards/relationshipTemplate';
 import {
     deleteRelationshipTemplateRequest,
@@ -18,23 +19,17 @@ import {
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
 import { removeItemById } from '../../../utils/reactQuery';
 import { RelationshipTitle } from '../../../common/RelationshipTitle';
+import SearchInput from '../../../common/inputs/SearchInput';
 
-const RelationshipTemplatesRow: React.FC<{
-    relationshipTemplates: IMongoRelationshipTemplate[];
-    entityTemplates: IMongoEntityTemplatePopulated[];
-    sourceEntityTemplatesToHide: string[];
-    setSourceEntityTemplatesToHide: Dispatch<SetStateAction<string[]>>;
-    destinationEntityTemplatesToHide: string[];
-    setDestinationEntityTemplatesToHide: Dispatch<SetStateAction<string[]>>;
-}> = ({
-    relationshipTemplates,
-    entityTemplates,
-    sourceEntityTemplatesToHide,
-    setSourceEntityTemplatesToHide,
-    destinationEntityTemplatesToHide,
-    setDestinationEntityTemplatesToHide,
-}) => {
+const RelationshipTemplatesRow: React.FC = () => {
     const queryClient = useQueryClient();
+
+    const categories = queryClient.getQueryData<IMongoCategory[]>('getCategories')!;
+    const entityTemplates = queryClient.getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates')!;
+    const relationshipTemplates = queryClient.getQueryData<IMongoRelationshipTemplate[]>('getRelationshipTemplates')!;
+
+    const [sourceEntityTemplatesToShow, setSourceEntityTemplatesToShow] = useState<IMongoEntityTemplatePopulated[]>(entityTemplates);
+    const [destinationEntityTemplatesToShow, setDestinationEntityTemplatesToShow] = useState<IMongoEntityTemplatePopulated[]>(entityTemplates);
 
     const [searchText, setSearchText] = useState('');
 
@@ -68,29 +63,44 @@ const RelationshipTemplatesRow: React.FC<{
     return (
         <Grid item container marginBottom="30px">
             <Header title={i18next.t('relationshipTemplates')}>
-                <Grid container spacing={4}>
+                <Grid container spacing={1} alignItems="center">
                     <Grid item>
-                        <TextField
-                            style={{ backgroundColor: 'white' }}
-                            variant="outlined"
-                            placeholder={i18next.t('searchLabel')}
-                            onChange={(event) => setSearchText(event.target.value)}
-                        />
+                        <SearchInput onChange={setSearchText} endAdornmentChildren={<SearchIcon />} />
                     </Grid>
                     <Grid item>
                         <SelectCheckbox
                             title={i18next.t('systemManagement.sourceTemplates')}
-                            handleChange={(event) => setSourceEntityTemplatesToHide(event.target.value as string[])}
-                            options={entityTemplates.map((entityTemplate) => entityTemplate.displayName)}
-                            optionsToHide={sourceEntityTemplatesToHide}
+                            options={entityTemplates}
+                            selectedOptions={sourceEntityTemplatesToShow}
+                            setSelectedOptions={setSourceEntityTemplatesToShow}
+                            getOptionId={(entityTemplate) => entityTemplate._id}
+                            getOptionLabel={(entityTemplate) => entityTemplate.displayName}
+                            groupsProps={{
+                                useGroups: true,
+                                groups: categories,
+                                getGroupId: (category) => category._id,
+                                getGroupLabel: (category) => category.displayName,
+                                getGroupOfOption: (entityTemplate, _categories) => entityTemplate.category,
+                            }}
+                            size="small"
                         />
                     </Grid>
                     <Grid item>
                         <SelectCheckbox
                             title={i18next.t('systemManagement.destinationTemplates')}
-                            handleChange={(event) => setDestinationEntityTemplatesToHide(event.target.value as string[])}
-                            options={entityTemplates.map((entityTemplate) => entityTemplate.displayName)}
-                            optionsToHide={destinationEntityTemplatesToHide}
+                            options={entityTemplates}
+                            selectedOptions={destinationEntityTemplatesToShow}
+                            setSelectedOptions={setDestinationEntityTemplatesToShow}
+                            getOptionId={(entityTemplate) => entityTemplate._id}
+                            getOptionLabel={(entityTemplate) => entityTemplate.displayName}
+                            groupsProps={{
+                                useGroups: true,
+                                groups: categories,
+                                getGroupId: (category) => category._id,
+                                getGroupLabel: (category) => category.displayName,
+                                getGroupOfOption: (entityTemplate, _categories) => entityTemplate.category,
+                            }}
+                            size="small"
                         />
                     </Grid>
                     <Grid item>
@@ -119,8 +129,13 @@ const RelationshipTemplatesRow: React.FC<{
                     })
                     .filter((relationshipTemplate) => {
                         return (
-                            !sourceEntityTemplatesToHide.includes(relationshipTemplate.sourceEntity.displayName) &&
-                            !destinationEntityTemplatesToHide.includes(relationshipTemplate.destinationEntity.displayName)
+                            sourceEntityTemplatesToShow.some(
+                                (sourceEntityTemplateToShow) => sourceEntityTemplateToShow._id === relationshipTemplate.sourceEntity._id,
+                            ) &&
+                            destinationEntityTemplatesToShow.some(
+                                (destinationEntityTemplateToShow) =>
+                                    destinationEntityTemplateToShow._id === relationshipTemplate.destinationEntity._id,
+                            )
                         );
                     })
                     .filter((relationshipTemplate) => {

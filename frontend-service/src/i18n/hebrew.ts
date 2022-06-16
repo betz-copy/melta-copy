@@ -8,6 +8,8 @@ export default {
     relationshipTemplate: 'תבנית קשר',
     relationshipTemplates: 'תבניות קשר',
     failedToGetTemplates: 'נכשל לטעון תבניות',
+    templatesTablesEntityTemplatesCheckboxLabel: 'סוגי יישויות',
+    selectChooseAll: 'בחר הכל',
     addEntity: 'הוסף יישות',
     downloadMultipleTables: 'הורד טבלאות',
     entitiesTableOfTemplate: {
@@ -15,6 +17,7 @@ export default {
         navigateToEntityPage: 'עמוד פרט',
         failedToLoadData: 'נכשל לטעון מידע',
     },
+    noSearchResults: 'לא נמצאו תוצאות. חפש שנית',
     entityPage: {
         deleteRelationshipPopoverText: 'מחק קשר',
         failedToDeleteRelationship: 'נכשל למחוק קשר',
@@ -56,7 +59,7 @@ export default {
         expand: 'הרחב', // הצג שכנים
     },
     pages: {
-        home: 'בית',
+        globalSearch: 'חיפוש גלובלי',
         systemManagement: 'ניהול מערכת',
         unavailable: 'המערכת אינה זמינה',
         permissionsManagement: 'ניהול הרשאות ',

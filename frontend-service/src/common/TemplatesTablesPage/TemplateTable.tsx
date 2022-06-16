@@ -2,24 +2,28 @@ import React, { useRef, forwardRef, useImperativeHandle } from 'react';
 import { Grid, IconButton, Box } from '@mui/material';
 import { AddCircle, FileDownloadOutlined } from '@mui/icons-material';
 import { exportMultipleSheetsAsExcel } from '@noam7700/ag-grid-enterprise-excel-export';
-import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { AddEntityButton } from './AddEntityButton';
-import EntitiesTableOfTemplate from '../../../common/EntitiesTableOfTemplate';
-import { BlueTitle } from '../../../common/BlueTitle';
+import EntitiesTableOfTemplate, { EntitiesTableOfTemplateRef } from '../EntitiesTableOfTemplate';
+import { BlueTitle } from '../BlueTitle';
 
-const TemplateTable = forwardRef<{ getExcelData: () => string }, { template: IMongoEntityTemplatePopulated }>(({ template }, ref) => {
-    const entitiesTableRef = useRef<{ getExcelData: () => string }>(null);
+const TemplateTable = forwardRef<
+    EntitiesTableOfTemplateRef,
+    {
+        template: IMongoEntityTemplatePopulated;
+        quickFilterText: string;
+    }
+>(({ template, quickFilterText }, ref) => {
+    const entitiesTableRef = useRef<EntitiesTableOfTemplateRef>(null);
 
     const onExcelExport = () => {
         exportMultipleSheetsAsExcel({
-            data: [entitiesTableRef.current!.getExcelData()],
+            data: [entitiesTableRef.current!.getExcelData()!],
             fileName: `${template.displayName}.xlsx`,
         });
     };
 
-    useImperativeHandle(ref, () => ({
-        getExcelData: entitiesTableRef.current!.getExcelData,
-    }));
+    useImperativeHandle(ref, () => entitiesTableRef.current!);
 
     return (
         <Grid container>
@@ -48,6 +52,7 @@ const TemplateTable = forwardRef<{ getExcelData: () => string }, { template: IMo
                     getRowId={(entity) => entity.properties._id}
                     getEntityPropertiesData={(entity) => entity.properties}
                     rowModelType="serverSide"
+                    quickFilterText={quickFilterText}
                     height={360}
                     rowHeight={50}
                     fontSize="16px"

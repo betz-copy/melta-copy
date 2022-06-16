@@ -7,6 +7,7 @@ import { useParams } from 'react-router-dom';
 import { EntityWizardValues } from './index';
 import { StepComponentProps } from '../index';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { IPermissionsOfUser } from '../../../services/permissionsService';
 
 const chooseTemplateSchema = {
     template: Yup.object({
@@ -18,17 +19,25 @@ const chooseTemplateSchema = {
 
 const ChooseTemplate: React.FC<StepComponentProps<EntityWizardValues>> = ({ values, touched, errors, setFieldValue }) => {
     const param = useParams();
-    const { categoryId } = param;
+    const { categoryId } = param; // assuming if in category page
     const queryClient = useQueryClient();
 
-    const entityTemplates = queryClient
-        .getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates')!
-        .filter((entity) => entity.category._id === categoryId);
+    const entityTemplates = queryClient.getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates')!;
+    const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
+
+    let entityTemplatesFiltered: IMongoEntityTemplatePopulated[];
+    if (categoryId) {
+        entityTemplatesFiltered = entityTemplates.filter((entity) => entity.category._id === categoryId);
+    } else {
+        entityTemplatesFiltered = entityTemplates.filter((entity) => {
+            return myPermissions.instancesPermissions.some(({ category }) => category === entity.category._id);
+        });
+    }
 
     return (
         <Autocomplete
             id="template"
-            options={entityTemplates}
+            options={entityTemplatesFiltered}
             onChange={(_e, value) => setFieldValue('template', value || '')}
             value={values.template._id ? values.template : null}
             getOptionLabel={(option) => option.displayName}

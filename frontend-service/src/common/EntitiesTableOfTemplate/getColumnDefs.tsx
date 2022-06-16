@@ -9,7 +9,6 @@ import IconButtonWithPopoverText from '../IconButtonWithPopover';
 
 export const getColumnDefs = <Data extends any>(
     template: IMongoEntityTemplatePopulated,
-    actionsColumnId: string,
     getEntityPropertiesData: (data: Data) => IEntity['properties'],
     onNavigateToRow: ((entity: Data) => void) | undefined,
     disabledEntity?: boolean,
@@ -58,13 +57,21 @@ export const getColumnDefs = <Data extends any>(
     );
 
     if (onNavigateToRow || deleteRowButtonProps) {
+        const numberOfButtons = Number(Boolean(onNavigateToRow)) + Number(Boolean(deleteRowButtonProps));
+        const cellPadding = 46;
+        const iconButtonWidth = 42;
+        const widthToFitButtons = cellPadding + numberOfButtons * iconButtonWidth;
+        const headerNameWidth = 100;
+        const columnWidth = Math.max(headerNameWidth, widthToFitButtons);
+
         columnDefs.push({
-            colId: actionsColumnId, // used for autoSizeColumns onFirstDataRendered
             headerName: i18next.t('entitiesTableOfTemplate.actionsHeaderName'),
             pinned: 'left',
             menuTabs: [],
             sortable: false,
-            minWidth: 0,
+            width: columnWidth,
+            minWidth: columnWidth,
+            flex: 0,
             cellRenderer: memo<{ data: Data }>(({ data }) => {
                 return (
                     <div>

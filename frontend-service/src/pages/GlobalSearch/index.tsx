@@ -1,99 +1,40 @@
-import React, { useState } from 'react';
-import { Navigate, useSearchParams } from 'react-router-dom';
-import { Grid, ToggleButton, ToggleButtonGroup, IconButton, Typography } from '@mui/material';
-import { TableChartOutlined, AccountTreeOutlined, AddCircle } from '@mui/icons-material';
+import React, { useEffect } from 'react';
+import i18next from 'i18next';
+import { Grid } from '@mui/material';
 import { useQueryClient } from 'react-query';
-import { TemplateTable } from './components/TemplateTable';
-import { SideBar } from './components/SideBar';
+import _debounce from 'lodash.debounce';
+import { IMongoCategory } from '../../interfaces/categories';
+
+import '../../css/pages.css';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
-import { IEntity } from '../../interfaces/entities';
+import { IPermissionsOfUser } from '../../services/permissionsService';
+import TemplatesTablesPage from '../../common/TemplatesTablesPage';
 
-const Category: React.FC = () => {
-    const [searchParams] = useSearchParams();
-    const categoryId = searchParams.get('categoryId');
+const GlobalSearch: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> }> = ({ setTitle }) => {
+    useEffect(() => setTitle(i18next.t('pages.globalSearch')), [setTitle]);
+
     const queryClient = useQueryClient();
-    const [templateToDisplay, setTemplatesToDisplay] = useState(['']);
-    const [viewType, setViewType] = useState<'table' | 'graph'>('table');
 
-    const templates = queryClient
-        .getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates')!
-        .filter((template) => template.category._id === categoryId);
+    const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
 
-    if (!categoryId) {
-        return <Navigate to="/" />;
-    }
+    const allowedCategories = queryClient.getQueryData<IMongoCategory[]>('getCategories')!.filter((category) => {
+        return myPermissions.instancesPermissions.some(({ category: categoryId }) => categoryId === category._id);
+    });
 
-    const entitiesByTemplate: { [id: string]: IMongoEntityTemplatePopulated & { entities: IEntity[] } } = {};
-    templates.forEach((template) => {
-        // eslint-disable-next-line no-param-reassign
-        entitiesByTemplate[template._id] = {
-            ...template,
-            entities: [],
-        };
+    const allowedTemplates = queryClient.getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates')!.filter((entityTemplate) => {
+        return allowedCategories.map(({ _id }) => _id).includes(entityTemplate.category._id);
     });
 
     return (
-        <Grid container>
-            <Grid item xs={12}>
-                <SideBar
-                    templateToDisplay={templateToDisplay}
-                    categoryId={categoryId}
-                    setTemplatesToDisplay={setTemplatesToDisplay}
-                    templatesNames={templates.map((template) => template.displayName)}
-                />
-            </Grid>
-            <Grid item xs={12} style={{ height: '1vh' }} />
-            <Grid container alignItems="flex-end" style={{ height: '2vh' }}>
-                <Grid item xs={10} />
-                <Grid item xs={1}>
-                    <IconButton style={{ background: 'white', borderRadius: '7px' }}>
-                        <AddCircle color="primary" />
-                        <Typography fontSize={14} style={{ fontWeight: '500', paddingRight: '5px' }}>
-                            הוספת יישות
-                        </Typography>
-                    </IconButton>
-                </Grid>
-
-                <Grid item xs={0.5}>
-                    <ToggleButtonGroup
-                        style={{ backgroundColor: 'white' }}
-                        size="small"
-                        color="primary"
-                        exclusive
-                        value={viewType}
-                        onChange={(_ev, newValue) => {
-                            if (newValue !== null) setViewType(newValue);
-                        }}
-                    >
-                        <ToggleButton size="small" value="table">
-                            <TableChartOutlined fontSize="small" />
-                        </ToggleButton>
-                        <ToggleButton size="small" value="graph">
-                            <AccountTreeOutlined />
-                        </ToggleButton>
-                    </ToggleButtonGroup>
-                </Grid>
-            </Grid>
-            <Grid item xs={12} style={{ height: '3vh' }} />
-
-            <Grid item xs={11}>
-                {viewType === 'table' ? (
-                    <div style={{ display: 'flex', flexDirection: 'column' }}>
-                        {Object.values(entitiesByTemplate).map((template) => (
-                            <Grid key={template._id} container>
-                                <Grid item xs={1.5} />
-                                <Grid item xs={10}>
-                                    <TemplateTable key={template._id} template={template} templateToDisplay={templateToDisplay} />
-                                </Grid>
-                            </Grid>
-                        ))}
-                    </div>
-                ) : (
-                    <>graph</>
-                )}
-            </Grid>
+        <Grid container className="pageMargin">
+            <TemplatesTablesPage
+                key="globalSearch"
+                templates={allowedTemplates}
+                categories={allowedCategories}
+                excelExportAllTablesFileName={`${i18next.t('pages.globalSearch')}.xlsx`}
+            />
         </Grid>
     );
 };
 
-export { Category };
+export default GlobalSearch;

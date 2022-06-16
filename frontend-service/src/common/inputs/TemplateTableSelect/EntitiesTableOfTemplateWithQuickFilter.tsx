@@ -1,9 +1,11 @@
-import { Box, Grid, TextField } from '@mui/material';
-import i18next from 'i18next';
 import React, { useState } from 'react';
+import { Box, Grid } from '@mui/material';
+import { Search as SearchIcon } from '@mui/icons-material';
+import _debounce from 'lodash.debounce';
 import { IEntity } from '../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import EntitiesTableOfTemplate from '../../EntitiesTableOfTemplate';
+import SearchInput from '../SearchInput';
 
 const EntitiesTableOfTemplateWithQuickFilter: React.FC<{
     entityTemplate: IMongoEntityTemplatePopulated;
@@ -11,19 +13,14 @@ const EntitiesTableOfTemplateWithQuickFilter: React.FC<{
     hideNonPreview?: boolean;
 }> = ({ entityTemplate, onRowSelected, hideNonPreview }) => {
     const [quickFilterText, setQuickFilterText] = useState('');
+    const setQuickFilterTextDebounced = _debounce(setQuickFilterText, 1000);
 
     return (
         <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', alignItems: 'stretch' }}>
             <div>
                 <Grid container justifyContent="center">
                     <Grid item xs={8}>
-                        <TextField
-                            value={quickFilterText}
-                            onChange={(e) => setQuickFilterText(e.target.value)}
-                            placeholder={i18next.t('searchLabel')}
-                            variant="outlined"
-                            fullWidth
-                        />
+                        <SearchInput onChange={setQuickFilterTextDebounced} endAdornmentChildren={<SearchIcon />} />
                     </Grid>
                 </Grid>
             </div>

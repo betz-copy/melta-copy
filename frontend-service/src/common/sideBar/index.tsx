@@ -74,7 +74,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                         '::-webkit-scrollbar-thumb': { background: 'lightgray', borderRadius: 20 },
                     }}
                 >
-                    {categories?.map((category) => {
+                    {categories.map((category) => {
                         return (
                             <NavButton
                                 key={category._id}
@@ -83,7 +83,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                                 isDrawerOpen={isDrawerOpen}
                                 disabled={Boolean(!myPermissions.instancesPermissions.find((instance) => instance.category === category._id))}
                             >
-                                {category?.iconFileId ? (
+                                {category.iconFileId ? (
                                     <CustomIcon iconUrl={category.iconFileId} height="40px" width="40px" />
                                 ) : (
                                     <HiveIcon fontSize="large" sx={{ color: 'white' }} />
@@ -96,7 +96,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                 <Grid item container direction="column" alignItems="stretch" marginTop="auto">
                     <Divider />
 
-                    <NavButton to="/" text={i18next.t('pages.home')} isDrawerOpen={isDrawerOpen}>
+                    <NavButton to="/" text={i18next.t('pages.globalSearch')} isDrawerOpen={isDrawerOpen}>
                         <PublicIcon fontSize="large" sx={{ color: 'white' }} />
                     </NavButton>
 
@@ -118,11 +118,9 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
 
                     <Divider />
 
-                    <Grid item container direction="column" alignItems="center">
-                        <IconButton onClick={toggleDrawer} size="large" sx={{ color: 'white' }}>
-                            {isDrawerOpen ? <ChevronRightIcon /> : <ChevronLeftIcon />}
-                        </IconButton>
-                    </Grid>
+                    <IconButton onClick={toggleDrawer} size="large" sx={{ color: 'white', borderRadius: 0, padding: '20px' }} disableRipple>
+                        {isDrawerOpen ? <ChevronRightIcon /> : <ChevronLeftIcon />}
+                    </IconButton>
                 </Grid>
             </Grid>
 
