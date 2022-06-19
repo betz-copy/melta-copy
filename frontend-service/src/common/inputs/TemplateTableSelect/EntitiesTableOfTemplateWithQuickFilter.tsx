@@ -33,7 +33,6 @@ const EntitiesTableOfTemplateWithQuickFilter: React.FC<{
                     getEntityPropertiesData={(entity) => entity.properties}
                     rowModelType="serverSide"
                     quickFilterText={quickFilterText}
-                    height="250px"
                     rowHeight={25}
                     fontSize="14px"
                     minColumnWidth={200}

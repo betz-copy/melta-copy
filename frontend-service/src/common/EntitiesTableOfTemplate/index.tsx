@@ -89,8 +89,8 @@ export type EntitiesTableOfTemplateProps<Data> = {
     rowData?: Data[];
     datasource?: IServerSideDatasource;
     quickFilterText?: string;
-    height: React.CSSProperties['height'];
     rowHeight: number;
+    pageRowCount?: number;
     fontSize: React.CSSProperties['fontSize'];
     minColumnWidth: number;
     hideNonPreview?: boolean;
@@ -114,8 +114,8 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef, EntitiesT
             rowData,
             datasource,
             quickFilterText,
-            height,
             rowHeight,
+            pageRowCount = 5,
             fontSize,
             minColumnWidth,
             hideNonPreview,
@@ -157,21 +157,24 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef, EntitiesT
             [rowModelType, template._id, rowData, datasource, quickFilterText],
         );
 
+        const getGlobalStyles = () => {
+            const styles = {
+                '.ag-column-select-virtual-list-viewport': { height: `${rowHeight * pageRowCount}px !important` },
+                '.ag-center-cols-clipper': { minHeight: `${rowHeight * pageRowCount}px !important` },
+            };
+
+            if (onRowSelected) styles['.ag-theme-material .ag-row-hover'] = { backgroundColor: '#75b0eb !important' };
+
+            return styles;
+        };
+
         return (
             <Box>
-                {/* maybe there's a better way to override hover color. in .css we dont need "!important" */}
-                {onRowSelected && (
-                    <GlobalStyles
-                        styles={{
-                            '.ag-theme-material .ag-row-hover': { backgroundColor: '#75b0eb !important' },
-                        }}
-                    />
-                )}
+                <GlobalStyles styles={getGlobalStyles()} />
                 <AgGridReact
                     ref={gridRef}
                     className="ag-theme-material"
                     containerStyle={{
-                        height,
                         width: '100%',
                         fontFamily: 'Rubik',
                         fontSize,
@@ -186,11 +189,12 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef, EntitiesT
                         SetFilterModule,
                         ClientSideRowModelModule,
                     ]}
+                    domLayout="autoHeight"
                     getRowId={({ data }) => getRowId(data)}
                     columnDefs={columnDefs}
                     {...rowModelProps}
                     pagination
-                    paginationPageSize={5}
+                    paginationPageSize={pageRowCount}
                     rowHeight={rowHeight}
                     components={{
                         agDateInput: DateFilterComponent,

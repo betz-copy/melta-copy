@@ -72,6 +72,9 @@ export const getColumnDefs = <Data extends any>(
             width: columnWidth,
             minWidth: columnWidth,
             flex: 0,
+            resizable: false,
+            lockPosition: true,
+            suppressColumnsToolPanel: true,
             cellRenderer: memo<{ data: Data }>(({ data }) => {
                 return (
                     <div>

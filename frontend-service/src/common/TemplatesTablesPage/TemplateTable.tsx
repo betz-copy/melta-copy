@@ -53,7 +53,6 @@ const TemplateTable = forwardRef<
                     getEntityPropertiesData={(entity) => entity.properties}
                     rowModelType="serverSide"
                     quickFilterText={quickFilterText}
-                    height={360}
                     rowHeight={50}
                     fontSize="16px"
                     minColumnWidth={200}

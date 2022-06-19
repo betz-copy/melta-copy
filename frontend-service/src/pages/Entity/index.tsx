@@ -240,7 +240,6 @@ const Entity: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> 
                                                 rowData={expandedEntity.connections.filter(
                                                     (connection) => connection.relationship.templateId === currRelationshipTemplate._id,
                                                 )}
-                                                height={360}
                                                 rowHeight={50}
                                                 fontSize="16px"
                                                 minColumnWidth={200}
