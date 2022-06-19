@@ -14,7 +14,7 @@ const getTemplateCount = async (templateId: string, searchInput: string) => {
     const { lastRowIndex } = await getEntitiesByTemplateRequest(templateId, {
         startRow: 0,
         endRow: 0,
-        quickFilter: searchInput,
+        quickFilter: searchInput !== '' ? searchInput : undefined,
         sortModel: [],
         filterModel: {},
     });
