@@ -76,7 +76,7 @@ export default {
         title: 'מלתעות',
     },
     areYouSureDialog: {
-        title: 'האם אתה בטוח',
+        title: 'האם אתה בטוח?',
         yes: 'אשר',
         no: 'בטל',
     },
