@@ -25,6 +25,8 @@ export default {
         createdAt: 'תאריך יצירה',
         updatedAt: 'תאריך עדכון',
         relationshipTitle: 'קשרים',
+        save: 'שמור',
+        cancel: 'בטל',
     },
     errorPage: {
         oops: 'אופס...',

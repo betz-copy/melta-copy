@@ -1,5 +1,5 @@
 import React from 'react';
-import { Grid, Card, CardContent, IconButton, CircularProgress, Box, Typography } from '@mui/material';
+import { Grid, Card, CardContent, CircularProgress, Box, Typography, Divider, Button } from '@mui/material';
 import { Done as DoneIcon, Clear as ClearIcon } from '@mui/icons-material';
 import { useMutation, useQueryClient } from 'react-query';
 import i18next from 'i18next';
@@ -63,7 +63,7 @@ const EditEntityDetails: React.FC<{
                     <Form>
                         <Card>
                             <CardContent>
-                                <Grid container flexDirection="row">
+                                <Grid container justifyContent="center">
                                     <Grid item xs={12}>
                                         <Grid container flexDirection="row">
                                             <Box sx={{ marginRight: '50px' }}>
@@ -94,19 +94,33 @@ const EditEntityDetails: React.FC<{
                                             </Box>
                                         </Grid>
                                     </Grid>
-                                    <Grid item>
-                                        <Grid item xs={12}>
-                                            <IconButton type="submit">
-                                                <DoneIcon />
-                                                {isUpdateLoading && <CircularProgress size={20} />}
-                                            </IconButton>
-                                            <IconButton
-                                                onClick={() => {
-                                                    setIsEditMode(false);
-                                                }}
-                                            >
-                                                <ClearIcon />
-                                            </IconButton>
+                                    <Grid item xs={12}>
+                                        <Divider />
+                                    </Grid>
+                                    <Grid item marginTop="20px">
+                                        <Grid container spacing={4}>
+                                            <Grid item>
+                                                <Button
+                                                    type="submit"
+                                                    variant="contained"
+                                                    startIcon={
+                                                        isUpdateLoading ? <CircularProgress sx={{ color: 'white' }} size={20} /> : <DoneIcon />
+                                                    }
+                                                >
+                                                    {i18next.t('entityPage.save')}
+                                                </Button>
+                                            </Grid>
+                                            <Grid item>
+                                                <Button
+                                                    variant="outlined"
+                                                    startIcon={<ClearIcon />}
+                                                    onClick={() => {
+                                                        setIsEditMode(false);
+                                                    }}
+                                                >
+                                                    {i18next.t('entityPage.cancel')}
+                                                </Button>
+                                            </Grid>
                                         </Grid>
                                     </Grid>
                                 </Grid>
