@@ -6,7 +6,7 @@ import { AuthService } from './services/authService';
 
 const axios = axiosInstance.create({
     withCredentials: true,
-    timeout: 5000,
+    timeout: 10000,
     baseURL: '/api',
 });
 
@@ -15,7 +15,7 @@ axios.interceptors.response.use(
         return response;
     },
     (error) => {
-        if (error.response.status === 401) {
+        if (error.response?.status === 401) {
             AuthService.logout();
         }
 
