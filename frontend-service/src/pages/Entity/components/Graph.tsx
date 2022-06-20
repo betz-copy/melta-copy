@@ -12,7 +12,7 @@ import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplat
 import { IEntityExpanded } from '../../../interfaces/entities';
 import { IMongoRelationshipTemplate } from '../../../interfaces/relationshipTemplates';
 import { getExpandedEntityByIdRequest } from '../../../services/entitiesService';
-import { drawNodeLabel, drawLinkLabel, expandedEntityToGraphData } from '../../../utils/graph';
+import { drawNodeLabel, drawLinkLabel, expandedEntityToGraphData, getGraphDataWithNodeSizes, getFixedGraphLinks } from '../../../utils/graph';
 import { EntityProperties } from '../../../common/EntityProperties';
 import { IMongoCategory } from '../../../interfaces/categories';
 import { uniqByFunction } from '../../../utils/object';
@@ -36,7 +36,8 @@ const Graph: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> }
     const entityTemplates = queryClient.getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates')!;
     const relationshipTemplates = queryClient.getQueryData<IMongoRelationshipTemplate[]>('getRelationshipTemplates')!;
 
-    const [graphData, setGraphData] = useState<GraphData>(state ? expandedEntityToGraphData(state, relationshipTemplates) : { nodes: [], links: [] });
+    const expendedGraphData = state ? getGraphDataWithNodeSizes(expandedEntityToGraphData(state, relationshipTemplates)) : { nodes: [], links: [] };
+    const [graphData, setGraphData] = useState<GraphData>(expendedGraphData);
 
     const updateGraphSize = () => {
         const mainBox = ref.current?.parentElement.parentElement;
@@ -56,16 +57,24 @@ const Graph: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> }
 
     const addNewGraphData = (newGraphData: GraphData) => {
         setGraphData((prevGraphData) => {
-            return {
-                nodes: uniqByFunction(
-                    [...newGraphData.nodes.filter((value) => !prevGraphData.nodes.map(({ id }) => id).includes(value.id)), ...prevGraphData.nodes],
-                    (item1, item2) => item1.id === item2.id,
-                ),
-                links: uniqByFunction(
-                    [...newGraphData.links, ...prevGraphData.links],
-                    (item1, item2) => item1.source === item2.source && item1.target === item2.target,
-                ),
+            const mergedGraphNodes = [
+                ...newGraphData.nodes.filter((value) => !prevGraphData.nodes.map(({ id }) => id).includes(value.id)),
+                ...prevGraphData.nodes,
+            ];
+            const mergedGraphLinks = getFixedGraphLinks([...newGraphData.links, ...prevGraphData.links]);
+
+            const uniqeGraphNodes = uniqByFunction(mergedGraphNodes, (item1, item2) => item1.id === item2.id);
+            const uniqeGraphLinks = uniqByFunction(
+                mergedGraphLinks,
+                (item1, item2) => item1.source === item2.source && item1.target === item2.target,
+            );
+
+            const updatedGraphData = {
+                nodes: uniqeGraphNodes,
+                links: uniqeGraphLinks,
             };
+
+            return getGraphDataWithNodeSizes(updatedGraphData);
         });
     };
 
@@ -75,7 +84,9 @@ const Graph: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> }
     useQuery<IEntityExpanded>(['getExpandedEntity', entityId], () => getExpandedEntityByIdRequest(entityId!), {
         enabled: !state,
         onSuccess: (data) => {
-            setGraphData(expandedEntityToGraphData(data, relationshipTemplates));
+            const expendedGraphDataWithSizes = getGraphDataWithNodeSizes(expandedEntityToGraphData(data, relationshipTemplates));
+
+            setGraphData(expendedGraphDataWithSizes);
         },
     });
 
@@ -108,6 +119,7 @@ const Graph: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> }
                 width={width}
                 ref={forceRef}
                 graphData={graphData}
+                nodeVal="nodeSize"
                 cooldownTicks={100}
                 nodeLabel={renderTooltip}
                 linkDirectionalArrowRelPos={1}
@@ -130,7 +142,7 @@ const Graph: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> }
                 nodeCanvasObject={(node: NodeObject, ctx) => {
                     const label = entityTemplates.find((entityTemplate) => entityTemplate._id === node.templateId)?.displayName || '';
 
-                    drawNodeLabel(node as NodeObject & { x: number; y: number }, label, ctx);
+                    drawNodeLabel(node as NodeObject & { x: number; y: number; nodeSize: number }, label, ctx);
                 }}
                 linkCanvasObjectMode={() => 'after'}
                 linkCanvasObject={(link, ctx) => {

@@ -19,8 +19,8 @@ export const drawText = (ctx: CanvasRenderingContext2D, text: string, x: number,
     ctx.fillText(text, x, y);
 };
 
-export const getRectangleDimensionsByString = (ctx: CanvasRenderingContext2D, text: string) => {
-    const fontSize = 2;
+export const getRectangleDimensionsByString = (ctx: CanvasRenderingContext2D, text: string, nodeSize: number = 2) => {
+    const fontSize = nodeSize;
 
     ctx.font = `${fontSize}px Sans-Serif`;
     const textWidth = ctx.measureText(text).width;
