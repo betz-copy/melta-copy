@@ -11,7 +11,7 @@ const AreYouSureDialog: React.FC<{
     onNo?: MouseEventHandler;
 }> = ({ open, handleClose, title = i18next.t('areYouSureDialog.title'), isLoading = false, onYes, onNo }) => {
     return (
-        <Dialog open={open} onClose={handleClose}>
+        <Dialog open={open}>
             <DialogTitle>{title}</DialogTitle>
             <DialogActions>
                 <Button onClick={onNo ?? handleClose}>{i18next.t('areYouSureDialog.no')}</Button>

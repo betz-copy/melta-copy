@@ -185,7 +185,7 @@ const CreateRelationshipDialog: React.FC<{
     });
 
     return (
-        <Dialog open={isOpen} onClose={handleClose} fullWidth maxWidth="xl" keepMounted={false} disableEnforceFocus>
+        <Dialog open={isOpen} fullWidth maxWidth="xl" keepMounted={false} disableEnforceFocus>
             <Formik
                 initialValues={initialValues}
                 onSubmit={async ({ relationshipTemplate, sourceEntity, destinationEntity }) => {
