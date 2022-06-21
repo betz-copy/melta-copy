@@ -16,6 +16,7 @@ import { deleteEntityTemplateRequest, entityTemplateObjectToEntityTemplateForm }
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
 import { removeItemById } from '../../../utils/reactQuery';
 import SearchInput from '../../../common/inputs/SearchInput';
+import { templatesCompareFunc } from '../../../utils/sortTemplates';
 
 const EntityTemplatesRow: React.FC = () => {
     const queryClient = useQueryClient();
@@ -63,7 +64,7 @@ const EntityTemplatesRow: React.FC = () => {
                     <Grid item>
                         <SelectCheckbox
                             title={i18next.t('categories')}
-                            options={categories}
+                            options={categories.sort((categoryA, categoryB) => categoryA.displayName.localeCompare(categoryB.displayName))}
                             selectedOptions={categoriesToShow}
                             setSelectedOptions={setCategoriesToShow}
                             getOptionId={(category) => category._id}
@@ -80,6 +81,7 @@ const EntityTemplatesRow: React.FC = () => {
             </Header>
             <Grid container spacing={4}>
                 {entityTemplates
+                    .sort(templatesCompareFunc)
                     .filter((entityTemplate) => categoriesToShow.some((categoryToShow) => categoryToShow._id === entityTemplate.category._id))
                     .filter((entityTemplate) => searchText === '' || entityTemplate.displayName.includes(searchText))
                     .map((entityTemplate) => (

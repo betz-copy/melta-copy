@@ -3,12 +3,14 @@ import i18next from 'i18next';
 import { Box, CircularProgress, Grid, Typography } from '@mui/material';
 import _debounce from 'lodash.debounce';
 import { useQuery } from 'react-query';
+import pLimit from 'p-limit';
 import { IMongoCategory } from '../../interfaces/categories';
 
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { TemplateTablesHeadline } from './TemplateTablesHeadline';
 import TemplateTablesView from './TemplatesTablesView';
 import { getEntitiesByTemplateRequest } from '../../services/entitiesService';
+import { templatesCompareFunc } from '../../utils/sortTemplates';
 
 const getTemplateCount = async (templateId: string, searchInput: string) => {
     const { lastRowIndex } = await getEntitiesByTemplateRequest(templateId, {
@@ -22,7 +24,8 @@ const getTemplateCount = async (templateId: string, searchInput: string) => {
 };
 
 const filterEmptyTemplatesTablesOnGlobalSearchRequest = async (templates: IMongoEntityTemplatePopulated[], searchInput: string) => {
-    const templatesCountsPromises = templates.map(({ _id }) => getTemplateCount(_id, searchInput));
+    const pLimitGetTemplateCount = pLimit(10);
+    const templatesCountsPromises = templates.map(({ _id }) => pLimitGetTemplateCount(() => getTemplateCount(_id, searchInput)));
     const templatesCounts = await Promise.all(templatesCountsPromises);
     return templates.filter((_template, index) => {
         const count = templatesCounts[index];
@@ -58,6 +61,8 @@ const TemplatesTablesPage: React.FC<{
         refetchTemplatesFilteredByCount();
     };
 
+    const templatesFilteredByCountSorted = templatesFilteredByCount?.sort(templatesCompareFunc);
+
     return (
         <Grid container>
             <Grid item xs={12}>
@@ -75,11 +80,11 @@ const TemplatesTablesPage: React.FC<{
                 </Box>
                 <Grid container>
                     {isLoadingTemplatesFilteredByCount && <CircularProgress />}
-                    {!isLoadingTemplatesFilteredByCount && templatesFilteredByCount?.length === 0 && (
+                    {!isLoadingTemplatesFilteredByCount && templatesFilteredByCountSorted?.length === 0 && (
                         <Typography>{i18next.t('noSearchResults')}</Typography>
                     )}
                     {!isLoadingTemplatesFilteredByCount && (
-                        <TemplateTablesView ref={templatesTablesRef} templates={templatesFilteredByCount!} searchInput={searchInput} />
+                        <TemplateTablesView ref={templatesTablesRef} templates={templatesFilteredByCountSorted!} searchInput={searchInput} />
                     )}
                 </Grid>
             </Grid>

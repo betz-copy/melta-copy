@@ -5,26 +5,8 @@ import { AddCircle as AddIcon, DownloadForOffline as DonwloadIcon, TravelExplore
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import SearchInput from '../inputs/SearchInput';
 import { AddEntityButton } from './AddEntityButton';
-import { SelectCheckbox, SelectCheckboxProps } from '../SelectCheckbox';
 import { IMongoCategory } from '../../interfaces/categories';
-
-const getEntityTemplateSelectCheckboxGroupProps = (
-    categories: IMongoCategory[] | undefined,
-): SelectCheckboxProps<IMongoEntityTemplatePopulated, IMongoCategory>['groupsProps'] => {
-    if (!categories) {
-        return {
-            useGroups: false,
-        };
-    }
-
-    return {
-        useGroups: true,
-        groups: categories,
-        getGroupId: (category) => category._id,
-        getGroupLabel: (category) => category.displayName,
-        getGroupOfOption: (entityTemplate, _categories) => entityTemplate.category,
-    };
-};
+import TemplatesSelectCheckbox from '../templatesSelectCheckbox';
 
 const GlobalSearch: React.FC<{ onSearch: (searchValue: string) => void }> = ({ onSearch }) => {
     const [input, setInput] = useState('');
@@ -65,14 +47,12 @@ const TemplateTablesHeadline: React.FC<{
                             <GlobalSearch onSearch={onSearch} />
                         </Grid>
                         <Grid item>
-                            <SelectCheckbox
+                            <TemplatesSelectCheckbox
                                 title={i18next.t('templatesTablesEntityTemplatesCheckboxLabel')}
-                                options={entityTemplateSelectCheckboxProps.templates}
-                                selectedOptions={entityTemplateSelectCheckboxProps.templatesToShow}
-                                setSelectedOptions={entityTemplateSelectCheckboxProps.setTemplatesToShow}
-                                getOptionId={({ _id }) => _id}
-                                getOptionLabel={({ displayName }) => displayName}
-                                groupsProps={getEntityTemplateSelectCheckboxGroupProps(entityTemplateSelectCheckboxProps.categories)}
+                                templates={entityTemplateSelectCheckboxProps.templates}
+                                selectedTemplates={entityTemplateSelectCheckboxProps.templatesToShow}
+                                setSelectedTemplates={entityTemplateSelectCheckboxProps.setTemplatesToShow}
+                                categories={entityTemplateSelectCheckboxProps.categories}
                                 size="small"
                             />
                         </Grid>

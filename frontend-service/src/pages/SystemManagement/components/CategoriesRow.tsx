@@ -18,6 +18,7 @@ const CategoriesRow: React.FC = () => {
     const queryClient = useQueryClient();
 
     const categories = queryClient.getQueryData<IMongoCategory[]>('getCategories')!;
+    const categoriesSorted = categories.sort((categoryA, categoryB) => categoryA.displayName.localeCompare(categoryB.displayName));
 
     const [deleteCategoryDialogState, setDeleteCategoryDialogState] = useState<{
         isDialogOpen: boolean;
@@ -54,7 +55,7 @@ const CategoriesRow: React.FC = () => {
                 </IconButton>
             </Header>
             <Grid container spacing={4}>
-                {categories.map((category) => (
+                {categoriesSorted.map((category) => (
                     <ViewingCard
                         minWidth={250}
                         key={category._id}

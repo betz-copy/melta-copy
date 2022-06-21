@@ -7,7 +7,6 @@ import { toast } from 'react-toastify';
 import i18next from 'i18next';
 import { ViewingCard } from './ViewingCard';
 import { Header } from '../../../common/Header';
-import { SelectCheckbox } from '../../../common/SelectCheckbox';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IMongoRelationshipTemplate, IMongoRelationshipTemplatePopulated } from '../../../interfaces/relationshipTemplates';
 import { IMongoCategory } from '../../../interfaces/categories';
@@ -20,6 +19,7 @@ import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
 import { removeItemById } from '../../../utils/reactQuery';
 import { RelationshipTitle } from '../../../common/RelationshipTitle';
 import SearchInput from '../../../common/inputs/SearchInput';
+import TemplatesSelectCheckbox from '../../../common/templatesSelectCheckbox';
 
 const RelationshipTemplatesRow: React.FC = () => {
     const queryClient = useQueryClient();
@@ -68,38 +68,22 @@ const RelationshipTemplatesRow: React.FC = () => {
                         <SearchInput onChange={setSearchText} endAdornmentChildren={<SearchIcon />} />
                     </Grid>
                     <Grid item>
-                        <SelectCheckbox
+                        <TemplatesSelectCheckbox
                             title={i18next.t('systemManagement.sourceTemplates')}
-                            options={entityTemplates}
-                            selectedOptions={sourceEntityTemplatesToShow}
-                            setSelectedOptions={setSourceEntityTemplatesToShow}
-                            getOptionId={(entityTemplate) => entityTemplate._id}
-                            getOptionLabel={(entityTemplate) => entityTemplate.displayName}
-                            groupsProps={{
-                                useGroups: true,
-                                groups: categories,
-                                getGroupId: (category) => category._id,
-                                getGroupLabel: (category) => category.displayName,
-                                getGroupOfOption: (entityTemplate, _categories) => entityTemplate.category,
-                            }}
+                            templates={entityTemplates}
+                            selectedTemplates={sourceEntityTemplatesToShow}
+                            setSelectedTemplates={setSourceEntityTemplatesToShow}
+                            categories={categories}
                             size="small"
                         />
                     </Grid>
                     <Grid item>
-                        <SelectCheckbox
+                        <TemplatesSelectCheckbox
                             title={i18next.t('systemManagement.destinationTemplates')}
-                            options={entityTemplates}
-                            selectedOptions={destinationEntityTemplatesToShow}
-                            setSelectedOptions={setDestinationEntityTemplatesToShow}
-                            getOptionId={(entityTemplate) => entityTemplate._id}
-                            getOptionLabel={(entityTemplate) => entityTemplate.displayName}
-                            groupsProps={{
-                                useGroups: true,
-                                groups: categories,
-                                getGroupId: (category) => category._id,
-                                getGroupLabel: (category) => category.displayName,
-                                getGroupOfOption: (entityTemplate, _categories) => entityTemplate.category,
-                            }}
+                            templates={entityTemplates}
+                            selectedTemplates={destinationEntityTemplatesToShow}
+                            setSelectedTemplates={setDestinationEntityTemplatesToShow}
+                            categories={categories}
                             size="small"
                         />
                     </Grid>
