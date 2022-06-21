@@ -16,4 +16,5 @@ export const environment = {
         searchUsers: '/users/search',
     },
     accessTokenName: 'rabaz-access-token',
+    minimumSupportedChromeVersion: 80,
 };

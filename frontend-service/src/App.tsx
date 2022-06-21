@@ -4,6 +4,7 @@ import i18next from 'i18next';
 import { useSelector, useDispatch } from 'react-redux';
 import { toast } from 'react-toastify';
 import { useQuery, useQueryClient } from 'react-query';
+import Bowser from 'bowser';
 import 'react-toastify/dist/ReactToastify.css';
 import { AuthService } from './services/authService';
 import Main from './Main';
@@ -17,9 +18,21 @@ import { IMongoCategory } from './interfaces/categories';
 import { IMongoEntityTemplatePopulated } from './interfaces/entityTemplates';
 import { IMongoRelationshipTemplate } from './interfaces/relationshipTemplates';
 import ErrorPage from './pages/ErrorPage';
+import { environment } from './globals';
 
 const App: React.FC = () => {
     const queryClient = useQueryClient();
+
+    useEffect(() => {
+        const browser = Bowser.getParser(window.navigator.userAgent);
+        const isValidBrowser = browser.satisfies({
+            chrome: `>=${environment.minimumSupportedChromeVersion}`,
+        });
+
+        if (!isValidBrowser) {
+            toast.error(i18next.t('error.unsupportedChromeVersion'), { autoClose: false, theme: 'colored', style: { fontSize: 'large' } });
+        }
+    }, []);
 
     const currentUser = useSelector((state: RootState) => state.user);
     useQuery<BackendConfigState>('getBackendConfig', getBackendConfigRequest, {
