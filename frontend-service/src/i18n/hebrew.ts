@@ -55,7 +55,7 @@ export default {
         unknownEntity: 'לא ידוע',
         noOptions: 'אין תוצאות',
     },
-    searchLabel: 'חפש...',
+    searchLabel: 'חיפוש...',
     booleanOptions: { yes: 'כן', no: 'לא' },
     graph: {
         center: 'מרכז',
