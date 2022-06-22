@@ -2,16 +2,39 @@ import { GraphData, LinkObject, NodeObject } from 'react-force-graph-2d';
 import { IEntity, IEntityExpanded } from '../interfaces/entities';
 import { IMongoRelationshipTemplate } from '../interfaces/relationshipTemplates';
 import { drawRectangle, drawText, getLineAngle, getRectangleDimensionsByString } from './canvas';
+import { environment } from '../globals';
+
+type rangeAsString = `${string}-${string}`;
+const searchNodeSizeInsideRangesDict = (connectionsCount: number, connectionsCountRangesToSizeDict: Record<rangeAsString, number>) => {
+    const ranges = Object.keys(connectionsCountRangesToSizeDict) as rangeAsString[];
+
+    const rangeThatMatchConnectionsCount = ranges.find((range: string) => {
+        const [minAsString, maxAsString] = range.split('-');
+
+        return connectionsCount >= Number(minAsString) && connectionsCount <= Number(maxAsString);
+    });
+
+    // if we can't find any range that fits the connections count of the node, return it as the size
+    if (!rangeThatMatchConnectionsCount) {
+        return connectionsCount;
+    }
+
+    return connectionsCountRangesToSizeDict[rangeThatMatchConnectionsCount];
+};
 
 export const getSizeOfNodeByConnections = (nodeId: string, links: LinkObject[]) => {
+    const { nodeConnectionsCountRangesToNodeSize, maximumNodeSize } = environment.graphSettings;
+
     const connections = links.filter((curr) => curr.target === nodeId || curr.source === nodeId);
     const connectionsCount = connections.length;
 
-    if (connectionsCount >= 6) {
-        return 6;
+    const selectedNodeSize = searchNodeSizeInsideRangesDict(connectionsCount, nodeConnectionsCountRangesToNodeSize);
+
+    if (selectedNodeSize > maximumNodeSize) {
+        return maximumNodeSize;
     }
 
-    return connectionsCount;
+    return selectedNodeSize;
 };
 
 // this function is used to fixed weird behavior of the graph engine which is to populate the links to the real objects
