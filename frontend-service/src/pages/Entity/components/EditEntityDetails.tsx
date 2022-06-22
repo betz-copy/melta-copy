@@ -1,5 +1,5 @@
 import React from 'react';
-import { Grid, Card, CardContent, CircularProgress, Box, Typography, Divider, Button } from '@mui/material';
+import { Grid, Card, CardContent, CircularProgress, Box, Divider, Button } from '@mui/material';
 import { Done as DoneIcon, Clear as ClearIcon } from '@mui/icons-material';
 import { useMutation, useQueryClient } from 'react-query';
 import i18next from 'i18next';
@@ -12,6 +12,7 @@ import { EntityWizardValues } from '../../../common/wizards/entity';
 import { objectFilter, objectMap } from '../../../utils/object';
 import { EntityFilesInput } from '../../../common/inputs/EntityFilesInput';
 import { EntityPropertiesInput } from '../../../common/inputs/EntityPropertiesInput';
+import { BlueTitle } from '../../../common/BlueTitle';
 
 const EditEntityDetails: React.FC<{
     entityTemplate: IMongoEntityTemplatePopulated;
@@ -67,7 +68,7 @@ const EditEntityDetails: React.FC<{
                                     <Grid item xs={12}>
                                         <Grid container flexDirection="row">
                                             <Box sx={{ marginRight: '50px' }}>
-                                                {i18next.t('wizard.entityTemplate.properties')}
+                                                <BlueTitle title={i18next.t('wizard.entityTemplate.properties')} component="h6" variant="h6" />
                                                 <EntityPropertiesInput
                                                     schema={{
                                                         ...entityTemplate.properties,
@@ -80,18 +81,23 @@ const EditEntityDetails: React.FC<{
                                                     setFieldValue={setFieldValue}
                                                 />
                                             </Box>
-                                            <Box>
-                                                <Typography style={{ marginBottom: '22px' }}>
-                                                    {i18next.t('wizard.entityTemplate.attachments')}
-                                                </Typography>
-                                                <EntityFilesInput
-                                                    requiredFilesNames={requiredFilesNames}
-                                                    filesProperties={templateFilesProperties}
-                                                    setFieldValue={setFieldValue}
-                                                    errors={errors}
-                                                    values={values}
-                                                />
-                                            </Box>
+                                            {templateFileKeys.length > 0 && (
+                                                <Box>
+                                                    <BlueTitle
+                                                        title={i18next.t('wizard.entityTemplate.attachments')}
+                                                        component="h6"
+                                                        variant="h6"
+                                                        style={{ marginBottom: '22px' }}
+                                                    />
+                                                    <EntityFilesInput
+                                                        requiredFilesNames={requiredFilesNames}
+                                                        filesProperties={templateFilesProperties}
+                                                        setFieldValue={setFieldValue}
+                                                        errors={errors}
+                                                        values={values}
+                                                    />
+                                                </Box>
+                                            )}
                                         </Grid>
                                     </Grid>
                                     <Grid item xs={12}>
