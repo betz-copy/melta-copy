@@ -37,8 +37,12 @@ export class EntityTemplateManager {
 
     static async createTemplate(templateData: Omit<IEntityTemplate, 'iconFileId'>) {
         const entityTemplate = await EntityTemplateModel.create(templateData);
+
         await menash.send(rabbit.queueName, 'New Template Created.');
-        return entityTemplate;
+
+        const entityTemplatePopulated = await entityTemplate.populate('category').execPopulate();
+
+        return entityTemplatePopulated;
     }
 
     static async deleteTemplate(id: string) {
@@ -48,6 +52,7 @@ export class EntityTemplateManager {
             .exec();
 
         await menash.send(rabbit.queueName, 'Template Deleted.');
+
         return entityTemplate;
     }
 
@@ -57,7 +62,9 @@ export class EntityTemplateManager {
             .orFail(new ServiceError(404, 'Entity Template not found'))
             .lean()
             .exec();
+
         await menash.send(rabbit.queueName, 'Template Updated.');
+
         return entityTemplate;
     }
 }
