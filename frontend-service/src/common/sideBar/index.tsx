@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Divider, IconButton, Typography, Grid, Avatar } from '@mui/material';
+import { Divider, IconButton, Grid } from '@mui/material';
 import { useQueryClient } from 'react-query';
 import {
     ChevronRight as ChevronRightIcon,
@@ -19,6 +19,7 @@ import { IPermissionsOfUser } from '../../services/permissionsService';
 import PermissionsOfUserDialog from '../permissionsOfUserDialog';
 import { CustomIcon } from '../CustomIcon';
 import { RootState } from '../../store';
+import { ProfileButton } from './ProfileButton';
 
 type SideBarProps = {
     toggleDrawer: () => any;
@@ -37,26 +38,14 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
         <Drawer variant="permanent" open={isDrawerOpen}>
             <Grid container direction="column" wrap="nowrap" height="100%" bgcolor="#225AA7">
                 <Grid item container direction="column" alignItems="center" marginTop="10px" marginBottom="10px">
-                    <Typography color="white" fontFamily="Rubik" fontSize={25} fontWeight="bold">
-                        MELTA
-                    </Typography>
-                    <IconButton onClick={() => setIsMyPermissionsDialogOpen(true)}>
-                        <Avatar
-                            sx={{
-                                width: 48,
-                                height: 48,
-                                font: '28px Rubik',
-                                fontSize: 25,
-                                backgroundColor: '#fcfeff',
-                                fontWeight: 500,
-                                color: 'rgb(25, 118, 210)',
-                                '&:hover': { backgroundColor: '#dfe4e7' },
-                            }}
-                        >
-                            {currentUser.name?.firstName.charAt(0)}
-                            {currentUser.name?.lastName.charAt(0)}
-                        </Avatar>
-                    </IconButton>
+                    <img src={isDrawerOpen ? '/icons/Melta_Logo.svg' : '/icons/Melta_Short_Logo.svg'} style={{ margin: '0.8rem' }} height="40px" />
+
+                    <ProfileButton
+                        currentUser={currentUser}
+                        text={i18next.t('permissions.permissionsOfUserDialog.readTitle')}
+                        isDrawerOpen={isDrawerOpen}
+                        onClick={() => setIsMyPermissionsDialogOpen(true)}
+                    />
                 </Grid>
 
                 <Divider />
@@ -118,9 +107,22 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
 
                     <Divider />
 
-                    <IconButton onClick={toggleDrawer} size="large" sx={{ color: 'white', borderRadius: 0, padding: '20px' }} disableRipple>
-                        {isDrawerOpen ? <ChevronRightIcon /> : <ChevronLeftIcon />}
-                    </IconButton>
+                    <Grid item container alignItems="center" justifyContent="space-around" flexWrap="nowrap" height="4rem">
+                        {isDrawerOpen && (
+                            <Grid item container alignItems="center" width="fit-content" spacing={1}>
+                                <Grid item>
+                                    <img src="/icons/sapir.svg" height="40px" />
+                                </Grid>
+                                <Grid item>
+                                    <img src="/icons/yesodot.svg" height="35px" />
+                                </Grid>
+                            </Grid>
+                        )}
+
+                        <IconButton onClick={toggleDrawer} size="large" sx={{ color: 'white' }}>
+                            {isDrawerOpen ? <ChevronRightIcon /> : <ChevronLeftIcon />}
+                        </IconButton>
+                    </Grid>
                 </Grid>
             </Grid>
 
