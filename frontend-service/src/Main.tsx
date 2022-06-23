@@ -1,5 +1,5 @@
-import React, { useState, lazy, Suspense } from 'react';
-import { CssBaseline, Box } from '@mui/material';
+import React, { useState, lazy, Suspense, useRef } from 'react';
+import { CssBaseline, Box, useScrollTrigger } from '@mui/material';
 import { Route, Routes } from 'react-router-dom';
 import rtlPlugin from 'stylis-plugin-rtl';
 import { CacheProvider } from '@emotion/react';
@@ -18,6 +18,7 @@ import {
     EntityProtectedRoute,
     CategoryProtectedRoute,
 } from './utils/ProtectedRoutes';
+import ScrollToTop from './ScrollToTop';
 
 const GlobalSearch = lazy(() => import('./pages/GlobalSearch'));
 const Category = lazy(() => import('./pages/Category'));
@@ -36,6 +37,11 @@ const cacheRtl = createCache({
 const Main = () => {
     const [open, setOpen] = useState(false);
     const [title, setTitle] = useState('');
+
+    const [pageScrollTarget, setPageScrollTarget] = useState<HTMLElement | undefined>(undefined);
+    const trigger = useScrollTrigger({ target: pageScrollTarget, disableHysteresis: true, threshold: 300 });
+    const topBarRef = useRef<HTMLDivElement>(null);
+
     const queryClient = useQueryClient();
 
     const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
@@ -50,8 +56,12 @@ const Main = () => {
             <Box display="flex">
                 <CssBaseline />
                 <SideBar toggleDrawer={toggleDrawer} isDrawerOpen={open} />
-                <MainBox>
-                    <TopBar title={title} />
+                <MainBox
+                    ref={(ref) => {
+                        if (ref) setPageScrollTarget(ref as HTMLElement);
+                    }}
+                >
+                    <TopBar ref={topBarRef} title={title} />
                     <Box>
                         <Suspense fallback={<div />}>
                             <Routes>
@@ -101,6 +111,7 @@ const Main = () => {
                             </Routes>
                         </Suspense>
                     </Box>
+                    <ScrollToTop fadeInTrigger={trigger} scrollToElementRef={topBarRef} />
                 </MainBox>
             </Box>
         </CacheProvider>

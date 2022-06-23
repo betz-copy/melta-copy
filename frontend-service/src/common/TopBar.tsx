@@ -1,11 +1,12 @@
-import React from 'react';
+import React, { forwardRef } from 'react';
 import { Box } from '@mui/material';
 import { BlueTitle } from './BlueTitle';
 
-const TopBar: React.FC<{ title: string }> = ({ title }) => {
+const TopBar = forwardRef<HTMLDivElement, { title: string }>(({ title }, ref) => {
     if (title.length) {
         return (
             <Box
+                ref={ref}
                 bgcolor="#fcfeff"
                 boxShadow="0px 4px 4px #0000000D"
                 paddingTop="0.5rem"
@@ -19,6 +20,6 @@ const TopBar: React.FC<{ title: string }> = ({ title }) => {
     }
 
     return null;
-};
+});
 
 export { TopBar };
