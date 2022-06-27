@@ -14,14 +14,17 @@ type TransactionType = 'writeTransaction' | 'readTransaction';
 class Neo4jClient {
     private driver: Driver;
 
+    private database: string;
+
     private isInitialized: boolean;
 
     constructor() {
         this.isInitialized = false;
     }
 
-    async initialize(url: string, auth: Neo4jAuth, configuration: Config = {}) {
+    async initialize(url: string, auth: Neo4jAuth, database: string, configuration: Config = {}) {
         this.driver = neo4j.driver(url, neo4j.auth.basic(auth.username, auth.password), configuration);
+        this.database = database;
 
         await this.verifyConnectivity();
 
@@ -30,16 +33,16 @@ class Neo4jClient {
         this.isInitialized = true;
     }
 
-    async readTransaction(cypherQuery: string, parameters = {}, database = 'neo4j') {
-        return this.performTransaction('readTransaction', cypherQuery, parameters, database);
+    async readTransaction(cypherQuery: string, parameters = {}) {
+        return this.performTransaction('readTransaction', cypherQuery, parameters);
     }
 
-    async writeTransaction(cypherQuery: string, parameters = {}, database = 'neo4j') {
-        return this.performTransaction('writeTransaction', cypherQuery, parameters, database);
+    async writeTransaction(cypherQuery: string, parameters = {}) {
+        return this.performTransaction('writeTransaction', cypherQuery, parameters);
     }
 
-    async performTransaction(transactionType: TransactionType, cypherQuery: string, parameters = {}, database = 'neo4j') {
-        const session = this.driver.session({ database });
+    async performTransaction(transactionType: TransactionType, cypherQuery: string, parameters = {}) {
+        const session = this.driver.session({ database: this.database });
 
         try {
             const result = await session[transactionType]((tx) => tx.run(cypherQuery, parameters));

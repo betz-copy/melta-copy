@@ -17,7 +17,7 @@ const config = {
         timeout: env.get('TEMPLATE_MANAGER_TIMEOUT').default(5000).asIntPositive(),
     },
     neo4j: {
-        url: env.get('NEO4J_URL').default('neo4j://localhost').asUrlString(),
+        url: env.get('NEO4J_URL').default('neo4j://localhost').asString(),
         auth: {
             username: env.get('NEO4J_USERNAME').default('neo4j').asString(),
             password: env.get('NEO4J_PASSWORD').default('test').asString(),
@@ -26,6 +26,7 @@ const config = {
         connectionRetries: env.get('NEO4J_CONNECTION_RETRIES').default(5).asIntPositive(),
         connectionRetryDelay: env.get('NEO4J_CONNECTION_RETRY_DELAY').default(3000).asIntPositive(),
         globalSearchIndexes: env.get('NEO4J_GLOBAL_SEARCH_INDEXES').default('primaryGlobalSearch,secondaryGlobalSearch').asArray(),
+        stringPropertySuffix: env.get('STRING_PROPERTY_SUFFIX').default('_tostring').asString(),
     },
     redis: {
         url: env.get('REDIS_HOST').default('redis://redis:6379').asString(),

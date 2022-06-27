@@ -50,10 +50,23 @@ const fetchTemplatesAndCreateIndex = async () => {
     const templates = await getEntityTemplates();
 
     const templateIds = templates.map((template) => template._id);
-    const templateProperties = templates.flatMap((template) => Object.keys(template.properties.properties));
-    const properties = [...new Set(templateProperties)];
+    const templateProperties = new Set<string>();
 
-    await updateIndexWithTemplates(templateIds, properties);
+    templates.forEach((template) => {
+        Object.entries(template.properties.properties).forEach(([key, value]) => {
+            const { type, format } = value;
+
+            if (type !== 'string' || format === 'date' || format === 'date-time') {
+                templateProperties.add(`${key}${neo4j.stringPropertySuffix}`);
+
+                return;
+            }
+
+            templateProperties.add(key);
+        });
+    });
+
+    await updateIndexWithTemplates(templateIds, Array.from(templateProperties));
 };
 
 export default fetchTemplatesAndCreateIndex;

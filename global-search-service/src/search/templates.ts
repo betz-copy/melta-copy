@@ -3,17 +3,27 @@ import axios from 'axios';
 import config from '../config';
 import { trycatch } from '../utils/index';
 
+interface IEntitySingleProperty {
+    type: 'string' | 'number' | 'boolean';
+    title: string;
+    format?: string;
+}
+
 interface IJSONSchema {
-    properties: object;
-    type: string;
+    properties: Record<string, IEntitySingleProperty>;
+    type: 'object';
+    required: string[];
 }
 
 interface IEntityTemplate {
     _id: string;
     name: string;
     displayName: string;
-    category: string;
+    iconFileId?: string;
     properties: IJSONSchema;
+    category: string;
+    propertiesOrder: string[];
+    propertiesPreview: string[];
     disabled: boolean;
 }
 
