@@ -1,15 +1,37 @@
 import { v4 as uuidv4 } from 'uuid';
 import neo4j, { QueryResult } from 'neo4j-driver';
+import config from '../../config';
+
+/**
+ *
+ * @param date
+ * @returns Date in YYYY-MM-DD Format
+ */
+export const formatDate = (date: string) => {
+    return date.slice(0, 10);
+};
 
 const normalizeFields = (properties: Record<string, any>) => {
     const props = {};
 
     Object.entries(properties).forEach(([key, value]) => {
-        if (key.endsWith('_tostring')) {
+        if (key.endsWith(config.neo4j.stringPropertySuffix)) {
             return;
         }
 
-        props[key] = value instanceof neo4j.types.DateTime ? new Date(value.toString()) : value;
+        if (value instanceof neo4j.types.DateTime) {
+            props[key] = new Date(value.toString());
+
+            return;
+        }
+
+        if (value instanceof neo4j.types.Date) {
+            props[key] = formatDate(value.toString());
+
+            return;
+        }
+
+        props[key] = value;
     });
 
     return props;
@@ -103,10 +125,11 @@ export const normalizeReturnedRelAndEntities = (result: QueryResult) => {
     };
 };
 
-export const getNeo4jDate = (date = new Date()) => neo4j.types.DateTime.fromStandardDate(date);
+export const getNeo4jDateTime = (date = new Date()) => neo4j.types.DateTime.fromStandardDate(date);
+export const getNeo4jDate = (date = new Date()) => neo4j.types.Date.fromStandardDate(date);
 
 export const generateDefaultProperties = () => {
-    const timestamp = getNeo4jDate();
+    const timestamp = getNeo4jDateTime();
     const id = uuidv4();
 
     return {
@@ -122,13 +145,4 @@ export const defaultJsonSchemaProperties: Record<string, any> = {
         type: 'string',
         title: 'disabled',
     },
-};
-
-/**
- *
- * @param date
- * @returns Date in YYYY-MM-DD Format
- */
-export const formatDate = (date: string) => {
-    return new Date(date).toISOString().slice(0, 10);
 };

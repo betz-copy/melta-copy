@@ -1,5 +1,5 @@
 import Neo4jClient from '../../utils/neo4j';
-import { generateDefaultProperties, getNeo4jDate, normalizeResponseCount, normalizeReturnedRelationship } from '../../utils/neo4j/lib';
+import { generateDefaultProperties, getNeo4jDateTime, normalizeResponseCount, normalizeReturnedRelationship } from '../../utils/neo4j/lib';
 import { IRelationship } from './interface';
 import { NotFoundError, ServiceError } from '../error';
 
@@ -61,7 +61,7 @@ export class RelationshipManager {
             {
                 props: {
                     ...relationshipProperties,
-                    updatedAt: getNeo4jDate(),
+                    updatedAt: getNeo4jDateTime(),
                 },
             },
         );

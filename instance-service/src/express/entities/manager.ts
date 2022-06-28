@@ -2,7 +2,7 @@ import { Neo4jError } from 'neo4j-driver';
 import Neo4jClient from '../../utils/neo4j';
 import {
     generateDefaultProperties,
-    getNeo4jDate,
+    getNeo4jDateTime,
     normalizeReturnedRelAndEntities,
     normalizeReturnedEntity,
     normalizeResponseCount,
@@ -110,7 +110,7 @@ export class EntityManager {
             {
                 props: {
                     ...entityProperties,
-                    updatedAt: getNeo4jDate(),
+                    updatedAt: getNeo4jDateTime(),
                     _id: id,
                 },
             },

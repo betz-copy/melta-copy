@@ -14,6 +14,7 @@ const config = {
         database: env.get('NEO4J_DATABASE').default('neo4j').asString(),
         connectionRetries: env.get('NEO4J_CONNECTION_RETRIES').default(5).asIntPositive(),
         connectionRetryDelay: env.get('NEO4J_CONNECTION_RETRY_DELAY').default(3000).asIntPositive(),
+        stringPropertySuffix: env.get('STRING_PROPERTY_SUFFIX').default('_tostring').asString(),
     },
     templateManager: {
         url: env.get('TEMPLATE_MANAGER_URL').required().asString(),

@@ -121,20 +121,20 @@ export const dateFilterToQuery = (field: string, { type, dateFrom: dateFromStrin
 
     switch (type) {
         case 'equals':
-            return `date(datetime(node.${field})) = date('${dateFrom}')`;
+            return `date(node.${field}) = date('${dateFrom}')`;
         case 'notEqual':
-            return `date(datetime(node.${field})) <> date('${dateFrom}')`;
+            return `date(node.${field}) <> date('${dateFrom}')`;
         case 'lessThan':
-            return `date(datetime(node.${field})) < date('${dateFrom}')`;
+            return `date(node.${field}) < date('${dateFrom}')`;
         case 'lessThanOrEqual':
-            return `date(datetime(node.${field})) <= date('${dateFrom}')`;
+            return `date(node.${field}) <= date('${dateFrom}')`;
         case 'greaterThan':
-            return `date(datetime(node.${field})) > date('${dateFrom}')`;
+            return `date(node.${field}) > date('${dateFrom}')`;
         case 'greaterThanOrEqual':
-            return `date(datetime(node.${field})) >= date('${dateFrom}')`;
+            return `date(node.${field}) >= date('${dateFrom}')`;
         case 'inRange':
             assert(dateToString, 'inRange must have dateFrom & dateTo');
-            return `date('${dateFrom}') <= date(datetime(node.${field})) <= date('${formatDate(dateToString)}')`;
+            return `date('${dateFrom}') <= date(node.${field}) <= date('${formatDate(dateToString)}')`;
         default:
             throw new Error('Invalid supported ag-grid filter type method');
     }

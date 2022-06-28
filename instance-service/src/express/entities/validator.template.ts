@@ -4,25 +4,33 @@ import axios from 'axios';
 import { Request, NextFunction, Response } from 'express';
 import config from '../../config';
 import { trycatch } from '../../utils/lib';
-import { defaultJsonSchemaProperties, getNeo4jDate } from '../../utils/neo4j/lib';
+import { defaultJsonSchemaProperties, getNeo4jDate, getNeo4jDateTime } from '../../utils/neo4j/lib';
 import { ValidationError } from '../error';
 
+interface IEntitySingleProperty {
+    type: 'string' | 'number' | 'boolean';
+    title: string;
+    format?: string;
+}
+
 interface IJSONSchema {
-    properties: Record<string, any>;
-    type: string;
+    properties: Record<string, IEntitySingleProperty>;
+    type: 'object';
     required: string[];
 }
 
 interface IEntityTemplate {
-    _id: string;
     name: string;
     displayName: string;
-    category: string;
+    iconFileId?: string;
     properties: IJSONSchema;
+    category: string;
+    propertiesOrder: string[];
+    propertiesPreview: string[];
     disabled: boolean;
 }
 
-const { templateManager } = config;
+const { templateManager, neo4j } = config;
 const { url, getByIdRoute, timeout } = templateManager;
 
 const ajv = new Ajv();
@@ -75,11 +83,25 @@ export const addStringFieldsAndNormalizeDateValues = (req: Request, _res: Respon
         }
 
         // For Neo4j fulltext search (supports only string properties)
-        if (type !== 'string' || format === 'date') {
-            normalizedEntity[`${key}_tostring`] = String(propertyValue);
+        if (type !== 'string') {
+            normalizedEntity[`${key}${neo4j.stringPropertySuffix}`] = String(propertyValue);
         }
 
-        normalizedEntity[key] = type === 'string' && format === 'date' ? getNeo4jDate(new Date(propertyValue)) : propertyValue;
+        if (type === 'string' && format === 'date') {
+            normalizedEntity[key] = getNeo4jDate(new Date(propertyValue));
+            normalizedEntity[`${key}${neo4j.stringPropertySuffix}`] = new Date(propertyValue).toLocaleDateString('en-uk');
+
+            return;
+        }
+
+        if (type === 'string' && format === 'date-time') {
+            normalizedEntity[key] = getNeo4jDateTime(new Date(propertyValue));
+            normalizedEntity[`${key}${neo4j.stringPropertySuffix}`] = new Date(propertyValue).toLocaleString('en-uk');
+
+            return;
+        }
+
+        normalizedEntity[key] = propertyValue;
     });
 
     req.body.properties = normalizedEntity;

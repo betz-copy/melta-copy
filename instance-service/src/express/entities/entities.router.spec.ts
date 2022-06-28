@@ -62,6 +62,11 @@ describe('Entity router', () => {
                         format: 'date',
                         title: 'mockDate',
                     },
+                    mockDateTime: {
+                        type: 'string',
+                        format: 'date-time',
+                        title: 'mockDateTime',
+                    },
                 },
             },
             disabled: false,
@@ -96,14 +101,21 @@ describe('Entity router', () => {
 
     describe('POST /api/instances/entities', () => {
         it('Should create new entity', async () => {
-            const res = await request(app)
-                .post('/api/instances/entities')
-                .send({ templateId: defaultTemplateId, properties: { ...defaultProperties, mockDate: formatDate(mockDateStr) } });
+            const properties = {
+                mockDate: formatDate(mockDateStr),
+                mockDateTime: mockDateStr,
+                ...defaultProperties,
+            };
+
+            const res = await request(app).post('/api/instances/entities').send({
+                templateId: defaultTemplateId,
+                properties,
+            });
 
             expect(res.statusCode).toBe(200);
             expect(res.body).toBeDefined();
             expect(res.body.templateId).toBe(defaultTemplateId);
-            expect(res.body.properties).toEqual(expect.objectContaining(defaultProperties));
+            expect(res.body.properties).toEqual(expect.objectContaining(properties));
         });
 
         it('Should fail to create a new entity', async () => {
