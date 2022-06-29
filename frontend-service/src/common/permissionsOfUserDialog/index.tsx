@@ -218,7 +218,7 @@ const PermissionsOfUserDialog: React.FC<{
     );
 
     return (
-        <Dialog open={isOpen} fullWidth maxWidth="xs" keepMounted={false}>
+        <Dialog open={isOpen} fullWidth maxWidth="xs" keepMounted={false} onClose={handleClose}>
             <Formik
                 initialValues={
                     existingPermissionsOfUser ? _cloneDeep(permissionsToFormPermissions(existingPermissionsOfUser)) : defaultEmptyPermissionsOfUser
