@@ -16,7 +16,7 @@ const defaultEntity = {
 
 describe('Entity manager', () => {
     beforeAll(async () => {
-        await Neo4jClient.initialize(neo4j.url, neo4j.auth);
+        await Neo4jClient.initialize(neo4j.url, neo4j.auth, neo4j.database);
     });
 
     afterAll(async () => {

@@ -65,7 +65,7 @@ describe('Relationship router', () => {
             __v: 0,
         });
 
-        await Neo4jClient.initialize(neo4j.url, neo4j.auth);
+        await Neo4jClient.initialize(neo4j.url, neo4j.auth, neo4j.database);
     });
 
     beforeEach(() => {

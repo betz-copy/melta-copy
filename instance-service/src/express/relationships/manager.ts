@@ -30,17 +30,27 @@ export class RelationshipManager {
             ...defaultProperties,
         };
 
-        const edge = await Neo4jClient.writeTransaction(
-            `MATCH (s {_id: '${sourceEntityId}'}),(d {_id: '${destinationEntityId}'}) CREATE (s)-[r: \`${templateId}\` $relProps]->(d) RETURN r, s, d`,
-            normalizeReturnedRelationship(),
-            { relProps },
-        );
+        return Neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
+            const countOfExistingRelationships = await transaction.run(
+                `MATCH ({_id: '${sourceEntityId}'})-[r: \`${templateId}\`]->({_id: '${destinationEntityId}'}) return count(r)`,
+            );
 
-        if (!edge) {
-            throw new ServiceError(404, `[NEO4J] relationship not created. Source/destination entity node not found.`);
-        }
+            if (normalizeResponseCount(countOfExistingRelationships) > 0) {
+                throw new ServiceError(400, `[NEO4J] relationship already exists between requested entities.`);
+            }
 
-        return edge;
+            const edge = await transaction.run(
+                `MATCH (s {_id: '${sourceEntityId}'}),(d {_id: '${destinationEntityId}'})
+                MERGE (s)-[r: \`${templateId}\`]->(d)
+                ON CREATE SET r = $relProps
+                RETURN r, s, d`,
+                { relProps },
+            );
+
+            const normalizedRelationship = normalizeReturnedRelationship()(edge) as IRelationship;
+
+            return normalizedRelationship;
+        });
     }
 
     static async deleteRelationshipById(id: string) {

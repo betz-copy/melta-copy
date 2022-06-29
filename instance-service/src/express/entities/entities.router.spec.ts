@@ -32,8 +32,7 @@ describe('Entity router', () => {
 
     beforeAll(async () => {
         // Initialize Neo4j client
-        await Neo4jClient.initialize(neo4j.url, neo4j.auth);
-
+        await Neo4jClient.initialize(neo4j.url, neo4j.auth, neo4j.database);
         // Mock get template router - for validation middleware
         const { url, getByIdRoute } = templateManager;
 

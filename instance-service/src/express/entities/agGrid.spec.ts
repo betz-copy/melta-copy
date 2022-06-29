@@ -12,7 +12,7 @@ const defaultProperties = { testProp: 'testProp' };
 
 describe('e2e ag-grid entities tests', () => {
     beforeAll(async () => {
-        await Neo4jClient.initialize(neo4j.url, neo4j.auth);
+        await Neo4jClient.initialize(neo4j.url, neo4j.auth, neo4j.database);
     });
 
     afterAll(async () => {

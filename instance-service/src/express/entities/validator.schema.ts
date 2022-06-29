@@ -90,11 +90,8 @@ const agGridDateFilterSchema = Joi.object({
         'blank',
         'notBlank',
     ).required(),
-    dateFrom: Joi.string().required(),
-    dateTo: Joi.when('type', {
-        is: 'inRange',
-        then: Joi.string().required(),
-    }),
+    dateFrom: Joi.string().allow(null).required(),
+    dateTo: Joi.when('type', { is: 'inRange', then: Joi.string().required() }).allow(null).required(),
 });
 
 /**

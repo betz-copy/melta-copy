@@ -1,4 +1,4 @@
-import neo4j, { Driver, Config } from 'neo4j-driver';
+import neo4j, { Driver, Config, Transaction } from 'neo4j-driver';
 import { retry } from 'ts-retry-promise';
 
 import config from '../../config';
@@ -10,9 +10,12 @@ interface Neo4jAuth {
 }
 
 type TransactionType = 'writeTransaction' | 'readTransaction';
+type TransactionWork<T> = (tx: Transaction) => Promise<T> | T;
 
 class Neo4jClient {
     private driver: Driver;
+
+    private database: string;
 
     private isInitialized: boolean;
 
@@ -20,8 +23,9 @@ class Neo4jClient {
         this.isInitialized = false;
     }
 
-    async initialize(url: string, auth: Neo4jAuth, configuration: Config = {}) {
+    async initialize(url: string, auth: Neo4jAuth, database: string, configuration: Config = {}) {
         this.driver = neo4j.driver(url, neo4j.auth.basic(auth.username, auth.password), configuration);
+        this.database = database;
 
         await this.verifyConnectivity();
 
@@ -30,12 +34,27 @@ class Neo4jClient {
         this.isInitialized = true;
     }
 
-    async readTransaction(cypherQuery: string, normalizeResultFunction: Function, parameters = {}, database = 'neo4j') {
-        return this.performTransaction('readTransaction', normalizeResultFunction, cypherQuery, parameters, database);
+    async readTransaction(cypherQuery: string, normalizeResultFunction: Function, parameters = {}) {
+        return this.performTransaction('readTransaction', normalizeResultFunction, cypherQuery, parameters);
     }
 
-    async writeTransaction(cypherQuery: string, normalizeResultFunction: Function, parameters = {}, database = 'neo4j') {
-        return this.performTransaction('writeTransaction', normalizeResultFunction, cypherQuery, parameters, database);
+    async writeTransaction(cypherQuery: string, normalizeResultFunction: Function, parameters = {}) {
+        return this.performTransaction('writeTransaction', normalizeResultFunction, cypherQuery, parameters);
+    }
+
+    async performComplexTransaction<T>(transactionType: TransactionType, transactionWork: TransactionWork<T>) {
+        const session = this.driver.session({ database: this.database });
+
+        try {
+            const result = await session[transactionType](transactionWork);
+
+            return result;
+        } finally {
+            const { err } = await trycatch(() => session.close());
+            if (err) {
+                console.error('Failed to close session. Possible leak, Error:', err);
+            }
+        }
     }
 
     async performTransaction(
@@ -43,9 +62,8 @@ class Neo4jClient {
         normalizeResultFunction: Function,
         cypherQuery: string,
         parameters: Record<string, any>,
-        database: string,
     ) {
-        const session = this.driver.session({ database });
+        const session = this.driver.session({ database: this.database });
 
         try {
             const result = await session[transactionType]((tx) => tx.run(cypherQuery, parameters));
@@ -58,6 +76,10 @@ class Neo4jClient {
                 console.error('Failed to close session. Possible leak, Error:', err);
             }
         }
+    }
+
+    getSession() {
+        return this.driver.session({ database: this.database });
     }
 
     async close() {

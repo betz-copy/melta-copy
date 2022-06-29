@@ -21,7 +21,7 @@ describe('Relationship manager', () => {
     let relId: string;
 
     beforeAll(async () => {
-        await Neo4jClient.initialize(neo4j.url, neo4j.auth);
+        await Neo4jClient.initialize(neo4j.url, neo4j.auth, neo4j.database);
     });
 
     afterAll(async () => {
@@ -68,6 +68,19 @@ describe('Relationship manager', () => {
             await expect(() => RelationshipManager.getRelationshipById(unknownId)).rejects.toThrowError(
                 `[NEO4J] relationship "${unknownId}" not found`,
             );
+        });
+    });
+
+    describe('Create relationship', () => {
+        it('Should fail to create a new relationship because already exists', async () => {
+            await expect(() =>
+                RelationshipManager.createRelationshipByEntityIds({
+                    templateId: defaultRelationshipTemplateId,
+                    sourceEntityId: entityId,
+                    destinationEntityId: secondEntityId,
+                    properties: defaultProperties,
+                }),
+            ).rejects.toThrowError(`[NEO4J] relationship already exists between requested entities.`);
         });
     });
 
