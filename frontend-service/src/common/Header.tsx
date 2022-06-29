@@ -13,7 +13,7 @@ const Header: React.FC<{ title: string }> = ({ title, children }) => {
             style={{ height: '9vh', borderBottom: '1px solid #00000027' }}
         >
             <Grid item>
-                <BlueTitle title={title} component="h3" variant="h3" />
+                <BlueTitle title={title} component="h4" variant="h4" />
             </Grid>
             <Grid item display="flex">
                 {children}
