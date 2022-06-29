@@ -19,7 +19,7 @@ config:
     - name: NEO4J_PASSWORD
       value: qdftt5gfVy-GaoutZvpmv6MRN0hPXVBljEVxY6A69BU
     - name: NEO4J_DATABASE
-      value: Neo
+      value: neo4j
     - name: NEO4J_URL
       value: neo4j+s://4a2c637e.databases.neo4j.io
     - name: TEMPLATE_MANAGER_URL
