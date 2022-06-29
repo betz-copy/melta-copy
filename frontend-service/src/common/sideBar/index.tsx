@@ -38,7 +38,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
         <Drawer variant="permanent" open={isDrawerOpen}>
             <Grid container direction="column" wrap="nowrap" height="100%" bgcolor="#225AA7">
                 <Grid item container direction="column" alignItems="center" marginTop="10px" marginBottom="10px">
-                    <img src={isDrawerOpen ? '/icons/Melta_Logo.svg' : '/icons/Melta_Short_Logo.svg'} style={{ margin: '0.8rem' }} height="40px" />
+                    <img src={isDrawerOpen ? '/icons/Melta_Logo.svg' : '/icons/Melta_Short_Logo.svg'} style={{ margin: '0.8rem' }} height="32px" />
 
                     <ProfileButton
                         currentUser={currentUser}
