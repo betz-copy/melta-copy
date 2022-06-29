@@ -27,7 +27,7 @@ config:
     - name: RELATIONSHIP_MANAGER_URL
       value: http://relationship-template-manager:8000      
     - name: REDIS_HOST
-      value: redis://:ZjtUJvwPOY@redis-master:6379  
+      value: redis://:ZjtUJvwPOY@redis:6379  
     - name: RABBIT_URI
       value: amqp://user:McgIwOn8Yh@my-release-rabbitmq
    
