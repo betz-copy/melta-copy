@@ -5,6 +5,10 @@ export class FilesController {
     static async downloadFile(req: express.Request, res: express.Response) {
         const { path } = req.params;
         const stream = await FilesManager.downloadFile(path.toString());
+
+        const fileStats = await FilesManager.fileStat(path.toString());
+        res.setHeader('Content-Type', fileStats.metaData['content-type']);
+
         stream.pipe(res);
     }
 

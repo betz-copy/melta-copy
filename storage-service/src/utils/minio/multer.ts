@@ -18,7 +18,7 @@ class MinioStorage {
         let path = generatePath();
         path = path.split('-').join('') + file.originalname;
 
-        await this.client.uploadFileStream(file.stream, path);
+        await this.client.uploadFileStream(file.stream, path, { 'content-type': file.mimetype });
         return { ...(await this.client.statFile(path)), path };
     }
 
