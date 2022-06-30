@@ -54,15 +54,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                 <Grid item container justifyContent="space-between" alignItems="stretch" wrap="nowrap" overflow="auto" padding="1rem">
                     <Grid item container direction="column" justifyContent="space-between">
                         <Box padding="0.2rem">
-                            <EntityProperties
-                                entityTemplate={entityTemplate}
-                                properties={entity.properties}
-                                style={{
-                                    columnCount: 3,
-                                    columnGap: '40px',
-                                    columnRule: '2px solid #B1B1B1',
-                                }}
-                            />
+                            <EntityProperties entityTemplate={entityTemplate} properties={entity.properties} />
                         </Box>
                         <Grid item container justifyContent="space-around">
                             <Typography color="gray">

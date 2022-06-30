@@ -13,7 +13,7 @@ const DeletableEntityViewerCard: React.FC<{ entity: IEntity; onDelete: () => voi
     const entityTemplate = entityTemplates.find((currEntityTemplate) => currEntityTemplate._id === entity.templateId);
 
     return (
-        <Card variant="outlined">
+        <Card variant="outlined" sx={{ overflowX: 'auto', maxWidth: '470px' }}>
             <CardHeader
                 avatar={
                     entityTemplate?.iconFileId ? (
