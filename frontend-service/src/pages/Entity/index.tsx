@@ -174,8 +174,8 @@ const Entity: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> 
                                 {relationshipTemplates?.map((currRelationshipTemplate) => {
                                     return (
                                         <Grid key={currRelationshipTemplate._id}>
-                                            <Grid container item justifyContent="space-between">
-                                                <Grid item xs={3.5}>
+                                            <Grid container item justifyContent="space-between" marginBottom="10px">
+                                                <Grid item>
                                                     <RelationshipTitle
                                                         sourceEntityTemplateDisplayName={currRelationshipTemplate.sourceEntity.displayName}
                                                         relationshipTemplateDisplayName={currRelationshipTemplate.displayName}
