@@ -24,6 +24,7 @@ import { IEntity } from '../../interfaces/entities';
 import { getEntitiesByTemplateRequest } from '../../services/entitiesService';
 import { getColumnDefs } from './getColumnDefs';
 import { trycatch } from '../../utils/trycatch';
+import { LocalStorage } from '../../utils/localStorage';
 
 export const getDatasource = (
     templateId: IMongoEntityTemplatePopulated['_id'],
@@ -94,10 +95,12 @@ export type EntitiesTableOfTemplateProps<Data> = {
     fontSize: React.CSSProperties['fontSize'];
     minColumnWidth: number;
     hideNonPreview?: boolean;
+    filterStorageProps: { shouldSaveFilter: boolean; pageType?: string };
 };
 
 export type EntitiesTableOfTemplateRef = {
     getExcelData: () => string | undefined;
+    resetFilter: () => void;
 };
 
 const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef, EntitiesTableOfTemplateProps<unknown>>(
@@ -119,6 +122,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef, EntitiesT
             fontSize,
             minColumnWidth,
             hideNonPreview,
+            filterStorageProps,
         }: EntitiesTableOfTemplateProps<Data>,
         ref: ForwardedRef<EntitiesTableOfTemplateRef>,
     ) => {
@@ -130,6 +134,9 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef, EntitiesT
             return {
                 getExcelData() {
                     return gridRef.current?.api.getSheetDataForExcel({ sheetName: template.displayName });
+                },
+                resetFilter() {
+                    gridRef.current?.api.setFilterModel(null);
                 },
             };
         });
@@ -205,9 +212,19 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef, EntitiesT
                     onRowSelected={!onRowSelected ? undefined : ({ data }) => onRowSelected(data)}
                     rowStyle={onRowSelected ? { cursor: 'pointer' } : undefined}
                     suppressCellFocus
+                    onFilterChanged={(params) => {
+                        if (filterStorageProps.shouldSaveFilter) {
+                            if (Object.keys(params.api.getFilterModel()).length === 0) {
+                                LocalStorage.remove(`tableFilter-${filterStorageProps.pageType}-${template._id}`);
+                            } else {
+                                LocalStorage.set(`tableFilter-${filterStorageProps.pageType}-${template._id}`, params.api.getFilterModel());
+                            }
+                        }
+                    }}
                     suppressCsvExport
                     suppressContextMenu
                     onGridReady={(params) => {
+                        params.api.setFilterModel(LocalStorage.get(`tableFilter-${filterStorageProps.pageType}-${template._id}`));
                         params.columnApi.applyColumnState({ state: [{ colId: 'updatedAt', sort: 'desc' }] });
                     }}
                     defaultColDef={{

@@ -1,12 +1,14 @@
 import React, { useState, CSSProperties } from 'react';
-import { IconButton } from '@mui/material';
+import i18next from 'i18next';
 import { EntityWizard, EntityWizardValues } from '../wizards/entity';
+import IconButtonWithPopoverText from '../IconButtonWithPopover';
 
-const AddEntityButton: React.FC<{ style?: CSSProperties; initialStep?: number; initialValues?: EntityWizardValues }> = ({
+const AddEntityButton: React.FC<{ style?: CSSProperties; initialStep?: number; initialValues?: EntityWizardValues; disabledToolTip?: boolean }> = ({
     style,
     children,
     initialStep,
     initialValues,
+    disabledToolTip = false,
 }) => {
     const [addEntityWizardState, setAddEntityWizardState] = useState<{ isOpen: boolean; initialStep?: number; initialValues?: EntityWizardValues }>({
         isOpen: false,
@@ -14,9 +16,13 @@ const AddEntityButton: React.FC<{ style?: CSSProperties; initialStep?: number; i
 
     return (
         <>
-            <IconButton onClick={() => setAddEntityWizardState({ isOpen: true, initialStep, initialValues })} style={style}>
+            <IconButtonWithPopoverText
+                iconButtonProps={{ onClick: () => setAddEntityWizardState({ isOpen: true, initialStep, initialValues }), style }}
+                popoverText={i18next.t('entitiesTableOfTemplate.addEntity')}
+                disabledToolTip={disabledToolTip}
+            >
                 {children}
-            </IconButton>
+            </IconButtonWithPopoverText>
             <EntityWizard
                 open={addEntityWizardState.isOpen}
                 handleClose={() =>

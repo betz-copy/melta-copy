@@ -1,19 +1,23 @@
 import React, { useRef, forwardRef, useImperativeHandle } from 'react';
-import { Grid, IconButton, Box } from '@mui/material';
+import { Grid, Box } from '@mui/material';
 import { AddCircle, FileDownloadOutlined } from '@mui/icons-material';
 import { exportMultipleSheetsAsExcel } from '@noam7700/ag-grid-enterprise-excel-export';
+import i18next from 'i18next';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { AddEntityButton } from './AddEntityButton';
 import EntitiesTableOfTemplate, { EntitiesTableOfTemplateRef } from '../EntitiesTableOfTemplate';
 import { BlueTitle } from '../BlueTitle';
+import { ResetFilterButton } from './ResetFilterButton';
+import IconButtonWithPopoverText from '../IconButtonWithPopover';
 
 const TemplateTable = forwardRef<
     EntitiesTableOfTemplateRef,
     {
         template: IMongoEntityTemplatePopulated;
         quickFilterText: string;
+        page: string;
     }
->(({ template, quickFilterText }, ref) => {
+>(({ template, quickFilterText, page }, ref) => {
     const entitiesTableRef = useRef<EntitiesTableOfTemplateRef>(null);
 
     const onExcelExport = () => {
@@ -35,9 +39,13 @@ const TemplateTable = forwardRef<
                 </Grid>
                 <Grid>
                     <Grid item>
-                        <IconButton size="medium" onClick={onExcelExport}>
+                        <ResetFilterButton entitiesTableRef={entitiesTableRef} />
+                        <IconButtonWithPopoverText
+                            popoverText={i18next.t('entitiesTableOfTemplate.downloadOneTable')}
+                            iconButtonProps={{ onClick: () => onExcelExport, size: 'medium' }}
+                        >
                             <FileDownloadOutlined color="primary" fontSize="medium" />
-                        </IconButton>
+                        </IconButtonWithPopoverText>
                         <AddEntityButton initialStep={1} initialValues={{ template, properties: {}, attachmentsProperties: {} }}>
                             <AddCircle color="primary" fontSize="large" />
                         </AddEntityButton>
@@ -56,6 +64,7 @@ const TemplateTable = forwardRef<
                     rowHeight={50}
                     fontSize="16px"
                     minColumnWidth={200}
+                    filterStorageProps={{ shouldSaveFilter: true, pageType: page }}
                 />
             </Box>
         </Grid>

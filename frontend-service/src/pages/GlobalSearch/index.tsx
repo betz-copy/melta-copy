@@ -28,6 +28,7 @@ const GlobalSearch: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<str
     return (
         <Grid container className="pageMargin">
             <TemplatesTablesPage
+                pageType="globalSearch"
                 key="globalSearch"
                 templates={allowedTemplates}
                 categories={allowedCategories}

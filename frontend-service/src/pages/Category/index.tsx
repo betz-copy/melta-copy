@@ -24,7 +24,12 @@ const Category: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>
 
     return (
         <Grid container className="pageMargin">
-            <TemplatesTablesPage key={category._id} templates={templates} excelExportAllTablesFileName={`${category.displayName}.xlsx`} />
+            <TemplatesTablesPage
+                key={category._id}
+                templates={templates}
+                excelExportAllTablesFileName={`${category.displayName}.xlsx`}
+                pageType="category"
+            />
         </Grid>
     );
 };

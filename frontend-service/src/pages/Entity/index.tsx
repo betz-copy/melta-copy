@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Box, CircularProgress, Grid, Tab } from '@mui/material';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { useParams } from 'react-router-dom';
@@ -16,18 +16,20 @@ import CreateRelationshipDialog from '../../common/dialogs/createRelationshipDia
 import { IEntity, IEntityExpanded } from '../../interfaces/entities';
 import { IRelationship } from '../../interfaces/relationships';
 import { deleteRelationshipRequest } from '../../services/relationshipsService';
-import EntitiesTableOfTemplate from '../../common/EntitiesTableOfTemplate';
+import EntitiesTableOfTemplate, { EntitiesTableOfTemplateRef } from '../../common/EntitiesTableOfTemplate';
 import { AreYouSureDialog } from '../../common/dialogs/AreYouSureDialog';
 import { IPermissionsOfUser } from '../../services/permissionsService';
 
 import '../../css/pages.css';
 import IconButtonWithPopoverText from '../../common/IconButtonWithPopover';
 import { BlueTitle } from '../../common/BlueTitle';
+import { ResetFilterButton } from '../../common/TemplatesTablesPage/ResetFilterButton';
 
 const Entity: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> }> = ({ setTitle }) => {
     const params = useParams();
     const queryClient = useQueryClient();
     const { entityId } = params;
+    const entitiesTableRef = useRef<EntitiesTableOfTemplateRef>(null);
 
     const { data: expandedEntity } = useQuery(['getExpandedEntity', entityId], () => getExpandedEntityByIdRequest(entityId!));
 
@@ -180,10 +182,15 @@ const Entity: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> 
                                                         destinationEntityTemplateDisplayName={currRelationshipTemplate.destinationEntity.displayName}
                                                     />
                                                 </Grid>
+
                                                 <Grid item>
+                                                    <ResetFilterButton entitiesTableRef={entitiesTableRef} />
                                                     <IconButtonWithPopoverText
-                                                        popoverText={i18next.t('permissions.dontHavePermissionsToCategory')}
-                                                        disabledToolTip={!disabled}
+                                                        popoverText={
+                                                            disabled
+                                                                ? i18next.t('permissions.dontHavePermissionsToCategory')
+                                                                : i18next.t('entitiesTableOfTemplate.addRelationship')
+                                                        }
                                                         iconButtonProps={{
                                                             disabled,
                                                             onClick: () => {
@@ -220,6 +227,7 @@ const Entity: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> 
                                                 </Grid>
                                             </Grid>
                                             <EntitiesTableOfTemplate
+                                                ref={entitiesTableRef}
                                                 template={currRelationshipTemplate.otherEntityTemplate}
                                                 showNavigateToRowButton
                                                 deleteRowButtonProps={{
@@ -243,6 +251,7 @@ const Entity: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> 
                                                 rowHeight={50}
                                                 fontSize="16px"
                                                 minColumnWidth={200}
+                                                filterStorageProps={{ shouldSaveFilter: true, pageType: `entity-${entityId}` }}
                                             />
                                         </Grid>
                                     );

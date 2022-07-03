@@ -69,7 +69,7 @@ const TemplateTablesHeadline: React.FC<{
                             </IconButton>
                         </Grid>
                         <Grid item>
-                            <AddEntityButton style={{ background: 'white', borderRadius: '7px' }}>
+                            <AddEntityButton disabledToolTip style={{ background: 'white', borderRadius: '7px' }}>
                                 <AddIcon color="primary" />
                                 <Typography fontSize={14} style={{ fontWeight: '500', paddingRight: '5px' }}>
                                     {i18next.t('addEntity')}

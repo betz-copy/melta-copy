@@ -37,7 +37,8 @@ const TemplatesTablesPage: React.FC<{
     templates: IMongoEntityTemplatePopulated[];
     categories?: IMongoCategory[];
     excelExportAllTablesFileName: string;
-}> = ({ templates, categories, excelExportAllTablesFileName }) => {
+    pageType: string;
+}> = ({ templates, categories, excelExportAllTablesFileName, pageType }) => {
     const [templatesToShowCheckbox, setTemplatesToShowCheckbox] = useState<IMongoEntityTemplatePopulated[]>(templates);
 
     const templatesTablesRef = useRef<React.ComponentRef<typeof TemplateTablesView>>(null);
@@ -84,7 +85,12 @@ const TemplatesTablesPage: React.FC<{
                         <Typography>{i18next.t('noSearchResults')}</Typography>
                     )}
                     {!isLoadingTemplatesFilteredByCount && (
-                        <TemplateTablesView ref={templatesTablesRef} templates={templatesFilteredByCountSorted!} searchInput={searchInput} />
+                        <TemplateTablesView
+                            ref={templatesTablesRef}
+                            templates={templatesFilteredByCountSorted!}
+                            searchInput={searchInput}
+                            pageType={pageType}
+                        />
                     )}
                 </Grid>
             </Grid>

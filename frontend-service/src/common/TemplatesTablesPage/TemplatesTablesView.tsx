@@ -13,8 +13,9 @@ const TemplateTablesView = forwardRef<
         templates: IMongoEntityTemplatePopulated[];
         searchInput: string;
         pageSize?: number;
+        pageType: string;
     }
->(({ templates, searchInput, pageSize = 10 }, ref) => {
+>(({ templates, searchInput, pageSize = 10, pageType }, ref) => {
     const [currPage, setCurrPage] = useState(1);
     const countOfPages = Math.ceil(templates.length / pageSize);
 
@@ -42,6 +43,7 @@ const TemplateTablesView = forwardRef<
                         ref={(el) => (templateTableRefs.current[template._id] = el)}
                         template={template}
                         quickFilterText={searchInput}
+                        page={pageType}
                     />
                 </Grid>
             ))}

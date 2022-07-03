@@ -37,6 +37,7 @@ const EntitiesTableOfTemplateWithQuickFilter: React.FC<{
                     fontSize="14px"
                     minColumnWidth={200}
                     hideNonPreview={hideNonPreview}
+                    filterStorageProps={{ shouldSaveFilter: false }}
                 />
             </div>
         </Box>
