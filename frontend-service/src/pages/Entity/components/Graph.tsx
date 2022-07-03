@@ -90,8 +90,6 @@ const Graph: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> }
         },
     });
 
-    if (!graphData.nodes.length) return <CircularProgress size={80} />;
-
     // manage forces in graph
     forceRef.current?.d3Force(
         'charge',
@@ -114,44 +112,48 @@ const Graph: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> }
 
     return (
         <Box ref={ref} overflow="hidden">
-            <ForceGraph
-                height={height}
-                width={width}
-                ref={forceRef}
-                graphData={graphData}
-                nodeVal="nodeSize"
-                cooldownTicks={100}
-                nodeLabel={renderTooltip}
-                linkDirectionalArrowRelPos={1}
-                linkDirectionalArrowLength={3}
-                nodeColor={(node) => getNodeColor(node)}
-                onNodeClick={(node) => {
-                    navigate(`/entity/${node.id}`);
-                }}
-                onNodeRightClick={(node, event) => {
-                    forceRef.current?.pauseAnimation();
-                    setNodeMenuState({ showMenu: true, top: event.clientY, left: event.clientX, node });
-                }}
-                onEngineStop={() => {
-                    if (shouldZoomToFit) {
-                        forceRef.current?.zoomToFit(400);
-                        setShouldZoomToFit(false);
-                    }
-                }}
-                nodeCanvasObjectMode={() => 'after'}
-                nodeCanvasObject={(node: NodeObject, ctx) => {
-                    const label = entityTemplates.find((entityTemplate) => entityTemplate._id === node.templateId)?.displayName || '';
+            {graphData.nodes.length === 0 ? (
+                <CircularProgress size={80} />
+            ) : (
+                <ForceGraph
+                    height={height}
+                    width={width}
+                    ref={forceRef}
+                    graphData={graphData}
+                    nodeVal="nodeSize"
+                    cooldownTicks={100}
+                    nodeLabel={renderTooltip}
+                    linkDirectionalArrowRelPos={1}
+                    linkDirectionalArrowLength={3}
+                    nodeColor={(node) => getNodeColor(node)}
+                    onNodeClick={(node) => {
+                        navigate(`/entity/${node.id}`);
+                    }}
+                    onNodeRightClick={(node, event) => {
+                        forceRef.current?.pauseAnimation();
+                        setNodeMenuState({ showMenu: true, top: event.clientY, left: event.clientX, node });
+                    }}
+                    onEngineStop={() => {
+                        if (shouldZoomToFit) {
+                            forceRef.current?.zoomToFit(400);
+                            setShouldZoomToFit(false);
+                        }
+                    }}
+                    nodeCanvasObjectMode={() => 'after'}
+                    nodeCanvasObject={(node: NodeObject, ctx) => {
+                        const label = entityTemplates.find((entityTemplate) => entityTemplate._id === node.templateId)?.displayName || '';
 
-                    drawNodeLabel(node as NodeObject & { x: number; y: number; nodeSize: number }, label, ctx);
-                }}
-                linkCanvasObjectMode={() => 'after'}
-                linkCanvasObject={(link, ctx) => {
-                    const label =
-                        relationshipTemplates.find((relationshipTemplate) => relationshipTemplate._id === link.templateId)?.displayName || '';
+                        drawNodeLabel(node as NodeObject & { x: number; y: number; nodeSize: number }, label, ctx);
+                    }}
+                    linkCanvasObjectMode={() => 'after'}
+                    linkCanvasObject={(link, ctx) => {
+                        const label =
+                            relationshipTemplates.find((relationshipTemplate) => relationshipTemplate._id === link.templateId)?.displayName || '';
 
-                    drawLinkLabel(link, label, ctx);
-                }}
-            />
+                        drawLinkLabel(link, label, ctx);
+                    }}
+                />
+            )}
             {nodeMenuState.node && (
                 <GraphMenu
                     node={nodeMenuState.node}
