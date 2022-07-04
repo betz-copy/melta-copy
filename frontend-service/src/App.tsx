@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { CircularProgress } from '@mui/material';
 import i18next from 'i18next';
 import { useSelector, useDispatch } from 'react-redux';
 import { toast } from 'react-toastify';
@@ -19,6 +18,8 @@ import { IMongoEntityTemplatePopulated } from './interfaces/entityTemplates';
 import { IMongoRelationshipTemplate } from './interfaces/relationshipTemplates';
 import ErrorPage from './pages/ErrorPage';
 import { environment } from './globals';
+import loadingAnimation from './assets/icons/Melta_Logo.svg';
+import './css/loading.css';
 
 const App: React.FC = () => {
     const queryClient = useQueryClient();
@@ -88,8 +89,8 @@ const App: React.FC = () => {
     const isLoading = isLoadingUser || isLoadingAllTemplates || isLoadingMyPermissions;
     if (isLoading) {
         return (
-            <div style={{ display: 'flex', justifyContent: 'center', marginTop: '30vh' }}>
-                <CircularProgress size={80} />
+            <div style={{ display: 'flex', justifyContent: 'center', marginTop: '40vh' }}>
+                <img className="ld ld-bounce" src={loadingAnimation} width="300px" />
             </div>
         );
     }
