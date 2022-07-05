@@ -59,17 +59,17 @@ export const setFilterToQuery = (field: string, { values }: IAGGridSetFilter) =>
 export const textFilterToQuery = (field: string, { type, filter }: IAGGridTextFilter) => {
     switch (type) {
         case 'equals':
-            return `node.${field} = '${filter}'`;
+            return `node.${field} =~ '(?i)${filter}'`;
         case 'notEqual':
-            return `node.${field} <> '${filter}'`;
+            return `toLower(node.${field}) <> toLower('${filter}')`;
         case 'contains':
-            return `node.${field} CONTAINS '${filter}'`;
+            return `toLower(node.${field}) CONTAINS toLower('${filter}')`;
         case 'notContains':
             return `NOT node.${field} CONTAINS '${filter}'`;
         case 'startsWith':
-            return `node.${field} STARTS WITH '${filter}'`;
+            return `toLower(node.${field}) STARTS WITH toLower('${filter}')`;
         case 'endsWith':
-            return `node.${field} ENDS WITH '${filter}'`;
+            return `toLower(node.${field}) ENDS WITH toLower('${filter}')`;
         case 'blank':
             return `node.${field} IS NULL`;
         case 'notBlank':
