@@ -42,7 +42,7 @@ const TemplateTable = forwardRef<
                         <ResetFilterButton entitiesTableRef={entitiesTableRef} />
                         <IconButtonWithPopoverText
                             popoverText={i18next.t('entitiesTableOfTemplate.downloadOneTable')}
-                            iconButtonProps={{ onClick: () => onExcelExport, size: 'medium' }}
+                            iconButtonProps={{ onClick: onExcelExport, size: 'medium' }}
                         >
                             <FileDownloadOutlined color="primary" fontSize="medium" />
                         </IconButtonWithPopoverText>
