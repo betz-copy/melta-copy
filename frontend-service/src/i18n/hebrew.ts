@@ -78,7 +78,7 @@ export default {
     },
     error: {
         config: 'שגיאה בתקשורת לשרת',
-        unsupportedChromeVersion: `גרסת הכרום שלך לא נתמכת. אנא פנה למחשוב היחידתי להתקנת כרום מתאים (${environment.minimumSupportedChromeVersion}+).`,
+        unsupportedChromeVersion: `גרסת הדפדפן שלך לא נתמכת. אנא פנה למחשוב היחידתי להתקנת כרום מתאים (${environment.minimumSupportedChromeVersion}+).`,
     },
     sideBar: {
         title: 'מלתעות',
