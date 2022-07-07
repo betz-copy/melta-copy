@@ -1,8 +1,7 @@
 import React from 'react';
-import { TextField, Box } from '@mui/material';
+import { TextField, Grid } from '@mui/material';
 import * as Yup from 'yup';
 import i18next from 'i18next';
-import FileInput from '../../inputs/FileInput';
 import { variableNameValidation } from '../../../utils/validation';
 import { EntityTemplateWizardValues } from './index';
 import { StepComponentProps } from '../index';
@@ -12,17 +11,10 @@ const createTemplateNameSchema = {
     displayName: Yup.string().required(i18next.t('validation.required')),
 };
 
-const CreateTemplateName: React.FC<StepComponentProps<EntityTemplateWizardValues>> = ({
-    values,
-    touched,
-    errors,
-    handleChange,
-    setFieldValue,
-    isEditMode,
-}) => {
+const CreateTemplateName: React.FC<StepComponentProps<EntityTemplateWizardValues>> = ({ values, touched, errors, handleChange, isEditMode }) => {
     return (
-        <>
-            <Box margin={1}>
+        <Grid container direction="column" alignItems="center" spacing={1}>
+            <Grid item>
                 <TextField
                     name="name"
                     disabled={isEditMode}
@@ -32,8 +24,8 @@ const CreateTemplateName: React.FC<StepComponentProps<EntityTemplateWizardValues
                     error={touched.name && Boolean(errors.name)}
                     helperText={touched.name && errors.name}
                 />
-            </Box>
-            <Box margin={1}>
+            </Grid>
+            <Grid item>
                 <TextField
                     name="displayName"
                     label={i18next.t('wizard.displayName')}
@@ -42,22 +34,8 @@ const CreateTemplateName: React.FC<StepComponentProps<EntityTemplateWizardValues
                     error={touched.displayName && Boolean(errors.displayName)}
                     helperText={touched.displayName && errors.displayName}
                 />
-            </Box>
-            <Box margin={1}>
-                <FileInput
-                    name="iconFile"
-                    onDeleteFile={() => {
-                        setFieldValue('file', null);
-                    }}
-                    onDropFile={(acceptedFile) => {
-                        setFieldValue('file', acceptedFile);
-                    }}
-                    filePath={values.file?.name}
-                    inputText={i18next.t('wizard.file')}
-                    acceptedFilesTypes="image/png"
-                />
-            </Box>
-        </>
+            </Grid>
+        </Grid>
     );
 };
 

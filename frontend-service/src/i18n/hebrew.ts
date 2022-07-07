@@ -139,7 +139,8 @@ export default {
             failedToCreate: 'נכשל ליצור קטגוריה',
             deletedSuccessfully: 'קטגוריה נמחקה בהצלחה',
             failedToDelete: 'נכשל למחוק קטגוריה',
-            chooseCategoryName: 'בחר שם לקטגוריה',
+            chooseName: 'בחירת שם קטגוריה',
+            chooseDisplay: 'בחירת תצוגה',
         },
         entityTemplate: {
             title: 'יצירת תבנית ישות',
@@ -158,6 +159,7 @@ export default {
             addAttachment: 'הוסף קובץ',
             chooseCategroy: 'בחירת קטגוריה',
             chooseEntityTemplateName: 'בחירת שם תבנית',
+            chooseIcon: 'בחירת אייקון',
             properties: 'שדות',
             parameters: 'פרמטרים',
             attachments: 'קבצים',
@@ -211,6 +213,13 @@ export default {
         'date-time': 'תאריך ושעה',
         email: 'כתובת מייל',
         enum: 'אפשרויות',
+    },
+    input: {
+        imagePicker: {
+            iconSearch: 'חיפוש אייקון (חיפוש באנגלית)',
+            chooseFromOptions: 'בחירה מאפשרויות',
+            chooseFile: 'בחירת קובץ',
+        },
     },
     agGridLocaleText,
 };

@@ -1,6 +1,7 @@
 import React, { MouseEventHandler } from 'react';
 import { IconButton, Grid } from '@mui/material';
 import { CloseOutlined as DeleteIcon, FilePresent as FileIcon } from '@mui/icons-material';
+import '../../css/index.css';
 
 const FileInput: React.FC<{
     filePath: string | undefined;
@@ -11,16 +12,6 @@ const FileInput: React.FC<{
     name: string;
     errorText?: string;
 }> = ({ filePath, acceptedFilesTypes, inputText, name, onDeleteFile, onDropFile, errorText }) => {
-    const inputStyle = {
-        border: '1px solid rgb(196 196 196)',
-        borderRadius: '5px',
-        width: '220px',
-        height: '56px',
-        display: 'flex',
-        padding: '16px 10px',
-        color: '#666666',
-    };
-
     const errorStyle = {
         color: 'rgb(211, 47, 47)',
         margin: 0,
@@ -30,7 +21,7 @@ const FileInput: React.FC<{
     if (filePath) {
         return (
             <>
-                <div style={inputStyle}>
+                <div className="inputStyle">
                     <FileIcon fontSize="medium" style={{ marginRight: '10px', marginLeft: '5px' }} />
                     <Grid item style={{ overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis', width: '145px' }}>
                         {filePath}
@@ -56,7 +47,7 @@ const FileInput: React.FC<{
 
     return (
         <>
-            <label htmlFor={name} style={inputStyle}>
+            <label htmlFor={name} className="inputStyle">
                 <input
                     id={name}
                     name={name}

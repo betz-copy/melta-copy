@@ -9,6 +9,7 @@ import { AddFields, addFieldsSchema } from './AddFields';
 import { createEntityTemplateRequest, updateEntityTemplateRequest } from '../../../services/templates/enitityTemplatesService';
 import { IEntityTemplatePopulated, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { replaceItemById } from '../../../utils/reactQuery';
+import { ChooseIcon } from './ChooseIcon';
 
 export interface EntityTemplateFormInputProperties {
     name: string;
@@ -38,7 +39,12 @@ const steps: StepsType<EntityTemplateWizardValues> = [
         validation: createTemplateNameSchema,
     },
     {
-        label: i18next.t('wizard.entityTemplate.parameters'),
+        label: i18next.t('wizard.entityTemplate.chooseIcon'),
+        component: (props) => <ChooseIcon {...props} />,
+        validation: {},
+    },
+    {
+        label: i18next.t('wizard.entityTemplate.properties'),
         component: (props, isEditMode) => <AddFields {...props} isEditMode={isEditMode} />,
         validation: addFieldsSchema,
     },

@@ -73,7 +73,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                                 disabled={Boolean(!myPermissions.instancesPermissions.find((instance) => instance.category === category._id))}
                             >
                                 {category.iconFileId ? (
-                                    <CustomIcon iconUrl={category.iconFileId} height="40px" width="40px" />
+                                    <CustomIcon iconUrl={category.iconFileId} height="40px" width="40px" hexColor="#FFFFFF" />
                                 ) : (
                                     <HiveIcon fontSize="large" sx={{ color: 'white' }} />
                                 )}
