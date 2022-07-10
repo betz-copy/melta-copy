@@ -3,6 +3,7 @@ import axios from '../../axios';
 import { EntityTemplateFormInputProperties, EntityTemplateWizardValues } from '../../common/wizards/entityTemplate';
 import { environment } from '../../globals';
 import { IEntityTemplate, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { getFileName } from '../../utils/getFileName';
 
 const { entityTemplates } = environment.api;
 export const basePropertyTypes = ['string', 'number', 'boolean'];
@@ -45,7 +46,7 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
 
     if (iconFileId) {
         const file: Partial<File> = { name: iconFileId };
-        return { ...restOfEntityTemplate, file, properties: propertiesArray, attachmentProperties };
+        return { ...restOfEntityTemplate, icon: { file, name: getFileName(iconFileId) }, properties: propertiesArray, attachmentProperties };
     }
 
     return { ...restOfEntityTemplate, properties: propertiesArray, attachmentProperties };
@@ -96,8 +97,8 @@ const createEntityTemplateRequest = async (newEntityTemplate: EntityTemplateWiza
 
     const entityTemplate = formToJSONSchema(newEntityTemplate);
 
-    if (newEntityTemplate.file) {
-        formData.append('file', newEntityTemplate.file as File);
+    if (newEntityTemplate.icon) {
+        formData.append('file', newEntityTemplate.icon.file as File);
     }
 
     formData.append('displayName', entityTemplate.displayName);
@@ -116,11 +117,11 @@ const updateEntityTemplateRequest = async (entityTemplateId: string, updatedEnti
 
     const entityTemplate = formToJSONSchema(updatedEntityTemplate);
 
-    if (updatedEntityTemplate.file) {
-        if (updatedEntityTemplate.file instanceof File) {
-            formData.append('file', updatedEntityTemplate.file);
+    if (updatedEntityTemplate.icon) {
+        if (updatedEntityTemplate.icon.file instanceof File) {
+            formData.append('file', updatedEntityTemplate.icon.file);
         } else {
-            formData.append('iconFileId', updatedEntityTemplate.file.name!);
+            formData.append('iconFileId', updatedEntityTemplate.icon.file.name!);
         }
     }
 

@@ -13,11 +13,10 @@ const ChooseDisplay: React.FC<StepComponentProps<CategoryWizardValues>> = ({ val
         <Grid container direction="column" alignItems="center" spacing={2}>
             <Grid item>
                 <ImagePicker
-                    image={values.file}
-                    setImage={(image) => {
-                        setFieldValue('file', image || null);
-                    }}
-                    defaultInputType={values.file ? 'chooseFile' : 'chooseFromOptions'}
+                    image={values.icon}
+                    onPick={(image) => setFieldValue('icon', image)}
+                    onDelete={() => setFieldValue('icon', undefined)}
+                    defaultInputType={values.icon?.file ? 'chooseFile' : 'chooseFromOptions'}
                 />
             </Grid>
 

@@ -28,4 +28,5 @@ export const environment = {
     },
     accessTokenName: 'rabaz-access-token',
     minimumSupportedChromeVersion: 80,
+    fileIdLength: 32,
 };

@@ -10,7 +10,7 @@ import { IEntityExpanded } from '../../../interfaces/entities';
 import { updateEntityRequest } from '../../../services/entitiesService';
 import { EntityWizardValues } from '../../../common/wizards/entity';
 import { objectFilter, objectMap } from '../../../utils/object';
-import { EntityFilesInput } from '../../../common/inputs/EntityFilesInput';
+import { EntityFilesInput } from '../../../common/inputs/EntityFilesInput/index';
 import { EntityPropertiesInput } from '../../../common/inputs/EntityPropertiesInput';
 import { BlueTitle } from '../../../common/BlueTitle';
 

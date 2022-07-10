@@ -4,27 +4,27 @@ import { CloseOutlined as DeleteIcon, FilePresent as FileIcon } from '@mui/icons
 import '../../css/index.css';
 
 const FileInput: React.FC<{
-    filePath: string | undefined;
+    fileName: string | undefined;
     onDeleteFile: MouseEventHandler;
     onDropFile: (acceptedFile: File) => void;
     inputText: string;
     acceptedFilesTypes?: string;
     name: string;
     errorText?: string;
-}> = ({ filePath, acceptedFilesTypes, inputText, name, onDeleteFile, onDropFile, errorText }) => {
+}> = ({ fileName, acceptedFilesTypes, inputText, name, onDeleteFile, onDropFile, errorText }) => {
     const errorStyle = {
         color: 'rgb(211, 47, 47)',
         margin: 0,
         padding: 0,
     };
 
-    if (filePath) {
+    if (fileName) {
         return (
             <>
                 <div className="inputStyle">
                     <FileIcon fontSize="medium" style={{ marginRight: '10px', marginLeft: '5px' }} />
                     <Grid item style={{ overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis', width: '145px' }}>
-                        {filePath}
+                        {fileName}
                     </Grid>
                     <IconButton
                         onClick={(e) => {

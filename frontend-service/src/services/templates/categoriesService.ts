@@ -2,6 +2,7 @@ import axios from '../../axios';
 import { CategoryWizardValues } from '../../common/wizards/category';
 import { environment } from '../../globals';
 import { IMongoCategory } from '../../interfaces/categories';
+import { getFileName } from '../../utils/getFileName';
 
 const { categories } = environment.api;
 
@@ -11,7 +12,7 @@ const categoryObjectToCategoryForm = (category: IMongoCategory | null): Category
 
     if (iconFileId) {
         const file: Partial<File> = { name: iconFileId };
-        return { ...restOfCategory, file };
+        return { ...restOfCategory, icon: { file, name: getFileName(iconFileId) } };
     }
 
     return restOfCategory;
@@ -20,8 +21,8 @@ const categoryObjectToCategoryForm = (category: IMongoCategory | null): Category
 const createCategoryRequest = async (newCategory: CategoryWizardValues) => {
     const formData = new FormData();
 
-    if (newCategory.file) {
-        formData.append('file', newCategory.file as File);
+    if (newCategory.icon) {
+        formData.append('file', newCategory.icon.file as File);
     }
     formData.append('displayName', newCategory.displayName);
     formData.append('name', newCategory.name);
@@ -34,11 +35,11 @@ const createCategoryRequest = async (newCategory: CategoryWizardValues) => {
 const updateCategoryRequest = async (categoryId: string, updatedCategory: CategoryWizardValues) => {
     const formData = new FormData();
 
-    if (updatedCategory.file) {
-        if (updatedCategory.file instanceof File) {
-            formData.append('file', updatedCategory.file);
+    if (updatedCategory.icon) {
+        if (updatedCategory.icon.file instanceof File) {
+            formData.append('file', updatedCategory.icon.file);
         } else {
-            formData.append('iconFileId', updatedCategory.file.name!);
+            formData.append('iconFileId', updatedCategory.icon.file.name!);
         }
     }
 

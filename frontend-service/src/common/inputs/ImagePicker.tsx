@@ -3,26 +3,36 @@ import { Grid, ToggleButtonGroup, ToggleButton } from '@mui/material';
 import i18next from 'i18next';
 import FileInput from './FileInput';
 import IconPicker from './IconPicker';
+import fileDetails from '../../interfaces/fileDetails';
 
 type InputSelectType = 'chooseFile' | 'chooseFromOptions';
 
 interface ImagePickerProps {
-    image?: Partial<File>;
-    setImage: (image: Partial<File> | null) => void;
+    image?: fileDetails;
+    onPick: (image: fileDetails) => void;
+    onDelete: () => void;
     defaultInputType?: InputSelectType;
 }
 
-const ImagePicker: React.FC<ImagePickerProps> = ({ image, setImage, defaultInputType }) => {
+const ImagePicker: React.FC<ImagePickerProps> = ({ image, onPick, onDelete, defaultInputType }) => {
     const [inputType, setInputType] = useState(defaultInputType);
 
-    const [fileInputValue, setFileInputValue] = useState<Partial<File> | null>(image || null);
-    const [iconPickerValue, setIconPickerValue] = useState<Partial<File> | null>(null);
+    const [fileInputValue, setFileInputValue] = useState<fileDetails | undefined>(image);
+    const [iconPickerValue, setIconPickerValue] = useState<fileDetails>();
 
     const onToggle = (_event: React.MouseEvent<HTMLElement>, selected: InputSelectType | null) => {
         if (!selected) return;
 
         setInputType(selected);
-        setImage(selected === 'chooseFromOptions' ? iconPickerValue : fileInputValue);
+
+        const selectedValue = selected === 'chooseFile' ? fileInputValue : iconPickerValue;
+
+        if (!selectedValue) {
+            onDelete();
+            return;
+        }
+
+        onPick(selectedValue);
     };
 
     return (
@@ -44,14 +54,16 @@ const ImagePicker: React.FC<ImagePickerProps> = ({ image, setImage, defaultInput
                         width="30rem"
                         height="24.5rem"
                         iconsPerPage={60}
-                        selectedIconName={iconPickerValue?.name?.split('.')[0]}
+                        selectedIconName={image?.name.split('.')[0]}
                         onPick={(icon) => {
-                            setIconPickerValue(icon);
-                            setImage(icon);
+                            const detailedFile = { file: icon, name: icon.name };
+
+                            setIconPickerValue(detailedFile);
+                            onPick(detailedFile);
                         }}
                         onDelete={() => {
-                            setIconPickerValue(null);
-                            setImage(null);
+                            setIconPickerValue(undefined);
+                            onDelete();
                         }}
                     />
                 </Grid>
@@ -59,16 +71,18 @@ const ImagePicker: React.FC<ImagePickerProps> = ({ image, setImage, defaultInput
             {inputType === 'chooseFile' && (
                 <Grid item>
                     <FileInput
-                        name="file"
+                        name="icon"
                         onDropFile={(acceptedFile) => {
-                            setFileInputValue(acceptedFile);
-                            setImage(acceptedFile);
+                            const detailedFile = { file: acceptedFile, name: acceptedFile.name };
+
+                            setFileInputValue(detailedFile);
+                            onPick(detailedFile);
                         }}
                         onDeleteFile={() => {
-                            setFileInputValue(null);
-                            setImage(null);
+                            setFileInputValue(undefined);
+                            onDelete();
                         }}
-                        filePath={fileInputValue?.name}
+                        fileName={image?.name}
                         inputText={i18next.t('wizard.file')}
                         acceptedFilesTypes="image/png"
                     />

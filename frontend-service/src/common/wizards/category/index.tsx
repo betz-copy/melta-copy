@@ -9,9 +9,10 @@ import { createCategoryRequest, updateCategoryRequest } from '../../../services/
 import { ICategory, IMongoCategory } from '../../../interfaces/categories';
 import { replaceItemById } from '../../../utils/reactQuery';
 import { ChooseDisplay } from './ChooseDisplay';
+import fileDetails from '../../../interfaces/fileDetails';
 
 export interface CategoryWizardValues extends Omit<ICategory, 'iconFileId'> {
-    file?: Partial<File>;
+    icon?: fileDetails;
 }
 const steps: StepsType<CategoryWizardValues> = [
     {
@@ -30,7 +31,7 @@ const CategoryWizard: React.FC<WizardBaseType<CategoryWizardValues>> = ({
     open,
     handleClose,
     initalStep = 0,
-    initialValues = { name: '', displayName: '', file: undefined, color: '#ffffff' },
+    initialValues = { name: '', displayName: '', icon: undefined, color: '#ffffff' },
     isEditMode = false,
 }) => {
     const queryClient = useQueryClient();

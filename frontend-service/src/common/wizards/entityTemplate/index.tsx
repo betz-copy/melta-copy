@@ -10,6 +10,7 @@ import { createEntityTemplateRequest, updateEntityTemplateRequest } from '../../
 import { IEntityTemplatePopulated, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { replaceItemById } from '../../../utils/reactQuery';
 import { ChooseIcon } from './ChooseIcon';
+import fileDetails from '../../../interfaces/fileDetails';
 
 export interface EntityTemplateFormInputProperties {
     name: string;
@@ -24,7 +25,7 @@ export interface EntityTemplateWizardValues
     extends Omit<IEntityTemplatePopulated, 'properties' | 'iconFileId' | 'propertiesOrder' | 'propertiesPreview'> {
     properties: EntityTemplateFormInputProperties[];
     attachmentProperties: EntityTemplateFormInputProperties[];
-    file?: Partial<File>;
+    icon?: fileDetails;
 }
 
 const steps: StepsType<EntityTemplateWizardValues> = [
@@ -57,7 +58,7 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
     initialValues = {
         name: '',
         displayName: '',
-        file: undefined,
+        icon: undefined,
         category: { displayName: '', name: '', _id: '', color: '' },
         properties: [],
         attachmentProperties: [],

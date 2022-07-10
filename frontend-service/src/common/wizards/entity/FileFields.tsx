@@ -4,7 +4,7 @@ import i18next from 'i18next';
 import { EntityWizardValues } from './index';
 import { StepComponentProps } from '../index';
 import { objectFilter } from '../../../utils/object';
-import { EntityFilesInput } from '../../inputs/EntityFilesInput';
+import { EntityFilesInput } from '../../inputs/EntityFilesInput/index';
 
 const fileFieldsSchema = {
     attachmentsProperties: Yup.object().required(i18next.t('validation.required')),
