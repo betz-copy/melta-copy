@@ -8,7 +8,8 @@ import { CreateCategoryName, createCategoryNameSchema } from './CreateCategoryNa
 import { createCategoryRequest, updateCategoryRequest } from '../../../services/templates/categoriesService';
 import { ICategory, IMongoCategory } from '../../../interfaces/categories';
 import { replaceItemById } from '../../../utils/reactQuery';
-import { ChooseDisplay } from './ChooseDisplay';
+import { ChooseIcon } from './ChooseIcon';
+import { ChooseColor } from './ChooseColor';
 import fileDetails from '../../../interfaces/fileDetails';
 
 export interface CategoryWizardValues extends Omit<ICategory, 'iconFileId'> {
@@ -21,8 +22,13 @@ const steps: StepsType<CategoryWizardValues> = [
         validation: createCategoryNameSchema,
     },
     {
-        label: i18next.t('wizard.category.chooseDisplay'),
-        component: (props) => <ChooseDisplay {...props} />,
+        label: i18next.t('wizard.category.chooseIcon'),
+        component: (props) => <ChooseIcon {...props} />,
+        validation: {},
+    },
+    {
+        label: i18next.t('wizard.category.chooseColor'),
+        component: (props) => <ChooseColor {...props} />,
         validation: {},
     },
 ];

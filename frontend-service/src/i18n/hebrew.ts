@@ -140,7 +140,8 @@ export default {
             deletedSuccessfully: 'קטגוריה נמחקה בהצלחה',
             failedToDelete: 'נכשל למחוק קטגוריה',
             chooseName: 'בחירת שם קטגוריה',
-            chooseDisplay: 'בחירת תצוגה',
+            chooseIcon: 'בחירת אייקון',
+            chooseColor: 'בחירת צבע',
         },
         entityTemplate: {
             title: 'יצירת תבנית ישות',
