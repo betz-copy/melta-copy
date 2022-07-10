@@ -1,9 +1,9 @@
 import React, { useCallback, useState, CSSProperties } from 'react';
 import { Box, Grid, IconButton, Pagination, TextField } from '@mui/material';
-import * as muiIcons from '@mui/icons-material';
 import { CloseOutlined as DeleteIcon } from '@mui/icons-material';
 import i18next from 'i18next';
 import _debounce from 'lodash.debounce';
+import * as muiIcons from '../../utils/icons';
 import '../../css/index.css';
 
 interface IconPickerProps {
@@ -16,16 +16,13 @@ interface IconPickerProps {
     onDelete: () => void;
 }
 
-const icons = Object.entries(muiIcons).filter(([iconName]) => {
-    const isUnwantedIconType = ['Outlined', 'Rounded', 'TwoTone', 'Sharp'].some((unwantedType) => iconName.includes(unwantedType));
-    return !isUnwantedIconType;
-});
+const iconsEntries = Object.entries(muiIcons);
 
 const IconPicker: React.FC<IconPickerProps> = ({ width, height, iconsPerPage, selectedIconName, color = 'black', onPick, onDelete }) => {
     const [searchStr, setSearchStr] = useState('');
     const [page, setPage] = useState(1);
 
-    const [displayedIcons, setDisplayedIcons] = useState([...icons]);
+    const [displayedIcons, setDisplayedIcons] = useState([...iconsEntries]);
 
     const displayIndex = (page - 1) * iconsPerPage;
     const pageCount = Math.ceil(displayedIcons.length / iconsPerPage);
@@ -36,12 +33,12 @@ const IconPicker: React.FC<IconPickerProps> = ({ width, height, iconsPerPage, se
             setPage(1);
 
             if (!str) {
-                setDisplayedIcons([...icons]);
+                setDisplayedIcons([...iconsEntries]);
                 return;
             }
 
             const filter = new RegExp(str, 'i');
-            setDisplayedIcons(icons.filter(([name]) => filter.test(name)));
+            setDisplayedIcons(iconsEntries.filter(([name]) => filter.test(name)));
         }, 600),
         [],
     );
