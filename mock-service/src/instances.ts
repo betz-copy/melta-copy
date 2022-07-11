@@ -58,13 +58,16 @@ export const createRelationshipInstances = async (
                     const destinationEntityId =
                         relevantDestinationEntities[Math.floor(Math.random() * relevantDestinationEntities.length)].properties._id;
 
-                    return limit(() =>
-                        axios.post(uri + createRelationshipRoute, {
-                            sourceEntityId,
-                            destinationEntityId,
-                            templateId: relationshipTemplate._id,
-                        }),
-                    );
+                    return limit(async () => {
+                        const { result } = await trycatch(() =>
+                            axios.post(uri + createRelationshipRoute, {
+                                sourceEntityId,
+                                destinationEntityId,
+                                templateId: relationshipTemplate._id,
+                            }),
+                        );
+                        return result;
+                    });
                 },
             );
         })
@@ -72,7 +75,7 @@ export const createRelationshipInstances = async (
 
     const results = await Promise.all(promises);
 
-    return results.map((result) => result.data);
+    return results.map((result) => result?.data);
 };
 
 export const isInstanceManagerAlive = async () => {
