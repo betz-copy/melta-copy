@@ -70,6 +70,7 @@ export default {
         systemManagement: 'ניהול מערכת',
         unavailable: 'המערכת אינה זמינה',
         permissionsManagement: 'ניהול הרשאות ',
+        fluidSimulation: '???',
     },
     systemManagement: {
         search: 'חיפוש',

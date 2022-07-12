@@ -7,6 +7,7 @@ import createCache from '@emotion/cache';
 import { prefixer } from 'stylis';
 import { useQueryClient } from 'react-query';
 import i18next from 'i18next';
+import { useSelector } from 'react-redux';
 import { SideBar } from './common/sideBar';
 import { MainBox } from './Main.styled';
 import { TopBar } from './common/TopBar';
@@ -19,6 +20,7 @@ import {
     CategoryProtectedRoute,
 } from './utils/ProtectedRoutes';
 import ScrollToTop from './ScrollToTop';
+import { RootState } from './store';
 
 const GlobalSearch = lazy(() => import('./pages/GlobalSearch'));
 const Category = lazy(() => import('./pages/Category'));
@@ -28,6 +30,8 @@ const Unavailable = lazy(() => import('./pages/Unavailable'));
 const ErrorPage = lazy(() => import('./pages/ErrorPage'));
 const Entity = lazy(() => import('./pages/Entity'));
 const Graph = lazy(() => import('./pages/Entity/components/Graph'));
+
+const FluidSimulation = lazy(() => import('./pages/MeltaPlus/FluidSimulation'));
 
 const cacheRtl = createCache({
     key: 'muirtl',
@@ -46,6 +50,8 @@ const Main = () => {
 
     const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
     const entityTemplates = queryClient.getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates')!;
+
+    const meltaPlus = useSelector((state: RootState) => state.meltaPlus);
 
     const toggleDrawer = () => {
         setOpen(!open);
@@ -108,6 +114,8 @@ const Main = () => {
                                 />
                                 <Route path="/" element={<GlobalSearch setTitle={setTitle} />} />
                                 <Route path="*" element={<ErrorPage setTitle={setTitle} errorText={i18next.t('errorPage.reachedTheWrongPage')} />} />
+
+                                {meltaPlus && <Route path="/fluid-simulation" element={<FluidSimulation setTitle={setTitle} />} />}
                             </Routes>
                         </Suspense>
                     </Box>

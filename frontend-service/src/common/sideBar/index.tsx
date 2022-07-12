@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Divider, IconButton, Grid } from '@mui/material';
+import { Divider, IconButton, Grid, Box, Slide, Fade } from '@mui/material';
 import { useQueryClient } from 'react-query';
 import {
     ChevronRight as ChevronRightIcon,
@@ -8,10 +8,12 @@ import {
     Public as PublicIcon,
     Widgets as WidgetsIcon,
     ManageAccounts as ManageAccountsIcon,
+    Add as PlusIcon,
+    Air as FluidSimulationIcon,
 } from '@mui/icons-material';
 
 import i18next from 'i18next';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { Drawer } from './SideBar.styled';
 import { IMongoCategory } from '../../interfaces/categories';
 import { NavButton } from './NavButton';
@@ -20,6 +22,7 @@ import PermissionsOfUserDialog from '../permissionsOfUserDialog';
 import { CustomIcon } from '../CustomIcon';
 import { RootState } from '../../store';
 import { ProfileButton } from './ProfileButton';
+import { toggleMeltaPlus } from '../../store/meltaPlus';
 
 type SideBarProps = {
     toggleDrawer: () => any;
@@ -30,15 +33,33 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
     const queryClient = useQueryClient();
     const categories = queryClient.getQueryData<IMongoCategory[]>('getCategories')!;
     const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
-    const currentUser = useSelector((state: RootState) => state.user);
 
+    const { user: currentUser, meltaPlus } = useSelector((state: RootState) => state);
+    const dispatch = useDispatch();
+
+    toggleMeltaPlus();
     const [isMyPermissionsDialogOpen, setIsMyPermissionsDialogOpen] = useState<boolean>(false);
 
     return (
-        <Drawer variant="permanent" open={isDrawerOpen}>
+        <Drawer variant="permanent" open={isDrawerOpen} PaperProps={{ sx: { backgroundColor: '#225AA7' } }}>
             <Grid container direction="column" wrap="nowrap" height="100%" bgcolor="#225AA7">
-                <Grid item container direction="column" alignItems="center" marginTop="10px" marginBottom="10px">
-                    <img src={isDrawerOpen ? '/icons/Melta_Logo.svg' : '/icons/Melta_Short_Logo.svg'} style={{ margin: '0.8rem' }} height="32px" />
+                <Grid item container direction="column" alignItems="center" marginTop="15px" marginBottom="10px">
+                    <Box
+                        position="relative"
+                        onClick={(event) => {
+                            if (event.detail >= 3) dispatch(toggleMeltaPlus());
+                        }}
+                    >
+                        <Slide in={meltaPlus} direction="down">
+                            <PlusIcon sx={{ position: 'absolute', left: '-15%', top: '10%', fontSize: 40, color: 'white' }} />
+                        </Slide>
+
+                        <img
+                            src={isDrawerOpen ? '/icons/Melta_Logo.svg' : '/icons/Melta_Short_Logo.svg'}
+                            style={{ margin: '0.6rem' }}
+                            height="32px"
+                        />
+                    </Box>
 
                     <ProfileButton
                         currentUser={currentUser}
@@ -84,6 +105,16 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
 
                 <Grid item container direction="column" alignItems="stretch" marginTop="auto">
                     <Divider />
+
+                    {meltaPlus && (
+                        <Fade in={meltaPlus}>
+                            <Box>
+                                <NavButton to="/fluid-simulation" text={i18next.t('pages.fluidSimulation')} isDrawerOpen={isDrawerOpen}>
+                                    <FluidSimulationIcon fontSize="large" sx={{ color: 'white' }} />
+                                </NavButton>
+                            </Box>
+                        </Fade>
+                    )}
 
                     <NavButton to="/" text={i18next.t('pages.globalSearch')} isDrawerOpen={isDrawerOpen}>
                         <PublicIcon fontSize="large" sx={{ color: 'white' }} />

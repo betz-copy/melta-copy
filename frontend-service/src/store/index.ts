@@ -1,9 +1,11 @@
 import { configureStore } from '@reduxjs/toolkit';
 import userReducer from './user';
+import meltaPlusReducer from './meltaPlus';
 
 export const store = configureStore({
     reducer: {
         user: userReducer,
+        meltaPlus: meltaPlusReducer,
     },
 });
 
