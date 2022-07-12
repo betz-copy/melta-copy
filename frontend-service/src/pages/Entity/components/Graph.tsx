@@ -6,6 +6,7 @@ import { Box, CircularProgress } from '@mui/material';
 import ForceGraph, { ForceGraphMethods, GraphData, NodeObject } from 'react-force-graph-2d';
 import { forceLink, forceManyBody } from 'd3-force';
 import { useQuery, useQueryClient } from 'react-query';
+import randomColor from 'randomcolor';
 import { useLocation, useParams, useNavigate } from 'react-router-dom';
 import { GraphMenu } from './GraphMenu';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
@@ -106,8 +107,10 @@ const Graph: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> }
     };
 
     const getNodeColor = (node: NodeObject) => {
-        const categoryId = entityTemplates.find((entityTemplate) => entityTemplate._id === node.templateId)?.category._id;
-        return categories.find((category) => category._id === categoryId)?.color || 'black';
+        const entityTemplate = entityTemplates.find((template) => template._id === node.templateId)!;
+        const category = categories.find((currCategory) => currCategory._id === entityTemplate.category._id)!;
+
+        return randomColor({ hue: category.color || '#000000', seed: entityTemplate.name });
     };
 
     return (
