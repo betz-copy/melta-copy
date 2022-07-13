@@ -11,6 +11,9 @@ interface IEntitySingleProperty {
     type: 'string' | 'number' | 'boolean';
     title: string;
     format?: string;
+    enum?: string[];
+    pattern?: string;
+    patternCustomErrorMessage?: string;
 }
 
 interface IJSONSchema {
@@ -22,7 +25,7 @@ interface IJSONSchema {
 interface IEntityTemplate {
     name: string;
     displayName: string;
-    iconFileId?: string;
+    iconFileId: string | null;
     properties: IJSONSchema;
     category: string;
     propertiesOrder: string[];
@@ -37,6 +40,7 @@ const ajv = new Ajv();
 
 ajv.addFormat('fileId', /.*/);
 addFormats(ajv);
+ajv.addKeyword('patternCustomErrorMessage');
 
 export const getEntityTemplateById = async (templateId: string) => {
     const { result, err } = await trycatch(() => axios.get<IEntityTemplate>(`${url}${getByIdRoute}/${templateId}`, { timeout }));
