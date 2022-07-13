@@ -10,6 +10,7 @@ const { supportedFilesTypes } = config.service;
 const ajv = new Ajv();
 ajv.addFormat('fileId', /.*/);
 addFormats(ajv);
+ajv.addKeyword('patternCustomErrorMessage');
 
 const stringFormats = ['date', 'date-time', 'email', 'fileId'];
 const allowedJSONSchemaTypes = ['string', 'number', 'boolean'];
@@ -36,9 +37,12 @@ const propertiesArraySchema = Joi.array()
             format: Joi.string()
                 .valid(...stringFormats)
                 .when('type', { not: 'string', then: Joi.forbidden() })
+                .when('pattern', { is: Joi.exist(), then: Joi.forbidden() })
                 .when('enum', { is: Joi.exist(), then: Joi.forbidden() }),
             enum: Joi.array().items(Joi.string()).when('type', { not: 'string', then: Joi.forbidden() }),
-        }),
+            pattern: Joi.string().when('type', { not: 'string', then: Joi.forbidden() }),
+            patternCustomErrorMessage: Joi.string().when('pattern', { is: Joi.exist(), then: Joi.required(), otherwise: Joi.forbidden() }),
+        }).nand('pattern', 'enum'),
     )
     .unique((a, b) => a.title === b.title);
 

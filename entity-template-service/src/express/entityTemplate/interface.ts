@@ -3,6 +3,8 @@ interface IEntitySingleProperty {
     type: 'string' | 'number' | 'boolean';
     format?: 'date' | 'date-time' | 'email' | 'fileId';
     enum?: string[];
+    pattern?: string;
+    patternCustomErrorMessage?: string;
 }
 
 export interface IProperties {
