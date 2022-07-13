@@ -19,28 +19,30 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
     propertiesOrder.forEach((key) => {
         const value = properties.properties[key];
 
-        if (value.format === 'fileId') {
-            attachmentProperties.push({
-                id: uuid(),
-                name: key,
-                ...value,
-                required: properties.required.includes(key),
-                preview: propertiesPreview.includes(key),
-                type: value.format,
-                options: [],
-            });
-        } else {
-            const type = value.enum ? 'enum' : value.format || value.type;
+        let type = value.format || value.type;
+        if (value.enum) {
+            type = 'enum';
+        }
+        if (value.pattern) {
+            type = 'pattern';
+        }
 
-            propertiesArray.push({
-                id: uuid(),
-                name: key,
-                ...value,
-                required: properties.required.includes(key),
-                preview: propertiesPreview.includes(key),
-                type,
-                options: value.enum || [],
-            });
+        const property: EntityTemplateFormInputProperties = {
+            id: uuid(),
+            name: key,
+            title: value.title,
+            required: properties.required.includes(key),
+            preview: propertiesPreview.includes(key),
+            type,
+            options: value.enum || [],
+            pattern: value.pattern || '',
+            patternCustomErrorMessage: value.patternCustomErrorMessage || '',
+        };
+
+        if (value.format === 'fileId') {
+            attachmentProperties.push(property);
+        } else {
+            propertiesArray.push(property);
         }
     });
 
@@ -63,12 +65,14 @@ const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTemplate =
         required: [] as string[],
     };
 
-    properties.forEach(({ name, title, type, required, preview, options }) => {
+    properties.forEach(({ name, title, type, required, preview, options, pattern, patternCustomErrorMessage }) => {
         schema.properties[name] = {
             title,
             type: basePropertyTypes.includes(type) ? type : 'string',
             format: stringFormats.includes(type) ? type : undefined,
             enum: type === 'enum' ? options : undefined,
+            pattern: type === 'pattern' ? pattern : undefined,
+            patternCustomErrorMessage: type === 'pattern' ? patternCustomErrorMessage : undefined,
         };
 
         propertiesOrder.push(name);

@@ -19,17 +19,15 @@ const steps: StepsType<CategoryWizardValues> = [
     {
         label: i18next.t('wizard.category.chooseName'),
         component: (props) => <CreateCategoryName {...props} />,
-        validation: createCategoryNameSchema,
+        validationSchema: createCategoryNameSchema,
     },
     {
         label: i18next.t('wizard.category.chooseIcon'),
         component: (props) => <ChooseIcon {...props} />,
-        validation: {},
     },
     {
         label: i18next.t('wizard.category.chooseColor'),
         component: (props) => <ChooseColor {...props} />,
-        validation: {},
     },
 ];
 

@@ -1,7 +1,7 @@
 import React, { PropsWithChildren, useEffect, useState } from 'react';
 import { Dialog, DialogTitle, DialogContent, Divider, IconButton } from '@mui/material';
 import { Close as CloseIcon } from '@mui/icons-material';
-import { Formik, Form, FormikProps } from 'formik';
+import { Formik, Form, FormikProps, FormikConfig } from 'formik';
 import * as Yup from 'yup';
 // eslint-disable-next-line import/no-unresolved
 import { ObjectShape } from 'yup/lib/object';
@@ -21,7 +21,8 @@ export type WizardBaseType<T extends object> = {
 export type StepsType<T extends object> = {
     label: string;
     component: (formikProps: StepComponentProps<T>, isEditMode?: boolean) => JSX.Element;
-    validation: ObjectShape | Yup.ObjectSchema<ObjectShape>;
+    validationSchema?: ObjectShape | Yup.ObjectSchema<ObjectShape>;
+    validate?: FormikConfig<T>['validate'];
 }[];
 
 const Wizard = <T extends object>({
@@ -76,10 +77,11 @@ const Wizard = <T extends object>({
                 <Formik
                     initialValues={initialValues}
                     validationSchema={
-                        steps[activeStep].validation instanceof Yup.ObjectSchema
-                            ? steps[activeStep].validation
-                            : Yup.object(steps[activeStep].validation as ObjectShape)
+                        steps[activeStep].validationSchema instanceof Yup.ObjectSchema
+                            ? steps[activeStep].validationSchema
+                            : Yup.object(steps[activeStep].validationSchema as ObjectShape)
                     }
+                    validate={steps[activeStep].validate}
                     onSubmit={async (values, actions) => {
                         if (isLastStep) {
                             await submitFucntion(values);

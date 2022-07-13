@@ -1,24 +1,29 @@
 import React from 'react';
-import * as Yup from 'yup';
-import i18next from 'i18next';
 import { EntityWizardValues } from './index';
-import { StepComponentProps } from '../index';
-import { objectFilter } from '../../../utils/object';
-import { EntityPropertiesInput } from '../../inputs/EntityPropertiesInput';
+import { StepComponentProps, StepsType } from '../index';
+import { JSONSchemaFormik, ajvValidate } from '../../inputs/JSONSchemaFormik';
+import { filterAttachmentsPropertiesFromSchema } from '../../../utils/filterAttachmentsFromSchema';
 
-const fillFieldsSchema = {
-    properties: Yup.object().required(i18next.t('validation.required')),
+const fillFieldsValidate: StepsType<EntityWizardValues>[number]['validate'] = (values) => {
+    const schema = filterAttachmentsPropertiesFromSchema(values.template.properties);
+    const propertiesErrors = ajvValidate(schema, values.properties);
+    if (Object.keys(propertiesErrors).length === 0) {
+        return {};
+    }
+    return { properties: propertiesErrors };
 };
 
-const FillFields: React.FC<StepComponentProps<EntityWizardValues>> = ({ values, setFieldValue }) => {
-    const propertiesWithoutFiles = objectFilter(values.template.properties.properties, (_key, value) => value.format !== 'fileId');
-
-    const schema = {
-        ...values.template.properties,
-        properties: propertiesWithoutFiles,
-    };
-
-    return <EntityPropertiesInput schema={schema} values={values} setFieldValue={setFieldValue} />;
+const FillFields: React.FC<StepComponentProps<EntityWizardValues>> = ({ values, setFieldValue, touched, setFieldTouched, errors }) => {
+    return (
+        <JSONSchemaFormik
+            schema={filterAttachmentsPropertiesFromSchema(values.template.properties)}
+            values={values}
+            setValues={(propertiesValues) => setFieldValue('properties', propertiesValues)}
+            errors={errors.properties ?? {}}
+            touched={touched.properties ?? {}}
+            setFieldTouched={(field) => setFieldTouched(`properties.${field}`)}
+        />
+    );
 };
 
-export { FillFields, fillFieldsSchema };
+export { FillFields, fillFieldsValidate };

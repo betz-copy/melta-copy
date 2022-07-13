@@ -17,6 +17,7 @@ interface FieldEditCardProps {
     errors: FormikErrors<EntityTemplateWizardValues>;
     setFieldValue: FormikHelpers<EntityTemplateWizardValues>['setFieldValue'];
     handleChange: FormikHandlers['handleChange'];
+    handleBlur: FormikHandlers['handleBlur'];
     remove: (index: number) => any;
 }
 
@@ -30,6 +31,7 @@ const FieldEditCard: React.FC<FieldEditCardProps> = ({
     errors,
     setFieldValue,
     handleChange,
+    handleBlur,
     remove,
 }) => {
     const name = `properties[${index}].name`;
@@ -44,7 +46,18 @@ const FieldEditCard: React.FC<FieldEditCardProps> = ({
     const touchedType = getIn(touched, type);
     const errorType = getIn(errors, type);
 
+    const pattern = `properties[${index}].pattern`;
+    const touchedPattern = getIn(touched, pattern);
+    const errorPattern = getIn(errors, pattern);
+
+    const patternCustomErrorMessage = `properties[${index}].patternCustomErrorMessage`;
+    const touchedPatternCustomErrorMessage = getIn(touched, patternCustomErrorMessage);
+    const errorPatternCustomErrorMessage = getIn(errors, patternCustomErrorMessage);
+
     const options = `properties[${index}].options`;
+    const touchedOptions = getIn(touched, options);
+    const errorOptions = getIn(errors, options);
+
     const required = `properties[${index}].required`;
     const preview = `properties[${index}].preview`;
 
@@ -65,8 +78,8 @@ const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                     <DragHandleIcon fontSize="large" />
                                 </Box>
 
-                                <Grid container direction="column">
-                                    <Grid container wrap="nowrap">
+                                <Grid container direction="column" spacing={1}>
+                                    <Grid item container wrap="nowrap">
                                         <FastField
                                             component={TextField}
                                             label={i18next.t('wizard.entityTemplate.propertyName')}
@@ -74,6 +87,7 @@ const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                             name={name}
                                             value={value.name}
                                             onChange={handleChange}
+                                            onBlur={handleBlur}
                                             error={touchedName && Boolean(errorName)}
                                             helperText={touchedName && errorName}
                                             disabled={isDisabled}
@@ -86,6 +100,7 @@ const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                             name={title}
                                             value={value.title}
                                             onChange={handleChange}
+                                            onBlur={handleBlur}
                                             error={touchedTitle && Boolean(errorTitle)}
                                             helperText={touchedTitle && errorTitle}
                                             sx={{ width: '25%', marginRight: '5px' }}
@@ -99,10 +114,11 @@ const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                             name={type}
                                             value={value.type}
                                             onChange={handleChange}
+                                            onBlur={handleBlur}
                                             error={touchedType && Boolean(errorType)}
                                             helperText={touchedType && errorType}
                                             disabled={isDisabled}
-                                            sx={{ width: value.type === 'enum' ? '20%' : '50%', marginRight: '5px' }}
+                                            sx={{ width: value.type === 'enum' || value.type === 'pattern' ? '20%' : '50%', marginRight: '5px' }}
                                         >
                                             {validPropertyTypes.map((validType) => (
                                                 <MenuItem key={validType} value={validType}>
@@ -126,6 +142,7 @@ const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                         setFieldValue(options, currValue);
                                                     }
                                                 }}
+                                                onBlur={handleBlur}
                                                 renderTags={(tagValue, getTagProps) =>
                                                     tagValue.map((option: string, tagIndex: number) => (
                                                         // eslint-disable-next-line react/jsx-key
@@ -138,12 +155,55 @@ const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                     ))
                                                 }
                                                 filterSelectedOptions
-                                                renderInput={(params) => <TextField {...params} label={i18next.t('propertyTypes.enum')} />}
+                                                renderInput={(params) => (
+                                                    <TextField
+                                                        {...params}
+                                                        label={i18next.t('propertyTypes.enum')}
+                                                        error={touchedOptions && Boolean(errorOptions)}
+                                                        helperText={touchedOptions && errorOptions}
+                                                    />
+                                                )}
+                                                sx={{ width: '30%' }}
+                                            />
+                                        )}
+                                        {value.type === 'pattern' && (
+                                            <FastField
+                                                component={TextField}
+                                                label={i18next.t('propertyTypes.pattern')}
+                                                id={pattern}
+                                                name={pattern}
+                                                value={value.pattern}
+                                                onChange={handleChange}
+                                                onBlur={handleBlur}
+                                                error={touchedPattern && Boolean(errorPattern)}
+                                                helperText={touchedPattern && errorPattern}
+                                                disabled={isDisabled}
+                                                dir="ltr"
                                                 sx={{ width: '30%' }}
                                             />
                                         )}
                                     </Grid>
-                                    <Grid container justifyContent="space-between">
+                                    {value.type === 'pattern' && (
+                                        <Grid item container>
+                                            <FastField
+                                                component={TextField}
+                                                label={i18next.t('wizard.entityTemplate.customErrorMessage')}
+                                                id={patternCustomErrorMessage}
+                                                name={patternCustomErrorMessage}
+                                                value={value.patternCustomErrorMessage}
+                                                onChange={handleChange}
+                                                onBlur={handleBlur}
+                                                error={touchedPatternCustomErrorMessage && Boolean(errorPatternCustomErrorMessage)}
+                                                helperText={
+                                                    touchedPatternCustomErrorMessage && errorPatternCustomErrorMessage
+                                                        ? errorPatternCustomErrorMessage
+                                                        : i18next.t('wizard.entityTemplate.customErrorMessageHelperText')
+                                                }
+                                                sx={{ width: '25%', marginRight: '5px' }}
+                                            />
+                                        </Grid>
+                                    )}
+                                    <Grid item container justifyContent="space-between">
                                         <Box>
                                             <FormControlLabel
                                                 control={

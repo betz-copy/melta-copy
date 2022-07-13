@@ -5,6 +5,8 @@ export interface IEntitySingleProperty {
     title: string;
     format?: string;
     enum?: string[];
+    pattern?: string;
+    patternCustomErrorMessage?: string;
 }
 
 export interface IEntityTemplate {

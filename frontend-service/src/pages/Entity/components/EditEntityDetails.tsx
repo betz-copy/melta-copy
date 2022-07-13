@@ -10,9 +10,10 @@ import { IEntityExpanded } from '../../../interfaces/entities';
 import { updateEntityRequest } from '../../../services/entitiesService';
 import { EntityWizardValues } from '../../../common/wizards/entity';
 import { objectFilter, objectMap } from '../../../utils/object';
-import { EntityFilesInput } from '../../../common/inputs/EntityFilesInput/index';
-import { EntityPropertiesInput } from '../../../common/inputs/EntityPropertiesInput';
+import { EntityFilesInput } from '../../../common/inputs/EntityFilesInput';
+import { JSONSchemaFormik, ajvValidate } from '../../../common/inputs/JSONSchemaFormik';
 import { BlueTitle } from '../../../common/BlueTitle';
+import { filterAttachmentsPropertiesFromSchema } from '../../../utils/filterAttachmentsFromSchema';
 
 const EditEntityDetails: React.FC<{
     entityTemplate: IMongoEntityTemplatePopulated;
@@ -58,8 +59,16 @@ const EditEntityDetails: React.FC<{
             onSubmit={async (values) => {
                 updateMutation({ ...values, template: entityTemplate });
             }}
+            validate={(values) => {
+                const nonAttachmentsSchema = filterAttachmentsPropertiesFromSchema(entityTemplate.properties);
+                const propertiesErrors = ajvValidate(nonAttachmentsSchema, values.properties);
+                if (Object.keys(propertiesErrors).length === 0) {
+                    return {};
+                }
+                return { properties: propertiesErrors };
+            }}
         >
-            {({ setFieldValue, values, errors }) => {
+            {({ setFieldValue, values, errors, touched, setFieldTouched }) => {
                 return (
                     <Form>
                         <Card>
@@ -69,16 +78,13 @@ const EditEntityDetails: React.FC<{
                                         <Grid container flexDirection="row">
                                             <Box sx={{ marginRight: '50px' }}>
                                                 <BlueTitle title={i18next.t('wizard.entityTemplate.properties')} component="h6" variant="h6" />
-                                                <EntityPropertiesInput
-                                                    schema={{
-                                                        ...entityTemplate.properties,
-                                                        properties: objectFilter(
-                                                            entityTemplate.properties.properties,
-                                                            (_key, value) => value.format !== 'fileId',
-                                                        ),
-                                                    }}
+                                                <JSONSchemaFormik
+                                                    schema={filterAttachmentsPropertiesFromSchema(entityTemplate.properties)}
                                                     values={values}
-                                                    setFieldValue={setFieldValue}
+                                                    setValues={(propertiesValues) => setFieldValue('properties', propertiesValues)}
+                                                    errors={errors.properties ?? {}}
+                                                    touched={touched.properties ?? {}}
+                                                    setFieldTouched={(field) => setFieldTouched(`properties.${field}`)}
                                                 />
                                             </Box>
                                             {templateFileKeys.length > 0 && (

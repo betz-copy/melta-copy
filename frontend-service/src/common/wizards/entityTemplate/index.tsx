@@ -20,6 +20,8 @@ export interface EntityTemplateFormInputProperties {
     preview: boolean;
     id: string;
     options: string[];
+    pattern: string;
+    patternCustomErrorMessage: string;
 }
 export interface EntityTemplateWizardValues
     extends Omit<IEntityTemplatePopulated, 'properties' | 'iconFileId' | 'propertiesOrder' | 'propertiesPreview'> {
@@ -32,22 +34,21 @@ const steps: StepsType<EntityTemplateWizardValues> = [
     {
         label: i18next.t('wizard.entityTemplate.chooseCategroy'),
         component: (props) => <ChooseCategory {...props} />,
-        validation: chooseCategorySchema,
+        validationSchema: chooseCategorySchema,
     },
     {
         label: i18next.t('wizard.entityTemplate.chooseEntityTemplateName'),
         component: (props, isEditMode) => <CreateTemplateName {...props} isEditMode={isEditMode} />,
-        validation: createTemplateNameSchema,
+        validationSchema: createTemplateNameSchema,
     },
     {
         label: i18next.t('wizard.entityTemplate.chooseIcon'),
         component: (props) => <ChooseIcon {...props} />,
-        validation: {},
     },
     {
         label: i18next.t('wizard.entityTemplate.properties'),
         component: (props, isEditMode) => <AddFields {...props} isEditMode={isEditMode} />,
-        validation: addFieldsSchema,
+        validationSchema: addFieldsSchema,
     },
 ];
 

@@ -7,7 +7,7 @@ import i18next from 'i18next';
 import { useQuery, useQueryClient } from 'react-query';
 import { DragDropContext, Droppable } from 'react-beautiful-dnd';
 import { v4 as uuid } from 'uuid';
-import { entityTemplateUniqueProperties, variableNameValidation } from '../../../utils/validation';
+import { entityTemplateUniqueProperties, regexSchema, variableNameValidation } from '../../../utils/validation';
 import { EntityTemplateWizardValues } from './index';
 import { StepComponentProps } from '../index';
 import { getEntitiesByTemplateRequest } from '../../../services/entitiesService';
@@ -15,7 +15,7 @@ import FieldEditCard from './FieldEditCard';
 import AttachmentEditCard from './AttachmentEditCard';
 import { basePropertyTypes, stringFormats } from '../../../services/templates/enitityTemplatesService';
 
-const validPropertyTypes = [...basePropertyTypes, ...stringFormats, 'enum'];
+const validPropertyTypes = [...basePropertyTypes, ...stringFormats, 'pattern', 'enum'];
 
 const addFieldsSchema = Yup.object({
     properties: Yup.array()
@@ -27,6 +27,11 @@ const addFieldsSchema = Yup.object({
                 required: Yup.boolean().required(i18next.t('validation.required')),
                 preview: Yup.boolean().required(i18next.t('validation.required')),
                 options: Yup.array(Yup.string()).when('type', { is: 'enum', then: (schema) => schema.min(1, i18next.t('validation.required')) }),
+                pattern: regexSchema.when('type', { is: 'pattern', then: (schema) => schema.required(i18next.t('validation.required')) }),
+                patternCustomErrorMessage: Yup.string().when('type', {
+                    is: 'pattern',
+                    then: (schema) => schema.required(i18next.t('validation.required')),
+                }),
             }),
         )
         .min(1, i18next.t('validation.oneField'))
@@ -46,6 +51,7 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues>> = ({
     errors,
     setFieldValue,
     handleChange,
+    handleBlur,
     isEditMode,
     initialValues,
 }) => {
@@ -108,6 +114,7 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues>> = ({
                                                     touched={touched}
                                                     errors={errors}
                                                     handleChange={handleChange}
+                                                    handleBlur={handleBlur}
                                                     remove={remove}
                                                     setFieldValue={setFieldValue}
                                                 />
@@ -124,10 +131,12 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues>> = ({
                                                         id: uuid(),
                                                         name: '',
                                                         title: '',
-                                                        type: 'fileId',
+                                                        type: '',
                                                         required: false,
                                                         preview: false,
                                                         options: [],
+                                                        pattern: '',
+                                                        patternCustomErrorMessage: '',
                                                     })
                                                 }
                                             >
@@ -188,7 +197,7 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues>> = ({
                                                 type="button"
                                                 variant="contained"
                                                 style={{ margin: '8px' }}
-                                                onClick={() => push({ id: uuid(), name: '', title: '', type: '', required: false })}
+                                                onClick={() => push({ id: uuid(), name: '', title: '', type: 'fileId', required: false })}
                                             >
                                                 {i18next.t('wizard.entityTemplate.addAttachment')}
                                             </Button>

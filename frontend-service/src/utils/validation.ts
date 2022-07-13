@@ -2,6 +2,17 @@ import i18next from 'i18next';
 import * as Yup from 'yup';
 import { EntityTemplateFormInputProperties } from '../common/wizards/entityTemplate';
 
+export const regexSchema = Yup.string().test('is-regex', (value, context) => {
+    if (!value) return true;
+    try {
+        // eslint-disable-next-line no-new
+        new RegExp(value);
+        return true;
+    } catch (error) {
+        return context.createError({ message: (error as Error).message });
+    }
+});
+
 export const variableNameValidation = /^[a-zA-Z][a-zA-Z_$0-9]*$/;
 
 type PropertiesType = 'normal' | 'attachment';

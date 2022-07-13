@@ -156,6 +156,8 @@ export default {
             propertyDisplayName: 'שם שדה לתצוגה',
             attachmentDisplayName: 'שם קובץ לתצוגה',
             propertyType: 'סוג שדה',
+            customErrorMessage: 'הודעת שגיאה בכישלון תבנית',
+            customErrorMessageHelperText: 'לדוגמא: "יש להזין בפורמט מס טלפון בלבד (050-1234-123)"',
             propertyPreview: 'תצוגה מצומצמת',
             addProperty: 'הוסף שדה',
             addAttachment: 'הוסף קובץ',
@@ -214,6 +216,7 @@ export default {
         time: 'שעה',
         'date-time': 'תאריך ושעה',
         email: 'כתובת מייל',
+        pattern: 'תבנית (regex)',
         enum: 'אפשרויות',
     },
     input: {

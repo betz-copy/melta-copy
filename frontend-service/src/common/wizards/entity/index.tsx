@@ -6,7 +6,7 @@ import i18next from 'i18next';
 import { useNavigate } from 'react-router-dom';
 import { StepsType, Wizard, WizardBaseType } from '../index';
 import { ChooseTemplate, chooseTemplateSchema } from './ChooseTemplate';
-import { FillFields, fillFieldsSchema } from './FillFields';
+import { FillFields, fillFieldsValidate } from './FillFields';
 import { Summary } from './Summary';
 import { createEntityRequest } from '../../../services/entitiesService';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
@@ -22,22 +22,21 @@ const steps: StepsType<EntityWizardValues> = [
     {
         label: i18next.t('wizard.entity.chooseEntityTemplate'),
         component: (props) => <ChooseTemplate {...props} />,
-        validation: chooseTemplateSchema,
+        validationSchema: chooseTemplateSchema,
     },
     {
         label: i18next.t('wizard.entity.fillFields'),
         component: (props) => <FillFields {...props} />,
-        validation: fillFieldsSchema,
+        validate: fillFieldsValidate,
     },
     {
         label: i18next.t('wizard.entity.fileFields'),
         component: (props) => <FileFields {...props} />,
-        validation: fileFieldsSchema,
+        validationSchema: fileFieldsSchema,
     },
     {
         label: i18next.t('wizard.entity.summary'),
         component: (props) => <Summary {...props} />,
-        validation: {},
     },
 ];
 
