@@ -7,6 +7,9 @@ interface IEntitySingleProperty {
     type: 'string' | 'number' | 'boolean';
     title: string;
     format?: string;
+    enum?: string[];
+    pattern?: string;
+    patternCustomErrorMessage?: string;
 }
 
 interface IJSONSchema {
@@ -19,7 +22,7 @@ interface IEntityTemplate {
     _id: string;
     name: string;
     displayName: string;
-    iconFileId?: string;
+    iconFileId: string | null;
     properties: IJSONSchema;
     category: string;
     propertiesOrder: string[];
