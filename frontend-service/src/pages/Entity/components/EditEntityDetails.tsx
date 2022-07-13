@@ -68,7 +68,7 @@ const EditEntityDetails: React.FC<{
                 return { properties: propertiesErrors };
             }}
         >
-            {({ setFieldValue, values, errors, touched, setFieldTouched }) => {
+            {({ setFieldValue, values, errors, touched, setFieldTouched, dirty }) => {
                 return (
                     <Form>
                         <Card>
@@ -118,6 +118,7 @@ const EditEntityDetails: React.FC<{
                                                     startIcon={
                                                         isUpdateLoading ? <CircularProgress sx={{ color: 'white' }} size={20} /> : <DoneIcon />
                                                     }
+                                                    disabled={!dirty || isUpdateLoading}
                                                 >
                                                     {i18next.t('entityPage.save')}
                                                 </Button>
