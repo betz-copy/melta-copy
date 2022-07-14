@@ -25,7 +25,7 @@ const Graph: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> }
     const [height, setHeight] = useState(0);
 
     const { state } = useLocation() as { state: IEntityExpanded | undefined };
-    const { entityId } = useParams();
+    const { entityId } = useParams() as { entityId: string };
     const navigate = useNavigate();
 
     const [nodeMenuState, setNodeMenuState] = useState<{ showMenu: boolean; top?: number; left?: number; node?: NodeObject }>({
@@ -37,8 +37,7 @@ const Graph: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> }
     const entityTemplates = queryClient.getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates')!;
     const relationshipTemplates = queryClient.getQueryData<IMongoRelationshipTemplate[]>('getRelationshipTemplates')!;
 
-    const expendedGraphData = state ? getGraphDataWithNodeSizes(expandedEntityToGraphData(state, relationshipTemplates)) : { nodes: [], links: [] };
-    const [graphData, setGraphData] = useState<GraphData>(expendedGraphData);
+    const [graphData, setGraphData] = useState<GraphData>({ nodes: [], links: [] });
 
     const updateGraphSize = () => {
         const mainBox = ref.current?.parentElement.parentElement;
@@ -82,14 +81,30 @@ const Graph: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> }
     const forceRef = useRef<ForceGraphMethods | undefined>(undefined);
     const [shouldZoomToFit, setShouldZoomToFit] = useState(true);
 
-    useQuery<IEntityExpanded>(['getExpandedEntity', entityId], () => getExpandedEntityByIdRequest(entityId!), {
-        enabled: !state,
-        onSuccess: (data) => {
-            const expendedGraphDataWithSizes = getGraphDataWithNodeSizes(expandedEntityToGraphData(data, relationshipTemplates));
-
-            setGraphData(expendedGraphDataWithSizes);
+    const { refetch: getExpandedEntityById } = useQuery<IEntityExpanded>(
+        ['getExpandedEntity', entityId],
+        () => getExpandedEntityByIdRequest(entityId),
+        {
+            enabled: false,
         },
-    });
+    );
+
+    useEffect(() => {
+        const setGraphDataOnStart = async () => {
+            let initialExpandedEntity: IEntityExpanded;
+            if (state) {
+                initialExpandedEntity = state;
+            } else {
+                const { data } = await getExpandedEntityById();
+                initialExpandedEntity = data!;
+            }
+
+            const expandedEntityGraphData = getGraphDataWithNodeSizes(expandedEntityToGraphData(initialExpandedEntity, relationshipTemplates));
+            setGraphData(expandedEntityGraphData);
+        };
+
+        setGraphDataOnStart();
+    }, [entityId]);
 
     // manage forces in graph
     forceRef.current?.d3Force(
