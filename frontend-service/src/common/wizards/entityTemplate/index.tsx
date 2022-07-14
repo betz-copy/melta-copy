@@ -38,7 +38,7 @@ const steps: StepsType<EntityTemplateWizardValues> = [
     },
     {
         label: i18next.t('wizard.entityTemplate.chooseEntityTemplateName'),
-        component: (props, isEditMode) => <CreateTemplateName {...props} isEditMode={isEditMode} />,
+        component: (props, { isEditMode }) => <CreateTemplateName {...props} isEditMode={isEditMode} />,
         validationSchema: createTemplateNameSchema,
     },
     {
@@ -47,7 +47,7 @@ const steps: StepsType<EntityTemplateWizardValues> = [
     },
     {
         label: i18next.t('wizard.entityTemplate.properties'),
-        component: (props, isEditMode) => <AddFields {...props} isEditMode={isEditMode} />,
+        component: (props, { isEditMode, setBlock }) => <AddFields {...props} isEditMode={isEditMode} setBlock={setBlock} />,
         validationSchema: addFieldsSchema,
     },
 ];

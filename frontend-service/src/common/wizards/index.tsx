@@ -8,7 +8,13 @@ import { ObjectShape } from 'yup/lib/object';
 
 import { Stepper } from './stepper';
 
-export type StepComponentProps<T extends object> = FormikProps<T> & { isEditMode?: boolean };
+export interface StepComponentHelpers {
+    isEditMode: boolean;
+    setBlock: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+export type StepComponentProps<T extends object, helpers extends keyof StepComponentHelpers = never> = FormikProps<T> &
+    Pick<StepComponentHelpers, helpers>;
 
 export type WizardBaseType<T extends object> = {
     open: boolean;
@@ -20,7 +26,7 @@ export type WizardBaseType<T extends object> = {
 
 export type StepsType<T extends object> = {
     label: string;
-    component: (formikProps: StepComponentProps<T>, isEditMode?: boolean) => JSX.Element;
+    component: (formikProps: StepComponentProps<T>, helpers: StepComponentHelpers) => JSX.Element;
     validationSchema?: ObjectShape | Yup.ObjectSchema<ObjectShape>;
     validate?: FormikConfig<T>['validate'];
 }[];
@@ -100,7 +106,7 @@ const Wizard = <T extends object>({
                                 steps={steps}
                                 isLoading={isLoading}
                                 formikProps={formikProps}
-                                isEditMode={isEditMode}
+                                isEditMode={!!isEditMode}
                             />
                         </Form>
                     )}

@@ -1,19 +1,14 @@
 import React from 'react';
-import { Accordion, AccordionDetails, AccordionSummary, Button, Grid, Typography } from '@mui/material';
-import { ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
-import { FieldArray } from 'formik';
+import { Grid } from '@mui/material';
 import * as Yup from 'yup';
 import i18next from 'i18next';
 import { useQuery, useQueryClient } from 'react-query';
-import { DragDropContext, Droppable } from 'react-beautiful-dnd';
-import { v4 as uuid } from 'uuid';
 import { entityTemplateUniqueProperties, regexSchema, variableNameValidation } from '../../../utils/validation';
 import { EntityTemplateWizardValues } from './index';
 import { StepComponentProps } from '../index';
 import { getEntitiesByTemplateRequest } from '../../../services/entitiesService';
-import FieldEditCard from './FieldEditCard';
-import AttachmentEditCard from './AttachmentEditCard';
 import { basePropertyTypes, stringFormats } from '../../../services/templates/enitityTemplatesService';
+import FieldBlock from './FieldBlock';
 
 const validPropertyTypes = [...basePropertyTypes, ...stringFormats, 'pattern', 'enum'];
 
@@ -45,15 +40,15 @@ const addFieldsSchema = Yup.object({
     ),
 }).test('uniqueProperties', entityTemplateUniqueProperties);
 
-const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues>> = ({
+const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEditMode' | 'setBlock'>> = ({
     values,
     touched,
     errors,
     setFieldValue,
     handleChange,
-    handleBlur,
-    isEditMode,
     initialValues,
+    isEditMode,
+    setBlock,
 }) => {
     const queryClient = useQueryClient();
 
@@ -79,137 +74,41 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues>> = ({
         ])!.lastRowIndex > 0;
 
     return (
-        <>
-            <Accordion
-                style={{
-                    width: '100%',
-                    boxShadow: '1px 1px 10px 2px rgb(0 0 0 / 20%), 0px 1px 1px 0px rgb(0 0 0 / 14%), 0px 1px 3px 0px rgb(0 0 0 / 12%)',
-                    marginBottom: '10px',
-                }}
-            >
-                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                    <Typography>{i18next.t('wizard.entityTemplate.properties')}</Typography>
-                </AccordionSummary>
-                <AccordionDetails>
-                    <FieldArray name="properties" validateOnChange={false}>
-                        {({ push, remove, move }) => (
-                            <DragDropContext onDragEnd={(result) => result.destination && move(result.source.index, result.destination.index)}>
-                                <Droppable droppableId="fieldArea">
-                                    {(droppableProvided) => (
-                                        <Grid
-                                            container
-                                            ref={droppableProvided.innerRef}
-                                            {...droppableProvided.droppableProps}
-                                            direction="column"
-                                            alignItems="center"
-                                        >
-                                            {values.properties.map((property, index) => (
-                                                <FieldEditCard
-                                                    key={property.id}
-                                                    value={property}
-                                                    index={index}
-                                                    isEditMode={isEditMode}
-                                                    initialValues={initialValues}
-                                                    areThereAnyInstances={areThereAnyInstances}
-                                                    touched={touched}
-                                                    errors={errors}
-                                                    handleChange={handleChange}
-                                                    handleBlur={handleBlur}
-                                                    remove={remove}
-                                                    setFieldValue={setFieldValue}
-                                                />
-                                            ))}
+        <Grid container direction="column" alignItems="stretch" spacing={1}>
+            <Grid item>
+                <FieldBlock
+                    propertiesType="properties"
+                    values={values}
+                    initialValues={initialValues}
+                    setFieldValue={setFieldValue}
+                    handleChange={handleChange}
+                    areThereAnyInstances={areThereAnyInstances}
+                    isEditMode={isEditMode}
+                    setBlock={setBlock}
+                    title={i18next.t('wizard.entityTemplate.properties')}
+                    addPropertyButtonLabel={i18next.t('wizard.entityTemplate.addProperty')}
+                    touched={touched}
+                    errors={errors}
+                />
+            </Grid>
 
-                                            {droppableProvided.placeholder}
-
-                                            <Button
-                                                type="button"
-                                                variant="contained"
-                                                style={{ margin: '8px' }}
-                                                onClick={() =>
-                                                    push({
-                                                        id: uuid(),
-                                                        name: '',
-                                                        title: '',
-                                                        type: '',
-                                                        required: false,
-                                                        preview: false,
-                                                        options: [],
-                                                        pattern: '',
-                                                        patternCustomErrorMessage: '',
-                                                    })
-                                                }
-                                            >
-                                                {i18next.t('wizard.entityTemplate.addProperty')}
-                                            </Button>
-
-                                            {errors.properties === i18next.t('validation.oneField') && (
-                                                <div style={{ color: '#d32f2f' }}>{i18next.t('validation.oneField')}</div>
-                                            )}
-                                        </Grid>
-                                    )}
-                                </Droppable>
-                            </DragDropContext>
-                        )}
-                    </FieldArray>
-                </AccordionDetails>
-            </Accordion>
-            <Accordion
-                style={{
-                    width: '100%',
-                    boxShadow: '1px 1px 10px 2px rgb(0 0 0 / 20%), 0px 1px 1px 0px rgb(0 0 0 / 14%), 0px 1px 3px 0px rgb(0 0 0 / 12%)',
-                }}
-            >
-                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                    <Typography>{i18next.t('wizard.entityTemplate.attachments')}</Typography>
-                </AccordionSummary>
-                <AccordionDetails>
-                    <FieldArray name="attachmentProperties">
-                        {({ push, remove, move }) => (
-                            <DragDropContext onDragEnd={(result) => result.destination && move(result.source.index, result.destination.index)}>
-                                <Droppable droppableId="fieldArea">
-                                    {(droppableProvided) => (
-                                        <Grid
-                                            container
-                                            ref={droppableProvided.innerRef}
-                                            {...droppableProvided.droppableProps}
-                                            direction="column"
-                                            alignItems="center"
-                                        >
-                                            {values.attachmentProperties.map((property, index) => (
-                                                <AttachmentEditCard
-                                                    key={property.id}
-                                                    value={property}
-                                                    index={index}
-                                                    isEditMode={isEditMode}
-                                                    initialValues={initialValues}
-                                                    areThereAnyInstances={areThereAnyInstances}
-                                                    touched={touched}
-                                                    errors={errors}
-                                                    handleChange={handleChange}
-                                                    remove={remove}
-                                                />
-                                            ))}
-
-                                            {droppableProvided.placeholder}
-
-                                            <Button
-                                                type="button"
-                                                variant="contained"
-                                                style={{ margin: '8px' }}
-                                                onClick={() => push({ id: uuid(), name: '', title: '', type: 'fileId', required: false })}
-                                            >
-                                                {i18next.t('wizard.entityTemplate.addAttachment')}
-                                            </Button>
-                                        </Grid>
-                                    )}
-                                </Droppable>
-                            </DragDropContext>
-                        )}
-                    </FieldArray>
-                </AccordionDetails>
-            </Accordion>
-        </>
+            <Grid item>
+                <FieldBlock
+                    propertiesType="attachmentProperties"
+                    values={values}
+                    initialValues={initialValues}
+                    setFieldValue={setFieldValue}
+                    handleChange={handleChange}
+                    areThereAnyInstances={areThereAnyInstances}
+                    isEditMode={isEditMode}
+                    setBlock={setBlock}
+                    title={i18next.t('wizard.entityTemplate.attachments')}
+                    addPropertyButtonLabel={i18next.t('wizard.entityTemplate.addAttachment')}
+                    touched={touched}
+                    errors={errors}
+                />
+            </Grid>
+        </Grid>
     );
 };
 

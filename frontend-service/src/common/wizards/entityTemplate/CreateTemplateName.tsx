@@ -11,7 +11,13 @@ const createTemplateNameSchema = {
     displayName: Yup.string().required(i18next.t('validation.required')),
 };
 
-const CreateTemplateName: React.FC<StepComponentProps<EntityTemplateWizardValues>> = ({ values, touched, errors, handleChange, isEditMode }) => {
+const CreateTemplateName: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEditMode'>> = ({
+    values,
+    touched,
+    errors,
+    handleChange,
+    isEditMode,
+}) => {
     return (
         <Grid container direction="column" alignItems="center" spacing={1}>
             <Grid item>

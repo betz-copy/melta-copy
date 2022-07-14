@@ -1,24 +1,25 @@
-import React from 'react';
-import { FastField, Field, FormikErrors, FormikHandlers, FormikTouched, getIn } from 'formik';
+import React, { memo } from 'react';
+import { FormikErrors, FormikTouched } from 'formik';
 import { TextField, Box, Grid, Card, CardContent, Switch, FormControlLabel, IconButton } from '@mui/material';
 import { Delete as DeleteIcon, DragHandle as DragHandleIcon } from '@mui/icons-material';
 import { Draggable } from 'react-beautiful-dnd';
 import i18next from 'i18next';
+import isEqual from 'lodash.isequal';
 import { EntityTemplateFormInputProperties, EntityTemplateWizardValues } from './index';
 
 interface AttachmentEditCardProps {
     value: EntityTemplateFormInputProperties;
     index: number;
-    isEditMode?: Boolean;
+    isEditMode?: boolean;
     initialValues: EntityTemplateWizardValues;
-    areThereAnyInstances?: Boolean;
-    touched: FormikTouched<EntityTemplateWizardValues>;
-    errors: FormikErrors<EntityTemplateWizardValues>;
-    handleChange: FormikHandlers['handleChange'];
+    areThereAnyInstances?: boolean;
+    touched?: FormikTouched<EntityTemplateFormInputProperties>;
+    errors?: FormikErrors<EntityTemplateFormInputProperties>;
+    onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
     remove: (index: number) => any;
 }
 
-const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
+export const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
     value,
     index,
     isEditMode,
@@ -26,16 +27,16 @@ const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
     areThereAnyInstances,
     touched,
     errors,
-    handleChange,
+    onChange,
     remove,
 }) => {
     const name = `attachmentProperties[${index}].name`;
-    const touchedName = getIn(touched, name);
-    const errorName = getIn(errors, name);
+    const touchedName = touched?.name;
+    const errorName = errors?.name;
 
     const title = `attachmentProperties[${index}].title`;
-    const touchedTitle = getIn(touched, title);
-    const errorTitle = getIn(errors, title);
+    const touchedTitle = touched?.title;
+    const errorTitle = errors?.title;
 
     const required = `attachmentProperties[${index}].required`;
 
@@ -56,25 +57,23 @@ const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
 
                                 <Grid container direction="column">
                                     <Grid container wrap="nowrap">
-                                        <FastField
-                                            component={TextField}
+                                        <TextField
                                             label={i18next.t('wizard.entityTemplate.attachmentName')}
                                             id={name}
                                             name={name}
                                             value={value.name}
-                                            onChange={handleChange}
+                                            onChange={onChange}
                                             error={touchedName && Boolean(errorName)}
                                             helperText={touchedName && errorName}
                                             disabled={isDisabled}
                                             sx={{ width: '50%', marginRight: '5px' }}
                                         />
-                                        <FastField
-                                            component={TextField}
+                                        <TextField
                                             label={i18next.t('wizard.entityTemplate.attachmentDisplayName')}
                                             id={title}
                                             name={title}
                                             value={value.title}
-                                            onChange={handleChange}
+                                            onChange={onChange}
                                             error={touchedTitle && Boolean(errorTitle)}
                                             helperText={touchedTitle && errorTitle}
                                             sx={{ width: '50%', marginRight: '5px' }}
@@ -84,16 +83,15 @@ const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
                                         <Box>
                                             <FormControlLabel
                                                 control={
-                                                    <Field
+                                                    <Switch
                                                         id={required}
                                                         name={required}
-                                                        component={Switch}
-                                                        onChange={handleChange}
+                                                        onChange={onChange}
                                                         checked={value.required}
                                                         disabled={isEditMode && areThereAnyInstances}
                                                     />
                                                 }
-                                                label={i18next.t('validation.required') as string}
+                                                label={i18next.t('validation.required')}
                                             />
                                         </Box>
 
@@ -111,4 +109,12 @@ const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
     );
 };
 
-export default AttachmentEditCard;
+export const MemoAttachmentEditCard = memo(
+    AttachmentEditCard,
+    (prev, next) =>
+        prev.index === next.index &&
+        prev.areThereAnyInstances === next.areThereAnyInstances &&
+        isEqual(prev.value, next.value) &&
+        isEqual(prev.touched, next.touched) &&
+        isEqual(prev.errors, next.errors),
+);

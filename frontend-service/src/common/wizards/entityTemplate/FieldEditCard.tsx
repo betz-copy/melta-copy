@@ -1,27 +1,27 @@
-import React from 'react';
-import { FastField, Field, FormikErrors, FormikHandlers, FormikHelpers, FormikTouched, getIn } from 'formik';
+import React, { memo } from 'react';
+import { FormikErrors, FormikTouched } from 'formik';
 import { TextField, Box, MenuItem, Grid, Card, CardContent, Switch, FormControlLabel, IconButton, Chip, Autocomplete } from '@mui/material';
 import { Delete as DeleteIcon, DragHandle as DragHandleIcon } from '@mui/icons-material';
 import { Draggable } from 'react-beautiful-dnd';
 import i18next from 'i18next';
+import isEqual from 'lodash.isequal';
 import { validPropertyTypes } from './AddFields';
 import { EntityTemplateFormInputProperties, EntityTemplateWizardValues } from './index';
 
 interface FieldEditCardProps {
     value: EntityTemplateFormInputProperties;
     index: number;
-    isEditMode?: Boolean;
+    isEditMode?: boolean;
     initialValues: EntityTemplateWizardValues;
-    areThereAnyInstances?: Boolean;
-    touched: FormikTouched<EntityTemplateWizardValues>;
-    errors: FormikErrors<EntityTemplateWizardValues>;
-    setFieldValue: FormikHelpers<EntityTemplateWizardValues>['setFieldValue'];
-    handleChange: FormikHandlers['handleChange'];
-    handleBlur: FormikHandlers['handleBlur'];
+    areThereAnyInstances?: boolean;
+    touched?: FormikTouched<EntityTemplateFormInputProperties>;
+    errors?: FormikErrors<EntityTemplateFormInputProperties>;
+    setFieldValue: (field: keyof EntityTemplateFormInputProperties, value: any) => void;
+    onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
     remove: (index: number) => any;
 }
 
-const FieldEditCard: React.FC<FieldEditCardProps> = ({
+export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     value,
     index,
     isEditMode,
@@ -30,33 +30,32 @@ const FieldEditCard: React.FC<FieldEditCardProps> = ({
     touched,
     errors,
     setFieldValue,
-    handleChange,
-    handleBlur,
+    onChange,
     remove,
 }) => {
     const name = `properties[${index}].name`;
-    const touchedName = getIn(touched, name);
-    const errorName = getIn(errors, name);
+    const touchedName = touched?.name;
+    const errorName = errors?.name;
 
     const title = `properties[${index}].title`;
-    const touchedTitle = getIn(touched, title);
-    const errorTitle = getIn(errors, title);
+    const touchedTitle = touched?.title;
+    const errorTitle = errors?.title;
 
     const type = `properties[${index}].type`;
-    const touchedType = getIn(touched, type);
-    const errorType = getIn(errors, type);
+    const touchedType = touched?.type;
+    const errorType = errors?.type;
 
     const pattern = `properties[${index}].pattern`;
-    const touchedPattern = getIn(touched, pattern);
-    const errorPattern = getIn(errors, pattern);
+    const touchedPattern = touched?.pattern;
+    const errorPattern = errors?.pattern;
 
     const patternCustomErrorMessage = `properties[${index}].patternCustomErrorMessage`;
-    const touchedPatternCustomErrorMessage = getIn(touched, patternCustomErrorMessage);
-    const errorPatternCustomErrorMessage = getIn(errors, patternCustomErrorMessage);
+    const touchedPatternCustomErrorMessage = touched?.patternCustomErrorMessage;
+    const errorPatternCustomErrorMessage = errors?.patternCustomErrorMessage;
 
     const options = `properties[${index}].options`;
-    const touchedOptions = getIn(touched, options);
-    const errorOptions = getIn(errors, options);
+    const touchedOptions = touched?.options;
+    const errorOptions = errors?.options;
 
     const required = `properties[${index}].required`;
     const preview = `properties[${index}].preview`;
@@ -78,47 +77,44 @@ const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                     <DragHandleIcon fontSize="large" />
                                 </Box>
 
-                                <Grid container direction="column" spacing={1}>
-                                    <Grid item container wrap="nowrap">
-                                        <FastField
-                                            component={TextField}
+                                <Grid container direction="column">
+                                    <Grid container wrap="nowrap" marginBottom="0.4rem">
+                                        <TextField
                                             label={i18next.t('wizard.entityTemplate.propertyName')}
                                             id={name}
                                             name={name}
                                             value={value.name}
-                                            onChange={handleChange}
-                                            onBlur={handleBlur}
+                                            onChange={onChange}
                                             error={touchedName && Boolean(errorName)}
                                             helperText={touchedName && errorName}
                                             disabled={isDisabled}
-                                            sx={{ width: '25%', marginRight: '5px' }}
+                                            sx={{ marginRight: '5px' }}
+                                            fullWidth
                                         />
-                                        <FastField
-                                            component={TextField}
+                                        <TextField
                                             label={i18next.t('wizard.entityTemplate.propertyDisplayName')}
                                             id={title}
                                             name={title}
                                             value={value.title}
-                                            onChange={handleChange}
-                                            onBlur={handleBlur}
+                                            onChange={onChange}
                                             error={touchedTitle && Boolean(errorTitle)}
                                             helperText={touchedTitle && errorTitle}
-                                            sx={{ width: '25%', marginRight: '5px' }}
+                                            sx={{ marginRight: '5px' }}
+                                            fullWidth
                                         />
                                         <TextField
                                             select
-                                            fullWidth
                                             type="text"
                                             label={i18next.t('wizard.entityTemplate.propertyType')}
                                             id={type}
                                             name={type}
                                             value={value.type}
-                                            onChange={handleChange}
-                                            onBlur={handleBlur}
+                                            onChange={onChange}
                                             error={touchedType && Boolean(errorType)}
                                             helperText={touchedType && errorType}
                                             disabled={isDisabled}
-                                            sx={{ width: value.type === 'enum' || value.type === 'pattern' ? '20%' : '50%', marginRight: '5px' }}
+                                            sx={{ marginRight: '5px' }}
+                                            fullWidth
                                         >
                                             {validPropertyTypes.map((validType) => (
                                                 <MenuItem key={validType} value={validType}>
@@ -126,6 +122,8 @@ const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                 </MenuItem>
                                             ))}
                                         </TextField>
+                                    </Grid>
+                                    <Grid item container justifyContent="space-between" flexWrap="nowrap">
                                         {value.type === 'enum' && (
                                             <Autocomplete
                                                 id={options}
@@ -137,12 +135,11 @@ const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                     if (isDisabled) {
                                                         const newValues = currValue.filter((option) => initialEnumOptions.indexOf(option) === -1);
 
-                                                        setFieldValue(options, [...initialEnumOptions, ...newValues]);
+                                                        setFieldValue('options', [...initialEnumOptions, ...newValues]);
                                                     } else {
-                                                        setFieldValue(options, currValue);
+                                                        setFieldValue('options', currValue);
                                                     }
                                                 }}
-                                                onBlur={handleBlur}
                                                 renderTags={(tagValue, getTagProps) =>
                                                     tagValue.map((option: string, tagIndex: number) => (
                                                         // eslint-disable-next-line react/jsx-key
@@ -163,72 +160,60 @@ const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                         helperText={touchedOptions && errorOptions}
                                                     />
                                                 )}
-                                                sx={{ width: '30%' }}
+                                                sx={{ marginRight: '5px' }}
+                                                fullWidth
                                             />
                                         )}
                                         {value.type === 'pattern' && (
-                                            <FastField
-                                                component={TextField}
-                                                label={i18next.t('propertyTypes.pattern')}
-                                                id={pattern}
-                                                name={pattern}
-                                                value={value.pattern}
-                                                onChange={handleChange}
-                                                onBlur={handleBlur}
-                                                error={touchedPattern && Boolean(errorPattern)}
-                                                helperText={touchedPattern && errorPattern}
-                                                disabled={isDisabled}
-                                                dir="ltr"
-                                                sx={{ width: '30%' }}
-                                            />
+                                            <>
+                                                <TextField
+                                                    label={i18next.t('propertyTypes.pattern')}
+                                                    id={pattern}
+                                                    name={pattern}
+                                                    value={value.pattern}
+                                                    onChange={onChange}
+                                                    error={touchedPattern && Boolean(errorPattern)}
+                                                    helperText={touchedPattern && errorPattern}
+                                                    disabled={isDisabled}
+                                                    dir="ltr"
+                                                    sx={{ marginRight: '5px' }}
+                                                    fullWidth
+                                                />
+                                                <TextField
+                                                    label={i18next.t('wizard.entityTemplate.customErrorMessage')}
+                                                    id={patternCustomErrorMessage}
+                                                    name={patternCustomErrorMessage}
+                                                    value={value.patternCustomErrorMessage}
+                                                    onChange={onChange}
+                                                    error={touchedPatternCustomErrorMessage && Boolean(errorPatternCustomErrorMessage)}
+                                                    helperText={
+                                                        touchedPatternCustomErrorMessage && errorPatternCustomErrorMessage
+                                                            ? errorPatternCustomErrorMessage
+                                                            : i18next.t('wizard.entityTemplate.customErrorMessageHelperText')
+                                                    }
+                                                    sx={{ marginRight: '5px' }}
+                                                    fullWidth
+                                                />
+                                            </>
                                         )}
                                     </Grid>
-                                    {value.type === 'pattern' && (
-                                        <Grid item container>
-                                            <FastField
-                                                component={TextField}
-                                                label={i18next.t('wizard.entityTemplate.customErrorMessage')}
-                                                id={patternCustomErrorMessage}
-                                                name={patternCustomErrorMessage}
-                                                value={value.patternCustomErrorMessage}
-                                                onChange={handleChange}
-                                                onBlur={handleBlur}
-                                                error={touchedPatternCustomErrorMessage && Boolean(errorPatternCustomErrorMessage)}
-                                                helperText={
-                                                    touchedPatternCustomErrorMessage && errorPatternCustomErrorMessage
-                                                        ? errorPatternCustomErrorMessage
-                                                        : i18next.t('wizard.entityTemplate.customErrorMessageHelperText')
-                                                }
-                                                sx={{ width: '25%', marginRight: '5px' }}
-                                            />
-                                        </Grid>
-                                    )}
                                     <Grid item container justifyContent="space-between">
                                         <Box>
                                             <FormControlLabel
                                                 control={
-                                                    <Field
+                                                    <Switch
                                                         id={required}
                                                         name={required}
-                                                        component={Switch}
-                                                        onChange={handleChange}
+                                                        onChange={onChange}
                                                         checked={value.required}
                                                         disabled={isEditMode && areThereAnyInstances}
                                                     />
                                                 }
-                                                label={i18next.t('validation.required') as string}
+                                                label={i18next.t('validation.required')}
                                             />
                                             <FormControlLabel
-                                                control={
-                                                    <Field
-                                                        id={preview}
-                                                        name={preview}
-                                                        component={Switch}
-                                                        onChange={handleChange}
-                                                        checked={value.preview}
-                                                    />
-                                                }
-                                                label={i18next.t('validation.preview') as string}
+                                                control={<Switch id={preview} name={preview} onChange={onChange} checked={value.preview} />}
+                                                label={i18next.t('validation.preview')}
                                             />
                                         </Box>
 
@@ -246,4 +231,12 @@ const FieldEditCard: React.FC<FieldEditCardProps> = ({
     );
 };
 
-export default FieldEditCard;
+export const MemoFieldEditCard = memo(
+    FieldEditCard,
+    (prev, next) =>
+        prev.index === next.index &&
+        prev.areThereAnyInstances === next.areThereAnyInstances &&
+        isEqual(prev.value, next.value) &&
+        isEqual(prev.touched, next.touched) &&
+        isEqual(prev.errors, next.errors),
+);
