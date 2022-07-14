@@ -28,3 +28,6 @@
 [submodule "global-search-index-creator"]
 	path = global-search-index-creator
 	url = git@gitlab.com:yesodot/rnd/terminal-rabaz/jaws/microservices/global-search.git
+[submodule "activity-log"]
+	path = activity-log
+	url = git@gitlab.com:yesodot/rnd/terminal-rabaz/jaws/microservices/activity-log.git
