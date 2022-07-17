@@ -57,6 +57,13 @@ const config = {
         searchRoute: env.get('KARTOFFEL_SEARCH_ENTITIES').default('/search').asString(),
         requestTimeout: env.get('KARTOFFEL_REQUEST_TIMEOUT').default(10000).asIntPositive(),
     },
+    errorCodes: {
+        categoryHasTemplates: 'CATEGORY_HAS_TEMPLATES',
+        entityTemplateHasOutgoingRelationships: 'TEMPLATE_HAS_OUTGOING_RELATIONSHIPS',
+        entityTemplateHasIncomingRelationships: 'TEMPLATE_HAS_INCOMING_RELATIONSHIPS',
+        entityTemplateHasInstances: 'ENTITY_TEMPLATE_HAS_INSTANCES',
+        relationshipTemplateHasInstances: 'RELATIONSHIP_TEMPLATE_HAS_INSTANCES',
+    },
 };
 
 export default config;

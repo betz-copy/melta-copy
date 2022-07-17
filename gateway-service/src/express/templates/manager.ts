@@ -8,6 +8,15 @@ import { trycatch } from '../../utils';
 import { removeTmpFile } from '../../utils/fs';
 import { ServiceError } from '../error';
 import PermissionsManager from '../permissions/manager';
+import config from '../../config';
+
+const {
+    categoryHasTemplates,
+    entityTemplateHasOutgoingRelationships,
+    entityTemplateHasIncomingRelationships,
+    entityTemplateHasInstances,
+    relationshipTemplateHasInstances,
+} = config.errorCodes;
 
 export class TemplatesManager {
     // get all entityTemplates that are one relationship (step) away  from the original users permissions
@@ -91,7 +100,7 @@ export class TemplatesManager {
     static async deleteCategory(id: string) {
         const templates = await EntityTemplateManagerService.searchEntityTemplates({ categoryIds: [id] });
         if (templates.length > 0) {
-            throw new ServiceError(400, 'category still has entity templates');
+            throw new ServiceError(400, 'category still has entity templates', { errorCode: categoryHasTemplates });
         }
 
         const category = await EntityTemplateManagerService.getCategoryById(id);
@@ -145,18 +154,22 @@ export class TemplatesManager {
     static async throwIfEntityHasRelationships(id: string) {
         const outgoingRelationships = await RelationshipsTemplateManagerService.searchRelationshipTemplates({ sourceEntityIds: [id] });
         if (outgoingRelationships.length > 0) {
-            throw new ServiceError(400, 'entity template still has outgoing relationships');
+            throw new ServiceError(400, 'entity template still has outgoing relationships', {
+                errorCode: entityTemplateHasOutgoingRelationships,
+            });
         }
         const incomingRelationships = await RelationshipsTemplateManagerService.searchRelationshipTemplates({ destinationEntityIds: [id] });
         if (incomingRelationships.length > 0) {
-            throw new ServiceError(400, 'entity template still has incoming relationships');
+            throw new ServiceError(400, 'entity template still has incoming relationships', {
+                errorCode: entityTemplateHasIncomingRelationships,
+            });
         }
     }
 
     static async throwIfEntityTemplateHasInstances(id: string) {
         const { rows } = await InstanceManagerService.getInstancesByTemplateId(id, { startRow: 0, endRow: 0, sortModel: [], filterModel: {} });
         if (rows.length !== 0) {
-            throw new ServiceError(400, 'entity template still has instances');
+            throw new ServiceError(400, 'entity template still has instances', { errorCode: entityTemplateHasInstances });
         }
     }
 
@@ -191,7 +204,7 @@ export class TemplatesManager {
 
             Object.entries(currTemplate.properties.properties).forEach(([key, value]) => {
                 const newValue = updatedTemplate.properties?.properties[key];
-                if (!newValue) throw new ServiceError(400, 'can not remove property type');
+                if (!newValue) throw new ServiceError(400, 'can not remove property');
 
                 if (value.type !== newValue.type) throw new ServiceError(400, 'can not change property type');
                 if (value.format !== newValue.format) throw new ServiceError(400, 'can not change property format');
@@ -275,7 +288,7 @@ export class TemplatesManager {
     static async deleteRelationshipTemplate(templateId: string) {
         const relationshipCount = await InstanceManagerService.getRelationshipsCountByTemplateId(templateId);
         if (relationshipCount !== 0) {
-            throw new ServiceError(400, 'relationship template still has instances');
+            throw new ServiceError(400, 'relationship template still has instances', { errorCode: relationshipTemplateHasInstances });
         }
 
         return RelationshipsTemplateManagerService.deleteRelationshipTemplate(templateId);

@@ -9,6 +9,21 @@ export class ServiceError extends Error {
     }
 }
 
+const formatAxiosErrorData = (axiosErrorData: object & { message?: string; metadata?: object }) => {
+    if (axiosErrorData.message?.includes('E11000')) {
+        return { ...axiosErrorData, errorCode: 'DUPLICATE_ERROR' };
+    }
+
+    if (axiosErrorData.metadata) {
+        return {
+            ...axiosErrorData,
+            ...axiosErrorData.metadata,
+        };
+    }
+
+    return axiosErrorData;
+};
+
 export const errorMiddleware = (error: Error, _req: express.Request, res: express.Response, next: express.NextFunction) => {
     if (error.name === 'ValidationError') {
         res.status(400).send({
@@ -30,7 +45,7 @@ export const errorMiddleware = (error: Error, _req: express.Request, res: expres
         res.status(error.response?.status).send({
             type: error.name,
             message: error.message,
-            metadata: error.response.data,
+            metadata: formatAxiosErrorData(error.response.data),
         });
     } else {
         res.status(500).send({
