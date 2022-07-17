@@ -30,6 +30,10 @@ const config = {
         url: env.get('REDIS_HOST').default('redis://redis:6379').asString(),
         globalSearchKeyName: env.get('GLOBAL_SEARCH_KEY_NAME').default('latestIndex').asString(),
     },
+    errorCodes: {
+        entityHasRelationships: 'ENTITY_HAS_RELATIONSHIPS',
+        relationshipAlreadyExists: 'RELATIONSHIP_ALREADY_EXISTS',
+    },
 };
 
 export default config;

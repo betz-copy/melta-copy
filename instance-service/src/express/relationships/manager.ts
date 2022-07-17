@@ -2,6 +2,7 @@ import Neo4jClient from '../../utils/neo4j';
 import { generateDefaultProperties, getNeo4jDateTime, normalizeResponseCount, normalizeReturnedRelationship } from '../../utils/neo4j/lib';
 import { IRelationship } from './interface';
 import { NotFoundError, ServiceError } from '../error';
+import config from '../../config';
 
 export class RelationshipManager {
     static async getRelationshipById(id: string) {
@@ -36,7 +37,9 @@ export class RelationshipManager {
             );
 
             if (normalizeResponseCount(countOfExistingRelationships) > 0) {
-                throw new ServiceError(400, `[NEO4J] relationship already exists between requested entities.`);
+                throw new ServiceError(400, `[NEO4J] relationship already exists between requested entities.`, {
+                    errorCode: config.errorCodes.relationshipAlreadyExists,
+                });
             }
 
             const edge = await transaction.run(

@@ -11,6 +11,7 @@ import { IEntity } from './interface';
 import { NotFoundError, ServiceError } from '../error';
 import { agGridRequestToNeo4JRequest, agGridSearchRequestToNeo4JRequest, IAGGridRequest } from '../../utils/agGridFilterModelToNeoQuery';
 import getLatestIndex from '../../utils/redis/getLatestIndex';
+import config from '../../config';
 
 export class EntityManager {
     static createEntity(entity: IEntity) {
@@ -92,7 +93,9 @@ export class EntityManager {
             return id;
         } catch (error) {
             if (error instanceof Neo4jError && error.code === 'Neo.ClientError.Schema.ConstraintValidationFailed') {
-                throw new ServiceError(400, `[NEO4J] entity "${id}" has existing relationships. Delete them first.`);
+                throw new ServiceError(400, `[NEO4J] entity "${id}" has existing relationships. Delete them first.`, {
+                    errorCode: config.errorCodes.entityHasRelationships,
+                });
             }
 
             throw error;
