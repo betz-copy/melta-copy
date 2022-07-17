@@ -7,17 +7,17 @@ const { neo4j, redis } = config;
 
 const createIndex = async (indexName: string, labels: string[], properties: string[]) => {
     const createFullTextIndexCommand = `
-    CREATE FULLTEXT INDEX \`${indexName}\`
-    FOR
-    (n:${labels.map((label) => `\`${label}\``).join('|')})
-    ON EACH
-    [${properties.map((property) => `n.${property}`).join(', ')}]`;
+    CALL db.index.fulltext.createNodeIndex(
+        '${indexName}',
+        ['${labels.join("','")}'],
+        ['${properties.join("','")}']
+    )`;
 
     await Neo4jClient.writeTransaction(createFullTextIndexCommand);
 };
 
 const dropIndex = (indexName: string) => {
-    return Neo4jClient.writeTransaction(`DROP INDEX \`${indexName}\``);
+    return Neo4jClient.writeTransaction(`CALL db.index.fulltext.drop('${indexName}')`);
 };
 
 const updateIndexWithTemplates = async (labels: string[], properties: string[]) => {
