@@ -5,6 +5,7 @@ import { useMutation, useQueryClient } from 'react-query';
 import i18next from 'i18next';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
+import { AxiosError } from 'axios';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IEntityExpanded } from '../../../interfaces/entities';
 import { deleteEntityRequest } from '../../../services/entitiesService';
@@ -13,6 +14,7 @@ import { EntityProperties } from '../../../common/EntityProperties';
 import { IPermissionsOfUser } from '../../../services/permissionsService';
 import IconButtonWithPopoverText from '../../../common/IconButtonWithPopover';
 import { EditEntityDetails } from './EditEntityDetails';
+import { ErrorToast } from '../../../common/ErrorToast';
 
 const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; expandedEntity: IEntityExpanded }> = ({
     entityTemplate,
@@ -34,8 +36,9 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
     const currentEntityTemplate = entityTemplates.find((currTemplate) => currTemplate._id === expandedEntity?.entity.templateId);
 
     const { isLoading: isDeleteLoading, mutateAsync: deleteMutation } = useMutation(() => deleteEntityRequest(entity.properties._id), {
-        onError: () => {
+        onError: (error: AxiosError) => {
             closeDeleteDialog();
+            toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.entity.failedToDelete')} />);
         },
         onSuccess: () => {
             toast.success(i18next.t('wizard.entity.deletedSuccessfully'));

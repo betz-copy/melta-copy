@@ -2,6 +2,7 @@ import React from 'react';
 import { toast } from 'react-toastify';
 import i18next from 'i18next';
 import { useMutation, useQueryClient } from 'react-query';
+import { AxiosError } from 'axios';
 import { StepsType, Wizard, WizardBaseType } from '../index';
 import { CreateRelationshipTemplateName, createRelationshipTemplateNameSchema } from './CreateRelationshipTemplate';
 import {
@@ -12,6 +13,7 @@ import {
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { replaceItemById } from '../../../utils/reactQuery';
 import { IMongoRelationshipTemplate } from '../../../interfaces/relationshipTemplates';
+import { ErrorToast } from '../../ErrorToast';
 
 export interface RelationshipTemplateWizardValues {
     _id?: string;
@@ -84,8 +86,12 @@ const RelationshipTemplateWizard: React.FC<WizardBaseType<RelationshipTemplateWi
                 }
                 handleClose();
             },
-            onError: () => {
-                toast.error(i18next.t('wizard.relationshipTemplate.failedToCreate'));
+            onError: (error: AxiosError) => {
+                if (isEditMode) {
+                    toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.relationshipTemplate.failedToEdit')} />);
+                } else {
+                    toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.relationshipTemplate.failedToCreate')} />);
+                }
             },
         },
     );

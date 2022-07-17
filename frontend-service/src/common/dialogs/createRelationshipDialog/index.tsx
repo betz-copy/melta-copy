@@ -6,6 +6,7 @@ import { Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, Di
 import { CompareArrows as CompareArrowsIcon } from '@mui/icons-material';
 import { useMutation } from 'react-query';
 import { toast } from 'react-toastify';
+import { AxiosError } from 'axios';
 import { IEntity } from '../../../interfaces/entities';
 import { IMongoRelationshipTemplatePopulated } from '../../../interfaces/relationshipTemplates';
 import RelationshipTemplateAutocomplete from '../../inputs/RelationshipTemplateAutocomplete';
@@ -14,6 +15,7 @@ import StrechableArrowRight from './strechableArrowRight';
 import { trycatch } from '../../../utils/trycatch';
 import { createRelationshipRequest } from '../../../services/relationshipsService';
 import { IRelationship } from '../../../interfaces/relationships';
+import { ErrorToast } from '../../ErrorToast';
 
 export interface ICreateRelationshipValues {
     relationshipTemplate: IMongoRelationshipTemplatePopulated | null;
@@ -174,9 +176,9 @@ const CreateRelationshipDialog: React.FC<{
     const initialValues = { ...defaultInitialValues, ...parentInitialValues };
 
     const { mutateAsync: createRelationship } = useMutation(createRelationshipRequest, {
-        onError: (error) => {
+        onError: (error: AxiosError) => {
             console.log('failed to create relationship. error:', error);
-            toast.error(i18next.t('addRelationshipDialog.failedToCreateRelationship'));
+            toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('addRelationshipDialog.failedToCreateRelationship')} />);
         },
         onSuccess: () => {
             toast.success(i18next.t('addRelationshipDialog.succeededToCreateRelationship'));

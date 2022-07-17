@@ -5,6 +5,7 @@ import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 
 import i18next from 'i18next';
+import { AxiosError } from 'axios';
 import { IMongoCategory } from '../../../interfaces/categories';
 import { ViewingCard } from './ViewingCard';
 import { CustomIcon } from '../../../common/CustomIcon';
@@ -17,6 +18,7 @@ import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
 import { removeItemById } from '../../../utils/reactQuery';
 import SearchInput from '../../../common/inputs/SearchInput';
 import { templatesCompareFunc } from '../../../utils/sortTemplates';
+import { ErrorToast } from '../../../common/ErrorToast';
 
 const EntityTemplatesRow: React.FC = () => {
     const queryClient = useQueryClient();
@@ -49,8 +51,8 @@ const EntityTemplatesRow: React.FC = () => {
             setDeleteEntityTemplateDialogState({ isDialogOpen: false, entityTemplateId: null });
             toast.success(i18next.t('wizard.entityTemplate.deletedSuccessfully'));
         },
-        onError: () => {
-            toast.error(i18next.t('wizard.entityTemplate.failedToDelete'));
+        onError: (error: AxiosError) => {
+            toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.entityTemplate.failedToDelete')} />);
         },
     });
 

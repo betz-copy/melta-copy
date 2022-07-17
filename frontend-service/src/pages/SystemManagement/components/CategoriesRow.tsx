@@ -5,6 +5,7 @@ import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 
 import i18next from 'i18next';
+import { AxiosError } from 'axios';
 import { IMongoCategory } from '../../../interfaces/categories';
 import { ViewingCard } from './ViewingCard';
 import { CustomIcon } from '../../../common/CustomIcon';
@@ -13,6 +14,7 @@ import { CategoryWizard } from '../../../common/wizards/category';
 import { categoryObjectToCategoryForm, deleteCategoryRequest } from '../../../services/templates/categoriesService';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
 import { removeItemById } from '../../../utils/reactQuery';
+import { ErrorToast } from '../../../common/ErrorToast';
 
 const CategoriesRow: React.FC = () => {
     const queryClient = useQueryClient();
@@ -42,8 +44,8 @@ const CategoriesRow: React.FC = () => {
             setDeleteCategoryDialogState({ isDialogOpen: false, categoryId: null });
             toast.success(i18next.t('wizard.category.deletedSuccessfully'));
         },
-        onError: () => {
-            toast.error(i18next.t('wizard.category.failedToDelete'));
+        onError: (err: AxiosError) => {
+            toast.error(<ErrorToast axiosError={err} defaultErrorMessage={i18next.t('wizard.category.failedToDelete')} />);
         },
     });
 

@@ -3,6 +3,7 @@ import React from 'react';
 import { toast } from 'react-toastify';
 import i18next from 'i18next';
 import { useMutation, useQueryClient } from 'react-query';
+import { AxiosError } from 'axios';
 import { StepsType, Wizard, WizardBaseType } from '../index';
 import { CreateCategoryName, createCategoryNameSchema } from './CreateCategoryName';
 import { createCategoryRequest, updateCategoryRequest } from '../../../services/templates/categoriesService';
@@ -11,6 +12,7 @@ import { replaceItemById } from '../../../utils/reactQuery';
 import { ChooseIcon } from './ChooseIcon';
 import { ChooseColor } from './ChooseColor';
 import fileDetails from '../../../interfaces/fileDetails';
+import { ErrorToast } from '../../ErrorToast';
 
 export interface CategoryWizardValues extends Omit<ICategory, 'iconFileId'> {
     icon?: fileDetails;
@@ -55,8 +57,12 @@ const CategoryWizard: React.FC<WizardBaseType<CategoryWizardValues>> = ({
                 }
                 handleClose();
             },
-            onError: () => {
-                toast.error(i18next.t('wizard.category.title'));
+            onError: (error: AxiosError) => {
+                if (isEditMode) {
+                    toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.category.failedToEdit')} />);
+                } else {
+                    toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.category.failedToCreate')} />);
+                }
             },
         },
     );

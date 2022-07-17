@@ -2,6 +2,7 @@ import React from 'react';
 import { toast } from 'react-toastify';
 import i18next from 'i18next';
 import { useMutation, useQueryClient } from 'react-query';
+import { AxiosError } from 'axios';
 import { StepsType, Wizard, WizardBaseType } from '../index';
 import { ChooseCategory, chooseCategorySchema } from './ChooseCategory';
 import { CreateTemplateName, createTemplateNameSchema } from './CreateTemplateName';
@@ -11,6 +12,7 @@ import { IEntityTemplatePopulated, IMongoEntityTemplatePopulated } from '../../.
 import { replaceItemById } from '../../../utils/reactQuery';
 import { ChooseIcon } from './ChooseIcon';
 import fileDetails from '../../../interfaces/fileDetails';
+import { ErrorToast } from '../../ErrorToast';
 
 export interface EntityTemplateFormInputProperties {
     name: string;
@@ -83,8 +85,12 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
                 }
                 handleClose();
             },
-            onError: () => {
-                toast.error(i18next.t('wizard.entityTemplate.failedToCreate'));
+            onError: (error: AxiosError) => {
+                if (isEditMode) {
+                    toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.entityTemplate.failedToEdit')} />);
+                } else {
+                    toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.entityTemplate.failedToCreate')} />);
+                }
             },
         },
     );
