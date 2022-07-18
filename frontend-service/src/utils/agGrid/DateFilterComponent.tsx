@@ -1,6 +1,6 @@
 import React, { forwardRef, useImperativeHandle, useState } from 'react';
-import { MobileDatePicker, LocalizationProvider } from '@mui/lab';
-import AdapterDateFns from '@mui/lab/AdapterDateFns';
+import { LocalizationProvider, MobileDatePicker } from '@mui/x-date-pickers';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { TextField } from '@mui/material';
 
 const DateFilterComponent: React.FC<{ onDateChanged: () => void }> = forwardRef(({ onDateChanged }, ref) => {
