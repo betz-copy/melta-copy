@@ -26,6 +26,10 @@ class EntityController {
         res.json(await EntityManager.deleteByTemplateId(req.query.templateId as unknown as string));
     }
 
+    static async updateStatusById(req: Request, res: Response) {
+        res.json(await EntityManager.updateStatusById(req.params.id, req.body.disabled));
+    }
+
     static async updateEntityById(req: Request, res: Response) {
         res.json(await EntityManager.updateEntityById(req.params.id, req.body.properties));
     }

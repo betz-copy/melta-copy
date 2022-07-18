@@ -10,6 +10,7 @@ import {
     getEntityByIdRequestSchema,
     updateEntityByIdRequestSchema,
     getEntitiesRequestSchema,
+    updateEntityStatusByIdRequestSchema,
 } from './validator.schema';
 
 const entityRouter: Router = Router();
@@ -32,5 +33,6 @@ entityRouter.put(
     addStringFieldsAndNormalizeDateValues,
     wrapController(EntityController.updateEntityById),
 );
+entityRouter.patch('/:id/status', ValidateRequest(updateEntityStatusByIdRequestSchema), wrapController(EntityController.updateStatusById));
 
 export default entityRouter;

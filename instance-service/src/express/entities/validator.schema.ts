@@ -121,6 +121,19 @@ export const getEntitiesRequestSchema = Joi.object({
 });
 
 /**
+ * PATCH /api/instances/entities/:id/status
+ */
+export const updateEntityStatusByIdRequestSchema = Joi.object({
+    body: {
+        disabled: Joi.boolean().required(),
+    },
+    query: {},
+    params: {
+        id: Joi.string().required(),
+    },
+});
+
+/**
  * PUT /api/instances/entities/:id
  */
 export const updateEntityByIdRequestSchema = Joi.object({

@@ -4,7 +4,7 @@ import axios from 'axios';
 import { Request, NextFunction, Response } from 'express';
 import config from '../../config';
 import { trycatch } from '../../utils/lib';
-import { defaultJsonSchemaProperties, getNeo4jDate, getNeo4jDateTime } from '../../utils/neo4j/lib';
+import { getNeo4jDate, getNeo4jDateTime } from '../../utils/neo4j/lib';
 import { ValidationError } from '../error';
 
 interface IEntitySingleProperty {
@@ -76,15 +76,14 @@ const fetchEntityTemplateFromRequest = (req: any) => {
 export const addStringFieldsAndNormalizeDateValues = (req: Request, _res: Response, next: NextFunction) => {
     const entityTemplate = fetchEntityTemplateFromRequest(req);
     const normalizedEntity = {};
-    const jsonSchemaProperties = { ...entityTemplate.properties.properties, ...defaultJsonSchemaProperties } as IJSONSchema;
 
-    Object.entries(jsonSchemaProperties).forEach(([key, value]) => {
-        const propertyValue = req.body.properties[key];
-        const { type, format } = value;
-
-        if (!propertyValue) {
+    Object.entries(entityTemplate.properties.properties).forEach(([key, value]) => {
+        if (!(key in req.body.properties)) {
             return;
         }
+
+        const propertyValue = req.body.properties[key];
+        const { type, format } = value;
 
         // For Neo4j fulltext search (supports only string properties)
         if (type !== 'string') {

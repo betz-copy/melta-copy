@@ -106,24 +106,50 @@ export class EntityManager {
         return Neo4jClient.writeTransaction(`MATCH (e: \`${templateId}\`) DETACH DELETE e`, normalizeReturnedEntity('multipleResponses'));
     }
 
-    static async updateEntityById(id: string, entityProperties: Record<string, any>) {
-        const node = await Neo4jClient.writeTransaction(
-            `MATCH (e {_id: '${id}'}) WITH e.createdAt as createdAt, e AS e SET e = $props SET e.createdAt = createdAt RETURN e`,
-            normalizeReturnedEntity(),
-            {
-                props: {
-                    ...entityProperties,
-                    updatedAt: getNeo4jDateTime(),
-                    _id: id,
-                },
-            },
-        );
+    static async updateStatusById(id: string, disabled: boolean) {
+        const node = await Neo4jClient.writeTransaction(`MATCH (e {_id: '${id}'}) SET e.disabled = $disabled RETURN e`, normalizeReturnedEntity(), {
+            disabled,
+        });
 
         if (!node) {
             throw new NotFoundError(`[NEO4J] entity "${id}" not found`);
         }
 
         return node;
+    }
+
+    static async updateEntityById(id: string, entityProperties: Record<string, any>) {
+        return Neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
+            const entity = await transaction.run(`MATCH (e {_id: '${id}'}) RETURN e`);
+
+            const normalizedEntity = normalizeReturnedEntity()(entity) as IEntity;
+
+            if (!entity) {
+                throw new NotFoundError(`[NEO4J] entity "${id}" not found`);
+            }
+
+            if (normalizedEntity.properties.disabled) {
+                throw new ServiceError(400, `[NEO4J] cannot update disabled entity.`);
+            }
+
+            const updatedEntity = await transaction.run(
+                `MATCH (e {_id: '${id}'})
+                 WITH e.createdAt as createdAt, e.disabled AS disabled, e AS e
+                 SET e = $props 
+                 SET e.createdAt = createdAt
+                 SET e.disabled = disabled 
+                 RETURN e`,
+                {
+                    props: {
+                        ...entityProperties,
+                        updatedAt: getNeo4jDateTime(),
+                        _id: id,
+                    },
+                },
+            );
+
+            return normalizeReturnedEntity()(updatedEntity) as IEntity;
+        });
     }
 }
 

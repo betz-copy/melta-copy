@@ -139,10 +139,3 @@ export const generateDefaultProperties = () => {
         disabled: false,
     };
 };
-
-export const defaultJsonSchemaProperties: Record<string, any> = {
-    disabled: {
-        type: 'string',
-        title: 'disabled',
-    },
-};
