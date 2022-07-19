@@ -2,11 +2,12 @@ import React from 'react';
 import { TextField, Box, Autocomplete } from '@mui/material';
 import * as Yup from 'yup';
 import i18next from 'i18next';
-import { useQueryClient } from 'react-query';
+import { useQuery, useQueryClient } from 'react-query';
 import { RelationshipTemplateWizardValues } from './index';
 import { StepComponentProps } from '../index';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { variableNameValidation } from '../../../utils/validation';
+import { getRelationshipInstancesCountByTemplateIdRequest } from '../../../services/entitiesService';
 
 const createRelationshipTemplateNameSchema = {
     name: Yup.string().matches(variableNameValidation, i18next.t('validation.variableName')).required(i18next.t('validation.required')),
@@ -21,16 +22,26 @@ const createRelationshipTemplateNameSchema = {
     }).required(i18next.t('validation.required')),
 };
 
-const CreateRelationshipTemplateName: React.FC<StepComponentProps<RelationshipTemplateWizardValues>> = ({
+const CreateRelationshipTemplateName: React.FC<StepComponentProps<RelationshipTemplateWizardValues, 'isEditMode'>> = ({
     values,
     touched,
     errors,
     handleChange,
     setFieldValue,
+    isEditMode,
 }) => {
     const queryClient = useQueryClient();
 
     const entityTemplates = queryClient.getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates')!;
+
+    const { data: areThereRelationshipInstancesByTemplateId } = useQuery(
+        ['areThereRelationshipInstancesByTemplateId', (values as RelationshipTemplateWizardValues & { _id: string })._id],
+        () => getRelationshipInstancesCountByTemplateIdRequest((values as RelationshipTemplateWizardValues & { _id: string })._id),
+        {
+            enabled: isEditMode,
+            initialData: 0,
+        },
+    );
 
     return (
         <>
@@ -61,6 +72,7 @@ const CreateRelationshipTemplateName: React.FC<StepComponentProps<RelationshipTe
                     onChange={(_e, value) => setFieldValue('sourceEntity', value || '')}
                     value={values.sourceEntity._id ? values.sourceEntity : null}
                     getOptionLabel={(option) => option.displayName}
+                    disabled={areThereRelationshipInstancesByTemplateId! > 0}
                     renderInput={(params) => (
                         <TextField
                             style={{ width: '220px' }}
@@ -81,6 +93,7 @@ const CreateRelationshipTemplateName: React.FC<StepComponentProps<RelationshipTe
                     options={entityTemplates}
                     onChange={(_e, value) => setFieldValue('destinationEntity', value || '')}
                     value={values.destinationEntity._id ? values.destinationEntity : null}
+                    disabled={areThereRelationshipInstancesByTemplateId! > 0}
                     getOptionLabel={(option) => option.displayName}
                     renderInput={(params) => (
                         <TextField

@@ -2,7 +2,7 @@ import React from 'react';
 import { Grid } from '@mui/material';
 import * as Yup from 'yup';
 import i18next from 'i18next';
-import { useQuery, useQueryClient } from 'react-query';
+import { useQuery } from 'react-query';
 import { entityTemplateUniqueProperties, regexSchema, variableNameValidation } from '../../../utils/validation';
 import { EntityTemplateWizardValues } from './index';
 import { StepComponentProps } from '../index';
@@ -50,10 +50,8 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
     isEditMode,
     setBlock,
 }) => {
-    const queryClient = useQueryClient();
-
-    useQuery(
-        ['isThereInstancesByTemplateId', (values as EntityTemplateWizardValues & { _id: string })._id],
+    const { data: areThereInstancesByTemplateIdResponse } = useQuery(
+        ['areThereInstancesByTemplateId', (values as EntityTemplateWizardValues & { _id: string })._id],
         () =>
             getEntitiesByTemplateRequest((values as EntityTemplateWizardValues & { _id: string })._id, {
                 startRow: 0,
@@ -67,11 +65,7 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
         },
     );
 
-    const areThereAnyInstances =
-        queryClient.getQueryData<{ lastRowIndex: number }>([
-            'isThereInstancesByTemplateId',
-            (values as EntityTemplateWizardValues & { _id: string })._id,
-        ])!.lastRowIndex > 0;
+    const areThereAnyInstances = areThereInstancesByTemplateIdResponse!.lastRowIndex > 0;
 
     return (
         <Grid container direction="column" alignItems="stretch" spacing={1}>

@@ -5,7 +5,7 @@ import { environment } from '../globals';
 import { IEntity, IEntityExpanded } from '../interfaces/entities';
 import { EntityWizardValues } from '../common/wizards/entity';
 
-const { entities } = environment.api;
+const { entities, relationships } = environment.api;
 
 const getAllEntitiesRequest = async () => {
     const { data } = await axios.get<{ nodes: IEntity[]; links: any[] }>(`${entities}/all`);
@@ -27,6 +27,11 @@ const getRelatedEntitiesByIdRequest = async (entityId: string) => {
 
 const getExpandedEntityByIdRequest = async (entityId: string) => {
     const { data } = await axios.get<IEntityExpanded>(`${entities}/${entityId}?expanded=true`);
+    return data;
+};
+
+const getRelationshipInstancesCountByTemplateIdRequest = async (templateId: string) => {
+    const { data } = await axios.get<number>(`${relationships}/count`, { params: { templateId } });
     return data;
 };
 
@@ -71,4 +76,5 @@ export {
     deleteEntityRequest,
     getExpandedEntityByIdRequest,
     updateEntityRequest,
+    getRelationshipInstancesCountByTemplateIdRequest,
 };

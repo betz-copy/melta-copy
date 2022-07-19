@@ -28,7 +28,7 @@ export interface RelationshipTemplateWizardValues {
 const steps: StepsType<RelationshipTemplateWizardValues> = [
     {
         label: i18next.t('wizard.relationshipTemplate.title'),
-        component: (props) => <CreateRelationshipTemplateName {...props} />,
+        component: (props, { isEditMode }) => <CreateRelationshipTemplateName {...props} isEditMode={isEditMode} />,
         validationSchema: createRelationshipTemplateNameSchema,
     },
 ];
