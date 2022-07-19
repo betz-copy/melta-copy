@@ -10,6 +10,7 @@ import {
     validateUserCanUpdateGetOrDeleteEntityInstance,
     validateUserCanUpdateOrDeleteRelationshipInstance,
 } from './middlewares';
+import { validateUserIsTemplateManager } from '../permissions/validateAuthorizationMiddleware';
 import InstancesController from './controller';
 import { createEntityInstanceSchema, deleteEntityInstanceSchema, updateEntityInstanceSchema } from './validator.schema';
 import ValidateRequest from '../../utils/joi';
@@ -50,6 +51,7 @@ InstancesRouter.delete(
 
 // relationships (Instances)
 InstancesRouter.post('/relationships', wrapMiddleware(validateUserCanCreateRelationshipInstance), InstanceManagerProxy);
+InstancesRouter.get('/relationships/count', wrapMiddleware(validateUserIsTemplateManager), InstanceManagerProxy);
 InstancesRouter.put('/relationships/:id', wrapMiddleware(validateUserCanUpdateOrDeleteRelationshipInstance), InstanceManagerProxy);
 InstancesRouter.delete('/relationships/:id', wrapMiddleware(validateUserCanUpdateOrDeleteRelationshipInstance), InstanceManagerProxy);
 
