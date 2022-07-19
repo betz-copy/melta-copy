@@ -53,6 +53,7 @@ const CreateRelationshipTemplateName: React.FC<StepComponentProps<RelationshipTe
                     onChange={handleChange}
                     error={touched.name && Boolean(errors.name)}
                     helperText={touched.name && errors.name}
+                    disabled={areThereRelationshipInstancesByTemplateId! > 0}
                 />
             </Box>
             <Box margin={1}>
