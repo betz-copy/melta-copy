@@ -27,7 +27,7 @@ const ActivityLogSchema = new mongoose.Schema({
     },
 });
 
-ActivityLogSchema.index({ entityId: 1, timestamp: 1 });
+ActivityLogSchema.index({ entityId: 1, timestamp: -1 });
 
 const ActivityLogModel = mongoose.model<IActivityLog & mongoose.Document>(config.mongo.activityLogCollectionName, ActivityLogSchema);
 

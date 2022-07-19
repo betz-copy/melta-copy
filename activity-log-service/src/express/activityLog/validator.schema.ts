@@ -8,7 +8,7 @@ export const getActivitySchema = Joi.object({
     },
     body: {},
     params: {
-        entityId: Joi.string(),
+        entityId: Joi.string().required(),
     },
 });
 
