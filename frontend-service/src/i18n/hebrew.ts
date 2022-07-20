@@ -28,8 +28,8 @@ export default {
         edit: 'עריכה',
         delete: 'מחיקה',
         graph: 'גרף',
-        disable: 'השבת',
-        activate: 'הפעל',
+        disable: 'השבתה',
+        activate: 'הפעלה',
     },
     entityPage: {
         deleteRelationshipPopoverText: 'מחק קשר',
