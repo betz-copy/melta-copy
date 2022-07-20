@@ -23,7 +23,7 @@ const mockEntites = (mock: MockAdapter) => {
         ];
     });
 
-    mock.onGet(/\/api\/instances\/entities\/expanded\/[0-9a-fA-F]{24}/).reply((config) => [
+    mock.onPost(/\/api\/instances\/entities\/expanded\/[0-9a-fA-F]{24}/).reply((config) => [
         200,
         {
             entity: {
