@@ -107,12 +107,28 @@ const createEntityTemplateRequest = async (newEntityTemplate: EntityTemplateWiza
 
     formData.append('displayName', entityTemplate.displayName);
     formData.append('name', entityTemplate.name);
+    formData.append('disabled', String(entityTemplate.disabled));
     formData.append('category', entityTemplate.category);
     formData.append('properties', JSON.stringify(entityTemplate.properties));
     formData.append('propertiesOrder', JSON.stringify(entityTemplate.propertiesOrder));
     formData.append('propertiesPreview', JSON.stringify(entityTemplate.propertiesPreview));
 
     const { data } = await axios.post<IMongoEntityTemplatePopulated>(entityTemplates, formData);
+    return data;
+};
+
+const updateDisabledFieldEntityTemplateRequest = async (entityTemplateId: string, entityTemplate: IMongoEntityTemplatePopulated) => {
+    const formData = new FormData();
+    formData.append('displayName', entityTemplate.displayName);
+    formData.append('name', entityTemplate.name);
+    formData.append('category', entityTemplate.category._id);
+    formData.append('properties', JSON.stringify(entityTemplate.properties));
+    formData.append('propertiesOrder', JSON.stringify(entityTemplate.propertiesOrder));
+    formData.append('disabled', String(!entityTemplate.disabled));
+
+    formData.append('propertiesPreview', JSON.stringify(entityTemplate.propertiesPreview));
+
+    const { data } = await axios.put<IMongoEntityTemplatePopulated>(`${entityTemplates}/${entityTemplateId}`, formData);
     return data;
 };
 
@@ -135,6 +151,7 @@ const updateEntityTemplateRequest = async (entityTemplateId: string, updatedEnti
     formData.append('properties', JSON.stringify(entityTemplate.properties));
     formData.append('propertiesOrder', JSON.stringify(entityTemplate.propertiesOrder));
     formData.append('propertiesPreview', JSON.stringify(entityTemplate.propertiesPreview));
+    formData.append('disabled', String(entityTemplate.disabled));
 
     const { data } = await axios.put<IMongoEntityTemplatePopulated>(`${entityTemplates}/${entityTemplateId}`, formData);
     return data;
@@ -145,4 +162,10 @@ const deleteEntityTemplateRequest = async (entityTemplateId: string) => {
     return data;
 };
 
-export { createEntityTemplateRequest, updateEntityTemplateRequest, entityTemplateObjectToEntityTemplateForm, deleteEntityTemplateRequest };
+export {
+    createEntityTemplateRequest,
+    updateEntityTemplateRequest,
+    entityTemplateObjectToEntityTemplateForm,
+    deleteEntityTemplateRequest,
+    updateDisabledFieldEntityTemplateRequest,
+};

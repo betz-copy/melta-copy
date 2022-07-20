@@ -39,7 +39,7 @@ const InstancesPermissionsCard: React.FC<{
                     <Grid item container justifyContent="space-between">
                         {checkboxAllProps && (
                             <FormControlLabel
-                                label={i18next.t('permissions.permissionsOfUserDialog.chooseAll')}
+                                label={i18next.t('permissions.permissionsOfUserDialog.chooseAll') as string}
                                 control={<Checkbox checked={checkboxAllProps.checked} onChange={checkboxAllProps.onChange} size="medium" />}
                             />
                         )}

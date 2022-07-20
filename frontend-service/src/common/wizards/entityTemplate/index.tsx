@@ -63,6 +63,7 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
         displayName: '',
         icon: undefined,
         category: { displayName: '', name: '', _id: '', color: '' },
+        disabled: false,
         properties: [],
         attachmentProperties: [],
     },

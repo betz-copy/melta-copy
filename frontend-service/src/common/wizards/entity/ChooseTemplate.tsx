@@ -25,19 +25,21 @@ const ChooseTemplate: React.FC<StepComponentProps<EntityWizardValues>> = ({ valu
     const entityTemplates = queryClient.getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates')!;
     const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
 
-    let entityTemplatesFiltered: IMongoEntityTemplatePopulated[];
+    let entityTemplatesFilteredByCategory: IMongoEntityTemplatePopulated[];
     if (categoryId) {
-        entityTemplatesFiltered = entityTemplates.filter((entity) => entity.category._id === categoryId);
+        entityTemplatesFilteredByCategory = entityTemplates.filter((entity) => entity.category._id === categoryId);
     } else {
-        entityTemplatesFiltered = entityTemplates.filter((entity) => {
+        entityTemplatesFilteredByCategory = entityTemplates.filter((entity) => {
             return myPermissions.instancesPermissions.some(({ category }) => category === entity.category._id);
         });
     }
 
+    const activeEntityTemplatesFiltered = entityTemplatesFilteredByCategory.filter((entity) => !entity.disabled);
+
     return (
         <Autocomplete
             id="template"
-            options={entityTemplatesFiltered}
+            options={activeEntityTemplatesFiltered}
             onChange={(_e, value) => setFieldValue('template', value || '')}
             value={values.template._id ? values.template : null}
             getOptionLabel={(option) => option.displayName}

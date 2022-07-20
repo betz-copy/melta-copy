@@ -12,7 +12,7 @@ const mockEntites = (mock: MockAdapter) => {
 
         const countOfSearchedRows =
             faker.datatype.boolean() || rowsOfTemplate.length === 0 ? 0 : faker.datatype.number({ min: 1, max: rowsOfTemplate.length });
-        const searchedRows = faker.helpers.arrayElements(rowsOfTemplate, countOfSearchedRows);
+        const searchedRows = faker.random.arrayElements(rowsOfTemplate, countOfSearchedRows);
 
         return [
             200,
@@ -33,6 +33,8 @@ const mockEntites = (mock: MockAdapter) => {
                     lastName: 'קירל',
                     age: 20,
                     gender: false,
+                    firstFile: 'blabla.docx',
+                    disabled: faker.datatype.boolean(),
                     _id: config.url!.split('/').at(-1)!.split('?')[0],
                     createdAt: new Date(2345, 10, 1).toISOString(),
                     updatedAt: new Date(2346, 10, 1).toISOString(),
@@ -57,6 +59,7 @@ const mockEntites = (mock: MockAdapter) => {
                             _id: '123451234512345123451100',
                             createdAt: new Date(1111, 10, 1).toISOString(),
                             updatedAt: new Date(1111, 10, 1).toISOString(),
+                            disabled: false,
                         },
                     },
                 },
@@ -78,6 +81,7 @@ const mockEntites = (mock: MockAdapter) => {
                             _id: '123451234512345123451105',
                             createdAt: new Date(2345, 10, 1).toISOString(),
                             updatedAt: new Date(2346, 10, 1).toISOString(),
+                            disabled: false,
                         },
                     },
                 },
@@ -100,6 +104,7 @@ const mockEntites = (mock: MockAdapter) => {
                             _id: '123451234512345123451138',
                             createdAt: new Date(2345, 10, 1).toISOString(),
                             updatedAt: new Date(2346, 10, 1).toISOString(),
+                            disabled: false,
                         },
                     },
                 },
@@ -122,6 +127,7 @@ const mockEntites = (mock: MockAdapter) => {
                             _id: '123451234512345123451141',
                             createdAt: new Date(2345, 10, 1).toISOString(),
                             updatedAt: new Date(2346, 10, 1).toISOString(),
+                            disabled: false,
                         },
                     },
                 },
@@ -142,6 +148,7 @@ const mockEntites = (mock: MockAdapter) => {
                             _id: '123451234512345123451135',
                             createdAt: new Date(2345, 10, 1).toISOString(),
                             updatedAt: new Date(2346, 10, 1).toISOString(),
+                            disabled: false,
                         },
                     },
                 },
@@ -162,6 +169,7 @@ const mockEntites = (mock: MockAdapter) => {
                             _id: '123451234512345123451160',
                             createdAt: new Date(2345, 10, 1).toISOString(),
                             updatedAt: new Date(2346, 10, 1).toISOString(),
+                            disabled: false,
                         },
                     },
                 },
@@ -183,6 +191,7 @@ const mockEntites = (mock: MockAdapter) => {
                             startDate: '2017-11-29',
                             endDate: '2017-12-05',
                             _id: config.url!.split('/')[3],
+                            disabled: false,
                         },
                     },
                     {
@@ -194,6 +203,7 @@ const mockEntites = (mock: MockAdapter) => {
                             gender: true,
                             agentId: 'd4e5f6',
                             _id: '1001',
+                            disabled: false,
                         },
                     },
                     {
@@ -204,6 +214,7 @@ const mockEntites = (mock: MockAdapter) => {
                             age: 35,
                             gender: false,
                             _id: '1002',
+                            disabled: false,
                         },
                     },
                     {
@@ -214,6 +225,7 @@ const mockEntites = (mock: MockAdapter) => {
                             age: 36,
                             gender: false,
                             _id: '1003',
+                            disabled: false,
                         },
                     },
                     {
@@ -224,6 +236,7 @@ const mockEntites = (mock: MockAdapter) => {
                             age: 76,
                             gender: true,
                             _id: '1004',
+                            disabled: false,
                         },
                     },
                     {
@@ -234,6 +247,7 @@ const mockEntites = (mock: MockAdapter) => {
                             age: 43,
                             gender: true,
                             _id: '1005',
+                            disabled: false,
                         },
                     },
                     {
@@ -243,6 +257,7 @@ const mockEntites = (mock: MockAdapter) => {
                             color: 'שחור',
                             weight: 21,
                             _id: '1006',
+                            disabled: false,
                         },
                     },
                     {
@@ -251,6 +266,7 @@ const mockEntites = (mock: MockAdapter) => {
                             company: 'at&t',
                             number: 543458942,
                             _id: '1007',
+                            disabled: false,
                         },
                     },
                     {
@@ -259,6 +275,7 @@ const mockEntites = (mock: MockAdapter) => {
                             company: 'vodaphone',
                             number: 1958535628,
                             _id: '1008',
+                            disabled: false,
                         },
                     },
                     {
@@ -268,6 +285,7 @@ const mockEntites = (mock: MockAdapter) => {
                             color: 'שחור',
                             serialNumber: '13941231231',
                             _id: '1009',
+                            disabled: false,
                         },
                     },
                     {
@@ -277,6 +295,7 @@ const mockEntites = (mock: MockAdapter) => {
                             color: 'לבן',
                             serialNumber: '12365431231',
                             _id: '1010',
+                            disabled: false,
                         },
                     },
                     {
@@ -288,6 +307,7 @@ const mockEntites = (mock: MockAdapter) => {
                             checkOutDate: '2017-05-16',
                             country: 'צרפת',
                             _id: '1011',
+                            disabled: false,
                         },
                     },
                     {
@@ -298,6 +318,7 @@ const mockEntites = (mock: MockAdapter) => {
                             checkOutDate: '20173-04-09',
                             country: 'איטליה',
                             _id: '1012',
+                            disabled: false,
                         },
                     },
                     {
@@ -308,6 +329,7 @@ const mockEntites = (mock: MockAdapter) => {
                             expirtaionDate: '2026-01-19',
                             monthlyAmount: 6500,
                             _id: '1013',
+                            disabled: false,
                         },
                     },
                     {
@@ -318,6 +340,7 @@ const mockEntites = (mock: MockAdapter) => {
                             expirtaionDate: '2026-02-22',
                             monthlyAmount: 6500,
                             _id: '1014',
+                            disabled: false,
                         },
                     },
                     {
@@ -328,6 +351,7 @@ const mockEntites = (mock: MockAdapter) => {
                             checkOutDate: '2018-08-21',
                             country: 'משעמם',
                             _id: '1015',
+                            disabled: false,
                         },
                     },
                 ],
@@ -367,6 +391,7 @@ const mockEntites = (mock: MockAdapter) => {
                     age: 20,
                     gender: false,
                     _id: config.url!.split('/')[2].split('?')[0],
+                    disabled: false,
                 },
             },
         ];

@@ -46,8 +46,12 @@ const TemplateTable = forwardRef<
                         >
                             <FileDownloadOutlined color="primary" fontSize="medium" />
                         </IconButtonWithPopoverText>
-                        <AddEntityButton initialStep={1} initialValues={{ template, properties: {}, attachmentsProperties: {} }}>
-                            <AddCircle color="primary" fontSize="large" />
+                        <AddEntityButton
+                            initialStep={1}
+                            disabled={template.disabled}
+                            initialValues={{ template, properties: { disabled: false }, attachmentsProperties: {} }}
+                        >
+                            <AddCircle color={!template.disabled ? 'primary' : 'disabled'} fontSize="large" />
                         </AddEntityButton>
                     </Grid>
                 </Grid>

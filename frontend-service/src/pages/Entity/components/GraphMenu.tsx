@@ -21,13 +21,17 @@ const GraphMenu: React.FC<{
     const queryClient = useQueryClient();
     const relationshipTemplates = queryClient.getQueryData<IMongoRelationshipTemplate[]>('getRelationshipTemplates');
 
-    const { refetch: getExpandedData } = useQuery<IEntityExpanded>(['getExpandedEntity', node.id], () => getExpandedEntityByIdRequest(node.id), {
-        enabled: false,
-        onSuccess: (data) => {
-            const newGraphData = expandedEntityToGraphData(data, relationshipTemplates!);
-            addNewGraphData(newGraphData);
+    const { refetch: getExpandedData } = useQuery<IEntityExpanded>(
+        ['getExpandedEntity', node.id, false],
+        () => getExpandedEntityByIdRequest(node.id, { disabled: false }),
+        {
+            enabled: false,
+            onSuccess: (data) => {
+                const newGraphData = expandedEntityToGraphData(data, relationshipTemplates!);
+                addNewGraphData(newGraphData);
+            },
         },
-    });
+    );
 
     return (
         <MuiMenu

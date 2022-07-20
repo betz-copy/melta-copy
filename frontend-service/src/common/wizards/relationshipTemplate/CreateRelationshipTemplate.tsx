@@ -32,7 +32,7 @@ const CreateRelationshipTemplateName: React.FC<StepComponentProps<RelationshipTe
 }) => {
     const queryClient = useQueryClient();
 
-    const entityTemplates = queryClient.getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates')!;
+    const entityTemplates = queryClient.getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates')!.filter((entity) => !entity.disabled);
 
     const { data: areThereRelationshipInstancesByTemplateId } = useQuery(
         ['areThereRelationshipInstancesByTemplateId', (values as RelationshipTemplateWizardValues & { _id: string })._id],

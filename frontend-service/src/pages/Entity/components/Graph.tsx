@@ -7,7 +7,7 @@ import ForceGraph, { ForceGraphMethods, GraphData, NodeObject } from 'react-forc
 import { forceLink, forceManyBody } from 'd3-force';
 import { useQuery, useQueryClient } from 'react-query';
 import randomColor from 'randomcolor';
-import { useLocation, useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { GraphMenu } from './GraphMenu';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IEntityExpanded } from '../../../interfaces/entities';
@@ -24,7 +24,6 @@ const Graph: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> }
     const [width, setWidth] = useState(0);
     const [height, setHeight] = useState(0);
 
-    const { state } = useLocation() as { state: IEntityExpanded | undefined };
     const { entityId } = useParams() as { entityId: string };
     const navigate = useNavigate();
 
@@ -82,8 +81,8 @@ const Graph: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> }
     const [shouldZoomToFit, setShouldZoomToFit] = useState(true);
 
     const { refetch: getExpandedEntityById } = useQuery<IEntityExpanded>(
-        ['getExpandedEntity', entityId],
-        () => getExpandedEntityByIdRequest(entityId),
+        ['getExpandedEntity', entityId, false],
+        () => getExpandedEntityByIdRequest(entityId, { disabled: false }),
         {
             enabled: false,
         },
@@ -91,15 +90,9 @@ const Graph: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> }
 
     useEffect(() => {
         const setGraphDataOnStart = async () => {
-            let initialExpandedEntity: IEntityExpanded;
-            if (state) {
-                initialExpandedEntity = state;
-            } else {
-                const { data } = await getExpandedEntityById();
-                initialExpandedEntity = data!;
-            }
+            const { data: initialExpandedEntity } = await getExpandedEntityById();
 
-            const expandedEntityGraphData = getGraphDataWithNodeSizes(expandedEntityToGraphData(initialExpandedEntity, relationshipTemplates));
+            const expandedEntityGraphData = getGraphDataWithNodeSizes(expandedEntityToGraphData(initialExpandedEntity!, relationshipTemplates));
             setGraphData(expandedEntityGraphData);
         };
 

@@ -32,6 +32,7 @@ const Entity: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> 
     const entitiesTableRef = useRef<EntitiesTableOfTemplateRef>(null);
 
     const { data: expandedEntity } = useQuery(['getExpandedEntity', entityId], () => getExpandedEntityByIdRequest(entityId!));
+    const isEntityDisabled = expandedEntity?.entity.properties.disabled;
 
     const categories = queryClient.getQueryData<IMongoCategory[]>('getCategories')!;
     const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
@@ -168,14 +169,16 @@ const Entity: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> 
                         </TabList>
                     </Box>
                     {categoriesWithRelationshipTemplates?.map(({ _id, relationshipTemplates }, index) => {
-                        const disabled = Boolean(!myPermissions.instancesPermissions.find((instance) => instance.category === _id));
+                        const hasPermissionToCategory = Boolean(myPermissions.instancesPermissions.find((instance) => instance.category === _id));
+                        const canCreateRelationship = hasPermissionToCategory && !isEntityDisabled;
+
                         return (
                             <TabPanel key={_id} value={String(index)} sx={{ padding: 0 }}>
                                 {relationshipTemplates?.map((currRelationshipTemplate) => {
                                     return (
                                         <Grid key={currRelationshipTemplate._id}>
                                             <Grid container item justifyContent="space-between" marginBottom="10px">
-                                                <Grid item>
+                                                <Grid item marginTop="10px">
                                                     <RelationshipTitle
                                                         sourceEntityTemplateDisplayName={currRelationshipTemplate.sourceEntity.displayName}
                                                         relationshipTemplateDisplayName={currRelationshipTemplate.displayName}
@@ -187,12 +190,13 @@ const Entity: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> 
                                                     <ResetFilterButton entitiesTableRef={entitiesTableRef} />
                                                     <IconButtonWithPopoverText
                                                         popoverText={
-                                                            disabled
-                                                                ? i18next.t('permissions.dontHavePermissionsToCategory')
-                                                                : i18next.t('entitiesTableOfTemplate.addRelationship')
+                                                            hasPermissionToCategory
+                                                                ? i18next.t('entityPage.disabledEntity')
+                                                                : i18next.t('permissions.dontHavePermissionsToCategory')
                                                         }
+                                                        disabledToolTip={canCreateRelationship}
                                                         iconButtonProps={{
-                                                            disabled,
+                                                            disabled: !hasPermissionToCategory || isEntityDisabled,
                                                             onClick: () => {
                                                                 const { otherEntityTemplate, ...relationshipTemplatePopulated } =
                                                                     currRelationshipTemplate;
@@ -215,14 +219,7 @@ const Entity: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> 
                                                             },
                                                         }}
                                                     >
-                                                        <AddCircle
-                                                            color={
-                                                                !myPermissions.instancesPermissions.find((instance) => instance.category === _id)
-                                                                    ? 'disabled'
-                                                                    : 'primary'
-                                                            }
-                                                            fontSize="large"
-                                                        />
+                                                        <AddCircle color={canCreateRelationship ? 'primary' : 'disabled'} fontSize="large" />
                                                     </IconButtonWithPopoverText>
                                                 </Grid>
                                             </Grid>
@@ -231,15 +228,15 @@ const Entity: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> 
                                                 template={currRelationshipTemplate.otherEntityTemplate}
                                                 showNavigateToRowButton
                                                 deleteRowButtonProps={{
-                                                    popoverText: disabled
-                                                        ? i18next.t('permissions.dontHavePermissionsToCategory')
-                                                        : i18next.t('entityPage.deleteRelationshipPopoverText'),
+                                                    popoverText: hasPermissionToCategory
+                                                        ? i18next.t('entityPage.deleteRelationshipPopoverText')
+                                                        : i18next.t('permissions.dontHavePermissionsToCategory'),
                                                     onClick: (connectionToDelete) => {
                                                         setDeleteRelationshipDialogState({ open: true, connectionToDelete });
                                                     },
-                                                    disabled,
+                                                    disabled: !hasPermissionToCategory,
                                                 }}
-                                                disabledEntity={disabled}
+                                                disabledEntity={!hasPermissionToCategory}
                                                 getRowId={(connection) => {
                                                     return connection.relationship.properties._id;
                                                 }}

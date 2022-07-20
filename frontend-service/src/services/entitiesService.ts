@@ -7,21 +7,11 @@ import { EntityWizardValues } from '../common/wizards/entity';
 
 const { entities, relationships } = environment.api;
 
-const getAllEntitiesRequest = async () => {
-    const { data } = await axios.get<{ nodes: IEntity[]; links: any[] }>(`${entities}/all`);
-    return data;
-};
-
 const getEntitiesByTemplateRequest = async (
     templateId: string,
     agGridRequest: Pick<IServerSideGetRowsRequest, 'startRow' | 'endRow' | 'sortModel' | 'filterModel'> & { quickFilter?: string },
 ) => {
     const { data } = await axios.post<{ rows: IEntity[]; lastRowIndex: number }>(`${entities}/search`, agGridRequest, { params: { templateId } });
-    return data;
-};
-
-const getRelatedEntitiesByIdRequest = async (entityId: string) => {
-    const { data } = await axios.get<{ nodes: IEntity[]; links: any[] }>(`${entities}/${entityId}`);
     return data;
 };
 
@@ -41,6 +31,11 @@ const createEntityRequest = async (entity: EntityWizardValues) => {
     formData.append('properties', JSON.stringify(entity.properties));
     formData.append('templateId', entity.template._id);
     const { data } = await axios.post<IEntity>(entities, formData);
+    return data;
+};
+
+const updateEntityStatusRequest = async (entityId: string, disabled: boolean) => {
+    const { data } = await axios.patch<IEntity>(`${entities}/${entityId}/status`, { disabled });
     return data;
 };
 
@@ -69,12 +64,11 @@ const deleteEntityRequest = async (entityId: string) => {
 };
 
 export {
-    getAllEntitiesRequest,
     getEntitiesByTemplateRequest,
-    getRelatedEntitiesByIdRequest,
     createEntityRequest,
     deleteEntityRequest,
     getExpandedEntityByIdRequest,
     updateEntityRequest,
     getRelationshipInstancesCountByTemplateIdRequest,
+    updateEntityStatusRequest,
 };

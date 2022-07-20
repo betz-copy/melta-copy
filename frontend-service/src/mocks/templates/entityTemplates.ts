@@ -5,6 +5,7 @@ const entityTemplates = [
         _id: '61e3ea6e4d51a83e87e83c7e',
         name: 'trip',
         displayName: 'טיול',
+        disabled: false,
         category: {
             _id: '61e3dee74d51a83e87e83c7b',
             name: 'trips',
@@ -51,6 +52,7 @@ const entityTemplates = [
         _id: '61e3ea6e4d51a83e87e83c7f',
         name: 'tourist',
         displayName: 'תייר',
+        disabled: true,
         category: {
             _id: '61e3d8384d51a83e87e83c74',
             name: 'pepole',
@@ -90,6 +92,7 @@ const entityTemplates = [
         _id: '61e3ea6e4d51a83e87e83c80',
         name: 'travelAgent',
         displayName: 'סוכן נסיעות',
+        disabled: true,
         category: {
             _id: '61e3d8384d51a83e87e83c74',
             name: 'pepole',
@@ -128,6 +131,7 @@ const entityTemplates = [
         _id: '61e3ea6e4d51a83e87e83c81',
         name: 'flight',
         displayName: 'טיסה',
+        disabled: false,
         category: {
             _id: '61e3d8384d51a83e87e83c75',
             name: 'flights',
@@ -172,6 +176,7 @@ const entityTemplates = [
         _id: '61e3ea6e4d51a83e87e83c82',
         name: 'airport',
         displayName: 'שדה תעופה',
+        disabled: false,
         category: {
             _id: '61e3d8384d51a83e87e83c75',
             name: 'flights',
@@ -202,6 +207,7 @@ const entityTemplates = [
         _id: '61e3ea6e4d51a83e87e83c83',
         name: 'hotel',
         displayName: 'בית מלון',
+        disabled: false,
         category: {
             _id: '61e3d8384d51a83e87e83c76',
             name: 'hotels',
@@ -242,6 +248,7 @@ const entityTemplates = [
         _id: '61e3ea6e4d51a83e87e83c84',
         name: 'airbnb',
         displayName: 'אייר-ב.נ.ב',
+        disabled: false,
         category: {
             _id: '61e3d8384d51a83e87e83c76',
             name: 'hotels',
@@ -278,6 +285,7 @@ const entityTemplates = [
         _id: '61e3ea6e4d51a83e87e83c85',
         name: 'creditCard',
         displayName: 'כרטיס אשראי',
+        disabled: false,
         category: {
             _id: '61e3d8384d51a83e87e83c77',
             name: 'money',
@@ -314,6 +322,7 @@ const entityTemplates = [
         name: 'check',
         // eslint-disable-next-line quotes
         displayName: "צ'ק",
+        disabled: false,
         category: {
             _id: '61e3d8384d51a83e87e83c77',
             name: 'money',
@@ -340,6 +349,7 @@ const entityTemplates = [
         _id: '61e3ea6e4d51a83e87e83c87',
         name: 'phone',
         displayName: 'טלפון',
+        disabled: false,
         category: {
             _id: '61e3d8384d51a83e87e83c79',
             name: 'communcation',
@@ -370,6 +380,7 @@ const entityTemplates = [
         _id: '61e3ea6e4d51a83e87e83c88',
         name: 'sim',
         displayName: 'סים',
+        disabled: false,
         category: {
             _id: '61e3d8384d51a83e87e83c79',
             name: 'communcation',
@@ -396,6 +407,7 @@ const entityTemplates = [
         _id: '61e3ea6e4d51a83e87e83c89',
         name: 'suitcase',
         displayName: 'מזוודה',
+        disabled: false,
         category: {
             _id: '61e3d8384d51a83e87e83c78',
             name: 'things',

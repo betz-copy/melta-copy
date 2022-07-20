@@ -6,6 +6,7 @@ export interface IEntity {
         _id: string;
         createdAt: string;
         updatedAt: string;
+        disabled: boolean;
     } & Record<string, any>;
 }
 

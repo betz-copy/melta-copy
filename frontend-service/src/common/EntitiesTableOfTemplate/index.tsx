@@ -25,6 +25,7 @@ import { getEntitiesByTemplateRequest } from '../../services/entitiesService';
 import { getColumnDefs } from './getColumnDefs';
 import { trycatch } from '../../utils/trycatch';
 import { LocalStorage } from '../../utils/localStorage';
+import { objectFilter } from '../../utils/object';
 
 export const getDatasource = (
     templateId: IMongoEntityTemplatePopulated['_id'],
@@ -180,6 +181,10 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef, EntitiesT
                 <GlobalStyles styles={getGlobalStyles()} />
                 <AgGridReact
                     ref={gridRef}
+                    getRowStyle={(params) => {
+                        if (params.data && getEntityPropertiesData(params.data).disabled) return { background: 'rgb(159 147 147 / 16%)' };
+                        return { background: 'white' };
+                    }}
                     className="ag-theme-material"
                     containerStyle={{
                         width: '100%',
@@ -214,17 +219,30 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef, EntitiesT
                     suppressCellFocus
                     onFilterChanged={(params) => {
                         if (filterStorageProps.shouldSaveFilter) {
-                            if (Object.keys(params.api.getFilterModel()).length === 0) {
+                            const filterModel = params.api.getFilterModel();
+                            const filterModelKeys = Object.keys(filterModel);
+
+                            if (filterModelKeys.length === 1 && filterModelKeys[0] === 'disabled') {
                                 LocalStorage.remove(`tableFilter-${filterStorageProps.pageType}-${template._id}`);
                             } else {
-                                LocalStorage.set(`tableFilter-${filterStorageProps.pageType}-${template._id}`, params.api.getFilterModel());
+                                LocalStorage.set(
+                                    `tableFilter-${filterStorageProps.pageType}-${template._id}`,
+                                    objectFilter(filterModel, (field) => field !== 'disabled'),
+                                );
                             }
                         }
                     }}
                     suppressCsvExport
                     suppressContextMenu
                     onGridReady={(params) => {
-                        params.api.setFilterModel(LocalStorage.get(`tableFilter-${filterStorageProps.pageType}-${template._id}`));
+                        params.api.setFilterModel({
+                            disabled: {
+                                filterType: 'set',
+                                values: ['false'],
+                            },
+                            ...LocalStorage.get(`tableFilter-${filterStorageProps.pageType}-${template._id}`),
+                        });
+
                         params.columnApi.applyColumnState({ state: [{ colId: 'updatedAt', sort: 'desc' }] });
                     }}
                     defaultColDef={{

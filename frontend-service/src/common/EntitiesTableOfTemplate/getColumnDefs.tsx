@@ -34,6 +34,17 @@ export const getColumnDefs = <Data extends any>(
     });
 
     columnDefs.push(
+        booleanColDef(
+            'disabled',
+            ({ data }) => getEntityPropertiesData(data).disabled,
+            {
+                title: i18next.t('entitiesTableOfTemplate.disabledHeaderName'),
+            },
+            true,
+        ),
+    );
+
+    columnDefs.push(
         dateColDef(
             'createdAt',
             ({ data }) => getEntityPropertiesData(data).createdAt,

@@ -13,9 +13,13 @@ import { Header } from '../../../common/Header';
 import { SelectCheckbox } from '../../../common/SelectCheckbox';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { EntityTemplateWizard } from '../../../common/wizards/entityTemplate';
-import { deleteEntityTemplateRequest, entityTemplateObjectToEntityTemplateForm } from '../../../services/templates/enitityTemplatesService';
+import {
+    deleteEntityTemplateRequest,
+    entityTemplateObjectToEntityTemplateForm,
+    updateDisabledFieldEntityTemplateRequest,
+} from '../../../services/templates/enitityTemplatesService';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
-import { removeItemById } from '../../../utils/reactQuery';
+import { removeItemById, replaceItemById } from '../../../utils/reactQuery';
 import SearchInput from '../../../common/inputs/SearchInput';
 import { templatesCompareFunc } from '../../../utils/sortTemplates';
 import { ErrorToast } from '../../../common/ErrorToast';
@@ -45,16 +49,34 @@ const EntityTemplatesRow: React.FC = () => {
         entityTemplate: null,
     });
 
-    const { isLoading, mutateAsync } = useMutation((id: string) => deleteEntityTemplateRequest(id), {
-        onSuccess: (_data, id) => {
-            queryClient.setQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates', (prevData) => removeItemById(id, prevData));
-            setDeleteEntityTemplateDialogState({ isDialogOpen: false, entityTemplateId: null });
-            toast.success(i18next.t('wizard.entityTemplate.deletedSuccessfully'));
+    const { mutateAsync: updateDisabledMutateAsync } = useMutation(
+        (entityTemplate: IMongoEntityTemplatePopulated) => updateDisabledFieldEntityTemplateRequest(entityTemplate._id, entityTemplate),
+        {
+            onSuccess: (data) => {
+                queryClient.setQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates', (prevData) => replaceItemById(data, prevData));
+                if (data.disabled) toast.success(i18next.t('wizard.entityTemplate.disabledSuccessfully'));
+                else toast.success(i18next.t('wizard.entityTemplate.activatedSuccessfully'));
+            },
+            onError: (_err, variables) => {
+                if (variables.disabled) toast.error(i18next.t('wizard.entityTemplate.failedToActivate'));
+                else toast.error(i18next.t('wizard.entityTemplate.failedToDisable'));
+            },
         },
-        onError: (error: AxiosError) => {
-            toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.entityTemplate.failedToDelete')} />);
+    );
+
+    const { isLoading: deleteTemplateIsLoading, mutateAsync: deleteTemplateMutateAsync } = useMutation(
+        (id: string) => deleteEntityTemplateRequest(id),
+        {
+            onSuccess: (_data, id) => {
+                queryClient.setQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates', (prevData) => removeItemById(id, prevData));
+                setDeleteEntityTemplateDialogState({ isDialogOpen: false, entityTemplateId: null });
+                toast.success(i18next.t('wizard.entityTemplate.deletedSuccessfully'));
+            },
+            onError: (error: AxiosError) => {
+                toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.entityTemplate.failedToDelete')} />);
+            },
         },
-    });
+    );
 
     return (
         <Grid item container>
@@ -86,6 +108,7 @@ const EntityTemplatesRow: React.FC = () => {
                     .sort(templatesCompareFunc)
                     .filter((entityTemplate) => categoriesToShow.some((categoryToShow) => categoryToShow._id === entityTemplate.category._id))
                     .filter((entityTemplate) => searchText === '' || entityTemplate.displayName.includes(searchText))
+                    .sort((a, b) => Number(a.disabled) - Number(b.disabled))
                     .map((entityTemplate) => (
                         <ViewingCard
                             minWidth={250}
@@ -100,6 +123,12 @@ const EntityTemplatesRow: React.FC = () => {
                             }
                             onEditClick={() => setEntityTemplateWizardDialogState({ isWizardOpen: true, entityTemplate })}
                             onDeleteClick={() => setDeleteEntityTemplateDialogState({ isDialogOpen: true, entityTemplateId: entityTemplate._id })}
+                            onDisableClick={() => updateDisabledMutateAsync(entityTemplate)}
+                            disabledProps={{
+                                isDisabled: entityTemplate.disabled,
+                                canEdit: entityTemplate.disabled,
+                                tooltipTitle: i18next.t('systemManagement.disabledEntityTemplate'),
+                            }}
                         />
                     ))}
             </Grid>
@@ -112,8 +141,8 @@ const EntityTemplatesRow: React.FC = () => {
             <AreYouSureDialog
                 open={deleteEntityTemplateDialogState.isDialogOpen}
                 handleClose={() => setDeleteEntityTemplateDialogState({ isDialogOpen: false, entityTemplateId: null })}
-                onYes={() => mutateAsync(deleteEntityTemplateDialogState.entityTemplateId!)}
-                isLoading={isLoading}
+                onYes={() => deleteTemplateMutateAsync(deleteEntityTemplateDialogState.entityTemplateId!)}
+                isLoading={deleteTemplateIsLoading}
             />
         </Grid>
     );

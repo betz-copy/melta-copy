@@ -14,7 +14,7 @@ import { FileFields, fileFieldsSchema } from './FileFields';
 
 export interface EntityWizardValues {
     template: IMongoEntityTemplatePopulated;
-    properties: object;
+    properties: object & { disabled: boolean };
     attachmentsProperties: object;
 }
 
@@ -62,8 +62,9 @@ const EntityWizard: React.FC<WizardBaseType<EntityWizardValues>> = ({
             },
             propertiesOrder: [],
             propertiesPreview: [],
+            disabled: false,
         },
-        properties: {},
+        properties: { disabled: false },
         attachmentsProperties: {},
     },
     isEditMode = false,

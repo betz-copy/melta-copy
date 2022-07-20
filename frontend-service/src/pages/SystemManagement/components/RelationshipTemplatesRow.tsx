@@ -134,6 +134,11 @@ const RelationshipTemplatesRow: React.FC = () => {
                         <ViewingCard
                             minWidth={350}
                             key={relationshipTemplate._id}
+                            disabledProps={{
+                                isDisabled: false,
+                                canEdit: relationshipTemplate.sourceEntity.disabled || relationshipTemplate.destinationEntity.disabled,
+                                tooltipTitle: i18next.t('systemManagement.disabledEntityTemplate'),
+                            }}
                             title={
                                 <RelationshipTitle
                                     sourceEntityTemplateDisplayName={relationshipTemplate.sourceEntity.displayName}

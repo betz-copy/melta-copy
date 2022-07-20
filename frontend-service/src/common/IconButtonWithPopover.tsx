@@ -1,15 +1,18 @@
-import React from 'react';
+import React, { CSSProperties } from 'react';
 import { IconButton, Tooltip } from '@mui/material';
 
 const IconButtonWithPopoverText: React.FC<{
     iconButtonProps: React.ComponentProps<typeof IconButton>;
     popoverText: string;
     disabledToolTip?: boolean;
-}> = ({ children, iconButtonProps, popoverText, disabledToolTip = false }) => {
+    style?: CSSProperties;
+}> = ({ children, iconButtonProps, popoverText, disabledToolTip = false, style }) => {
     return (
-        <Tooltip title={popoverText} followCursor disableHoverListener={disabledToolTip}>
+        <Tooltip title={popoverText} disableHoverListener={disabledToolTip} arrow>
             <span>
-                <IconButton {...iconButtonProps}>{children}</IconButton>
+                <IconButton {...iconButtonProps} style={style}>
+                    {children}
+                </IconButton>
             </span>
         </Tooltip>
     );
