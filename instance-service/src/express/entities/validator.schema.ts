@@ -12,12 +12,12 @@ export const getEntityByIdRequestSchema = Joi.object({
 });
 
 /**
- * POST /api/instances/entities/:id
+ * POST /api/instances/entities/expanded/:id
  */
 export const getExpandedEntityByIdRequestSchema = Joi.object({
     query: {},
     body: {
-        disabled: Joi.boolean().default(false),
+        disabled: Joi.boolean(),
     },
     params: {
         id: Joi.string().required(),

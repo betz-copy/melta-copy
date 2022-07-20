@@ -1,4 +1,5 @@
 import assert from 'assert';
+import { isBoolean } from './lib';
 import { formatDate } from './neo4j/lib';
 
 export interface IAGGridTextFilter {
@@ -42,8 +43,6 @@ export interface IAGGridRequest {
     quickFilter?: string;
     sortModel: IAGGridSort[];
 }
-
-const isBoolean = (value: string) => value === 'true' || value === 'false';
 
 export const setFilterToQuery = (field: string, { values }: IAGGridSetFilter) => {
     const valuesWithoutNulls = values.filter(Boolean) as string[];
