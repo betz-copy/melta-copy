@@ -25,8 +25,8 @@ const getRelatedEntitiesByIdRequest = async (entityId: string) => {
     return data;
 };
 
-const getExpandedEntityByIdRequest = async (entityId: string) => {
-    const { data } = await axios.get<IEntityExpanded>(`${entities}/${entityId}?expanded=true`);
+const getExpandedEntityByIdRequest = async (entityId: string, options?: { disabled?: boolean }) => {
+    const { data } = await axios.post<IEntityExpanded>(`${entities}/expanded/${entityId}`, options);
     return data;
 };
 
