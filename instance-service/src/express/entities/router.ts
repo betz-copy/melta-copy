@@ -11,6 +11,7 @@ import {
     updateEntityByIdRequestSchema,
     getEntitiesRequestSchema,
     updateEntityStatusByIdRequestSchema,
+    getExpandedEntityByIdRequestSchema,
 } from './validator.schema';
 
 const entityRouter: Router = Router();
@@ -23,6 +24,7 @@ entityRouter.post(
     wrapController(EntityController.createEntity),
 );
 entityRouter.post('/search', ValidateRequest(getEntitiesRequestSchema), wrapController(EntityController.getEntities));
+entityRouter.post('/expanded/:id', ValidateRequest(getExpandedEntityByIdRequestSchema), wrapController(EntityController.getExpandedEntityById));
 entityRouter.get('/:id', ValidateRequest(getEntityByIdRequestSchema), wrapController(EntityController.getEntityById));
 entityRouter.delete('/:id', ValidateRequest(deleteEntityByIdRequestSchema), wrapController(EntityController.deleteEntityById));
 entityRouter.delete('/', ValidateRequest(deleteEntitiesByTemplateIdRequestSchema), wrapController(EntityController.deleteEntitiesByTemplateId));

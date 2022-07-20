@@ -66,9 +66,9 @@ export class EntityManager {
         return node;
     }
 
-    static async getExpandedEntityById(id: string) {
+    static async getExpandedEntityById(id: string, disabled: boolean) {
         const nodeAndConnections = await Neo4jClient.readTransaction(
-            `MATCH (n {_id:'${id}'}) OPTIONAL MATCH (n)-[r]-(m) return n,r,m`,
+            `MATCH (n {_id:'${id}'}) OPTIONAL MATCH (n)-[r]-(m {disabled: ${disabled}}) return n,r,m`,
             normalizeReturnedRelAndEntities,
         );
 
@@ -124,7 +124,7 @@ export class EntityManager {
 
             const normalizedEntity = normalizeReturnedEntity()(entity) as IEntity;
 
-            if (!entity) {
+            if (!normalizedEntity) {
                 throw new NotFoundError(`[NEO4J] entity "${id}" not found`);
             }
 
@@ -134,7 +134,7 @@ export class EntityManager {
 
             const updatedEntity = await transaction.run(
                 `MATCH (e {_id: '${id}'})
-                 WITH e.createdAt as createdAt, e.disabled AS disabled, e AS e
+                 WITH e.createdAt AS createdAt, e.disabled AS disabled, e AS e
                  SET e = $props 
                  SET e.createdAt = createdAt
                  SET e.disabled = disabled 

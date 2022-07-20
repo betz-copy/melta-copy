@@ -11,15 +11,15 @@ class EntityController {
     }
 
     static async getEntityById(req: Request, res: Response) {
-        const { expanded } = req.query;
+        res.json(await EntityManager.getEntityById(req.params.id));
+    }
 
-        res.json(expanded ? await EntityManager.getExpandedEntityById(req.params.id) : await EntityManager.getEntityById(req.params.id));
+    static async getExpandedEntityById(req: Request, res: Response) {
+        res.json(await EntityManager.getExpandedEntityById(req.params.id, req.body.disabled as unknown as boolean));
     }
 
     static async deleteEntityById(req: Request, res: Response) {
-        const { deleteAllRelationships } = req.query;
-
-        res.json(await EntityManager.deleteEntityById(req.params.id, deleteAllRelationships as unknown as boolean));
+        res.json(await EntityManager.deleteEntityById(req.params.id, req.query.deleteAllRelationships as unknown as boolean));
     }
 
     static async deleteEntitiesByTemplateId(req: Request, res: Response) {

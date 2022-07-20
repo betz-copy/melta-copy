@@ -1276,7 +1276,10 @@ describe('e2e ag-grid entities tests', () => {
     describe('Check global search', () => {
         beforeAll(async () => {
             // Configure global search index in neo4j
-            await Neo4jClient.writeTransaction(`CREATE FULLTEXT INDEX globalSearchTest FOR (n: \`${defaultTemplateId}\`) ON EACH [n.name]`, () => {});
+            await Neo4jClient.writeTransaction(
+                `CALL db.index.fulltext.createNodeIndex('globalSearchTest',['${defaultTemplateId}'],['name'])`,
+                () => {},
+            );
 
             // Configure redis and set latest index
             await RedisClient.initialize(redis.url);
@@ -1288,7 +1291,7 @@ describe('e2e ag-grid entities tests', () => {
 
         afterAll(async () => {
             // Delete global search index in neo4j
-            await Neo4jClient.writeTransaction(`DROP INDEX globalSearchTest`, () => {});
+            await Neo4jClient.writeTransaction(`CALL db.index.fulltext.drop('globalSearchTest')`, () => {});
 
             // Delete latest index in redis
             const redisClient = RedisClient.getClient();

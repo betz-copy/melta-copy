@@ -191,7 +191,7 @@ describe('Entity router', () => {
         });
     });
 
-    describe('GET /api/instances/entities/:id?expanded=true', () => {
+    describe('POST /api/instances/entities/expanded/:id', () => {
         let id: string;
 
         beforeEach(async () => {
@@ -201,7 +201,7 @@ describe('Entity router', () => {
         });
 
         it('Should get an existing entity (expanded mode - without connections)', async () => {
-            const res = await request(app).get(`/api/instances/entities/${id}?expanded=true`);
+            const res = await request(app).post(`/api/instances/entities/expanded/${id}`).send({ disabled: false });
 
             expect(res.statusCode).toBe(200);
             expect(res.body).toBeDefined();
@@ -213,7 +213,7 @@ describe('Entity router', () => {
         it('Should fail to get an existing entity (expanded mode - without connections)', async () => {
             const unknownId = 'unknown_id';
 
-            const res = await request(app).get(`/api/instances/entities/${unknownId}?expanded=true`);
+            const res = await request(app).post(`/api/instances/entities/expanded/${unknownId}`).send({ disabled: false });
 
             expect(res.statusCode).toBe(404);
             expect(res.body.type).toEqual('NotFound');
@@ -311,6 +311,23 @@ describe('Entity router', () => {
             const res = await request(app).delete(`/api/instances/entities?templateId=${defaultTemplateId}`);
 
             expect(res.statusCode).toBe(200);
+        });
+    });
+
+    describe(`PATCH /api/instances/entities/:id/status`, () => {
+        let id: string;
+
+        beforeEach(async () => {
+            const entity = await request(app).post('/api/instances/entities').send(defaultEntity);
+
+            id = entity.body.properties._id;
+        });
+
+        it('Should update the disabled state of an existing entity', async () => {
+            const res = await request(app).patch(`/api/instances/entities/${id}/status`).send({ disabled: true });
+
+            expect(res.statusCode).toBe(200);
+            expect(res.body.properties.disabled).toEqual(true);
         });
     });
 });

@@ -41,9 +41,9 @@ describe('Entity manager', () => {
     describe('Update entity', () => {
         let id: string;
 
+        const unknownId = 'unknown_id';
         const newProperties = {
             testProp: 'newTestProp',
-            disabled: true,
         };
 
         beforeEach(async () => {
@@ -61,11 +61,19 @@ describe('Entity manager', () => {
         });
 
         it('Should fail to update an entity', async () => {
-            const unknownId = 'unknown_id';
-
             await expect(() => EntityManager.updateEntityById(unknownId, newProperties)).rejects.toThrowError(
                 `[NEO4J] entity "${unknownId}" not found`,
             );
+        });
+
+        it('Should fail to update an entity (disabled status) + unknown id', async () => {
+            await expect(() => EntityManager.updateStatusById(unknownId, true)).rejects.toThrowError(`[NEO4J] entity "${unknownId}" not found`);
+        });
+
+        it('Should fail to update an entity (disabled status)', async () => {
+            await EntityManager.updateStatusById(id, true);
+
+            await expect(() => EntityManager.updateEntityById(id, newProperties)).rejects.toThrowError(`[NEO4J] cannot update disabled entity.`);
         });
     });
 
@@ -103,7 +111,7 @@ describe('Entity manager', () => {
         });
 
         it('Should get an entity by id (expanded mode - without connections)', async () => {
-            const res = await EntityManager.getExpandedEntityById(id);
+            const res = await EntityManager.getExpandedEntityById(id, false);
 
             expect(res.entity.templateId).toBe(defaultTemplateId);
             expect(res.entity.properties).toEqual(expect.objectContaining(defaultProperties));
@@ -113,7 +121,7 @@ describe('Entity manager', () => {
         it('Should fail to get an entity (expanded mode - without connections)', async () => {
             const unknownId = 'unknown_id';
 
-            await expect(() => EntityManager.getExpandedEntityById(unknownId)).rejects.toThrowError(`[NEO4J] entity "${unknownId}" not found`);
+            await expect(() => EntityManager.getExpandedEntityById(unknownId, false)).rejects.toThrowError(`[NEO4J] entity "${unknownId}" not found`);
         });
 
         describe('With connections', () => {
@@ -132,8 +140,16 @@ describe('Entity manager', () => {
                 });
             });
 
+            it('Should get an entity by id (without connections)', async () => {
+                const res = await EntityManager.getExpandedEntityById(id, true);
+
+                expect(res.entity.templateId).toBe(defaultTemplateId);
+                expect(res.entity.properties).toEqual(expect.objectContaining(defaultProperties));
+                expect(res.connections.length).toStrictEqual(0);
+            });
+
             it('Get entity and its connections', async () => {
-                const res = await EntityManager.getExpandedEntityById(id);
+                const res = await EntityManager.getExpandedEntityById(id, false);
 
                 expect(res).toBeDefined();
                 expect(res.entity.templateId).toBe(defaultTemplateId);

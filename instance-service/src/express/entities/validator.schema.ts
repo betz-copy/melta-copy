@@ -4,10 +4,21 @@ import Joi from 'joi';
  * GET /api/instances/entities/:id
  */
 export const getEntityByIdRequestSchema = Joi.object({
-    query: {
-        expanded: Joi.boolean().default(false),
-    },
+    query: {},
     body: {},
+    params: {
+        id: Joi.string().required(),
+    },
+});
+
+/**
+ * POST /api/instances/entities/:id
+ */
+export const getExpandedEntityByIdRequestSchema = Joi.object({
+    query: {},
+    body: {
+        disabled: Joi.boolean().default(false),
+    },
     params: {
         id: Joi.string().required(),
     },
