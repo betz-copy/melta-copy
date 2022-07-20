@@ -43,7 +43,7 @@ export const createEntityTemplateSchema = Joi.object({
         name: Joi.string().required(),
         displayName: Joi.string().required(),
         category: Joi.string().required(),
-        disabled: Joi.boolean().default(false),
+        disabled: Joi.boolean().valid(false),
         properties: ExtendedJoi.stringToObject().required(),
         propertiesOrder: ExtendedJoi.stringToArray().required(),
         propertiesPreview: ExtendedJoi.stringToArray().required(),

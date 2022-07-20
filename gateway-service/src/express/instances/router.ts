@@ -49,6 +49,7 @@ InstancesRouter.delete(
     wrapMiddleware(validateUserCanUpdateGetOrDeleteEntityInstance),
     wrapController(InstancesController.deleteEntityInstance),
 );
+InstancesRouter.patch('/entities/:id/status', wrapMiddleware(validateUserCanUpdateGetOrDeleteEntityInstance), InstanceManagerProxy);
 
 // relationships (Instances)
 InstancesRouter.post('/relationships', wrapMiddleware(validateUserCanCreateRelationshipInstance), InstanceManagerProxy);

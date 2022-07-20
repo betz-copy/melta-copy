@@ -1,5 +1,6 @@
 import { AxiosError } from 'axios';
 import * as lodashUniqby from 'lodash.uniqby';
+import * as _isEqual from 'lodash.isequal';
 import { EntityTemplateManagerService, ICategory, IEntityTemplate, ISearchEntityTemplatesBody } from '../../externalServices/entityTemplateManager';
 import { InstanceManagerService } from '../../externalServices/instanceManager';
 import { IRelationshipTemplate, RelationshipsTemplateManagerService } from '../../externalServices/relationshipsTemplateManager';
@@ -195,6 +196,40 @@ export class TemplatesManager {
         const { rows } = await InstanceManagerService.getInstancesByTemplateId(id, { startRow: 0, endRow: 0, sortModel: [], filterModel: {} });
         const currTemplate = await EntityTemplateManagerService.getEntityTemplateById(id);
 
+        if (currTemplate.disabled === true && updatedTemplate.disabled === true) throw new ServiceError(400, 'can not update disabled template');
+
+        if (
+            (currTemplate.disabled === false && updatedTemplate.disabled === true) ||
+            (currTemplate.disabled === true && updatedTemplate.disabled === false)
+        ) {
+            const {
+                displayName: currTemplateDisplayName,
+                name: currTemplateName,
+                category: { _id: currTemplateNameCategoryId },
+                properties: currTemplateProperties,
+                propertiesOrder: currTemplatePropertiesOrder,
+                propertiesPreview: currTemplatePropertiessPreview,
+            } = currTemplate;
+
+            const { disabled: updatedTemplateDisabled, ...restOfUpdatedTemplate } = updatedTemplate;
+
+            if (
+                !_isEqual(
+                    {
+                        displayName: currTemplateDisplayName,
+                        name: currTemplateName,
+                        category: currTemplateNameCategoryId,
+                        properties: currTemplateProperties,
+                        propertiesOrder: currTemplatePropertiesOrder,
+                        propertiesPreview: currTemplatePropertiessPreview,
+                    },
+                    restOfUpdatedTemplate,
+                )
+            ) {
+                throw new ServiceError(400, 'can not change disabled properties');
+            }
+        }
+
         if (rows.length > 0) {
             if (updatedTemplate.category) {
                 await EntityTemplateManagerService.getCategoryById(updatedTemplate.category);
@@ -260,6 +295,13 @@ export class TemplatesManager {
         await TemplatesManager.throwIfEntityTemplateDoesntExist(sourceEntityId, 'source entity of relation doesnt exist');
         await TemplatesManager.throwIfEntityTemplateDoesntExist(destinationEntityId, 'destination entity of relation doesnt exist');
 
+        const { disabled: sourceEntityDisabled } = await EntityTemplateManagerService.getEntityTemplateById(sourceEntityId);
+        const { disabled: destinationEntityDisabled } = await EntityTemplateManagerService.getEntityTemplateById(destinationEntityId);
+
+        if (sourceEntityDisabled === true || destinationEntityDisabled === true) {
+            throw new ServiceError(400, 'can not create relationship template with disabled entity');
+        }
+
         return RelationshipsTemplateManagerService.createRelationshipTemplate(relationshipTemplate);
     }
 
@@ -274,6 +316,13 @@ export class TemplatesManager {
 
         const relationshipCount = await InstanceManagerService.getRelationshipsCountByTemplateId(templateId);
         const currTemplate = await RelationshipsTemplateManagerService.getRelationshipTemplateById(templateId);
+
+        const { disabled: sourceEntityDisabled } = await EntityTemplateManagerService.getEntityTemplateById(currTemplate.sourceEntityId);
+        const { disabled: destinationEntityDisabled } = await EntityTemplateManagerService.getEntityTemplateById(currTemplate.destinationEntityId);
+
+        if (sourceEntityDisabled === true || destinationEntityDisabled === true) {
+            throw new ServiceError(400, 'can not update relationship template with disabled entity');
+        }
 
         if (relationshipCount > 0) {
             if (updatedFields.name !== currTemplate.name) throw new ServiceError(400, 'can not change template name');
