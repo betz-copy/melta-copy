@@ -30,7 +30,7 @@ export const validateUserCanSearchEntityInstances = async (req: Request) => {
 export const validateUserCanUpdateGetOrDeleteEntityInstance = async (req: Request) => {
     const instanceId = req.params.id;
 
-    const { templateId } = await InstanceManagerService.getEntityInstanceById(instanceId, false);
+    const { templateId } = await InstanceManagerService.getEntityInstanceById(instanceId);
 
     const categoryId = await getCategoryIdFromTemplateId(templateId);
 

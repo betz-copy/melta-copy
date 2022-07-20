@@ -28,6 +28,7 @@ const InstancesRouter: Router = Router();
 InstancesRouter.post('/entities/search', wrapMiddleware(validateUserCanSearchEntityInstances), InstanceManagerProxy);
 
 InstancesRouter.get('/entities/:id', wrapMiddleware(validateUserCanUpdateGetOrDeleteEntityInstance), InstanceManagerProxy);
+InstancesRouter.post('/entities/expanded/:id', wrapMiddleware(validateUserCanUpdateGetOrDeleteEntityInstance), InstanceManagerProxy);
 InstancesRouter.post(
     '/entities',
     multer({ dest: config.service.uploadsFolderPath }).any(),

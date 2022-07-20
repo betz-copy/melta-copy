@@ -59,7 +59,7 @@ export class InstancesManager {
     static async updateEntityInstance(id: string, instanceData: IEntity, files: Express.Multer.File[]) {
         const uploadedFilesProperties = await InstancesManager.uploadInstanceFiles(files);
 
-        const currentEntity = await InstanceManagerService.getEntityInstanceById(id, false);
+        const currentEntity = await InstanceManagerService.getEntityInstanceById(id);
 
         const updatedInstace = await InstanceManagerService.updateEntityInstance(id, {
             templateId: instanceData.templateId,
@@ -90,7 +90,7 @@ export class InstancesManager {
     }
 
     static async deleteEntityInstance(id: string) {
-        const currentEntity = await InstanceManagerService.getEntityInstanceById(id, false);
+        const currentEntity = await InstanceManagerService.getEntityInstanceById(id);
         const deletedInstance = await InstanceManagerService.deleteEntityInstance(id);
 
         const { err } = await trycatch(() => InstancesManager.deleteAllEntityFiles(currentEntity));

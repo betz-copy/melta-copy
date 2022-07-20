@@ -30,8 +30,8 @@ export class InstanceManagerService {
     private static InstanceManagerApi = axios.create({ baseURL: uri, timeout: requestTimeout });
 
     // entity instances
-    static async getEntityInstanceById(id: string, expanded: boolean) {
-        const { data } = await this.InstanceManagerApi.get<IEntity>(`${baseEntitiesRoute}/${id}`, { params: { expanded } });
+    static async getEntityInstanceById(id: string) {
+        const { data } = await this.InstanceManagerApi.get<IEntity>(`${baseEntitiesRoute}/${id}`);
 
         return data;
     }
