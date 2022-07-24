@@ -1,6 +1,8 @@
 import React, { forwardRef, useImperativeHandle, useState } from 'react';
+import i18next from 'i18next';
 import { LocalizationProvider, MobileDatePicker } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import heLocale from 'date-fns/locale/he';
 import { TextField } from '@mui/material';
 
 const DateFilterComponent: React.FC<{ onDateChanged: () => void }> = forwardRef(({ onDateChanged }, ref) => {
@@ -22,7 +24,11 @@ const DateFilterComponent: React.FC<{ onDateChanged: () => void }> = forwardRef(
     }));
 
     return (
-        <LocalizationProvider dateAdapter={AdapterDateFns}>
+        <LocalizationProvider
+            dateAdapter={AdapterDateFns}
+            adapterLocale={heLocale}
+            localeText={i18next.t('muiDatePickersLocaleText', { returnObjects: true })}
+        >
             <MobileDatePicker
                 inputFormat="dd/MM/yyyy"
                 value={dateValue}

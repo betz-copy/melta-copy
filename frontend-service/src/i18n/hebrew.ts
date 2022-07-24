@@ -1,5 +1,6 @@
 import { environment } from '../globals';
 import { agGridLocaleText } from '../utils/agGrid/agGridLocaleText';
+import { muiDatePickersLocaleText } from '../utils/datePickers';
 
 export default {
     category: 'קטגוריה',
@@ -267,4 +268,5 @@ export default {
         RELATIONSHIP_ALREADY_EXISTS: 'הקשר קיים כבר',
     },
     agGridLocaleText,
+    muiDatePickersLocaleText,
 };
