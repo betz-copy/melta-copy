@@ -5,6 +5,7 @@ import addFormats from 'ajv-formats';
 import i18next from 'i18next';
 import { FormikErrors, FormikHelpers, FormikTouched } from 'formik';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { RjfsDateWidget, RjfsDateTimeWidget } from './RjfsDatesWidgets';
 import RjfsSelectWidget from './RjfsSelectWidget';
 import { objectFilter, objectMap } from '../../../utils/object';
 
@@ -73,7 +74,11 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({ schema, 
             noValidate
             extraErrors={ajvExtraErrorsOnlyTouched}
             tagName="div"
-            widgets={{ SelectWidget: RjfsSelectWidget }}
+            widgets={{
+                SelectWidget: RjfsSelectWidget,
+                DateWidget: RjfsDateWidget,
+                DateTimeWidget: RjfsDateTimeWidget,
+            }}
         >
             <div /> {/* remove the built in submit button */}
         </JSONSchemaForm>
