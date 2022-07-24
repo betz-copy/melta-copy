@@ -12,7 +12,7 @@ const mockEntites = (mock: MockAdapter) => {
 
         const countOfSearchedRows =
             faker.datatype.boolean() || rowsOfTemplate.length === 0 ? 0 : faker.datatype.number({ min: 1, max: rowsOfTemplate.length });
-        const searchedRows = faker.random.arrayElements(rowsOfTemplate, countOfSearchedRows);
+        const searchedRows = faker.helpers.arrayElements(rowsOfTemplate, countOfSearchedRows);
 
         return [
             200,
