@@ -1,19 +1,9 @@
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable no-shadow */
-import React, { useContext } from 'react';
+import React from 'react';
 import { WidgetProps, utils } from '@rjsf/core';
-import { MuiComponentContext } from '@rjsf/material-ui';
 import i18next from 'i18next';
-
-export function useMuiComponent() {
-    const muiComponents = useContext(MuiComponentContext);
-
-    if (!muiComponents) {
-        throw new Error('Either v4 or v5 of material-ui components and icons must be installed as dependencies');
-    }
-
-    return muiComponents;
-}
+import { useMuiComponent } from './rjsfUseMuiComponent';
 
 const { asNumber, guessType } = utils;
 

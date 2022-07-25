@@ -1,7 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable no-shadow */
 import React from 'react';
-import { styled, TextField } from '@mui/material';
+import { styled } from '@mui/material';
 import i18next from 'i18next';
 import { WidgetProps, utils } from '@rjsf/core';
 import { LocalizationProvider, MobileDatePicker, MobileDateTimePicker } from '@mui/x-date-pickers';
@@ -9,6 +9,7 @@ import heLocale from 'date-fns/locale/he';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { DateTimePickerToolbar, dateTimePickerToolbarClasses } from '@mui/x-date-pickers/DateTimePicker/DateTimePickerToolbar';
 import { BaseToolbarProps } from '@mui/x-date-pickers/internals';
+import { useMuiComponent } from './rjsfUseMuiComponent';
 
 const CustomDateTimePickerToolbar = styled(DateTimePickerToolbar)({
     [`& .${dateTimePickerToolbarClasses.timeContainer}`]: {
@@ -42,6 +43,7 @@ const getRjfsDateOrDateTimeWidget =
         registry,
         ...textFieldProps
     }: WidgetProps) => {
+        const { TextField } = useMuiComponent();
         const _onBlur = ({ target: { value } }: React.FocusEvent<HTMLInputElement>) => onBlur(id, value);
         const _onFocus = ({ target: { value } }: React.FocusEvent<HTMLInputElement>) => onFocus(id, value);
 
