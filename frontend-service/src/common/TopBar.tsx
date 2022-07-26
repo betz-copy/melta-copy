@@ -14,7 +14,7 @@ const TopBar = forwardRef<HTMLDivElement, { title: string }>(({ title }, ref) =>
                 paddingBottom="0.4rem"
                 marginBottom="1rem"
             >
-                <BlueTitle title={title} component="h3" variant="h3" />
+                <BlueTitle title={title} component="h4" variant="h4" />
             </Box>
         );
     }

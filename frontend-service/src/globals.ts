@@ -13,7 +13,8 @@ export const environment = {
         getAllPermissions: '/permissions',
         createPermissionsBulk: '/permissions/bulk',
         deletePermissionsBulk: '/permissions',
-        searchUsers: '/users/search',
+        users: '/users',
+        activityLog: '/activity-log',
     },
     graphSettings: {
         // TODO: instead of here get this from the backend ( so it could be configurable ) + dont allow range overlaps ( validation )

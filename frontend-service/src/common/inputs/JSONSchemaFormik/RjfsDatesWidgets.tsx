@@ -79,17 +79,20 @@ const getRjfsDateOrDateTimeWidget =
                     showToolbar
                     componentsProps={{ actionBar: { actions: ['clear', 'cancel', 'accept'] } }}
                     label={displayLabel ? label || schema.title : false}
-                    renderInput={(params) => (
-                        <TextField
-                            {...textFieldProps}
-                            {...params}
-                            id={id}
-                            required={required}
-                            onBlur={_onBlur}
-                            onFocus={_onFocus}
-                            error={rawErrors.length > 0}
-                        />
-                    )}
+                    renderInput={(params) => {
+                        return (
+                            // @ts-ignore
+                            <TextField
+                                {...textFieldProps}
+                                {...params}
+                                id={id}
+                                required={required}
+                                onBlur={_onBlur}
+                                onFocus={_onFocus}
+                                error={rawErrors.length > 0}
+                            />
+                        );
+                    }}
                     readOnly={readonly}
                     disabled={disabled}
                     autoFocus={autofocus}
