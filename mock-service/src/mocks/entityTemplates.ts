@@ -138,10 +138,15 @@ export const entityTemplates = [
                     type: 'string',
                     title: 'סוג המטוס',
                 },
+                seatType: {
+                    type: 'string',
+                    title: 'סוג מושב',
+                    enum: ['ביזנס', 'עסקים', 'תיירים פלוס', 'תיירים'],
+                },
             },
             required: ['flightNumber', 'departureDate', 'landingDate'],
         },
-        propertiesOrder: ['flightNumber', 'departureDate', 'landingDate', 'from', 'to', 'planeType'],
+        propertiesOrder: ['flightNumber', 'departureDate', 'landingDate', 'from', 'to', 'planeType', 'seatType'],
         propertiesPreview: ['flightNumber', 'from', 'to'],
     },
     {
