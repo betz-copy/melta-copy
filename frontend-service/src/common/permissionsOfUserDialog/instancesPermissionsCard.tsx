@@ -1,12 +1,14 @@
 import React from 'react';
 import { Card, CardContent, Checkbox, CheckboxProps, FormControlLabel, FormGroup, Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
+import CheckboxReadOnly from './CheckboxReadOnly';
 
 const InstancesPermissionsCard: React.FC<{
     categoriesCheckboxProps: {
         categoryId: string;
         categoryDisplayName: string;
         disabled: boolean;
+        readOnly: boolean;
         checked: boolean;
         onChange: CheckboxProps['onChange'];
     }[];
@@ -21,16 +23,18 @@ const InstancesPermissionsCard: React.FC<{
             <CardContent>
                 <Grid container direction="column" spacing={3}>
                     <Grid item container justifyContent="space-between" alignItems="center">
-                        <Typography>{i18next.t('permissions.permissionsOfUserDialog.instancesPermissions')}</Typography>
+                        <Typography style={{ fontWeight: 'bold', cursor: 'default' }}>
+                            {i18next.t('permissions.permissionsOfUserDialog.instancesPermissions')}
+                        </Typography>
 
                         <FormGroup row>
-                            {categoriesCheckboxProps.map(({ categoryId, categoryDisplayName, disabled, checked, onChange }) => (
+                            {categoriesCheckboxProps.map(({ categoryId, categoryDisplayName, disabled, readOnly, checked, onChange }) => (
                                 <FormControlLabel
                                     key={categoryId}
                                     label={categoryDisplayName}
                                     labelPlacement="bottom"
                                     disabled={disabled}
-                                    control={<Checkbox checked={checked} onChange={onChange} />}
+                                    control={readOnly ? <CheckboxReadOnly checked={checked} /> : <Checkbox checked={checked} onChange={onChange} />}
                                 />
                             ))}
                         </FormGroup>

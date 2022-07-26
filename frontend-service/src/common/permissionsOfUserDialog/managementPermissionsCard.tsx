@@ -1,8 +1,9 @@
 import React from 'react';
 import i18next from 'i18next';
 import { Card, CardContent, Checkbox, CheckboxProps, FormControlLabel, FormGroup, Typography } from '@mui/material';
+import CheckboxReadOnly from './CheckboxReadOnly';
 
-type ManagementCheckboxProps = { disabled: boolean; checked: boolean; onChange: CheckboxProps['onChange'] };
+type ManagementCheckboxProps = { disabled: boolean; readOnly: boolean; checked: boolean; onChange: CheckboxProps['onChange'] };
 const ManagementPermissionsCard: React.FC<{ permissionsManagement: ManagementCheckboxProps; templatesManagement: ManagementCheckboxProps }> = ({
     permissionsManagement,
     templatesManagement,
@@ -10,19 +11,33 @@ const ManagementPermissionsCard: React.FC<{ permissionsManagement: ManagementChe
     return (
         <Card variant="outlined">
             <CardContent>
-                <Typography>{i18next.t('permissions.permissionsOfUserDialog.managementTitle')}</Typography>
+                <Typography style={{ fontWeight: 'bold', cursor: 'default' }}>
+                    {i18next.t('permissions.permissionsOfUserDialog.managementTitle')}
+                </Typography>
                 <FormGroup row>
                     <FormControlLabel
                         label={i18next.t('permissions.permissionsOfUserDialog.permissionsManagement') as string}
                         labelPlacement="end"
                         disabled={permissionsManagement.disabled}
-                        control={<Checkbox checked={permissionsManagement.checked} onChange={permissionsManagement.onChange} />}
+                        control={
+                            permissionsManagement.readOnly ? (
+                                <CheckboxReadOnly checked={permissionsManagement.checked} />
+                            ) : (
+                                <Checkbox checked={permissionsManagement.checked} onChange={permissionsManagement.onChange} />
+                            )
+                        }
                     />
                     <FormControlLabel
                         label={i18next.t('permissions.permissionsOfUserDialog.templatesManagement') as string}
                         labelPlacement="end"
                         disabled={templatesManagement.disabled}
-                        control={<Checkbox checked={templatesManagement.checked} onChange={templatesManagement.onChange} />}
+                        control={
+                            templatesManagement.readOnly ? (
+                                <CheckboxReadOnly checked={templatesManagement.checked} />
+                            ) : (
+                                <Checkbox checked={templatesManagement.checked} onChange={templatesManagement.onChange} />
+                            )
+                        }
                     />
                 </FormGroup>
             </CardContent>

@@ -250,7 +250,8 @@ const PermissionsOfUserDialog: React.FC<{
                                     value={formikProps.values.user}
                                     onChange={(_e, chosenUser) => formikProps.setFieldValue('user', chosenUser)}
                                     onBlur={(event) => formikProps.handleBlur(event)}
-                                    disabled={mode === 'read' || mode === 'edit' || formikProps.isSubmitting} // on edit mode, cant change user only his permissions
+                                    readOnly={mode === 'read'}
+                                    disabled={mode === 'edit'}
                                     isError={Boolean(formikProps.touched.user && formikProps.errors.user)}
                                     helperText={formikProps.touched.user ? formikProps.errors.user : ''}
                                 />
@@ -271,6 +272,7 @@ const PermissionsOfUserDialog: React.FC<{
                                                     ? () => {}
                                                     : (_e, checked) => formikProps.setFieldValue('doesHavePermissionsManagement', checked),
                                             disabled: formikProps.isSubmitting,
+                                            readOnly: mode === 'read',
                                         }}
                                         templatesManagement={{
                                             checked: formikProps.values.doesHaveTemplatesManagement,
@@ -279,6 +281,7 @@ const PermissionsOfUserDialog: React.FC<{
                                                     ? () => {}
                                                     : (_e, checked) => formikProps.setFieldValue('doesHaveTemplatesManagement', checked),
                                             disabled: formikProps.isSubmitting,
+                                            readOnly: mode === 'read',
                                         }}
                                     />
                                 </Box>
@@ -289,6 +292,7 @@ const PermissionsOfUserDialog: React.FC<{
                                         categoryId: _id,
                                         categoryDisplayName: displayName,
                                         disabled: formikProps.isSubmitting,
+                                        readOnly: mode === 'read',
                                         checked: formikProps.values.instancesPermissions.some(({ category }) => category === _id),
                                         onChange:
                                             mode === 'read'
