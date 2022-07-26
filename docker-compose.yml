@@ -67,6 +67,14 @@ services:
       REDIS_HOST: ${REDIS_HOST}
       RABBIT_URI: ${RABBIT_URI}
 
+  activity-log:
+    image: jawsproject.azurecr.io/activity-log
+    # build: ./activity-log
+    environment:
+      PORT: 8000
+      MONGO_URI: ${ACTIVITY_LOG_MONGO_URI}
+      MONGO_ACTIVITY_LOG_COLLECTION_NAME: ${ACTIVITY_LOG_COLLECTION_NAME}
+
   backend:
     image: jawsproject.azurecr.io/backend
     # build: ./backend
@@ -83,6 +91,7 @@ services:
       SHRAGA_URL: ${SHRAGA_URL}
       ACCESS_TOKEN_NAME: ${ACCESS_TOKEN_NAME}
       SYSTEM_UNAVAILABLE_URL: ${SYSTEM_UNAVAILABLE_URL}
+      ACTIVITY_LOG_URI: ${ACTIVITY_LOG_URI}
       NODE_TLS_REJECT_UNAUTHORIZED: 0
 
   frontend:
