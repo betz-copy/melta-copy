@@ -12,6 +12,8 @@ export interface IKartoffelUser {
     fullName: string;
     hierarchy?: string;
     jobTitle?: string;
+    firstName: string;
+    lastName: string;
     digitalIdentities: { uniqueId: string; source: string }[];
 }
 

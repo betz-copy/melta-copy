@@ -12,7 +12,7 @@ import {
 } from './middlewares';
 import { validateUserIsTemplateManager } from '../permissions/validateAuthorizationMiddleware';
 import InstancesController from './controller';
-import { createEntityInstanceSchema, deleteEntityInstanceSchema, updateEntityInstanceSchema } from './validator.schema';
+import { createEntityInstanceSchema, deleteEntityInstanceSchema, updateEntityInstanceSchema, updateEntityStatusSchema } from './validator.schema';
 import ValidateRequest from '../../utils/joi';
 
 const { instanceManager } = config;
@@ -49,12 +49,25 @@ InstancesRouter.delete(
     wrapMiddleware(validateUserCanUpdateGetOrDeleteEntityInstance),
     wrapController(InstancesController.deleteEntityInstance),
 );
-InstancesRouter.patch('/entities/:id/status', wrapMiddleware(validateUserCanUpdateGetOrDeleteEntityInstance), InstanceManagerProxy);
+InstancesRouter.patch(
+    '/entities/:id/status',
+    ValidateRequest(updateEntityStatusSchema),
+    wrapMiddleware(validateUserCanUpdateGetOrDeleteEntityInstance),
+    wrapController(InstancesController.updateEntityStatus),
+);
 
 // relationships (Instances)
-InstancesRouter.post('/relationships', wrapMiddleware(validateUserCanCreateRelationshipInstance), InstanceManagerProxy);
 InstancesRouter.get('/relationships/count', wrapMiddleware(validateUserIsTemplateManager), InstanceManagerProxy);
+InstancesRouter.post(
+    '/relationships',
+    wrapMiddleware(validateUserCanCreateRelationshipInstance),
+    wrapController(InstancesController.createRelationshipInstance),
+);
 InstancesRouter.put('/relationships/:id', wrapMiddleware(validateUserCanUpdateOrDeleteRelationshipInstance), InstanceManagerProxy);
-InstancesRouter.delete('/relationships/:id', wrapMiddleware(validateUserCanUpdateOrDeleteRelationshipInstance), InstanceManagerProxy);
+InstancesRouter.delete(
+    '/relationships/:id',
+    wrapMiddleware(validateUserCanUpdateOrDeleteRelationshipInstance),
+    wrapController(InstancesController.deleteEntityInstance),
+);
 
 export default InstancesRouter;

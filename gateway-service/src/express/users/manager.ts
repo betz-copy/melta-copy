@@ -16,15 +16,16 @@ export class UsersManager {
     }
 
     static kartoffelUserToUser(kartoffelUser: IKartoffelUser): IUser {
-        const { id, fullName, hierarchy, jobTitle, digitalIdentities } = kartoffelUser;
+        const { id, fullName, hierarchy, jobTitle, digitalIdentities, firstName, lastName } = kartoffelUser;
 
         const displayName = UsersManager.getFormattedDisplayName(fullName, hierarchy, jobTitle);
 
-        return { id, displayName, digitalIdentities: digitalIdentities.map(({ uniqueId }) => ({ uniqueId })) };
+        return { id, displayName, firstName, lastName, fullName, digitalIdentities: digitalIdentities.map(({ uniqueId }) => ({ uniqueId })) };
     }
 
     static async getUserById(id: string) {
         const kartoffelUser = await getEntityById(id);
+
         return UsersManager.kartoffelUserToUser(kartoffelUser);
     }
 

@@ -8,3 +8,10 @@ export const searchUsersRequestSchema = Joi.object({
     },
     body: {},
 });
+
+// GET /api/users/:userId
+export const getUserById = Joi.object({
+    params: { userId: Joi.string().required() },
+    query: {},
+    body: {},
+});

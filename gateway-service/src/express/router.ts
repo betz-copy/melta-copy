@@ -9,6 +9,7 @@ import { wrapMiddleware } from '../utils/express';
 import { validateUserHasAtLeastSomePermissions } from './permissions/validateAuthorizationMiddleware';
 import templatesRouter from './templates/router';
 import instancesRouter from './instances/router';
+import ActivityLogRouter from './activityLog/router';
 
 const appRouter = Router();
 
@@ -42,6 +43,8 @@ appRouter.use(
 appRouter.use('/api/users', usersRouter);
 
 appRouter.use('/api/permissions', permissionsRouter);
+
+appRouter.use('/api/activity-log', ActivityLogRouter);
 
 appRouter.use('*', (_req, res) => {
     res.status(404).send('Invalid Route');

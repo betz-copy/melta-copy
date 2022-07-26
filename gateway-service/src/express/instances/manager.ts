@@ -1,6 +1,7 @@
 import { deleteFiles, uploadFiles } from '../../externalServices/storageService';
-import { IEntity, InstanceManagerService } from '../../externalServices/instanceManager';
+import { IEntity, InstanceManagerService, IRelationship } from '../../externalServices/instanceManager';
 import { EntityTemplateManagerService, IEntityTemplatePopulated } from '../../externalServices/entityTemplateManager';
+import { ActivityLogManagerService } from '../../externalServices/activityLogManager';
 import { trycatch } from '../../utils';
 
 export class InstancesManager {
@@ -27,13 +28,21 @@ export class InstancesManager {
         return Object.entries(entityProperties).filter(([key]) => fileProperties.includes(key));
     }
 
-    static async createEntityInstance(instanceData: IEntity, files: Express.Multer.File[]) {
+    static async createEntityInstance(instanceData: IEntity, files: Express.Multer.File[], user: Express.User) {
         const fileProperties = await InstancesManager.uploadInstanceFiles(files);
-
-        return InstanceManagerService.createEntityInstance({
+        const entity = await InstanceManagerService.createEntityInstance({
             templateId: instanceData.templateId,
             properties: { ...fileProperties, ...instanceData.properties },
         });
+
+        await ActivityLogManagerService.createActivityLog({
+            action: 'CREATE_ENTITY',
+            entityId: entity.properties._id,
+            metadata: {},
+            timestamp: new Date(),
+            userId: user.id,
+        });
+        return entity;
     }
 
     private static async deleteUnusedFiles(currentEntity: IEntity, instanceData: IEntity, files: Express.Multer.File[]) {
@@ -56,7 +65,20 @@ export class InstancesManager {
         return deleteFiles(filesToDelete);
     }
 
-    static async updateEntityInstance(id: string, instanceData: IEntity, files: Express.Multer.File[]) {
+    static async updateEntityStatus(id: string, disabled: boolean, user: Express.User) {
+        const entity = await InstanceManagerService.updateEntityStatus(id, disabled);
+
+        await ActivityLogManagerService.createActivityLog({
+            action: disabled ? 'DISABLE_ENTITY' : 'ACTIVATE_ENTITY',
+            metadata: {},
+            entityId: id,
+            timestamp: new Date(),
+            userId: user.id,
+        });
+        return entity;
+    }
+
+    static async updateEntityInstance(id: string, instanceData: IEntity, files: Express.Multer.File[], user: Express.User) {
         const uploadedFilesProperties = await InstancesManager.uploadInstanceFiles(files);
 
         const currentEntity = await InstanceManagerService.getEntityInstanceById(id);
@@ -70,6 +92,35 @@ export class InstancesManager {
 
         if (err) {
             console.log(`failed to delete files of instanceId ${id}`);
+        }
+
+        const updateInfo = { entityId: instanceData.properties._id, timestamp: new Date(), userId: user.id };
+        if (currentEntity.properties.disabled === updatedInstace.properties.disabled) {
+            const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(currentEntity.templateId);
+
+            const updatedFieldsNames = Object.keys(entityTemplate.properties.properties).filter(
+                (key) => currentEntity.properties[key] !== updatedInstace.properties[key],
+            );
+
+            const updatedFields = updatedFieldsNames.map((fieldName) => {
+                return {
+                    fieldName,
+                    oldValue: currentEntity.properties[fieldName] || null,
+                    newValue: updatedInstace.properties[fieldName] || null,
+                };
+            });
+
+            await ActivityLogManagerService.createActivityLog({
+                action: 'UPDATE_ENTITY',
+                metadata: { updatedFields },
+                ...updateInfo,
+            });
+        } else {
+            await ActivityLogManagerService.createActivityLog({
+                action: updatedInstace.properties.disabled ? 'DISABLE_ENTITY' : 'ACTIVATE_ENTITY',
+                metadata: {},
+                ...updateInfo,
+            });
         }
 
         return updatedInstace;
@@ -100,6 +151,76 @@ export class InstancesManager {
         }
 
         return deletedInstance;
+    }
+
+    static async createRelationshipInstance(relationship: IRelationship, user: Express.User) {
+        const createdRelationship = await InstanceManagerService.createRelationshipInstance(relationship);
+
+        const updatedFields: {
+            action: 'CREATE_RELATIONSHIP';
+            timestamp: Date;
+            userId: string;
+            metadata: {
+                relationshipTemplateId: string;
+                relationshipId: string;
+            };
+        } = {
+            action: 'CREATE_RELATIONSHIP',
+            timestamp: new Date(),
+            userId: user.id,
+            metadata: {
+                relationshipTemplateId: createdRelationship.templateId,
+                relationshipId: createdRelationship.properties._id,
+            },
+        };
+
+        await ActivityLogManagerService.createActivityLog({
+            ...updatedFields,
+            entityId: createdRelationship.sourceEntityId,
+            metadata: { ...updatedFields.metadata, entityId: createdRelationship.destinationEntityId },
+        });
+        await ActivityLogManagerService.createActivityLog({
+            ...updatedFields,
+            entityId: createdRelationship.destinationEntityId,
+            metadata: { ...updatedFields.metadata, entityId: createdRelationship.sourceEntityId },
+        });
+
+        return createdRelationship;
+    }
+
+    static async deleteRelationshipInstance(relationshipId: string, user: Express.User) {
+        const relationship = await InstanceManagerService.deleteRelationshipInstance(relationshipId);
+
+        const updatedFields: {
+            action: 'DELETE_RELATIONSHIP';
+            timestamp: Date;
+            userId: string;
+            metadata: {
+                relationshipTemplateId: string;
+                relationshipId: string;
+            };
+        } = {
+            action: 'DELETE_RELATIONSHIP',
+            timestamp: new Date(),
+            userId: user.id,
+            metadata: {
+                relationshipTemplateId: relationship.templateId,
+                relationshipId: relationship.properties._id,
+            },
+        };
+
+        await ActivityLogManagerService.createActivityLog({
+            ...updatedFields,
+            entityId: relationship.sourceEntityId,
+            metadata: { ...updatedFields.metadata, entityId: relationship.destinationEntityId },
+        });
+        await ActivityLogManagerService.createActivityLog({
+            ...updatedFields,
+            entityId: relationship.destinationEntityId,
+            metadata: { ...updatedFields.metadata, entityId: relationship.sourceEntityId },
+        });
+
+        return relationship;
     }
 }
 

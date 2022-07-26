@@ -7,7 +7,12 @@ const {
 
 export interface IEntity {
     templateId: string;
-    properties: object;
+    properties: {
+        _id: string;
+        createdAt: string;
+        updatedAt: string;
+        disabled: boolean;
+    } & Record<string, any>;
 }
 
 interface IEntityFilterParams {
@@ -21,7 +26,7 @@ interface IEntityFilterParams {
 }
 export interface IRelationship {
     templateId: string;
-    properties: object;
+    properties: { _id: string } & Record<string, any>;
     sourceEntityId: string;
     destinationEntityId: string;
 }
@@ -48,6 +53,12 @@ export class InstanceManagerService {
         return data;
     }
 
+    static async updateEntityStatus(id: string, disabled: boolean) {
+        const { data } = await this.InstanceManagerApi.patch<IEntity>(`${baseEntitiesRoute}/${id}/status`, { disabled });
+
+        return data;
+    }
+
     static async deleteEntityInstance(id: string) {
         const { data } = await this.InstanceManagerApi.delete<string>(`${baseEntitiesRoute}/${id}`);
 
@@ -67,6 +78,18 @@ export class InstanceManagerService {
     // relationships instances
     static async getRelationshipInstanceById(id: string) {
         const { data } = await this.InstanceManagerApi.get<IRelationship>(`${baseRelationshipsRoute}/${id}`);
+
+        return data;
+    }
+
+    static async createRelationshipInstance(relationship: IRelationship) {
+        const { data } = await this.InstanceManagerApi.post<IRelationship>(baseRelationshipsRoute, relationship);
+
+        return data;
+    }
+
+    static async deleteRelationshipInstance(id: string) {
+        const { data } = await this.InstanceManagerApi.delete<IRelationship>(`${baseRelationshipsRoute}/${id}`);
 
         return data;
     }

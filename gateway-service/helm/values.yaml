@@ -28,6 +28,8 @@ config:
       value: http://permission-api:8000
     - name: STORAGE_SERVICE_URI
       value: http://storage-service:8000
+    - name: ACTIVITY_LOG_URI
+      value: http://activity-log:8000
     - name: KARTOFFEL_BASE_URL
       value: https://kartoffel.branch-yesodot.org
     - name: CALLBACK_URL
