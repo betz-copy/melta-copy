@@ -59,8 +59,11 @@ const config = {
     kartoffel: {
         baseUrl: env.get('KARTOFFEL_BASE_URL').required().asString(),
         baseEntitiesRoute: env.get('KARTOFFEL_BASE_ENTITIES_ROUTE').default('/api/entities').asString(),
-        searchRoute: env.get('KARTOFFEL_SEARCH_ENTITIES').default('/search').asString(),
         requestTimeout: env.get('KARTOFFEL_REQUEST_TIMEOUT').default(10000).asIntPositive(),
+        identifierRoute: env.get('KARTOFFEL_FIND_USER_BY_IDENTIFIER_ROUTE').default('/identifier').asString(),
+        digitalIdentityRoute: env.get('KARTOFFEL_FIND_USER_BY_DIGITAL_IDENTITY_ROUTE').default('/digitalIdentity').asString(),
+        idRoute: env.get('KARTOFFEL_FIND_USER_BY_ID_ROUTE').default('').asString(),
+        fullNameRoute: env.get('KARTOFFEL_SEARCH_USER_BY_FULLNAME_ROUTE').default('/search').asString(),
     },
     errorCodes: {
         categoryHasTemplates: 'CATEGORY_HAS_TEMPLATES',

@@ -1,4 +1,15 @@
-import { IKartoffelUser, searchKartoffelUsers, getEntityById } from '../../externalServices/kartoffel';
+import {
+    IKartoffelUser,
+    searchUsersByName,
+    getEntityById,
+    getUserByDigitalIdentity,
+    getUserByIdentifier,
+    isKartoffelId,
+    getUserById,
+    wrapKartoffelRequestForUiSearch,
+    isDomainUser,
+    isIdentifier,
+} from '../../externalServices/kartoffel';
 import { IUser } from './interface';
 
 export class UsersManager {
@@ -29,8 +40,23 @@ export class UsersManager {
         return UsersManager.kartoffelUserToUser(kartoffelUser);
     }
 
-    static async searchUsers(fullName: string) {
-        const kartoffelUsers = await searchKartoffelUsers(fullName);
+    static async searchUsers(search: string) {
+        if (isDomainUser(search)) {
+            const kartoffelUsers = await wrapKartoffelRequestForUiSearch(() => getUserByDigitalIdentity(search));
+            return kartoffelUsers.map(UsersManager.kartoffelUserToUser);
+        }
+
+        if (isIdentifier(search)) {
+            const kartoffelUsers = await wrapKartoffelRequestForUiSearch(() => getUserByIdentifier(search));
+            return kartoffelUsers.map(UsersManager.kartoffelUserToUser);
+        }
+
+        if (isKartoffelId(search)) {
+            const kartoffelUsers = await wrapKartoffelRequestForUiSearch(() => getUserById(search));
+            return kartoffelUsers.map(UsersManager.kartoffelUserToUser);
+        }
+
+        const kartoffelUsers = await searchUsersByName(search);
         return kartoffelUsers.map(UsersManager.kartoffelUserToUser);
     }
 }

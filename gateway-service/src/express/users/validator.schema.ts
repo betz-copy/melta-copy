@@ -4,7 +4,7 @@ import * as Joi from 'joi';
 export const searchUsersRequestSchema = Joi.object({
     params: {},
     query: {
-        fullName: Joi.string().required(),
+        search: Joi.string().required(),
     },
     body: {},
 });
