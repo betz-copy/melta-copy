@@ -13,13 +13,17 @@ export interface IUser {
     fullName: string;
 }
 
-const searchUsersRequest = async (fullName: string) => {
-    const { data } = await axios.get<IUser[]>(`${users}/search`, { params: { fullName } });
-    return data;
-};
 const getUserByIdRequest = async (userId: string) => {
     const { data } = await axios.get<IUser>(`${users}/${userId}`);
     return data;
+};
+
+const searchUsersRequest = async (search: string) => {
+    if (search.length >= 2) {
+        const { data } = await axios.get<IUser[]>(`${users}/search`, { params: { search } });
+        return data;
+    }
+    return [];
 };
 
 export { searchUsersRequest, getUserByIdRequest };
