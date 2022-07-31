@@ -1,26 +1,24 @@
-import React, { CSSProperties, useMemo } from 'react';
+import React, { CSSProperties } from 'react';
 import { environment } from '../globals';
-import { hexToColorFilter } from '../utils/hexToColorFilter';
 
 interface CustomIconProps {
     iconUrl: string;
     width: string;
     height: string;
-    hexColor?: string;
+    color?: CSSProperties['color'];
     style?: CSSProperties;
 }
 
-const CustomIcon: React.FC<CustomIconProps> = ({ iconUrl, width, height, hexColor = '#000000', style }) => {
-    const colorFilter = useMemo(() => hexToColorFilter(hexColor), [hexColor]);
-
+const CustomIcon: React.FC<CustomIconProps> = ({ iconUrl, width, height, color = '#000000', style }) => {
     return (
         <img
-            src={`/api${environment.api.storage}/${iconUrl}`}
             height={height}
             width={width}
             style={{
                 ...style,
-                filter: colorFilter,
+                backgroundColor: color,
+                WebkitMaskImage: `url(/api${environment.api.storage}/${iconUrl})`,
+                WebkitMaskSize: 'contain',
             }}
         />
     );
