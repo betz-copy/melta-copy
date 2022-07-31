@@ -20,11 +20,15 @@ const generateUser = () => {
             .map(() => faker.commerce.department())
             .join('/'),
     ]);
-    const fullName = `${faker.name.firstName()} ${faker.name.lastName()}`;
+    const name = { firstName: faker.name.firstName(), lastName: faker.name.lastName() };
+    const fullName = `${name.firstName} ${name.lastName}`;
     return {
         id: generateMongoId(), // kartoffelId
         displayName: `${fullName}${hierarchy ? ` - ${hierarchy}` : ''}`,
         digitalIdentities: generateUserDigitalIdentities(),
+        firstName: name.firstName,
+        lastName: name.lastName,
+        fullName,
     };
 };
 
@@ -43,6 +47,10 @@ const generatePermissionsOfUser = () => {
 const mockPermissions = (mock: MockAdapter) => {
     mock.onGet(/\/api\/users\/search.*/).reply(() => {
         return [200, Array.from({ length: 10 }).map(generateUser)];
+    });
+
+    mock.onGet(/\/api\/users\.*/).reply(() => {
+        return [200, generateUser];
     });
 
     mock.onGet('/api/permissions/my').reply(() => {
