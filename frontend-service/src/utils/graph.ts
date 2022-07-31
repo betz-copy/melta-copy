@@ -107,6 +107,7 @@ const drawNodeBorder = (node: PartialRequired<NodeObject, 'nodeSize'>, ctx: Canv
     });
 };
 
+const offscreenCanvas = document.createElement('canvas');
 const drawNodeIcon = (
     node: PartialRequired<NodeObject, 'x' | 'y' | 'nodeSize'>,
     ctx: CanvasRenderingContext2D,
@@ -121,23 +122,35 @@ const drawNodeIcon = (
         node.icon.src = `/api${environment.api.storage}/${entityTemplate.iconFileId}`;
     }
 
+    if (!node.icon.complete) return;
+
     const { a: scaleX, d: scaleY } = ctx.getTransform();
 
-    if (node.icon.complete) {
-        const offScreenCanvasCtx = new OffscreenCanvas(iconsSize * scaleX, iconsSize * scaleY).getContext('2d');
-        if (!offScreenCanvasCtx || !offScreenCanvasCtx.canvas.width || !offScreenCanvasCtx.canvas.height) return;
+    const width = Math.floor(iconsSize * scaleX);
+    const height = Math.floor(iconsSize * scaleY);
 
-        offScreenCanvasCtx.scale(scaleX, scaleY);
+    if (!width || !height) return;
 
-        offScreenCanvasCtx.drawImage(node.icon, 0, 0, iconsSize, iconsSize);
+    offscreenCanvas.width = width;
+    offscreenCanvas.height = height;
 
-        offScreenCanvasCtx.globalCompositeOperation = 'source-in';
+    const offScreenCanvasCtx = offscreenCanvas.getContext('2d');
+    if (!offScreenCanvasCtx) return;
 
-        offScreenCanvasCtx.fillStyle = '#000';
-        offScreenCanvasCtx.fillRect(0, 0, iconsSize, iconsSize);
+    offScreenCanvasCtx.save();
 
-        ctx.drawImage(offScreenCanvasCtx.canvas, -iconsSize / 2, -iconsSize / 2, iconsSize, iconsSize);
-    }
+    offScreenCanvasCtx.scale(scaleX, scaleY);
+
+    offScreenCanvasCtx.drawImage(node.icon, 0, 0, iconsSize, iconsSize);
+
+    offScreenCanvasCtx.globalCompositeOperation = 'source-in';
+
+    offScreenCanvasCtx.fillStyle = '#000000';
+    offScreenCanvasCtx.fillRect(0, 0, iconsSize, iconsSize);
+
+    ctx.drawImage(offScreenCanvasCtx.canvas, -iconsSize / 2, -iconsSize / 2, iconsSize, iconsSize);
+
+    offScreenCanvasCtx.restore();
 };
 
 export const drawNode = (

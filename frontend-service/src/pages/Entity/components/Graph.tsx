@@ -3,7 +3,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import * as ReactDOMServer from 'react-dom/server';
 
 import { Box, CircularProgress } from '@mui/material';
-import ForceGraph, { ForceGraphMethods, GraphData, NodeObject } from 'react-force-graph-2d';
+import { forceManyBody } from 'd3-force';
+import ForceGraph, { ForceGraphMethods, GraphData, LinkObject, NodeObject } from 'react-force-graph-2d';
 import { useQuery, useQueryClient } from 'react-query';
 import randomColor from 'randomcolor';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -120,6 +121,15 @@ const Graph: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> }
         return randomColor({ hue: entityTemplate.category.color || '#000000', seed: entityTemplate.name });
     };
 
+    const getLinkColor = (link: LinkObject) => {
+        const relationshipTemplate = relationshipTemplates.find((template) => template._id === link.templateId)!;
+
+        return randomColor({ luminosity: 'dark', seed: relationshipTemplate.name });
+    };
+
+    // manage forces in graph
+    forceRef.current?.d3Force('node', forceManyBody().strength(-100).distanceMin(50).distanceMax(400));
+
     return (
         <Box ref={ref} overflow="hidden">
             {graphData.nodes.length === 0 ? (
@@ -136,8 +146,8 @@ const Graph: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> }
                     nodeLabel={renderTooltip}
                     linkDirectionalArrowRelPos={1}
                     linkDirectionalArrowLength={3}
-                    linkWidth={3}
                     nodeColor={(node) => getNodeColor(node)}
+                    linkColor={(link) => getLinkColor(link)}
                     onNodeClick={(node) => {
                         navigate(`/entity/${node.id}`);
                     }}
