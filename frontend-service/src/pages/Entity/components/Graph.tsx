@@ -142,10 +142,13 @@ const Graph: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> }
                     graphData={graphData}
                     nodeVal="nodeSize"
                     nodeRelSize={environment.graphSettings.defaultNodeRadius}
-                    cooldownTicks={100}
+                    cooldownTicks={50}
                     nodeLabel={renderTooltip}
                     linkDirectionalArrowRelPos={1}
                     linkDirectionalArrowLength={3}
+                    linkDirectionalParticles={4}
+                    linkDirectionalParticleWidth={(link) => (link.highlighted ? 4 : 0)}
+                    linkWidth={(link) => (link.highlighted ? 4 : 1)}
                     nodeColor={(node) => getNodeColor(node)}
                     linkColor={(link) => getLinkColor(link)}
                     onNodeClick={(node) => {
@@ -191,6 +194,7 @@ const Graph: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> }
                     }}
                     location={{ top: nodeMenuState.top!, left: nodeMenuState.left! }}
                     addNewGraphData={addNewGraphData}
+                    graphData={graphData}
                 />
             )}
             {menuState && (

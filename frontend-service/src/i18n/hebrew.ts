@@ -105,6 +105,9 @@ export default {
         free: 'שחרר',
         lock: 'נעל',
         freeAll: 'שחרר הכל',
+        highlight: 'סמן',
+        cancelHighlight: 'בטל סימון',
+        cancelAllHighlights: 'בטל את כל הסימונים',
     },
     pages: {
         globalSearch: 'חיפוש גלובלי',

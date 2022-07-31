@@ -34,6 +34,21 @@ const GraphMenu: React.FC<{
             >
                 {i18next.t('graph.freeAll')}
             </MenuItem>
+            <MenuItem
+                onClick={() => {
+                    graphData.nodes.forEach((node) => {
+                        node.mainHighlighted = false;
+                        node.highlighted = 0;
+                    });
+                    graphData.links.forEach((links) => {
+                        links.highlighted = 0;
+                    });
+
+                    onCloseMenu();
+                }}
+            >
+                {i18next.t('graph.cancelAllHighlights')}
+            </MenuItem>
         </MuiMenu>
     );
 };

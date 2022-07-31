@@ -67,11 +67,12 @@ export const getGraphDataWithNodeSizes = (graphData: GraphData) => {
     return { links, nodes: expendedNodes };
 };
 
-export const entityToNode = (entity: IEntity) => {
+export const entityToNode = (entity: IEntity): NodeObject => {
     return {
         data: { ...entity.properties },
         templateId: entity.templateId,
         id: entity.properties._id,
+        highlighted: 0,
     };
 };
 
@@ -84,10 +85,15 @@ export const expandedEntityToGraphData = (expandedEntity: IEntityExpanded, relat
         if (!relationshipTemplate) throw new Error('must have relationship template');
 
         if (relationshipTemplate.sourceEntityId === expandedEntity.entity.templateId) {
-            return { source: expandedEntity.entity.properties._id, target: entity.properties._id, templateId: relationship.templateId };
+            return {
+                source: expandedEntity.entity.properties._id,
+                target: entity.properties._id,
+                templateId: relationship.templateId,
+                highlighted: 0,
+            };
         }
 
-        return { source: entity.properties._id, target: expandedEntity.entity.properties._id, templateId: relationship.templateId };
+        return { source: entity.properties._id, target: expandedEntity.entity.properties._id, templateId: relationship.templateId, highlighted: 0 };
     });
 
     return { nodes, links: getFixedGraphLinks(links) };
@@ -171,7 +177,10 @@ export const drawNode = (
     if (isOriginalNode) borders.push('#7ef6a2');
     if (node.locked) borders.push('#7ed2f6');
 
-    drawNodeBorder(node, ctx, borders, nodeRadius / 10);
+    if (node.mainHighlighted) borders.push('#ff0000');
+    else if (node.highlighted) borders.push('#FF8C00');
+
+    drawNodeBorder(node, ctx, borders, nodeRadius / 15);
 
     ctx.restore();
 };

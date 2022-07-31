@@ -13,6 +13,8 @@ declare module 'react-force-graph-2d' {
         icon?: Image;
         locked?: boolean;
         nodeSize?: number;
+        highlighted: number;
+        mainHighlighted?: boolean;
         templateId: string;
         data: IEntity['properties'];
     }
@@ -20,6 +22,7 @@ declare module 'react-force-graph-2d' {
     export interface LinkObject {
         source: string | NodeObject;
         target: string | NodeObject;
+        highlighted: number;
         templateId: string;
     }
 }

@@ -16,7 +16,8 @@ const GraphNodeMenu: React.FC<{
     onCloseMenu: () => void;
     location: { top: number; left: number };
     addNewGraphData: (graphData: GraphData) => void;
-}> = ({ showMenu, node, onCloseMenu, location, addNewGraphData }) => {
+    graphData: GraphData;
+}> = ({ showMenu, node, onCloseMenu, location, addNewGraphData, graphData }) => {
     const navigate = useNavigate();
 
     const queryClient = useQueryClient();
@@ -86,6 +87,27 @@ const GraphNodeMenu: React.FC<{
                     {i18next.t('graph.lock')}
                 </MenuItem>
             )}
+            <MenuItem
+                onClick={() => {
+                    node.mainHighlighted = !node.mainHighlighted;
+                    const count = node.mainHighlighted ? 1 : -1;
+
+                    graphData.links.forEach((link) => {
+                        if (link.target === node) {
+                            (link.source as NodeObject).highlighted += count;
+                            link.highlighted += count;
+                        }
+                        if (link.source === node) {
+                            (link.target as NodeObject).highlighted += count;
+                            link.highlighted += count;
+                        }
+                    });
+
+                    onCloseMenu();
+                }}
+            >
+                {node.mainHighlighted ? i18next.t('graph.cancelHighlight') : i18next.t('graph.highlight')}
+            </MenuItem>
         </MuiMenu>
     );
 };
