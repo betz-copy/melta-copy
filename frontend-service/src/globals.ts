@@ -19,13 +19,14 @@ export const environment = {
     graphSettings: {
         // TODO: instead of here get this from the backend ( so it could be configurable ) + dont allow range overlaps ( validation )
         nodeConnectionsCountRangesToNodeSize: {
-            '0-2': 2,
-            '3-4': 3,
-            '5-6': 4,
-            '7-8': 5,
-            '9-10': 7,
+            '0-2': 3,
+            '3-4': 4,
+            '5-6': 5,
+            '7-8': 6,
+            '9-10': 8,
         },
         maximumNodeSize: 7,
+        defaultNodeRadius: 4,
     },
     accessTokenName: 'rabaz-access-token',
     minimumSupportedChromeVersion: 80,

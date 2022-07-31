@@ -24,5 +24,8 @@ export const getRectangleDimensionsByString = (ctx: CanvasRenderingContext2D, te
 
     ctx.font = `${fontSize}px Sans-Serif`;
     const textWidth = ctx.measureText(text).width;
-    return [textWidth, fontSize].map((n) => n + fontSize * 0.2);
+
+    const borderMultiplier = fontSize * 0.2;
+
+    return { width: textWidth + borderMultiplier, height: fontSize + borderMultiplier };
 };

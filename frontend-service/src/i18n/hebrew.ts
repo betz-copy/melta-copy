@@ -102,6 +102,9 @@ export default {
     graph: {
         center: 'מרכז',
         expand: 'הרחב', // הצג שכנים
+        free: 'שחרר',
+        lock: 'נעל',
+        freeAll: 'שחרר הכל',
     },
     pages: {
         globalSearch: 'חיפוש גלובלי',

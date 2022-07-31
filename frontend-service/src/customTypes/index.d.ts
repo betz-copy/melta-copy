@@ -1,4 +1,3 @@
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import ForceGraph2D from 'react-force-graph-2d';
 import { IEntity } from '../interfaces/entities';
 
@@ -11,6 +10,9 @@ declare module 'react-force-graph-2d' {
         vy?: number;
         fx?: number;
         fy?: number;
+        icon?: Image;
+        locked?: boolean;
+        nodeSize?: number;
         templateId: string;
         data: IEntity['properties'];
     }

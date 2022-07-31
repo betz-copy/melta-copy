@@ -1,8 +1,13 @@
+/* eslint-disable no-param-reassign */
 import { GraphData, LinkObject, NodeObject } from 'react-force-graph-2d';
 import { IEntity, IEntityExpanded } from '../interfaces/entities';
 import { IMongoRelationshipTemplate } from '../interfaces/relationshipTemplates';
 import { drawRectangle, drawText, getLineAngle, getRectangleDimensionsByString } from './canvas';
 import { environment } from '../globals';
+import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
+import { PartialRequired } from './typeHelpers';
+
+const { graphSettings } = environment;
 
 type rangeAsString = `${string}-${string}`;
 const searchNodeSizeInsideRangesDict = (connectionsCount: number, connectionsCountRangesToSizeDict: Record<rangeAsString, number>) => {
@@ -23,7 +28,7 @@ const searchNodeSizeInsideRangesDict = (connectionsCount: number, connectionsCou
 };
 
 export const getSizeOfNodeByConnections = (nodeId: string, links: LinkObject[]) => {
-    const { nodeConnectionsCountRangesToNodeSize, maximumNodeSize } = environment.graphSettings;
+    const { nodeConnectionsCountRangesToNodeSize, maximumNodeSize } = graphSettings;
 
     const connections = links.filter((curr) => curr.target === nodeId || curr.source === nodeId);
     const connectionsCount = connections.length;
@@ -43,9 +48,9 @@ export const getFixedGraphLinks = (links: Record<string, any>[] | string[]): Lin
         const { source, target, ...other } = link;
 
         const fixedSource = source.id || source;
-        const fixedtarget = target.id || target;
+        const fixedTarget = target.id || target;
 
-        return { source: fixedSource, target: fixedtarget, ...other } as LinkObject;
+        return { source: fixedSource, target: fixedTarget, ...other } as LinkObject;
     });
 
     return fixedLinks;
@@ -88,12 +93,86 @@ export const expandedEntityToGraphData = (expandedEntity: IEntityExpanded, relat
     return { nodes, links: getFixedGraphLinks(links) };
 };
 
-export const drawNodeLabel = (node: NodeObject & { x: number; y: number; nodeSize: number }, nodeLabel: string, ctx: CanvasRenderingContext2D) => {
+const drawNodeBorder = (node: PartialRequired<NodeObject, 'nodeSize'>, ctx: CanvasRenderingContext2D, colors: string[], borderWidth: number) => {
+    const nodeRadius = graphSettings.defaultNodeRadius + node.nodeSize;
+
+    colors.forEach((color, index) => {
+        ctx.beginPath();
+
+        ctx.lineWidth = borderWidth;
+        ctx.strokeStyle = color;
+
+        ctx.arc(0, 0, nodeRadius + borderWidth * index, 0, 2 * Math.PI);
+        ctx.stroke();
+    });
+};
+
+const drawNodeIcon = (
+    node: PartialRequired<NodeObject, 'x' | 'y' | 'nodeSize'>,
+    ctx: CanvasRenderingContext2D,
+    entityTemplate: IMongoEntityTemplatePopulated,
+) => {
+    if (!entityTemplate.iconFileId) return;
+
+    const iconsSize = (graphSettings.defaultNodeRadius + node.nodeSize) * 1.5;
+
+    if (!node.icon) {
+        node.icon = new Image(iconsSize, iconsSize);
+        node.icon.src = `/api${environment.api.storage}/${entityTemplate.iconFileId}`;
+    }
+
+    const { a: scaleX, d: scaleY } = ctx.getTransform();
+
+    if (node.icon.complete) {
+        const offScreenCanvasCtx = new OffscreenCanvas(iconsSize * scaleX, iconsSize * scaleY).getContext('2d');
+        if (!offScreenCanvasCtx || !offScreenCanvasCtx.canvas.width || !offScreenCanvasCtx.canvas.height) return;
+
+        offScreenCanvasCtx.scale(scaleX, scaleY);
+
+        offScreenCanvasCtx.drawImage(node.icon, 0, 0, iconsSize, iconsSize);
+
+        offScreenCanvasCtx.globalCompositeOperation = 'source-in';
+
+        offScreenCanvasCtx.fillStyle = '#000';
+        offScreenCanvasCtx.fillRect(0, 0, iconsSize, iconsSize);
+
+        ctx.drawImage(offScreenCanvasCtx.canvas, -iconsSize / 2, -iconsSize / 2, iconsSize, iconsSize);
+    }
+};
+
+export const drawNode = (
+    node: PartialRequired<NodeObject, 'x' | 'y' | 'nodeSize'>,
+    ctx: CanvasRenderingContext2D,
+    entityTemplate: IMongoEntityTemplatePopulated,
+    isOriginalNode: boolean = false,
+) => {
+    const nodeRadius = graphSettings.defaultNodeRadius + node.nodeSize;
+    const borders: string[] = [];
+
     ctx.save();
 
-    const bckgDimensions = getRectangleDimensionsByString(ctx, nodeLabel, node.nodeSize);
     ctx.translate(node.x, node.y);
-    drawRectangle(ctx, -bckgDimensions[0] / 2, -bckgDimensions[1] / 2, bckgDimensions[0], bckgDimensions[1], 'rgba(255, 255, 255, 0.8)');
+
+    drawNodeIcon(node, ctx, entityTemplate);
+
+    if (isOriginalNode) borders.push('#7ef6a2');
+    if (node.locked) borders.push('#7ed2f6');
+
+    drawNodeBorder(node, ctx, borders, nodeRadius / 10);
+
+    ctx.restore();
+};
+
+export const drawNodeLabel = (node: PartialRequired<NodeObject, 'x' | 'y' | 'nodeSize'>, ctx: CanvasRenderingContext2D, nodeLabel: string) => {
+    const nodeRadius = graphSettings.defaultNodeRadius + node.nodeSize;
+
+    ctx.save();
+
+    const { width, height } = getRectangleDimensionsByString(ctx, nodeLabel, node.nodeSize);
+
+    ctx.translate(node.x, node.y + nodeRadius);
+
+    drawRectangle(ctx, -width / 2, -height / 2, width, height, 'rgba(255, 255, 255, 0.8)');
     drawText(ctx, nodeLabel, 0, 0, 'black');
 
     ctx.restore();
@@ -105,10 +184,12 @@ export const drawLinkLabel = (link: LinkObject, linkLabel: string, ctx: CanvasRe
     const start = link.source as NodeObject & { x: number; y: number };
     const end = link.target as NodeObject & { x: number; y: number };
 
-    const bckgDimensions = getRectangleDimensionsByString(ctx, linkLabel);
+    const { width, height } = getRectangleDimensionsByString(ctx, linkLabel);
+
     ctx.translate(start.x + (end.x - start.x) / 2, start.y + (end.y - start.y) / 2);
     ctx.rotate(getLineAngle(end.x - start.x, end.y - start.y));
-    drawRectangle(ctx, -bckgDimensions[0] / 2, -bckgDimensions[1] / 2, bckgDimensions[0], bckgDimensions[1], 'rgba(255, 255, 255, 0.8)');
+
+    drawRectangle(ctx, -width / 2, -height / 2, width, height, 'rgba(255, 255, 255, 0.8)');
     drawText(ctx, linkLabel, 0, 0, 'black');
 
     ctx.restore();
