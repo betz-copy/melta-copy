@@ -46,9 +46,11 @@ services:
     restart: always
 
   neo4j:
-    image: neo4j:latest
+    build:
+      context: ./instance-manager
+      dockerfile: Dockerfile-neo4j
     environment:
-      - NEO4J_AUTH=neo4j/pass
+      - NEO4J_AUTH=neo4j/test
     ports:
       - "7474:7474"
       - "7687:7687"
