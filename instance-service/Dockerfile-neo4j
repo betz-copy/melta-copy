@@ -1,2 +1,2 @@
-FROM neo4j:4.3
+FROM neo4j:latest
 RUN cp ./labs/apoc-* ./plugins/
