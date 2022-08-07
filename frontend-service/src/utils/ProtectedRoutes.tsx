@@ -1,6 +1,6 @@
 import React, { isValidElement } from 'react';
 import { useParams, Navigate } from 'react-router-dom';
-import { useQuery } from 'react-query';
+import { useQuery, useQueryClient } from 'react-query';
 import { CircularProgress } from '@mui/material';
 import { getExpandedEntityByIdRequest } from '../services/entitiesService';
 import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
@@ -32,8 +32,13 @@ export const EntityProtectedRoute: React.FC<{ permissions: IPermissionsOfUser; e
 }) => {
     const params = useParams();
     const { entityId } = params;
+    const queryClient = useQueryClient();
 
-    const { data: expandedEntity, isLoading } = useQuery(['getExpandedEntity', entityId], () => getExpandedEntityByIdRequest(entityId!));
+    const templateIds = queryClient.getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates')!.map((entityTemplate) => entityTemplate._id);
+
+    const { data: expandedEntity, isLoading } = useQuery(['getExpandedEntity', entityId], () =>
+        getExpandedEntityByIdRequest(entityId!, { templateIds }),
+    );
 
     if (isLoading) return <CircularProgress />;
     const currentEntityTemplate = entityTemplates.find((currTemplate) => currTemplate._id === expandedEntity?.entity.templateId);

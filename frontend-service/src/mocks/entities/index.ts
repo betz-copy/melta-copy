@@ -49,7 +49,21 @@ const mockEntites = (mock: MockAdapter) => {
                             _id: '016B6f4a5aE2FeA62882f5C5',
                         },
                     },
-                    entity: {
+                    sourceEntity: {
+                        templateId: '61e3ea6e4d51a83e87e83c7f',
+                        properties: {
+                            firstName: 'נועה',
+                            lastName: 'קירל',
+                            age: 20,
+                            gender: false,
+                            firstFile: 'blabla.docx',
+                            disabled: faker.datatype.boolean(),
+                            _id: config.url!.split('/').at(-1)!.split('?')[0],
+                            createdAt: new Date(2345, 10, 1).toISOString(),
+                            updatedAt: new Date(2346, 10, 1).toISOString(),
+                        },
+                    },
+                    destinationEntity: {
                         templateId: '61e3ea6e4d51a83e87e83c7e',
                         properties: {
                             name: 'טיול בר מצווה ללונדון',
@@ -70,7 +84,21 @@ const mockEntites = (mock: MockAdapter) => {
                             _id: 'Fb5DbEa1Ad4bbaa8DbEd3Dd8',
                         },
                     },
-                    entity: {
+                    destinationEntity: {
+                        templateId: '61e3ea6e4d51a83e87e83c7f',
+                        properties: {
+                            firstName: 'נועה',
+                            lastName: 'קירל',
+                            age: 20,
+                            gender: false,
+                            firstFile: 'blabla.docx',
+                            disabled: faker.datatype.boolean(),
+                            _id: config.url!.split('/').at(-1)!.split('?')[0],
+                            createdAt: new Date(2345, 10, 1).toISOString(),
+                            updatedAt: new Date(2346, 10, 1).toISOString(),
+                        },
+                    },
+                    sourceEntity: {
                         templateId: '61e3ea6e4d51a83e87e83c80',
                         properties: {
                             firstName: 'איילה',
@@ -92,7 +120,7 @@ const mockEntites = (mock: MockAdapter) => {
                             _id: '5Be45BAeA16d6Ab8df171E62',
                         },
                     },
-                    entity: {
+                    destinationEntity: {
                         templateId: '61e3ea6e4d51a83e87e83c81',
                         properties: {
                             flightNumber: 'AA123',
@@ -107,6 +135,20 @@ const mockEntites = (mock: MockAdapter) => {
                             disabled: false,
                         },
                     },
+                    sourceEntity: {
+                        templateId: '61e3ea6e4d51a83e87e83c7f',
+                        properties: {
+                            firstName: 'נועה',
+                            lastName: 'קירל',
+                            age: 20,
+                            gender: false,
+                            firstFile: 'blabla.docx',
+                            disabled: faker.datatype.boolean(),
+                            _id: config.url!.split('/').at(-1)!.split('?')[0],
+                            createdAt: new Date(2345, 10, 1).toISOString(),
+                            updatedAt: new Date(2346, 10, 1).toISOString(),
+                        },
+                    },
                 },
                 {
                     relationship: {
@@ -115,7 +157,21 @@ const mockEntites = (mock: MockAdapter) => {
                             _id: 'c15dFBF79C300d7f4F61bF4f',
                         },
                     },
-                    entity: {
+                    sourceEntity: {
+                        templateId: '61e3ea6e4d51a83e87e83c7f',
+                        properties: {
+                            firstName: 'נועה',
+                            lastName: 'קירל',
+                            age: 20,
+                            gender: false,
+                            firstFile: 'blabla.docx',
+                            disabled: faker.datatype.boolean(),
+                            _id: config.url!.split('/').at(-1)!.split('?')[0],
+                            createdAt: new Date(2345, 10, 1).toISOString(),
+                            updatedAt: new Date(2346, 10, 1).toISOString(),
+                        },
+                    },
+                    destinationEntity: {
                         templateId: '61e3ea6e4d51a83e87e83c81',
                         properties: {
                             flightNumber: 'ACA156',
@@ -138,7 +194,21 @@ const mockEntites = (mock: MockAdapter) => {
                             _id: '9aBA50AE3aeF36F0C0eab1B2',
                         },
                     },
-                    entity: {
+                    sourceEntity: {
+                        templateId: '61e3ea6e4d51a83e87e83c7f',
+                        properties: {
+                            firstName: 'נועה',
+                            lastName: 'קירל',
+                            age: 20,
+                            gender: false,
+                            firstFile: 'blabla.docx',
+                            disabled: faker.datatype.boolean(),
+                            _id: config.url!.split('/').at(-1)!.split('?')[0],
+                            createdAt: new Date(2345, 10, 1).toISOString(),
+                            updatedAt: new Date(2346, 10, 1).toISOString(),
+                        },
+                    },
+                    destinationEntity: {
                         templateId: '61e3ea6e4d51a83e87e83c83',
                         properties: {
                             hotelName: 'hotel la butique',
@@ -159,7 +229,21 @@ const mockEntites = (mock: MockAdapter) => {
                             _id: '16b5ef0DaaF6CDF2ed624F12',
                         },
                     },
-                    entity: {
+                    sourceEntity: {
+                        templateId: '61e3ea6e4d51a83e87e83c7f',
+                        properties: {
+                            firstName: 'נועה',
+                            lastName: 'קירל',
+                            age: 20,
+                            gender: false,
+                            firstFile: 'blabla.docx',
+                            disabled: faker.datatype.boolean(),
+                            _id: config.url!.split('/').at(-1)!.split('?')[0],
+                            createdAt: new Date(2345, 10, 1).toISOString(),
+                            updatedAt: new Date(2346, 10, 1).toISOString(),
+                        },
+                    },
+                    destinationEntity: {
                         templateId: '61e3ea6e4d51a83e87e83c84',
                         properties: {
                             name: 'hara dira',

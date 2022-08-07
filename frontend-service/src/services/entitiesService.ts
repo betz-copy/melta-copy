@@ -15,8 +15,12 @@ const getEntitiesByTemplateRequest = async (
     return data;
 };
 
-const getExpandedEntityByIdRequest = async (entityId: string, options?: { disabled?: boolean }) => {
+const getExpandedEntityByIdRequest = async (
+    entityId: string,
+    options?: { disabled?: boolean; templateIds: string[]; numberOfConnections?: number },
+) => {
     const { data } = await axios.post<IEntityExpanded>(`${entities}/expanded/${entityId}`, options);
+
     return data;
 };
 

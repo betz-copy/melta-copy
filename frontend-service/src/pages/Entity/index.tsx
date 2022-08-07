@@ -31,8 +31,12 @@ const Entity: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> 
     const queryClient = useQueryClient();
     const { entityId } = params;
     const entitiesTableRef = useRef<EntitiesTableOfTemplateRef>(null);
+    const templateIds = queryClient.getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates')!.map((entityTemplate) => entityTemplate._id);
 
-    const { data: expandedEntity } = useQuery(['getExpandedEntity', entityId], () => getExpandedEntityByIdRequest(entityId!));
+    const { data: expandedEntity } = useQuery(['getExpandedEntity', entityId, { templateIds, numberOfConnections: 1 }], () =>
+        getExpandedEntityByIdRequest(entityId!, { templateIds, numberOfConnections: 1 }),
+    );
+
     const isEntityDisabled = expandedEntity?.entity.properties.disabled;
 
     const categories = queryClient.getQueryData<IMongoCategory[]>('getCategories')!;
@@ -134,14 +138,13 @@ const Entity: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> 
             return;
         }
         queryClient.setQueryData<IEntityExpanded>(['getExpandedEntity', entityId], (prevEntityExpanded) => {
-            const otherEntity = entityId !== sourceEntity.properties._id ? sourceEntity : destinationEntity;
-
             return {
                 ...prevEntityExpanded!,
                 connections: [
                     ...prevEntityExpanded!.connections,
                     {
-                        entity: otherEntity,
+                        sourceEntity,
+                        destinationEntity,
                         relationship: {
                             templateId: createdRelationship.templateId,
                             properties: createdRelationship.properties,
@@ -244,7 +247,11 @@ const Entity: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> 
                                                     getRowId={(connection) => {
                                                         return connection.relationship.properties._id;
                                                     }}
-                                                    getEntityPropertiesData={(connection) => connection.entity.properties}
+                                                    getEntityPropertiesData={(connection) => {
+                                                        if (currentEntityTemplate._id === connection.destinationEntity.templateId)
+                                                            return connection.sourceEntity.properties;
+                                                        return connection.destinationEntity.properties;
+                                                    }}
                                                     rowModelType="clientSide"
                                                     rowData={expandedEntity.connections.filter(
                                                         (connection) => connection.relationship.templateId === currRelationshipTemplate._id,

@@ -12,5 +12,9 @@ export interface IEntity {
 
 export interface IEntityExpanded {
     entity: IEntity;
-    connections: { relationship: Pick<IRelationship, 'templateId' | 'properties'>; entity: IEntity }[];
+    connections: {
+        relationship: Pick<IRelationship, 'templateId' | 'properties'>;
+        sourceEntity: IEntity;
+        destinationEntity: IEntity;
+    }[];
 }

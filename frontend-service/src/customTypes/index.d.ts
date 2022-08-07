@@ -14,6 +14,7 @@ declare module 'react-force-graph-2d' {
         locked?: boolean;
         nodeSize?: number;
         highlighted: number;
+        numberOfConnectionsExpanded: number;
         mainHighlighted?: boolean;
         templateId: string;
         data: IEntity['properties'];

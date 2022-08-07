@@ -1,7 +1,7 @@
 /* eslint-disable no-param-reassign */
 import React from 'react';
 import { Menu as MuiMenu, MenuItem } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { GraphData, NodeObject } from 'react-force-graph-2d';
 import { useQuery, useQueryClient } from 'react-query';
 import i18next from 'i18next';
@@ -9,6 +9,7 @@ import { IEntityExpanded } from '../../../interfaces/entities';
 import { getExpandedEntityByIdRequest } from '../../../services/entitiesService';
 import { expandedEntityToGraphData } from '../../../utils/graph';
 import { IMongoRelationshipTemplate } from '../../../interfaces/relationshipTemplates';
+import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 
 const GraphNodeMenu: React.FC<{
     showMenu: boolean;
@@ -19,17 +20,21 @@ const GraphNodeMenu: React.FC<{
     graphData: GraphData;
 }> = ({ showMenu, node, onCloseMenu, location, addNewGraphData, graphData }) => {
     const navigate = useNavigate();
+    const [searchParams, setSearchParams] = useSearchParams();
 
     const queryClient = useQueryClient();
     const relationshipTemplates = queryClient.getQueryData<IMongoRelationshipTemplate[]>('getRelationshipTemplates');
+    const templateIds = queryClient.getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates')!.map((entityTemplate) => entityTemplate._id);
 
     const { refetch: getExpandedData } = useQuery<IEntityExpanded>(
-        ['getExpandedEntity', node.id, false],
-        () => getExpandedEntityByIdRequest(node.id, { disabled: false }),
+        ['getExpandedEntity', node.id, { disabled: false, templateIds, numberOfConnections: node.numberOfConnectionsExpanded + 1 }],
+        () => getExpandedEntityByIdRequest(node.id, { disabled: false, templateIds, numberOfConnections: node.numberOfConnectionsExpanded + 1 }),
         {
             enabled: false,
             onSuccess: (data) => {
                 const newGraphData = expandedEntityToGraphData(data, relationshipTemplates!);
+                node.numberOfConnectionsExpanded++;
+
                 addNewGraphData(newGraphData);
             },
         },
@@ -55,12 +60,21 @@ const GraphNodeMenu: React.FC<{
                 {i18next.t('graph.center')}
             </MenuItem>
             <MenuItem
+                disabled={node.numberOfConnectionsExpanded >= 6}
                 onClick={async () => {
                     await getExpandedData();
+                    const expandedParams = JSON.parse(searchParams.get('expandedEntities')!);
+
+                    const updatedExpandedEntities = {
+                        ...expandedParams,
+                        [node.id]: node.numberOfConnectionsExpanded,
+                    };
+
+                    setSearchParams({ expandedEntities: JSON.stringify(updatedExpandedEntities) });
                     onCloseMenu();
                 }}
             >
-                {i18next.t('graph.expand')}
+                {i18next.t('graph.expand')} {node.numberOfConnectionsExpanded !== 0 && `(x${node.numberOfConnectionsExpanded})`}
             </MenuItem>
             {node.fx || node.fy ? (
                 <MenuItem

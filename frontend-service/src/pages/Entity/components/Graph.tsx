@@ -1,13 +1,12 @@
 /* eslint-disable no-param-reassign */
 import React, { useEffect, useRef, useState } from 'react';
 import * as ReactDOMServer from 'react-dom/server';
-
-import { Box, CircularProgress } from '@mui/material';
+import { Box, CircularProgress, Grid } from '@mui/material';
 import { forceManyBody } from 'd3-force';
 import ForceGraph, { ForceGraphMethods, GraphData, LinkObject, NodeObject } from 'react-force-graph-2d';
-import { useQuery, useQueryClient } from 'react-query';
+import { useQuery, useQueryClient, useQueries } from 'react-query';
 import randomColor from 'randomcolor';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { GraphNodeMenu } from './GraphNodeMenu';
 import { GraphMenu } from './GraphMenu';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
@@ -26,6 +25,7 @@ import { EntityProperties } from '../../../common/EntityProperties';
 import { uniqByFunction } from '../../../utils/object';
 import { environment } from '../../../globals';
 import { PartialRequired } from '../../../utils/typeHelpers';
+import { GraphTopBar } from './GraphTopBar';
 
 const Graph: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> }> = ({ setTitle }) => {
     const ref = useRef<any>(null);
@@ -35,6 +35,7 @@ const Graph: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> }
 
     const { entityId } = useParams() as { entityId: string };
     const navigate = useNavigate();
+    const [searchParams, setSearchParams] = useSearchParams();
 
     const [nodeMenuState, setNodeMenuState] = useState<{ showMenu: boolean; top?: number; left?: number; node?: NodeObject }>({
         showMenu: false,
@@ -46,11 +47,13 @@ const Graph: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> }
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates')!;
     const relationshipTemplates = queryClient.getQueryData<IMongoRelationshipTemplate[]>('getRelationshipTemplates')!;
+    const templateIds = entityTemplates.map((entityTemplate) => entityTemplate._id);
 
     const [graphData, setGraphData] = useState<GraphData>({ nodes: [], links: [] });
+    const [loadAgain, setLoadAgain] = useState<boolean>(false);
 
     const updateGraphSize = () => {
-        const mainBox = ref.current?.parentElement.parentElement;
+        const mainBox = ref.current?.parentElement;
 
         if (mainBox) {
             setHeight(mainBox.offsetHeight);
@@ -71,6 +74,7 @@ const Graph: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> }
                 ...newGraphData.nodes.filter((value) => !prevGraphData.nodes.map(({ id }) => id).includes(value.id)),
                 ...prevGraphData.nodes,
             ];
+
             const mergedGraphLinks = getFixedGraphLinks([...newGraphData.links, ...prevGraphData.links]);
 
             const uniqueGraphNodes = uniqByFunction(mergedGraphNodes, (item1, item2) => item1.id === item2.id);
@@ -92,11 +96,49 @@ const Graph: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> }
     const [shouldZoomToFit, setShouldZoomToFit] = useState(true);
 
     const { refetch: getExpandedEntityById } = useQuery<IEntityExpanded>(
-        ['getExpandedEntity', entityId, false],
-        () => getExpandedEntityByIdRequest(entityId, { disabled: false }),
+        [
+            'getExpandedEntity',
+            entityId,
+            {
+                disabled: false,
+                templateIds,
+                numberOfConnections: 1,
+            },
+        ],
+        () =>
+            getExpandedEntityByIdRequest(entityId, {
+                disabled: false,
+                templateIds,
+                numberOfConnections: 1,
+            }),
         {
             enabled: false,
         },
+    );
+
+    const expandedParams = JSON.parse(searchParams.get('expandedEntities')!) || {};
+
+    const expandedEntitiesQueries = useQueries(
+        Object.keys(expandedParams).map((id) => {
+            return {
+                queryKey: [
+                    'getExpandedEntity',
+                    id,
+                    {
+                        disabled: false,
+                        templateIds,
+                        numberOfConnections: expandedParams[id],
+                    },
+                ],
+                queryFn: () =>
+                    getExpandedEntityByIdRequest(id, {
+                        disabled: false,
+                        templateIds,
+                        numberOfConnections: expandedParams[id],
+                    }),
+                enabled: false,
+            };
+        }),
     );
 
     useEffect(() => {
@@ -104,11 +146,20 @@ const Graph: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> }
             const { data: initialExpandedEntity } = await getExpandedEntityById();
 
             const expandedEntityGraphData = getGraphDataWithNodeSizes(expandedEntityToGraphData(initialExpandedEntity!, relationshipTemplates));
+            expandedEntityGraphData.nodes.find((node) => node.id === entityId)!.numberOfConnectionsExpanded++;
             setGraphData(expandedEntityGraphData);
+
+            const expandedEntitiesQueriesPromises = await Promise.all(expandedEntitiesQueries.map((query) => query.refetch()));
+
+            expandedEntitiesQueriesPromises.forEach((query) => {
+                addNewGraphData(expandedEntityToGraphData(query.data!, relationshipTemplates));
+            });
+            setLoadAgain(false);
+            setShouldZoomToFit(true);
         };
 
         setGraphDataOnStart();
-    }, [entityId]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [entityId, loadAgain]); // eslint-disable-line react-hooks/exhaustive-deps
 
     const renderTooltip = (node: NodeObject) => {
         const entityTemplate = entityTemplates.find((template) => template._id === node.templateId)!;
@@ -132,58 +183,67 @@ const Graph: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> }
 
     return (
         <Box ref={ref} overflow="hidden">
-            {graphData.nodes.length === 0 ? (
-                <CircularProgress size={80} />
-            ) : (
-                <ForceGraph
-                    height={height}
-                    width={width}
-                    ref={forceRef}
-                    graphData={graphData}
-                    nodeVal="nodeSize"
-                    nodeRelSize={environment.graphSettings.defaultNodeRadius}
-                    cooldownTicks={50}
-                    nodeLabel={renderTooltip}
-                    linkDirectionalArrowRelPos={1}
-                    linkDirectionalArrowLength={3}
-                    linkDirectionalParticles={4}
-                    linkDirectionalParticleWidth={(link) => (link.highlighted ? 4 : 0)}
-                    linkWidth={(link) => (link.highlighted ? 4 : 1)}
-                    nodeColor={(node) => getNodeColor(node)}
-                    linkColor={(link) => getLinkColor(link)}
-                    onNodeClick={(node) => {
-                        navigate(`/entity/${node.id}`);
-                    }}
-                    onNodeRightClick={(node, event) => {
-                        forceRef.current?.pauseAnimation();
-                        setNodeMenuState({ showMenu: true, top: event.clientY, left: event.clientX, node });
-                    }}
-                    onBackgroundRightClick={(event) => {
-                        forceRef.current?.pauseAnimation();
-                        setMenuState({ showMenu: true, top: event.clientY, left: event.clientX });
-                    }}
-                    onEngineStop={() => {
-                        if (shouldZoomToFit) {
-                            forceRef.current?.zoomToFit(400);
-                            setShouldZoomToFit(false);
-                        }
-                    }}
-                    nodeCanvasObjectMode={() => 'after'}
-                    nodeCanvasObject={(node: NodeObject, ctx) => {
-                        const entityTemplate = entityTemplates.find((template) => template._id === node.templateId)!;
+            <GraphTopBar
+                entityId={entityId}
+                onReset={() => {
+                    setSearchParams({});
+                    setLoadAgain(true);
+                }}
+            />
+            <Grid height="94vh">
+                {graphData.nodes.length === 0 ? (
+                    <CircularProgress size={80} />
+                ) : (
+                    <ForceGraph
+                        height={height}
+                        width={width}
+                        ref={forceRef}
+                        graphData={graphData}
+                        nodeVal="nodeSize"
+                        nodeRelSize={environment.graphSettings.defaultNodeRadius}
+                        cooldownTicks={50}
+                        nodeLabel={renderTooltip}
+                        linkDirectionalArrowRelPos={1}
+                        linkDirectionalArrowLength={3}
+                        linkDirectionalParticles={4}
+                        linkDirectionalParticleWidth={(link) => (link.highlighted ? 4 : 0)}
+                        linkWidth={(link) => (link.highlighted ? 4 : 1)}
+                        nodeColor={(node) => getNodeColor(node)}
+                        linkColor={(link) => getLinkColor(link)}
+                        onNodeClick={(node) => {
+                            navigate(`/entity/${node.id}`);
+                        }}
+                        onNodeRightClick={(node, event) => {
+                            forceRef.current?.pauseAnimation();
+                            setNodeMenuState({ showMenu: true, top: event.clientY, left: event.clientX, node });
+                        }}
+                        onBackgroundRightClick={(event) => {
+                            forceRef.current?.pauseAnimation();
+                            setMenuState({ showMenu: true, top: event.clientY, left: event.clientX });
+                        }}
+                        onEngineStop={() => {
+                            if (shouldZoomToFit) {
+                                forceRef.current?.zoomToFit(400);
+                                setShouldZoomToFit(false);
+                            }
+                        }}
+                        nodeCanvasObjectMode={() => 'after'}
+                        nodeCanvasObject={(node: NodeObject, ctx) => {
+                            const entityTemplate = entityTemplates.find((template) => template._id === node.templateId)!;
 
-                        drawNode(node as PartialRequired<NodeObject, 'x' | 'y' | 'nodeSize'>, ctx, entityTemplate, entityId === node.data._id);
-                        drawNodeLabel(node as PartialRequired<NodeObject, 'x' | 'y' | 'nodeSize'>, ctx, entityTemplate.displayName);
-                    }}
-                    linkCanvasObjectMode={() => 'after'}
-                    linkCanvasObject={(link, ctx) => {
-                        const label =
-                            relationshipTemplates.find((relationshipTemplate) => relationshipTemplate._id === link.templateId)?.displayName || '';
+                            drawNode(node as PartialRequired<NodeObject, 'x' | 'y' | 'nodeSize'>, ctx, entityTemplate, entityId === node.data._id);
+                            drawNodeLabel(node as PartialRequired<NodeObject, 'x' | 'y' | 'nodeSize'>, ctx, entityTemplate.displayName);
+                        }}
+                        linkCanvasObjectMode={() => 'after'}
+                        linkCanvasObject={(link, ctx) => {
+                            const label =
+                                relationshipTemplates.find((relationshipTemplate) => relationshipTemplate._id === link.templateId)?.displayName || '';
 
-                        drawLinkLabel(link, label, ctx);
-                    }}
-                />
-            )}
+                            drawLinkLabel(link, label, ctx);
+                        }}
+                    />
+                )}
+            </Grid>
             {nodeMenuState.node && (
                 <GraphNodeMenu
                     node={nodeMenuState.node}

@@ -64,6 +64,11 @@ export default {
             withEntity: 'עם ישות מסוג',
             failedToGetActivities: 'נכשל לטעון היסטוריה',
         },
+        graph: {
+            reset: 'אפס גרף',
+            copy: 'העתק קישור',
+            copiedSuccessfully: 'הקישור הועתק בהצלחה',
+        },
     },
     categoryPage: {
         disabledTemplate: 'תבנית לא פעילה',

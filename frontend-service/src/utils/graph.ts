@@ -6,6 +6,7 @@ import { drawRectangle, drawText, getLineAngle, getRectangleDimensionsByString }
 import { environment } from '../globals';
 import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { PartialRequired } from './typeHelpers';
+import { uniqByFunction } from './object';
 
 const { graphSettings } = environment;
 
@@ -73,30 +74,27 @@ export const entityToNode = (entity: IEntity): NodeObject => {
         templateId: entity.templateId,
         id: entity.properties._id,
         highlighted: 0,
+        numberOfConnectionsExpanded: 0,
     };
 };
 
 export const expandedEntityToGraphData = (expandedEntity: IEntityExpanded, relationshipTemplates: IMongoRelationshipTemplate[]): GraphData => {
-    const nodes = [entityToNode(expandedEntity.entity), ...expandedEntity.connections.map(({ entity }) => entityToNode(entity))];
+    const nodes = [entityToNode(expandedEntity.entity)];
+    expandedEntity.connections.forEach((connection) => {
+        nodes.push(entityToNode(connection.sourceEntity));
+        nodes.push(entityToNode(connection.destinationEntity));
+    });
+    const uniqueGraphNodes = uniqByFunction(nodes, (item1, item2) => item1.id === item2.id);
 
-    const links = expandedEntity.connections.map(({ entity, relationship }) => {
+    const links = expandedEntity.connections.map(({ sourceEntity, destinationEntity, relationship }) => {
         const relationshipTemplate = relationshipTemplates.find((template) => template._id === relationship.templateId);
 
         if (!relationshipTemplate) throw new Error('must have relationship template');
 
-        if (relationshipTemplate.sourceEntityId === expandedEntity.entity.templateId) {
-            return {
-                source: expandedEntity.entity.properties._id,
-                target: entity.properties._id,
-                templateId: relationship.templateId,
-                highlighted: 0,
-            };
-        }
-
-        return { source: entity.properties._id, target: expandedEntity.entity.properties._id, templateId: relationship.templateId, highlighted: 0 };
+        return { source: sourceEntity.properties._id, target: destinationEntity.properties._id, templateId: relationship.templateId, highlighted: 0 };
     });
 
-    return { nodes, links: getFixedGraphLinks(links) };
+    return { nodes: uniqueGraphNodes, links: getFixedGraphLinks(links) };
 };
 
 const drawNodeBorder = (node: PartialRequired<NodeObject, 'nodeSize'>, ctx: CanvasRenderingContext2D, colors: string[], borderWidth: number) => {
