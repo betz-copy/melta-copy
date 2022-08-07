@@ -201,7 +201,9 @@ describe('Entity router', () => {
         });
 
         it('Should get an existing entity (expanded mode - without connections)', async () => {
-            const res = await request(app).post(`/api/instances/entities/expanded/${id}`).send({ disabled: false });
+            const res = await request(app)
+                .post(`/api/instances/entities/expanded/${id}`)
+                .send({ disabled: false, numberOfConnections: 1, templateIds: [defaultTemplateId] });
 
             expect(res.statusCode).toBe(200);
             expect(res.body).toBeDefined();
@@ -213,7 +215,9 @@ describe('Entity router', () => {
         it('Should fail to get an existing entity (expanded mode - without connections)', async () => {
             const unknownId = 'unknown_id';
 
-            const res = await request(app).post(`/api/instances/entities/expanded/${unknownId}`).send({ disabled: false });
+            const res = await request(app)
+                .post(`/api/instances/entities/expanded/${unknownId}`)
+                .send({ disabled: false, numberOfConnections: 1, templateIds: [defaultTemplateId] });
 
             expect(res.statusCode).toBe(404);
             expect(res.body.type).toEqual('NotFound');

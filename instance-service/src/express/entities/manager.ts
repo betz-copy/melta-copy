@@ -66,12 +66,17 @@ export class EntityManager {
         return node;
     }
 
-    static async getExpandedEntityById(id: string, disabled: boolean) {
-        const disabledQuery = typeof disabled === 'boolean' ? `{disabled: ${disabled}}` : '';
-
+    static async getExpandedEntityById(id: string, disabled: boolean | null, templateIds: string[], numOfConnections: number) {
         const nodeAndConnections = await Neo4jClient.readTransaction(
-            `MATCH (n {_id:'${id}'}) OPTIONAL MATCH (n)-[r]-(m ${disabledQuery}) return n,r,m`,
-            normalizeReturnedRelAndEntities,
+            `MATCH (p {_id:'${id}'})
+             CALL apoc.path.expandConfig(p, {
+                labelFilter: '${templateIds.join('|')}',
+                minLevel: 0,
+                maxLevel: ${numOfConnections}
+             })
+             YIELD path
+             RETURN apoc.path.elements(path)`,
+            normalizeReturnedRelAndEntities(disabled),
         );
 
         if (!nodeAndConnections) {

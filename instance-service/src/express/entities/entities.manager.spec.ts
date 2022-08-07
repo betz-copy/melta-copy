@@ -111,7 +111,7 @@ describe('Entity manager', () => {
         });
 
         it('Should get an entity by id (expanded mode - without connections)', async () => {
-            const res = await EntityManager.getExpandedEntityById(id, false);
+            const res = await EntityManager.getExpandedEntityById(id, false, [defaultTemplateId], 1);
 
             expect(res.entity.templateId).toBe(defaultTemplateId);
             expect(res.entity.properties).toEqual(expect.objectContaining(defaultProperties));
@@ -121,14 +121,16 @@ describe('Entity manager', () => {
         it('Should fail to get an entity (expanded mode - without connections)', async () => {
             const unknownId = 'unknown_id';
 
-            await expect(() => EntityManager.getExpandedEntityById(unknownId, false)).rejects.toThrowError(`[NEO4J] entity "${unknownId}" not found`);
+            await expect(() => EntityManager.getExpandedEntityById(unknownId, false, [defaultTemplateId], 1)).rejects.toThrowError(
+                `[NEO4J] entity "${unknownId}" not found`,
+            );
         });
 
-        describe('With connections', () => {
-            const secondEntityProperties = { testProp: 'testProp' };
+        describe('With one connection', () => {
+            const secondEntityProperties = { testProp: 'secondTestProp' };
 
             beforeEach(async () => {
-                // Create second entities
+                // Create second entity
                 const secondEntity = await EntityManager.createEntity({ templateId: defaultTemplateId, properties: secondEntityProperties });
 
                 // Create relationship between two entities
@@ -141,7 +143,7 @@ describe('Entity manager', () => {
             });
 
             it('Should get an entity by id (without connections)', async () => {
-                const res = await EntityManager.getExpandedEntityById(id, true);
+                const res = await EntityManager.getExpandedEntityById(id, true, [defaultTemplateId], 1);
 
                 expect(res.entity.templateId).toBe(defaultTemplateId);
                 expect(res.entity.properties).toEqual(expect.objectContaining(defaultProperties));
@@ -149,7 +151,7 @@ describe('Entity manager', () => {
             });
 
             it('Get entity and its connections', async () => {
-                const res = await EntityManager.getExpandedEntityById(id, false);
+                const res = await EntityManager.getExpandedEntityById(id, false, [defaultTemplateId], 1);
 
                 expect(res).toBeDefined();
                 expect(res.entity.templateId).toBe(defaultTemplateId);
@@ -157,11 +159,71 @@ describe('Entity manager', () => {
 
                 expect(res.connections[0]).toBeDefined();
 
+                expect(res.connections[0].sourceEntity.templateId).toBe(defaultTemplateId);
+                expect(res.connections[0].sourceEntity.properties).toEqual(expect.objectContaining(defaultProperties));
+
                 expect(res.connections[0].relationship.templateId).toBe(defaultRelationshipTemplateId);
                 expect(res.connections[0].relationship.properties).toEqual(expect.objectContaining(defaultProperties));
 
-                expect(res.connections[0].entity.templateId).toBe(defaultTemplateId);
-                expect(res.connections[0].entity.properties).toEqual(expect.objectContaining(secondEntityProperties));
+                expect(res.connections[0].destinationEntity.templateId).toBe(defaultTemplateId);
+                expect(res.connections[0].destinationEntity.properties).toEqual(expect.objectContaining(secondEntityProperties));
+            });
+        });
+
+        describe('With two connections', () => {
+            const secondEntityProperties = { testProp: 'testPropTwo' };
+            const thirdEntityProperties = { testProp: 'testPropThree' };
+
+            beforeEach(async () => {
+                // Create second entity
+                const secondEntity = await EntityManager.createEntity({ templateId: defaultTemplateId, properties: secondEntityProperties });
+
+                // Create relationship between two entities
+                await RelationshipManager.createRelationshipByEntityIds({
+                    templateId: defaultRelationshipTemplateId,
+                    properties: defaultProperties,
+                    sourceEntityId: id,
+                    destinationEntityId: secondEntity.properties._id,
+                });
+
+                // Create third entity
+                const thirdEntity = await EntityManager.createEntity({ templateId: defaultTemplateId, properties: thirdEntityProperties });
+
+                // Create relationship between two entities
+                await RelationshipManager.createRelationshipByEntityIds({
+                    templateId: defaultRelationshipTemplateId,
+                    properties: defaultProperties,
+                    sourceEntityId: secondEntity.properties._id,
+                    destinationEntityId: thirdEntity.properties._id,
+                });
+            });
+
+            it('Get entity and its connections', async () => {
+                const res = await EntityManager.getExpandedEntityById(id, false, [defaultTemplateId], 2);
+
+                expect(res).toBeDefined();
+                expect(res.entity.templateId).toBe(defaultTemplateId);
+                expect(res.entity.properties).toEqual(expect.objectContaining(defaultProperties));
+
+                expect(res.connections[0]).toBeDefined();
+
+                expect(res.connections[0].sourceEntity.templateId).toBe(defaultTemplateId);
+                expect(res.connections[0].sourceEntity.properties).toEqual(expect.objectContaining(defaultProperties));
+
+                expect(res.connections[0].relationship.templateId).toBe(defaultRelationshipTemplateId);
+                expect(res.connections[0].relationship.properties).toEqual(expect.objectContaining(defaultProperties));
+
+                expect(res.connections[0].destinationEntity.templateId).toBe(defaultTemplateId);
+                expect(res.connections[0].destinationEntity.properties).toEqual(expect.objectContaining(secondEntityProperties));
+
+                expect(res.connections[1].sourceEntity.templateId).toBe(defaultTemplateId);
+                expect(res.connections[1].sourceEntity.properties).toEqual(expect.objectContaining(secondEntityProperties));
+
+                expect(res.connections[1].relationship.templateId).toBe(defaultRelationshipTemplateId);
+                expect(res.connections[1].relationship.properties).toEqual(expect.objectContaining(defaultProperties));
+
+                expect(res.connections[1].destinationEntity.templateId).toBe(defaultTemplateId);
+                expect(res.connections[1].destinationEntity.properties).toEqual(expect.objectContaining(thirdEntityProperties));
             });
         });
     });
@@ -183,7 +245,7 @@ describe('Entity manager', () => {
 
         describe('With connections to entity', () => {
             beforeEach(async () => {
-                // Create second entities
+                // Create second entity
                 const secondEntityProperties = { testProp: 'testProp' };
 
                 const secondEntity = await EntityManager.createEntity({ templateId: defaultTemplateId, properties: secondEntityProperties });

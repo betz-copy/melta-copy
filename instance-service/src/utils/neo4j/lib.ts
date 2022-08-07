@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import neo4j, { QueryResult } from 'neo4j-driver';
+import neo4j, { QueryResult, Node, Relationship } from 'neo4j-driver';
 import config from '../../config';
 
 /**
@@ -85,33 +85,53 @@ export const normalizeReturnedRelationship =
         return relationships;
     };
 
-export const normalizeReturnedRelAndEntities = (result: QueryResult) => {
+const doesPathContainDisabledNode = (path: (Node | Relationship)[], disabled: boolean) => {
+    return path.slice(1).some((pathPart) => {
+        const isNode = 'labels' in pathPart;
+
+        return isNode && !pathPart.properties.disabled === disabled;
+    });
+};
+
+export const normalizeReturnedRelAndEntities = (disabled: boolean | null) => (result: QueryResult) => {
     if (!result.records.length) {
         return null;
     }
 
-    const entity = result.records[0].get('n');
+    const entity = result.records[0].get(0)[0];
 
     if (!entity) {
         return null;
     }
 
-    const connections = result.records.map((record) => {
-        const relationship = record.get('r');
-        const entityInstance = record.get('m');
+    const validConnections = result.records.slice(1).filter((record) => {
+        const path = record.get(0) as (Node | Relationship)[];
 
-        if (!relationship && !entityInstance) {
-            return null;
+        if (typeof disabled === 'boolean') {
+            return !doesPathContainDisabledNode(path, disabled);
         }
 
+        return true;
+    });
+
+    const connections = validConnections.map((record) => {
+        const [firstEntity, relationship, secondEntity] = record.get(0).slice(-3) as [Node, Relationship, Node];
+        const [sourceEntity, destinationEntity] = relationship.start.equals(firstEntity.identity)
+            ? [firstEntity, secondEntity]
+            : [secondEntity, firstEntity];
+
         return {
+            sourceEntity: {
+                templateId: sourceEntity.labels[0],
+                properties: normalizeFields(sourceEntity.properties),
+            },
             relationship: {
                 templateId: relationship.type,
                 properties: normalizeFields(relationship.properties),
             },
-            entity: {
-                templateId: entityInstance.labels[0],
-                properties: normalizeFields(entityInstance.properties),
+            destinationEntity: {
+                templateId: destinationEntity.labels[0],
+                properties: normalizeFields(destinationEntity.properties),
             },
         };
     });
@@ -121,7 +141,7 @@ export const normalizeReturnedRelAndEntities = (result: QueryResult) => {
             templateId: entity.labels[0],
             properties: normalizeFields(entity.properties),
         },
-        connections: connections.filter(Boolean),
+        connections,
     };
 };
 

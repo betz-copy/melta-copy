@@ -17,7 +17,9 @@ export const getEntityByIdRequestSchema = Joi.object({
 export const getExpandedEntityByIdRequestSchema = Joi.object({
     query: {},
     body: {
-        disabled: Joi.boolean(),
+        disabled: Joi.boolean().default(null),
+        templateIds: Joi.array().items(Joi.string()).required(),
+        numberOfConnections: Joi.number().default(0),
     },
     params: {
         id: Joi.string().required(),

@@ -15,7 +15,9 @@ class EntityController {
     }
 
     static async getExpandedEntityById(req: Request, res: Response) {
-        res.json(await EntityManager.getExpandedEntityById(req.params.id, req.body.disabled as unknown as boolean));
+        const { disabled, numberOfConnections, templateIds } = req.body;
+
+        res.json(await EntityManager.getExpandedEntityById(req.params.id, disabled as unknown as boolean, templateIds, numberOfConnections));
     }
 
     static async deleteEntityById(req: Request, res: Response) {
