@@ -73,7 +73,7 @@ InstancesRouter.put('/relationships/:id', wrapMiddleware(validateUserCanUpdateOr
 InstancesRouter.delete(
     '/relationships/:id',
     wrapMiddleware(validateUserCanUpdateOrDeleteRelationshipInstance),
-    wrapController(InstancesController.deleteEntityInstance),
+    wrapController(InstancesController.deleteRelationshipInstance),
 );
 
 export default InstancesRouter;
