@@ -21,7 +21,7 @@ import { IFormula } from './interfaces/formula';
 
 type CypherQuery = {
     cypherQuery: string;
-    aggergationSubQueries: string[];
+    aggergationSubQueries: Array<{ subQuery: string; resultVariableName: string }>;
     parameters: Record<string, any>; // todo: use parameters to insert data for security
 };
 
@@ -42,15 +42,21 @@ const generateNeo4jQueryFromCountAggFunction = (
 
     const aggResultVariableName = `${countAggFunction.variableName}_countAggResult_${uuidv4().slice(0, 8)}`;
     return {
-        cypherQuery: aggResultVariableName,
+        cypherQuery: `\`${aggResultVariableName}\``,
         aggergationSubQueries: [
-            `
-            call {
-                with ${pinnedEntityName}
-                match (${pinnedEntityName})-[ri:\`${aggregatedRelationship._id}\`]-(\`${countAggFunction.variableName}\`)
-                return count(\`${countAggFunction.variableName}\`) as \`${aggResultVariableName}\`
-            }
-            `,
+            {
+                subQuery: `
+                    call {
+                        with ${pinnedEntityName}
+
+                        match (${pinnedEntityName})-[ri:\`${aggregatedRelationship._id}\`]-(\`${countAggFunction.variableName}\`)
+                        where \`${countAggFunction.variableName}\`._id <> $nonPinnedEntityId // exclude current from aggregation of existing connections
+
+                        return count(\`${countAggFunction.variableName}\`) as \`${aggResultVariableName}\`
+                    }
+                `,
+                resultVariableName: `\`${aggResultVariableName}\``,
+            },
         ],
         parameters: {},
     };
@@ -73,15 +79,18 @@ const generateNeo4jQueryFromSumAggFunction = (
 
     const aggResultVariableName = `${sumAggFunction.variableName}_sumAggResult_${uuidv4().slice(0, 8)}`;
     return {
-        cypherQuery: aggResultVariableName,
+        cypherQuery: `\`${aggResultVariableName}\``,
         aggergationSubQueries: [
-            `
-            call {
-                with ${pinnedEntityName}
-                match (${pinnedEntityName})-[ri:\`${aggregatedRelationship._id}\`]-(\`${sumAggFunction.variableName}\`)
-                return sum(\`${sumAggFunction.variableName}\`.${sumAggFunction.property}) as \`${aggResultVariableName}\`
-            }
-            `,
+            {
+                subQuery: `
+                    call {
+                        with ${pinnedEntityName}
+                        match (${pinnedEntityName})-[ri:\`${aggregatedRelationship._id}\`]-(\`${sumAggFunction.variableName}\`)
+                        return sum(\`${sumAggFunction.variableName}\`.${sumAggFunction.property}) as \`${aggResultVariableName}\`
+                    }
+                `,
+                resultVariableName: `\`${aggResultVariableName}\``,
+            },
         ],
         parameters: {},
     };
@@ -228,13 +237,16 @@ const generateNeo4jQueryFromAggregationGroup = (
     return {
         cypherQuery: `\`${aggResultVariableName}\``,
         aggergationSubQueries: [
-            `
-            call {
-                with ${pinnedEntityName}
-                match (${pinnedEntityName})-[ri:\`${aggregatedRelationship._id}\`]-(\`${formula.variableNameOfAggregation}\`)
-                return ${neoAggregation}(${formulaQuery.cypherQuery}) as \`${aggResultVariableName}\`
-            }
-            `,
+            {
+                subQuery: `
+                    call {
+                        with ${pinnedEntityName}
+                        match (${pinnedEntityName})-[ri:\`${aggregatedRelationship._id}\`]-(\`${formula.variableNameOfAggregation}\`)
+                        return ${neoAggregation}(${formulaQuery.cypherQuery}) as \`${aggResultVariableName}\`
+                    }
+                `,
+                resultVariableName: `\`${aggResultVariableName}\``,
+            },
         ],
         parameters: formulaQuery.parameters,
     };
@@ -282,10 +294,12 @@ export const generateNeo4jQuery = (
         WHERE ${pinnedEntityName}._id = $pinnedEntityId AND ${nonPinnedEntityName}._id = $nonPinnedEntityId AND rel._id = $nonPinnedRelationshipId
         
         // aggregations actions
-        ${formulaQuery.aggergationSubQueries.join('\n')}
+        ${formulaQuery.aggergationSubQueries.map(({ subQuery }) => subQuery).join('\n')}
 
         call {
-            with ${pinnedEntityName}, ${nonPinnedEntityName}
+            with ${pinnedEntityName}, ${nonPinnedEntityName},
+            ${formulaQuery.aggergationSubQueries.map(({ resultVariableName }) => resultVariableName).join(', ')}
+
             return (${formulaQuery.cypherQuery}) as doesRuleStillApply
         }
         return doesRuleStillApply;                           

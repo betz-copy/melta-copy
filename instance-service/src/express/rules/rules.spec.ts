@@ -274,7 +274,6 @@ export const mainRunExampleRule2 = () => {
         [{ relationshipTemplate: tripConnectedToFlightRelationshipTemplate, unpinnedEntityTemplate: flightEntityTemplate }],
     );
 
-    // console.log('generateNeo4jQuery', neo4jQuery.cypherQuery, neo4jQuery.parameters);
     return neo4jQuery;
 };
 
@@ -294,6 +293,17 @@ export const mainRunExampleRule3 = () => {
         [{ relationshipTemplate: tripConnectedToFlightRelationshipTemplate, unpinnedEntityTemplate: flightEntityTemplate }],
     );
 
-    // console.log('generateNeo4jQuery', neo4jQuery.cypherQuery, neo4jQuery.parameters);
     return neo4jQuery;
 };
+
+/*
+transaction:
+-------------
+1. do action
+
+2. get all pairs to check rules
+
+3. check for each pair the rule
+
+4. throw 400 if needed, etc etc...
+*/

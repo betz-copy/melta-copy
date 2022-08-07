@@ -2,7 +2,7 @@ import Server from './express/server';
 import config from './config';
 import Neo4jClient from './utils/neo4j';
 import RedisClient from './utils/redis';
-import { mainRunExampleRule3 } from './express/rules/rules.spec';
+import { mainRunExampleRule1 } from './express/rules/rules.spec';
 
 const { service, neo4j, redis } = config;
 
