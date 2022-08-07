@@ -79,7 +79,7 @@ const agGridNumberFilterSchema = Joi.object({
         'notBlank',
     ).required(),
     filter: Joi.number().when('type', { is: Joi.invalid('blank', 'notBlank'), then: Joi.required() }),
-    filterTo: Joi.number(),
+    filterTo: Joi.number().when('type', { is: Joi.valid('inRange'), then: Joi.required() }),
 });
 
 const agGridTextFilterSchema = Joi.object({
@@ -102,7 +102,7 @@ const agGridDateFilterSchema = Joi.object({
         'notBlank',
     ).required(),
     dateFrom: Joi.string().allow(null).required(),
-    dateTo: Joi.when('type', { is: 'inRange', then: Joi.string().required() }).allow(null).required(),
+    dateTo: Joi.string().when('type', { is: Joi.valid('inRange'), then: Joi.required(), otherwise: Joi.allow(null) }),
 });
 
 /**
