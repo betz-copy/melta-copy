@@ -3,7 +3,9 @@ import * as lodashUniqby from 'lodash.uniqby';
 import { EntityTemplateManagerService } from '../../externalServices/entityTemplateManager';
 import { InstanceManagerService, IRelationship } from '../../externalServices/instanceManager';
 import { RelationshipsTemplateManagerService } from '../../externalServices/relationshipsTemplateManager';
+import { ServiceError } from '../error';
 import { validateAuthorization } from '../permissions/validateAuthorizationMiddleware';
+import { TemplatesManager } from '../templates/manager';
 
 // entities
 const getCategoryIdFromTemplateId = async (templateId: string) => {
@@ -35,6 +37,17 @@ export const validateUserCanUpdateGetOrDeleteEntityInstance = async (req: Reques
     const categoryId = await getCategoryIdFromTemplateId(templateId);
 
     return validateAuthorization(req, 'Instances', [categoryId]);
+};
+
+export const validateUserCanGetExpandedEntity = async (req: Request) => {
+    const { templateIds } = req.body;
+    const allAllowedEntityTemplates = (await TemplatesManager.getAllAllowedEntityTemplates(req.user?.id!)).map(
+        (entityTemplate) => entityTemplate._id,
+    );
+    const isAllowedAllTemplates = templateIds.every((templateId) => allAllowedEntityTemplates.includes(templateId));
+
+    if (!isAllowedAllTemplates)
+        throw new ServiceError(403, 'user not authorized', { metadata: `unauthorized templates ${JSON.stringify(templateIds)}` });
 };
 
 // relationships

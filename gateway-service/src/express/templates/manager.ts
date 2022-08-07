@@ -82,6 +82,30 @@ export class TemplatesManager {
         };
     }
 
+    static async getAllAllowedEntityTemplates(userId: string) {
+        const allowedEntityTemplates = await TemplatesManager.getAllowedEntitiesTemplates(userId);
+        const allowedEntityTemplatesIds = allowedEntityTemplates.map((entityTemplate) => entityTemplate._id);
+
+        const allowedRelationshipsTemplatesBySource = await RelationshipsTemplateManagerService.searchRelationshipTemplates({
+            sourceEntityIds: allowedEntityTemplatesIds,
+        });
+        const allowedRelationshipsTemplatesByDestination = await RelationshipsTemplateManagerService.searchRelationshipTemplates({
+            destinationEntityIds: allowedEntityTemplatesIds,
+        });
+
+        const extendedAllowedRelationshipsTemplatesIds = this.getAllEntityTemplateThatAreOneRelationshipAwayFromUsersPermissions(
+            allowedRelationshipsTemplatesBySource,
+            allowedRelationshipsTemplatesByDestination,
+            allowedEntityTemplatesIds,
+        );
+
+        const allowedEntityTemplatesByOneRelationship = await EntityTemplateManagerService.searchEntityTemplates({
+            ids: extendedAllowedRelationshipsTemplatesIds,
+        });
+
+        return [...allowedEntityTemplates, ...allowedEntityTemplatesByOneRelationship];
+    }
+
     // categories
     static async getAllCategories() {
         return EntityTemplateManagerService.getAllCategories();
