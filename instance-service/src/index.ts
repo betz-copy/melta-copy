@@ -14,11 +14,12 @@ const initializeRedis = async () => {
 };
 
 const main = async () => {
+    await initializeRedis();
+    await Neo4jClient.initialize(neo4j.url, neo4j.auth, neo4j.database);
+
     const server = new Server(service.port);
 
     await server.start();
-    await initializeRedis();
-    await Neo4jClient.initialize(neo4j.url, neo4j.auth, neo4j.database);
 
     console.log(`Server started on port: ${service.port}`);
 };
