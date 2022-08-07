@@ -78,7 +78,7 @@ const agGridNumberFilterSchema = Joi.object({
         'blank',
         'notBlank',
     ).required(),
-    filter: Joi.number().required(),
+    filter: Joi.number().when('type', { is: Joi.invalid('blank', 'notBlank'), then: Joi.required() }),
     filterTo: Joi.number(),
 });
 
