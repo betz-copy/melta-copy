@@ -44,7 +44,7 @@ const GraphTopBar: React.FC<{ onReset: React.MouseEventHandler<HTMLButtonElement
                     component="h4"
                     variant="h4"
                 >
-                    {entityTemplate.category.displayName}
+                    {entityTemplate?.category.displayName}
                 </Typography>
 
                 <Typography variant="h4" fontSize="30px" color="#d3d8df" marginLeft="5px" marginRight="5px">
@@ -52,7 +52,7 @@ const GraphTopBar: React.FC<{ onReset: React.MouseEventHandler<HTMLButtonElement
                 </Typography>
 
                 <Typography style={{ paddingBottom: '2px' }} variant="h4" fontSize="28px" color="rgb(25, 118, 210)">
-                    {entityTemplate.displayName}
+                    {entityTemplate?.displayName}
                 </Typography>
             </Box>
             <Box>
