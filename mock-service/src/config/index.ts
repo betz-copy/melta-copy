@@ -6,6 +6,7 @@ const config = {
         uri: env.get('PERMISSIONS_API_URI').required().asString(),
         baseRoute: env.get('PERMISSIONS_API_BASE_ROUTE').default('/api/permissions').asString(),
         isAliveRoute: env.get('PERMISSIONS_API_ALIVE_ROUTE').default('/isAlive').asString(),
+        kartoffelIds: env.get('KARTOFFEL_IDS').required().asArray(),
     },
     entityTemplateManager: {
         uri: env.get('ENTITY_TEMPLATE_MANAGER_URI').required().asString(),

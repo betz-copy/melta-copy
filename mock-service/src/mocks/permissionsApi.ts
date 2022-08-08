@@ -1,29 +1,36 @@
 import { IMongoCategory } from '../categories';
 import { IPermission } from '../permissionsApi';
-
-const user1KartoffelId = '5e5688324203fc40043591aa';
+import config from '../config/index';
 
 export const getPermissionsToCreate = (categories: IMongoCategory[]) => {
-    const permissionsResourcePermission: IPermission = {
-        userId: user1KartoffelId,
-        resourceType: 'Permissions',
-        category: 'All',
-        scopes: ['Read', 'Write'],
-    };
+    const permissions: IPermission[] = [];
 
-    const templatesResourcePermission: IPermission = {
-        userId: user1KartoffelId,
-        resourceType: 'Templates',
-        category: 'All',
-        scopes: ['Read', 'Write'],
-    };
+    config.permissionsApi.kartoffelIds.forEach((kartoffelId) => {
+        const permissionsResourcePermission: IPermission = {
+            userId: kartoffelId,
+            resourceType: 'Permissions',
+            category: 'All',
+            scopes: ['Read', 'Write'],
+        };
 
-    const instancesResourcePermissions: IPermission[] = categories.map(({ _id }) => ({
-        userId: user1KartoffelId,
-        resourceType: 'Instances',
-        category: _id,
-        scopes: ['Read', 'Write'],
-    }));
+        const templatesResourcePermission: IPermission = {
+            userId: kartoffelId,
+            resourceType: 'Templates',
+            category: 'All',
+            scopes: ['Read', 'Write'],
+        };
 
-    return [permissionsResourcePermission, templatesResourcePermission, ...instancesResourcePermissions];
+        const instancesResourcePermissions: IPermission[] = categories.map(({ _id }) => ({
+            userId: kartoffelId,
+            resourceType: 'Instances',
+            category: _id,
+            scopes: ['Read', 'Write'],
+        }));
+
+        permissions.push(permissionsResourcePermission, templatesResourcePermission, ...instancesResourcePermissions);
+    });
+
+    console.log(permissions);
+
+    return permissions;
 };
