@@ -56,7 +56,19 @@ export const booleanColDef = (field: string, valueGetter: ValueGetterFunc, value
         hide,
     };
 };
-
+export const enumColDef = (field: string, valueGetter: ValueGetterFunc, value: { title: string }, values: Array<string>, hide = false): ColDef => {
+    return {
+        field,
+        headerName: value.title,
+        valueGetter,
+        filter: 'agSetColumnFilter',
+        filterParams: {
+            suppressMiniFilter: true,
+            values: [...values, undefined],
+        },
+        hide,
+    };
+};
 export const dateColDef = (field: string, valueGetter: ValueGetterFunc, value: { title: string; format?: string }, hide = false): ColDef => {
     const { format } = value;
 

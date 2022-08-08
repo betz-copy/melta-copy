@@ -4,7 +4,7 @@ import { ValueGetterFunc } from '@ag-grid-community/core';
 import i18next from 'i18next';
 import { IEntity } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
-import { booleanColDef, dateColDef, fileColDef, numberColDef, stringColDef } from '../../utils/agGrid/commonColDefs';
+import { booleanColDef, dateColDef, enumColDef, fileColDef, numberColDef, stringColDef } from '../../utils/agGrid/commonColDefs';
 import IconButtonWithPopoverText from '../IconButtonWithPopover';
 
 export const getColumnDefs = <Data extends any>(
@@ -21,7 +21,6 @@ export const getColumnDefs = <Data extends any>(
 ) => {
     const columnDefs = Object.entries(template.properties.properties).map(([key, value]) => {
         const { type, format } = value;
-
         const valueGetter: ValueGetterFunc = ({ data }) => getEntityPropertiesData(data)[key];
 
         const hide = hideNonPreview && !template.propertiesPreview.includes(key);
@@ -30,6 +29,7 @@ export const getColumnDefs = <Data extends any>(
         if (type === 'boolean') return booleanColDef(key, valueGetter, value, hide);
         if (format === 'date' || format === 'date-time') return dateColDef(key, valueGetter, value, hide);
         if (format === 'fileId') return fileColDef(key, valueGetter, value, hide);
+        if (value.enum) return enumColDef(key, valueGetter, value, value.enum, hide);
         return stringColDef(key, valueGetter, value, hide);
     });
 
