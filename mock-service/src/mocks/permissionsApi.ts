@@ -30,7 +30,5 @@ export const getPermissionsToCreate = (categories: IMongoCategory[]) => {
         permissions.push(permissionsResourcePermission, templatesResourcePermission, ...instancesResourcePermissions);
     });
 
-    console.log(permissions);
-
     return permissions;
 };
