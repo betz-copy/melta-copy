@@ -20,6 +20,7 @@ import {
     getGraphDataWithNodeSizes,
     getFixedGraphLinks,
     drawNode,
+    fixHighlighted,
 } from '../../../utils/graph';
 import { EntityProperties } from '../../../common/EntityProperties';
 import { uniqByFunction } from '../../../utils/object';
@@ -29,6 +30,8 @@ import { GraphTopBar } from './GraphTopBar';
 
 const Graph: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> }> = ({ setTitle }) => {
     const ref = useRef<any>(null);
+
+    const [updateHighlighted, setUpdateHighlighted] = useState(false);
 
     const [width, setWidth] = useState(0);
     const [height, setHeight] = useState(0);
@@ -70,12 +73,8 @@ const Graph: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> }
 
     const addNewGraphData = (newGraphData: GraphData) => {
         setGraphData((prevGraphData) => {
-            const mergedGraphNodes = [
-                ...newGraphData.nodes.filter((value) => !prevGraphData.nodes.map(({ id }) => id).includes(value.id)),
-                ...prevGraphData.nodes,
-            ];
-
-            const mergedGraphLinks = getFixedGraphLinks([...newGraphData.links, ...prevGraphData.links]);
+            const mergedGraphNodes = [...prevGraphData.nodes, ...newGraphData.nodes];
+            const mergedGraphLinks = getFixedGraphLinks([...prevGraphData.links, ...newGraphData.links]);
 
             const uniqueGraphNodes = uniqByFunction(mergedGraphNodes, (item1, item2) => item1.id === item2.id);
             const uniqueGraphLinks = uniqByFunction(
@@ -83,12 +82,13 @@ const Graph: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> }
                 (item1, item2) => item1.source === item2.source && item1.target === item2.target,
             );
 
-            const updatedGraphData = {
+            // not every link source and target are populated at this point so updating highlighted links on next graph tick
+            setUpdateHighlighted(true);
+
+            return getGraphDataWithNodeSizes({
                 nodes: uniqueGraphNodes,
                 links: uniqueGraphLinks,
-            };
-
-            return getGraphDataWithNodeSizes(updatedGraphData);
+            });
         });
     };
 
@@ -210,6 +210,12 @@ const Graph: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> }
                         linkWidth={(link) => (link.highlighted ? 4 : 1)}
                         nodeColor={(node) => getNodeColor(node)}
                         linkColor={(link) => getLinkColor(link)}
+                        onEngineTick={() => {
+                            if (updateHighlighted) {
+                                fixHighlighted(graphData);
+                                setUpdateHighlighted(false);
+                            }
+                        }}
                         onNodeClick={(node) => {
                             navigate(`/entity/${node.id}`);
                         }}

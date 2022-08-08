@@ -214,3 +214,33 @@ export const drawLinkLabel = (link: LinkObject, linkLabel: string, ctx: CanvasRe
 
     ctx.restore();
 };
+
+export const highlightNode = (node: NodeObject, graphData: GraphData, highlight: boolean = true) => {
+    const count = highlight ? 1 : -1;
+
+    node.mainHighlighted = highlight;
+
+    graphData.links.forEach((link) => {
+        if ((link.target as NodeObject).id === node.id) {
+            (link.source as NodeObject).highlighted += count;
+            link.highlighted += count;
+        }
+        if ((link.source as NodeObject).id === node.id) {
+            (link.target as NodeObject).highlighted += count;
+            link.highlighted += count;
+        }
+    });
+};
+
+export const fixHighlighted = (graphData: GraphData) => {
+    graphData.links.forEach((link) => {
+        link.highlighted = 0;
+        (link.source as NodeObject).highlighted = 0;
+        (link.target as NodeObject).highlighted = 0;
+    });
+    graphData.nodes.forEach((node) => {
+        if (node.mainHighlighted) {
+            highlightNode(node, graphData);
+        }
+    });
+};

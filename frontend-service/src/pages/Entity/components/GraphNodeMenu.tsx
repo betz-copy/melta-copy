@@ -7,7 +7,7 @@ import { useQuery, useQueryClient } from 'react-query';
 import i18next from 'i18next';
 import { IEntityExpanded } from '../../../interfaces/entities';
 import { getExpandedEntityByIdRequest } from '../../../services/entitiesService';
-import { expandedEntityToGraphData } from '../../../utils/graph';
+import { expandedEntityToGraphData, highlightNode } from '../../../utils/graph';
 import { IMongoRelationshipTemplate } from '../../../interfaces/relationshipTemplates';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 
@@ -103,19 +103,7 @@ const GraphNodeMenu: React.FC<{
             )}
             <MenuItem
                 onClick={() => {
-                    node.mainHighlighted = !node.mainHighlighted;
-                    const count = node.mainHighlighted ? 1 : -1;
-
-                    graphData.links.forEach((link) => {
-                        if (link.target === node) {
-                            (link.source as NodeObject).highlighted += count;
-                            link.highlighted += count;
-                        }
-                        if (link.source === node) {
-                            (link.target as NodeObject).highlighted += count;
-                            link.highlighted += count;
-                        }
-                    });
+                    highlightNode(node, graphData, !node.mainHighlighted);
 
                     onCloseMenu();
                 }}
