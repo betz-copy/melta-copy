@@ -39,7 +39,7 @@ const entityTemplates = [
                 },
                 options: {
                     type: 'string',
-                    title: 'אפשרויות',
+                    title: 'רשימה',
                     enum: ['אפשרות1', 'אפשרות2'],
                 },
             },

@@ -276,7 +276,7 @@ export default {
         'date-time': 'תאריך ושעה',
         email: 'כתובת מייל',
         pattern: 'תבנית (regex)',
-        enum: 'אפשרויות',
+        enum: 'רשימה',
     },
     input: {
         imagePicker: {
