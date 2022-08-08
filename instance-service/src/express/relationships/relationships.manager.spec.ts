@@ -117,7 +117,12 @@ describe('Relationship manager', () => {
 
     describe('Delete relationship', () => {
         it('Should delete an existing relationship', async () => {
-            await RelationshipManager.deleteRelationshipById(relId);
+            const relationship = await RelationshipManager.deleteRelationshipById(relId);
+
+            expect(relationship.templateId).toStrictEqual(defaultRelationshipTemplateId);
+            expect(relationship.properties).toEqual(expect.objectContaining(defaultProperties));
+            expect(relationship.sourceEntityId).toStrictEqual(entityId);
+            expect(relationship.destinationEntityId).toStrictEqual(secondEntityId);
         });
 
         it('Should fail to delete an existing relationship', async () => {

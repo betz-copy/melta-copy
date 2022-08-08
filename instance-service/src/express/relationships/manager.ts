@@ -1,5 +1,11 @@
 import Neo4jClient from '../../utils/neo4j';
-import { generateDefaultProperties, getNeo4jDateTime, normalizeResponseCount, normalizeReturnedRelationship } from '../../utils/neo4j/lib';
+import {
+    generateDefaultProperties,
+    getNeo4jDateTime,
+    normalizeResponseCount,
+    normalizeReturnedDeletedRelationship,
+    normalizeReturnedRelationship,
+} from '../../utils/neo4j/lib';
 import { IRelationship } from './interface';
 import { NotFoundError, ServiceError } from '../error';
 import config from '../../config';
@@ -58,13 +64,18 @@ export class RelationshipManager {
 
     static async deleteRelationshipById(id: string) {
         const relationship = await Neo4jClient.writeTransaction(
-            `MATCH (s)-[r]-(d) WHERE r._id='${id}' DELETE r RETURN r, s, d`,
-            normalizeReturnedRelationship(),
+            `MATCH (s)-[r]->(d)
+             WHERE r._id='${id}' with *, properties(r) as rProps, type(r) as rType
+             DELETE r 
+             RETURN rProps, rType, s, d`,
+            normalizeReturnedDeletedRelationship,
         );
 
         if (!relationship) {
             throw new NotFoundError(`[NEO4J] relationship "${id}" not found`);
         }
+
+        return relationship;
     }
 
     static async updateRelationshipPropertiesById(id: string, relationshipProperties: object) {

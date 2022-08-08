@@ -43,7 +43,7 @@ export const normalizeReturnedEntity =
     (response: ResponseType = 'singleResponse') =>
     (result: QueryResult) => {
         const entities = result.records.map((record) => {
-            const { labels, properties } = record.get(0);
+            const { labels, properties } = record.get(0) as Node;
 
             return {
                 templateId: labels[0],
@@ -66,9 +66,9 @@ export const normalizeReturnedRelationship =
     (response: ResponseType = 'singleResponse') =>
     (result: QueryResult) => {
         const relationships = result.records.map((record) => {
-            const { type, properties } = record.get('r');
-            const { properties: sourceEntityProps } = record.get('s');
-            const { properties: destEntityProps } = record.get('d');
+            const { type, properties } = record.get('r') as Relationship;
+            const { properties: sourceEntityProps } = record.get('s') as Node;
+            const { properties: destEntityProps } = record.get('d') as Node;
 
             return {
                 templateId: type,
@@ -84,6 +84,26 @@ export const normalizeReturnedRelationship =
 
         return relationships;
     };
+
+export const normalizeReturnedDeletedRelationship = (result: QueryResult) => {
+    if (result.records.length === 0) {
+        return null;
+    }
+
+    const relationshipResult = result.records[0];
+
+    const relationshipProperties = relationshipResult.get('rProps') as Relationship['properties'];
+    const relationshipType = relationshipResult.get('rType') as Relationship['type'];
+    const { properties: sourceEntityProps } = relationshipResult.get('s') as Node;
+    const { properties: destEntityProps } = relationshipResult.get('d') as Node;
+
+    return {
+        templateId: relationshipType,
+        properties: normalizeFields(relationshipProperties),
+        sourceEntityId: sourceEntityProps._id,
+        destinationEntityId: destEntityProps._id,
+    };
+};
 
 const doesPathContainDisabledNode = (path: (Node | Relationship)[], disabled: boolean) => {
     return path.slice(1).some((pathPart) => {
