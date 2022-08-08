@@ -60,15 +60,18 @@ const Entity: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> 
             setDeleteRelationshipDialogState({ open: false });
         },
         onSuccess: (_deletedRelationship, deletedRelationshipId) => {
-            queryClient.setQueryData<IEntityExpanded>(['getExpandedEntity', entityId], (prevEntityExpanded) => {
-                const connections = prevEntityExpanded!.connections.filter(
-                    ({ relationship }) => relationship.properties._id !== deletedRelationshipId,
-                );
-                return {
-                    ...prevEntityExpanded!,
-                    connections,
-                };
-            });
+            queryClient.setQueryData<IEntityExpanded>(
+                ['getExpandedEntity', entityId, { templateIds, numberOfConnections: 1 }],
+                (prevEntityExpanded) => {
+                    const connections = prevEntityExpanded!.connections.filter(
+                        ({ relationship }) => relationship.properties._id !== deletedRelationshipId,
+                    );
+                    return {
+                        ...prevEntityExpanded!,
+                        connections,
+                    };
+                },
+            );
             setDeleteRelationshipDialogState({ open: false });
         },
     });
@@ -137,7 +140,7 @@ const Entity: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> 
         if (!doesCreatedRelationshipWithCurrEntity) {
             return;
         }
-        queryClient.setQueryData<IEntityExpanded>(['getExpandedEntity', entityId], (prevEntityExpanded) => {
+        queryClient.setQueryData<IEntityExpanded>(['getExpandedEntity', entityId, { templateIds, numberOfConnections: 1 }], (prevEntityExpanded) => {
             return {
                 ...prevEntityExpanded!,
                 connections: [

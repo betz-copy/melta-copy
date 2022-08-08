@@ -23,11 +23,13 @@ const EditEntityDetails: React.FC<{
     const { entity } = expandedEntity;
     const queryClient = useQueryClient();
 
+    const templateIds = queryClient.getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates')!.map((template) => template._id);
+
     const { isLoading: isUpdateLoading, mutateAsync: updateMutation } = useMutation(
         (newEntityDate: EntityWizardValues) => updateEntityRequest(entity.properties._id, newEntityDate),
         {
             onSuccess: (data) => {
-                queryClient.setQueryData(['getExpandedEntity', entity.properties._id], () => {
+                queryClient.setQueryData(['getExpandedEntity', entity.properties._id, { templateIds, numberOfConnections: 1 }], () => {
                     return {
                         ...expandedEntity,
                         entity: data,

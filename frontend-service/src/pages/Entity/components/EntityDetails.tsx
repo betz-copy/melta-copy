@@ -56,7 +56,8 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
         ({ entityId, disabled }: { entityId: string; disabled: boolean }) => updateEntityStatusRequest(entityId, disabled),
         {
             onSuccess: (data) => {
-                queryClient.setQueryData(['getExpandedEntity', entity.properties._id], () => {
+                const templateIds = entityTemplates.map((template) => template._id);
+                queryClient.setQueryData(['getExpandedEntity', entity.properties._id, { templateIds, numberOfConnections: 1 }], () => {
                     return {
                         ...expandedEntity,
                         entity: data,

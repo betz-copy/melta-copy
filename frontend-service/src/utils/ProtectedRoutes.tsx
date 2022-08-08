@@ -36,7 +36,7 @@ export const EntityProtectedRoute: React.FC<{ permissions: IPermissionsOfUser; e
 
     const templateIds = queryClient.getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates')!.map((entityTemplate) => entityTemplate._id);
 
-    const { data: expandedEntity, isLoading } = useQuery(['getExpandedEntity', entityId], () =>
+    const { data: expandedEntity, isLoading } = useQuery(['getExpandedEntity', entityId, { templateIds, numberOfConnections: 0 }], () =>
         getExpandedEntityByIdRequest(entityId!, { templateIds }),
     );
 

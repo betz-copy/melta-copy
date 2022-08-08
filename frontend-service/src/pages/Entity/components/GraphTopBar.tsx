@@ -13,7 +13,7 @@ const GraphTopBar: React.FC<{ onReset: React.MouseEventHandler<HTMLButtonElement
     const entityTemplates = queryClient.getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates')!;
     const templateIds = entityTemplates.map((entityTemplate) => entityTemplate._id);
 
-    const { data: expandedEntity } = useQuery(['getExpandedEntity', entityId], () =>
+    const { data: expandedEntity } = useQuery(['getExpandedEntity', entityId, { templateIds, numberOfConnections: 1 }], () =>
         getExpandedEntityByIdRequest(entityId!, { templateIds, numberOfConnections: 1 }),
     );
 
