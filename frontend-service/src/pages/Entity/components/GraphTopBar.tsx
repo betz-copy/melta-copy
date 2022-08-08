@@ -23,7 +23,7 @@ const GraphTopBar: React.FC<{ onReset: React.MouseEventHandler<HTMLButtonElement
 
     const handleCopy = () => {
         navigator.clipboard.writeText(window.location.href);
-        toast.success(i18next.t(i18next.t('entityPage.graph.copiedSuccessfully')));
+        toast.success(i18next.t('entityPage.graph.copiedSuccessfully'));
     };
     return (
         <Box
