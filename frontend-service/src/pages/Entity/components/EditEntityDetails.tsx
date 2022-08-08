@@ -5,11 +5,12 @@ import { useMutation, useQueryClient } from 'react-query';
 import i18next from 'i18next';
 import { toast } from 'react-toastify';
 import { Form, Formik } from 'formik';
+import mapValues from 'lodash.mapvalues';
+import pickBy from 'lodash.pickby';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { IEntityExpanded } from '../../../interfaces/entities';
+import { IEntity, IEntityExpanded } from '../../../interfaces/entities';
 import { updateEntityRequest } from '../../../services/entitiesService';
 import { EntityWizardValues } from '../../../common/wizards/entity';
-import { objectFilter, objectMap } from '../../../utils/object';
 import { EntityFilesInput } from '../../../common/inputs/EntityFilesInput';
 import { JSONSchemaFormik, ajvValidate } from '../../../common/inputs/JSONSchemaFormik';
 import { BlueTitle } from '../../../common/BlueTitle';
@@ -45,15 +46,13 @@ const EditEntityDetails: React.FC<{
         },
     );
 
-    const templateFilesProperties = objectFilter(entityTemplate.properties.properties, (_key, value) => value.format === 'fileId');
+    const templateFilesProperties = pickBy(entityTemplate.properties.properties, (value) => value.format === 'fileId');
     const templateFileKeys = Object.keys(templateFilesProperties);
     const requiredFilesNames = entityTemplate.properties.required.filter((name) => templateFileKeys.includes(name));
 
-    const fieldProperties = objectFilter(entity.properties, (key) => !templateFileKeys.includes(key));
-    const fileIdsProperties = objectFilter(entity.properties, (key) => templateFileKeys.includes(key));
-    const fileProperties = objectMap(fileIdsProperties, (_key, value) => {
-        return { name: value };
-    });
+    const fieldProperties = pickBy(entity.properties, (_value, key) => !templateFileKeys.includes(key)) as IEntity['properties'];
+    const fileIdsProperties = pickBy(entity.properties, (_value, key) => templateFileKeys.includes(key));
+    const fileProperties = mapValues(fileIdsProperties, (value) => ({ name: value }));
 
     return (
         <Formik

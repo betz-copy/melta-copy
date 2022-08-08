@@ -7,6 +7,8 @@ import ForceGraph, { ForceGraphMethods, GraphData, LinkObject, NodeObject } from
 import { useQuery, useQueryClient, useQueries } from 'react-query';
 import randomColor from 'randomcolor';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
+import uniqBy from 'lodash.uniqby';
+import uniqWith from 'lodash.uniqwith';
 import { GraphNodeMenu } from './GraphNodeMenu';
 import { GraphMenu } from './GraphMenu';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
@@ -23,7 +25,6 @@ import {
     fixHighlighted,
 } from '../../../utils/graph';
 import { EntityProperties } from '../../../common/EntityProperties';
-import { uniqByFunction } from '../../../utils/object';
 import { environment } from '../../../globals';
 import { PartialRequired } from '../../../utils/typeHelpers';
 import { GraphTopBar } from './GraphTopBar';
@@ -76,11 +77,8 @@ const Graph: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> }
             const mergedGraphNodes = [...prevGraphData.nodes, ...newGraphData.nodes];
             const mergedGraphLinks = getFixedGraphLinks([...prevGraphData.links, ...newGraphData.links]);
 
-            const uniqueGraphNodes = uniqByFunction(mergedGraphNodes, (item1, item2) => item1.id === item2.id);
-            const uniqueGraphLinks = uniqByFunction(
-                mergedGraphLinks,
-                (item1, item2) => item1.source === item2.source && item1.target === item2.target,
-            );
+            const uniqueGraphNodes = uniqBy(mergedGraphNodes, ({ id }) => id);
+            const uniqueGraphLinks = uniqWith(mergedGraphLinks, (item1, item2) => item1.source === item2.source && item1.target === item2.target);
 
             // not every link source and target are populated at this point so updating highlighted links on next graph tick
             setUpdateHighlighted(true);

@@ -4,10 +4,11 @@ import Ajv, { ErrorObject } from 'ajv';
 import addFormats from 'ajv-formats';
 import i18next from 'i18next';
 import { FormikErrors, FormikHelpers, FormikTouched } from 'formik';
+import mapValues from 'lodash.mapvalues';
+import pickBy from 'lodash.pickby';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { RjfsDateWidget, RjfsDateTimeWidget } from './RjfsDatesWidgets';
 import RjfsSelectWidget from './RjfsSelectWidget';
-import { objectFilter, objectMap } from '../../../utils/object';
 
 const ajvErrorsToFormikErrors = (schema: IMongoEntityTemplatePopulated['properties'], ajvErrors: ErrorObject[]): FormikErrors<any> => {
     const formikErrorsEntries = ajvErrors.map((ajvError) => {
@@ -42,7 +43,7 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
 
 const formikErrorsToRjsfExtraErrors = (formikErrors: Record<string, string>): Record<string, { __errors: string[] }> => {
     // assuming no complex fields (nested/array). need recursion for nested fields
-    return objectMap(formikErrors, (_field, errorMessage) => ({ __errors: [errorMessage] }));
+    return mapValues(formikErrors, (errorMessage) => ({ __errors: [errorMessage] }));
 };
 
 interface JSONSchemaFormFormikProps {
@@ -56,7 +57,7 @@ interface JSONSchemaFormFormikProps {
 
 export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({ schema, values, setValues, errors, touched, setFieldTouched }) => {
     const rjsfExtraErrors = formikErrorsToRjsfExtraErrors(errors as Record<string, string>);
-    const ajvExtraErrorsOnlyTouched = objectFilter(rjsfExtraErrors, (field) => touched[field]);
+    const ajvExtraErrorsOnlyTouched = pickBy(rjsfExtraErrors, (_value, key) => touched[key]);
 
     return (
         <JSONSchemaForm

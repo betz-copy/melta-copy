@@ -1,9 +1,9 @@
 import React from 'react';
 import * as Yup from 'yup';
 import i18next from 'i18next';
+import pickBy from 'lodash.pickby';
 import { EntityWizardValues } from './index';
 import { StepComponentProps } from '../index';
-import { objectFilter } from '../../../utils/object';
 import { EntityFilesInput } from '../../inputs/EntityFilesInput/index';
 
 const fileFieldsSchema = {
@@ -11,7 +11,7 @@ const fileFieldsSchema = {
 };
 
 const FileFields: React.FC<StepComponentProps<EntityWizardValues>> = ({ values, setFieldValue, errors }) => {
-    const filesProperties = objectFilter(values.template.properties.properties, (_key, value) => value.format === 'fileId');
+    const filesProperties = pickBy(values.template.properties.properties, (value) => value.format === 'fileId');
     const requiredFilesNames = values.template.properties.required.filter((name) => Object.keys(filesProperties).includes(name));
 
     return (

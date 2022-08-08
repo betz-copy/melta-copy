@@ -2,6 +2,7 @@ import React, { forwardRef, ForwardedRef, useImperativeHandle, useRef, useMemo }
 import { useNavigate } from 'react-router-dom';
 import { Box, GlobalStyles } from '@mui/material';
 
+import pickBy from 'lodash.pickby';
 import { ColDef, IServerSideDatasource } from '@ag-grid-community/core';
 import { AgGridReact } from '@ag-grid-community/react';
 import '@noam7700/ag-grid-enterprise-core';
@@ -25,7 +26,6 @@ import { getEntitiesByTemplateRequest } from '../../services/entitiesService';
 import { getColumnDefs } from './getColumnDefs';
 import { trycatch } from '../../utils/trycatch';
 import { LocalStorage } from '../../utils/localStorage';
-import { objectFilter } from '../../utils/object';
 
 export const getDatasource = (
     templateId: IMongoEntityTemplatePopulated['_id'],
@@ -227,7 +227,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef, EntitiesT
                             } else {
                                 LocalStorage.set(
                                     `tableFilter-${filterStorageProps.pageType}-${template._id}`,
-                                    objectFilter(filterModel, (field) => field !== 'disabled'),
+                                    pickBy(filterModel, (_value, key) => key !== 'disabled'),
                                 );
                             }
                         }

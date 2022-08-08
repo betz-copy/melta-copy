@@ -1,12 +1,12 @@
 /* eslint-disable no-param-reassign */
 import { GraphData, LinkObject, NodeObject } from 'react-force-graph-2d';
+import uniqBy from 'lodash.uniqby';
 import { IEntity, IEntityExpanded } from '../interfaces/entities';
 import { IMongoRelationshipTemplate } from '../interfaces/relationshipTemplates';
 import { drawRectangle, drawText, getLineAngle, getRectangleDimensionsByString } from './canvas';
 import { environment } from '../globals';
 import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { PartialRequired } from './typeHelpers';
-import { uniqByFunction } from './object';
 
 const { graphSettings } = environment;
 
@@ -84,7 +84,7 @@ export const expandedEntityToGraphData = (expandedEntity: IEntityExpanded, relat
         nodes.push(entityToNode(connection.sourceEntity));
         nodes.push(entityToNode(connection.destinationEntity));
     });
-    const uniqueGraphNodes = uniqByFunction(nodes, (item1, item2) => item1.id === item2.id);
+    const uniqueGraphNodes = uniqBy(nodes, ({ id }) => id);
 
     const links = expandedEntity.connections.map(({ sourceEntity, destinationEntity, relationship }) => {
         const relationshipTemplate = relationshipTemplates.find((template) => template._id === relationship.templateId);

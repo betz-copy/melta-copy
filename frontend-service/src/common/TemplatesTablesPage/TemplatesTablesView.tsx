@@ -2,10 +2,10 @@ import React, { forwardRef, useImperativeHandle, useRef, useState } from 'react'
 import _isEqual from 'lodash.isequal';
 import { exportMultipleSheetsAsExcel } from '@noam7700/ag-grid-enterprise-excel-export';
 import { Divider, Grid, Pagination } from '@mui/material';
+import pickBy from 'lodash.pickby';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { EntitiesTableOfTemplateRef } from '../EntitiesTableOfTemplate';
 import { TemplateTable } from './TemplateTable';
-import { objectFilter } from '../../utils/object';
 
 const TemplateTablesView = forwardRef<
     { onExcelExportTables: (excelFileName: string) => void },
@@ -26,7 +26,7 @@ const TemplateTablesView = forwardRef<
 
     useImperativeHandle(ref, () => ({
         onExcelExportTables: (excelFileName: string) => {
-            const existingTemplateTableRefs = objectFilter(templateTableRefs.current, (_templateId, templateTableRef) => Boolean(templateTableRef));
+            const existingTemplateTableRefs = pickBy(templateTableRefs.current, (templateTableRef) => Boolean(templateTableRef));
             exportMultipleSheetsAsExcel({
                 data: Object.values(existingTemplateTableRefs).map((item) => item!.getExcelData()!),
                 fileName: excelFileName,
