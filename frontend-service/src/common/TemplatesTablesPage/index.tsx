@@ -10,7 +10,7 @@ import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates'
 import { TemplateTablesHeadline } from './TemplateTablesHeadline';
 import TemplateTablesView from './TemplatesTablesView';
 import { getEntitiesByTemplateRequest } from '../../services/entitiesService';
-import { templatesCompareFunc } from '../../utils/sortTemplates';
+import { templatesCompareFunc } from '../../utils/templates';
 
 const getTemplateCount = async (templateId: string, searchInput: string) => {
     const { lastRowIndex } = await getEntitiesByTemplateRequest(templateId, {

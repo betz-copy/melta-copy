@@ -8,7 +8,7 @@ import i18next from 'i18next';
 import { ViewingCard } from './ViewingCard';
 import { Header } from '../../../common/Header';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { IMongoRelationshipTemplate, IMongoRelationshipTemplatePopulated } from '../../../interfaces/relationshipTemplates';
+import { IMongoRelationshipTemplate } from '../../../interfaces/relationshipTemplates';
 import { IMongoCategory } from '../../../interfaces/categories';
 import { RelationshipTemplateWizard } from '../../../common/wizards/relationshipTemplate';
 import {
@@ -20,6 +20,7 @@ import { removeItemById } from '../../../utils/reactQuery';
 import { RelationshipTitle } from '../../../common/RelationshipTitle';
 import SearchInput from '../../../common/inputs/SearchInput';
 import TemplatesSelectCheckbox from '../../../common/templatesSelectCheckbox';
+import { populateRelationshipTemplate } from '../../../utils/templates';
 
 const RelationshipTemplatesRow: React.FC = () => {
     const queryClient = useQueryClient();
@@ -96,21 +97,7 @@ const RelationshipTemplatesRow: React.FC = () => {
             </Header>
             <Grid container spacing={4}>
                 {relationshipTemplates
-                    .map((relationshipTemplate) => {
-                        const sourceEntity = entityTemplates.find((entityTemplate) => entityTemplate._id === relationshipTemplate.sourceEntityId)!;
-
-                        const destinationEntity = entityTemplates.find(
-                            (entityTemplate) => entityTemplate._id === relationshipTemplate.destinationEntityId,
-                        )!;
-
-                        const { sourceEntityId, destinationEntityId, ...restOfRelationshipTemplate } = relationshipTemplate;
-
-                        return {
-                            sourceEntity,
-                            destinationEntity,
-                            ...restOfRelationshipTemplate,
-                        } as IMongoRelationshipTemplatePopulated;
-                    })
+                    .map((relationshipTemplate) => populateRelationshipTemplate(relationshipTemplate, entityTemplates))
                     .filter((relationshipTemplate) => {
                         return (
                             sourceEntityTemplatesToShow.some(

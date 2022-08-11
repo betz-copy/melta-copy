@@ -8,7 +8,7 @@ import { toast } from 'react-toastify';
 import i18next from 'i18next';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { getExpandedEntityByIdRequest } from '../../services/entitiesService';
-import { IMongoRelationshipTemplate, IMongoRelationshipTemplatePopulated } from '../../interfaces/relationshipTemplates';
+import { IMongoRelationshipTemplate } from '../../interfaces/relationshipTemplates';
 import { EntityDetails } from './components/EntityDetails';
 import { IMongoCategory } from '../../interfaces/categories';
 import { RelationshipTitle } from '../../common/RelationshipTitle';
@@ -25,6 +25,7 @@ import IconButtonWithPopoverText from '../../common/IconButtonWithPopover';
 import { BlueTitle } from '../../common/BlueTitle';
 import { ResetFilterButton } from '../../common/TemplatesTablesPage/ResetFilterButton';
 import { EntityTopBar } from './components/TopBar';
+import { populateRelationshipTemplate } from '../../utils/templates';
 
 const Entity: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> }> = ({ setTitle }) => {
     const params = useParams();
@@ -108,24 +109,15 @@ const Entity: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> 
                 ...category,
                 relationshipTemplates:
                     relevantRelationshipTemplates
-                        .map((currRelationshipTemplate) => {
-                            const sourceEntity = entityTemplates.find(
-                                (currEntityTemplate) => currEntityTemplate._id === currRelationshipTemplate.sourceEntityId,
-                            )!;
-                            const destinationEntity = entityTemplates.find(
-                                (currEntityTemplate) => currEntityTemplate._id === currRelationshipTemplate.destinationEntityId,
-                            )!;
-
+                        .map((currRelationshipTemplate) => populateRelationshipTemplate(currRelationshipTemplate, entityTemplates))
+                        .map((currRelationshipTemplatePopulated) => {
+                            const { sourceEntity, destinationEntity } = currRelationshipTemplatePopulated;
                             const otherEntityTemplate = sourceEntity._id === currentEntityTemplate._id ? destinationEntity : sourceEntity;
 
                             return {
-                                _id: currRelationshipTemplate._id,
-                                name: currRelationshipTemplate.name,
-                                displayName: currRelationshipTemplate.displayName,
-                                sourceEntity,
-                                destinationEntity,
+                                ...currRelationshipTemplatePopulated,
                                 otherEntityTemplate,
-                            } as IMongoRelationshipTemplatePopulated & { otherEntityTemplate: IMongoEntityTemplatePopulated };
+                            };
                         })
                         .filter((currRelationshipTemplate) => currRelationshipTemplate.otherEntityTemplate.category._id === category._id) || [],
             };

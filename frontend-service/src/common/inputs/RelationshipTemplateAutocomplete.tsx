@@ -4,25 +4,10 @@ import { useQueryClient } from 'react-query';
 import i18next from 'i18next';
 import { IMongoRelationshipTemplate, IMongoRelationshipTemplatePopulated } from '../../interfaces/relationshipTemplates';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { populateRelationshipTemplate } from '../../utils/templates';
 
 type PartialByKeys<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 type IMongoRelationshipTemplatePopulatedOption = PartialByKeys<IMongoRelationshipTemplatePopulated, 'sourceEntity' | 'destinationEntity'>;
-
-const populateRelationshipTemplateOption = (
-    relationshipTemplate: IMongoRelationshipTemplate,
-    entityTemplates: IMongoEntityTemplatePopulated[],
-): IMongoRelationshipTemplatePopulatedOption => {
-    const { sourceEntityId, destinationEntityId, ...restOfRelationshipTemplate } = relationshipTemplate;
-
-    const sourceEntity = entityTemplates.find(({ _id }) => _id === sourceEntityId);
-    const destinationEntity = entityTemplates.find(({ _id }) => _id === destinationEntityId);
-
-    return {
-        sourceEntity,
-        destinationEntity,
-        ...restOfRelationshipTemplate,
-    };
-};
 
 const getConstrainedOptions = (
     relationshipTemplatesPopulatedOptions: IMongoRelationshipTemplatePopulatedOption[],
@@ -55,7 +40,7 @@ const RelationshipTemplateAutocomplete: React.FC<{
     const entityTemplates = queryClient.getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates')!;
 
     const relationshipTemplatesPopulatedOptions = relationshipTemplates.map((relationshipTemplate) =>
-        populateRelationshipTemplateOption(relationshipTemplate, entityTemplates),
+        populateRelationshipTemplate(relationshipTemplate, entityTemplates),
     );
 
     const relationshipTemplatesPopulatedConstrainedOptions = getConstrainedOptions(

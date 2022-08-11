@@ -21,7 +21,7 @@ import {
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
 import { removeItemById, replaceItemById } from '../../../utils/reactQuery';
 import SearchInput from '../../../common/inputs/SearchInput';
-import { templatesCompareFunc } from '../../../utils/sortTemplates';
+import { templatesCompareFunc } from '../../../utils/templates';
 import { ErrorToast } from '../../../common/ErrorToast';
 
 const EntityTemplatesRow: React.FC = () => {
