@@ -14,6 +14,7 @@ class Server {
 
     private port: number;
 
+    /* istanbul ignore next */
     constructor(port: number) {
         this.app = Server.createExpressApp();
         this.port = port;
@@ -34,6 +35,7 @@ class Server {
         return app;
     }
 
+    /* istanbul ignore next */
     async start() {
         this.http = this.app.listen(this.port);
         await once(this.http, 'listening');

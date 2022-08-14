@@ -12,10 +12,11 @@ services:
       - 5672:5672
       - 15672:15672
 
-  feature:
+  notifications:
     build: .
+    ports:
+      - 8000:8000
     environment:
       PORT: 8000
       MONGO_URI: mongodb://mongo
-      MONGO_FEATURE_COLLECTION_NAME: feature
       RABBIT_URI: amqp://rabbit

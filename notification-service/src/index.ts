@@ -9,7 +9,7 @@ const { mongo, rabbit, service } = config;
 const initializeMongo = async () => {
     console.log('Connecting to Mongo...');
 
-    await mongoose.connect(mongo.uri, { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false, useCreateIndex: true });
+    await mongoose.connect(mongo.uri);
 
     console.log('Mongo connection established');
 };

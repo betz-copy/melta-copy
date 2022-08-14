@@ -11,6 +11,7 @@ export class ServiceError extends Error {
 }
 
 export const errorMiddleware = (error: Error, _req: express.Request, res: express.Response, next: express.NextFunction) => {
+    /* istanbul ignore else */
     if (error.name === 'ValidationError') {
         res.status(400).send({
             type: error.name,
@@ -31,3 +32,8 @@ export const errorMiddleware = (error: Error, _req: express.Request, res: expres
     next();
 };
 
+export class NotificationDoesNotExistError extends ServiceError {
+    constructor(notificationId: string) {
+        super(404, `A notification with the id '${notificationId}' does not exist`);
+    }
+}

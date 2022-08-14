@@ -7,10 +7,8 @@ const config = {
     },
     mongo: {
         uri: env.get('MONGO_URI').required().asString(),
-        alertCollectionName: env.get('MONGO_ALERT_COLLECTION_NAME').default('alerts').asString(),
-        requestCollectionName: env.get('MONGO_REQUEST_COLLECTION_NAME').default('requests').asString(),
-        responseCollectionName: env.get('MONGO_RESPONSE_COLLECTION_NAME').default('responses').asString(),
-        maxFindLimit: env.get('MONGO_MAX_FIND_LIMIT').default(100).asIntPositive(),
+        notificationsCollectionName: env.get('MONGO_NOTIFICATIONS_COLLECTION_NAME').default('notifications').asString(),
+        maxFindLimit: env.get('MONGO_MAX_FIND_LIMIT').default(500).asIntPositive(),
     },
     rabbit: {
         uri: env.get('RABBIT_URI').required().asString(),

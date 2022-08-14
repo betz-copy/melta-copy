@@ -1,9 +1,9 @@
 import { Router } from 'express';
-import alertRouter from './alert/router';
+import notificationsRouter from './notifications/router';
 
 const appRouter = Router();
 
-appRouter.use('/api', alertRouter);
+appRouter.use('/api/notifications', notificationsRouter);
 
 appRouter.use('/isAlive', (_req, res) => {
     res.status(200).send('alive');
