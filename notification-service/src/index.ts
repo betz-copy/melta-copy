@@ -1,8 +1,9 @@
 /* eslint-disable no-console */
 import * as mongoose from 'mongoose';
-import menash, { ConsumerMessage } from 'menashmq';
+import menash from 'menashmq';
 import Server from './express/server';
 import config from './config';
+import NotificationsConsumer from './rabbit/consumer';
 
 const { mongo, rabbit, service } = config;
 
@@ -21,15 +22,9 @@ const initializeRabbit = async () => {
 
     console.log('Rabbit connected');
 
-    const featureConsumeFunction = (msg: ConsumerMessage) => {
-        console.log('Received message: ', msg.getContent());
-    };
-
     await menash.declareTopology({
-        queues: [{ name: 'feature-queue', options: { durable: true } }],
-        exchanges: [{ name: 'feature-exchange', type: 'fanout', options: { durable: true } }],
-        bindings: [{ source: 'feature-exchange', destination: 'feature-queue' }],
-        consumers: [{ queueName: 'feature-queue', onMessage: featureConsumeFunction }],
+        queues: [{ name: rabbit.queueName, options: { durable: true } }],
+        consumers: [{ queueName: rabbit.queueName, onMessage: NotificationsConsumer.createNotification }],
     });
 
     console.log('Rabbit initialized');

@@ -1,6 +1,7 @@
 /* eslint-disable import/prefer-default-export */
 import * as joi from 'joi';
 import config from '../../config';
+import { createNotificationMessageSchema } from '../../rabbit/validator.schema';
 import { notificationType } from './interface';
 
 const { maxFindLimit } = config.mongo;
@@ -29,16 +30,9 @@ export const getNotificationByIdRequestSchema = joi.object({
 });
 
 // POST /api/notifications
-export const createNotificationByIdRequestSchema = joi.object({
+export const createNotificationRequestSchema = joi.object({
     query: {},
-    body: {
-        viewers: joi.array().items(mongoIdSchema).required(),
-        type: joi
-            .string()
-            .valid(...notificationType)
-            .required(),
-        metadata: joi.object().required(),
-    },
+    body: createNotificationMessageSchema,
     params: {},
 });
 

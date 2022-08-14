@@ -12,6 +12,7 @@ const config = {
     },
     rabbit: {
         uri: env.get('RABBIT_URI').required().asString(),
+        queueName: env.get('RABBIT_QUEUE_NAME').default('notifications-queue').asString(),
         retryOptions: {
             minTimeout: env.get('RABBIT_RETRY_MIN_TIMEOUT').default(1000).asIntPositive(),
             retries: env.get('RABBIT_RETRY_RETRIES').default(10).asIntPositive(),

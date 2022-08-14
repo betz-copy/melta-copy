@@ -2,7 +2,7 @@ import { Request } from 'express';
 import * as Joi from 'joi';
 import { wrapValidator } from '../express';
 
-const defaultValidationOptions: Joi.ValidationOptions = {
+export const defaultValidationOptions: Joi.ValidationOptions = {
     abortEarly: false,
     allowUnknown: false,
     convert: true,
@@ -32,6 +32,17 @@ const ValidateRequest = (schema: Joi.ObjectSchema<any>, options: Joi.ValidationO
     };
 
     return wrapValidator(validator);
+};
+
+/* istanbul ignore next */
+export const basicValidateRequest = (schema: Joi.ObjectSchema<any>, value: any, options: Joi.ValidationOptions = defaultValidationOptions) => {
+    const { error, value: newValue } = schema.unknown().validate(value, options);
+
+    if (error) {
+        throw error;
+    }
+
+    return newValue;
 };
 
 export default ValidateRequest;

@@ -3,7 +3,7 @@ import NotificationsController from './controller';
 import { wrapController } from '../../utils/express';
 import ValidateRequest from '../../utils/joi';
 import {
-    createNotificationByIdRequestSchema,
+    createNotificationRequestSchema,
     getNotificationByIdRequestSchema,
     getNotificationsRequestSchema,
     notificationSeenRequestSchema,
@@ -18,7 +18,7 @@ notificationsRouter.get(
     wrapController(NotificationsController.getNotificationById),
 );
 
-notificationsRouter.post('/', ValidateRequest(createNotificationByIdRequestSchema), wrapController(NotificationsController.createNotification));
+notificationsRouter.post('/', ValidateRequest(createNotificationRequestSchema), wrapController(NotificationsController.createNotification));
 notificationsRouter.patch(
     '/:notificationId/seen',
     ValidateRequest(notificationSeenRequestSchema),
