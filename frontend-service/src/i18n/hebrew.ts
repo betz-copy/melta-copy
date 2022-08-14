@@ -264,6 +264,7 @@ export default {
         variableName: 'פורמט שם משתנה',
         fieldNameExists: 'קיים שם שדה באנגלית זהה',
         fieldTitleExists: 'קיים שם שדה לתצוגה זהה',
+        fieldExist: 'שדה זה קיים במערכת',
         attachmentFieldNameExists: 'קיים שם קובץ באנגלית זהה',
         attachmentFieldTitleExists: 'קיים שם קובץ לתצוגה זהה',
     },

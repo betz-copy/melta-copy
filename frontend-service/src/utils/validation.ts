@@ -28,7 +28,6 @@ export const entityTemplateUniqueProperties = (value, context: Yup.TestContext) 
             `validation.${duplicateFieldType === 'normal' ? 'field' : 'attachmentField'}${inputType === 'name' ? 'Name' : 'Title'}Exists`,
         );
         const path = `${fieldType === 'normal' ? 'properties' : 'attachmentProperties'}[${index}].${inputType}`;
-
         errors.push(context.createError({ message, path }));
     };
 

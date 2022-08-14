@@ -9,11 +9,9 @@ const mockEntites = (mock: MockAdapter) => {
         const { templateId } = params;
 
         const rowsOfTemplate = allEntities.filter((entity) => entity.templateId === templateId);
-
         const countOfSearchedRows =
             faker.datatype.boolean() || rowsOfTemplate.length === 0 ? 0 : faker.datatype.number({ min: 1, max: rowsOfTemplate.length });
         const searchedRows = faker.helpers.arrayElements(rowsOfTemplate, countOfSearchedRows);
-
         return [
             200,
             {
@@ -22,7 +20,6 @@ const mockEntites = (mock: MockAdapter) => {
             },
         ];
     });
-
     mock.onPost(/\/api\/instances\/entities\/expanded\/[0-9a-fA-F]{24}/).reply((config) => [
         200,
         {

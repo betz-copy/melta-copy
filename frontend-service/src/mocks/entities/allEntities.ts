@@ -67,7 +67,7 @@ export const allEntities: IEntity[] = [
         properties: {
             firstName: 'איילה',
             lastName: 'נסיעות',
-            age: 40,
+            age: -40,
             gender: false,
             agentId: 'a1b2c3',
             _id: '123451234512345123451105',

@@ -11,13 +11,17 @@ import { basePropertyTypes, stringFormats } from '../../../services/templates/en
 import FieldBlock from './FieldBlock';
 
 const validPropertyTypes = [...basePropertyTypes, ...stringFormats, 'pattern', 'enum'];
-
 const addFieldsSchema = Yup.object({
     properties: Yup.array()
         .of(
             Yup.object({
-                name: Yup.string().matches(variableNameValidation, i18next.t('validation.variableName')).required(i18next.t('validation.required')),
-                title: Yup.string().required(i18next.t('validation.required')),
+                name: Yup.string()
+                    .notOneOf(['createdAt', 'updatedAt', 'disable'], i18next.t('validation.fieldExist'))
+                    .matches(variableNameValidation, i18next.t('validation.variableName'))
+                    .required(i18next.t('validation.required')),
+                title: Yup.string()
+                    .notOneOf(['תאריך יצירה', 'תאריך עדכון', 'מושבת'], i18next.t('validation.fieldExist'))
+                    .required(i18next.t('validation.required')),
                 type: Yup.string().oneOf(validPropertyTypes, i18next.t('validation.invalidPropertyType')).required(i18next.t('validation.required')),
                 required: Yup.boolean().required(i18next.t('validation.required')),
                 preview: Yup.boolean().required(i18next.t('validation.required')),

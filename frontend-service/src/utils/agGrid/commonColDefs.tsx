@@ -10,6 +10,7 @@ export const numberColDef = (field: string, valueGetter: ValueGetterFunc, value:
         valueGetter,
         filter: 'agNumberColumnFilter',
         hide,
+        cellStyle: { direction: 'ltr' },
     };
 };
 
