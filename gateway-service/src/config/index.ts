@@ -55,6 +55,11 @@ const config = {
         baseRoute: env.get('ACTIVITY_LOG_BASE_ROUTE').default('/api/activity-log').asString(),
         requestTimeout: env.get('ACTIVITY_LOG_REQUEST_TIMEOUT').default(10000).asIntPositive(),
     },
+    notificationService: {
+        uri: env.get('NOTIFICATION_SERVICE_URI').required().asString(),
+        baseRoute: env.get('NOTIFICATION_SERVICE_BASE_ROUTE').default('/api/notifications').asString(),
+        requestTimeout: env.get('NOTIFICATION_SERVICE_REQUEST_TIMEOUT').default(10000).asIntPositive(),
+    },
     getUsersLimitForPermissionsOfUsers: env.get('GET_USERS_LIMIT_FOR_PERMISSIONS_OF_USERS').default(20).asIntPositive(),
     kartoffel: {
         baseUrl: env.get('KARTOFFEL_BASE_URL').required().asString(),
