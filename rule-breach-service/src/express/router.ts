@@ -4,6 +4,7 @@ import RuleBreachesRouter from './ruleBreaches/router';
 
 const appRouter = Router();
 
+appRouter.use('/api/rule-breaches/alerts', RuleBreachAlertsRouter);
 appRouter.use('/isAlive', (_req, res) => {
     res.status(200).send('alive');
 });
