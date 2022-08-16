@@ -23,3 +23,19 @@ export const populateRelationshipTemplate = (
         ...restOfRelationshipTemplate,
     };
 };
+
+export const getOppositeEntityTemplate = (
+    entityTemplate: IMongoEntityTemplatePopulated,
+    relationshipTemplate: IMongoRelationshipTemplatePopulated,
+) => {
+    const { sourceEntity, destinationEntity } = relationshipTemplate;
+    return sourceEntity._id === entityTemplate._id ? destinationEntity : sourceEntity;
+};
+
+export const isRelationshipConnectedToEntityTemplate = (
+    entityTemplate: IMongoEntityTemplatePopulated,
+    relationshipTemplate: IMongoRelationshipTemplatePopulated,
+) => {
+    const { sourceEntity, destinationEntity } = relationshipTemplate;
+    return sourceEntity._id === entityTemplate._id || destinationEntity._id === entityTemplate._id;
+};

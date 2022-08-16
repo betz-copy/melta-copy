@@ -8,7 +8,7 @@ import { toast } from 'react-toastify';
 import i18next from 'i18next';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { getExpandedEntityByIdRequest } from '../../services/entitiesService';
-import { IMongoRelationshipTemplate } from '../../interfaces/relationshipTemplates';
+import { IMongoRelationshipTemplate, IMongoRelationshipTemplatePopulated } from '../../interfaces/relationshipTemplates';
 import { EntityDetails } from './components/EntityDetails';
 import { IMongoCategory } from '../../interfaces/categories';
 import { RelationshipTitle } from '../../common/RelationshipTitle';
@@ -25,7 +25,7 @@ import IconButtonWithPopoverText from '../../common/IconButtonWithPopover';
 import { BlueTitle } from '../../common/BlueTitle';
 import { ResetFilterButton } from '../../common/TemplatesTablesPage/ResetFilterButton';
 import { EntityTopBar } from './components/TopBar';
-import { populateRelationshipTemplate } from '../../utils/templates';
+import { getOppositeEntityTemplate, isRelationshipConnectedToEntityTemplate, populateRelationshipTemplate } from '../../utils/templates';
 
 const Entity: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> }> = ({ setTitle }) => {
     const params = useParams();
@@ -42,6 +42,9 @@ const Entity: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> 
 
     const categories = queryClient.getQueryData<IMongoCategory[]>('getCategories')!;
     const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
+    const entityTemplates = queryClient.getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates')!;
+    const relationshipTemplates = queryClient.getQueryData<IMongoRelationshipTemplate[]>('getRelationshipTemplates')!;
+    const currentEntityTemplate = entityTemplates.find((currTemplate) => currTemplate._id === expandedEntity?.entity.templateId)!;
 
     const [createRelationshipDialogState, setCreateRelationshipDialogState] = useState<{
         isOpen: boolean;
@@ -80,11 +83,6 @@ const Entity: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> 
     const [value, setValue] = useState('0');
     const [titleUpdated, setTitleUpdated] = useState(false);
 
-    const entityTemplates = queryClient.getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates')!;
-    const currentEntityTemplate: IMongoEntityTemplatePopulated = entityTemplates.find(
-        (currTemplate) => currTemplate._id === expandedEntity?.entity.templateId,
-    )!;
-
     // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => {
         if (titleUpdated || !currentEntityTemplate) return;
@@ -95,32 +93,21 @@ const Entity: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> 
 
     if (!expandedEntity) return <CircularProgress />;
 
-    const relevantRelationshipTemplates = queryClient
-        .getQueryData<IMongoRelationshipTemplate[]>('getRelationshipTemplates')!
-        .filter(
-            (currTemplate) =>
-                currTemplate.sourceEntityId === expandedEntity?.entity.templateId ||
-                currTemplate.destinationEntityId === expandedEntity?.entity.templateId,
-        );
-
     const categoriesWithRelationshipTemplates = categories
         .map((category) => {
             return {
                 ...category,
-                relationshipTemplates:
-                    relevantRelationshipTemplates
-                        .map((currRelationshipTemplate) => populateRelationshipTemplate(currRelationshipTemplate, entityTemplates))
-                        .map((currRelationshipTemplatePopulated) => {
-                            const { sourceEntity, destinationEntity } = currRelationshipTemplatePopulated;
-                            const otherEntityTemplate = sourceEntity._id === currentEntityTemplate._id ? destinationEntity : sourceEntity;
+                relationshipTemplates: relationshipTemplates
+                    .map((currRelationshipTemplate) => populateRelationshipTemplate(currRelationshipTemplate, entityTemplates))
+                    .filter((currRelationshipTemplatePopulated) =>
+                        isRelationshipConnectedToEntityTemplate(currentEntityTemplate, currRelationshipTemplatePopulated),
+                    )
+                    .filter((currRelationshipTemplatePopulated) => {
+                        const otherEntityTemplate = getOppositeEntityTemplate(currentEntityTemplate, currRelationshipTemplatePopulated);
 
-                            return {
-                                ...currRelationshipTemplatePopulated,
-                                otherEntityTemplate,
-                            };
-                        })
-                        .filter((currRelationshipTemplate) => currRelationshipTemplate.otherEntityTemplate.category._id === category._id) || [],
-            };
+                        return otherEntityTemplate.category._id === category._id;
+                    }),
+            } as IMongoCategory & { relationshipTemplates: IMongoRelationshipTemplatePopulated[] };
         })
         .filter((currCategory) => currCategory.relationshipTemplates?.length > 0);
 
@@ -168,13 +155,13 @@ const Entity: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> 
                                 ))}
                             </TabList>
                         </Box>
-                        {categoriesWithRelationshipTemplates?.map(({ _id, relationshipTemplates }, index) => {
+                        {categoriesWithRelationshipTemplates?.map(({ _id, relationshipTemplates: connectedRelationshipTemplates }, index) => {
                             const hasPermissionToCategory = Boolean(myPermissions.instancesPermissions.find((instance) => instance.category === _id));
                             const canCreateRelationship = hasPermissionToCategory && !isEntityDisabled;
 
                             return (
                                 <TabPanel key={_id} value={String(index)} sx={{ padding: 0 }}>
-                                    {relationshipTemplates?.map((currRelationshipTemplate) => {
+                                    {connectedRelationshipTemplates?.map((currRelationshipTemplate) => {
                                         return (
                                             <Grid key={currRelationshipTemplate._id}>
                                                 <Grid container item justifyContent="space-between" marginBottom="10px">
@@ -200,20 +187,18 @@ const Entity: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> 
                                                             iconButtonProps={{
                                                                 disabled: !hasPermissionToCategory || isEntityDisabled,
                                                                 onClick: () => {
-                                                                    const { otherEntityTemplate, ...relationshipTemplatePopulated } =
-                                                                        currRelationshipTemplate;
                                                                     setCreateRelationshipDialogState({
                                                                         isOpen: true,
                                                                         initialValues: {
-                                                                            relationshipTemplate: relationshipTemplatePopulated,
+                                                                            relationshipTemplate: currRelationshipTemplate,
                                                                             sourceEntity:
                                                                                 currentEntityTemplate._id ===
-                                                                                relationshipTemplatePopulated.sourceEntity._id
+                                                                                currRelationshipTemplate.sourceEntity._id
                                                                                     ? expandedEntity.entity
                                                                                     : null,
                                                                             destinationEntity:
                                                                                 currentEntityTemplate._id ===
-                                                                                relationshipTemplatePopulated.destinationEntity._id
+                                                                                currRelationshipTemplate.destinationEntity._id
                                                                                     ? expandedEntity.entity
                                                                                     : null,
                                                                         },
@@ -227,7 +212,7 @@ const Entity: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> 
                                                 </Grid>
                                                 <EntitiesTableOfTemplate
                                                     ref={entitiesTableRef}
-                                                    template={currRelationshipTemplate.otherEntityTemplate}
+                                                    template={getOppositeEntityTemplate(currentEntityTemplate, currRelationshipTemplate)}
                                                     showNavigateToRowButton
                                                     deleteRowButtonProps={{
                                                         popoverText: hasPermissionToCategory
