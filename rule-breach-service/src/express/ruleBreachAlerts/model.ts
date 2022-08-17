@@ -6,7 +6,7 @@ import { IRuleBreachAlertDocument } from './interface';
 const RuleBreachAlertsSchema = new mongoose.Schema({}, { versionKey: false });
 
 const RuleBreachAlertsModel = RuleBreachesModel.discriminator<IRuleBreachAlertDocument>(
-    config.mongo.ruleBreachAlertsCollectionName,
+    config.mongo.ruleBreachAlertsSubCollectionName,
     RuleBreachAlertsSchema,
 );
 

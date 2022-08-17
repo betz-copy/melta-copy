@@ -16,6 +16,7 @@ const RuleBreachesSchema = new mongoose.Schema(
                 },
             ],
             required: true,
+            _id: false,
         },
         actionType: {
             type: String,

@@ -31,3 +31,9 @@ export const errorMiddleware = (error: Error, _req: express.Request, res: expres
 
     next();
 };
+
+export class RuleBreachRequestDoesNotExistError extends ServiceError {
+    constructor(ruleBreachRequestId: string) {
+        super(404, `A rule breach request with the id '${ruleBreachRequestId}' does not exist`);
+    }
+}

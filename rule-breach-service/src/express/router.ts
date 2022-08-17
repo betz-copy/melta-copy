@@ -1,10 +1,15 @@
 import { Router } from 'express';
-import RuleBreachAlertsRouter from './ruleBreachAlert/router';
+import RuleBreachAlertsRouter from './ruleBreachAlerts/router';
 import RuleBreachesRouter from './ruleBreaches/router';
+import RuleBreachRequestsRouter from './ruleBreachRequests/router';
 
 const appRouter = Router();
 
-appRouter.use('/api/rule-breaches/alerts', RuleBreachAlertsRouter);
+RuleBreachesRouter.use('/alerts', RuleBreachAlertsRouter);
+RuleBreachesRouter.use('/requests', RuleBreachRequestsRouter);
+
+appRouter.use('/api/rule-breaches', RuleBreachesRouter);
+
 appRouter.use('/isAlive', (_req, res) => {
     res.status(200).send('alive');
 });
