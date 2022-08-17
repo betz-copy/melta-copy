@@ -5,11 +5,11 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { GraphData, NodeObject } from 'react-force-graph-2d';
 import { useQuery, useQueryClient } from 'react-query';
 import i18next from 'i18next';
-import { IEntityExpanded } from '../../../interfaces/entities';
-import { getExpandedEntityByIdRequest } from '../../../services/entitiesService';
-import { expandedEntityToGraphData, highlightNode } from '../../../utils/graph';
-import { IMongoRelationshipTemplate } from '../../../interfaces/relationshipTemplates';
-import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { IMongoRelationshipTemplate } from '../../interfaces/relationshipTemplates';
+import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IEntityExpanded } from '../../interfaces/entities';
+import { getExpandedEntityByIdRequest } from '../../services/entitiesService';
+import { expandedEntityToGraphData, highlightNode } from '../../utils/graph';
 
 const GraphNodeMenu: React.FC<{
     showMenu: boolean;

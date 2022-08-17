@@ -3,9 +3,9 @@ import { Grid, Typography, styled } from '@mui/material';
 import { useQueryClient } from 'react-query';
 import i18next from 'i18next';
 import { useNavigate } from 'react-router-dom';
-import { IActivityLog } from '../../../services/activityLogService';
-import { IMongoRelationshipTemplate } from '../../../interfaces/relationshipTemplates';
-import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { IActivityLog } from '../../../../services/activityLogService';
+import { IMongoRelationshipTemplate } from '../../../../interfaces/relationshipTemplates';
+import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 
 const StyledTypography = styled(Typography)({
     fontFamily: 'Rubik',

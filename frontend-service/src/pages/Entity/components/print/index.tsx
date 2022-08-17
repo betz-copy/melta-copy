@@ -2,11 +2,11 @@ import { FileDownloadOutlined } from '@mui/icons-material';
 import i18next from 'i18next';
 import React from 'react';
 import { useReactToPrint } from 'react-to-print';
-import IconButtonWithPopoverText from '../../../common/IconButtonWithPopover';
-import { IMongoCategory } from '../../../interfaces/categories';
-import { IEntityExpanded } from '../../../interfaces/entities';
-import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { IMongoRelationshipTemplatePopulated } from '../../../interfaces/relationshipTemplates';
+import IconButtonWithPopoverText from '../../../../common/IconButtonWithPopover';
+import { IMongoCategory } from '../../../../interfaces/categories';
+import { IEntityExpanded } from '../../../../interfaces/entities';
+import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
+import { IMongoRelationshipTemplatePopulated } from '../../../../interfaces/relationshipTemplates';
 import { ComponentToPrint } from './ComponentToPrint';
 import { PrintOptionsDialog } from './PrintOptionsDialog';
 

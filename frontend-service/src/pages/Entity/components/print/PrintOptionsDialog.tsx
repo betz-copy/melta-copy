@@ -2,9 +2,9 @@ import React from 'react';
 import { Dialog, DialogTitle, DialogContent, Grid, Button, Checkbox, FormControlLabel, DialogActions, IconButton } from '@mui/material';
 import { PrintOutlined, CloseOutlined } from '@mui/icons-material';
 import i18next from 'i18next';
-import { SelectCheckbox } from '../../../common/SelectCheckbox';
-import { IMongoRelationshipTemplatePopulated } from '../../../interfaces/relationshipTemplates';
-import { IMongoCategory } from '../../../interfaces/categories';
+import { SelectCheckbox } from '../../../../common/SelectCheckbox';
+import { IMongoRelationshipTemplatePopulated } from '../../../../interfaces/relationshipTemplates';
+import { IMongoCategory } from '../../../../interfaces/categories';
 
 const PrintOptionsDialog: React.FC<{
     open: boolean;

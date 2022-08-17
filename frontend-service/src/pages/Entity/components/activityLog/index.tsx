@@ -1,10 +1,10 @@
 import React, { useEffect } from 'react';
 import { HistoryRounded } from '@mui/icons-material';
 import i18next from 'i18next';
-import IconButtonWithPopoverText from '../../../common/IconButtonWithPopover';
+import IconButtonWithPopoverText from '../../../../common/IconButtonWithPopover';
 import ActivityLogPopper from './ActivityLogPopper';
-import { IEntityExpanded } from '../../../interfaces/entities';
-import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { IEntityExpanded } from '../../../../interfaces/entities';
+import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 
 const ActivityLog: React.FC<{ expandedEntity: IEntityExpanded; entityTemplate: IMongoEntityTemplatePopulated }> = ({
     expandedEntity,

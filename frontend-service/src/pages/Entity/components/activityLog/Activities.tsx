@@ -3,9 +3,9 @@ import React, { useRef, useEffect } from 'react';
 import { useInfiniteQuery } from 'react-query';
 import i18next from 'i18next';
 import { toast } from 'react-toastify';
-import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { getActivityLogRequest } from '../../../services/activityLogService';
 import ActivityLogRow from './ActivityLogRow';
+import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
+import { getActivityLogRequest } from '../../../../services/activityLogService';
 
 const Activities: React.FC<{ entityId: string; entityTemplate: IMongoEntityTemplatePopulated }> = ({ entityId, entityTemplate }) => {
     const ref = useRef(null);

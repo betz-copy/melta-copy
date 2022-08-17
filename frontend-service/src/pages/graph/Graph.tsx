@@ -9,12 +9,6 @@ import randomColor from 'randomcolor';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import uniqBy from 'lodash.uniqby';
 import uniqWith from 'lodash.uniqwith';
-import { GraphNodeMenu } from './GraphNodeMenu';
-import { GraphMenu } from './GraphMenu';
-import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { IEntityExpanded } from '../../../interfaces/entities';
-import { IMongoRelationshipTemplate } from '../../../interfaces/relationshipTemplates';
-import { getExpandedEntityByIdRequest } from '../../../services/entitiesService';
 import {
     drawNodeLabel,
     drawLinkLabel,
@@ -23,11 +17,17 @@ import {
     getFixedGraphLinks,
     drawNode,
     fixHighlighted,
-} from '../../../utils/graph';
-import { EntityProperties } from '../../../common/EntityProperties';
-import { environment } from '../../../globals';
-import { PartialRequired } from '../../../utils/typeHelpers';
+} from '../../utils/graph';
+import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IMongoRelationshipTemplate } from '../../interfaces/relationshipTemplates';
+import { IEntityExpanded } from '../../interfaces/entities';
+import { getExpandedEntityByIdRequest } from '../../services/entitiesService';
+import { EntityProperties } from '../../common/EntityProperties';
 import { GraphTopBar } from './GraphTopBar';
+import { environment } from '../../globals';
+import { PartialRequired } from '../../utils/typeHelpers';
+import { GraphNodeMenu } from './GraphNodeMenu';
+import { GraphMenu } from './GraphMenu';
 
 const Graph: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> }> = ({ setTitle }) => {
     const ref = useRef<any>(null);

@@ -1,10 +1,10 @@
 import React from 'react';
 import { Box } from '@mui/material';
-import { EntityProperties } from '../../../common/EntityProperties';
-import { IEntity } from '../../../interfaces/entities';
-import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { EntityDisableCheckbox } from './EntityDisableCheckbox';
-import { EntityDates } from './EntityDates';
+import { EntityProperties } from '../../../../common/EntityProperties';
+import { IEntity } from '../../../../interfaces/entities';
+import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
+import { EntityDisableCheckbox } from '../EntityDisableCheckbox';
+import { EntityDates } from '../EntityDates';
 
 const EntityComponentToPrint: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; entity: IEntity; options?: { showDates?: boolean } }> = ({
     entityTemplate,

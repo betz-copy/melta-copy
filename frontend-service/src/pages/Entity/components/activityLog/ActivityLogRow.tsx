@@ -2,10 +2,11 @@ import React from 'react';
 import { Typography, Grid, Avatar, Skeleton } from '@mui/material';
 import { useQuery } from 'react-query';
 import randomColor from 'randomcolor';
-import { IActivityLog } from '../../../services/activityLogService';
-import { getUserByIdRequest } from '../../../services/kartoffelService';
+import { IActivityLog } from '../../../../services/activityLogService';
+import { getUserByIdRequest } from '../../../../services/kartoffelService';
+
 import ActionText from './ActionText';
-import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 
 const ActivityLogRow: React.FC<{ log: IActivityLog; entityTemplate: IMongoEntityTemplatePopulated }> = ({ log, entityTemplate }) => {
     const { data: user, isLoading } = useQuery(['getUserById', log.userId], () => getUserByIdRequest(log.userId));

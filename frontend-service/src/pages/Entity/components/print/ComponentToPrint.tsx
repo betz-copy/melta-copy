@@ -2,10 +2,10 @@ import React from 'react';
 import { Box, Typography } from '@mui/material';
 import i18next from 'i18next';
 import { useQueryClient } from 'react-query';
-import { BlueTitle } from '../../../common/BlueTitle';
-import { IEntityExpanded } from '../../../interfaces/entities';
-import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { IMongoRelationshipTemplatePopulated } from '../../../interfaces/relationshipTemplates';
+import { BlueTitle } from '../../../../common/BlueTitle';
+import { IEntityExpanded } from '../../../../interfaces/entities';
+import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
+import { IMongoRelationshipTemplatePopulated } from '../../../../interfaces/relationshipTemplates';
 import { EntityComponentToPrint } from './EntityComponentToPrint';
 
 const ComponentToPrint = React.forwardRef<

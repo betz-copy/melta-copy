@@ -3,8 +3,8 @@ import { Box, Divider, IconButton, Popper, Typography, Grid } from '@mui/materia
 import { CloseSharp } from '@mui/icons-material';
 import i18next from 'i18next';
 import Slide from '@mui/material/Slide';
-import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { Activities } from './Activities';
+import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 
 const ActivityLogPopper: React.FC<{
     open: boolean;

@@ -3,8 +3,8 @@ import { Box, Typography } from '@mui/material';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IEntityExpanded } from '../../../interfaces/entities';
 import { IMongoRelationshipTemplatePopulated } from '../../../interfaces/relationshipTemplates';
-import { ActivityLog } from './ActivityLog';
-import { Print } from './Print';
+import { ActivityLog } from './activityLog';
+import { Print } from './print';
 import { IMongoCategory } from '../../../interfaces/categories';
 
 const EntityTopBar: React.FC<{

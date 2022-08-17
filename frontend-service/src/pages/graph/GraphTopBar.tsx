@@ -4,9 +4,9 @@ import { useQueryClient, useQuery } from 'react-query';
 import { RestartAltOutlined as ResetIcon, LinkOutlined as CopyUrlIcon } from '@mui/icons-material';
 import i18next from 'i18next';
 import { toast } from 'react-toastify';
-import IconButtonWithPopoverText from '../../../common/IconButtonWithPopover';
-import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { getExpandedEntityByIdRequest } from '../../../services/entitiesService';
+import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { getExpandedEntityByIdRequest } from '../../services/entitiesService';
+import IconButtonWithPopoverText from '../../common/IconButtonWithPopover';
 
 const GraphTopBar: React.FC<{ onReset: React.MouseEventHandler<HTMLButtonElement>; entityId: string }> = ({ onReset, entityId }) => {
     const queryClient = useQueryClient();
