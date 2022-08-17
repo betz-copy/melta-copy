@@ -9,6 +9,7 @@ import EntitiesTableOfTemplate, { EntitiesTableOfTemplateRef } from '../Entities
 import { BlueTitle } from '../BlueTitle';
 import { ResetFilterButton } from './ResetFilterButton';
 import IconButtonWithPopoverText from '../IconButtonWithPopover';
+import { CustomIcon } from '../CustomIcon';
 
 const TemplateTable = forwardRef<
     EntitiesTableOfTemplateRef,
@@ -32,8 +33,9 @@ const TemplateTable = forwardRef<
     return (
         <Grid container>
             <Grid container paddingLeft={3} justifyContent="space-between" width="100%">
-                <Grid>
-                    <Grid item>
+                <Grid item container xs={5}>
+                    <Grid item>{template.iconFileId && <CustomIcon iconUrl={template.iconFileId} height="30px" width="30px" color="#1976d2" />}</Grid>
+                    <Grid item paddingLeft="10px">
                         <BlueTitle title={template.displayName} component="h6" variant="h6" />
                     </Grid>
                 </Grid>
