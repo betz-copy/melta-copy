@@ -93,20 +93,21 @@ const Entity: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> 
 
     if (!expandedEntity) return <CircularProgress />;
 
+    const relevantRelationshipTemplates = relationshipTemplates
+        .map((currRelationshipTemplate) => populateRelationshipTemplate(currRelationshipTemplate, entityTemplates))
+        .filter((currRelationshipTemplatePopulated) =>
+            isRelationshipConnectedToEntityTemplate(currentEntityTemplate, currRelationshipTemplatePopulated),
+        );
+
     const categoriesWithRelationshipTemplates = categories
         .map((category) => {
             return {
                 ...category,
-                relationshipTemplates: relationshipTemplates
-                    .map((currRelationshipTemplate) => populateRelationshipTemplate(currRelationshipTemplate, entityTemplates))
-                    .filter((currRelationshipTemplatePopulated) =>
-                        isRelationshipConnectedToEntityTemplate(currentEntityTemplate, currRelationshipTemplatePopulated),
-                    )
-                    .filter((currRelationshipTemplatePopulated) => {
-                        const otherEntityTemplate = getOppositeEntityTemplate(currentEntityTemplate, currRelationshipTemplatePopulated);
+                relationshipTemplates: relevantRelationshipTemplates.filter((currRelationshipTemplatePopulated) => {
+                    const otherEntityTemplate = getOppositeEntityTemplate(currentEntityTemplate, currRelationshipTemplatePopulated);
 
-                        return otherEntityTemplate.category._id === category._id;
-                    }),
+                    return otherEntityTemplate.category._id === category._id;
+                }),
             } as IMongoCategory & { relationshipTemplates: IMongoRelationshipTemplatePopulated[] };
         })
         .filter((currCategory) => currCategory.relationshipTemplates?.length > 0);
@@ -139,7 +140,12 @@ const Entity: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> 
 
     return (
         <>
-            <EntityTopBar entityId={entityId!} entityTemplate={currentEntityTemplate} />
+            <EntityTopBar
+                entityTemplate={currentEntityTemplate}
+                expandedEntity={expandedEntity}
+                relevantRelationshipTemplates={relevantRelationshipTemplates}
+                categoriesWithRelationshipTemplates={categoriesWithRelationshipTemplates}
+            />
             <Grid className="pageMargin">
                 <Grid item marginTop="20px">
                     <EntityDetails entityTemplate={currentEntityTemplate} expandedEntity={expandedEntity} />

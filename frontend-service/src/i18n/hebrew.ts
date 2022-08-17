@@ -64,6 +64,15 @@ export default {
             withEntity: 'עם ישות מסוג',
             failedToGetActivities: 'נכשל לטעון היסטוריה',
         },
+        print: {
+            header: 'הדפס ישות',
+            continue: 'הדפס',
+            showDate: 'הוספת תאריך',
+            showDisabled: 'הראה ישויות מושבתות',
+            showEntityDates: 'הראה תאריכי יצירה ועדכון של ישויות',
+            chooseRelationship: 'בחרית קשרים',
+            printOptions: 'הגדרות הדפסה',
+        },
         graph: {
             reset: 'אפס גרף',
             copy: 'העתק קישור',

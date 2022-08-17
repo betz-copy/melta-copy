@@ -1,13 +1,6 @@
 import React, { useState } from 'react';
-import { Grid, Card, CardContent, IconButton, Menu, Tooltip, Checkbox, FormControlLabel, Typography, Box } from '@mui/material';
-import {
-    Delete as DeleteIcon,
-    Edit as EditIcon,
-    AccountTreeOutlined as GraphIcon,
-    MoreVertOutlined,
-    DoDisturbAlt,
-    CircleRounded,
-} from '@mui/icons-material';
+import { Grid, Card, CardContent, IconButton, Menu, Tooltip, Box } from '@mui/material';
+import { Delete as DeleteIcon, Edit as EditIcon, AccountTreeOutlined as GraphIcon, MoreVertOutlined, DoDisturbAlt } from '@mui/icons-material';
 import { useMutation, useQueryClient } from 'react-query';
 import i18next from 'i18next';
 import { toast } from 'react-toastify';
@@ -22,6 +15,8 @@ import { IPermissionsOfUser } from '../../../services/permissionsService';
 import { EditEntityDetails } from './EditEntityDetails';
 import { ErrorToast } from '../../../common/ErrorToast';
 import { MenuButton } from '../../../common/MenuButton';
+import { EntityDisableCheckbox } from './EntityDisableCheckbox';
+import { EntityDates } from './EntityDates';
 
 const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; expandedEntity: IEntityExpanded }> = ({
     entityTemplate,
@@ -174,26 +169,8 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                             </Menu>
                         </Grid>
                     </Grid>
-                    <Grid item>
-                        <FormControlLabel
-                            control={
-                                <Checkbox
-                                    checked={!isEntityDisabled}
-                                    checkedIcon={<CircleRounded color="success" fontSize="small" />}
-                                    icon={<CircleRounded fontSize="small" color="error" />}
-                                />
-                            }
-                            label={isEntityDisabled ? (i18next.t('entityPage.disable') as string) : (i18next.t('entityPage.active') as string)}
-                        />
-                    </Grid>
-                    <Grid item container justifyContent="space-around">
-                        <Typography color="gray">
-                            {`${i18next.t('entityPage.createdAt')}: ${new Date(expandedEntity.entity.properties.createdAt).toLocaleString('en-uk')}`}
-                        </Typography>
-                        <Typography color="gray">
-                            {`${i18next.t('entityPage.updatedAt')}: ${new Date(expandedEntity.entity.properties.updatedAt).toLocaleString('en-uk')}`}
-                        </Typography>
-                    </Grid>
+                    <EntityDisableCheckbox isEntityDisabled={isEntityDisabled}> </EntityDisableCheckbox>
+                    <EntityDates createdAt={expandedEntity.entity.properties.createdAt} updatedAt={expandedEntity.entity.properties.updatedAt} />
                 </Grid>
             </CardContent>
 
