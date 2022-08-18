@@ -29,7 +29,7 @@ const PermissionsManagement = lazy(() => import('./pages/PermissionsManagement')
 const Unavailable = lazy(() => import('./pages/Unavailable'));
 const ErrorPage = lazy(() => import('./pages/ErrorPage'));
 const Entity = lazy(() => import('./pages/Entity'));
-const Graph = lazy(() => import('./pages/graph/Graph'));
+const Graph = lazy(() => import('./pages/Graph'));
 
 const FluidSimulation = lazy(() => import('./pages/MeltaPlus/FluidSimulation'));
 
