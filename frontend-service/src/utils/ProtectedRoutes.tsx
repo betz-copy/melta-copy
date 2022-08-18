@@ -1,7 +1,8 @@
 import React, { isValidElement } from 'react';
-import { useParams, Navigate } from 'react-router-dom';
+import { useParams, Navigate, useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from 'react-query';
 import { CircularProgress } from '@mui/material';
+import { AxiosError } from 'axios';
 import { getExpandedEntityByIdRequest } from '../services/entitiesService';
 import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { IPermissionsOfUser } from '../services/permissionsService';
@@ -33,11 +34,20 @@ export const EntityProtectedRoute: React.FC<{ permissions: IPermissionsOfUser; e
     const params = useParams();
     const { entityId } = params;
     const queryClient = useQueryClient();
+    const navigate = useNavigate();
 
     const templateIds = queryClient.getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates')!.map((entityTemplate) => entityTemplate._id);
 
-    const { data: expandedEntity, isLoading } = useQuery(['getExpandedEntity', entityId, { templateIds, numberOfConnections: 0 }], () =>
-        getExpandedEntityByIdRequest(entityId!, { templateIds }),
+    const { data: expandedEntity, isLoading } = useQuery(
+        ['getExpandedEntity', entityId, { templateIds, numberOfConnections: 0 }],
+        () => getExpandedEntityByIdRequest(entityId!, { templateIds }),
+        {
+            onError: (error: AxiosError) => {
+                if (error.response?.status === 404) {
+                    navigate('/404');
+                }
+            },
+        },
     );
 
     if (isLoading) return <CircularProgress />;

@@ -16,12 +16,12 @@ const queryClient = new QueryClient({
     defaultOptions: {
         queries: {
             refetchOnWindowFocus: false,
-            retry: (_count, error) => {
+            retry: (count, error) => {
                 if ((error as AxiosError).response?.status === 403) {
                     return false;
                 }
 
-                return true;
+                return count < 2;
             },
         },
     },
