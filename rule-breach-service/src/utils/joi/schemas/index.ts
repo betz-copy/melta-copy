@@ -18,6 +18,8 @@ export const updateEntityMetadataSchema = joi.object({
     updatedFields: joi.object().min(1).required(),
 });
 
+export const actionMetadataSchema = joi.alternatives(createRelationshipMetadataSchema, deleteRelationshipMetadataSchema, updateEntityMetadataSchema);
+
 export const ruleBreachSchema = joi.object({
     originUserId: mongoIdSchema.required(),
     brokenRules: joi
