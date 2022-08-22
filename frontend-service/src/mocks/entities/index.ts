@@ -28,7 +28,7 @@ const mockEntites = (mock: MockAdapter) => {
                 properties: {
                     firstName: 'נועה',
                     lastName: 'קירל',
-                    age: 20,
+                    age: -20,
                     gender: false,
                     firstFile: 'blabla.docx',
                     disabled: faker.datatype.boolean(),
@@ -51,7 +51,7 @@ const mockEntites = (mock: MockAdapter) => {
                         properties: {
                             firstName: 'נועה',
                             lastName: 'קירל',
-                            age: 20,
+                            age: -20,
                             gender: false,
                             firstFile: 'blabla.docx',
                             disabled: faker.datatype.boolean(),
@@ -86,7 +86,7 @@ const mockEntites = (mock: MockAdapter) => {
                         properties: {
                             firstName: 'נועה',
                             lastName: 'קירל',
-                            age: 20,
+                            age: -20,
                             gender: false,
                             firstFile: 'blabla.docx',
                             disabled: faker.datatype.boolean(),
@@ -137,7 +137,7 @@ const mockEntites = (mock: MockAdapter) => {
                         properties: {
                             firstName: 'נועה',
                             lastName: 'קירל',
-                            age: 20,
+                            age: -20,
                             gender: false,
                             firstFile: 'blabla.docx',
                             disabled: faker.datatype.boolean(),
@@ -159,7 +159,7 @@ const mockEntites = (mock: MockAdapter) => {
                         properties: {
                             firstName: 'נועה',
                             lastName: 'קירל',
-                            age: 20,
+                            age: -20,
                             gender: false,
                             firstFile: 'blabla.docx',
                             disabled: faker.datatype.boolean(),
@@ -196,7 +196,7 @@ const mockEntites = (mock: MockAdapter) => {
                         properties: {
                             firstName: 'נועה',
                             lastName: 'קירל',
-                            age: 20,
+                            age: -20,
                             gender: false,
                             firstFile: 'blabla.docx',
                             disabled: faker.datatype.boolean(),
@@ -231,7 +231,7 @@ const mockEntites = (mock: MockAdapter) => {
                         properties: {
                             firstName: 'נועה',
                             lastName: 'קירל',
-                            age: 20,
+                            age: -20,
                             gender: false,
                             firstFile: 'blabla.docx',
                             disabled: faker.datatype.boolean(),

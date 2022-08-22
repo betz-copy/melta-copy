@@ -52,7 +52,7 @@ const EntityProperties: React.FC<{
                                     {propertySchema.title}:
                                 </Typography>
                             </Grid>
-                            <Grid item>
+                            <Grid item style={propertySchema.type === 'number' ? { direction: 'ltr' } : { direction: 'rtl' }}>
                                 <Typography display="inline" variant="h6">
                                     {formatToString(propertyValue, propertySchema.type, propertySchema.format)}
                                 </Typography>
