@@ -37,3 +37,9 @@ export class RuleBreachRequestDoesNotExistError extends ServiceError {
         super(404, `A rule breach request with the id '${ruleBreachRequestId}' does not exist`);
     }
 }
+
+export class RuleBreachSearchFilterTypeError extends ServiceError {
+    constructor(filterType: string) {
+        super(404, `A filter of type '${filterType}' does not exist`);
+    }
+}
