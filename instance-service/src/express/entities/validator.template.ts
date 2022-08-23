@@ -40,7 +40,7 @@ const ajv = new Ajv();
 
 ajv.addFormat('fileId', /.*/);
 addFormats(ajv);
-ajv.addKeyword('patternCustomErrorMessage');
+ajv.addVocabulary(['patternCustomErrorMessage', 'hide']);
 
 export const getEntityTemplateById = async (templateId: string) => {
     const { result, err } = await trycatch(() => axios.get<IEntityTemplate>(`${url}${getByIdRoute}/${templateId}`, { timeout }));
