@@ -1,0 +1,1 @@
+db['entity-templates'].updateMany({},{$set:{'properties.hide':[]}})
