@@ -30,7 +30,7 @@ const ExtendedJoi = Joi.extend({
 const propertiesArraySchema = Joi.array()
     .items(
         Joi.object({
-            title: Joi.string().required(),
+            title: Joi.string().invalid('תאריך יצירה', 'תאריך עדכון', 'מושבת').required(),
             type: Joi.string()
                 .valid(...allowedJSONSchemaTypes)
                 .required(),
@@ -84,13 +84,13 @@ export const innerPropertiesSchema = Joi.object()
         properties: Joi.object()
             .custom((value) => {
                 const { error } = propertiesArraySchema.validate(Object.values(value)); // titles are unique
-
                 if (error) {
                     throw error;
                 }
-
                 return value;
             })
+            .pattern(/^((createdAt)|(updatedAt)|(disable))$/, Joi.forbidden())
+            .unknown(true)
             .required(),
         required: Joi.array().unique().items(Joi.string()).custom(customRequiredValidation),
         hide: Joi.array().unique().items(Joi.string()).custom(customRequiredValidation).custom(customHideValidation),
