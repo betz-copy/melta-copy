@@ -10,7 +10,7 @@ const { supportedFilesTypes } = config.service;
 const ajv = new Ajv();
 ajv.addFormat('fileId', /.*/);
 addFormats(ajv);
-ajv.addKeyword('patternCustomErrorMessage');
+ajv.addVocabulary(['patternCustomErrorMessage', 'hide']);
 
 const stringFormats = ['date', 'date-time', 'email', 'fileId'];
 const allowedJSONSchemaTypes = ['string', 'number', 'boolean'];
@@ -60,8 +60,22 @@ const validatePropertiesArray = (value, propertiesKeys) => {
     return value;
 };
 
+const validatepropertiesPreviewArray = (value, propertiesKeys) => {
+    const isRequiredValid = value.every((item) => !propertiesKeys.includes(item));
+
+    if (!isRequiredValid) {
+        throw new Error('item in hide array cannot be in preview array');
+    }
+
+    return value;
+};
+
 const customRequiredValidation = (value, helpers) => {
     return validatePropertiesArray(value, Object.keys(helpers.state.ancestors[0].properties));
+};
+
+const customHideValidation = (value, helpers) => {
+    return validatepropertiesPreviewArray(value, helpers.state.ancestors[1].propertiesPreview);
 };
 
 export const innerPropertiesSchema = Joi.object()
@@ -79,6 +93,7 @@ export const innerPropertiesSchema = Joi.object()
             })
             .required(),
         required: Joi.array().unique().items(Joi.string()).custom(customRequiredValidation),
+        hide: Joi.array().unique().items(Joi.string()).custom(customRequiredValidation).custom(customHideValidation),
     })
     .custom((value) => {
         ajv.compile(value); // throws an error if JSONSchema is invalid
