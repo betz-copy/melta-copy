@@ -1,36 +1,36 @@
 export const relationshipTemplates = [
     {
-        name: 'going on',
+        name: 'goingOn',
         displayName: 'משתתף ב',
         sourceEntityId: { name: 'tourist' },
         destinationEntityId: { name: 'trip' },
     },
     {
-        name: 'sold trip to',
+        name: 'soldTripTo',
         displayName: 'מכר טיול ל',
         sourceEntityId: { name: 'travelAgent' },
         destinationEntityId: { name: 'tourist' },
     },
     {
-        name: 'flies on',
+        name: 'fliesOn',
         displayName: 'טס על',
         sourceEntityId: { name: 'tourist' },
         destinationEntityId: { name: 'flight' },
     },
     {
-        name: 'departue from',
+        name: 'departueFrom',
         displayName: 'ממריא מ',
         sourceEntityId: { name: 'flight' },
         destinationEntityId: { name: 'airport' },
     },
     {
-        name: 'stays in',
+        name: 'staysIn',
         displayName: 'ישן ב',
         sourceEntityId: { name: 'tourist' },
         destinationEntityId: { name: 'hotel' },
     },
     {
-        name: 'stays in',
+        name: 'staysIn',
         displayName: 'ישן ב',
         sourceEntityId: { name: 'tourist' },
         destinationEntityId: { name: 'airbnb' },
