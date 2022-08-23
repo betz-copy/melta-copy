@@ -167,6 +167,7 @@ const FieldBlock: React.FC<FieldBlockProps> = ({
                                                     type: '',
                                                     required: false,
                                                     preview: false,
+                                                    hide: false,
                                                     options: [],
                                                     pattern: '',
                                                     patternCustomErrorMessage: '',

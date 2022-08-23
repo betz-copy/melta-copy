@@ -265,6 +265,7 @@ export default {
     validation: {
         required: 'חובה',
         preview: 'תצוגה מצומצמת',
+        hide: 'הסתר',
         invalidPropertyType: 'סוג שדה לא תקין',
         hebrew: 'עברית',
         oneField: 'לפחות שדה חובה אחד',

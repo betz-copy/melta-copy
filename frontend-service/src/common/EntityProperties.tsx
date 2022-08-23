@@ -1,5 +1,5 @@
 import React, { CSSProperties } from 'react';
-import { Box, Grid, Typography } from '@mui/material';
+import { Box, Grid, Typography, Input } from '@mui/material';
 import i18next from 'i18next';
 import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { IEntity } from '../interfaces/entities';
@@ -32,9 +32,10 @@ export const formatToString = (value: any, valueType: 'string' | 'number' | 'boo
 const EntityProperties: React.FC<{
     entityTemplate: IMongoEntityTemplatePopulated;
     properties: IEntity['properties'];
+    hideFields?: boolean;
     showPreviewPropertiesOnly?: boolean;
     style?: CSSProperties;
-}> = ({ entityTemplate, properties, showPreviewPropertiesOnly = false, style }) => {
+}> = ({ entityTemplate, properties, hideFields = false, showPreviewPropertiesOnly = false, style }) => {
     const propertiesOrderedToShow = showPreviewPropertiesOnly
         ? entityTemplate.propertiesOrder.filter((propertyKey) => entityTemplate.propertiesPreview.includes(propertyKey))
         : entityTemplate.propertiesOrder;
@@ -44,6 +45,8 @@ const EntityProperties: React.FC<{
             {propertiesOrderedToShow.map((propertyKey) => {
                 const propertySchema = entityTemplate.properties.properties[propertyKey];
                 const propertyValue = properties[propertyKey];
+                const hideField = entityTemplate.properties.hide.includes(propertyKey);
+
                 return (
                     <Grid key={propertyKey} item>
                         <Grid container spacing={1}>
@@ -53,9 +56,23 @@ const EntityProperties: React.FC<{
                                 </Typography>
                             </Grid>
                             <Grid item style={propertySchema.type === 'number' ? { direction: 'ltr' } : { direction: 'rtl' }}>
-                                <Typography display="inline" variant="h6">
-                                    {formatToString(propertyValue, propertySchema.type, propertySchema.format)}
-                                </Typography>
+                                {hideFields && hideField ? (
+                                    <Input
+                                        type="password"
+                                        value={propertyValue}
+                                        disabled
+                                        disableUnderline
+                                        sx={{
+                                            '& .MuiInputBase-input.Mui-disabled': {
+                                                WebkitTextFillColor: 'black',
+                                            },
+                                        }}
+                                    />
+                                ) : (
+                                    <Typography display="inline" variant="h6">
+                                        {formatToString(propertyValue, propertySchema.type, propertySchema.format)}
+                                    </Typography>
+                                )}
                             </Grid>
                         </Grid>
                     </Grid>

@@ -33,6 +33,7 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
             title: value.title,
             required: properties.required.includes(key),
             preview: propertiesPreview.includes(key),
+            hide: properties.hide.includes(key),
             type,
             options: value.enum || [],
             pattern: value.pattern || '',
@@ -63,9 +64,10 @@ const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTemplate =
         type: 'object' as 'object',
         properties: {} as any,
         required: [] as string[],
+        hide: [] as string[],
     };
 
-    properties.forEach(({ name, title, type, required, preview, options, pattern, patternCustomErrorMessage }) => {
+    properties.forEach(({ name, title, type, required, preview, options, pattern, patternCustomErrorMessage, hide }) => {
         schema.properties[name] = {
             title,
             type: basePropertyTypes.includes(type) ? type : 'string',
@@ -78,6 +80,7 @@ const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTemplate =
         propertiesOrder.push(name);
 
         if (required) schema.required.push(name);
+        if (hide) schema.hide.push(name);
         if (preview) propertiesPreview.push(name);
     });
 

@@ -59,6 +59,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
 
     const required = `properties[${index}].required`;
     const preview = `properties[${index}].preview`;
+    const hide = `properties[${index}].hide`;
 
     const initialEnumOptions = initialValues.properties.find((property) => property.id === value.id)?.options || [];
 
@@ -212,8 +213,22 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                 label={i18next.t('validation.required')}
                                             />
                                             <FormControlLabel
-                                                control={<Switch id={preview} name={preview} onChange={onChange} checked={value.preview} />}
+                                                control={
+                                                    <Switch
+                                                        id={preview}
+                                                        name={preview}
+                                                        onChange={onChange}
+                                                        disabled={value.hide}
+                                                        checked={value.preview}
+                                                    />
+                                                }
                                                 label={i18next.t('validation.preview')}
+                                            />
+                                            <FormControlLabel
+                                                control={
+                                                    <Switch id={hide} name={hide} onChange={onChange} disabled={value.preview} checked={value.hide} />
+                                                }
+                                                label={i18next.t('validation.hide')}
                                             />
                                         </Box>
 

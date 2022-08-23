@@ -17,6 +17,7 @@ export interface IEntityTemplate {
         type: 'object';
         properties: Record<string, IEntitySingleProperty>;
         required: string[];
+        hide: string[];
     };
     disabled: boolean;
     category: IMongoCategory['_id'];

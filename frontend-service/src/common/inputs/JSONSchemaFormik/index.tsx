@@ -32,7 +32,7 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
     const ajv = new Ajv({ allErrors: true });
     ajv.addFormat('fileId', /.*/);
     addFormats(ajv);
-    ajv.addKeyword('patternCustomErrorMessage');
+    ajv.addVocabulary(['patternCustomErrorMessage', 'hide']);
 
     const validateFunction = ajv.compile(schema);
     validateFunction(data);

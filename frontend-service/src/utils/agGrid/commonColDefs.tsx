@@ -2,40 +2,61 @@ import React from 'react';
 import { ColDef, ValueFormatterParams, ValueGetterFunc } from '@ag-grid-community/core';
 import i18next from 'i18next';
 import { DownloadButton } from '../../common/DownloadButton';
+import { Value } from './Value';
 
-export const numberColDef = (field: string, valueGetter: ValueGetterFunc, value: { title: string }, hide = false): ColDef => {
+export const numberColDef = (
+    field: string,
+    valueGetter: ValueGetterFunc,
+    value: { title: string },
+    hideColumn = false,
+    hideValue = false,
+): ColDef => {
     return {
         field,
         headerName: value.title,
         valueGetter,
         filter: 'agNumberColumnFilter',
-        hide,
+        cellRenderer: (props) => <Value hideValue={hideValue} value={props.value} />,
+        hide: hideColumn,
         cellStyle: { direction: 'ltr' },
     };
 };
 
-export const stringColDef = (field: string, valueGetter: ValueGetterFunc, value: { title: string }, hide = false): ColDef => {
+export const stringColDef = (
+    field: string,
+    valueGetter: ValueGetterFunc,
+    value: { title: string },
+    hideColumn = false,
+    hideValue = false,
+): ColDef => {
     return {
         field,
         headerName: value.title,
+        cellRenderer: (props) => <Value hideValue={hideValue} value={props.value} />,
         valueGetter,
         filter: 'agTextColumnFilter',
-        hide,
+        hide: hideColumn,
     };
 };
 
-export const fileColDef = (field: string, valueGetter: ValueGetterFunc, value: { title: string }, hide = false): ColDef => {
+export const fileColDef = (field: string, valueGetter: ValueGetterFunc, value: { title: string }, hideColumn = false): ColDef => {
     return {
         field,
         headerName: value.title,
         valueGetter,
         menuTabs: [],
         cellRenderer: (props) => <DownloadButton fileId={props.value} />,
-        hide,
+        hide: hideColumn,
     };
 };
 
-export const booleanColDef = (field: string, valueGetter: ValueGetterFunc, value: { title: string }, hide = false): ColDef => {
+export const booleanColDef = (
+    field: string,
+    valueGetter: ValueGetterFunc,
+    value: { title: string },
+    hideColumn = false,
+    hideValue = false,
+): ColDef => {
     const valueFormatter = (params: ValueFormatterParams) => {
         if (String(params.value) === 'true') return i18next.t('booleanOptions.yes');
         if (String(params.value) === 'false') return i18next.t('booleanOptions.no');
@@ -47,6 +68,7 @@ export const booleanColDef = (field: string, valueGetter: ValueGetterFunc, value
         field,
         headerName: value.title,
         valueGetter,
+        cellRenderer: (props) => <Value hideValue={hideValue} value={props.value} />,
         filter: 'agSetColumnFilter',
         valueFormatter,
         filterParams: {
@@ -54,23 +76,37 @@ export const booleanColDef = (field: string, valueGetter: ValueGetterFunc, value
             suppressMiniFilter: true,
             values: [true, false, undefined],
         },
-        hide,
+        hide: hideColumn,
     };
 };
-export const enumColDef = (field: string, valueGetter: ValueGetterFunc, value: { title: string }, values: Array<string>, hide = false): ColDef => {
+export const enumColDef = (
+    field: string,
+    valueGetter: ValueGetterFunc,
+    value: { title: string },
+    values: Array<string>,
+    hideColumn = false,
+    hideValue = false,
+): ColDef => {
     return {
         field,
         headerName: value.title,
         valueGetter,
+        cellRenderer: (props) => <Value hideValue={hideValue} value={props.value} />,
         filter: 'agSetColumnFilter',
         filterParams: {
             suppressMiniFilter: true,
             values: [...values, undefined],
         },
-        hide,
+        hide: hideColumn,
     };
 };
-export const dateColDef = (field: string, valueGetter: ValueGetterFunc, value: { title: string; format?: string }, hide = false): ColDef => {
+export const dateColDef = (
+    field: string,
+    valueGetter: ValueGetterFunc,
+    value: { title: string; format?: string },
+    hideColumn = false,
+    hideValue = false,
+): ColDef => {
     const { format } = value;
 
     const valueFormatter = (params: ValueFormatterParams) => {
@@ -99,6 +135,7 @@ export const dateColDef = (field: string, valueGetter: ValueGetterFunc, value: {
         field,
         headerName: value.title,
         valueGetter,
+        cellRenderer: (props) => <Value hideValue={hideValue} value={props.value} />,
         filter: 'agDateColumnFilter',
         valueFormatter,
         filterParams: {
@@ -106,6 +143,6 @@ export const dateColDef = (field: string, valueGetter: ValueGetterFunc, value: {
             comparator,
         },
         minWidth: format === 'date-time' ? 220 : undefined,
-        hide,
+        hide: hideColumn,
     };
 };

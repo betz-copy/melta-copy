@@ -20,6 +20,7 @@ export interface EntityTemplateFormInputProperties {
     type: string;
     required: boolean;
     preview: boolean;
+    hide: boolean;
     id: string;
     options: string[];
     pattern: string;

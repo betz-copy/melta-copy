@@ -21,16 +21,19 @@ export const getColumnDefs = <Data extends any>(
 ) => {
     const columnDefs = Object.entries(template.properties.properties).map(([key, value]) => {
         const { type, format } = value;
+
+        const hideField = template.properties.hide.includes(key);
+
         const valueGetter: ValueGetterFunc = ({ data }) => getEntityPropertiesData(data)[key];
 
-        const hide = hideNonPreview && !template.propertiesPreview.includes(key);
+        const hideColumn = hideNonPreview && !template.propertiesPreview.includes(key);
 
-        if (type === 'number') return numberColDef(key, valueGetter, value, hide);
-        if (type === 'boolean') return booleanColDef(key, valueGetter, value, hide);
-        if (format === 'date' || format === 'date-time') return dateColDef(key, valueGetter, value, hide);
-        if (format === 'fileId') return fileColDef(key, valueGetter, value, hide);
-        if (value.enum) return enumColDef(key, valueGetter, value, value.enum, hide);
-        return stringColDef(key, valueGetter, value, hide);
+        if (type === 'number') return numberColDef(key, valueGetter, value, hideColumn, hideField);
+        if (type === 'boolean') return booleanColDef(key, valueGetter, value, hideColumn, hideField);
+        if (format === 'date' || format === 'date-time') return dateColDef(key, valueGetter, value, hideColumn, hideField);
+        if (format === 'fileId') return fileColDef(key, valueGetter, value, hideColumn);
+        if (value.enum) return enumColDef(key, valueGetter, value, value.enum, hideColumn, hideField);
+        return stringColDef(key, valueGetter, value, hideColumn, hideField);
     });
 
     columnDefs.push(

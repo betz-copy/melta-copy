@@ -1,6 +1,14 @@
 import React, { useState } from 'react';
 import { Grid, Card, CardContent, IconButton, Menu, Tooltip, Box } from '@mui/material';
-import { Delete as DeleteIcon, Edit as EditIcon, AccountTreeOutlined as GraphIcon, MoreVertOutlined, DoDisturbAlt } from '@mui/icons-material';
+import {
+    Delete as DeleteIcon,
+    Edit as EditIcon,
+    AccountTreeOutlined as GraphIcon,
+    MoreVertOutlined,
+    DoDisturbAlt,
+    VisibilityOff,
+    Visibility,
+} from '@mui/icons-material';
 import { useMutation, useQueryClient } from 'react-query';
 import i18next from 'i18next';
 import { toast } from 'react-toastify';
@@ -28,6 +36,8 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
     const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
     const queryClient = useQueryClient();
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+    const [hideField, setHideField] = React.useState(true);
+
     const open = Boolean(anchorEl);
 
     const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -90,13 +100,14 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
         <Card style={{ background: isEntityDisabled ? 'rgb(159 147 147 / 16%)' : 'white' }}>
             <CardContent sx={{ '&:last-child': { padding: 0 } }}>
                 <Grid item container justifyContent="space-between" alignItems="stretch" padding="1rem">
-                    <Grid item xs={11.5}>
+                    <Grid item xs={11}>
                         <Box padding="0.2rem">
-                            <EntityProperties entityTemplate={entityTemplate} properties={entity.properties} />
+                            <EntityProperties entityTemplate={entityTemplate} properties={entity.properties} hideFields={hideField} />
                         </Box>
                     </Grid>
                     <Grid item>
                         <Grid container>
+                            <IconButton onClick={() => setHideField((cur) => !cur)}>{hideField ? <VisibilityOff /> : <Visibility />}</IconButton>
                             <IconButton onClick={handleClick}>
                                 <MoreVertOutlined />
                             </IconButton>

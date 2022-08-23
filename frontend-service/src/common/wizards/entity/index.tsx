@@ -59,6 +59,7 @@ const EntityWizard: React.FC<WizardBaseType<EntityWizardValues>> = ({
                 properties: {},
                 required: [],
                 type: 'object',
+                hide: [],
             },
             propertiesOrder: [],
             propertiesPreview: [],
