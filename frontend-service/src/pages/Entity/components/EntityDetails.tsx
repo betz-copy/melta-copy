@@ -107,7 +107,9 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                     </Grid>
                     <Grid item>
                         <Grid container>
-                            <IconButton onClick={() => setHideField((cur) => !cur)}>{hideField ? <VisibilityOff /> : <Visibility />}</IconButton>
+                            {entityTemplate.properties.hide.length > 0 && (
+                                <IconButton onClick={() => setHideField((cur) => !cur)}>{hideField ? <VisibilityOff /> : <Visibility />}</IconButton>
+                            )}
                             <IconButton onClick={handleClick}>
                                 <MoreVertOutlined />
                             </IconButton>
@@ -180,7 +182,10 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                             </Menu>
                         </Grid>
                     </Grid>
-                    <EntityDisableCheckbox isEntityDisabled={isEntityDisabled}> </EntityDisableCheckbox>
+
+                    <Grid container>
+                        <EntityDisableCheckbox isEntityDisabled={isEntityDisabled}> </EntityDisableCheckbox>
+                    </Grid>
                     <EntityDates createdAt={expandedEntity.entity.properties.createdAt} updatedAt={expandedEntity.entity.properties.updatedAt} />
                 </Grid>
             </CardContent>

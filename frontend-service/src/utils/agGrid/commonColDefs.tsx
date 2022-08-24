@@ -1,5 +1,5 @@
 import React from 'react';
-import { ColDef, ValueFormatterParams, ValueGetterFunc } from '@ag-grid-community/core';
+import { ColDef, ValueGetterFunc } from '@ag-grid-community/core';
 import i18next from 'i18next';
 import { DownloadButton } from '../../common/DownloadButton';
 import { Value } from './Value';
@@ -57,20 +57,19 @@ export const booleanColDef = (
     hideColumn = false,
     hideValue = false,
 ): ColDef => {
-    const valueFormatter = (params: ValueFormatterParams) => {
-        if (String(params.value) === 'true') return i18next.t('booleanOptions.yes');
-        if (String(params.value) === 'false') return i18next.t('booleanOptions.no');
+    const valueFormatter = (props) => {
+        if (String(props.value) === 'true') return i18next.t('booleanOptions.yes');
+        if (String(props.value) === 'false') return i18next.t('booleanOptions.no');
 
-        return params.value;
+        return props.value;
     };
 
     return {
         field,
         headerName: value.title,
         valueGetter,
-        cellRenderer: (props) => <Value hideValue={hideValue} value={props.value} />,
+        cellRenderer: (props) => <Value hideValue={hideValue} value={valueFormatter(props)} />,
         filter: 'agSetColumnFilter',
-        valueFormatter,
         filterParams: {
             valueFormatter,
             suppressMiniFilter: true,
@@ -109,14 +108,14 @@ export const dateColDef = (
 ): ColDef => {
     const { format } = value;
 
-    const valueFormatter = (params: ValueFormatterParams) => {
-        if (!params.value) return '';
+    const valueFormatter = (props) => {
+        if (!props.value) return '';
 
-        if (format === 'date') return new Date(params.value).toLocaleDateString('en-uk');
+        if (format === 'date') return new Date(props.value).toLocaleDateString('en-uk');
 
-        if (format === 'date-time') return new Date(params.value).toLocaleString('en-uk');
+        if (format === 'date-time') return new Date(props.value).toLocaleString('en-uk');
 
-        return params.value;
+        return props.value;
     };
 
     const comparator = (filterLocalDateAtMidnight: Date, cellValue: string) => {
@@ -135,9 +134,8 @@ export const dateColDef = (
         field,
         headerName: value.title,
         valueGetter,
-        cellRenderer: (props) => <Value hideValue={hideValue} value={props.value} />,
+        cellRenderer: (props) => <Value hideValue={hideValue} value={valueFormatter(props)} />,
         filter: 'agDateColumnFilter',
-        valueFormatter,
         filterParams: {
             valueFormatter,
             comparator,
