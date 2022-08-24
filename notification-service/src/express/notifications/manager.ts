@@ -10,11 +10,11 @@ export class NotificationsManager {
         if (type) query.type = type;
         if (viewerId) query.viewers = { $in: viewerId };
 
-        return NotificationModel.find(query, {}, { limit, skip }).exec();
+        return NotificationModel.find(query, {}, { limit, skip }).lean();
     }
 
     public static async getNotificationById(notificationId: string): Promise<INotificationDocument> {
-        return NotificationModel.findById(notificationId).orFail(new NotificationDoesNotExistError(notificationId)).exec();
+        return NotificationModel.findById(notificationId).orFail(new NotificationDoesNotExistError(notificationId)).lean();
     }
 
     public static async createNotification(notificationData: Omit<INotification, 'createdAt'>): Promise<INotificationDocument> {
@@ -24,7 +24,7 @@ export class NotificationsManager {
     public static async notificationSeen(notificationId: string, userId: string): Promise<INotificationDocument> {
         return NotificationModel.findByIdAndUpdate(notificationId, { $pull: { viewers: userId } }, { new: true })
             .orFail(new NotificationDoesNotExistError(notificationId))
-            .exec();
+            .lean();
     }
 }
 
