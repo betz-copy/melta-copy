@@ -70,7 +70,7 @@ export default {
             showDate: 'הוספת תאריך',
             showDisabled: 'הראה ישויות מושבתות',
             showEntityDates: 'הראה תאריכי יצירה ועדכון של ישויות',
-            chooseRelationship: 'בחרית קשרים',
+            chooseRelationship: 'בחירת קשרים',
             printOptions: 'הגדרות הדפסה',
         },
         graph: {
