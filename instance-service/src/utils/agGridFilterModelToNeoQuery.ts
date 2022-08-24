@@ -46,7 +46,7 @@ export interface IAGGridRequest {
 
 export const setFilterToQuery = (field: string, { values }: IAGGridSetFilter) => {
     const valuesWithoutNulls = values.filter(Boolean) as string[];
-    const valuesQuery = valuesWithoutNulls.map((value) => (isBoolean(value) ? `${value}` : `'${value}'`)).join(',');
+    const valuesQuery = valuesWithoutNulls.map((value) => (isBoolean(value) ? `${value}` : `'${value.replace(/'/g, "\\'")}'`)).join(',');
 
     if (values.includes(null)) {
         return `((node.${field} IS NULL) OR (node.${field} IN [${valuesQuery}]))`;
