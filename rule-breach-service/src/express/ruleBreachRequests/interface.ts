@@ -1,5 +1,5 @@
 import { Document } from 'mongoose';
-import { IRuleBreach } from '../ruleBreaches/interface';
+import { IRuleBreach } from '../../utils/interfaces/ruleBreach';
 
 export interface IRuleBreachRequest extends IRuleBreach {
     reviewerId?: string;

@@ -1,13 +1,10 @@
 import * as mongoose from 'mongoose';
 import config from '../../config';
-import RuleBreachesModel from '../ruleBreaches/model';
+import { defaultSchemaOptions, ruleBreachSchemaDefinition } from '../../utils/mongoose/schemas/ruleBreach';
 import { IRuleBreachAlertDocument } from './interface';
 
-const RuleBreachAlertsSchema = new mongoose.Schema({}, { versionKey: false });
+const RuleBreachAlertsSchema = new mongoose.Schema(ruleBreachSchemaDefinition, defaultSchemaOptions);
 
-const RuleBreachAlertsModel = RuleBreachesModel.discriminator<IRuleBreachAlertDocument>(
-    config.mongo.ruleBreachAlertsSubCollectionName,
-    RuleBreachAlertsSchema,
-);
+const RuleBreachAlertsModel = mongoose.model<IRuleBreachAlertDocument>(config.mongo.ruleBreachAlertsCollectionName, RuleBreachAlertsSchema);
 
 export default RuleBreachAlertsModel;

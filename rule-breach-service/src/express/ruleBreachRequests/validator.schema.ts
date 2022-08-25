@@ -1,21 +1,55 @@
 /* eslint-disable import/prefer-default-export */
 import * as joi from 'joi';
-import { mongoIdSchema, ruleBreachSchema } from '../../utils/joi/schemas';
+import { ActionTypes } from '../../utils/interfaces/actionMetadata';
+import { mongoIdSchema, ruleBreachSchema } from '../../utils/joi/schemas/actionMetadata';
+import { agGridRequestSchema } from '../../utils/joi/schemas/agGrid';
+import { validateActionMetadata } from '../../utils/joi/validateActionMetadata';
+
+// POST /api/rule-breaches/requests/search
+export const searchRuleBreachRequestsRequestSchema = joi.object({
+    query: {},
+    body: agGridRequestSchema,
+    params: {},
+});
 
 // POST /api/rule-breaches/requests
-export const createRuleBreachRequestSchema = joi.object({
+export const createRuleBreachRequestRequestSchema = joi.object({
     query: {},
     body: ruleBreachSchema,
     params: {},
 });
 
 // PATCH /api/rule-breaches/requests/:ruleBreachRequestId/review
-export const reviewRuleBreachRequestSchema = joi.object({
+export const reviewRuleBreachRequestRequestSchema = joi.object({
     query: {},
     body: {
         reviewerId: mongoIdSchema.required(),
         approved: joi.boolean().required(),
     },
+    params: {
+        ruleBreachRequestId: mongoIdSchema.required(),
+    },
+});
+
+// PATCH /api/rule-breaches/requests/:ruleBreachRequestId/action-metadata
+export const updateRuleBreachRequestActionMetadataRequestSchema = joi.object({
+    query: {},
+    body: {
+        actionType: joi
+            .string()
+            .valid(...Object.values(ActionTypes))
+            .required(),
+        actionMetadata: joi.custom(validateActionMetadata).required(),
+    },
+    params: {
+        ruleBreachRequestId: mongoIdSchema.required(),
+    },
+});
+
+// GET /api/rule-breaches/requests/:ruleBreachRequestId
+export const getRuleBreachRequestByIdRequestSchema = joi.object({
+    query: {},
+    body: {},
     params: {
         ruleBreachRequestId: mongoIdSchema.required(),
     },

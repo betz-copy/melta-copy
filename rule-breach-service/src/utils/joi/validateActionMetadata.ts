@@ -1,8 +1,8 @@
 /* eslint-disable import/prefer-default-export */
 import * as joi from 'joi';
-import { IRuleBreach } from '../../express/ruleBreaches/interface';
-import { ActionTypes } from '../interfaces';
-import { createRelationshipMetadataSchema, deleteRelationshipMetadataSchema, updateEntityMetadataSchema } from './schemas';
+import { IRuleBreach } from '../interfaces/ruleBreach';
+import { ActionTypes } from '../interfaces/actionMetadata';
+import { createRelationshipMetadataSchema, deleteRelationshipMetadataSchema, updateEntityMetadataSchema } from './schemas/actionMetadata';
 
 export const validateActionMetadata: joi.CustomValidator = (value, helpers) => {
     const parent: Omit<IRuleBreach, 'createdAt'> = helpers.state.ancestors[0];

@@ -1,6 +1,6 @@
 import * as joi from 'joi';
-import { ActionTypes } from '../../interfaces';
-import { validateActionMetadata } from '../customValidation';
+import { ActionTypes } from '../../interfaces/actionMetadata';
+import { validateActionMetadata } from '../validateActionMetadata';
 
 export const mongoIdSchema = joi.string().regex(/^[0-9a-fA-F]{24}$/, 'valid MongoId');
 

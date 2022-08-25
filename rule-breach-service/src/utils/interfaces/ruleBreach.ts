@@ -1,5 +1,4 @@
-import { Document } from 'mongoose';
-import { IActionMetadata, ActionTypes } from '../../utils/interfaces';
+import { IActionMetadata, ActionTypes } from './actionMetadata';
 
 export interface IRuleBreach {
     originUserId: string;
@@ -11,5 +10,3 @@ export interface IRuleBreach {
     actionMetadata: IActionMetadata;
     createdAt: Date;
 }
-
-export type IRuleBreachDocument = IRuleBreach & Document;
