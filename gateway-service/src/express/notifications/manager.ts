@@ -22,8 +22,7 @@ export class NotificationsManager {
     }
 
     static transformNotification = (notification: INotification): IBasicNotification => {
-        const basicNotification: any = { ...notification };
-        delete basicNotification.viewers;
+        const { viewers, ...basicNotification } = notification;
 
         return basicNotification;
     };
