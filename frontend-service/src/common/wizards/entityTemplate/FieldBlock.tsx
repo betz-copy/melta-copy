@@ -131,7 +131,6 @@ const FieldBlock: React.FC<FieldBlockProps> = ({
                                     >
                                         {displayValues.map((property, index) => {
                                             const props = {
-                                                key: property.id,
                                                 value: property,
                                                 index,
                                                 isEditMode,
@@ -146,11 +145,17 @@ const FieldBlock: React.FC<FieldBlockProps> = ({
                                             };
 
                                             if (propertiesType === 'properties') {
-                                                return <MemoFieldEditCard {...props} setFieldValue={setFieldDisplayValueWrapper(index)} />;
+                                                return (
+                                                    <MemoFieldEditCard
+                                                        {...props}
+                                                        key={property.id}
+                                                        setFieldValue={setFieldDisplayValueWrapper(index)}
+                                                    />
+                                                );
                                             }
 
                                             // eslint-disable-next-line react/jsx-key
-                                            return <MemoAttachmentEditCard {...props} />;
+                                            return <MemoAttachmentEditCard {...props} key={property.id} />;
                                         })}
 
                                         {droppableProvided.placeholder}
