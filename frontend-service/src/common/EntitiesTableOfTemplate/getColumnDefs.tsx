@@ -4,7 +4,7 @@ import { ValueGetterFunc } from '@ag-grid-community/core';
 import i18next from 'i18next';
 import { IEntity } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
-import { booleanColDef, dateColDef, enumColDef, fileColDef, numberColDef, stringColDef } from '../../utils/agGrid/commonColDefs';
+import { booleanColDef, dateColDef, enumColDef, fileColDef, numberColDef, regexColDef, stringColDef } from '../../utils/agGrid/commonColDefs';
 import IconButtonWithPopoverText from '../IconButtonWithPopover';
 
 export const getColumnDefs = <Data extends any>(
@@ -33,6 +33,7 @@ export const getColumnDefs = <Data extends any>(
         if (format === 'date' || format === 'date-time') return dateColDef(key, valueGetter, value, hideColumn, hideField);
         if (format === 'fileId') return fileColDef(key, valueGetter, value, hideColumn);
         if (value.enum) return enumColDef(key, valueGetter, value, value.enum, hideColumn, hideField);
+        if (value.pattern) return regexColDef(key, valueGetter, value, hideColumn, hideField);
         return stringColDef(key, valueGetter, value, hideColumn, hideField);
     });
 

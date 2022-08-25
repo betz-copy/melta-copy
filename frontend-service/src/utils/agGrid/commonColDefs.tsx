@@ -22,6 +22,18 @@ export const numberColDef = (
     };
 };
 
+export const regexColDef = (field: string, valueGetter: ValueGetterFunc, value: { title: string }, hideColumn = false, hideValue = false): ColDef => {
+    return {
+        field,
+        headerName: value.title,
+        cellRenderer: (props) => <Value hideValue={hideValue} value={props.value} />,
+        valueGetter,
+        filter: 'agTextColumnFilter',
+        hide: hideColumn,
+        cellStyle: { direction: 'ltr' },
+    };
+};
+
 export const stringColDef = (
     field: string,
     valueGetter: ValueGetterFunc,
