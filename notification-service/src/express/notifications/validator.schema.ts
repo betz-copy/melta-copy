@@ -40,7 +40,7 @@ export const createNotificationRequestSchema = joi.object({
 export const notificationSeenRequestSchema = joi.object({
     query: {},
     body: {
-        userId: mongoIdSchema.required(),
+        viewerId: mongoIdSchema.required(),
     },
     params: {
         notificationId: mongoIdSchema.required(),

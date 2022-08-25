@@ -217,7 +217,7 @@ describe('e2e notifications api testing', () => {
                     .send({ viewers: [fakeObjectId], type: 'ruleBreachAlert', metadata: { alertId: fakeObjectId } })
                     .expect(200);
 
-                await request(app).patch(`/api/notifications/${notification._id}/seen`).send({ test: 'test', userId: fakeObjectId }).expect(400);
+                await request(app).patch(`/api/notifications/${notification._id}/seen`).send({ test: 'test', viewerId: fakeObjectId }).expect(400);
             });
 
             it('should fail validation for missing fields', async () => {
@@ -235,7 +235,10 @@ describe('e2e notifications api testing', () => {
                     .send({ viewers: [fakeObjectId, fakeObjectId2, fakeObjectId3], type: 'ruleBreachAlert', metadata: { alertId: fakeObjectId } })
                     .expect(200);
 
-                const { body } = await request(app).patch(`/api/notifications/${notification._id}/seen`).send({ userId: fakeObjectId2 }).expect(200);
+                const { body } = await request(app)
+                    .patch(`/api/notifications/${notification._id}/seen`)
+                    .send({ viewerId: fakeObjectId2 })
+                    .expect(200);
 
                 expect(body).toEqual(expect.objectContaining({ viewers: [fakeObjectId, fakeObjectId3] }));
             });
@@ -246,7 +249,10 @@ describe('e2e notifications api testing', () => {
                     .send({ viewers: [fakeObjectId, fakeObjectId2], type: 'ruleBreachAlert', metadata: { alertId: fakeObjectId } })
                     .expect(200);
 
-                const { body } = await request(app).patch(`/api/notifications/${notification._id}/seen`).send({ userId: fakeObjectId3 }).expect(200);
+                const { body } = await request(app)
+                    .patch(`/api/notifications/${notification._id}/seen`)
+                    .send({ viewerId: fakeObjectId3 })
+                    .expect(200);
 
                 expect(body).toEqual(expect.objectContaining({ viewers: [fakeObjectId, fakeObjectId2] }));
             });

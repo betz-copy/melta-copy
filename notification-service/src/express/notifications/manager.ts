@@ -21,8 +21,8 @@ export class NotificationsManager {
         return NotificationModel.create(notificationData);
     }
 
-    public static async notificationSeen(notificationId: string, userId: string): Promise<INotificationDocument> {
-        return NotificationModel.findByIdAndUpdate(notificationId, { $pull: { viewers: userId } }, { new: true })
+    public static async notificationSeen(notificationId: string, viewerId: string): Promise<INotificationDocument> {
+        return NotificationModel.findByIdAndUpdate(notificationId, { $pull: { viewers: viewerId } }, { new: true })
             .orFail(new NotificationDoesNotExistError(notificationId))
             .lean();
     }

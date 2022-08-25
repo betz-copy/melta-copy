@@ -18,9 +18,9 @@ class NotificationsController {
 
     static async notificationSeen(req: Request, res: Response) {
         const { notificationId } = req.params;
-        const { userId } = req.body;
+        const { viewerId } = req.body;
 
-        res.json(await NotificationsManager.notificationSeen(notificationId, userId));
+        res.json(await NotificationsManager.notificationSeen(notificationId, viewerId));
     }
 }
 
