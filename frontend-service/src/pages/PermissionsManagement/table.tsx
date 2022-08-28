@@ -71,6 +71,7 @@ const columnDefs = (
     },
     nullableStringToBooleanColDefs('permissionsManagementId', i18next.t('permissions.permissionsManagement')),
     nullableStringToBooleanColDefs('templatesManagementId', i18next.t('permissions.templatesManagement')),
+    nullableStringToBooleanColDefs('rulesManagementId', i18next.t('permissions.rulesManagement')),
     {
         field: 'instancesPermissions',
         headerName: i18next.t('permissions.permissionsOfUserDialog.instancesPermissions'),
@@ -198,7 +199,7 @@ const Table: React.FC<{
             suppressExcelExport
             suppressContextMenu
             onFirstDataRendered={(params) => {
-                params.columnApi.autoSizeColumns(['actions', 'permissionsManagementId', 'templatesManagementId']);
+                params.columnApi.autoSizeColumns(['actions', 'permissionsManagementId', 'templatesManagementId', 'rulesManagementId']);
             }}
             quickFilterText={quickFilterText}
             localeText={i18next.t('agGridLocaleText', { returnObjects: true })}

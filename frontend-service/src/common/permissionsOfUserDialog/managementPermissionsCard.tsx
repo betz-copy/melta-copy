@@ -4,10 +4,11 @@ import { Card, CardContent, Checkbox, CheckboxProps, FormControlLabel, FormGroup
 import CheckboxReadOnly from './CheckboxReadOnly';
 
 type ManagementCheckboxProps = { disabled: boolean; readOnly: boolean; checked: boolean; onChange: CheckboxProps['onChange'] };
-const ManagementPermissionsCard: React.FC<{ permissionsManagement: ManagementCheckboxProps; templatesManagement: ManagementCheckboxProps }> = ({
-    permissionsManagement,
-    templatesManagement,
-}) => {
+const ManagementPermissionsCard: React.FC<{
+    permissionsManagement: ManagementCheckboxProps;
+    templatesManagement: ManagementCheckboxProps;
+    rulesManagement: ManagementCheckboxProps;
+}> = ({ permissionsManagement, templatesManagement, rulesManagement }) => {
     return (
         <Card variant="outlined">
             <CardContent>
@@ -36,6 +37,18 @@ const ManagementPermissionsCard: React.FC<{ permissionsManagement: ManagementChe
                                 <CheckboxReadOnly checked={templatesManagement.checked} />
                             ) : (
                                 <Checkbox checked={templatesManagement.checked} onChange={templatesManagement.onChange} />
+                            )
+                        }
+                    />
+                    <FormControlLabel
+                        label={i18next.t('permissions.permissionsOfUserDialog.rulesManagement') as string}
+                        labelPlacement="end"
+                        disabled={rulesManagement.disabled}
+                        control={
+                            rulesManagement.readOnly ? (
+                                <CheckboxReadOnly checked={rulesManagement.checked} />
+                            ) : (
+                                <Checkbox checked={rulesManagement.checked} onChange={rulesManagement.onChange} />
                             )
                         }
                     />

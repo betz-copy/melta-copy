@@ -37,6 +37,7 @@ const generatePermissionsOfUser = () => {
         user: generateUser(),
         permissionsManagementId: chance.pickone([generateMongoId(), null]),
         templatesManagementId: chance.pickone([generateMongoId(), null]),
+        rulesManagementId: chance.pickone([generateMongoId(), null]),
         instancesPermissions: chance.pickset(
             categories.map(({ _id: category }) => ({ _id: generateMongoId(), category })),
             chance.integer({ min: 0, max: categories.length }),

@@ -20,6 +20,7 @@ const defaultEmptyPermissionsOfUser = {
     user: null,
     doesHavePermissionsManagement: false,
     doesHaveTemplatesManagement: false,
+    doesHaveRulesManagement: false,
     instancesPermissions: [],
 } as IFormPermissionsOfUser;
 
@@ -27,11 +28,17 @@ type IFormPermissionsOfUser = {
     user: IUser | null;
     doesHavePermissionsManagement: boolean;
     doesHaveTemplatesManagement: boolean;
+    doesHaveRulesManagement: boolean;
     instancesPermissions: Pick<IPermission, 'category'>[];
 };
 
 const doesUserHaveNoPermissions = (permissions: IFormPermissionsOfUser) => {
-    return !permissions.doesHavePermissionsManagement && !permissions.doesHaveTemplatesManagement && permissions.instancesPermissions.length === 0;
+    return (
+        !permissions.doesHavePermissionsManagement &&
+        !permissions.doesHaveTemplatesManagement &&
+        !permissions.doesHaveRulesManagement &&
+        permissions.instancesPermissions.length === 0
+    );
 };
 
 const isPermissionsChanged = (currentPermissions: IFormPermissionsOfUser, newPermissions: IFormPermissionsOfUser) => {
@@ -53,11 +60,13 @@ const permissionsToFormPermissions = ({
     user,
     permissionsManagementId,
     templatesManagementId,
+    rulesManagementId,
     instancesPermissions,
 }: IPermissionsOfUser): IFormPermissionsOfUser => ({
     user,
     doesHavePermissionsManagement: Boolean(permissionsManagementId),
     doesHaveTemplatesManagement: Boolean(templatesManagementId),
+    doesHaveRulesManagement: Boolean(rulesManagementId),
     instancesPermissions: instancesPermissions.map(({ category }) => ({ category })),
 });
 
@@ -79,6 +88,12 @@ const getPermissionsToDeleteAndCreate = (
         permissionsToCreate.push({ userId: formPermissionsOfUser.user.id, resourceType: 'Templates', category: 'All' });
     } else if (!formPermissionsOfUser.doesHaveTemplatesManagement && existingPermissionsOfUser?.templatesManagementId) {
         permissonsIdsToDelete.push(existingPermissionsOfUser.templatesManagementId);
+    }
+
+    if (formPermissionsOfUser.doesHaveRulesManagement && !existingPermissionsOfUser?.rulesManagementId) {
+        permissionsToCreate.push({ userId: formPermissionsOfUser.user.id, resourceType: 'Rules', category: 'All' });
+    } else if (!formPermissionsOfUser.doesHaveRulesManagement && existingPermissionsOfUser?.rulesManagementId) {
+        permissonsIdsToDelete.push(existingPermissionsOfUser.rulesManagementId);
     }
 
     categories.forEach((category) => {
@@ -117,6 +132,7 @@ const createOrEditPermissionsOfUserRequest = async (
 
     const createdPermissionsManagement = createdPermissions.find(({ resourceType }) => resourceType === 'Permissions');
     const createdTemplatesManagement = createdPermissions.find(({ resourceType }) => resourceType === 'Templates');
+    const createdRulesManagement = createdPermissions.find(({ resourceType }) => resourceType === 'Rules');
 
     const newPermissionsOfUser: IPermissionsOfUser = {
         user: formPermissionsOfUser.user,
@@ -126,6 +142,9 @@ const createOrEditPermissionsOfUserRequest = async (
         templatesManagementId: !formPermissionsOfUser.doesHaveTemplatesManagement
             ? null
             : createdTemplatesManagement?._id ?? existingPermissionsOfUser!.templatesManagementId,
+        rulesManagementId: !formPermissionsOfUser.doesHaveRulesManagement
+            ? null
+            : createdRulesManagement?._id ?? existingPermissionsOfUser!.rulesManagementId,
         instancesPermissions: categories
             .map((category) => {
                 const doesUserHasPermissionForCategory = formPermissionsOfUser.instancesPermissions.some(
@@ -187,6 +206,7 @@ const PermissionsOfUserDialog: React.FC<{
                         const doesUserShouldHaveNoPermissions =
                             !newPermissionsOfUser.permissionsManagementId &&
                             !newPermissionsOfUser.templatesManagementId &&
+                            !newPermissionsOfUser.rulesManagementId &&
                             newPermissionsOfUser.instancesPermissions.length === 0;
 
                         if (doesUserShouldHaveNoPermissions) {
@@ -218,7 +238,7 @@ const PermissionsOfUserDialog: React.FC<{
     );
 
     return (
-        <Dialog open={isOpen} fullWidth maxWidth="xs" keepMounted={false} onClose={handleClose}>
+        <Dialog open={isOpen} fullWidth maxWidth="sm" keepMounted={false} onClose={handleClose}>
             <Formik
                 initialValues={
                     existingPermissionsOfUser ? _cloneDeep(permissionsToFormPermissions(existingPermissionsOfUser)) : defaultEmptyPermissionsOfUser
@@ -261,7 +281,8 @@ const PermissionsOfUserDialog: React.FC<{
                             {!(
                                 mode === 'read' &&
                                 !formikProps.values.doesHavePermissionsManagement &&
-                                !formikProps.values.doesHaveTemplatesManagement
+                                !formikProps.values.doesHaveTemplatesManagement &&
+                                !formikProps.values.doesHaveRulesManagement
                             ) && (
                                 <Box margin={1}>
                                     <ManagementPermissionsCard
@@ -280,6 +301,15 @@ const PermissionsOfUserDialog: React.FC<{
                                                 mode === 'read'
                                                     ? () => {}
                                                     : (_e, checked) => formikProps.setFieldValue('doesHaveTemplatesManagement', checked),
+                                            disabled: formikProps.isSubmitting,
+                                            readOnly: mode === 'read',
+                                        }}
+                                        rulesManagement={{
+                                            checked: formikProps.values.doesHaveRulesManagement,
+                                            onChange:
+                                                mode === 'read'
+                                                    ? () => {}
+                                                    : (_e, checked) => formikProps.setFieldValue('doesHaveRulesManagement', checked),
                                             disabled: formikProps.isSubmitting,
                                             readOnly: mode === 'read',
                                         }}
