@@ -1,5 +1,5 @@
 import * as Joi from 'joi';
-import { MongoIdSchema, ColorSchema } from '../../utils/joi';
+import { MongoIdSchema, ColorSchema,variableNameValidation } from '../../utils/joi';
 
 // GET /api/categories/:categoryId
 export const getCategoryByIdSchema = Joi.object({
@@ -22,7 +22,7 @@ export const getCategoriesSchema = Joi.object({
 export const createCategorySchema = Joi.object({
     query: {},
     body: {
-        name: Joi.string().required(),
+        name: variableNameValidation.required(),
         displayName: Joi.string().required(),
         color: ColorSchema.required(),
         iconFileId: Joi.string().allow(null),
@@ -43,7 +43,7 @@ export const deleteCategorySchema = Joi.object({
 export const updateCategorySchema = Joi.object({
     query: {},
     body: {
-        name: Joi.string(),
+        name: variableNameValidation,
         displayName: Joi.string(),
         color: ColorSchema,
         iconFileId: Joi.string().allow(null),

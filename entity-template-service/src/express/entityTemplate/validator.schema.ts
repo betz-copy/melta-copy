@@ -1,5 +1,5 @@
 import * as Joi from 'joi';
-import { MongoIdSchema, innerPropertiesSchema, orderPropertiesSchema, previewPropertiesSchema } from '../../utils/joi';
+import { MongoIdSchema, innerPropertiesSchema, orderPropertiesSchema, previewPropertiesSchema,variableNameValidation } from '../../utils/joi';
 
 // POST /api/entities/templates/search
 export const searchEntityTemplatesSchema = Joi.object({
@@ -31,7 +31,7 @@ export const deleteEntityTemplateSchema = Joi.object({
 // POST api/entities/templates
 export const createEntityTemplateSchema = Joi.object({
     body: {
-        name: Joi.string().required(),
+        name: variableNameValidation.required(),
         displayName: Joi.string().required(),
         category: Joi.string().required(),
         disabled: Joi.boolean().default(false),
@@ -47,7 +47,7 @@ export const createEntityTemplateSchema = Joi.object({
 // PUT /api/entities/templates/:templateId
 export const updateEntityTemplateSchema = Joi.object({
     body: Joi.object({
-        name: Joi.string(),
+        name: variableNameValidation,
         displayName: Joi.string(),
         category: Joi.string(),
         disabled: Joi.boolean(),
