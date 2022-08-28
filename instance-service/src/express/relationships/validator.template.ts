@@ -4,19 +4,13 @@ import config from '../../config';
 import { trycatch } from '../../utils/lib';
 import EntityManager from '../entities/manager';
 import { ValidationError } from '../error';
-
-interface IRelationshipTemplate {
-    name: string;
-    displayName: string;
-    sourceEntityId: string;
-    destinationEntityId: string;
-}
+import { IRelationshipTemplate } from './interface';
 
 const { relationshipManager } = config;
-const { url, getByIdRoute, timeout } = relationshipManager;
+const { url, getRelationshipByIdRoute, timeout } = relationshipManager;
 
 export const getRelationshipTemplateById = async (templateId: string) => {
-    const { result, err } = await trycatch(() => axios.get<IRelationshipTemplate>(`${url}${getByIdRoute}/${templateId}`, { timeout }));
+    const { result, err } = await trycatch(() => axios.get<IRelationshipTemplate>(`${url}${getRelationshipByIdRoute}/${templateId}`, { timeout }));
 
     if (err || !result) {
         throw new ValidationError(`Failed to fetch relationship template schema (id: ${templateId})`);

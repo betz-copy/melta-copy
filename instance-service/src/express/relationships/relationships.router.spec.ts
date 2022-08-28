@@ -54,7 +54,7 @@ describe('Relationship router', () => {
             __v: 0,
         });
 
-        mock.onGet(`${relationshipManager.url}${relationshipManager.getByIdRoute}/${defaultRelationshipTemplateId}`).reply(200, {
+        mock.onGet(`${relationshipManager.url}${relationshipManager.getRelationshipByIdRoute}/${defaultRelationshipTemplateId}`).reply(200, {
             _id: defaultRelationshipTemplateId,
             name: 'relTest',
             displayName: 'relTest',
@@ -122,7 +122,7 @@ describe('Relationship router', () => {
             const secondEntity = await request(app).post('/api/instances/entities').send(defaultEntity);
 
             // Mock rel template response
-            mock.onGet(`${relationshipManager.url}${relationshipManager.getByIdRoute}/${relTemplateId}`).reply(200, {
+            mock.onGet(`${relationshipManager.url}${relationshipManager.getRelationshipByIdRoute}/${relTemplateId}`).reply(200, {
                 _id: relTemplateId,
                 name: 'relTest',
                 displayName: 'relTest',

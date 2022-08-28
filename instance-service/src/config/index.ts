@@ -23,7 +23,8 @@ const config = {
     },
     relationshipManager: {
         url: env.get('RELATIONSHIP_MANAGER_URL').required().asString(),
-        getByIdRoute: env.get('RELATIONSHIP_MANAGER_GET_BY_ID_ROUTE').default('/api/templates/relationships').asString(),
+        getRelationshipByIdRoute: env.get('RELATIONSHIP_MANAGER_GET_RELATIONSHIP_BY_ID_ROUTE').default('/api/templates/relationships').asString(),
+        searchRulesRoute: env.get('RELATIONSHIP_MANAGER_SEARCH_RULES_ROUTE').default('/api/templates/rules/search').asString(),
         timeout: env.get('RELATIONSHIP_MANAGER_TIMEOUT').default(5000).asIntPositive(),
     },
     redis: {

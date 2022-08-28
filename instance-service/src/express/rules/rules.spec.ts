@@ -1,6 +1,6 @@
 import { IRelationshipTemplateRule } from './interfaces';
-import { IMongoRelationshipTemplate, IMongoRelationshipTemplatePopulated } from '../../externalServices/relationshipTemplateManager';
-import { IMongoEntityTemplate } from '../../externalServices/entityTemplateManager';
+import { IMongoRelationshipTemplate, IMongoRelationshipTemplatePopulated } from '../relationships/interface';
+import { IMongoEntityTemplate } from '../entities/interface';
 import { generateNeo4jQuery } from '.';
 
 const travelAgentEntityTemplate: IMongoEntityTemplate = {
@@ -162,22 +162,21 @@ const tripConnectedToFlightRelationshipTemplate: IMongoRelationshipTemplate = {
 
 // rule 1
 export const oneTravelAgentPerFlight: IRelationshipTemplateRule = {
-    isRelationshipTemplateRule: true,
     name: 'סוכן נסיעות אחד על טיסה',
     description: 'סוכן נסיעות אחד בלבד על טיסה. נועד למנוע מריבות בין סוכני נסיעות, כי הם לא אוהבים אחד את השני',
-    errorMessageOnFail: 'טיסה כבר מקושרת לסוכן נסיעות',
-    actionOnFail: 'WARNING_BEFORE_EXECUTION_AND_NOTIFY_ADMINS',
+    actionOnFail: 'WARNING',
     relationshipTemplateId: flightsOnRelationshipTemplatePopulated._id,
     pinnedEntityTemplateId: flightEntityTemplate._id,
+    disabled: false,
     formula: {
         isGroup: true,
         ruleOfGroup: 'AND',
         subFormulas: [
             {
                 isEquation: true,
-                operatorBool: 'equals',
+                operatorBool: 'lessThanOrEqual',
                 lhsArgument: { isCountAggFunction: true, variableName: 'flight.flies on.travelAgent' },
-                rhsArgument: { isConstant: true, value: 0 },
+                rhsArgument: { isConstant: true, value: 1 },
             },
         ],
     },
@@ -185,13 +184,12 @@ export const oneTravelAgentPerFlight: IRelationshipTemplateRule = {
 
 // rule 2
 export const noOverlappingFlightsInTrip: IRelationshipTemplateRule = {
-    isRelationshipTemplateRule: true,
     name: 'טיסה אחת ביום לטיול',
     description: 'מקסימום טיסה אחת ביום לאותו הטיול. אסור שיהיו כמה טיסות לאותו הטיול באותו היום כי אחרת זה יהיה ממש מבלבל',
-    errorMessageOnFail: 'כבר קיימת טיסה המחוברת לטיול זה באותו היום',
-    actionOnFail: 'WARNING_BEFORE_EXECUTION_AND_NOTIFY_ADMINS',
+    actionOnFail: 'WARNING',
     relationshipTemplateId: tripConnectedToFlightRelationshipTemplatePopulated._id,
     pinnedEntityTemplateId: tripEntityTemplate._id,
+    disabled: false,
     formula: {
         isGroup: true,
         ruleOfGroup: 'AND',
@@ -217,13 +215,12 @@ export const noOverlappingFlightsInTrip: IRelationshipTemplateRule = {
 
 // rule 3
 export const warnOnEveryFlightOnActiveZone: IRelationshipTemplateRule = {
-    isRelationshipTemplateRule: true,
     name: 'התראה על טיסות בסבב פעיל',
     description: 'התראה על כל טיסה חדשה שמחוברת לסבב פעיל',
-    errorMessageOnFail: 'שים לב, הטיסה תהיה מחוברת לסבב פעיל',
-    actionOnFail: 'WARNING_BEFORE_EXECUTION_AND_NOTIFY_ADMINS',
+    actionOnFail: 'WARNING',
     relationshipTemplateId: tripConnectedToFlightRelationshipTemplatePopulated._id,
     pinnedEntityTemplateId: tripEntityTemplate._id,
+    disabled: false,
     formula: {
         isGroup: true,
         ruleOfGroup: 'AND',

@@ -30,17 +30,11 @@ export const isSumAggFunction = (sumAggFunction: any): sumAggFunction is ISumAgg
 export type IFunction = ICountAggFunction | ISumAggFunction | IRegularSumFunction;
 
 // do snake case (for example NOT_CONTAINS)
-export type IOperatorBool =
-    | 'equals'
-    | 'notEqual'
-    | 'lessThan'
-    | 'lessThanOrEqual'
-    | 'greaterThan'
-    | 'greaterThanOrEqual'
-    | 'inRange'
-    // todo: support blank/notBlank unary operator
-    | 'blank'
-    | 'notBlank';
+export type IOperatorBool = 'equals' | 'notEqual' | 'lessThan' | 'lessThanOrEqual' | 'greaterThan' | 'greaterThanOrEqual';
+// todo: support blank/notBlank unary operator
+// | 'blank'
+// | 'notBlank';
+
 export interface IEquation {
     isEquation: true;
     lhsArgument: IArgument;
@@ -75,16 +69,15 @@ export const isGroup = (group: any): group is IGroup => {
 };
 
 export interface IRelationshipTemplateRule {
-    isRelationshipTemplateRule: true; // to identify interface runtime (instead of class' instanceof)
     name: string;
     description: string;
-    actionOnFail: 'WARNING_BEFORE_EXECUTION' | 'WARNING_BEFORE_EXECUTION_AND_NOTIFY_ADMINS';
-    errorMessageOnFail: string;
+    actionOnFail: 'WARNING' | 'ENFORCEMENT';
     relationshipTemplateId: string;
-    pinnedEntityTemplateId: string; // sourceEntityTemplate or destinationEntityTemplate
+    pinnedEntityTemplateId: string;
     formula: IFormula;
+    disabled: boolean;
 }
 
-export const isRelationshipTemplateRule = (relationshipTemplateRule: any): relationshipTemplateRule is IRelationshipTemplateRule => {
-    return relationshipTemplateRule.isRelationshipTemplateRule;
-};
+export interface IMongoRelationshipTemplateRule extends IRelationshipTemplateRule {
+    _id: string;
+}

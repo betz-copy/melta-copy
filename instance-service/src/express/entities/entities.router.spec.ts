@@ -267,10 +267,10 @@ describe('Entity router', () => {
                     .post('/api/instances/entities')
                     .send({ templateId: defaultTemplateId, properties: secondEntityProperties });
 
-                const { url, getByIdRoute } = relationshipManager;
+                const { url, getRelationshipByIdRoute } = relationshipManager;
 
                 // Mock get relationship template route
-                mock.onGet(`${url}${getByIdRoute}/${defaultRelationshipTemplateId}`).reply(200, {
+                mock.onGet(`${url}${getRelationshipByIdRoute}/${defaultRelationshipTemplateId}`).reply(200, {
                     _id: '123',
                     name: 'RelationshipMock',
                     displayName: 'RelationshipMock',

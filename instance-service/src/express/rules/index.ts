@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
-import { IMongoEntityTemplate } from '../../externalServices/entityTemplateManager';
-import { IMongoRelationshipTemplate } from '../../externalServices/relationshipTemplateManager';
+import { IMongoEntityTemplate } from '../entities/interface';
+import { IMongoRelationshipTemplate } from '../relationships/interface';
 import {
     IAggregationGroup,
     ICountAggFunction,

@@ -58,8 +58,12 @@ export const normalizeReturnedEntity =
         return entities;
     };
 
-export const normalizeResponseCount = (result: QueryResult) => {
+export const normalizeResponseCount = (result: QueryResult): number => {
     return result.records[0].get(0).toNumber();
+};
+
+export const normalizeRuleResult = (result: QueryResult): boolean => {
+    return result.records[0].get('doesRuleStillApply').toBoolean();
 };
 
 export const normalizeReturnedRelationship =
