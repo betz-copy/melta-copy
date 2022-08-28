@@ -257,7 +257,7 @@ describe('e2e rule breaches api testing', () => {
                             originUserId: fakeObjectId,
                             brokenRules: [{ ruleId: fakeObjectId, relationshipsIds: [fakeObjectId, fakeObjectId2] }],
                             actionType: ActionTypes.CreateRelationship,
-                            actionMetadata: { relationshipId: fakeObjectId },
+                            actionMetadata: { relationshipTemplateId: fakeObjectId, sourceEntityId: fakeObjectId, destinationEntityId: fakeObjectId },
                         })
                         .expect(200);
 
@@ -266,7 +266,7 @@ describe('e2e rule breaches api testing', () => {
                             originUserId: fakeObjectId,
                             brokenRules: [{ ruleId: fakeObjectId, relationshipsIds: [fakeObjectId, fakeObjectId2] }],
                             actionType: ActionTypes.CreateRelationship,
-                            actionMetadata: { relationshipId: fakeObjectId },
+                            actionMetadata: { relationshipTemplateId: fakeObjectId, sourceEntityId: fakeObjectId, destinationEntityId: fakeObjectId },
                         }),
                     );
                 });

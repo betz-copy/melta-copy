@@ -1,5 +1,7 @@
 export interface ICreateRelationshipMetadata {
-    relationshipId: string;
+    relationshipTemplateId: string;
+    sourceEntityId: string;
+    destinationEntityId: string;
 }
 
 export interface IDeleteRelationshipMetadata {
