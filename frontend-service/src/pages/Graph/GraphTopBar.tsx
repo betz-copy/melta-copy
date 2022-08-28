@@ -7,10 +7,18 @@ import { toast } from 'react-toastify';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { getExpandedEntityByIdRequest } from '../../services/entitiesService';
 import IconButtonWithPopoverText from '../../common/IconButtonWithPopover';
+import TemplatesSelectCheckbox from '../../common/templatesSelectCheckbox';
+import { IMongoCategory } from '../../interfaces/categories';
 
-const GraphTopBar: React.FC<{ onReset: React.MouseEventHandler<HTMLButtonElement>; entityId: string }> = ({ onReset, entityId }) => {
+const GraphTopBar: React.FC<{
+    onReset: React.MouseEventHandler<HTMLButtonElement>;
+    entityId: string;
+    filteredEntityTemplates: IMongoEntityTemplatePopulated[];
+    setFilteredEntityTemplates: React.Dispatch<React.SetStateAction<IMongoEntityTemplatePopulated[]>>;
+}> = ({ onReset, entityId, filteredEntityTemplates, setFilteredEntityTemplates }) => {
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates')!;
+    const categories = queryClient.getQueryData<IMongoCategory[]>('getCategories')!;
     const templateIds = entityTemplates.map((entityTemplate) => entityTemplate._id);
 
     const { data: expandedEntity } = useQuery(['getExpandedEntity', entityId, { templateIds, numberOfConnections: 1 }], () =>
@@ -46,15 +54,24 @@ const GraphTopBar: React.FC<{ onReset: React.MouseEventHandler<HTMLButtonElement
                 >
                     {entityTemplate?.category.displayName}
                 </Typography>
-
                 <Typography variant="h4" fontSize="30px" color="#d3d8df" marginLeft="5px" marginRight="5px">
                     /
                 </Typography>
-
                 <Typography style={{ paddingBottom: '2px' }} variant="h4" fontSize="28px" color="rgb(25, 118, 210)">
                     {entityTemplate?.displayName}
                 </Typography>
+                <Box marginLeft="10px">
+                    <TemplatesSelectCheckbox
+                        title={i18next.t('entityPage.graph.filterTemplates')}
+                        templates={entityTemplates}
+                        selectedTemplates={filteredEntityTemplates}
+                        setSelectedTemplates={setFilteredEntityTemplates}
+                        size="small"
+                        categories={categories}
+                    />
+                </Box>
             </Box>
+
             <Box>
                 <IconButtonWithPopoverText
                     popoverText={i18next.t('entityPage.graph.copy')}

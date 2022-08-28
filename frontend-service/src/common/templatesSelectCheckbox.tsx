@@ -32,7 +32,7 @@ const TemplatesSelectCheckbox: React.FC<{
     return (
         <SelectCheckbox
             title={title}
-            options={templates.sort((templateA, templateB) => templateA.displayName.localeCompare(templateB.displayName))}
+            options={[...templates].sort((templateA, templateB) => templateA.displayName.localeCompare(templateB.displayName))}
             selectedOptions={selectedTemplates}
             setSelectedOptions={setSelectedTemplates}
             getOptionId={({ _id }) => _id}

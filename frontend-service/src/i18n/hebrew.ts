@@ -10,7 +10,7 @@ export default {
     relationshipTemplate: 'תבנית קשר',
     relationshipTemplates: 'תבניות קשר',
     failedToGetTemplates: 'נכשל לטעון תבניות',
-    templatesTablesEntityTemplatesCheckboxLabel: 'סוגי ישויות',
+    templatesTablesEntityTemplatesCheckboxLabel: 'סינון ישויות',
     selectChooseAll: 'בחר הכל',
     addEntity: 'הוסף ישות',
     downloadMultipleTables: 'הורד טבלאות',
@@ -77,6 +77,7 @@ export default {
             reset: 'אפס גרף',
             copy: 'העתק קישור',
             copiedSuccessfully: 'הקישור הועתק בהצלחה',
+            filterTemplates: 'סינון תבניות',
         },
     },
     categoryPage: {

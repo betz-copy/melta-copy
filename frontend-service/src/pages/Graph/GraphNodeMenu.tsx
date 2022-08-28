@@ -18,17 +18,30 @@ const GraphNodeMenu: React.FC<{
     location: { top: number; left: number };
     addNewGraphData: (graphData: GraphData) => void;
     graphData: GraphData;
-}> = ({ showMenu, node, onCloseMenu, location, addNewGraphData, graphData }) => {
+    filteredEntityTemplates: IMongoEntityTemplatePopulated[];
+}> = ({ showMenu, node, onCloseMenu, location, addNewGraphData, graphData, filteredEntityTemplates }) => {
     const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();
 
     const queryClient = useQueryClient();
     const relationshipTemplates = queryClient.getQueryData<IMongoRelationshipTemplate[]>('getRelationshipTemplates');
-    const templateIds = queryClient.getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates')!.map((entityTemplate) => entityTemplate._id);
 
     const { refetch: getExpandedData } = useQuery<IEntityExpanded>(
-        ['getExpandedEntity', node.id, { disabled: false, templateIds, numberOfConnections: node.numberOfConnectionsExpanded + 1 }],
-        () => getExpandedEntityByIdRequest(node.id, { disabled: false, templateIds, numberOfConnections: node.numberOfConnectionsExpanded + 1 }),
+        [
+            'getExpandedEntity',
+            node.id,
+            {
+                disabled: false,
+                templateIds: filteredEntityTemplates.map((entityTemplate) => entityTemplate._id),
+                numberOfConnections: node.numberOfConnectionsExpanded + 1,
+            },
+        ],
+        () =>
+            getExpandedEntityByIdRequest(node.id, {
+                disabled: false,
+                templateIds: filteredEntityTemplates.map((entityTemplate) => entityTemplate._id),
+                numberOfConnections: node.numberOfConnectionsExpanded + 1,
+            }),
         {
             enabled: false,
             onSuccess: (data) => {

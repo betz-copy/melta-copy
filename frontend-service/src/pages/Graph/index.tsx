@@ -51,10 +51,10 @@ const Graph: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> }
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates')!;
     const relationshipTemplates = queryClient.getQueryData<IMongoRelationshipTemplate[]>('getRelationshipTemplates')!;
-    const templateIds = entityTemplates.map((entityTemplate) => entityTemplate._id);
 
     const [graphData, setGraphData] = useState<GraphData>({ nodes: [], links: [] });
     const [loadAgain, setLoadAgain] = useState<boolean>(false);
+    const [filteredEntityTemplates, setFilteredEntityTemplates] = useState<IMongoEntityTemplatePopulated[]>(entityTemplates);
 
     const updateGraphSize = () => {
         const mainBox = ref.current?.parentElement;
@@ -99,14 +99,14 @@ const Graph: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> }
             entityId,
             {
                 disabled: false,
-                templateIds,
+                templateIds: filteredEntityTemplates.map((entityTemplate) => entityTemplate._id),
                 numberOfConnections: 1,
             },
         ],
         () =>
             getExpandedEntityByIdRequest(entityId, {
                 disabled: false,
-                templateIds,
+                templateIds: filteredEntityTemplates.map((entityTemplate) => entityTemplate._id),
                 numberOfConnections: 1,
             }),
         {
@@ -124,14 +124,14 @@ const Graph: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> }
                     id,
                     {
                         disabled: false,
-                        templateIds,
+                        templateIds: filteredEntityTemplates.map((entityTemplate) => entityTemplate._id),
                         numberOfConnections: expandedParams[id],
                     },
                 ],
                 queryFn: () =>
                     getExpandedEntityByIdRequest(id, {
                         disabled: false,
-                        templateIds,
+                        templateIds: filteredEntityTemplates.map((entityTemplate) => entityTemplate._id),
                         numberOfConnections: expandedParams[id],
                     }),
                 enabled: false,
@@ -152,12 +152,13 @@ const Graph: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> }
             expandedEntitiesQueriesPromises.forEach((query) => {
                 addNewGraphData(expandedEntityToGraphData(query.data!, relationshipTemplates));
             });
+
             setLoadAgain(false);
             setShouldZoomToFit(true);
         };
 
         setGraphDataOnStart();
-    }, [entityId, loadAgain]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [entityId, loadAgain, filteredEntityTemplates]); // eslint-disable-line react-hooks/exhaustive-deps
 
     const renderTooltip = (node: NodeObject) => {
         const entityTemplate = entityTemplates.find((template) => template._id === node.templateId)!;
@@ -183,8 +184,11 @@ const Graph: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> }
         <Box ref={ref} overflow="hidden">
             <GraphTopBar
                 entityId={entityId}
+                filteredEntityTemplates={filteredEntityTemplates}
+                setFilteredEntityTemplates={setFilteredEntityTemplates}
                 onReset={() => {
                     setSearchParams({});
+                    setFilteredEntityTemplates(entityTemplates);
                     setLoadAgain(true);
                 }}
             />
@@ -252,6 +256,7 @@ const Graph: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> }
                 <GraphNodeMenu
                     node={nodeMenuState.node}
                     showMenu={nodeMenuState.showMenu}
+                    filteredEntityTemplates={filteredEntityTemplates}
                     onCloseMenu={() => {
                         forceRef.current?.resumeAnimation();
                         setNodeMenuState({ showMenu: false });
