@@ -1,5 +1,5 @@
 import * as Joi from 'joi';
-import { MongoIdSchema } from '../../utils/joi';
+import { MongoIdSchema ,variableNameValidation} from '../../utils/joi';
 
 // GET /api/relationship/templates/:templateId
 export const getTemplateByIdRequestSchema = Joi.object({
@@ -13,7 +13,7 @@ export const getTemplateByIdRequestSchema = Joi.object({
 // POST /api/relationship/templates
 export const createTemplateRequestSchema = Joi.object({
     body: {
-        name: Joi.string().required(),
+        name: variableNameValidation.required(),
         displayName: Joi.string().required(),
         sourceEntityId: MongoIdSchema.required(),
         destinationEntityId: MongoIdSchema.required(),
@@ -25,7 +25,7 @@ export const createTemplateRequestSchema = Joi.object({
 // PUT /api/relationship/templates/:templateId
 export const updateTemplateByIdRequestSchema = Joi.object({
     body: {
-        name: Joi.string(),
+        name: variableNameValidation,
         displayName: Joi.string(),
         sourceEntityId: MongoIdSchema,
         destinationEntityId: MongoIdSchema,
