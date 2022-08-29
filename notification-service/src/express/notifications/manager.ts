@@ -1,3 +1,4 @@
+import { FilterQuery } from 'mongoose';
 import NotificationModel from './model';
 import { INotification, INotificationDocument } from './interface';
 import { NotificationDoesNotExistError } from '../error';
@@ -6,9 +7,9 @@ export class NotificationsManager {
     public static async getNotifications(limit: number, step: number, type?: string, viewerId?: string): Promise<INotificationDocument[]> {
         const skip = step * limit;
 
-        const query: any = {};
+        const query: FilterQuery<INotificationDocument> = {};
         if (type) query.type = type;
-        if (viewerId) query.viewers = { $in: viewerId };
+        if (viewerId) query.viewers = viewerId;
 
         return NotificationModel.find(query, {}, { limit, skip }).lean();
     }

@@ -11,7 +11,7 @@ export const mongoIdSchema = joi.string().regex(/^[0-9a-fA-F]{24}$/, 'valid Mong
 // GET /api/notifications
 export const getNotificationsRequestSchema = joi.object({
     query: {
-        limit: joi.number().integer().min(1).max(maxFindLimit).default(maxFindLimit),
+        limit: joi.number().integer().min(1).max(maxFindLimit).required(),
         step: joi.number().integer().min(0).default(0),
         type: joi.string().valid(...notificationType),
         viewerId: mongoIdSchema,

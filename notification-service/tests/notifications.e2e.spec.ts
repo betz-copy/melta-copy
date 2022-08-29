@@ -74,7 +74,7 @@ describe('e2e notifications api testing', () => {
                     .send({ viewers: [fakeObjectId], type: 'ruleBreachResponse', metadata: { requestId: fakeObjectId3 } })
                     .expect(200);
 
-                const { body } = await request(app).get('/api/notifications').expect(200);
+                const { body } = await request(app).get('/api/notifications').query({ limit: 100 }).expect(200);
 
                 expect(body).toEqual([notification1, notification2, notification3]);
             });
@@ -93,7 +93,7 @@ describe('e2e notifications api testing', () => {
                     .send({ viewers: [fakeObjectId], type: 'ruleBreachAlert', metadata: { requestId: fakeObjectId3 } })
                     .expect(200);
 
-                const { body } = await request(app).get('/api/notifications').query({ type: 'ruleBreachAlert' }).expect(200);
+                const { body } = await request(app).get('/api/notifications').query({ limit: 100, type: 'ruleBreachAlert' }).expect(200);
 
                 expect(body).toEqual([notification1, notification3]);
             });
@@ -116,7 +116,7 @@ describe('e2e notifications api testing', () => {
                     .send({ viewers: [fakeObjectId2, fakeObjectId3], type: 'ruleBreachResponse', metadata: { requestId: fakeObjectId3 } })
                     .expect(200);
 
-                const { body } = await request(app).get('/api/notifications').query({ viewerId: fakeObjectId3 }).expect(200);
+                const { body } = await request(app).get('/api/notifications').query({ limit: 100, viewerId: fakeObjectId3 }).expect(200);
 
                 expect(body).toEqual([notification2, notification3]);
             });
@@ -151,7 +151,7 @@ describe('e2e notifications api testing', () => {
             });
 
             it('should get an empty array', async () => {
-                const { body } = await request(app).get('/api/notifications').expect(200);
+                const { body } = await request(app).get('/api/notifications').query({ limit: 100 }).expect(200);
 
                 expect(body).toEqual([]);
             });
