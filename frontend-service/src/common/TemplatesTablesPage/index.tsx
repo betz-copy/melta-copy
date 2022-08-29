@@ -38,7 +38,8 @@ const TemplatesTablesPage: React.FC<{
     categories?: IMongoCategory[];
     excelExportAllTablesFileName: string;
     pageType: string;
-}> = ({ templates, categories, excelExportAllTablesFileName, pageType }) => {
+    pageTitle: string;
+}> = ({ templates, categories, excelExportAllTablesFileName, pageType, pageTitle }) => {
     const [templatesToShowCheckbox, setTemplatesToShowCheckbox] = useState<IMongoEntityTemplatePopulated[]>(templates);
 
     const templatesTablesRef = useRef<React.ComponentRef<typeof TemplateTablesView>>(null);
@@ -65,7 +66,7 @@ const TemplatesTablesPage: React.FC<{
     const templatesFilteredByCountSorted = templatesFilteredByCount?.sort(templatesCompareFunc);
 
     return (
-        <Grid container>
+        <Grid container margin="0vh">
             <Grid item xs={12}>
                 <Box marginBottom="3vh">
                     <TemplateTablesHeadline
@@ -77,9 +78,10 @@ const TemplatesTablesPage: React.FC<{
                             templates,
                         }}
                         onExcelExport={onExcelExportTables}
+                        pageTitle={pageTitle}
                     />
                 </Box>
-                <Grid container>
+                <Grid container padding="0 2.5rem">
                     {isLoadingTemplatesFilteredByCount && <CircularProgress />}
                     {!isLoadingTemplatesFilteredByCount && templatesFilteredByCountSorted?.length === 0 && (
                         <Typography>{i18next.t('noSearchResults')}</Typography>

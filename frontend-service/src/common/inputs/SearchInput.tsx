@@ -7,7 +7,8 @@ const SearchInput: React.FC<{
     onChange: (newSearchValue: string) => void;
     onKeyDown?: React.KeyboardEventHandler<HTMLDivElement>;
     endAdornmentChildren: ReactNode;
-}> = ({ value, onChange, onKeyDown, endAdornmentChildren }) => {
+    topBarBorderRadius?: string;
+}> = ({ value, onChange, onKeyDown, endAdornmentChildren, topBarBorderRadius }) => {
     return (
         <TextField
             value={value}
@@ -17,12 +18,12 @@ const SearchInput: React.FC<{
             variant="outlined"
             fullWidth
             size="small"
+            sx={{ marginRight: '2rem' }}
             InputProps={{
                 endAdornment: <InputAdornment position="end">{endAdornmentChildren}</InputAdornment>,
                 sx: {
-                    borderRadius: '40px',
+                    borderRadius: topBarBorderRadius ?? '7px 7px 7px 7px',
                     backgroundColor: 'white',
-                    paddingLeft: '15px',
                 },
             }}
         />

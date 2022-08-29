@@ -100,11 +100,11 @@ const App: React.FC = () => {
     }
 
     if (isErrorMyPermissions) {
-        return <ErrorPage setTitle={() => {}} errorText={i18next.t('errorPage.noPermissions')} />;
+        return <ErrorPage errorText={i18next.t('errorPage.noPermissions')} />;
     }
 
     if (isErrorAllTemplates) {
-        return <ErrorPage setTitle={() => {}} errorText={i18next.t('errorPage.systemUnavailable')} />;
+        return <ErrorPage errorText={i18next.t('errorPage.systemUnavailable')} />;
     }
 
     return <Main />;

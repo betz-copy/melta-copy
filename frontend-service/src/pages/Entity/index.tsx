@@ -27,7 +27,7 @@ import { ResetFilterButton } from '../../common/TemplatesTablesPage/ResetFilterB
 import { EntityTopBar } from './components/TopBar';
 import { getOppositeEntityTemplate, isRelationshipConnectedToEntityTemplate, populateRelationshipTemplate } from '../../utils/templates';
 
-const Entity: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> }> = ({ setTitle }) => {
+const Entity: React.FC = () => {
     const params = useParams();
     const queryClient = useQueryClient();
     const { entityId } = params;
@@ -86,8 +86,6 @@ const Entity: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> 
     // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => {
         if (titleUpdated || !currentEntityTemplate) return;
-
-        setTitle('');
         setTitleUpdated(true);
     });
 

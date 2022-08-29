@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import i18next from 'i18next';
 import { Grid } from '@mui/material';
 import { useQueryClient } from 'react-query';
@@ -10,9 +10,7 @@ import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates'
 import { IPermissionsOfUser } from '../../services/permissionsService';
 import TemplatesTablesPage from '../../common/TemplatesTablesPage';
 
-const GlobalSearch: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> }> = ({ setTitle }) => {
-    useEffect(() => setTitle(i18next.t('pages.globalSearch')), [setTitle]);
-
+const GlobalSearch: React.FC = () => {
     const queryClient = useQueryClient();
 
     const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
@@ -26,13 +24,14 @@ const GlobalSearch: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<str
     });
 
     return (
-        <Grid container className="pageMargin">
+        <Grid container marginLeft="0" marginRight="0">
             <TemplatesTablesPage
                 pageType="globalSearch"
                 key="globalSearch"
                 templates={allowedTemplates}
                 categories={allowedCategories}
                 excelExportAllTablesFileName={`${i18next.t('pages.globalSearch')}.xlsx`}
+                pageTitle={i18next.t('pages.globalSearch')}
             />
         </Grid>
     );

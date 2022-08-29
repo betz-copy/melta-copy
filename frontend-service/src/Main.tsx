@@ -67,24 +67,29 @@ const Main = () => {
                         if (ref) setPageScrollTarget(ref as HTMLElement);
                     }}
                 >
-                    <TopBar ref={topBarRef} title={title} />
                     <Box>
                         <Suspense fallback={<div />}>
                             <Routes>
                                 <Route
                                     path="/system-management"
                                     element={
-                                        <SystemManagementProtectedRoute permissions={myPermissions}>
-                                            <SystemManagement setTitle={setTitle} />
-                                        </SystemManagementProtectedRoute>
+                                        <>
+                                            <TopBar ref={topBarRef} title={title} />
+                                            <SystemManagementProtectedRoute permissions={myPermissions}>
+                                                <SystemManagement setTitle={setTitle} />
+                                            </SystemManagementProtectedRoute>
+                                        </>
                                     }
                                 />
                                 <Route
                                     path="/permissions-management"
                                     element={
-                                        <PermissionsManagementProtectedRoute permissions={myPermissions}>
-                                            <PermissionsManagement setTitle={setTitle} />
-                                        </PermissionsManagementProtectedRoute>
+                                        <>
+                                            <TopBar ref={topBarRef} title={title} />
+                                            <PermissionsManagementProtectedRoute permissions={myPermissions}>
+                                                <PermissionsManagement setTitle={setTitle} />
+                                            </PermissionsManagementProtectedRoute>
+                                        </>
                                     }
                                 />
                                 <Route path="/unavailable" element={<Unavailable setTitle={setTitle} />} />
@@ -92,7 +97,7 @@ const Main = () => {
                                     path="/category/:categoryId"
                                     element={
                                         <CategoryProtectedRoute permissions={myPermissions}>
-                                            <Category setTitle={setTitle} />
+                                            <Category />
                                         </CategoryProtectedRoute>
                                     }
                                 />
@@ -100,7 +105,7 @@ const Main = () => {
                                     path="/entity/:entityId"
                                     element={
                                         <EntityProtectedRoute permissions={myPermissions} entityTemplates={entityTemplates}>
-                                            <Entity setTitle={setTitle} />
+                                            <Entity />
                                         </EntityProtectedRoute>
                                     }
                                 />
@@ -108,12 +113,12 @@ const Main = () => {
                                     path="/entity/:entityId/graph"
                                     element={
                                         <EntityProtectedRoute permissions={myPermissions} entityTemplates={entityTemplates}>
-                                            <Graph setTitle={setTitle} />
+                                            <Graph />
                                         </EntityProtectedRoute>
                                     }
                                 />
-                                <Route path="/" element={<GlobalSearch setTitle={setTitle} />} />
-                                <Route path="*" element={<ErrorPage setTitle={setTitle} errorText={i18next.t('errorPage.reachedTheWrongPage')} />} />
+                                <Route path="/" element={<GlobalSearch />} />
+                                <Route path="*" element={<ErrorPage errorText={i18next.t('errorPage.reachedTheWrongPage')} />} />
 
                                 {meltaPlus && <Route path="/fluid-simulation" element={<FluidSimulation setTitle={setTitle} />} />}
                             </Routes>

@@ -28,7 +28,8 @@ const TemplatesSelectCheckbox: React.FC<{
     setSelectedTemplates: React.Dispatch<React.SetStateAction<IMongoEntityTemplatePopulated[]>>;
     categories?: any[];
     size?: 'small' | 'medium';
-}> = ({ title, templates, selectedTemplates, setSelectedTemplates, categories, size }) => {
+    toTopBar?: boolean;
+}> = ({ title, templates, selectedTemplates, setSelectedTemplates, categories, size, toTopBar }) => {
     return (
         <SelectCheckbox
             title={title}
@@ -39,6 +40,7 @@ const TemplatesSelectCheckbox: React.FC<{
             getOptionLabel={({ displayName }) => displayName}
             groupsProps={getCategoriesSelectCheckboxGroupProps(categories)}
             size={size}
+            toTopBar={toTopBar}
         />
     );
 };

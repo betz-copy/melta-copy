@@ -1,12 +1,11 @@
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 import i18next from 'i18next';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router';
 import './index.css';
 
-const ErrorPage: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>>; errorText: string }> = ({ setTitle, errorText }) => {
-    useEffect(() => setTitle(''), [setTitle]);
+const ErrorPage: React.FC<{ errorText: string }> = ({ errorText }) => {
     const navigate = useNavigate();
 
     const [showEasterEgg, setShowEasterEgg] = useState(false);

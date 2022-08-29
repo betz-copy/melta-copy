@@ -29,6 +29,7 @@ export type SelectCheckboxProps<Option extends any, Group extends any = any> = P
     getOptionLabel: (option: Option) => string;
     groupsProps?: { useGroups: false } | ({ useGroups: true } & SelectCheckboxGroupProps<Option, Group>);
     size?: 'small' | 'medium';
+    toTopBar?: boolean;
 }>;
 
 const groupByWithInitial = <T extends any>(collection: T[], keys: PropertyKey[], func: (value: T) => PropertyKey) => {
@@ -267,6 +268,7 @@ const SelectCheckbox = <Option extends any, Group extends any>({
     getOptionLabel,
     groupsProps = { useGroups: false },
     size = 'medium',
+    toTopBar,
 }: SelectCheckboxProps<Option, Group>) => {
     const [miniFilterValue, setMiniFilterValue] = useState('');
 
@@ -278,7 +280,7 @@ const SelectCheckbox = <Option extends any, Group extends any>({
     });
 
     return (
-        <FormControl style={{ width: '15vw', background: 'white', borderRadius: '0 7px 7px 0' }}>
+        <FormControl style={{ width: '15vw', maxWidth: '130px', background: 'white', borderRadius: '0 7px 7px 0' }}>
             <Select
                 displayEmpty
                 renderValue={() => title}
@@ -290,6 +292,7 @@ const SelectCheckbox = <Option extends any, Group extends any>({
                     },
                 }}
                 size={size}
+                style={toTopBar ? { borderRadius: '0 7px 7px 0' } : { borderRadius: '7px 7px 7px 7px' }}
             >
                 <MiniFilter value={miniFilterValue} onChange={setMiniFilterValue} />
                 <ChooseAllMenuItem

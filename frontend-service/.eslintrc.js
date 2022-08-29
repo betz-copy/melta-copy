@@ -25,7 +25,6 @@ module.exports = {
         'import/extensions': 'off',
         'no-unused-vars': 'off',
         'no-console': 'warn',
-        'linebreak-style': ['error', 'unix'],
         'no-empty': 'warn',
         'no-use-before-define': 'off',
         '@typescript-eslint/no-use-before-define': ['error'],
@@ -36,7 +35,6 @@ module.exports = {
         'no-plusplus': 'off',
         'react/prop-types': 'off',
         'react/no-unused-prop-types': 'off',
-        'react/prop-types': 'off',
         'jsx-a11y/alt-text': 'off',
         'react/jsx-filename-extension': [
             2,

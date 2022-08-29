@@ -29,7 +29,7 @@ import { PartialRequired } from '../../utils/typeHelpers';
 import { GraphNodeMenu } from './GraphNodeMenu';
 import { GraphMenu } from './GraphMenu';
 
-const Graph: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> }> = ({ setTitle }) => {
+const Graph: React.FC = () => {
     const ref = useRef<any>(null);
 
     const [updateHighlighted, setUpdateHighlighted] = useState(false);
@@ -69,8 +69,6 @@ const Graph: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> }
     useEffect(() => {
         updateGraphSize();
     }, []);
-
-    useEffect(() => setTitle(''), [setTitle]);
 
     const addNewGraphData = (newGraphData: GraphData) => {
         setGraphData((prevGraphData) => {
