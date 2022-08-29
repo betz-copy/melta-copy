@@ -17,6 +17,7 @@ export class PermissionsManager {
     private static emptyPermissionsOfUser: Omit<IPermissionsOfUser, 'user'> = {
         permissionsManagementId: null,
         templatesManagementId: null,
+        rulesManagementId: null,
         instancesPermissions: [],
     };
 
@@ -30,6 +31,10 @@ export class PermissionsManager {
 
         if (permission.resourceType === 'Templates') {
             return { ...permissionsOfUser, templatesManagementId: permission._id };
+        }
+
+        if (permission.resourceType === 'Rules') {
+            return { ...permissionsOfUser, rulesManagementId: permission._id };
         }
 
         const instancesPermissions: IPermissionsOfUser['instancesPermissions'] = [
