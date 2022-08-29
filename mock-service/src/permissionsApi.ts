@@ -4,7 +4,7 @@ import { trycatch } from './utils';
 
 const { uri, baseRoute, isAliveRoute } = config.permissionsApi;
 
-export const resourceTypeOptions = ['Templates', 'Instances', 'Permissions'] as const;
+export const resourceTypeOptions = ['Templates', 'Instances', 'Permissions', 'Rules'] as const;
 export type ResourceType = typeof resourceTypeOptions[number];
 
 export const scopeOptions = ['Read', 'Write'] as const;

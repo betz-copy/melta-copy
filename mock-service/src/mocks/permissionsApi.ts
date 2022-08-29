@@ -20,6 +20,13 @@ export const getPermissionsToCreate = (categories: IMongoCategory[]) => {
             scopes: ['Read', 'Write'],
         };
 
+        const rulesResourcePermission: IPermission = {
+            userId: kartoffelId,
+            resourceType: 'Rules',
+            category: 'All',
+            scopes: ['Read', 'Write'],
+        };
+
         const instancesResourcePermissions: IPermission[] = categories.map(({ _id }) => ({
             userId: kartoffelId,
             resourceType: 'Instances',
@@ -27,7 +34,7 @@ export const getPermissionsToCreate = (categories: IMongoCategory[]) => {
             scopes: ['Read', 'Write'],
         }));
 
-        permissions.push(permissionsResourcePermission, templatesResourcePermission, ...instancesResourcePermissions);
+        permissions.push(permissionsResourcePermission, templatesResourcePermission, rulesResourcePermission, ...instancesResourcePermissions);
     });
 
     return permissions;
