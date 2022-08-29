@@ -9,6 +9,7 @@ import pickBy from 'lodash.pickby';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { RjfsDateWidget, RjfsDateTimeWidget } from './RjfsDatesWidgets';
 import RjfsSelectWidget from './RjfsSelectWidget';
+import RjsfTextWidget from './RjsfStringWidget';
 
 const ajvErrorsToFormikErrors = (schema: IMongoEntityTemplatePopulated['properties'], ajvErrors: ErrorObject[]): FormikErrors<any> => {
     const formikErrorsEntries = ajvErrors.map((ajvError) => {
@@ -79,6 +80,7 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({ schema, 
                 SelectWidget: RjfsSelectWidget,
                 DateWidget: RjfsDateWidget,
                 DateTimeWidget: RjfsDateTimeWidget,
+                TextWidget: RjsfTextWidget,
             }}
         >
             <div /> {/* remove the built in submit button */}
