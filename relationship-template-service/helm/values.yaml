@@ -29,6 +29,8 @@ config:
     - name: MONGO_URI
       value: mongodb+srv://jaws:jcfVBJQW73BobDvr@cluster0.t8onr.mongodb.net/templates?retryWrites=true&w=majority
     - name: MONGO_RELATIONSHIP_TEMPLATE_COLLECTION_NAME
+      value: relationshipTemplate    
+    - name: MONGO_RULE_COLLECTION_NAME
       value: relationshipTemplate
     - name: ENTITY_TEMPLATE_MANAGER_URI
       value: http://entity-template-manager:8000
