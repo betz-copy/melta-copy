@@ -1,6 +1,7 @@
 import * as mongoose from 'mongoose';
 
 import { IRelationshipTemplate } from './interface';
+import { transformResultDocsObjectIdKeysToString } from '../../utils/mongoose';
 import config from '../../config';
 
 const RelationshipTemplateSchema = new mongoose.Schema(
@@ -27,6 +28,10 @@ const RelationshipTemplateSchema = new mongoose.Schema(
         versionKey: false,
     },
 );
+
+RelationshipTemplateSchema.post(['find', 'findOne', 'findOneAndUpdate', 'findOneAndDelete'], (res) => {
+    transformResultDocsObjectIdKeysToString(res);
+});
 
 RelationshipTemplateSchema.index({ name: 1, sourceEntityId: 1, destinationEntityId: 1 }, { unique: true });
 RelationshipTemplateSchema.index({ displayName: 1, sourceEntityId: 1, destinationEntityId: 1 }, { unique: true });

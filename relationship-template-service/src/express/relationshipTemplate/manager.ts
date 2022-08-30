@@ -32,7 +32,7 @@ export class RelationshipTemplateManager {
         skip: number;
     }) {
         const { search, sourceEntityIds, destinationEntityIds, limit, skip } = searchBody;
-        const query: FilterQuery<IRelationshipTemplate & Document<any, any, any>> = {};
+        const query: FilterQuery<IRelationshipTemplate & Document> = {};
 
         if (search) {
             query.displayName = { $regex: escapeRegExp(search) };

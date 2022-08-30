@@ -2,7 +2,7 @@ import { Request } from 'express';
 import * as Joi from 'joi';
 import { wrapValidator } from './express';
 
-const defaultValidationOptions: Joi.ValidationOptions = {
+export const defaultValidationOptions: Joi.ValidationOptions = {
     abortEarly: false,
     allowUnknown: false,
     convert: true,

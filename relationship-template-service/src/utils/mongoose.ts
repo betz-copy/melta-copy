@@ -1,4 +1,5 @@
-import { ClientSession, startSession } from 'mongoose';
+import { ClientSession, startSession, Types } from 'mongoose';
+import * as _forEach from 'lodash.foreach';
 import { trycatch } from '.';
 
 export const withTransaction = async <Func extends (session: ClientSession) => Promise<any>>(func: Func): Promise<Awaited<ReturnType<Func>>> => {
@@ -17,3 +18,22 @@ export const withTransaction = async <Func extends (session: ClientSession) => P
         }
     }
 };
+
+
+export const transformObjectIdKeysToString = (doc: any) => {
+    _forEach(doc, (val, key) => {
+        if (val instanceof Types.ObjectId) {
+            doc[key] = val.toString();
+        }
+    });
+}
+
+export const transformResultDocsObjectIdKeysToString = (res: any | any[]) => {
+    if (Array.isArray(res)) {
+        res.forEach(doc => transformObjectIdKeysToString(doc))
+        return;
+    }
+
+    transformObjectIdKeysToString(res);
+    return;
+}

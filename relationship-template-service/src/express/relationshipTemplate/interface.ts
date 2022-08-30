@@ -4,3 +4,9 @@ export interface IRelationshipTemplate {
     sourceEntityId: string;
     destinationEntityId: string;
 }
+
+export interface IMongoRelationshipTemplate extends IRelationshipTemplate {
+    _id: string;
+    createdAt: string;
+    updatedAt: string;
+}

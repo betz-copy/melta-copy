@@ -45,7 +45,7 @@ export const deleteTemplateByIdRequestSchema = Joi.object({
     },
 });
 
-// GET /api/relationship/templates?search=value
+// POST /api/relationship/templates/search?search=value
 export const searchTemplatesRequestSchema = Joi.object({
     body: {
         search: Joi.string(),
