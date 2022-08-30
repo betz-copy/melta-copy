@@ -1,29 +1,19 @@
-import axios from 'axios';
-import config from '../../config';
+import { NotificationService, IBasicNotification, INotification } from '../../externalServices/notificationService';
 import { ShragaUser } from '../../utils/express/passport';
-import { IBasicNotification, INotification } from './interface';
-
-const { uri, baseRoute, requestTimeout } = config.notificationService;
 
 export class NotificationsManager {
-    private static notificationService = axios.create({
-        baseURL: `${uri}${baseRoute}`,
-        timeout: requestTimeout,
-    });
-
     static async getMyNotifications(user: ShragaUser, query: object): Promise<IBasicNotification[]> {
-        const { data } = await this.notificationService.get<INotification[]>('/', { params: { ...query, viewerId: user.id } });
-        return data.map(this.transformNotification);
+        const notifications = await NotificationService.getNotifications({ ...query, viewerId: user.id });
+        return notifications.map(this.transformNotificationToClient);
     }
 
     static async notificationsSeen(notificationId: string, user: ShragaUser): Promise<IBasicNotification> {
-        const { data } = await this.notificationService.patch<INotification>(`/${notificationId}/seen`, { userId: user.id });
-        return this.transformNotification(data);
+        const notification = await NotificationService.notificationsSeen(notificationId, user.id);
+        return this.transformNotificationToClient(notification);
     }
 
-    static transformNotification = (notification: INotification): IBasicNotification => {
+    static transformNotificationToClient = (notification: INotification): IBasicNotification => {
         const { viewers, ...basicNotification } = notification;
-
         return basicNotification;
     };
 }

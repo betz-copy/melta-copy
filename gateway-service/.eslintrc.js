@@ -37,5 +37,7 @@ module.exports = {
         'no-underscore-dangle': ['error', { allow: ['_id'] }],
         'no-unused-vars': 'off', // Checked by typescript
         'import/prefer-default-export': 'off',
+        'no-shadow': 'off',
+        '@typescript-eslint/no-shadow': 'error',
     },
 };
