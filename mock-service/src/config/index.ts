@@ -17,7 +17,8 @@ const config = {
     relationshipTemplateManager: {
         uri: env.get('RELATIONSHIP_TEMPLATE_MANAGER_URI').required().asString(),
         isAliveRoute: env.get('RELATIONSHIP_TEMPLATE_MANAGER_IS_ALIVE_ROUTE').default('/isAlive').asString(),
-        createrelationshipTemplateRoute: env.get('CREATE_ENTITY_TEMPLATE_ROUTE').default('/api/templates/relationships').asString(),
+        createRelationshipTemplateRoute: env.get('CREATE_RELATIONSHIP_TEMPLATE_ROUTE').default('/api/templates/relationships').asString(),
+        createRuleRoute: env.get('CREATE_RULE_ROUTE').default('/api/templates/rules').asString(),
     },
     instacnceManager: {
         uri: env.get('INSTANCE_MANAGER_URI').required().asString(),

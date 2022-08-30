@@ -35,4 +35,10 @@ export const relationshipTemplates = [
         sourceEntityId: { name: 'tourist' },
         destinationEntityId: { name: 'airbnb' },
     },
+    {
+        name: 'flightInTrip',
+        displayName: 'טיסה משוייכת לטיול',
+        sourceEntityId: { name: 'flight' },
+        destinationEntityId: { name: 'trip' },
+    },
 ];

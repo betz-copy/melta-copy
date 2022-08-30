@@ -9,6 +9,7 @@ import { createRealtionshipTemplates, isRelationshipTemplateManagerAlive } from 
 import { relationshipTemplates } from './mocks/relationshipTemplates';
 import { createPermissionsBulk, isPermissionsApiAlive } from './permissionsApi';
 import { getPermissionsToCreate } from './mocks/permissionsApi';
+import { createRules } from './rules';
 
 const main = async () => {
     console.log(`Mock started ${JSON.stringify(config, null, 4)}`);
@@ -55,6 +56,10 @@ const main = async () => {
     console.log('Creating relationshipTemplates templates');
 
     const createdRelationshipTemplates = await createRealtionshipTemplates(relationshipTemplates, createdEntityTemplates);
+
+    console.log('Creating rules');
+
+    await createRules(createdEntityTemplates, createdRelationshipTemplates);
 
     console.log('Creating permissions');
 

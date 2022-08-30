@@ -4,7 +4,7 @@ import config from './config';
 import { IMongoEntityTemplate } from './entityTemplates';
 import { trycatch } from './utils';
 
-const { uri, createrelationshipTemplateRoute, isAliveRoute } = config.relationshipTemplateManager;
+const { uri, createRelationshipTemplateRoute, isAliveRoute } = config.relationshipTemplateManager;
 
 export interface IRelationshipTemplate {
     name: string;
@@ -21,7 +21,7 @@ export interface IMongoRealtionshipTemplate extends Omit<IRelationshipTemplate, 
 
 export const createRealtionshipTemplates = async (relationshipTemplates: IRelationshipTemplate[], entityTemplates: IMongoEntityTemplate[]) => {
     const promises = relationshipTemplates.map((relationshipTemplate) => {
-        return axios.post<IMongoRealtionshipTemplate>(uri + createrelationshipTemplateRoute, {
+        return axios.post<IMongoRealtionshipTemplate>(uri + createRelationshipTemplateRoute, {
             ...relationshipTemplate,
             sourceEntityId: entityTemplates.find((entityTemplate) => relationshipTemplate.sourceEntityId.name === entityTemplate.name)?._id,
             destinationEntityId: entityTemplates.find((entityTemplate) => relationshipTemplate.destinationEntityId.name === entityTemplate.name)?._id,
