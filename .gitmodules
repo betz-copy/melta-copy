@@ -31,3 +31,6 @@
 [submodule "activity-log"]
 	path = activity-log
 	url = git@gitlab.com:yesodot/rnd/terminal-rabaz/jaws/microservices/activity-log.git
+[submodule "notification-service"]
+	path = notification-service
+	url = git@gitlab.com:yesodot/rnd/terminal-rabaz/jaws/microservices/notification-service.git
