@@ -31,6 +31,6 @@ config:
     - name: MONGO_RELATIONSHIP_TEMPLATE_COLLECTION_NAME
       value: relationshipTemplate    
     - name: MONGO_RULE_COLLECTION_NAME
-      value: relationshipTemplate
+      value: rules
     - name: ENTITY_TEMPLATE_MANAGER_URI
       value: http://entity-template-manager:8000
