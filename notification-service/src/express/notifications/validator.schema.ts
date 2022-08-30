@@ -2,7 +2,7 @@
 import * as joi from 'joi';
 import config from '../../config';
 import { createNotificationMessageSchema } from '../../rabbit/validator.schema';
-import { notificationType } from './interface';
+import { NotificationType } from './interface';
 
 const { maxFindLimit } = config.mongo;
 
@@ -13,7 +13,7 @@ export const getNotificationsRequestSchema = joi.object({
     query: {
         limit: joi.number().integer().min(1).max(maxFindLimit).required(),
         step: joi.number().integer().min(0).default(0),
-        type: joi.string().valid(...notificationType),
+        type: joi.string().valid(...Object.values(NotificationType)),
         viewerId: mongoIdSchema,
     },
     body: {},

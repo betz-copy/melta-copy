@@ -1,6 +1,10 @@
 import { Document } from 'mongoose';
 
-export const notificationType = ['ruleBreachAlert', 'ruleBreachRequest', 'ruleBreachResponse'];
+export enum NotificationType {
+    ruleBreachAlert = 'ruleBreachAlert',
+    ruleBreachRequest = 'ruleBreachRequest',
+    ruleBreachResponse = 'ruleBreachResponse',
+}
 
 interface IAlertMetadata {
     alertId: string;
@@ -18,7 +22,7 @@ type INotificationMetadata = IAlertMetadata | IRequestMetadata | IResponseMetada
 
 export interface INotification {
     viewers: string[];
-    type: typeof notificationType[number];
+    type: NotificationType;
     metadata: INotificationMetadata;
     createdAt: Date;
 }
