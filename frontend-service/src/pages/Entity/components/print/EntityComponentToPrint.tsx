@@ -12,7 +12,7 @@ const EntityComponentToPrint: React.FC<{ entityTemplate: IMongoEntityTemplatePop
     options = { showDates: true },
 }) => {
     return (
-        <Box border="2px solid rgb(25, 118, 210)" borderRadius="20px" padding="1rem" style={{ pageBreakInside: 'avoid' }}>
+        <Box border="2px solid #225AA7" borderRadius="20px" padding="1rem" style={{ pageBreakInside: 'avoid' }}>
             <Box padding="0.2rem">
                 <EntityProperties entityTemplate={entityTemplate} properties={entity.properties} />
             </Box>

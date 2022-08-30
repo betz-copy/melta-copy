@@ -11,7 +11,7 @@
 }
 
 .ag-theme-material .ag-checkbox-input-wrapper.ag-checked::after {
-    color: #1976d2;
+    color: #225aa7;
 }
 
 .ag-body-viewport,
@@ -21,7 +21,7 @@
 }
 
 .ag-theme-material .ag-checkbox-input-wrapper.ag-checked::after {
-    color: #1976d2;
+    color: #225aa7;
 }
 
 .ag-column-select-virtual-list-viewport::-webkit-scrollbar {
@@ -40,7 +40,7 @@
 
 .ag-column-select-virtual-list-viewport::-webkit-scrollbar-thumb,
 .ag-body-horizontal-scroll-viewport::-webkit-scrollbar-thumb {
-    background: #1976d2;
+    background: #225aa7;
     border-radius: 7px;
 }
 

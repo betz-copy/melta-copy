@@ -35,7 +35,7 @@ const ProfileButton: React.FC<ProfileButtonProps> = ({ currentUser, text, isDraw
                                     fontSize: 25,
                                     backgroundColor: '#fcfeff',
                                     fontWeight: 500,
-                                    color: 'rgb(25, 118, 210)',
+                                    color: '#225AA7',
                                     '&:hover': { backgroundColor: isDrawerOpen ? undefined : '#dfe4e7' },
                                 }}
                             >

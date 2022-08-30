@@ -280,7 +280,7 @@ const SelectCheckbox = <Option extends any, Group extends any>({
     });
 
     return (
-        <FormControl style={{ width: '15vw', maxWidth: '130px', background: 'white', borderRadius: '0 7px 7px 0' }}>
+        <FormControl style={{ background: 'white', borderRadius: '0 7px 7px 0' }}>
             <Select
                 displayEmpty
                 renderValue={() => title}

@@ -26,9 +26,11 @@ const EntityTopBar: React.FC<{
             display="flex"
             justifyContent="space-between"
             alignItems="center"
+            position="sticky"
+            style={{ top: 0, right: 0, zIndex: 1 }}
         >
             <Box display="flex" alignItems="center">
-                <Typography color="#1976d2" fontWeight="800" component="h4" variant="h4">
+                <Typography color="#225AA7" fontWeight="800" component="h4" variant="h4">
                     {entityTemplate.category.displayName}
                 </Typography>
 
@@ -36,7 +38,7 @@ const EntityTopBar: React.FC<{
                     /
                 </Typography>
 
-                <Typography paddingBottom="2px" variant="h4" fontSize="28px" color="rgb(25, 118, 210)">
+                <Typography paddingBottom="2px" variant="h4" fontSize="28px" color="#225AA7">
                     {entityTemplate.displayName}
                 </Typography>
             </Box>

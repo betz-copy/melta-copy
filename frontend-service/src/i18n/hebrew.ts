@@ -10,7 +10,7 @@ export default {
     relationshipTemplate: 'תבנית קשר',
     relationshipTemplates: 'תבניות קשר',
     failedToGetTemplates: 'נכשל לטעון תבניות',
-    templatesTablesEntityTemplatesCheckboxLabel: 'סינון ישויות',
+    templatesTablesEntityTemplatesCheckboxLabel: 'סינון תבניות',
     selectChooseAll: 'בחר הכל',
     addEntity: 'הוסף ישות',
     downloadMultipleTables: 'הורד טבלאות',

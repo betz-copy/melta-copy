@@ -38,7 +38,7 @@ const PrintOptionsDialog: React.FC<{
                 </Grid>
             </DialogTitle>
             <DialogContent style={{ width: '500px', height: '240px' }}>
-                <Grid container direction="column" alignItems="center" spacing={1}>
+                <Grid container direction="column" spacing={1} alignItems="center">
                     <Grid item>
                         <SelectCheckbox
                             title={i18next.t('entityPage.print.chooseRelationship')}

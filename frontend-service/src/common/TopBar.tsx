@@ -13,6 +13,8 @@ const TopBar = forwardRef<HTMLDivElement, { title: string }>(({ title }, ref) =>
                 paddingLeft="2.5rem"
                 paddingBottom="0.4rem"
                 marginBottom="1rem"
+                position="sticky"
+                style={{ top: 0, right: 0, zIndex: 1 }}
             >
                 <BlueTitle title={title} component="h4" variant="h4" />
             </Box>

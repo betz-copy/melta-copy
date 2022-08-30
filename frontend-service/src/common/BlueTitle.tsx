@@ -10,7 +10,7 @@ const BlueTitle: React.FC<{ title: string; component: ElementType; variant: Typo
     return (
         <Typography
             style={{
-                color: '#1976d2',
+                color: '#225AA7',
                 fontWeight: '800',
                 ...style,
             }}

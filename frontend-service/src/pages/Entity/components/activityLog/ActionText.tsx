@@ -51,7 +51,7 @@ const RelationshipMetadataActionText: React.FC<{
                 {action === 'CREATE_RELATIONSHIP'
                     ? i18next.t('entityPage.activityLog.createRelationship')
                     : i18next.t('entityPage.activityLog.deleteRelationship')}
-                <StyledTypography component="span" display="inline" variant="body2" style={{ color: 'rgb(25, 118, 210)' }}>
+                <StyledTypography component="span" display="inline" variant="body2" style={{ color: '#225AA7' }}>
                     &quot;{relationshipTemplate?.displayName}&quot;{' '}
                 </StyledTypography>
                 {i18next.t('entityPage.activityLog.withEntity')}{' '}
@@ -60,7 +60,7 @@ const RelationshipMetadataActionText: React.FC<{
                     display="inline"
                     variant="body2"
                     onClick={() => navigate(`/entity/${actionMetadata.entityId}`)}
-                    style={{ color: 'rgb(25, 118, 210)', cursor: 'pointer' }}
+                    style={{ color: '#225AA7', cursor: 'pointer' }}
                     borderBottom="1px solid"
                 >
                     {sourceAndDestinationTemplate[0]._id === entityTemplate._id
@@ -94,7 +94,7 @@ const UpdateEntityMetadataActionText: React.FC<{
                                 whiteSpace: 'nowrap',
                                 textOverflow: 'ellipsis',
                                 maxWidth: '160px',
-                                color: 'rgb(25, 118, 210)',
+                                color: '#225AA7',
                                 marginLeft: '10px',
                             }}
                             component="span"

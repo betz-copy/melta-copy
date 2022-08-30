@@ -46,7 +46,7 @@ const GraphTopBar: React.FC<{
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
                 <Typography
                     style={{
-                        color: '#1976d2',
+                        color: '#225AA7',
                         fontWeight: '800',
                     }}
                     component="h4"
@@ -57,7 +57,7 @@ const GraphTopBar: React.FC<{
                 <Typography variant="h4" fontSize="30px" color="#d3d8df" marginLeft="5px" marginRight="5px">
                     /
                 </Typography>
-                <Typography style={{ paddingBottom: '2px' }} variant="h4" fontSize="28px" color="rgb(25, 118, 210)">
+                <Typography style={{ paddingBottom: '2px' }} variant="h4" fontSize="28px" color="#225AA7">
                     {entityTemplate?.displayName}
                 </Typography>
                 <Box marginLeft="10px">

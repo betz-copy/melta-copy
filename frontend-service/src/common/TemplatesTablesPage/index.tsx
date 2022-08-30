@@ -68,7 +68,7 @@ const TemplatesTablesPage: React.FC<{
     return (
         <Grid container margin="0vh">
             <Grid item xs={12}>
-                <Box marginBottom="3vh">
+                <Box marginBottom="3vh" position="sticky" style={{ top: 0, right: 0, zIndex: 1 }}>
                     <TemplateTablesHeadline
                         onSearch={onSearch}
                         entityTemplateSelectCheckboxProps={{
