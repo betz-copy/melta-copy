@@ -1,4 +1,4 @@
-import React, { useState, lazy, Suspense, useRef } from 'react';
+import React, { useState, lazy, Suspense } from 'react';
 import { CssBaseline, Box, useScrollTrigger } from '@mui/material';
 import { Route, Routes } from 'react-router-dom';
 import rtlPlugin from 'stylis-plugin-rtl';
@@ -44,7 +44,6 @@ const Main = () => {
 
     const [pageScrollTarget, setPageScrollTarget] = useState<HTMLElement | undefined>(undefined);
     const trigger = useScrollTrigger({ target: pageScrollTarget, disableHysteresis: true, threshold: 300 });
-    const topBarRef = useRef<HTMLDivElement>(null);
 
     const queryClient = useQueryClient();
 
@@ -75,7 +74,7 @@ const Main = () => {
                                     path="/system-management"
                                     element={
                                         <>
-                                            <TopBar ref={topBarRef} title={title} />
+                                            <TopBar title={title} />
                                             <SystemManagementProtectedRoute permissions={myPermissions}>
                                                 <SystemManagement setTitle={setTitle} />
                                             </SystemManagementProtectedRoute>
@@ -86,7 +85,7 @@ const Main = () => {
                                     path="/permissions-management"
                                     element={
                                         <>
-                                            <TopBar ref={topBarRef} title={title} />
+                                            <TopBar title={title} />
                                             <PermissionsManagementProtectedRoute permissions={myPermissions}>
                                                 <PermissionsManagement setTitle={setTitle} />
                                             </PermissionsManagementProtectedRoute>
