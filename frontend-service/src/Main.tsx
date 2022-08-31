@@ -63,6 +63,7 @@ const Main = () => {
                 <CssBaseline />
                 <SideBar toggleDrawer={toggleDrawer} isDrawerOpen={open} />
                 <MainBox
+                    id="main-box"
                     ref={(ref) => {
                         if (ref) setPageScrollTarget(ref as HTMLElement);
                     }}
@@ -124,7 +125,7 @@ const Main = () => {
                             </Routes>
                         </Suspense>
                     </Box>
-                    <ScrollToTop fadeInTrigger={trigger} scrollToElementRef={topBarRef} />
+                    <ScrollToTop fadeInTrigger={trigger} />
                 </MainBox>
             </Box>
         </CacheProvider>

@@ -214,37 +214,39 @@ const Entity: React.FC = () => {
                                                         </IconButtonWithPopoverText>
                                                     </Grid>
                                                 </Grid>
-                                                <EntitiesTableOfTemplate
-                                                    ref={entitiesTableRef}
-                                                    template={getOppositeEntityTemplate(currentEntityTemplate, currRelationshipTemplate)}
-                                                    showNavigateToRowButton
-                                                    deleteRowButtonProps={{
-                                                        popoverText: hasPermissionToCategory
-                                                            ? i18next.t('entityPage.deleteRelationshipPopoverText')
-                                                            : i18next.t('permissions.dontHavePermissionsToCategory'),
-                                                        onClick: (connectionToDelete) => {
-                                                            setDeleteRelationshipDialogState({ open: true, connectionToDelete });
-                                                        },
-                                                        disabled: !hasPermissionToCategory,
-                                                    }}
-                                                    disabledEntity={!hasPermissionToCategory}
-                                                    getRowId={(connection) => {
-                                                        return connection.relationship.properties._id;
-                                                    }}
-                                                    getEntityPropertiesData={(connection) => {
-                                                        if (currentEntityTemplate._id === connection.destinationEntity.templateId)
-                                                            return connection.sourceEntity.properties;
-                                                        return connection.destinationEntity.properties;
-                                                    }}
-                                                    rowModelType="clientSide"
-                                                    rowData={expandedEntity.connections.filter(
-                                                        (connection) => connection.relationship.templateId === currRelationshipTemplate._id,
-                                                    )}
-                                                    rowHeight={50}
-                                                    fontSize="16px"
-                                                    minColumnWidth={200}
-                                                    filterStorageProps={{ shouldSaveFilter: true, pageType: `entity-${entityId}` }}
-                                                />
+                                                <Box sx={{ marginBottom: '30px', width: '100%' }}>
+                                                    <EntitiesTableOfTemplate
+                                                        ref={entitiesTableRef}
+                                                        template={getOppositeEntityTemplate(currentEntityTemplate, currRelationshipTemplate)}
+                                                        showNavigateToRowButton
+                                                        deleteRowButtonProps={{
+                                                            popoverText: hasPermissionToCategory
+                                                                ? i18next.t('entityPage.deleteRelationshipPopoverText')
+                                                                : i18next.t('permissions.dontHavePermissionsToCategory'),
+                                                            onClick: (connectionToDelete) => {
+                                                                setDeleteRelationshipDialogState({ open: true, connectionToDelete });
+                                                            },
+                                                            disabled: !hasPermissionToCategory,
+                                                        }}
+                                                        disabledEntity={!hasPermissionToCategory}
+                                                        getRowId={(connection) => {
+                                                            return connection.relationship.properties._id;
+                                                        }}
+                                                        getEntityPropertiesData={(connection) => {
+                                                            if (currentEntityTemplate._id === connection.destinationEntity.templateId)
+                                                                return connection.sourceEntity.properties;
+                                                            return connection.destinationEntity.properties;
+                                                        }}
+                                                        rowModelType="clientSide"
+                                                        rowData={expandedEntity.connections.filter(
+                                                            (connection) => connection.relationship.templateId === currRelationshipTemplate._id,
+                                                        )}
+                                                        rowHeight={50}
+                                                        fontSize="16px"
+                                                        minColumnWidth={200}
+                                                        filterStorageProps={{ shouldSaveFilter: true, pageType: `entity-${entityId}` }}
+                                                    />
+                                                </Box>
                                             </Grid>
                                         );
                                     })}
