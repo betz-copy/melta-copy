@@ -22,6 +22,12 @@ appRouter.use('/api/auth', authenticationRouter);
 
 if (config.authentication.isRequired) {
     appRouter.use(passport.authenticate('jwt', { session: false }));
+} else {
+    appRouter.use((req, _res, next) => {
+        if (!req.user) req.user = {} as any;
+        req.user!.id = config.authentication.mockAuthenticatedUserId;
+        next();
+    });
 }
 
 appRouter.use('/api/config', (_req, res) =>

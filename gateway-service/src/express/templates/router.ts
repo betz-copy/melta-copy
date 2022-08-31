@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { createProxyMiddleware, fixRequestBody } from 'http-proxy-middleware';
 import * as multer from 'multer';
 import { wrapController, wrapMiddleware } from '../../utils/express';
-import { validateUserHasAtLeastSomePermissions, validateUserIsTemplateManager } from '../permissions/validateAuthorizationMiddleware';
+import { validateUserHasAtLeastSomePermissions, validateUserIsRulesManager, validateUserIsTemplatesManager } from '../permissions/validateAuthorizationMiddleware';
 import TemplatesController from './controller';
 import {
     validateUserCanCreateEntityTemplateUnderCategory,
@@ -23,10 +23,12 @@ import {
     updateCategorySchema,
     updateEntityTemplateSchema,
     updateRelationshipTemplateSchema,
+    updateRuleStatusByIdRequestSchema,
 } from './validator.schema';
 
 const {
     entityTemplateManager,
+    relationshipTemplateManager,
     service: { uploadsFolderPath },
 } = config;
 
@@ -34,6 +36,12 @@ const EntityTemplatesManagerProxy = createProxyMiddleware({
     target: entityTemplateManager.uri,
     onProxyReq: fixRequestBody,
     proxyTimeout: entityTemplateManager.requestTimeout,
+});
+
+const RelationshipTemplatesManagerProxy = createProxyMiddleware({
+    target: relationshipTemplateManager.uri,
+    onProxyReq: fixRequestBody,
+    proxyTimeout: relationshipTemplateManager.requestTimeout,
 });
 
 const templatesRouter: Router = Router();
@@ -47,20 +55,20 @@ templatesRouter.post(
     '/categories',
     multer({ dest: uploadsFolderPath }).single('file'),
     ValidateRequest(createCategorySchema),
-    wrapMiddleware(validateUserIsTemplateManager),
+    wrapMiddleware(validateUserIsTemplatesManager),
     wrapController(TemplatesController.createCategory),
 );
 templatesRouter.put(
     '/categories/:id',
     multer({ dest: uploadsFolderPath }).single('file'),
     ValidateRequest(updateCategorySchema),
-    wrapMiddleware(validateUserIsTemplateManager),
+    wrapMiddleware(validateUserIsTemplatesManager),
     wrapController(TemplatesController.updateCategory),
 );
 templatesRouter.delete(
     '/categories/:id',
     ValidateRequest(deleteCategorySchema),
-    wrapMiddleware(validateUserIsTemplateManager),
+    wrapMiddleware(validateUserIsTemplatesManager),
     wrapController(TemplatesController.deleteCategory),
 );
 
@@ -105,5 +113,16 @@ templatesRouter.delete(
     wrapMiddleware(validateUserCanUpdateOrDeleteRelationshipTemplate),
     wrapController(TemplatesController.deleteRelationshipTemplate),
 );
+
+// rules (templates)
+templatesRouter.put('/rules/:ruleId', wrapMiddleware(validateUserIsRulesManager), RelationshipTemplatesManagerProxy);
+templatesRouter.patch(
+    '/rules/:ruleId/status',
+    wrapMiddleware(validateUserIsRulesManager),
+    ValidateRequest(updateRuleStatusByIdRequestSchema),
+    wrapController(TemplatesController.updateRuleStatusById),
+);
+templatesRouter.delete('/rules/:ruleId', wrapMiddleware(validateUserIsRulesManager), RelationshipTemplatesManagerProxy);
+templatesRouter.post('/rules', wrapMiddleware(validateUserIsRulesManager), RelationshipTemplatesManagerProxy);
 
 export default templatesRouter;

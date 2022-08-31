@@ -9,14 +9,14 @@ import {
     deletePermissionsRequestSchema,
     getMyPermissionsRequestSchema,
 } from './validator.schema';
-import { getValidateAuthorizationMiddleware, validateUserHasAtLeastSomePermissions } from './validateAuthorizationMiddleware';
+import { validateUserHasAtLeastSomePermissions, validateUserIsPermissionsManager } from './validateAuthorizationMiddleware';
 
 const permissionsRouter: Router = Router();
 
 permissionsRouter.get(
     '/',
     ValidateRequest(getPermissionsOfUsersRequestSchema),
-    wrapMiddleware(getValidateAuthorizationMiddleware('Permissions', ['All'])),
+    wrapMiddleware(validateUserIsPermissionsManager),
     wrapController(PermissionsController.getPermissionsOfUsers),
 );
 permissionsRouter.get(
@@ -28,13 +28,13 @@ permissionsRouter.get(
 permissionsRouter.post(
     '/bulk',
     ValidateRequest(createPermissionsBulkRequestSchema),
-    wrapMiddleware(getValidateAuthorizationMiddleware('Permissions', ['All'])),
+    wrapMiddleware(validateUserIsPermissionsManager),
     wrapController(PermissionsController.createPermissionsBulk),
 );
 permissionsRouter.delete(
     '/',
     ValidateRequest(deletePermissionsRequestSchema),
-    wrapMiddleware(getValidateAuthorizationMiddleware('Permissions', ['All'])),
+    wrapMiddleware(validateUserIsPermissionsManager),
     wrapController(PermissionsController.deletePermissions),
 );
 

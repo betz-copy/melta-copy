@@ -111,3 +111,14 @@ export const deleteRelationshipTemplateSchema = Joi.object({
     query: {},
     params: { id: MongoIdSchema.required() },
 });
+
+// PATCH /api/templates/rules/:ruleId/status
+export const updateRuleStatusByIdRequestSchema = Joi.object({
+    body: {
+        disabled: Joi.boolean().required(),
+    },
+    query: {},
+    params: {
+        ruleId: Joi.string().required(),
+    },
+});

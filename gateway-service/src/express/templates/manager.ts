@@ -3,7 +3,11 @@ import * as lodashUniqby from 'lodash.uniqby';
 import * as _isEqual from 'lodash.isequal';
 import { EntityTemplateManagerService, ICategory, IEntityTemplate, ISearchEntityTemplatesBody } from '../../externalServices/entityTemplateManager';
 import { InstanceManagerService } from '../../externalServices/instanceManager';
-import { IRelationshipTemplate, RelationshipsTemplateManagerService } from '../../externalServices/relationshipsTemplateManager';
+import {
+    IRelationshipTemplate,
+    IRelationshipTemplateRule,
+    RelationshipsTemplateManagerService,
+} from '../../externalServices/relationshipsTemplateManager';
 import { deleteFile, uploadFile } from '../../externalServices/storageService';
 import { trycatch } from '../../utils';
 import { removeTmpFile } from '../../utils/fs';
@@ -47,6 +51,74 @@ export class TemplatesManager {
         return Array.from(extendedAllowedRelationshipsTemplatesIds);
     }
 
+    private static async getAllowedRules(
+        allowedRelationshipsTemplates: IRelationshipTemplate[],
+        allowedEntityTemplatesIdsByOneRelationship: string[],
+    ) {
+        const allowedRelationshipsTemplatesIds = allowedRelationshipsTemplates.map(({ _id }) => _id);
+
+        const rulesByAllowedRelationshipTemplates = await RelationshipsTemplateManagerService.searchRules({
+            relationshipTemplateIds: allowedRelationshipsTemplatesIds,
+            skip: 0,
+            limit: 0,
+        });
+
+        /*
+         * you need rules of pinned entity templates of "by one relationship"
+         * because you can break the rule if it has aggregation on the pinned entity (pinned.conncections.allowedEntityToEdit)
+         * for example, say you have permissions only for people.
+         * so you receive templates
+         * 1. template of person - because you have direct permission
+         * 2. template of flight - because there's relationship person<=>flight
+         * 3!!!. template of trip - because there's a rule of flight<=>trip,
+         *    and flight is the pinned entity in the rule, and the rule might contain aggregation of "flight.flightsOn.person",
+         *    and rule might break on person change
+         */
+        const rulesPinnedByEntityTemplatesByOneRelationship = await RelationshipsTemplateManagerService.searchRules({
+            pinnedEntityTemplateIds: allowedEntityTemplatesIdsByOneRelationship,
+            skip: 0,
+            limit: 0,
+        });
+
+        const allowedRules: IRelationshipTemplateRule[] = lodashUniqby(
+            [...rulesByAllowedRelationshipTemplates, ...rulesPinnedByEntityTemplatesByOneRelationship],
+            '_id',
+        );
+
+        const allowedRelationshipTemplatesIdsBecauseOfRules = allowedRules
+            .map(({ relationshipTemplateId }) => relationshipTemplateId)
+            .filter((relationshipTemplateId) => !allowedRelationshipsTemplatesIds.includes(relationshipTemplateId));
+
+        const allowedRelationshipTemplatesBecauseOfRules = await RelationshipsTemplateManagerService.searchRelationshipTemplates({
+            ids: allowedRelationshipTemplatesIdsBecauseOfRules,
+            skip: 0,
+            limit: 0,
+        });
+
+        const unpinnedEntityTemplatesIdsOfAllowedRules = allowedRelationshipTemplatesBecauseOfRules.map((relationshipTemplate) => {
+            const rule = allowedRules.find(({ relationshipTemplateId }) => relationshipTemplateId === relationshipTemplate._id)!;
+            const unpinnedEntityTemplateId =
+                relationshipTemplate.sourceEntityId === rule.pinnedEntityTemplateId
+                    ? relationshipTemplate.destinationEntityId
+                    : relationshipTemplate.sourceEntityId;
+            return unpinnedEntityTemplateId;
+        });
+
+        const unknownUnpinnedEntityTemplatesIdsOfAllowedRules = unpinnedEntityTemplatesIdsOfAllowedRules.filter((entityTemplateId) => {
+            return !allowedEntityTemplatesIdsByOneRelationship.includes(entityTemplateId);
+        });
+
+        const allowedEntityTemplatesBecauseOfRules = await EntityTemplateManagerService.searchEntityTemplates({
+            ids: unknownUnpinnedEntityTemplatesIdsOfAllowedRules,
+        });
+
+        return {
+            allowedRules,
+            allowedRelationshipTemplatesBecauseOfRules,
+            allowedEntityTemplatesBecauseOfRules,
+        };
+    }
+
     // all
     static async getAllAllowedTemplates(userId: string) {
         const allCategories = await TemplatesManager.getAllCategories();
@@ -65,20 +137,24 @@ export class TemplatesManager {
             '_id',
         );
 
-        const extendedAllowedRelationshipsTemplatesIds = this.getAllEntityTemplateThatAreOneRelationshipAwayFromUsersPermissions(
+        const allowedEntityTemplatesIdsByOneRelationship = this.getAllEntityTemplateThatAreOneRelationshipAwayFromUsersPermissions(
             allowedRelationshipsTemplatesBySource,
             allowedRelationshipsTemplatesByDestination,
             allowedEntityTemplatesIds,
         );
 
         const allowedEntityTemplatesByOneRelationship = await EntityTemplateManagerService.searchEntityTemplates({
-            ids: extendedAllowedRelationshipsTemplatesIds,
+            ids: allowedEntityTemplatesIdsByOneRelationship,
         });
+
+        const { allowedRules, allowedRelationshipTemplatesBecauseOfRules, allowedEntityTemplatesBecauseOfRules } =
+            await TemplatesManager.getAllowedRules(allowedRelationshipsTemplates, allowedEntityTemplatesIdsByOneRelationship);
 
         return {
             categories: allCategories,
-            entityTemplates: [...allowedEntityTemplates, ...allowedEntityTemplatesByOneRelationship],
-            relationshipTemplates: allowedRelationshipsTemplates,
+            entityTemplates: [...allowedEntityTemplates, ...allowedEntityTemplatesByOneRelationship, ...allowedEntityTemplatesBecauseOfRules],
+            relationshipTemplates: [...allowedRelationshipsTemplates, ...allowedRelationshipTemplatesBecauseOfRules],
+            rules: allowedRules,
         };
     }
 
@@ -93,14 +169,14 @@ export class TemplatesManager {
             destinationEntityIds: allowedEntityTemplatesIds,
         });
 
-        const extendedAllowedRelationshipsTemplatesIds = this.getAllEntityTemplateThatAreOneRelationshipAwayFromUsersPermissions(
+        const allowedEntityTemplatesIdsByOneRelationship = this.getAllEntityTemplateThatAreOneRelationshipAwayFromUsersPermissions(
             allowedRelationshipsTemplatesBySource,
             allowedRelationshipsTemplatesByDestination,
             allowedEntityTemplatesIds,
         );
 
         const allowedEntityTemplatesByOneRelationship = await EntityTemplateManagerService.searchEntityTemplates({
-            ids: extendedAllowedRelationshipsTemplatesIds,
+            ids: allowedEntityTemplatesIdsByOneRelationship,
         });
 
         return [...allowedEntityTemplates, ...allowedEntityTemplatesByOneRelationship];
@@ -381,6 +457,16 @@ export class TemplatesManager {
         }
 
         return EntityTemplateManagerService.searchEntityTemplates(searchBody);
+    }
+
+    // rules
+    static async updateRuleStatusById(ruleId: string, disabled: boolean) {
+        // todo: if disabling, check no open requests, search in rule-breaches
+        // if (!disabled) {
+
+        // }
+
+        return RelationshipsTemplateManagerService.updateRuleStatusById(ruleId, disabled);
     }
 }
 

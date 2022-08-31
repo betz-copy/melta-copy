@@ -10,6 +10,7 @@ const config = {
     authentication: {
         tokenSecret: env.get('TOKEN_SECRET').required().asString(),
         isRequired: env.get('IS_AUTHENTICATION_REQUIRED').default('true').asBool(),
+        mockAuthenticatedUserId: env.get('MOCK_AUTHENTICATED_USER_ID').default('5e5688324203fc40043591aa').asString(), // niky adidas
         callbackURL: env.get('CALLBACK_URL').required().asString(),
         shragaURL: env.get('SHRAGA_URL').required().asString(),
         useEnrichId: env.get('USE_ENRICH_ID').default('true').asBool(),
@@ -26,7 +27,9 @@ const config = {
     },
     relationshipTemplateManager: {
         uri: env.get('RELATIONSHIP_TEMPLATE_MANAGER_URI').required().asString(),
-        baseRoute: env.get('RELATIONSHIP_TEMPLATE_MANAGER_BASE_ROUTE').default('/api/templates/relationships').asString(),
+        baseRelationshipsRoute: env.get('RELATIONSHIP_TEMPLATE_MANAGER_BASE_RELATIONSHIPS_ROUTE').default('/api/templates/relationships').asString(),
+        baseRulesRoute: env.get('RELATIONSHIP_TEMPLATE_MANAGER_BASE_RULES_ROUTE').default('/api/templates/rules').asString(),
+        updateRuleStatusByIdRouteSuffix: env.get('RELATIONSHIP_TEMPLATE_MANAGER_UPDATE_RULE_STATUS_BY_ID_ROUTE_SUFFIX').default('/status').asString(),
         requestTimeout: env.get('RELATIONSHIP_TEMPLATE_MANAGER_REQUEST_TIMEOUT').default(10000).asIntPositive(),
     },
     storageService: {

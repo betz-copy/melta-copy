@@ -50,6 +50,11 @@ class TemplatesController {
     static async updateRelationshipTemplate(req: Request, res: Response) {
         res.json(await TemplatesManager.updateRelationshipTemplate(req.params.id, req.body));
     }
+
+    // rules
+    static async updateRuleStatusById(req: Request, res: Response) {
+        res.json(await TemplatesManager.updateRuleStatusById(req.params.ruleId, req.body.disabled));
+    }
 }
 
 export default TemplatesController;
