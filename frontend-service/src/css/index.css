@@ -3,16 +3,19 @@
     font-weight: 100;
     src: local('Rubik'), url(../assets/Rubik/Rubik-VariableFont_wght.ttf) format('woff');
 }
+
 @font-face {
     font-family: 'Rubik';
     font-weight: 800;
     src: local('Rubik'), url(../assets/Rubik/Rubik-VariableFont_wght.ttf) format('woff');
 }
+
 @font-face {
     font-family: 'Rubik';
     font-weight: 500;
     src: local('Rubik'), url(../assets/Rubik/Rubik-VariableFont_wght.ttf) format('woff');
 }
+
 @font-face {
     font-family: 'Rubik';
     font-weight: 400;
@@ -32,4 +35,10 @@
     display: flex;
     padding: 16px 10px;
     color: #666666;
+}
+
+/* z-index added for 'raqb' component as mentioned in docs https://github.com/ukrbublik/react-awesome-query-builder#api */
+.MuiPopover-root,
+.MuiDialog-root {
+    z-index: 900 !important;
 }

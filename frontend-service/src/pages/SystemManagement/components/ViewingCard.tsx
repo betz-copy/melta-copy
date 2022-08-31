@@ -9,7 +9,7 @@ const ViewingCard: React.FC<{
     icon?: React.ReactNode;
     color?: string;
     onEditClick: MouseEventHandler;
-    onDeleteClick: MouseEventHandler;
+    onDeleteClick?: MouseEventHandler;
     minWidth: number;
     disabledProps?: { isDisabled: boolean; canEdit: boolean; tooltipTitle: string };
     onDisableClick?: MouseEventHandler;
@@ -65,14 +65,16 @@ const ViewingCard: React.FC<{
                                     </Grid>
                                 </Tooltip>
 
-                                <MenuButton
-                                    onClick={(e) => {
-                                        onDeleteClick(e);
-                                        handleClose();
-                                    }}
-                                    text={i18next.t('actions.delete')}
-                                    icon={<DeleteIcon color="action" />}
-                                />
+                                {onDeleteClick && (
+                                    <MenuButton
+                                        onClick={(e) => {
+                                            onDeleteClick(e);
+                                            handleClose();
+                                        }}
+                                        text={i18next.t('actions.delete')}
+                                        icon={<DeleteIcon color="action" />}
+                                    />
+                                )}
 
                                 {onDisableClick && (
                                     <MenuButton

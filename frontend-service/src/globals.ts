@@ -6,6 +6,7 @@ export const environment = {
         categories: '/templates/categories',
         entityTemplates: '/templates/entities',
         relationshipTemplates: '/templates/relationships',
+        rules: '/templates/rules',
         entities: '/instances/entities',
         relationships: '/instances/relationships',
         storage: '/files',

@@ -20,6 +20,7 @@ import ErrorPage from './pages/ErrorPage';
 import { environment } from './globals';
 import loadingAnimation from './assets/icons/Melta_Logo.svg';
 import './css/loading.css';
+import { IMongoRelationshipTemplateRule } from './interfaces/rules';
 
 const App: React.FC = () => {
     const queryClient = useQueryClient();
@@ -46,16 +47,18 @@ const App: React.FC = () => {
     useQuery('getCategories', () => undefined, { enabled: false });
     useQuery('getEntityTemplates', () => undefined, { enabled: false });
     useQuery('getRelationshipTemplates', () => undefined, { enabled: false });
+    useQuery('getRules', () => undefined, { enabled: false });
 
     const { isLoading: isLoadingAllTemplates, isError: isErrorAllTemplates } = useQuery<GetAllTemplatesType>('getAllTemplates', getAllTemplates, {
         onError: (error) => {
             toast.error(i18next.t('failedToGetTemplates'));
             console.log('failed to get templates error:', error);
         },
-        onSuccess: ({ categories, entityTemplates, relationshipTemplates }) => {
+        onSuccess: ({ categories, entityTemplates, relationshipTemplates, rules }) => {
             queryClient.setQueryData<IMongoCategory[]>('getCategories', categories);
             queryClient.setQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates', entityTemplates);
             queryClient.setQueryData<IMongoRelationshipTemplate[]>('getRelationshipTemplates', relationshipTemplates);
+            queryClient.setQueryData<IMongoRelationshipTemplateRule[]>('getRules', rules);
         },
     });
 

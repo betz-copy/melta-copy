@@ -62,7 +62,8 @@ const Wizard = <T extends object>({
     }, [open, initalStep]);
 
     return (
-        <Dialog open={open} maxWidth="lg" style={{ height: '80%', margin: 'auto' }}>
+        <Dialog open={open} maxWidth="lg" style={{ height: '80%', margin: 'auto' }} disableEnforceFocus>
+            {/* disableEnforceFocus added for 'raqb' component as mentioned in docs https://github.com/ukrbublik/react-awesome-query-builder#api */}
             <DialogTitle>
                 {title}
                 <IconButton

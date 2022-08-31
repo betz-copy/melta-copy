@@ -43,6 +43,13 @@ const relationshipTemplates = [
         sourceEntityId: '61e3ea6e4d51a83e87e83c7f',
         destinationEntityId: '61e3ea6e4d51a83e87e83c84',
     },
+    {
+        _id: '61e3ea6e3d51a83e87e42c7c',
+        name: 'flightInTrip',
+        displayName: 'טיסה משוייכת לטיול',
+        sourceEntityId: '61e3ea6e4d51a83e87e83c81',
+        destinationEntityId: '61e3ea6e4d51a83e87e83c7e',
+    },
 ];
 
 const mockRelationshipTemplates = (mock: MockAdapter) => {

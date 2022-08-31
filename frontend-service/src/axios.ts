@@ -32,6 +32,7 @@ if (process.env.NODE_ENV === 'development' && !process.env.REACT_APP_IS_DOCKER) 
     const { mockEntites } = require('./mocks/entities');
     const { mockEntityTemplates } = require('./mocks/templates/entityTemplates');
     const { mockRelationshipTemplates } = require('./mocks/templates/relationshipTemplates');
+    const { mockRules } = require('./mocks/templates/rules');
     const { mockRelationships } = require('./mocks/relationships');
     const { mockPermissions } = require('./mocks/permissions');
     const { mockActivityLog } = require('./mocks/entities/activityLog');
@@ -47,6 +48,8 @@ if (process.env.NODE_ENV === 'development' && !process.env.REACT_APP_IS_DOCKER) 
     mockEntityTemplates(mock);
 
     mockRelationshipTemplates(mock);
+
+    mockRules(mock);
 
     mockEntites(mock);
 
