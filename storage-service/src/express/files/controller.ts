@@ -24,9 +24,20 @@ export class FilesController {
         res.json(await FilesManager.listFiles());
     }
 
+    static async duplicateFile(req: express.Request, res: express.Response) {
+        const { path } = req.params;
+        res.json(await FilesManager.duplicateFile(path));
+    }
+
+    static async duplicateFiles(req: express.Request, res: express.Response) {
+        const { paths } = req.body;
+
+        res.json(await FilesManager.duplicateFiles(paths));
+    }
+
     static async fileStat(req: express.Request, res: express.Response) {
         const { path } = req.params;
-        res.json(await FilesManager.fileStat(path.toString()));
+        res.json(await FilesManager.fileStat(path));
     }
 
     static async deleteFile(req: express.Request, res: express.Response) {

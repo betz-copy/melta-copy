@@ -31,6 +31,10 @@ export class MinIOClient {
         return this.minioClient.removeObject(this.bucketName, filePath);
     }
 
+    copyFile(sourceFilePath: string, destinationFilePath: string) {
+        return this.minioClient.copyObject(this.bucketName, destinationFilePath, `${this.bucketName}/${sourceFilePath}`, new minio.CopyConditions());
+    }
+
     removeFiles(filesNamesArray: string[]) {
         return this.minioClient.removeObjects(this.bucketName, filesNamesArray);
     }

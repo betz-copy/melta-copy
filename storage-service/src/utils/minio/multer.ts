@@ -1,12 +1,9 @@
 import { callbackify } from 'util';
 import { Request } from 'express';
-import * as uuid from 'uuid';
 import * as Multer from 'multer';
 import { MinIOClient, minioClient } from './minioClient';
+import { generatePath } from '../generatePath';
 
-const generatePath = () => {
-    return uuid.v4();
-};
 class MinioStorage {
     private client: MinIOClient;
 
@@ -15,8 +12,7 @@ class MinioStorage {
     }
 
     async handleFile(_req: Request, file: Express.Multer.File) {
-        let path = generatePath();
-        path = path.split('-').join('') + file.originalname;
+        const path = generatePath(file.originalname);
 
         await this.client.uploadFileStream(file.stream, path, { 'content-type': file.mimetype });
         return { ...(await this.client.statFile(path)), path };

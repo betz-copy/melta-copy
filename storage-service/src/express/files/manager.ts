@@ -1,3 +1,4 @@
+import { generatePath } from '../../utils/generatePath';
 import { minioClient } from '../../utils/minio';
 
 export class FilesManager {
@@ -23,6 +24,19 @@ export class FilesManager {
 
     static deleteFile(filePath: string) {
         return minioClient.removeFile(filePath);
+    }
+
+    static async duplicateFile(sourceFilePath: string) {
+        const destinationPath = generatePath(sourceFilePath.slice(32));
+        await minioClient.copyFile(sourceFilePath, destinationPath);
+        return { ...(await FilesManager.fileStat(destinationPath)), path: destinationPath };
+    }
+
+    static async duplicateFiles(sourceFilePaths: string[]) {
+        const copiedFiles = sourceFilePaths.map((path) => FilesManager.duplicateFile(path));
+        const result = await Promise.all(copiedFiles);
+
+        return result;
     }
 
     static deleteFiles(filePaths: string[]) {

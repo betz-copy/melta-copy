@@ -25,7 +25,8 @@ export const uploadFilesRequestSchema = Joi.object({
 });
 
 // POST /api/files/delete-bulk
-export const deleteFilesRequestSchema = Joi.object({
+// POST /api/files/duplicate-bulk
+export const bulkFilesRequestSchema = Joi.object({
     query: {},
     params: {},
     body: {
