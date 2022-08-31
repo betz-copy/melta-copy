@@ -16,7 +16,7 @@ const ActivityLogPopper: React.FC<{
         <Popper open={open} transition>
             {({ TransitionProps }) => (
                 <Slide {...TransitionProps} direction="right">
-                    <div style={{ paddingTop: '6.2vh', paddingLeft: '1.1rem' }}>
+                    <div style={{ paddingTop: '3.8rem', paddingLeft: '1.1rem' }}>
                         <ClickAwayListener onClickAway={() => setOpen(false)}>
                             <Box
                                 minWidth="250px"
