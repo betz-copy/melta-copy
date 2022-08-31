@@ -5,13 +5,11 @@ import { NotificationDoesNotExistError } from '../error';
 
 export class NotificationsManager {
     public static async getNotifications(limit: number, step: number, type?: NotificationType, viewerId?: string): Promise<INotificationDocument[]> {
-        const skip = step * limit;
+        return NotificationModel.find(this.makeQuery(type, viewerId), {}, { limit, skip: step * limit }).lean();
+    }
 
-        const query: FilterQuery<INotificationDocument> = {};
-        if (type) query.type = type;
-        if (viewerId) query.viewers = viewerId;
-
-        return NotificationModel.find(query, {}, { limit, skip }).lean();
+    public static async getNotificationCount(type?: NotificationType, viewerId?: string): Promise<number> {
+        return NotificationModel.count(this.makeQuery(type, viewerId));
     }
 
     public static async getNotificationById(notificationId: string): Promise<INotificationDocument> {
@@ -26,6 +24,15 @@ export class NotificationsManager {
         return NotificationModel.findByIdAndUpdate(notificationId, { $pull: { viewers: viewerId } }, { new: true })
             .orFail(new NotificationDoesNotExistError(notificationId))
             .lean();
+    }
+
+    private static makeQuery(type?: NotificationType, viewerId?: string) {
+        const query: FilterQuery<INotificationDocument> = {};
+
+        if (type) query.type = type;
+        if (viewerId) query.viewers = viewerId;
+
+        return query;
     }
 }
 

@@ -7,6 +7,11 @@ class NotificationsController {
         res.json(await NotificationsManager.getNotifications(limit, step, type, viewerId));
     }
 
+    public static async getNotificationCount(req: Request, res: Response) {
+        const { type, viewerId } = req.query as any;
+        res.json(await NotificationsManager.getNotificationCount(type, viewerId));
+    }
+
     static async getNotificationById(req: Request, res: Response) {
         const { notificationId } = req.params;
         res.json(await NotificationsManager.getNotificationById(notificationId));

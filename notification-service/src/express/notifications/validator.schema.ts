@@ -20,6 +20,16 @@ export const getNotificationsRequestSchema = joi.object({
     params: {},
 });
 
+// GET /api/notifications/count
+export const getNotificationCountRequestSchema = joi.object({
+    query: {
+        type: joi.string().valid(...Object.values(NotificationType)),
+        viewerId: mongoIdSchema,
+    },
+    body: {},
+    params: {},
+});
+
 // GET /api/notifications/:id
 export const getNotificationByIdRequestSchema = joi.object({
     query: {},

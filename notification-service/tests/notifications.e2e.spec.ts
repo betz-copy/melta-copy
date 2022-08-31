@@ -178,6 +178,87 @@ describe('e2e notifications api testing', () => {
             });
         });
 
+        describe('GET /api/notifications/count', () => {
+            it('should fail validation for unknown fields', async () => {
+                return request(app).get('/api/notifications/count').query({ test: 'test' }).expect(400);
+            });
+
+            it('should get notification count', async () => {
+                await request(app)
+                    .post('/api/notifications')
+                    .send({ viewers: [fakeObjectId], type: 'ruleBreachAlert', metadata: { alertId: fakeObjectId } })
+                    .expect(200);
+                await request(app)
+                    .post('/api/notifications')
+                    .send({ viewers: [fakeObjectId2], type: 'ruleBreachRequest', metadata: { alertId: fakeObjectId2 } })
+                    .expect(200);
+                await request(app)
+                    .post('/api/notifications')
+                    .send({ viewers: [fakeObjectId2], type: 'ruleBreachRequest', metadata: { alertId: fakeObjectId2 } })
+                    .expect(200);
+                await request(app)
+                    .post('/api/notifications')
+                    .send({ viewers: [fakeObjectId2], type: 'ruleBreachRequest', metadata: { alertId: fakeObjectId2 } })
+                    .expect(200);
+
+                const { body } = await request(app).get('/api/notifications/count').expect(200);
+
+                expect(body).toEqual(4);
+            });
+
+            it('should get zero when there are no notifications', async () => {
+                const { body } = await request(app).get('/api/notifications/count').expect(200);
+
+                expect(body).toEqual(0);
+            });
+
+            it('should get notification count of user', async () => {
+                await request(app)
+                    .post('/api/notifications')
+                    .send({ viewers: [fakeObjectId], type: 'ruleBreachAlert', metadata: { alertId: fakeObjectId } })
+                    .expect(200);
+                await request(app)
+                    .post('/api/notifications')
+                    .send({ viewers: [fakeObjectId2], type: 'ruleBreachRequest', metadata: { alertId: fakeObjectId2 } })
+                    .expect(200);
+                await request(app)
+                    .post('/api/notifications')
+                    .send({ viewers: [fakeObjectId2], type: 'ruleBreachRequest', metadata: { alertId: fakeObjectId2 } })
+                    .expect(200);
+                await request(app)
+                    .post('/api/notifications')
+                    .send({ viewers: [fakeObjectId2], type: 'ruleBreachRequest', metadata: { alertId: fakeObjectId2 } })
+                    .expect(200);
+
+                const { body } = await request(app).get('/api/notifications/count').query({ viewerId: fakeObjectId2 }).expect(200);
+
+                expect(body).toEqual(3);
+            });
+
+            it('should get notification count of specific type', async () => {
+                await request(app)
+                    .post('/api/notifications')
+                    .send({ viewers: [fakeObjectId], type: 'ruleBreachAlert', metadata: { alertId: fakeObjectId } })
+                    .expect(200);
+                await request(app)
+                    .post('/api/notifications')
+                    .send({ viewers: [fakeObjectId2], type: 'ruleBreachRequest', metadata: { alertId: fakeObjectId2 } })
+                    .expect(200);
+                await request(app)
+                    .post('/api/notifications')
+                    .send({ viewers: [fakeObjectId2], type: 'ruleBreachResponse', metadata: { alertId: fakeObjectId2 } })
+                    .expect(200);
+                await request(app)
+                    .post('/api/notifications')
+                    .send({ viewers: [fakeObjectId2], type: 'ruleBreachRequest', metadata: { alertId: fakeObjectId2 } })
+                    .expect(200);
+
+                const { body } = await request(app).get('/api/notifications/count').query({ type: 'ruleBreachRequest' }).expect(200);
+
+                expect(body).toEqual(2);
+            });
+        });
+
         describe('POST /api/notifications', () => {
             it('should fail validation for unknown fields', async () => {
                 return request(app).post('/api/notifications').send({ test: 'test' }).expect(400);
