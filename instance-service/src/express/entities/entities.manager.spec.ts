@@ -195,23 +195,33 @@ describe('Entity manager', () => {
                 const secondEntity = await EntityManager.createEntity({ templateId: defaultTemplateId, properties: secondEntityProperties });
 
                 // Create relationship between two entities
-                await RelationshipManager.createRelationshipByEntityIds({
-                    templateId: defaultRelationshipTemplateId,
-                    properties: defaultProperties,
-                    sourceEntityId: id,
-                    destinationEntityId: secondEntity.properties._id,
-                });
+                await RelationshipManager.createRelationshipByEntityIds(
+                    {
+                        templateId: defaultRelationshipTemplateId,
+                        properties: defaultProperties,
+                        sourceEntityId: id,
+                        destinationEntityId: secondEntity.properties._id,
+                    },
+                    relationshipTemplate,
+                    firstEntity,
+                    secondEntity,
+                );
 
                 // Create third entity
                 const thirdEntity = await EntityManager.createEntity({ templateId: defaultTemplateId, properties: thirdEntityProperties });
 
                 // Create relationship between two entities
-                await RelationshipManager.createRelationshipByEntityIds({
-                    templateId: defaultRelationshipTemplateId,
-                    properties: defaultProperties,
-                    sourceEntityId: secondEntity.properties._id,
-                    destinationEntityId: thirdEntity.properties._id,
-                });
+                await RelationshipManager.createRelationshipByEntityIds(
+                    {
+                        templateId: defaultRelationshipTemplateId,
+                        properties: defaultProperties,
+                        sourceEntityId: secondEntity.properties._id,
+                        destinationEntityId: thirdEntity.properties._id,
+                    },
+                    relationshipTemplate,
+                    secondEntity,
+                    thirdEntity,
+                );
             });
 
             it('Get entity and its connections', async () => {

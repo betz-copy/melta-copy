@@ -13,6 +13,8 @@ import { isRelationshipLegal } from './rules';
 import { IEntity } from '../entities/interface';
 import config from '../../config';
 import { areAllRulesLegal } from '../rules/lib';
+import { getRelationshipTemplateById } from './template';
+import EntityManager from '../entities/manager';
 
 export class RelationshipManager {
     static async getRelationshipById(id: string) {
@@ -87,19 +89,42 @@ export class RelationshipManager {
     }
 
     static async deleteRelationshipById(id: string) {
-        const relationship = await Neo4jClient.writeTransaction(
-            `MATCH (s)-[r]->(d)
-             WHERE r._id='${id}' with *, properties(r) as rProps, type(r) as rType
-             DELETE r 
-             RETURN rProps, rType, s, d`,
-            normalizeReturnedDeletedRelationship,
-        );
+        return Neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
+            const relationship = await transaction.run(`
+            MATCH (s)-[r]->(d)
+            WHERE r._id='${id}' with *, properties(r) as rProps, type(r) as rType
+            DELETE r 
+            RETURN rProps, rType, s, d`);
 
-        if (!relationship) {
-            throw new NotFoundError(`[NEO4J] relationship "${id}" not found`);
-        }
+            const normalizedRelationship = normalizeReturnedDeletedRelationship(relationship) as IRelationship;
 
-        return relationship;
+            if (!normalizedRelationship) {
+                throw new NotFoundError(`[NEO4J] relationship "${id}" not found`);
+            }
+
+            const { templateId, sourceEntityId, destinationEntityId } = normalizedRelationship;
+
+            const relationshipTemplate = await getRelationshipTemplateById(templateId);
+            const sourceEntity = await EntityManager.getEntityById(sourceEntityId);
+            const destinationEntity = await EntityManager.getEntityById(destinationEntityId);
+
+            const ruleQueries = await isRelationshipLegal(normalizedRelationship, sourceEntity, destinationEntity, relationshipTemplate);
+            const ruleResults = await Promise.all(
+                ruleQueries.map(async (ruleQuery) => {
+                    const result = await transaction.run(ruleQuery.cypherQuery, ruleQuery.parameters);
+
+                    return normalizeRuleResult(result);
+                }),
+            );
+
+            if (!areAllRulesLegal(ruleResults)) {
+                throw new ServiceError(400, `[NEO4J] relationship is blocked by rules.`, {
+                    errorCode: config.errorCodes.ruleBlock,
+                });
+            }
+
+            return normalizedRelationship;
+        });
     }
 
     static async updateRelationshipPropertiesById(id: string, relationshipProperties: object) {
