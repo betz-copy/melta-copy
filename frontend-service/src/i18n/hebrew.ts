@@ -73,12 +73,6 @@ export default {
             chooseRelationship: 'בחירת קשרים',
             printOptions: 'הגדרות הדפסה',
         },
-        graph: {
-            reset: 'אפס גרף',
-            copy: 'העתק קישור',
-            copiedSuccessfully: 'הקישור הועתק בהצלחה',
-            filterTemplates: 'סינון תבניות',
-        },
     },
     categoryPage: {
         disabledTemplate: 'תבנית לא פעילה',
@@ -115,6 +109,7 @@ export default {
     searchLabel: 'חיפוש...',
     booleanOptions: { yes: 'כן', no: 'לא' },
     graph: {
+        navigateToGraph: 'עבור לגרף',
         center: 'מרכז',
         expand: 'הרחב', // הצג שכנים
         free: 'שחרר',
@@ -123,6 +118,11 @@ export default {
         highlight: 'סמן',
         cancelHighlight: 'בטל סימון',
         cancelAllHighlights: 'בטל את כל הסימונים',
+        reset: 'אפס גרף',
+        copy: 'העתק קישור',
+        copiedSuccessfully: 'הקישור הועתק בהצלחה',
+        filterTemplates: 'סינון תבניות',
+        noPreviewProperties: 'לא נבחרו שדות לתצוגה מצומצמת',
     },
     pages: {
         globalSearch: 'חיפוש גלובלי',

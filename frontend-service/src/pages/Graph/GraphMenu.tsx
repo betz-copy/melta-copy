@@ -7,9 +7,10 @@ import i18next from 'i18next';
 const GraphMenu: React.FC<{
     showMenu: boolean;
     onCloseMenu: () => void;
+    onCenterMain: () => void;
     location: { top: number; left: number };
     graphData: GraphData;
-}> = ({ showMenu, onCloseMenu, location, graphData }) => {
+}> = ({ showMenu, onCloseMenu, onCenterMain, location, graphData }) => {
     return (
         <MuiMenu
             open={showMenu}
@@ -48,6 +49,14 @@ const GraphMenu: React.FC<{
                 }}
             >
                 {i18next.t('graph.cancelAllHighlights')}
+            </MenuItem>
+            <MenuItem
+                onClick={() => {
+                    onCenterMain();
+                    onCloseMenu();
+                }}
+            >
+                {i18next.t('graph.center')}
             </MenuItem>
         </MuiMenu>
     );

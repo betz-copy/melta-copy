@@ -1,6 +1,7 @@
 /* eslint-disable no-param-reassign */
 import React, { useEffect, useRef, useState } from 'react';
 import * as ReactDOMServer from 'react-dom/server';
+import i18next from 'i18next';
 import { Box, CircularProgress, Grid } from '@mui/material';
 import { forceManyBody } from 'd3-force';
 import ForceGraph, { ForceGraphMethods, GraphData, LinkObject, NodeObject } from 'react-force-graph-2d';
@@ -150,9 +151,10 @@ const Graph: React.FC = () => {
             expandedEntitiesQueriesPromises.forEach((query) => {
                 addNewGraphData(expandedEntityToGraphData(query.data!, relationshipTemplates));
             });
+            const shouldZoom = !(initialExpandedEntity && initialExpandedEntity?.connections.length < 1);
+            setShouldZoomToFit(shouldZoom);
 
             setLoadAgain(false);
-            setShouldZoomToFit(true);
         };
 
         setGraphDataOnStart();
@@ -160,7 +162,14 @@ const Graph: React.FC = () => {
 
     const renderTooltip = (node: NodeObject) => {
         const entityTemplate = entityTemplates.find((template) => template._id === node.templateId)!;
-        return ReactDOMServer.renderToString(<EntityProperties properties={node.data} showPreviewPropertiesOnly entityTemplate={entityTemplate} />);
+
+        return ReactDOMServer.renderToString(
+            entityTemplate.propertiesPreview.length < 1 ? (
+                <div>{i18next.t('graph.noPreviewProperties')}</div>
+            ) : (
+                <EntityProperties properties={node.data} showPreviewPropertiesOnly entityTemplate={entityTemplate} />
+            ),
+        );
     };
 
     const getNodeColor = (node: NodeObject) => {
@@ -270,6 +279,11 @@ const Graph: React.FC = () => {
                     onCloseMenu={() => {
                         forceRef.current?.resumeAnimation();
                         setMenuState({ showMenu: false });
+                    }}
+                    onCenterMain={() => {
+                        const centerEntity = graphData.nodes.find((node) => node.id === entityId);
+                        forceRef.current?.zoom(5, 300);
+                        forceRef.current?.centerAt(centerEntity?.x, centerEntity?.y, 200);
                     }}
                     location={{ top: menuState.top!, left: menuState.left! }}
                     graphData={graphData}

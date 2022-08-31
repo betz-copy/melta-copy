@@ -31,7 +31,7 @@ const GraphTopBar: React.FC<{
 
     const handleCopy = () => {
         navigator.clipboard.writeText(window.location.href);
-        toast.success(i18next.t('entityPage.graph.copiedSuccessfully'));
+        toast.success(i18next.t('graph.copiedSuccessfully'));
     };
     return (
         <Box
@@ -60,9 +60,9 @@ const GraphTopBar: React.FC<{
                 <Typography style={{ paddingBottom: '2px' }} variant="h4" fontSize="28px" color="#225AA7">
                     {entityTemplate?.displayName}
                 </Typography>
-                <Box marginLeft="10px">
+                <Box marginLeft="3rem">
                     <TemplatesSelectCheckbox
-                        title={i18next.t('entityPage.graph.filterTemplates')}
+                        title={i18next.t('graph.filterTemplates')}
                         templates={entityTemplates}
                         selectedTemplates={filteredEntityTemplates}
                         setSelectedTemplates={setFilteredEntityTemplates}
@@ -74,14 +74,14 @@ const GraphTopBar: React.FC<{
 
             <Box>
                 <IconButtonWithPopoverText
-                    popoverText={i18next.t('entityPage.graph.copy')}
+                    popoverText={i18next.t('graph.copy')}
                     iconButtonProps={{
                         onClick: handleCopy,
                     }}
                 >
                     <CopyUrlIcon color="primary" fontSize="inherit" />
                 </IconButtonWithPopoverText>
-                <IconButtonWithPopoverText popoverText={i18next.t('entityPage.graph.reset')} iconButtonProps={{ onClick: onReset }}>
+                <IconButtonWithPopoverText popoverText={i18next.t('graph.reset')} iconButtonProps={{ onClick: onReset }}>
                     <ResetIcon color="primary" fontSize="inherit" />
                 </IconButtonWithPopoverText>
             </Box>

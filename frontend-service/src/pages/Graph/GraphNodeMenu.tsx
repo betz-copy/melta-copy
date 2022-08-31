@@ -70,7 +70,7 @@ const GraphNodeMenu: React.FC<{
                     navigate(`/entity/${node.id}/graph`);
                 }}
             >
-                {i18next.t('graph.center')}
+                {i18next.t('graph.navigateToGraph')}
             </MenuItem>
             <MenuItem
                 disabled={node.numberOfConnectionsExpanded >= 6}
