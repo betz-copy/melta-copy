@@ -1,5 +1,5 @@
 import * as Joi from 'joi';
-import { MongoIdSchema ,variableNameValidation} from '../../utils/joi';
+import { MongoIdSchema, variableNameValidation } from '../../utils/joi';
 
 // GET /api/relationship/templates/:templateId
 export const getTemplateByIdRequestSchema = Joi.object({
@@ -49,6 +49,7 @@ export const deleteTemplateByIdRequestSchema = Joi.object({
 export const searchTemplatesRequestSchema = Joi.object({
     body: {
         search: Joi.string(),
+        ids: Joi.array().items(MongoIdSchema),
         sourceEntityIds: Joi.array().items(MongoIdSchema),
         destinationEntityIds: Joi.array().items(MongoIdSchema),
         limit: Joi.number().integer().min(0).default(0),

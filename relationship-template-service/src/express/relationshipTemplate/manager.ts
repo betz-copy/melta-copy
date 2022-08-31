@@ -26,17 +26,23 @@ export class RelationshipTemplateManager {
 
     static searchTemplates(searchBody: {
         search?: string;
+        ids?: string[];
         sourceEntityIds?: string[];
         destinationEntityIds?: string[];
         limit: number;
         skip: number;
     }) {
-        const { search, sourceEntityIds, destinationEntityIds, limit, skip } = searchBody;
+        const { search, ids, sourceEntityIds, destinationEntityIds, limit, skip } = searchBody;
         const query: FilterQuery<IRelationshipTemplate & Document> = {};
 
         if (search) {
             query.displayName = { $regex: escapeRegExp(search) };
         }
+
+        if (ids) {
+            query._id = { $in: ids };
+        }
+
         if (sourceEntityIds) {
             query.sourceEntityId = { $in: sourceEntityIds };
         }
