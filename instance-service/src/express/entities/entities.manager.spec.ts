@@ -3,15 +3,25 @@ import Neo4jClient from '../../utils/neo4j';
 
 import EntityManager from './manager';
 import RelationshipManager from '../relationships/manager';
+import { IEntity } from './interface';
 
 const { neo4j } = config;
 
-const defaultTemplateId = '2';
-const defaultRelationshipTemplateId = 'rel-entity';
+const defaultTemplateId = '111111111111111111111111';
+const defaultRelationshipTemplateId = '222222222222222222222222';
 const defaultProperties = { testProp: 'testProp' };
 const defaultEntity = {
     templateId: defaultTemplateId,
     properties: defaultProperties,
+};
+const relationshipTemplate = {
+    _id: defaultRelationshipTemplateId,
+    name: 'rel',
+    displayName: 'rel',
+    sourceEntityId: defaultTemplateId,
+    destinationEntityId: defaultTemplateId,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
 };
 
 describe('Entity manager', () => {
@@ -102,12 +112,13 @@ describe('Entity manager', () => {
     });
 
     describe('Get entity by id (expanded mode)', () => {
+        let firstEntity: IEntity;
         let id: string;
 
         beforeEach(async () => {
-            const { properties } = await EntityManager.createEntity(defaultEntity);
+            firstEntity = await EntityManager.createEntity(defaultEntity);
 
-            id = properties._id;
+            id = firstEntity.properties._id;
         });
 
         it('Should get an entity by id (expanded mode - without connections)', async () => {
@@ -134,12 +145,17 @@ describe('Entity manager', () => {
                 const secondEntity = await EntityManager.createEntity({ templateId: defaultTemplateId, properties: secondEntityProperties });
 
                 // Create relationship between two entities
-                await RelationshipManager.createRelationshipByEntityIds({
-                    templateId: defaultRelationshipTemplateId,
-                    properties: defaultProperties,
-                    sourceEntityId: id,
-                    destinationEntityId: secondEntity.properties._id,
-                });
+                await RelationshipManager.createRelationshipByEntityIds(
+                    {
+                        templateId: defaultRelationshipTemplateId,
+                        properties: defaultProperties,
+                        sourceEntityId: id,
+                        destinationEntityId: secondEntity.properties._id,
+                    },
+                    relationshipTemplate,
+                    firstEntity,
+                    secondEntity,
+                );
             });
 
             it('Should get an entity by id (without connections)', async () => {
@@ -229,12 +245,13 @@ describe('Entity manager', () => {
     });
 
     describe('Delete an entity', () => {
+        let firstEntity: IEntity;
         let id: string;
 
         beforeEach(async () => {
-            const { properties } = await EntityManager.createEntity(defaultEntity);
+            firstEntity = await EntityManager.createEntity(defaultEntity);
 
-            id = properties._id;
+            id = firstEntity.properties._id;
         });
 
         it('Delete an entity (deleteAllRelationships=false)', async () => {
@@ -251,12 +268,17 @@ describe('Entity manager', () => {
                 const secondEntity = await EntityManager.createEntity({ templateId: defaultTemplateId, properties: secondEntityProperties });
 
                 // Create relationship between two entities
-                await RelationshipManager.createRelationshipByEntityIds({
-                    templateId: defaultRelationshipTemplateId,
-                    properties: defaultProperties,
-                    sourceEntityId: id,
-                    destinationEntityId: secondEntity.properties._id,
-                });
+                await RelationshipManager.createRelationshipByEntityIds(
+                    {
+                        templateId: defaultRelationshipTemplateId,
+                        properties: defaultProperties,
+                        sourceEntityId: id,
+                        destinationEntityId: secondEntity.properties._id,
+                    },
+                    relationshipTemplate,
+                    firstEntity,
+                    secondEntity,
+                );
             });
 
             it('Delete an entity (deleteAllRelationships=false - but has connections)', async () => {

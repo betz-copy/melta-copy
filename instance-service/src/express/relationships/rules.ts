@@ -1,55 +1,88 @@
 import axios from 'axios';
 import { trycatch } from '../../utils/lib';
 import { ValidationError } from '../error';
-import { IRuleRequestSchema, IRelationship, IMongoRelationshipTemplate } from './interface';
-import { IRelationshipTemplateRule } from '../rules/interfaces';
+import { IRelationshipRequestSchema, IRelationship, IMongoRelationshipTemplate } from './interface';
 import { generateNeo4jQuery } from '../rules';
+import { IEntity } from '../entities/interface';
+import { getEntityTemplateById } from '../entities/validator.template';
+import { searchRuleTemplates } from '../rules/lib';
 import config from '../../config';
-import { IMongoEntityTemplate } from '../entities/interface';
 
 const { relationshipManager } = config;
-const { url, searchRulesRoute, timeout } = relationshipManager;
+const { url, searchTemplatesRoute, timeout } = relationshipManager;
 
-export const searchRuleTemplates = async (ruleRequest: IRuleRequestSchema) => {
-    const { result, err } = await trycatch(() => axios.post<IRelationshipTemplateRule[]>(`${url}${searchRulesRoute}`, ruleRequest, { timeout }));
+export const searchRelationshipTemplates = async (relationshipRequest: IRelationshipRequestSchema) => {
+    const { result, err } = await trycatch(() =>
+        axios.post<IMongoRelationshipTemplate[]>(`${url}${searchTemplatesRoute}`, relationshipRequest, { timeout }),
+    );
 
     if (err || !result) {
-        throw new ValidationError(`Failed to fetch rule template schema.`);
+        throw new ValidationError(`Failed to fetch relationship template schemas.`);
     }
 
     return result.data;
 };
 
-export const isRelationshipLegal = async (
-    relationship: IRelationship,
-    sourceEntityTemplate: IMongoEntityTemplate,
-    destinationEntityTemplate: IMongoEntityTemplate,
-    relationshipTemplate: IMongoRelationshipTemplate,
-) => {
+const getRelationshipTemplateRules = async (relationshipTemplate: IMongoRelationshipTemplate) => {
     const relationshipTemplateRules = await Promise.all([
         searchRuleTemplates({ relationshipTemplateIds: [relationshipTemplate._id] }),
         searchRuleTemplates({ pinnedEntityTemplateIds: [relationshipTemplate.sourceEntityId] }),
         searchRuleTemplates({ pinnedEntityTemplateIds: [relationshipTemplate.destinationEntityId] }),
     ]);
 
-    const { sourceEntityId, destinationEntityId } = relationship;
+    const flattenedRelationshipTemplateRules = relationshipTemplateRules.flat();
+    const relationshipTemplateRuleIds = flattenedRelationshipTemplateRules.map((el) => el._id);
+    const filteredRelationshipTemplateRules = flattenedRelationshipTemplateRules.filter(
+        ({ _id }, index) => !relationshipTemplateRuleIds.includes(_id, index + 1),
+    );
 
-    const generateNeo4jQueries = relationshipTemplateRules.flat().map((relationshipTemplateRule) => {
+    return filteredRelationshipTemplateRules;
+};
+
+const getRelationshipTemplatesById = async (entityTemplateId: string) => {
+    return Promise.all([
+        searchRelationshipTemplates({ sourceEntityIds: [entityTemplateId] }),
+        searchRelationshipTemplates({ destinationEntityIds: [entityTemplateId] }),
+    ]);
+};
+
+export const isRelationshipLegal = async (
+    relationship: IRelationship,
+    sourceEntity: IEntity,
+    destinationEntity: IEntity,
+    relationshipTemplate: IMongoRelationshipTemplate,
+) => {
+    const relationshipTemplateRules = await getRelationshipTemplateRules(relationshipTemplate);
+
+    const generateNeo4jQueries = relationshipTemplateRules.map(async (relationshipTemplateRule) => {
         const { pinnedEntityTemplateId } = relationshipTemplateRule;
 
-        const [pinnedEntityId, nonPinnedEntityId] =
-            pinnedEntityTemplateId === sourceEntityTemplate._id ? [sourceEntityId, destinationEntityId] : [destinationEntityId, sourceEntityId];
+        const [pinnedEntity, nonPinnedEntity] =
+            pinnedEntityTemplateId === sourceEntity.templateId ? [sourceEntity, destinationEntity] : [destinationEntity, sourceEntity];
+
+        const pinnedEntityRelationships = await getRelationshipTemplatesById(pinnedEntityTemplateId);
+
+        const connectionsTemplates = await Promise.all(
+            pinnedEntityRelationships.flat().map(async (relTemplate) => {
+                const { sourceEntityId, destinationEntityId } = relTemplate;
+                const unpinnedEntityTemplateId = sourceEntityId === pinnedEntity.templateId ? destinationEntityId : sourceEntityId;
+
+                const unpinnedEntityTemplate = await getEntityTemplateById(unpinnedEntityTemplateId);
+
+                return { relationshipTemplate: relTemplate, unpinnedEntityTemplate };
+            }),
+        );
 
         return generateNeo4jQuery(
             relationshipTemplateRule,
-            pinnedEntityId,
-            nonPinnedEntityId,
+            pinnedEntity.properties._id,
+            nonPinnedEntity.properties._id,
             relationship.properties._id,
-            sourceEntityTemplate,
-            destinationEntityTemplate,
-            [{ relationshipTemplate, unpinnedEntityTemplate: destinationEntityTemplate }],
+            pinnedEntity.templateId,
+            nonPinnedEntity.templateId,
+            connectionsTemplates,
         );
     });
 
-    return generateNeo4jQueries;
+    return Promise.all(generateNeo4jQueries);
 };

@@ -81,3 +81,12 @@ export interface IRelationshipTemplateRule {
 export interface IMongoRelationshipTemplateRule extends IRelationshipTemplateRule {
     _id: string;
 }
+
+export interface IRuleRequestSchema {
+    search?: string;
+    relationshipTemplateIds?: string[];
+    pinnedEntityTemplateIds?: string[];
+    disabled?: boolean;
+    limit?: number;
+    skip?: number;
+}

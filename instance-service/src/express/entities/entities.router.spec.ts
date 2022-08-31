@@ -11,8 +11,8 @@ import { formatDate } from '../../utils/neo4j/lib';
 const mockDate = new Date();
 const mockDateStr = mockDate.toISOString();
 
-const defaultRelationshipTemplateId = 'rel-entity-router';
-const defaultTemplateId = '3';
+const defaultRelationshipTemplateId = '888888888888888888888888';
+const defaultTemplateId = '999999999999999999999999';
 const defaultProperties = { testProp: 'testProp' };
 const defaultEntity = {
     templateId: defaultTemplateId,
@@ -73,6 +73,14 @@ describe('Entity router', () => {
             updatedAt: mockDateStr,
             __v: 0,
         });
+
+        mock.onPost(`${relationshipManager.url}${relationshipManager.searchRulesRoute}`, {
+            pinnedEntityTemplateIds: [defaultTemplateId],
+        }).reply(200, []);
+
+        mock.onPost(`${relationshipManager.url}${relationshipManager.searchRulesRoute}`, {
+            relationshipTemplateIds: [defaultRelationshipTemplateId],
+        }).reply(200, []);
     });
 
     afterAll(async () => {
@@ -271,7 +279,7 @@ describe('Entity router', () => {
 
                 // Mock get relationship template route
                 mock.onGet(`${url}${getRelationshipByIdRoute}/${defaultRelationshipTemplateId}`).reply(200, {
-                    _id: '123',
+                    _id: defaultRelationshipTemplateId,
                     name: 'RelationshipMock',
                     displayName: 'RelationshipMock',
                     sourceEntityId: defaultTemplateId,

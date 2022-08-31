@@ -7,14 +7,14 @@ export interface IRelationship {
     destinationEntityId: string;
 }
 
-export interface IRuleRequestSchema {
+export interface IRelationshipRequestSchema {
     search?: string;
-    relationshipTemplateIds?: string[];
-    pinnedEntityTemplateIds?: string[];
-    disabled?: boolean;
+    sourceEntityIds?: string[];
+    destinationEntityIds?: string[];
     limit?: number;
     skip?: number;
 }
+
 export interface IRelationshipTemplate {
     name: string;
     displayName: string;

@@ -175,7 +175,10 @@ export const oneTravelAgentPerFlight: IRelationshipTemplateRule = {
             {
                 isEquation: true,
                 operatorBool: 'lessThanOrEqual',
-                lhsArgument: { isCountAggFunction: true, variableName: 'flight.flies on.travelAgent' },
+                lhsArgument: {
+                    isCountAggFunction: true,
+                    variableName: `${flightEntityTemplate._id}.${flightsOnRelationshipTemplate._id}.${travelAgentEntityTemplate._id}`,
+                },
                 rhsArgument: { isConstant: true, value: 1 },
             },
         ],
@@ -197,14 +200,18 @@ export const noOverlappingFlightsInTrip: IRelationshipTemplateRule = {
             {
                 isAggregationGroup: true,
                 aggregation: 'EVERY',
-                variableNameOfAggregation: 'trip.flightInTrip.flight',
+                variableNameOfAggregation: `${tripEntityTemplate._id}.${tripConnectedToFlightRelationshipTemplate._id}.${flightEntityTemplate._id}`,
                 ruleOfGroup: 'AND',
                 subFormulas: [
                     {
                         isEquation: true,
                         operatorBool: 'notEqual',
                         // todo: make function of: date(dateTimeVariable)
-                        lhsArgument: { isPropertyOfVariable: true, variableName: 'trip.flightInTrip.flight', property: 'date' },
+                        lhsArgument: {
+                            isPropertyOfVariable: true,
+                            variableName: `${tripEntityTemplate._id}.${tripConnectedToFlightRelationshipTemplate._id}.${flightEntityTemplate._id}`,
+                            property: 'date',
+                        },
                         rhsArgument: { isPropertyOfVariable: true, variableName: 'flight', property: 'date' },
                     },
                 ],
@@ -228,7 +235,7 @@ export const warnOnEveryFlightOnActiveZone: IRelationshipTemplateRule = {
             {
                 isEquation: true,
                 operatorBool: 'equals',
-                lhsArgument: { isPropertyOfVariable: true, variableName: 'trip', property: 'active' },
+                lhsArgument: { isPropertyOfVariable: true, variableName: tripEntityTemplate._id, property: 'active' },
                 rhsArgument: { isConstant: true, value: false },
             },
         ],
@@ -246,8 +253,8 @@ export const mainRunExampleRule1 = () => {
         pinnedEntityId,
         nonPinnedEntityId,
         nonPinnedRelationshipId,
-        flightEntityTemplate,
-        travelAgentEntityTemplate,
+        flightEntityTemplate._id,
+        travelAgentEntityTemplate._id,
         [{ relationshipTemplate: flightsOnRelationshipTemplate, unpinnedEntityTemplate: travelAgentEntityTemplate }],
     );
 
@@ -266,8 +273,8 @@ export const mainRunExampleRule2 = () => {
         pinnedEntityId,
         nonPinnedEntityId,
         nonPinnedRelationshipId,
-        flightEntityTemplate,
-        tripEntityTemplate,
+        flightEntityTemplate._id,
+        tripEntityTemplate._id,
         [{ relationshipTemplate: tripConnectedToFlightRelationshipTemplate, unpinnedEntityTemplate: flightEntityTemplate }],
     );
 
@@ -285,8 +292,8 @@ export const mainRunExampleRule3 = () => {
         pinnedEntityId,
         nonPinnedEntityId,
         nonPinnedRelationshipId,
-        flightEntityTemplate,
-        tripEntityTemplate,
+        flightEntityTemplate._id,
+        tripEntityTemplate._id,
         [{ relationshipTemplate: tripConnectedToFlightRelationshipTemplate, unpinnedEntityTemplate: flightEntityTemplate }],
     );
 
@@ -294,7 +301,7 @@ export const mainRunExampleRule3 = () => {
 };
 
 /*
-transaction:
+transaction:67
 -------------
 1. do action
 

@@ -1,22 +1,35 @@
 import config from '../../config';
 import Neo4jClient from '../../utils/neo4j';
+import { IEntity } from '../entities/interface';
 
 import EntityManager from '../entities/manager';
 import RelationshipManager from './manager';
 
 const { neo4j } = config;
 
-const unknownId = 'unkownId';
-const defaultRelationshipTemplateId = 'rel-manager';
-const defaultEntityTemplateId = '5';
+const unknownId = '555555555555555555555555';
+const defaultRelationshipTemplateId = '444444444444444444444444';
+const defaultEntityTemplateId = '333333333333333333333333';
 const defaultProperties = { testProp: 'testProp' };
 const defaultEntity = {
     templateId: defaultEntityTemplateId,
     properties: defaultProperties,
 };
+const relationshipTemplate = {
+    _id: defaultRelationshipTemplateId,
+    name: 'rel',
+    displayName: 'rel',
+    sourceEntityId: defaultEntityTemplateId,
+    destinationEntityId: defaultEntityTemplateId,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+};
 
 describe('Relationship manager', () => {
+    let firstEntity: IEntity;
     let entityId: string;
+
+    let secondEntity: IEntity;
     let secondEntityId: string;
     let relId: string;
 
@@ -34,22 +47,27 @@ describe('Relationship manager', () => {
     });
 
     beforeEach(async () => {
-        const { properties: entityProperties } = await EntityManager.createEntity(defaultEntity);
+        firstEntity = await EntityManager.createEntity(defaultEntity);
 
-        entityId = entityProperties._id;
+        entityId = firstEntity.properties._id;
 
         // Create second entities
-        const secondEntity = await EntityManager.createEntity(defaultEntity);
+        secondEntity = await EntityManager.createEntity(defaultEntity);
 
         secondEntityId = secondEntity.properties._id;
 
         // Create relationship between two entities
-        const { properties: relProperties } = await RelationshipManager.createRelationshipByEntityIds({
-            templateId: defaultRelationshipTemplateId,
-            properties: defaultProperties,
-            sourceEntityId: entityId,
-            destinationEntityId: secondEntityId,
-        });
+        const { properties: relProperties } = await RelationshipManager.createRelationshipByEntityIds(
+            {
+                templateId: defaultRelationshipTemplateId,
+                properties: defaultProperties,
+                sourceEntityId: entityId,
+                destinationEntityId: secondEntityId,
+            },
+            relationshipTemplate,
+            firstEntity,
+            secondEntity,
+        );
 
         relId = relProperties._id;
     });
@@ -74,12 +92,17 @@ describe('Relationship manager', () => {
     describe('Create relationship', () => {
         it('Should fail to create a new relationship because already exists', async () => {
             await expect(() =>
-                RelationshipManager.createRelationshipByEntityIds({
-                    templateId: defaultRelationshipTemplateId,
-                    sourceEntityId: entityId,
-                    destinationEntityId: secondEntityId,
-                    properties: defaultProperties,
-                }),
+                RelationshipManager.createRelationshipByEntityIds(
+                    {
+                        templateId: defaultRelationshipTemplateId,
+                        sourceEntityId: entityId,
+                        destinationEntityId: secondEntityId,
+                        properties: defaultProperties,
+                    },
+                    relationshipTemplate,
+                    firstEntity,
+                    secondEntity,
+                ),
             ).rejects.toThrowError(`[NEO4J] relationship already exists between requested entities.`);
         });
     });

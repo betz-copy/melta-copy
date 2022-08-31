@@ -10,8 +10,8 @@ import config from '../../config';
 const mockDate = new Date();
 const mockDateStr = mockDate.toISOString();
 
-const defaultEntityTemplateId = '6';
-const defaultRelationshipTemplateId = 'rel-router';
+const defaultEntityTemplateId = '666666666666666666666666';
+const defaultRelationshipTemplateId = '777777777777777777777777';
 const unknownId = 'unkownId';
 const defaultProperties = { testProp: 'testProp' };
 const defaultEntity = {
@@ -31,7 +31,7 @@ describe('Relationship router', () => {
             name: 'entityTest',
             displayName: 'entityTest',
             category: {
-                _id: '123',
+                _id: '888888888888888888888888',
                 name: 'people',
                 displayName: 'people',
                 createdAt: mockDateStr,
@@ -64,6 +64,14 @@ describe('Relationship router', () => {
             updatedAt: mockDateStr,
             __v: 0,
         });
+
+        mock.onPost(`${relationshipManager.url}${relationshipManager.searchRulesRoute}`, {
+            pinnedEntityTemplateIds: [defaultEntityTemplateId],
+        }).reply(200, []);
+
+        mock.onPost(`${relationshipManager.url}${relationshipManager.searchRulesRoute}`, {
+            relationshipTemplateIds: [defaultRelationshipTemplateId],
+        }).reply(200, []);
 
         await Neo4jClient.initialize(neo4j.url, neo4j.auth, neo4j.database);
     });

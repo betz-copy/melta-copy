@@ -2,36 +2,11 @@ import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 import axios from 'axios';
 import { Request, NextFunction, Response } from 'express';
-import config from '../../config';
 import { trycatch } from '../../utils/lib';
 import { getNeo4jDate, getNeo4jDateTime } from '../../utils/neo4j/lib';
 import { ValidationError } from '../error';
-
-interface IEntitySingleProperty {
-    type: 'string' | 'number' | 'boolean';
-    title: string;
-    format?: string;
-    enum?: string[];
-    pattern?: string;
-    patternCustomErrorMessage?: string;
-}
-
-interface IJSONSchema {
-    properties: Record<string, IEntitySingleProperty>;
-    type: 'object';
-    required: string[];
-}
-
-interface IEntityTemplate {
-    name: string;
-    displayName: string;
-    iconFileId: string | null;
-    properties: IJSONSchema;
-    category: string;
-    propertiesOrder: string[];
-    propertiesPreview: string[];
-    disabled: boolean;
-}
+import { IMongoEntityTemplate } from './interface';
+import config from '../../config';
 
 const { templateManager, neo4j } = config;
 const { url, getByIdRoute, timeout } = templateManager;
@@ -43,7 +18,7 @@ addFormats(ajv);
 ajv.addVocabulary(['patternCustomErrorMessage', 'hide']);
 
 export const getEntityTemplateById = async (templateId: string) => {
-    const { result, err } = await trycatch(() => axios.get<IEntityTemplate>(`${url}${getByIdRoute}/${templateId}`, { timeout }));
+    const { result, err } = await trycatch(() => axios.get<IMongoEntityTemplate>(`${url}${getByIdRoute}/${templateId}`, { timeout }));
 
     if (err || !result) {
         throw new ValidationError(`Failed to fetch entity template schema (id: ${templateId})`);
@@ -70,7 +45,7 @@ export const validateEntity = async (req: Request) => {
 };
 
 const fetchEntityTemplateFromRequest = (req: any) => {
-    return req.entityTemplate as IEntityTemplate;
+    return req.entityTemplate as IMongoEntityTemplate;
 };
 
 export const addStringFieldsAndNormalizeDateValues = (req: Request, _res: Response, next: NextFunction) => {

@@ -63,7 +63,7 @@ export const normalizeResponseCount = (result: QueryResult): number => {
 };
 
 export const normalizeRuleResult = (result: QueryResult): boolean => {
-    return result.records[0].get('doesRuleStillApply').toBoolean();
+    return result.records[0].get('doesRuleStillApply');
 };
 
 export const normalizeReturnedRelationship =

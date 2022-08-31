@@ -25,6 +25,7 @@ const config = {
         url: env.get('RELATIONSHIP_MANAGER_URL').required().asString(),
         getRelationshipByIdRoute: env.get('RELATIONSHIP_MANAGER_GET_RELATIONSHIP_BY_ID_ROUTE').default('/api/templates/relationships').asString(),
         searchRulesRoute: env.get('RELATIONSHIP_MANAGER_SEARCH_RULES_ROUTE').default('/api/templates/rules/search').asString(),
+        searchTemplatesRoute: env.get('RELATIONSHIP_MANAGER_SEARCH_TEMPLATES_ROUTE').default('/api/templates/relationships/search').asString(),
         timeout: env.get('RELATIONSHIP_MANAGER_TIMEOUT').default(5000).asIntPositive(),
     },
     redis: {
@@ -34,6 +35,7 @@ const config = {
     errorCodes: {
         entityHasRelationships: 'ENTITY_HAS_RELATIONSHIPS',
         relationshipAlreadyExists: 'RELATIONSHIP_ALREADY_EXISTS',
+        ruleBlock: 'RULE_BLOCK',
     },
 };
 

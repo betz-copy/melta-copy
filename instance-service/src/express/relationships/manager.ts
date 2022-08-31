@@ -3,12 +3,16 @@ import {
     generateDefaultProperties,
     getNeo4jDateTime,
     normalizeResponseCount,
-    normalizeReturnedDeletedRelationship,
     normalizeReturnedRelationship,
+    normalizeRuleResult,
+    normalizeReturnedDeletedRelationship,
 } from '../../utils/neo4j/lib';
-import { IRelationship } from './interface';
+import { IMongoRelationshipTemplate, IRelationship } from './interface';
 import { NotFoundError, ServiceError } from '../error';
+import { isRelationshipLegal } from './rules';
+import { IEntity } from '../entities/interface';
 import config from '../../config';
+import { areAllRulesLegal } from '../rules/lib';
 
 export class RelationshipManager {
     static async getRelationshipById(id: string) {
@@ -28,7 +32,12 @@ export class RelationshipManager {
         return Neo4jClient.readTransaction(`MATCH ()-[r: \`${templateId}\`]->() RETURN count(r)`, normalizeResponseCount);
     }
 
-    static async createRelationshipByEntityIds(relationship: IRelationship) {
+    static async createRelationshipByEntityIds(
+        relationship: IRelationship,
+        relationshipTemplate: IMongoRelationshipTemplate,
+        sourceEntity: IEntity,
+        destinationEntity: IEntity,
+    ) {
         const { templateId, properties, sourceEntityId, destinationEntityId } = relationship;
         const defaultProperties = generateDefaultProperties();
 
@@ -57,6 +66,21 @@ export class RelationshipManager {
             );
 
             const normalizedRelationship = normalizeReturnedRelationship()(edge) as IRelationship;
+
+            const ruleQueries = await isRelationshipLegal(normalizedRelationship, sourceEntity, destinationEntity, relationshipTemplate);
+            const ruleResults = await Promise.all(
+                ruleQueries.map(async (ruleQuery) => {
+                    const result = await transaction.run(ruleQuery.cypherQuery, ruleQuery.parameters);
+
+                    return normalizeRuleResult(result);
+                }),
+            );
+
+            if (!areAllRulesLegal(ruleResults)) {
+                throw new ServiceError(400, `[NEO4J] relationship is blocked by rules.`, {
+                    errorCode: config.errorCodes.ruleBlock,
+                });
+            }
 
             return normalizedRelationship;
         });

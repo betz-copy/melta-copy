@@ -29,12 +29,12 @@ const generateNeo4jQueryFromCountAggFunction = (
     countAggFunction: ICountAggFunction,
     connectionsTemplates: Array<{ relationshipTemplate: IMongoRelationshipTemplate; unpinnedEntityTemplate: IMongoEntityTemplate }>,
 ): CypherQuery => {
-    const [pinnedEntityName, aggregatedRelationshipName] = countAggFunction.variableName.split('.');
-    const aggregatedConnection = connectionsTemplates.find(({ relationshipTemplate: { name } }) => name === aggregatedRelationshipName);
+    const [pinnedEntityTemplateId, aggregatedRelationshipTemplateId] = countAggFunction.variableName.split('.');
+    const aggregatedConnection = connectionsTemplates.find(({ relationshipTemplate: { _id } }) => _id === aggregatedRelationshipTemplateId);
 
     if (!aggregatedConnection) {
         throw new Error(
-            `unexpected count aggregation variable name "${countAggFunction.variableName}", relationship of name "${aggregatedRelationshipName}" doesnt exist for the pinned entity template`,
+            `unexpected count aggregation variable name "${countAggFunction.variableName}", relationship with id "${aggregatedRelationshipTemplateId}" doesnt exist for the pinned entity template`,
         );
     }
 
@@ -47,9 +47,9 @@ const generateNeo4jQueryFromCountAggFunction = (
             {
                 subQuery: `
                     call {
-                        with ${pinnedEntityName}
+                        with \`${pinnedEntityTemplateId}\`
 
-                        match (${pinnedEntityName})-[ri:\`${aggregatedRelationship._id}\`]-(\`${countAggFunction.variableName}\`)
+                        match (\`${pinnedEntityTemplateId}\`)-[ri:\`${aggregatedRelationship._id}\`]-(\`${countAggFunction.variableName}\`)
                         where \`${countAggFunction.variableName}\`._id <> $nonPinnedEntityId // exclude current from aggregation of existing connections
 
                         return count(\`${countAggFunction.variableName}\`) as \`${aggResultVariableName}\`
@@ -66,12 +66,12 @@ const generateNeo4jQueryFromSumAggFunction = (
     sumAggFunction: ISumAggFunction,
     connectionsTemplates: Array<{ relationshipTemplate: IMongoRelationshipTemplate; unpinnedEntityTemplate: IMongoEntityTemplate }>,
 ): CypherQuery => {
-    const [pinnedEntityName, aggregatedRelationshipName] = sumAggFunction.variableName.split('.');
-    const aggregatedConnection = connectionsTemplates.find(({ relationshipTemplate: { name } }) => name === aggregatedRelationshipName);
+    const [pinnedEntityTemplateId, aggregatedRelationshipTemplateId] = sumAggFunction.variableName.split('.');
+    const aggregatedConnection = connectionsTemplates.find(({ relationshipTemplate: { _id } }) => _id === aggregatedRelationshipTemplateId);
 
     if (!aggregatedConnection) {
         throw new Error(
-            `unexpected sum aggregation variable name "${sumAggFunction.variableName}", relationship of name "${aggregatedRelationshipName}" doesnt exist for the pinned entity template`,
+            `unexpected sum aggregation variable name "${sumAggFunction.variableName}", relationship with id "${aggregatedRelationshipTemplateId}" doesnt exist for the pinned entity template`,
         );
     }
 
@@ -84,8 +84,8 @@ const generateNeo4jQueryFromSumAggFunction = (
             {
                 subQuery: `
                     call {
-                        with ${pinnedEntityName}
-                        match (${pinnedEntityName})-[ri:\`${aggregatedRelationship._id}\`]-(\`${sumAggFunction.variableName}\`)
+                        with \`${pinnedEntityTemplateId}\`
+                        match (\`${pinnedEntityTemplateId}\`)-[ri:\`${aggregatedRelationship._id}\`]-(\`${sumAggFunction.variableName}\`)
                         return sum(\`${sumAggFunction.variableName}\`.${sumAggFunction.property}) as \`${aggResultVariableName}\`
                     }
                 `,
@@ -202,12 +202,12 @@ const generateNeo4jQueryFromAggregationGroup = (
     formula: IAggregationGroup,
     connectionsTemplates: Array<{ relationshipTemplate: IMongoRelationshipTemplate; unpinnedEntityTemplate: IMongoEntityTemplate }>,
 ): CypherQuery => {
-    const [pinnedEntityName, aggregatedRelationshipName] = formula.variableNameOfAggregation.split('.');
-    const aggregatedConnection = connectionsTemplates.find(({ relationshipTemplate: { name } }) => name === aggregatedRelationshipName);
+    const [pinnedEntityTemplateId, aggregatedRelationshipTemplateId] = formula.variableNameOfAggregation.split('.');
+    const aggregatedConnection = connectionsTemplates.find(({ relationshipTemplate: { _id } }) => _id === aggregatedRelationshipTemplateId);
 
     if (!aggregatedConnection) {
         throw new Error(
-            `unexpected aggregation variable name "${formula.variableNameOfAggregation}", relationship of name "${aggregatedRelationshipName}" doesnt exist for the pinned entity template`,
+            `unexpected aggregation variable name "${formula.variableNameOfAggregation}", relationship with id "${aggregatedRelationshipTemplateId}" doesnt exist for the pinned entity template`,
         );
     }
 
@@ -240,8 +240,8 @@ const generateNeo4jQueryFromAggregationGroup = (
             {
                 subQuery: `
                     call {
-                        with ${pinnedEntityName}
-                        match (${pinnedEntityName})-[ri:\`${aggregatedRelationship._id}\`]-(\`${formula.variableNameOfAggregation}\`)
+                        with \`${pinnedEntityTemplateId}\`
+                        match (\`${pinnedEntityTemplateId}\`)-[ri:\`${aggregatedRelationship._id}\`]-(\`${formula.variableNameOfAggregation}\`)
                         return ${neoAggregation}(${formulaQuery.cypherQuery}) as \`${aggResultVariableName}\`
                     }
                 `,
@@ -277,27 +277,22 @@ export const generateNeo4jQuery = (
     pinnedEntityId: string,
     nonPinnedEntityId: string,
     nonPinnedRelationshipId: string,
-    sourceEntityTemplate: IMongoEntityTemplate,
-    destinationEntityTemplate: IMongoEntityTemplate,
+    pinnedEntityTemplateId: string,
+    nonPinnedEntityTemplateId: string,
     connectionsTemplates: Array<{ relationshipTemplate: IMongoRelationshipTemplate; unpinnedEntityTemplate: IMongoEntityTemplate }>,
 ): Omit<CypherQuery, 'aggergationSubQueries'> => {
-    const [pinnedEntityName, nonPinnedEntityName] =
-        relationshipTemplateRule.pinnedEntityTemplateId === sourceEntityTemplate._id
-            ? [sourceEntityTemplate.name, destinationEntityTemplate.name]
-            : [destinationEntityTemplate.name, sourceEntityTemplate.name];
-
     const formulaQuery = generateNeo4jQueryFromFormula(relationshipTemplateRule.formula, connectionsTemplates);
 
     return {
         cypherQuery: `
-        MATCH (${pinnedEntityName})-[rel]-(${nonPinnedEntityName})
-        WHERE ${pinnedEntityName}._id = $pinnedEntityId AND ${nonPinnedEntityName}._id = $nonPinnedEntityId AND rel._id = $nonPinnedRelationshipId
+        MATCH (\`${pinnedEntityTemplateId}\`)-[rel]-(\`${nonPinnedEntityTemplateId}\`)
+        WHERE \`${pinnedEntityTemplateId}\`._id = $pinnedEntityId AND \`${nonPinnedEntityTemplateId}\`._id = $nonPinnedEntityId AND rel._id = $nonPinnedRelationshipId
         
         // aggregations actions
         ${formulaQuery.aggergationSubQueries.map(({ subQuery }) => subQuery).join('\n')}
 
         call {
-            with ${pinnedEntityName}, ${nonPinnedEntityName},
+            with \`${pinnedEntityTemplateId}\`, \`${nonPinnedEntityTemplateId}\`,
             ${formulaQuery.aggergationSubQueries.map(({ resultVariableName }) => resultVariableName).join(', ')}
 
             return (${formulaQuery.cypherQuery}) as doesRuleStillApply

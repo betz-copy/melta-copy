@@ -19,6 +19,10 @@ export const getRelationshipTemplateById = async (templateId: string) => {
     return result.data;
 };
 
+const addTemplateToRequest = (req: any, templateName: string, value: any) => {
+    req.body[templateName] = value;
+};
+
 export const validateRelationship = async (req: Request) => {
     const { templateId, sourceEntityId, destinationEntityId } = req.body;
 
@@ -32,4 +36,9 @@ export const validateRelationship = async (req: Request) => {
     ) {
         throw new ValidationError(`Relationship template source/destination id does not match entity source/destination id.`);
     }
+
+    addTemplateToRequest(req, 'relationshipInstance', req.body);
+    addTemplateToRequest(req, 'relationshipTemplate', relationshipTemplate);
+    addTemplateToRequest(req, 'sourceEntity', sourceEntity);
+    addTemplateToRequest(req, 'destinationEntity', destinationEntity);
 };
