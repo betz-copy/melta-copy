@@ -1,38 +1,27 @@
 /* eslint-disable react/jsx-no-useless-fragment */
 import React from 'react';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
-import { IconButton, InputAdornment, Input } from '@mui/material';
+import { IconButton, Typography, Grid } from '@mui/material';
 
 const Value: React.FC<{ hideValue: boolean; value: string }> = ({ hideValue, value }) => {
     const [hideField, setHideField] = React.useState(true);
     const handleClick = () => {
         setHideField((curr) => !curr);
     };
-    if (!hideValue) return <>{value}</>;
+    if (!hideValue) return <>{value} </>;
 
     return (
-        <Input
-            type={hideField ? 'password' : 'text'}
-            value={value}
-            disabled
-            disableUnderline
-            sx={{
-                margin: '5px',
-                '& .MuiInputBase-input.Mui-disabled': {
-                    WebkitTextFillColor: 'black',
-                    font: '16px Rubik',
-                    fontWeight: '200',
-                },
-                width: '92%',
-            }}
-            endAdornment={
-                <InputAdornment position="end">
-                    <IconButton onClick={handleClick} edge="end">
-                        {hideField ? <VisibilityOff /> : <Visibility />}
-                    </IconButton>
-                </InputAdornment>
-            }
-        />
+        <Grid container justifyContent="space-between" width="92%" alignItems="center" direction="row">
+            <Typography
+                fontFamily="Rubik"
+                fontSize="16px"
+                fontWeight="200"
+                style={{ overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis', maxWidth: '160px' }}
+            >
+                {hideField ? <>••••••••</> : value}
+            </Typography>
+            <IconButton onClick={handleClick}>{hideField ? <VisibilityOff /> : <Visibility />}</IconButton>
+        </Grid>
     );
 };
 
