@@ -11,7 +11,7 @@ export const formatDate = (date: string) => {
     return date.slice(0, 10);
 };
 
-const normalizeFields = (properties: Record<string, any>) => {
+const normalizeFields = (properties: Record<string, any>): Record<string, any> => {
     const props = {};
 
     Object.entries(properties).forEach(([key, value]) => {
@@ -167,6 +167,31 @@ export const normalizeReturnedRelAndEntities = (disabled: boolean | null) => (re
         },
         connections,
     };
+};
+
+export const normalizeRelAndEntitiesForRule = (result: QueryResult) => {
+    return result.records.map((record) => {
+        const sourceEntity = record.get('s') as Node;
+        const relationship = record.get('r') as Relationship;
+        const destinationEntity = record.get('d') as Node;
+
+        return {
+            sourceEntity: {
+                templateId: sourceEntity.labels[0],
+                properties: normalizeFields(sourceEntity.properties),
+            },
+            relationship: {
+                templateId: relationship.type,
+                properties: normalizeFields(relationship.properties),
+                sourceEntityId: sourceEntity.properties._id,
+                destinationEntityId: destinationEntity.properties._id,
+            },
+            destinationEntity: {
+                templateId: destinationEntity.labels[0],
+                properties: normalizeFields(destinationEntity.properties),
+            },
+        };
+    });
 };
 
 export const getNeo4jDateTime = (date = new Date()) => neo4j.types.DateTime.fromStandardDate(date);

@@ -48,10 +48,7 @@ const generateNeo4jQueryFromCountAggFunction = (
                 subQuery: `
                     call {
                         with \`${pinnedEntityTemplateId}\`
-
                         match (\`${pinnedEntityTemplateId}\`)-[ri:\`${aggregatedRelationship._id}\`]-(\`${countAggFunction.variableName}\`)
-                        where \`${countAggFunction.variableName}\`._id <> $nonPinnedEntityId // exclude current from aggregation of existing connections
-
                         return count(\`${countAggFunction.variableName}\`) as \`${aggResultVariableName}\`
                     }
                 `,
@@ -271,7 +268,6 @@ const generateNeo4jQueryFromFormula = (
     throw new Error('unexpected formula, must be group/equation/aggeregationGroup');
 };
 
-// eslint-disable-next-line import/prefer-default-export
 export const generateNeo4jQuery = (
     relationshipTemplateRule: IRelationshipTemplateRule,
     pinnedEntityId: string,

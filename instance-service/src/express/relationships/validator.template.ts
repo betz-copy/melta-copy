@@ -23,6 +23,4 @@ export const validateRelationship = async (req: Request) => {
 
     addTemplateToRequest(req, 'relationshipInstance', req.body);
     addTemplateToRequest(req, 'relationshipTemplate', relationshipTemplate);
-    addTemplateToRequest(req, 'sourceEntity', sourceEntity);
-    addTemplateToRequest(req, 'destinationEntity', destinationEntity);
 };

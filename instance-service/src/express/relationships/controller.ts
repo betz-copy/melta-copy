@@ -3,11 +3,7 @@ import { RelationshipManager } from './manager';
 
 class RelationshipController {
     static async createRelationship(req: Request, res: Response) {
-        const { relationshipTemplate, sourceEntity, destinationEntity, relationshipInstance } = req.body;
-
-        res.json(
-            await RelationshipManager.createRelationshipByEntityIds(relationshipInstance, relationshipTemplate, sourceEntity, destinationEntity),
-        );
+        res.json(await RelationshipManager.createRelationshipByEntityIds(req.body.relationshipInstance, req.body.relationshipTemplate));
     }
 
     static async getRelationshipById(req: Request, res: Response) {

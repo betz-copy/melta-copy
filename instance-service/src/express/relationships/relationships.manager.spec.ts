@@ -83,8 +83,6 @@ describe('Relationship manager', () => {
                 destinationEntityId: secondEntityId,
             },
             relationshipTemplate,
-            firstEntity,
-            secondEntity,
         );
 
         relId = relProperties._id;
@@ -118,8 +116,6 @@ describe('Relationship manager', () => {
                         properties: defaultProperties,
                     },
                     relationshipTemplate,
-                    firstEntity,
-                    secondEntity,
                 ),
             ).rejects.toThrowError(`[NEO4J] relationship already exists between requested entities.`);
         });

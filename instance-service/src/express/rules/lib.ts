@@ -2,6 +2,7 @@ import axios from 'axios';
 import { trycatch } from '../../utils/lib';
 import { ValidationError } from '../error';
 import { IMongoRelationshipTemplateRule, IRuleRequestSchema } from './interfaces';
+import { RuleTransactionResult } from '../relationships/interface';
 import config from '../../config';
 
 const { relationshipManager } = config;
@@ -17,4 +18,4 @@ export const searchRuleTemplates = async (ruleRequest: IRuleRequestSchema) => {
     return result.data;
 };
 
-export const areAllRulesLegal = (ruleResults: boolean[]) => ruleResults.every(Boolean);
+export const areAllRulesLegal = (ruleResults: RuleTransactionResult[]) => ruleResults.every((ruleResult) => ruleResult.doesRuleStillApply);
