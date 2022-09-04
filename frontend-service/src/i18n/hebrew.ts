@@ -342,6 +342,7 @@ export default {
         DUPLICATE_ERROR: 'קיימים מאפיינים זהים',
         ENTITY_HAS_RELATIONSHIPS: 'קיימים קשרים לישות',
         RELATIONSHIP_ALREADY_EXISTS: 'הקשר קיים כבר',
+        RELATIONSHIP_TEMPLATE_HAS_RULES: 'קיימים חוקים לתבנית קשר',
     },
     agGridLocaleText,
     muiDatePickersLocaleText,

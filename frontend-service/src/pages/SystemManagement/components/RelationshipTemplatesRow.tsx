@@ -5,6 +5,7 @@ import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 
 import i18next from 'i18next';
+import { AxiosError } from 'axios';
 import { ViewingCard } from './ViewingCard';
 import { Header } from '../../../common/Header';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
@@ -21,6 +22,7 @@ import { RelationshipTitle } from '../../../common/RelationshipTitle';
 import SearchInput from '../../../common/inputs/SearchInput';
 import TemplatesSelectCheckbox from '../../../common/templatesSelectCheckbox';
 import { populateRelationshipTemplate } from '../../../utils/templates';
+import { ErrorToast } from '../../../common/ErrorToast';
 
 const RelationshipTemplatesRow: React.FC = () => {
     const queryClient = useQueryClient();
@@ -56,8 +58,8 @@ const RelationshipTemplatesRow: React.FC = () => {
             setDeleteRelationshipTemplateDialogState({ isDialogOpen: false, relationshipTemplateId: null });
             toast.success(i18next.t('wizard.relationshipTemplate.deletedSuccessfully'));
         },
-        onError: () => {
-            toast.error(i18next.t('wizard.relationshipTemplate.failedToDelete'));
+        onError: (error: AxiosError) => {
+            toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.relationshipTemplate.failedToDelete')} />);
         },
     });
 
