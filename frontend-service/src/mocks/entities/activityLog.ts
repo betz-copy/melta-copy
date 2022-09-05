@@ -1,7 +1,7 @@
 import MockAdapter from 'axios-mock-adapter';
 
 const mockActivityLog = (mock: MockAdapter) => {
-    mock.onGet(/\/api\/activity-log\/[0-9a-fA-F]{24}/, { params: { skip: 0, limit: 10 } }).reply(() => [
+    mock.onGet(/\/api\/activity-log\/[0-9a-fA-F]{24}/, { params: { skip: undefined, limit: 10 } }).reply(() => [
         200,
         [
             {
