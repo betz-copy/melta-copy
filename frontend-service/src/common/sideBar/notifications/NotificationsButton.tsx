@@ -25,7 +25,7 @@ export const NotificationsButton: React.FC<NotificationsButtonProps> = ({ notifi
                     <Grid container alignItems="center" spacing={1}>
                         <Grid item position="relative">
                             <NotificationsIcon sx={{ color: 'white', fontSize: 38 }} />
-                            {!!notificationCount && (
+                            {Boolean(notificationCount) && (
                                 <Typography
                                     fontWeight="bold"
                                     fontSize={12}

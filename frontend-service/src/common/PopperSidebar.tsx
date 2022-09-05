@@ -15,7 +15,7 @@ const PopperSidebar: React.FC<{
         <Popper open={open} transition sx={{ zIndex: 10, left: side === 'right' ? 0 : 'auto', marginX: sideMargin }}>
             {({ TransitionProps }) => (
                 <Slide {...TransitionProps} direction={side === 'right' ? 'left' : 'right'}>
-                    <Box paddingTop="6.6vh" paddingX="1.1rem">
+                    <Box paddingTop="3.8rem" paddingX="1.1rem">
                         <ClickAwayListener onClickAway={() => setOpen(false)}>
                             <Grid
                                 container
