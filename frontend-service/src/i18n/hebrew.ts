@@ -163,6 +163,7 @@ export default {
         failedToGetNotifications: 'נכשל לטעון התראות',
         noNotificationsLeft: 'אין עוד התראות',
         setAsSeen: 'סמן כנקרא',
+        failedSetAsSeen: 'נכשל לסמן כנקרא',
     },
     permissions: {
         failedToLoadMyPermissions: 'נכשל לטעון הרשאות',
