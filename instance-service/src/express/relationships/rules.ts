@@ -39,7 +39,7 @@ export const isRelationshipLegal = async (
     relationshipTemplateRules: IMongoRelationshipTemplateRule[],
 ) => {
     const generateNeo4jQueries = relationshipTemplateRules
-        .filter((relationshipTemplateRule) => relationshipTemplateRule.relationshipTemplateId === relationship.templateId)
+        .filter(({ relationshipTemplateId }) => relationshipTemplateId === relationship.templateId)
         .map(async (relationshipTemplateRule) => {
             const { pinnedEntityTemplateId } = relationshipTemplateRule;
 

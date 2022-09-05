@@ -1,4 +1,5 @@
 import _groupBy from 'lodash.groupby';
+import { QueryResult, Transaction } from 'neo4j-driver';
 import Neo4jClient from '../../utils/neo4j';
 import {
     generateDefaultProperties,
@@ -12,8 +13,9 @@ import {
 import { IMongoRelationshipTemplate, IRelationship } from './interface';
 import { NotFoundError, ServiceError } from '../error';
 import { isRelationshipLegal } from './rules';
-import config from '../../config';
 import { areAllRulesLegal, searchRuleTemplates } from '../rules/lib';
+import { IMongoRelationshipTemplateRule } from '../rules/interfaces';
+import config from '../../config';
 
 export class RelationshipManager {
     static async getRelationshipById(id: string) {
@@ -32,6 +34,62 @@ export class RelationshipManager {
     static async getRelationshipsCountByTemplateId(templateId: string) {
         return Neo4jClient.readTransaction(`MATCH ()-[r: \`${templateId}\`]->() RETURN count(r)`, normalizeResponseCount);
     }
+
+    private static createRuleQuery = (queryResult: QueryResult, rules: IMongoRelationshipTemplateRule[]) => {
+        return normalizeRelAndEntitiesForRule(queryResult).map((path) =>
+            isRelationshipLegal(path.relationship, path.sourceEntity, path.destinationEntity, rules),
+        );
+    };
+
+    private static getRuleQueryByRelId = async (transaction: Transaction, templateId: string, sourceEntityId: string) => {
+        const pathsConnectedWithRelIdRules = await searchRuleTemplates({ relationshipTemplateIds: [templateId] });
+
+        if (!pathsConnectedWithRelIdRules.length) {
+            return [];
+        }
+
+        const pathsWithRelId = await transaction.run(`MATCH (s {_id: '${sourceEntityId}'})-[r: \`${templateId}\`]->(d) RETURN s, r, d`);
+
+        return this.createRuleQuery(pathsWithRelId, pathsConnectedWithRelIdRules);
+    };
+
+    private static getRuleQueryBySourceId = async (
+        transaction: Transaction,
+        relationshipTemplate: IMongoRelationshipTemplate,
+        sourceEntityId: string,
+        destinationEntityId: string,
+    ) => {
+        const pathsConnectedToSourceIdRules = await searchRuleTemplates({ pinnedEntityTemplateIds: [relationshipTemplate.sourceEntityId] });
+
+        if (!pathsConnectedToSourceIdRules.length) {
+            return [];
+        }
+
+        const pathsConnectedToSourceId = await transaction.run(
+            `MATCH (s {_id: '${sourceEntityId}'})-[r]-(d) WHERE d._id <> '${destinationEntityId}' RETURN s, r, d`,
+        );
+
+        return this.createRuleQuery(pathsConnectedToSourceId, pathsConnectedToSourceIdRules);
+    };
+
+    private static getRuleQueryByDestId = async (
+        transaction: Transaction,
+        relationshipTemplate: IMongoRelationshipTemplate,
+        sourceEntityId: string,
+        destinationEntityId: string,
+    ) => {
+        const pathsConnectedToDestIdRules = await searchRuleTemplates({ pinnedEntityTemplateIds: [relationshipTemplate.destinationEntityId] });
+
+        if (!pathsConnectedToDestIdRules.length) {
+            return [];
+        }
+
+        const pathsConnectedToDestId = await transaction.run(
+            `MATCH (s)-[r]-(d {_id: '${destinationEntityId}'}) WHERE s._id <> '${sourceEntityId}' RETURN s, r, d`,
+        );
+
+        return this.createRuleQuery(pathsConnectedToDestId, pathsConnectedToDestIdRules);
+    };
 
     static async createRelationshipByEntityIds(relationship: IRelationship, relationshipTemplate: IMongoRelationshipTemplate) {
         const { templateId, properties, sourceEntityId, destinationEntityId } = relationship;
@@ -62,30 +120,10 @@ export class RelationshipManager {
 
             const normalizedRelationship = normalizeReturnedRelationship()(createdRelationship) as IRelationship;
 
-            const pathsWithRelId = await transaction.run(`MATCH (s {_id: '${sourceEntityId}'})-[r: \`${templateId}\`]->(d) RETURN s, r, d`);
-            const pathsConnectedWithRelIdRules = await searchRuleTemplates({ relationshipTemplateIds: [templateId] });
-
-            const pathsConnectedToSourceId = await transaction.run(
-                `MATCH (s {_id: '${sourceEntityId}'})-[r]-(d) WHERE d._id <> '${destinationEntityId}' RETURN s, r, d`,
-            );
-            const pathsConnectedToSourceIdRules = await searchRuleTemplates({ pinnedEntityTemplateIds: [relationshipTemplate.sourceEntityId] });
-
-            const pathsConnectedToDestId = await transaction.run(
-                `MATCH (s)-[r]-(d {_id: '${destinationEntityId}'}) WHERE s._id <> '${sourceEntityId}' RETURN s, r, d`,
-            );
-            const pathsConnectedToDestIdRules = await searchRuleTemplates({ pinnedEntityTemplateIds: [relationshipTemplate.destinationEntityId] });
-
-            const ruleQueries = await Promise.all([
-                ...normalizeRelAndEntitiesForRule(pathsWithRelId).map((path) =>
-                    isRelationshipLegal(path.relationship, path.sourceEntity, path.destinationEntity, pathsConnectedWithRelIdRules),
-                ),
-                ...normalizeRelAndEntitiesForRule(pathsConnectedToSourceId).map((path) =>
-                    isRelationshipLegal(path.relationship, path.sourceEntity, path.destinationEntity, pathsConnectedToSourceIdRules),
-                ),
-                ...normalizeRelAndEntitiesForRule(pathsConnectedToDestId).map((path) =>
-                    isRelationshipLegal(path.relationship, path.sourceEntity, path.destinationEntity, pathsConnectedToDestIdRules),
-                ),
-            ]);
+            const ruleQueryBySourceId = await this.getRuleQueryBySourceId(transaction, relationshipTemplate, sourceEntityId, destinationEntityId);
+            const ruleQueryByDestId = await this.getRuleQueryByDestId(transaction, relationshipTemplate, sourceEntityId, destinationEntityId);
+            const ruleQueryByRelId = await this.getRuleQueryByRelId(transaction, templateId, sourceEntityId);
+            const ruleQueries = await Promise.all([...ruleQueryBySourceId, ...ruleQueryByDestId, ...ruleQueryByRelId]);
 
             const ruleTransactions = ruleQueries.flat().map(async (ruleTransaction) => {
                 const { ruleQuery, ruleId, relationshipId } = ruleTransaction;
