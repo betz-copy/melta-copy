@@ -5,6 +5,7 @@ import ValidateRequest from '../../utils/joi';
 import {
     createNotificationRequestSchema,
     getNotificationByIdRequestSchema,
+    getNotificationCountRequestSchema,
     getNotificationsRequestSchema,
     notificationSeenRequestSchema,
 } from './validator.schema';
@@ -12,6 +13,7 @@ import {
 const notificationsRouter: Router = Router();
 
 notificationsRouter.get('/', ValidateRequest(getNotificationsRequestSchema), wrapController(NotificationsController.getNotifications));
+notificationsRouter.get('/count', ValidateRequest(getNotificationCountRequestSchema), wrapController(NotificationsController.getNotificationCount));
 notificationsRouter.get(
     '/:notificationId',
     ValidateRequest(getNotificationByIdRequestSchema),

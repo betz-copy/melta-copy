@@ -2,9 +2,19 @@ version: '3.4'
 
 services:
   mongo:
-    image: mongo
+    image: mongo:5.0.11
+    entrypoint: ['/usr/bin/mongod', '--bind_ip_all', '--replSet', 'rs0']
     ports:
       - 27017:27017
+
+  mongosetup:
+    image: mongo:5.0.11
+    depends_on:
+      - mongo
+    volumes:
+      - ./scripts:/scripts
+    restart: "no"
+    entrypoint: [ "bash", "/scripts/setup_mongo.sh"]
 
   rabbit:
     image: rabbitmq:3-management
