@@ -7,6 +7,7 @@ import { getUserByIdRequest } from '../../../../services/kartoffelService';
 
 import ActionText from './ActionText';
 import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
+import { getShortDate } from '../../../../utils/date';
 
 const ActivityLogRow: React.FC<{ log: IActivityLog; entityTemplate: IMongoEntityTemplatePopulated }> = ({ log, entityTemplate }) => {
     const { data: user, isLoading } = useQuery(['getUserById', log.userId], () => getUserByIdRequest(log.userId));
@@ -46,13 +47,7 @@ const ActivityLogRow: React.FC<{ log: IActivityLog; entityTemplate: IMongoEntity
                             <Skeleton variant="text" width="5vw" />
                         ) : (
                             <Typography variant="subtitle1" color="rgb(110 104 104 / 87%)" fontFamily="Rubik" fontSize="15px">
-                                {new Date(log.timestamp).toLocaleString('en-uk', {
-                                    day: '2-digit',
-                                    month: '2-digit',
-                                    year: '2-digit',
-                                    hour: '2-digit',
-                                    minute: '2-digit',
-                                })}
+                                {getShortDate(log.timestamp)}
                             </Typography>
                         )}
                     </Grid>

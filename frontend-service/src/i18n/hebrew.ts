@@ -158,6 +158,12 @@ export default {
         loading: 'טוען...',
         noOptions: 'אין תוצאות',
     },
+    notifications: {
+        title: 'התראות',
+        failedToGetNotifications: 'נכשל לטעון התראות',
+        noNotificationsLeft: 'אין עוד התראות',
+        setAsSeen: 'סמן כנקרא',
+    },
     permissions: {
         failedToLoadMyPermissions: 'נכשל לטעון הרשאות',
         userHeaderName: 'משתמש',

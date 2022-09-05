@@ -16,6 +16,7 @@ export const environment = {
         deletePermissionsBulk: '/permissions',
         users: '/users',
         activityLog: '/activity-log',
+        notifications: '/notifications',
     },
     graphSettings: {
         // TODO: instead of here get this from the backend ( so it could be configurable ) + dont allow range overlaps ( validation )
@@ -28,6 +29,13 @@ export const environment = {
         },
         maximumNodeSize: 7,
         defaultNodeRadius: 4,
+    },
+    notifications: {
+        updateInterval: 1000 * 60 * 10,
+        infiniteScrollPageCount: 10,
+    },
+    activityLog: {
+        infiniteScrollPageCount: 10,
     },
     accessTokenName: 'rabaz-access-token',
     minimumSupportedChromeVersion: 80,

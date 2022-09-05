@@ -1,10 +1,18 @@
 import React, { useEffect } from 'react';
 import { HistoryRounded } from '@mui/icons-material';
 import i18next from 'i18next';
+import { toast } from 'react-toastify';
+import { Divider } from '@mui/material';
 import IconButtonWithPopoverText from '../../../../common/IconButtonWithPopover';
-import ActivityLogPopper from './ActivityLogPopper';
 import { IEntityExpanded } from '../../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
+import PopperSidebar from '../../../../common/PopperSidebar';
+import { InfiniteScroll } from '../../../../common/InfiniteScroll';
+import { getActivityLogRequest, IActivityLog } from '../../../../services/activityLogService';
+import ActivityLogRow from './ActivityLogRow';
+import { environment } from '../../../../globals';
+
+const { infiniteScrollPageCount } = environment.activityLog;
 
 const ActivityLog: React.FC<{ expandedEntity: IEntityExpanded; entityTemplate: IMongoEntityTemplatePopulated }> = ({
     expandedEntity,
@@ -12,9 +20,11 @@ const ActivityLog: React.FC<{ expandedEntity: IEntityExpanded; entityTemplate: I
 }) => {
     const [openPopper, setOpenPopper] = React.useState(false);
 
+    const entityId = expandedEntity.entity.properties._id;
+
     useEffect(() => {
         setOpenPopper(false);
-    }, [expandedEntity.entity.properties._id]);
+    }, [entityId]);
 
     return (
         <>
@@ -24,12 +34,30 @@ const ActivityLog: React.FC<{ expandedEntity: IEntityExpanded; entityTemplate: I
             >
                 <HistoryRounded color="primary" fontSize="inherit" />
             </IconButtonWithPopoverText>
-            <ActivityLogPopper
-                open={openPopper}
-                setOpen={setOpenPopper}
-                entityId={expandedEntity.entity.properties._id}
-                entityTemplate={entityTemplate}
-            />
+
+            <PopperSidebar open={openPopper} setOpen={setOpenPopper} title={i18next.t('entityPage.activityLog.header')} side="left">
+                <InfiniteScroll<IActivityLog>
+                    queryKey={['getActivityLogRequest', entityId]}
+                    queryFunction={({ pageParam }) => getActivityLogRequest(entityId, infiniteScrollPageCount, pageParam)}
+                    onQueryError={(error) => {
+                        // eslint-disable-next-line no-console
+                        console.log('failed to get activities. error:', error);
+                        toast.error(i18next.t('entityPage.activityLog.failedToGetActivities'));
+                    }}
+                    getNextPageParam={(lastPage, allPages) => {
+                        const nextPage = allPages.length * infiniteScrollPageCount;
+                        return lastPage.length ? nextPage : undefined;
+                    }}
+                    endText={i18next.t('entityPage.activityLog.noSearchLeft')}
+                >
+                    {(activityLog) => (
+                        <>
+                            <ActivityLogRow log={activityLog} entityTemplate={entityTemplate} />
+                            <Divider variant="middle" style={{ marginTop: '7px' }} />
+                        </>
+                    )}
+                </InfiniteScroll>
+            </PopperSidebar>
         </>
     );
 };

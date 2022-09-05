@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Divider, IconButton, Grid, Box, Slide, Fade } from '@mui/material';
-import { useQueryClient } from 'react-query';
+import { useQuery, useQueryClient } from 'react-query';
 import {
     ChevronRight as ChevronRightIcon,
     ChevronLeft as ChevronLeftIcon,
@@ -23,6 +23,10 @@ import { CustomIcon } from '../CustomIcon';
 import { RootState } from '../../store';
 import { ProfileButton } from './ProfileButton';
 import { toggleMeltaPlus } from '../../store/meltaPlus';
+import { NotificationsButton } from './notifications/NotificationsButton';
+import { getMyNotificationCountRequest } from '../../services/notificationService';
+import { environment } from '../../globals';
+import { NotificationsScreen } from './notifications/NotificationsScreen';
 
 type SideBarProps = {
     toggleDrawer: () => any;
@@ -30,18 +34,28 @@ type SideBarProps = {
 };
 
 const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
+    const drawerRef = useRef<React.ComponentRef<typeof Drawer>>(null);
+
     const queryClient = useQueryClient();
+
     const categories = queryClient.getQueryData<IMongoCategory[]>('getCategories')!;
     const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
+
+    const { data: notificationsCount, refetch: updateNotificationCount } = useQuery('getMyNotificationCount', getMyNotificationCountRequest, {
+        refetchInterval: environment.notifications.updateInterval,
+        refetchOnWindowFocus: true,
+    });
 
     const { user: currentUser, meltaPlus } = useSelector((state: RootState) => state);
     const dispatch = useDispatch();
 
     toggleMeltaPlus();
+
     const [isMyPermissionsDialogOpen, setIsMyPermissionsDialogOpen] = useState<boolean>(false);
+    const [isNotificationsScreenOpen, setIsNotificationsScreenOpen] = useState<boolean>(false);
 
     return (
-        <Drawer variant="permanent" open={isDrawerOpen} PaperProps={{ sx: { backgroundColor: '#225AA7' } }}>
+        <Drawer ref={drawerRef} variant="permanent" open={isDrawerOpen} PaperProps={{ sx: { backgroundColor: '#225AA7' } }}>
             <Grid container direction="column" wrap="nowrap" height="100%" bgcolor="#225AA7">
                 <Grid item container direction="column" alignItems="center" marginTop="15px" marginBottom="10px">
                     <Box
@@ -66,6 +80,16 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                         text={i18next.t('permissions.permissionsOfUserDialog.readTitle')}
                         isDrawerOpen={isDrawerOpen}
                         onClick={() => setIsMyPermissionsDialogOpen(true)}
+                    />
+
+                    <NotificationsButton
+                        notificationCount={notificationsCount || 0}
+                        text={i18next.t('notifications.title')}
+                        isDrawerOpen={isDrawerOpen}
+                        onClick={() => {
+                            setIsNotificationsScreenOpen(!isNotificationsScreenOpen);
+                            updateNotificationCount();
+                        }}
                     />
                 </Grid>
 
@@ -162,6 +186,13 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                 mode="read"
                 handleClose={() => setIsMyPermissionsDialogOpen(false)}
                 existingPermissionsOfUser={myPermissions}
+            />
+
+            <NotificationsScreen
+                open={isNotificationsScreenOpen}
+                setOpen={setIsNotificationsScreenOpen}
+                sideBarWidth={`${drawerRef.current?.offsetWidth}px`}
+                updateNotificationCount={updateNotificationCount}
             />
         </Drawer>
     );
