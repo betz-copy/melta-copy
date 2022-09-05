@@ -324,6 +324,27 @@ describe('e2e notifications api testing', () => {
                 expect(body).toEqual(expect.objectContaining({ viewers: [fakeObjectId, fakeObjectId3] }));
             });
 
+            it('should delete a notification with no viewers', async () => {
+                const { body: notification } = await request(app)
+                    .post('/api/notifications')
+                    .send({ viewers: [fakeObjectId, fakeObjectId2], type: 'ruleBreachAlert', metadata: { alertId: fakeObjectId } })
+                    .expect(200);
+
+                const { body: request1 } = await request(app)
+                    .patch(`/api/notifications/${notification._id}/seen`)
+                    .send({ viewerId: fakeObjectId })
+                    .expect(200);
+                const { body: request2 } = await request(app)
+                    .patch(`/api/notifications/${notification._id}/seen`)
+                    .send({ viewerId: fakeObjectId2 })
+                    .expect(200);
+
+                expect(request1).toEqual(expect.objectContaining({ viewers: [fakeObjectId2] }));
+                expect(request2).toEqual(expect.objectContaining({ viewers: [] }));
+
+                await request(app).get(`/api/notifications/${notification._id}`).expect(404);
+            });
+
             it('should not change the notification', async () => {
                 const { body: notification } = await request(app)
                     .post('/api/notifications')
