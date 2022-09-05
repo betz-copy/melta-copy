@@ -17,7 +17,7 @@ class RelationshipController {
     }
 
     static async deleteRelationshipById(req: Request, res: Response) {
-        res.json(await RelationshipManager.deleteRelationshipById(req.params.id));
+        res.json(await RelationshipManager.deleteRelationshipById(req.params.id, req.body.ignoredRules));
     }
 
     static async updateRelationshipPropertiesById(req: Request, res: Response) {

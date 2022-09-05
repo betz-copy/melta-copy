@@ -14,6 +14,7 @@ import { NotFoundError, ServiceError } from '../error';
 import { isRelationshipLegal } from './rules';
 import { searchRuleTemplates, getBrokenRules, areAllBrokenRulesIgnored } from '../rules/lib';
 import { IBrokenRule, IMongoRelationshipTemplateRule, IRuleTransactionQuery, IRuleTransactionResult } from '../rules/interfaces';
+import { getRelationshipTemplateById } from './template';
 import config from '../../config';
 
 export class RelationshipManager {
@@ -134,9 +135,9 @@ export class RelationshipManager {
 
             const normalizedRelationship = normalizeReturnedRelationship()(createdRelationship) as IRelationship;
 
+            const ruleQueryByRelId = await this.getRuleQueryByRelId(transaction, templateId, sourceEntityId);
             const ruleQueryBySourceId = await this.getRuleQueryBySourceId(transaction, relationshipTemplate, sourceEntityId, destinationEntityId);
             const ruleQueryByDestId = await this.getRuleQueryByDestId(transaction, relationshipTemplate, sourceEntityId, destinationEntityId);
-            const ruleQueryByRelId = await this.getRuleQueryByRelId(transaction, templateId, sourceEntityId);
             const ruleQueries = await Promise.all([...ruleQueryBySourceId, ...ruleQueryByDestId, ...ruleQueryByRelId]);
 
             const ruleResults = await this.getRuleResults(transaction, ruleQueries.flat());
@@ -144,7 +145,7 @@ export class RelationshipManager {
             const brokenRules = getBrokenRules(ruleResults);
 
             if (!areAllBrokenRulesIgnored(brokenRules, ignoredRules)) {
-                throw new ServiceError(400, `[NEO4J] relationship is blocked by rules.`, {
+                throw new ServiceError(400, `[NEO4J] relationship creation is blocked by rules.`, {
                     errorCode: config.errorCodes.ruleBlock,
                     brokenRules,
                 });
@@ -154,7 +155,7 @@ export class RelationshipManager {
         });
     }
 
-    static async deleteRelationshipById(id: string) {
+    static async deleteRelationshipById(id: string, ignoredRules: IBrokenRule[]) {
         return Neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
             const relationship = await transaction.run(`
             MATCH (s)-[r]->(d)
@@ -166,6 +167,25 @@ export class RelationshipManager {
 
             if (!normalizedRelationship) {
                 throw new NotFoundError(`[NEO4J] relationship "${id}" not found`);
+            }
+
+            const { sourceEntityId, destinationEntityId, templateId } = normalizedRelationship;
+
+            const relationshipTemplate = await getRelationshipTemplateById(templateId);
+
+            const ruleQueryBySourceId = await this.getRuleQueryBySourceId(transaction, relationshipTemplate, sourceEntityId, destinationEntityId);
+            const ruleQueryByDestId = await this.getRuleQueryByDestId(transaction, relationshipTemplate, sourceEntityId, destinationEntityId);
+            const ruleQueries = await Promise.all([...ruleQueryBySourceId, ...ruleQueryByDestId]);
+
+            const ruleResults = await this.getRuleResults(transaction, ruleQueries.flat());
+
+            const brokenRules = getBrokenRules(ruleResults);
+
+            if (!areAllBrokenRulesIgnored(brokenRules, ignoredRules)) {
+                throw new ServiceError(400, `[NEO4J] relationship deletion blocked by rules.`, {
+                    errorCode: config.errorCodes.ruleBlock,
+                    brokenRules,
+                });
             }
 
             return normalizedRelationship;

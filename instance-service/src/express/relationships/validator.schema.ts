@@ -49,7 +49,16 @@ export const createRelationshipRequestSchema = Joi.object({
  */
 export const deleteRelationshipByIdRequestSchema = Joi.object({
     query: {},
-    body: {},
+    body: {
+        ignoredRules: Joi.array()
+            .items(
+                Joi.object({
+                    ruleId: Joi.string().required(),
+                    relationshipsIds: Joi.array().items(Joi.string()).required(),
+                }),
+            )
+            .default([]),
+    },
     params: {
         id: Joi.string().required(),
     },
