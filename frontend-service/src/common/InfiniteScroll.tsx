@@ -16,7 +16,7 @@ export const InfiniteScroll = <T extends { _id: string }>({
     queryKey,
     queryFunction,
     onQueryError,
-    getNextPageParam = (lastPage, allPages) => (lastPage.length ? allPages.length + 1 : undefined),
+    getNextPageParam = (lastPage, allPages) => (lastPage.length ? allPages.length : undefined),
     endText,
 }: InfiniteScrollProps<T>) => {
     const ref = useRef(null);
