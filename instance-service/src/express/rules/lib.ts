@@ -1,8 +1,8 @@
 import axios from 'axios';
+import _groupBy from 'lodash.groupby';
 import { trycatch } from '../../utils/lib';
 import { ValidationError } from '../error';
-import { IMongoRelationshipTemplateRule, IRuleRequestSchema } from './interfaces';
-import { RuleTransactionResult } from '../relationships/interface';
+import { IMongoRelationshipTemplateRule, IRuleRequestSchema, IRuleTransactionResult } from './interfaces';
 import config from '../../config';
 
 const { relationshipManager } = config;
@@ -18,4 +18,19 @@ export const searchRuleTemplates = async (ruleRequest: IRuleRequestSchema) => {
     return result.data;
 };
 
-export const areAllRulesLegal = (ruleResults: RuleTransactionResult[]) => ruleResults.every((ruleResult) => ruleResult.doesRuleStillApply);
+export const areAllRulesLegal = (ruleResults: IRuleTransactionResult[]) => ruleResults.every((ruleResult) => ruleResult.doesRuleStillApply);
+
+export const getBrokenRules = (ruleResults: IRuleTransactionResult[]) => {
+    const resultsByRuleId = _groupBy(
+        ruleResults.filter((ruleResult) => !ruleResult.doesRuleStillApply),
+        'ruleId',
+    );
+
+    const brokenRules = Object.entries(resultsByRuleId).map(([ruleId, ruleTransactionResults]) => {
+        const relationshipIds = ruleTransactionResults.map((ruleTransactionResult) => ruleTransactionResult.relationshipId);
+
+        return { ruleId, relationshipIds };
+    });
+
+    return brokenRules;
+};

@@ -15,15 +15,10 @@ import {
     isRegularSumFunction,
     isSumAggFunction,
     IOperatorBool,
+    CypherQuery,
 } from './interfaces';
 import { IArgument, isConstant, isPropertyOfVariable } from './interfaces/argument';
 import { IFormula } from './interfaces/formula';
-
-type CypherQuery = {
-    cypherQuery: string;
-    aggergationSubQueries: Array<{ subQuery: string; resultVariableName: string }>;
-    parameters: Record<string, any>; // todo: use parameters to insert data for security
-};
 
 const generateNeo4jQueryFromCountAggFunction = (
     countAggFunction: ICountAggFunction,

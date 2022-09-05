@@ -1,4 +1,3 @@
-import _groupBy from 'lodash.groupby';
 import { QueryResult, Transaction } from 'neo4j-driver';
 import Neo4jClient from '../../utils/neo4j';
 import {
@@ -13,8 +12,8 @@ import {
 import { IMongoRelationshipTemplate, IRelationship } from './interface';
 import { NotFoundError, ServiceError } from '../error';
 import { isRelationshipLegal } from './rules';
-import { areAllRulesLegal, searchRuleTemplates } from '../rules/lib';
-import { IMongoRelationshipTemplateRule } from '../rules/interfaces';
+import { areAllRulesLegal, searchRuleTemplates, getBrokenRules } from '../rules/lib';
+import { IMongoRelationshipTemplateRule, IRuleTransactionQuery } from '../rules/interfaces';
 import config from '../../config';
 
 export class RelationshipManager {
@@ -91,6 +90,17 @@ export class RelationshipManager {
         return this.createRuleQuery(pathsConnectedToDestId, pathsConnectedToDestIdRules);
     };
 
+    private static getRuleResults = async (transaction: Transaction, ruleQueries: IRuleTransactionQuery[]) => {
+        const ruleTransactions = ruleQueries.map(async (ruleTransaction) => {
+            const { ruleQuery, ruleId, relationshipId } = ruleTransaction;
+            const result = await transaction.run(ruleQuery.cypherQuery, ruleQuery.parameters);
+
+            return { doesRuleStillApply: normalizeRuleResult(result), ruleId, relationshipId };
+        });
+
+        return Promise.all(ruleTransactions);
+    };
+
     static async createRelationshipByEntityIds(relationship: IRelationship, relationshipTemplate: IMongoRelationshipTemplate) {
         const { templateId, properties, sourceEntityId, destinationEntityId } = relationship;
 
@@ -125,29 +135,12 @@ export class RelationshipManager {
             const ruleQueryByRelId = await this.getRuleQueryByRelId(transaction, templateId, sourceEntityId);
             const ruleQueries = await Promise.all([...ruleQueryBySourceId, ...ruleQueryByDestId, ...ruleQueryByRelId]);
 
-            const ruleTransactions = ruleQueries.flat().map(async (ruleTransaction) => {
-                const { ruleQuery, ruleId, relationshipId } = ruleTransaction;
-                const result = await transaction.run(ruleQuery.cypherQuery, ruleQuery.parameters);
-
-                return { doesRuleStillApply: normalizeRuleResult(result), ruleId, relationshipId };
-            });
-
-            const ruleResults = await Promise.all(ruleTransactions);
-
-            const resultsByRuleId = _groupBy(
-                ruleResults.filter((ruleResult) => !ruleResult.doesRuleStillApply),
-                'ruleId',
-            );
+            const ruleResults = await this.getRuleResults(transaction, ruleQueries.flat());
 
             if (!areAllRulesLegal(ruleResults)) {
-                const brokenRules = Object.entries(resultsByRuleId).map(([ruleId, ruleTransactionResults]) => {
-                    const relationshipIds = ruleTransactionResults.map((ruleTransactionResult) => ruleTransactionResult.relationshipId);
-
-                    return { ruleId, relationshipIds };
-                });
                 throw new ServiceError(400, `[NEO4J] relationship is blocked by rules.`, {
                     errorCode: config.errorCodes.ruleBlock,
-                    brokenRules,
+                    brokenRules: getBrokenRules(ruleResults),
                 });
             }
 

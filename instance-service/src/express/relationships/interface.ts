@@ -32,9 +32,3 @@ export type IMongoRelationshipTemplatePopulated = Omit<IMongoRelationshipTemplat
     sourceEntity: IMongoEntityTemplate;
     destinationEntity: IMongoEntityTemplate;
 };
-
-export interface RuleTransactionResult {
-    doesRuleStillApply: boolean;
-    ruleId: string;
-    relationshipId: string;
-}

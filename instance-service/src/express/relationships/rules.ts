@@ -6,7 +6,7 @@ import { generateNeo4jQuery } from '../rules';
 import { IEntity } from '../entities/interface';
 import { getEntityTemplateById } from '../entities/validator.template';
 import config from '../../config';
-import { IMongoRelationshipTemplateRule } from '../rules/interfaces';
+import { IMongoRelationshipTemplateRule, IRuleTransactionQuery } from '../rules/interfaces';
 
 const { relationshipManager } = config;
 const { url, searchTemplatesRoute, timeout } = relationshipManager;
@@ -37,7 +37,7 @@ export const isRelationshipLegal = async (
     sourceEntity: IEntity,
     destinationEntity: IEntity,
     relationshipTemplateRules: IMongoRelationshipTemplateRule[],
-) => {
+): Promise<IRuleTransactionQuery[]> => {
     const generateNeo4jQueries = relationshipTemplateRules
         .filter(({ relationshipTemplateId }) => relationshipTemplateId === relationship.templateId)
         .map(async (relationshipTemplateRule) => {
@@ -71,7 +71,7 @@ export const isRelationshipLegal = async (
 
             return {
                 ruleQuery,
-                relationshipId: relationship.properties._id,
+                relationshipId: relationship.properties._id as string,
                 ruleId: relationshipTemplateRule._id,
             };
         });

@@ -1,6 +1,11 @@
 import { IArgument } from './argument';
 import { IFormula } from './formula';
 
+export type CypherQuery = {
+    cypherQuery: string;
+    aggergationSubQueries: Array<{ subQuery: string; resultVariableName: string }>;
+    parameters: Record<string, any>; // todo: use parameters to insert data for security
+};
 export interface IRegularSumFunction {
     isRegularSumFunction: true; // to identify interface runtime (instead of class' instanceof)
     lhsArgument: IArgument;
@@ -89,4 +94,16 @@ export interface IRuleRequestSchema {
     disabled?: boolean;
     limit?: number;
     skip?: number;
+}
+
+export interface IRuleTransactionResult {
+    doesRuleStillApply: boolean;
+    ruleId: string;
+    relationshipId: string;
+}
+
+export interface IRuleTransactionQuery {
+    ruleQuery: Omit<CypherQuery, 'aggergationSubQueries'>;
+    ruleId: string;
+    relationshipId: string;
 }
