@@ -7,6 +7,10 @@ export class NotificationsManager {
         return notifications.map(this.transformNotificationToClient);
     }
 
+    static async getMyNotificationCount(user: ShragaUser, query: any): Promise<number> {
+        return NotificationService.getNotificationCount({ ...query, viewerId: user.id });
+    }
+
     static async notificationsSeen(notificationId: string, user: ShragaUser): Promise<IBasicNotification> {
         const notification = await NotificationService.notificationsSeen(notificationId, user.id);
         return this.transformNotificationToClient(notification);

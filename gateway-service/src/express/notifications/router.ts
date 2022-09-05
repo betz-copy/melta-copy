@@ -3,7 +3,7 @@ import { wrapController, wrapMiddleware } from '../../utils/express';
 import ValidateRequest from '../../utils/joi';
 import { validateUserHasAtLeastSomePermissions } from '../permissions/validateAuthorizationMiddleware';
 import NotificationsController from './controller';
-import { getMyNotificationsRequestSchema, notificationSeenRequestSchema } from './validator.schema';
+import { getMyNotificationCountRequestSchema, getMyNotificationsRequestSchema, notificationSeenRequestSchema } from './validator.schema';
 
 const notificationsRouter: Router = Router();
 
@@ -12,6 +12,12 @@ notificationsRouter.get(
     ValidateRequest(getMyNotificationsRequestSchema),
     wrapMiddleware(validateUserHasAtLeastSomePermissions),
     wrapController(NotificationsController.getMyNotifications),
+);
+notificationsRouter.get(
+    '/my/count',
+    ValidateRequest(getMyNotificationCountRequestSchema),
+    wrapMiddleware(validateUserHasAtLeastSomePermissions),
+    wrapController(NotificationsController.getMyNotificationCount),
 );
 notificationsRouter.patch(
     '/:notificationId/seen',

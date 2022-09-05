@@ -35,8 +35,13 @@ export class NotificationService {
         timeout: requestTimeout,
     });
 
-    static async getNotifications(query: object = {}): Promise<INotification[]> {
+    static async getNotifications(query: object): Promise<INotification[]> {
         const { data } = await this.notificationService.get<INotification[]>('/', { params: query });
+        return data;
+    }
+
+    static async getNotificationCount(query: object): Promise<number> {
+        const { data } = await this.notificationService.get<number>('/count', { params: query });
         return data;
     }
 
