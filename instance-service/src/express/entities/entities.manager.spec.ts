@@ -153,6 +153,7 @@ describe('Entity manager', () => {
                         destinationEntityId: secondEntity.properties._id,
                     },
                     relationshipTemplate,
+                    [],
                 );
             });
 
@@ -201,6 +202,7 @@ describe('Entity manager', () => {
                         destinationEntityId: secondEntity.properties._id,
                     },
                     relationshipTemplate,
+                    [],
                 );
 
                 // Create third entity
@@ -215,6 +217,7 @@ describe('Entity manager', () => {
                         destinationEntityId: thirdEntity.properties._id,
                     },
                     relationshipTemplate,
+                    [],
                 );
             });
 
@@ -280,6 +283,7 @@ describe('Entity manager', () => {
                         destinationEntityId: secondEntity.properties._id,
                     },
                     relationshipTemplate,
+                    [],
                 );
             });
 

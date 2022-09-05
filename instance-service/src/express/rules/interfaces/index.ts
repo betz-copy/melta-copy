@@ -96,6 +96,11 @@ export interface IRuleRequestSchema {
     skip?: number;
 }
 
+export interface IBrokenRule {
+    ruleId: string;
+    relationshipIds: string[];
+}
+
 export interface IRuleTransactionResult {
     doesRuleStillApply: boolean;
     ruleId: string;

@@ -31,6 +31,14 @@ export const createRelationshipRequestSchema = Joi.object({
         properties: Joi.object(),
         sourceEntityId: Joi.string().required(),
         destinationEntityId: Joi.string().required(),
+        ignoredRules: Joi.array()
+            .items(
+                Joi.object({
+                    ruleId: Joi.string().required(),
+                    relationshipsIds: Joi.array().items(Joi.string()).required(),
+                }),
+            )
+            .default([]),
     },
     query: {},
     params: {},
