@@ -36,6 +36,7 @@ if (process.env.NODE_ENV === 'development' && !process.env.REACT_APP_IS_DOCKER) 
     const { mockRelationships } = require('./mocks/relationships');
     const { mockPermissions } = require('./mocks/permissions');
     const { mockActivityLog } = require('./mocks/entities/activityLog');
+    const { mockNotifications } = require('./mocks/notifications');
 
     const mock = new MockAdapter(axios, { delayResponse: 500 });
 
@@ -58,6 +59,8 @@ if (process.env.NODE_ENV === 'development' && !process.env.REACT_APP_IS_DOCKER) 
     mockPermissions(mock);
 
     mockActivityLog(mock);
+
+    mockNotifications(mock);
 }
 
 export default axios;
