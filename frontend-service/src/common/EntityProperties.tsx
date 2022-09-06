@@ -1,5 +1,5 @@
 import React, { CSSProperties } from 'react';
-import { Box, Grid, Typography, Input } from '@mui/material';
+import { Box, Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
 import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { IEntity } from '../interfaces/entities';
@@ -56,23 +56,13 @@ const EntityProperties: React.FC<{
                                 </Typography>
                             </Grid>
                             <Grid item style={propertySchema.type === 'number' ? { direction: 'ltr' } : { direction: 'rtl' }}>
-                                {hideFields && hideField ? (
-                                    <Input
-                                        type="password"
-                                        value={propertyValue}
-                                        disabled
-                                        disableUnderline
-                                        sx={{
-                                            '& .MuiInputBase-input.Mui-disabled': {
-                                                WebkitTextFillColor: 'black',
-                                            },
-                                        }}
-                                    />
-                                ) : (
-                                    <Typography display="inline" variant="h6">
-                                        {formatToString(propertyValue, propertySchema.type, propertySchema.format)}
-                                    </Typography>
-                                )}
+                                <Typography display="inline" variant="h6">
+                                    {hideFields && hideField ? (
+                                        <>••••••••</>
+                                    ) : (
+                                        formatToString(propertyValue, propertySchema.type, propertySchema.format)
+                                    )}
+                                </Typography>
                             </Grid>
                         </Grid>
                     </Grid>
