@@ -1,5 +1,6 @@
 import axios from 'axios';
 import config from '../config';
+import { IRelationshipTemplateRule } from '../express/templates/rules/interfaces';
 
 const {
     relationshipTemplateManager: { uri, baseRelationshipsRoute, baseRulesRoute, updateRuleStatusByIdRouteSuffix, requestTimeout },
@@ -22,23 +23,13 @@ export interface ISearchRelationshipTemplatesBody {
     skip?: number;
 }
 
-export interface IRelationshipTemplateRule {
-    name: string;
-    description: string;
-    actionOnFail: 'WARNING' | 'ENFORCEMENT';
-    relationshipTemplateId: string;
-    pinnedEntityTemplateId: string; // sourceEntityTemplate or destinationEntityTemplate
-    formula: object; // IFormula;
-    disabled: boolean;
-}
-
 export interface ISearchRulesBody {
     search?: string;
     relationshipTemplateIds?: string[];
     pinnedEntityTemplateIds?: string[];
     disabled?: boolean;
-    limit: number;
-    skip: number;
+    limit?: number;
+    skip?: number;
 }
 
 export class RelationshipsTemplateManagerService {

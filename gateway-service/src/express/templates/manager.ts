@@ -3,17 +3,16 @@ import * as lodashUniqby from 'lodash.uniqby';
 import * as _isEqual from 'lodash.isequal';
 import { EntityTemplateManagerService, ICategory, IEntityTemplate, ISearchEntityTemplatesBody } from '../../externalServices/entityTemplateManager';
 import { InstanceManagerService } from '../../externalServices/instanceManager';
-import {
-    IRelationshipTemplate,
-    IRelationshipTemplateRule,
-    RelationshipsTemplateManagerService,
-} from '../../externalServices/relationshipsTemplateManager';
+import { IRelationshipTemplate, RelationshipsTemplateManagerService } from '../../externalServices/relationshipsTemplateManager';
 import { deleteFile, uploadFile } from '../../externalServices/storageService';
 import { trycatch } from '../../utils';
 import { removeTmpFile } from '../../utils/fs';
 import { ServiceError } from '../error';
 import PermissionsManager from '../permissions/manager';
 import config from '../../config';
+import { IRelationshipTemplateRule } from './rules/interfaces';
+import { getParametersOfFormula } from './rules';
+import { IFormula } from './rules/interfaces/formula';
 
 const {
     categoryHasTemplates,
@@ -21,6 +20,7 @@ const {
     entityTemplateHasIncomingRelationships,
     entityTemplateHasInstances,
     relationshipTemplateHasInstances,
+    relationshipTemplateHasRules,
 } = config.errorCodes;
 
 export class TemplatesManager {
@@ -59,8 +59,6 @@ export class TemplatesManager {
 
         const rulesByAllowedRelationshipTemplates = await RelationshipsTemplateManagerService.searchRules({
             relationshipTemplateIds: allowedRelationshipsTemplatesIds,
-            skip: 0,
-            limit: 0,
         });
 
         /*
@@ -76,8 +74,6 @@ export class TemplatesManager {
          */
         const rulesPinnedByEntityTemplatesByOneRelationship = await RelationshipsTemplateManagerService.searchRules({
             pinnedEntityTemplateIds: allowedEntityTemplatesIdsByOneRelationship,
-            skip: 0,
-            limit: 0,
         });
 
         const allowedRules: IRelationshipTemplateRule[] = lodashUniqby(
@@ -91,8 +87,6 @@ export class TemplatesManager {
 
         const allowedRelationshipTemplatesBecauseOfRules = await RelationshipsTemplateManagerService.searchRelationshipTemplates({
             ids: allowedRelationshipTemplatesIdsBecauseOfRules,
-            skip: 0,
-            limit: 0,
         });
 
         const unpinnedEntityTemplatesIdsOfAllowedRules = allowedRelationshipTemplatesBecauseOfRules.map((relationshipTemplate) => {
@@ -434,10 +428,38 @@ export class TemplatesManager {
         return RelationshipsTemplateManagerService.updateRelationshipTemplate(templateId, updatedFields);
     }
 
+    static getDependentRelationshipTemplates(formula: IFormula) {
+        const parameters = getParametersOfFormula(formula);
+        const variablesWithAggregation = parameters.filter(({ variableName }) => variableName.split('.').length === 3);
+        const relationshipTemplates = variablesWithAggregation.map(({ variableName }) => variableName.split('.')[1]);
+
+        return [...new Set(relationshipTemplates)];
+    }
+
     static async deleteRelationshipTemplate(templateId: string) {
         const relationshipCount = await InstanceManagerService.getRelationshipsCountByTemplateId(templateId);
         if (relationshipCount !== 0) {
             throw new ServiceError(400, 'relationship template still has instances', { errorCode: relationshipTemplateHasInstances });
+        }
+
+        const relationshipTemplate = await RelationshipsTemplateManagerService.getRelationshipTemplateById(templateId);
+        const { sourceEntityId, destinationEntityId } = relationshipTemplate;
+
+        const relationshipRelatedRules = await RelationshipsTemplateManagerService.searchRules({ relationshipTemplateIds: [templateId] });
+        const sourceRelatedRules = await RelationshipsTemplateManagerService.searchRules({ pinnedEntityTemplateIds: [sourceEntityId] });
+        const destinationRelatedRules = await RelationshipsTemplateManagerService.searchRules({ pinnedEntityTemplateIds: [destinationEntityId] });
+
+        const dependentRelationshipsToSource = sourceRelatedRules.map(({ formula }) => {
+            return TemplatesManager.getDependentRelationshipTemplates(formula);
+        });
+        const dependentRelationshipsToDestination = destinationRelatedRules.map(({ formula }) => {
+            return TemplatesManager.getDependentRelationshipTemplates(formula);
+        });
+
+        const dependentRelationships = [...new Set(...dependentRelationshipsToSource, ...dependentRelationshipsToDestination)];
+
+        if (relationshipRelatedRules.length !== 0 || dependentRelationships.includes(templateId)) {
+            throw new ServiceError(400, 'relationship template still has rules', { errorCode: relationshipTemplateHasRules });
         }
 
         return RelationshipsTemplateManagerService.deleteRelationshipTemplate(templateId);

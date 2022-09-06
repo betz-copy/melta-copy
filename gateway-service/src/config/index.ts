@@ -79,6 +79,7 @@ const config = {
         entityTemplateHasIncomingRelationships: 'TEMPLATE_HAS_INCOMING_RELATIONSHIPS',
         entityTemplateHasInstances: 'ENTITY_TEMPLATE_HAS_INSTANCES',
         relationshipTemplateHasInstances: 'RELATIONSHIP_TEMPLATE_HAS_INSTANCES',
+        relationshipTemplateHasRules: 'RELATIONSHIP_TEMPLATE_HAS_RULES',
     },
 };
 
