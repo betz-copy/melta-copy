@@ -154,6 +154,45 @@ export class EntityManager {
         return this.createRuleQuery(pathsConnectedToSourceId, pathsConnectedToSourceIdRules);
     };
 
+    private static async verifyRuleForEntityUpdate(
+        transaction: Transaction,
+        entityTemplate: IMongoEntityTemplate,
+        updatedEntity: IEntity,
+        ignoredRules: IBrokenRule[],
+    ) {
+        const pathsConnectedToSourceIdRules = await Promise.all([
+            searchRuleTemplates({ pinnedEntityTemplateIds: [entityTemplate._id] }),
+            searchRuleTemplates({ unpinnedEntityTemplateIds: [entityTemplate._id] }),
+        ]);
+
+        const pathsConnectedToSourceId = await transaction.run(`MATCH (s {_id: '${updatedEntity.properties._id}'})-[r]-(d)  RETURN s, r, d`);
+
+        const normalizedPathsBySourceId = normalizeRelAndEntitiesForRule(pathsConnectedToSourceId);
+
+        const destinationRulesPromises = normalizedPathsBySourceId.flatMap(async ({ destinationEntity }) => {
+            const template = await getEntityTemplateById(destinationEntity.templateId);
+
+            return this.getPathsBySourceId(transaction, template._id, destinationEntity.properties._id, updatedEntity.properties._id);
+        });
+        const destinationRules = await Promise.all(destinationRulesPromises);
+
+        const ruleQueries = await Promise.all([
+            ...this.createRuleQuery(pathsConnectedToSourceId, pathsConnectedToSourceIdRules.flat()),
+            ...destinationRules.flat(),
+        ]);
+
+        const ruleResults = await getRuleResults(transaction, ruleQueries.flat());
+
+        const brokenRules = getBrokenRules(ruleResults);
+
+        if (!areAllBrokenRulesIgnored(brokenRules, ignoredRules)) {
+            throw new ServiceError(400, `[NEO4J] relationship creation is blocked by rules.`, {
+                errorCode: config.errorCodes.ruleBlock,
+                brokenRules,
+            });
+        }
+    }
+
     static async updateEntityById(
         id: string,
         entityProperties: Record<string, any>,
@@ -191,37 +230,7 @@ export class EntityManager {
 
             const updatedEntity = normalizeReturnedEntity()(updatedEntityResult) as IEntity;
 
-            const pathsConnectedToSourceIdRules = await Promise.all([
-                searchRuleTemplates({ pinnedEntityTemplateIds: [entityTemplate._id] }),
-                searchRuleTemplates({ unpinnedEntityTemplateIds: [entityTemplate._id] }),
-            ]);
-
-            const pathsConnectedToSourceId = await transaction.run(`MATCH (s {_id: '${updatedEntity.properties._id}'})-[r]-(d)  RETURN s, r, d`);
-
-            const normalizedPathsBySourceId = normalizeRelAndEntitiesForRule(pathsConnectedToSourceId);
-
-            const destinationRulesPromises = normalizedPathsBySourceId.flatMap(async ({ destinationEntity }) => {
-                const template = await getEntityTemplateById(destinationEntity.templateId);
-
-                return this.getPathsBySourceId(transaction, template._id, destinationEntity.properties._id, updatedEntity.properties._id);
-            });
-            const destinationRules = await Promise.all(destinationRulesPromises);
-
-            const ruleQueries = await Promise.all([
-                ...this.createRuleQuery(pathsConnectedToSourceId, pathsConnectedToSourceIdRules.flat()),
-                ...destinationRules.flat(),
-            ]);
-
-            const ruleResults = await getRuleResults(transaction, ruleQueries.flat());
-
-            const brokenRules = getBrokenRules(ruleResults);
-
-            if (!areAllBrokenRulesIgnored(brokenRules, ignoredRules)) {
-                throw new ServiceError(400, `[NEO4J] relationship creation is blocked by rules.`, {
-                    errorCode: config.errorCodes.ruleBlock,
-                    brokenRules,
-                });
-            }
+            await this.verifyRuleForEntityUpdate(transaction, entityTemplate, updatedEntity, ignoredRules);
 
             return updatedEntity;
         });
