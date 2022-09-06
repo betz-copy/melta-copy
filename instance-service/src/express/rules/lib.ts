@@ -12,7 +12,7 @@ import { generateNeo4jQuery } from '.';
 import config from '../../config';
 import { normalizeRelAndEntitiesForRule, normalizeRuleResult } from '../../utils/neo4j/lib';
 
-const { relationshipManager } = config;
+const { relationshipManager, createdRelationshipIdInBrokenRules } = config;
 const { url, searchRulesRoute, searchTemplatesRoute, timeout } = relationshipManager;
 
 export const searchRelationshipTemplates = async (relationshipRequest: IRelationshipRequestSchema) => {
@@ -37,7 +37,9 @@ const getRelationshipTemplatesById = async (entityTemplateId: string) => {
 };
 
 export const searchRuleTemplates = async (ruleRequest: IRuleRequestSchema) => {
-    const { result, err } = await trycatch(() => axios.post<IMongoRelationshipTemplateRule[]>(`${url}${searchRulesRoute}`, ruleRequest, { timeout }));
+    const { result, err } = await trycatch(() =>
+        axios.post<IMongoRelationshipTemplateRule[]>(`${url}${searchRulesRoute}`, { disabled: false, ...ruleRequest }, { timeout }),
+    );
 
     if (err || !result) {
         throw new ValidationError(`Failed to fetch rule template schema.`);
@@ -46,14 +48,20 @@ export const searchRuleTemplates = async (ruleRequest: IRuleRequestSchema) => {
     return result.data;
 };
 
-export const getBrokenRules = (ruleResults: IRuleTransactionResult[]) => {
+export const getBrokenRules = (ruleResults: IRuleTransactionResult[], createdRelationshipId?: string) => {
     const resultsByRuleId = _groupBy(
         ruleResults.filter((ruleResult) => !ruleResult.doesRuleStillApply),
         'ruleId',
     );
 
     const brokenRules = Object.entries(resultsByRuleId).map(([ruleId, ruleTransactionResults]) => {
-        const relationshipIds = ruleTransactionResults.map((ruleTransactionResult) => ruleTransactionResult.relationshipId);
+        const relationshipIds = ruleTransactionResults.map((ruleTransactionResult) => {
+            if (ruleTransactionResult.relationshipId === createdRelationshipId) {
+                return createdRelationshipIdInBrokenRules;
+            }
+
+            return ruleTransactionResult.relationshipId;
+        });
 
         return { ruleId, relationshipIds };
     });

@@ -37,6 +37,7 @@ const config = {
         relationshipAlreadyExists: 'RELATIONSHIP_ALREADY_EXISTS',
         ruleBlock: 'RULE_BLOCK',
     },
+    createdRelationshipIdInBrokenRules: env.get('CREATED_RELATIONSHIP_ID_IN_BROKEN_RULES').default('created-relationship-id').asString(),
 };
 
 export default config;

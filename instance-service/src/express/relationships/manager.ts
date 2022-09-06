@@ -122,7 +122,7 @@ export class RelationshipManager {
 
             const ruleResults = await getRuleResults(transaction, ruleQueries.flat());
 
-            const brokenRules = getBrokenRules(ruleResults);
+            const brokenRules = getBrokenRules(ruleResults, normalizedRelationship.properties._id);
 
             if (!areAllBrokenRulesIgnored(brokenRules, ignoredRules)) {
                 throw new ServiceError(400, `[NEO4J] relationship creation is blocked by rules.`, {

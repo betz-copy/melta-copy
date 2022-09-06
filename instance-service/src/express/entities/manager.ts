@@ -186,7 +186,7 @@ export class EntityManager {
         const brokenRules = getBrokenRules(ruleResults);
 
         if (!areAllBrokenRulesIgnored(brokenRules, ignoredRules)) {
-            throw new ServiceError(400, `[NEO4J] relationship creation is blocked by rules.`, {
+            throw new ServiceError(400, `[NEO4J] entity update is blocked by rules.`, {
                 errorCode: config.errorCodes.ruleBlock,
                 brokenRules,
             });

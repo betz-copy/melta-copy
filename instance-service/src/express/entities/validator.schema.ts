@@ -157,7 +157,7 @@ export const updateEntityByIdRequestSchema = Joi.object({
             .items(
                 Joi.object({
                     ruleId: Joi.string().required(),
-                    relationshipsIds: Joi.array().items(Joi.string()).required(),
+                    relationshipIds: Joi.array().items(Joi.string()).required(),
                 }),
             )
             .default([]),
