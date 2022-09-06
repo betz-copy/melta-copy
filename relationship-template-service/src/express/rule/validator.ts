@@ -2,7 +2,7 @@ import * as Joi from 'joi';
 import { Request } from 'express';
 import * as assert from 'assert';
 import { defaultValidationOptions } from '../../utils/joi';
-import { IRelationshipTemplateRule, IRelevantTemplates } from './interfaces';
+import { IRule, IRelevantTemplates } from './interfaces';
 import { RelationshipTemplateManager } from '../relationshipTemplate/manager';
 import { EntityTemplateManagerService, IEntityTemplatePopulated } from '../externalServices/entityTemplateManager';
 import { IMongoRelationshipTemplate } from '../relationshipTemplate/interface';
@@ -235,15 +235,21 @@ const validateFormula = (
     }
 };
 
-const validateAndGetRelevantTemplates = async (rule: IRelationshipTemplateRule): Promise<IRelevantTemplates> => {
+const validateAndGetRelevantTemplates = async (rule: IRule): Promise<IRelevantTemplates> => {
     const relationshipTemplateOfRule = await RelationshipTemplateManager.getTemplateById(rule.relationshipTemplateId);
 
-    const doesPinnedIdInRelationship = [
-        relationshipTemplateOfRule.sourceEntityId,
-        relationshipTemplateOfRule.destinationEntityId,
-    ].includes(rule.pinnedEntityTemplateId);
+    const doesPinnedIdInRelationship = [relationshipTemplateOfRule.sourceEntityId, relationshipTemplateOfRule.destinationEntityId].includes(
+        rule.pinnedEntityTemplateId,
+    );
 
     assert(doesPinnedIdInRelationship, "rule's pinnedEntityTemplateId is not in rule's relationshipTemplate");
+
+    const otherEntityTemplateId =
+        rule.pinnedEntityTemplateId === relationshipTemplateOfRule.sourceEntityId
+            ? relationshipTemplateOfRule.destinationEntityId
+            : relationshipTemplateOfRule.sourceEntityId;
+    const doesUnpinnedIdIsOtherEntityTemplate = rule.unpinnedEntityTemplateId === otherEntityTemplateId;
+    assert(doesUnpinnedIdIsOtherEntityTemplate, "rule's unpinnedEntityTemplateId is not the other entity template id in relationshipTemplate");
 
     const pinnedEntityTemplate = await EntityTemplateManagerService.getEntityTemplateById(rule.pinnedEntityTemplateId);
 
@@ -287,7 +293,7 @@ const validateAndGetRelevantTemplates = async (rule: IRelationshipTemplateRule):
     return { pinnedEntityTemplate, unpinnedEntityTemplate, connectionsTemplatesOfPinnedEntityTemplate };
 };
 
-export const validateRuleFormula = async (rule: IRelationshipTemplateRule) => {
+export const validateRuleFormula = async (rule: IRule) => {
     const relevantTemplates = await validateAndGetRelevantTemplates(rule);
 
     validateFormula(rule.formula, relevantTemplates, undefined);

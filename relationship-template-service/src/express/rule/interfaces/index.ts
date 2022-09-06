@@ -75,12 +75,13 @@ export const isGroup = (group: any): group is IGroup => {
     return group.isGroup;
 };
 
-export interface IRelationshipTemplateRule {
+export interface IRule {
     name: string;
     description: string;
     actionOnFail: 'WARNING' | 'ENFORCEMENT';
     relationshipTemplateId: string;
     pinnedEntityTemplateId: string; // sourceEntityTemplate or destinationEntityTemplate
+    unpinnedEntityTemplateId: string; // just to allow for searches
     formula: IFormula;
     disabled: boolean;
 }

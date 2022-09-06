@@ -1,6 +1,6 @@
 import * as mongoose from 'mongoose';
 
-import { IRelationshipTemplateRule } from './interfaces';
+import { IRule } from './interfaces';
 import { transformResultDocsObjectIdKeysToString } from '../../utils/mongoose';
 import config from '../../config';
 
@@ -28,6 +28,10 @@ const RuleTemplateSchema = new mongoose.Schema(
             type: String,
             required: true,
         }, // sourceEntityTemplate or destinationEntityTemplate
+        unpinnedEntityTemplateId: {
+            type: String,
+            required: true,
+        },
         formula: {
             type: Object,
             required: true,
@@ -47,6 +51,6 @@ RuleTemplateSchema.post(['find', 'findOne', 'findOneAndUpdate', 'findOneAndDelet
     transformResultDocsObjectIdKeysToString(res);
 });
 
-const RuleModel = mongoose.model<IRelationshipTemplateRule & mongoose.Document>(config.mongo.ruleCollectionName, RuleTemplateSchema);
+const RuleModel = mongoose.model<IRule & mongoose.Document>(config.mongo.ruleCollectionName, RuleTemplateSchema);
 
 export default RuleModel;

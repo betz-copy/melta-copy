@@ -1,6 +1,6 @@
 import { Document, FilterQuery } from 'mongoose';
 import RuleModel from './model';
-import { IRelationshipTemplateRule } from './interfaces';
+import { IRule } from './interfaces';
 import { ServiceError } from '../error';
 import { escapeRegExp } from '../../utils';
 
@@ -9,7 +9,7 @@ export class RuleManager {
         return RuleModel.findById(templateId).orFail(new ServiceError(404, 'Rule not found')).lean().exec();
     }
 
-    static async updateRuleById(ruleId: string, updatedFields: Pick<IRelationshipTemplateRule, 'name' | 'description'>) {
+    static async updateRuleById(ruleId: string, updatedFields: Pick<IRule, 'name' | 'description'>) {
         return RuleModel.findByIdAndUpdate(ruleId, updatedFields, { new: true }).orFail(new ServiceError(404, 'Rule not found')).lean().exec();
     }
 
@@ -28,7 +28,7 @@ export class RuleManager {
         );
     }
 
-    static async createRule(rule: Omit<IRelationshipTemplateRule, 'disabled'>) {
+    static async createRule(rule: Omit<IRule, 'disabled'>) {
         // todo: (extra feature) ignoring possible breaches in existing entities. make sure client know (popup)
         return RuleModel.create({ ...rule, disabled: false });
     }
@@ -37,12 +37,13 @@ export class RuleManager {
         search?: string;
         relationshipTemplateIds?: string[];
         pinnedEntityTemplateIds?: string[];
+        unpinnedEntityTemplateIds?: string[];
         disabled?: boolean;
         limit: number;
         skip: number;
     }) {
-        const { search, relationshipTemplateIds, pinnedEntityTemplateIds, disabled, limit, skip } = searchBody;
-        const query: FilterQuery<IRelationshipTemplateRule & Document<any, any, any>> = {};
+        const { search, relationshipTemplateIds, pinnedEntityTemplateIds, unpinnedEntityTemplateIds, disabled, limit, skip } = searchBody;
+        const query: FilterQuery<IRule & Document<any, any, any>> = {};
 
         if (disabled !== undefined) {
             query.disabled = disabled;
@@ -58,6 +59,10 @@ export class RuleManager {
 
         if (pinnedEntityTemplateIds) {
             query.pinnedEntityTemplateId = { $in: pinnedEntityTemplateIds };
+        }
+
+        if (unpinnedEntityTemplateIds) {
+            query.unpinnedEntityTemplateId = { $in: pinnedEntityTemplateIds };
         }
 
         return RuleModel.find(query).limit(limit).skip(skip).lean().exec();
