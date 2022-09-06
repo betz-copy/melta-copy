@@ -5,6 +5,7 @@ export const rulesCreator = (fliesOnId: string, flightInTripId: string, flightId
         actionOnFail: 'WARNING',
         relationshipTemplateId: fliesOnId,
         pinnedEntityTemplateId: flightId,
+        unpinnedEntityTemplateId: touristId,
         formula: {
             isGroup: true,
             ruleOfGroup: 'AND',
@@ -27,6 +28,7 @@ export const rulesCreator = (fliesOnId: string, flightInTripId: string, flightId
         actionOnFail: 'WARNING',
         relationshipTemplateId: flightInTripId,
         pinnedEntityTemplateId: tripId,
+        unpinnedEntityTemplateId: flightId,
         formula: {
             isGroup: true,
             ruleOfGroup: 'AND',
@@ -58,6 +60,7 @@ export const rulesCreator = (fliesOnId: string, flightInTripId: string, flightId
         actionOnFail: 'WARNING',
         relationshipTemplateId: flightInTripId,
         pinnedEntityTemplateId: tripId,
+        unpinnedEntityTemplateId: flightId,
         formula: {
             isGroup: true,
             ruleOfGroup: 'AND',
