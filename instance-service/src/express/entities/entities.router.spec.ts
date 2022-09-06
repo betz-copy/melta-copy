@@ -290,12 +290,16 @@ describe('Entity router', () => {
                 });
 
                 // Create relationship between two entities
-                await request(app).post('/api/instances/relationships').send({
-                    templateId: defaultRelationshipTemplateId,
-                    properties: defaultProperties,
-                    sourceEntityId: id,
-                    destinationEntityId: secondEntity.body.properties._id,
-                });
+                await request(app)
+                    .post('/api/instances/relationships')
+                    .send({
+                        relationshipInstance: {
+                            templateId: defaultRelationshipTemplateId,
+                            properties: defaultProperties,
+                            sourceEntityId: id,
+                            destinationEntityId: secondEntity.body.properties._id,
+                        },
+                    });
             });
 
             it('Should fail to delete an existing entity because it has connections', async () => {

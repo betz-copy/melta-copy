@@ -91,6 +91,7 @@ export interface IRuleRequestSchema {
     search?: string;
     relationshipTemplateIds?: string[];
     pinnedEntityTemplateIds?: string[];
+    unpinnedEntityTemplateIds?: string[];
     disabled?: boolean;
     limit?: number;
     skip?: number;

@@ -15,3 +15,11 @@ export const wrapController = (func: (req: Request, res: Response, next?: NextFu
         func(req, res, next).catch(next);
     };
 };
+
+export const addPropertyToRequest = (req: any, key: string, value: any) => {
+    req[key] = value;
+};
+
+export const fetchPropertyFromRequest = <T>(req: any, key: string): T => {
+    return req[key];
+};

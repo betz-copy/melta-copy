@@ -96,12 +96,16 @@ describe('Relationship router', () => {
             const secondEntity = await request(app).post('/api/instances/entities').send(defaultEntity);
 
             // Create relationship between two entities
-            const { body: relBody } = await request(app).post('/api/instances/relationships').send({
-                templateId: defaultRelationshipTemplateId,
-                properties: defaultProperties,
-                sourceEntityId: firstEntity.body.properties._id,
-                destinationEntityId: secondEntity.body.properties._id,
-            });
+            const { body: relBody } = await request(app)
+                .post('/api/instances/relationships')
+                .send({
+                    relationshipInstance: {
+                        templateId: defaultRelationshipTemplateId,
+                        properties: defaultProperties,
+                        sourceEntityId: firstEntity.body.properties._id,
+                        destinationEntityId: secondEntity.body.properties._id,
+                    },
+                });
 
             expect(relBody.templateId).toStrictEqual(defaultRelationshipTemplateId);
             expect(relBody.properties).toEqual(expect.objectContaining(defaultProperties));
@@ -110,12 +114,16 @@ describe('Relationship router', () => {
         it('Should fail to create a relationship (relationship template does not exist)', async () => {
             const unknownRelId = 'unknownRelId';
 
-            const relationship = await request(app).post('/api/instances/relationships').send({
-                templateId: unknownRelId,
-                properties: defaultProperties,
-                sourceEntityId: unknownId,
-                destinationEntityId: unknownId,
-            });
+            const relationship = await request(app)
+                .post('/api/instances/relationships')
+                .send({
+                    relationshipInstance: {
+                        templateId: unknownRelId,
+                        properties: defaultProperties,
+                        sourceEntityId: unknownId,
+                        destinationEntityId: unknownId,
+                    },
+                });
 
             expect(relationship.statusCode).toBe(400);
             expect(relationship.body.type).toEqual('TemplateValidationError');
@@ -141,12 +149,16 @@ describe('Relationship router', () => {
                 __v: 0,
             });
 
-            const relationship = await request(app).post('/api/instances/relationships').send({
-                templateId: relTemplateId,
-                properties: defaultProperties,
-                sourceEntityId: firstEntity.body.properties._id,
-                destinationEntityId: secondEntity.body.properties._id,
-            });
+            const relationship = await request(app)
+                .post('/api/instances/relationships')
+                .send({
+                    relationshipInstance: {
+                        templateId: relTemplateId,
+                        properties: defaultProperties,
+                        sourceEntityId: firstEntity.body.properties._id,
+                        destinationEntityId: secondEntity.body.properties._id,
+                    },
+                });
 
             expect(relationship.statusCode).toBe(400);
             expect(relationship.body.type).toEqual('TemplateValidationError');
@@ -170,12 +182,16 @@ describe('Relationship router', () => {
             secondEntityId = secondEntity.body.properties._id;
 
             // Create relationship between two entities
-            const { body: relBody } = await request(app).post('/api/instances/relationships').send({
-                templateId: defaultRelationshipTemplateId,
-                properties: defaultProperties,
-                sourceEntityId: entityId,
-                destinationEntityId: secondEntityId,
-            });
+            const { body: relBody } = await request(app)
+                .post('/api/instances/relationships')
+                .send({
+                    relationshipInstance: {
+                        templateId: defaultRelationshipTemplateId,
+                        properties: defaultProperties,
+                        sourceEntityId: entityId,
+                        destinationEntityId: secondEntityId,
+                    },
+                });
 
             relId = relBody.properties._id;
         });

@@ -1,19 +1,16 @@
-import { QueryResult, Transaction } from 'neo4j-driver';
+import { Transaction } from 'neo4j-driver';
 import Neo4jClient from '../../utils/neo4j';
 import {
     generateDefaultProperties,
     getNeo4jDateTime,
     normalizeResponseCount,
     normalizeReturnedRelationship,
-    normalizeRuleResult,
     normalizeReturnedDeletedRelationship,
-    normalizeRelAndEntitiesForRule,
 } from '../../utils/neo4j/lib';
 import { IMongoRelationshipTemplate, IRelationship } from './interface';
 import { NotFoundError, ServiceError } from '../error';
-import { isRelationshipLegal } from './rules';
-import { searchRuleTemplates, getBrokenRules, areAllBrokenRulesIgnored } from '../rules/lib';
-import { IBrokenRule, IMongoRelationshipTemplateRule, IRuleTransactionQuery, IRuleTransactionResult } from '../rules/interfaces';
+import { searchRuleTemplates, getBrokenRules, areAllBrokenRulesIgnored, createRuleQuery, getRuleResults } from '../rules/lib';
+import { IBrokenRule } from '../rules/interfaces';
 import { getRelationshipTemplateById } from './template';
 import config from '../../config';
 
@@ -35,12 +32,6 @@ export class RelationshipManager {
         return Neo4jClient.readTransaction(`MATCH ()-[r: \`${templateId}\`]->() RETURN count(r)`, normalizeResponseCount);
     }
 
-    private static createRuleQuery = (queryResult: QueryResult, rules: IMongoRelationshipTemplateRule[]) => {
-        return normalizeRelAndEntitiesForRule(queryResult).map((path) =>
-            isRelationshipLegal(path.relationship, path.sourceEntity, path.destinationEntity, rules),
-        );
-    };
-
     private static getRuleQueryByRelId = async (transaction: Transaction, templateId: string, sourceEntityId: string) => {
         const pathsConnectedWithRelIdRules = await searchRuleTemplates({ relationshipTemplateIds: [templateId] });
 
@@ -50,7 +41,7 @@ export class RelationshipManager {
 
         const pathsWithRelId = await transaction.run(`MATCH (s {_id: '${sourceEntityId}'})-[r: \`${templateId}\`]->(d) RETURN s, r, d`);
 
-        return this.createRuleQuery(pathsWithRelId, pathsConnectedWithRelIdRules);
+        return createRuleQuery(pathsWithRelId, pathsConnectedWithRelIdRules);
     };
 
     private static getRuleQueryBySourceId = async (
@@ -69,7 +60,7 @@ export class RelationshipManager {
             `MATCH (s {_id: '${sourceEntityId}'})-[r]-(d) WHERE d._id <> '${destinationEntityId}' RETURN s, r, d`,
         );
 
-        return this.createRuleQuery(pathsConnectedToSourceId, pathsConnectedToSourceIdRules);
+        return createRuleQuery(pathsConnectedToSourceId, pathsConnectedToSourceIdRules);
     };
 
     private static getRuleQueryByDestId = async (
@@ -88,18 +79,7 @@ export class RelationshipManager {
             `MATCH (s)-[r]-(d {_id: '${destinationEntityId}'}) WHERE s._id <> '${sourceEntityId}' RETURN s, r, d`,
         );
 
-        return this.createRuleQuery(pathsConnectedToDestId, pathsConnectedToDestIdRules);
-    };
-
-    private static getRuleResults = async (transaction: Transaction, ruleQueries: IRuleTransactionQuery[]): Promise<IRuleTransactionResult[]> => {
-        const ruleTransactions = ruleQueries.map(async (ruleTransaction) => {
-            const { ruleQuery, ruleId, relationshipId } = ruleTransaction;
-            const result = await transaction.run(ruleQuery.cypherQuery, ruleQuery.parameters);
-
-            return { doesRuleStillApply: normalizeRuleResult(result), ruleId, relationshipId };
-        });
-
-        return Promise.all(ruleTransactions);
+        return createRuleQuery(pathsConnectedToDestId, pathsConnectedToDestIdRules);
     };
 
     static async createRelationshipByEntityIds(
@@ -140,7 +120,7 @@ export class RelationshipManager {
             const ruleQueryByDestId = await this.getRuleQueryByDestId(transaction, relationshipTemplate, sourceEntityId, destinationEntityId);
             const ruleQueries = await Promise.all([...ruleQueryBySourceId, ...ruleQueryByDestId, ...ruleQueryByRelId]);
 
-            const ruleResults = await this.getRuleResults(transaction, ruleQueries.flat());
+            const ruleResults = await getRuleResults(transaction, ruleQueries.flat());
 
             const brokenRules = getBrokenRules(ruleResults);
 
@@ -177,7 +157,7 @@ export class RelationshipManager {
             const ruleQueryByDestId = await this.getRuleQueryByDestId(transaction, relationshipTemplate, sourceEntityId, destinationEntityId);
             const ruleQueries = await Promise.all([...ruleQueryBySourceId, ...ruleQueryByDestId]);
 
-            const ruleResults = await this.getRuleResults(transaction, ruleQueries.flat());
+            const ruleResults = await getRuleResults(transaction, ruleQueries.flat());
 
             const brokenRules = getBrokenRules(ruleResults);
 

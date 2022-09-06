@@ -7,6 +7,7 @@ import { getNeo4jDate, getNeo4jDateTime } from '../../utils/neo4j/lib';
 import { ValidationError } from '../error';
 import { IMongoEntityTemplate } from './interface';
 import config from '../../config';
+import { addPropertyToRequest, fetchPropertyFromRequest } from '../../utils/express';
 
 const { templateManager, neo4j } = config;
 const { url, getByIdRoute, timeout } = templateManager;
@@ -27,10 +28,6 @@ export const getEntityTemplateById = async (templateId: string) => {
     return result.data;
 };
 
-const addEntityTemplateToRequest = (req: any, value: any) => {
-    req.entityTemplate = value;
-};
-
 export const validateEntity = async (req: Request) => {
     const entityTemplate = await getEntityTemplateById(req.body.templateId);
 
@@ -41,15 +38,12 @@ export const validateEntity = async (req: Request) => {
         throw new ValidationError(`Entity does not match template schema: ${JSON.stringify(validateFunction.errors)}`);
     }
 
-    addEntityTemplateToRequest(req, entityTemplate);
-};
-
-const fetchEntityTemplateFromRequest = (req: any) => {
-    return req.entityTemplate as IMongoEntityTemplate;
+    addPropertyToRequest(req, 'entityTemplate', entityTemplate);
 };
 
 export const addStringFieldsAndNormalizeDateValues = (req: Request, _res: Response, next: NextFunction) => {
-    const entityTemplate = fetchEntityTemplateFromRequest(req);
+    const entityTemplate = fetchPropertyFromRequest<IMongoEntityTemplate>(req, 'entityTemplate');
+
     const normalizedEntity = {};
 
     Object.entries(entityTemplate.properties.properties).forEach(([key, value]) => {

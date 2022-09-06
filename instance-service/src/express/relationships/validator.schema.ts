@@ -27,10 +27,12 @@ export const getRelationshipsCountRequestSchema = Joi.object({
  */
 export const createRelationshipRequestSchema = Joi.object({
     body: {
-        templateId: Joi.string().required(),
-        properties: Joi.object(),
-        sourceEntityId: Joi.string().required(),
-        destinationEntityId: Joi.string().required(),
+        relationshipInstance: {
+            templateId: Joi.string().required(),
+            properties: Joi.object(),
+            sourceEntityId: Joi.string().required(),
+            destinationEntityId: Joi.string().required(),
+        },
         ignoredRules: Joi.array()
             .items(
                 Joi.object({

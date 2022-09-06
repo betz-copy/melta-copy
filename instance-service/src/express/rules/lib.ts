@@ -1,13 +1,40 @@
 import axios from 'axios';
 import _groupBy from 'lodash.groupby';
 import _difference from 'lodash.difference';
+import { QueryResult, Transaction } from 'neo4j-driver';
 import { trycatch } from '../../utils/lib';
 import { ValidationError } from '../error';
-import { IBrokenRule, IMongoRelationshipTemplateRule, IRuleRequestSchema, IRuleTransactionResult } from './interfaces';
+import { IBrokenRule, IMongoRelationshipTemplateRule, IRuleRequestSchema, IRuleTransactionQuery, IRuleTransactionResult } from './interfaces';
+import { IRelationshipRequestSchema, IMongoRelationshipTemplate, IRelationship } from '../relationships/interface';
+import { IEntity } from '../entities/interface';
+import { getEntityTemplateById } from '../entities/validator.template';
+import { generateNeo4jQuery } from '.';
 import config from '../../config';
+import { normalizeRelAndEntitiesForRule, normalizeRuleResult } from '../../utils/neo4j/lib';
 
 const { relationshipManager } = config;
-const { url, searchRulesRoute, timeout } = relationshipManager;
+const { url, searchRulesRoute, searchTemplatesRoute, timeout } = relationshipManager;
+
+export const searchRelationshipTemplates = async (relationshipRequest: IRelationshipRequestSchema) => {
+    const { result, err } = await trycatch(() =>
+        axios.post<IMongoRelationshipTemplate[]>(`${url}${searchTemplatesRoute}`, relationshipRequest, { timeout }),
+    );
+
+    if (err || !result) {
+        throw new ValidationError(`Failed to fetch relationship template schemas.`);
+    }
+
+    return result.data;
+};
+
+const getRelationshipTemplatesById = async (entityTemplateId: string) => {
+    const relationshipTemplates = await Promise.all([
+        searchRelationshipTemplates({ sourceEntityIds: [entityTemplateId] }),
+        searchRelationshipTemplates({ destinationEntityIds: [entityTemplateId] }),
+    ]);
+
+    return relationshipTemplates.flat();
+};
 
 export const searchRuleTemplates = async (ruleRequest: IRuleRequestSchema) => {
     const { result, err } = await trycatch(() => axios.post<IMongoRelationshipTemplateRule[]>(`${url}${searchRulesRoute}`, ruleRequest, { timeout }));
@@ -44,4 +71,68 @@ export const areAllBrokenRulesIgnored = (brokenRules: IBrokenRule[], ignoredRule
 
         return _difference(brokenRule.relationshipIds, ignoredRule.relationshipIds).length === 0;
     });
+};
+
+export const getRuleResults = async (transaction: Transaction, ruleQueries: IRuleTransactionQuery[]): Promise<IRuleTransactionResult[]> => {
+    const ruleTransactions = ruleQueries.map(async (ruleTransaction) => {
+        const { ruleQuery, ruleId, relationshipId } = ruleTransaction;
+        const result = await transaction.run(ruleQuery.cypherQuery, ruleQuery.parameters);
+
+        return { doesRuleStillApply: normalizeRuleResult(result), ruleId, relationshipId };
+    });
+
+    return Promise.all(ruleTransactions);
+};
+
+export const isRelationshipLegal = async (
+    relationship: IRelationship,
+    sourceEntity: IEntity,
+    destinationEntity: IEntity,
+    relationshipTemplateRules: IMongoRelationshipTemplateRule[],
+): Promise<IRuleTransactionQuery[]> => {
+    const generateNeo4jQueries = relationshipTemplateRules
+        .filter(({ relationshipTemplateId }) => relationshipTemplateId === relationship.templateId)
+        .map(async (relationshipTemplateRule) => {
+            const { pinnedEntityTemplateId } = relationshipTemplateRule;
+
+            const [pinnedEntity, nonPinnedEntity] =
+                pinnedEntityTemplateId === sourceEntity.templateId ? [sourceEntity, destinationEntity] : [destinationEntity, sourceEntity];
+
+            const pinnedEntityRelationships = await getRelationshipTemplatesById(pinnedEntityTemplateId);
+
+            const connectionsTemplates = await Promise.all(
+                pinnedEntityRelationships.map(async (relTemplate) => {
+                    const { sourceEntityId, destinationEntityId } = relTemplate;
+                    const unpinnedEntityTemplateId = sourceEntityId === pinnedEntity.templateId ? destinationEntityId : sourceEntityId;
+
+                    const unpinnedEntityTemplate = await getEntityTemplateById(unpinnedEntityTemplateId);
+
+                    return { relationshipTemplate: relTemplate, unpinnedEntityTemplate };
+                }),
+            );
+
+            const ruleQuery = generateNeo4jQuery(
+                relationshipTemplateRule,
+                pinnedEntity.properties._id,
+                nonPinnedEntity.properties._id,
+                relationship.properties._id,
+                pinnedEntity.templateId,
+                nonPinnedEntity.templateId,
+                connectionsTemplates,
+            );
+
+            return {
+                ruleQuery,
+                relationshipId: relationship.properties._id as string,
+                ruleId: relationshipTemplateRule._id,
+            };
+        });
+
+    return Promise.all(generateNeo4jQueries);
+};
+
+export const createRuleQuery = (queryResult: QueryResult, rules: IMongoRelationshipTemplateRule[]) => {
+    return normalizeRelAndEntitiesForRule(queryResult).map((path) =>
+        isRelationshipLegal(path.relationship, path.sourceEntity, path.destinationEntity, rules),
+    );
 };

@@ -3,7 +3,7 @@ import Neo4jClient from '../../utils/neo4j';
 
 import EntityManager from './manager';
 import RelationshipManager from '../relationships/manager';
-import { IEntity } from './interface';
+import { IEntity, IMongoEntityTemplate } from './interface';
 
 const { neo4j } = config;
 
@@ -22,6 +22,23 @@ const relationshipTemplate = {
     destinationEntityId: defaultTemplateId,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
+};
+
+const entityTemplate: IMongoEntityTemplate = {
+    _id: defaultTemplateId,
+    propertiesOrder: ['testProp'],
+    propertiesPreview: ['testProp'],
+    name: 'template',
+    displayName: 'template',
+    category: '999999999999999999999999',
+    properties: {
+        type: 'object',
+        properties: {
+            testProp: { type: 'string', title: 'testProp' },
+        },
+        required: ['testProp'],
+    },
+    disabled: false,
 };
 
 describe('Entity manager', () => {
@@ -63,7 +80,7 @@ describe('Entity manager', () => {
         });
 
         it('Should update an entity', async () => {
-            const res = await EntityManager.updateEntityById(id, newProperties);
+            const res = await EntityManager.updateEntityById(id, newProperties, entityTemplate, []);
 
             expect(res).toBeDefined();
             expect(res.templateId).toBe(defaultTemplateId);
@@ -71,7 +88,7 @@ describe('Entity manager', () => {
         });
 
         it('Should fail to update an entity', async () => {
-            await expect(() => EntityManager.updateEntityById(unknownId, newProperties)).rejects.toThrowError(
+            await expect(() => EntityManager.updateEntityById(unknownId, newProperties, entityTemplate, [])).rejects.toThrowError(
                 `[NEO4J] entity "${unknownId}" not found`,
             );
         });
@@ -83,7 +100,9 @@ describe('Entity manager', () => {
         it('Should fail to update an entity (disabled status)', async () => {
             await EntityManager.updateStatusById(id, true);
 
-            await expect(() => EntityManager.updateEntityById(id, newProperties)).rejects.toThrowError(`[NEO4J] cannot update disabled entity.`);
+            await expect(() => EntityManager.updateEntityById(id, newProperties, entityTemplate, [])).rejects.toThrowError(
+                `[NEO4J] cannot update disabled entity.`,
+            );
         });
     });
 

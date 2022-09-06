@@ -1,14 +1,11 @@
 import { Request } from 'express';
+import { addPropertyToRequest } from '../../utils/express';
 import EntityManager from '../entities/manager';
 import { ValidationError } from '../error';
 import { getRelationshipTemplateById } from './template';
 
-const addTemplateToRequest = (req: any, templateName: string, value: any) => {
-    req.body[templateName] = value;
-};
-
 export const validateRelationship = async (req: Request) => {
-    const { templateId, sourceEntityId, destinationEntityId } = req.body;
+    const { templateId, sourceEntityId, destinationEntityId } = req.body.relationshipInstance;
 
     const relationshipTemplate = await getRelationshipTemplateById(templateId);
     const sourceEntity = await EntityManager.getEntityById(sourceEntityId);
@@ -21,6 +18,5 @@ export const validateRelationship = async (req: Request) => {
         throw new ValidationError(`Relationship template source/destination id does not match entity source/destination id.`);
     }
 
-    addTemplateToRequest(req, 'relationshipInstance', req.body);
-    addTemplateToRequest(req, 'relationshipTemplate', relationshipTemplate);
+    addPropertyToRequest(req, 'relationshipTemplate', relationshipTemplate);
 };

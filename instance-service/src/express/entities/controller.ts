@@ -1,4 +1,6 @@
 import { Request, Response } from 'express';
+import { fetchPropertyFromRequest } from '../../utils/express';
+import { IMongoEntityTemplate } from './interface';
 import { EntityManager } from './manager';
 
 class EntityController {
@@ -33,7 +35,9 @@ class EntityController {
     }
 
     static async updateEntityById(req: Request, res: Response) {
-        res.json(await EntityManager.updateEntityById(req.params.id, req.body.properties));
+        const entityTemplate = fetchPropertyFromRequest<IMongoEntityTemplate>(req, 'entityTemplate');
+
+        res.json(await EntityManager.updateEntityById(req.params.id, req.body.properties, entityTemplate, req.body.ignoredRules));
     }
 }
 

@@ -1,11 +1,13 @@
 import { Request, Response } from 'express';
+import { fetchPropertyFromRequest } from '../../utils/express';
+import { IMongoRelationshipTemplate } from './interface';
 import { RelationshipManager } from './manager';
 
 class RelationshipController {
     static async createRelationship(req: Request, res: Response) {
-        const { relationshipInstance, relationshipTemplate, ignoredRules } = req.body;
+        const relationshipTemplate = fetchPropertyFromRequest<IMongoRelationshipTemplate>(req, 'relationshipTemplate');
 
-        res.json(await RelationshipManager.createRelationshipByEntityIds(relationshipInstance, relationshipTemplate, ignoredRules));
+        res.json(await RelationshipManager.createRelationshipByEntityIds(req.body.relationshipInstance, relationshipTemplate, req.body.ignoredRules));
     }
 
     static async getRelationshipById(req: Request, res: Response) {
