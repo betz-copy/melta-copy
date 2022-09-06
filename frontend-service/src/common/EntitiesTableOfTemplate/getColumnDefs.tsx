@@ -2,6 +2,7 @@ import React, { memo } from 'react';
 import { Delete as DeleteIcon, ReadMore as ReadMoreIcon } from '@mui/icons-material';
 import { ValueGetterFunc } from '@ag-grid-community/core';
 import i18next from 'i18next';
+import { NavLink } from 'react-router-dom';
 import { IEntity } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { booleanColDef, dateColDef, enumColDef, fileColDef, numberColDef, regexColDef, stringColDef } from '../../utils/agGrid/commonColDefs';
@@ -94,23 +95,29 @@ export const getColumnDefs = <Data extends any>(
                 return (
                     <div>
                         {onNavigateToRow && (
-                            <IconButtonWithPopoverText
-                                iconButtonProps={{
-                                    disabled: disabledEntity,
-                                    onClick: () => onNavigateToRow(data),
+                            <NavLink
+                                to={`/entity/${getEntityPropertiesData(data)._id}`}
+                                onClick={(e) => {
+                                    if (disabledEntity) e.preventDefault();
                                 }}
-                                popoverText={
-                                    disabledEntity
-                                        ? i18next.t('permissions.dontHavePermissionsToCategory')
-                                        : i18next.t('entitiesTableOfTemplate.navigateToEntityPage')
-                                }
                             >
-                                <ReadMoreIcon
-                                    style={{
-                                        transform: 'scaleX(-1)',
+                                <IconButtonWithPopoverText
+                                    iconButtonProps={{
+                                        disabled: disabledEntity,
                                     }}
-                                />
-                            </IconButtonWithPopoverText>
+                                    popoverText={
+                                        disabledEntity
+                                            ? i18next.t('permissions.dontHavePermissionsToCategory')
+                                            : i18next.t('entitiesTableOfTemplate.navigateToEntityPage')
+                                    }
+                                >
+                                    <ReadMoreIcon
+                                        style={{
+                                            transform: 'scaleX(-1)',
+                                        }}
+                                    />
+                                </IconButtonWithPopoverText>
+                            </NavLink>
                         )}
                         {deleteRowButtonProps && (
                             <IconButtonWithPopoverText
