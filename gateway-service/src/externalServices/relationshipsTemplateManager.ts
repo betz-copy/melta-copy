@@ -1,6 +1,6 @@
 import axios from 'axios';
 import config from '../config';
-import { IRelationshipTemplateRule } from '../express/templates/rules/interfaces';
+import { IRule } from '../express/templates/rules/interfaces';
 
 const {
     relationshipTemplateManager: { uri, baseRelationshipsRoute, baseRulesRoute, updateRuleStatusByIdRouteSuffix, requestTimeout },
@@ -78,7 +78,7 @@ export class RelationshipsTemplateManagerService {
     }
 
     static async searchRules(searchBody: ISearchRulesBody) {
-        const { data } = await this.RelationshipsTemplateManagerApi.post<IRelationshipTemplateRule[]>(`${baseRulesRoute}/search`, searchBody);
+        const { data } = await this.RelationshipsTemplateManagerApi.post<IRule[]>(`${baseRulesRoute}/search`, searchBody);
 
         return data;
     }

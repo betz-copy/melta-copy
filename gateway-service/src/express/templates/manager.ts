@@ -10,7 +10,7 @@ import { removeTmpFile } from '../../utils/fs';
 import { ServiceError } from '../error';
 import PermissionsManager from '../permissions/manager';
 import config from '../../config';
-import { IRelationshipTemplateRule } from './rules/interfaces';
+import { IRule } from './rules/interfaces';
 import { getParametersOfFormula } from './rules';
 import { IFormula } from './rules/interfaces/formula';
 
@@ -76,10 +76,7 @@ export class TemplatesManager {
             pinnedEntityTemplateIds: allowedEntityTemplatesIdsByOneRelationship,
         });
 
-        const allowedRules: IRelationshipTemplateRule[] = lodashUniqby(
-            [...rulesByAllowedRelationshipTemplates, ...rulesPinnedByEntityTemplatesByOneRelationship],
-            '_id',
-        );
+        const allowedRules: IRule[] = lodashUniqby([...rulesByAllowedRelationshipTemplates, ...rulesPinnedByEntityTemplatesByOneRelationship], '_id');
 
         const allowedRelationshipTemplatesIdsBecauseOfRules = allowedRules
             .map(({ relationshipTemplateId }) => relationshipTemplateId)
