@@ -20,7 +20,7 @@ import ErrorPage from './pages/ErrorPage';
 import { environment } from './globals';
 import loadingAnimation from './assets/icons/Melta_Logo.svg';
 import './css/loading.css';
-import { IMongoRelationshipTemplateRule } from './interfaces/rules';
+import { IMongoRule } from './interfaces/rules';
 
 const App: React.FC = () => {
     const queryClient = useQueryClient();
@@ -58,7 +58,7 @@ const App: React.FC = () => {
             queryClient.setQueryData<IMongoCategory[]>('getCategories', categories);
             queryClient.setQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates', entityTemplates);
             queryClient.setQueryData<IMongoRelationshipTemplate[]>('getRelationshipTemplates', relationshipTemplates);
-            queryClient.setQueryData<IMongoRelationshipTemplateRule[]>('getRules', rules);
+            queryClient.setQueryData<IMongoRule[]>('getRules', rules);
         },
     });
 

@@ -49,7 +49,7 @@ const entityTemplatesToFieldsConfig = (
         .map((relationshipTemplate) => populateRelationshipTemplate(relationshipTemplate, entityTemplates))
         .filter((relationshipTemplate) => isRelationshipConnectedToEntityTemplate(pinnedEntityTemplate, relationshipTemplate))!
         .map((relationshipTemplatePopulated) => {
-            const template = getOppositeEntityTemplate(pinnedEntityTemplate, relationshipTemplatePopulated);
+            const template = getOppositeEntityTemplate(pinnedEntityTemplateId, relationshipTemplatePopulated);
 
             return {
                 relationshipTemplate: relationshipTemplatePopulated,

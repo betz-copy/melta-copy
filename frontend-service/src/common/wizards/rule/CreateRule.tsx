@@ -7,7 +7,7 @@ import { StepComponentProps } from '../index';
 import { RelationshipTemplateRuleWizardValues } from '.';
 import { IMongoRelationshipTemplate } from '../../../interfaces/relationshipTemplates';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { populateRelationshipTemplate } from '../../../utils/templates';
+import { getOppositeEntityTemplate, populateRelationshipTemplate } from '../../../utils/templates';
 import RelationshipTemplateAutocomplete from '../../inputs/RelationshipTemplateAutocomplete';
 
 const createRuleSchema = {
@@ -85,7 +85,16 @@ const CreateRule: React.FC<StepComponentProps<RelationshipTemplateRuleWizardValu
                     disabled={!relationshipTemplateId || isEditMode}
                 >
                     <FormLabel>{i18next.t('wizard.rule.pinnedEntityTemplate')}</FormLabel>
-                    <RadioGroup row name="pinnedEntityTemplateId" onChange={handleChange} value={pinnedEntityTemplateId}>
+                    <RadioGroup
+                        row
+                        name="pinnedEntityTemplateId"
+                        onChange={(_e, value) => {
+                            setFieldValue('pinnedEntityTemplateId', value);
+                            const unpinnedEntityTemplate = getOppositeEntityTemplate(value, selectedRelationshipTemplatePopulated!);
+                            setFieldValue('unpinnedEntityTemplateId', unpinnedEntityTemplate._id, false);
+                        }}
+                        value={pinnedEntityTemplateId}
+                    >
                         <FormControlLabel
                             value={selectedRelationshipTemplatePopulated?.sourceEntity._id}
                             control={<Radio />}

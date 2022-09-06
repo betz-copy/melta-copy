@@ -3,14 +3,14 @@ import axios from '../../axios';
 import { RelationshipTemplateRuleWizardValues } from '../../common/wizards/rule';
 import { environment } from '../../globals';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
-import { IMongoRelationshipTemplateRule, IRelationshipTemplateRule } from '../../interfaces/rules';
+import { IMongoRule, IRule } from '../../interfaces/rules';
 import { RuleParser } from '../../utils/rules/parser';
 import { RuleSerializer } from '../../utils/rules/serializer';
 
 const { rules } = environment.api;
 
 const ruleObjectToRuleForm = (
-    rule: IRelationshipTemplateRule | null,
+    rule: IRule | null,
     entityTemplates: IMongoEntityTemplatePopulated[],
 ): RelationshipTemplateRuleWizardValues | undefined => {
     if (!rule) return undefined;
@@ -25,12 +25,12 @@ const ruleObjectToRuleForm = (
 };
 
 const updateDisabledRuleRequest = async (ruleId: string, disabled: boolean) => {
-    const { data } = await axios.patch<IMongoRelationshipTemplateRule>(`${rules}/${ruleId}/status`, { disabled });
+    const { data } = await axios.patch<IMongoRule>(`${rules}/${ruleId}/status`, { disabled });
     return data;
 };
 
 const createRuleRequest = async (newRule: RelationshipTemplateRuleWizardValues) => {
-    const { data } = await axios.post<IMongoRelationshipTemplateRule>(rules, {
+    const { data } = await axios.post<IMongoRule>(rules, {
         ...newRule,
         formula: RuleParser.jsonTreeToFormula(QbUtils.getTree(newRule.formula) as JsonItem),
     });
@@ -38,7 +38,7 @@ const createRuleRequest = async (newRule: RelationshipTemplateRuleWizardValues) 
 };
 
 const updateRuleRequest = async (ruleId: string, updatedRule: RelationshipTemplateRuleWizardValues) => {
-    const { data } = await axios.put<IMongoRelationshipTemplateRule>(`${rules}/${ruleId}`, {
+    const { data } = await axios.put<IMongoRule>(`${rules}/${ruleId}`, {
         name: updatedRule.name,
         description: updatedRule.description,
     });
@@ -46,7 +46,7 @@ const updateRuleRequest = async (ruleId: string, updatedRule: RelationshipTempla
 };
 
 const deleteRuleRequest = async (ruleId: string) => {
-    const { data } = await axios.delete<IMongoRelationshipTemplateRule>(`${rules}/${ruleId}`);
+    const { data } = await axios.delete<IMongoRule>(`${rules}/${ruleId}`);
     return data;
 };
 

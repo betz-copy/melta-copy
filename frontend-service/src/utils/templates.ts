@@ -24,12 +24,9 @@ export const populateRelationshipTemplate = (
     };
 };
 
-export const getOppositeEntityTemplate = (
-    entityTemplate: IMongoEntityTemplatePopulated,
-    relationshipTemplate: IMongoRelationshipTemplatePopulated,
-) => {
+export const getOppositeEntityTemplate = (entityTemplateId: string, relationshipTemplate: IMongoRelationshipTemplatePopulated) => {
     const { sourceEntity, destinationEntity } = relationshipTemplate;
-    return sourceEntity._id === entityTemplate._id ? destinationEntity : sourceEntity;
+    return sourceEntity._id === entityTemplateId ? destinationEntity : sourceEntity;
 };
 
 export const isRelationshipConnectedToEntityTemplate = (

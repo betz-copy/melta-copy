@@ -8,40 +8,37 @@ import { ViewingCard } from './ViewingCard';
 import { Header } from '../../../common/Header';
 import { replaceItemById } from '../../../utils/reactQuery';
 import SearchInput from '../../../common/inputs/SearchInput';
-import { IMongoRelationshipTemplateRule } from '../../../interfaces/rules';
+import { IMongoRule } from '../../../interfaces/rules';
 import { RuleWizard } from '../../../common/wizards/rule';
 import { ruleObjectToRuleForm, updateDisabledRuleRequest } from '../../../services/templates/rulesService';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 
 const RulesRow: React.FC = () => {
     const queryClient = useQueryClient();
-    const rules = queryClient.getQueryData<IMongoRelationshipTemplateRule[]>('getRules')!;
+    const rules = queryClient.getQueryData<IMongoRule[]>('getRules')!;
     const entityTemplates = queryClient.getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates')!;
 
     const [searchText, setSearchText] = useState('');
 
     const [ruleWizardDialogState, setRuleWizardDialogState] = useState<{
         isWizardOpen: boolean;
-        rule: IMongoRelationshipTemplateRule | null;
+        rule: IMongoRule | null;
     }>({
         isWizardOpen: false,
         rule: null,
     });
 
-    const { mutateAsync: updateDisabledMutateAsync } = useMutation(
-        (rule: IMongoRelationshipTemplateRule) => updateDisabledRuleRequest(rule._id, !rule.disabled),
-        {
-            onSuccess: (data) => {
-                queryClient.setQueryData<IMongoRelationshipTemplateRule[]>('getRules', (prevData) => replaceItemById(data, prevData));
-                if (data.disabled) toast.success(i18next.t('wizard.rule.disabledSuccessfully'));
-                else toast.success(i18next.t('wizard.rule.activatedSuccessfully'));
-            },
-            onError: (_err, variables) => {
-                if (variables.disabled) toast.error(i18next.t('wizard.rule.failedToActivate'));
-                else toast.error(i18next.t('wizard.rule.failedToDisable'));
-            },
+    const { mutateAsync: updateDisabledMutateAsync } = useMutation((rule: IMongoRule) => updateDisabledRuleRequest(rule._id, !rule.disabled), {
+        onSuccess: (data) => {
+            queryClient.setQueryData<IMongoRule[]>('getRules', (prevData) => replaceItemById(data, prevData));
+            if (data.disabled) toast.success(i18next.t('wizard.rule.disabledSuccessfully'));
+            else toast.success(i18next.t('wizard.rule.activatedSuccessfully'));
         },
-    );
+        onError: (_err, variables) => {
+            if (variables.disabled) toast.error(i18next.t('wizard.rule.failedToActivate'));
+            else toast.error(i18next.t('wizard.rule.failedToDisable'));
+        },
+    });
 
     return (
         <Grid item container marginBottom="30px">

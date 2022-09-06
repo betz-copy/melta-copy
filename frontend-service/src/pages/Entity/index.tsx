@@ -102,7 +102,7 @@ const Entity: React.FC = () => {
             return {
                 ...category,
                 relationshipTemplates: relevantRelationshipTemplates.filter((currRelationshipTemplatePopulated) => {
-                    const otherEntityTemplate = getOppositeEntityTemplate(currentEntityTemplate, currRelationshipTemplatePopulated);
+                    const otherEntityTemplate = getOppositeEntityTemplate(currentEntityTemplate._id, currRelationshipTemplatePopulated);
 
                     return otherEntityTemplate.category._id === category._id;
                 }),
@@ -217,7 +217,7 @@ const Entity: React.FC = () => {
                                                 <Box sx={{ marginBottom: '30px', width: '100%' }}>
                                                     <EntitiesTableOfTemplate
                                                         ref={entitiesTableRef}
-                                                        template={getOppositeEntityTemplate(currentEntityTemplate, currRelationshipTemplate)}
+                                                        template={getOppositeEntityTemplate(currentEntityTemplate._id, currRelationshipTemplate)}
                                                         showNavigateToRowButton
                                                         deleteRowButtonProps={{
                                                             popoverText: hasPermissionToCategory

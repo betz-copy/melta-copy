@@ -10,11 +10,11 @@ import { StepsType, Wizard, WizardBaseType } from '../index';
 import { CreateRule, createRuleSchema } from './CreateRule';
 import { replaceItemById } from '../../../utils/reactQuery';
 import { ErrorToast } from '../../ErrorToast';
-import { IMongoRelationshipTemplateRule, IRelationshipTemplateRule } from '../../../interfaces/rules';
+import { IMongoRule, IRule } from '../../../interfaces/rules';
 import { createRuleRequest, updateRuleRequest } from '../../../services/templates/rulesService';
 import { CreateFormula, formulaValidation } from './CreateFormula';
 
-export interface RelationshipTemplateRuleWizardValues extends Omit<IRelationshipTemplateRule, 'formula'> {
+export interface RelationshipTemplateRuleWizardValues extends Omit<IRule, 'formula'> {
     formula: ImmutableTree;
 }
 
@@ -41,6 +41,7 @@ const RuleWizard: React.FC<WizardBaseType<RelationshipTemplateRuleWizardValues>>
         actionOnFail: 'WARNING',
         relationshipTemplateId: '',
         pinnedEntityTemplateId: '',
+        unpinnedEntityTemplateId: '',
         formula: QbUtils.loadTree({ id: QbUtils.uuid(), type: 'group' }),
         disabled: false,
     },
@@ -55,10 +56,10 @@ const RuleWizard: React.FC<WizardBaseType<RelationshipTemplateRuleWizardValues>>
         {
             onSuccess: (data) => {
                 if (isEditMode) {
-                    queryClient.setQueryData<IMongoRelationshipTemplateRule[]>('getRules', (prevData) => replaceItemById(data, prevData));
+                    queryClient.setQueryData<IMongoRule[]>('getRules', (prevData) => replaceItemById(data, prevData));
                     toast.success(i18next.t('wizard.rule.editedSuccefully'));
                 } else {
-                    queryClient.setQueryData<IMongoRelationshipTemplateRule[]>('getRules', (prevData) => [...prevData!, data]);
+                    queryClient.setQueryData<IMongoRule[]>('getRules', (prevData) => [...prevData!, data]);
                     toast.success(i18next.t('wizard.rule.createdSuccessfully'));
                 }
                 handleClose();
