@@ -52,23 +52,25 @@ const TemplateTablesHeadline: React.FC<{
             marginBottom="1rem"
             justifyContent="space-between"
         >
-            <Grid container direction="row" display="flex">
-                <BlueTitle title={pageTitle} component="h4" variant="h4" />
-                <Grid item paddingLeft="3rem" paddingTop="4px">
-                    <Grid item container>
-                        <Grid item>
-                            <TemplatesSelectCheckbox
-                                title={i18next.t('templatesTablesEntityTemplatesCheckboxLabel')}
-                                templates={entityTemplateSelectCheckboxProps.templates}
-                                selectedTemplates={entityTemplateSelectCheckboxProps.templatesToShow}
-                                setSelectedTemplates={entityTemplateSelectCheckboxProps.setTemplatesToShow}
-                                categories={entityTemplateSelectCheckboxProps.categories}
-                                size="small"
-                                toTopBar
-                            />
-                        </Grid>
-                        <Grid item>
-                            <GlobalSearch onSearch={onSearch} />
+            <Grid item>
+                <Grid container direction="row" display="flex">
+                    <BlueTitle title={pageTitle} component="h4" variant="h4" />
+                    <Grid item paddingLeft="3rem" paddingTop="4px">
+                        <Grid item container>
+                            <Grid item>
+                                <TemplatesSelectCheckbox
+                                    title={i18next.t('templatesTablesEntityTemplatesCheckboxLabel')}
+                                    templates={entityTemplateSelectCheckboxProps.templates}
+                                    selectedTemplates={entityTemplateSelectCheckboxProps.templatesToShow}
+                                    setSelectedTemplates={entityTemplateSelectCheckboxProps.setTemplatesToShow}
+                                    categories={entityTemplateSelectCheckboxProps.categories}
+                                    size="small"
+                                    toTopBar
+                                />
+                            </Grid>
+                            <Grid item>
+                                <GlobalSearch onSearch={onSearch} />
+                            </Grid>
                         </Grid>
                     </Grid>
                 </Grid>
