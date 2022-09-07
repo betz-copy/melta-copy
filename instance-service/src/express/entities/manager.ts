@@ -1,4 +1,4 @@
-import { Neo4jError, QueryResult, Transaction } from 'neo4j-driver';
+import { Neo4jError, Transaction } from 'neo4j-driver';
 import Neo4jClient from '../../utils/neo4j';
 import {
     generateDefaultProperties,
@@ -13,9 +13,15 @@ import { NotFoundError, ServiceError } from '../error';
 import { agGridRequestToNeo4JRequest, agGridSearchRequestToNeo4JRequest, IAGGridRequest } from '../../utils/agGridFilterModelToNeoQuery';
 import getLatestIndex from '../../utils/redis/getLatestIndex';
 import config from '../../config';
-import { areAllBrokenRulesIgnored, getBrokenRules, getRuleResults, isRelationshipLegal, searchRuleTemplates } from '../rules/lib';
-import { IBrokenRule, IMongoRelationshipTemplateRule } from '../rules/interfaces';
-import { getEntityTemplateById } from './validator.template';
+import {
+    areAllBrokenRulesIgnored,
+    createRuleQuery,
+    getBrokenRules,
+    getRuleResults,
+    getRulesByEntityTemplateId,
+    searchRuleTemplates,
+} from '../rules/lib';
+import { IBrokenRule } from '../rules/interfaces';
 
 export class EntityManager {
     static createEntity(entity: IEntity) {
@@ -129,13 +135,7 @@ export class EntityManager {
         return node;
     }
 
-    private static createRuleQuery = (queryResult: QueryResult, rules: IMongoRelationshipTemplateRule[]) => {
-        return normalizeRelAndEntitiesForRule(queryResult).map((path) =>
-            isRelationshipLegal(path.relationship, path.sourceEntity, path.destinationEntity, rules),
-        );
-    };
-
-    private static getPathsBySourceId = async (
+    private static getRuleQueryBySourceId = async (
         transaction: Transaction,
         entityTemplateId: string,
         sourceEntityId: string,
@@ -148,10 +148,20 @@ export class EntityManager {
         }
 
         const pathsConnectedToSourceId = await transaction.run(
-            `MATCH (s {_id: '${sourceEntityId}'})-[r]-(d)  WHERE d._id <> '${destinationEntityId}'  RETURN s, r, d`,
+            `MATCH (s {_id: '${sourceEntityId}'})-[r]-(d) WHERE d._id <> '${destinationEntityId}'  RETURN s, r, d`,
         );
 
-        return this.createRuleQuery(pathsConnectedToSourceId, pathsConnectedToSourceIdRules);
+        return createRuleQuery(pathsConnectedToSourceId, pathsConnectedToSourceIdRules);
+    };
+
+    public static getRulesConnectedToEntityInstances = async (transaction: Transaction, entities: IEntity[], excludedEntityId: string) => {
+        const destinationRulesPromises = entities.flatMap(async (entity) => {
+            return EntityManager.getRuleQueryBySourceId(transaction, entity.templateId, entity.properties._id, excludedEntityId);
+        });
+
+        const destinationRules = await Promise.all(destinationRulesPromises);
+
+        return destinationRules.flat();
     };
 
     private static async verifyRuleForEntityUpdate(
@@ -160,26 +170,17 @@ export class EntityManager {
         updatedEntity: IEntity,
         ignoredRules: IBrokenRule[],
     ) {
-        const pathsConnectedToSourceIdRules = await Promise.all([
-            searchRuleTemplates({ pinnedEntityTemplateIds: [entityTemplate._id] }),
-            searchRuleTemplates({ unpinnedEntityTemplateIds: [entityTemplate._id] }),
-        ]);
+        const rulesByEntityTemplateId = await getRulesByEntityTemplateId(entityTemplate._id);
 
         const pathsConnectedToSourceId = await transaction.run(`MATCH (s {_id: '${updatedEntity.properties._id}'})-[r]-(d)  RETURN s, r, d`);
 
-        const normalizedPathsBySourceId = normalizeRelAndEntitiesForRule(pathsConnectedToSourceId);
+        const destinationRules = await EntityManager.getRulesConnectedToEntityInstances(
+            transaction,
+            normalizeRelAndEntitiesForRule(pathsConnectedToSourceId).map(({ destinationEntity }) => destinationEntity),
+            updatedEntity.properties._id,
+        );
 
-        const destinationRulesPromises = normalizedPathsBySourceId.flatMap(async ({ destinationEntity }) => {
-            const template = await getEntityTemplateById(destinationEntity.templateId);
-
-            return this.getPathsBySourceId(transaction, template._id, destinationEntity.properties._id, updatedEntity.properties._id);
-        });
-        const destinationRules = await Promise.all(destinationRulesPromises);
-
-        const ruleQueries = await Promise.all([
-            ...this.createRuleQuery(pathsConnectedToSourceId, pathsConnectedToSourceIdRules.flat()),
-            ...destinationRules.flat(),
-        ]);
+        const ruleQueries = await Promise.all([...createRuleQuery(pathsConnectedToSourceId, rulesByEntityTemplateId), ...destinationRules]);
 
         const ruleResults = await getRuleResults(transaction, ruleQueries.flat());
 
@@ -230,7 +231,7 @@ export class EntityManager {
 
             const updatedEntity = normalizeReturnedEntity()(updatedEntityResult) as IEntity;
 
-            await this.verifyRuleForEntityUpdate(transaction, entityTemplate, updatedEntity, ignoredRules);
+            await EntityManager.verifyRuleForEntityUpdate(transaction, entityTemplate, updatedEntity, ignoredRules);
 
             return updatedEntity;
         });

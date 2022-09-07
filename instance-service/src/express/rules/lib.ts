@@ -48,6 +48,15 @@ export const searchRuleTemplates = async (ruleRequest: IRuleRequestSchema) => {
     return result.data;
 };
 
+export const getRulesByEntityTemplateId = async (entityTemplateId: string) => {
+    const rules = await Promise.all([
+        searchRuleTemplates({ pinnedEntityTemplateIds: [entityTemplateId] }),
+        searchRuleTemplates({ unpinnedEntityTemplateIds: [entityTemplateId] }),
+    ]);
+
+    return rules.flat();
+};
+
 export const getBrokenRules = (ruleResults: IRuleTransactionResult[], createdRelationshipId?: string) => {
     const resultsByRuleId = _groupBy(
         ruleResults.filter((ruleResult) => !ruleResult.doesRuleStillApply),
