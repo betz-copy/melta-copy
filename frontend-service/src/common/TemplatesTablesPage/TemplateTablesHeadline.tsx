@@ -52,7 +52,7 @@ const TemplateTablesHeadline: React.FC<{
             marginBottom="1rem"
             justifyContent="space-between"
         >
-            <Grid direction="row" display="flex">
+            <Grid container direction="row" display="flex">
                 <BlueTitle title={pageTitle} component="h4" variant="h4" />
                 <Grid item paddingLeft="3rem" paddingTop="4px">
                     <Grid item container>
