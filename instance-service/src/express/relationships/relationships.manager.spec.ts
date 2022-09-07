@@ -42,10 +42,12 @@ describe('Relationship manager', () => {
         await Neo4jClient.initialize(neo4j.url, neo4j.auth, neo4j.database);
 
         mock.onPost(`${relationshipManager.url}${relationshipManager.searchRulesRoute}`, {
+            disabled: false,
             pinnedEntityTemplateIds: [defaultEntityTemplateId],
         }).reply(200, []);
 
         mock.onPost(`${relationshipManager.url}${relationshipManager.searchRulesRoute}`, {
+            disabled: false,
             relationshipTemplateIds: [defaultRelationshipTemplateId],
         }).reply(200, []);
 

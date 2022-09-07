@@ -66,10 +66,12 @@ describe('Relationship router', () => {
         });
 
         mock.onPost(`${relationshipManager.url}${relationshipManager.searchRulesRoute}`, {
+            disabled: false,
             pinnedEntityTemplateIds: [defaultEntityTemplateId],
         }).reply(200, []);
 
         mock.onPost(`${relationshipManager.url}${relationshipManager.searchRulesRoute}`, {
+            disabled: false,
             relationshipTemplateIds: [defaultRelationshipTemplateId],
         }).reply(200, []);
 

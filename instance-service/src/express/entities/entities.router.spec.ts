@@ -75,10 +75,17 @@ describe('Entity router', () => {
         });
 
         mock.onPost(`${relationshipManager.url}${relationshipManager.searchRulesRoute}`, {
+            disabled: false,
             pinnedEntityTemplateIds: [defaultTemplateId],
         }).reply(200, []);
 
         mock.onPost(`${relationshipManager.url}${relationshipManager.searchRulesRoute}`, {
+            disabled: false,
+            unpinnedEntityTemplateIds: [defaultTemplateId],
+        }).reply(200, []);
+
+        mock.onPost(`${relationshipManager.url}${relationshipManager.searchRulesRoute}`, {
+            disabled: false,
             relationshipTemplateIds: [defaultRelationshipTemplateId],
         }).reply(200, []);
     });
