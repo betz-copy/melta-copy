@@ -93,8 +93,26 @@ const generateNeo4jQueryFromArgument = (
     connectionsTemplates: Array<{ relationshipTemplate: IMongoRelationshipTemplate; unpinnedEntityTemplate: IMongoEntityTemplate }>,
 ): CypherQuery => {
     if (isConstant(argument)) {
+        let valueCypherQuery: string;
+        switch (typeof argument.value) {
+            case 'string': {
+                valueCypherQuery = `'${argument.value}'`; // todo: if argument.value contains quotes, we're doomed
+                break;
+            }
+            case 'number': {
+                valueCypherQuery = argument.value.toString();
+                break;
+            }
+            case 'boolean': {
+                valueCypherQuery = argument.value.toString();
+                break;
+            }
+            default: {
+                throw new Error('unexpected constant type string/number/boolean');
+            }
+        }
         return {
-            cypherQuery: `${argument.value}`,
+            cypherQuery: valueCypherQuery,
             aggergationSubQueries: [],
             parameters: {},
         };
