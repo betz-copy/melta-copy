@@ -80,9 +80,9 @@ const UserAutocomplete: React.FC<{
                         fullWidth
                         helperText={helperText}
                         label={i18next.t('userAutocomplete.label')}
-                        InputProps={{ ...params.InputProps, readOnly }}
-                        InputLabelProps={{ ...(params.InputLabelProps, readOnly ? readOnlyInputLabelProps : undefined) }}
-                        sx={readOnly ? readOnlyValueSx : undefined}
+                        InputProps={{ ...params.InputProps, readOnly, endAdornment: (readOnly || disabled) && undefined }}
+                        InputLabelProps={{ ...(params.InputLabelProps, readOnly && readOnlyInputLabelProps) }}
+                        sx={readOnly ? readOnlyValueSx : {}}
                     />
                 )}
                 readOnly={readOnly}
