@@ -36,6 +36,7 @@ const Stepper = <T extends object>({
                 isLastStep={activeStep === steps.length - 1}
                 isFirstStep={activeStep === 0}
                 isLoading={isLoading || block}
+                formikProps={formikProps}
             />
         </Grid>
     );
