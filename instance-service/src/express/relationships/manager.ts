@@ -13,6 +13,7 @@ import { searchRuleTemplates, getBrokenRules, areAllBrokenRulesIgnored, createRu
 import { IBrokenRule } from '../rules/interfaces';
 import { getRelationshipTemplateById } from './template';
 import config from '../../config';
+import { filterRulesDependentInRelationshipTemplate } from '../rules/getParametersOfFormula';
 
 export class RelationshipManager {
     static async getRelationshipById(id: string) {
@@ -51,8 +52,9 @@ export class RelationshipManager {
         destinationEntityId: string,
     ) => {
         const pathsConnectedToSourceIdRules = await searchRuleTemplates({ pinnedEntityTemplateIds: [relationshipTemplate.sourceEntityId] });
+        const relevantRules = filterRulesDependentInRelationshipTemplate(pathsConnectedToSourceIdRules, relationshipTemplate._id);
 
-        if (!pathsConnectedToSourceIdRules.length) {
+        if (!relevantRules.length) {
             return [];
         }
 
@@ -60,7 +62,7 @@ export class RelationshipManager {
             `MATCH (s {_id: '${sourceEntityId}'})-[r]-(d) WHERE d._id <> '${destinationEntityId}' RETURN s, r, d`,
         );
 
-        return createRuleQuery(pathsConnectedToSourceId, pathsConnectedToSourceIdRules);
+        return createRuleQuery(pathsConnectedToSourceId, relevantRules);
     };
 
     private static getRuleQueryByDestId = async (
@@ -70,8 +72,9 @@ export class RelationshipManager {
         destinationEntityId: string,
     ) => {
         const pathsConnectedToDestIdRules = await searchRuleTemplates({ pinnedEntityTemplateIds: [relationshipTemplate.destinationEntityId] });
+        const relevantRules = filterRulesDependentInRelationshipTemplate(pathsConnectedToDestIdRules, relationshipTemplate._id);
 
-        if (!pathsConnectedToDestIdRules.length) {
+        if (!relevantRules.length) {
             return [];
         }
 
@@ -79,7 +82,7 @@ export class RelationshipManager {
             `MATCH (s)-[r]-(d {_id: '${destinationEntityId}'}) WHERE s._id <> '${sourceEntityId}' RETURN s, r, d`,
         );
 
-        return createRuleQuery(pathsConnectedToDestId, pathsConnectedToDestIdRules);
+        return createRuleQuery(pathsConnectedToDestId, relevantRules);
     };
 
     private static async verifyRuleForRelationshipCreation(
