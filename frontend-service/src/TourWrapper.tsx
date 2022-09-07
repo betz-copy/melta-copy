@@ -35,6 +35,7 @@ const TourWrapper: React.FC = ({ children }) => {
         {
             selector: '[data-tour="entity-page"]',
             content: tourText.entityPage,
+            disableActions: true,
             stepInteraction: true,
         },
         {
