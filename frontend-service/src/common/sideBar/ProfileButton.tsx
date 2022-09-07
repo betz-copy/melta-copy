@@ -22,8 +22,8 @@ const ProfileButton: React.FC<ProfileButtonProps> = ({ currentUser, text, isDraw
                 }}
             >
                 <IconButton onClick={onClick} sx={{ borderRadius: 10 }}>
-                    <Grid container alignItems="center" spacing={1}>
-                        <Grid item>
+                    <Grid container alignItems="center">
+                        <Grid item data-tour="my-permissions">
                             <Avatar
                                 sx={{
                                     borderRadius: 10,

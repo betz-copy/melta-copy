@@ -1,6 +1,6 @@
-import React, { useState, lazy, Suspense } from 'react';
-import { CssBaseline, Box, useScrollTrigger } from '@mui/material';
-import { Route, Routes } from 'react-router-dom';
+import React, { useState, lazy, Suspense, useEffect } from 'react';
+import { CssBaseline, Box, useScrollTrigger, Button } from '@mui/material';
+import { Route, Routes, useNavigate } from 'react-router-dom';
 import rtlPlugin from 'stylis-plugin-rtl';
 import { CacheProvider } from '@emotion/react';
 import createCache from '@emotion/cache';
@@ -8,6 +8,8 @@ import { prefixer } from 'stylis';
 import { useQueryClient } from 'react-query';
 import i18next from 'i18next';
 import { useSelector } from 'react-redux';
+import { useTour } from '@reactour/tour';
+import { toast } from 'react-toastify';
 import { SideBar } from './common/sideBar';
 import { MainBox } from './Main.styled';
 import { TopBar } from './common/TopBar';
@@ -21,6 +23,7 @@ import {
 } from './utils/ProtectedRoutes';
 import ScrollToTop from './ScrollToTop';
 import { RootState } from './store';
+import { LocalStorage } from './utils/localStorage';
 
 const GlobalSearch = lazy(() => import('./pages/GlobalSearch'));
 const Category = lazy(() => import('./pages/Category'));
@@ -41,6 +44,8 @@ const cacheRtl = createCache({
 const Main = () => {
     const [open, setOpen] = useState(false);
     const [title, setTitle] = useState('');
+    const navigate = useNavigate();
+    const { setIsOpen, setCurrentStep } = useTour();
 
     const [pageScrollTarget, setPageScrollTarget] = useState<HTMLElement | undefined>(undefined);
     const trigger = useScrollTrigger({ target: pageScrollTarget, disableHysteresis: true, threshold: 300 });
@@ -55,6 +60,34 @@ const Main = () => {
     const toggleDrawer = () => {
         setOpen(!open);
     };
+
+    useEffect(() => {
+        const didTour = LocalStorage.get<boolean>('didTour');
+
+        if (!didTour) {
+            toast.info(
+                <>
+                    <span>{i18next.t('tourText.forTour')}</span>
+                    <Button
+                        variant="contained"
+                        onClick={() => {
+                            LocalStorage.set('didTour', true);
+                            setIsOpen(true);
+                            setCurrentStep(0);
+                            navigate('/');
+                        }}
+                        sx={{ marginRight: '10px' }}
+                    >
+                        {i18next.t('tourText.pressHere')}
+                    </Button>
+                </>,
+                {
+                    autoClose: false,
+                    onClose: () => LocalStorage.set('didTour', true),
+                },
+            );
+        }
+    }, []);
 
     return (
         <CacheProvider value={cacheRtl}>

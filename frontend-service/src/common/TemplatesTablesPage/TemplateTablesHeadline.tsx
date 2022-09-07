@@ -57,7 +57,7 @@ const TemplateTablesHeadline: React.FC<{
                     <BlueTitle title={pageTitle} component="h4" variant="h4" />
                     <Grid item paddingLeft="3rem" paddingTop="4px">
                         <Grid item container>
-                            <Grid item>
+                            <Grid item data-tour="template-filter">
                                 <TemplatesSelectCheckbox
                                     title={i18next.t('templatesTablesEntityTemplatesCheckboxLabel')}
                                     templates={entityTemplateSelectCheckboxProps.templates}
@@ -68,7 +68,7 @@ const TemplateTablesHeadline: React.FC<{
                                     toTopBar
                                 />
                             </Grid>
-                            <Grid item>
+                            <Grid item data-tour="search-input">
                                 <GlobalSearch onSearch={onSearch} />
                             </Grid>
                         </Grid>

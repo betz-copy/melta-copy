@@ -11,6 +11,7 @@ import { AxiosError } from 'axios';
 import { store } from './store';
 import App from './App';
 import { globalTheme } from './theme';
+import { TourWrapper } from './TourWrapper';
 
 const queryClient = new QueryClient({
     defaultOptions: {
@@ -32,7 +33,9 @@ ReactDOM.render(
         <QueryClientProvider client={queryClient}>
             <ThemeProvider theme={globalTheme}>
                 <Router>
-                    <App />
+                    <TourWrapper>
+                        <App />
+                    </TourWrapper>
                     <ToastContainer theme="light" position="bottom-right" autoClose={5000} limit={5} pauseOnFocusLoss={false} rtl newestOnTop />
                 </Router>
             </ThemeProvider>

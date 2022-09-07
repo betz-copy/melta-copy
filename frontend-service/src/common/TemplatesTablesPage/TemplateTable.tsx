@@ -53,7 +53,7 @@ const TemplateTable = forwardRef<
                             disabled={template.disabled}
                             initialValues={{ template, properties: { disabled: false }, attachmentsProperties: {} }}
                         >
-                            <AddCircle color={!template.disabled ? 'primary' : 'disabled'} fontSize="large" />
+                            <AddCircle color={!template.disabled ? 'primary' : 'disabled'} fontSize="large" data-tour="create-entity" />
                         </AddEntityButton>
                     </Grid>
                 </Grid>

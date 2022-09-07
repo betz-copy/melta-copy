@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
+import { Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Grid } from '@mui/material';
 import i18next from 'i18next';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
@@ -8,6 +8,8 @@ import isEqualWith from 'lodash.isequalwith';
 import { useSelector } from 'react-redux';
 import { Form, Formik, FormikProps } from 'formik';
 import * as Yup from 'yup';
+import { useTour } from '@reactour/tour';
+import { useNavigate } from 'react-router-dom';
 import { createPermissionsBulkRequest, deletePermissionsBulkRequest, IPermission, IPermissionsOfUser } from '../../services/permissionsService';
 import UserAutocomplete from '../inputs/UserAutocomplete';
 import { IUser } from '../../services/kartoffelService';
@@ -179,6 +181,8 @@ const PermissionsOfUserDialog: React.FC<{
     existingPermissionsOfUser?: IPermissionsOfUser;
 }> = ({ isOpen, handleClose, mode, existingPermissionsOfUser }) => {
     const currentUser = useSelector((state: RootState) => state.user);
+    const navigate = useNavigate();
+    const { setIsOpen, setCurrentStep } = useTour();
 
     const queryClient = useQueryClient();
     const allPermissions = queryClient.getQueryData<IPermissionsOfUser[]>('getAllPermissions');
@@ -367,24 +371,42 @@ const PermissionsOfUserDialog: React.FC<{
                             </Box>
                         </DialogContent>
                         <DialogActions>
-                            <Button onClick={handleClose} autoFocus disabled={formikProps.isSubmitting}>
-                                {i18next.t('permissions.permissionsOfUserDialog.closeBtn')}
-                            </Button>
-                            {mode !== 'read' && (
-                                <Button
-                                    type="submit"
-                                    disabled={
-                                        formikProps.isSubmitting ||
-                                        isPermissionsChanged(formikProps.initialValues, formikProps.values) ||
-                                        doesUserHaveNoPermissions(formikProps.values)
-                                    }
-                                    variant="contained"
-                                >
-                                    {mode === 'create' && i18next.t('permissions.permissionsOfUserDialog.createBtn')}
-                                    {mode === 'edit' && i18next.t('permissions.permissionsOfUserDialog.saveBtn')}
-                                    {formikProps.isSubmitting && <CircularProgress size={20} />}
-                                </Button>
-                            )}
+                            <Grid container justifyContent="space-between">
+                                <Grid>
+                                    {mode === 'read' && (
+                                        <Button
+                                            onClick={() => {
+                                                handleClose();
+                                                setIsOpen(true);
+                                                setCurrentStep(0);
+                                                navigate('/');
+                                            }}
+                                        >
+                                            {i18next.t('showTour')}
+                                        </Button>
+                                    )}
+                                </Grid>
+                                <Grid>
+                                    <Button onClick={handleClose} autoFocus disabled={formikProps.isSubmitting}>
+                                        {i18next.t('permissions.permissionsOfUserDialog.closeBtn')}
+                                    </Button>
+                                    {mode !== 'read' && (
+                                        <Button
+                                            type="submit"
+                                            disabled={
+                                                formikProps.isSubmitting ||
+                                                isPermissionsChanged(formikProps.initialValues, formikProps.values) ||
+                                                doesUserHaveNoPermissions(formikProps.values)
+                                            }
+                                            variant="contained"
+                                        >
+                                            {mode === 'create' && i18next.t('permissions.permissionsOfUserDialog.createBtn')}
+                                            {mode === 'edit' && i18next.t('permissions.permissionsOfUserDialog.saveBtn')}
+                                            {formikProps.isSubmitting && <CircularProgress size={20} />}
+                                        </Button>
+                                    )}
+                                </Grid>
+                            </Grid>
                         </DialogActions>
                     </Form>
                 )}

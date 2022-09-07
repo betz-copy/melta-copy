@@ -100,6 +100,7 @@ export const getColumnDefs = <Data extends any>(
                                 onClick={(e) => {
                                     if (disabledEntity) e.preventDefault();
                                 }}
+                                data-tour="entity-page"
                             >
                                 <IconButtonWithPopoverText
                                     iconButtonProps={{

@@ -55,7 +55,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
     const [isNotificationsScreenOpen, setIsNotificationsScreenOpen] = useState<boolean>(false);
 
     return (
-        <Drawer ref={drawerRef} variant="permanent" open={isDrawerOpen} PaperProps={{ sx: { backgroundColor: '#225AA7' } }}>
+        <Drawer ref={drawerRef} variant="permanent" open={isDrawerOpen} PaperProps={{ sx: { backgroundColor: '#225AA7' } }} data-tour="side-bar">
             <Grid container direction="column" wrap="nowrap" height="100%" bgcolor="#225AA7">
                 <Grid item container direction="column" alignItems="center" marginTop="15px" marginBottom="10px">
                     <Box

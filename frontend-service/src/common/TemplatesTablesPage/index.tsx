@@ -4,6 +4,7 @@ import { Box, CircularProgress, Grid, Typography } from '@mui/material';
 import _debounce from 'lodash.debounce';
 import { useQuery } from 'react-query';
 import pLimit from 'p-limit';
+import { useTour } from '@reactour/tour';
 import { IMongoCategory } from '../../interfaces/categories';
 
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
@@ -41,6 +42,7 @@ const TemplatesTablesPage: React.FC<{
     pageTitle: string;
 }> = ({ templates, categories, excelExportAllTablesFileName, pageType, pageTitle }) => {
     const [templatesToShowCheckbox, setTemplatesToShowCheckbox] = useState<IMongoEntityTemplatePopulated[]>(templates);
+    const { setSteps } = useTour();
 
     const templatesTablesRef = useRef<React.ComponentRef<typeof TemplateTablesView>>(null);
 
@@ -54,8 +56,17 @@ const TemplatesTablesPage: React.FC<{
         data: templatesFilteredByCount,
         refetch: refetchTemplatesFilteredByCount,
         isFetching: isLoadingTemplatesFilteredByCount,
-    } = useQuery(['filterEmptyTemplatesTablesOnGlobalSearch', templatesToShowCheckbox, searchInput], () =>
-        filterEmptyTemplatesTablesOnGlobalSearchRequest(templatesToShowCheckbox, searchInput),
+    } = useQuery(
+        ['filterEmptyTemplatesTablesOnGlobalSearch', templatesToShowCheckbox, searchInput],
+        () => filterEmptyTemplatesTablesOnGlobalSearchRequest(templatesToShowCheckbox, searchInput),
+        {
+            onSuccess: (data) => {
+                if (data.length === 0 && pageType === 'globalSearch') {
+                    // if there are no entities to show in the global search page, stop the tour
+                    setSteps((currSteps) => currSteps.slice(0, 4));
+                }
+            },
+        },
     );
 
     const onSearch = (newSearchInput: string) => {

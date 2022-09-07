@@ -6,6 +6,7 @@ import { AddCircle } from '@mui/icons-material';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { toast } from 'react-toastify';
 import i18next from 'i18next';
+import { useTour } from '@reactour/tour';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { getExpandedEntityByIdRequest } from '../../services/entitiesService';
 import { IMongoRelationshipTemplate, IMongoRelationshipTemplatePopulated } from '../../interfaces/relationshipTemplates';
@@ -31,6 +32,8 @@ const Entity: React.FC = () => {
     const params = useParams();
     const queryClient = useQueryClient();
     const { entityId } = params;
+    const { setDisabledActions, setCurrentStep } = useTour();
+
     const entitiesTableRef = useRef<EntitiesTableOfTemplateRef>(null);
     const templateIds = queryClient.getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates')!.map((entityTemplate) => entityTemplate._id);
 
@@ -81,13 +84,13 @@ const Entity: React.FC = () => {
     });
 
     const [value, setValue] = useState('0');
-    const [titleUpdated, setTitleUpdated] = useState(false);
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => {
-        if (titleUpdated || !currentEntityTemplate) return;
-        setTitleUpdated(true);
-    });
+        if (!expandedEntity) return;
+
+        setCurrentStep((currStep) => currStep + 1);
+        setDisabledActions(false);
+    }, [expandedEntity]);
 
     if (!expandedEntity) return <CircularProgress />;
 
@@ -145,115 +148,123 @@ const Entity: React.FC = () => {
                 categoriesWithRelationshipTemplates={categoriesWithRelationshipTemplates}
             />
             <Grid className="pageMargin">
-                <Grid item marginTop="20px">
+                <Grid item marginTop="20px" data-tour="entity-details">
                     <EntityDetails entityTemplate={currentEntityTemplate} expandedEntity={expandedEntity} />
                 </Grid>
 
-                <BlueTitle title={i18next.t('entityPage.relationshipTitle')} component="h5" variant="h5" style={{ marginTop: '2rem' }} />
-                <Grid item>
-                    <TabContext value={value}>
-                        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                            <TabList onChange={(_event, newValue) => setValue(newValue)}>
-                                {categoriesWithRelationshipTemplates?.map(({ _id, displayName }, index) => (
-                                    <Tab key={_id} label={displayName} value={String(index)} />
-                                ))}
-                            </TabList>
-                        </Box>
-                        {categoriesWithRelationshipTemplates?.map(({ _id, relationshipTemplates: connectedRelationshipTemplates }, index) => {
-                            const hasPermissionToCategory = Boolean(myPermissions.instancesPermissions.find((instance) => instance.category === _id));
-                            const canCreateRelationship = hasPermissionToCategory && !isEntityDisabled;
+                <Grid data-tour="connected-entities">
+                    <BlueTitle title={i18next.t('entityPage.relationshipTitle')} component="h5" variant="h5" style={{ marginTop: '2rem' }} />
+                    <Grid item>
+                        <TabContext value={value}>
+                            <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                                <TabList onChange={(_event, newValue) => setValue(newValue)}>
+                                    {categoriesWithRelationshipTemplates?.map(({ _id, displayName }, index) => (
+                                        <Tab key={_id} label={displayName} value={String(index)} />
+                                    ))}
+                                </TabList>
+                            </Box>
+                            {categoriesWithRelationshipTemplates?.map(({ _id, relationshipTemplates: connectedRelationshipTemplates }, index) => {
+                                const hasPermissionToCategory = Boolean(
+                                    myPermissions.instancesPermissions.find((instance) => instance.category === _id),
+                                );
+                                const canCreateRelationship = hasPermissionToCategory && !isEntityDisabled;
 
-                            return (
-                                <TabPanel key={_id} value={String(index)} sx={{ padding: 0 }}>
-                                    {connectedRelationshipTemplates?.map((currRelationshipTemplate) => {
-                                        return (
-                                            <Grid key={currRelationshipTemplate._id}>
-                                                <Grid container item justifyContent="space-between" marginBottom="10px">
-                                                    <Grid item marginTop="10px">
-                                                        <RelationshipTitle
-                                                            sourceEntityTemplateDisplayName={currRelationshipTemplate.sourceEntity.displayName}
-                                                            relationshipTemplateDisplayName={currRelationshipTemplate.displayName}
-                                                            destinationEntityTemplateDisplayName={
-                                                                currRelationshipTemplate.destinationEntity.displayName
-                                                            }
-                                                        />
+                                return (
+                                    <TabPanel key={_id} value={String(index)} sx={{ padding: 0 }}>
+                                        {connectedRelationshipTemplates?.map((currRelationshipTemplate) => {
+                                            return (
+                                                <Grid key={currRelationshipTemplate._id}>
+                                                    <Grid container item justifyContent="space-between" marginBottom="10px">
+                                                        <Grid item marginTop="10px">
+                                                            <RelationshipTitle
+                                                                sourceEntityTemplateDisplayName={currRelationshipTemplate.sourceEntity.displayName}
+                                                                relationshipTemplateDisplayName={currRelationshipTemplate.displayName}
+                                                                destinationEntityTemplateDisplayName={
+                                                                    currRelationshipTemplate.destinationEntity.displayName
+                                                                }
+                                                            />
+                                                        </Grid>
+
+                                                        <Grid item>
+                                                            <ResetFilterButton entitiesTableRef={entitiesTableRef} />
+                                                            <IconButtonWithPopoverText
+                                                                popoverText={
+                                                                    hasPermissionToCategory
+                                                                        ? i18next.t('entityPage.disabledEntity')
+                                                                        : i18next.t('permissions.dontHavePermissionsToCategory')
+                                                                }
+                                                                disabledToolTip={canCreateRelationship}
+                                                                iconButtonProps={{
+                                                                    disabled: !hasPermissionToCategory || isEntityDisabled,
+                                                                    onClick: () => {
+                                                                        setCreateRelationshipDialogState({
+                                                                            isOpen: true,
+                                                                            initialValues: {
+                                                                                relationshipTemplate: currRelationshipTemplate,
+                                                                                sourceEntity:
+                                                                                    currentEntityTemplate._id ===
+                                                                                    currRelationshipTemplate.sourceEntity._id
+                                                                                        ? expandedEntity.entity
+                                                                                        : null,
+                                                                                destinationEntity:
+                                                                                    currentEntityTemplate._id ===
+                                                                                    currRelationshipTemplate.destinationEntity._id
+                                                                                        ? expandedEntity.entity
+                                                                                        : null,
+                                                                            },
+                                                                        });
+                                                                    },
+                                                                }}
+                                                            >
+                                                                <AddCircle
+                                                                    color={canCreateRelationship ? 'primary' : 'disabled'}
+                                                                    fontSize="large"
+                                                                    data-tour="create-relationship"
+                                                                />
+                                                            </IconButtonWithPopoverText>
+                                                        </Grid>
                                                     </Grid>
-
-                                                    <Grid item>
-                                                        <ResetFilterButton entitiesTableRef={entitiesTableRef} />
-                                                        <IconButtonWithPopoverText
-                                                            popoverText={
-                                                                hasPermissionToCategory
-                                                                    ? i18next.t('entityPage.disabledEntity')
-                                                                    : i18next.t('permissions.dontHavePermissionsToCategory')
-                                                            }
-                                                            disabledToolTip={canCreateRelationship}
-                                                            iconButtonProps={{
-                                                                disabled: !hasPermissionToCategory || isEntityDisabled,
-                                                                onClick: () => {
-                                                                    setCreateRelationshipDialogState({
-                                                                        isOpen: true,
-                                                                        initialValues: {
-                                                                            relationshipTemplate: currRelationshipTemplate,
-                                                                            sourceEntity:
-                                                                                currentEntityTemplate._id ===
-                                                                                currRelationshipTemplate.sourceEntity._id
-                                                                                    ? expandedEntity.entity
-                                                                                    : null,
-                                                                            destinationEntity:
-                                                                                currentEntityTemplate._id ===
-                                                                                currRelationshipTemplate.destinationEntity._id
-                                                                                    ? expandedEntity.entity
-                                                                                    : null,
-                                                                        },
-                                                                    });
+                                                    <Box sx={{ marginBottom: '30px', width: '100%' }}>
+                                                        <EntitiesTableOfTemplate
+                                                            ref={entitiesTableRef}
+                                                            template={getOppositeEntityTemplate(currentEntityTemplate._id, currRelationshipTemplate)}
+                                                            showNavigateToRowButton
+                                                            deleteRowButtonProps={{
+                                                                popoverText: hasPermissionToCategory
+                                                                    ? i18next.t('entityPage.deleteRelationshipPopoverText')
+                                                                    : i18next.t('permissions.dontHavePermissionsToCategory'),
+                                                                onClick: (connectionToDelete) => {
+                                                                    setDeleteRelationshipDialogState({ open: true, connectionToDelete });
                                                                 },
+                                                                disabled: !hasPermissionToCategory,
                                                             }}
-                                                        >
-                                                            <AddCircle color={canCreateRelationship ? 'primary' : 'disabled'} fontSize="large" />
-                                                        </IconButtonWithPopoverText>
-                                                    </Grid>
+                                                            disabledEntity={!hasPermissionToCategory}
+                                                            getRowId={(connection) => {
+                                                                return connection.relationship.properties._id;
+                                                            }}
+                                                            getEntityPropertiesData={(connection) => {
+                                                                if (currentEntityTemplate._id === connection.destinationEntity.templateId)
+                                                                    return connection.sourceEntity.properties;
+                                                                return connection.destinationEntity.properties;
+                                                            }}
+                                                            rowModelType="clientSide"
+                                                            rowData={expandedEntity.connections.filter(
+                                                                (connection) => connection.relationship.templateId === currRelationshipTemplate._id,
+                                                            )}
+                                                            rowHeight={50}
+                                                            fontSize="16px"
+                                                            minColumnWidth={200}
+                                                            filterStorageProps={{ shouldSaveFilter: true, pageType: `entity-${entityId}` }}
+                                                        />
+                                                    </Box>
                                                 </Grid>
-                                                <Box sx={{ marginBottom: '30px', width: '100%' }}>
-                                                    <EntitiesTableOfTemplate
-                                                        ref={entitiesTableRef}
-                                                        template={getOppositeEntityTemplate(currentEntityTemplate._id, currRelationshipTemplate)}
-                                                        showNavigateToRowButton
-                                                        deleteRowButtonProps={{
-                                                            popoverText: hasPermissionToCategory
-                                                                ? i18next.t('entityPage.deleteRelationshipPopoverText')
-                                                                : i18next.t('permissions.dontHavePermissionsToCategory'),
-                                                            onClick: (connectionToDelete) => {
-                                                                setDeleteRelationshipDialogState({ open: true, connectionToDelete });
-                                                            },
-                                                            disabled: !hasPermissionToCategory,
-                                                        }}
-                                                        disabledEntity={!hasPermissionToCategory}
-                                                        getRowId={(connection) => {
-                                                            return connection.relationship.properties._id;
-                                                        }}
-                                                        getEntityPropertiesData={(connection) => {
-                                                            if (currentEntityTemplate._id === connection.destinationEntity.templateId)
-                                                                return connection.sourceEntity.properties;
-                                                            return connection.destinationEntity.properties;
-                                                        }}
-                                                        rowModelType="clientSide"
-                                                        rowData={expandedEntity.connections.filter(
-                                                            (connection) => connection.relationship.templateId === currRelationshipTemplate._id,
-                                                        )}
-                                                        rowHeight={50}
-                                                        fontSize="16px"
-                                                        minColumnWidth={200}
-                                                        filterStorageProps={{ shouldSaveFilter: true, pageType: `entity-${entityId}` }}
-                                                    />
-                                                </Box>
-                                            </Grid>
-                                        );
-                                    })}
-                                </TabPanel>
-                            );
-                        })}
-                    </TabContext>
+                                            );
+                                        })}
+                                    </TabPanel>
+                                );
+                            })}
+                        </TabContext>
+                    </Grid>
                 </Grid>
             </Grid>
             <CreateRelationshipDialog
