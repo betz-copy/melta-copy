@@ -2,7 +2,7 @@ import { IActionMetadata, ActionTypes } from './actionMetadata';
 
 export interface IBrokenRule {
     ruleId: string;
-    relationshipsIds: string[];
+    relationshipIds: string[];
 }
 
 export interface IRuleBreach {

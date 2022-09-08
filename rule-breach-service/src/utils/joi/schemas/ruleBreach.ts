@@ -8,7 +8,7 @@ export const brokenRulesSchema = joi
     .items(
         joi.object({
             ruleId: mongoIdSchema.required(),
-            relationshipsIds: joi.array().items(mongoIdSchema).required(),
+            relationshipIds: joi.array().items(mongoIdSchema).required(),
         }),
     )
     .min(1);

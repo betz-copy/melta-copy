@@ -73,7 +73,7 @@ describe('e2e rule breaches api testing', () => {
                         .post('/api/rule-breaches/alerts')
                         .send({
                             originUserId: fakeObjectId,
-                            brokenRules: [{ ruleId: fakeObjectId, relationshipsIds: [fakeObjectId, fakeObjectId2] }],
+                            brokenRules: [{ ruleId: fakeObjectId, relationshipIds: [fakeObjectId, fakeObjectId2] }],
                             actionType: ActionTypes.UpdateEntity,
                             actionMetadata: { entityId: fakeObjectId, updatedFields: { name: 'test' } },
                         })
@@ -82,7 +82,7 @@ describe('e2e rule breaches api testing', () => {
                     expect(body).toEqual(
                         expect.objectContaining({
                             originUserId: fakeObjectId,
-                            brokenRules: [{ ruleId: fakeObjectId, relationshipsIds: [fakeObjectId, fakeObjectId2] }],
+                            brokenRules: [{ ruleId: fakeObjectId, relationshipIds: [fakeObjectId, fakeObjectId2] }],
                             actionType: ActionTypes.UpdateEntity,
                             actionMetadata: { entityId: fakeObjectId, updatedFields: { name: 'test' } },
                         }),
@@ -94,7 +94,7 @@ describe('e2e rule breaches api testing', () => {
                         .post('/api/rule-breaches/alerts')
                         .send({
                             originUserId: fakeObjectId,
-                            brokenRules: [{ ruleId: fakeObjectId, relationshipsIds: [fakeObjectId, fakeObjectId2] }],
+                            brokenRules: [{ ruleId: fakeObjectId, relationshipIds: [fakeObjectId, fakeObjectId2] }],
                             actionType: ActionTypes.DeleteRelationship,
                             actionMetadata: { entityId: fakeObjectId, updatedFields: { name: 'test' } },
                         })
@@ -136,7 +136,7 @@ describe('e2e rule breaches api testing', () => {
                         .post('/api/rule-breaches/alerts')
                         .send({
                             originUserId: fakeObjectId,
-                            brokenRules: [{ ruleId: fakeObjectId, relationshipsIds: [fakeObjectId, fakeObjectId2] }],
+                            brokenRules: [{ ruleId: fakeObjectId, relationshipIds: [fakeObjectId, fakeObjectId2] }],
                             actionType: ActionTypes.UpdateEntity,
                             actionMetadata: { entityId: fakeObjectId, updatedFields: { name: 'test' } },
                         })
@@ -145,7 +145,7 @@ describe('e2e rule breaches api testing', () => {
                         .post('/api/rule-breaches/alerts')
                         .send({
                             originUserId: fakeObjectId2,
-                            brokenRules: [{ ruleId: fakeObjectId2, relationshipsIds: [fakeObjectId, fakeObjectId2] }],
+                            brokenRules: [{ ruleId: fakeObjectId2, relationshipIds: [fakeObjectId, fakeObjectId2] }],
                             actionType: ActionTypes.UpdateEntity,
                             actionMetadata: { entityId: fakeObjectId2, updatedFields: { name: 'test2' } },
                         })
@@ -154,7 +154,7 @@ describe('e2e rule breaches api testing', () => {
                         .post('/api/rule-breaches/alerts')
                         .send({
                             originUserId: fakeObjectId3,
-                            brokenRules: [{ ruleId: fakeObjectId3, relationshipsIds: [fakeObjectId, fakeObjectId2] }],
+                            brokenRules: [{ ruleId: fakeObjectId3, relationshipIds: [fakeObjectId, fakeObjectId2] }],
                             actionType: ActionTypes.UpdateEntity,
                             actionMetadata: { entityId: fakeObjectId3, updatedFields: { name: 'test3' } },
                         })
@@ -188,7 +188,7 @@ describe('e2e rule breaches api testing', () => {
                         .post('/api/rule-breaches/requests')
                         .send({
                             originUserId: fakeObjectId,
-                            brokenRules: [{ ruleId: fakeObjectId, relationshipsIds: [fakeObjectId, fakeObjectId2] }],
+                            brokenRules: [{ ruleId: fakeObjectId, relationshipIds: [fakeObjectId, fakeObjectId2] }],
                             actionType: ActionTypes.CreateRelationship,
                             actionMetadata: { relationshipTemplateId: fakeObjectId, sourceEntityId: fakeObjectId, destinationEntityId: fakeObjectId },
                         })
@@ -197,7 +197,7 @@ describe('e2e rule breaches api testing', () => {
                     expect(body).toEqual(
                         expect.objectContaining({
                             originUserId: fakeObjectId,
-                            brokenRules: [{ ruleId: fakeObjectId, relationshipsIds: [fakeObjectId, fakeObjectId2] }],
+                            brokenRules: [{ ruleId: fakeObjectId, relationshipIds: [fakeObjectId, fakeObjectId2] }],
                             actionType: ActionTypes.CreateRelationship,
                             actionMetadata: { relationshipTemplateId: fakeObjectId, sourceEntityId: fakeObjectId, destinationEntityId: fakeObjectId },
                         }),
@@ -209,7 +209,7 @@ describe('e2e rule breaches api testing', () => {
                         .post('/api/rule-breaches/requests')
                         .send({
                             originUserId: fakeObjectId,
-                            brokenRules: [{ ruleId: fakeObjectId, relationshipsIds: [fakeObjectId, fakeObjectId2] }],
+                            brokenRules: [{ ruleId: fakeObjectId, relationshipIds: [fakeObjectId, fakeObjectId2] }],
                             actionType: ActionTypes.DeleteRelationship,
                             actionMetadata: { entityId: fakeObjectId, updatedFields: { name: 'test' } },
                         })
@@ -249,7 +249,7 @@ describe('e2e rule breaches api testing', () => {
                         .post('/api/rule-breaches/requests')
                         .send({
                             originUserId: fakeObjectId,
-                            brokenRules: [{ ruleId: fakeObjectId, relationshipsIds: [fakeObjectId, fakeObjectId2] }],
+                            brokenRules: [{ ruleId: fakeObjectId, relationshipIds: [fakeObjectId, fakeObjectId2] }],
                             actionType: ActionTypes.UpdateEntity,
                             actionMetadata: { entityId: fakeObjectId, updatedFields: { name: 'test' } },
                         })
@@ -265,7 +265,7 @@ describe('e2e rule breaches api testing', () => {
                         .post('/api/rule-breaches/requests')
                         .send({
                             originUserId: fakeObjectId,
-                            brokenRules: [{ ruleId: fakeObjectId, relationshipsIds: [fakeObjectId, fakeObjectId2] }],
+                            brokenRules: [{ ruleId: fakeObjectId, relationshipIds: [fakeObjectId, fakeObjectId2] }],
                             actionType: ActionTypes.UpdateEntity,
                             actionMetadata: { entityId: fakeObjectId, updatedFields: { name: 'test' } },
                         })
@@ -281,7 +281,7 @@ describe('e2e rule breaches api testing', () => {
                         .post('/api/rule-breaches/requests')
                         .send({
                             originUserId: fakeObjectId,
-                            brokenRules: [{ ruleId: fakeObjectId, relationshipsIds: [fakeObjectId, fakeObjectId2] }],
+                            brokenRules: [{ ruleId: fakeObjectId, relationshipIds: [fakeObjectId, fakeObjectId2] }],
                             actionType: ActionTypes.UpdateEntity,
                             actionMetadata: { entityId: fakeObjectId, updatedFields: { name: 'test' } },
                         })
@@ -302,7 +302,7 @@ describe('e2e rule breaches api testing', () => {
                         .post('/api/rule-breaches/requests')
                         .send({
                             originUserId: fakeObjectId,
-                            brokenRules: [{ ruleId: fakeObjectId, relationshipsIds: [fakeObjectId, fakeObjectId2] }],
+                            brokenRules: [{ ruleId: fakeObjectId, relationshipIds: [fakeObjectId, fakeObjectId2] }],
                             actionType: ActionTypes.UpdateEntity,
                             actionMetadata: { entityId: fakeObjectId, updatedFields: { name: 'test' } },
                         })
@@ -339,7 +339,7 @@ describe('e2e rule breaches api testing', () => {
                         .post('/api/rule-breaches/requests')
                         .send({
                             originUserId: fakeObjectId,
-                            brokenRules: [{ ruleId: fakeObjectId, relationshipsIds: [fakeObjectId, fakeObjectId2] }],
+                            brokenRules: [{ ruleId: fakeObjectId, relationshipIds: [fakeObjectId, fakeObjectId2] }],
                             actionType: ActionTypes.UpdateEntity,
                             actionMetadata: { entityId: fakeObjectId, updatedFields: { name: 'test' } },
                         })
@@ -356,7 +356,7 @@ describe('e2e rule breaches api testing', () => {
                         .post('/api/rule-breaches/requests')
                         .send({
                             originUserId: fakeObjectId,
-                            brokenRules: [{ ruleId: fakeObjectId, relationshipsIds: [fakeObjectId, fakeObjectId2] }],
+                            brokenRules: [{ ruleId: fakeObjectId, relationshipIds: [fakeObjectId, fakeObjectId2] }],
                             actionType: ActionTypes.UpdateEntity,
                             actionMetadata: { entityId: fakeObjectId, updatedFields: { name: 'test' } },
                         })
@@ -375,7 +375,7 @@ describe('e2e rule breaches api testing', () => {
                         .post('/api/rule-breaches/requests')
                         .send({
                             originUserId: fakeObjectId,
-                            brokenRules: [{ ruleId: fakeObjectId, relationshipsIds: [fakeObjectId, fakeObjectId2] }],
+                            brokenRules: [{ ruleId: fakeObjectId, relationshipIds: [fakeObjectId, fakeObjectId2] }],
                             actionType: ActionTypes.UpdateEntity,
                             actionMetadata: { entityId: fakeObjectId, updatedFields: { name: 'test' } },
                         })
@@ -385,9 +385,9 @@ describe('e2e rule breaches api testing', () => {
                         .patch(`/api/rule-breaches/requests/${ruleBreachRequest._id}/broken-rules`)
                         .send({
                             brokenRules: [
-                                { ruleId: fakeObjectId4, relationshipsIds: [fakeObjectId3, fakeObjectId2] },
-                                { ruleId: fakeObjectId2, relationshipsIds: [fakeObjectId, fakeObjectId2] },
-                                { ruleId: fakeObjectId3, relationshipsIds: [fakeObjectId4, fakeObjectId3] },
+                                { ruleId: fakeObjectId4, relationshipIds: [fakeObjectId3, fakeObjectId2] },
+                                { ruleId: fakeObjectId2, relationshipIds: [fakeObjectId, fakeObjectId2] },
+                                { ruleId: fakeObjectId3, relationshipIds: [fakeObjectId4, fakeObjectId3] },
                             ],
                         })
                         .expect(200);
@@ -395,9 +395,9 @@ describe('e2e rule breaches api testing', () => {
                     expect(body).toEqual(
                         expect.objectContaining({
                             brokenRules: [
-                                { ruleId: fakeObjectId4, relationshipsIds: [fakeObjectId3, fakeObjectId2] },
-                                { ruleId: fakeObjectId2, relationshipsIds: [fakeObjectId, fakeObjectId2] },
-                                { ruleId: fakeObjectId3, relationshipsIds: [fakeObjectId4, fakeObjectId3] },
+                                { ruleId: fakeObjectId4, relationshipIds: [fakeObjectId3, fakeObjectId2] },
+                                { ruleId: fakeObjectId2, relationshipIds: [fakeObjectId, fakeObjectId2] },
+                                { ruleId: fakeObjectId3, relationshipIds: [fakeObjectId4, fakeObjectId3] },
                             ],
                         }),
                     );
@@ -408,7 +408,7 @@ describe('e2e rule breaches api testing', () => {
                         .post('/api/rule-breaches/requests')
                         .send({
                             originUserId: fakeObjectId,
-                            brokenRules: [{ ruleId: fakeObjectId, relationshipsIds: [fakeObjectId, fakeObjectId2] }],
+                            brokenRules: [{ ruleId: fakeObjectId, relationshipIds: [fakeObjectId, fakeObjectId2] }],
                             actionType: ActionTypes.UpdateEntity,
                             actionMetadata: { entityId: fakeObjectId, updatedFields: { name: 'test' } },
                         })
@@ -425,7 +425,7 @@ describe('e2e rule breaches api testing', () => {
                         .post('/api/rule-breaches/requests')
                         .send({
                             originUserId: fakeObjectId,
-                            brokenRules: [{ ruleId: fakeObjectId, relationshipsIds: [fakeObjectId, fakeObjectId2] }],
+                            brokenRules: [{ ruleId: fakeObjectId, relationshipIds: [fakeObjectId, fakeObjectId2] }],
                             actionType: ActionTypes.UpdateEntity,
                             actionMetadata: { entityId: fakeObjectId, updatedFields: { name: 'test' } },
                         })
@@ -444,7 +444,7 @@ describe('e2e rule breaches api testing', () => {
                         .post('/api/rule-breaches/requests')
                         .send({
                             originUserId: fakeObjectId,
-                            brokenRules: [{ ruleId: fakeObjectId, relationshipsIds: [fakeObjectId, fakeObjectId2] }],
+                            brokenRules: [{ ruleId: fakeObjectId, relationshipIds: [fakeObjectId, fakeObjectId2] }],
                             actionType: ActionTypes.UpdateEntity,
                             actionMetadata: { entityId: fakeObjectId, updatedFields: { name: 'test' } },
                         })
@@ -453,7 +453,7 @@ describe('e2e rule breaches api testing', () => {
                         .post('/api/rule-breaches/requests')
                         .send({
                             originUserId: fakeObjectId2,
-                            brokenRules: [{ ruleId: fakeObjectId2, relationshipsIds: [fakeObjectId, fakeObjectId2] }],
+                            brokenRules: [{ ruleId: fakeObjectId2, relationshipIds: [fakeObjectId, fakeObjectId2] }],
                             actionType: ActionTypes.UpdateEntity,
                             actionMetadata: { entityId: fakeObjectId2, updatedFields: { name: 'test2' } },
                         })
@@ -462,7 +462,7 @@ describe('e2e rule breaches api testing', () => {
                         .post('/api/rule-breaches/requests')
                         .send({
                             originUserId: fakeObjectId3,
-                            brokenRules: [{ ruleId: fakeObjectId3, relationshipsIds: [fakeObjectId, fakeObjectId2] }],
+                            brokenRules: [{ ruleId: fakeObjectId3, relationshipIds: [fakeObjectId, fakeObjectId2] }],
                             actionType: ActionTypes.UpdateEntity,
                             actionMetadata: { entityId: fakeObjectId3, updatedFields: { name: 'test3' } },
                         })
@@ -485,9 +485,9 @@ describe('e2e rule breaches api testing', () => {
                         .send({
                             originUserId: fakeObjectId,
                             brokenRules: [
-                                { ruleId: fakeObjectId3, relationshipsIds: [fakeObjectId, fakeObjectId2] },
-                                { ruleId: fakeObjectId, relationshipsIds: [fakeObjectId, fakeObjectId2] },
-                                { ruleId: fakeObjectId2, relationshipsIds: [fakeObjectId, fakeObjectId2] },
+                                { ruleId: fakeObjectId3, relationshipIds: [fakeObjectId, fakeObjectId2] },
+                                { ruleId: fakeObjectId, relationshipIds: [fakeObjectId, fakeObjectId2] },
+                                { ruleId: fakeObjectId2, relationshipIds: [fakeObjectId, fakeObjectId2] },
                             ],
                             actionType: ActionTypes.UpdateEntity,
                             actionMetadata: { entityId: fakeObjectId, updatedFields: { name: 'test' } },
@@ -498,10 +498,10 @@ describe('e2e rule breaches api testing', () => {
                         .send({
                             originUserId: fakeObjectId2,
                             brokenRules: [
-                                { ruleId: fakeObjectId3, relationshipsIds: [fakeObjectId, fakeObjectId2] },
-                                { ruleId: fakeObjectId, relationshipsIds: [fakeObjectId, fakeObjectId2] },
-                                { ruleId: fakeObjectId4, relationshipsIds: [fakeObjectId, fakeObjectId2] },
-                                { ruleId: fakeObjectId2, relationshipsIds: [fakeObjectId, fakeObjectId2] },
+                                { ruleId: fakeObjectId3, relationshipIds: [fakeObjectId, fakeObjectId2] },
+                                { ruleId: fakeObjectId, relationshipIds: [fakeObjectId, fakeObjectId2] },
+                                { ruleId: fakeObjectId4, relationshipIds: [fakeObjectId, fakeObjectId2] },
+                                { ruleId: fakeObjectId2, relationshipIds: [fakeObjectId, fakeObjectId2] },
                             ],
                             actionType: ActionTypes.UpdateEntity,
                             actionMetadata: { entityId: fakeObjectId2, updatedFields: { name: 'test2' } },
@@ -512,8 +512,8 @@ describe('e2e rule breaches api testing', () => {
                         .send({
                             originUserId: fakeObjectId3,
                             brokenRules: [
-                                { ruleId: fakeObjectId2, relationshipsIds: [fakeObjectId, fakeObjectId2] },
-                                { ruleId: fakeObjectId4, relationshipsIds: [fakeObjectId, fakeObjectId2] },
+                                { ruleId: fakeObjectId2, relationshipIds: [fakeObjectId, fakeObjectId2] },
+                                { ruleId: fakeObjectId4, relationshipIds: [fakeObjectId, fakeObjectId2] },
                             ],
                             actionType: ActionTypes.UpdateEntity,
                             actionMetadata: { entityId: fakeObjectId3, updatedFields: { name: 'test3' } },
@@ -531,8 +531,8 @@ describe('e2e rule breaches api testing', () => {
                         .send({
                             originUserId: fakeObjectId,
                             brokenRules: [
-                                { ruleId: fakeObjectId, relationshipsIds: [fakeObjectId, fakeObjectId2] },
-                                { ruleId: fakeObjectId2, relationshipsIds: [fakeObjectId, fakeObjectId2] },
+                                { ruleId: fakeObjectId, relationshipIds: [fakeObjectId, fakeObjectId2] },
+                                { ruleId: fakeObjectId2, relationshipIds: [fakeObjectId, fakeObjectId2] },
                             ],
                             actionType: ActionTypes.UpdateEntity,
                             actionMetadata: { entityId: fakeObjectId, updatedFields: { name: 'test' } },
@@ -543,9 +543,9 @@ describe('e2e rule breaches api testing', () => {
                         .send({
                             originUserId: fakeObjectId,
                             brokenRules: [
-                                { ruleId: fakeObjectId3, relationshipsIds: [fakeObjectId, fakeObjectId2] },
-                                { ruleId: fakeObjectId2, relationshipsIds: [fakeObjectId, fakeObjectId2] },
-                                { ruleId: fakeObjectId, relationshipsIds: [fakeObjectId, fakeObjectId2] },
+                                { ruleId: fakeObjectId3, relationshipIds: [fakeObjectId, fakeObjectId2] },
+                                { ruleId: fakeObjectId2, relationshipIds: [fakeObjectId, fakeObjectId2] },
+                                { ruleId: fakeObjectId, relationshipIds: [fakeObjectId, fakeObjectId2] },
                             ],
                             actionType: ActionTypes.UpdateEntity,
                             actionMetadata: { entityId: fakeObjectId, updatedFields: { name: 'test' } },
@@ -555,7 +555,7 @@ describe('e2e rule breaches api testing', () => {
                         .post('/api/rule-breaches/requests')
                         .send({
                             originUserId: fakeObjectId,
-                            brokenRules: [{ ruleId: fakeObjectId, relationshipsIds: [fakeObjectId, fakeObjectId2] }],
+                            brokenRules: [{ ruleId: fakeObjectId, relationshipIds: [fakeObjectId, fakeObjectId2] }],
                             actionType: ActionTypes.UpdateEntity,
                             actionMetadata: { entityId: fakeObjectId, updatedFields: { name: 'test' } },
                         })

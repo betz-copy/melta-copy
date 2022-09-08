@@ -9,7 +9,7 @@ export const ruleBreachSchemaDefinition: SchemaDefinition = {
         type: [
             {
                 ruleId: String,
-                relationshipsIds: [String],
+                relationshipIds: [String],
             },
         ],
         required: true,
