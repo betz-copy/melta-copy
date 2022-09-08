@@ -2,26 +2,28 @@
 import { Chance } from 'chance';
 import MockAdapter from 'axios-mock-adapter';
 import { generateMongoId } from './permissions';
-import { INotification, NotificationType } from '../interfaces/notifications';
+import { INotificationPopulated, NotificationType } from '../interfaces/notifications';
+import { generateRuleBreachAlert, generateRuleBreachRequest } from './ruleBreaches';
 
 const chance = new Chance();
 
-const generateNotification = (): INotification => {
+const generateNotification = (): INotificationPopulated => {
     const type = chance.pickone([NotificationType.ruleBreachAlert, NotificationType.ruleBreachRequest, NotificationType.ruleBreachResponse]);
 
-    let metadata;
+    let metadata: INotificationPopulated['metadata'];
 
     switch (type) {
         case NotificationType.ruleBreachAlert:
-            metadata = { alertId: generateMongoId() };
+            metadata = { alert: generateRuleBreachAlert() };
             break;
         case NotificationType.ruleBreachRequest:
-            metadata = { requestId: generateMongoId() };
+            metadata = { request: generateRuleBreachRequest() };
             break;
         case NotificationType.ruleBreachResponse:
-            metadata = { requestId: generateMongoId() };
+            metadata = { request: generateRuleBreachRequest(true) };
             break;
         default:
+            throw new Error('unsupported notification type');
     }
 
     return {
@@ -32,7 +34,7 @@ const generateNotification = (): INotification => {
     };
 };
 
-const myNotifications: INotification[] = [];
+const myNotifications: INotificationPopulated[] = [];
 
 for (let i = 0; i < chance.integer({ min: 1, max: 200 }); i += 1) {
     myNotifications.push(generateNotification());

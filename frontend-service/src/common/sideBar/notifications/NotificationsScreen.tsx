@@ -2,7 +2,7 @@ import i18next from 'i18next';
 import React, { CSSProperties } from 'react';
 import { toast } from 'react-toastify';
 import { environment } from '../../../globals';
-import { INotification } from '../../../interfaces/notifications';
+import { INotificationPopulated } from '../../../interfaces/notifications';
 import { getMyNotificationsRequest } from '../../../services/notificationService';
 import { InfiniteScroll } from '../../InfiniteScroll';
 import PopperSidebar from '../../PopperSidebar';
@@ -20,7 +20,7 @@ interface NotificationsScreenProps {
 export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({ open, setOpen, sideBarWidth, updateNotificationCount }) => {
     return (
         <PopperSidebar open={open} setOpen={setOpen} title={i18next.t('notifications.title')} side="right" sideMargin={sideBarWidth}>
-            <InfiniteScroll<INotification>
+            <InfiniteScroll<INotificationPopulated>
                 queryKey="getMyNotifications"
                 queryFunction={({ pageParam }) => getMyNotificationsRequest(infiniteScrollPageCount, Number(pageParam))}
                 onQueryError={(error) => {

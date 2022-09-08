@@ -359,6 +359,40 @@ export default {
         forTour: 'לסיור במערכת',
         pressHere: 'לחץ כאן',
     },
+    ruleBreachInfo: {
+        relActionInfo: {
+            creation: 'יצירת',
+            deletion: 'מחיקת',
+            relationship: 'קשר',
+            fromEntity: 'מישות',
+            toEntity: 'לישות',
+        },
+        updateEntityActionInfo: {
+            updatingEntity: 'עדכון ישות',
+            unknownEntity: 'לא ידוע',
+            entityBeforeUnknown: 'לא ידוע ישות לפני',
+            entityBefore: 'ישות לפני',
+            entityAfterUnknown: 'לא ידוע ישות אחרי',
+            entityAfter: 'ישות אחרי',
+        },
+        brokeTheFollowingRules: 'עברה על החוקים',
+        relevantEntities: 'ישויות רלוונטיות',
+        unknownRelationship: 'קשר לא ידוע',
+        noRelevantEntitiesForBrokenRule: 'אין ישויות רלוונטיות למעבר על חוק זה',
+    },
+    ruleBreachAlertNotification: {
+        payAttention: 'שים לב,',
+        by: 'ע"י',
+    },
+    ruleBreachRequestNotification: {
+        requestWaitingForApproval: 'בקשה ממתינה לאישור',
+    },
+    ruleBreachResponseNotification: {
+        theRequestOfExecutingTheAction: 'הבקשה לביצוע הפעולה',
+        wasApproved: 'אושרה',
+        wasDenied: 'סורבה',
+        by: 'ע"י',
+    },
     agGridLocaleText,
     muiDatePickersLocaleText,
 };

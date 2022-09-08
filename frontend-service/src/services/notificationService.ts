@@ -1,6 +1,6 @@
 import axios from '../axios';
 import { environment } from '../globals';
-import { INotification } from '../interfaces/notifications';
+import { INotificationPopulated } from '../interfaces/notifications';
 
 const { notifications } = environment.api;
 
@@ -9,7 +9,7 @@ export const getMyNotificationsRequest = async (limit: number, step?: number, ty
     if (step) query.step = step;
     if (type) query.type = type;
 
-    const { data } = await axios.get<INotification[]>(`${notifications}/my`, { params: query });
+    const { data } = await axios.get<INotificationPopulated[]>(`${notifications}/my`, { params: query });
     return data;
 };
 

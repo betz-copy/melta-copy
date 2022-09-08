@@ -72,4 +72,4 @@ const mockPermissions = (mock: MockAdapter) => {
     });
 };
 
-export { mockPermissions };
+export { mockPermissions, generateUser };

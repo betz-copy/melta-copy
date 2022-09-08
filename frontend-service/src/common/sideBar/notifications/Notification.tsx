@@ -1,22 +1,28 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Card, CardContent, Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
 import { useMutation } from 'react-query';
 import { LoadingButton } from '@mui/lab';
 import { toast } from 'react-toastify';
-import { INotification } from '../../../interfaces/notifications';
+import {
+    IAlertMetadataPopulated,
+    IRequestMetadataPopulated,
+    IResponseMetadataPopulated,
+    INotificationPopulated,
+    NotificationType,
+} from '../../../interfaces/notifications';
 import { getShortDate } from '../../../utils/date';
 import { NotificationSeenRequest } from '../../../services/notificationService';
+import { RuleBreachAlertNotification } from './ruleBreachNotification/RuleBreachAlertNotification';
+import { RuleBreachRequestNotification } from './ruleBreachNotification/RuleBreachRequestNotification';
+import { RuleBreachResponseNotification } from './ruleBreachNotification/RuleBreachResponseNotification';
 
 interface NotificationCardProps {
-    notification: INotification;
+    notification: INotificationPopulated;
     onSeen?: () => void;
 }
 
 export const NotificationCard: React.FC<NotificationCardProps> = ({ notification, onSeen }) => {
-    const [title, _setTitle] = useState('');
-    const [element, _setElement] = useState<JSX.Element | null>(null);
-
     const { mutate, isLoading, isSuccess } = useMutation(() => NotificationSeenRequest(notification._id), {
         onSuccess: onSeen,
         onError: (error) => {
@@ -32,22 +38,29 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({ notification
                 marginTop: '0.5rem',
                 marginX: '1rem',
                 padding: '0.5rem',
-                direction: 'rtl',
                 pointerEvents: isSuccess ? 'none' : 'initial',
                 opacity: isSuccess ? '0.20' : '1',
             }}
         >
             <CardContent sx={{ '&:last-child': { padding: 0 } }}>
                 <Grid container direction="column">
-                    <Grid item container justifyContent="space-between" wrap="nowrap">
+                    <Grid item container justifyContent="flex-end" wrap="nowrap">
                         <Typography fontSize={14}>{getShortDate(notification.createdAt)}</Typography>
-
-                        <Typography>{title}</Typography>
                     </Grid>
 
-                    <Grid item>{element}</Grid>
+                    <Grid item>
+                        {notification.type === NotificationType.ruleBreachAlert && (
+                            <RuleBreachAlertNotification ruleBreachAlert={(notification.metadata as IAlertMetadataPopulated).alert} />
+                        )}
+                        {notification.type === NotificationType.ruleBreachRequest && (
+                            <RuleBreachRequestNotification ruleBreachRequest={(notification.metadata as IRequestMetadataPopulated).request} />
+                        )}
+                        {notification.type === NotificationType.ruleBreachResponse && (
+                            <RuleBreachResponseNotification ruleBreachRequest={(notification.metadata as IResponseMetadataPopulated).request} />
+                        )}
+                    </Grid>
 
-                    <Grid item container justifyContent="space-between" wrap="nowrap">
+                    <Grid item container justifyContent="flex-end" wrap="nowrap">
                         <LoadingButton onClick={() => mutate()} loading={isLoading}>
                             {i18next.t('notifications.setAsSeen')}
                         </LoadingButton>
