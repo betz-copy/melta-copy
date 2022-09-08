@@ -5,9 +5,11 @@ import ValidateRequest from '../../utils/joi';
 import {
     createRuleBreachRequestRequestSchema,
     getRuleBreachRequestByIdRequestSchema,
+    getRuleBreachRequestsByRuleIdRequestSchema,
     reviewRuleBreachRequestRequestSchema,
     searchRuleBreachRequestsRequestSchema,
     updateRuleBreachRequestActionMetadataRequestSchema,
+    updateRuleBreachRequestBrokenRulesRequestSchema,
 } from './validator.schema';
 
 const RuleBreachRequestsRouter: Router = Router();
@@ -36,10 +38,22 @@ RuleBreachRequestsRouter.patch(
     wrapController(RuleBreachRequestsController.updateRuleBreachRequestActionMetadata),
 );
 
+RuleBreachRequestsRouter.patch(
+    '/:ruleBreachRequestId/broken-rules',
+    ValidateRequest(updateRuleBreachRequestBrokenRulesRequestSchema),
+    wrapController(RuleBreachRequestsController.updateRuleBreachRequestBrokenRules),
+);
+
 RuleBreachRequestsRouter.get(
     '/:ruleBreachRequestId',
     ValidateRequest(getRuleBreachRequestByIdRequestSchema),
     wrapController(RuleBreachRequestsController.getRuleBreachRequestById),
+);
+
+RuleBreachRequestsRouter.get(
+    '/broken-rules/:ruleId',
+    ValidateRequest(getRuleBreachRequestsByRuleIdRequestSchema),
+    wrapController(RuleBreachRequestsController.getRuleBreachRequestsByRuleId),
 );
 
 export default RuleBreachRequestsRouter;

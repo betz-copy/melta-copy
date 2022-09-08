@@ -15,6 +15,7 @@ const { mongo } = config;
 const fakeObjectId = '111111111111111111111111';
 const fakeObjectId2 = '222222222222222222222222';
 const fakeObjectId3 = '333333333333333333333333';
+const fakeObjectId4 = '444444444444444444444444';
 
 const removeAllCollections = async () => {
     const collections = Object.keys(mongoose.connection.collections);
@@ -121,74 +122,6 @@ describe('e2e rule breaches api testing', () => {
                             actionType: 'test',
                             actionMetadata: { entityId: fakeObjectId, updatedFields: { name: 'test' } },
                         })
-                        .expect(400);
-                });
-            });
-
-            describe('PATCH /:ruleBreachAlertId/action-metadata', () => {
-                it('should fail validation for unknown fields', async () => {
-                    return request(app).post('/api/rule-breaches/alerts').send({ test: 'test' }).expect(400);
-                });
-
-                it('should fail validation for missing fields', async () => {
-                    return request(app).post('/api/rule-breaches/alerts').send({ actionType: ActionTypes.CreateRelationship }).expect(400);
-                });
-
-                it('should update rule breach alert metadata', async () => {
-                    const { body: ruleBreachAlert } = await request(app)
-                        .post('/api/rule-breaches/alerts')
-                        .send({
-                            originUserId: fakeObjectId,
-                            brokenRules: [{ ruleId: fakeObjectId, relationshipsIds: [fakeObjectId, fakeObjectId2] }],
-                            actionType: ActionTypes.UpdateEntity,
-                            actionMetadata: { entityId: fakeObjectId, updatedFields: { name: 'test' } },
-                        })
-                        .expect(200);
-
-                    const { body } = await request(app)
-                        .patch(`/api/rule-breaches/alerts/${ruleBreachAlert._id}/action-metadata`)
-                        .send({ actionType: ActionTypes.DeleteRelationship, actionMetadata: { relationshipId: fakeObjectId } })
-                        .expect(200);
-
-                    expect(body).toEqual(
-                        expect.objectContaining({
-                            actionType: ActionTypes.DeleteRelationship,
-                            actionMetadata: { relationshipId: fakeObjectId },
-                        }),
-                    );
-                });
-
-                it('should fail for update rule breach alert with incorrect action type', async () => {
-                    const { body: ruleBreachAlert } = await request(app)
-                        .post('/api/rule-breaches/alerts')
-                        .send({
-                            originUserId: fakeObjectId,
-                            brokenRules: [{ ruleId: fakeObjectId, relationshipsIds: [fakeObjectId, fakeObjectId2] }],
-                            actionType: ActionTypes.UpdateEntity,
-                            actionMetadata: { entityId: fakeObjectId, updatedFields: { name: 'test' } },
-                        })
-                        .expect(200);
-
-                    await request(app)
-                        .patch(`/api/rule-breaches/alerts/${ruleBreachAlert._id}/action-metadata`)
-                        .send({ actionType: 'test', actionMetadata: { relationshipId: fakeObjectId } })
-                        .expect(400);
-                });
-
-                it('should fail for update rule breach alert with incorrect action metadata', async () => {
-                    const { body: ruleBreachAlert } = await request(app)
-                        .post('/api/rule-breaches/alerts')
-                        .send({
-                            originUserId: fakeObjectId,
-                            brokenRules: [{ ruleId: fakeObjectId, relationshipsIds: [fakeObjectId, fakeObjectId2] }],
-                            actionType: ActionTypes.UpdateEntity,
-                            actionMetadata: { entityId: fakeObjectId, updatedFields: { name: 'test' } },
-                        })
-                        .expect(200);
-
-                    await request(app)
-                        .patch(`/api/rule-breaches/alerts/${ruleBreachAlert._id}/action-metadata`)
-                        .send({ actionType: ActionTypes.UpdateEntity, actionMetadata: { relationshipId: fakeObjectId } })
                         .expect(400);
                 });
             });
@@ -364,14 +297,6 @@ describe('e2e rule breaches api testing', () => {
             });
 
             describe('PATCH /:ruleBreachRequestId/action-metadata', () => {
-                it('should fail validation for unknown fields', async () => {
-                    return request(app).post('/api/rule-breaches/requests').send({ test: 'test' }).expect(400);
-                });
-
-                it('should fail validation for missing fields', async () => {
-                    return request(app).post('/api/rule-breaches/requests').send({ actionType: ActionTypes.CreateRelationship }).expect(400);
-                });
-
                 it('should update rule breach request metadata', async () => {
                     const { body: ruleBreachRequest } = await request(app)
                         .post('/api/rule-breaches/requests')
@@ -385,13 +310,26 @@ describe('e2e rule breaches api testing', () => {
 
                     const { body } = await request(app)
                         .patch(`/api/rule-breaches/requests/${ruleBreachRequest._id}/action-metadata`)
-                        .send({ actionType: ActionTypes.DeleteRelationship, actionMetadata: { relationshipId: fakeObjectId } })
+                        .send({
+                            actionType: ActionTypes.DeleteRelationship,
+                            actionMetadata: {
+                                relationshipId: fakeObjectId,
+                                relationshipTemplateId: fakeObjectId,
+                                sourceEntityId: fakeObjectId,
+                                destinationEntityId: fakeObjectId,
+                            },
+                        })
                         .expect(200);
 
                     expect(body).toEqual(
                         expect.objectContaining({
                             actionType: ActionTypes.DeleteRelationship,
-                            actionMetadata: { relationshipId: fakeObjectId },
+                            actionMetadata: {
+                                relationshipId: fakeObjectId,
+                                relationshipTemplateId: fakeObjectId,
+                                sourceEntityId: fakeObjectId,
+                                destinationEntityId: fakeObjectId,
+                            },
                         }),
                     );
                 });
@@ -431,11 +369,76 @@ describe('e2e rule breaches api testing', () => {
                 });
             });
 
-            describe('GET /:ruleBreachRequestId', () => {
-                it('should fail validation for unknown fields', async () => {
-                    return request(app).post('/api/rule-breaches/requests').send({ test: 'test' }).expect(400);
+            describe('PATCH /:ruleBreachRequestId/broken-rules', () => {
+                it('should update rule breach request broken rules', async () => {
+                    const { body: ruleBreachRequest } = await request(app)
+                        .post('/api/rule-breaches/requests')
+                        .send({
+                            originUserId: fakeObjectId,
+                            brokenRules: [{ ruleId: fakeObjectId, relationshipsIds: [fakeObjectId, fakeObjectId2] }],
+                            actionType: ActionTypes.UpdateEntity,
+                            actionMetadata: { entityId: fakeObjectId, updatedFields: { name: 'test' } },
+                        })
+                        .expect(200);
+
+                    const { body } = await request(app)
+                        .patch(`/api/rule-breaches/requests/${ruleBreachRequest._id}/broken-rules`)
+                        .send({
+                            brokenRules: [
+                                { ruleId: fakeObjectId4, relationshipsIds: [fakeObjectId3, fakeObjectId2] },
+                                { ruleId: fakeObjectId2, relationshipsIds: [fakeObjectId, fakeObjectId2] },
+                                { ruleId: fakeObjectId3, relationshipsIds: [fakeObjectId4, fakeObjectId3] },
+                            ],
+                        })
+                        .expect(200);
+
+                    expect(body).toEqual(
+                        expect.objectContaining({
+                            brokenRules: [
+                                { ruleId: fakeObjectId4, relationshipsIds: [fakeObjectId3, fakeObjectId2] },
+                                { ruleId: fakeObjectId2, relationshipsIds: [fakeObjectId, fakeObjectId2] },
+                                { ruleId: fakeObjectId3, relationshipsIds: [fakeObjectId4, fakeObjectId3] },
+                            ],
+                        }),
+                    );
                 });
 
+                it('should fail for incorrect broken rules', async () => {
+                    const { body: ruleBreachRequest } = await request(app)
+                        .post('/api/rule-breaches/requests')
+                        .send({
+                            originUserId: fakeObjectId,
+                            brokenRules: [{ ruleId: fakeObjectId, relationshipsIds: [fakeObjectId, fakeObjectId2] }],
+                            actionType: ActionTypes.UpdateEntity,
+                            actionMetadata: { entityId: fakeObjectId, updatedFields: { name: 'test' } },
+                        })
+                        .expect(200);
+
+                    await request(app)
+                        .patch(`/api/rule-breaches/requests/${ruleBreachRequest._id}/broken-rules`)
+                        .send({ brokenRules: [{ ruleId: fakeObjectId }] })
+                        .expect(400);
+                });
+
+                it('should fail for no broken rules', async () => {
+                    const { body: ruleBreachRequest } = await request(app)
+                        .post('/api/rule-breaches/requests')
+                        .send({
+                            originUserId: fakeObjectId,
+                            brokenRules: [{ ruleId: fakeObjectId, relationshipsIds: [fakeObjectId, fakeObjectId2] }],
+                            actionType: ActionTypes.UpdateEntity,
+                            actionMetadata: { entityId: fakeObjectId, updatedFields: { name: 'test' } },
+                        })
+                        .expect(200);
+
+                    await request(app)
+                        .patch(`/api/rule-breaches/requests/${ruleBreachRequest._id}/broken-rules`)
+                        .send({ brokenRules: [] })
+                        .expect(400);
+                });
+            });
+
+            describe('GET /:ruleBreachRequestId', () => {
                 it('should get rule breach request by id', async () => {
                     await request(app)
                         .post('/api/rule-breaches/requests')
@@ -472,6 +475,95 @@ describe('e2e rule breaches api testing', () => {
 
                 it('should fail for getting a non-existing rule breach request', async () => {
                     return request(app).get(`/api/rule-breaches/requests/${fakeObjectId}`).expect(404);
+                });
+            });
+
+            describe('GET /broken-rules/:ruleId', () => {
+                it('should get rule breach requests by rule id', async () => {
+                    await request(app)
+                        .post('/api/rule-breaches/requests')
+                        .send({
+                            originUserId: fakeObjectId,
+                            brokenRules: [
+                                { ruleId: fakeObjectId3, relationshipsIds: [fakeObjectId, fakeObjectId2] },
+                                { ruleId: fakeObjectId, relationshipsIds: [fakeObjectId, fakeObjectId2] },
+                                { ruleId: fakeObjectId2, relationshipsIds: [fakeObjectId, fakeObjectId2] },
+                            ],
+                            actionType: ActionTypes.UpdateEntity,
+                            actionMetadata: { entityId: fakeObjectId, updatedFields: { name: 'test' } },
+                        })
+                        .expect(200);
+                    const { body: ruleBreachRequest1 } = await request(app)
+                        .post('/api/rule-breaches/requests')
+                        .send({
+                            originUserId: fakeObjectId2,
+                            brokenRules: [
+                                { ruleId: fakeObjectId3, relationshipsIds: [fakeObjectId, fakeObjectId2] },
+                                { ruleId: fakeObjectId, relationshipsIds: [fakeObjectId, fakeObjectId2] },
+                                { ruleId: fakeObjectId4, relationshipsIds: [fakeObjectId, fakeObjectId2] },
+                                { ruleId: fakeObjectId2, relationshipsIds: [fakeObjectId, fakeObjectId2] },
+                            ],
+                            actionType: ActionTypes.UpdateEntity,
+                            actionMetadata: { entityId: fakeObjectId2, updatedFields: { name: 'test2' } },
+                        })
+                        .expect(200);
+                    const { body: ruleBreachRequest2 } = await request(app)
+                        .post('/api/rule-breaches/requests')
+                        .send({
+                            originUserId: fakeObjectId3,
+                            brokenRules: [
+                                { ruleId: fakeObjectId2, relationshipsIds: [fakeObjectId, fakeObjectId2] },
+                                { ruleId: fakeObjectId4, relationshipsIds: [fakeObjectId, fakeObjectId2] },
+                            ],
+                            actionType: ActionTypes.UpdateEntity,
+                            actionMetadata: { entityId: fakeObjectId3, updatedFields: { name: 'test3' } },
+                        })
+                        .expect(200);
+
+                    const { body } = await request(app).get(`/api/rule-breaches/requests/broken-rules/${fakeObjectId4}`).expect(200);
+
+                    expect(body).toEqual([ruleBreachRequest1, ruleBreachRequest2]);
+                });
+
+                it('should get an empty array', async () => {
+                    await request(app)
+                        .post('/api/rule-breaches/requests')
+                        .send({
+                            originUserId: fakeObjectId,
+                            brokenRules: [
+                                { ruleId: fakeObjectId, relationshipsIds: [fakeObjectId, fakeObjectId2] },
+                                { ruleId: fakeObjectId2, relationshipsIds: [fakeObjectId, fakeObjectId2] },
+                            ],
+                            actionType: ActionTypes.UpdateEntity,
+                            actionMetadata: { entityId: fakeObjectId, updatedFields: { name: 'test' } },
+                        })
+                        .expect(200);
+                    await request(app)
+                        .post('/api/rule-breaches/requests')
+                        .send({
+                            originUserId: fakeObjectId,
+                            brokenRules: [
+                                { ruleId: fakeObjectId3, relationshipsIds: [fakeObjectId, fakeObjectId2] },
+                                { ruleId: fakeObjectId2, relationshipsIds: [fakeObjectId, fakeObjectId2] },
+                                { ruleId: fakeObjectId, relationshipsIds: [fakeObjectId, fakeObjectId2] },
+                            ],
+                            actionType: ActionTypes.UpdateEntity,
+                            actionMetadata: { entityId: fakeObjectId, updatedFields: { name: 'test' } },
+                        })
+                        .expect(200);
+                    await request(app)
+                        .post('/api/rule-breaches/requests')
+                        .send({
+                            originUserId: fakeObjectId,
+                            brokenRules: [{ ruleId: fakeObjectId, relationshipsIds: [fakeObjectId, fakeObjectId2] }],
+                            actionType: ActionTypes.UpdateEntity,
+                            actionMetadata: { entityId: fakeObjectId, updatedFields: { name: 'test' } },
+                        })
+                        .expect(200);
+
+                    const { body } = await request(app).get(`/api/rule-breaches/requests/broken-rules/${fakeObjectId4}`).expect(200);
+
+                    expect(body).toEqual([]);
                 });
             });
         });

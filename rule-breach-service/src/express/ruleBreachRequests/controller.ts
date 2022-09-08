@@ -11,23 +11,36 @@ class RuleBreachRequestsController {
     }
 
     static async reviewRuleBreachRequest(req: Request, res: Response) {
-        const { reviewerId, approved } = req.body;
         const { ruleBreachRequestId } = req.params;
+        const { reviewerId, approved } = req.body;
 
         res.json(await RuleBreachRequestsManager.reviewRuleBreachRequest(ruleBreachRequestId, reviewerId, approved));
     }
 
     static async updateRuleBreachRequestActionMetadata(req: Request, res: Response) {
-        const { actionType, actionMetadata } = req.body;
         const { ruleBreachRequestId } = req.params;
+        const { actionType, actionMetadata } = req.body;
 
         res.json(await RuleBreachRequestsManager.updateRuleBreachRequestActionMetadata(ruleBreachRequestId, actionType, actionMetadata));
+    }
+
+    static async updateRuleBreachRequestBrokenRules(req: Request, res: Response) {
+        const { ruleBreachRequestId } = req.params;
+        const { brokenRules } = req.body;
+
+        res.json(await RuleBreachRequestsManager.updateRuleBreachRequestBrokenRules(ruleBreachRequestId, brokenRules));
     }
 
     static async getRuleBreachRequestById(req: Request, res: Response) {
         const { ruleBreachRequestId } = req.params;
 
         res.json(await RuleBreachRequestsManager.getRuleBreachRequestById(ruleBreachRequestId));
+    }
+
+    static async getRuleBreachRequestsByRuleId(req: Request, res: Response) {
+        const { ruleId } = req.params;
+
+        res.json(await RuleBreachRequestsManager.getRuleBreachRequestsByRuleId(ruleId));
     }
 }
 
