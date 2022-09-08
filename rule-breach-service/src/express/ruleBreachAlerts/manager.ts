@@ -1,5 +1,4 @@
 import { translateAgGridFilterModel, translateAgGridSortModel } from '../../utils/agGrid';
-import { ActionTypes, IActionMetadata } from '../../utils/interfaces/actionMetadata';
 import { IAgGridRequest } from '../../utils/interfaces/agGrid';
 import { IRuleBreach } from '../../utils/interfaces/ruleBreach';
 import { RuleBreachDoesNotExistError } from '../error';
@@ -18,16 +17,6 @@ export class RuleBreachAlertsManager {
 
     public static async createRuleBreachAlert(ruleBreachAlertData: Omit<IRuleBreach, 'createdAt'>): Promise<IRuleBreachAlertDocument> {
         return RuleBreachAlertsModel.create(ruleBreachAlertData);
-    }
-
-    public static async updateRuleBreachAlertActionMetadata(
-        ruleBreachAlertId: string,
-        actionType: ActionTypes,
-        actionMetadata: IActionMetadata,
-    ): Promise<IRuleBreachAlertDocument> {
-        return RuleBreachAlertsModel.findByIdAndUpdate(ruleBreachAlertId, { actionType, actionMetadata }, { new: true })
-            .orFail(new RuleBreachDoesNotExistError(ruleBreachAlertId, 'alert'))
-            .exec();
     }
 
     public static async getRuleBreachAlertById(ruleBreachAlertId: string): Promise<IRuleBreachAlertDocument> {
