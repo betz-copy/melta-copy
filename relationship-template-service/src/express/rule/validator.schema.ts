@@ -19,7 +19,7 @@ export const createRuleRequestSchema = Joi.object({
         relationshipTemplateId: MongoIdSchema.required(),
         pinnedEntityTemplateId: MongoIdSchema.required(),
         unpinnedEntityTemplateId: MongoIdSchema.required(),
-        formula: Joi.object(),
+        formula: Joi.object().required(),
         disabled: Joi.boolean().default(false),
     },
     query: {},
