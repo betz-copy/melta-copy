@@ -188,8 +188,18 @@ export class RelationshipManager {
 
         const relationshipTemplate = await getRelationshipTemplateById(templateId);
 
-        const ruleQueryBySourceId = await this.getRuleQueryBySourceId(transaction, relationshipTemplate, sourceEntityId, destinationEntityId);
-        const ruleQueryByDestId = await this.getRuleQueryByDestId(transaction, relationshipTemplate, sourceEntityId, destinationEntityId);
+        const ruleQueryBySourceId = await RelationshipManager.getRuleQueryBySourceId(
+            transaction,
+            relationshipTemplate,
+            sourceEntityId,
+            destinationEntityId,
+        );
+        const ruleQueryByDestId = await RelationshipManager.getRuleQueryByDestId(
+            transaction,
+            relationshipTemplate,
+            sourceEntityId,
+            destinationEntityId,
+        );
         const ruleQueries = await Promise.all([...ruleQueryBySourceId, ...ruleQueryByDestId]);
 
         const ruleResults = await getRuleResults(transaction, ruleQueries.flat());
