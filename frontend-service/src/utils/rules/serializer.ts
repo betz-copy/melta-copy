@@ -110,6 +110,9 @@ export class RuleSerializer {
         return {
             id: uuid(),
             type: 'group',
+            properties: {
+                conjunction: gr.ruleOfGroup,
+            },
             children1: Object.fromEntries(
                 gr.subFormulas.map((subFormula) => [uuid(), RuleSerializer.formulaComponentToRuleItem(subFormula) as JsonItem]),
             ),
