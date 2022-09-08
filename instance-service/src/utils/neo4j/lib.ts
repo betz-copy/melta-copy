@@ -1,6 +1,8 @@
 import { v4 as uuidv4 } from 'uuid';
 import neo4j, { QueryResult, Node, Relationship } from 'neo4j-driver';
 import config from '../../config';
+import { IEntity } from '../../express/entities/interface';
+import { IRelationship } from '../../express/relationships/interface';
 
 /**
  *
@@ -38,10 +40,11 @@ const normalizeFields = (properties: Record<string, any>): Record<string, any> =
 };
 
 type ResponseType = 'singleResponse' | 'multipleResponses';
+type Response<ResType extends ResponseType, Data> = ResType extends 'singleResponse' ? null | Data : Data[];
 
 export const normalizeReturnedEntity =
-    (response: ResponseType = 'singleResponse') =>
-    (result: QueryResult) => {
+    <T extends ResponseType>(response: T) =>
+    (result: QueryResult): Response<T, IEntity> => {
         const entities = result.records.map((record) => {
             const { labels, properties } = record.get(0) as Node;
 
@@ -52,10 +55,10 @@ export const normalizeReturnedEntity =
         });
 
         if (response === 'singleResponse') {
-            return entities.length > 0 ? entities[0] : null;
+            return (entities.length > 0 ? entities[0] : null) as Response<T, IEntity>;
         }
 
-        return entities;
+        return entities as Response<T, IEntity>;
     };
 
 export const normalizeResponseCount = (result: QueryResult): number => {
@@ -67,8 +70,8 @@ export const normalizeRuleResult = (result: QueryResult): boolean => {
 };
 
 export const normalizeReturnedRelationship =
-    (response: ResponseType = 'singleResponse') =>
-    (result: QueryResult) => {
+    <T extends ResponseType>(response: T) =>
+    (result: QueryResult): Response<T, IRelationship> => {
         const relationships = result.records.map((record) => {
             const { type, properties } = record.get('r') as Relationship;
             const { properties: sourceEntityProps } = record.get('s') as Node;
@@ -83,10 +86,10 @@ export const normalizeReturnedRelationship =
         });
 
         if (response === 'singleResponse') {
-            return relationships.length > 0 ? relationships[0] : null;
+            return (relationships.length > 0 ? relationships[0] : null) as Response<T, IRelationship>;
         }
 
-        return relationships;
+        return relationships as Response<T, IRelationship>;
     };
 
 export const normalizeReturnedDeletedRelationship = (result: QueryResult) => {

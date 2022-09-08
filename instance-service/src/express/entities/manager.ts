@@ -12,22 +12,16 @@ import { IEntity, IMongoEntityTemplate } from './interface';
 import { NotFoundError, ServiceError } from '../error';
 import { agGridRequestToNeo4JRequest, agGridSearchRequestToNeo4JRequest, IAGGridRequest } from '../../utils/agGridFilterModelToNeoQuery';
 import getLatestIndex from '../../utils/redis/getLatestIndex';
-import config from '../../config';
-import {
-    areAllBrokenRulesIgnored,
-    createRuleQuery,
-    getBrokenRules,
-    getRuleResults,
-    getRulesByEntityTemplateId,
-    searchRuleTemplates,
-} from '../rules/lib';
+import { areAllBrokenRulesIgnored, createRulesQueries, getBrokenRules, getRulesByEntityTemplateId, searchRuleTemplates } from '../rules/lib';
 import { IBrokenRule } from '../rules/interfaces';
+import { transactionRunAndNormalize, getRuleResults } from '../rules/transaction';
+import config from '../../config';
 
 export class EntityManager {
     static createEntity(entity: IEntity) {
         const { templateId, properties } = entity;
 
-        return Neo4jClient.writeTransaction(`CREATE (e: \`${templateId}\` $properties) RETURN e`, normalizeReturnedEntity(), {
+        return Neo4jClient.writeTransaction(`CREATE (e: \`${templateId}\` $properties) RETURN e`, normalizeReturnedEntity('singleResponse'), {
             properties: {
                 ...generateDefaultProperties(),
                 ...properties,
@@ -67,7 +61,7 @@ export class EntityManager {
     }
 
     static async getEntityById(id: string): Promise<IEntity> {
-        const node = await Neo4jClient.readTransaction(`MATCH (e {_id: '${id}'}) RETURN e`, normalizeReturnedEntity());
+        const node = await Neo4jClient.readTransaction(`MATCH (e {_id: '${id}'}) RETURN e`, normalizeReturnedEntity('singleResponse'));
 
         if (!node) {
             throw new NotFoundError(`[NEO4J] entity "${id}" not found`);
@@ -100,7 +94,7 @@ export class EntityManager {
         try {
             const node = await Neo4jClient.writeTransaction(
                 `MATCH (e {_id: '${id}'}) ${deleteAllRelationships ? 'DETACH' : ''} DELETE e RETURN e`,
-                normalizeReturnedEntity(),
+                normalizeReturnedEntity('singleResponse'),
             );
 
             if (!node) {
@@ -124,9 +118,11 @@ export class EntityManager {
     }
 
     static async updateStatusById(id: string, disabled: boolean) {
-        const node = await Neo4jClient.writeTransaction(`MATCH (e {_id: '${id}'}) SET e.disabled = $disabled RETURN e`, normalizeReturnedEntity(), {
-            disabled,
-        });
+        const node = await Neo4jClient.writeTransaction(
+            `MATCH (e {_id: '${id}'}) SET e.disabled = $disabled RETURN e`,
+            normalizeReturnedEntity('singleResponse'),
+            { disabled },
+        );
 
         if (!node) {
             throw new NotFoundError(`[NEO4J] entity "${id}" not found`);
@@ -147,11 +143,13 @@ export class EntityManager {
             return [];
         }
 
-        const pathsConnectedToSourceId = await transaction.run(
+        const pathsConnectedToSourceId = await transactionRunAndNormalize(
+            transaction,
             `MATCH (s {_id: '${sourceEntityId}'})-[r]-(d) WHERE d._id <> '${destinationEntityId}'  RETURN s, r, d`,
+            normalizeRelAndEntitiesForRule,
         );
 
-        return createRuleQuery(pathsConnectedToSourceId, pathsConnectedToSourceIdRules);
+        return createRulesQueries(pathsConnectedToSourceId, pathsConnectedToSourceIdRules);
     };
 
     public static getRulesConnectedToEntityInstances = async (transaction: Transaction, entities: IEntity[], excludedEntityId: string) => {
@@ -171,16 +169,19 @@ export class EntityManager {
         ignoredRules: IBrokenRule[],
     ) {
         const rulesByEntityTemplateId = await getRulesByEntityTemplateId(entityTemplate._id);
-
-        const pathsConnectedToSourceId = await transaction.run(`MATCH (s {_id: '${updatedEntity.properties._id}'})-[r]-(d)  RETURN s, r, d`);
+        const connectionsWithSourceId = await transactionRunAndNormalize(
+            transaction,
+            `MATCH (s {_id: '${updatedEntity.properties._id}'})-[r]-(d)  RETURN s, r, d`,
+            normalizeRelAndEntitiesForRule,
+        );
 
         const destinationRules = await EntityManager.getRulesConnectedToEntityInstances(
             transaction,
-            normalizeRelAndEntitiesForRule(pathsConnectedToSourceId).map(({ destinationEntity }) => destinationEntity),
+            connectionsWithSourceId.map(({ destinationEntity }) => destinationEntity),
             updatedEntity.properties._id,
         );
 
-        const ruleQueries = await Promise.all([...createRuleQuery(pathsConnectedToSourceId, rulesByEntityTemplateId), ...destinationRules]);
+        const ruleQueries = await Promise.all([...createRulesQueries(connectionsWithSourceId, rulesByEntityTemplateId), ...destinationRules]);
 
         const ruleResults = await getRuleResults(transaction, ruleQueries.flat());
 
@@ -201,25 +202,29 @@ export class EntityManager {
         ignoredRules: IBrokenRule[],
     ) {
         return Neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
-            const entity = await transaction.run(`MATCH (e {_id: '${id}'}) RETURN e`);
+            const entity = await transactionRunAndNormalize(
+                transaction,
+                `MATCH (e {_id: '${id}'}) RETURN e`,
+                normalizeReturnedEntity('singleResponse'),
+            );
 
-            const normalizedEntity = normalizeReturnedEntity()(entity) as IEntity;
-
-            if (!normalizedEntity) {
+            if (!entity) {
                 throw new NotFoundError(`[NEO4J] entity "${id}" not found`);
             }
 
-            if (normalizedEntity.properties.disabled) {
+            if (entity.properties.disabled) {
                 throw new ServiceError(400, `[NEO4J] cannot update disabled entity.`);
             }
 
-            const updatedEntityResult = await transaction.run(
+            const updatedEntity = (await transactionRunAndNormalize(
+                transaction,
                 `MATCH (e {_id: '${id}'})
                  WITH e.createdAt AS createdAt, e.disabled AS disabled, e AS e
                  SET e = $props 
                  SET e.createdAt = createdAt
                  SET e.disabled = disabled 
                  RETURN e`,
+                normalizeReturnedEntity('singleResponse'),
                 {
                     props: {
                         ...entityProperties,
@@ -227,9 +232,7 @@ export class EntityManager {
                         _id: id,
                     },
                 },
-            );
-
-            const updatedEntity = normalizeReturnedEntity()(updatedEntityResult) as IEntity;
+            )) as IEntity;
 
             await EntityManager.verifyRuleForEntityUpdate(transaction, entityTemplate, updatedEntity, ignoredRules);
 

@@ -1,16 +1,21 @@
 import axios from 'axios';
 import _groupBy from 'lodash.groupby';
 import _difference from 'lodash.difference';
-import { QueryResult, Transaction } from 'neo4j-driver';
 import { trycatch } from '../../utils/lib';
 import { ValidationError } from '../error';
-import { IBrokenRule, IMongoRelationshipTemplateRule, IRuleRequestSchema, IRuleTransactionQuery, IRuleTransactionResult } from './interfaces';
+import {
+    IBrokenRule,
+    IConnection,
+    IMongoRelationshipTemplateRule,
+    IRuleRequestSchema,
+    IRuleTransactionQuery,
+    IRuleTransactionResult,
+} from './interfaces';
 import { IRelationshipRequestSchema, IMongoRelationshipTemplate, IRelationship } from '../relationships/interface';
 import { IEntity } from '../entities/interface';
 import { getEntityTemplateById } from '../entities/validator.template';
 import { generateNeo4jQuery } from '.';
 import config from '../../config';
-import { normalizeRelAndEntitiesForRule, normalizeRuleResult } from '../../utils/neo4j/lib';
 
 const { relationshipManager, createdRelationshipIdInBrokenRules } = config;
 const { url, searchRulesRoute, searchTemplatesRoute, timeout } = relationshipManager;
@@ -90,17 +95,6 @@ export const areAllBrokenRulesIgnored = (brokenRules: IBrokenRule[], ignoredRule
     });
 };
 
-export const getRuleResults = async (transaction: Transaction, ruleQueries: IRuleTransactionQuery[]): Promise<IRuleTransactionResult[]> => {
-    const ruleTransactions = ruleQueries.map(async (ruleTransaction) => {
-        const { ruleQuery, ruleId, relationshipId } = ruleTransaction;
-        const result = await transaction.run(ruleQuery.cypherQuery, ruleQuery.parameters);
-
-        return { doesRuleStillApply: normalizeRuleResult(result), ruleId, relationshipId };
-    });
-
-    return Promise.all(ruleTransactions);
-};
-
 export const isRelationshipLegal = async (
     relationship: IRelationship,
     sourceEntity: IEntity,
@@ -148,8 +142,6 @@ export const isRelationshipLegal = async (
     return Promise.all(generateNeo4jQueries);
 };
 
-export const createRuleQuery = (queryResult: QueryResult, rules: IMongoRelationshipTemplateRule[]) => {
-    return normalizeRelAndEntitiesForRule(queryResult).map((path) =>
-        isRelationshipLegal(path.relationship, path.sourceEntity, path.destinationEntity, rules),
-    );
+export const createRulesQueries = (connections: IConnection[], rules: IMongoRelationshipTemplateRule[]) => {
+    return connections.map((path) => isRelationshipLegal(path.relationship, path.sourceEntity, path.destinationEntity, rules));
 };

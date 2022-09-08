@@ -1,3 +1,5 @@
+import { IEntity } from '../../entities/interface';
+import { IRelationship } from '../../relationships/interface';
 import { IArgument } from './argument';
 import { IFormula } from './formula';
 
@@ -112,4 +114,10 @@ export interface IRuleTransactionQuery {
     ruleQuery: Omit<CypherQuery, 'aggergationSubQueries'>;
     ruleId: string;
     relationshipId: string;
+}
+
+export interface IConnection {
+    sourceEntity: IEntity;
+    relationship: IRelationship;
+    destinationEntity: IEntity;
 }
