@@ -9,18 +9,19 @@ const rules = [
         actionOnFail: 'WARNING',
         relationshipTemplateId: '61e3ea6e4d51a83e87e43c7c',
         pinnedEntityTemplateId: '61e3ea6e4d51a83e87e83c81',
+        unpinnedEntityTemplateId: '61e3ea6e4d51a83e87e83c7f',
         formula: {
             isGroup: true,
             ruleOfGroup: 'AND',
             subFormulas: [
                 {
                     isEquation: true,
-                    operatorBool: 'notEqual',
+                    operatorBool: 'lessThanOrEqual',
                     lhsArgument: {
                         isCountAggFunction: true,
                         variableName: '61e3ea6e4d51a83e87e83c81.61e3ea6e4d51a83e87e43c7c.61e3ea6e4d51a83e87e83c7f',
                     },
-                    rhsArgument: { isConstant: true, value: 0 },
+                    rhsArgument: { isConstant: true, value: 1 },
                 },
             ],
         },
@@ -33,6 +34,7 @@ const rules = [
         actionOnFail: 'WARNING',
         relationshipTemplateId: '61e3ea6e3d51a83e87e42c7c',
         pinnedEntityTemplateId: '61e3ea6e4d51a83e87e83c7e',
+        unpinnedEntityTemplateId: '61e3ea6e4d51a83e87e83c81',
         formula: {
             isGroup: true,
             ruleOfGroup: 'AND',
@@ -66,6 +68,7 @@ const rules = [
         actionOnFail: 'WARNING',
         relationshipTemplateId: '61e3ea6e3d51a83e87e42c7c',
         pinnedEntityTemplateId: '61e3ea6e4d51a83e87e83c7e',
+        unpinnedEntityTemplateId: '61e3ea6e4d51a83e87e83c81',
         formula: {
             isGroup: true,
             ruleOfGroup: 'AND',
@@ -93,18 +96,19 @@ const mockRules = (mock: MockAdapter) => {
             actionOnFail: 'WARNING',
             relationshipTemplateId: '61e3ea6e4d51a83e87e43c7c',
             pinnedEntityTemplateId: '61e3ea6e4d51a83e87e83c81',
+            unpinnedEntityTemplateId: '61e3ea6e4d51a83e87e83c7f',
             formula: {
                 isGroup: true,
                 ruleOfGroup: 'AND',
                 subFormulas: [
                     {
                         isEquation: true,
-                        operatorBool: 'equals',
+                        operatorBool: 'lessThanOrEqual',
                         lhsArgument: {
                             isCountAggFunction: true,
                             variableName: '61e3ea6e4d51a83e87e83c81.61e3ea6e4d51a83e87e43c7c.61e3ea6e4d51a83e87e83c80',
                         },
-                        rhsArgument: { isConstant: true, value: 0 },
+                        rhsArgument: { isConstant: true, value: 1 },
                     },
                 ],
             },
@@ -122,18 +126,19 @@ const mockRules = (mock: MockAdapter) => {
             actionOnFail: 'WARNING',
             relationshipTemplateId: '61e3ea6e4d51a83e87e43c7c',
             pinnedEntityTemplateId: '61e3ea6e4d51a83e87e83c81',
+            unpinnedEntityTemplateId: '61e3ea6e4d51a83e87e83c7f',
             formula: {
                 isGroup: true,
                 ruleOfGroup: 'AND',
                 subFormulas: [
                     {
                         isEquation: true,
-                        operatorBool: 'equals',
+                        operatorBool: 'lessThanOrEqual',
                         lhsArgument: {
                             isCountAggFunction: true,
                             variableName: '61e3ea6e4d51a83e87e83c81.61e3ea6e4d51a83e87e43c7c.61e3ea6e4d51a83e87e83c80',
                         },
-                        rhsArgument: { isConstant: true, value: 0 },
+                        rhsArgument: { isConstant: true, value: 1 },
                     },
                 ],
             },
