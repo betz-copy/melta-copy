@@ -78,3 +78,11 @@ export const updateRelationshipByIdRequestSchema = Joi.object({
         id: Joi.string().required(),
     },
 });
+
+export const getRelationshipsConnectionsByIdRequestSchema = Joi.object({
+    body: {
+        ids: Joi.array().items(Joi.string()).required(),
+    },
+    query: {},
+    params: {},
+});

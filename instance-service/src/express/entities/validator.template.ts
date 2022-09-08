@@ -6,8 +6,8 @@ import { trycatch } from '../../utils/lib';
 import { getNeo4jDate, getNeo4jDateTime } from '../../utils/neo4j/lib';
 import { ValidationError } from '../error';
 import { IMongoEntityTemplate } from './interface';
-import config from '../../config';
 import { addPropertyToRequest, fetchPropertyFromRequest } from '../../utils/express';
+import config from '../../config';
 
 const { templateManager, neo4j } = config;
 const { url, getByIdRoute, timeout } = templateManager;

@@ -60,7 +60,7 @@ export class EntityManager {
         return { rows: nodes, lastRowIndex: nodesOverallCount };
     }
 
-    static async getEntityById(id: string): Promise<IEntity> {
+    static async getEntityById(id: string) {
         const node = await Neo4jClient.readTransaction(`MATCH (e {_id: '${id}'}) RETURN e`, normalizeReturnedEntity('singleResponse'));
 
         if (!node) {
@@ -216,7 +216,7 @@ export class EntityManager {
                 throw new ServiceError(400, `[NEO4J] cannot update disabled entity.`);
             }
 
-            const updatedEntity = (await transactionRunAndNormalize(
+            const updatedEntity = await transactionRunAndNormalize(
                 transaction,
                 `MATCH (e {_id: '${id}'})
                  WITH e.createdAt AS createdAt, e.disabled AS disabled, e AS e
@@ -232,7 +232,7 @@ export class EntityManager {
                         _id: id,
                     },
                 },
-            )) as IEntity;
+            );
 
             await EntityManager.verifyRuleForEntityUpdate(transaction, entityTemplate, updatedEntity, ignoredRules);
 

@@ -18,6 +18,10 @@ class RelationshipController {
         res.json(await RelationshipManager.getRelationshipsCountByTemplateId(req.query.templateId as unknown as string));
     }
 
+    static async getRelationshipsConnectionsById(req: Request, res: Response) {
+        res.json(await RelationshipManager.getRelationshipsConnectionsById(req.body.ids));
+    }
+
     static async deleteRelationshipById(req: Request, res: Response) {
         res.json(await RelationshipManager.deleteRelationshipById(req.params.id, req.body.ignoredRules));
     }

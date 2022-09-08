@@ -1,7 +1,7 @@
 import Server from './express/server';
-import config from './config';
 import Neo4jClient from './utils/neo4j';
 import RedisClient from './utils/redis';
+import config from './config';
 
 const { service, neo4j, redis } = config;
 

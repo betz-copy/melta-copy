@@ -31,6 +31,19 @@ export class RelationshipManager {
         return relationship;
     }
 
+    static async getRelationshipsConnectionsById(ids: string[]) {
+        const relationships = await Neo4jClient.readTransaction(
+            `MATCH (s)-[r]->(d) WHERE r._id IN [${ids.map((id) => `'${id}'`).join(',')}] RETURN s, r, d`,
+            normalizeRelAndEntitiesForRule,
+        );
+
+        if (!relationships.length) {
+            throw new NotFoundError(`[NEO4J] no relationships found`);
+        }
+
+        return relationships;
+    }
+
     static async getRelationshipsCountByTemplateId(templateId: string) {
         return Neo4jClient.readTransaction(`MATCH ()-[r: \`${templateId}\`]->() RETURN count(r)`, normalizeResponseCount);
     }
@@ -150,7 +163,7 @@ export class RelationshipManager {
                 });
             }
 
-            const createdRelationship = (await transactionRunAndNormalize(
+            const createdRelationship = await transactionRunAndNormalize(
                 transaction,
                 `MATCH (s {_id: '${sourceEntityId}'}),(d {_id: '${destinationEntityId}'})
                  MERGE (s)-[r: \`${templateId}\`]->(d)
@@ -158,7 +171,7 @@ export class RelationshipManager {
                  RETURN r, s, d`,
                 normalizeReturnedRelationship('singleResponse'),
                 { relProps: { ...properties, ...generateDefaultProperties() } },
-            )) as IRelationship;
+            );
 
             await RelationshipManager.verifyRuleForRelationshipCreation(transaction, relationshipTemplate, createdRelationship, ignoredRules);
 

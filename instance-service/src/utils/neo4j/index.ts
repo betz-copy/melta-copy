@@ -1,8 +1,8 @@
-import neo4j, { Driver, Config, Transaction } from 'neo4j-driver';
+import neo4j, { Driver, Config, Transaction, QueryResult } from 'neo4j-driver';
 import { retry } from 'ts-retry-promise';
 
-import config from '../../config';
 import { trycatch } from '../lib';
+import config from '../../config';
 
 interface Neo4jAuth {
     username: string;
@@ -34,11 +34,11 @@ class Neo4jClient {
         this.isInitialized = true;
     }
 
-    async readTransaction(cypherQuery: string, normalizeResultFunction: Function, parameters = {}) {
+    async readTransaction<T>(cypherQuery: string, normalizeResultFunction: (queryResult: QueryResult) => T, parameters = {}): Promise<T> {
         return this.performTransaction('readTransaction', normalizeResultFunction, cypherQuery, parameters);
     }
 
-    async writeTransaction(cypherQuery: string, normalizeResultFunction: Function, parameters = {}) {
+    async writeTransaction<T>(cypherQuery: string, normalizeResultFunction: (queryResult: QueryResult) => T, parameters = {}): Promise<T> {
         return this.performTransaction('writeTransaction', normalizeResultFunction, cypherQuery, parameters);
     }
 
@@ -57,12 +57,12 @@ class Neo4jClient {
         }
     }
 
-    async performTransaction(
+    async performTransaction<T>(
         transactionType: TransactionType,
-        normalizeResultFunction: Function,
+        normalizeResultFunction: (queryResult: QueryResult) => T,
         cypherQuery: string,
         parameters: Record<string, any>,
-    ) {
+    ): Promise<T> {
         const session = this.driver.session({ database: this.database });
 
         try {

@@ -1,8 +1,8 @@
 import { v4 as uuidv4 } from 'uuid';
 import neo4j, { QueryResult, Node, Relationship } from 'neo4j-driver';
-import config from '../../config';
 import { IEntity } from '../../express/entities/interface';
 import { IRelationship } from '../../express/relationships/interface';
+import config from '../../config';
 
 /**
  *
@@ -40,7 +40,7 @@ const normalizeFields = (properties: Record<string, any>): Record<string, any> =
 };
 
 type ResponseType = 'singleResponse' | 'multipleResponses';
-type Response<ResType extends ResponseType, Data> = ResType extends 'singleResponse' ? null | Data : Data[];
+type Response<ResType extends ResponseType, Data> = ResType extends 'singleResponse' ? Data : Data[];
 
 export const normalizeReturnedEntity =
     <T extends ResponseType>(response: T) =>

@@ -1,8 +1,8 @@
 import axios from 'axios';
-import config from '../../config';
 import { trycatch } from '../../utils/lib';
 import { ValidationError } from '../error';
 import { IMongoRelationshipTemplate } from './interface';
+import config from '../../config';
 
 const { relationshipManager } = config;
 const { url, getRelationshipByIdRoute, timeout } = relationshipManager;

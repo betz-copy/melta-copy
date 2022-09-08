@@ -6,6 +6,7 @@ import {
     deleteRelationshipByIdRequestSchema,
     updateRelationshipByIdRequestSchema,
     getRelationshipsCountRequestSchema,
+    getRelationshipsConnectionsByIdRequestSchema,
 } from './validator.schema';
 import ValidateRequest from '../../utils/joi';
 import RelationshipController from './controller';
@@ -13,6 +14,11 @@ import { validateRelationship } from './validator.template';
 
 const relationshipRouter: Router = Router();
 
+relationshipRouter.post(
+    '/connections',
+    ValidateRequest(getRelationshipsConnectionsByIdRequestSchema),
+    wrapController(RelationshipController.getRelationshipsConnectionsById),
+);
 relationshipRouter.get(
     '/count',
     ValidateRequest(getRelationshipsCountRequestSchema),

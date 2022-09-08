@@ -1,5 +1,5 @@
-import config from '../../config';
 import Neo4jClient from '../../utils/neo4j';
+import config from '../../config';
 
 import EntityManager from './manager';
 import RelationshipManager from '../relationships/manager';

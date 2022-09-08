@@ -1,12 +1,10 @@
 import axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
-
-import config from '../../config';
 import Neo4jClient from '../../utils/neo4j';
 import { IEntity } from '../entities/interface';
-
 import EntityManager from '../entities/manager';
 import RelationshipManager from './manager';
+import config from '../../config';
 
 const { relationshipManager, neo4j } = config;
 
