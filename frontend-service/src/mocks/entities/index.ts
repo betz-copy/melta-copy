@@ -471,8 +471,30 @@ const mockEntites = (mock: MockAdapter) => {
                     lastName: 'קירללללל',
                     age: 20,
                     gender: false,
-                    _id: config.url!.split('/')[2].split('?')[0],
+                    _id: config.url!.split('/')[3].split('?')[0],
                     disabled: false,
+                    createdAt: new Date(2345, 10, 1).toISOString(),
+                    updatedAt: new Date(2346, 10, 1).toISOString(),
+                },
+            },
+        ];
+    });
+
+    mock.onPatch(/\/api\/instances\/entities\/[0-9a-fA-F]{24}\/status/).reply((config) => {
+        const { disabled } = JSON.parse(config.data);
+        return [
+            200,
+            {
+                templateId: '61e3ea6e4d51a83e87e83c7f',
+                properties: {
+                    firstName: 'נועה',
+                    lastName: 'קירל',
+                    age: 20,
+                    gender: false,
+                    _id: config.url!.split('/')[3],
+                    disabled,
+                    createdAt: new Date(2345, 10, 1).toISOString(),
+                    updatedAt: new Date(2346, 10, 1).toISOString(),
                 },
             },
         ];
