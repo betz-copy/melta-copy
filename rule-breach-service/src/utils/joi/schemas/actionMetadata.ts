@@ -1,8 +1,5 @@
 import * as joi from 'joi';
-import { ActionTypes } from '../../interfaces/actionMetadata';
-import { validateActionMetadata } from '../validateActionMetadata';
-
-export const mongoIdSchema = joi.string().regex(/^[0-9a-fA-F]{24}$/, 'valid MongoId');
+import { mongoIdSchema } from '.';
 
 export const createRelationshipMetadataSchema = joi.object({
     relationshipTemplateId: mongoIdSchema.required(),
@@ -12,6 +9,9 @@ export const createRelationshipMetadataSchema = joi.object({
 
 export const deleteRelationshipMetadataSchema = joi.object({
     relationshipId: mongoIdSchema.required(),
+    relationshipTemplateId: mongoIdSchema.required(),
+    sourceEntityId: mongoIdSchema.required(),
+    destinationEntityId: mongoIdSchema.required(),
 });
 
 export const updateEntityMetadataSchema = joi.object({
@@ -21,22 +21,3 @@ export const updateEntityMetadataSchema = joi.object({
 });
 
 export const actionMetadataSchema = joi.alternatives(createRelationshipMetadataSchema, deleteRelationshipMetadataSchema, updateEntityMetadataSchema);
-
-export const ruleBreachSchema = joi.object({
-    originUserId: mongoIdSchema.required(),
-    brokenRules: joi
-        .array()
-        .items(
-            joi.object({
-                ruleId: mongoIdSchema.required(),
-                relationshipsIds: joi.array().items(mongoIdSchema).required(),
-            }),
-        )
-        .min(1)
-        .required(),
-    actionType: joi
-        .string()
-        .valid(...Object.values(ActionTypes))
-        .required(),
-    actionMetadata: joi.custom(validateActionMetadata).required(),
-});
