@@ -3,6 +3,7 @@ import { IRelationshipPopulated } from '../relationships';
 import { ActionTypes, IActionMetadata, IActionMetadataPopulated } from './actionMetadata';
 
 export interface IRuleBreach {
+    _id: string;
     originUserId: string;
     brokenRules: {
         ruleId: string;
@@ -13,8 +14,8 @@ export interface IRuleBreach {
     createdAt: Date;
 }
 
-// todo: make nullable population, if instances were deleted
 export interface IRuleBreachPopulated {
+    _id: string;
     originUser: IUser;
     brokenRules: {
         ruleId: string;

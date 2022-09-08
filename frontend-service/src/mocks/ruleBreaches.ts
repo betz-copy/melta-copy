@@ -9,7 +9,7 @@ import {
 import { IRuleBreachPopulated } from '../interfaces/ruleBreaches/ruleBreach';
 import { IRuleBreachAlertPopulated } from '../interfaces/ruleBreaches/ruleBreachAlert';
 import { IRuleBreachRequestPopulated } from '../interfaces/ruleBreaches/ruleBreachRequest';
-import { generateUser } from './permissions';
+import { generateMongoId, generateUser } from './permissions';
 
 const chance = new Chance();
 
@@ -119,6 +119,7 @@ const brokenRules: IRuleBreachPopulated['brokenRules'] = [
 ];
 
 const ruleBreach1: IRuleBreachPopulated = {
+    _id: generateMongoId(),
     originUser: generateUser(),
     brokenRules,
     actionType: ActionTypes.CreateRelationship,
@@ -131,6 +132,7 @@ const ruleBreach1: IRuleBreachPopulated = {
 };
 
 const ruleBreach2: IRuleBreachPopulated = {
+    _id: generateMongoId(),
     originUser: generateUser(),
     brokenRules,
     actionType: ActionTypes.DeleteRelationship,
@@ -144,6 +146,7 @@ const ruleBreach2: IRuleBreachPopulated = {
 };
 
 const ruleBreach3: IRuleBreachPopulated = {
+    _id: generateMongoId(),
     originUser: generateUser(),
     brokenRules,
     actionType: ActionTypes.UpdateEntity,
@@ -155,6 +158,7 @@ const ruleBreach3: IRuleBreachPopulated = {
 };
 
 const ruleBreach4: IRuleBreachPopulated = {
+    _id: generateMongoId(),
     originUser: generateUser(),
     brokenRules,
     actionType: ActionTypes.DeleteRelationship,
@@ -168,6 +172,7 @@ const ruleBreach4: IRuleBreachPopulated = {
 };
 
 const ruleBreach5: IRuleBreachPopulated = {
+    _id: generateMongoId(),
     originUser: generateUser(),
     brokenRules,
     actionType: ActionTypes.UpdateEntity,
