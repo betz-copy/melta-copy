@@ -1,5 +1,4 @@
 /* eslint-disable no-underscore-dangle */
-/* eslint-disable no-shadow */
 import React from 'react';
 import { styled } from '@mui/material';
 import i18next from 'i18next';
@@ -44,8 +43,8 @@ const getRjfsDateOrDateTimeWidget =
         ...textFieldProps
     }: WidgetProps) => {
         const { TextField } = useMuiComponent();
-        const _onBlur = ({ target: { value } }: React.FocusEvent<HTMLInputElement>) => onBlur(id, value);
-        const _onFocus = ({ target: { value } }: React.FocusEvent<HTMLInputElement>) => onFocus(id, value);
+        const _onBlur = ({ target: { value: newValue } }: React.FocusEvent<HTMLInputElement>) => onBlur(id, newValue);
+        const _onFocus = ({ target: { value: newValue } }: React.FocusEvent<HTMLInputElement>) => onFocus(id, newValue);
 
         const { rootSchema } = registry;
         const displayLabel = getDisplayLabel(schema, uiSchema, rootSchema);

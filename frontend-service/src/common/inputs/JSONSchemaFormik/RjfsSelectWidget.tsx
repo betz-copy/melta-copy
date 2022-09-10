@@ -1,5 +1,4 @@
 /* eslint-disable no-underscore-dangle */
-/* eslint-disable no-shadow */
 import React from 'react';
 import { WidgetProps, utils } from '@rjsf/core';
 import i18next from 'i18next';
@@ -67,9 +66,10 @@ const RjfsSelectWidget = ({
 
     const emptyValue = multiple ? [] : '';
 
-    const _onChange = ({ target: { value } }: React.ChangeEvent<{ name?: string; value: unknown }>) => onChange(processValue(schema, value));
-    const _onBlur = ({ target: { value } }: React.FocusEvent<HTMLInputElement>) => onBlur(id, processValue(schema, value));
-    const _onFocus = ({ target: { value } }: React.FocusEvent<HTMLInputElement>) => onFocus(id, processValue(schema, value));
+    const _onChange = ({ target: { value: newValue } }: React.ChangeEvent<{ name?: string; value: unknown }>) =>
+        onChange(processValue(schema, newValue));
+    const _onBlur = ({ target: { value: newValue } }: React.FocusEvent<HTMLInputElement>) => onBlur(id, processValue(schema, newValue));
+    const _onFocus = ({ target: { value: newValue } }: React.FocusEvent<HTMLInputElement>) => onFocus(id, processValue(schema, newValue));
 
     return (
         <TextField
@@ -92,12 +92,12 @@ const RjfsSelectWidget = ({
             }}
         >
             <MenuItem value="">{placeholder || i18next.t('wizard.entity.enumEmptyOption')}</MenuItem>
-            {(enumOptions as any).map(({ value, label }: any, i: number) => {
-                const disabled: any = enumDisabled && (enumDisabled as any).indexOf(value) !== -1;
+            {(enumOptions as any).map(({ value: currValue, label: currLabel }: any, i: number) => {
+                const isDisabled: any = enumDisabled && (enumDisabled as any).indexOf(currValue) !== -1;
                 return (
                     // eslint-disable-next-line react/no-array-index-key
-                    <MenuItem key={i} value={value} disabled={disabled}>
-                        {label}
+                    <MenuItem key={i} value={currValue} disabled={isDisabled}>
+                        {currLabel}
                     </MenuItem>
                 );
             })}

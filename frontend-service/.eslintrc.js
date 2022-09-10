@@ -56,7 +56,5 @@ module.exports = {
                 ignorePropertyModificationsFor: ['state'],
             },
         ],
-        'no-shadow': 'off',
-        '@typescript-eslint/no-shadow': 'error',
     },
 };

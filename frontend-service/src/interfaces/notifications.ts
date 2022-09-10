@@ -1,7 +1,6 @@
 import { IRuleBreachAlertPopulated } from './ruleBreaches/ruleBreachAlert';
 import { IRuleBreachRequestPopulated } from './ruleBreaches/ruleBreachRequest';
 
-/* eslint-disable no-shadow */
 export enum NotificationType {
     ruleBreachAlert = 'ruleBreachAlert',
     ruleBreachRequest = 'ruleBreachRequest',
