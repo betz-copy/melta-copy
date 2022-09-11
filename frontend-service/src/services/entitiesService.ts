@@ -61,6 +61,24 @@ const updateEntityRequest = async (entityId: string, newEntityData: EntityWizard
 
     return data;
 };
+const duplicateEntityRequest = async (entityId: string, newEntityData: EntityWizardValues) => {
+    const formData = new FormData();
+    const [fileToUpload, unchangedFiles] = partition(Object.entries(newEntityData.attachmentsProperties), ([_key, value]) => value instanceof File);
+
+    fileToUpload.forEach(([key, value]) => formData.append(key, value));
+    const fileProperties = {};
+    unchangedFiles.forEach(([key, value]) => {
+        if (value) {
+            fileProperties[key] = value.name;
+        }
+    });
+
+    formData.append('properties', JSON.stringify({ ...newEntityData.properties, ...fileProperties }));
+    formData.append('templateId', newEntityData.template._id);
+    const { data } = await axios.post<IEntity>(`${entities}/${entityId}/duplicate`, formData);
+
+    return data;
+};
 
 const deleteEntityRequest = async (entityId: string) => {
     const { data } = await axios.delete(`${entities}/${entityId}`);
@@ -73,6 +91,7 @@ export {
     deleteEntityRequest,
     getExpandedEntityByIdRequest,
     updateEntityRequest,
+    duplicateEntityRequest,
     getRelationshipInstancesCountByTemplateIdRequest,
     updateEntityStatusRequest,
 };

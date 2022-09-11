@@ -30,7 +30,7 @@ const mockEntites = (mock: MockAdapter) => {
                     lastName: 'קירל',
                     age: -20,
                     gender: false,
-                    firstFile: 'blabla.docx',
+                    firstFile: '59604a2459b7433a8e876609617054feblabla.docx',
                     disabled: faker.datatype.boolean(),
                     _id: config.url!.split('/').at(-1)!.split('?')[0],
                     createdAt: new Date(2345, 10, 1).toISOString(),
@@ -53,7 +53,7 @@ const mockEntites = (mock: MockAdapter) => {
                             lastName: 'קירל',
                             age: -20,
                             gender: false,
-                            firstFile: 'blabla.docx',
+                            firstFile: '59604a2459b7433a8e876609617054feblabla.docx',
                             disabled: faker.datatype.boolean(),
                             _id: config.url!.split('/').at(-1)!.split('?')[0],
                             createdAt: new Date(2345, 10, 1).toISOString(),
@@ -88,7 +88,7 @@ const mockEntites = (mock: MockAdapter) => {
                             lastName: 'קירל',
                             age: -20,
                             gender: false,
-                            firstFile: 'blabla.docx',
+                            firstFile: '59604a2459b7433a8e876609617054feblabla.docx',
                             disabled: faker.datatype.boolean(),
                             _id: config.url!.split('/').at(-1)!.split('?')[0],
                             createdAt: new Date(2345, 10, 1).toISOString(),
@@ -139,7 +139,7 @@ const mockEntites = (mock: MockAdapter) => {
                             lastName: 'קירל',
                             age: -20,
                             gender: false,
-                            firstFile: 'blabla.docx',
+                            firstFile: '59604a2459b7433a8e876609617054feblabla.docx',
                             disabled: faker.datatype.boolean(),
                             _id: config.url!.split('/').at(-1)!.split('?')[0],
                             createdAt: new Date(2345, 10, 1).toISOString(),
@@ -161,7 +161,7 @@ const mockEntites = (mock: MockAdapter) => {
                             lastName: 'קירל',
                             age: -20,
                             gender: false,
-                            firstFile: 'blabla.docx',
+                            firstFile: '59604a2459b7433a8e876609617054feblabla.docx',
                             disabled: faker.datatype.boolean(),
                             _id: config.url!.split('/').at(-1)!.split('?')[0],
                             createdAt: new Date(2345, 10, 1).toISOString(),
@@ -198,7 +198,7 @@ const mockEntites = (mock: MockAdapter) => {
                             lastName: 'קירל',
                             age: -20,
                             gender: false,
-                            firstFile: 'blabla.docx',
+                            firstFile: '59604a2459b7433a8e876609617054feblabla.docx',
                             disabled: faker.datatype.boolean(),
                             _id: config.url!.split('/').at(-1)!.split('?')[0],
                             createdAt: new Date(2345, 10, 1).toISOString(),
@@ -233,7 +233,7 @@ const mockEntites = (mock: MockAdapter) => {
                             lastName: 'קירל',
                             age: -20,
                             gender: false,
-                            firstFile: 'blabla.docx',
+                            firstFile: '59604a2459b7433a8e876609617054feblabla.docx',
                             disabled: faker.datatype.boolean(),
                             _id: config.url!.split('/').at(-1)!.split('?')[0],
                             createdAt: new Date(2345, 10, 1).toISOString(),
@@ -459,6 +459,23 @@ const mockEntites = (mock: MockAdapter) => {
             _id: '61e3ea6e4d51a83e87e83c7e',
         },
     ]);
+
+    mock.onPost(/\/api\/instances\/entities\/[0-9a-fA-F]{24}\/duplicate/).reply((config) => {
+        return [
+            200,
+            {
+                templateId: '61e3ea6e4d51a83e87e83c7f',
+                properties: {
+                    firstName: 'נועה',
+                    lastName: 'קירללללל',
+                    age: 20,
+                    gender: false,
+                    _id: config.url!.split('/')[2].split('?')[0],
+                    disabled: faker.datatype.boolean(),
+                },
+            },
+        ];
+    });
 
     // Update
     mock.onPut(/\/api\/instances\/entities\/[0-9a-fA-F]{24}/).reply((config) => {

@@ -3,6 +3,7 @@ import { Grid, Card, CardContent, IconButton, Menu, Tooltip, Box } from '@mui/ma
 import {
     Delete as DeleteIcon,
     Edit as EditIcon,
+    ContentCopy as DuplicateIcon,
     AccountTreeOutlined as GraphIcon,
     MoreVertOutlined,
     DoDisturbAlt,
@@ -148,6 +149,18 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                                     </Grid>
                                 </Tooltip>
 
+                                <Grid>
+                                    <MenuButton
+                                        onClick={() => {
+                                            navigate(`/entity/${entity.properties._id}/duplicate`, {
+                                                state: { entityTemplate, expandedEntity, currentEntityTemplate },
+                                            });
+                                            handleClose();
+                                        }}
+                                        text={i18next.t('actions.duplicate')}
+                                        icon={<DuplicateIcon color="action" />}
+                                    />
+                                </Grid>
                                 <Tooltip
                                     arrow
                                     title={i18next.t('permissions.dontHavePermissionsToCategory') as string}

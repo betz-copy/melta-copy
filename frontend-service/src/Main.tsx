@@ -33,6 +33,7 @@ const Unavailable = lazy(() => import('./pages/Unavailable'));
 const ErrorPage = lazy(() => import('./pages/ErrorPage'));
 const Entity = lazy(() => import('./pages/Entity'));
 const Graph = lazy(() => import('./pages/Graph'));
+const Duplicate = lazy(() => import('./pages/Entity/components/DuplicateEntity'));
 
 const FluidSimulation = lazy(() => import('./pages/MeltaPlus/FluidSimulation'));
 
@@ -147,6 +148,14 @@ const Main = () => {
                                     element={
                                         <EntityProtectedRoute permissions={myPermissions} entityTemplates={entityTemplates}>
                                             <Graph />
+                                        </EntityProtectedRoute>
+                                    }
+                                />
+                                <Route
+                                    path="/entity/:entityId/duplicate"
+                                    element={
+                                        <EntityProtectedRoute permissions={myPermissions} entityTemplates={entityTemplates}>
+                                            <Duplicate />
                                         </EntityProtectedRoute>
                                     }
                                 />

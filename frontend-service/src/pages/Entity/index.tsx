@@ -112,7 +112,6 @@ const Entity: React.FC = () => {
             } as IMongoCategory & { relationshipTemplates: IMongoRelationshipTemplatePopulated[] };
         })
         .filter((currCategory) => currCategory.relationshipTemplates?.length > 0);
-
     const onCreateRelationship = (createdRelationship: IRelationship, sourceEntity: IEntity, destinationEntity: IEntity) => {
         const doesCreatedRelationshipWithCurrEntity = [createdRelationship.sourceEntityId, createdRelationship.destinationEntityId].includes(
             entityId!,
