@@ -32,16 +32,10 @@ export class RelationshipManager {
     }
 
     static async getRelationshipsConnectionsById(ids: string[]) {
-        const relationships = await Neo4jClient.readTransaction(
+        return Neo4jClient.readTransaction(
             `MATCH (s)-[r]->(d) WHERE r._id IN [${ids.map((id) => `'${id}'`).join(',')}] RETURN s, r, d`,
             normalizeRelAndEntitiesForRule,
         );
-
-        if (!relationships.length) {
-            throw new NotFoundError(`[NEO4J] no relationships found`);
-        }
-
-        return relationships;
     }
 
     static async getRelationshipsCountByTemplateId(templateId: string) {
