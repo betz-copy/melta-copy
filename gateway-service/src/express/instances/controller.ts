@@ -10,6 +10,10 @@ class InstancesController {
         res.json(await InstancesManager.updateEntityInstance(req.params.id, req.body, req.files as Express.Multer.File[], req.user!));
     }
 
+    static async duplicateEntityInstance(req: Request, res: Response) {
+        res.json(await InstancesManager.duplicateEntityInstance(req.params.id, req.body, req.files as Express.Multer.File[], req.user!));
+    }
+
     static async deleteEntityInstance(req: Request, res: Response) {
         res.json(await InstancesManager.deleteEntityInstance(req.params.id));
     }

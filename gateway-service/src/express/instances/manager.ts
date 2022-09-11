@@ -1,4 +1,4 @@
-import { deleteFiles, uploadFiles } from '../../externalServices/storageService';
+import { deleteFiles, duplicateFiles, uploadFiles } from '../../externalServices/storageService';
 import { IEntity, InstanceManagerService, IRelationship } from '../../externalServices/instanceManager';
 import { EntityTemplateManagerService, IEntityTemplatePopulated } from '../../externalServices/entityTemplateManager';
 import { ActivityLogManagerService } from '../../externalServices/activityLogManager';
@@ -78,6 +78,39 @@ export class InstancesManager {
         return entity;
     }
 
+    static async duplicateEntityInstance(id: string, instanceData: IEntity, files: Express.Multer.File[], user: Express.User) {
+        const uploadedFilesProperties = await InstancesManager.uploadInstanceFiles(files);
+
+        const currentEntity = await InstanceManagerService.getEntityInstanceById(id);
+        const currentEntityTemplate = await EntityTemplateManagerService.getEntityTemplateById(currentEntity.templateId);
+
+        const filePropertiesKeys = InstancesManager.getFilePropertiesKeysByTemplate(currentEntityTemplate);
+        const filesEntries = InstancesManager.getCurrentEntityFilesEntries(currentEntity.properties, filePropertiesKeys);
+
+        const filesEntriesToDuplicate = filesEntries.filter(([_key, value]) => Object.values(instanceData.properties).includes(value));
+
+        const duplicatedFiles = await duplicateFiles(filesEntriesToDuplicate.map(([_key, value]) => value));
+
+        const duplicatedFilesEntries = filesEntriesToDuplicate.map(([key], index) => [key, duplicatedFiles[index].path]);
+
+        const duplicatedFilesEntriesProperties = Object.fromEntries(duplicatedFilesEntries);
+
+        const entity = await InstanceManagerService.createEntityInstance({
+            templateId: instanceData.templateId,
+            properties: { ...uploadedFilesProperties, ...instanceData.properties, ...duplicatedFilesEntriesProperties },
+        });
+
+        await ActivityLogManagerService.createActivityLog({
+            action: 'CREATE_ENTITY',
+            entityId: entity.properties._id,
+            metadata: {},
+            timestamp: new Date(),
+            userId: user.id,
+        });
+
+        return entity;
+    }
+
     static async updateEntityInstance(id: string, instanceData: IEntity, files: Express.Multer.File[], user: Express.User) {
         const uploadedFilesProperties = await InstancesManager.uploadInstanceFiles(files);
 
@@ -87,7 +120,6 @@ export class InstancesManager {
             templateId: instanceData.templateId,
             properties: { ...uploadedFilesProperties, ...instanceData.properties },
         });
-
         const { err } = await trycatch(() => InstancesManager.deleteUnusedFiles(currentEntity, instanceData, files));
 
         if (err) {

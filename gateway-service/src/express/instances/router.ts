@@ -49,6 +49,13 @@ InstancesRouter.put(
     wrapMiddleware(validateUserCanUpdateGetOrDeleteEntityInstance),
     wrapController(InstancesController.updateEntityInstance),
 );
+InstancesRouter.post(
+    '/entities/:id/duplicate',
+    multer({ dest: config.service.uploadsFolderPath }).any(),
+    ValidateRequest(updateEntityInstanceSchema),
+    wrapMiddleware(validateUserCanUpdateGetOrDeleteEntityInstance),
+    wrapController(InstancesController.duplicateEntityInstance),
+);
 InstancesRouter.delete(
     '/entities/:id',
     ValidateRequest(deleteEntityInstanceSchema),

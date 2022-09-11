@@ -2,7 +2,11 @@ import { Router } from 'express';
 import { createProxyMiddleware, fixRequestBody } from 'http-proxy-middleware';
 import * as multer from 'multer';
 import { wrapController, wrapMiddleware } from '../../utils/express';
-import { validateUserHasAtLeastSomePermissions, validateUserIsRulesManager, validateUserIsTemplatesManager } from '../permissions/validateAuthorizationMiddleware';
+import {
+    validateUserHasAtLeastSomePermissions,
+    validateUserIsRulesManager,
+    validateUserIsTemplatesManager,
+} from '../permissions/validateAuthorizationMiddleware';
 import TemplatesController from './controller';
 import {
     validateUserCanCreateEntityTemplateUnderCategory,

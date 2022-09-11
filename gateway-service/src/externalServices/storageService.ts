@@ -4,7 +4,7 @@ import fsCreateReadStream from '../utils/fs';
 
 import config from '../config';
 
-const { uri, uploadFileRoute, uploadFilesRoute, deleteFileRoute, deleteFilesRoute } = config.storageService;
+const { uri, uploadFileRoute, uploadFilesRoute, deleteFileRoute, deleteFilesRoute, duplicateFilesRoute } = config.storageService;
 
 export const uploadFile = async (file: Express.Multer.File) => {
     const formData = new FormData();
@@ -41,4 +41,9 @@ export const deleteFile = (fileId: string) => {
 
 export const deleteFiles = (paths: string[]) => {
     return axios.post(`${uri}/${deleteFilesRoute}`, { paths });
+};
+
+export const duplicateFiles = async (paths: string[]) => {
+    const { data } = await axios.post(`${uri}/${duplicateFilesRoute}`, { paths });
+    return data;
 };
