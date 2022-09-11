@@ -107,7 +107,7 @@ export const ActionInfo: React.FC<{
     isCompact: boolean;
 }> = ({ originUser, actionType, actionMetadata, isCompact }) => {
     return (
-        <Grid container>
+        <Grid container flexDirection="column">
             <Grid item>
                 {actionType !== ActionTypes.UpdateEntity && (
                     <CreateOrDeleteRelActionInfo

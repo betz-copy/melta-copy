@@ -46,6 +46,7 @@ const EntityProperties: React.FC<{
                 const propertySchema = entityTemplate.properties.properties[propertyKey];
                 const propertyValue = properties[propertyKey];
                 const hideField = entityTemplate.properties.hide.includes(propertyKey);
+                const isLTR = propertySchema.type === 'number' || Boolean(propertySchema.pattern);
 
                 return (
                     <Grid key={propertyKey} item>
@@ -55,7 +56,7 @@ const EntityProperties: React.FC<{
                                     {propertySchema.title}:
                                 </Typography>
                             </Grid>
-                            <Grid item style={propertySchema.type === 'number' ? { direction: 'ltr' } : { direction: 'rtl' }}>
+                            <Grid item style={{ direction: isLTR ? 'ltr' : 'rtl' }}>
                                 <Typography display="inline" variant="h6">
                                     {hideFields && hideField ? (
                                         <>••••••••</>
