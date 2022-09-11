@@ -56,5 +56,6 @@ module.exports = {
                 ignorePropertyModificationsFor: ['state'],
             },
         ],
+        'no-shadow': 'off',
     },
 };
