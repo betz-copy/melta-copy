@@ -1,7 +1,7 @@
 import { FilterQuery, Document } from 'mongoose';
 import menash from 'menashmq';
 import EntityTemplateModel from './model';
-import { IEntityTemplate } from './interface';
+import { IEntitySingleProperty, IEntityTemplate } from './interface';
 import { ServiceError } from '../error';
 import { escapeRegExp } from '../../utils';
 import config from '../../config';
@@ -57,15 +57,38 @@ export class EntityTemplateManager {
     }
 
     static async updateEntityTemplate(id: string, updatedTemplate: Partial<Omit<IEntityTemplate, 'iconFileId'>>) {
-        const entityTemplate = await EntityTemplateModel.findByIdAndUpdate(id, updatedTemplate, { new: true })
+        const currentEntityTemplate = await EntityTemplateManager.getTemplateById(id);
+
+        const newEntityTemplate = await EntityTemplateModel.findByIdAndUpdate(id, updatedTemplate, { new: true })
             .populate('category')
             .orFail(new ServiceError(404, 'Entity Template not found'))
             .lean()
             .exec();
 
-        await menash.send(rabbit.queueName, 'Template Updated.');
+        const propertyTypeWithToString = ['number', 'boolean', 'date', 'date-time'];
+        const isPropertyWithToString = (property: IEntitySingleProperty) => {
+            return propertyTypeWithToString.includes(property.type) || propertyTypeWithToString.includes(property.format!);
+        };
 
-        return entityTemplate;
+        const isPropertyTypeChanged = Object.entries(currentEntityTemplate.properties.properties).some(([key, value]) => {
+            const newProperty = newEntityTemplate.properties.properties[key];
+
+            if (!newProperty) return true; // if property deleted
+
+            const isCurrentPropertyWithToString = isPropertyWithToString(value);
+            const isNewPropertyWithToString = isPropertyWithToString(newProperty);
+
+            return isCurrentPropertyWithToString !== isNewPropertyWithToString;
+        });
+
+        if (isPropertyTypeChanged) await menash.send(rabbit.queueName, 'Template Updated.');
+
+        const isNewPropertyAdded =
+            Object.keys(currentEntityTemplate.properties.properties).length !== Object.keys(newEntityTemplate.properties.properties).length;
+
+        if (isNewPropertyAdded) await menash.send(rabbit.queueName, 'Template Updated.');
+
+        return newEntityTemplate;
     }
 }
 

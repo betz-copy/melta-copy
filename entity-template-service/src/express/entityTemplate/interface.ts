@@ -1,4 +1,4 @@
-interface IEntitySingleProperty {
+export interface IEntitySingleProperty {
     title: string;
     type: 'string' | 'number' | 'boolean';
     format?: 'date' | 'date-time' | 'email' | 'fileId';
