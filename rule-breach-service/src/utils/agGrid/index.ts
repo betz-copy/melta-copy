@@ -43,9 +43,10 @@ const translateAgGridFilter = (
             return { $regex: new RegExp(`^${filterValue}`, 'i') };
         case textFilterOperationTypes.endsWith:
             return { $regex: new RegExp(`${filterValue}$`, 'i') };
-    }
 
-    throw new RuleBreachSearchFilterTypeError(type);
+        default:
+            throw new RuleBreachSearchFilterTypeError(type);
+    }
 };
 
 export const translateAgGridFilterModel = (filterModel: IAgGridRequest['filterModel']) => {
