@@ -169,15 +169,11 @@ export const mainRunExampleRule2 = () => {
     const nonPinnedEntityId = '222';
     const nonPinnedRelationshipId = '333';
 
-    const neo4jQuery = generateNeo4jQuery(
-        noOverlappingFlightsInTrip,
-        pinnedEntityId,
-        nonPinnedEntityId,
-        nonPinnedRelationshipId,
-        flightEntityTemplate._id,
-        tripEntityTemplate._id,
-        [{ relationshipTemplate: tripConnectedToFlightRelationshipTemplate, unpinnedEntityTemplate: flightEntityTemplate }],
-    );
+    const neo4jQuery = generateNeo4jQuery(noOverlappingFlightsInTrip, pinnedEntityId, nonPinnedEntityId, nonPinnedRelationshipId, {
+        pinnedEntityTemplateId: flightEntityTemplate._id,
+        unpinnedEntityTemplateId: tripEntityTemplate._id,
+        connectionsTemplates: [{ relationshipTemplate: tripConnectedToFlightRelationshipTemplate, otherEntityTemplate: flightEntityTemplate }],
+    });
 
     return neo4jQuery;
 };
@@ -188,15 +184,11 @@ export const mainRunExampleRule3 = () => {
     const nonPinnedEntityId = '222';
     const nonPinnedRelationshipId = '333';
 
-    const neo4jQuery = generateNeo4jQuery(
-        warnOnEveryFlightOnActiveZone,
-        pinnedEntityId,
-        nonPinnedEntityId,
-        nonPinnedRelationshipId,
-        flightEntityTemplate._id,
-        tripEntityTemplate._id,
-        [{ relationshipTemplate: tripConnectedToFlightRelationshipTemplate, unpinnedEntityTemplate: flightEntityTemplate }],
-    );
+    const neo4jQuery = generateNeo4jQuery(warnOnEveryFlightOnActiveZone, pinnedEntityId, nonPinnedEntityId, nonPinnedRelationshipId, {
+        pinnedEntityTemplateId: flightEntityTemplate._id,
+        unpinnedEntityTemplateId: tripEntityTemplate._id,
+        connectionsTemplates: [{ relationshipTemplate: tripConnectedToFlightRelationshipTemplate, otherEntityTemplate: flightEntityTemplate }],
+    });
 
     return neo4jQuery;
 };
