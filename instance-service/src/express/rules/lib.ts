@@ -104,7 +104,7 @@ export const isRelationshipLegal = async (
     const generateNeo4jQueries = relationshipTemplateRules
         .filter(({ relationshipTemplateId }) => relationshipTemplateId === relationship.templateId)
         .map(async (relationshipTemplateRule) => {
-            const { pinnedEntityTemplateId } = relationshipTemplateRule;
+            const { pinnedEntityTemplateId, unpinnedEntityTemplateId } = relationshipTemplateRule;
 
             const [pinnedEntity, nonPinnedEntity] =
                 pinnedEntityTemplateId === sourceEntity.templateId ? [sourceEntity, destinationEntity] : [destinationEntity, sourceEntity];
@@ -114,11 +114,11 @@ export const isRelationshipLegal = async (
             const connectionsTemplates = await Promise.all(
                 pinnedEntityRelationships.map(async (relTemplate) => {
                     const { sourceEntityId, destinationEntityId } = relTemplate;
-                    const unpinnedEntityTemplateId = sourceEntityId === pinnedEntity.templateId ? destinationEntityId : sourceEntityId;
+                    const otherEntityTemplateId = sourceEntityId === pinnedEntity.templateId ? destinationEntityId : sourceEntityId;
 
-                    const unpinnedEntityTemplate = await getEntityTemplateById(unpinnedEntityTemplateId);
+                    const otherEntityTemplate = await getEntityTemplateById(otherEntityTemplateId);
 
-                    return { relationshipTemplate: relTemplate, unpinnedEntityTemplate };
+                    return { relationshipTemplate: relTemplate, otherEntityTemplate };
                 }),
             );
 
@@ -127,9 +127,7 @@ export const isRelationshipLegal = async (
                 pinnedEntity.properties._id,
                 nonPinnedEntity.properties._id,
                 relationship.properties._id,
-                pinnedEntity.templateId,
-                nonPinnedEntity.templateId,
-                connectionsTemplates,
+                { pinnedEntityTemplateId, unpinnedEntityTemplateId, connectionsTemplates },
             );
 
             return {

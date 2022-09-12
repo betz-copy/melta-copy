@@ -1,5 +1,5 @@
-import { IEntity } from '../../entities/interface';
-import { IRelationship } from '../../relationships/interface';
+import { IEntity, IMongoEntityTemplate } from '../../entities/interface';
+import { IMongoRelationshipTemplate, IRelationship } from '../../relationships/interface';
 import { IArgument } from './argument';
 import { IFormula } from './formula';
 
@@ -88,6 +88,15 @@ export interface IRelationshipTemplateRule {
 
 export interface IMongoRelationshipTemplateRule extends IRelationshipTemplateRule {
     _id: string;
+}
+
+export interface IRelevantTemplates {
+    pinnedEntityTemplateId: string;
+    unpinnedEntityTemplateId: string;
+    connectionsTemplates: Array<{
+        relationshipTemplate: IMongoRelationshipTemplate;
+        otherEntityTemplate: IMongoEntityTemplate;
+    }>;
 }
 
 export interface IRuleRequestSchema {

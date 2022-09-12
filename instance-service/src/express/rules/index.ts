@@ -1,6 +1,4 @@
 import { v4 as uuidv4 } from 'uuid';
-import { IMongoEntityTemplate } from '../entities/interface';
-import { IMongoRelationshipTemplate } from '../relationships/interface';
 import {
     IAggregationGroup,
     ICountAggFunction,
@@ -16,14 +14,12 @@ import {
     isSumAggFunction,
     IOperatorBool,
     CypherQuery,
+    IRelevantTemplates,
 } from './interfaces';
 import { IArgument, isConstant, isPropertyOfVariable } from './interfaces/argument';
 import { IFormula } from './interfaces/formula';
 
-const generateNeo4jQueryFromCountAggFunction = (
-    countAggFunction: ICountAggFunction,
-    connectionsTemplates: Array<{ relationshipTemplate: IMongoRelationshipTemplate; unpinnedEntityTemplate: IMongoEntityTemplate }>,
-): CypherQuery => {
+const generateNeo4jQueryFromCountAggFunction = (countAggFunction: ICountAggFunction, { connectionsTemplates }: IRelevantTemplates): CypherQuery => {
     const [pinnedEntityTemplateId, aggregatedRelationshipTemplateId] = countAggFunction.variableName.split('.');
     const aggregatedConnection = connectionsTemplates.find(({ relationshipTemplate: { _id } }) => _id === aggregatedRelationshipTemplateId);
 
@@ -54,10 +50,7 @@ const generateNeo4jQueryFromCountAggFunction = (
     };
 };
 
-const generateNeo4jQueryFromSumAggFunction = (
-    sumAggFunction: ISumAggFunction,
-    connectionsTemplates: Array<{ relationshipTemplate: IMongoRelationshipTemplate; unpinnedEntityTemplate: IMongoEntityTemplate }>,
-): CypherQuery => {
+const generateNeo4jQueryFromSumAggFunction = (sumAggFunction: ISumAggFunction, { connectionsTemplates }: IRelevantTemplates): CypherQuery => {
     const [pinnedEntityTemplateId, aggregatedRelationshipTemplateId] = sumAggFunction.variableName.split('.');
     const aggregatedConnection = connectionsTemplates.find(({ relationshipTemplate: { _id } }) => _id === aggregatedRelationshipTemplateId);
 
@@ -88,10 +81,7 @@ const generateNeo4jQueryFromSumAggFunction = (
     };
 };
 
-const generateNeo4jQueryFromArgument = (
-    argument: IArgument,
-    connectionsTemplates: Array<{ relationshipTemplate: IMongoRelationshipTemplate; unpinnedEntityTemplate: IMongoEntityTemplate }>,
-): CypherQuery => {
+const generateNeo4jQueryFromArgument = (argument: IArgument, relevantTemplates: IRelevantTemplates): CypherQuery => {
     if (isConstant(argument)) {
         let valueCypherQuery: string;
         switch (typeof argument.value) {
@@ -127,16 +117,16 @@ const generateNeo4jQueryFromArgument = (
     }
 
     if (isCountAggFunction(argument)) {
-        return generateNeo4jQueryFromCountAggFunction(argument, connectionsTemplates);
+        return generateNeo4jQueryFromCountAggFunction(argument, relevantTemplates);
     }
 
     if (isSumAggFunction(argument)) {
-        return generateNeo4jQueryFromSumAggFunction(argument, connectionsTemplates);
+        return generateNeo4jQueryFromSumAggFunction(argument, relevantTemplates);
     }
 
     if (isRegularSumFunction(argument)) {
-        const lhsArgumentQuery = generateNeo4jQueryFromArgument(argument.lhsArgument, connectionsTemplates);
-        const rhsArgumentQuery = generateNeo4jQueryFromArgument(argument.rhsArgument, connectionsTemplates);
+        const lhsArgumentQuery = generateNeo4jQueryFromArgument(argument.lhsArgument, relevantTemplates);
+        const rhsArgumentQuery = generateNeo4jQueryFromArgument(argument.rhsArgument, relevantTemplates);
         return {
             cypherQuery: `(${lhsArgumentQuery.cypherQuery}) + (${rhsArgumentQuery.cypherQuery})`,
             aggergationSubQueries: [...lhsArgumentQuery.aggergationSubQueries, ...rhsArgumentQuery.aggergationSubQueries],
@@ -147,12 +137,9 @@ const generateNeo4jQueryFromArgument = (
     throw new Error('unexpected argument, must be constant/propertyOfVariable/countAggFunction/sumAggFunction/regularSumFunction');
 };
 
-const generateNeo4jQueryFromGroup = (
-    formula: IGroup,
-    connectionsTemplates: Array<{ relationshipTemplate: IMongoRelationshipTemplate; unpinnedEntityTemplate: IMongoEntityTemplate }>,
-): CypherQuery => {
+const generateNeo4jQueryFromGroup = (formula: IGroup, relevantTemplates: IRelevantTemplates): CypherQuery => {
     // eslint-disable-next-line no-use-before-define -- circular recursive functions (formula->group->formulas)
-    const subFormulasQueries = formula.subFormulas.map((subFormula) => generateNeo4jQueryFromFormula(subFormula, connectionsTemplates));
+    const subFormulasQueries = formula.subFormulas.map((subFormula) => generateNeo4jQueryFromFormula(subFormula, relevantTemplates));
     return {
         cypherQuery: subFormulasQueries.map(({ cypherQuery }) => `(${cypherQuery})`).join(` ${formula.ruleOfGroup} `),
         aggergationSubQueries: subFormulasQueries.flatMap(({ aggergationSubQueries }) => aggergationSubQueries),
@@ -192,12 +179,9 @@ const generateEquationQuery = (operatorBool: IOperatorBool, lhsCypherQuery: stri
     }
 };
 
-const generateNeo4jQueryFromEquation = (
-    formula: IEquation,
-    connectionsTemplates: Array<{ relationshipTemplate: IMongoRelationshipTemplate; unpinnedEntityTemplate: IMongoEntityTemplate }>,
-): CypherQuery => {
-    const lhsArgumentQuery = generateNeo4jQueryFromArgument(formula.lhsArgument, connectionsTemplates);
-    const rhsArgumentQuery = generateNeo4jQueryFromArgument(formula.rhsArgument, connectionsTemplates);
+const generateNeo4jQueryFromEquation = (formula: IEquation, relevantTemplates: IRelevantTemplates): CypherQuery => {
+    const lhsArgumentQuery = generateNeo4jQueryFromArgument(formula.lhsArgument, relevantTemplates);
+    const rhsArgumentQuery = generateNeo4jQueryFromArgument(formula.rhsArgument, relevantTemplates);
 
     const equationQuery = generateEquationQuery(formula.operatorBool, lhsArgumentQuery.cypherQuery, rhsArgumentQuery.cypherQuery);
 
@@ -208,12 +192,11 @@ const generateNeo4jQueryFromEquation = (
     };
 };
 
-const generateNeo4jQueryFromAggregationGroup = (
-    formula: IAggregationGroup,
-    connectionsTemplates: Array<{ relationshipTemplate: IMongoRelationshipTemplate; unpinnedEntityTemplate: IMongoEntityTemplate }>,
-): CypherQuery => {
+const generateNeo4jQueryFromAggregationGroup = (formula: IAggregationGroup, relevantTemplates: IRelevantTemplates): CypherQuery => {
     const [pinnedEntityTemplateId, aggregatedRelationshipTemplateId] = formula.variableNameOfAggregation.split('.');
-    const aggregatedConnection = connectionsTemplates.find(({ relationshipTemplate: { _id } }) => _id === aggregatedRelationshipTemplateId);
+    const aggregatedConnection = relevantTemplates.connectionsTemplates.find(
+        ({ relationshipTemplate: { _id } }) => _id === aggregatedRelationshipTemplateId,
+    );
 
     if (!aggregatedConnection) {
         throw new Error(
@@ -227,7 +210,7 @@ const generateNeo4jQueryFromAggregationGroup = (
     // eslint-disable-next-line no-use-before-define -- circular recursive functions (formula->aggGroup->subFormulas)
     const formulaQuery = generateNeo4jQueryFromFormula(
         { isGroup: true, ruleOfGroup: formula.ruleOfGroup, subFormulas: formula.subFormulas },
-        connectionsTemplates,
+        relevantTemplates,
     );
 
     let neoAggregation: string;
@@ -250,7 +233,7 @@ const generateNeo4jQueryFromAggregationGroup = (
             {
                 subQuery: `
                     call {
-                        with \`${pinnedEntityTemplateId}\`
+                        with \`${pinnedEntityTemplateId}\`, \`${relevantTemplates.unpinnedEntityTemplateId}\`
                         match (\`${pinnedEntityTemplateId}\`)-[ri:\`${aggregatedRelationship._id}\`]-(\`${formula.variableNameOfAggregation}\`)
                         return ${neoAggregation}(${formulaQuery.cypherQuery}) as \`${aggResultVariableName}\`
                     }
@@ -262,20 +245,17 @@ const generateNeo4jQueryFromAggregationGroup = (
     };
 };
 
-const generateNeo4jQueryFromFormula = (
-    formula: IFormula,
-    connectionsTemplates: Array<{ relationshipTemplate: IMongoRelationshipTemplate; unpinnedEntityTemplate: IMongoEntityTemplate }>,
-): CypherQuery => {
+const generateNeo4jQueryFromFormula = (formula: IFormula, relevantTemplates: IRelevantTemplates): CypherQuery => {
     if (isGroup(formula)) {
-        return generateNeo4jQueryFromGroup(formula, connectionsTemplates);
+        return generateNeo4jQueryFromGroup(formula, relevantTemplates);
     }
 
     if (isEquation(formula)) {
-        return generateNeo4jQueryFromEquation(formula, connectionsTemplates);
+        return generateNeo4jQueryFromEquation(formula, relevantTemplates);
     }
 
     if (isAggregationGroup(formula)) {
-        return generateNeo4jQueryFromAggregationGroup(formula, connectionsTemplates);
+        return generateNeo4jQueryFromAggregationGroup(formula, relevantTemplates);
     }
 
     throw new Error('unexpected formula, must be group/equation/aggeregationGroup');
@@ -286,22 +266,22 @@ export const generateNeo4jQuery = (
     pinnedEntityId: string,
     nonPinnedEntityId: string,
     nonPinnedRelationshipId: string,
-    pinnedEntityTemplateId: string,
-    nonPinnedEntityTemplateId: string,
-    connectionsTemplates: Array<{ relationshipTemplate: IMongoRelationshipTemplate; unpinnedEntityTemplate: IMongoEntityTemplate }>,
+    relevantTemplates: IRelevantTemplates,
 ): Omit<CypherQuery, 'aggergationSubQueries'> => {
-    const formulaQuery = generateNeo4jQueryFromFormula(relationshipTemplateRule.formula, connectionsTemplates);
+    const formulaQuery = generateNeo4jQueryFromFormula(relationshipTemplateRule.formula, relevantTemplates);
+
+    const { pinnedEntityTemplateId, unpinnedEntityTemplateId } = relevantTemplates;
 
     return {
         cypherQuery: `
-        MATCH (\`${pinnedEntityTemplateId}\`)-[rel]-(\`${nonPinnedEntityTemplateId}\`)
-        WHERE \`${pinnedEntityTemplateId}\`._id = $pinnedEntityId AND \`${nonPinnedEntityTemplateId}\`._id = $nonPinnedEntityId AND rel._id = $nonPinnedRelationshipId
+        MATCH (\`${pinnedEntityTemplateId}\`)-[rel]-(\`${unpinnedEntityTemplateId}\`)
+        WHERE \`${pinnedEntityTemplateId}\`._id = $pinnedEntityId AND \`${unpinnedEntityTemplateId}\`._id = $nonPinnedEntityId AND rel._id = $nonPinnedRelationshipId
         
         // aggregations actions
         ${formulaQuery.aggergationSubQueries.map(({ subQuery }) => subQuery).join('\n')}
 
         call {
-            with \`${pinnedEntityTemplateId}\`, \`${nonPinnedEntityTemplateId}\`,
+            with \`${pinnedEntityTemplateId}\`, \`${unpinnedEntityTemplateId}\`,
             ${formulaQuery.aggergationSubQueries.map(({ resultVariableName }) => resultVariableName).join(', ')}
 
             return (${formulaQuery.cypherQuery}) as doesRuleStillApply
