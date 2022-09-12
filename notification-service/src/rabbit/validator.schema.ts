@@ -1,4 +1,3 @@
-/* eslint-disable import/prefer-default-export */
 import * as joi from 'joi';
 import { NotificationType } from '../express/notifications/interface';
 

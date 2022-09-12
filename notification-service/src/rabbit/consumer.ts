@@ -7,7 +7,7 @@ import { createNotificationMessageSchema } from './validator.schema';
 class NotificationsConsumer {
     static async createNotification(msg: ConsumerMessage) {
         try {
-            const msgContent = JSON.parse(String(msg.getContent()));
+            const msgContent = msg.getContent();
             const value = basicValidateRequest(createNotificationMessageSchema, msgContent);
 
             await NotificationsManager.createNotification(value);
