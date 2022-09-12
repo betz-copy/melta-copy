@@ -7,13 +7,18 @@ import { IRuleBreachRequest } from './interface';
 import RuleBreachRequestsModel from './model';
 
 export class RuleBreachRequestsManager {
-    public static async searchRuleBreachRequests(agGridRequest: IAgGridRequest): Promise<IRuleBreachRequest[]> {
+    public static async searchRuleBreachRequests(agGridRequest: IAgGridRequest) {
         const { startRow, endRow, sortModel, filterModel } = agGridRequest;
 
         const sort = translateAgGridSortModel(sortModel);
-        const query = await translateAgGridFilterModel(filterModel);
+        const query = translateAgGridFilterModel(filterModel);
 
-        return RuleBreachRequestsModel.find(query, {}, { skip: startRow, limit: endRow - startRow, sort }).lean();
+        const [rows, lastRowIndex] = await Promise.all([
+            RuleBreachRequestsModel.find(query, {}, { skip: startRow, limit: endRow - startRow, sort }).lean(),
+            RuleBreachRequestsModel.count(query),
+        ]);
+
+        return { rows, lastRowIndex };
     }
 
     public static async createRuleBreachRequest(ruleBreachRequestData: Omit<IRuleBreach, 'createdAt'>): Promise<IRuleBreachRequest> {
