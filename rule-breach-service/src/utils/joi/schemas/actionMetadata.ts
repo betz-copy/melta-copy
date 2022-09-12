@@ -3,19 +3,19 @@ import { mongoIdSchema } from '.';
 
 export const createRelationshipMetadataSchema = joi.object({
     relationshipTemplateId: mongoIdSchema.required(),
-    sourceEntityId: mongoIdSchema.required(),
-    destinationEntityId: mongoIdSchema.required(),
+    sourceEntityId: joi.string().required(),
+    destinationEntityId: joi.string().required(),
 });
 
 export const deleteRelationshipMetadataSchema = joi.object({
-    relationshipId: mongoIdSchema.required(),
     relationshipTemplateId: mongoIdSchema.required(),
-    sourceEntityId: mongoIdSchema.required(),
-    destinationEntityId: mongoIdSchema.required(),
+    relationshipId: joi.string().required(),
+    sourceEntityId: joi.string().required(),
+    destinationEntityId: joi.string().required(),
 });
 
 export const updateEntityMetadataSchema = joi.object({
-    entityId: mongoIdSchema.required(),
+    entityId: joi.string().required(),
     before: joi.object().min(1),
     updatedFields: joi.object().min(1).required(),
 });
