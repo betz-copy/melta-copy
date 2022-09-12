@@ -7,6 +7,7 @@ import * as logger from 'morgan';
 import { once } from 'events';
 import { errorMiddleware } from './error';
 import { appRouter } from './router';
+import { config } from '../config';
 
 export class Server {
     private app: express.Application;
@@ -23,8 +24,8 @@ export class Server {
 
         app.use(helmet());
         app.use(logger('dev'));
-        app.use(bodyParser.json());
-        app.use(bodyParser.urlencoded({ extended: true }));
+        app.use(bodyParser.json({ limit: config.service.maxFileSize }));
+        app.use(bodyParser.urlencoded({ extended: true, limit: config.service.maxFileSize }));
 
         app.use(appRouter);
 

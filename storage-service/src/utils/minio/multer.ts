@@ -3,6 +3,7 @@ import { Request } from 'express';
 import * as Multer from 'multer';
 import { MinIOClient, minioClient } from './minioClient';
 import { generatePath } from '../generatePath';
+import { config } from '../../config';
 
 class MinioStorage {
     private client: MinIOClient;
@@ -28,9 +29,9 @@ class MinioStorage {
 }
 
 export const UploadToMinio = (fileKeyName: string) => {
-    return Multer({ storage: new MinioStorage(minioClient) }).single(fileKeyName);
+    return Multer({ storage: new MinioStorage(minioClient), limits: { fileSize: config.service.maxFileSize } }).single(fileKeyName);
 };
 
 export const UploadBulkToMinio = (filesKeyName: string) => {
-    return Multer({ storage: new MinioStorage(minioClient) }).array(filesKeyName);
+    return Multer({ storage: new MinioStorage(minioClient), limits: { fileSize: config.service.maxFileSize } }).array(filesKeyName);
 };
