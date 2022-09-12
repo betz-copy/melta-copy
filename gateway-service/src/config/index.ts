@@ -6,6 +6,7 @@ const config = {
         port: env.get('PORT').required().asPortNumber(),
         systemUnavailableURL: env.get('SYSTEM_UNAVAILABLE_URL').required().asString(),
         uploadsFolderPath: env.get('UPLOADS_FOLDER_PATH').default('public/uploads/').asString(),
+        maxFileSize: env.get('MAX_FILE_SIZE').default(50000000).asInt(),
     },
     authentication: {
         tokenSecret: env.get('TOKEN_SECRET').required().asString(),

@@ -37,21 +37,21 @@ InstancesRouter.post(
 );
 InstancesRouter.post(
     '/entities',
-    multer({ dest: config.service.uploadsFolderPath }).any(),
+    multer({ dest: config.service.uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).any(),
     ValidateRequest(createEntityInstanceSchema),
     wrapMiddleware(validateUserCanCreateEntityInstance),
     wrapController(InstancesController.createEntityInstance),
 );
 InstancesRouter.put(
     '/entities/:id',
-    multer({ dest: config.service.uploadsFolderPath }).any(),
+    multer({ dest: config.service.uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).any(),
     ValidateRequest(updateEntityInstanceSchema),
     wrapMiddleware(validateUserCanUpdateGetOrDeleteEntityInstance),
     wrapController(InstancesController.updateEntityInstance),
 );
 InstancesRouter.post(
     '/entities/:id/duplicate',
-    multer({ dest: config.service.uploadsFolderPath }).any(),
+    multer({ dest: config.service.uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).any(),
     ValidateRequest(updateEntityInstanceSchema),
     wrapMiddleware(validateUserCanUpdateGetOrDeleteEntityInstance),
     wrapController(InstancesController.duplicateEntityInstance),

@@ -57,14 +57,14 @@ templatesRouter.get('/all', wrapMiddleware(validateUserHasAtLeastSomePermissions
 templatesRouter.get('/categories', wrapMiddleware(validateUserHasAtLeastSomePermissions), EntityTemplatesManagerProxy);
 templatesRouter.post(
     '/categories',
-    multer({ dest: uploadsFolderPath }).single('file'),
+    multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).single('file'),
     ValidateRequest(createCategorySchema),
     wrapMiddleware(validateUserIsTemplatesManager),
     wrapController(TemplatesController.createCategory),
 );
 templatesRouter.put(
     '/categories/:id',
-    multer({ dest: uploadsFolderPath }).single('file'),
+    multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).single('file'),
     ValidateRequest(updateCategorySchema),
     wrapMiddleware(validateUserIsTemplatesManager),
     wrapController(TemplatesController.updateCategory),
@@ -79,14 +79,14 @@ templatesRouter.delete(
 // entities (templates)
 templatesRouter.post(
     '/entities',
-    multer({ dest: uploadsFolderPath }).single('file'),
+    multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).single('file'),
     ValidateRequest(createEntityTemplateSchema),
     wrapMiddleware(validateUserCanCreateEntityTemplateUnderCategory),
     wrapController(TemplatesController.createEntityTemplate),
 );
 templatesRouter.put(
     '/entities/:id',
-    multer({ dest: uploadsFolderPath }).single('file'),
+    multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).single('file'),
     ValidateRequest(updateEntityTemplateSchema),
     wrapMiddleware(validateUserCanUpdateOrDeleteEntityTemplate),
     wrapController(TemplatesController.updateEntityTemplate),

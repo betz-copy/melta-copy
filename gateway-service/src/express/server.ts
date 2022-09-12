@@ -28,8 +28,8 @@ class Server {
         const app = express();
 
         app.use(helmet());
-        app.use(express.json());
-        app.use(express.urlencoded({ extended: true }));
+        app.use(express.json({ limit: config.service.maxFileSize }));
+        app.use(express.urlencoded({ extended: true, limit: config.service.maxFileSize }));
         app.use(cookieParser());
 
         app.use(logger('dev'));
