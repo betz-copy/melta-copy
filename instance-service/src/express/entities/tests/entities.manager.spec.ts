@@ -1,11 +1,13 @@
-import Neo4jClient from '../../utils/neo4j';
-import config from '../../config';
+import axios from 'axios';
+import MockAdapter from 'axios-mock-adapter';
+import Neo4jClient from '../../../utils/neo4j';
+import config from '../../../config';
 
-import EntityManager from './manager';
-import RelationshipManager from '../relationships/manager';
-import { IEntity, IMongoEntityTemplate } from './interface';
+import EntityManager from '../manager';
+import RelationshipManager from '../../relationships/manager';
+import { IEntity, IMongoEntityTemplate } from '../interface';
 
-const { neo4j } = config;
+const { relationshipManager, neo4j } = config;
 
 const defaultTemplateId = '111111111111111111111111';
 const defaultRelationshipTemplateId = '222222222222222222222222';
@@ -42,8 +44,25 @@ const entityTemplate: IMongoEntityTemplate = {
 };
 
 describe('Entity manager', () => {
+    const mock = new MockAdapter(axios);
+
     beforeAll(async () => {
         await Neo4jClient.initialize(neo4j.url, neo4j.auth, neo4j.database);
+
+        mock.onPost(`${relationshipManager.url}${relationshipManager.searchRulesRoute}`, {
+            disabled: false,
+            pinnedEntityTemplateIds: [defaultTemplateId],
+        }).reply(200, []);
+
+        mock.onPost(`${relationshipManager.url}${relationshipManager.searchRulesRoute}`, {
+            disabled: false,
+            unpinnedEntityTemplateIds: [defaultTemplateId],
+        }).reply(200, []);
+
+        mock.onPost(`${relationshipManager.url}${relationshipManager.searchRulesRoute}`, {
+            disabled: false,
+            relationshipTemplateIds: [defaultRelationshipTemplateId],
+        }).reply(200, []);
     });
 
     afterAll(async () => {

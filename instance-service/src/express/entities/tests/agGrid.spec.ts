@@ -1,9 +1,9 @@
-import { IAGGridRequest } from '../../utils/agGridFilterModelToNeoQuery';
-import Neo4jClient from '../../utils/neo4j';
-import RedisClient from '../../utils/redis';
-import { IEntity } from './interface';
-import EntityManager from './manager';
-import config from '../../config';
+import { IAGGridRequest } from '../../../utils/agGridFilterModelToNeoQuery';
+import Neo4jClient from '../../../utils/neo4j';
+import RedisClient from '../../../utils/redis';
+import { IEntity } from '../interface';
+import EntityManager from '../manager';
+import config from '../../../config';
 
 const { neo4j, redis } = config;
 

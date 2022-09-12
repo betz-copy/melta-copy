@@ -3,10 +3,10 @@ import request from 'supertest';
 import axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
 
-import Neo4jClient from '../../utils/neo4j';
-import Server from '../server';
-import { formatDate } from '../../utils/neo4j/lib';
-import config from '../../config';
+import Neo4jClient from '../../../utils/neo4j';
+import Server from '../../server';
+import { formatDate } from '../../../utils/neo4j/lib';
+import config from '../../../config';
 
 const mockDate = new Date();
 const mockDateStr = mockDate.toISOString();

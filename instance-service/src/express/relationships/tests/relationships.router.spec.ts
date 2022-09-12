@@ -3,9 +3,11 @@ import request from 'supertest';
 import MockAdapter from 'axios-mock-adapter';
 import axios from 'axios';
 
-import Neo4jClient from '../../utils/neo4j';
-import Server from '../server';
-import config from '../../config';
+import Neo4jClient from '../../../utils/neo4j';
+import Server from '../../server';
+import config from '../../../config';
+import { IEntity } from '../../entities/interface';
+import { IRelationship } from '../interface';
 
 const mockDate = new Date();
 const mockDateStr = mockDate.toISOString();
@@ -169,19 +171,26 @@ describe('Relationship router', () => {
     });
 
     describe('Tests to perform after relationship is created', () => {
+        let firstEntity: IEntity;
         let entityId: string;
+
+        let secondEntity: IEntity;
         let secondEntityId: string;
+
+        let relationshipInstance: IRelationship;
         let relId: string;
 
         beforeEach(async () => {
-            const { body: entityBody } = await request(app).post('/api/instances/entities').send(defaultEntity);
+            const { body: firstEntityBody } = await request(app).post('/api/instances/entities').send(defaultEntity);
 
-            entityId = entityBody.properties._id;
+            firstEntity = firstEntityBody;
+            entityId = firstEntityBody.properties._id;
 
             // Create second entities
-            const secondEntity = await request(app).post('/api/instances/entities').send(defaultEntity);
+            const { body: secondEntityBody } = await request(app).post('/api/instances/entities').send(defaultEntity);
 
-            secondEntityId = secondEntity.body.properties._id;
+            secondEntity = secondEntityBody;
+            secondEntityId = secondEntityBody.properties._id;
 
             // Create relationship between two entities
             const { body: relBody } = await request(app)
@@ -195,6 +204,7 @@ describe('Relationship router', () => {
                     },
                 });
 
+            relationshipInstance = relBody;
             relId = relBody.properties._id;
         });
 
@@ -265,6 +275,19 @@ describe('Relationship router', () => {
                 expect(relationship.statusCode).toBe(404);
                 expect(relationship.body.type).toEqual('NotFound');
                 expect(relationship.body.message).toEqual(`[NEO4J] relationship "${unknownId}" not found`);
+            });
+        });
+
+        describe('POST /api/instances/relationships/connections', () => {
+            it('Should get relationships connections ( [{node, relationship, node}] ) - by id', async () => {
+                const relationship = await request(app)
+                    .post(`/api/instances/relationships/connections`)
+                    .send({ ids: [relId] });
+
+                expect(relationship.statusCode).toBe(200);
+                expect(relationship.body).toStrictEqual(
+                    expect.arrayContaining([{ sourceEntity: firstEntity, relationship: relationshipInstance, destinationEntity: secondEntity }]),
+                );
             });
         });
     });

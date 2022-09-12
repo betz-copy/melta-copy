@@ -3,42 +3,6 @@ import { IMongoRelationshipTemplate, IMongoRelationshipTemplatePopulated } from 
 import { IMongoEntityTemplate } from '../entities/interface';
 import { generateNeo4jQuery } from '.';
 
-const travelAgentEntityTemplate: IMongoEntityTemplate = {
-    _id: '111',
-    name: 'travelAgent',
-    displayName: 'סוכן נסיעות',
-    category: '111',
-    properties: {
-        type: 'object',
-        properties: {
-            firstName: {
-                type: 'string',
-                title: 'שם פרטי',
-            },
-            lastName: {
-                type: 'string',
-                title: 'שם משפחה',
-            },
-            age: {
-                type: 'number',
-                title: 'גיל',
-            },
-            gender: {
-                type: 'boolean',
-                title: 'זכר',
-            },
-            agentId: {
-                type: 'string',
-                title: 'מזהה סוכן',
-            },
-        },
-        required: ['firstName', 'lastName', 'agentId'],
-    },
-    propertiesOrder: ['firstName', 'lastName', 'age', 'gender', 'agentId'],
-    propertiesPreview: ['firstName', 'lastName', 'age'],
-    disabled: false,
-};
-
 const flightEntityTemplate: IMongoEntityTemplate = {
     _id: '222',
     name: 'flight',
@@ -79,26 +43,6 @@ const flightEntityTemplate: IMongoEntityTemplate = {
     propertiesOrder: ['flightNumber', 'departureDate', 'landingDate', 'from', 'to', 'planeType'],
     propertiesPreview: ['flightNumber', 'from', 'to'],
     disabled: false,
-};
-
-const flightsOnRelationshipTemplatePopulated: IMongoRelationshipTemplatePopulated = {
-    _id: '111',
-    name: 'flies on',
-    displayName: 'טס על',
-    sourceEntity: travelAgentEntityTemplate,
-    destinationEntity: flightEntityTemplate,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-};
-
-const flightsOnRelationshipTemplate: IMongoRelationshipTemplate = {
-    _id: flightsOnRelationshipTemplatePopulated._id,
-    name: flightsOnRelationshipTemplatePopulated.name,
-    displayName: flightsOnRelationshipTemplatePopulated.displayName,
-    sourceEntityId: flightsOnRelationshipTemplatePopulated.sourceEntity._id,
-    destinationEntityId: flightsOnRelationshipTemplatePopulated.destinationEntity._id,
-    createdAt: flightsOnRelationshipTemplatePopulated.createdAt,
-    updatedAt: flightsOnRelationshipTemplatePopulated.updatedAt,
 };
 
 const tripEntityTemplate: IMongoEntityTemplate = {
@@ -160,31 +104,6 @@ const tripConnectedToFlightRelationshipTemplate: IMongoRelationshipTemplate = {
     updatedAt: tripConnectedToFlightRelationshipTemplatePopulated.updatedAt,
 };
 
-// rule 1
-export const oneTravelAgentPerFlight: IRelationshipTemplateRule = {
-    name: 'סוכן נסיעות אחד על טיסה',
-    description: 'סוכן נסיעות אחד בלבד על טיסה. נועד למנוע מריבות בין סוכני נסיעות, כי הם לא אוהבים אחד את השני',
-    actionOnFail: 'WARNING',
-    relationshipTemplateId: flightsOnRelationshipTemplatePopulated._id,
-    pinnedEntityTemplateId: flightEntityTemplate._id,
-    disabled: false,
-    formula: {
-        isGroup: true,
-        ruleOfGroup: 'AND',
-        subFormulas: [
-            {
-                isEquation: true,
-                operatorBool: 'lessThanOrEqual',
-                lhsArgument: {
-                    isCountAggFunction: true,
-                    variableName: `${flightEntityTemplate._id}.${flightsOnRelationshipTemplate._id}.${travelAgentEntityTemplate._id}`,
-                },
-                rhsArgument: { isConstant: true, value: 1 },
-            },
-        ],
-    },
-};
-
 // rule 2
 export const noOverlappingFlightsInTrip: IRelationshipTemplateRule = {
     name: 'טיסה אחת ביום לטיול',
@@ -192,6 +111,7 @@ export const noOverlappingFlightsInTrip: IRelationshipTemplateRule = {
     actionOnFail: 'WARNING',
     relationshipTemplateId: tripConnectedToFlightRelationshipTemplatePopulated._id,
     pinnedEntityTemplateId: tripEntityTemplate._id,
+    unpinnedEntityTemplateId: flightEntityTemplate._id,
     disabled: false,
     formula: {
         isGroup: true,
@@ -227,6 +147,7 @@ export const warnOnEveryFlightOnActiveZone: IRelationshipTemplateRule = {
     actionOnFail: 'WARNING',
     relationshipTemplateId: tripConnectedToFlightRelationshipTemplatePopulated._id,
     pinnedEntityTemplateId: tripEntityTemplate._id,
+    unpinnedEntityTemplateId: flightEntityTemplate._id,
     disabled: false,
     formula: {
         isGroup: true,
@@ -240,26 +161,6 @@ export const warnOnEveryFlightOnActiveZone: IRelationshipTemplateRule = {
             },
         ],
     },
-};
-
-export const mainRunExampleRule1 = () => {
-    // todo: given to check if rule applies to him
-    const pinnedEntityId = '111';
-    const nonPinnedEntityId = '222';
-    const nonPinnedRelationshipId = '333';
-
-    const neo4jQuery = generateNeo4jQuery(
-        oneTravelAgentPerFlight,
-        pinnedEntityId,
-        nonPinnedEntityId,
-        nonPinnedRelationshipId,
-        flightEntityTemplate._id,
-        travelAgentEntityTemplate._id,
-        [{ relationshipTemplate: flightsOnRelationshipTemplate, unpinnedEntityTemplate: travelAgentEntityTemplate }],
-    );
-
-    // console.log('generateNeo4jQuery', neo4jQuery.cypherQuery, neo4jQuery.parameters);
-    return neo4jQuery;
 };
 
 export const mainRunExampleRule2 = () => {
@@ -299,15 +200,3 @@ export const mainRunExampleRule3 = () => {
 
     return neo4jQuery;
 };
-
-/*
-transaction:67
--------------
-1. do action
-
-2. get all pairs to check rules
-
-3. check for each pair the rule
-
-4. throw 400 if needed, etc etc...
-*/

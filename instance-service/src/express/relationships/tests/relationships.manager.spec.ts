@@ -1,10 +1,11 @@
 import axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
-import Neo4jClient from '../../utils/neo4j';
-import { IEntity } from '../entities/interface';
-import EntityManager from '../entities/manager';
-import RelationshipManager from './manager';
-import config from '../../config';
+import Neo4jClient from '../../../utils/neo4j';
+import { IEntity } from '../../entities/interface';
+import RelationshipManager from '../manager';
+import config from '../../../config';
+import { IRelationship } from '../interface';
+import EntityManager from '../../entities/manager';
 
 const { relationshipManager, neo4j } = config;
 
@@ -34,6 +35,8 @@ describe('Relationship manager', () => {
 
     let secondEntity: IEntity;
     let secondEntityId: string;
+
+    let relationshipInstance: IRelationship;
     let relId: string;
 
     beforeAll(async () => {
@@ -75,7 +78,7 @@ describe('Relationship manager', () => {
         secondEntityId = secondEntity.properties._id;
 
         // Create relationship between two entities
-        const { properties: relProperties } = await RelationshipManager.createRelationshipByEntityIds(
+        relationshipInstance = await RelationshipManager.createRelationshipByEntityIds(
             {
                 templateId: defaultRelationshipTemplateId,
                 properties: defaultProperties,
@@ -86,17 +89,14 @@ describe('Relationship manager', () => {
             [],
         );
 
-        relId = relProperties._id;
+        relId = relationshipInstance.properties._id;
     });
 
     describe('Get relationship', () => {
         it('Should get a new relationship', async () => {
             const relationship = await RelationshipManager.getRelationshipById(relId);
 
-            expect(relationship.templateId).toStrictEqual(defaultRelationshipTemplateId);
-            expect(relationship.properties).toEqual(expect.objectContaining(defaultProperties));
-            expect(relationship.sourceEntityId).toStrictEqual(entityId);
-            expect(relationship.destinationEntityId).toStrictEqual(secondEntityId);
+            expect(relationship).toEqual(expect.objectContaining(relationshipInstance));
         });
 
         it('Should fail to get an existing relationship', async () => {
@@ -158,16 +158,24 @@ describe('Relationship manager', () => {
         it('Should delete an existing relationship', async () => {
             const relationship = await RelationshipManager.deleteRelationshipById(relId, []);
 
-            expect(relationship.templateId).toStrictEqual(defaultRelationshipTemplateId);
-            expect(relationship.properties).toEqual(expect.objectContaining(defaultProperties));
-            expect(relationship.sourceEntityId).toStrictEqual(entityId);
-            expect(relationship.destinationEntityId).toStrictEqual(secondEntityId);
+            expect(relationship).toEqual(expect.objectContaining(relationshipInstance));
         });
 
         it('Should fail to delete an existing relationship', async () => {
             await expect(() => RelationshipManager.deleteRelationshipById(unknownId, [])).rejects.toThrowError(
                 `[NEO4J] relationship "${unknownId}" not found`,
             );
+        });
+    });
+
+    describe('Relationships connections', () => {
+        it('Should get relationships connections ( [{node, relationship, node}] ) - by ids', async () => {
+            const connections = await RelationshipManager.getRelationshipsConnectionsById([relId]);
+
+            expect(connections.length).toStrictEqual(1);
+            expect(connections[0].sourceEntity).toEqual(expect.objectContaining(firstEntity));
+            expect(connections[0].relationship).toEqual(expect.objectContaining(relationshipInstance));
+            expect(connections[0].destinationEntity).toEqual(expect.objectContaining(secondEntity));
         });
     });
 });

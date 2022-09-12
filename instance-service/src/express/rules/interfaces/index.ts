@@ -81,6 +81,7 @@ export interface IRelationshipTemplateRule {
     actionOnFail: 'WARNING' | 'ENFORCEMENT';
     relationshipTemplateId: string;
     pinnedEntityTemplateId: string;
+    unpinnedEntityTemplateId: string;
     formula: IFormula;
     disabled: boolean;
 }
