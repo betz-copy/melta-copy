@@ -19,7 +19,10 @@ import {
 import { IArgument, isConstant, isPropertyOfVariable } from './interfaces/argument';
 import { IFormula } from './interfaces/formula';
 
-const generateNeo4jQueryFromCountAggFunction = (countAggFunction: ICountAggFunction, { connectionsTemplates }: IRelevantTemplates): CypherQuery => {
+const generateNeo4jQueryFromCountAggFunction = (
+    countAggFunction: ICountAggFunction,
+    { unpinnedEntityTemplateId, connectionsTemplates }: IRelevantTemplates,
+): CypherQuery => {
     const [pinnedEntityTemplateId, aggregatedRelationshipTemplateId] = countAggFunction.variableName.split('.');
     const aggregatedConnection = connectionsTemplates.find(({ relationshipTemplate: { _id } }) => _id === aggregatedRelationshipTemplateId);
 
@@ -38,7 +41,7 @@ const generateNeo4jQueryFromCountAggFunction = (countAggFunction: ICountAggFunct
             {
                 subQuery: `
                     call {
-                        with \`${pinnedEntityTemplateId}\`
+                        with \`${pinnedEntityTemplateId}\`, \`${unpinnedEntityTemplateId}\`
                         match (\`${pinnedEntityTemplateId}\`)-[ri:\`${aggregatedRelationship._id}\`]-(\`${countAggFunction.variableName}\`)
                         return count(\`${countAggFunction.variableName}\`) as \`${aggResultVariableName}\`
                     }
@@ -50,7 +53,10 @@ const generateNeo4jQueryFromCountAggFunction = (countAggFunction: ICountAggFunct
     };
 };
 
-const generateNeo4jQueryFromSumAggFunction = (sumAggFunction: ISumAggFunction, { connectionsTemplates }: IRelevantTemplates): CypherQuery => {
+const generateNeo4jQueryFromSumAggFunction = (
+    sumAggFunction: ISumAggFunction,
+    { unpinnedEntityTemplateId, connectionsTemplates }: IRelevantTemplates,
+): CypherQuery => {
     const [pinnedEntityTemplateId, aggregatedRelationshipTemplateId] = sumAggFunction.variableName.split('.');
     const aggregatedConnection = connectionsTemplates.find(({ relationshipTemplate: { _id } }) => _id === aggregatedRelationshipTemplateId);
 
@@ -69,7 +75,7 @@ const generateNeo4jQueryFromSumAggFunction = (sumAggFunction: ISumAggFunction, {
             {
                 subQuery: `
                     call {
-                        with \`${pinnedEntityTemplateId}\`
+                        with \`${pinnedEntityTemplateId}\`, \`${unpinnedEntityTemplateId}\`
                         match (\`${pinnedEntityTemplateId}\`)-[ri:\`${aggregatedRelationship._id}\`]-(\`${sumAggFunction.variableName}\`)
                         return sum(\`${sumAggFunction.variableName}\`.${sumAggFunction.property}) as \`${aggResultVariableName}\`
                     }
@@ -281,8 +287,10 @@ export const generateNeo4jQuery = (
         ${formulaQuery.aggergationSubQueries.map(({ subQuery }) => subQuery).join('\n')}
 
         call {
-            with \`${pinnedEntityTemplateId}\`, \`${unpinnedEntityTemplateId}\`,
-            ${formulaQuery.aggergationSubQueries.map(({ resultVariableName }) => resultVariableName).join(', ')}
+            with \`${pinnedEntityTemplateId}\`, \`${unpinnedEntityTemplateId}\`
+            ${formulaQuery.aggergationSubQueries
+                .map(({ resultVariableName }, i) => (i === 0 ? `, ${resultVariableName}` : resultVariableName))
+                .join(', ')}
 
             return (${formulaQuery.cypherQuery}) as doesRuleStillApply
         }
