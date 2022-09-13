@@ -42,7 +42,12 @@ export class RelationshipManager {
         return Neo4jClient.readTransaction(`MATCH ()-[r: \`${templateId}\`]->() RETURN count(r)`, normalizeResponseCount);
     }
 
-    private static getRuleQueryByRelId = async (transaction: Transaction, templateId: string, sourceEntityId: string) => {
+    private static getRuleQueryByRelId = async (
+        transaction: Transaction,
+        templateId: string,
+        sourceEntityId: string,
+        destinationEntityId: string,
+    ) => {
         const pathsConnectedWithRelIdRules = await searchRuleTemplates({ relationshipTemplateIds: [templateId] });
 
         if (!pathsConnectedWithRelIdRules.length) {
@@ -51,7 +56,7 @@ export class RelationshipManager {
 
         const pathsWithRelId = await transactionRunAndNormalize(
             transaction,
-            `MATCH (s {_id: '${sourceEntityId}'})-[r: \`${templateId}\`]->(d) RETURN s, r, d`,
+            `MATCH (s {_id: '${sourceEntityId}'})-[r: \`${templateId}\`]->(d {_id: '${destinationEntityId}'}) RETURN s, r, d`,
             normalizeRelAndEntitiesForRule,
         );
 
@@ -110,7 +115,12 @@ export class RelationshipManager {
     ) {
         const { sourceEntityId, destinationEntityId, properties } = createdRelationship;
 
-        const ruleQueryByRelId = await RelationshipManager.getRuleQueryByRelId(transaction, relationshipTemplate._id, sourceEntityId);
+        const ruleQueryByRelId = await RelationshipManager.getRuleQueryByRelId(
+            transaction,
+            relationshipTemplate._id,
+            sourceEntityId,
+            destinationEntityId,
+        );
         const ruleQueryBySourceId = await RelationshipManager.getRuleQueryBySourceId(
             transaction,
             relationshipTemplate,
