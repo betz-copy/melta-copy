@@ -6,13 +6,18 @@ import { IRuleBreachAlertDocument } from './interface';
 import RuleBreachAlertsModel from './model';
 
 export class RuleBreachAlertsManager {
-    public static async searchRuleBreachAlerts(agGridRequest: IAgGridRequest): Promise<IRuleBreachAlertDocument[]> {
+    public static async searchRuleBreachAlerts(agGridRequest: IAgGridRequest) {
         const { startRow, endRow, sortModel, filterModel } = agGridRequest;
 
         const sort = translateAgGridSortModel(sortModel);
         const query = await translateAgGridFilterModel(filterModel);
 
-        return RuleBreachAlertsModel.find(query, {}, { skip: startRow, limit: endRow - startRow, sort }).exec();
+        const [rows, lastRowIndex] = await Promise.all([
+            RuleBreachAlertsModel.find(query, {}, { skip: startRow, limit: endRow - startRow, sort }).lean(),
+            RuleBreachAlertsModel.count(query),
+        ]);
+
+        return { rows, lastRowIndex };
     }
 
     public static async createRuleBreachAlert(ruleBreachAlertData: Omit<IRuleBreach, 'createdAt'>): Promise<IRuleBreachAlertDocument> {
