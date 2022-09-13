@@ -13,7 +13,7 @@ import { NotFoundError, ServiceError } from '../error';
 import { searchRuleTemplates, getBrokenRules, areAllBrokenRulesIgnored, createRulesQueries } from '../rules/lib';
 import { IBrokenRule } from '../rules/interfaces';
 import { getRelationshipTemplateById } from './template';
-import { filterRulesDependentInRelationshipTemplate } from '../rules/getParametersOfFormula';
+import { filterDependentRules } from '../rules/getParametersOfFormula';
 import { transactionRunAndNormalize, getRuleResults } from '../rules/transaction';
 import config from '../../config';
 
@@ -70,7 +70,7 @@ export class RelationshipManager {
         destinationEntityId: string,
     ) => {
         const pathsConnectedToSourceIdRules = await searchRuleTemplates({ pinnedEntityTemplateIds: [relationshipTemplate.sourceEntityId] });
-        const relevantRules = filterRulesDependentInRelationshipTemplate(pathsConnectedToSourceIdRules, relationshipTemplate._id);
+        const relevantRules = filterDependentRules(pathsConnectedToSourceIdRules, relationshipTemplate._id);
 
         if (!relevantRules.length) {
             return [];
@@ -92,7 +92,7 @@ export class RelationshipManager {
         destinationEntityId: string,
     ) => {
         const pathsConnectedToDestIdRules = await searchRuleTemplates({ pinnedEntityTemplateIds: [relationshipTemplate.destinationEntityId] });
-        const relevantRules = filterRulesDependentInRelationshipTemplate(pathsConnectedToDestIdRules, relationshipTemplate._id);
+        const relevantRules = filterDependentRules(pathsConnectedToDestIdRules, relationshipTemplate._id);
 
         if (!relevantRules.length) {
             return [];

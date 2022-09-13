@@ -43,11 +43,40 @@ const getDependentRelationshipTemplatesOfFormula = (formula: IFormula) => {
     return [...new Set(relationshipTemplates)];
 };
 
-const isRuleDependentInRelationshipTemplate = (rule: IMongoRelationshipTemplateRule, relationshipTemplateId: string) => {
+const isRuleDependentOnPropertiesViaAggregation = (
+    rule: IMongoRelationshipTemplateRule,
+    relationshipTemplateId: string,
+    updatedProperties: string[],
+) => {
+    const parameters = getParametersOfFormula(rule.formula);
+
+    return parameters.some(({ variableName, property }) => {
+        if (!property) {
+            return false;
+        }
+
+        const isVariableAggregation = variableName.split('.').length === 3;
+
+        if (isVariableAggregation) {
+            return relationshipTemplateId === variableName.split('.')[1] && updatedProperties.includes(property);
+        }
+
+        return false;
+    });
+};
+
+const isRuleDependentOnRelationship = (rule: IMongoRelationshipTemplateRule, relationshipTemplateId: string) => {
     const dependentRelationshipTemplatesOfRule = getDependentRelationshipTemplatesOfFormula(rule.formula);
+
     return dependentRelationshipTemplatesOfRule.includes(relationshipTemplateId);
 };
 
-export const filterRulesDependentInRelationshipTemplate = (rules: IMongoRelationshipTemplateRule[], relationshipTemplateId: string) => {
-    return rules.filter((rule) => isRuleDependentInRelationshipTemplate(rule, relationshipTemplateId));
+export const filterDependentRules = (rules: IMongoRelationshipTemplateRule[], relationshipTemplateId: string, updatedProperties?: string[]) => {
+    return rules.filter((rule) => {
+        if (updatedProperties) {
+            return isRuleDependentOnPropertiesViaAggregation(rule, relationshipTemplateId, updatedProperties);
+        }
+
+        return isRuleDependentOnRelationship(rule, relationshipTemplateId);
+    });
 };

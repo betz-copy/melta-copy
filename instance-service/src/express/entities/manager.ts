@@ -13,8 +13,9 @@ import { NotFoundError, ServiceError } from '../error';
 import { agGridRequestToNeo4JRequest, agGridSearchRequestToNeo4JRequest, IAGGridRequest } from '../../utils/agGridFilterModelToNeoQuery';
 import getLatestIndex from '../../utils/redis/getLatestIndex';
 import { areAllBrokenRulesIgnored, createRulesQueries, getBrokenRules, getRulesByEntityTemplateId, searchRuleTemplates } from '../rules/lib';
-import { IBrokenRule } from '../rules/interfaces';
+import { IBrokenRule, IConnection } from '../rules/interfaces';
 import { transactionRunAndNormalize, getRuleResults } from '../rules/transaction';
+import { filterDependentRules } from '../rules/getParametersOfFormula';
 import config from '../../config';
 
 export class EntityManager {
@@ -136,10 +137,14 @@ export class EntityManager {
         entityTemplateId: string,
         sourceEntityId: string,
         destinationEntityId: string,
+        relationshipTemplateId: string,
+        updatedProperties: string[],
     ) => {
         const pathsConnectedToSourceIdRules = await searchRuleTemplates({ pinnedEntityTemplateIds: [entityTemplateId] });
 
-        if (!pathsConnectedToSourceIdRules.length) {
+        const relevantRules = filterDependentRules(pathsConnectedToSourceIdRules, relationshipTemplateId, updatedProperties);
+
+        if (!relevantRules.length) {
             return [];
         }
 
@@ -149,12 +154,24 @@ export class EntityManager {
             normalizeRelAndEntitiesForRule,
         );
 
-        return createRulesQueries(pathsConnectedToSourceId, pathsConnectedToSourceIdRules);
+        return createRulesQueries(pathsConnectedToSourceId, relevantRules);
     };
 
-    public static getRulesConnectedToEntityInstances = async (transaction: Transaction, entities: IEntity[], excludedEntityId: string) => {
-        const destinationRulesPromises = entities.flatMap(async (entity) => {
-            return EntityManager.getRuleQueryBySourceId(transaction, entity.templateId, entity.properties._id, excludedEntityId);
+    public static getRulesConnectedToEntityInstances = async (
+        transaction: Transaction,
+        connections: IConnection[],
+        excludedEntityId: string,
+        updatedProperties: string[],
+    ) => {
+        const destinationRulesPromises = connections.flatMap(async ({ relationship, destinationEntity: entity }) => {
+            return EntityManager.getRuleQueryBySourceId(
+                transaction,
+                entity.templateId,
+                entity.properties._id,
+                excludedEntityId,
+                relationship.templateId,
+                updatedProperties,
+            );
         });
 
         const destinationRules = await Promise.all(destinationRulesPromises);
@@ -167,6 +184,7 @@ export class EntityManager {
         entityTemplate: IMongoEntityTemplate,
         updatedEntity: IEntity,
         ignoredRules: IBrokenRule[],
+        updatedProperties: string[],
     ) {
         const rulesByEntityTemplateId = await getRulesByEntityTemplateId(entityTemplate._id);
         const connectionsWithSourceId = await transactionRunAndNormalize(
@@ -177,8 +195,9 @@ export class EntityManager {
 
         const destinationRules = await EntityManager.getRulesConnectedToEntityInstances(
             transaction,
-            connectionsWithSourceId.map(({ destinationEntity }) => destinationEntity),
+            connectionsWithSourceId,
             updatedEntity.properties._id,
+            updatedProperties,
         );
 
         const ruleQueries = await Promise.all([...createRulesQueries(connectionsWithSourceId, rulesByEntityTemplateId), ...destinationRules]);
@@ -193,6 +212,18 @@ export class EntityManager {
                 brokenRules,
             });
         }
+    }
+
+    public static getUpdatedProperties(oldEntity: IEntity, newEntity: IEntity, entityTemplate: IMongoEntityTemplate) {
+        const updatedProperties: string[] = [];
+
+        Object.entries(entityTemplate.properties.properties).forEach(([key]) => {
+            if (newEntity.properties[key] !== oldEntity.properties[key]) {
+                updatedProperties.push(key);
+            }
+        });
+
+        return updatedProperties;
     }
 
     static async updateEntityById(
@@ -234,7 +265,13 @@ export class EntityManager {
                 },
             );
 
-            await EntityManager.verifyRuleForEntityUpdate(transaction, entityTemplate, updatedEntity, ignoredRules);
+            await EntityManager.verifyRuleForEntityUpdate(
+                transaction,
+                entityTemplate,
+                updatedEntity,
+                ignoredRules,
+                EntityManager.getUpdatedProperties(entity, updatedEntity, entityTemplate),
+            );
 
             return updatedEntity;
         });
