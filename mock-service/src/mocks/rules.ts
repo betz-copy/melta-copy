@@ -12,12 +12,12 @@ export const rulesCreator = (fliesOnId: string, flightInTripId: string, flightId
             subFormulas: [
                 {
                     isEquation: true,
-                    operatorBool: 'notEqual',
+                    operatorBool: 'lessThanOrEqual',
                     lhsArgument: {
                         isCountAggFunction: true,
                         variableName: `${flightId}.${fliesOnId}.${touristId}`,
                     },
-                    rhsArgument: { isConstant: true, value: 0 },
+                    rhsArgument: { isConstant: true, value: 1 },
                 },
             ],
         },
