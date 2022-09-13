@@ -6,7 +6,9 @@ import transaction from '../../utils/mongoose';
 
 export class NotificationsManager {
     public static async getNotifications(limit: number, step: number, type?: NotificationType, viewerId?: string): Promise<INotification[]> {
-        return NotificationModel.find(this.makeQuery(type, viewerId), {}, { limit, skip: step * limit }).lean();
+        return NotificationModel.find(this.makeQuery(type, viewerId), {}, { limit, skip: step * limit })
+            .sort({ createdAt: -1 })
+            .lean();
     }
 
     public static async getNotificationCount(type?: NotificationType, viewerId?: string): Promise<number> {
