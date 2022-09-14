@@ -61,9 +61,11 @@ export const createRelationshipInstances = async (
                     return limit(async () => {
                         const { result } = await trycatch(() =>
                             axios.post(uri + createRelationshipRoute, {
-                                sourceEntityId,
-                                destinationEntityId,
-                                templateId: relationshipTemplate._id,
+                                relationshipInstance: {
+                                    sourceEntityId,
+                                    destinationEntityId,
+                                    templateId: relationshipTemplate._id,
+                                },
                             }),
                         );
                         return result;
