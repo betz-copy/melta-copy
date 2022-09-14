@@ -3,7 +3,7 @@ import MockAdapter from 'axios-mock-adapter';
 import Neo4jClient from '../../../utils/neo4j';
 import { IEntity, IMongoEntityTemplate } from '../../entities/interface';
 import { IMongoRelationshipTemplate, IMongoRelationshipTemplatePopulated } from '../interface';
-import { IMongoRelationshipTemplateRule } from '../../rules/interfaces';
+import { IMongoRule } from '../../rules/interfaces';
 import { ServiceError } from '../../error';
 import EntityManager from '../../entities/manager';
 import RelationshipManager from '../manager';
@@ -110,7 +110,7 @@ const flightsOnRelationshipTemplate: IMongoRelationshipTemplate = {
 };
 
 // rule 1
-export const oneTravelAgentPerFlight: IMongoRelationshipTemplateRule = {
+export const oneTravelAgentPerFlight: IMongoRule = {
     _id: '12345',
     name: 'One travel agent per flight',
     description: 'One travel agent per flight',

@@ -3,14 +3,7 @@ import _groupBy from 'lodash.groupby';
 import _difference from 'lodash.difference';
 import { trycatch } from '../../utils/lib';
 import { ValidationError } from '../error';
-import {
-    IBrokenRule,
-    IConnection,
-    IMongoRelationshipTemplateRule,
-    IRuleRequestSchema,
-    IRuleTransactionQuery,
-    IRuleTransactionResult,
-} from './interfaces';
+import { IBrokenRule, IConnection, IMongoRule, IRuleRequestSchema, IRuleTransactionQuery, IRuleTransactionResult } from './interfaces';
 import { IRelationshipRequestSchema, IMongoRelationshipTemplate, IRelationship } from '../relationships/interface';
 import { IEntity } from '../entities/interface';
 import { getEntityTemplateById } from '../entities/validator.template';
@@ -43,7 +36,7 @@ const getRelationshipTemplatesById = async (entityTemplateId: string) => {
 
 export const searchRuleTemplates = async (ruleRequest: IRuleRequestSchema) => {
     const { result, err } = await trycatch(() =>
-        axios.post<IMongoRelationshipTemplateRule[]>(`${url}${searchRulesRoute}`, { disabled: false, ...ruleRequest }, { timeout }),
+        axios.post<IMongoRule[]>(`${url}${searchRulesRoute}`, { disabled: false, ...ruleRequest }, { timeout }),
     );
 
     if (err || !result) {
@@ -99,7 +92,7 @@ export const isRelationshipLegal = async (
     relationship: IRelationship,
     sourceEntity: IEntity,
     destinationEntity: IEntity,
-    relationshipTemplateRules: IMongoRelationshipTemplateRule[],
+    relationshipTemplateRules: IMongoRule[],
 ): Promise<IRuleTransactionQuery[]> => {
     const generateNeo4jQueries = relationshipTemplateRules
         .filter(({ relationshipTemplateId }) => relationshipTemplateId === relationship.templateId)
@@ -140,6 +133,6 @@ export const isRelationshipLegal = async (
     return Promise.all(generateNeo4jQueries);
 };
 
-export const createRulesQueries = (connections: IConnection[], rules: IMongoRelationshipTemplateRule[]) => {
+export const createRulesQueries = (connections: IConnection[], rules: IMongoRule[]) => {
     return connections.map((path) => isRelationshipLegal(path.relationship, path.sourceEntity, path.destinationEntity, rules));
 };

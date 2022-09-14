@@ -86,7 +86,7 @@ export interface IRule {
     disabled: boolean;
 }
 
-export interface IMongoRelationshipTemplateRule extends IRule {
+export interface IMongoRule extends IRule {
     _id: string;
 }
 
