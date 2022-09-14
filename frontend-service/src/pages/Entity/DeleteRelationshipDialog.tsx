@@ -41,6 +41,7 @@ const DeleteRelationshipDialog: React.FC<{
                     setDeleteWithRuleBreachDialogState({
                         isOpen: true,
                         brokenRules: errorMetadata.brokenRules,
+                        rawBrokenRules: errorMetadata.rawBrokenRules,
                     });
                 }
 

@@ -216,6 +216,7 @@ const CreateRelationshipDialog: React.FC<{
                     setCreateWithRuleBreachDialogState({
                         isOpen: true,
                         brokenRules: errorMetadata.brokenRules,
+                        rawBrokenRules: errorMetadata.rawBrokenRules,
                         actionMetadata: relationshipInstancePopulated,
                     });
                 }
