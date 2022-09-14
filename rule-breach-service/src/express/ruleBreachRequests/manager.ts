@@ -21,8 +21,10 @@ export class RuleBreachRequestsManager {
         return { rows, lastRowIndex };
     }
 
-    public static async createRuleBreachRequest(ruleBreachRequestData: Omit<IRuleBreach, 'createdAt'>): Promise<IRuleBreachRequest> {
-        return RuleBreachRequestsModel.create(ruleBreachRequestData);
+    public static async createRuleBreachRequest(
+        ruleBreachRequestData: Omit<IRuleBreach, '_id' | 'createdAt' | 'status'>,
+    ): Promise<IRuleBreachRequest> {
+        return RuleBreachRequestsModel.create({ ...ruleBreachRequestData, status: RuleBreachRequestStatus.Pending });
     }
 
     public static async updateRuleBreachRequestStatus(

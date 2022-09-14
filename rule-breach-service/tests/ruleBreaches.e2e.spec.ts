@@ -275,6 +275,20 @@ describe('e2e rule breaches api testing', () => {
                     await request(app).patch(`/api/rule-breaches/requests/${_id}/status`).send({ reviewerId: fakeObjectId }).expect(400);
                 });
 
+                it('should start rule breach request as pending', async () => {
+                    const { body } = await request(app)
+                        .post('/api/rule-breaches/requests')
+                        .send({
+                            originUserId: fakeObjectId,
+                            brokenRules: [{ ruleId: fakeObjectId, relationshipIds: [fakeObjectId, fakeObjectId2] }],
+                            actionType: ActionTypes.UpdateEntity,
+                            actionMetadata: { entityId: fakeObjectId, updatedFields: { name: 'test' } },
+                        })
+                        .expect(200);
+
+                    expect(body).toEqual(expect.objectContaining({ status: RuleBreachRequestStatus.Pending }));
+                });
+
                 it('should set rule breach request as approved', async () => {
                     const {
                         body: { _id },
