@@ -82,4 +82,10 @@ export class RelationshipsTemplateManagerService {
 
         return data;
     }
+
+    static async getRuleById(ruleId: string) {
+        const { data } = await this.RelationshipsTemplateManagerApi.get<IRule>(`${baseRulesRoute}/${ruleId}`);
+
+        return data;
+    }
 }

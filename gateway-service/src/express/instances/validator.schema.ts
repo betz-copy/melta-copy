@@ -1,5 +1,6 @@
 import * as Joi from 'joi';
-import { ExtendedJoi, fileSchema } from '../../utils/joi';
+import { ExtendedJoi, fileSchema, MongoIdSchema } from '../../utils/joi';
+import { brokenRuleSchema } from '../ruleBreaches/validator.schema';
 
 // POST /api/instances/entities
 export const createEntityInstanceSchema = Joi.object({
@@ -17,6 +18,7 @@ export const updateEntityInstanceSchema = Joi.object({
     body: Joi.object({
         templateId: Joi.string().required(),
         properties: ExtendedJoi.stringToObject(), // properties is json string (because of form data)
+        ignoredRules: ExtendedJoi.stringToArray().items(brokenRuleSchema).default([]),
     }).unknown(true),
     query: {},
     params: { id: Joi.string().required() },
@@ -37,4 +39,30 @@ export const deleteEntityInstanceSchema = Joi.object({
     body: {},
     query: {},
     params: { id: Joi.string().required() },
+});
+
+// POST /api/instances/relationships
+export const createRelationshipSchema = Joi.object({
+    body: {
+        relationshipInstance: {
+            templateId: MongoIdSchema.required(),
+            properties: Joi.object(),
+            sourceEntityId: Joi.string().required(),
+            destinationEntityId: Joi.string().required(),
+        },
+        ignoredRules: Joi.array().items(brokenRuleSchema).default([]),
+    },
+    query: {},
+    params: {},
+});
+
+// DELETE /api/instances/relationships/:id
+export const deleteRelationshipSchema = Joi.object({
+    body: {
+        ignoredRules: Joi.array().items(brokenRuleSchema).default([]),
+    },
+    query: {},
+    params: {
+        id: Joi.string().required(),
+    },
 });

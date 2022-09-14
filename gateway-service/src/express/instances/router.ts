@@ -7,13 +7,21 @@ import {
     validateUserCanCreateEntityInstance,
     validateUserCanCreateRelationshipInstance,
     validateUserCanGetExpandedEntity,
+    validateUserCanIgnoreRules,
     validateUserCanSearchEntityInstances,
     validateUserCanUpdateGetOrDeleteEntityInstance,
     validateUserCanUpdateOrDeleteRelationshipInstance,
 } from './middlewares';
 import { validateUserIsTemplatesManager } from '../permissions/validateAuthorizationMiddleware';
 import InstancesController from './controller';
-import { createEntityInstanceSchema, deleteEntityInstanceSchema, updateEntityInstanceSchema, updateEntityStatusSchema } from './validator.schema';
+import {
+    createEntityInstanceSchema,
+    createRelationshipSchema,
+    deleteEntityInstanceSchema,
+    deleteRelationshipSchema,
+    updateEntityInstanceSchema,
+    updateEntityStatusSchema,
+} from './validator.schema';
 import ValidateRequest from '../../utils/joi';
 
 const { instanceManager } = config;
@@ -47,6 +55,7 @@ InstancesRouter.put(
     multer({ dest: config.service.uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).any(),
     ValidateRequest(updateEntityInstanceSchema),
     wrapMiddleware(validateUserCanUpdateGetOrDeleteEntityInstance),
+    wrapMiddleware(validateUserCanIgnoreRules),
     wrapController(InstancesController.updateEntityInstance),
 );
 InstancesRouter.post(
@@ -73,13 +82,17 @@ InstancesRouter.patch(
 InstancesRouter.get('/relationships/count', wrapMiddleware(validateUserIsTemplatesManager), InstanceManagerProxy);
 InstancesRouter.post(
     '/relationships',
+    ValidateRequest(createRelationshipSchema),
     wrapMiddleware(validateUserCanCreateRelationshipInstance),
+    wrapMiddleware(validateUserCanIgnoreRules),
     wrapController(InstancesController.createRelationshipInstance),
 );
 InstancesRouter.put('/relationships/:id', wrapMiddleware(validateUserCanUpdateOrDeleteRelationshipInstance), InstanceManagerProxy);
 InstancesRouter.delete(
     '/relationships/:id',
+    ValidateRequest(deleteRelationshipSchema),
     wrapMiddleware(validateUserCanUpdateOrDeleteRelationshipInstance),
+    wrapMiddleware(validateUserCanIgnoreRules),
     wrapController(InstancesController.deleteRelationshipInstance),
 );
 

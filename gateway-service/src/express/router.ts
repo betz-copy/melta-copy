@@ -11,6 +11,7 @@ import templatesRouter from './templates/router';
 import instancesRouter from './instances/router';
 import ActivityLogRouter from './activityLog/router';
 import notificationsRouter from './notifications/router';
+import RulesBreachesRouter from './ruleBreaches/router';
 
 const appRouter = Router();
 
@@ -54,6 +55,8 @@ appRouter.use('/api/permissions', permissionsRouter);
 appRouter.use('/api/activity-log', ActivityLogRouter);
 
 appRouter.use('/api/notifications', notificationsRouter);
+
+appRouter.use('/api/rule-breaches', RulesBreachesRouter);
 
 appRouter.use('*', (_req, res) => {
     res.status(404).send('Invalid Route');

@@ -2,10 +2,12 @@ import { Request } from 'express';
 import * as lodashUniqby from 'lodash.uniqby';
 import { EntityTemplateManagerService } from '../../externalServices/entityTemplateManager';
 import { InstanceManagerService, IRelationship } from '../../externalServices/instanceManager';
+import { isRuleManager } from '../../externalServices/permissionsApi';
 import { RelationshipsTemplateManagerService } from '../../externalServices/relationshipsTemplateManager';
 import { ServiceError } from '../error';
 import { validateAuthorization } from '../permissions/validateAuthorizationMiddleware';
 import { TemplatesManager } from '../templates/manager';
+import { IRule } from '../templates/rules/interfaces';
 
 // entities
 const getCategoryIdFromTemplateId = async (templateId: string) => {
@@ -64,7 +66,7 @@ const getRelatedCategoriesFromRelationshipInstance = async (relationshipInstance
 };
 
 export const validateUserCanCreateRelationshipInstance = async (req: Request) => {
-    const relatedCategories = await getRelatedCategoriesFromRelationshipInstance(req.body);
+    const relatedCategories = await getRelatedCategoriesFromRelationshipInstance(req.body.relationshipInstance);
 
     return validateAuthorization(req, 'Instances', relatedCategories);
 };
@@ -75,4 +77,21 @@ export const validateUserCanUpdateOrDeleteRelationshipInstance = async (req: Req
     const relatedCategories = await getRelatedCategoriesFromRelationshipInstance(relationshipInstance);
 
     return validateAuthorization(req, 'Instances', relatedCategories);
+};
+
+// rules
+export const validateUserCanIgnoreRules = async (req: Request) => {
+    const { ignoredRules } = req.body;
+    const { user } = req;
+
+    if (!user) throw new Error('req.user is undefined');
+    if (await isRuleManager(user.id)) return;
+
+    const ignoredRulesPopulated: IRule[] = await Promise.all(
+        ignoredRules.map((ignoredRule) => RelationshipsTemplateManagerService.getRuleById(ignoredRule.ruleId)),
+    );
+
+    if (ignoredRulesPopulated.some((rule) => rule.actionOnFail !== 'WARNING')) {
+        throw new ServiceError(403, 'a user without rule permissions only ignore "WARNING" rules', {});
+    }
 };

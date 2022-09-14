@@ -65,6 +65,11 @@ const config = {
         baseRoute: env.get('NOTIFICATION_SERVICE_BASE_ROUTE').default('/api/notifications').asString(),
         requestTimeout: env.get('NOTIFICATION_SERVICE_REQUEST_TIMEOUT').default(10000).asIntPositive(),
     },
+    ruleBreachService: {
+        uri: env.get('RULE_BREACH_SERVICE_URI').required().asString(),
+        baseRoute: env.get('RULE_BREACH_SERVICE_BASE_ROUTE').default('/api/rule-breaches').asString(),
+        requestTimeout: env.get('RULE_BREACH_SERVICE_REQUEST_TIMEOUT').default(10000).asIntPositive(),
+    },
     getUsersLimitForPermissionsOfUsers: env.get('GET_USERS_LIMIT_FOR_PERMISSIONS_OF_USERS').default(20).asIntPositive(),
     kartoffel: {
         baseUrl: env.get('KARTOFFEL_BASE_URL').required().asString(),
@@ -82,6 +87,16 @@ const config = {
         entityTemplateHasInstances: 'ENTITY_TEMPLATE_HAS_INSTANCES',
         relationshipTemplateHasInstances: 'RELATIONSHIP_TEMPLATE_HAS_INSTANCES',
         relationshipTemplateHasRules: 'RELATIONSHIP_TEMPLATE_HAS_RULES',
+        ruleBlock: 'RULE_BLOCK',
+    },
+    rabbit: {
+        uri: env.get('RABBIT_URI').required().asUrlString(),
+        retryOptions: {
+            minTimeout: env.get('RABBIT_RETRY_MIN_TIMEOUT').default(1000).asIntPositive(),
+            retries: env.get('RABBIT_RETRY_RETRIES').default(10).asIntPositive(),
+            factor: env.get('RABBIT_RETRY_FACTOR').default(1.8).asFloatPositive(),
+        },
+        notificationQueue: env.get('NOTIFICATION_QUEUE_NAME').default('notifications-queue').asString(),
     },
 };
 

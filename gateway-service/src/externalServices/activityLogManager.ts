@@ -5,6 +5,12 @@ const {
     activityLog: { uri, baseRoute, requestTimeout },
 } = config;
 
+export interface IUpdatedFields {
+    fieldName: string;
+    oldValue: any;
+    newValue: any;
+}
+
 interface IBaseActivityLog {
     timestamp: Date;
     entityId: string;
@@ -24,7 +30,7 @@ interface IRelationshipMetadata extends IBaseActivityLog {
 
 interface IUpdateEntityMetadata extends IBaseActivityLog {
     action: 'UPDATE_ENTITY';
-    metadata: { updatedFields: [{ fieldName: string; oldValue: any; newValue: any }] };
+    metadata: { updatedFields: IUpdatedFields[] };
 }
 
 export type IActivityLog = IEmptyMetadata | IRelationshipMetadata | IUpdateEntityMetadata;

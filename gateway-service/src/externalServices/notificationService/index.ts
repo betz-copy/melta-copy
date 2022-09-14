@@ -1,33 +1,12 @@
 import axios from 'axios';
-import config from '../config';
+import { menash } from 'menashmq';
+import config from '../../config';
+import { INotification, NotificationType } from './interfaces';
 
-const { uri, baseRoute, requestTimeout } = config.notificationService;
-
-export interface IAlertMetadata {
-    alertId: string;
-}
-export interface IRequestMetadata {
-    requestId: string;
-}
-export interface IResponseMetadata {
-    requestId: string;
-}
-
-export type INotificationMetadata = IAlertMetadata | IRequestMetadata | IResponseMetadata;
-
-export enum NotificationType {
-    ruleBreachAlert = 'ruleBreachAlert',
-    ruleBreachRequest = 'ruleBreachRequest',
-    ruleBreachResponse = 'ruleBreachResponse',
-}
-
-export interface INotification<T = INotificationMetadata> {
-    viewers: string[];
-    type: NotificationType;
-    metadata: T;
-    createdAt: Date;
-}
-export type IBasicNotification = Omit<INotification, 'viewers'>;
+const {
+    rabbit,
+    notificationService: { uri, baseRoute, requestTimeout },
+} = config;
 
 export class NotificationService {
     private static notificationService = axios.create({
@@ -48,5 +27,9 @@ export class NotificationService {
     static async notificationsSeen(notificationId: string, viewerId: string): Promise<INotification> {
         const { data } = await this.notificationService.patch<INotification>(`/${notificationId}/seen`, { viewerId });
         return data;
+    }
+
+    static async rabbitCreateNotification<T>(viewers: string[], type: NotificationType, metadata: T) {
+        return menash.send(rabbit.notificationQueue, { viewers, type, metadata });
     }
 }

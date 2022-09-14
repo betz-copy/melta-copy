@@ -1,5 +1,7 @@
 import axios from 'axios';
 import config from '../config';
+import { IAgGridResult } from '../utils/agGrid/interface';
+import { IBrokenRule } from './ruleBreachService/interfaces';
 
 const {
     instanceManager: { uri, baseEntitiesRoute, baseRelationshipsRoute, requestTimeout, searchRoute },
@@ -31,6 +33,17 @@ export interface IRelationship {
     destinationEntityId: string;
 }
 
+export interface IRelationshipPopulated extends Omit<IRelationship, 'sourceEntityId' | 'destinationEntityId'> {
+    sourceEntity: IEntity;
+    destinationEntity: IEntity;
+}
+
+export interface IRelationshipConnections {
+    relationship: IRelationship;
+    sourceEntity: IEntity;
+    destinationEntity: IEntity;
+}
+
 export class InstanceManagerService {
     private static InstanceManagerApi = axios.create({ baseURL: uri, timeout: requestTimeout });
 
@@ -47,8 +60,8 @@ export class InstanceManagerService {
         return data;
     }
 
-    static async updateEntityInstance(id: string, entity: IEntity) {
-        const { data } = await this.InstanceManagerApi.put<IEntity>(`${baseEntitiesRoute}/${id}`, entity);
+    static async updateEntityInstance(id: string, entity: IEntity, ignoredRules: IBrokenRule[]) {
+        const { data } = await this.InstanceManagerApi.put<IEntity>(`${baseEntitiesRoute}/${id}`, { ...entity, ignoredRules });
 
         return data;
     }
@@ -66,11 +79,9 @@ export class InstanceManagerService {
     }
 
     static async getInstancesByTemplateId(templateId: string, agGridRequest: IEntityFilterParams) {
-        const { data } = await this.InstanceManagerApi.post<{ rows: IEntity[]; lastRowIndex: number }>(
-            `${baseEntitiesRoute}/${searchRoute}`,
-            agGridRequest,
-            { params: { templateId } },
-        );
+        const { data } = await this.InstanceManagerApi.post<IAgGridResult<IEntity>>(`${baseEntitiesRoute}/${searchRoute}`, agGridRequest, {
+            params: { templateId },
+        });
 
         return data;
     }
@@ -82,20 +93,31 @@ export class InstanceManagerService {
         return data;
     }
 
-    static async createRelationshipInstance(relationship: IRelationship) {
-        const { data } = await this.InstanceManagerApi.post<IRelationship>(baseRelationshipsRoute, relationship);
+    static async createRelationshipInstance(relationship: IRelationship, ignoredRules: IBrokenRule[]) {
+        const { data } = await this.InstanceManagerApi.post<IRelationship>(baseRelationshipsRoute, {
+            relationshipInstance: relationship,
+            ignoredRules,
+        });
 
         return data;
     }
 
-    static async deleteRelationshipInstance(id: string) {
-        const { data } = await this.InstanceManagerApi.delete<IRelationship>(`${baseRelationshipsRoute}/${id}`);
+    static async deleteRelationshipInstance(id: string, ignoredRules: IBrokenRule[]) {
+        const { data } = await this.InstanceManagerApi.delete<IRelationship>(`${baseRelationshipsRoute}/${id}`, { data: { ignoredRules } });
 
         return data;
     }
 
     static async getRelationshipsCountByTemplateId(templateId: string) {
         const { data } = await this.InstanceManagerApi.get<number>(`${baseRelationshipsRoute}/count`, { params: { templateId } });
+
+        return data;
+    }
+
+    static async getRelationshipsConnectionsByIds(relationshipIds: string[]) {
+        const { data } = await this.InstanceManagerApi.post<IRelationshipConnections[]>(`${baseRelationshipsRoute}/connections`, {
+            ids: relationshipIds,
+        });
 
         return data;
     }

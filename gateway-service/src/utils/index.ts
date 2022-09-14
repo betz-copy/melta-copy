@@ -1,3 +1,4 @@
+/* eslint-disable no-plusplus */
 import { pipeline } from 'stream';
 import { promisify } from 'util';
 
@@ -12,4 +13,18 @@ export const trycatch = async <Func extends (...args: any[]) => any>(func: Func,
     } catch (err) {
         return { err };
     }
+};
+
+export const filteredMap = <T, V>(arr: T[], func: (value: T) => { include: true; value: V } | { include: false; value?: V }) => {
+    const newArr: V[] = [];
+
+    for (let i = 0; i < arr.length; i++) {
+        const { include, value } = func(arr[i]);
+
+        if (include) {
+            newArr.push(value);
+        }
+    }
+
+    return newArr;
 };

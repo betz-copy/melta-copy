@@ -50,7 +50,7 @@ export const deletePermissionsUnderCategory = async (categoryId: string) => {
     return data;
 };
 
-export const checkUserAuthorization = async (userId: string, resourceType: string, relatedCategories: string[], operation: Scope) => {
+export const checkUserAuthorization = async (userId: string, resourceType: ResourceType, relatedCategories: string[], operation: Scope) => {
     const { data } = await permissionsAxios.post<ICheckAuthorizationResult>(
         `${permissionApi.baseRoute}/${userId}/${permissionApi.checkAuthorizationRoute}`,
         {
@@ -61,4 +61,9 @@ export const checkUserAuthorization = async (userId: string, resourceType: strin
     );
 
     return data;
+};
+
+export const isRuleManager = async (userId: string) => {
+    const { authorized } = await checkUserAuthorization(userId, 'Rules', ['All'], 'Read');
+    return authorized;
 };

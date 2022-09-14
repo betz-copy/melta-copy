@@ -2,7 +2,7 @@ import axios from 'axios';
 import * as express from 'express';
 
 export class ServiceError extends Error {
-    constructor(public code: number, message: string, public metadata: object = {}) {
+    constructor(public code: number, message: string, public metadata: any = {}) {
         super(message);
         this.code = code;
         this.metadata = metadata;
@@ -24,7 +24,7 @@ const formatAxiosErrorData = (axiosErrorData: object & { message?: string; metad
     return axiosErrorData;
 };
 
-export const errorMiddleware = (error: Error, _req: express.Request, res: express.Response, next: express.NextFunction) => {
+export const errorMiddleware = async (error: Error, _req: express.Request, res: express.Response, next: express.NextFunction) => {
     if (error.name === 'ValidationError') {
         res.status(400).send({
             type: error.name,
@@ -54,7 +54,7 @@ export const errorMiddleware = (error: Error, _req: express.Request, res: expres
         });
 
         // TODO: add some logging
-        console.error('Request failed with error: ', error);
+        console.error('Request failed with error: ', error); // eslint-disable-line no-console
     }
 
     next();

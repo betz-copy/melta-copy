@@ -1,5 +1,5 @@
 import * as joi from 'joi';
-import { NotificationType } from '../../externalServices/notificationService';
+import { NotificationType } from '../../externalServices/notificationService/interfaces';
 
 const mongoIdSchema = joi.string().regex(/^[0-9a-fA-F]{24}$/, 'valid MongoId');
 
