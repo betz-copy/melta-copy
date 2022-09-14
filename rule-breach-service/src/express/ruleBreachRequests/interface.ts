@@ -5,6 +5,7 @@ export enum RuleBreachRequestStatus {
     Pending = 'pending',
     Approved = 'approved',
     Denied = 'denied',
+    Canceled = 'canceled',
 }
 
 export interface IRuleBreachRequest extends IRuleBreach {
