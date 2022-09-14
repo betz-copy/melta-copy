@@ -127,9 +127,9 @@ export const BrokenRulesInfo: React.FC<{
     return (
         <Grid container direction="column" spacing={1}>
             <Grid item>
-                <Typography variant="body1" sx={{ textDecoration: 'underline' }}>{`${i18next.t(
-                    'ruleBreachInfo.brokeTheFollowingRules',
-                )}:`}</Typography>
+                <Typography variant="body1" sx={{ textDecoration: 'underline' }}>{`${
+                    brokenRules.length === 1 ? i18next.t('ruleBreachInfo.brokeTheFollowingRule') : i18next.t('ruleBreachInfo.brokeTheFollowingRules')
+                }:`}</Typography>
             </Grid>
             <Grid item>
                 <List dense={isCompact}>

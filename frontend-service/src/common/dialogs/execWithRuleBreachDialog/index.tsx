@@ -1,4 +1,4 @@
-import { Button, CircularProgress, Dialog, DialogActions, DialogContent, Tooltip } from '@mui/material';
+import { Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Tooltip } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
 import { useQueryClient } from 'react-query';
@@ -24,7 +24,24 @@ const ExecWithRuleBreachDialog: React.FC<{
     });
 
     return (
-        <Dialog open fullWidth maxWidth="sm">
+        <Dialog
+            open
+            fullWidth
+            maxWidth="sm"
+            sx={{
+                '& .MuiPaper-root': {
+                    borderColor: 'red',
+                    borderWidth: '3px',
+                    borderStyle: 'solid',
+                },
+            }}
+        >
+            <DialogTitle>
+                {i18next.t('execActionWithRuleBreach.actionBroke')}{' '}
+                {brokenRules.length === 1
+                    ? i18next.t('execActionWithRuleBreach.rule')
+                    : `${brokenRules.length} ${i18next.t('execActionWithRuleBreach.rules')}`}
+            </DialogTitle>
             <DialogContent>
                 <RuleBreachInfo brokenRules={brokenRules} actionType={actionType} actionMetadata={actionMetadata} isCompact={false} />
             </DialogContent>
