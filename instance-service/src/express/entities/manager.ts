@@ -15,7 +15,7 @@ import getLatestIndex from '../../utils/redis/getLatestIndex';
 import { areAllBrokenRulesIgnored, createRulesQueries, getBrokenRules, getRulesByEntityTemplateId, searchRuleTemplates } from '../rules/lib';
 import { IBrokenRule, IConnection } from '../rules/interfaces';
 import { transactionRunAndNormalize, getRuleResults } from '../rules/transaction';
-import { filterDependentRules } from '../rules/getParametersOfFormula';
+import { filterDependentRulesOnProperties, filterDependentRulesViaAggregation } from '../rules/getParametersOfFormula';
 import config from '../../config';
 
 export class EntityManager {
@@ -142,7 +142,7 @@ export class EntityManager {
     ) => {
         const pathsConnectedToSourceIdRules = await searchRuleTemplates({ pinnedEntityTemplateIds: [entityTemplateId] });
 
-        const relevantRules = filterDependentRules(pathsConnectedToSourceIdRules, relationshipTemplateId, updatedProperties);
+        const relevantRules = filterDependentRulesViaAggregation(pathsConnectedToSourceIdRules, relationshipTemplateId, updatedProperties);
 
         if (!relevantRules.length) {
             return [];
@@ -186,21 +186,25 @@ export class EntityManager {
         ignoredRules: IBrokenRule[],
         updatedProperties: string[],
     ) {
-        const rulesByEntityTemplateId = await getRulesByEntityTemplateId(entityTemplate._id);
         const connectionsWithSourceId = await transactionRunAndNormalize(
             transaction,
             `MATCH (s {_id: '${updatedEntity.properties._id}'})-[r]-(d)  RETURN s, r, d`,
             normalizeRelAndEntitiesForRule,
         );
 
-        const destinationRules = await EntityManager.getRulesConnectedToEntityInstances(
+        const rulesByEntityTemplateId = await getRulesByEntityTemplateId(entityTemplate._id);
+        const relevantRulesByEntityTemplateId = filterDependentRulesOnProperties(rulesByEntityTemplateId, entityTemplate._id, updatedProperties);
+
+        const updatedEntityRuleQueries = createRulesQueries(connectionsWithSourceId, relevantRulesByEntityTemplateId);
+
+        const destinationRuleQueries = await EntityManager.getRulesConnectedToEntityInstances(
             transaction,
             connectionsWithSourceId,
             updatedEntity.properties._id,
             updatedProperties,
         );
 
-        const ruleQueries = await Promise.all([...createRulesQueries(connectionsWithSourceId, rulesByEntityTemplateId), ...destinationRules]);
+        const ruleQueries = await Promise.all([...updatedEntityRuleQueries, ...destinationRuleQueries]);
 
         const ruleResults = await getRuleResults(transaction, ruleQueries.flat());
 
