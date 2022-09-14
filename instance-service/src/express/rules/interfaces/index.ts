@@ -75,7 +75,7 @@ export const isGroup = (group: any): group is IGroup => {
     return group.isGroup;
 };
 
-export interface IRelationshipTemplateRule {
+export interface IRule {
     name: string;
     description: string;
     actionOnFail: 'WARNING' | 'ENFORCEMENT';
@@ -86,7 +86,7 @@ export interface IRelationshipTemplateRule {
     disabled: boolean;
 }
 
-export interface IMongoRelationshipTemplateRule extends IRelationshipTemplateRule {
+export interface IMongoRelationshipTemplateRule extends IRule {
     _id: string;
 }
 

@@ -1,4 +1,4 @@
-import { IRelationshipTemplateRule } from './interfaces';
+import { IRule } from './interfaces';
 import { IMongoRelationshipTemplate, IMongoRelationshipTemplatePopulated } from '../relationships/interface';
 import { IMongoEntityTemplate } from '../entities/interface';
 import { generateNeo4jQuery } from '.';
@@ -105,7 +105,7 @@ const tripConnectedToFlightRelationshipTemplate: IMongoRelationshipTemplate = {
 };
 
 // rule 2
-export const noOverlappingFlightsInTrip: IRelationshipTemplateRule = {
+export const noOverlappingFlightsInTrip: IRule = {
     name: 'טיסה אחת ביום לטיול',
     description: 'מקסימום טיסה אחת ביום לאותו הטיול. אסור שיהיו כמה טיסות לאותו הטיול באותו היום כי אחרת זה יהיה ממש מבלבל',
     actionOnFail: 'WARNING',
@@ -141,7 +141,7 @@ export const noOverlappingFlightsInTrip: IRelationshipTemplateRule = {
 };
 
 // rule 3
-export const warnOnEveryFlightOnActiveZone: IRelationshipTemplateRule = {
+export const warnOnEveryFlightOnActiveZone: IRule = {
     name: 'התראה על טיסות בסבב פעיל',
     description: 'התראה על כל טיסה חדשה שמחוברת לסבב פעיל',
     actionOnFail: 'WARNING',

@@ -5,7 +5,7 @@ import {
     ISumAggFunction,
     IEquation,
     IGroup,
-    IRelationshipTemplateRule,
+    IRule,
     isAggregationGroup,
     isCountAggFunction,
     isEquation,
@@ -268,7 +268,7 @@ const generateNeo4jQueryFromFormula = (formula: IFormula, relevantTemplates: IRe
 };
 
 export const generateNeo4jQuery = (
-    relationshipTemplateRule: IRelationshipTemplateRule,
+    relationshipTemplateRule: IRule,
     pinnedEntityId: string,
     nonPinnedEntityId: string,
     nonPinnedRelationshipId: string,
