@@ -44,6 +44,12 @@ config:
       value: /unavailable
     - name: NODE_TLS_REJECT_UNAUTHORIZED
       value: '0'
+    - name: NOTIFICATION_SERVICE_URI
+      value: http://notification-service:8000 
+    - name: RULE_BREACH_SERVICE_URI
+      value: http://rule-breach-service:8000  
+    - name: RABBIT_URI
+      value: amqp://user:McgIwOn8Yh@my-release-rabbitmq
 
 livenessProbe:
   httpGet:
