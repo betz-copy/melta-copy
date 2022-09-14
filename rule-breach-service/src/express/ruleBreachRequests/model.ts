@@ -12,8 +12,8 @@ const RuleBreachRequestsSchema = new mongoose.Schema(
         reviewedAt: {
             type: Date,
         },
-        approved: {
-            type: Boolean,
+        status: {
+            type: String,
         },
     },
     defaultSchemaOptions,

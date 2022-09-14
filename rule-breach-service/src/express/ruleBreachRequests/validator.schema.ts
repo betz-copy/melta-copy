@@ -5,6 +5,7 @@ import { brokenRulesSchema, ruleBreachSchema } from '../../utils/joi/schemas/rul
 import { agGridRequestSchema } from '../../utils/joi/schemas/agGrid';
 import { validateActionMetadata } from '../../utils/joi/validateActionMetadata';
 import { mongoIdSchema } from '../../utils/joi/schemas';
+import { RuleBreachRequestStatus } from './interface';
 
 // POST /api/rule-breaches/requests/search
 export const searchRuleBreachRequestsRequestSchema = joi.object({
@@ -20,12 +21,15 @@ export const createRuleBreachRequestRequestSchema = joi.object({
     params: {},
 });
 
-// PATCH /api/rule-breaches/requests/:ruleBreachRequestId/review
-export const reviewRuleBreachRequestRequestSchema = joi.object({
+// PATCH /api/rule-breaches/requests/:ruleBreachRequestId/status
+export const updateRuleBreachRequestStatusRequestSchema = joi.object({
     query: {},
     body: {
         reviewerId: mongoIdSchema.required(),
-        approved: joi.boolean().required(),
+        status: joi
+            .string()
+            .valid(...Object.values(RuleBreachRequestStatus))
+            .required(),
     },
     params: {
         ruleBreachRequestId: mongoIdSchema.required(),

@@ -6,7 +6,7 @@ import {
     createRuleBreachRequestRequestSchema,
     getRuleBreachRequestByIdRequestSchema,
     getRuleBreachRequestsByRuleIdRequestSchema,
-    reviewRuleBreachRequestRequestSchema,
+    updateRuleBreachRequestStatusRequestSchema,
     searchRuleBreachRequestsRequestSchema,
     updateRuleBreachRequestActionMetadataRequestSchema,
     updateRuleBreachRequestBrokenRulesRequestSchema,
@@ -27,9 +27,9 @@ RuleBreachRequestsRouter.post(
 );
 
 RuleBreachRequestsRouter.patch(
-    '/:ruleBreachRequestId/review',
-    ValidateRequest(reviewRuleBreachRequestRequestSchema),
-    wrapController(RuleBreachRequestsController.reviewRuleBreachRequest),
+    '/:ruleBreachRequestId/status',
+    ValidateRequest(updateRuleBreachRequestStatusRequestSchema),
+    wrapController(RuleBreachRequestsController.updateRuleBreachRequestStatus),
 );
 
 RuleBreachRequestsRouter.patch(

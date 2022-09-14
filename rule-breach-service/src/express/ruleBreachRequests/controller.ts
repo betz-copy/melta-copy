@@ -10,11 +10,11 @@ class RuleBreachRequestsController {
         res.json(await RuleBreachRequestsManager.createRuleBreachRequest(req.body));
     }
 
-    static async reviewRuleBreachRequest(req: Request, res: Response) {
+    static async updateRuleBreachRequestStatus(req: Request, res: Response) {
         const { ruleBreachRequestId } = req.params;
-        const { reviewerId, approved } = req.body;
+        const { reviewerId, status } = req.body;
 
-        res.json(await RuleBreachRequestsManager.reviewRuleBreachRequest(ruleBreachRequestId, reviewerId, approved));
+        res.json(await RuleBreachRequestsManager.updateRuleBreachRequestStatus(ruleBreachRequestId, reviewerId, status));
     }
 
     static async updateRuleBreachRequestActionMetadata(req: Request, res: Response) {

@@ -3,7 +3,7 @@ import { ActionTypes, IActionMetadata } from '../../utils/interfaces/actionMetad
 import { IAgGridRequest } from '../../utils/interfaces/agGrid';
 import { IBrokenRule, IRuleBreach } from '../../utils/interfaces/ruleBreach';
 import { RuleBreachDoesNotExistError } from '../error';
-import { IRuleBreachRequest } from './interface';
+import { IRuleBreachRequest, RuleBreachRequestStatus } from './interface';
 import RuleBreachRequestsModel from './model';
 
 export class RuleBreachRequestsManager {
@@ -25,8 +25,12 @@ export class RuleBreachRequestsManager {
         return RuleBreachRequestsModel.create(ruleBreachRequestData);
     }
 
-    public static async reviewRuleBreachRequest(ruleBreachRequestId: string, reviewerId: string, approved: boolean): Promise<IRuleBreachRequest> {
-        return RuleBreachRequestsModel.findByIdAndUpdate(ruleBreachRequestId, { approved, reviewerId, reviewedAt: new Date() }, { new: true })
+    public static async updateRuleBreachRequestStatus(
+        ruleBreachRequestId: string,
+        reviewerId: string,
+        status: RuleBreachRequestStatus,
+    ): Promise<IRuleBreachRequest> {
+        return RuleBreachRequestsModel.findByIdAndUpdate(ruleBreachRequestId, { status, reviewerId, reviewedAt: new Date() }, { new: true })
             .orFail(new RuleBreachDoesNotExistError(ruleBreachRequestId, 'request'))
             .lean();
     }

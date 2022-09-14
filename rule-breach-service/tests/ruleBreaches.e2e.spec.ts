@@ -9,6 +9,7 @@ import { Express } from 'express';
 import config from '../src/config';
 import Server from '../src/express/server';
 import { ActionTypes } from '../src/utils/interfaces/actionMetadata';
+import { RuleBreachRequestStatus } from '../src/express/ruleBreachRequests/interface';
 
 const { mongo } = config;
 
@@ -241,7 +242,7 @@ describe('e2e rule breaches api testing', () => {
                 });
             });
 
-            describe('PATCH /:ruleBreachRequestId/review', () => {
+            describe('PATCH /:ruleBreachRequestId/status', () => {
                 it('should fail validation for unknown fields', async () => {
                     const {
                         body: { _id },
@@ -255,7 +256,7 @@ describe('e2e rule breaches api testing', () => {
                         })
                         .expect(200);
 
-                    await request(app).patch(`/api/rule-breaches/requests/${_id}/review`).send({ test: 'test' }).expect(400);
+                    await request(app).patch(`/api/rule-breaches/requests/${_id}/status`).send({ test: 'test' }).expect(400);
                 });
 
                 it('should fail validation for missing fields', async () => {
@@ -271,7 +272,7 @@ describe('e2e rule breaches api testing', () => {
                         })
                         .expect(200);
 
-                    await request(app).patch(`/api/rule-breaches/requests/${_id}/review`).send({ reviewerId: fakeObjectId }).expect(400);
+                    await request(app).patch(`/api/rule-breaches/requests/${_id}/status`).send({ reviewerId: fakeObjectId }).expect(400);
                 });
 
                 it('should set rule breach request as approved', async () => {
@@ -288,11 +289,11 @@ describe('e2e rule breaches api testing', () => {
                         .expect(200);
 
                     const { body } = await request(app)
-                        .patch(`/api/rule-breaches/requests/${_id}/review`)
-                        .send({ reviewerId: fakeObjectId, approved: true })
+                        .patch(`/api/rule-breaches/requests/${_id}/status`)
+                        .send({ reviewerId: fakeObjectId, status: RuleBreachRequestStatus.Approved })
                         .expect(200);
 
-                    expect(body).toEqual(expect.objectContaining({ approved: true, reviewerId: fakeObjectId }));
+                    expect(body).toEqual(expect.objectContaining({ status: RuleBreachRequestStatus.Approved, reviewerId: fakeObjectId }));
                 });
             });
 

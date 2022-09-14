@@ -1,10 +1,16 @@
 import { Document } from 'mongoose';
 import { IRuleBreach } from '../../utils/interfaces/ruleBreach';
 
+export enum RuleBreachRequestStatus {
+    Pending = 'pending',
+    Approved = 'approved',
+    Denied = 'denied',
+}
+
 export interface IRuleBreachRequest extends IRuleBreach {
     reviewerId?: string;
     reviewedAt?: Date;
-    approved?: boolean;
+    status: RuleBreachRequestStatus;
 }
 
 export type IRuleBreachRequestDocument = IRuleBreachRequest & Document;
