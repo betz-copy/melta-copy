@@ -1,10 +1,9 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Box, CircularProgress, Grid, Tab } from '@mui/material';
-import { useMutation, useQuery, useQueryClient } from 'react-query';
+import { useQuery, useQueryClient } from 'react-query';
 import { useParams } from 'react-router-dom';
 import { AddCircle } from '@mui/icons-material';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
-import { toast } from 'react-toastify';
 import i18next from 'i18next';
 import { useTour } from '@reactour/tour';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
@@ -16,9 +15,8 @@ import { RelationshipTitle } from '../../common/RelationshipTitle';
 import CreateRelationshipDialog from '../../common/dialogs/createRelationshipDialog';
 import { IEntity, IEntityExpanded } from '../../interfaces/entities';
 import { IRelationship } from '../../interfaces/relationships';
-import { deleteRelationshipRequest } from '../../services/relationshipsService';
 import EntitiesTableOfTemplate, { EntitiesTableOfTemplateRef } from '../../common/EntitiesTableOfTemplate';
-import { AreYouSureDialog } from '../../common/dialogs/AreYouSureDialog';
+import DeleteRelationshipDialog from './DeleteRelationshipDialog';
 import { IPermissionsOfUser } from '../../services/permissionsService';
 
 import '../../css/pages.css';
@@ -58,30 +56,6 @@ const Entity: React.FC = () => {
         open: boolean;
         connectionToDelete?: IEntityExpanded['connections'][number];
     }>({ open: false });
-
-    const { mutateAsync: deleteRelationship, isLoading: isLoadingDeleteRelationship } = useMutation(deleteRelationshipRequest, {
-        onError: (error) => {
-            // eslint-disable-next-line no-console
-            console.log('failed to delete relationship. error:', error);
-            toast.error(i18next.t('entityPage.failedToDeleteRelationship'));
-            setDeleteRelationshipDialogState({ open: false });
-        },
-        onSuccess: (_deletedRelationship, deletedRelationshipId) => {
-            queryClient.setQueryData<IEntityExpanded>(
-                ['getExpandedEntity', entityId, { templateIds, numberOfConnections: 1 }],
-                (prevEntityExpanded) => {
-                    const connections = prevEntityExpanded!.connections.filter(
-                        ({ relationship }) => relationship.properties._id !== deletedRelationshipId,
-                    );
-                    return {
-                        ...prevEntityExpanded!,
-                        connections,
-                    };
-                },
-            );
-            setDeleteRelationshipDialogState({ open: false });
-        },
-    });
 
     const [value, setValue] = useState('0');
 
@@ -134,6 +108,16 @@ const Entity: React.FC = () => {
                         },
                     },
                 ],
+            };
+        });
+    };
+
+    const onDeleteRelationship = (deletedRelationshipId: string) => {
+        queryClient.setQueryData<IEntityExpanded>(['getExpandedEntity', entityId, { templateIds, numberOfConnections: 1 }], (prevEntityExpanded) => {
+            const connections = prevEntityExpanded!.connections.filter(({ relationship }) => relationship.properties._id !== deletedRelationshipId);
+            return {
+                ...prevEntityExpanded!,
+                connections,
             };
         });
     };
@@ -272,11 +256,14 @@ const Entity: React.FC = () => {
                 onSubmitSuccess={onCreateRelationship}
                 initialValues={createRelationshipDialogState.initialValues}
             />
-            <AreYouSureDialog
-                open={deleteRelationshipDialogState.open}
+            <DeleteRelationshipDialog
+                isOpen={deleteRelationshipDialogState.open}
+                connectionToDelete={deleteRelationshipDialogState.connectionToDelete}
                 handleClose={() => setDeleteRelationshipDialogState({ open: false })}
-                onYes={async () => deleteRelationship(deleteRelationshipDialogState.connectionToDelete!.relationship.properties._id)}
-                isLoading={isLoadingDeleteRelationship}
+                onSubmitSuccess={() => {
+                    onDeleteRelationship(deleteRelationshipDialogState.connectionToDelete!.relationship.properties._id);
+                    setDeleteRelationshipDialogState({ open: false });
+                }}
             />
         </>
     );

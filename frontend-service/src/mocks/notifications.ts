@@ -20,7 +20,7 @@ const generateNotification = (): INotificationPopulated => {
             metadata = { request: generateRuleBreachRequest() };
             break;
         case NotificationType.ruleBreachResponse:
-            metadata = { request: generateRuleBreachRequest(true) };
+            metadata = { request: generateRuleBreachRequest({ isReviewed: true }) };
             break;
         default:
             throw new Error('unsupported notification type');

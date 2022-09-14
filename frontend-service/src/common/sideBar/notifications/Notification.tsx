@@ -4,13 +4,7 @@ import i18next from 'i18next';
 import { useMutation } from 'react-query';
 import { LoadingButton } from '@mui/lab';
 import { toast } from 'react-toastify';
-import {
-    IAlertMetadataPopulated,
-    IRequestMetadataPopulated,
-    IResponseMetadataPopulated,
-    INotificationPopulated,
-    NotificationType,
-} from '../../../interfaces/notifications';
+import { INotificationPopulated, isAlertNotification, isRequestNotification, isResponseNotification } from '../../../interfaces/notifications';
 import { getShortDate } from '../../../utils/date';
 import { NotificationSeenRequest } from '../../../services/notificationService';
 import { RuleBreachAlertNotification } from './ruleBreachNotification/RuleBreachAlertNotification';
@@ -49,15 +43,9 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({ notification
                     </Grid>
 
                     <Grid item>
-                        {notification.type === NotificationType.ruleBreachAlert && (
-                            <RuleBreachAlertNotification ruleBreachAlert={(notification.metadata as IAlertMetadataPopulated).alert} />
-                        )}
-                        {notification.type === NotificationType.ruleBreachRequest && (
-                            <RuleBreachRequestNotification ruleBreachRequest={(notification.metadata as IRequestMetadataPopulated).request} />
-                        )}
-                        {notification.type === NotificationType.ruleBreachResponse && (
-                            <RuleBreachResponseNotification ruleBreachRequest={(notification.metadata as IResponseMetadataPopulated).request} />
-                        )}
+                        {isAlertNotification(notification) && <RuleBreachAlertNotification ruleBreachAlert={notification.metadata.alert} />}
+                        {isRequestNotification(notification) && <RuleBreachRequestNotification ruleBreachRequest={notification.metadata.request} />}
+                        {isResponseNotification(notification) && <RuleBreachResponseNotification ruleBreachRequest={notification.metadata.request} />}
                     </Grid>
 
                     <Grid item container justifyContent="flex-end" wrap="nowrap">

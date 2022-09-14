@@ -18,7 +18,7 @@ import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates'
 
 import '@ag-grid-community/core/dist/styles/ag-grid.css';
 import '@ag-grid-community/core/dist/styles/ag-theme-material.css';
-import './table.css';
+import '../../css/table.css';
 
 import { DateFilterComponent } from '../../utils/agGrid/DateFilterComponent';
 import { IEntity } from '../../interfaces/entities';

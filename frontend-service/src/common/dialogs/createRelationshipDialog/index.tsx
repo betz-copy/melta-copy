@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import i18next from 'i18next';
 import { Form, Formik, FormikErrors, FormikProps, yupToFormErrors } from 'formik';
 import * as Yup from 'yup';
@@ -16,6 +16,9 @@ import { trycatch } from '../../../utils/trycatch';
 import { createRelationshipRequest } from '../../../services/relationshipsService';
 import { IRelationship } from '../../../interfaces/relationships';
 import { ErrorToast } from '../../ErrorToast';
+import { IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
+import { ICreateRelationshipMetadataPopulated } from '../../../interfaces/ruleBreaches/actionMetadata';
+import CreateWithRuleBreachDialog from './CreateWithRuleBreachDialog';
 
 export interface ICreateRelationshipValues {
     relationshipTemplate: IMongoRelationshipTemplatePopulated | null;
@@ -167,6 +170,15 @@ const SourceOrDestinationEntityInput: React.FC<{
     );
 };
 
+interface ICreateRelationshipBodyPopulated {
+    relationshipInstancePopulated: {
+        relationshipTemplateId: string;
+        sourceEntity: IEntity;
+        destinationEntity: IEntity;
+    };
+    rawBrokenRules?: IRuleBreach['brokenRules'];
+}
+
 const CreateRelationshipDialog: React.FC<{
     isOpen: boolean;
     handleClose: () => void;
@@ -175,83 +187,142 @@ const CreateRelationshipDialog: React.FC<{
 }> = ({ isOpen, handleClose, onSubmitSuccess = () => {}, initialValues: parentInitialValues }) => {
     const initialValues = { ...defaultInitialValues, ...parentInitialValues };
 
-    const { mutateAsync: createRelationship } = useMutation(createRelationshipRequest, {
-        onError: (error: AxiosError) => {
-            console.log('failed to create relationship. error:', error);
-            toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('addRelationshipDialog.failedToCreateRelationship')} />);
+    const [createWithRuleBreachDialogState, setCreateWithRuleBreachDialogState] = useState<{
+        isOpen: boolean;
+        brokenRules?: IRuleBreachPopulated['brokenRules'];
+        rawBrokenRules?: IRuleBreach['brokenRules'];
+        actionMetadata?: ICreateRelationshipMetadataPopulated;
+    }>({ isOpen: false });
+
+    const { mutateAsync: createRelationship, isLoading: isLoadingCreateRelationship } = useMutation(
+        ({
+            relationshipInstancePopulated: { relationshipTemplateId, sourceEntity, destinationEntity },
+            rawBrokenRules,
+        }: ICreateRelationshipBodyPopulated) => {
+            return createRelationshipRequest({
+                relationshipInstance: {
+                    templateId: relationshipTemplateId,
+                    sourceEntityId: sourceEntity.properties._id,
+                    destinationEntityId: destinationEntity.properties._id,
+                    properties: {},
+                },
+                ignoredRules: rawBrokenRules,
+            });
         },
-        onSuccess: () => {
-            toast.success(i18next.t('addRelationshipDialog.succeededToCreateRelationship'));
-            handleClose();
+        {
+            onError: (err: AxiosError, { relationshipInstancePopulated }) => {
+                const errorMetadata = err.response?.data?.metadata;
+                if (errorMetadata?.errorCode === 'RULE_BLOCK') {
+                    setCreateWithRuleBreachDialogState({
+                        isOpen: true,
+                        brokenRules: errorMetadata.brokenRules,
+                        actionMetadata: relationshipInstancePopulated,
+                    });
+                }
+
+                console.log('failed to create relationship. error:', err);
+                toast.error(<ErrorToast axiosError={err} defaultErrorMessage={i18next.t('addRelationshipDialog.failedToCreateRelationship')} />);
+            },
+            onSuccess: (createdRelationship, { relationshipInstancePopulated: { sourceEntity, destinationEntity } }) => {
+                toast.success(i18next.t('addRelationshipDialog.succeededToCreateRelationship'));
+                handleClose();
+
+                onSubmitSuccess(createdRelationship, sourceEntity, destinationEntity);
+            },
         },
-    });
+    );
 
     return (
-        <Dialog open={isOpen} fullWidth maxWidth="xl" keepMounted={false} disableEnforceFocus>
-            <Formik
-                initialValues={initialValues}
-                onSubmit={async ({ relationshipTemplate, sourceEntity, destinationEntity }) => {
-                    const createdRelationship = await createRelationship({
-                        templateId: relationshipTemplate!._id,
-                        sourceEntityId: sourceEntity!.properties._id,
-                        destinationEntityId: destinationEntity!.properties._id,
-                        properties: {},
-                    });
-                    onSubmitSuccess(createdRelationship, sourceEntity!, destinationEntity!);
-                }}
-                validate={validateForm}
-            >
-                {(formikProps: FormikProps<ICreateRelationshipValues>) => (
-                    <Form>
-                        <DialogTitle>{i18next.t('addRelationshipDialog.title')}</DialogTitle>
-                        <DialogContent>
-                            <Grid container alignItems="center" spacing={1}>
-                                <Grid item xs={4}>
-                                    <SourceOrDestinationEntityInput
-                                        field="sourceEntity"
-                                        formikProps={formikProps}
-                                        label={i18next.t('addRelationshipDialog.selectSourceEntityLabel')}
-                                    />
-                                </Grid>
-                                <Grid item xs={4} container direction="column" alignItems="stretch" spacing={1}>
-                                    <Grid item container justifyContent="center">
+        <>
+            <Dialog open={isOpen} fullWidth maxWidth="xl">
+                <Formik
+                    initialValues={initialValues}
+                    onSubmit={(values) =>
+                        createRelationship({
+                            relationshipInstancePopulated: {
+                                relationshipTemplateId: values.relationshipTemplate!._id,
+                                sourceEntity: values.sourceEntity!,
+                                destinationEntity: values.destinationEntity!,
+                            },
+                        })
+                    }
+                    validate={validateForm}
+                >
+                    {(formikProps: FormikProps<ICreateRelationshipValues>) => (
+                        <Form>
+                            <DialogTitle>{i18next.t('addRelationshipDialog.title')}</DialogTitle>
+                            <DialogContent>
+                                <Grid container alignItems="center" spacing={1}>
+                                    <Grid item xs={4}>
+                                        <SourceOrDestinationEntityInput
+                                            field="sourceEntity"
+                                            formikProps={formikProps}
+                                            label={i18next.t('addRelationshipDialog.selectSourceEntityLabel')}
+                                        />
+                                    </Grid>
+                                    <Grid item xs={4} container direction="column" alignItems="stretch" spacing={1}>
+                                        <Grid item container justifyContent="center">
+                                            <Grid item>
+                                                <SwitchSidesButton formikProps={formikProps} />
+                                            </Grid>
+                                        </Grid>
                                         <Grid item>
-                                            <SwitchSidesButton formikProps={formikProps} />
+                                            <Box sx={{ margin: '5px' }}>
+                                                <RelationshipTemplateInput formikProps={formikProps} />
+                                            </Box>
+                                        </Grid>
+                                        <Grid item container justifyContent="center">
+                                            <Grid item xs={8}>
+                                                <StrechableArrowRight />
+                                            </Grid>
                                         </Grid>
                                     </Grid>
-                                    <Grid item>
-                                        <Box sx={{ margin: '5px' }}>
-                                            <RelationshipTemplateInput formikProps={formikProps} />
-                                        </Box>
-                                    </Grid>
-                                    <Grid item container justifyContent="center">
-                                        <Grid item xs={8}>
-                                            <StrechableArrowRight />
-                                        </Grid>
+                                    <Grid item xs={4}>
+                                        <SourceOrDestinationEntityInput
+                                            field="destinationEntity"
+                                            formikProps={formikProps}
+                                            label={i18next.t('addRelationshipDialog.selectDestinationEntityLabel')}
+                                        />
                                     </Grid>
                                 </Grid>
-                                <Grid item xs={4}>
-                                    <SourceOrDestinationEntityInput
-                                        field="destinationEntity"
-                                        formikProps={formikProps}
-                                        label={i18next.t('addRelationshipDialog.selectDestinationEntityLabel')}
-                                    />
-                                </Grid>
-                            </Grid>
-                        </DialogContent>
-                        <DialogActions>
-                            <Button onClick={handleClose} autoFocus disabled={formikProps.isSubmitting}>
-                                {i18next.t('addRelationshipDialog.closeBtn')}
-                            </Button>
-                            <Button type="submit" variant="contained" autoFocus disabled={formikProps.isSubmitting}>
-                                {i18next.t('addRelationshipDialog.createBtn')}
-                                {formikProps.isSubmitting && <CircularProgress size={20} />}
-                            </Button>
-                        </DialogActions>
-                    </Form>
-                )}
-            </Formik>
-        </Dialog>
+                            </DialogContent>
+                            <DialogActions>
+                                <Button onClick={handleClose} autoFocus disabled={formikProps.isSubmitting}>
+                                    {i18next.t('addRelationshipDialog.closeBtn')}
+                                </Button>
+                                <Button type="submit" variant="contained" autoFocus disabled={formikProps.isSubmitting}>
+                                    {i18next.t('addRelationshipDialog.createBtn')}
+                                    {formikProps.isSubmitting && <CircularProgress size={20} />}
+                                </Button>
+                            </DialogActions>
+                        </Form>
+                    )}
+                </Formik>
+            </Dialog>
+            {createWithRuleBreachDialogState.isOpen && (
+                <CreateWithRuleBreachDialog
+                    handleClose={() => setCreateWithRuleBreachDialogState({ isOpen: false })}
+                    brokenRules={createWithRuleBreachDialogState.brokenRules!}
+                    rawBrokenRules={createWithRuleBreachDialogState.rawBrokenRules!}
+                    actionMetadata={createWithRuleBreachDialogState.actionMetadata!}
+                    onCreateRelationship={async () => {
+                        await createRelationship({
+                            relationshipInstancePopulated: {
+                                relationshipTemplateId: createWithRuleBreachDialogState.actionMetadata!.relationshipTemplateId,
+                                sourceEntity: createWithRuleBreachDialogState.actionMetadata!.sourceEntity!,
+                                destinationEntity: createWithRuleBreachDialogState.actionMetadata!.destinationEntity!,
+                            },
+                            rawBrokenRules: createWithRuleBreachDialogState.rawBrokenRules!,
+                        });
+                    }}
+                    isLoadingCreateRelationship={isLoadingCreateRelationship}
+                    onCreateRuleBreachRequest={() => handleClose()}
+                    onUpdatedRuleBlock={(brokenRules) =>
+                        setCreateWithRuleBreachDialogState(({ actionMetadata }) => ({ isOpen: true, brokenRules, actionMetadata }))
+                    }
+                />
+            )}
+        </>
     );
 };
 

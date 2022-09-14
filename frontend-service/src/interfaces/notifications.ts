@@ -38,9 +38,27 @@ export interface INotification {
     _id: string;
 }
 
-export interface INotificationPopulated {
+export interface INotificationPopulated<T = INotificationMetadataPopulated> {
     type: NotificationType;
-    metadata: INotificationMetadataPopulated;
+    metadata: T;
     createdAt: Date;
     _id: string;
 }
+
+export const isAlertNotification = (
+    notification: Partial<INotificationPopulated>,
+): notification is INotificationPopulated<IAlertMetadataPopulated> => {
+    return notification.type === NotificationType.ruleBreachAlert;
+};
+
+export const isRequestNotification = (
+    notification: Partial<INotificationPopulated>,
+): notification is INotificationPopulated<IRequestMetadataPopulated> => {
+    return notification.type === NotificationType.ruleBreachRequest;
+};
+
+export const isResponseNotification = (
+    notification: Partial<INotificationPopulated>,
+): notification is INotificationPopulated<IResponseMetadataPopulated> => {
+    return notification.type === NotificationType.ruleBreachResponse;
+};

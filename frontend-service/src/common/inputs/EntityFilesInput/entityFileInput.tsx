@@ -16,21 +16,12 @@ interface EntityFileInputProps {
 }
 
 export const EntityFileInput: React.FC<EntityFileInputProps> = ({ fieldName, value, setFieldValue, required, values, errors }) => {
-    const [fileName, setFileName] = useState<string | undefined>();
+    const fileId = values.attachmentsProperties[fieldName]?.name;
+    const initialFileName = fileId ? getFileName(fileId) : undefined;
+
+    const [fileName, setFileName] = useState<string | undefined>(initialFileName);
 
     const field = `attachmentsProperties.${fieldName}`;
-
-    const getThisFileName = () => {
-        if (fileName) return fileName;
-
-        const fileId = values.attachmentsProperties[fieldName]?.name;
-        if (!fileId) return '';
-
-        const newFileName = getFileName(fileId);
-        setFileName(newFileName);
-
-        return newFileName;
-    };
 
     return (
         <Box margin={1}>
@@ -39,7 +30,7 @@ export const EntityFileInput: React.FC<EntityFileInputProps> = ({ fieldName, val
                 name={field}
                 component={FileInput}
                 inputText={`${value.title} ${required ? '*' : ''}`}
-                fileName={getThisFileName()}
+                fileName={fileName}
                 onDropFile={(acceptedFile) => {
                     setFieldValue(field, acceptedFile);
                     setFileName(acceptedFile.name);

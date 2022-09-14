@@ -19,9 +19,11 @@ export interface IRuleBreachPopulated {
     originUser: IUser;
     brokenRules: {
         ruleId: string;
-        relationships: (IRelationshipPopulated | null)[];
+        relationships: (IRelationshipPopulated | string | null)[];
     }[];
     actionType: ActionTypes;
     actionMetadata: IActionMetadataPopulated;
     createdAt: Date;
 }
+
+export type BreachType = 'alert' | 'request';

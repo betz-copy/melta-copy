@@ -4,6 +4,7 @@ import axios from '../axios';
 import { environment } from '../globals';
 import { IEntity, IEntityExpanded } from '../interfaces/entities';
 import { EntityWizardValues } from '../common/wizards/entity';
+import { IRuleBreach } from '../interfaces/ruleBreaches/ruleBreach';
 
 const { entities, relationships } = environment.api;
 
@@ -43,7 +44,7 @@ const updateEntityStatusRequest = async (entityId: string, disabled: boolean) =>
     return data;
 };
 
-const updateEntityRequest = async (entityId: string, newEntityData: EntityWizardValues) => {
+const updateEntityRequest = async (entityId: string, newEntityData: EntityWizardValues, ignoredRules?: IRuleBreach['brokenRules']) => {
     const formData = new FormData();
     const [fileToUpload, unchangedFiles] = partition(Object.entries(newEntityData.attachmentsProperties), ([_key, value]) => value instanceof File);
 
@@ -57,6 +58,10 @@ const updateEntityRequest = async (entityId: string, newEntityData: EntityWizard
 
     formData.append('properties', JSON.stringify({ ...newEntityData.properties, ...fileProperties }));
     formData.append('templateId', newEntityData.template._id);
+
+    if (ignoredRules) {
+        formData.append('ignoredRules', JSON.stringify(ignoredRules));
+    }
     const { data } = await axios.put<IEntity>(`${entities}/${entityId}`, formData);
 
     return data;

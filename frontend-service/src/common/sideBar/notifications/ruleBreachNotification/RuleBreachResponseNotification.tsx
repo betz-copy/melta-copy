@@ -2,7 +2,7 @@ import React from 'react';
 import { Box, Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
 import RuleBreachInfo from '../../../ruleBreanchInfo/RuleBreachInfo';
-import { IRuleBreachRequestPopulated } from '../../../../interfaces/ruleBreaches/ruleBreachRequest';
+import { IRuleBreachRequestPopulated, RuleBreachRequestStatus } from '../../../../interfaces/ruleBreaches/ruleBreachRequest';
 
 export const RuleBreachResponseNotification: React.FC<{
     ruleBreachRequest: IRuleBreachRequestPopulated;
@@ -26,7 +26,7 @@ export const RuleBreachResponseNotification: React.FC<{
             <Grid item>
                 <Typography component="p" variant="body1">
                     <Box component="span" fontWeight="bold">
-                        {ruleBreachRequest.approved!
+                        {ruleBreachRequest.status === RuleBreachRequestStatus.Approved
                             ? i18next.t('ruleBreachResponseNotification.wasApproved')
                             : i18next.t('ruleBreachResponseNotification.wasDenied')}
                     </Box>{' '}

@@ -29,6 +29,7 @@ const GlobalSearch = lazy(() => import('./pages/GlobalSearch'));
 const Category = lazy(() => import('./pages/Category'));
 const SystemManagement = lazy(() => import('./pages/SystemManagement'));
 const PermissionsManagement = lazy(() => import('./pages/PermissionsManagement'));
+const RuleManagement = lazy(() => import('./pages/RuleManagement'));
 const Unavailable = lazy(() => import('./pages/Unavailable'));
 const ErrorPage = lazy(() => import('./pages/ErrorPage'));
 const Entity = lazy(() => import('./pages/Entity'));
@@ -123,6 +124,15 @@ const Main = () => {
                                             <PermissionsManagementProtectedRoute permissions={myPermissions}>
                                                 <PermissionsManagement setTitle={setTitle} />
                                             </PermissionsManagementProtectedRoute>
+                                        </>
+                                    }
+                                />
+                                <Route
+                                    path="/rule-management"
+                                    element={
+                                        <>
+                                            <TopBar title={title} />
+                                            <RuleManagement setTitle={setTitle} />
                                         </>
                                     }
                                 />

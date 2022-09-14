@@ -2,7 +2,6 @@ import React from 'react';
 import { Box, Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
 import { useQueryClient } from 'react-query';
-import { NavLink } from 'react-router-dom';
 import { IEntity } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IMongoRelationshipTemplate, IMongoRelationshipTemplatePopulated } from '../../interfaces/relationshipTemplates';
@@ -16,6 +15,7 @@ import {
 import { populateRelationshipTemplate } from '../../utils/templates';
 import { UpdatedFieldsDiff } from './UpdatedFieldsDiff';
 import { IUser } from '../../services/kartoffelService';
+import { EntityLink } from '../EntityLink';
 
 export const RelationshipInfo: React.FC<{
     relationshipTemplatePopulated: IMongoRelationshipTemplatePopulated;
@@ -29,13 +29,9 @@ export const RelationshipInfo: React.FC<{
                 {relationshipTemplatePopulated.displayName}
             </Box>{' '}
             <Box component="span">{i18next.t('ruleBreachInfo.relActionInfo.fromEntity')}</Box>{' '}
-            <NavLink to={`/entity/${sourceEntity ? sourceEntity.properties._id : 'unknownEntity'}`}>
-                {relationshipTemplatePopulated.sourceEntity.displayName}
-            </NavLink>{' '}
+            <EntityLink entity={sourceEntity} entityTemplate={relationshipTemplatePopulated.sourceEntity} />{' '}
             <Box component="span">{i18next.t('ruleBreachInfo.relActionInfo.toEntity')}</Box>{' '}
-            <NavLink to={`/entity/${destinationEntity ? destinationEntity.properties._id : 'unknownEntity'}`}>
-                {relationshipTemplatePopulated.destinationEntity.displayName}
-            </NavLink>
+            <EntityLink entity={destinationEntity} entityTemplate={relationshipTemplatePopulated.destinationEntity} />
         </>
     );
 };
@@ -85,9 +81,7 @@ const UpdateEntityActionInfo: React.FC<{
             <Grid item>
                 <Typography component="p" variant="body1">
                     <Box component="span">{i18next.t('ruleBreachInfo.updateEntityActionInfo.updatingEntity')}</Box>{' '}
-                    <NavLink to={`/entity/${entity ? entity.properties._id : 'unknownEntity'}`}>
-                        {entityTemplate ? entityTemplate.displayName : i18next.t('ruleBreachInfo.updateEntityActionInfo.unknownEntity')}
-                    </NavLink>
+                    <EntityLink entity={entity} entityTemplate={entityTemplate} />
                     {!isCompact ? ':' : ''}
                 </Typography>
             </Grid>

@@ -156,3 +156,28 @@ export const dateColDef = (
         hide: hideColumn,
     };
 };
+
+export const translatedEnumColDef = (
+    field: string,
+    valueGetter: ValueGetterFunc,
+    value: { title: string },
+    valuesMap: Record<string, string>,
+    hideColumn = false,
+    hideValue = false,
+): ColDef => {
+    const valueFormatter = (props) => valuesMap[props.value];
+
+    return {
+        field,
+        headerName: value.title,
+        valueGetter,
+        cellRenderer: (props) => <Value hideValue={hideValue} value={valueFormatter(props)} />,
+        filter: 'agSetColumnFilter',
+        filterParams: {
+            suppressMiniFilter: true,
+            valueFormatter,
+            values: [...Object.keys(valuesMap), undefined],
+        },
+        hide: hideColumn,
+    };
+};

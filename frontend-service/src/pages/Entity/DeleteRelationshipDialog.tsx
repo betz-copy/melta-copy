@@ -1,0 +1,133 @@
+import i18next from 'i18next';
+import React, { useState } from 'react';
+import { useMutation, useQueryClient } from 'react-query';
+import { toast } from 'react-toastify';
+import { AxiosError } from 'axios';
+import { AreYouSureDialog } from '../../common/dialogs/AreYouSureDialog';
+import ExecWithRuleBreachDialog from '../../common/dialogs/execWithRuleBreachDialog';
+import { IEntityExpanded } from '../../interfaces/entities';
+import { deleteRelationshipRequest } from '../../services/relationshipsService';
+import { IMongoRule } from '../../interfaces/rules';
+import { IRuleBreach, IRuleBreachPopulated } from '../../interfaces/ruleBreaches/ruleBreach';
+import { ActionTypes, IDeleteRelationshipMetadata, IDeleteRelationshipMetadataPopulated } from '../../interfaces/ruleBreaches/actionMetadata';
+import { createRuleBreachRequestRequest } from '../../services/ruleBreachesService';
+import { ErrorToast } from '../../common/ErrorToast';
+
+const DeleteRelationshipDialog: React.FC<{
+    isOpen: boolean;
+    handleClose: () => void;
+    connectionToDelete?: IEntityExpanded['connections'][number];
+    onSubmitSuccess: () => void;
+}> = ({ isOpen, handleClose, connectionToDelete, onSubmitSuccess }) => {
+    const queryClient = useQueryClient();
+    const rules = queryClient.getQueryData<IMongoRule[]>('getRules')!;
+
+    const [deleteWithRuleBreachDialogState, setDeleteWithRuleBreachDialogState] = useState<{
+        isOpen: boolean;
+        brokenRules?: IRuleBreachPopulated['brokenRules'];
+        rawBrokenRules?: IRuleBreach['brokenRules'];
+    }>({ isOpen: false });
+
+    const { mutateAsync: deleteRelationship, isLoading: isLoadingDeleteRelationship } = useMutation(
+        () => {
+            return deleteRelationshipRequest(connectionToDelete!.relationship.properties._id, {
+                ignoredRules: deleteWithRuleBreachDialogState.rawBrokenRules!,
+            });
+        },
+        {
+            onError: (err: AxiosError) => {
+                const errorMetadata = err.response?.data?.metadata;
+                if (errorMetadata?.errorCode === 'RULE_BLOCK') {
+                    setDeleteWithRuleBreachDialogState({
+                        isOpen: true,
+                        brokenRules: errorMetadata.brokenRules,
+                    });
+                }
+
+                // eslint-disable-next-line no-console
+                console.log('failed to delete relationship. error:', err);
+                toast.error(<ErrorToast axiosError={err} defaultErrorMessage={i18next.t('entityPage.failedToDeleteRelationship')} />);
+            },
+            onSuccess: () => {
+                setDeleteWithRuleBreachDialogState({ isOpen: false });
+                onSubmitSuccess();
+                toast.success(i18next.t('entityPage.succeededToDeleteRelationship'));
+            },
+        },
+    );
+
+    const { mutateAsync: createRuleBreachRequest, isLoading: isLoadingCreateRuleBreachRequest } = useMutation(
+        () => {
+            return createRuleBreachRequestRequest({
+                brokenRules: deleteWithRuleBreachDialogState.rawBrokenRules!,
+                actionType: ActionTypes.DeleteRelationship,
+                actionMetadata: {
+                    relationshipTemplateId: connectionToDelete!.relationship.templateId,
+                    relationshipId: connectionToDelete!.relationship.properties._id,
+                    sourceEntityId: connectionToDelete!.sourceEntity.properties._id,
+                    destinationEntityId: connectionToDelete!.destinationEntity.properties._id,
+                } as IDeleteRelationshipMetadata,
+            });
+        },
+        {
+            onError: (err: AxiosError) => {
+                const errorMetadata = err.response?.data?.metadata;
+                if (errorMetadata?.errorCode === 'RULE_BLOCK') {
+                    setDeleteWithRuleBreachDialogState({
+                        isOpen: true,
+                        brokenRules: errorMetadata.brokenRules,
+                    });
+                }
+
+                console.log('failed to create rule breach request. error:', err);
+                toast.error(<ErrorToast axiosError={err} defaultErrorMessage={i18next.t('execActionWithRuleBreach.failedToCreateRequest')} />);
+            },
+            onSuccess: () => {
+                setDeleteWithRuleBreachDialogState({ isOpen: false });
+                handleClose();
+                toast.success(i18next.t('execActionWithRuleBreach.succeededToCreateRequest'));
+            },
+        },
+    );
+    return (
+        <>
+            <AreYouSureDialog
+                open={isOpen}
+                handleClose={handleClose}
+                onYes={async () => deleteRelationship()}
+                isLoading={isLoadingDeleteRelationship}
+            />
+
+            {deleteWithRuleBreachDialogState.isOpen && (
+                <ExecWithRuleBreachDialog
+                    isSubmitting={isLoadingDeleteRelationship || isLoadingCreateRuleBreachRequest}
+                    onCancel={() => setDeleteWithRuleBreachDialogState({ isOpen: false })}
+                    onSubmit={async () => {
+                        const someBrokenRuleIsEnforcement = deleteWithRuleBreachDialogState.brokenRules!.some(({ ruleId }) => {
+                            const rule = rules.find((currRule) => currRule._id === ruleId)!;
+                            return rule.actionOnFail === 'ENFORCEMENT';
+                        });
+
+                        if (someBrokenRuleIsEnforcement) {
+                            await createRuleBreachRequest();
+                        } else {
+                            await deleteRelationship();
+                        }
+                    }}
+                    brokenRules={deleteWithRuleBreachDialogState.brokenRules!}
+                    actionType={ActionTypes.DeleteRelationship}
+                    actionMetadata={
+                        {
+                            relationshipTemplateId: connectionToDelete!.relationship.templateId,
+                            relationshipId: connectionToDelete!.relationship.properties._id,
+                            sourceEntity: connectionToDelete!.sourceEntity,
+                            destinationEntity: connectionToDelete!.destinationEntity,
+                        } as IDeleteRelationshipMetadataPopulated
+                    }
+                />
+            )}
+        </>
+    );
+};
+
+export default DeleteRelationshipDialog;

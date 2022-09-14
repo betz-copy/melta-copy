@@ -7,7 +7,7 @@ import { categories } from './templates/categories';
 const chance = new Chance();
 faker.locale = 'he';
 
-export const generateMongoId = () => chance.string({ pool: 'abcdefABCDEF0123456789', length: 24 });
+export const generateMongoId = () => chance.string({ pool: 'abcdef0123456789', length: 24 });
 
 const generateUserDigitalIdentities = () => {
     const sources = chance.pickset(['source1', 'source2', 'source3'], chance.integer({ min: 1, max: 3 }));

@@ -1,4 +1,5 @@
 /* eslint-disable import/no-extraneous-dependencies */
+import MockAdapter from 'axios-mock-adapter';
 import { Chance } from 'chance';
 import {
     ActionTypes,
@@ -8,7 +9,7 @@ import {
 } from '../interfaces/ruleBreaches/actionMetadata';
 import { IRuleBreachPopulated } from '../interfaces/ruleBreaches/ruleBreach';
 import { IRuleBreachAlertPopulated } from '../interfaces/ruleBreaches/ruleBreachAlert';
-import { IRuleBreachRequestPopulated } from '../interfaces/ruleBreaches/ruleBreachRequest';
+import { IRuleBreachRequestPopulated, RuleBreachRequestStatus } from '../interfaces/ruleBreaches/ruleBreachRequest';
 import { generateMongoId, generateUser } from './permissions';
 
 const chance = new Chance();
@@ -80,48 +81,47 @@ const flight = {
     },
 };
 
-const brokenRules: IRuleBreachPopulated['brokenRules'] = [
-    {
-        ruleId: '61e3ea6e4d53a23e87e43c7c',
-        relationships: [
-            {
-                templateId: fliesOn._id,
-                properties: {
-                    _id: 'created-relationship-id',
+const generateBrokenRules = (options?: { nullables?: boolean; actionType?: ActionTypes }): IRuleBreachPopulated['brokenRules'] => {
+    const { nullables = true, actionType } = options ?? {};
+    return [
+        {
+            ruleId: '61e3ea6e4d53a23e87e43c7c',
+            relationships: [
+                ...(actionType === ActionTypes.CreateRelationship ? ['created-relationship-id'] : []),
+                {
+                    templateId: fliesOn._id,
+                    properties: {
+                        _id: '012345678901234567890002',
+                    },
+                    sourceEntity: tourist2,
+                    destinationEntity: flight,
                 },
-                sourceEntity: tourist1,
-                destinationEntity: flight,
-            },
-            {
-                templateId: fliesOn._id,
-                properties: {
-                    _id: '012345678901234567890002',
+                {
+                    templateId: fliesOn._id,
+                    properties: {
+                        _id: '012345678901234567890003',
+                    },
+                    sourceEntity: tourist3,
+                    destinationEntity: flight,
                 },
-                sourceEntity: tourist2,
-                destinationEntity: flight,
-            },
-            {
-                templateId: fliesOn._id,
-                properties: {
-                    _id: '012345678901234567890003',
-                },
-                sourceEntity: tourist3,
-                destinationEntity: flight,
-            },
-            null,
-            null,
-        ],
-    },
-    {
-        ruleId: '61e3ea6e4d83a23e87e43c7c',
-        relationships: [null],
-    },
-];
+                ...(nullables ? [null, null] : []),
+            ],
+        },
+        ...(nullables
+            ? [
+                  {
+                      ruleId: '61e3ea6e4d83a23e87e43c7c',
+                      relationships: [null],
+                  },
+              ]
+            : []),
+    ];
+};
 
-const ruleBreach1: IRuleBreachPopulated = {
+const generateRuleBreachExample1 = (): IRuleBreachPopulated => ({
     _id: generateMongoId(),
     originUser: generateUser(),
-    brokenRules,
+    brokenRules: generateBrokenRules({ nullables: false, actionType: ActionTypes.CreateRelationship }),
     actionType: ActionTypes.CreateRelationship,
     actionMetadata: {
         relationshipTemplateId: fliesOn._id,
@@ -129,12 +129,12 @@ const ruleBreach1: IRuleBreachPopulated = {
         destinationEntity: flight,
     } as ICreateRelationshipMetadataPopulated,
     createdAt: new Date(),
-};
+});
 
-const ruleBreach2: IRuleBreachPopulated = {
+const generateRuleBreachExample2 = (): IRuleBreachPopulated => ({
     _id: generateMongoId(),
     originUser: generateUser(),
-    brokenRules,
+    brokenRules: generateBrokenRules({ nullables: false, actionType: ActionTypes.DeleteRelationship }),
     actionType: ActionTypes.DeleteRelationship,
     actionMetadata: {
         relationshipId: '012345678901234567890001',
@@ -143,24 +143,24 @@ const ruleBreach2: IRuleBreachPopulated = {
         destinationEntity: flight,
     } as IDeleteRelationshipMetadataPopulated,
     createdAt: new Date(),
-};
+});
 
-const ruleBreach3: IRuleBreachPopulated = {
+const generateRuleBreachExample3 = (): IRuleBreachPopulated => ({
     _id: generateMongoId(),
     originUser: generateUser(),
-    brokenRules,
+    brokenRules: generateBrokenRules({ nullables: false, actionType: ActionTypes.UpdateEntity }),
     actionType: ActionTypes.UpdateEntity,
     actionMetadata: {
         entity: tourist1,
         updatedFields: { lastName: 'קירלללללל' },
     } as IUpdateEntityMetadataPopulated,
     createdAt: new Date(),
-};
+});
 
-const ruleBreach4: IRuleBreachPopulated = {
+const generateRuleBreachExampleNullables1 = (): IRuleBreachPopulated => ({
     _id: generateMongoId(),
     originUser: generateUser(),
-    brokenRules,
+    brokenRules: generateBrokenRules({ nullables: true, actionType: ActionTypes.DeleteRelationship }),
     actionType: ActionTypes.DeleteRelationship,
     actionMetadata: {
         relationshipId: '012345678901234567890001',
@@ -169,40 +169,99 @@ const ruleBreach4: IRuleBreachPopulated = {
         destinationEntity: null,
     } as IDeleteRelationshipMetadataPopulated,
     createdAt: new Date(),
-};
+});
 
-const ruleBreach5: IRuleBreachPopulated = {
+const generateRuleBreachExampleNullables2 = (): IRuleBreachPopulated => ({
     _id: generateMongoId(),
     originUser: generateUser(),
-    brokenRules,
+    brokenRules: generateBrokenRules({ nullables: true, actionType: ActionTypes.UpdateEntity }),
     actionType: ActionTypes.UpdateEntity,
     actionMetadata: {
         entity: null,
         updatedFields: { lastName: 'קירלללללל' },
     } as IUpdateEntityMetadataPopulated,
     createdAt: new Date(),
-};
+});
 
-export const generateRuleBreachAlert = (): IRuleBreachAlertPopulated => {
-    const ruleBreach = chance.pickone([ruleBreach1, ruleBreach2, ruleBreach3]);
+export const generateRuleBreach = (options?: { nullable?: boolean; actionType?: ActionTypes }): IRuleBreachPopulated => {
+    const { nullable = true, actionType } = options ?? {};
+    let ruleBreaches = [generateRuleBreachExample1(), generateRuleBreachExample2(), generateRuleBreachExample3()];
+
+    if (nullable) {
+        ruleBreaches.push(generateRuleBreachExampleNullables1(), generateRuleBreachExampleNullables2());
+    }
+
+    if (actionType) {
+        ruleBreaches = ruleBreaches.filter((ruleBreach) => ruleBreach.actionType === actionType);
+    }
+
+    const ruleBreach = chance.pickone(ruleBreaches);
 
     return ruleBreach;
 };
 
-export const generateRuleBreachRequest = (isReviewed?: true): IRuleBreachRequestPopulated => {
-    const ruleBreach = chance.pickone([ruleBreach1, ruleBreach2, ruleBreach3, ruleBreach4, ruleBreach5]);
+export const generateRuleBreachAlert = (options?: { nullable?: boolean; actionType?: ActionTypes | undefined }): IRuleBreachAlertPopulated => {
+    return generateRuleBreach(options);
+};
 
-    const approved = isReviewed === true ? chance.bool() : chance.pickone([true, false, undefined]);
+export const generateRuleBreachRequest = (options?: {
+    isReviewed?: true;
+    nullable?: boolean;
+    actionType?: ActionTypes;
+}): IRuleBreachRequestPopulated => {
+    const { isReviewed, nullable, actionType } = options ?? {};
+
+    const ruleBreach = generateRuleBreach({ nullable, actionType });
+
+    const status = isReviewed
+        ? chance.pickone([
+              RuleBreachRequestStatus.Denied,
+              RuleBreachRequestStatus.Approved,
+              RuleBreachRequestStatus.Pending,
+              RuleBreachRequestStatus.Canceled,
+          ])
+        : chance.pickone([RuleBreachRequestStatus.Pending, RuleBreachRequestStatus.Canceled]);
 
     return {
         ...ruleBreach,
-        reviewer: approved !== undefined ? generateUser() : undefined,
-        reviewedAt: approved !== undefined ? new Date() : undefined,
-        approved,
+        reviewer: status !== undefined ? generateUser() : undefined,
+        reviewedAt: status !== undefined ? new Date() : undefined,
+        status,
     };
 };
 
 export const generateRuleBreachAlertOrRequest = () => {
     const isRequest = chance.bool();
     return isRequest ? generateRuleBreachRequest() : generateRuleBreachAlert();
+};
+
+export const mockRuleBreaches = (mock: MockAdapter) => {
+    mock.onPost('/api/rule-breaches/requests').reply(() => {
+        return [200, generateRuleBreachRequest({ nullable: false })];
+    });
+
+    mock.onPost('/api/rule-breaches/alerts/search').reply(() => {
+        const numberOfBreaches = chance.integer({ min: 0, max: 20 });
+        const breaches = Array.from({ length: numberOfBreaches }).map(() => generateRuleBreachAlert());
+        return [200, { rows: breaches, lastRowIndex: numberOfBreaches }];
+    });
+
+    mock.onPost('/api/rule-breaches/requests/search').reply(() => {
+        const numberOfBreaches = chance.integer({ min: 0, max: 20 });
+        const breaches = Array.from({ length: numberOfBreaches }).map(() => generateRuleBreachRequest());
+
+        return [200, { rows: breaches, lastRowIndex: numberOfBreaches }];
+    });
+
+    mock.onPost(/\/api\/rule-breaches\/requests\/.*\/approve/).reply(() => {
+        return [200, generateRuleBreachRequest({ isReviewed: true })];
+    });
+
+    mock.onPost(/\/api\/rule-breaches\/requests\/.*\/deny/).reply(() => {
+        return [200, generateRuleBreachRequest({ isReviewed: true })];
+    });
+
+    mock.onPost(/\/api\/rule-breaches\/requests\/.*\/cancel/).reply(() => {
+        return [200, generateRuleBreachRequest({})];
+    });
 };

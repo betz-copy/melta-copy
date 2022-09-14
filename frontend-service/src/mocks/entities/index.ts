@@ -2,6 +2,8 @@
 import MockAdapter from 'axios-mock-adapter';
 import faker from '@faker-js/faker';
 import { allEntities } from './allEntities';
+import { generateRuleBreachRequest } from '../ruleBreaches';
+import { unpopulateBrokenRules } from '../../services/ruleBreachesService';
 
 const mockEntites = (mock: MockAdapter) => {
     // Get entities by category
@@ -479,19 +481,38 @@ const mockEntites = (mock: MockAdapter) => {
 
     // Update
     mock.onPut(/\/api\/instances\/entities\/[0-9a-fA-F]{24}/).reply((config) => {
+        const formData = config.data as FormData;
+
+        const isSuccess = formData.has('ignoredRules') ? true : faker.datatype.boolean();
+
+        if (isSuccess) {
+            return [
+                200,
+                {
+                    templateId: '61e3ea6e4d51a83e87e83c7f',
+                    properties: {
+                        firstName: 'נועה',
+                        lastName: 'קירללללל',
+                        age: 20,
+                        gender: false,
+                        _id: config.url!.split('/')[3].split('?')[0],
+                        disabled: false,
+                        createdAt: new Date(2345, 10, 1).toISOString(),
+                        updatedAt: new Date(2346, 10, 1).toISOString(),
+                    },
+                },
+            ];
+        }
+
+        const { brokenRules } = generateRuleBreachRequest({ nullable: false });
+
         return [
-            200,
+            400,
             {
-                templateId: '61e3ea6e4d51a83e87e83c7f',
-                properties: {
-                    firstName: 'נועה',
-                    lastName: 'קירללללל',
-                    age: 20,
-                    gender: false,
-                    _id: config.url!.split('/')[3].split('?')[0],
-                    disabled: false,
-                    createdAt: new Date(2345, 10, 1).toISOString(),
-                    updatedAt: new Date(2346, 10, 1).toISOString(),
+                metadata: {
+                    errorCode: 'RULE_BLOCK',
+                    brokenRules,
+                    rawBrokenRules: unpopulateBrokenRules(brokenRules),
                 },
             },
         ];

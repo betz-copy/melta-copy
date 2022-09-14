@@ -19,7 +19,7 @@ const RuleBreachInfo: React.FC<{
                 <ActionInfo originUser={originUser} actionType={actionType} actionMetadata={actionMetadata} isCompact={isCompact} />
             </Grid>
             <Grid item>
-                <BrokenRulesInfo brokenRules={brokenRules} isCompact={isCompact} />
+                <BrokenRulesInfo brokenRules={brokenRules} actionMetadata={actionMetadata} isCompact={isCompact} />
             </Grid>
         </Grid>
     );

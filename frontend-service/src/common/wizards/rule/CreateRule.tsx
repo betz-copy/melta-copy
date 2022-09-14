@@ -61,7 +61,7 @@ const CreateRule: React.FC<StepComponentProps<RelationshipTemplateRuleWizardValu
                 />
             </Grid>
             <Grid item>
-                <FormControl>
+                <FormControl disabled={isEditMode}>
                     <FormLabel error={touched.actionOnFail && Boolean(errors.actionOnFail)}>{i18next.t('wizard.rule.actionOnFail')}</FormLabel>
                     <RadioGroup row name="actionOnFail" onChange={handleChange} value={values.actionOnFail}>
                         <FormControlLabel value="WARNING" control={<Radio />} label={i18next.t('wizard.rule.actions.warning')} />

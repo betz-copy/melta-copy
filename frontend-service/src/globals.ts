@@ -17,6 +17,8 @@ export const environment = {
         users: '/users',
         activityLog: '/activity-log',
         notifications: '/notifications',
+        ruleBreachesRequests: '/rule-breaches/requests',
+        ruleBreachesAlerts: '/rule-breaches/alerts',
     },
     graphSettings: {
         // TODO: instead of here get this from the backend ( so it could be configurable ) + dont allow range overlaps ( validation )
@@ -37,6 +39,7 @@ export const environment = {
     activityLog: {
         infiniteScrollPageCount: 10,
     },
+    createdRelationshipIdInBrokenRules: 'created-relationship-id',
     accessTokenName: 'rabaz-access-token',
     minimumSupportedChromeVersion: 80,
     fileIdLength: 32,

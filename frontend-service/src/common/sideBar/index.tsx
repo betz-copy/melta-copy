@@ -10,6 +10,7 @@ import {
     ManageAccounts as ManageAccountsIcon,
     Add as PlusIcon,
     Air as FluidSimulationIcon,
+    Gavel as GavelIcon,
 } from '@mui/icons-material';
 
 import i18next from 'i18next';
@@ -142,6 +143,9 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
 
                     <NavButton to="/" text={i18next.t('pages.globalSearch')} isDrawerOpen={isDrawerOpen}>
                         <PublicIcon fontSize="large" sx={{ color: 'white' }} />
+                    </NavButton>
+                    <NavButton to="/rule-management" text={i18next.t('pages.ruleManagement')} isDrawerOpen={isDrawerOpen}>
+                        <GavelIcon fontSize="large" sx={{ color: 'white' }} />
                     </NavButton>
 
                     {myPermissions.templatesManagementId && (
