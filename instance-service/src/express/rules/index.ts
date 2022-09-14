@@ -268,13 +268,13 @@ const generateNeo4jQueryFromFormula = (formula: IFormula, relevantTemplates: IRe
 };
 
 export const generateNeo4jQuery = (
-    relationshipTemplateRule: IRule,
+    rule: IRule,
     pinnedEntityId: string,
     nonPinnedEntityId: string,
     nonPinnedRelationshipId: string,
     relevantTemplates: IRelevantTemplates,
 ): Omit<CypherQuery, 'aggergationSubQueries'> => {
-    const formulaQuery = generateNeo4jQueryFromFormula(relationshipTemplateRule.formula, relevantTemplates);
+    const formulaQuery = generateNeo4jQueryFromFormula(rule.formula, relevantTemplates);
 
     const { pinnedEntityTemplateId, unpinnedEntityTemplateId } = relevantTemplates;
 

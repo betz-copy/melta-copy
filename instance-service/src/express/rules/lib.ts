@@ -92,12 +92,12 @@ export const isRelationshipLegal = async (
     relationship: IRelationship,
     sourceEntity: IEntity,
     destinationEntity: IEntity,
-    relationshipTemplateRules: IMongoRule[],
+    rules: IMongoRule[],
 ): Promise<IRuleTransactionQuery[]> => {
-    const generateNeo4jQueries = relationshipTemplateRules
+    const generateNeo4jQueries = rules
         .filter(({ relationshipTemplateId }) => relationshipTemplateId === relationship.templateId)
-        .map(async (relationshipTemplateRule) => {
-            const { pinnedEntityTemplateId, unpinnedEntityTemplateId } = relationshipTemplateRule;
+        .map(async (rule) => {
+            const { pinnedEntityTemplateId, unpinnedEntityTemplateId } = rule;
 
             const [pinnedEntity, nonPinnedEntity] =
                 pinnedEntityTemplateId === sourceEntity.templateId ? [sourceEntity, destinationEntity] : [destinationEntity, sourceEntity];
@@ -115,18 +115,16 @@ export const isRelationshipLegal = async (
                 }),
             );
 
-            const ruleQuery = generateNeo4jQuery(
-                relationshipTemplateRule,
-                pinnedEntity.properties._id,
-                nonPinnedEntity.properties._id,
-                relationship.properties._id,
-                { pinnedEntityTemplateId, unpinnedEntityTemplateId, connectionsTemplates },
-            );
+            const ruleQuery = generateNeo4jQuery(rule, pinnedEntity.properties._id, nonPinnedEntity.properties._id, relationship.properties._id, {
+                pinnedEntityTemplateId,
+                unpinnedEntityTemplateId,
+                connectionsTemplates,
+            });
 
             return {
                 ruleQuery,
                 relationshipId: relationship.properties._id as string,
-                ruleId: relationshipTemplateRule._id,
+                ruleId: rule._id,
             };
         });
 
