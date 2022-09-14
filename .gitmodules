@@ -34,3 +34,6 @@
 [submodule "notification-service"]
 	path = notification-service
 	url = git@gitlab.com:yesodot/rnd/terminal-rabaz/jaws/microservices/notification-service.git
+[submodule "rule-breach-service"]
+	path = rule-breach-service
+	url = git@gitlab.com:yesodot/rnd/terminal-rabaz/jaws/microservices/rule-breach-service.git
