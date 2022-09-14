@@ -14,7 +14,7 @@ services:
       STORAGE_SERVICE_UPLOAD_FILE_ROUTE: ${STORAGE_SERVICE_UPLOAD_FILE_ROUTE}
       STORAGE_SERVICE_DOWNLOAD_FILE_ROUTE: ${STORAGE_SERVICE_DOWNLOAD_FILE_ROUTE}
       STORAGE_SERVICE_DELETE_FILE_ROUTE: ${STORAGE_SERVICE_DELETE_FILE_ROUTE}
-      RABBIT_URI: ${RABBIT_URI} 
+      RABBIT_URI: ${RABBIT_URI}
 
   permission-api:
     image: jawsproject.azurecr.io/permission-api # TODO: fix permissions vs permission
@@ -44,8 +44,8 @@ services:
       ENTITY_TEMPLATE_MANAGER_URI: ${ENTITY_TEMPLATE_MANAGER_URI}
 
   instance-manager:
-    image: jawsproject.azurecr.io/instance-manager
-    # build: ./instance-manager
+    # image: jawsproject.azurecr.io/instance-manager
+    build: ./instance-manager
     environment:
       PORT: 8000
       NEO4J_URL: ${NEO4J_URL}
@@ -78,17 +78,26 @@ services:
       RABBIT_URI: ${RABBIT_URI}
 
   notification-service:
-    # image: jawsproject.azurecr.io/notification-service
-    build: ./notification-service
+    image: jawsproject.azurecr.io/notification-service
+    # build: ./notification-service
     environment:
       PORT: 8000
       MONGO_URI: ${NOTIFICATION_SERVICE_MONGO_URI}
       MONGO_NOTIFICATION_COLLECTION_NAME: ${NOTIFICATION_SERVICE_COLLECTION_NAME}
       RABBIT_URI: ${RABBIT_URI}
 
+  rule-breach-service:
+    # image: jawsproject.azurecr.io/rule-breach-service
+    build: ./rule-breach-service
+    environment:
+      PORT: 8000
+      MONGO_URI: ${RULE_BREACH_SERVICE_MONGO_URI}
+      MONGO_RULE_BREACH_ALERTS_COLLECTION_NAME: ${MONGO_RULE_BREACH_ALERTS_COLLECTION_NAME}
+      MONGO_RULE_BREACH_REQUESTS_COLLECTION_NAME: ${MONGO_RULE_BREACH_REQUESTS_COLLECTION_NAME}
+
   backend:
-    image: jawsproject.azurecr.io/backend
-    # build: ./backend
+    # image: jawsproject.azurecr.io/backend
+    build: ./backend
     environment:
       PORT: 8000
       TOKEN_SECRET: ${TOKEN_SECRET}
@@ -98,6 +107,7 @@ services:
       PERMISSION_API_BASE_URL: ${PERMISSION_API_URL}
       STORAGE_SERVICE_URI: ${STORAGE_SERVICE_URI}
       NOTIFICATION_SERVICE_URI: ${NOTIFICATION_SERVICE_URI}
+      RULE_BREACH_SERVICE_URI: ${RULE_BREACH_SERVICE_URI}
       KARTOFFEL_BASE_URL: ${KARTOFFEL_BASE_URL}
       CALLBACK_URL: ${CALLBACK_URL}
       SHRAGA_URL: ${SHRAGA_URL}
@@ -105,6 +115,7 @@ services:
       SYSTEM_UNAVAILABLE_URL: ${SYSTEM_UNAVAILABLE_URL}
       ACTIVITY_LOG_URI: ${ACTIVITY_LOG_URI}
       NODE_TLS_REJECT_UNAUTHORIZED: 0
+      RABBIT_URI: ${RABBIT_URI}
 
   frontend:
     image: jawsproject.azurecr.io/frontend

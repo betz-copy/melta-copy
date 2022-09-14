@@ -57,8 +57,8 @@ services:
     restart: always
 
   mock:
-    image: jawsproject.azurecr.io/mock
-    # build: ./mock
+    # image: jawsproject.azurecr.io/mock
+    build: ./mock
     environment:
       ENTITY_TEMPLATE_MANAGER_URI: ${ENTITY_TEMPLATE_MANAGER_URI}
       RELATIONSHIP_TEMPLATE_MANAGER_URI: ${RELATIONSHIP_TEMPLATE_MANAGER_URI}
@@ -112,4 +112,10 @@ services:
     restart: always
 
   global-search-index-creator:
+    restart: always
+
+  notification-service:
+    restart: always
+
+  rule-breach-service:
     restart: always
