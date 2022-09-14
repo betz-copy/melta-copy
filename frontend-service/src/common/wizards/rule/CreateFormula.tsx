@@ -7,7 +7,7 @@ import { IMongoRelationshipTemplate } from '../../../interfaces/relationshipTemp
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { entityTemplatesToFieldsConfig } from '../../../utils/rules/fields';
 import { RelationshipTemplateRuleWizardValues } from '.';
-
+import VanillaConjs from './VanillaConjs';
 import 'react-awesome-query-builder/lib/css/styles.css';
 import './rules.css';
 import { RuleParser } from '../../../utils/rules/parser';
@@ -41,6 +41,8 @@ const CreateFormula: React.FC<StepComponentProps<RelationshipTemplateRuleWizardV
         settings: {
             ...BasicConfig.settings,
             showNot: false,
+            // @ts-ignore
+            renderConjs: (props) => <VanillaConjs {...props} />,
         },
         operators: {
             equal: BasicConfig.operators.equal,

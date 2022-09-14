@@ -1,4 +1,54 @@
 .group {
-    background: rgb(34, 90, 167, 0.5);
+    background: rgb(33, 88, 166, .7);
     font-family: OpenSans;
+}
+.group--actions button {
+    border-radius: 10%;
+    border: 1px solid gray;
+    margin-right: 5px;
+    height: 25px;
+    font-family: 'Rubik';
+    color: gray;
+    font-weight: 450;
+    background-color: white;
+}
+.group--actions button:hover {
+    box-shadow: 0 0 4px 2px rgba(70,150,240,0.25) inset, 0 0 4px 2px rgba(81, 82, 83, 0.25);
+    border: 1px solid rgb(242, 244, 247);
+  }
+.query-builder *, .query-builder *::before, .query-builder *::after {
+    box-sizing: border-box;
+    font-family: 'Rubik';
+    font-size: 15px;
+}
+.rule--operator, .widget--widget, .widget--valuesrc, .widget--sep {
+    margin-left: 18px;
+}
+label {
+    color: white;
+}
+.rule--header button {
+    border-radius: 45%;
+    border: 1px solid black;
+    font-size: 15px;
+}
+.rule--header button:hover {
+    box-shadow: 0 0 4px 2px rgba(70,150,240,0.25) inset, 0 0 4px 2px rgba(81, 82, 83, 0.25);
+    border: 1px solid rgb(7, 7, 7);
+  }
+  .locked {
+    border: 1px dashed rgb(33, 88, 166);;
+}
+.toggle-buttons {
+    background-color: white;
+    height: 25px;
+    font-family: 'Rubik';
+    color: gray;
+    font-weight: 450;
+    border-radius: 10%;
+    border: 1px solid gray;
+}
+
+.muirtl-1rkzlb0-MuiTypography-root {
+    color: black;
 }
