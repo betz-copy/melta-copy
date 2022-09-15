@@ -23,6 +23,7 @@ export default ({ id, not, setNot, conjunctionOptions, setConjunction, disabled,
                 value={val}
             >
                 {Object.keys(conjunctionOptions).map((key) => {
+                    // eslint-disable-next-line @typescript-eslint/no-shadow
                     const { id, checked } = conjunctionOptions[key];
                     if ((readonly || disabled) && !checked) return null;
 
