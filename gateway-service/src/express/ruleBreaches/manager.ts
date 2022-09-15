@@ -182,11 +182,9 @@ export class RuleBreachesManager {
             false,
         );
 
-        const { _id, createdAt, updatedAt, ...entityFields } = newEntityProperties;
-
         await RuleBreachService.updateRuleBreachRequestActionMetadata(ruleBreachRequest._id, ruleBreachRequest.actionType, {
             ...ruleBreachRequest.actionMetadata,
-            before: entityFields,
+            before: entity,
         });
     }
 
@@ -198,7 +196,19 @@ export class RuleBreachesManager {
         RuleBreachesManager.checkIfRuleBreachRequestIsReviewable(ruleBreachRequest);
         RuleBreachesManager.deleteRuleBreachFiles(ruleBreachRequest);
 
-        const updatedRuleBreachRequest = await RuleBreachService.updateRuleBreachRequestStatus(ruleBreachRequest._id, user.id, type);
+        const [updatedRuleBreachRequest, { actionMetadata: updatedMetadata }] = await Promise.all([
+            RuleBreachService.updateRuleBreachRequestStatus(ruleBreachRequest._id, user.id, type),
+
+            isUpdateEntityRuleBreach(ruleBreachRequest)
+                ? InstanceManagerService.getEntityInstanceById(ruleBreachRequest.actionMetadata.entityId).then((entity) =>
+                      RuleBreachService.updateRuleBreachRequestActionMetadata(ruleBreachRequest._id, ruleBreachRequest.actionType, {
+                          ...ruleBreachRequest.actionMetadata,
+                          before: entity,
+                      }),
+                  )
+                : { actionMetadata: ruleBreachRequest.actionMetadata },
+        ]);
+
         await RuleBreachesManager.sendNotification<IResponseNotificationMetadata>(
             NotificationType.ruleBreachResponse,
             {
@@ -207,7 +217,7 @@ export class RuleBreachesManager {
             [ruleBreachRequest.originUserId],
         );
 
-        return RuleBreachesManager.populateRuleBreachRequest(updatedRuleBreachRequest);
+        return RuleBreachesManager.populateRuleBreachRequest({ ...updatedRuleBreachRequest, actionMetadata: updatedMetadata });
     }
 
     static async denyRuleBreachRequest(ruleBreachRequestId: string, user: ShragaUser): Promise<IRuleBreachRequestPopulated> {
