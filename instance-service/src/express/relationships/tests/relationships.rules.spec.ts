@@ -2,7 +2,7 @@ import axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
 import Neo4jClient from '../../../utils/neo4j';
 import { IEntity, IMongoEntityTemplate } from '../../entities/interface';
-import { IMongoRelationshipTemplate, IMongoRelationshipTemplatePopulated } from '../interface';
+import { IMongoRelationshipTemplate } from '../interface';
 import { IMongoRule } from '../../rules/interfaces';
 import { ServiceError } from '../../error';
 import EntityManager from '../../entities/manager';
@@ -156,64 +156,34 @@ const airportEntityTemplate: IMongoEntityTemplate = {
     propertiesPreview: ['airportName', 'country'],
 };
 
-const flightsOnRelationshipTemplatePopulated: IMongoRelationshipTemplatePopulated = {
+const flightsOnRelationshipTemplate: IMongoRelationshipTemplate = {
     _id: '111',
     name: 'flies on',
     displayName: 'flies on',
-    sourceEntity: travelAgentEntityTemplate,
-    destinationEntity: flightEntityTemplate,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-};
-
-const flightsOnRelationshipTemplate: IMongoRelationshipTemplate = {
-    _id: flightsOnRelationshipTemplatePopulated._id,
-    name: flightsOnRelationshipTemplatePopulated.name,
-    displayName: flightsOnRelationshipTemplatePopulated.displayName,
-    sourceEntityId: flightsOnRelationshipTemplatePopulated.sourceEntity._id,
-    destinationEntityId: flightsOnRelationshipTemplatePopulated.destinationEntity._id,
-    createdAt: flightsOnRelationshipTemplatePopulated.createdAt,
-    updatedAt: flightsOnRelationshipTemplatePopulated.updatedAt,
-};
-
-const tripConnectedToFlightRelationshipTemplatePopulated: IMongoRelationshipTemplatePopulated = {
-    _id: '222',
-    name: 'flightInTrip',
-    displayName: 'טיסה משוייכת לטיול',
-    sourceEntity: flightEntityTemplate,
-    destinationEntity: tripEntityTemplate,
+    sourceEntityId: travelAgentEntityTemplate._id,
+    destinationEntityId: flightEntityTemplate._id,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
 };
 
 const tripConnectedToFlightRelationshipTemplate: IMongoRelationshipTemplate = {
-    _id: tripConnectedToFlightRelationshipTemplatePopulated._id,
-    name: tripConnectedToFlightRelationshipTemplatePopulated.name,
-    displayName: tripConnectedToFlightRelationshipTemplatePopulated.displayName,
-    sourceEntityId: tripConnectedToFlightRelationshipTemplatePopulated.sourceEntity._id,
-    destinationEntityId: tripConnectedToFlightRelationshipTemplatePopulated.destinationEntity._id,
-    createdAt: tripConnectedToFlightRelationshipTemplatePopulated.createdAt,
-    updatedAt: tripConnectedToFlightRelationshipTemplatePopulated.updatedAt,
-};
-
-const departureFromRelationshipTemplatePopulated: IMongoRelationshipTemplatePopulated = {
-    _id: '333',
-    name: 'departueFrom',
-    displayName: 'ממריא מ',
-    sourceEntity: flightEntityTemplate,
-    destinationEntity: airportEntityTemplate,
+    _id: '222',
+    name: 'flightInTrip',
+    displayName: 'טיסה משוייכת לטיול',
+    sourceEntityId: flightEntityTemplate._id,
+    destinationEntityId: tripEntityTemplate._id,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
 };
 
 const departureFromRelationshipTemplate: IMongoRelationshipTemplate = {
-    _id: departureFromRelationshipTemplatePopulated._id,
-    name: departureFromRelationshipTemplatePopulated.name,
-    displayName: departureFromRelationshipTemplatePopulated.displayName,
-    sourceEntityId: departureFromRelationshipTemplatePopulated.sourceEntity._id,
-    destinationEntityId: departureFromRelationshipTemplatePopulated.destinationEntity._id,
-    createdAt: departureFromRelationshipTemplatePopulated.createdAt,
-    updatedAt: departureFromRelationshipTemplatePopulated.updatedAt,
+    _id: '333',
+    name: 'departueFrom',
+    displayName: 'ממריא מ',
+    sourceEntityId: flightEntityTemplate._id,
+    destinationEntityId: airportEntityTemplate._id,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
 };
 
 // rule 1
@@ -222,7 +192,7 @@ export const oneTravelAgentPerFlight: IMongoRule = {
     name: 'One travel agent per flight',
     description: 'One travel agent per flight',
     actionOnFail: 'WARNING',
-    relationshipTemplateId: flightsOnRelationshipTemplatePopulated._id,
+    relationshipTemplateId: flightsOnRelationshipTemplate._id,
     pinnedEntityTemplateId: flightEntityTemplate._id,
     unpinnedEntityTemplateId: travelAgentEntityTemplate._id,
     disabled: false,
@@ -426,7 +396,7 @@ describe('Relationship manager', () => {
                 await EntityManager.deleteByTemplateId(travelAgentEntityTemplate._id);
                 await EntityManager.deleteByTemplateId(tripEntityTemplate._id);
 
-                await Neo4jClient.writeTransaction(`MATCH ()-[r: \`${flightsOnRelationshipTemplatePopulated._id}\`]-() DELETE r `, () => {});
+                await Neo4jClient.writeTransaction(`MATCH ()-[r: \`${flightsOnRelationshipTemplate._id}\`]-() DELETE r `, () => {});
             });
 
             it('Should create a new relationship', async () => {
