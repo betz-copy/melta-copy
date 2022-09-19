@@ -89,6 +89,73 @@ const flightEntityTemplate: IMongoEntityTemplate = {
     disabled: false,
 };
 
+const tripEntityTemplate: IMongoEntityTemplate = {
+    _id: '333',
+    name: 'trip',
+    displayName: 'טיול',
+    category: '333',
+    properties: {
+        type: 'object',
+        properties: {
+            name: {
+                type: 'string',
+                title: 'שם',
+            },
+            destination: {
+                type: 'string',
+                title: 'יעד',
+            },
+            startDate: {
+                type: 'string',
+                title: 'תאריך התחלה',
+                format: 'date',
+            },
+            endDate: {
+                type: 'string',
+                title: 'תאריך סיום',
+                format: 'date',
+            },
+            firstFile: {
+                type: 'string',
+                title: 'קובץ ראשון',
+                format: 'fileId',
+            },
+        },
+        required: ['name', 'destination'],
+    },
+    propertiesOrder: ['name', 'destination', 'startDate', 'endDate', 'firstFile'],
+    propertiesPreview: ['name', 'destination', 'startDate', 'endDate'],
+    disabled: false,
+};
+
+const airportEntityTemplate: IMongoEntityTemplate = {
+    _id: '444',
+    name: 'airport',
+    displayName: 'שדה תעופה',
+    disabled: false,
+    category: '444',
+    properties: {
+        type: 'object',
+        properties: {
+            airportName: {
+                type: 'string',
+                title: 'שם',
+            },
+            airportId: {
+                type: 'string',
+                title: 'מזהה',
+            },
+            country: {
+                type: 'string',
+                title: 'מדינה',
+            },
+        },
+        required: ['airportName', 'airportId', 'country'],
+    },
+    propertiesOrder: ['airportName', 'airportId', 'country'],
+    propertiesPreview: ['airportName', 'country'],
+};
+
 const flightsOnRelationshipTemplatePopulated: IMongoRelationshipTemplatePopulated = {
     _id: '111',
     name: 'flies on',
@@ -109,6 +176,46 @@ const flightsOnRelationshipTemplate: IMongoRelationshipTemplate = {
     updatedAt: flightsOnRelationshipTemplatePopulated.updatedAt,
 };
 
+const tripConnectedToFlightRelationshipTemplatePopulated: IMongoRelationshipTemplatePopulated = {
+    _id: '222',
+    name: 'flightInTrip',
+    displayName: 'טיסה משוייכת לטיול',
+    sourceEntity: flightEntityTemplate,
+    destinationEntity: tripEntityTemplate,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+};
+
+const tripConnectedToFlightRelationshipTemplate: IMongoRelationshipTemplate = {
+    _id: tripConnectedToFlightRelationshipTemplatePopulated._id,
+    name: tripConnectedToFlightRelationshipTemplatePopulated.name,
+    displayName: tripConnectedToFlightRelationshipTemplatePopulated.displayName,
+    sourceEntityId: tripConnectedToFlightRelationshipTemplatePopulated.sourceEntity._id,
+    destinationEntityId: tripConnectedToFlightRelationshipTemplatePopulated.destinationEntity._id,
+    createdAt: tripConnectedToFlightRelationshipTemplatePopulated.createdAt,
+    updatedAt: tripConnectedToFlightRelationshipTemplatePopulated.updatedAt,
+};
+
+const departureFromRelationshipTemplatePopulated: IMongoRelationshipTemplatePopulated = {
+    _id: '333',
+    name: 'departueFrom',
+    displayName: 'ממריא מ',
+    sourceEntity: flightEntityTemplate,
+    destinationEntity: airportEntityTemplate,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+};
+
+const departureFromRelationshipTemplate: IMongoRelationshipTemplate = {
+    _id: departureFromRelationshipTemplatePopulated._id,
+    name: departureFromRelationshipTemplatePopulated.name,
+    displayName: departureFromRelationshipTemplatePopulated.displayName,
+    sourceEntityId: departureFromRelationshipTemplatePopulated.sourceEntity._id,
+    destinationEntityId: departureFromRelationshipTemplatePopulated.destinationEntity._id,
+    createdAt: departureFromRelationshipTemplatePopulated.createdAt,
+    updatedAt: departureFromRelationshipTemplatePopulated.updatedAt,
+};
+
 // rule 1
 export const oneTravelAgentPerFlight: IMongoRule = {
     _id: '12345',
@@ -121,7 +228,7 @@ export const oneTravelAgentPerFlight: IMongoRule = {
     disabled: false,
     formula: {
         isGroup: true,
-        ruleOfGroup: 'AND',
+        ruleOfGroup: 'OR',
         subFormulas: [
             {
                 isEquation: true,
@@ -131,6 +238,28 @@ export const oneTravelAgentPerFlight: IMongoRule = {
                     variableName: `${flightEntityTemplate._id}.${flightsOnRelationshipTemplate._id}.${travelAgentEntityTemplate._id}`,
                 },
                 rhsArgument: { isConstant: true, value: 1 },
+            },
+            // just for tests - to be dependent on tripConnectedToFlight
+            {
+                isAggregationGroup: true,
+                aggregation: 'EVERY',
+                ruleOfGroup: 'AND',
+                variableNameOfAggregation: `${flightEntityTemplate._id}.${tripConnectedToFlightRelationshipTemplate._id}.${tripEntityTemplate._id}`,
+                subFormulas: [
+                    {
+                        isEquation: true,
+                        operatorBool: 'equals',
+                        lhsArgument: {
+                            isPropertyOfVariable: true,
+                            variableName: `${flightEntityTemplate._id}.${tripConnectedToFlightRelationshipTemplate._id}.${tripEntityTemplate._id}`,
+                            property: 'name',
+                        },
+                        rhsArgument: {
+                            isConstant: true,
+                            value: 'debug',
+                        },
+                    },
+                ],
             },
         ],
     },
@@ -151,9 +280,12 @@ describe('Relationship manager', () => {
         let firstTravelAgent: IEntity;
         let secondTravelAgent: IEntity;
         let flight: IEntity;
+        let trip: IEntity;
+        let airport: IEntity;
 
         describe('One travel agent per flight', () => {
             let firstRelationshipId: string;
+            let secondRelationshipId: string;
 
             beforeAll(async () => {
                 mock.onPost(`${relationshipManager.url}${relationshipManager.searchRulesRoute}`, {
@@ -164,17 +296,44 @@ describe('Relationship manager', () => {
                 mock.onPost(`${relationshipManager.url}${relationshipManager.searchRulesRoute}`, {
                     disabled: false,
                     pinnedEntityTemplateIds: [travelAgentEntityTemplate._id],
-                }).reply(200, [oneTravelAgentPerFlight]);
+                }).reply(200, []);
+
+                mock.onPost(`${relationshipManager.url}${relationshipManager.searchRulesRoute}`, {
+                    disabled: false,
+                    pinnedEntityTemplateIds: [tripEntityTemplate._id],
+                }).reply(200, []);
+
+                mock.onPost(`${relationshipManager.url}${relationshipManager.searchRulesRoute}`, {
+                    disabled: false,
+                    pinnedEntityTemplateIds: [airportEntityTemplate._id],
+                }).reply(200, []);
 
                 mock.onPost(`${relationshipManager.url}${relationshipManager.searchRulesRoute}`, {
                     disabled: false,
                     relationshipTemplateIds: [flightsOnRelationshipTemplate._id],
                 }).reply(200, [oneTravelAgentPerFlight]);
 
+                mock.onPost(`${relationshipManager.url}${relationshipManager.searchRulesRoute}`, {
+                    disabled: false,
+                    relationshipTemplateIds: [tripConnectedToFlightRelationshipTemplate._id],
+                }).reply(200, []);
+
+                mock.onPost(`${relationshipManager.url}${relationshipManager.searchRulesRoute}`, {
+                    disabled: false,
+                    relationshipTemplateIds: [departureFromRelationshipTemplate._id],
+                }).reply(200, []);
+
                 mock.onGet(`${relationshipManager.url}${relationshipManager.getRelationshipByIdRoute}/${flightsOnRelationshipTemplate._id}`).reply(
                     200,
                     flightsOnRelationshipTemplate,
                 );
+                mock.onGet(
+                    `${relationshipManager.url}${relationshipManager.getRelationshipByIdRoute}/${tripConnectedToFlightRelationshipTemplate._id}`,
+                ).reply(200, flightsOnRelationshipTemplate);
+
+                mock.onGet(
+                    `${relationshipManager.url}${relationshipManager.getRelationshipByIdRoute}/${departureFromRelationshipTemplate._id}`,
+                ).reply(200, departureFromRelationshipTemplate);
 
                 mock.onPost(`${relationshipManager.url}${relationshipManager.searchTemplatesRoute}`, {
                     sourceEntityIds: [travelAgentEntityTemplate._id],
@@ -186,17 +345,27 @@ describe('Relationship manager', () => {
 
                 mock.onPost(`${relationshipManager.url}${relationshipManager.searchTemplatesRoute}`, {
                     sourceEntityIds: [flightEntityTemplate._id],
-                }).reply(200, []);
+                }).reply(200, [tripConnectedToFlightRelationshipTemplate, departureFromRelationshipTemplate]);
 
                 mock.onPost(`${relationshipManager.url}${relationshipManager.searchTemplatesRoute}`, {
                     destinationEntityIds: [travelAgentEntityTemplate._id],
                 }).reply(200, []);
+
+                mock.onPost(`${relationshipManager.url}${relationshipManager.searchTemplatesRoute}`, {
+                    destinationEntityIds: [tripEntityTemplate._id],
+                }).reply(200, [tripConnectedToFlightRelationshipTemplate]);
+
+                mock.onPost(`${relationshipManager.url}${relationshipManager.searchTemplatesRoute}`, {
+                    destinationEntityIds: [airportEntityTemplate._id],
+                }).reply(200, [departureFromRelationshipTemplate]);
 
                 mock.onGet(`${templateManager.url}${templateManager.getByIdRoute}/${flightEntityTemplate._id}`).reply(200, flightEntityTemplate);
                 mock.onGet(`${templateManager.url}${templateManager.getByIdRoute}/${travelAgentEntityTemplate._id}`).reply(
                     200,
                     travelAgentEntityTemplate,
                 );
+                mock.onGet(`${templateManager.url}${templateManager.getByIdRoute}/${tripEntityTemplate._id}`).reply(200, tripEntityTemplate);
+                mock.onGet(`${templateManager.url}${templateManager.getByIdRoute}/${airportEntityTemplate._id}`).reply(200, airportEntityTemplate);
             });
 
             beforeAll(async () => {
@@ -233,11 +402,29 @@ describe('Relationship manager', () => {
                         planeType: 'Boeing 747',
                     },
                 });
+
+                trip = await EntityManager.createEntity({
+                    templateId: tripEntityTemplate._id,
+                    properties: {
+                        name: 'My trip',
+                        destination: 'New York',
+                    },
+                });
+
+                airport = await EntityManager.createEntity({
+                    templateId: airportEntityTemplate._id,
+                    properties: {
+                        airportName: 'New York Airport',
+                        airportId: '1234',
+                        country: 'New York',
+                    },
+                });
             });
 
             afterAll(async () => {
                 await EntityManager.deleteByTemplateId(flightEntityTemplate._id);
                 await EntityManager.deleteByTemplateId(travelAgentEntityTemplate._id);
+                await EntityManager.deleteByTemplateId(tripEntityTemplate._id);
 
                 await Neo4jClient.writeTransaction(`MATCH ()-[r: \`${flightsOnRelationshipTemplatePopulated._id}\`]-() DELETE r `, () => {});
             });
@@ -308,6 +495,52 @@ describe('Relationship manager', () => {
                 expect(relationship.templateId).toStrictEqual(flightsOnRelationshipTemplate._id);
                 expect(relationship.sourceEntityId).toStrictEqual(secondTravelAgent.properties._id);
                 expect(relationship.destinationEntityId).toStrictEqual(flight.properties._id);
+
+                secondRelationshipId = relationship.properties._id;
+            });
+
+            it('Should fail to create relationship between trip and flight, because rule dependent ', async () => {
+                try {
+                    await RelationshipManager.createRelationshipByEntityIds(
+                        {
+                            templateId: tripConnectedToFlightRelationshipTemplate._id,
+                            properties: { testProp: 'testProp' },
+                            sourceEntityId: flight.properties._id,
+                            destinationEntityId: trip.properties._id,
+                        },
+                        tripConnectedToFlightRelationshipTemplate,
+                        [],
+                    );
+                } catch (error) {
+                    expect(error).toBeInstanceOf(ServiceError);
+                    expect((error as ServiceError).message).toStrictEqual(`[NEO4J] relationship creation is blocked by rules.`);
+                    expect((error as ServiceError).metadata).toStrictEqual({
+                        errorCode: config.errorCodes.ruleBlock,
+                        brokenRules: expect.arrayContaining([
+                            {
+                                relationshipIds: expect.arrayContaining([firstRelationshipId, secondRelationshipId]),
+                                ruleId: oneTravelAgentPerFlight._id,
+                            },
+                        ]),
+                    });
+                }
+            });
+
+            it('Should create relationship between airport and flight, because rule not dependent', async () => {
+                const relationship = await RelationshipManager.createRelationshipByEntityIds(
+                    {
+                        templateId: departureFromRelationshipTemplate._id,
+                        properties: { testProp: 'testProp' },
+                        sourceEntityId: flight.properties._id,
+                        destinationEntityId: airport.properties._id,
+                    },
+                    departureFromRelationshipTemplate,
+                    [],
+                );
+
+                expect(relationship.templateId).toStrictEqual(departureFromRelationshipTemplate._id);
+                expect(relationship.sourceEntityId).toStrictEqual(flight.properties._id);
+                expect(relationship.destinationEntityId).toStrictEqual(airport.properties._id);
             });
         });
     });
