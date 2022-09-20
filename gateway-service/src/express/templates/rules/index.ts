@@ -1,4 +1,4 @@
-import { isAggregationGroup, isCountAggFunction, isEquation, isGroup } from './interfaces';
+import { isAggregationGroup, isCountAggFunction, isEquation, isGroup, isRegularFunction } from './interfaces';
 import { IArgument, isPropertyOfVariable } from './interfaces/argument';
 import { IFormula } from './interfaces/formula';
 
@@ -11,6 +11,11 @@ export const getParametersOfArgument = (argument: IArgument) => {
     if (isCountAggFunction(argument)) {
         const { variableName } = argument;
         return [{ variableName }];
+    }
+
+    if (isRegularFunction(argument)) {
+        const { arguments: functionArguments } = argument;
+        return functionArguments.flatMap(getParametersOfArgument);
     }
 
     return [];
