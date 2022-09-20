@@ -1,4 +1,4 @@
-import { IMongoRule, isAggregationGroup, isCountAggFunction, isEquation, isGroup } from './interfaces';
+import { IMongoRule, isAggregationGroup, isCountAggFunction, isEquation, isGroup, isRegularFunction } from './interfaces';
 import { IArgument, isPropertyOfVariable } from './interfaces/argument';
 import { IFormula } from './interfaces/formula';
 
@@ -16,6 +16,11 @@ const getParametersOfArgument = (argument: IArgument): IParameterOfFormula[] => 
     if (isCountAggFunction(argument)) {
         const { variableName } = argument;
         return [{ variableName }];
+    }  
+    
+    if (isRegularFunction(argument)) {
+        const { arguments: functionArguments } = argument;
+        return functionArguments.flatMap(getParametersOfArgument);
     }
 
     return [];
