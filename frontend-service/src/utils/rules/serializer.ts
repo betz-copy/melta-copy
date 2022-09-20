@@ -11,8 +11,9 @@ import {
     isCountAggFunction,
     isEquation,
     isGroup,
+    isRegularFunction,
 } from '../../interfaces/rules';
-import { IConstant, IPropertyOfVariable, isConstant, isPropertyOfVariable } from '../../interfaces/rules/argument';
+import { IArgument, IConstant, IPropertyOfVariable, isConstant, isPropertyOfVariable } from '../../interfaces/rules/argument';
 import { IFormula } from '../../interfaces/rules/formula';
 
 export class RuleSerializer {
@@ -55,6 +56,8 @@ export class RuleSerializer {
     private static getEquationValueType = (argument: IPropertyOfVariable) => {
         const { variableName, property: propertyName } = argument;
 
+        if (propertyName === '_id') return 'text';
+
         const entityTemplateId = variableName.substring(variableName.lastIndexOf('.') + 1);
         const template = RuleSerializer.entityTemplates.find(({ _id }) => _id === entityTemplateId)!;
         const property = template.properties.properties[propertyName];
@@ -66,44 +69,69 @@ export class RuleSerializer {
         return 'text';
     };
 
+    private static rhsArgumentSerializer = (rhsArgument: IArgument, connectionInitials: string) => {
+        if (isPropertyOfVariable(rhsArgument)) {
+            return {
+                value: [connectionInitials + RuleSerializer.propertyOfVariableSerializer(rhsArgument)],
+                valueSrc: ['field'],
+            };
+        }
+
+        if (isRegularFunction(rhsArgument)) {
+            return {
+                value: [
+                    `${connectionInitials + RuleSerializer.propertyOfVariableSerializer(rhsArgument.arguments[0] as IPropertyOfVariable)}-ignoreHour`,
+                ],
+                valueSrc: ['field'],
+            };
+        }
+
+        if (isConstant(rhsArgument)) {
+            return {
+                value: [rhsArgument.value],
+                valueSrc: ['value'],
+            };
+        }
+
+        throw new Error('rhs format not supported');
+    };
+
     private static equationSerializer = (eq: IEquation): JsonRule | JsonRuleGroupExt => {
         if (isCountAggFunction(eq.lhsArgument)) {
             return RuleSerializer.countSerialzier(eq as IEquation & { lhsArgument: ICountAggFunction; rhsArgument: IConstant });
         }
 
-        if (!isPropertyOfVariable(eq.lhsArgument)) throw new Error('left argument must be property of value');
+        let connectionInitials = '';
+        let ruleProperties: any = {};
 
-        const connectionInitials = eq.lhsArgument.variableName.includes('.') ? `${eq.lhsArgument.variableName.replaceAll('.', '-')}.` : '';
+        if (isRegularFunction(eq.lhsArgument)) {
+            const argument = eq.lhsArgument.arguments[0] as IPropertyOfVariable;
+            connectionInitials = argument.variableName.includes('.') ? `${argument.variableName.replaceAll('.', '-')}.` : '';
 
-        const ruleProperties = {
-            field: connectionInitials + RuleSerializer.propertyOfVariableSerializer(eq.lhsArgument),
-            valueType: [RuleSerializer.getEquationValueType(eq.lhsArgument)],
-            operator: RuleSerializer.operatorSerializer(eq.operatorBool),
+            ruleProperties = {
+                field: `${connectionInitials + RuleSerializer.propertyOfVariableSerializer(argument)}-ignoreHour`,
+                valueType: ['date'],
+                operator: RuleSerializer.operatorSerializer(eq.operatorBool),
+            };
+        }
+
+        if (isPropertyOfVariable(eq.lhsArgument)) {
+            connectionInitials = eq.lhsArgument.variableName.includes('.') ? `${eq.lhsArgument.variableName.replaceAll('.', '-')}.` : '';
+
+            ruleProperties = {
+                field: connectionInitials + RuleSerializer.propertyOfVariableSerializer(eq.lhsArgument),
+                valueType: [RuleSerializer.getEquationValueType(eq.lhsArgument)],
+                operator: RuleSerializer.operatorSerializer(eq.operatorBool),
+            };
+        }
+
+        return {
+            type: 'rule',
+            properties: {
+                ...ruleProperties,
+                ...RuleSerializer.rhsArgumentSerializer(eq.rhsArgument, connectionInitials),
+            },
         };
-
-        if (isPropertyOfVariable(eq.rhsArgument)) {
-            return {
-                type: 'rule',
-                properties: {
-                    ...ruleProperties,
-                    value: [connectionInitials + RuleSerializer.propertyOfVariableSerializer(eq.rhsArgument)],
-                    valueSrc: ['field'],
-                },
-            };
-        }
-
-        if (isConstant(eq.rhsArgument)) {
-            return {
-                type: 'rule',
-                properties: {
-                    ...ruleProperties,
-                    value: [eq.rhsArgument.value],
-                    valueSrc: ['value'],
-                },
-            };
-        }
-
-        throw new Error('rule format not supported');
     };
 
     private static groupSerializer = (gr: IGroup): JsonGroup => {

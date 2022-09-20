@@ -8,29 +8,53 @@ const entityTemplateToSubfields = (
     options: { hideForCompare?: boolean },
     initials?: { key: string; label: string },
 ) => {
-    return Object.fromEntries(
-        Object.entries(entityTemplate.properties.properties).map(([key, value]) => {
-            let type = 'text';
+    const fieldEntries: [string, SimpleField][] = [
+        [
+            initials ? `${initials.key}-${entityTemplate._id}-_id` : `${entityTemplate._id}-_id`,
+            {
+                type: 'text',
+                valueSources: ['field', 'value'],
+                label: initials ? `${initials.label}.${entityTemplate.name}._id` : `${entityTemplate.name}._id`,
+                ...options,
+            },
+        ],
+    ];
 
-            if (value.type !== 'string') {
-                type = value.type;
-            } else if (value.format === 'date') {
-                type = 'date';
-            } else if (value.format === 'date-time') {
-                type = 'datetime';
-            }
+    Object.entries(entityTemplate.properties.properties).forEach(([key, value]) => {
+        let type = 'text';
 
-            return [
-                initials ? `${initials.key}-${entityTemplate._id}-${key}` : `${entityTemplate._id}-${key}`,
+        if (value.type !== 'string') {
+            type = value.type;
+        } else if (value.format === 'date') {
+            type = 'date';
+        } else if (value.format === 'date-time') {
+            type = 'datetime';
+        }
+
+        fieldEntries.push([
+            initials ? `${initials.key}-${entityTemplate._id}-${key}` : `${entityTemplate._id}-${key}`,
+            {
+                type,
+                valueSources: ['field', 'value'],
+                label: initials ? `${initials.label}.${entityTemplate.name}.${key}` : `${entityTemplate.name}.${key}`,
+                ...options,
+            },
+        ]);
+
+        if (type === 'datetime') {
+            fieldEntries.push([
+                initials ? `${initials.key}-${entityTemplate._id}-${key}-ignoreHour` : `${entityTemplate._id}-${key}-ignoreHour`,
                 {
-                    type,
+                    type: 'date',
                     valueSources: ['field', 'value'],
-                    label: initials ? `${initials.label}.${entityTemplate.name}.${key}` : `${entityTemplate.name}.${key}`,
+                    label: initials ? `${initials.label}.${entityTemplate.name}.${key} (ignore hour)` : `${entityTemplate.name}.${key} (ignore hour)`,
                     ...options,
-                } as SimpleField,
-            ];
-        }),
-    );
+                },
+            ]);
+        }
+    });
+
+    return Object.fromEntries(fieldEntries);
 };
 
 const entityTemplatesToFieldsConfig = (

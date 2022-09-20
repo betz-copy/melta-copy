@@ -1,5 +1,5 @@
 import { JsonGroup, RuleProperties, JsonItem, JsonRuleGroupExt } from 'react-awesome-query-builder';
-import { IAggregationGroup, IEquation, IGroup, IOperatorBool } from '../../interfaces/rules';
+import { IAggregationGroup, IEquation, IGroup, IOperatorBool, IRegularFunction } from '../../interfaces/rules';
 import { IConstant, IPropertyOfVariable } from '../../interfaces/rules/argument';
 import { IFormula } from '../../interfaces/rules/formula';
 
@@ -8,8 +8,22 @@ export class RuleParser {
         return field.includes('.') ? field.split('.')[1] : field;
     };
 
-    private static propertyParser(property): IPropertyOfVariable {
+    private static functionParser = (property): IRegularFunction => {
+        const formattedField = property.replace('-ignoreHour', '');
+
+        return {
+            isRegularFunction: true,
+            functionType: 'toDate',
+            arguments: [RuleParser.propertyParser(formattedField)],
+        };
+    };
+
+    private static propertyParser(property): IPropertyOfVariable | IRegularFunction {
         const formattedField = RuleParser.formatAggregationField(property);
+
+        if (property.includes('-ignoreHour')) {
+            return RuleParser.functionParser(property);
+        }
 
         const lastDashIndex = formattedField.lastIndexOf('-');
 
