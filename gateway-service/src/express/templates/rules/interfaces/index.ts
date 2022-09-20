@@ -1,13 +1,13 @@
 import { IArgument } from './argument';
 import { IFormula } from './formula';
 
-export interface IRegularSumFunction {
-    isRegularSumFunction: true; // to identify interface runtime (instead of class' instanceof)
-    lhsArgument: IArgument;
-    rhsArgument: IArgument;
+export interface IRegularFunction {
+    isRegularFunction: true; // to identify interface runtime (instead of class' instanceof)
+    functionType: 'toDate';
+    arguments: IArgument[];
 }
-export const isRegularSumFunction = (regularSumFunction: any): regularSumFunction is IRegularSumFunction => {
-    return regularSumFunction.isRegularSumFunction;
+export const isRegularFunction = (regularFunction: any): regularFunction is IRegularFunction => {
+    return regularFunction.isRegularFunction;
 };
 
 export interface ICountAggFunction {
@@ -27,7 +27,7 @@ export const isSumAggFunction = (sumAggFunction: any): sumAggFunction is ISumAgg
     return sumAggFunction.isSumAggFunction;
 };
 
-export type IFunction = ICountAggFunction | ISumAggFunction | IRegularSumFunction;
+export type IFunction = ICountAggFunction | ISumAggFunction | IRegularFunction;
 
 // do snake case (for example NOT_CONTAINS)
 export type IOperatorBool = 'equals' | 'notEqual' | 'lessThan' | 'lessThanOrEqual' | 'greaterThan' | 'greaterThanOrEqual';
