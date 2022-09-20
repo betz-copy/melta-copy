@@ -10,11 +10,12 @@ import {
     isCountAggFunction,
     isEquation,
     isGroup,
-    isRegularSumFunction,
+    isRegularFunction,
     isSumAggFunction,
     IOperatorBool,
     CypherQuery,
     IRelevantTemplates,
+    IRegularFunction,
 } from './interfaces';
 import { IArgument, isConstant, isPropertyOfVariable } from './interfaces/argument';
 import { IFormula } from './interfaces/formula';
@@ -87,6 +88,16 @@ const generateNeo4jQueryFromSumAggFunction = (
     };
 };
 
+const generateNeo4jQueryFromRegularFunction = (func: IRegularFunction, relevantTemplates: IRelevantTemplates) => {
+    // eslint-disable-next-line no-use-before-define -- circular recursive functions (formula->group->formulas)
+    const dateTimeArgumentQuery = generateNeo4jQueryFromArgument(func.arguments[0], relevantTemplates);
+    return {
+        cypherQuery: `date(${dateTimeArgumentQuery.cypherQuery})`,
+        aggergationSubQueries: dateTimeArgumentQuery.aggergationSubQueries,
+        parameters: dateTimeArgumentQuery.parameters,
+    };
+};
+
 const generateNeo4jQueryFromArgument = (argument: IArgument, relevantTemplates: IRelevantTemplates): CypherQuery => {
     if (isConstant(argument)) {
         let valueCypherQuery: string;
@@ -130,14 +141,8 @@ const generateNeo4jQueryFromArgument = (argument: IArgument, relevantTemplates: 
         return generateNeo4jQueryFromSumAggFunction(argument, relevantTemplates);
     }
 
-    if (isRegularSumFunction(argument)) {
-        const lhsArgumentQuery = generateNeo4jQueryFromArgument(argument.lhsArgument, relevantTemplates);
-        const rhsArgumentQuery = generateNeo4jQueryFromArgument(argument.rhsArgument, relevantTemplates);
-        return {
-            cypherQuery: `(${lhsArgumentQuery.cypherQuery}) + (${rhsArgumentQuery.cypherQuery})`,
-            aggergationSubQueries: [...lhsArgumentQuery.aggergationSubQueries, ...rhsArgumentQuery.aggergationSubQueries],
-            parameters: { ...lhsArgumentQuery.parameters, ...rhsArgumentQuery.parameters },
-        };
+    if (isRegularFunction(argument)) {
+        return generateNeo4jQueryFromRegularFunction(argument, relevantTemplates);
     }
 
     throw new Error('unexpected argument, must be constant/propertyOfVariable/countAggFunction/sumAggFunction/regularSumFunction');
