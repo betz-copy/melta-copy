@@ -16,8 +16,8 @@ const getParametersOfArgument = (argument: IArgument): IParameterOfFormula[] => 
     if (isCountAggFunction(argument)) {
         const { variableName } = argument;
         return [{ variableName }];
-    }  
-    
+    }
+
     if (isRegularFunction(argument)) {
         const { arguments: functionArguments } = argument;
         return functionArguments.flatMap(getParametersOfArgument);
