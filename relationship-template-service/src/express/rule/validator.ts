@@ -15,9 +15,16 @@ const joiValidate = (schema: Joi.AnySchema<any>, data: any): void => {
 };
 
 const validatePropertyExistInEntityTemplate = (property: string, entityTemplate: IEntityTemplatePopulated) => {
-    const doesPropertyExistUnderOtherTemplate = Object.keys(entityTemplate.properties.properties).some((propertyName) => propertyName === property);
+    if (property === '_id' || property === 'createdAt' || property === 'updatedAt' || property === 'disabled') {
+        return;
+    }
 
-    assert(doesPropertyExistUnderOtherTemplate, `property "${property}" must exist in template "${entityTemplate._id}"`);
+    const doesPropertyExistUnderTemplate = Object.keys(entityTemplate.properties.properties).some((propertyName) => propertyName === property);
+    if (doesPropertyExistUnderTemplate) {
+        return;
+    }
+
+    throw new Error(`property "${property}" must exist in template "${entityTemplate._id}"`);
 };
 
 const constantSchema = Joi.object({
@@ -109,22 +116,22 @@ const validateSumAggFunction = (sumAggFunction: any, relevantTemplates: IRelevan
     validateVariableNameOfAggregation(sumAggFunction.variableName, relevantTemplates);
 };
 
-const regularSumFunctionSchema = Joi.object({
-    isRegularSumFunction: Joi.boolean().valid(true).required(),
-    lhsArgument: Joi.object().required(),
-    rhsArgument: Joi.object().required(),
+const regularFunctionSchema = Joi.object({
+    isRegularFunction: Joi.boolean().valid(true).required(),
+    functionType: Joi.string().valid('toDate').required(),
+    arguments: Joi.array().items(Joi.object()).length(1).required(),
 });
 const validateRegularSumFunction = (
     regularSumFunction: any,
     relevantTemplates: IRelevantTemplates,
     aggregationContext: IRelevantTemplates['connectionsTemplatesOfPinnedEntityTemplate'][number] | undefined,
 ) => {
-    joiValidate(regularSumFunctionSchema, regularSumFunction);
+    joiValidate(regularFunctionSchema, regularSumFunction);
 
-    // eslint-disable-next-line no-use-before-define -- circular recursive functions
-    validateArgument(regularSumFunction.lhsArgument, relevantTemplates, aggregationContext);
-    // eslint-disable-next-line no-use-before-define -- circular recursive functions
-    validateArgument(regularSumFunction.rhsArgument, relevantTemplates, aggregationContext);
+    regularSumFunction.arguments.forEach((argument) => {
+        // eslint-disable-next-line no-use-before-define -- circular recursive functions
+        validateArgument(argument, relevantTemplates, aggregationContext);
+    });
 };
 
 const argumentSchema = Joi.alternatives(
@@ -132,8 +139,8 @@ const argumentSchema = Joi.alternatives(
     Joi.object({ isPropertyOfVariable: Joi.boolean().valid(true).required() }).unknown(true),
     Joi.object({ isCountAggFunction: Joi.boolean().valid(true).required() }).unknown(true),
     Joi.object({ isSumAggFunction: Joi.boolean().valid(true).required() }).unknown(true),
-    Joi.object({ isRegularSumFunction: Joi.boolean().valid(true).required() }).unknown(true),
-).messages({ 'alternatives.match': 'argument must be one of constant/propertyOfValue/countAggFunction/sumAggFunction/regularSumAggFunction' });
+    Joi.object({ isRegularFunction: Joi.boolean().valid(true).required() }).unknown(true),
+).messages({ 'alternatives.match': 'argument must be one of constant/propertyOfValue/countAggFunction/sumAggFunction/regularFunction' });
 const validateArgument = (
     argument: any,
     relevantTemplates: IRelevantTemplates,
