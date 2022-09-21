@@ -211,7 +211,7 @@ export class RelationshipManager {
         const brokenRules = getBrokenRules(ruleResults);
 
         if (!areAllBrokenRulesIgnored(brokenRules, ignoredRules)) {
-            throw new ServiceError(400, `[NEO4J] relationship deletion blocked by rules.`, {
+            throw new ServiceError(400, `[NEO4J] relationship deletion is blocked by rules.`, {
                 errorCode: config.errorCodes.ruleBlock,
                 brokenRules,
             });
@@ -235,6 +235,7 @@ export class RelationshipManager {
 
             await RelationshipManager.verifyRuleForRelationshipDeletion(transaction, relationship, ignoredRules);
 
+            console.log('deleting relationship', relationship.properties._id);
             return relationship;
         });
     }
