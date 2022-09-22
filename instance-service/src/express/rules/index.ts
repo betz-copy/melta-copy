@@ -41,11 +41,16 @@ const generateNeo4jQueryFromCountAggFunction = (
         aggergationSubQueries: [
             {
                 subQuery: `
-                    call {
-                        with \`${pinnedEntityTemplateId}\`, \`${unpinnedEntityTemplateId}\`
+                    CALL apoc.cypher.run("
+                        with $pinnedEntityTemplateId as \`${pinnedEntityTemplateId}\`, $unpinnedEntityTemplateId as \`${unpinnedEntityTemplateId}\`
+
                         match (\`${pinnedEntityTemplateId}\`)-[ri:\`${aggregatedRelationship._id}\`]-(\`${countAggFunction.variableName}\`)
-                        return count(\`${countAggFunction.variableName}\`) as \`${aggResultVariableName}\`
-                    }
+                        return count(\`${countAggFunction.variableName}\`) as aggResult
+                    ", {
+                        pinnedEntityTemplateId: \`${pinnedEntityTemplateId}\`,
+                        unpinnedEntityTemplateId: \`${unpinnedEntityTemplateId}\`
+                    }) yield value as \`${aggResultVariableName}_value\`
+                    with *, \`${aggResultVariableName}_value\`.aggResult as \`${aggResultVariableName}\`
                 `,
                 resultVariableName: `\`${aggResultVariableName}\``,
             },
@@ -75,11 +80,16 @@ const generateNeo4jQueryFromSumAggFunction = (
         aggergationSubQueries: [
             {
                 subQuery: `
-                    call {
-                        with \`${pinnedEntityTemplateId}\`, \`${unpinnedEntityTemplateId}\`
+                    CALL apoc.cypher.run("
+                        with $pinnedEntityTemplateId as \`${pinnedEntityTemplateId}\`, $unpinnedEntityTemplateId as \`${unpinnedEntityTemplateId}\`
+                        
                         match (\`${pinnedEntityTemplateId}\`)-[ri:\`${aggregatedRelationship._id}\`]-(\`${sumAggFunction.variableName}\`)
-                        return sum(\`${sumAggFunction.variableName}\`.${sumAggFunction.property}) as \`${aggResultVariableName}\`
-                    }
+                        return sum(\`${sumAggFunction.variableName}\`.${sumAggFunction.property}) as aggResult
+                    ", {
+                        pinnedEntityTemplateId: \`${pinnedEntityTemplateId}\`,
+                        unpinnedEntityTemplateId: \`${unpinnedEntityTemplateId}\`,
+                    }) yield value as \`${aggResultVariableName}_value\`
+                    with *, \`${aggResultVariableName}_value\`.aggResult as \`${aggResultVariableName}\`
                 `,
                 resultVariableName: `\`${aggResultVariableName}\``,
             },
@@ -243,11 +253,16 @@ const generateNeo4jQueryFromAggregationGroup = (formula: IAggregationGroup, rele
         aggergationSubQueries: [
             {
                 subQuery: `
-                    call {
-                        with \`${pinnedEntityTemplateId}\`, \`${relevantTemplates.unpinnedEntityTemplateId}\`
+                    CALL apoc.cypher.run("
+                        with $pinnedEntityTemplateId as \`${pinnedEntityTemplateId}\`, $unpinnedEntityTemplateId as \`${relevantTemplates.unpinnedEntityTemplateId}\`
+                        
                         match (\`${pinnedEntityTemplateId}\`)-[ri:\`${aggregatedRelationship._id}\`]-(\`${formula.variableNameOfAggregation}\`)
-                        return ${neoAggregation}(${formulaQuery.cypherQuery}) as \`${aggResultVariableName}\`
-                    }
+                        return ${neoAggregation}(${formulaQuery.cypherQuery}) as aggResult
+                    ", {
+                        pinnedEntityTemplateId: \`${pinnedEntityTemplateId}\`,
+                        unpinnedEntityTemplateId: \`${relevantTemplates.unpinnedEntityTemplateId}\`
+                    }) yield value as \`${aggResultVariableName}_value\`
+                    with *, \`${aggResultVariableName}_value\`.aggResult as \`${aggResultVariableName}\`
                 `,
                 resultVariableName: `\`${aggResultVariableName}\``,
             },
@@ -291,15 +306,21 @@ export const generateNeo4jQuery = (
         // aggregations actions
         ${formulaQuery.aggergationSubQueries.map(({ subQuery }) => subQuery).join('\n')}
 
-        call {
-            with \`${pinnedEntityTemplateId}\`, \`${unpinnedEntityTemplateId}\`
-            ${formulaQuery.aggergationSubQueries
-                .map(({ resultVariableName }, i) => (i === 0 ? `, ${resultVariableName}` : resultVariableName))
-                .join(', ')}
+        CALL apoc.cypher.run("
+            with $pinnedEntityTemplateId as \`${pinnedEntityTemplateId}\`, $unpinnedEntityTemplateId as \`${unpinnedEntityTemplateId}\`
+            ${formulaQuery.aggergationSubQueries.length > 0 ? ',' : ''}
+            ${formulaQuery.aggergationSubQueries.map(({ resultVariableName }) => `$${resultVariableName} as ${resultVariableName}`).join(', ')}
 
             return (${formulaQuery.cypherQuery}) as doesRuleStillApply
-        }
-        return doesRuleStillApply;                           
+        ", {
+            pinnedEntityTemplateId: \`${pinnedEntityTemplateId}\`,
+            unpinnedEntityTemplateId: \`${unpinnedEntityTemplateId}\`
+
+            ${formulaQuery.aggergationSubQueries.length > 0 ? ',' : ''}
+            ${formulaQuery.aggergationSubQueries.map(({ resultVariableName }) => `${resultVariableName}: ${resultVariableName}`).join(', ')}
+        }) yield value as doesRuleStillApply_value
+
+        return doesRuleStillApply_value.doesRuleStillApply as doesRuleStillApply;                           
         `,
         parameters: { pinnedEntityId, nonPinnedEntityId, nonPinnedRelationshipId, ...formulaQuery.parameters },
     };
