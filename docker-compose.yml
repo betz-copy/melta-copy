@@ -44,8 +44,8 @@ services:
       ENTITY_TEMPLATE_MANAGER_URI: ${ENTITY_TEMPLATE_MANAGER_URI}
 
   instance-manager:
-    # image: jawsproject.azurecr.io/instance-manager
-    build: ./instance-manager
+    image: jawsproject.azurecr.io/instance-manager
+    # build: ./instance-manager
     environment:
       PORT: 8000
       NEO4J_URL: ${NEO4J_URL}
@@ -87,8 +87,8 @@ services:
       RABBIT_URI: ${RABBIT_URI}
 
   rule-breach-service:
-    # image: jawsproject.azurecr.io/rule-breach-service
-    build: ./rule-breach-service
+    image: jawsproject.azurecr.io/rule-breach-service
+    # build: ./rule-breach-service
     environment:
       PORT: 8000
       MONGO_URI: ${RULE_BREACH_SERVICE_MONGO_URI}
@@ -96,8 +96,8 @@ services:
       MONGO_RULE_BREACH_REQUESTS_COLLECTION_NAME: ${MONGO_RULE_BREACH_REQUESTS_COLLECTION_NAME}
 
   backend:
-    # image: jawsproject.azurecr.io/backend
-    build: ./backend
+    image: jawsproject.azurecr.io/backend
+    # build: ./backend
     environment:
       PORT: 8000
       TOKEN_SECRET: ${TOKEN_SECRET}
