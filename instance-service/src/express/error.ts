@@ -40,6 +40,9 @@ export const errorMiddleware = (error: Error, _req: express.Request, res: expres
             type: error.name,
             message: error.message,
         });
+
+        // TODO: add some logging
+        console.error('Request failed with error: ', error); // eslint-disable-line no-console
     }
 
     next();
