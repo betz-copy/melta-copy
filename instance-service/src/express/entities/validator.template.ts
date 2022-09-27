@@ -41,17 +41,18 @@ export const validateEntity = async (req: Request) => {
     addPropertyToRequest(req, 'entityTemplate', entityTemplate);
 };
 
-export const addStringFieldsAndNormalizeDateValues = (req: Request, _res: Response, next: NextFunction) => {
-    const entityTemplate = fetchPropertyFromRequest<IMongoEntityTemplate>(req, 'entityTemplate');
-
+export const addStringFieldsAndNormalizeDateValues = (
+    entityProperties: Record<string, any>,
+    entityTemplate: IMongoEntityTemplate,
+): Record<string, any> => {
     const normalizedEntity = {};
 
     Object.entries(entityTemplate.properties.properties).forEach(([key, value]) => {
-        if (!(key in req.body.properties)) {
+        if (!(key in entityProperties)) {
             return;
         }
 
-        const propertyValue = req.body.properties[key];
+        const propertyValue = entityProperties[key];
         const { type, format } = value;
 
         // For Neo4j fulltext search (supports only string properties)
@@ -76,7 +77,12 @@ export const addStringFieldsAndNormalizeDateValues = (req: Request, _res: Respon
         normalizedEntity[key] = propertyValue;
     });
 
-    req.body.properties = normalizedEntity;
+    return normalizedEntity;
+};
+export const addStringFieldsAndNormalizeDateValuesMiddleware = (req: Request, _res: Response, next: NextFunction) => {
+    const entityTemplate = fetchPropertyFromRequest<IMongoEntityTemplate>(req, 'entityTemplate');
+
+    req.body.properties = addStringFieldsAndNormalizeDateValues(req.body.properties, entityTemplate);
 
     next();
 };

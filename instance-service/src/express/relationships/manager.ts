@@ -235,7 +235,6 @@ export class RelationshipManager {
 
             await RelationshipManager.verifyRuleForRelationshipDeletion(transaction, relationship, ignoredRules);
 
-            console.log('deleting relationship', relationship.properties._id);
             return relationship;
         });
     }

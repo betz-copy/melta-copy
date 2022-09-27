@@ -48,17 +48,17 @@ const createRelationshipAndExpectRuleBlock = async (
             [],
         ),
     );
-    expect(err).toBeInstanceOf(ServiceError);
-    expect((err as ServiceError).message).toStrictEqual(`[NEO4J] relationship creation is blocked by rules.`);
-    expect((err as ServiceError).metadata).toStrictEqual({
-        errorCode: config.errorCodes.ruleBlock,
-        brokenRules: [
-            {
-                ruleId: brokenRule.ruleId,
-                relationshipIds: expect.any(Array),
-            },
-        ],
-    });
+    expect(err).toStrictEqual(
+        new ServiceError(400, '[NEO4J] relationship creation is blocked by rules.', {
+            errorCode: config.errorCodes.ruleBlock,
+            brokenRules: [
+                {
+                    ruleId: brokenRule.ruleId,
+                    relationshipIds: expect.any(Array),
+                },
+            ],
+        }),
+    );
     expect((err as any).metadata.brokenRules[0].relationshipIds.sort()).toStrictEqual(brokenRule.relationshipIds.sort());
 };
 
@@ -88,17 +88,17 @@ const createRelationshipAndExpectToSucceed = async (
 
 const deleteRelationshipAndExpectRuleBlock = async (relationshipId: string, brokenRule: IBrokenRule) => {
     const { err } = await trycatch(() => RelationshipManager.deleteRelationshipById(relationshipId, []));
-    expect(err).toBeInstanceOf(ServiceError);
-    expect((err as ServiceError).message).toStrictEqual(`[NEO4J] relationship deletion is blocked by rules.`);
-    expect((err as ServiceError).metadata).toStrictEqual({
-        errorCode: config.errorCodes.ruleBlock,
-        brokenRules: [
-            {
-                ruleId: brokenRule.ruleId,
-                relationshipIds: expect.any(Array),
-            },
-        ],
-    });
+    expect(err).toStrictEqual(
+        new ServiceError(400, '[NEO4J] relationship deletion is blocked by rules.', {
+            errorCode: config.errorCodes.ruleBlock,
+            brokenRules: [
+                {
+                    ruleId: brokenRule.ruleId,
+                    relationshipIds: expect.any(Array),
+                },
+            ],
+        }),
+    );
     expect((err as any).metadata.brokenRules[0].relationshipIds.sort()).toStrictEqual(brokenRule.relationshipIds.sort());
 };
 
@@ -193,10 +193,15 @@ describe('Relationship manager test rules', () => {
             });
 
             afterAll(async () => {
-                await EntityManager.deleteByTemplateId(flightEntityTemplate._id);
-                await EntityManager.deleteByTemplateId(travelAgentEntityTemplate._id);
-                await EntityManager.deleteByTemplateId(tripEntityTemplate._id);
-                await EntityManager.deleteByTemplateId(airportEntityTemplate._id);
+                await Neo4jClient.writeTransaction(
+                    `MATCH (e1 { _id: "${firstTravelAgent.properties._id}" })
+                    MATCH (e2 { _id: "${secondTravelAgent.properties._id}" })
+                    MATCH (e3 { _id: "${flight.properties._id}" })
+                    MATCH (e4 { _id: "${trip.properties._id}" })
+                    MATCH (e5 { _id: "${airport.properties._id}" })
+                    DETACH DELETE e1,e2,e3,e4,e5`,
+                    () => {},
+                );
             });
 
             it('Should create a new relationship', async () => {
@@ -223,7 +228,7 @@ describe('Relationship manager test rules', () => {
                 secondRelationshipId = relationship.properties._id;
             });
 
-            it('Should fail to create relationship between trip and flight, because dependent in rule ', async () => {
+            it('Should fail to create relationship between trip and flight, because dependent in rule', async () => {
                 await createRelationshipAndExpectRuleBlock(flight, trip, tripConnectedToFlightRelationshipTemplate, {
                     ruleId: oneTravelAgentPerFlight._id,
                     relationshipIds: [firstRelationshipId, secondRelationshipId],
@@ -289,8 +294,14 @@ describe('Relationship manager test rules', () => {
             });
 
             afterAll(async () => {
-                await EntityManager.deleteByTemplateId(flightEntityTemplate._id);
-                await EntityManager.deleteByTemplateId(tripEntityTemplate._id);
+                await Neo4jClient.writeTransaction(
+                    `MATCH (e1 { _id: "${trip.properties._id}" })
+                    MATCH (e2 { _id: "${firstFlight.properties._id}" })
+                    MATCH (e3 { _id: "${secondFlightNotOverlapping.properties._id}" })
+                    MATCH (e4 { _id: "${thirdFlightOverlapping.properties._id}" })
+                    DETACH DELETE e1,e2,e3,e4`,
+                    () => {},
+                );
             });
 
             it('Should create a new first relationship', async () => {
@@ -353,6 +364,7 @@ describe('Relationship manager test rules', () => {
                     properties: {
                         name: 'My trip',
                         destination: 'New York',
+                        active: true,
                     },
                 });
 
@@ -367,8 +379,12 @@ describe('Relationship manager test rules', () => {
             });
 
             afterAll(async () => {
-                await EntityManager.deleteByTemplateId(flightEntityTemplate._id);
-                await EntityManager.deleteByTemplateId(tripEntityTemplate._id);
+                await Neo4jClient.writeTransaction(
+                    `MATCH (e1 { _id: "${flight.properties._id}" })
+                    MATCH (e2 { _id: "${trip.properties._id}" })
+                    DETACH DELETE e1,e2`,
+                    () => {},
+                );
             });
 
             it('Should fail to create a new relationship (because needs to warn on every flight)', async () => {
@@ -479,8 +495,14 @@ describe('Relationship manager test rules', () => {
             });
 
             afterAll(async () => {
-                await EntityManager.deleteByTemplateId(flightEntityTemplate._id);
-                await EntityManager.deleteByTemplateId(travelAgentEntityTemplate._id);
+                await Neo4jClient.writeTransaction(
+                    `MATCH (e1 { _id: "${firstTravelAgent.properties._id}" })
+                    MATCH (e2 { _id: "${secondTravelAgent.properties._id}" })
+                    MATCH (e3 { _id: "${thirdTravelAgent.properties._id}" })
+                    MATCH (e4 { _id: "${flight.properties._id}" })
+                    DETACH DELETE e1,e2,e3,e4`,
+                    () => {},
+                );
             });
 
             it('Should fail to delete third relationship because still rule fails', async () => {
@@ -600,8 +622,14 @@ describe('Relationship manager test rules', () => {
             });
 
             afterAll(async () => {
-                await EntityManager.deleteByTemplateId(flightEntityTemplate._id);
-                await EntityManager.deleteByTemplateId(travelAgentEntityTemplate._id);
+                await Neo4jClient.writeTransaction(
+                    `MATCH (e1 { _id: "${trip.properties._id}" })
+                    MATCH (e2 { _id: "${firstFlight.properties._id}" })
+                    MATCH (e3 { _id: "${secondFlightNotOverlapping.properties._id}" })
+                    MATCH (e4 { _id: "${thirdFlightOverlapping.properties._id}" })
+                    DETACH DELETE e1,e2,e3,e4`,
+                    () => {},
+                );
             });
 
             it('Should fail to delete second relationship because still overlapping', async () => {
@@ -656,6 +684,7 @@ describe('Relationship manager test rules', () => {
                     properties: {
                         name: 'My trip',
                         destination: 'New York',
+                        active: true,
                     },
                 });
 
@@ -713,8 +742,13 @@ describe('Relationship manager test rules', () => {
             });
 
             afterAll(async () => {
-                await EntityManager.deleteByTemplateId(flightEntityTemplate._id);
-                await EntityManager.deleteByTemplateId(tripEntityTemplate._id);
+                await Neo4jClient.writeTransaction(
+                    `MATCH (e1 { _id: "${trip.properties._id}" })
+                    MATCH (e2 { _id: "${firstFlight.properties._id}" })
+                    MATCH (e3 { _id: "${secondFlight.properties._id}" })
+                    DETACH DELETE e1,e2,e3`,
+                    () => {},
+                );
             });
 
             it('Should fail to delete second relationship because still rule fails', async () => {

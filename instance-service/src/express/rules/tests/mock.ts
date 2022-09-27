@@ -215,7 +215,7 @@ export const oneTravelAgentPerFlight: IMongoRule = {
             // just for tests - to be dependent on tripConnectedToFlight
             {
                 isAggregationGroup: true,
-                aggregation: 'EVERY',
+                aggregation: 'SOME',
                 ruleOfGroup: 'AND',
                 variableNameOfAggregation: `${flightEntityTemplate._id}.${tripConnectedToFlightRelationshipTemplate._id}.${tripEntityTemplate._id}`,
                 subFormulas: [
@@ -229,7 +229,7 @@ export const oneTravelAgentPerFlight: IMongoRule = {
                         },
                         rhsArgument: {
                             isConstant: true,
-                            value: 'debug',
+                            value: 'justForTesting',
                         },
                     },
                 ],
@@ -268,14 +268,14 @@ export const noOverlappingFlightsInTrip: IMongoRule = {
                                 {
                                     isPropertyOfVariable: true,
                                     variableName: `${tripEntityTemplate._id}.${tripConnectedToFlightRelationshipTemplate._id}.${flightEntityTemplate._id}`,
-                                    property: 'landingDate',
+                                    property: 'departureDate',
                                 },
                             ],
                         },
                         rhsArgument: {
                             isRegularFunction: true,
                             functionType: 'toDate',
-                            arguments: [{ isPropertyOfVariable: true, variableName: flightEntityTemplate._id, property: 'landingDate' }],
+                            arguments: [{ isPropertyOfVariable: true, variableName: flightEntityTemplate._id, property: 'departureDate' }],
                         },
                     },
                     {
@@ -391,5 +391,14 @@ export const mockRulesRoutes = (
             disabled: false,
             pinnedEntityTemplateIds: [entityTemplate._id],
         }).reply(200, rulesByPinnedEntityTemplate);
+    });
+
+    entityTemplates.forEach((entityTemplate) => {
+        const rulesByUnpinnedEntityTemplate = rules.filter(({ unpinnedEntityTemplateId }) => entityTemplate._id === unpinnedEntityTemplateId);
+
+        mock.onPost(`${relationshipManager.url}${relationshipManager.searchRulesRoute}`, {
+            disabled: false,
+            unpinnedEntityTemplateIds: [entityTemplate._id],
+        }).reply(200, rulesByUnpinnedEntityTemplate);
     });
 };

@@ -40,7 +40,7 @@ const normalizeFields = (properties: Record<string, any>): Record<string, any> =
 };
 
 type ResponseType = 'singleResponse' | 'multipleResponses';
-type Response<ResType extends ResponseType, Data> = ResType extends 'singleResponse' ? Data : Data[];
+type Response<ResType extends ResponseType, Data> = ResType extends 'singleResponse' ? Data : Data[]; // todo: (Data or null)
 
 export const normalizeReturnedEntity =
     <T extends ResponseType>(response: T) =>

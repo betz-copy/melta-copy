@@ -2,7 +2,7 @@ import { Router } from 'express';
 import EntityController from './controller';
 import { wrapController, wrapMiddleware } from '../../utils/express';
 import ValidateRequest from '../../utils/joi';
-import { addStringFieldsAndNormalizeDateValues, validateEntity } from './validator.template';
+import { addStringFieldsAndNormalizeDateValuesMiddleware, validateEntity } from './validator.template';
 import {
     deleteEntityByIdRequestSchema,
     deleteEntitiesByTemplateIdRequestSchema,
@@ -22,7 +22,7 @@ entityRouter.post(
     '/',
     ValidateRequest(createEntityRequestSchema),
     wrapMiddleware(validateEntity),
-    addStringFieldsAndNormalizeDateValues,
+    addStringFieldsAndNormalizeDateValuesMiddleware,
     wrapController(EntityController.createEntity),
 );
 entityRouter.get('/:id', ValidateRequest(getEntityByIdRequestSchema), wrapController(EntityController.getEntityById));
@@ -32,7 +32,7 @@ entityRouter.put(
     '/:id',
     ValidateRequest(updateEntityByIdRequestSchema),
     wrapMiddleware(validateEntity),
-    addStringFieldsAndNormalizeDateValues,
+    addStringFieldsAndNormalizeDateValuesMiddleware,
     wrapController(EntityController.updateEntityById),
 );
 entityRouter.patch('/:id/status', ValidateRequest(updateEntityStatusByIdRequestSchema), wrapController(EntityController.updateStatusById));
