@@ -5,6 +5,7 @@ import i18next from 'i18next';
 import { WidgetProps, utils } from '@rjsf/core';
 import { LocalizationProvider, MobileDatePicker, MobileDateTimePicker } from '@mui/x-date-pickers';
 import heLocale from 'date-fns/locale/he';
+import format from 'date-fns/format';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { DateTimePickerToolbar, dateTimePickerToolbarClasses } from '@mui/x-date-pickers/DateTimePicker/DateTimePickerToolbar';
 import { BaseToolbarProps } from '@mui/x-date-pickers/internals';
@@ -46,6 +47,8 @@ const getRjfsDateOrDateTimeWidget =
         const _onBlur = ({ target: { value: newValue } }: React.FocusEvent<HTMLInputElement>) => onBlur(id, newValue);
         const _onFocus = ({ target: { value: newValue } }: React.FocusEvent<HTMLInputElement>) => onFocus(id, newValue);
 
+        const [currDate, setCurrDate] = React.useState<Date | null>(value);
+
         const { rootSchema } = registry;
         const displayLabel = getDisplayLabel(schema, uiSchema, rootSchema);
 
@@ -54,7 +57,7 @@ const getRjfsDateOrDateTimeWidget =
             if (!date) {
                 return onChange(undefined);
             }
-            const dateString = date.toISOString().split('T')[0];
+            const dateString = format(date, 'yyyy-MM-dd');
             return onChange(dateString);
         };
         const onChangeDateTimeWidget = (date: Date | null) => {
@@ -65,6 +68,8 @@ const getRjfsDateOrDateTimeWidget =
             return onChange(dateString);
         };
 
+        const onFormChangeFunction = dateOrDateTime === 'date' ? onChangeDateWidget : onChangeDateTimeWidget;
+
         return (
             <LocalizationProvider
                 dateAdapter={AdapterDateFns}
@@ -72,15 +77,17 @@ const getRjfsDateOrDateTimeWidget =
                 localeText={i18next.t('muiDatePickersLocaleText', { returnObjects: true })}
             >
                 <MuiDatePicker<Date, Date>
-                    value={value ? new Date(value) : null}
-                    onChange={dateOrDateTime === 'date' ? onChangeDateWidget : onChangeDateTimeWidget}
+                    value={currDate || null}
+                    onChange={(val) => {
+                        setCurrDate(val);
+                        onFormChangeFunction(val);
+                    }}
                     inputFormat={dateOrDateTime === 'date' ? 'dd/MM/yyyy' : 'dd/MM/yyyy HH:mm'}
                     showToolbar
                     componentsProps={{ actionBar: { actions: ['clear', 'cancel', 'accept'] } }}
                     label={displayLabel ? label || schema.title : false}
                     renderInput={(params) => {
                         return (
-                            // @ts-ignore
                             <TextField
                                 {...textFieldProps}
                                 {...params}
