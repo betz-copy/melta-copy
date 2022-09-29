@@ -22,12 +22,16 @@ export class EntityManager {
     static createEntity(entity: IEntity) {
         const { templateId, properties } = entity;
 
-        return Neo4jClient.writeTransaction(`CREATE (e: \`${templateId}\` $properties) RETURN e`, normalizeReturnedEntity('singleResponse'), {
-            properties: {
-                ...generateDefaultProperties(),
-                ...properties,
+        return Neo4jClient.writeTransaction(
+            `CREATE (e: \`${templateId}\` $properties) RETURN e`,
+            normalizeReturnedEntity('singleResponseNotNullable'),
+            {
+                properties: {
+                    ...generateDefaultProperties(),
+                    ...properties,
+                },
             },
-        });
+        );
     }
 
     static async getEntities(templateId: string, agGridRequest: IAGGridRequest) {
@@ -259,7 +263,7 @@ export class EntityManager {
                  SET e.createdAt = createdAt
                  SET e.disabled = disabled 
                  RETURN e`,
-                normalizeReturnedEntity('singleResponse'),
+                normalizeReturnedEntity('singleResponseNotNullable'),
                 {
                     props: {
                         ...entityProperties,

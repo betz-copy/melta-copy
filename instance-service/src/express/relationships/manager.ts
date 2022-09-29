@@ -173,7 +173,7 @@ export class RelationshipManager {
                  MERGE (s)-[r: \`${templateId}\`]->(d)
                  ON CREATE SET r = $relProps
                  RETURN r, s, d`,
-                normalizeReturnedRelationship('singleResponse'),
+                normalizeReturnedRelationship('singleResponseNotNullable'),
                 { relProps: { ...properties, ...generateDefaultProperties() } },
             );
 

@@ -39,8 +39,14 @@ const normalizeFields = (properties: Record<string, any>): Record<string, any> =
     return props;
 };
 
-type ResponseType = 'singleResponse' | 'multipleResponses';
-type Response<ResType extends ResponseType, Data> = ResType extends 'singleResponse' ? Data : Data[]; // todo: (Data or null)
+type ResponseType = 'singleResponse' | 'singleResponseNotNullable' | 'multipleResponses';
+type Response<ResType extends ResponseType, Data> = ResType extends 'singleResponse'
+    ? Data | null
+    : ResType extends 'singleResponseNotNullable'
+    ? Data
+    : ResType extends 'multipleResponses'
+    ? Data[]
+    : never;
 
 export const normalizeReturnedEntity =
     <T extends ResponseType>(response: T) =>
@@ -54,7 +60,7 @@ export const normalizeReturnedEntity =
             };
         });
 
-        if (response === 'singleResponse') {
+        if (response === 'singleResponse' || response === 'singleResponseNotNullable') {
             return (entities.length > 0 ? entities[0] : null) as Response<T, IEntity>;
         }
 
@@ -85,7 +91,7 @@ export const normalizeReturnedRelationship =
             };
         });
 
-        if (response === 'singleResponse') {
+        if (response === 'singleResponse' || response === 'singleResponseNotNullable') {
             return (relationships.length > 0 ? relationships[0] : null) as Response<T, IRelationship>;
         }
 
