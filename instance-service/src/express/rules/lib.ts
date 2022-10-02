@@ -2,7 +2,7 @@ import _groupBy from 'lodash.groupby';
 import _difference from 'lodash.difference';
 import { IBrokenRule, IConnection, IMongoRule, IRuleTransactionQuery, IRuleTransactionResult } from './interfaces';
 import { IEntity } from '../entities/interface';
-import { generateNeo4jQuery } from '.';
+import { generateNeo4jQuery } from './generateRuleNeo4jQuery';
 import config from '../../config';
 import { EntityTemplateManagerService } from '../../externalServices/entityTemplateManager';
 import { IRelationship } from '../relationships/interface';
