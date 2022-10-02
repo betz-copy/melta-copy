@@ -1,5 +1,7 @@
-import { IEntity, IMongoEntityTemplate } from '../../entities/interface';
-import { IMongoRelationshipTemplate, IRelationship } from '../../relationships/interface';
+import { IMongoEntityTemplate } from '../../../externalServices/entityTemplateManager';
+import { IMongoRelationshipTemplate } from '../../../externalServices/relationshipTemplateManager';
+import { IEntity } from '../../entities/interface';
+import { IRelationship } from '../../relationships/interface';
 import { IArgument } from './argument';
 import { IFormula } from './formula';
 

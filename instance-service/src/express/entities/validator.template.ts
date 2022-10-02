@@ -1,16 +1,15 @@
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
-import axios from 'axios';
 import { Request, NextFunction, Response } from 'express';
-import { trycatch } from '../../utils/lib';
+import axios from 'axios';
 import { getNeo4jDate, getNeo4jDateTime } from '../../utils/neo4j/lib';
 import { ValidationError } from '../error';
-import { IMongoEntityTemplate } from './interface';
 import { addPropertyToRequest, fetchPropertyFromRequest } from '../../utils/express';
 import config from '../../config';
+import { EntityTemplateManagerService, IMongoEntityTemplate } from '../../externalServices/entityTemplateManager';
+import { trycatch } from '../../utils/lib';
 
-const { templateManager, neo4j } = config;
-const { url, getByIdRoute, timeout } = templateManager;
+const { neo4j } = config;
 
 const ajv = new Ajv();
 
@@ -18,18 +17,24 @@ ajv.addFormat('fileId', /.*/);
 addFormats(ajv);
 ajv.addVocabulary(['patternCustomErrorMessage', 'hide']);
 
-export const getEntityTemplateById = async (templateId: string) => {
-    const { result, err } = await trycatch(() => axios.get<IMongoEntityTemplate>(`${url}${getByIdRoute}/${templateId}`, { timeout }));
+const getEntityTemplateByIdOrThrowValidationError = async (templateId: string) => {
+    const { result: entityTemplate, err: getEntityTemplateByIdErr } = await trycatch(() =>
+        EntityTemplateManagerService.getEntityTemplateById(templateId),
+    );
 
-    if (err || !result) {
-        throw new ValidationError(`Failed to fetch entity template schema (id: ${templateId})`);
+    if (getEntityTemplateByIdErr || !entityTemplate) {
+        if (axios.isAxiosError(getEntityTemplateByIdErr) && getEntityTemplateByIdErr.response?.status === 404) {
+            throw new ValidationError(`Relationship template doesnt exist (id: "${templateId}")`);
+        }
+
+        throw getEntityTemplateByIdErr;
     }
 
-    return result.data;
+    return entityTemplate;
 };
 
 export const validateEntity = async (req: Request) => {
-    const entityTemplate = await getEntityTemplateById(req.body.templateId);
+    const entityTemplate = await getEntityTemplateByIdOrThrowValidationError(req.body.templateId);
 
     const validateFunction = ajv.compile(entityTemplate.properties);
     const valid = validateFunction(req.body.properties);

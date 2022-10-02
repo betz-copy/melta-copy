@@ -16,17 +16,23 @@ const config = {
         connectionRetryDelay: env.get('NEO4J_CONNECTION_RETRY_DELAY').default(3000).asIntPositive(),
         stringPropertySuffix: env.get('STRING_PROPERTY_SUFFIX').default('_tostring').asString(),
     },
-    templateManager: {
-        url: env.get('TEMPLATE_MANAGER_URL').required().asString(),
-        getByIdRoute: env.get('TEMPLATE_MANAGER_GET_BY_ID_ROUTE').default('/api/templates/entities').asString(),
-        timeout: env.get('TEMPLATE_MANAGER_TIMEOUT').default(5000).asIntPositive(),
+    entityTemplateManager: {
+        url: env.get('ENTITY_TEMPLATE_MANAGER_URL').required().asString(),
+        getByIdRoute: env.get('ENTITY_TEMPLATE_MANAGER_GET_BY_ID_ROUTE').default('/api/templates/entities').asString(),
+        timeout: env.get('ENTITY_TEMPLATE_MANAGER_TIMEOUT').default(5000).asIntPositive(),
     },
     relationshipManager: {
-        url: env.get('RELATIONSHIP_MANAGER_URL').required().asString(),
-        getRelationshipByIdRoute: env.get('RELATIONSHIP_MANAGER_GET_RELATIONSHIP_BY_ID_ROUTE').default('/api/templates/relationships').asString(),
-        searchRulesRoute: env.get('RELATIONSHIP_MANAGER_SEARCH_RULES_ROUTE').default('/api/templates/rules/search').asString(),
-        searchTemplatesRoute: env.get('RELATIONSHIP_MANAGER_SEARCH_TEMPLATES_ROUTE').default('/api/templates/relationships/search').asString(),
-        timeout: env.get('RELATIONSHIP_MANAGER_TIMEOUT').default(5000).asIntPositive(),
+        url: env.get('RELATIONSHIP_TEMPLATE_MANAGER_URL').required().asString(),
+        getRelationshipByIdRoute: env
+            .get('RELATIONSHIP_TEMPLATE_MANAGER_GET_RELATIONSHIP_BY_ID_ROUTE')
+            .default('/api/templates/relationships')
+            .asString(),
+        searchRulesRoute: env.get('RELATIONSHIP_TEMPLATE_MANAGER_SEARCH_RULES_ROUTE').default('/api/templates/rules/search').asString(),
+        searchTemplatesRoute: env
+            .get('RELATIONSHIP_TEMPLATE_MANAGER_SEARCH_TEMPLATES_ROUTE')
+            .default('/api/templates/relationships/search')
+            .asString(),
+        timeout: env.get('RELATIONSHIP_TEMPLATE_MANAGER_TIMEOUT').default(5000).asIntPositive(),
     },
     redis: {
         url: env.get('REDIS_HOST').default('redis://redis:6379').asString(),

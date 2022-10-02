@@ -1,13 +1,32 @@
+import axios from 'axios';
 import { Request } from 'express';
+import { RelationshipsTemplateManagerService } from '../../externalServices/relationshipTemplateManager';
 import { addPropertyToRequest } from '../../utils/express';
+import { trycatch } from '../../utils/lib';
 import EntityManager from '../entities/manager';
 import { ValidationError } from '../error';
-import { getRelationshipTemplateById } from './template';
+
+const getRelationshipTemplateByIdOrThrowValidationError = async (templateId: string) => {
+    const { result: relationshipTemplate, err: getRelationshipTemplateByIdErr } = await trycatch(() =>
+        RelationshipsTemplateManagerService.getRelationshipTemplateById(templateId),
+    );
+
+    if (getRelationshipTemplateByIdErr || !relationshipTemplate) {
+        if (axios.isAxiosError(getRelationshipTemplateByIdErr) && getRelationshipTemplateByIdErr.response?.status === 404) {
+            throw new ValidationError(`Relationship template doesnt exist (id: "${templateId}")`);
+        }
+
+        throw getRelationshipTemplateByIdErr;
+    }
+
+    return relationshipTemplate;
+};
 
 export const validateRelationship = async (req: Request) => {
     const { templateId, sourceEntityId, destinationEntityId } = req.body.relationshipInstance;
 
-    const relationshipTemplate = await getRelationshipTemplateById(templateId);
+    const relationshipTemplate = await getRelationshipTemplateByIdOrThrowValidationError(templateId);
+
     const sourceEntity = await EntityManager.getEntityById(sourceEntityId);
     const destinationEntity = await EntityManager.getEntityById(destinationEntityId);
 

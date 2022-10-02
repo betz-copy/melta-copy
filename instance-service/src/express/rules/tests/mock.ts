@@ -1,10 +1,10 @@
 import MockAdapter from 'axios-mock-adapter';
-import { IMongoEntityTemplate } from '../../entities/interface';
-import { IMongoRelationshipTemplate } from '../../relationships/interface';
+import { IMongoEntityTemplate } from '../../../externalServices/entityTemplateManager';
 import { IMongoRule } from '../interfaces';
 import config from '../../../config';
+import { IMongoRelationshipTemplate } from '../../../externalServices/relationshipTemplateManager';
 
-const { relationshipManager, templateManager } = config;
+const { relationshipManager, entityTemplateManager } = config;
 
 export const travelAgentEntityTemplate: IMongoEntityTemplate = {
     _id: '111',
@@ -40,6 +40,8 @@ export const travelAgentEntityTemplate: IMongoEntityTemplate = {
     propertiesOrder: ['firstName', 'lastName', 'age', 'gender', 'agentId'],
     propertiesPreview: ['firstName', 'lastName', 'age'],
     disabled: false,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
 };
 
 export const flightEntityTemplate: IMongoEntityTemplate = {
@@ -82,6 +84,8 @@ export const flightEntityTemplate: IMongoEntityTemplate = {
     propertiesOrder: ['flightNumber', 'departureDate', 'landingDate', 'from', 'to', 'planeType'],
     propertiesPreview: ['flightNumber', 'from', 'to'],
     disabled: false,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
 };
 
 export const tripEntityTemplate: IMongoEntityTemplate = {
@@ -125,6 +129,8 @@ export const tripEntityTemplate: IMongoEntityTemplate = {
     propertiesOrder: ['name', 'destination', 'startDate', 'endDate', 'firstFile'],
     propertiesPreview: ['name', 'destination', 'startDate', 'endDate'],
     disabled: false,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
 };
 
 export const airportEntityTemplate: IMongoEntityTemplate = {
@@ -153,9 +159,12 @@ export const airportEntityTemplate: IMongoEntityTemplate = {
     },
     propertiesOrder: ['airportName', 'airportId', 'country'],
     propertiesPreview: ['airportName', 'country'],
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
 };
 
 export const allEntityTemplates = [travelAgentEntityTemplate, flightEntityTemplate, tripEntityTemplate, airportEntityTemplate];
+export const allEntityTemplateIds = allEntityTemplates.map(({ _id }) => _id);
 
 export const flightsOnRelationshipTemplate: IMongoRelationshipTemplate = {
     _id: '111',
@@ -188,6 +197,7 @@ export const departureFromRelationshipTemplate: IMongoRelationshipTemplate = {
 };
 
 export const allRelationshipTemplates = [flightsOnRelationshipTemplate, tripConnectedToFlightRelationshipTemplate, departureFromRelationshipTemplate];
+export const allRelationshipTemplateIds = allRelationshipTemplates.map(({ _id }) => _id);
 
 // rule 1
 export const oneTravelAgentPerFlight: IMongoRule = {
@@ -332,73 +342,84 @@ export const warnOnEveryFlightOnActiveZone: IMongoRule = {
     },
 };
 
-export const mockEntityTemplatesRoutes = (mock: MockAdapter, entityTemplates: IMongoEntityTemplate[]) => {
+export const mockEntityTemplatesRoutes = (mockEntityTemplateManager: MockAdapter, entityTemplates: IMongoEntityTemplate[]) => {
     entityTemplates.forEach((entityTemplate) => {
-        mock.onGet(`${templateManager.url}${templateManager.getByIdRoute}/${entityTemplate._id}`).reply(200, entityTemplate);
+        mockEntityTemplateManager
+            .onGet(`${entityTemplateManager.url}${entityTemplateManager.getByIdRoute}/${entityTemplate._id}`)
+            .reply(200, entityTemplate);
     });
 };
 
 export const mockRelationshipTemplatesRoutes = (
-    mock: MockAdapter,
-    entityTemplates: IMongoEntityTemplate[],
+    mockRelationshipTemplateManager: MockAdapter,
     relationshipTemplates: IMongoRelationshipTemplate[],
+    entityTemplateIds: string[],
 ) => {
     relationshipTemplates.forEach((relationshipTemplate) => {
-        mock.onGet(`${relationshipManager.url}${relationshipManager.getRelationshipByIdRoute}/${relationshipTemplate._id}`).reply(
-            200,
-            relationshipTemplate,
-        );
+        mockRelationshipTemplateManager
+            .onGet(`${relationshipManager.url}${relationshipManager.getRelationshipByIdRoute}/${relationshipTemplate._id}`)
+            .reply(200, relationshipTemplate);
     });
 
-    entityTemplates.forEach((entityTemplate) => {
-        const relationshipTemplatesBySource = relationshipTemplates.filter(({ sourceEntityId }) => sourceEntityId === entityTemplate._id);
+    entityTemplateIds.forEach((entityTemplateId) => {
+        const relationshipTemplatesBySource = relationshipTemplates.filter(({ sourceEntityId }) => sourceEntityId === entityTemplateId);
 
-        mock.onPost(`${relationshipManager.url}${relationshipManager.searchTemplatesRoute}`, {
-            sourceEntityIds: [entityTemplate._id],
-        }).reply(200, relationshipTemplatesBySource);
+        mockRelationshipTemplateManager
+            .onPost(`${relationshipManager.url}${relationshipManager.searchTemplatesRoute}`, {
+                sourceEntityIds: [entityTemplateId],
+            })
+            .reply(200, relationshipTemplatesBySource);
     });
 
-    entityTemplates.forEach((entityTemplate) => {
+    entityTemplateIds.forEach((entityTemplateId) => {
         const relationshipTemplatesByDestination = relationshipTemplates.filter(
-            ({ destinationEntityId }) => destinationEntityId === entityTemplate._id,
+            ({ destinationEntityId }) => destinationEntityId === entityTemplateId,
         );
 
-        mock.onPost(`${relationshipManager.url}${relationshipManager.searchTemplatesRoute}`, {
-            destinationEntityIds: [entityTemplate._id],
-        }).reply(200, relationshipTemplatesByDestination);
+        mockRelationshipTemplateManager
+            .onPost(`${relationshipManager.url}${relationshipManager.searchTemplatesRoute}`, {
+                destinationEntityIds: [entityTemplateId],
+            })
+            .reply(200, relationshipTemplatesByDestination);
     });
 };
 
 export const mockRulesRoutes = (
-    mock: MockAdapter,
-    entityTemplates: IMongoEntityTemplate[],
-    relationshipTemplates: IMongoRelationshipTemplate[],
+    mockRelationshipTemplateManager: MockAdapter,
     rules: IMongoRule[],
+    entityTemplateIds: string[],
+    relationshipTemplateIds: string[],
 ) => {
-    relationshipTemplates.forEach((relationshipTemplate) => {
-        const rulesByRelationshipId = rules.filter(({ relationshipTemplateId }) => relationshipTemplate._id === relationshipTemplateId);
+    relationshipTemplateIds.forEach((currRelationshipTemplateId) => {
+        const rulesByRelationshipId = rules.filter(({ relationshipTemplateId }) => currRelationshipTemplateId === relationshipTemplateId);
 
-        mock.onPost(`${relationshipManager.url}${relationshipManager.searchRulesRoute}`, {
-            disabled: false,
-            relationshipTemplateIds: [relationshipTemplate._id],
-        }).reply(200, rulesByRelationshipId);
+        mockRelationshipTemplateManager
+            .onPost(`${relationshipManager.url}${relationshipManager.searchRulesRoute}`, {
+                disabled: false,
+                relationshipTemplateIds: [currRelationshipTemplateId],
+            })
+            .reply(200, rulesByRelationshipId);
     });
 
-    entityTemplates.forEach((entityTemplate) => {
-        const rulesByPinnedEntityTemplate = rules.filter(({ pinnedEntityTemplateId }) => entityTemplate._id === pinnedEntityTemplateId);
+    entityTemplateIds.forEach((entityTemplateId) => {
+        const rulesByPinnedEntityTemplate = rules.filter(({ pinnedEntityTemplateId }) => entityTemplateId === pinnedEntityTemplateId);
 
-        mock.onPost(`${relationshipManager.url}${relationshipManager.searchRulesRoute}`, {
-            disabled: false,
-            pinnedEntityTemplateIds: [entityTemplate._id],
-        }).reply(200, rulesByPinnedEntityTemplate);
+        mockRelationshipTemplateManager
+            .onPost(`${relationshipManager.url}${relationshipManager.searchRulesRoute}`, {
+                disabled: false,
+                pinnedEntityTemplateIds: [entityTemplateId],
+            })
+            .reply(200, rulesByPinnedEntityTemplate);
     });
 
-    entityTemplates.forEach((entityTemplate) => {
-        const rulesByUnpinnedEntityTemplate = rules.filter(({ unpinnedEntityTemplateId }) => entityTemplate._id === unpinnedEntityTemplateId);
+    entityTemplateIds.forEach((entityTemplateId) => {
+        const rulesByUnpinnedEntityTemplate = rules.filter(({ unpinnedEntityTemplateId }) => entityTemplateId === unpinnedEntityTemplateId);
 
-        mock.onPost(`${relationshipManager.url}${relationshipManager.searchRulesRoute}`, {
-            disabled: false,
-            unpinnedEntityTemplateIds: [entityTemplate._id],
-        }).reply(200, rulesByUnpinnedEntityTemplate);
+        mockRelationshipTemplateManager
+            .onPost(`${relationshipManager.url}${relationshipManager.searchRulesRoute}`, {
+                disabled: false,
+                unpinnedEntityTemplateIds: [entityTemplateId],
+            })
+            .reply(200, rulesByUnpinnedEntityTemplate);
     });
 };

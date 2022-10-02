@@ -1,10 +1,10 @@
-import axios from 'axios';
-import MockAdapter from 'axios-mock-adapter';
 import Neo4jClient from '../../../utils/neo4j';
 import config from '../../../config';
 import EntityManager from '../../entities/manager';
 import {
+    allEntityTemplateIds,
     allEntityTemplates,
+    allRelationshipTemplateIds,
     allRelationshipTemplates,
     flightEntityTemplate,
     flightsOnRelationshipTemplate,
@@ -18,13 +18,15 @@ import {
     tripEntityTemplate,
     warnOnEveryFlightOnActiveZone,
 } from './mock';
-import { IEntity, IMongoEntityTemplate } from '../../entities/interface';
+import { IEntity } from '../../entities/interface';
 import { getNeo4jDateTime } from '../../../utils/neo4j/lib';
 import RelationshipManager from '../../relationships/manager';
 import { trycatch } from '../../../utils/lib';
 import { ServiceError } from '../../error';
 import { IBrokenRule } from '../interfaces';
 import { addStringFieldsAndNormalizeDateValues } from '../../entities/validator.template';
+import { IMongoEntityTemplate } from '../../../externalServices/entityTemplateManager';
+import { getMockAdapterEntityTemplateManager, getMockAdapterRelationshipTemplateManager } from '../../../externalServices/tests/axiosMock';
 
 const { neo4j } = config;
 
@@ -80,7 +82,8 @@ const updateEntityAndExpectToSucceed = async (
 };
 
 describe('Entity manager test rules', () => {
-    const mock = new MockAdapter(axios);
+    const mockEntityTemplateManager = getMockAdapterEntityTemplateManager();
+    const mockRelationshipTemplateManager = getMockAdapterRelationshipTemplateManager();
 
     beforeAll(async () => {
         await Neo4jClient.initialize(neo4j.url, neo4j.auth, neo4j.database);
@@ -103,9 +106,9 @@ describe('Entity manager test rules', () => {
             beforeAll(async () => {
                 const rules = [oneTravelAgentPerFlight];
 
-                mockRulesRoutes(mock, allEntityTemplates, allRelationshipTemplates, rules);
-                mockRelationshipTemplatesRoutes(mock, allEntityTemplates, allRelationshipTemplates);
-                mockEntityTemplatesRoutes(mock, allEntityTemplates);
+                mockRulesRoutes(mockRelationshipTemplateManager, rules, allEntityTemplateIds, allRelationshipTemplateIds);
+                mockRelationshipTemplatesRoutes(mockRelationshipTemplateManager, allRelationshipTemplates, allEntityTemplateIds);
+                mockEntityTemplatesRoutes(mockEntityTemplateManager, allEntityTemplates);
             });
 
             beforeAll(async () => {
@@ -259,9 +262,9 @@ describe('Entity manager test rules', () => {
             beforeAll(async () => {
                 const rules = [noOverlappingFlightsInTrip];
 
-                mockRulesRoutes(mock, allEntityTemplates, allRelationshipTemplates, rules);
-                mockRelationshipTemplatesRoutes(mock, allEntityTemplates, allRelationshipTemplates);
-                mockEntityTemplatesRoutes(mock, allEntityTemplates);
+                mockRulesRoutes(mockRelationshipTemplateManager, rules, allEntityTemplateIds, allRelationshipTemplateIds);
+                mockRelationshipTemplatesRoutes(mockRelationshipTemplateManager, allRelationshipTemplates, allEntityTemplateIds);
+                mockEntityTemplatesRoutes(mockEntityTemplateManager, allEntityTemplates);
             });
 
             beforeAll(async () => {
@@ -422,9 +425,9 @@ describe('Entity manager test rules', () => {
             beforeAll(async () => {
                 const rules = [warnOnEveryFlightOnActiveZone];
 
-                mockRulesRoutes(mock, allEntityTemplates, allRelationshipTemplates, rules);
-                mockRelationshipTemplatesRoutes(mock, allEntityTemplates, allRelationshipTemplates);
-                mockEntityTemplatesRoutes(mock, allEntityTemplates);
+                mockRulesRoutes(mockRelationshipTemplateManager, rules, allEntityTemplateIds, allRelationshipTemplateIds);
+                mockRelationshipTemplatesRoutes(mockRelationshipTemplateManager, allRelationshipTemplates, allEntityTemplateIds);
+                mockEntityTemplatesRoutes(mockEntityTemplateManager, allEntityTemplates);
             });
 
             beforeAll(async () => {

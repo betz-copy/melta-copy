@@ -1,13 +1,15 @@
 import { Express } from 'express';
 import request from 'supertest';
-import MockAdapter from 'axios-mock-adapter';
-import axios from 'axios';
 
 import Neo4jClient from '../../../utils/neo4j';
 import Server from '../../server';
 import config from '../../../config';
 import { IEntity } from '../../entities/interface';
 import { IRelationship } from '../interface';
+import { mockEntityTemplatesRoutes, mockRelationshipTemplatesRoutes, mockRulesRoutes } from '../../rules/tests/mock';
+import { IMongoEntityTemplate } from '../../../externalServices/entityTemplateManager';
+import { IMongoRelationshipTemplate } from '../../../externalServices/relationshipTemplateManager';
+import { getMockAdapterEntityTemplateManager, getMockAdapterRelationshipTemplateManager } from '../../../externalServices/tests/axiosMock';
 
 const mockDate = new Date();
 const mockDateStr = mockDate.toISOString();
@@ -21,25 +23,20 @@ const defaultEntity = {
     properties: defaultProperties,
 };
 
-const { neo4j, templateManager, relationshipManager } = config;
+const { neo4j } = config;
 
 describe('Relationship router', () => {
-    const mock = new MockAdapter(axios);
+    const mockEntityTemplateManager = getMockAdapterEntityTemplateManager();
+    const mockRelationshipTemplateManager = getMockAdapterRelationshipTemplateManager();
+
     let app: Express;
 
     beforeAll(async () => {
-        mock.onGet(`${templateManager.url}${templateManager.getByIdRoute}/${defaultEntityTemplateId}`).reply(200, {
+        const defaultEntityTemplate: IMongoEntityTemplate = {
             _id: defaultEntityTemplateId,
             name: 'entityTest',
             displayName: 'entityTest',
-            category: {
-                _id: '888888888888888888888888',
-                name: 'people',
-                displayName: 'people',
-                createdAt: mockDateStr,
-                updatedAt: mockDateStr,
-                __v: 0,
-            },
+            category: '888888888888888888888888',
             properties: {
                 type: 'object',
                 required: ['testProp'],
@@ -50,13 +47,14 @@ describe('Relationship router', () => {
                     },
                 },
             },
+            propertiesOrder: ['testProp'],
+            propertiesPreview: ['testProp'],
             disabled: false,
             createdAt: mockDateStr,
             updatedAt: mockDateStr,
-            __v: 0,
-        });
+        };
 
-        mock.onGet(`${relationshipManager.url}${relationshipManager.getRelationshipByIdRoute}/${defaultRelationshipTemplateId}`).reply(200, {
+        const defaultRelationshipTemplate: IMongoRelationshipTemplate = {
             _id: defaultRelationshipTemplateId,
             name: 'relTest',
             displayName: 'relTest',
@@ -64,18 +62,11 @@ describe('Relationship router', () => {
             destinationEntityId: defaultEntityTemplateId,
             createdAt: mockDateStr,
             updatedAt: mockDateStr,
-            __v: 0,
-        });
+        };
 
-        mock.onPost(`${relationshipManager.url}${relationshipManager.searchRulesRoute}`, {
-            disabled: false,
-            pinnedEntityTemplateIds: [defaultEntityTemplateId],
-        }).reply(200, []);
-
-        mock.onPost(`${relationshipManager.url}${relationshipManager.searchRulesRoute}`, {
-            disabled: false,
-            relationshipTemplateIds: [defaultRelationshipTemplateId],
-        }).reply(200, []);
+        mockRulesRoutes(mockRelationshipTemplateManager, [], [defaultEntityTemplateId], [defaultRelationshipTemplateId]);
+        mockRelationshipTemplatesRoutes(mockRelationshipTemplateManager, [defaultRelationshipTemplate], [defaultEntityTemplateId]);
+        mockEntityTemplatesRoutes(mockEntityTemplateManager, [defaultEntityTemplate]);
 
         await Neo4jClient.initialize(neo4j.url, neo4j.auth, neo4j.database);
     });
@@ -131,7 +122,7 @@ describe('Relationship router', () => {
 
             expect(relationship.statusCode).toBe(400);
             expect(relationship.body.type).toEqual('TemplateValidationError');
-            expect(relationship.body.message).toEqual(`Failed to fetch relationship template schema (id: ${unknownRelId})`);
+            expect(relationship.body.message).toEqual(`Relationship template doesnt exist (id: "${unknownRelId}")`);
         });
 
         it('Should fail to create a relationship (source/destination id do not match)', async () => {
@@ -142,16 +133,21 @@ describe('Relationship router', () => {
             const secondEntity = await request(app).post('/api/instances/entities').send(defaultEntity);
 
             // Mock rel template response
-            mock.onGet(`${relationshipManager.url}${relationshipManager.getRelationshipByIdRoute}/${relTemplateId}`).reply(200, {
-                _id: relTemplateId,
-                name: 'relTest',
-                displayName: 'relTest',
-                sourceEntityId: unknownId,
-                destinationEntityId: unknownId,
-                createdAt: mockDateStr,
-                updatedAt: mockDateStr,
-                __v: 0,
-            });
+            mockRelationshipTemplatesRoutes(
+                mockRelationshipTemplateManager,
+                [
+                    {
+                        _id: relTemplateId,
+                        name: 'relTest',
+                        displayName: 'relTest',
+                        sourceEntityId: unknownId,
+                        destinationEntityId: unknownId,
+                        createdAt: mockDateStr,
+                        updatedAt: mockDateStr,
+                    },
+                ],
+                [defaultEntityTemplateId],
+            );
 
             const relationship = await request(app)
                 .post('/api/instances/relationships')

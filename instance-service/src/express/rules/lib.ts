@@ -1,55 +1,28 @@
-import axios from 'axios';
 import _groupBy from 'lodash.groupby';
 import _difference from 'lodash.difference';
-import { trycatch } from '../../utils/lib';
-import { ValidationError } from '../error';
-import { IBrokenRule, IConnection, IMongoRule, IRuleRequestSchema, IRuleTransactionQuery, IRuleTransactionResult } from './interfaces';
-import { IRelationshipRequestSchema, IMongoRelationshipTemplate, IRelationship } from '../relationships/interface';
+import { IBrokenRule, IConnection, IMongoRule, IRuleTransactionQuery, IRuleTransactionResult } from './interfaces';
 import { IEntity } from '../entities/interface';
-import { getEntityTemplateById } from '../entities/validator.template';
 import { generateNeo4jQuery } from '.';
 import config from '../../config';
+import { EntityTemplateManagerService } from '../../externalServices/entityTemplateManager';
+import { IRelationship } from '../relationships/interface';
+import { RelationshipsTemplateManagerService } from '../../externalServices/relationshipTemplateManager';
 
-const { relationshipManager, createdRelationshipIdInBrokenRules } = config;
-const { url, searchRulesRoute, searchTemplatesRoute, timeout } = relationshipManager;
+const { createdRelationshipIdInBrokenRules } = config;
 
-export const searchRelationshipTemplates = async (relationshipRequest: IRelationshipRequestSchema) => {
-    const { result, err } = await trycatch(() =>
-        axios.post<IMongoRelationshipTemplate[]>(`${url}${searchTemplatesRoute}`, relationshipRequest, { timeout }),
-    );
-
-    if (err || !result) {
-        throw new ValidationError(`Failed to fetch relationship template schemas.`);
-    }
-
-    return result.data;
-};
-
-const getRelationshipTemplatesById = async (entityTemplateId: string) => {
+const getRelationshipTemplatesOfEntityTemplate = async (entityTemplateId: string) => {
     const relationshipTemplates = await Promise.all([
-        searchRelationshipTemplates({ sourceEntityIds: [entityTemplateId] }),
-        searchRelationshipTemplates({ destinationEntityIds: [entityTemplateId] }),
+        RelationshipsTemplateManagerService.searchRelationshipTemplates({ sourceEntityIds: [entityTemplateId] }),
+        RelationshipsTemplateManagerService.searchRelationshipTemplates({ destinationEntityIds: [entityTemplateId] }),
     ]);
 
     return relationshipTemplates.flat();
 };
 
-export const searchRuleTemplates = async (ruleRequest: IRuleRequestSchema) => {
-    const { result, err } = await trycatch(() =>
-        axios.post<IMongoRule[]>(`${url}${searchRulesRoute}`, { disabled: false, ...ruleRequest }, { timeout }),
-    );
-
-    if (err || !result) {
-        throw new ValidationError(`Failed to fetch rule template schema.`);
-    }
-
-    return result.data;
-};
-
 export const getRulesByEntityTemplateId = async (entityTemplateId: string) => {
     const rules = await Promise.all([
-        searchRuleTemplates({ pinnedEntityTemplateIds: [entityTemplateId] }),
-        searchRuleTemplates({ unpinnedEntityTemplateIds: [entityTemplateId] }),
+        RelationshipsTemplateManagerService.searchRules({ pinnedEntityTemplateIds: [entityTemplateId] }),
+        RelationshipsTemplateManagerService.searchRules({ unpinnedEntityTemplateIds: [entityTemplateId] }),
     ]);
 
     return rules.flat();
@@ -102,14 +75,14 @@ export const isRelationshipLegal = async (
             const [pinnedEntity, nonPinnedEntity] =
                 pinnedEntityTemplateId === sourceEntity.templateId ? [sourceEntity, destinationEntity] : [destinationEntity, sourceEntity];
 
-            const pinnedEntityRelationships = await getRelationshipTemplatesById(pinnedEntityTemplateId);
+            const pinnedEntityRelationships = await getRelationshipTemplatesOfEntityTemplate(pinnedEntityTemplateId);
 
             const connectionsTemplates = await Promise.all(
                 pinnedEntityRelationships.map(async (relTemplate) => {
                     const { sourceEntityId, destinationEntityId } = relTemplate;
                     const otherEntityTemplateId = sourceEntityId === pinnedEntity.templateId ? destinationEntityId : sourceEntityId;
 
-                    const otherEntityTemplate = await getEntityTemplateById(otherEntityTemplateId);
+                    const otherEntityTemplate = await EntityTemplateManagerService.getEntityTemplateById(otherEntityTemplateId);
 
                     return { relationshipTemplate: relTemplate, otherEntityTemplate };
                 }),

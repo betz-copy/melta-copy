@@ -8,15 +8,17 @@ import {
     normalizeResponseCount,
     normalizeRelAndEntitiesForRule,
 } from '../../utils/neo4j/lib';
-import { IEntity, IMongoEntityTemplate } from './interface';
+import { IEntity } from './interface';
 import { NotFoundError, ServiceError } from '../error';
 import { agGridRequestToNeo4JRequest, agGridSearchRequestToNeo4JRequest, IAGGridRequest } from '../../utils/agGridFilterModelToNeoQuery';
 import getLatestIndex from '../../utils/redis/getLatestIndex';
-import { areAllBrokenRulesIgnored, createRulesQueries, getBrokenRules, getRulesByEntityTemplateId, searchRuleTemplates } from '../rules/lib';
+import { areAllBrokenRulesIgnored, createRulesQueries, getBrokenRules, getRulesByEntityTemplateId } from '../rules/lib';
 import { IBrokenRule, IConnection } from '../rules/interfaces';
 import { transactionRunAndNormalize, getRuleResults } from '../rules/transaction';
 import { filterDependentRulesOnProperties, filterDependentRulesViaAggregation } from '../rules/getParametersOfFormula';
 import config from '../../config';
+import { IMongoEntityTemplate } from '../../externalServices/entityTemplateManager';
+import { RelationshipsTemplateManagerService } from '../../externalServices/relationshipTemplateManager';
 
 export class EntityManager {
     static createEntity(entity: IEntity) {
@@ -144,7 +146,7 @@ export class EntityManager {
         relationshipTemplateId: string,
         updatedProperties: string[],
     ) => {
-        const pathsConnectedToSourceIdRules = await searchRuleTemplates({ pinnedEntityTemplateIds: [entityTemplateId] });
+        const pathsConnectedToSourceIdRules = await RelationshipsTemplateManagerService.searchRules({ pinnedEntityTemplateIds: [entityTemplateId] });
 
         const relevantRules = filterDependentRulesViaAggregation(pathsConnectedToSourceIdRules, relationshipTemplateId, updatedProperties);
 

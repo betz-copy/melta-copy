@@ -1,13 +1,13 @@
-import axios from 'axios';
-import MockAdapter from 'axios-mock-adapter';
 import Neo4jClient from '../../../utils/neo4j';
 import { IEntity } from '../../entities/interface';
 import RelationshipManager from '../manager';
 import config from '../../../config';
 import { IRelationship } from '../interface';
 import EntityManager from '../../entities/manager';
+import { getMockAdapterRelationshipTemplateManager } from '../../../externalServices/tests/axiosMock';
+import { mockRelationshipTemplatesRoutes, mockRulesRoutes } from '../../rules/tests/mock';
 
-const { relationshipManager, neo4j } = config;
+const { neo4j } = config;
 
 const unknownId = '555555555555555555555555';
 const defaultRelationshipTemplateId = '444444444444444444444444';
@@ -28,7 +28,7 @@ const relationshipTemplate = {
 };
 
 describe('Relationship manager', () => {
-    const mock = new MockAdapter(axios);
+    const mockRelationshipTemplateManager = getMockAdapterRelationshipTemplateManager();
 
     let firstEntity: IEntity;
     let entityId: string;
@@ -42,20 +42,8 @@ describe('Relationship manager', () => {
     beforeAll(async () => {
         await Neo4jClient.initialize(neo4j.url, neo4j.auth, neo4j.database);
 
-        mock.onPost(`${relationshipManager.url}${relationshipManager.searchRulesRoute}`, {
-            disabled: false,
-            pinnedEntityTemplateIds: [defaultEntityTemplateId],
-        }).reply(200, []);
-
-        mock.onPost(`${relationshipManager.url}${relationshipManager.searchRulesRoute}`, {
-            disabled: false,
-            relationshipTemplateIds: [defaultRelationshipTemplateId],
-        }).reply(200, []);
-
-        mock.onGet(`${relationshipManager.url}${relationshipManager.getRelationshipByIdRoute}/${defaultRelationshipTemplateId}`).reply(
-            200,
-            relationshipTemplate,
-        );
+        mockRulesRoutes(mockRelationshipTemplateManager, [], [defaultEntityTemplateId], [defaultRelationshipTemplateId]);
+        mockRelationshipTemplatesRoutes(mockRelationshipTemplateManager, [relationshipTemplate], [defaultEntityTemplateId]);
     });
 
     afterAll(async () => {

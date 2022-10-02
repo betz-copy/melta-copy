@@ -8,14 +8,14 @@ import {
     normalizeReturnedDeletedRelationship,
     normalizeRelAndEntitiesForRule,
 } from '../../utils/neo4j/lib';
-import { IMongoRelationshipTemplate, IRelationship } from './interface';
+import { IRelationship } from './interface';
 import { NotFoundError, ServiceError } from '../error';
-import { searchRuleTemplates, getBrokenRules, areAllBrokenRulesIgnored, createRulesQueries } from '../rules/lib';
+import { getBrokenRules, areAllBrokenRulesIgnored, createRulesQueries } from '../rules/lib';
 import { IBrokenRule } from '../rules/interfaces';
-import { getRelationshipTemplateById } from './template';
 import { filterDependentRulesViaAggregation } from '../rules/getParametersOfFormula';
 import { transactionRunAndNormalize, getRuleResults } from '../rules/transaction';
 import config from '../../config';
+import { IMongoRelationshipTemplate, RelationshipsTemplateManagerService } from '../../externalServices/relationshipTemplateManager';
 
 export class RelationshipManager {
     static async getRelationshipById(id: string) {
@@ -48,7 +48,7 @@ export class RelationshipManager {
         sourceEntityId: string,
         destinationEntityId: string,
     ) => {
-        const pathsConnectedWithRelIdRules = await searchRuleTemplates({ relationshipTemplateIds: [templateId] });
+        const pathsConnectedWithRelIdRules = await RelationshipsTemplateManagerService.searchRules({ relationshipTemplateIds: [templateId] });
 
         if (!pathsConnectedWithRelIdRules.length) {
             return [];
@@ -69,7 +69,9 @@ export class RelationshipManager {
         sourceEntityId: string,
         destinationEntityId: string,
     ) => {
-        const pathsConnectedToSourceIdRules = await searchRuleTemplates({ pinnedEntityTemplateIds: [relationshipTemplate.sourceEntityId] });
+        const pathsConnectedToSourceIdRules = await RelationshipsTemplateManagerService.searchRules({
+            pinnedEntityTemplateIds: [relationshipTemplate.sourceEntityId],
+        });
         const relevantRules = filterDependentRulesViaAggregation(pathsConnectedToSourceIdRules, relationshipTemplate._id);
 
         if (!relevantRules.length) {
@@ -91,7 +93,9 @@ export class RelationshipManager {
         sourceEntityId: string,
         destinationEntityId: string,
     ) => {
-        const pathsConnectedToDestIdRules = await searchRuleTemplates({ pinnedEntityTemplateIds: [relationshipTemplate.destinationEntityId] });
+        const pathsConnectedToDestIdRules = await RelationshipsTemplateManagerService.searchRules({
+            pinnedEntityTemplateIds: [relationshipTemplate.destinationEntityId],
+        });
         const relevantRules = filterDependentRulesViaAggregation(pathsConnectedToDestIdRules, relationshipTemplate._id);
 
         if (!relevantRules.length) {
@@ -190,7 +194,7 @@ export class RelationshipManager {
     ) {
         const { sourceEntityId, destinationEntityId, templateId } = deletedRelationship;
 
-        const relationshipTemplate = await getRelationshipTemplateById(templateId);
+        const relationshipTemplate = await RelationshipsTemplateManagerService.getRelationshipTemplateById(templateId);
 
         const ruleQueryBySourceId = await RelationshipManager.getRuleQueryBySourceId(
             transaction,

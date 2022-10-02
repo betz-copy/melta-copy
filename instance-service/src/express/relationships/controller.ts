@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { fetchPropertyFromRequest } from '../../utils/express';
-import { IMongoRelationshipTemplate } from './interface';
+import { IMongoRelationshipTemplate } from '../../externalServices/relationshipTemplateManager';
 import { RelationshipManager } from './manager';
 
 class RelationshipController {

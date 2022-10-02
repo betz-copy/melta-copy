@@ -1,28 +1,63 @@
 import { Express } from 'express';
 import request from 'supertest';
-import axios from 'axios';
-import MockAdapter from 'axios-mock-adapter';
 
 import Neo4jClient from '../../../utils/neo4j';
 import Server from '../../server';
 import { formatDate } from '../../../utils/neo4j/lib';
 import config from '../../../config';
+import { getMockAdapterEntityTemplateManager, getMockAdapterRelationshipTemplateManager } from '../../../externalServices/tests/axiosMock';
+import { mockEntityTemplatesRoutes, mockRelationshipTemplatesRoutes, mockRulesRoutes } from '../../rules/tests/mock';
+import { IMongoEntityTemplate } from '../../../externalServices/entityTemplateManager';
 
 const mockDate = new Date();
 const mockDateStr = mockDate.toISOString();
 
 const defaultRelationshipTemplateId = '888888888888888888888888';
 const defaultTemplateId = '999999999999999999999999';
+
+const defaultTemplate: IMongoEntityTemplate = {
+    _id: defaultTemplateId,
+    name: 'testTemplate',
+    displayName: 'testTemplate',
+    category: '1234',
+    properties: {
+        type: 'object',
+        required: ['testProp'],
+        properties: {
+            testProp: {
+                type: 'string',
+                title: 'testProp',
+            },
+            mockDate: {
+                type: 'string',
+                format: 'date',
+                title: 'mockDate',
+            },
+            mockDateTime: {
+                type: 'string',
+                format: 'date-time',
+                title: 'mockDateTime',
+            },
+        },
+    },
+    propertiesOrder: ['testProp'],
+    propertiesPreview: ['testProp'],
+    disabled: false,
+    createdAt: mockDateStr,
+    updatedAt: mockDateStr,
+};
+
 const defaultProperties = { testProp: 'testProp' };
 const defaultEntity = {
     templateId: defaultTemplateId,
     properties: defaultProperties,
 };
 
-const { templateManager, relationshipManager, neo4j } = config;
+const { neo4j } = config;
 
 describe('Entity router', () => {
-    const mock = new MockAdapter(axios);
+    const mockEntityTemplateManager = getMockAdapterEntityTemplateManager();
+    const mockRelationshipTemplateManager = getMockAdapterRelationshipTemplateManager();
 
     let app: Express;
 
@@ -34,60 +69,9 @@ describe('Entity router', () => {
         // Initialize Neo4j client
         await Neo4jClient.initialize(neo4j.url, neo4j.auth, neo4j.database);
         // Mock get template router - for validation middleware
-        const { url, getByIdRoute } = templateManager;
+        mockEntityTemplatesRoutes(mockEntityTemplateManager, [defaultTemplate]);
 
-        mock.onGet(`${url}${getByIdRoute}/${defaultTemplateId}`).reply(200, {
-            _id: defaultTemplateId,
-            name: 'testTemplate',
-            displayName: 'testTemplate',
-            category: {
-                _id: '1234',
-                name: 'testCatergory',
-                displayName: 'testCatergory',
-                createdAt: mockDateStr,
-                updatedAt: mockDateStr,
-                __v: 0,
-            },
-            properties: {
-                type: 'object',
-                required: ['testProp'],
-                properties: {
-                    testProp: {
-                        type: 'string',
-                        title: 'testProp',
-                    },
-                    mockDate: {
-                        type: 'string',
-                        format: 'date',
-                        title: 'mockDate',
-                    },
-                    mockDateTime: {
-                        type: 'string',
-                        format: 'date-time',
-                        title: 'mockDateTime',
-                    },
-                },
-            },
-            disabled: false,
-            createdAt: mockDateStr,
-            updatedAt: mockDateStr,
-            __v: 0,
-        });
-
-        mock.onPost(`${relationshipManager.url}${relationshipManager.searchRulesRoute}`, {
-            disabled: false,
-            pinnedEntityTemplateIds: [defaultTemplateId],
-        }).reply(200, []);
-
-        mock.onPost(`${relationshipManager.url}${relationshipManager.searchRulesRoute}`, {
-            disabled: false,
-            unpinnedEntityTemplateIds: [defaultTemplateId],
-        }).reply(200, []);
-
-        mock.onPost(`${relationshipManager.url}${relationshipManager.searchRulesRoute}`, {
-            disabled: false,
-            relationshipTemplateIds: [defaultRelationshipTemplateId],
-        }).reply(200, []);
+        mockRulesRoutes(mockRelationshipTemplateManager, [], [defaultTemplateId], [defaultRelationshipTemplateId]);
     });
 
     afterAll(async () => {
@@ -282,19 +266,22 @@ describe('Entity router', () => {
                     .post('/api/instances/entities')
                     .send({ templateId: defaultTemplateId, properties: secondEntityProperties });
 
-                const { url, getRelationshipByIdRoute } = relationshipManager;
-
                 // Mock get relationship template route
-                mock.onGet(`${url}${getRelationshipByIdRoute}/${defaultRelationshipTemplateId}`).reply(200, {
-                    _id: defaultRelationshipTemplateId,
-                    name: 'RelationshipMock',
-                    displayName: 'RelationshipMock',
-                    sourceEntityId: defaultTemplateId,
-                    destinationEntityId: defaultTemplateId,
-                    createdAt: mockDateStr,
-                    updatedAt: mockDateStr,
-                    __v: 0,
-                });
+                mockRelationshipTemplatesRoutes(
+                    mockRelationshipTemplateManager,
+                    [
+                        {
+                            _id: defaultRelationshipTemplateId,
+                            name: 'RelationshipMock',
+                            displayName: 'RelationshipMock',
+                            sourceEntityId: defaultTemplateId,
+                            destinationEntityId: defaultTemplateId,
+                            createdAt: mockDateStr,
+                            updatedAt: mockDateStr,
+                        },
+                    ],
+                    [defaultTemplateId],
+                );
 
                 // Create relationship between two entities
                 await request(app)
