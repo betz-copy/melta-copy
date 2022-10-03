@@ -1,8 +1,8 @@
 import MockAdapter from 'axios-mock-adapter';
-import { IMongoEntityTemplate } from '../../../externalServices/entityTemplateManager';
-import { IMongoRule } from '../interfaces';
-import config from '../../../config';
-import { IMongoRelationshipTemplate } from '../../../externalServices/relationshipTemplateManager';
+import { IMongoEntityTemplate } from '../entityTemplateManager';
+import { IMongoRule } from '../../express/rules/interfaces';
+import config from '../../config';
+import { IMongoRelationshipTemplate } from '../relationshipTemplateManager';
 
 const { relationshipManager, entityTemplateManager } = config;
 

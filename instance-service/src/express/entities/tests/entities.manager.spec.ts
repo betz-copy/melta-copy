@@ -5,8 +5,8 @@ import EntityManager from '../manager';
 import RelationshipManager from '../../relationships/manager';
 import { IEntity } from '../interface';
 import { IMongoEntityTemplate } from '../../../externalServices/entityTemplateManager';
-import { getMockAdapterRelationshipTemplateManager } from '../../../externalServices/tests/axiosMock';
-import { mockRulesRoutes } from '../../rules/tests/mock';
+import { getMockAdapterRelationshipTemplateManager } from '../../../externalServices/tests/axios.mock';
+import { mockRulesRoutes } from '../../../externalServices/tests/externalServices.mock';
 
 const { neo4j } = config;
 

@@ -17,7 +17,7 @@ import {
     tripConnectedToFlightRelationshipTemplate,
     tripEntityTemplate,
     warnOnEveryFlightOnActiveZone,
-} from './mock';
+} from '../../../externalServices/tests/externalServices.mock';
 import { IEntity } from '../../entities/interface';
 import { getNeo4jDateTime } from '../../../utils/neo4j/lib';
 import RelationshipManager from '../../relationships/manager';
@@ -26,7 +26,7 @@ import { ServiceError } from '../../error';
 import { IBrokenRule } from '../interfaces';
 import { addStringFieldsAndNormalizeDateValues } from '../../entities/validator.template';
 import { IMongoEntityTemplate } from '../../../externalServices/entityTemplateManager';
-import { getMockAdapterEntityTemplateManager, getMockAdapterRelationshipTemplateManager } from '../../../externalServices/tests/axiosMock';
+import { getMockAdapterEntityTemplateManager, getMockAdapterRelationshipTemplateManager } from '../../../externalServices/tests/axios.mock';
 
 const { neo4j } = config;
 

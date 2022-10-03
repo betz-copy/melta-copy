@@ -6,10 +6,10 @@ import Server from '../../server';
 import config from '../../../config';
 import { IEntity } from '../../entities/interface';
 import { IRelationship } from '../interface';
-import { mockEntityTemplatesRoutes, mockRelationshipTemplatesRoutes, mockRulesRoutes } from '../../rules/tests/mock';
+import { mockEntityTemplatesRoutes, mockRelationshipTemplatesRoutes, mockRulesRoutes } from '../../../externalServices/tests/externalServices.mock';
 import { IMongoEntityTemplate } from '../../../externalServices/entityTemplateManager';
 import { IMongoRelationshipTemplate } from '../../../externalServices/relationshipTemplateManager';
-import { getMockAdapterEntityTemplateManager, getMockAdapterRelationshipTemplateManager } from '../../../externalServices/tests/axiosMock';
+import { getMockAdapterEntityTemplateManager, getMockAdapterRelationshipTemplateManager } from '../../../externalServices/tests/axios.mock';
 
 const mockDate = new Date();
 const mockDateStr = mockDate.toISOString();

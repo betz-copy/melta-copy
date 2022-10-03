@@ -33,7 +33,7 @@ module.exports = {
                 json: 'never',
             },
         ],
-        'import/no-extraneous-dependencies': ['error', { devDependencies: true }],
+        'import/no-extraneous-dependencies': ['error', { devDependencies: ['**/*.spec.ts', '**/*.mock.ts'] }],
         'no-underscore-dangle': ['error', { allow: ['_id'] }],
         'no-console': 'off',
         'no-unused-vars': 'off', // Checked by typescript

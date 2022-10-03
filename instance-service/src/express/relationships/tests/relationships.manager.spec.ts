@@ -4,8 +4,8 @@ import RelationshipManager from '../manager';
 import config from '../../../config';
 import { IRelationship } from '../interface';
 import EntityManager from '../../entities/manager';
-import { getMockAdapterRelationshipTemplateManager } from '../../../externalServices/tests/axiosMock';
-import { mockRelationshipTemplatesRoutes, mockRulesRoutes } from '../../rules/tests/mock';
+import { getMockAdapterRelationshipTemplateManager } from '../../../externalServices/tests/axios.mock';
+import { mockRelationshipTemplatesRoutes, mockRulesRoutes } from '../../../externalServices/tests/externalServices.mock';
 
 const { neo4j } = config;
 

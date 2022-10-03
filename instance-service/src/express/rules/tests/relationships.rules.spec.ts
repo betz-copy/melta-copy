@@ -25,9 +25,9 @@ import {
     tripConnectedToFlightRelationshipTemplate,
     tripEntityTemplate,
     warnOnEveryFlightOnActiveZone,
-} from './mock';
+} from '../../../externalServices/tests/externalServices.mock';
 import { IMongoRelationshipTemplate } from '../../../externalServices/relationshipTemplateManager';
-import { getMockAdapterEntityTemplateManager, getMockAdapterRelationshipTemplateManager } from '../../../externalServices/tests/axiosMock';
+import { getMockAdapterEntityTemplateManager, getMockAdapterRelationshipTemplateManager } from '../../../externalServices/tests/axios.mock';
 
 const { neo4j } = config;
 

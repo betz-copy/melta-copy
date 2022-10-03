@@ -5,8 +5,8 @@ import Neo4jClient from '../../../utils/neo4j';
 import Server from '../../server';
 import { formatDate } from '../../../utils/neo4j/lib';
 import config from '../../../config';
-import { getMockAdapterEntityTemplateManager, getMockAdapterRelationshipTemplateManager } from '../../../externalServices/tests/axiosMock';
-import { mockEntityTemplatesRoutes, mockRelationshipTemplatesRoutes, mockRulesRoutes } from '../../rules/tests/mock';
+import { getMockAdapterEntityTemplateManager, getMockAdapterRelationshipTemplateManager } from '../../../externalServices/tests/axios.mock';
+import { mockEntityTemplatesRoutes, mockRelationshipTemplatesRoutes, mockRulesRoutes } from '../../../externalServices/tests/externalServices.mock';
 import { IMongoEntityTemplate } from '../../../externalServices/entityTemplateManager';
 
 const mockDate = new Date();
