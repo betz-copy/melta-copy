@@ -7,6 +7,7 @@ import {
     normalizeReturnedEntity,
     normalizeResponseCount,
     normalizeRelAndEntitiesForRule,
+    runInTransactionAndNormalize,
 } from '../../utils/neo4j/lib';
 import { IEntity } from './interface';
 import { NotFoundError, ServiceError } from '../error';
@@ -14,7 +15,7 @@ import { agGridRequestToNeo4JRequest, agGridSearchRequestToNeo4JRequest, IAGGrid
 import getLatestIndex from '../../utils/redis/getLatestIndex';
 import { areAllBrokenRulesIgnored, createRulesQueries, getBrokenRules, getRulesByEntityTemplateId } from '../rules/lib';
 import { IBrokenRule, IConnection } from '../rules/interfaces';
-import { transactionRunAndNormalize, getRuleResults } from '../rules/transaction';
+import { getRuleResults } from '../rules/transaction';
 import { filterDependentRulesOnProperties, filterDependentRulesViaAggregation } from '../rules/getParametersOfFormula';
 import config from '../../config';
 import { IMongoEntityTemplate } from '../../externalServices/entityTemplateManager';
@@ -154,7 +155,7 @@ export class EntityManager {
             return [];
         }
 
-        const pathsConnectedToSourceId = await transactionRunAndNormalize(
+        const pathsConnectedToSourceId = await runInTransactionAndNormalize(
             transaction,
             `MATCH (s {_id: '${sourceEntityId}'})-[r]-(d) WHERE d._id <> '${destinationEntityId}'  RETURN s, r, d`,
             normalizeRelAndEntitiesForRule,
@@ -192,7 +193,7 @@ export class EntityManager {
         ignoredRules: IBrokenRule[],
         updatedProperties: string[],
     ) {
-        const connectionsWithSourceId = await transactionRunAndNormalize(
+        const connectionsWithSourceId = await runInTransactionAndNormalize(
             transaction,
             `MATCH (s {_id: '${updatedEntity.properties._id}'})-[r]-(d)  RETURN s, r, d`,
             normalizeRelAndEntitiesForRule,
@@ -243,7 +244,7 @@ export class EntityManager {
         ignoredRules: IBrokenRule[],
     ) {
         return Neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
-            const entity = await transactionRunAndNormalize(
+            const entity = await runInTransactionAndNormalize(
                 transaction,
                 `MATCH (e {_id: '${id}'}) RETURN e`,
                 normalizeReturnedEntity('singleResponse'),
@@ -257,7 +258,7 @@ export class EntityManager {
                 throw new ServiceError(400, `[NEO4J] cannot update disabled entity.`);
             }
 
-            const updatedEntity = await transactionRunAndNormalize(
+            const updatedEntity = await runInTransactionAndNormalize(
                 transaction,
                 `MATCH (e {_id: '${id}'})
                  WITH e.createdAt AS createdAt, e.disabled AS disabled, e AS e

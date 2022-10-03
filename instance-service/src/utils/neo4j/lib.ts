@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import neo4j, { QueryResult, Node, Relationship } from 'neo4j-driver';
+import neo4j, { QueryResult, Node, Relationship, Transaction } from 'neo4j-driver';
 import { IEntity } from '../../express/entities/interface';
 import { IRelationship } from '../../express/relationships/interface';
 import config from '../../config';
@@ -201,6 +201,17 @@ export const normalizeRelAndEntitiesForRule = (result: QueryResult) => {
             },
         };
     });
+};
+
+export const runInTransactionAndNormalize = async <T>(
+    transaction: Transaction,
+    cypherQuery: string,
+    normalizeFunction: (queryResult: QueryResult) => T,
+    parameters?: Record<string, any>,
+): Promise<T> => {
+    const result = await transaction.run(cypherQuery, parameters);
+
+    return normalizeFunction(result);
 };
 
 export const getNeo4jDateTime = (date = new Date()) => neo4j.types.DateTime.fromStandardDate(date);

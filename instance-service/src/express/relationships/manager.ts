@@ -7,13 +7,14 @@ import {
     normalizeReturnedRelationship,
     normalizeReturnedDeletedRelationship,
     normalizeRelAndEntitiesForRule,
+    runInTransactionAndNormalize,
 } from '../../utils/neo4j/lib';
 import { IRelationship } from './interface';
 import { NotFoundError, ServiceError } from '../error';
 import { getBrokenRules, areAllBrokenRulesIgnored, createRulesQueries } from '../rules/lib';
 import { IBrokenRule } from '../rules/interfaces';
 import { filterDependentRulesViaAggregation } from '../rules/getParametersOfFormula';
-import { transactionRunAndNormalize, getRuleResults } from '../rules/transaction';
+import { getRuleResults } from '../rules/transaction';
 import config from '../../config';
 import { IMongoRelationshipTemplate, RelationshipsTemplateManagerService } from '../../externalServices/relationshipTemplateManager';
 
@@ -54,7 +55,7 @@ export class RelationshipManager {
             return [];
         }
 
-        const pathsWithRelId = await transactionRunAndNormalize(
+        const pathsWithRelId = await runInTransactionAndNormalize(
             transaction,
             `MATCH (s {_id: '${sourceEntityId}'})-[r: \`${templateId}\`]->(d {_id: '${destinationEntityId}'}) RETURN s, r, d`,
             normalizeRelAndEntitiesForRule,
@@ -78,7 +79,7 @@ export class RelationshipManager {
             return [];
         }
 
-        const pathsConnectedToSourceId = await transactionRunAndNormalize(
+        const pathsConnectedToSourceId = await runInTransactionAndNormalize(
             transaction,
             `MATCH (s {_id: '${sourceEntityId}'})-[r]-(d) WHERE d._id <> '${destinationEntityId}' RETURN s, r, d`,
             normalizeRelAndEntitiesForRule,
@@ -102,7 +103,7 @@ export class RelationshipManager {
             return [];
         }
 
-        const pathsConnectedToDestId = await transactionRunAndNormalize(
+        const pathsConnectedToDestId = await runInTransactionAndNormalize(
             transaction,
             `MATCH (s)-[r]-(d {_id: '${destinationEntityId}'}) WHERE s._id <> '${sourceEntityId}' RETURN s, r, d`,
             normalizeRelAndEntitiesForRule,
@@ -159,7 +160,7 @@ export class RelationshipManager {
         const { templateId, properties, sourceEntityId, destinationEntityId } = relationship;
 
         return Neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
-            const countOfExistingRelationships = await transactionRunAndNormalize(
+            const countOfExistingRelationships = await runInTransactionAndNormalize(
                 transaction,
                 `MATCH ({_id: '${sourceEntityId}'})-[r: \`${templateId}\`]->({_id: '${destinationEntityId}'}) return count(r)`,
                 normalizeResponseCount,
@@ -171,7 +172,7 @@ export class RelationshipManager {
                 });
             }
 
-            const createdRelationship = await transactionRunAndNormalize(
+            const createdRelationship = await runInTransactionAndNormalize(
                 transaction,
                 `MATCH (s {_id: '${sourceEntityId}'}),(d {_id: '${destinationEntityId}'})
                  MERGE (s)-[r: \`${templateId}\`]->(d)
@@ -224,7 +225,7 @@ export class RelationshipManager {
 
     static async deleteRelationshipById(id: string, ignoredRules: IBrokenRule[]) {
         return Neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
-            const relationship = await transactionRunAndNormalize(
+            const relationship = await runInTransactionAndNormalize(
                 transaction,
                 `MATCH (s)-[r]->(d)
                  WHERE r._id='${id}' with *, properties(r) as rProps, type(r) as rType
