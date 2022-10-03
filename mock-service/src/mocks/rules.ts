@@ -37,17 +37,27 @@ export const rulesCreator = (fliesOnId: string, flightInTripId: string, flightId
                     isAggregationGroup: true,
                     aggregation: 'EVERY',
                     variableNameOfAggregation: `${tripId}.${flightInTripId}.${flightId}`,
-                    ruleOfGroup: 'AND',
+                    ruleOfGroup: 'OR',
                     subFormulas: [
                         {
                             isEquation: true,
-                            operatorBool: 'equals',
+                            operatorBool: 'notEqual',
                             lhsArgument: {
                                 isPropertyOfVariable: true,
                                 variableName: `${tripId}.${flightInTripId}.${flightId}`,
                                 property: 'departureDate',
                             },
                             rhsArgument: { isPropertyOfVariable: true, variableName: flightId, property: 'departureDate' },
+                        },
+                        {
+                            isEquation: true,
+                            operatorBool: 'equals',
+                            lhsArgument: {
+                                isPropertyOfVariable: true,
+                                variableName: `${tripId}.${flightInTripId}.${flightId}`,
+                                property: '_id',
+                            },
+                            rhsArgument: { isPropertyOfVariable: true, variableName: flightId, property: '_id' },
                         },
                     ],
                 },
