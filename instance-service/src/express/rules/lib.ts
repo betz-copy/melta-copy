@@ -78,13 +78,13 @@ export const isRelationshipLegal = async (
             const pinnedEntityRelationships = await getRelationshipTemplatesOfEntityTemplate(pinnedEntityTemplateId);
 
             const connectionsTemplates = await Promise.all(
-                pinnedEntityRelationships.map(async (relTemplate) => {
-                    const { sourceEntityId, destinationEntityId } = relTemplate;
+                pinnedEntityRelationships.map(async (relationshipTemplate) => {
+                    const { sourceEntityId, destinationEntityId } = relationshipTemplate;
                     const otherEntityTemplateId = sourceEntityId === pinnedEntity.templateId ? destinationEntityId : sourceEntityId;
 
                     const otherEntityTemplate = await EntityTemplateManagerService.getEntityTemplateById(otherEntityTemplateId);
 
-                    return { relationshipTemplate: relTemplate, otherEntityTemplate };
+                    return { relationshipTemplate, otherEntityTemplate };
                 }),
             );
 
