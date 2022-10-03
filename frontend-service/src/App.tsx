@@ -21,6 +21,7 @@ import { environment } from './globals';
 import loadingAnimation from './assets/icons/Melta_Logo.svg';
 import './css/loading.css';
 import { IMongoRule } from './interfaces/rules';
+import { sortByDisplayName } from './utils/templates';
 
 const App: React.FC = () => {
     const queryClient = useQueryClient();
@@ -55,13 +56,12 @@ const App: React.FC = () => {
             console.log('failed to get templates error:', error);
         },
         onSuccess: ({ categories, entityTemplates, relationshipTemplates, rules }) => {
-            queryClient.setQueryData<IMongoCategory[]>('getCategories', categories);
-            queryClient.setQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates', entityTemplates);
-            queryClient.setQueryData<IMongoRelationshipTemplate[]>('getRelationshipTemplates', relationshipTemplates);
+            queryClient.setQueryData<IMongoCategory[]>('getCategories', sortByDisplayName(categories));
+            queryClient.setQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates', sortByDisplayName(entityTemplates));
+            queryClient.setQueryData<IMongoRelationshipTemplate[]>('getRelationshipTemplates', sortByDisplayName(relationshipTemplates));
             queryClient.setQueryData<IMongoRule[]>('getRules', rules);
         },
     });
-
     const { isLoading: isLoadingMyPermissions, isError: isErrorMyPermissions } = useQuery<IPermissionsOfUser>(
         'getMyPermissions',
         getMyPermissionsRequest,

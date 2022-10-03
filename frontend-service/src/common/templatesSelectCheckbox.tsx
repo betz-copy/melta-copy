@@ -14,7 +14,7 @@ const getCategoriesSelectCheckboxGroupProps = (
 
     return {
         useGroups: true,
-        groups: categories.sort((categoryA, categoryB) => categoryA.displayName.localeCompare(categoryB.displayName)),
+        groups: categories,
         getGroupId: (category) => category._id,
         getGroupLabel: (category) => category.displayName,
         getGroupOfOption: (entityTemplate, _categories) => entityTemplate.category,
@@ -33,7 +33,7 @@ const TemplatesSelectCheckbox: React.FC<{
     return (
         <SelectCheckbox
             title={title}
-            options={[...templates].sort((templateA, templateB) => templateA.displayName.localeCompare(templateB.displayName))}
+            options={templates}
             selectedOptions={selectedTemplates}
             setSelectedOptions={setSelectedTemplates}
             getOptionId={({ _id }) => _id}

@@ -88,7 +88,7 @@ const EntityTemplatesRow: React.FC = () => {
                     <Grid item>
                         <SelectCheckbox
                             title={i18next.t('categories')}
-                            options={categories.sort((categoryA, categoryB) => categoryA.displayName.localeCompare(categoryB.displayName))}
+                            options={categories}
                             selectedOptions={categoriesToShow}
                             setSelectedOptions={setCategoriesToShow}
                             getOptionId={(category) => category._id}

@@ -36,3 +36,7 @@ export const isRelationshipConnectedToEntityTemplate = (
     const { sourceEntity, destinationEntity } = relationshipTemplate;
     return sourceEntity._id === entityTemplate._id || destinationEntity._id === entityTemplate._id;
 };
+
+export const sortByDisplayName = (itemsToSort) => {
+    return itemsToSort.sort((itemA, itemB) => itemA.displayName.localeCompare(itemB.displayName));
+};
