@@ -1,4 +1,5 @@
 import Joi from 'joi';
+import { ignoredRuleSchema } from '../rules/ignoredRuleSchema';
 
 /**
  * GET /api/instances/entities/:id
@@ -153,14 +154,7 @@ export const updateEntityByIdRequestSchema = Joi.object({
     body: {
         properties: Joi.object().required(),
         templateId: Joi.string().required(),
-        ignoredRules: Joi.array()
-            .items(
-                Joi.object({
-                    ruleId: Joi.string().required(),
-                    relationshipIds: Joi.array().items(Joi.string()).required(),
-                }),
-            )
-            .default([]),
+        ignoredRules: Joi.array().items(ignoredRuleSchema).default([]),
     },
     query: {},
     params: {
