@@ -29,11 +29,11 @@ config:
     - name: NEO4J_USERNAME
       value: neo4j
     - name: NEO4J_PASSWORD
-      value: qdftt5gfVy-GaoutZvpmv6MRN0hPXVBljEVxY6A69BU
+      value: O7iiktQ9YjB2jBVvGXt0w8nqhV6bW7CawkraxZ3e-gA
     - name: NEO4J_DATABASE
       value: neo4j
     - name: NEO4J_URL
-      value: neo4j+s://4a2c637e.databases.neo4j.io
+      value: neo4j+s://35e30c09.databases.neo4j.io
     - name: TEMPLATE_MANAGER_URL
       value: http://entity-template-manager:8000
     - name: RELATIONSHIP_MANAGER_URL
