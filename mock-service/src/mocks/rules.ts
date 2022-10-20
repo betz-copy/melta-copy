@@ -43,11 +43,21 @@ export const rulesCreator = (fliesOnId: string, flightInTripId: string, flightId
                             isEquation: true,
                             operatorBool: 'notEqual',
                             lhsArgument: {
-                                isPropertyOfVariable: true,
-                                variableName: `${tripId}.${flightInTripId}.${flightId}`,
-                                property: 'departureDate',
+                                isRegularFunction: true,
+                                functionType: 'toDate',
+                                arguments: [
+                                    {
+                                        isPropertyOfVariable: true,
+                                        variableName: `${tripId}.${flightInTripId}.${flightId}`,
+                                        property: 'departureDate',
+                                    },
+                                ],
                             },
-                            rhsArgument: { isPropertyOfVariable: true, variableName: flightId, property: 'departureDate' },
+                            rhsArgument: {
+                                isRegularFunction: true,
+                                functionType: 'toDate',
+                                arguments: [{ isPropertyOfVariable: true, variableName: flightId, property: 'departureDate' }],
+                            },
                         },
                         {
                             isEquation: true,
