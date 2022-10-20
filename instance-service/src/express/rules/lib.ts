@@ -1,12 +1,13 @@
 import _groupBy from 'lodash.groupby';
 import _difference from 'lodash.difference';
-import { IBrokenRule, IConnection, IMongoRule, IRuleTransactionQuery, IRuleTransactionResult } from './interfaces';
-import { IEntity } from '../entities/interface';
-import { generateNeo4jQuery } from './generateRuleNeo4jQuery';
+import { Transaction } from 'neo4j-driver';
+import { IBrokenRule, IMongoRule, IRuleTransactionResult } from './interfaces';
+import { generateNeo4jRuleQueryAgainstPair, generateNeo4jRuleQueryAgainstPinnedEntity } from './generateRuleNeo4jQuery';
 import config from '../../config';
 import { EntityTemplateManagerService } from '../../externalServices/entityTemplateManager';
-import { IRelationship } from '../relationships/interface';
 import { RelationshipsTemplateManagerService } from '../../externalServices/relationshipTemplateManager';
+import { normalizeRuleResultAgainstPair, normalizeRuleResultsAgainstPinnedEntity, runInTransactionAndNormalize } from '../../utils/neo4j/lib';
+import { IRelationship } from '../relationships/interface';
 
 const { createdRelationshipIdInBrokenRules } = config;
 
@@ -61,49 +62,104 @@ export const areAllBrokenRulesIgnored = (brokenRules: IBrokenRule[], ignoredRule
     });
 };
 
-export const isRelationshipLegal = async (
-    relationship: IRelationship,
-    sourceEntity: IEntity,
-    destinationEntity: IEntity,
-    rules: IMongoRule[],
-): Promise<IRuleTransactionQuery[]> => {
-    const generateNeo4jQueries = rules
-        .filter(({ relationshipTemplateId }) => relationshipTemplateId === relationship.templateId)
-        .map(async (rule) => {
-            const { pinnedEntityTemplateId, unpinnedEntityTemplateId } = rule;
+export const getRelevantTemplatesOfRule = async (rule: IMongoRule) => {
+    const pinnedEntityRelationshipTemplates = await getRelationshipTemplatesOfEntityTemplate(rule.pinnedEntityTemplateId);
 
-            const [pinnedEntity, nonPinnedEntity] =
-                pinnedEntityTemplateId === sourceEntity.templateId ? [sourceEntity, destinationEntity] : [destinationEntity, sourceEntity];
+    const connectionsTemplates = await Promise.all(
+        pinnedEntityRelationshipTemplates.map(async (relationshipTemplate) => {
+            const { sourceEntityId, destinationEntityId } = relationshipTemplate;
+            const otherEntityTemplateId = sourceEntityId === rule.pinnedEntityTemplateId ? destinationEntityId : sourceEntityId;
 
-            const pinnedEntityRelationships = await getRelationshipTemplatesOfEntityTemplate(pinnedEntityTemplateId);
+            const otherEntityTemplate = await EntityTemplateManagerService.getEntityTemplateById(otherEntityTemplateId);
 
-            const connectionsTemplates = await Promise.all(
-                pinnedEntityRelationships.map(async (relationshipTemplate) => {
-                    const { sourceEntityId, destinationEntityId } = relationshipTemplate;
-                    const otherEntityTemplateId = sourceEntityId === pinnedEntity.templateId ? destinationEntityId : sourceEntityId;
+            return { relationshipTemplate, otherEntityTemplate };
+        }),
+    );
 
-                    const otherEntityTemplate = await EntityTemplateManagerService.getEntityTemplateById(otherEntityTemplateId);
+    const relationshipTemplateOfRule = connectionsTemplates.find(({ relationshipTemplate: { _id } }) => _id === rule.relationshipTemplateId)!;
 
-                    return { relationshipTemplate, otherEntityTemplate };
-                }),
-            );
-
-            const ruleQuery = generateNeo4jQuery(rule, pinnedEntity.properties._id, nonPinnedEntity.properties._id, relationship.properties._id, {
-                pinnedEntityTemplateId,
-                unpinnedEntityTemplateId,
-                connectionsTemplates,
-            });
-
-            return {
-                ruleQuery,
-                relationshipId: relationship.properties._id as string,
-                ruleId: rule._id,
-            };
-        });
-
-    return Promise.all(generateNeo4jQueries);
+    return {
+        pinnedEntityTemplateId: rule.pinnedEntityTemplateId,
+        unpinnedEntityTemplateId: relationshipTemplateOfRule.otherEntityTemplate._id,
+        connectionsTemplates,
+    };
 };
 
-export const createRulesQueries = (connections: IConnection[], rules: IMongoRule[]) => {
-    return connections.map((path) => isRelationshipLegal(path.relationship, path.sourceEntity, path.destinationEntity, rules));
+export const runRuleOnRelationshipsOfPinnedEntity = async (transaction: Transaction, pinnedEntityId: string, rule: IMongoRule) => {
+    const relevantTemplates = await getRelevantTemplatesOfRule(rule);
+
+    const ruleQuery = generateNeo4jRuleQueryAgainstPinnedEntity(rule, pinnedEntityId, relevantTemplates);
+
+    const ruleResults = await runInTransactionAndNormalize(
+        transaction,
+        ruleQuery.cypherQuery,
+        normalizeRuleResultsAgainstPinnedEntity,
+        ruleQuery.parameters,
+    );
+
+    return ruleResults;
+};
+
+export const runRulesOnRelationshipsOfPinnedEntity = async (
+    transaction: Transaction,
+    pinnedEntityId: string,
+    rules: IMongoRule[],
+    excludedUnpinnedEntityId?: string,
+) => {
+    const ruleResultsForEachRulePromises = rules.map(async (rule) => {
+        const ruleResults = await runRuleOnRelationshipsOfPinnedEntity(transaction, pinnedEntityId, rule);
+
+        const ruleResultsWithoutExcludedEntity = ruleResults.filter(({ unpinnedEntityId }) => unpinnedEntityId !== excludedUnpinnedEntityId);
+
+        return ruleResultsWithoutExcludedEntity.map(({ unpinnedRelationshipId, doesRuleStillApply }) => ({
+            ruleId: rule._id,
+            relationshipId: unpinnedRelationshipId,
+            doesRuleStillApply,
+        })) as IRuleTransactionResult[];
+    });
+    const ruleResultsForEachRule = await Promise.all(ruleResultsForEachRulePromises);
+
+    return ruleResultsForEachRule.flat();
+};
+
+export const runRuleOnPair = async (
+    transaction: Transaction,
+    pinnedEntityId: string,
+    nonPinnedEntityId: string,
+    nonPinnedRelationshipId: string,
+    rule: IMongoRule,
+) => {
+    const relevantTemplates = await getRelevantTemplatesOfRule(rule);
+
+    const ruleQuery = generateNeo4jRuleQueryAgainstPair(rule, pinnedEntityId, nonPinnedEntityId, nonPinnedRelationshipId, relevantTemplates);
+
+    const doesRuleStillApply = await runInTransactionAndNormalize(
+        transaction,
+        ruleQuery.cypherQuery,
+        normalizeRuleResultAgainstPair,
+        ruleQuery.parameters,
+    );
+
+    return doesRuleStillApply;
+};
+
+export const runRulesOnRelationship = async (
+    transaction: Transaction,
+    rules: IMongoRule[],
+    relationship: IRelationship,
+    sourceEntityTemplateId: string,
+) => {
+    const ruleResultsPromises = rules.map(async (rule) => {
+        const [pinnedEntityId, nonPinnedEntityId] =
+            rule.pinnedEntityTemplateId === sourceEntityTemplateId
+                ? [relationship.sourceEntityId, relationship.destinationEntityId]
+                : [relationship.destinationEntityId, relationship.sourceEntityId];
+
+        const doesRuleStillApply = await runRuleOnPair(transaction, pinnedEntityId, nonPinnedEntityId, relationship.properties._id, rule);
+
+        return { ruleId: rule._id, doesRuleStillApply, relationshipId: relationship.properties._id } as IRuleTransactionResult;
+    });
+    const ruleResults = await Promise.all(ruleResultsPromises);
+
+    return ruleResults;
 };

@@ -5,7 +5,6 @@ import {
     ISumAggFunction,
     IEquation,
     IGroup,
-    IRule,
     isAggregationGroup,
     isCountAggFunction,
     isEquation,
@@ -16,6 +15,7 @@ import {
     CypherQuery,
     IRelevantTemplates,
     IRegularFunction,
+    IMongoRule,
 } from './interfaces';
 import { IArgument, isConstant, isPropertyOfVariable } from './interfaces/argument';
 import { IFormula } from './interfaces/formula';
@@ -287,8 +287,8 @@ const generateNeo4jQueryFromFormula = (formula: IFormula, relevantTemplates: IRe
     throw new Error('unexpected formula, must be group/equation/aggeregationGroup');
 };
 
-export const generateNeo4jQuery = (
-    rule: IRule,
+export const generateNeo4jRuleQueryAgainstPair = (
+    rule: IMongoRule,
     pinnedEntityId: string,
     nonPinnedEntityId: string,
     nonPinnedRelationshipId: string,
@@ -323,5 +323,43 @@ export const generateNeo4jQuery = (
         return doesRuleStillApply_value.doesRuleStillApply as doesRuleStillApply;                           
         `,
         parameters: { pinnedEntityId, nonPinnedEntityId, nonPinnedRelationshipId, ...formulaQuery.parameters },
+    };
+};
+
+export const generateNeo4jRuleQueryAgainstPinnedEntity = (
+    rule: IMongoRule,
+    pinnedEntityId: string,
+    relevantTemplates: IRelevantTemplates,
+): Omit<CypherQuery, 'aggergationSubQueries'> => {
+    const formulaQuery = generateNeo4jQueryFromFormula(rule.formula, relevantTemplates);
+
+    const { pinnedEntityTemplateId, unpinnedEntityTemplateId } = relevantTemplates;
+
+    return {
+        cypherQuery: `
+        MATCH (\`${pinnedEntityTemplateId}\`)-[rel: \`${rule.relationshipTemplateId}\`]-(\`${unpinnedEntityTemplateId}\`)
+        WHERE \`${pinnedEntityTemplateId}\`._id = $pinnedEntityId
+        
+        // aggregations actions
+        ${formulaQuery.aggergationSubQueries.map(({ subQuery }) => subQuery).join('\n')}
+
+        CALL apoc.cypher.run("
+            with $pinnedEntityTemplateId as \`${pinnedEntityTemplateId}\`, $unpinnedEntityTemplateId as \`${unpinnedEntityTemplateId}\`
+            ${formulaQuery.aggergationSubQueries.length > 0 ? ',' : ''}
+            ${formulaQuery.aggergationSubQueries.map(({ resultVariableName }) => `$${resultVariableName} as ${resultVariableName}`).join(', ')}
+
+            return (${formulaQuery.cypherQuery}) as doesRuleStillApply
+        ", {
+            pinnedEntityTemplateId: \`${pinnedEntityTemplateId}\`,
+            unpinnedEntityTemplateId: \`${unpinnedEntityTemplateId}\`
+
+            ${formulaQuery.aggergationSubQueries.length > 0 ? ',' : ''}
+            ${formulaQuery.aggergationSubQueries.map(({ resultVariableName }) => `${resultVariableName}: ${resultVariableName}`).join(', ')}
+        }) yield value as doesRuleStillApply_value
+
+        WITH rel._id as unpinnedRelationshipId, \`${unpinnedEntityTemplateId}\`._id as unpinnedEntityId, doesRuleStillApply_value.doesRuleStillApply as doesRuleStillApply
+        return unpinnedRelationshipId, unpinnedEntityId, doesRuleStillApply;                           
+        `,
+        parameters: { pinnedEntityId, ...formulaQuery.parameters },
     };
 };

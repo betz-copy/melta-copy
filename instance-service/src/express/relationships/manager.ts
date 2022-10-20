@@ -11,10 +11,9 @@ import {
 } from '../../utils/neo4j/lib';
 import { IRelationship } from './interface';
 import { NotFoundError, ServiceError } from '../error';
-import { getBrokenRules, areAllBrokenRulesIgnored, createRulesQueries } from '../rules/lib';
+import { getBrokenRules, areAllBrokenRulesIgnored, runRulesOnRelationshipsOfPinnedEntity, runRulesOnRelationship } from '../rules/lib';
 import { IBrokenRule } from '../rules/interfaces';
 import { filterDependentRulesViaAggregation } from '../rules/getParametersOfFormula';
-import { getRuleResults } from '../rules/transaction';
 import config from '../../config';
 import { IMongoRelationshipTemplate, RelationshipsTemplateManagerService } from '../../externalServices/relationshipTemplateManager';
 
@@ -43,73 +42,33 @@ export class RelationshipManager {
         return Neo4jClient.readTransaction(`MATCH ()-[r: \`${templateId}\`]->() RETURN count(r)`, normalizeResponseCount);
     }
 
-    private static getRuleQueryByRelId = async (
-        transaction: Transaction,
-        templateId: string,
-        sourceEntityId: string,
-        destinationEntityId: string,
-    ) => {
-        const pathsConnectedWithRelIdRules = await RelationshipsTemplateManagerService.searchRules({ relationshipTemplateIds: [templateId] });
-
-        if (!pathsConnectedWithRelIdRules.length) {
-            return [];
-        }
-
-        const pathsWithRelId = await runInTransactionAndNormalize(
-            transaction,
-            `MATCH (s {_id: '${sourceEntityId}'})-[r: \`${templateId}\`]->(d {_id: '${destinationEntityId}'}) RETURN s, r, d`,
-            normalizeRelAndEntitiesForRule,
-        );
-
-        return createRulesQueries(pathsWithRelId, pathsConnectedWithRelIdRules);
-    };
-
-    private static getRuleQueryBySourceId = async (
+    private static runRulesOnCreatedRelationship = async (
         transaction: Transaction,
         relationshipTemplate: IMongoRelationshipTemplate,
-        sourceEntityId: string,
-        destinationEntityId: string,
+        createdRelationship: IRelationship,
     ) => {
-        const pathsConnectedToSourceIdRules = await RelationshipsTemplateManagerService.searchRules({
-            pinnedEntityTemplateIds: [relationshipTemplate.sourceEntityId],
+        const rulesOfRelationship = await RelationshipsTemplateManagerService.searchRules({
+            relationshipTemplateIds: [relationshipTemplate._id],
         });
-        const relevantRules = filterDependentRulesViaAggregation(pathsConnectedToSourceIdRules, relationshipTemplate._id);
 
-        if (!relevantRules.length) {
-            return [];
-        }
-
-        const pathsConnectedToSourceId = await runInTransactionAndNormalize(
-            transaction,
-            `MATCH (s {_id: '${sourceEntityId}'})-[r]-(d) WHERE d._id <> '${destinationEntityId}' RETURN s, r, d`,
-            normalizeRelAndEntitiesForRule,
-        );
-
-        return createRulesQueries(pathsConnectedToSourceId, relevantRules);
+        return runRulesOnRelationship(transaction, rulesOfRelationship, createdRelationship, relationshipTemplate.sourceEntityId);
     };
 
-    private static getRuleQueryByDestId = async (
+    // todo: use in update entity?
+    private static runRulesOfPinnedEntityDependentViaAggregation = async (
         transaction: Transaction,
-        relationshipTemplate: IMongoRelationshipTemplate,
-        sourceEntityId: string,
-        destinationEntityId: string,
+        pinnedEntityId: string,
+        pinnedEntityTemplateId: string,
+        dependentRelationshipTemplateId: string,
+        excludedUnpinnedEntityId?: string,
     ) => {
-        const pathsConnectedToDestIdRules = await RelationshipsTemplateManagerService.searchRules({
-            pinnedEntityTemplateIds: [relationshipTemplate.destinationEntityId],
+        const rulesOfPinnedEntity = await RelationshipsTemplateManagerService.searchRules({
+            pinnedEntityTemplateIds: [pinnedEntityTemplateId],
         });
-        const relevantRules = filterDependentRulesViaAggregation(pathsConnectedToDestIdRules, relationshipTemplate._id);
 
-        if (!relevantRules.length) {
-            return [];
-        }
+        const relevantRules = filterDependentRulesViaAggregation(rulesOfPinnedEntity, dependentRelationshipTemplateId);
 
-        const pathsConnectedToDestId = await runInTransactionAndNormalize(
-            transaction,
-            `MATCH (s)-[r]-(d {_id: '${destinationEntityId}'}) WHERE s._id <> '${sourceEntityId}' RETURN s, r, d`,
-            normalizeRelAndEntitiesForRule,
-        );
-
-        return createRulesQueries(pathsConnectedToDestId, relevantRules);
+        return runRulesOnRelationshipsOfPinnedEntity(transaction, pinnedEntityId, relevantRules, excludedUnpinnedEntityId);
     };
 
     private static async verifyRuleForRelationshipCreation(
@@ -120,27 +79,34 @@ export class RelationshipManager {
     ) {
         const { sourceEntityId, destinationEntityId, properties } = createdRelationship;
 
-        const ruleQueryByRelId = await RelationshipManager.getRuleQueryByRelId(
-            transaction,
-            relationshipTemplate._id,
-            sourceEntityId,
-            destinationEntityId,
-        );
-        const ruleQueryBySourceId = await RelationshipManager.getRuleQueryBySourceId(
+        const ruleResultsAgainstCreatedRelationshipPromise = RelationshipManager.runRulesOnCreatedRelationship(
             transaction,
             relationshipTemplate,
-            sourceEntityId,
-            destinationEntityId,
+            createdRelationship,
         );
-        const ruleQueryByDestId = await RelationshipManager.getRuleQueryByDestId(
-            transaction,
-            relationshipTemplate,
-            sourceEntityId,
-            destinationEntityId,
-        );
-        const ruleQueries = await Promise.all([...ruleQueryBySourceId, ...ruleQueryByDestId, ...ruleQueryByRelId]);
 
-        const ruleResults = await getRuleResults(transaction, ruleQueries.flat());
+        const ruleResultsAgainstSourceEntityPromise = RelationshipManager.runRulesOfPinnedEntityDependentViaAggregation(
+            transaction,
+            sourceEntityId,
+            relationshipTemplate.sourceEntityId,
+            createdRelationship.templateId,
+            destinationEntityId,
+        );
+
+        const ruleResultsAgainstDestinationEntityPromise = RelationshipManager.runRulesOfPinnedEntityDependentViaAggregation(
+            transaction,
+            destinationEntityId,
+            relationshipTemplate.destinationEntityId,
+            createdRelationship.templateId,
+            sourceEntityId,
+        );
+
+        const [ruleResultsAgainstCreatedRelationship, ruleResultsAgainstSourceEntity, ruleResultsAgainstDestinationEntity] = await Promise.all([
+            ruleResultsAgainstCreatedRelationshipPromise,
+            ruleResultsAgainstSourceEntityPromise,
+            ruleResultsAgainstDestinationEntityPromise,
+        ]);
+        const ruleResults = [...ruleResultsAgainstCreatedRelationship, ...ruleResultsAgainstSourceEntity, ...ruleResultsAgainstDestinationEntity];
 
         const brokenRules = getBrokenRules(ruleResults, properties._id);
 
@@ -197,23 +163,26 @@ export class RelationshipManager {
 
         const relationshipTemplate = await RelationshipsTemplateManagerService.getRelationshipTemplateById(templateId);
 
-        const ruleQueryBySourceId = await RelationshipManager.getRuleQueryBySourceId(
+        const ruleResultsAgainstSourceEntityPromise = RelationshipManager.runRulesOfPinnedEntityDependentViaAggregation(
             transaction,
-            relationshipTemplate,
             sourceEntityId,
-            destinationEntityId,
+            relationshipTemplate.sourceEntityId,
+            deletedRelationship.templateId,
         );
-        const ruleQueryByDestId = await RelationshipManager.getRuleQueryByDestId(
+
+        const ruleResultsAgainstDestinationEntityPromise = RelationshipManager.runRulesOfPinnedEntityDependentViaAggregation(
             transaction,
-            relationshipTemplate,
-            sourceEntityId,
             destinationEntityId,
+            relationshipTemplate.destinationEntityId,
+            deletedRelationship.templateId,
         );
-        const ruleQueries = await Promise.all([...ruleQueryBySourceId, ...ruleQueryByDestId]);
 
-        const ruleResults = await getRuleResults(transaction, ruleQueries.flat());
+        const [ruleResultsAgainstSourceEntity, ruleResultsAgainstDestinationEntity] = await Promise.all([
+            ruleResultsAgainstSourceEntityPromise,
+            ruleResultsAgainstDestinationEntityPromise,
+        ]);
 
-        const brokenRules = getBrokenRules(ruleResults);
+        const brokenRules = getBrokenRules([...ruleResultsAgainstSourceEntity, ...ruleResultsAgainstDestinationEntity]);
 
         if (!areAllBrokenRulesIgnored(brokenRules, ignoredRules)) {
             throw new ServiceError(400, `[NEO4J] relationship deletion is blocked by rules.`, {

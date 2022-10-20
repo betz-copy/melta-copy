@@ -13,9 +13,8 @@ import { IEntity } from './interface';
 import { NotFoundError, ServiceError } from '../error';
 import { agGridRequestToNeo4JRequest, agGridSearchRequestToNeo4JRequest, IAGGridRequest } from '../../utils/agGridFilterModelToNeoQuery';
 import getLatestIndex from '../../utils/redis/getLatestIndex';
-import { areAllBrokenRulesIgnored, createRulesQueries, getBrokenRules, getRulesByEntityTemplateId } from '../rules/lib';
+import { areAllBrokenRulesIgnored, getBrokenRules, runRulesOnRelationship, runRulesOnRelationshipsOfPinnedEntity } from '../rules/lib';
 import { IBrokenRule, IConnection } from '../rules/interfaces';
-import { getRuleResults } from '../rules/transaction';
 import { filterDependentRulesOnProperties, filterDependentRulesViaAggregation } from '../rules/getParametersOfFormula';
 import config from '../../config';
 import { IMongoEntityTemplate } from '../../externalServices/entityTemplateManager';
@@ -139,81 +138,93 @@ export class EntityManager {
         return node;
     }
 
-    private static getRuleQueryBySourceId = async (
+    private static runRulesOnAllRelationshipsOfUpdatedEntity = async (
         transaction: Transaction,
-        entityTemplateId: string,
-        sourceEntityId: string,
-        destinationEntityId: string,
-        relationshipTemplateId: string,
+        connectionsOfEntity: IConnection[],
+        entity: IEntity,
         updatedProperties: string[],
     ) => {
-        const pathsConnectedToSourceIdRules = await RelationshipsTemplateManagerService.searchRules({ pinnedEntityTemplateIds: [entityTemplateId] });
+        const rulesOfEntityWhenPinned = await RelationshipsTemplateManagerService.searchRules({
+            pinnedEntityTemplateIds: [entity.templateId],
+        });
+        const rulesOfEntityWhenUnpinned = await RelationshipsTemplateManagerService.searchRules({
+            unpinnedEntityTemplateIds: [entity.templateId],
+        });
+        const rulesOfEntity = [...rulesOfEntityWhenPinned, ...rulesOfEntityWhenUnpinned];
+        const relevantRulesOfEntity = filterDependentRulesOnProperties(rulesOfEntity, entity.templateId, updatedProperties);
 
-        const relevantRules = filterDependentRulesViaAggregation(pathsConnectedToSourceIdRules, relationshipTemplateId, updatedProperties);
+        const ruleResultsForEachConnectionPromises = connectionsOfEntity.map(async ({ relationship, destinationEntity: neighbourOfEntity }) => {
+            const relevantRulesOfRelationship = relevantRulesOfEntity.filter(
+                ({ relationshipTemplateId }) => relationshipTemplateId === relationship.templateId,
+            );
 
-        if (!relevantRules.length) {
-            return [];
-        }
+            const sourceEntityTemplateId = entity.properties._id === relationship.sourceEntityId ? entity.templateId : neighbourOfEntity.templateId;
+            return runRulesOnRelationship(transaction, relevantRulesOfRelationship, relationship, sourceEntityTemplateId);
+        });
 
-        const pathsConnectedToSourceId = await runInTransactionAndNormalize(
-            transaction,
-            `MATCH (s {_id: '${sourceEntityId}'})-[r]-(d) WHERE d._id <> '${destinationEntityId}'  RETURN s, r, d`,
-            normalizeRelAndEntitiesForRule,
-        );
+        const ruleResultsForEachConnection = await Promise.all(ruleResultsForEachConnectionPromises);
 
-        return createRulesQueries(pathsConnectedToSourceId, relevantRules);
+        return ruleResultsForEachConnection.flat();
     };
 
-    public static getRulesConnectedToEntityInstances = async (
+    private static runRulesOnRelationshipsOfNeighboursOfEntityDependentViaAggregation = async (
         transaction: Transaction,
-        connections: IConnection[],
-        excludedEntityId: string,
+        connectionsOfDependent: IConnection[],
+        dependentEntity: IEntity,
         updatedProperties: string[],
     ) => {
-        const destinationRulesPromises = connections.flatMap(async ({ relationship, destinationEntity: entity }) => {
-            return EntityManager.getRuleQueryBySourceId(
+        const ruleResultsForEachConnectionPromises = connectionsOfDependent.map(async ({ relationship, destinationEntity: neighbourOfEntity }) => {
+            const rulesOfPinnedEntity = await RelationshipsTemplateManagerService.searchRules({
+                pinnedEntityTemplateIds: [neighbourOfEntity.templateId],
+            });
+
+            const rulesDependentViaAggregation = filterDependentRulesViaAggregation(rulesOfPinnedEntity, relationship.templateId, updatedProperties);
+
+            return runRulesOnRelationshipsOfPinnedEntity(
                 transaction,
-                entity.templateId,
-                entity.properties._id,
-                excludedEntityId,
-                relationship.templateId,
-                updatedProperties,
+                neighbourOfEntity.properties._id,
+                rulesDependentViaAggregation,
+                dependentEntity.properties._id,
             );
         });
 
-        const destinationRules = await Promise.all(destinationRulesPromises);
+        const ruleResultsForEachConnection = await Promise.all(ruleResultsForEachConnectionPromises);
 
-        return destinationRules.flat();
+        return ruleResultsForEachConnection.flat();
     };
 
     private static async verifyRuleForEntityUpdate(
         transaction: Transaction,
-        entityTemplate: IMongoEntityTemplate,
         updatedEntity: IEntity,
         ignoredRules: IBrokenRule[],
         updatedProperties: string[],
     ) {
-        const connectionsWithSourceId = await runInTransactionAndNormalize(
+        const connectionsOfEntity = await runInTransactionAndNormalize(
             transaction,
             `MATCH (s {_id: '${updatedEntity.properties._id}'})-[r]-(d)  RETURN s, r, d`,
             normalizeRelAndEntitiesForRule,
         );
 
-        const rulesByEntityTemplateId = await getRulesByEntityTemplateId(entityTemplate._id);
-        const relevantRulesByEntityTemplateId = filterDependentRulesOnProperties(rulesByEntityTemplateId, entityTemplate._id, updatedProperties);
-
-        const updatedEntityRuleQueries = createRulesQueries(connectionsWithSourceId, relevantRulesByEntityTemplateId);
-
-        const destinationRuleQueries = await EntityManager.getRulesConnectedToEntityInstances(
+        const ruleResultsOnAllRelationshipsOfUpdatedEntityPromise = EntityManager.runRulesOnAllRelationshipsOfUpdatedEntity(
             transaction,
-            connectionsWithSourceId,
-            updatedEntity.properties._id,
+            connectionsOfEntity,
+            updatedEntity,
             updatedProperties,
         );
 
-        const ruleQueries = await Promise.all([...updatedEntityRuleQueries, ...destinationRuleQueries]);
+        const ruleResultsOnRelationshipsOfNeighboursOfEntityPromise =
+            EntityManager.runRulesOnRelationshipsOfNeighboursOfEntityDependentViaAggregation(
+                transaction,
+                connectionsOfEntity,
+                updatedEntity,
+                updatedProperties,
+            );
 
-        const ruleResults = await getRuleResults(transaction, ruleQueries.flat());
+        const [ruleResultsOnAllRelationshipsOfUpdatedEntity, ruleResultsOnRelationshipsOfNeighboursOfEntity] = await Promise.all([
+            ruleResultsOnAllRelationshipsOfUpdatedEntityPromise,
+            ruleResultsOnRelationshipsOfNeighboursOfEntityPromise,
+        ]);
+        const ruleResults = [...ruleResultsOnAllRelationshipsOfUpdatedEntity, ...ruleResultsOnRelationshipsOfNeighboursOfEntity];
 
         const brokenRules = getBrokenRules(ruleResults);
 
@@ -278,7 +289,6 @@ export class EntityManager {
 
             await EntityManager.verifyRuleForEntityUpdate(
                 transaction,
-                entityTemplate,
                 updatedEntity,
                 ignoredRules,
                 EntityManager.getUpdatedProperties(entity, updatedEntity, entityTemplate),

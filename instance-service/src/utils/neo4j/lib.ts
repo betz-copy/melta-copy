@@ -3,6 +3,7 @@ import neo4j, { QueryResult, Node, Relationship, Transaction } from 'neo4j-drive
 import { IEntity } from '../../express/entities/interface';
 import { IRelationship } from '../../express/relationships/interface';
 import config from '../../config';
+import { IConnection } from '../../express/rules/interfaces';
 
 /**
  *
@@ -71,8 +72,15 @@ export const normalizeResponseCount = (result: QueryResult): number => {
     return result.records[0].get(0).toNumber();
 };
 
-export const normalizeRuleResult = (result: QueryResult): boolean => {
+export const normalizeRuleResultAgainstPair = (result: QueryResult): boolean => {
     return result.records[0].get('doesRuleStillApply');
+};
+
+export const normalizeRuleResultsAgainstPinnedEntity = (result: QueryResult) => {
+    return result.records.map((resultOfPairRecord) => {
+        const resultOfPair = resultOfPairRecord.toObject();
+        return resultOfPair as { unpinnedRelationshipId: string; unpinnedEntityId: string; doesRuleStillApply: boolean };
+    });
 };
 
 export const normalizeReturnedRelationship =
@@ -178,7 +186,7 @@ export const normalizeReturnedRelAndEntities = (disabled: boolean | null) => (re
     };
 };
 
-export const normalizeRelAndEntitiesForRule = (result: QueryResult) => {
+export const normalizeRelAndEntitiesForRule = (result: QueryResult): IConnection[] => {
     return result.records.map((record) => {
         const sourceEntity = record.get('s') as Node;
         const relationship = record.get('r') as Relationship;
