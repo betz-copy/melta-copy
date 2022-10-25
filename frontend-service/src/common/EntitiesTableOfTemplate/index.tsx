@@ -1,7 +1,6 @@
 import React, { forwardRef, ForwardedRef, useImperativeHandle, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Box, GlobalStyles } from '@mui/material';
-
 import pickBy from 'lodash.pickby';
 import { ColDef, IServerSideDatasource } from '@ag-grid-community/core';
 import { AgGridReact } from '@ag-grid-community/react';
@@ -9,7 +8,6 @@ import '@noam7700/ag-grid-enterprise-core';
 import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
 import { ColumnsToolPanelModule } from '@noam7700/ag-grid-enterprise-column-tool-panel';
 import { MenuModule } from '@noam7700/ag-grid-enterprise-menu';
-import { ExcelExportModule } from '@noam7700/ag-grid-enterprise-excel-export';
 import { SetFilterModule } from '@noam7700/ag-grid-enterprise-set-filter';
 import { ServerSideRowModelModule } from '@noam7700/ag-grid-enterprise-server-side-row-model';
 import i18next from 'i18next';
@@ -193,14 +191,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef, EntitiesT
                         fontWeight: 300,
                         // todo: removed marginBottom: 30px. check doesnt effect regular page
                     }}
-                    modules={[
-                        ServerSideRowModelModule,
-                        ExcelExportModule,
-                        ColumnsToolPanelModule,
-                        MenuModule,
-                        SetFilterModule,
-                        ClientSideRowModelModule,
-                    ]}
+                    modules={[ServerSideRowModelModule, ColumnsToolPanelModule, MenuModule, SetFilterModule, ClientSideRowModelModule]}
                     domLayout="autoHeight"
                     getRowId={({ data }) => getRowId(data)}
                     columnDefs={columnDefs}
