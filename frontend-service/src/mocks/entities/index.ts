@@ -11,14 +11,25 @@ const mockEntites = (mock: MockAdapter) => {
         const { templateId } = params;
 
         const rowsOfTemplate = allEntities.filter((entity) => entity.templateId === templateId);
-        const countOfSearchedRows =
-            faker.datatype.boolean() || rowsOfTemplate.length === 0 ? 0 : faker.datatype.number({ min: 1, max: rowsOfTemplate.length });
-        const searchedRows = faker.helpers.arrayElements(rowsOfTemplate, countOfSearchedRows);
+        rowsOfTemplate.map((row, rowKey) => {
+            const propVals = Object.values(row.properties);
+            const propKeys = Object.keys(row.properties);
+            propVals.map((value, key) => {
+                if (typeof value === 'number' && value < 0) {
+                    propVals[key] = `${value * -1}-`;
+                }
+                return value;
+            });
+            rowsOfTemplate[rowKey].properties = propVals.reduce((accumulator, value, index) => {
+                return { ...accumulator, [propKeys[index]]: value };
+            }, {});
+            return rowsOfTemplate;
+        });
         return [
             200,
             {
-                rows: searchedRows,
-                lastRowIndex: countOfSearchedRows,
+                rows: rowsOfTemplate,
+                lastRowIndex: rowsOfTemplate.length,
             },
         ];
     });

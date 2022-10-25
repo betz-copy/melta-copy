@@ -23,6 +23,7 @@ export default {
         downloadOneTable: 'הורד טבלה',
         addRelationship: 'הוסף קשר',
         addEntity: 'הוסף ישות',
+        deleteEntity: 'מחק ישות',
         actionsHeaderName: 'פעולות',
         disabledHeaderName: 'מושבת',
         navigateToEntityPage: 'עמוד פרט',
