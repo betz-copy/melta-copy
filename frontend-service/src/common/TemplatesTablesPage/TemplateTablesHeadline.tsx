@@ -3,7 +3,7 @@ import i18next from 'i18next';
 import { Grid, IconButton, Typography } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import SearchIcon from '@mui/icons-material/Search';
-import VerticalAlignBottomOutlinedIcon from '@mui/icons-material/VerticalAlignBottomOutlined';
+import DownloadIcon from '@mui/icons-material/VerticalAlignBottomOutlined';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import SearchInput from '../inputs/SearchInput';
 import { AddEntityButton } from './AddEntityButton';
@@ -79,7 +79,7 @@ const TemplateTablesHeadline: React.FC<{
                 <Grid container spacing={1}>
                     <Grid item>
                         <IconButton style={{ background: '#eeeeee', borderRadius: '5px' }} onClick={onExcelExport}>
-                            <VerticalAlignBottomOutlinedIcon htmlColor="#225AA7" />
+                            <DownloadIcon htmlColor="#225AA7" />
                             <Typography fontSize={14} style={{ fontWeight: '500', padding: '0 10px', color: '#225AA7' }}>
                                 {i18next.t('downloadMultipleTables')}
                             </Typography>

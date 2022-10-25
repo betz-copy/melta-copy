@@ -6,11 +6,10 @@ import { useQuery } from 'react-query';
 import pLimit from 'p-limit';
 import { useTour } from '@reactour/tour';
 import { IMongoCategory } from '../../interfaces/categories';
-
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { TemplateTablesHeadline } from './TemplateTablesHeadline';
 import TemplateTablesView from './TemplatesTablesView';
-import { getEntitiesByTemplateRequest } from '../../services/entitiesService';
+import { exportTemplatesToExcel, getEntitiesByTemplateRequest } from '../../services/entitiesService';
 import { templatesCompareFunc } from '../../utils/templates';
 
 const getTemplateCount = async (templateId: string, searchInput: string) => {
@@ -47,7 +46,10 @@ const TemplatesTablesPage: React.FC<{
     const templatesTablesRef = useRef<React.ComponentRef<typeof TemplateTablesView>>(null);
 
     const onExcelExportTables = () => {
-        templatesTablesRef.current?.onExcelExportTables(excelExportAllTablesFileName);
+        exportTemplatesToExcel(
+            templates.map((template) => template._id),
+            excelExportAllTablesFileName,
+        );
     };
 
     const [searchInput, setSearchInput] = useState('');

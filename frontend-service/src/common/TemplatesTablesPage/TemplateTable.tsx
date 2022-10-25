@@ -1,7 +1,6 @@
 import React, { useRef, forwardRef, useImperativeHandle } from 'react';
 import { Grid, Box } from '@mui/material';
-import { AddCircle, FileDownloadOutlined } from '@mui/icons-material';
-import { exportMultipleSheetsAsExcel } from '@noam7700/ag-grid-enterprise-excel-export';
+import { AddCircle, VerticalAlignBottomOutlined as DownloadIcon } from '@mui/icons-material';
 import i18next from 'i18next';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { AddEntityButton } from './AddEntityButton';
@@ -10,6 +9,7 @@ import { BlueTitle } from '../BlueTitle';
 import { ResetFilterButton } from './ResetFilterButton';
 import IconButtonWithPopoverText from '../IconButtonWithPopover';
 import { CustomIcon } from '../CustomIcon';
+import { exportTemplatesToExcel } from '../../services/entitiesService';
 
 const TemplateTable = forwardRef<
     EntitiesTableOfTemplateRef,
@@ -21,11 +21,8 @@ const TemplateTable = forwardRef<
 >(({ template, quickFilterText, page }, ref) => {
     const entitiesTableRef = useRef<EntitiesTableOfTemplateRef>(null);
 
-    const onExcelExport = () => {
-        exportMultipleSheetsAsExcel({
-            data: [entitiesTableRef.current!.getExcelData()!],
-            fileName: `${template.displayName}.xlsx`,
-        });
+    const onExcelExport = async () => {
+        await exportTemplatesToExcel([template._id], `${template.displayName}.xlsx`);
     };
 
     useImperativeHandle(ref, () => entitiesTableRef.current!);
@@ -46,7 +43,7 @@ const TemplateTable = forwardRef<
                             popoverText={i18next.t('entitiesTableOfTemplate.downloadOneTable')}
                             iconButtonProps={{ onClick: onExcelExport, size: 'medium' }}
                         >
-                            <FileDownloadOutlined color="primary" fontSize="medium" />
+                            <DownloadIcon color="primary" fontSize="medium" />
                         </IconButtonWithPopoverText>
                         <AddEntityButton
                             initialStep={1}

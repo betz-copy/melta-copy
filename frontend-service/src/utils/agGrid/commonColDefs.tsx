@@ -123,9 +123,9 @@ export const dateColDef = (
     const valueFormatter = (props) => {
         if (!props.value) return '';
 
-        if (format === 'date') return new Date(props.value).toLocaleDateString('en-uk');
+        if (format === 'date') return new Date(props.value).toLocaleDateString('en-uk', { timeZone: 'Israel' });
 
-        if (format === 'date-time') return new Date(props.value).toLocaleString('en-uk');
+        if (format === 'date-time') return new Date(props.value).toLocaleString('en-uk', { timeZone: 'Israel' });
 
         return props.value;
     };

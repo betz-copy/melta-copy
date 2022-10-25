@@ -1,8 +1,6 @@
-import React, { forwardRef, useImperativeHandle, useRef, useState } from 'react';
+import React, { forwardRef, useRef, useState } from 'react';
 import _isEqual from 'lodash.isequal';
-import { exportMultipleSheetsAsExcel } from '@noam7700/ag-grid-enterprise-excel-export';
 import { Divider, Grid, Pagination } from '@mui/material';
-import pickBy from 'lodash.pickby';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { EntitiesTableOfTemplateRef } from '../EntitiesTableOfTemplate';
 import { TemplateTable } from './TemplateTable';
@@ -15,7 +13,7 @@ const TemplateTablesView = forwardRef<
         pageSize?: number;
         pageType: string;
     }
->(({ templates, searchInput, pageSize = 10, pageType }, ref) => {
+>(({ templates, searchInput, pageSize = 10, pageType }) => {
     const [currPage, setCurrPage] = useState(1);
     const countOfPages = Math.ceil(templates.length / pageSize);
 
@@ -23,16 +21,6 @@ const TemplateTablesView = forwardRef<
     const templatesOfPage = templates.slice(startOfPageIndex, startOfPageIndex + pageSize);
 
     const templateTableRefs = useRef<Record<string, EntitiesTableOfTemplateRef | null>>({});
-
-    useImperativeHandle(ref, () => ({
-        onExcelExportTables: (excelFileName: string) => {
-            const existingTemplateTableRefs = pickBy(templateTableRefs.current, (templateTableRef) => Boolean(templateTableRef));
-            exportMultipleSheetsAsExcel({
-                data: Object.values(existingTemplateTableRefs).map((item) => item!.getExcelData()!),
-                fileName: excelFileName,
-            });
-        },
-    }));
 
     return (
         <Grid container direction="column" spacing={1}>
