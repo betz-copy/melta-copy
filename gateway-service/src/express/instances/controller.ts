@@ -1,9 +1,20 @@
 import { Request, Response } from 'express';
+import { promises as fsp } from 'fs';
+import { promisify } from 'util';
 import { InstancesManager } from './manager';
 
 class InstancesController {
     static async createEntityInstance(req: Request, res: Response) {
         res.json(await InstancesManager.createEntityInstance(req.body, req.files as Express.Multer.File[], req.user!));
+    }
+
+    static async exportEntities(req: Request, res: Response) {
+        const filePath = await InstancesManager.exportEntities(req.body.templateIds as Array<string>, req.body.fileName);
+        try {
+            await promisify(res.sendFile.bind(res))(filePath);
+        } finally {
+            await fsp.unlink(filePath);
+        }
     }
 
     static async updateEntityInstance(req: Request, res: Response) {

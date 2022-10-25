@@ -6,7 +6,7 @@ import { deleteFiles } from '../../externalServices/storageService';
 import { filteredMap, trycatch } from '../../utils';
 import { ShragaUser } from '../../utils/express/passport';
 import { ServiceError } from '../error';
-import InstancesManager from '../instances/manager';
+import { InstancesManager } from '../instances/manager';
 
 import {
     IAlertNotificationMetadata,

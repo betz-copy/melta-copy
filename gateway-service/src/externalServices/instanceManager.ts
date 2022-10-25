@@ -17,7 +17,7 @@ export interface IEntity {
     } & Record<string, any>;
 }
 
-interface IEntityFilterParams {
+export interface IEntityFilterParams {
     startRow?: number;
     endRow?: number;
     sortModel?: Array<{
@@ -25,6 +25,7 @@ interface IEntityFilterParams {
         sort: 'asc' | 'desc';
     }>;
     filterModel?: any;
+    quickFilter?: string;
 }
 export interface IRelationship {
     templateId: string;
@@ -50,7 +51,6 @@ export class InstanceManagerService {
     // entity instances
     static async getEntityInstanceById(id: string) {
         const { data } = await this.InstanceManagerApi.get<IEntity>(`${baseEntitiesRoute}/${id}`);
-
         return data;
     }
 

@@ -41,6 +41,16 @@ export const deleteEntityInstanceSchema = Joi.object({
     params: { id: Joi.string().required() },
 });
 
+// POST /api/instances/entities/export
+export const exportEntitiesSchema = Joi.object({
+    body: {
+        templateIds: Joi.array().items(Joi.string()).required(),
+        fileName: Joi.string().required(),
+    },
+    query: {},
+    params: {},
+});
+
 // POST /api/instances/relationships
 export const createRelationshipSchema = Joi.object({
     body: {

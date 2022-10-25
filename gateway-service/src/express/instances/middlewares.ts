@@ -31,6 +31,13 @@ export const validateUserCanSearchEntityInstances = async (req: Request) => {
     return validateAuthorization(req, 'Instances', [categoryId]);
 };
 
+export const validateUserCanExportEntityInstances = async (req: Request) => {
+    const { templateIds } = req.body;
+    const categoryIdsPromises = templateIds.map((id: string) => getCategoryIdFromTemplateId(id));
+    const categoryIds = Array.from(new Set(await Promise.all(categoryIdsPromises)));
+    return validateAuthorization(req, 'Instances', Array.from(new Set(await Promise.all(categoryIds))));
+};
+
 export const validateUserCanUpdateGetOrDeleteEntityInstance = async (req: Request) => {
     const instanceId = req.params.id;
 

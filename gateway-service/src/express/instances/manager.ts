@@ -1,9 +1,11 @@
-/* eslint-disable no-plusplus */
 /* eslint-disable no-continue */
-/* eslint-disable no-console */
+/* eslint-disable no-plusplus */
+/* eslint-disable no-await-in-loop */
 import axios from 'axios';
+import { stream } from 'exceljs';
+import { promises as fsp } from 'fs';
 import { deleteFiles, duplicateFiles, uploadFiles } from '../../externalServices/storageService';
-import { IEntity, InstanceManagerService, IRelationship } from '../../externalServices/instanceManager';
+import { IEntity, IEntityFilterParams, InstanceManagerService, IRelationship } from '../../externalServices/instanceManager';
 import { EntityTemplateManagerService, IEntityTemplatePopulated } from '../../externalServices/entityTemplateManager';
 import { ActivityLogManagerService, IUpdatedFields } from '../../externalServices/activityLogManager';
 import { trycatch } from '../../utils';
@@ -17,6 +19,8 @@ import {
 import RuleBreachesManager from '../ruleBreaches/manager';
 import config from '../../config';
 import { ServiceError } from '../error';
+import { cerateWorksheet, createWorkbook, fixFileProperties, styleAWorksheet } from '../../utils/excel/excelFunctions';
+import { excelConfig } from '../../utils/excel/excelConfig';
 
 const { errorCodes } = config;
 
@@ -33,6 +37,57 @@ export class InstancesManager {
         });
 
         return Object.fromEntries(filePropertiesEntries);
+    }
+
+    static async exportEntities(templateIds: string[], fileName: string) {
+        const { workbook, filePath } = await createWorkbook(fileName);
+        try {
+            await this.addWorksheetsToWB(templateIds, workbook);
+            await workbook.commit();
+        } catch (err) {
+            await fsp.unlink(filePath);
+            throw err;
+        }
+        return filePath;
+    }
+
+    private static async addWorksheetsToWB(templateIds: string[], workbook: stream.xlsx.WorkbookWriter) {
+        for (let indexId = 0; indexId < templateIds.length; indexId += 1) {
+            const template = await EntityTemplateManagerService.getEntityTemplateById(templateIds[indexId]);
+            await this.createWorksheet(workbook, template, templateIds[indexId]);
+        }
+    }
+
+    private static async createWorksheet(workbook: stream.xlsx.WorkbookWriter, template: IEntityTemplatePopulated, templateId: string) {
+        const worksheet = await cerateWorksheet(workbook, template);
+        const rowsEachReq = config.service.numOfRowsEachReq;
+        const { lastRowIndex: numberOfRows } = await this.getEntitiesChunk(templateId, excelConfig.defaultFilterParams, 0, 0);
+        for (let firstRow = 0; numberOfRows - firstRow > 0; firstRow += rowsEachReq + 1) {
+            const { rows: chunk } = await InstancesManager.getEntitiesChunk(
+                templateId,
+                excelConfig.defaultFilterParams,
+                firstRow,
+                firstRow + rowsEachReq,
+            );
+            const rows = fixFileProperties(
+                chunk.map((row) => row.properties),
+                template,
+            );
+            // eslint-disable-next-line no-loop-func
+            rows.forEach((row) => {
+                const excelRow = worksheet.addRow(row);
+                styleAWorksheet(worksheet);
+                excelRow.commit();
+            });
+        }
+    }
+
+    private static async getEntitiesChunk(id: string, filterParams: IEntityFilterParams, currentFirstRow: number, currentEndRow: number) {
+        return InstanceManagerService.getInstancesByTemplateId(id, {
+            ...filterParams,
+            startRow: currentFirstRow,
+            endRow: currentEndRow,
+        });
     }
 
     static getFilePropertiesKeysByTemplate(template: IEntityTemplatePopulated) {
@@ -224,6 +279,7 @@ export class InstancesManager {
         const { err } = await trycatch(() => InstancesManager.deleteAllEntityFiles(currentEntity));
 
         if (err) {
+            // eslint-disable-next-line no-console
             console.log(`failed to delete files of instanceId ${id}`);
         }
 
@@ -333,5 +389,3 @@ export class InstancesManager {
         throw error;
     }
 }
-
-export default InstancesManager;

@@ -50,6 +50,8 @@ config:
       value: http://rule-breach-service:8000  
     - name: RABBIT_URI
       value: amqp://user:McgIwOn8Yh@my-release-rabbitmq
+    - name:  STORAGE_SERVICE_FILE_HYPER_LINK
+      value: http://jaws.branch-yesodot.org/api/files
 
 livenessProbe:
   httpGet:

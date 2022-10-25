@@ -7,6 +7,8 @@ const config = {
         systemUnavailableURL: env.get('SYSTEM_UNAVAILABLE_URL').required().asString(),
         uploadsFolderPath: env.get('UPLOADS_FOLDER_PATH').default('public/uploads/').asString(),
         maxFileSize: env.get('MAX_FILE_SIZE').default(50000000).asInt(),
+        numOfRowsEachReq: env.get('NUM_OF_ROWS_EACH_REQ').default(50).asIntPositive(),
+        excelFilePath: env.get('EXCEL_FILE_PATH').default('/usr/src/app').asString(),
     },
     authentication: {
         tokenSecret: env.get('TOKEN_SECRET').required().asString(),
@@ -41,6 +43,8 @@ const config = {
         deleteFileRoute: env.get('STORAGE_SERVICE_DELETE_FILE_ROUTE').default('api/files').asString(),
         deleteFilesRoute: env.get('STORAGE_SERVICE_DELETE_FILES_ROUTE').default('api/files/delete-bulk').asString(),
         duplicateFilesRoute: env.get('STORAGE_SERVICE_DUPLICATE_FILES_ROUTE').default('api/files/duplicate-bulk').asString(),
+        fileHyperLink: env.get('STORAGE_SERVICE_FILE_HYPER_LINK').required().asString(),
+        fileIdLength: env.get('STORAGE_SERVICE_FILE_ID_LENGTH').default(32).asIntPositive(),
     },
     instanceManager: {
         uri: env.get('INSTANCE_MANAGER_URI').required().asString(),

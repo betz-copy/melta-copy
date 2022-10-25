@@ -6,6 +6,7 @@ import { wrapController, wrapMiddleware } from '../../utils/express';
 import {
     validateUserCanCreateEntityInstance,
     validateUserCanCreateRelationshipInstance,
+    validateUserCanExportEntityInstances,
     validateUserCanGetExpandedEntity,
     validateUserCanIgnoreRules,
     validateUserCanSearchEntityInstances,
@@ -19,6 +20,7 @@ import {
     createRelationshipSchema,
     deleteEntityInstanceSchema,
     deleteRelationshipSchema,
+    exportEntitiesSchema,
     updateEntityInstanceSchema,
     updateEntityStatusSchema,
 } from './validator.schema';
@@ -35,7 +37,12 @@ const InstancesRouter: Router = Router();
 
 // entities (Instances)
 InstancesRouter.post('/entities/search', wrapMiddleware(validateUserCanSearchEntityInstances), InstanceManagerProxy);
-
+InstancesRouter.post(
+    '/entities/export',
+    wrapMiddleware(validateUserCanExportEntityInstances),
+    ValidateRequest(exportEntitiesSchema),
+    wrapController(InstancesController.exportEntities),
+);
 InstancesRouter.get('/entities/:id', wrapMiddleware(validateUserCanUpdateGetOrDeleteEntityInstance), InstanceManagerProxy);
 InstancesRouter.post(
     '/entities/expanded/:id',
