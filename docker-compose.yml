@@ -116,6 +116,7 @@ services:
       ACTIVITY_LOG_URI: ${ACTIVITY_LOG_URI}
       NODE_TLS_REJECT_UNAUTHORIZED: 0
       RABBIT_URI: ${RABBIT_URI}
+      STORAGE_SERVICE_FILE_HYPER_LINK: ${STORAGE_SERVICE_FILE_HYPER_LINK}
 
   frontend:
     image: jawsproject.azurecr.io/frontend
