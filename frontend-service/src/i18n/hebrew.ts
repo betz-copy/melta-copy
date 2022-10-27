@@ -68,6 +68,7 @@ export default {
             to: 'ל:',
             withEntity: 'עם ישות מסוג',
             failedToGetActivities: 'נכשל לטעון היסטוריה',
+            undefined: 'לא ידוע',
         },
         print: {
             header: 'הדפס ישות',

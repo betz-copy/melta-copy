@@ -52,21 +52,26 @@ const RelationshipMetadataActionText: React.FC<{
                     ? i18next.t('entityPage.activityLog.createRelationship')
                     : i18next.t('entityPage.activityLog.deleteRelationship')}
                 <StyledTypography component="span" display="inline" variant="body2" style={{ color: '#225AA7' }}>
-                    &quot;{relationshipTemplate?.displayName}&quot;{' '}
+                    {' '}
+                    &quot;{relationshipTemplate ? relationshipTemplate.displayName : i18next.t('entityPage.activityLog.undefined')}&quot;{' '}
                 </StyledTypography>
-                {i18next.t('entityPage.activityLog.withEntity')}{' '}
-                <StyledTypography
-                    component="span"
-                    display="inline"
-                    variant="body2"
-                    onClick={() => navigate(`/entity/${actionMetadata.entityId}`)}
-                    style={{ color: '#225AA7', cursor: 'pointer' }}
-                    borderBottom="1px solid"
-                >
-                    {sourceAndDestinationTemplate[0]._id === entityTemplate._id
-                        ? sourceAndDestinationTemplate[1].displayName
-                        : sourceAndDestinationTemplate[0].displayName}
-                </StyledTypography>
+                {relationshipTemplate && (
+                    <>
+                        {`${i18next.t('entityPage.activityLog.withEntity')} `}
+                        <StyledTypography
+                            component="span"
+                            display="inline"
+                            variant="body2"
+                            onClick={() => navigate(`/entity/${actionMetadata?.entityId}`)}
+                            style={{ color: '#225AA7', cursor: 'pointer' }}
+                            borderBottom="1px solid"
+                        >
+                            {sourceAndDestinationTemplate[0]._id === entityTemplate._id
+                                ? sourceAndDestinationTemplate[1].displayName
+                                : sourceAndDestinationTemplate[0].displayName}
+                        </StyledTypography>
+                    </>
+                )}
             </StyledTypography>
         </Grid>
     );
