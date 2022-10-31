@@ -2,6 +2,7 @@ import * as env from 'env-var';
 import './dotenv';
 
 const config = {
+    seed: env.get('SEED').asFloat(),
     permissionsApi: {
         uri: env.get('PERMISSIONS_API_URI').required().asString(),
         baseRoute: env.get('PERMISSIONS_API_BASE_ROUTE').default('/api/permissions').asString(),

@@ -1,7 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 import axios from 'axios';
 // @ts-ignore
-import { generate, format } from 'json-schema-faker';
+import { generate, format, JSONSchemaFaker } from 'json-schema-faker';
 import * as pLimit from 'p-limit';
 import config from './config';
 import { IMongoEntityTemplate } from './entityTemplates';
@@ -23,10 +23,10 @@ const {
 
 format('fileId', (_value) => '01234567890123456789012345678901bla bla.docx');
 
-export const createInstances = async (entityTemplates: IMongoEntityTemplate[]) => {
+export const createInstances = async (entityTemplates: IMongoEntityTemplate[], chance: Chance.Chance) => {
     const promises = entityTemplates
         .map((entityTemplate) => {
-            return Array.from({ length: Math.floor(Math.random() * (maxNumberOfEntities - minNumberOfEntities + 1)) + minNumberOfEntities }, () =>
+            return Array.from({ length: chance.integer({ min: minNumberOfEntities, max: maxNumberOfEntities }) }, () =>
                 limit(() =>
                     axios.post(uri + createEntityRoute, {
                         properties: generate(entityTemplate.properties),
@@ -45,33 +45,31 @@ export const createInstances = async (entityTemplates: IMongoEntityTemplate[]) =
 export const createRelationshipInstances = async (
     entities: { properties: { _id: string }; templateId: string }[],
     relationsipTemplates: IMongoRealtionshipTemplate[],
+    chance: Chance.Chance,
 ) => {
     const promises = relationsipTemplates
         .map((relationshipTemplate) => {
             const relevantSourceEntities = entities.filter((entity) => entity.templateId === relationshipTemplate.sourceEntityId);
             const relevantDestinationEntities = entities.filter((entity) => entity.templateId === relationshipTemplate.destinationEntityId);
 
-            return Array.from(
-                { length: Math.floor(Math.random() * (maxNumberOfRelationships - minNumberOfRelationships + 1)) + minNumberOfRelationships },
-                () => {
-                    const sourceEntityId = relevantSourceEntities[Math.floor(Math.random() * relevantSourceEntities.length)].properties._id;
-                    const destinationEntityId =
-                        relevantDestinationEntities[Math.floor(Math.random() * relevantDestinationEntities.length)].properties._id;
+            return Array.from({ length: chance.integer({ min: minNumberOfRelationships, max: maxNumberOfRelationships }) }, () => {
+                const sourceEntityId = relevantSourceEntities[chance.integer({ min: 0, max: relevantSourceEntities.length - 1 })].properties._id;
+                const destinationEntityId =
+                    relevantDestinationEntities[chance.integer({ min: 0, max: relevantDestinationEntities.length - 1 })].properties._id;
 
-                    return limit(async () => {
-                        const { result } = await trycatch(() =>
-                            axios.post(uri + createRelationshipRoute, {
-                                relationshipInstance: {
-                                    sourceEntityId,
-                                    destinationEntityId,
-                                    templateId: relationshipTemplate._id,
-                                },
-                            }),
-                        );
-                        return result;
-                    });
-                },
-            );
+                return limit(async () => {
+                    const { result } = await trycatch(() =>
+                        axios.post(uri + createRelationshipRoute, {
+                            relationshipInstance: {
+                                sourceEntityId,
+                                destinationEntityId,
+                                templateId: relationshipTemplate._id,
+                            },
+                        }),
+                    );
+                    return result;
+                });
+            });
         })
         .flat();
 

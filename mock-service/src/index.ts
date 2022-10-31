@@ -1,4 +1,6 @@
 /* eslint-disable no-console */
+import { Chance } from 'chance';
+import { JSONSchemaFaker } from 'json-schema-faker';
 import config from './config';
 import { createCategories, getCategories } from './categories';
 import { createEntityTemplates, isEntityTemplateManagerAlive } from './entityTemplates';
@@ -45,6 +47,12 @@ const main = async () => {
 
     console.log('All services alive!');
 
+    const seed = config.seed ?? Math.floor(Math.random() * 1000);
+    console.log(`Picked seed ${seed}`);
+
+    const chance = new Chance(seed);
+    JSONSchemaFaker.option({ random: () => chance.floating({ min: 0, max: 0.9999, fixed: 4 }) });
+
     console.log('Creating categories');
 
     const createdCategories = await createCategories(categories);
@@ -67,9 +75,9 @@ const main = async () => {
 
     console.log('Creating entities');
 
-    const createdEntityInstances = await createInstances(createdEntityTemplates);
+    const createdEntityInstances = await createInstances(createdEntityTemplates, chance);
 
-    await createRelationshipInstances(createdEntityInstances, createdRelationshipTemplates);
+    await createRelationshipInstances(createdEntityInstances, createdRelationshipTemplates, chance);
 
     console.log('Finished');
 };
