@@ -17,7 +17,7 @@ const getEntitiesByTemplateRequest = async (
 };
 
 const exportTemplatesToExcelRequest = async (templateIds: string[], fileName: string) => {
-    const { data } = await axios.post(`${entities}/export`, { templateIds, fileName }, { responseType: 'blob' });
+    const { data } = await axios.post(`${entities}/export`, { templateIds, fileName }, { responseType: 'blob', timeout: 60000 });
     return data;
 };
 
