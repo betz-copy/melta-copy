@@ -16,6 +16,8 @@ export default {
     addEntity: 'הוסף ישות',
     showTour: 'הצג סיור במערכת',
     downloadMultipleTables: 'הורד טבלאות',
+    failedToExportTables: 'הורדת טבלאות נכשלה',
+    failedToExportTable: 'הורדת טבלה נכשלה',
     entitiesTableOfTemplate: {
         resetFilters: 'איפוס סינונים',
         downloadOneTable: 'הורד טבלה',

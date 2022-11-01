@@ -1,7 +1,10 @@
 import React, { useRef, forwardRef, useImperativeHandle } from 'react';
-import { Grid, Box } from '@mui/material';
+import { Grid, Box, CircularProgress } from '@mui/material';
 import { AddCircle, VerticalAlignBottomOutlined as DownloadIcon } from '@mui/icons-material';
 import i18next from 'i18next';
+import { useQuery } from 'react-query';
+import fileDownload from 'js-file-download';
+import { toast } from 'react-toastify';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { AddEntityButton } from './AddEntityButton';
 import EntitiesTableOfTemplate, { EntitiesTableOfTemplateRef } from '../EntitiesTableOfTemplate';
@@ -9,7 +12,7 @@ import { BlueTitle } from '../BlueTitle';
 import { ResetFilterButton } from './ResetFilterButton';
 import IconButtonWithPopoverText from '../IconButtonWithPopover';
 import { CustomIcon } from '../CustomIcon';
-import { exportTemplatesToExcel } from '../../services/entitiesService';
+import { exportTemplatesToExcelRequest } from '../../services/entitiesService';
 
 const TemplateTable = forwardRef<
     EntitiesTableOfTemplateRef,
@@ -20,10 +23,20 @@ const TemplateTable = forwardRef<
     }
 >(({ template, quickFilterText, page }, ref) => {
     const entitiesTableRef = useRef<EntitiesTableOfTemplateRef>(null);
-
-    const onExcelExport = async () => {
-        await exportTemplatesToExcel([template._id], `${template.displayName}.xlsx`);
-    };
+    const { isFetching: isExportingTableToExcelFile, refetch: exportTemplateToExcel } = useQuery(
+        ['exportTemplateToExcel', [template._id], `${template.displayName}.xlsx`],
+        () => exportTemplatesToExcelRequest([template._id], `${template.displayName}.xlsx`),
+        {
+            enabled: false,
+            onError(error) {
+                console.log('Failed to export table', error);
+                toast.error(i18next.t('failedToExportTable'));
+            },
+            onSuccess(data) {
+                fileDownload(data, `${template.displayName}.xlsx`);
+            },
+        },
+    );
 
     useImperativeHandle(ref, () => entitiesTableRef.current!);
 
@@ -41,9 +54,9 @@ const TemplateTable = forwardRef<
                         <ResetFilterButton entitiesTableRef={entitiesTableRef} />
                         <IconButtonWithPopoverText
                             popoverText={i18next.t('entitiesTableOfTemplate.downloadOneTable')}
-                            iconButtonProps={{ onClick: onExcelExport, size: 'medium' }}
+                            iconButtonProps={{ onClick: () => exportTemplateToExcel(), size: 'medium' }}
                         >
-                            <DownloadIcon color="primary" fontSize="medium" />
+                            {isExportingTableToExcelFile ? <CircularProgress size="24px" /> : <DownloadIcon color="primary" fontSize="medium" />}
                         </IconButtonWithPopoverText>
                         <AddEntityButton
                             initialStep={1}

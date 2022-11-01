@@ -5,11 +5,13 @@ import _debounce from 'lodash.debounce';
 import { useQuery } from 'react-query';
 import pLimit from 'p-limit';
 import { useTour } from '@reactour/tour';
+import fileDownload from 'js-file-download';
+import { toast } from 'react-toastify';
 import { IMongoCategory } from '../../interfaces/categories';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { TemplateTablesHeadline } from './TemplateTablesHeadline';
 import TemplateTablesView from './TemplatesTablesView';
-import { exportTemplatesToExcel, getEntitiesByTemplateRequest } from '../../services/entitiesService';
+import { exportTemplatesToExcelRequest, getEntitiesByTemplateRequest } from '../../services/entitiesService';
 import { templatesCompareFunc } from '../../utils/templates';
 
 const getTemplateCount = async (templateId: string, searchInput: string) => {
@@ -42,15 +44,26 @@ const TemplatesTablesPage: React.FC<{
 }> = ({ templates, categories, excelExportAllTablesFileName, pageType, pageTitle }) => {
     const [templatesToShowCheckbox, setTemplatesToShowCheckbox] = useState<IMongoEntityTemplatePopulated[]>(templates);
     const { setSteps } = useTour();
+    const { isFetching: isLoadingExcelExport, refetch: exportTemplatesToExcel } = useQuery(
+        ['exportTemplatesToExcel', templates.map((template) => template._id), excelExportAllTablesFileName],
+        () =>
+            exportTemplatesToExcelRequest(
+                templates.map((template) => template._id),
+                excelExportAllTablesFileName,
+            ),
+        {
+            enabled: false,
+            onError(error) {
+                console.log('Failed to export tables', error);
+                toast.error(i18next.t('failedToExportTables'));
+            },
+            onSuccess(data) {
+                fileDownload(data, excelExportAllTablesFileName);
+            },
+        },
+    );
 
     const templatesTablesRef = useRef<React.ComponentRef<typeof TemplateTablesView>>(null);
-
-    const onExcelExportTables = () => {
-        exportTemplatesToExcel(
-            templates.map((template) => template._id),
-            excelExportAllTablesFileName,
-        );
-    };
 
     const [searchInput, setSearchInput] = useState('');
 
@@ -90,8 +103,9 @@ const TemplatesTablesPage: React.FC<{
                             setTemplatesToShow: setTemplatesToShowCheckbox,
                             templates,
                         }}
-                        onExcelExport={onExcelExportTables}
+                        onExcelExport={exportTemplatesToExcel}
                         pageTitle={pageTitle}
+                        isLoadingExcel={isLoadingExcelExport}
                     />
                 </Box>
                 <Grid container padding="0 2.5rem">

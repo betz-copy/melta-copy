@@ -1,6 +1,6 @@
 import React, { Dispatch, SetStateAction, useState } from 'react';
 import i18next from 'i18next';
-import { Grid, IconButton, Typography } from '@mui/material';
+import { CircularProgress, Grid, IconButton, Typography } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import SearchIcon from '@mui/icons-material/Search';
 import DownloadIcon from '@mui/icons-material/VerticalAlignBottomOutlined';
@@ -42,7 +42,8 @@ const TemplateTablesHeadline: React.FC<{
     };
     onExcelExport: () => void;
     pageTitle: string;
-}> = ({ onSearch, entityTemplateSelectCheckboxProps, onExcelExport, pageTitle }) => {
+    isLoadingExcel: boolean;
+}> = ({ onSearch, entityTemplateSelectCheckboxProps, onExcelExport, pageTitle, isLoadingExcel }) => {
     return (
         <Grid
             container
@@ -79,7 +80,7 @@ const TemplateTablesHeadline: React.FC<{
                 <Grid container spacing={1}>
                     <Grid item>
                         <IconButton style={{ background: '#eeeeee', borderRadius: '5px' }} onClick={onExcelExport}>
-                            <DownloadIcon htmlColor="#225AA7" />
+                            {isLoadingExcel ? <CircularProgress size="24px" /> : <DownloadIcon htmlColor="#225AA7" />}
                             <Typography fontSize={14} style={{ fontWeight: '500', padding: '0 10px', color: '#225AA7' }}>
                                 {i18next.t('downloadMultipleTables')}
                             </Typography>

@@ -1,6 +1,5 @@
 import { IServerSideGetRowsRequest } from '@ag-grid-community/core';
 import partition from 'lodash.partition';
-import fileDownload from 'js-file-download';
 import axios from '../axios';
 import { environment } from '../globals';
 import { IEntity, IEntityExpanded } from '../interfaces/entities';
@@ -17,9 +16,9 @@ const getEntitiesByTemplateRequest = async (
     return data;
 };
 
-const exportTemplatesToExcel = async (templateIds: string[], fileName: string) => {
+const exportTemplatesToExcelRequest = async (templateIds: string[], fileName: string) => {
     const { data } = await axios.post(`${entities}/export`, { templateIds, fileName }, { responseType: 'blob' });
-    fileDownload(data, fileName);
+    return data;
 };
 
 const getExpandedEntityByIdRequest = async (
@@ -105,5 +104,5 @@ export {
     duplicateEntityRequest,
     getRelationshipInstancesCountByTemplateIdRequest,
     updateEntityStatusRequest,
-    exportTemplatesToExcel,
+    exportTemplatesToExcelRequest,
 };
