@@ -215,7 +215,7 @@ export class InstancesManager {
         for (let i = 0; i < fields.length; i++) {
             const field = fields[i];
 
-            if (currentEntity.properties[field] !== instanceData.properties[field]) continue;
+            if (currentEntity.properties[field] === instanceData.properties[field]) continue;
 
             updatedFields[field] = instanceData.properties[field];
             activityLogUpdatedFields.push({
