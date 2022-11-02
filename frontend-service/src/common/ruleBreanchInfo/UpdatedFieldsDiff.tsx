@@ -49,6 +49,7 @@ export const UpdatedFieldsDiff: React.FC<{
                     {i18next.t('ruleBreachInfo.updateEntityActionInfo.entityAfter')}
                 </Typography>
             }
+            disableWordDiff
         />
     );
 };
