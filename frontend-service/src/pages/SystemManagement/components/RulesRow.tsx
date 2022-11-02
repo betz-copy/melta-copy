@@ -12,6 +12,7 @@ import { IMongoRule } from '../../../interfaces/rules';
 import { RuleWizard } from '../../../common/wizards/rule';
 import { ruleObjectToRuleForm, updateDisabledRuleRequest } from '../../../services/templates/rulesService';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { ViewingBox } from './ViewingBox';
 
 const RulesRow: React.FC = () => {
     const queryClient = useQueryClient();
@@ -54,7 +55,7 @@ const RulesRow: React.FC = () => {
                     </Grid>
                 </Grid>
             </Header>
-            <Grid container spacing={4}>
+            <ViewingBox>
                 {rules
                     .filter(({ name }) => searchText === '' || name.includes(searchText))
                     .map((rule) => (
@@ -76,7 +77,7 @@ const RulesRow: React.FC = () => {
                             }}
                         />
                     ))}
-            </Grid>
+            </ViewingBox>
             <RuleWizard
                 open={ruleWizardDialogState.isWizardOpen}
                 handleClose={() => setRuleWizardDialogState({ isWizardOpen: false, rule: null })}

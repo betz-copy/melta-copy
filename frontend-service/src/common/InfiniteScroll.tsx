@@ -57,8 +57,6 @@ export const InfiniteScroll = <T extends { _id: string }>({
             sx={{
                 overflowX: 'hidden',
                 overflowY: 'overlay',
-                '::-webkit-scrollbar': { background: 'lightgray', width: 6, borderRadius: 20 },
-                '::-webkit-scrollbar-thumb': { background: 'gray', borderRadius: 20 },
             }}
         >
             {data?.pages.map((page) =>

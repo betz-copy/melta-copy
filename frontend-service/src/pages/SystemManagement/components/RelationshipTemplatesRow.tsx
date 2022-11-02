@@ -23,6 +23,7 @@ import SearchInput from '../../../common/inputs/SearchInput';
 import TemplatesSelectCheckbox from '../../../common/templatesSelectCheckbox';
 import { populateRelationshipTemplate } from '../../../utils/templates';
 import { ErrorToast } from '../../../common/ErrorToast';
+import { ViewingBox } from './ViewingBox';
 
 const RelationshipTemplatesRow: React.FC = () => {
     const queryClient = useQueryClient();
@@ -97,7 +98,7 @@ const RelationshipTemplatesRow: React.FC = () => {
                     </Grid>
                 </Grid>
             </Header>
-            <Grid container spacing={4}>
+            <ViewingBox>
                 {relationshipTemplates
                     .map((relationshipTemplate) => populateRelationshipTemplate(relationshipTemplate, entityTemplates))
                     .filter((relationshipTemplate) => {
@@ -151,7 +152,7 @@ const RelationshipTemplatesRow: React.FC = () => {
                             }
                         />
                     ))}
-            </Grid>
+            </ViewingBox>
             <RelationshipTemplateWizard
                 open={relationshipTemplateWizardDialogState.isWizardOpen}
                 handleClose={() => setRelationshipTemplateWizardDialogState({ isWizardOpen: false, relationshipTemplate: null })}

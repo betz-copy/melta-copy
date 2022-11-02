@@ -119,7 +119,7 @@ const drawNodeIcon = (
 ) => {
     if (!entityTemplate.iconFileId) return;
 
-    const iconsSize = (graphSettings.defaultNodeRadius + node.nodeSize) * 1.5;
+    const iconsSize = (graphSettings.defaultNodeRadius + node.nodeSize) * 1.2;
 
     if (!node.icon) {
         node.icon = new Image(iconsSize, iconsSize);
@@ -192,7 +192,7 @@ export const drawNodeLabel = (node: PartialRequired<NodeObject, 'x' | 'y' | 'nod
 
     ctx.translate(node.x, node.y + nodeRadius);
 
-    drawRectangle(ctx, -width / 2, -height / 2, width, height, 'rgba(255, 255, 255, 0.8)');
+    drawRectangle(ctx, -width / 2, -height / 2, width, height, 'rgba(255, 255, 255, 0.8)', width / 2);
     drawText(ctx, nodeLabel, 0, 0, 'black');
 
     ctx.restore();

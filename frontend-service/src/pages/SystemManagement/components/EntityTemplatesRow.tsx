@@ -23,6 +23,7 @@ import { removeItemById, replaceItemById } from '../../../utils/reactQuery';
 import SearchInput from '../../../common/inputs/SearchInput';
 import { templatesCompareFunc } from '../../../utils/templates';
 import { ErrorToast } from '../../../common/ErrorToast';
+import { ViewingBox } from './ViewingBox';
 
 const EntityTemplatesRow: React.FC = () => {
     const queryClient = useQueryClient();
@@ -103,7 +104,7 @@ const EntityTemplatesRow: React.FC = () => {
                     </Grid>
                 </Grid>
             </Header>
-            <Grid container spacing={4}>
+            <ViewingBox>
                 {entityTemplates
                     .sort(templatesCompareFunc)
                     .filter((entityTemplate) => categoriesToShow.some((categoryToShow) => categoryToShow._id === entityTemplate.category._id))
@@ -131,7 +132,7 @@ const EntityTemplatesRow: React.FC = () => {
                             }}
                         />
                     ))}
-            </Grid>
+            </ViewingBox>
             <EntityTemplateWizard
                 open={entityTemplateWizardDialogState.isWizardOpen}
                 handleClose={() => setEntityTemplateWizardDialogState({ isWizardOpen: false, entityTemplate: null })}

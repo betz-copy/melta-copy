@@ -15,6 +15,7 @@ import { categoryObjectToCategoryForm, deleteCategoryRequest } from '../../../se
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
 import { removeItemById } from '../../../utils/reactQuery';
 import { ErrorToast } from '../../../common/ErrorToast';
+import { ViewingBox } from './ViewingBox';
 
 const CategoriesRow: React.FC = () => {
     const queryClient = useQueryClient();
@@ -55,7 +56,7 @@ const CategoriesRow: React.FC = () => {
                     <AddIcon color="primary" fontSize="large" />
                 </IconButton>
             </Header>
-            <Grid container spacing={4}>
+            <ViewingBox>
                 {categories.map((category) => (
                     <ViewingCard
                         minWidth={250}
@@ -73,7 +74,7 @@ const CategoriesRow: React.FC = () => {
                         onDeleteClick={() => setDeleteCategoryDialogState({ isDialogOpen: true, categoryId: category._id })}
                     />
                 ))}
-            </Grid>
+            </ViewingBox>
             <CategoryWizard
                 open={categoryWizardDialogState.isWizardOpen}
                 handleClose={() => setCategoryWizardDialogState({ isWizardOpen: false, category: null })}

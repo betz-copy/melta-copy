@@ -1,6 +1,6 @@
 import React, { useState, lazy, Suspense, useEffect } from 'react';
 import { CssBaseline, Box, useScrollTrigger, Button } from '@mui/material';
-import { Route, Routes, useNavigate } from 'react-router-dom';
+import { matchPath, Route, Routes, useNavigate } from 'react-router-dom';
 import rtlPlugin from 'stylis-plugin-rtl';
 import { CacheProvider } from '@emotion/react';
 import createCache from '@emotion/cache';
@@ -89,7 +89,7 @@ const Main = () => {
                 },
             );
         }
-    }, []);
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     return (
         <CacheProvider value={cacheRtl}>
@@ -101,6 +101,7 @@ const Main = () => {
                     ref={(ref) => {
                         if (ref) setPageScrollTarget(ref as HTMLElement);
                     }}
+                    style={{ overflowY: matchPath('/entity/:entityId/graph', window.location.pathname) ? 'hidden' : 'auto' }}
                 >
                     <Box>
                         <Suspense fallback={<div />}>

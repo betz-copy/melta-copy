@@ -61,8 +61,8 @@ const IconPicker: React.FC<IconPickerProps> = ({ width, height, iconsPerPage, se
     };
 
     return (
-        <Grid container justifyContent="center" direction="column" padding={2} width={width} height={height} alignItems="center" flexWrap="nowrap">
-            <Grid container flexWrap="nowrap" justifyContent="space-between">
+        <Grid container justifyContent="center" direction="column" padding={1} width={width} height={height} alignItems="center" flexWrap="nowrap">
+            <Grid container flexWrap="nowrap" justifyContent="space-between" alignItems="center">
                 <TextField
                     placeholder={i18next.t('input.imagePicker.iconSearch')}
                     value={searchStr}
@@ -105,11 +105,7 @@ const IconPicker: React.FC<IconPickerProps> = ({ width, height, iconsPerPage, se
                 width="100%"
                 marginTop="0.8rem"
                 marginBottom="0.4rem"
-                sx={{
-                    direction: 'rtl',
-                    '::-webkit-scrollbar': { background: 'lightgray', width: 6 },
-                    '::-webkit-scrollbar-thumb': { background: 'gray', borderRadius: 20 },
-                }}
+                sx={{ direction: 'rtl' }}
             >
                 <Grid item container justifyContent="center">
                     {displayedIcons.slice(displayIndex, displayIndex + iconsPerPage).map(([name, icon]) => (

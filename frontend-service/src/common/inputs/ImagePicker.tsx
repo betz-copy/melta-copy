@@ -36,9 +36,9 @@ const ImagePicker: React.FC<ImagePickerProps> = ({ image, onPick, onDelete, defa
     };
 
     return (
-        <Grid container direction="column" alignItems="center" spacing={2}>
+        <Grid container direction="column" alignItems="center" spacing={1}>
             <Grid item>
-                <ToggleButtonGroup value={inputType} exclusive onChange={onToggle}>
+                <ToggleButtonGroup value={inputType} exclusive onChange={onToggle} sx={{ height: '2.5rem' }}>
                     <ToggleButton value="chooseFromOptions" sx={{ width: '10rem' }}>
                         {i18next.t('input.imagePicker.chooseFromOptions')}
                     </ToggleButton>
@@ -51,9 +51,9 @@ const ImagePicker: React.FC<ImagePickerProps> = ({ image, onPick, onDelete, defa
             {inputType === 'chooseFromOptions' && (
                 <Grid item>
                     <IconPicker
-                        width="30rem"
-                        height="24.5rem"
-                        iconsPerPage={60}
+                        width="38rem"
+                        height="21rem"
+                        iconsPerPage={70}
                         selectedIconName={image?.name.split('.')[0]}
                         onPick={(icon) => {
                             const detailedFile = { file: icon, name: icon.name };

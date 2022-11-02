@@ -390,6 +390,8 @@ export default {
         relevantEntities: 'ישויות רלוונטיות',
         unknownRelationship: 'קשר לא ידוע',
         noRelevantEntitiesForBrokenRule: 'אין ישויות רלוונטיות למעבר על חוק זה',
+        warning: 'אזהרה',
+        enforcement: 'אכיפה',
     },
     ruleBreachAlertNotification: {
         payAttention: 'שים לב,',

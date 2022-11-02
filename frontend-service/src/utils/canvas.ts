@@ -1,7 +1,28 @@
 /* eslint-disable no-param-reassign */
-export const drawRectangle = (ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, color: string) => {
+export const drawRectangle = (
+    ctx: CanvasRenderingContext2D,
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    color: string,
+    radius: number = 2,
+) => {
+    ctx.beginPath();
+    ctx.moveTo(x + radius, y);
+
+    if (width < radius * 2) radius = width / 2;
+    if (height < radius * 2) radius = height / 2;
+
+    ctx.arcTo(x + width, y, x + width, y + height, radius);
+    ctx.arcTo(x + width, y + height, x, y + height, radius);
+    ctx.arcTo(x, y + height, x, y, radius);
+    ctx.arcTo(x, y, x + width, y, radius);
+
+    ctx.closePath();
+
     ctx.fillStyle = color;
-    ctx.fillRect(x, y, width, height);
+    ctx.fill();
 };
 
 export const getLineAngle = (x: number, y: number) => {
@@ -25,7 +46,8 @@ export const getRectangleDimensionsByString = (ctx: CanvasRenderingContext2D, te
     ctx.font = `${fontSize}px Sans-Serif`;
     const textWidth = ctx.measureText(text).width;
 
-    const borderMultiplier = fontSize * 0.2;
+    const heightPadding = fontSize * 0.2;
+    const widthPadding = fontSize * 0.65;
 
-    return { width: textWidth + borderMultiplier, height: fontSize + borderMultiplier };
+    return { width: textWidth + widthPadding, height: fontSize + heightPadding };
 };

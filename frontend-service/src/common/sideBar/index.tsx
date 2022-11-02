@@ -105,8 +105,9 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                     sx={{
                         overflowY: 'overlay',
                         direction: 'rtl',
-                        '::-webkit-scrollbar': { background: 'transparent', width: 4 },
-                        '::-webkit-scrollbar-thumb': { background: 'lightgray', borderRadius: 20 },
+                        '::-webkit-scrollbar': { width: 4 },
+                        '::-webkit-scrollbar-track': { background: 'transparent' },
+                        '::-webkit-scrollbar-thumb': { background: 'lightgray' },
                     }}
                 >
                     {categories.map((category) => {

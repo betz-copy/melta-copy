@@ -24,14 +24,6 @@
     color: #225aa7;
 }
 
-.ag-column-select-virtual-list-viewport::-webkit-scrollbar {
-    width: 8px;
-}
-
-.ag-body-horizontal-scroll-viewport::-webkit-scrollbar {
-    height: 10px;
-}
-
 .ag-column-select-virtual-list-viewport::-webkit-scrollbar-track,
 .ag-body-horizontal-scroll-viewport::-webkit-scrollbar-track {
     background-color: rgb(233, 230, 230);

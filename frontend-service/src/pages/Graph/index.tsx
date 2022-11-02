@@ -64,11 +64,13 @@ const Graph: React.FC = () => {
             setHeight(mainBox.offsetHeight);
             setWidth(mainBox.offsetWidth);
         }
+
+        return () => { }; // eslint-disable-line prettier/prettier
     };
 
     window.addEventListener('resize', updateGraphSize);
     useEffect(() => {
-        updateGraphSize();
+        return updateGraphSize();
     }, []);
 
     const addNewGraphData = (newGraphData: GraphData) => {

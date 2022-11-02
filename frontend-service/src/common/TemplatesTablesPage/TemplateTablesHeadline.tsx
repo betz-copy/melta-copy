@@ -50,14 +50,17 @@ const TemplateTablesHeadline: React.FC<{
             bgcolor="#fcfeff"
             boxShadow="0px 4px 4px #0000000D"
             padding="0.5rem 2.5rem"
+            height="3.6rem"
             marginBottom="1rem"
             justifyContent="space-between"
+            alignItems="center"
+            wrap="nowrap"
         >
             <Grid item>
-                <Grid container direction="row" display="flex">
+                <Grid container direction="row" display="flex" wrap="nowrap">
                     <BlueTitle title={pageTitle} component="h4" variant="h4" />
-                    <Grid item paddingLeft="3rem" paddingTop="4px">
-                        <Grid item container>
+                    <Grid item paddingLeft="3rem" paddingTop="5px">
+                        <Grid item container wrap="nowrap">
                             <Grid item data-tour="template-filter">
                                 <TemplatesSelectCheckbox
                                     title={i18next.t('templatesTablesEntityTemplatesCheckboxLabel')}
@@ -77,7 +80,7 @@ const TemplateTablesHeadline: React.FC<{
                 </Grid>
             </Grid>
             <Grid item>
-                <Grid container spacing={1}>
+                <Grid container spacing={1} wrap="nowrap">
                     <Grid item>
                         <IconButton style={{ background: '#eeeeee', borderRadius: '5px' }} onClick={onExcelExport}>
                             {isLoadingExcel ? <CircularProgress size="24px" /> : <DownloadIcon htmlColor="#225AA7" />}

@@ -1,42 +1,18 @@
-import React, { useState, Key } from 'react';
-import { Box, Collapse, Grid, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Tooltip, Typography } from '@mui/material';
-import { ExpandLess as ExpandLessIcon, ExpandMore as ExpandMoreIcon, Gavel as GavelIcon } from '@mui/icons-material';
+import React, { Key, useState } from 'react';
+import { Box, Collapse, List, ListItemButton, ListItemIcon, ListItemText, Tooltip } from '@mui/material';
 import { useQueryClient } from 'react-query';
 import i18next from 'i18next';
-import { IMongoRelationshipTemplate } from '../../interfaces/relationshipTemplates';
-import { populateRelationshipTemplate } from '../../utils/templates';
-import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
-import { IMongoRule } from '../../interfaces/rules';
-import { IRuleBreachPopulated } from '../../interfaces/ruleBreaches/ruleBreach';
-import { RelationshipInfo } from './ActionInfo';
-import { IActionMetadataPopulated, ICreateRelationshipMetadataPopulated } from '../../interfaces/ruleBreaches/actionMetadata';
+import { ExpandLess as ExpandLessIcon, ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
+import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { IMongoRelationshipTemplate } from '../../../interfaces/relationshipTemplates';
+import { IActionMetadataPopulated, ICreateRelationshipMetadataPopulated } from '../../../interfaces/ruleBreaches/actionMetadata';
+import { IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
+import { IMongoRule } from '../../../interfaces/rules';
+import { RelationshipInfo } from '../ActionInfo';
+import { populateRelationshipTemplate } from '../../../utils/templates';
+import { RuleIcon } from './RuleIcon';
 
-const BrokenRuleCompact: React.FC<{ brokenRule: IRuleBreachPopulated['brokenRules'][number]; ruleTemplate: IMongoRule }> = ({
-    brokenRule,
-    ruleTemplate,
-}) => {
-    return (
-        <ListItem key={brokenRule.ruleId}>
-            <ListItemIcon>
-                <GavelIcon />
-            </ListItemIcon>
-            <ListItemText>
-                <Tooltip
-                    title={ruleTemplate.description}
-                    PopperProps={{
-                        sx: { '& .MuiTooltip-tooltip': { fontSize: '0.8rem' } },
-                    }}
-                >
-                    <Box component="span" sx={{ fontWeight: 'bold' }}>
-                        {ruleTemplate.name}
-                    </Box>
-                </Tooltip>
-            </ListItemText>
-        </ListItem>
-    );
-};
-
-const BrokenRuleFull: React.FC<{
+export const BrokenRuleFull: React.FC<{
     brokenRule: IRuleBreachPopulated['brokenRules'][number];
     ruleTemplate: IMongoRule;
     actionMetadata: IActionMetadataPopulated;
@@ -51,7 +27,7 @@ const BrokenRuleFull: React.FC<{
         <>
             <ListItemButton onClick={() => setOpen((prev) => !prev)}>
                 <ListItemIcon>
-                    <GavelIcon />
+                    <RuleIcon ruleType={ruleTemplate.actionOnFail} />
                 </ListItemIcon>
                 <ListItemText secondary={i18next.t('ruleBreachInfo.relevantEntities')}>
                     <Tooltip title={ruleTemplate.description}>
@@ -113,41 +89,5 @@ const BrokenRuleFull: React.FC<{
                 </List>
             </Collapse>
         </>
-    );
-};
-
-export const BrokenRulesInfo: React.FC<{
-    brokenRules: IRuleBreachPopulated['brokenRules'];
-    actionMetadata: IActionMetadataPopulated;
-    isCompact: boolean;
-}> = ({ brokenRules, actionMetadata, isCompact }) => {
-    const queryClient = useQueryClient();
-    const rules = queryClient.getQueryData<IMongoRule[]>('getRules')!;
-
-    return (
-        <Grid container direction="column" spacing={1}>
-            <Grid item>
-                <Typography variant="body1" sx={{ textDecoration: 'underline' }}>{`${
-                    brokenRules.length === 1 ? i18next.t('ruleBreachInfo.brokeTheFollowingRule') : i18next.t('ruleBreachInfo.brokeTheFollowingRules')
-                }:`}</Typography>
-            </Grid>
-            <Grid item>
-                <List dense={isCompact}>
-                    {brokenRules.map((brokenRule) => {
-                        const ruleTemplate = rules.find(({ _id }) => _id === brokenRule.ruleId)!;
-                        return isCompact ? (
-                            <BrokenRuleCompact key={brokenRule.ruleId} brokenRule={brokenRule} ruleTemplate={ruleTemplate} />
-                        ) : (
-                            <BrokenRuleFull
-                                key={brokenRule.ruleId}
-                                brokenRule={brokenRule}
-                                ruleTemplate={ruleTemplate}
-                                actionMetadata={actionMetadata}
-                            />
-                        );
-                    })}
-                </List>
-            </Grid>
-        </Grid>
     );
 };
