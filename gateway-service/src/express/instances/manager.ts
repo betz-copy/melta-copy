@@ -376,7 +376,7 @@ export class InstancesManager {
     }
 
     static async handleBrokenRulesError(error: any): Promise<never> {
-        if (axios.isAxiosError(error) && error.response?.data.metadata.errorCode === errorCodes.ruleBlock) {
+        if (axios.isAxiosError(error) && error.response?.data.metadata?.errorCode === errorCodes.ruleBlock) {
             const { brokenRules } = error.response.data.metadata;
 
             throw new ServiceError(400, error.message, {
