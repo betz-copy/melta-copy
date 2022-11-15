@@ -1,4 +1,4 @@
-import React, { useRef, forwardRef, useImperativeHandle } from 'react';
+import React, { useRef } from 'react';
 import { Grid, Box, CircularProgress } from '@mui/material';
 import { AddCircle, VerticalAlignBottomOutlined as DownloadIcon } from '@mui/icons-material';
 import i18next from 'i18next';
@@ -14,14 +14,7 @@ import IconButtonWithPopoverText from '../IconButtonWithPopover';
 import { CustomIcon } from '../CustomIcon';
 import { exportTemplatesToExcelRequest } from '../../services/entitiesService';
 
-const TemplateTable = forwardRef<
-    EntitiesTableOfTemplateRef,
-    {
-        template: IMongoEntityTemplatePopulated;
-        quickFilterText: string;
-        page: string;
-    }
->(({ template, quickFilterText, page }, ref) => {
+const TemplateTable = ({ template, quickFilterText, page }: { template: IMongoEntityTemplatePopulated; quickFilterText: string; page: string }) => {
     const entitiesTableRef = useRef<EntitiesTableOfTemplateRef>(null);
     const { isFetching: isExportingTableToExcelFile, refetch: exportTemplateToExcel } = useQuery(
         ['exportTemplateToExcel', [template._id], `${template.displayName}.xlsx`],
@@ -37,8 +30,6 @@ const TemplateTable = forwardRef<
             },
         },
     );
-
-    useImperativeHandle(ref, () => entitiesTableRef.current!);
 
     return (
         <Grid container>
@@ -85,6 +76,6 @@ const TemplateTable = forwardRef<
             </Box>
         </Grid>
     );
-});
+};
 
 export { TemplateTable };

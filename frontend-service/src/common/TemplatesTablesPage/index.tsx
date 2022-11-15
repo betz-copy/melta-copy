@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
 import i18next from 'i18next';
 import { Box, CircularProgress, Grid, Typography } from '@mui/material';
 import _debounce from 'lodash.debounce';
@@ -63,8 +63,6 @@ const TemplatesTablesPage: React.FC<{
         },
     );
 
-    const templatesTablesRef = useRef<React.ComponentRef<typeof TemplateTablesView>>(null);
-
     const [searchInput, setSearchInput] = useState('');
 
     const {
@@ -114,12 +112,7 @@ const TemplatesTablesPage: React.FC<{
                         <Typography>{i18next.t('noSearchResults')}</Typography>
                     )}
                     {!isLoadingTemplatesFilteredByCount && (
-                        <TemplateTablesView
-                            ref={templatesTablesRef}
-                            templates={templatesFilteredByCountSorted!}
-                            searchInput={searchInput}
-                            pageType={pageType}
-                        />
+                        <TemplateTablesView templates={templatesFilteredByCountSorted!} searchInput={searchInput} pageType={pageType} />
                     )}
                 </Grid>
             </Grid>
