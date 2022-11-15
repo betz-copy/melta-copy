@@ -1,4 +1,5 @@
 import { Neo4jError, Transaction } from 'neo4j-driver';
+import pickBy from 'lodash.pickby';
 import Neo4jClient from '../../utils/neo4j';
 import {
     generateDefaultProperties,
@@ -237,14 +238,16 @@ export class EntityManager {
     }
 
     public static getUpdatedProperties(oldEntity: IEntity, newEntity: IEntity, entityTemplate: IMongoEntityTemplate) {
-        const updatedProperties: string[] = [];
-
-        Object.entries(entityTemplate.properties.properties).forEach(([key]) => {
-            if (newEntity.properties[key] !== oldEntity.properties[key]) {
-                updatedProperties.push(key);
+        const templateUpdatedProperties = pickBy(entityTemplate.properties.properties, (propertyTemplate, key) => {
+            // date is string, date-time is Date object.
+            // todo: normalize fields is weird. keep IEntity in managers always by the same format, and change only when inserting to Neo4J
+            if (propertyTemplate.format === 'date-time') {
+                return (newEntity.properties[key] as Date | undefined)?.getTime() !== (oldEntity.properties[key] as Date | undefined)?.getTime();
             }
+            return newEntity.properties[key] !== oldEntity.properties[key];
         });
 
+        const updatedProperties = Object.keys(templateUpdatedProperties);
         return updatedProperties;
     }
 
