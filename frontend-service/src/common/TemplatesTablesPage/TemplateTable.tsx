@@ -1,10 +1,11 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { Grid, Box, CircularProgress } from '@mui/material';
 import { AddCircle, VerticalAlignBottomOutlined as DownloadIcon } from '@mui/icons-material';
 import i18next from 'i18next';
-import { useQuery } from 'react-query';
-import fileDownload from 'js-file-download';
+import { AxiosError } from 'axios';
+import { useMutation, useQuery } from 'react-query';
 import { toast } from 'react-toastify';
+import fileDownload from 'js-file-download';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { AddEntityButton } from './AddEntityButton';
 import EntitiesTableOfTemplate, { EntitiesTableOfTemplateRef } from '../EntitiesTableOfTemplate';
@@ -12,7 +13,9 @@ import { BlueTitle } from '../BlueTitle';
 import { ResetFilterButton } from './ResetFilterButton';
 import IconButtonWithPopoverText from '../IconButtonWithPopover';
 import { CustomIcon } from '../CustomIcon';
-import { exportTemplatesToExcelRequest } from '../../services/entitiesService';
+import { exportTemplatesToExcelRequest, deleteEntityRequest } from '../../services/entitiesService';
+import { ErrorToast } from '../ErrorToast';
+import { AreYouSureDialog } from '../dialogs/AreYouSureDialog';
 
 const TemplateTable = ({ template, quickFilterText, page }: { template: IMongoEntityTemplatePopulated; quickFilterText: string; page: string }) => {
     const entitiesTableRef = useRef<EntitiesTableOfTemplateRef>(null);
@@ -30,7 +33,20 @@ const TemplateTable = ({ template, quickFilterText, page }: { template: IMongoEn
             },
         },
     );
-
+    const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+    const closeDeleteDialog = () => {
+        setOpenDeleteDialog(false);
+    };
+    const { isLoading: isDeleteLoading, mutateAsync: deleteMutation } = useMutation(() => deleteEntityRequest(template._id), {
+        onError: (error: AxiosError) => {
+            closeDeleteDialog();
+            toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.entity.failedToDelete')} />);
+        },
+        onSuccess: () => {
+            toast.success(i18next.t('wizard.entity.deletedSuccessfully'));
+            closeDeleteDialog();
+        },
+    });
     return (
         <Grid container>
             <Grid container paddingLeft={3} justifyContent="space-between" width="100%">
@@ -61,6 +77,15 @@ const TemplateTable = ({ template, quickFilterText, page }: { template: IMongoEn
             </Grid>
             <Box sx={{ marginBottom: '30px', width: '100%' }}>
                 <EntitiesTableOfTemplate
+                    deleteRowButtonProps={{
+                        popoverText: template.disabled
+                            ? i18next.t('entitiesTableOfTemplate.deleteEntity')
+                            : i18next.t('permissions.dontHavePermissionsToCategory'),
+                        onClick: () => {
+                            setOpenDeleteDialog(true);
+                        },
+                        disabled: !template.disabled,
+                    }}
                     ref={entitiesTableRef}
                     template={template}
                     showNavigateToRowButton
@@ -74,6 +99,7 @@ const TemplateTable = ({ template, quickFilterText, page }: { template: IMongoEn
                     filterStorageProps={{ shouldSaveFilter: true, pageType: page }}
                 />
             </Box>
+            <AreYouSureDialog open={openDeleteDialog} handleClose={closeDeleteDialog} onYes={() => deleteMutation()} isLoading={isDeleteLoading} />
         </Grid>
     );
 };
