@@ -2,9 +2,11 @@ import { Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogT
 import i18next from 'i18next';
 import React from 'react';
 import { useQueryClient } from 'react-query';
+import { useSelector } from 'react-redux';
 import { ActionTypes, IActionMetadataPopulated } from '../../../interfaces/ruleBreaches/actionMetadata';
 import { IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
 import { IMongoRule } from '../../../interfaces/rules';
+import { RootState } from '../../../store';
 import RuleBreachInfo from '../../ruleBreanchInfo/RuleBreachInfo';
 
 const ExecWithRuleBreachDialog: React.FC<{
@@ -18,6 +20,8 @@ const ExecWithRuleBreachDialog: React.FC<{
     const queryClient = useQueryClient();
     const rules = queryClient.getQueryData<IMongoRule[]>('getRules')!;
 
+    const darkMode = useSelector((state: RootState) => state.darkMode);
+
     const someBrokenRuleIsEnforcement = brokenRules.some(({ ruleId }) => {
         const rule = rules.find((currRule) => currRule._id === ruleId)!;
         return rule.actionOnFail === 'ENFORCEMENT';
@@ -28,13 +32,7 @@ const ExecWithRuleBreachDialog: React.FC<{
             open
             fullWidth
             maxWidth="sm"
-            sx={{
-                '& .MuiPaper-root': {
-                    borderColor: 'red',
-                    borderWidth: '3px',
-                    borderStyle: 'solid',
-                },
-            }}
+            PaperProps={{ sx: { bgcolor: darkMode ? '#060606' : 'white', borderColor: 'red', borderWidth: '2px', borderStyle: 'dashed' } }}
         >
             <DialogTitle>
                 {i18next.t('execActionWithRuleBreach.actionBroke')}{' '}

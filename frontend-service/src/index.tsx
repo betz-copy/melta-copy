@@ -4,14 +4,14 @@ import './i18n';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { BrowserRouter as Router } from 'react-router-dom';
 import { ReactQueryDevtools } from 'react-query/devtools';
-import { Provider } from 'react-redux';
+import { Provider, useSelector } from 'react-redux';
 import { ThemeProvider } from '@mui/material';
 import { ToastContainer } from 'react-toastify';
 import { AxiosError } from 'axios';
-import { store } from './store';
+import { RootState, store } from './store';
 import App from './App';
-import { globalTheme } from './theme';
 import { TourWrapper } from './TourWrapper';
+import { darkTheme, lightTheme } from './theme';
 
 const queryClient = new QueryClient({
     defaultOptions: {
@@ -28,19 +28,35 @@ const queryClient = new QueryClient({
     },
 });
 
-ReactDOM.render(
-    <Provider store={store}>
+const Index: React.FC = () => {
+    const darkMode = useSelector((state: RootState) => state.darkMode);
+
+    return (
         <QueryClientProvider client={queryClient}>
-            <ThemeProvider theme={globalTheme}>
+            <ThemeProvider theme={darkMode ? darkTheme : lightTheme}>
                 <Router>
                     <TourWrapper>
                         <App />
                     </TourWrapper>
-                    <ToastContainer theme="light" position="bottom-right" autoClose={5000} limit={5} pauseOnFocusLoss={false} rtl newestOnTop />
+                    <ToastContainer
+                        theme={darkMode ? 'dark' : 'light'}
+                        position="bottom-right"
+                        autoClose={5000}
+                        limit={5}
+                        pauseOnFocusLoss={false}
+                        rtl
+                        newestOnTop
+                    />
                 </Router>
             </ThemeProvider>
             <ReactQueryDevtools />
         </QueryClientProvider>
+    );
+};
+
+ReactDOM.render(
+    <Provider store={store}>
+        <Index />
     </Provider>,
     document.getElementById('root'),
 );

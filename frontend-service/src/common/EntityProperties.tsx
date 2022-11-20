@@ -1,9 +1,11 @@
 import React, { CSSProperties } from 'react';
 import { Box, Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
+import { useSelector } from 'react-redux';
 import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { IEntity } from '../interfaces/entities';
 import { DownloadButton } from './DownloadButton';
+import { RootState } from '../store';
 
 export const formatToString = (value: any, valueType: 'string' | 'number' | 'boolean', format?: string) => {
     if (value === null || value === undefined) {
@@ -29,13 +31,22 @@ export const formatToString = (value: any, valueType: 'string' | 'number' | 'boo
     return value;
 };
 
-const EntityProperties: React.FC<{
+interface IEntityPropertiesProps {
     entityTemplate: IMongoEntityTemplatePopulated;
     properties: IEntity['properties'];
     hideFields?: boolean;
     showPreviewPropertiesOnly?: boolean;
     style?: CSSProperties;
-}> = ({ entityTemplate, properties, hideFields = false, showPreviewPropertiesOnly = false, style }) => {
+}
+
+export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkMode?: boolean }> = ({
+    entityTemplate,
+    properties,
+    hideFields = false,
+    showPreviewPropertiesOnly = false,
+    style,
+    darkMode,
+}) => {
     const propertiesOrderedToShow = showPreviewPropertiesOnly
         ? entityTemplate.propertiesOrder.filter((propertyKey) => entityTemplate.propertiesPreview.includes(propertyKey))
         : entityTemplate.propertiesOrder;
@@ -52,7 +63,7 @@ const EntityProperties: React.FC<{
                     <Grid key={propertyKey} item>
                         <Grid container spacing={1}>
                             <Grid item>
-                                <Typography display="inline" variant="h6" color="#B1B1B1">
+                                <Typography display="inline" variant="h6" color={darkMode ? '#cecece' : '#B1B1B1'}>
                                     {propertySchema.title}:
                                 </Typography>
                             </Grid>
@@ -73,4 +84,8 @@ const EntityProperties: React.FC<{
     );
 };
 
-export { EntityProperties };
+export const EntityProperties: React.FC<IEntityPropertiesProps> = (props) => {
+    const darkMode = useSelector((state: RootState) => state.darkMode);
+
+    return <EntityPropertiesInternal {...props} darkMode={darkMode} />;
+};

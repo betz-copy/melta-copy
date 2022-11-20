@@ -1,5 +1,7 @@
 import React, { CSSProperties } from 'react';
 import { Grid, Card, CardContent } from '@mui/material';
+import { useSelector } from 'react-redux';
+import { RootState } from '../../../store';
 
 interface ViewingBoxProps {
     children: React.ReactNode;
@@ -7,6 +9,8 @@ interface ViewingBoxProps {
 }
 
 export const ViewingBox: React.FC<ViewingBoxProps> = ({ children, maxHeight = '21rem' }) => {
+    const darkMode = useSelector((state: RootState) => state.darkMode);
+
     if (Array.isArray(children) && !children.length) return null;
 
     return (
@@ -16,10 +20,10 @@ export const ViewingBox: React.FC<ViewingBoxProps> = ({ children, maxHeight = '2
                 maxHeight,
                 borderRadius: 5,
                 padding: '1.6rem',
-                bgcolor: '#f7f7f7',
-                boxShadow: 'inset 0 0 7px 0 rgba(0, 0, 0, 0.2)',
+                bgcolor: darkMode ? '#252525' : '#f7f7f7',
+                boxShadow: `inset 0 0 7px 0 rgba(0, 0, 0, ${darkMode ? 0.3 : 0.2})`,
                 overflowY: 'overlay',
-                '::-webkit-scrollbar-track': { marginY: '1rem', borderRadius: 20 },
+                '::-webkit-scrollbar-track': { marginY: '1rem', bgcolor: 'transparent' },
             }}
         >
             <CardContent sx={{ '&:last-child': { padding: 0 } }}>

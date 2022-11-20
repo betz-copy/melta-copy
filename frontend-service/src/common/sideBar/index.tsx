@@ -23,11 +23,13 @@ import PermissionsOfUserDialog from '../permissionsOfUserDialog';
 import { CustomIcon } from '../CustomIcon';
 import { RootState } from '../../store';
 import { ProfileButton } from './ProfileButton';
-import { toggleMeltaPlus } from '../../store/meltaPlus';
+import { toggleMeltaPlus } from '../../store/reducers/meltaPlus';
 import { NotificationsButton } from './notifications/NotificationsButton';
 import { getMyNotificationCountRequest } from '../../services/notificationService';
 import { environment } from '../../globals';
 import { NotificationsScreen } from './notifications/NotificationsScreen';
+import { toggleDarkMode } from '../../store/reducers/darkMode';
+import { SwitchThemeButton } from './SwitchThemeButton';
 
 type SideBarProps = {
     toggleDrawer: () => any;
@@ -47,10 +49,8 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
         refetchOnWindowFocus: true,
     });
 
-    const { user: currentUser, meltaPlus } = useSelector((state: RootState) => state);
+    const { user: currentUser, meltaPlus, darkMode } = useSelector((state: RootState) => state);
     const dispatch = useDispatch();
-
-    toggleMeltaPlus();
 
     const [isMyPermissionsDialogOpen, setIsMyPermissionsDialogOpen] = useState<boolean>(false);
     const [isNotificationsScreenOpen, setIsNotificationsScreenOpen] = useState<boolean>(false);
@@ -80,7 +80,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                         currentUser={currentUser}
                         text={i18next.t('permissions.permissionsOfUserDialog.readTitle')}
                         isDrawerOpen={isDrawerOpen}
-                        onClick={() => setIsMyPermissionsDialogOpen(true)}
+                        onClick={() => setIsMyPermissionsDialogOpen(!isMyPermissionsDialogOpen)}
                     />
 
                     <NotificationsButton
@@ -91,6 +91,13 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                             setIsNotificationsScreenOpen(!isNotificationsScreenOpen);
                             updateNotificationCount();
                         }}
+                    />
+
+                    <SwitchThemeButton
+                        text={i18next.t('sideBar.changeTheme')}
+                        isDrawerOpen={isDrawerOpen}
+                        darkMode={darkMode}
+                        onClick={() => dispatch(toggleDarkMode())}
                     />
                 </Grid>
 

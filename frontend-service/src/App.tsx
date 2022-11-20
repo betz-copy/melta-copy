@@ -8,7 +8,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { AuthService } from './services/authService';
 import Main from './Main';
 import { RootState } from './store';
-import { setUser } from './store/user';
+import { setUser } from './store/reducers/user';
 import { BackendConfigState, getBackendConfigRequest } from './services/backendConfigService';
 import { getAllTemplates, GetAllTemplatesType } from './services/templates/getAllTemplates';
 import { getMyPermissionsRequest, IPermissionsOfUser } from './services/permissionsService';

@@ -10,6 +10,7 @@ import randomColor from 'randomcolor';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import uniqBy from 'lodash.uniqby';
 import uniqWith from 'lodash.uniqwith';
+import { useSelector } from 'react-redux';
 import {
     drawNodeLabel,
     drawLinkLabel,
@@ -23,12 +24,13 @@ import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates'
 import { IMongoRelationshipTemplate } from '../../interfaces/relationshipTemplates';
 import { IEntityExpanded } from '../../interfaces/entities';
 import { getExpandedEntityByIdRequest } from '../../services/entitiesService';
-import { EntityProperties } from '../../common/EntityProperties';
+import { EntityPropertiesInternal } from '../../common/EntityProperties';
 import { GraphTopBar } from './GraphTopBar';
 import { environment } from '../../globals';
 import { PartialRequired } from '../../utils/typeHelpers';
 import { GraphNodeMenu } from './GraphNodeMenu';
 import { GraphMenu } from './GraphMenu';
+import { RootState } from '../../store';
 
 const Graph: React.FC = () => {
     const ref = useRef<any>(null);
@@ -48,6 +50,8 @@ const Graph: React.FC = () => {
     const [menuState, setMenuState] = useState<{ showMenu: boolean; top?: number; left?: number }>({
         showMenu: false,
     });
+
+    const darkMode = useSelector((state: RootState) => state.darkMode);
 
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates')!;
@@ -169,7 +173,7 @@ const Graph: React.FC = () => {
             entityTemplate.propertiesPreview.length < 1 ? (
                 <div>{i18next.t('graph.noPreviewProperties')}</div>
             ) : (
-                <EntityProperties properties={node.data} showPreviewPropertiesOnly entityTemplate={entityTemplate} />
+                <EntityPropertiesInternal properties={node.data} showPreviewPropertiesOnly entityTemplate={entityTemplate} darkMode={darkMode} />
             ),
         );
     };

@@ -163,16 +163,10 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef, EntitiesT
             [rowModelType, template._id, rowData, datasource, quickFilterText],
         );
 
-        const getGlobalStyles = () => {
-            const styles = {
-                '.ag-column-select-virtual-list-viewport': { height: `${rowHeight * pageRowCount}px !important` },
-                '.ag-center-cols-clipper': { minHeight: `${rowHeight * pageRowCount}px !important` },
-            };
-
-            if (onRowSelected) styles['.ag-theme-material .ag-row-hover'] = { backgroundColor: '#75b0eb !important' };
-
-            return styles;
-        };
+        const getGlobalStyles = () => ({
+            '.ag-column-select-virtual-list-viewport': { height: `${rowHeight * pageRowCount}px !important` },
+            '.ag-center-cols-clipper': { minHeight: `${rowHeight * pageRowCount}px !important` },
+        });
 
         return (
             <Box>
@@ -181,7 +175,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef, EntitiesT
                     ref={gridRef}
                     getRowStyle={(params) => {
                         if (params.data && getEntityPropertiesData(params.data).disabled) return { background: 'rgb(159 147 147 / 16%)' };
-                        return { background: 'white' };
+                        return { background: 'default' };
                     }}
                     className="ag-theme-material"
                     containerStyle={{
@@ -189,7 +183,6 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef, EntitiesT
                         fontFamily: 'Rubik',
                         fontSize,
                         fontWeight: 300,
-                        // todo: removed marginBottom: 30px. check doesnt effect regular page
                     }}
                     modules={[ServerSideRowModelModule, ColumnsToolPanelModule, MenuModule, SetFilterModule, ClientSideRowModelModule]}
                     domLayout="autoHeight"

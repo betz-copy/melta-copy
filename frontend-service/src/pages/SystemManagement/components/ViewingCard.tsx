@@ -2,7 +2,9 @@ import React, { MouseEventHandler } from 'react';
 import { Grid, IconButton, Card, CardHeader, Menu, Tooltip } from '@mui/material';
 import i18next from 'i18next';
 import { Edit as EditIcon, Delete as DeleteIcon, MoreVertOutlined as OptionsIcon, DoDisturbAlt as DisabledIcon } from '@mui/icons-material';
+import { useSelector } from 'react-redux';
 import { MenuButton } from '../../../common/MenuButton';
+import { RootState } from '../../../store';
 
 const ViewingCard: React.FC<{
     title: React.ReactNode;
@@ -17,6 +19,8 @@ const ViewingCard: React.FC<{
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
     const open = Boolean(anchorEl);
 
+    const darkMode = useSelector((state: RootState) => state.darkMode);
+
     const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
         setAnchorEl(event.currentTarget);
     };
@@ -29,8 +33,9 @@ const ViewingCard: React.FC<{
         <Grid item>
             <Card
                 sx={{
+                    bgcolor: darkMode ? '#171717' : 'white',
                     minWidth: `${minWidth}px`,
-                    background: disabledProps?.isDisabled ? 'rgb(159 147 147 / 16%)' : 'white',
+                    opacity: disabledProps?.isDisabled ? '0.4' : '1',
                     ':hover': { transform: 'scale(1.05)' },
                     border: `3px solid ${color}`,
                     borderRadius: '17px',

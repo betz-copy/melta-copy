@@ -1,5 +1,7 @@
 import React, { CSSProperties } from 'react';
+import { useSelector } from 'react-redux';
 import { environment } from '../globals';
+import { RootState } from '../store';
 
 interface CustomIconProps {
     iconUrl: string;
@@ -9,14 +11,16 @@ interface CustomIconProps {
     style?: CSSProperties;
 }
 
-const CustomIcon: React.FC<CustomIconProps> = ({ iconUrl, width, height, color = '#000000', style }) => {
+const CustomIcon: React.FC<CustomIconProps> = ({ iconUrl, width, height, color, style }) => {
+    const darkMode = useSelector((state: RootState) => state.darkMode);
+
     return (
         <img
             height={height}
             width={width}
             style={{
                 ...style,
-                backgroundColor: color,
+                backgroundColor: color || (darkMode ? '#FFFFFF' : '#000000'),
                 WebkitMaskImage: `url(/api${environment.api.storage}/${iconUrl})`,
                 WebkitMaskSize: 'contain',
             }}

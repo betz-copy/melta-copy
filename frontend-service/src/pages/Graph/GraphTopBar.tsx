@@ -4,11 +4,13 @@ import { useQueryClient, useQuery } from 'react-query';
 import { RestartAltOutlined as ResetIcon, LinkOutlined as CopyUrlIcon } from '@mui/icons-material';
 import i18next from 'i18next';
 import { toast } from 'react-toastify';
+import { useSelector } from 'react-redux';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { getExpandedEntityByIdRequest } from '../../services/entitiesService';
 import IconButtonWithPopoverText from '../../common/IconButtonWithPopover';
 import TemplatesSelectCheckbox from '../../common/templatesSelectCheckbox';
 import { IMongoCategory } from '../../interfaces/categories';
+import { RootState } from '../../store';
 
 const GraphTopBar: React.FC<{
     onReset: React.MouseEventHandler<HTMLButtonElement>;
@@ -20,6 +22,8 @@ const GraphTopBar: React.FC<{
     const entityTemplates = queryClient.getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates')!;
     const categories = queryClient.getQueryData<IMongoCategory[]>('getCategories')!;
     const templateIds = entityTemplates.map((entityTemplate) => entityTemplate._id);
+
+    const darkMode = useSelector((state: RootState) => state.darkMode);
 
     const { data: expandedEntity } = useQuery(['getExpandedEntity', entityId, { templateIds, numberOfConnections: 1 }], () =>
         getExpandedEntityByIdRequest(entityId!, { templateIds, numberOfConnections: 1 }),
@@ -35,7 +39,8 @@ const GraphTopBar: React.FC<{
     };
     return (
         <Box
-            bgcolor="#fcfeff"
+            bgcolor={darkMode ? '#131313' : '#fcfeff'}
+            height="3.6rem"
             paddingRight="2.5rem"
             paddingTop="0.5rem"
             paddingLeft="2.5rem"

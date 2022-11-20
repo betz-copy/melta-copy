@@ -3,7 +3,9 @@ import { Box, Grid, IconButton, Pagination, TextField } from '@mui/material';
 import { CloseOutlined as DeleteIcon } from '@mui/icons-material';
 import i18next from 'i18next';
 import _debounce from 'lodash.debounce';
+import { useSelector } from 'react-redux';
 import * as muiIcons from '../../utils/icons';
+import { RootState } from '../../store';
 import '../../css/index.css';
 
 interface IconPickerProps {
@@ -18,14 +20,18 @@ interface IconPickerProps {
 
 const iconsEntries = Object.entries(muiIcons);
 
-const IconPicker: React.FC<IconPickerProps> = ({ width, height, iconsPerPage, selectedIconName, color = 'black', onPick, onDelete }) => {
+const IconPicker: React.FC<IconPickerProps> = ({ width, height, iconsPerPage, selectedIconName, color, onPick, onDelete }) => {
     const [searchStr, setSearchStr] = useState('');
     const [page, setPage] = useState(1);
 
     const [displayedIcons, setDisplayedIcons] = useState([...iconsEntries]);
 
+    const darkMode = useSelector((state: RootState) => state.darkMode);
+
     const displayIndex = (page - 1) * iconsPerPage;
     const pageCount = Math.ceil(displayedIcons.length / iconsPerPage);
+
+    const borderColor = `rgb(211, 211, 211, ${darkMode ? 0.4 : 1})`;
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
     const searchDebounced = useCallback(
@@ -67,6 +73,7 @@ const IconPicker: React.FC<IconPickerProps> = ({ width, height, iconsPerPage, se
                     placeholder={i18next.t('input.imagePicker.iconSearch')}
                     value={searchStr}
                     onChange={handleTextChange}
+                    color={darkMode ? 'primary' : 'secondary'}
                     sx={{ flexGrow: 1 }}
                 />
 
@@ -80,7 +87,7 @@ const IconPicker: React.FC<IconPickerProps> = ({ width, height, iconsPerPage, se
                     height="100%"
                     border={1}
                     borderRadius={1}
-                    borderColor="lightgray"
+                    borderColor={borderColor}
                     sx={{ position: 'relative' }}
                 >
                     {selectedIconName && (
@@ -99,7 +106,7 @@ const IconPicker: React.FC<IconPickerProps> = ({ width, height, iconsPerPage, se
                 padding={0.4}
                 border={1}
                 borderRadius={1}
-                borderColor="lightgray"
+                borderColor={borderColor}
                 overflow="overlay"
                 height="75%"
                 width="100%"
@@ -110,7 +117,7 @@ const IconPicker: React.FC<IconPickerProps> = ({ width, height, iconsPerPage, se
                 <Grid item container justifyContent="center">
                     {displayedIcons.slice(displayIndex, displayIndex + iconsPerPage).map(([name, icon]) => (
                         <IconButton key={name} value={name} onClick={handleIconClick}>
-                            {React.createElement(icon, { sx: { color } })}
+                            {React.createElement(icon, { sx: { color: color || darkMode ? 'white' : 'black' } })}
                         </IconButton>
                     ))}
                 </Grid>

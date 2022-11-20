@@ -3,6 +3,8 @@ import i18next from 'i18next';
 import lodashGroupBy from 'lodash.groupby';
 import lodashUniqby from 'lodash.uniqby';
 import { FormControl, Grid, Typography, ListItemText, MenuItem, Select, Checkbox, SxProps, Theme, TextField, Divider } from '@mui/material';
+import { useSelector } from 'react-redux';
+import { RootState } from '../store';
 
 const MenuItemContent: React.FC<{ checked: boolean; indeterminate?: boolean; label: string }> = ({ checked, indeterminate, label }) => {
     return (
@@ -272,6 +274,8 @@ const SelectCheckbox = <Option extends any, Group extends any>({
 }: SelectCheckboxProps<Option, Group>) => {
     const [miniFilterValue, setMiniFilterValue] = useState('');
 
+    const darkMode = useSelector((state: RootState) => state.darkMode);
+
     const { optionsFiltered, groupsFiltered } = getOptionsAndGroupsMiniFiltered(miniFilterValue, options, getOptionId, getOptionLabel, groupsProps);
 
     const selectedOptionsFiltered = selectedOptions.filter((selectedOption) => {
@@ -280,7 +284,7 @@ const SelectCheckbox = <Option extends any, Group extends any>({
     });
 
     return (
-        <FormControl style={{ background: 'white', borderRadius: '0 7px 7px 0' }}>
+        <FormControl style={{ background: darkMode ? '#242424' : 'white', borderRadius: '0 7px 7px 0' }}>
             <Select
                 displayEmpty
                 renderValue={() => title}

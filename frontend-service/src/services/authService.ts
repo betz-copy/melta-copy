@@ -1,7 +1,7 @@
 import jwtDecode from 'jwt-decode';
 import cookies from 'js-cookie';
 import { environment } from '../globals';
-import { UserState } from '../store/user';
+import { UserState } from '../store/reducers/user';
 
 export class AuthService {
     static getUser = () => {

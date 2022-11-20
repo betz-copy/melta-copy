@@ -4,12 +4,14 @@ import i18next from 'i18next';
 import { useMutation } from 'react-query';
 import { LoadingButton } from '@mui/lab';
 import { toast } from 'react-toastify';
+import { useSelector } from 'react-redux';
 import { INotificationPopulated, isAlertNotification, isRequestNotification, isResponseNotification } from '../../../interfaces/notifications';
 import { getShortDate } from '../../../utils/date';
 import { NotificationSeenRequest } from '../../../services/notificationService';
 import { RuleBreachAlertNotification } from './ruleBreachNotification/RuleBreachAlertNotification';
 import { RuleBreachRequestNotification } from './ruleBreachNotification/RuleBreachRequestNotification';
 import { RuleBreachResponseNotification } from './ruleBreachNotification/RuleBreachResponseNotification';
+import { RootState } from '../../../store';
 
 interface NotificationCardProps {
     notification: INotificationPopulated;
@@ -26,9 +28,12 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({ notification
         },
     });
 
+    const darkMode = useSelector((state: RootState) => state.darkMode);
+
     return (
         <Card
             sx={{
+                bgcolor: darkMode ? '#161616' : 'white',
                 marginTop: '0.5rem',
                 marginX: '1rem',
                 padding: '0.5rem',

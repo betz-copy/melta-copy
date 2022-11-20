@@ -1,6 +1,6 @@
 import { Avatar, Grid, IconButton, Tooltip, tooltipClasses, Typography } from '@mui/material';
 import React from 'react';
-import { UserState } from '../../store/user';
+import { UserState } from '../../store/reducers/user';
 
 interface ProfileButtonProps {
     currentUser: Partial<UserState>;
@@ -22,7 +22,7 @@ const ProfileButton: React.FC<ProfileButtonProps> = ({ currentUser, text, isDraw
                 }}
             >
                 <IconButton onClick={onClick} sx={{ borderRadius: 10 }}>
-                    <Grid container alignItems="center">
+                    <Grid container alignItems="center" justifyContent="space-between" spacing={1}>
                         <Grid item data-tour="my-permissions">
                             <Avatar
                                 sx={{
@@ -45,9 +45,7 @@ const ProfileButton: React.FC<ProfileButtonProps> = ({ currentUser, text, isDraw
                         </Grid>
                         {isDrawerOpen && (
                             <Grid item>
-                                <Typography color="white" visibility={isDrawerOpen ? 'visible' : 'hidden'}>
-                                    {text}
-                                </Typography>
+                                <Typography color="white">{text}</Typography>
                             </Grid>
                         )}
                     </Grid>

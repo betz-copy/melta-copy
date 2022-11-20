@@ -1,7 +1,9 @@
 import React from 'react';
 import i18next from 'i18next';
 import { Card, CardContent, Checkbox, CheckboxProps, FormControlLabel, FormGroup, Typography } from '@mui/material';
+import { useSelector } from 'react-redux';
 import CheckboxReadOnly from './CheckboxReadOnly';
+import { RootState } from '../../store';
 
 type ManagementCheckboxProps = { disabled: boolean; readOnly: boolean; checked: boolean; onChange: CheckboxProps['onChange'] };
 const ManagementPermissionsCard: React.FC<{
@@ -9,8 +11,10 @@ const ManagementPermissionsCard: React.FC<{
     templatesManagement: ManagementCheckboxProps;
     rulesManagement: ManagementCheckboxProps;
 }> = ({ permissionsManagement, templatesManagement, rulesManagement }) => {
+    const darkMode = useSelector((state: RootState) => state.darkMode);
+
     return (
-        <Card variant="outlined">
+        <Card variant="outlined" sx={{ bgcolor: darkMode ? '#242424' : 'white' }}>
             <CardContent>
                 <Typography style={{ fontWeight: 'bold', cursor: 'default' }}>
                     {i18next.t('permissions.permissionsOfUserDialog.managementTitle')}

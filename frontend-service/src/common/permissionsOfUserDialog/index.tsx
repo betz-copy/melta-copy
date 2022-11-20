@@ -184,6 +184,8 @@ const PermissionsOfUserDialog: React.FC<{
     const navigate = useNavigate();
     const { setIsOpen, setCurrentStep } = useTour();
 
+    const darkMode = useSelector((state: RootState) => state.darkMode);
+
     const queryClient = useQueryClient();
     const allPermissions = queryClient.getQueryData<IPermissionsOfUser[]>('getAllPermissions');
     const categories = queryClient.getQueryData<IMongoCategory[]>('getCategories')!;
@@ -242,7 +244,14 @@ const PermissionsOfUserDialog: React.FC<{
     );
 
     return (
-        <Dialog open={isOpen} fullWidth maxWidth="sm" keepMounted={false} onClose={handleClose}>
+        <Dialog
+            open={isOpen}
+            fullWidth
+            maxWidth="sm"
+            keepMounted={false}
+            onClose={handleClose}
+            PaperProps={{ sx: { bgcolor: darkMode ? '#060606' : 'white' } }}
+        >
             <Formik
                 initialValues={
                     existingPermissionsOfUser ? _cloneDeep(permissionsToFormPermissions(existingPermissionsOfUser)) : defaultEmptyPermissionsOfUser
@@ -269,7 +278,7 @@ const PermissionsOfUserDialog: React.FC<{
                             {mode === 'read' && i18next.t('permissions.permissionsOfUserDialog.readTitle')}
                         </DialogTitle>
                         <DialogContent>
-                            <Box margin={1}>
+                            <Box margin={1} sx={{ bgcolor: darkMode ? '#242424' : 'white' }}>
                                 <UserAutocomplete
                                     value={formikProps.values.user}
                                     onChange={(_e, chosenUser) => formikProps.setFieldValue('user', chosenUser)}

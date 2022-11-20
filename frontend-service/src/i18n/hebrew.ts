@@ -154,6 +154,7 @@ export default {
     },
     sideBar: {
         title: 'מלתעות',
+        changeTheme: 'שנה עיצוב',
     },
     areYouSureDialog: {
         title: 'האם אתה בטוח?',

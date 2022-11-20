@@ -1,11 +1,13 @@
 import React from 'react';
 import { Box, Typography } from '@mui/material';
+import { useSelector } from 'react-redux';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IEntityExpanded } from '../../../interfaces/entities';
 import { IMongoRelationshipTemplatePopulated } from '../../../interfaces/relationshipTemplates';
 import { ActivityLog } from './activityLog';
 import { Print } from './print';
 import { IMongoCategory } from '../../../interfaces/categories';
+import { RootState } from '../../../store';
 
 const EntityTopBar: React.FC<{
     entityTemplate: IMongoEntityTemplatePopulated;
@@ -15,9 +17,12 @@ const EntityTopBar: React.FC<{
         relationshipTemplates: IMongoRelationshipTemplatePopulated[];
     })[];
 }> = ({ entityTemplate, expandedEntity, categoriesWithRelationshipTemplates, relevantRelationshipTemplates }) => {
+    const darkMode = useSelector((state: RootState) => state.darkMode);
+
     return (
         <Box
-            bgcolor="#fcfeff"
+            bgcolor={darkMode ? '#131313' : '#fcfeff'}
+            height="3.6rem"
             paddingRight="2.5rem"
             paddingTop="0.5rem"
             paddingLeft="2.5rem"

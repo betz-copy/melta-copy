@@ -15,6 +15,7 @@ import i18next from 'i18next';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import { AxiosError } from 'axios';
+import { useSelector } from 'react-redux';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IEntityExpanded } from '../../../interfaces/entities';
 import { deleteEntityRequest, updateEntityStatusRequest } from '../../../services/entitiesService';
@@ -26,6 +27,7 @@ import { ErrorToast } from '../../../common/ErrorToast';
 import { MenuButton } from '../../../common/MenuButton';
 import { EntityDisableCheckbox } from './EntityDisableCheckbox';
 import { EntityDates } from './EntityDates';
+import { RootState } from '../../../store';
 
 const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; expandedEntity: IEntityExpanded }> = ({
     entityTemplate,
@@ -38,6 +40,8 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
     const queryClient = useQueryClient();
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
     const [hideField, setHideField] = React.useState(true);
+
+    const darkMode = useSelector((state: RootState) => state.darkMode);
 
     const open = Boolean(anchorEl);
 
@@ -98,7 +102,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
     const isEntityDisabled = expandedEntity.entity.properties.disabled;
 
     return (
-        <Card style={{ background: isEntityDisabled ? 'rgb(159 147 147 / 16%)' : 'white' }}>
+        <Card style={{ background: darkMode ? '#171717' : 'white', opacity: isEntityDisabled ? '0.666' : '1' }}>
             <CardContent sx={{ '&:last-child': { padding: 0 } }}>
                 <Grid item container justifyContent="space-between" alignItems="stretch" padding="1rem">
                     <Grid item xs={11}>

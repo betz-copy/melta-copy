@@ -6,12 +6,14 @@ import React from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { AxiosError } from 'axios';
+import { useSelector } from 'react-redux';
 import RuleBreachInfo from '../../common/ruleBreanchInfo/RuleBreachInfo';
 import { IRuleBreachAlertPopulated } from '../../interfaces/ruleBreaches/ruleBreachAlert';
 import { IRuleBreachRequestPopulated, RuleBreachRequestStatus } from '../../interfaces/ruleBreaches/ruleBreachRequest';
 import { approveRuleBreachRequestRequest, cancelRuleBreachRequestRequest, denyRuleBreachRequestRequest } from '../../services/ruleBreachesService';
 import { BreachType } from '../../interfaces/ruleBreaches/ruleBreach';
 import { IPermissionsOfUser } from '../../services/permissionsService';
+import { RootState } from '../../store';
 
 const RuleBreachDialog: React.FC<{
     isOpen: boolean;
@@ -23,6 +25,8 @@ const RuleBreachDialog: React.FC<{
 }> = ({ isOpen, handleClose, ruleBreach, breachType, refreshBreaches, onUpdatedRuleBreach }) => {
     const queryClient = useQueryClient();
     const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
+
+    const darkMode = useSelector((state: RootState) => state.darkMode);
 
     const { rulesManagementId } = myPermissions;
 
@@ -86,7 +90,7 @@ const RuleBreachDialog: React.FC<{
     if (!ruleBreach) return <div />;
 
     return (
-        <Dialog open={isOpen} onClose={handleClose} fullWidth>
+        <Dialog open={isOpen} onClose={handleClose} PaperProps={{ sx: { bgcolor: darkMode ? '#060606' : 'white' } }} fullWidth>
             <DialogTitle>
                 {i18next.t('ruleManagement.breachDetails')}
                 <IconButton

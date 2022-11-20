@@ -4,12 +4,14 @@ import { CircularProgress, Grid, IconButton, Typography } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import SearchIcon from '@mui/icons-material/Search';
 import DownloadIcon from '@mui/icons-material/VerticalAlignBottomOutlined';
+import { useSelector } from 'react-redux';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import SearchInput from '../inputs/SearchInput';
 import { AddEntityButton } from './AddEntityButton';
 import { IMongoCategory } from '../../interfaces/categories';
 import TemplatesSelectCheckbox from '../templatesSelectCheckbox';
 import { BlueTitle } from '../BlueTitle';
+import { RootState } from '../../store';
 
 const GlobalSearch: React.FC<{ onSearch: (searchValue: string) => void }> = ({ onSearch }) => {
     const [input, setInput] = useState('');
@@ -44,10 +46,12 @@ const TemplateTablesHeadline: React.FC<{
     pageTitle: string;
     isLoadingExcel: boolean;
 }> = ({ onSearch, entityTemplateSelectCheckboxProps, onExcelExport, pageTitle, isLoadingExcel }) => {
+    const darkMode = useSelector((state: RootState) => state.darkMode);
+
     return (
         <Grid
             container
-            bgcolor="#fcfeff"
+            bgcolor={darkMode ? '#131313' : '#fcfeff'}
             boxShadow="0px 4px 4px #0000000D"
             padding="0.5rem 2.5rem"
             height="3.6rem"
@@ -82,9 +86,9 @@ const TemplateTablesHeadline: React.FC<{
             <Grid item>
                 <Grid container spacing={1} wrap="nowrap">
                     <Grid item>
-                        <IconButton style={{ background: '#eeeeee', borderRadius: '5px' }} onClick={onExcelExport}>
-                            {isLoadingExcel ? <CircularProgress size="24px" /> : <DownloadIcon htmlColor="#225AA7" />}
-                            <Typography fontSize={14} style={{ fontWeight: '500', padding: '0 10px', color: '#225AA7' }}>
+                        <IconButton style={{ background: '#225AA7', borderRadius: '5px' }} onClick={onExcelExport}>
+                            {isLoadingExcel ? <CircularProgress size="24px" /> : <DownloadIcon htmlColor="white" />}
+                            <Typography fontSize={14} style={{ fontWeight: '500', padding: '0 10px', color: 'white' }}>
                                 {i18next.t('downloadMultipleTables')}
                             </Typography>
                         </IconButton>

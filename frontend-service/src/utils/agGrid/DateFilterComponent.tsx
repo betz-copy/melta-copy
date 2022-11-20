@@ -4,9 +4,13 @@ import { LocalizationProvider, MobileDatePicker } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import heLocale from 'date-fns/locale/he';
 import { TextField } from '@mui/material';
+import { useSelector } from 'react-redux';
+import { RootState } from '../../store';
 
 const DateFilterComponent: React.FC<{ onDateChanged: () => void }> = forwardRef(({ onDateChanged }, ref) => {
     const [dateValue, setDateValue] = useState<Date | null>(null);
+
+    const darkMode = useSelector((state: RootState) => state.darkMode);
 
     const handleChange = (newValue: Date | null) => {
         setDateValue(newValue);
@@ -34,6 +38,7 @@ const DateFilterComponent: React.FC<{ onDateChanged: () => void }> = forwardRef(
                 value={dateValue}
                 onChange={handleChange}
                 renderInput={(params) => <TextField {...params} />}
+                DialogProps={{ PaperProps: { sx: { backgroundColor: darkMode ? '#040404' : 'white' } } }}
             />
         </LocalizationProvider>
     );

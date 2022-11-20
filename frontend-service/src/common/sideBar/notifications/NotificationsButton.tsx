@@ -21,7 +21,7 @@ export const NotificationsButton: React.FC<NotificationsButtonProps> = ({ notifi
                     sx: { [`& .${tooltipClasses.tooltip}`]: { fontSize: '1rem' } },
                 }}
             >
-                <IconButton onClick={onClick} sx={{ borderRadius: 10 }}>
+                <IconButton onClick={onClick} sx={{ borderRadius: 10, margin: '0.2rem', paddingBottom: '0', paddingX: '0.5rem' }}>
                     <Grid container alignItems="center" spacing={1}>
                         <Grid item position="relative">
                             <NotificationsIcon sx={{ color: 'white', fontSize: 38 }} />

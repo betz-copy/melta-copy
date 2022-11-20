@@ -26,7 +26,6 @@
 
 .ag-column-select-virtual-list-viewport::-webkit-scrollbar-track,
 .ag-body-horizontal-scroll-viewport::-webkit-scrollbar-track {
-    background-color: rgb(233, 230, 230);
     border-radius: 10px;
 }
 

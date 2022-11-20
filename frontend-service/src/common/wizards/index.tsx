@@ -6,7 +6,9 @@ import * as Yup from 'yup';
 // eslint-disable-next-line import/no-unresolved
 import { ObjectShape } from 'yup/lib/object';
 
+import { useSelector } from 'react-redux';
 import { Stepper } from './stepper';
+import { RootState } from '../../store';
 
 export interface StepComponentHelpers {
     isEditMode: boolean;
@@ -53,6 +55,8 @@ const Wizard = <T extends object>({
     const [activeStep, setActiveStep] = useState(initalStep);
     const isLastStep = activeStep === steps.length - 1;
 
+    const darkMode = useSelector((state: RootState) => state.darkMode);
+
     const handleBack = () => {
         setActiveStep((prevActiveStep) => prevActiveStep - 1);
     };
@@ -62,7 +66,14 @@ const Wizard = <T extends object>({
     }, [open, initalStep]);
 
     return (
-        <Dialog open={open} maxWidth="lg" fullWidth style={{ height: '80%', margin: 'auto' }} disableEnforceFocus>
+        <Dialog
+            open={open}
+            maxWidth="lg"
+            fullWidth
+            PaperProps={{ sx: { bgcolor: darkMode ? '#060606' : 'white' } }}
+            style={{ height: '80%', margin: 'auto' }}
+            disableEnforceFocus
+        >
             {/* disableEnforceFocus added for 'raqb' component as mentioned in docs https://github.com/ukrbublik/react-awesome-query-builder#api */}
             <DialogTitle>
                 {title}

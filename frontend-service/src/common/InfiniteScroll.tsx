@@ -67,7 +67,7 @@ export const InfiniteScroll = <T extends { _id: string }>({
                 )),
             )}
 
-            <Grid container ref={ref} justifyContent="center">
+            <Grid container ref={ref} justifyContent="center" marginTop="0.5rem">
                 {isFetchingNextPage ? <CircularProgress /> : endText}
             </Grid>
         </Grid>

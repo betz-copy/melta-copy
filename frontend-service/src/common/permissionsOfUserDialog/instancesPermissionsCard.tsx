@@ -1,7 +1,9 @@
 import React from 'react';
 import { Card, CardContent, Checkbox, CheckboxProps, FormControlLabel, FormGroup, Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
+import { useSelector } from 'react-redux';
 import CheckboxReadOnly from './CheckboxReadOnly';
+import { RootState } from '../../store';
 
 const InstancesPermissionsCard: React.FC<{
     categoriesCheckboxProps: {
@@ -18,8 +20,10 @@ const InstancesPermissionsCard: React.FC<{
         onChange: CheckboxProps['onChange'];
     };
 }> = ({ categoriesCheckboxProps, checkboxAllProps }) => {
+    const darkMode = useSelector((state: RootState) => state.darkMode);
+
     return (
-        <Card variant="outlined">
+        <Card variant="outlined" sx={{ bgcolor: darkMode ? '#242424' : 'white' }}>
             <CardContent>
                 <Grid container direction="column" spacing={3}>
                     <Grid item container justifyContent="space-between" alignItems="center">
