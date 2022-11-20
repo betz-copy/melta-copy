@@ -120,32 +120,6 @@ export const getColumnDefs = <Data extends any>(
                                 </IconButtonWithPopoverText>
                             </NavLink>
                         )}
-                        {/* {onNavigateToDelete && (
-                            <NavLink
-                                to={`/entity/${deleteEntity(data)._id}`}
-                                onClick={(e) => {
-                                    if (disabledEntity) e.preventDefault();
-                                }}
-                            >
-                                <IconButtonWithPopoverText
-                                    iconButtonProps={{
-                                        disabled: disabledEntity,
-                                    }}
-                                    popoverText={
-                                        deleteRowButtonProps
-                                            ? i18next.t('permissions.dontHavePermissionsToCategory')
-                                            : i18next.t('entitiesTableOfTemplate.deleteEntity')
-                                    }
-                                >
-                                    <DeleteIcon
-                                        style={{
-                                            transform: 'scaleX(-1)',
-                                            marginRight: '-5px',
-                                        }}
-                                    />
-                                </IconButtonWithPopoverText>
-                            </NavLink>
-                        )} */}
                         {deleteRowButtonProps && (
                             <IconButtonWithPopoverText
                                 popoverText={deleteRowButtonProps.popoverText}

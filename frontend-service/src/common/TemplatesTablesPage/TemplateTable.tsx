@@ -78,13 +78,11 @@ const TemplateTable = ({ template, quickFilterText, page }: { template: IMongoEn
             <Box sx={{ marginBottom: '30px', width: '100%' }}>
                 <EntitiesTableOfTemplate
                     deleteRowButtonProps={{
-                        popoverText: template.disabled
-                            ? i18next.t('entitiesTableOfTemplate.deleteEntity')
-                            : i18next.t('permissions.dontHavePermissionsToCategory'),
+                        popoverText: i18next.t('entitiesTableOfTemplate.deleteEntity'),
                         onClick: () => {
                             setOpenDeleteDialog(true);
                         },
-                        disabled: !template.disabled,
+                        disabled: false,
                     }}
                     ref={entitiesTableRef}
                     template={template}
