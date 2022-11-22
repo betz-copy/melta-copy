@@ -33,18 +33,22 @@ const TemplateTable = ({ template, quickFilterText, page }: { template: IMongoEn
             },
         },
     );
-    const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
-    const closeDeleteDialog = () => {
-        setOpenDeleteDialog(false);
-    };
-    const { isLoading: isDeleteLoading, mutateAsync: deleteMutation } = useMutation(() => deleteEntityRequest(template._id), {
+    // const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+    const [openDeleteDialog, setOpenDeleteDialog] = useState<{
+        isDialogOpen: boolean;
+        entityId: string | null;
+    }>({
+        isDialogOpen: false,
+        entityId: null,
+    });
+    const { isLoading: isDeleteLoading, mutateAsync: deleteMutation } = useMutation((id: string) => deleteEntityRequest(id), {
         onError: (error: AxiosError) => {
-            closeDeleteDialog();
+            setOpenDeleteDialog({ isDialogOpen: false, entityId: null });
             toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.entity.failedToDelete')} />);
         },
         onSuccess: () => {
             toast.success(i18next.t('wizard.entity.deletedSuccessfully'));
-            closeDeleteDialog();
+            setOpenDeleteDialog({ isDialogOpen: false, entityId: null });
         },
     });
     return (
@@ -79,16 +83,14 @@ const TemplateTable = ({ template, quickFilterText, page }: { template: IMongoEn
                 <EntitiesTableOfTemplate
                     deleteRowButtonProps={{
                         popoverText: i18next.t('entitiesTableOfTemplate.deleteEntity'),
-                        onClick: () => {
-                            setOpenDeleteDialog(true);
-                        },
+                        onClick: (entity) => setOpenDeleteDialog({ isDialogOpen: true, entityId: entity.properties._id }),
                         disabled: false,
                     }}
                     ref={entitiesTableRef}
                     template={template}
                     showNavigateToRowButton
-                    getRowId={(entity) => entity.properties._id}
-                    getEntityPropertiesData={(entity) => entity.properties}
+                    getRowId={(currentEntity) => currentEntity.properties._id}
+                    getEntityPropertiesData={(currentEntity) => currentEntity.properties}
                     rowModelType="serverSide"
                     quickFilterText={quickFilterText}
                     rowHeight={50}
@@ -97,7 +99,12 @@ const TemplateTable = ({ template, quickFilterText, page }: { template: IMongoEn
                     filterStorageProps={{ shouldSaveFilter: true, pageType: page }}
                 />
             </Box>
-            <AreYouSureDialog open={openDeleteDialog} handleClose={closeDeleteDialog} onYes={() => deleteMutation()} isLoading={isDeleteLoading} />
+            <AreYouSureDialog
+                open={openDeleteDialog.isDialogOpen}
+                handleClose={() => setOpenDeleteDialog({ isDialogOpen: false, entityId: null })}
+                onYes={() => deleteMutation(openDeleteDialog.entityId!)}
+                isLoading={isDeleteLoading}
+            />
         </Grid>
     );
 };
