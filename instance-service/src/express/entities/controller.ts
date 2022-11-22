@@ -5,7 +5,9 @@ import { EntityManager } from './manager';
 
 class EntityController {
     static async createEntity(req: Request, res: Response) {
-        res.json(await EntityManager.createEntity(req.body));
+        const entityTemplate = fetchPropertyFromRequest<IMongoEntityTemplate>(req, 'entityTemplate');
+
+        res.json(await EntityManager.createEntity(req.body, entityTemplate));
     }
 
     static async getEntities(req: Request, res: Response) {

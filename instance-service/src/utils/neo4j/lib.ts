@@ -23,7 +23,7 @@ const normalizeFields = (properties: Record<string, any>): Record<string, any> =
         }
 
         if (value instanceof neo4j.types.DateTime) {
-            props[key] = new Date(value.toString());
+            props[key] = new Date(value.toString()).toISOString();
 
             return;
         }

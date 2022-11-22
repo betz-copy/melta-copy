@@ -66,7 +66,7 @@ describe('Entity manager', () => {
 
     describe('Create entity', () => {
         it('Should create new entity', async () => {
-            const res = await EntityManager.createEntity(defaultEntity);
+            const res = await EntityManager.createEntity(defaultEntity, entityTemplate);
 
             expect(res).toBeDefined();
             expect(res.templateId).toBe(defaultTemplateId);
@@ -83,7 +83,7 @@ describe('Entity manager', () => {
         };
 
         beforeEach(async () => {
-            const { properties } = await EntityManager.createEntity({ templateId: defaultTemplateId, properties: defaultProperties });
+            const { properties } = await EntityManager.createEntity({ templateId: defaultTemplateId, properties: defaultProperties }, entityTemplate);
 
             id = properties._id;
         });
@@ -119,7 +119,7 @@ describe('Entity manager', () => {
         let id: string;
 
         beforeEach(async () => {
-            const { properties } = await EntityManager.createEntity(defaultEntity);
+            const { properties } = await EntityManager.createEntity(defaultEntity, entityTemplate);
 
             id = properties._id;
         });
@@ -144,7 +144,7 @@ describe('Entity manager', () => {
         let id: string;
 
         beforeEach(async () => {
-            firstEntity = await EntityManager.createEntity(defaultEntity);
+            firstEntity = await EntityManager.createEntity(defaultEntity, entityTemplate);
 
             id = firstEntity.properties._id;
         });
@@ -170,7 +170,10 @@ describe('Entity manager', () => {
 
             beforeEach(async () => {
                 // Create second entity
-                const secondEntity = await EntityManager.createEntity({ templateId: defaultTemplateId, properties: secondEntityProperties });
+                const secondEntity = await EntityManager.createEntity(
+                    { templateId: defaultTemplateId, properties: secondEntityProperties },
+                    entityTemplate,
+                );
 
                 // Create relationship between two entities
                 await RelationshipManager.createRelationshipByEntityIds(
@@ -219,7 +222,10 @@ describe('Entity manager', () => {
 
             beforeEach(async () => {
                 // Create second entity
-                const secondEntity = await EntityManager.createEntity({ templateId: defaultTemplateId, properties: secondEntityProperties });
+                const secondEntity = await EntityManager.createEntity(
+                    { templateId: defaultTemplateId, properties: secondEntityProperties },
+                    entityTemplate,
+                );
 
                 // Create relationship between two entities
                 await RelationshipManager.createRelationshipByEntityIds(
@@ -234,7 +240,10 @@ describe('Entity manager', () => {
                 );
 
                 // Create third entity
-                const thirdEntity = await EntityManager.createEntity({ templateId: defaultTemplateId, properties: thirdEntityProperties });
+                const thirdEntity = await EntityManager.createEntity(
+                    { templateId: defaultTemplateId, properties: thirdEntityProperties },
+                    entityTemplate,
+                );
 
                 // Create relationship between two entities
                 await RelationshipManager.createRelationshipByEntityIds(
@@ -284,7 +293,7 @@ describe('Entity manager', () => {
         let id: string;
 
         beforeEach(async () => {
-            firstEntity = await EntityManager.createEntity(defaultEntity);
+            firstEntity = await EntityManager.createEntity(defaultEntity, entityTemplate);
 
             id = firstEntity.properties._id;
         });
@@ -300,7 +309,10 @@ describe('Entity manager', () => {
                 // Create second entity
                 const secondEntityProperties = { testProp: 'testProp' };
 
-                const secondEntity = await EntityManager.createEntity({ templateId: defaultTemplateId, properties: secondEntityProperties });
+                const secondEntity = await EntityManager.createEntity(
+                    { templateId: defaultTemplateId, properties: secondEntityProperties },
+                    entityTemplate,
+                );
 
                 // Create relationship between two entities
                 await RelationshipManager.createRelationshipByEntityIds(

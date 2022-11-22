@@ -6,6 +6,7 @@ import { IRelationship } from '../interface';
 import EntityManager from '../../entities/manager';
 import { getMockAdapterRelationshipTemplateManager } from '../../../externalServices/tests/axios.mock';
 import { mockRelationshipTemplatesRoutes, mockRulesRoutes } from '../../../externalServices/tests/externalServices.mock';
+import { IMongoEntityTemplate } from '../../../externalServices/entityTemplateManager';
 
 const { neo4j } = config;
 
@@ -23,6 +24,25 @@ const relationshipTemplate = {
     displayName: 'rel',
     sourceEntityId: defaultEntityTemplateId,
     destinationEntityId: defaultEntityTemplateId,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+};
+
+const entityTemplate: IMongoEntityTemplate = {
+    _id: defaultEntityTemplateId,
+    propertiesOrder: ['testProp'],
+    propertiesPreview: ['testProp'],
+    name: 'template',
+    displayName: 'template',
+    category: '999999999999999999999999',
+    properties: {
+        type: 'object',
+        properties: {
+            testProp: { type: 'string', title: 'testProp' },
+        },
+        required: ['testProp'],
+    },
+    disabled: false,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
 };
@@ -56,12 +76,12 @@ describe('Relationship manager', () => {
     });
 
     beforeEach(async () => {
-        firstEntity = await EntityManager.createEntity(defaultEntity);
+        firstEntity = await EntityManager.createEntity(defaultEntity, entityTemplate);
 
         entityId = firstEntity.properties._id;
 
         // Create second entities
-        secondEntity = await EntityManager.createEntity(defaultEntity);
+        secondEntity = await EntityManager.createEntity(defaultEntity, entityTemplate);
 
         secondEntityId = secondEntity.properties._id;
 

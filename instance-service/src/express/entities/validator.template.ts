@@ -1,10 +1,10 @@
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
-import { Request, NextFunction, Response } from 'express';
+import { Request } from 'express';
 import axios from 'axios';
 import { getNeo4jDate, getNeo4jDateTime } from '../../utils/neo4j/lib';
 import { ValidationError } from '../error';
-import { addPropertyToRequest, fetchPropertyFromRequest } from '../../utils/express';
+import { addPropertyToRequest } from '../../utils/express';
 import config from '../../config';
 import { EntityTemplateManagerService, IMongoEntityTemplate } from '../../externalServices/entityTemplateManager';
 import { trycatch } from '../../utils/lib';
@@ -83,11 +83,4 @@ export const addStringFieldsAndNormalizeDateValues = (
     });
 
     return normalizedEntity;
-};
-export const addStringFieldsAndNormalizeDateValuesMiddleware = (req: Request, _res: Response, next: NextFunction) => {
-    const entityTemplate = fetchPropertyFromRequest<IMongoEntityTemplate>(req, 'entityTemplate');
-
-    req.body.properties = addStringFieldsAndNormalizeDateValues(req.body.properties, entityTemplate);
-
-    next();
 };

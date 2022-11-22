@@ -5,7 +5,6 @@ import { ServiceError } from '../../error';
 import EntityManager from '../../entities/manager';
 import RelationshipManager from '../../relationships/manager';
 import config from '../../../config';
-import { getNeo4jDateTime } from '../../../utils/neo4j/lib';
 import { trycatch } from '../../../utils/lib';
 import {
     airportEntityTemplate,
@@ -149,49 +148,64 @@ describe('Relationship manager test rules', () => {
             });
 
             beforeAll(async () => {
-                firstTravelAgent = await EntityManager.createEntity({
-                    templateId: travelAgentEntityTemplate._id,
-                    properties: {
-                        firstName: 'Name1',
-                        lastName: 'Name1',
-                        agentId: '1',
+                firstTravelAgent = await EntityManager.createEntity(
+                    {
+                        templateId: travelAgentEntityTemplate._id,
+                        properties: {
+                            firstName: 'Name1',
+                            lastName: 'Name1',
+                            agentId: '1',
+                        },
                     },
-                });
+                    travelAgentEntityTemplate,
+                );
 
-                secondTravelAgent = await EntityManager.createEntity({
-                    templateId: travelAgentEntityTemplate._id,
-                    properties: {
-                        firstName: 'Name2',
-                        lastName: 'Name2',
-                        agentId: '2',
+                secondTravelAgent = await EntityManager.createEntity(
+                    {
+                        templateId: travelAgentEntityTemplate._id,
+                        properties: {
+                            firstName: 'Name2',
+                            lastName: 'Name2',
+                            agentId: '2',
+                        },
                     },
-                });
+                    travelAgentEntityTemplate,
+                );
 
-                flight = await EntityManager.createEntity({
-                    templateId: flightEntityTemplate._id,
-                    properties: {
-                        flightNumber: '1',
-                        departureDate: getNeo4jDateTime(),
-                        landingDate: getNeo4jDateTime(),
+                flight = await EntityManager.createEntity(
+                    {
+                        templateId: flightEntityTemplate._id,
+                        properties: {
+                            flightNumber: '1',
+                            departureDate: new Date().toISOString(),
+                            landingDate: new Date().toISOString(),
+                        },
                     },
-                });
+                    flightEntityTemplate,
+                );
 
-                trip = await EntityManager.createEntity({
-                    templateId: tripEntityTemplate._id,
-                    properties: {
-                        name: 'My trip',
-                        destination: 'New York',
+                trip = await EntityManager.createEntity(
+                    {
+                        templateId: tripEntityTemplate._id,
+                        properties: {
+                            name: 'My trip',
+                            destination: 'New York',
+                        },
                     },
-                });
+                    tripEntityTemplate,
+                );
 
-                airport = await EntityManager.createEntity({
-                    templateId: airportEntityTemplate._id,
-                    properties: {
-                        airportName: 'New York Airport',
-                        airportId: '1234',
-                        country: 'New York',
+                airport = await EntityManager.createEntity(
+                    {
+                        templateId: airportEntityTemplate._id,
+                        properties: {
+                            airportName: 'New York Airport',
+                            airportId: '1234',
+                            country: 'New York',
+                        },
                     },
-                });
+                    airportEntityTemplate,
+                );
             });
 
             afterAll(async () => {
@@ -259,40 +273,52 @@ describe('Relationship manager test rules', () => {
             });
 
             beforeAll(async () => {
-                trip = await EntityManager.createEntity({
-                    templateId: tripEntityTemplate._id,
-                    properties: {
-                        name: 'My trip',
-                        destination: 'New York',
+                trip = await EntityManager.createEntity(
+                    {
+                        templateId: tripEntityTemplate._id,
+                        properties: {
+                            name: 'My trip',
+                            destination: 'New York',
+                        },
                     },
-                });
+                    tripEntityTemplate,
+                );
 
-                firstFlight = await EntityManager.createEntity({
-                    templateId: flightEntityTemplate._id,
-                    properties: {
-                        flightNumber: '1',
-                        departureDate: getNeo4jDateTime(new Date('2022-04-01T17:00:00.000Z')),
-                        landingDate: getNeo4jDateTime(new Date('2022-04-01T19:00:00.000Z')),
+                firstFlight = await EntityManager.createEntity(
+                    {
+                        templateId: flightEntityTemplate._id,
+                        properties: {
+                            flightNumber: '1',
+                            departureDate: '2022-04-01T17:00:00.000Z',
+                            landingDate: '2022-04-01T19:00:00.000Z',
+                        },
                     },
-                });
+                    flightEntityTemplate,
+                );
 
-                secondFlightNotOverlapping = await EntityManager.createEntity({
-                    templateId: flightEntityTemplate._id,
-                    properties: {
-                        flightNumber: '2',
-                        departureDate: getNeo4jDateTime(new Date('2022-04-20T17:00:00.000Z')),
-                        landingDate: getNeo4jDateTime(new Date('2022-04-20T19:00:00.000Z')),
+                secondFlightNotOverlapping = await EntityManager.createEntity(
+                    {
+                        templateId: flightEntityTemplate._id,
+                        properties: {
+                            flightNumber: '2',
+                            departureDate: '2022-04-20T17:00:00.000Z',
+                            landingDate: '2022-04-20T19:00:00.000Z',
+                        },
                     },
-                });
+                    flightEntityTemplate,
+                );
 
-                thirdFlightOverlapping = await EntityManager.createEntity({
-                    templateId: flightEntityTemplate._id,
-                    properties: {
-                        flightNumber: '3',
-                        departureDate: getNeo4jDateTime(new Date('2022-04-01T08:00:00.000Z')),
-                        landingDate: getNeo4jDateTime(new Date('2022-04-01T08:30:00.000Z')),
+                thirdFlightOverlapping = await EntityManager.createEntity(
+                    {
+                        templateId: flightEntityTemplate._id,
+                        properties: {
+                            flightNumber: '3',
+                            departureDate: '2022-04-01T08:00:00.000Z',
+                            landingDate: '2022-04-01T08:30:00.000Z',
+                        },
                     },
-                });
+                    flightEntityTemplate,
+                );
             });
 
             afterAll(async () => {
@@ -361,23 +387,29 @@ describe('Relationship manager test rules', () => {
             });
 
             beforeAll(async () => {
-                trip = await EntityManager.createEntity({
-                    templateId: tripEntityTemplate._id,
-                    properties: {
-                        name: 'My trip',
-                        destination: 'New York',
-                        active: true,
+                trip = await EntityManager.createEntity(
+                    {
+                        templateId: tripEntityTemplate._id,
+                        properties: {
+                            name: 'My trip',
+                            destination: 'New York',
+                            active: true,
+                        },
                     },
-                });
+                    tripEntityTemplate,
+                );
 
-                flight = await EntityManager.createEntity({
-                    templateId: flightEntityTemplate._id,
-                    properties: {
-                        flightNumber: '1',
-                        departureDate: getNeo4jDateTime(),
-                        landingDate: getNeo4jDateTime(),
+                flight = await EntityManager.createEntity(
+                    {
+                        templateId: flightEntityTemplate._id,
+                        properties: {
+                            flightNumber: '1',
+                            departureDate: new Date().toISOString(),
+                            landingDate: new Date().toISOString(),
+                        },
                     },
-                });
+                    flightEntityTemplate,
+                );
             });
 
             afterAll(async () => {
@@ -418,41 +450,53 @@ describe('Relationship manager test rules', () => {
             });
 
             beforeAll(async () => {
-                firstTravelAgent = await EntityManager.createEntity({
-                    templateId: travelAgentEntityTemplate._id,
-                    properties: {
-                        firstName: 'Name1',
-                        lastName: 'Name1',
-                        agentId: '1',
+                firstTravelAgent = await EntityManager.createEntity(
+                    {
+                        templateId: travelAgentEntityTemplate._id,
+                        properties: {
+                            firstName: 'Name1',
+                            lastName: 'Name1',
+                            agentId: '1',
+                        },
                     },
-                });
+                    travelAgentEntityTemplate,
+                );
 
-                secondTravelAgent = await EntityManager.createEntity({
-                    templateId: travelAgentEntityTemplate._id,
-                    properties: {
-                        firstName: 'Name2',
-                        lastName: 'Name2',
-                        agentId: '2',
+                secondTravelAgent = await EntityManager.createEntity(
+                    {
+                        templateId: travelAgentEntityTemplate._id,
+                        properties: {
+                            firstName: 'Name2',
+                            lastName: 'Name2',
+                            agentId: '2',
+                        },
                     },
-                });
+                    travelAgentEntityTemplate,
+                );
 
-                thirdTravelAgent = await EntityManager.createEntity({
-                    templateId: travelAgentEntityTemplate._id,
-                    properties: {
-                        firstName: 'Name3',
-                        lastName: 'Name3',
-                        agentId: '3',
+                thirdTravelAgent = await EntityManager.createEntity(
+                    {
+                        templateId: travelAgentEntityTemplate._id,
+                        properties: {
+                            firstName: 'Name3',
+                            lastName: 'Name3',
+                            agentId: '3',
+                        },
                     },
-                });
+                    travelAgentEntityTemplate,
+                );
 
-                flight = await EntityManager.createEntity({
-                    templateId: flightEntityTemplate._id,
-                    properties: {
-                        flightNumber: '1',
-                        departureDate: getNeo4jDateTime(),
-                        landingDate: getNeo4jDateTime(),
+                flight = await EntityManager.createEntity(
+                    {
+                        templateId: flightEntityTemplate._id,
+                        properties: {
+                            flightNumber: '1',
+                            departureDate: new Date().toISOString(),
+                            landingDate: new Date().toISOString(),
+                        },
                     },
-                });
+                    flightEntityTemplate,
+                );
 
                 const firstRelationship = await RelationshipManager.createRelationshipByEntityIds(
                     {
@@ -546,40 +590,52 @@ describe('Relationship manager test rules', () => {
             });
 
             beforeAll(async () => {
-                trip = await EntityManager.createEntity({
-                    templateId: tripEntityTemplate._id,
-                    properties: {
-                        name: 'My trip',
-                        destination: 'New York',
+                trip = await EntityManager.createEntity(
+                    {
+                        templateId: tripEntityTemplate._id,
+                        properties: {
+                            name: 'My trip',
+                            destination: 'New York',
+                        },
                     },
-                });
+                    tripEntityTemplate,
+                );
 
-                firstFlight = await EntityManager.createEntity({
-                    templateId: flightEntityTemplate._id,
-                    properties: {
-                        flightNumber: '1',
-                        departureDate: getNeo4jDateTime(new Date('2022-04-01T17:00:00.000Z')),
-                        landingDate: getNeo4jDateTime(new Date('2022-04-01T19:00:00.000Z')),
+                firstFlight = await EntityManager.createEntity(
+                    {
+                        templateId: flightEntityTemplate._id,
+                        properties: {
+                            flightNumber: '1',
+                            departureDate: '2022-04-01T17:00:00.000Z',
+                            landingDate: '2022-04-01T19:00:00.000Z',
+                        },
                     },
-                });
+                    flightEntityTemplate,
+                );
 
-                secondFlightNotOverlapping = await EntityManager.createEntity({
-                    templateId: flightEntityTemplate._id,
-                    properties: {
-                        flightNumber: '2',
-                        departureDate: getNeo4jDateTime(new Date('2022-04-20T17:00:00.000Z')),
-                        landingDate: getNeo4jDateTime(new Date('2022-04-20T19:00:00.000Z')),
+                secondFlightNotOverlapping = await EntityManager.createEntity(
+                    {
+                        templateId: flightEntityTemplate._id,
+                        properties: {
+                            flightNumber: '2',
+                            departureDate: '2022-04-20T17:00:00.000Z',
+                            landingDate: '2022-04-20T19:00:00.000Z',
+                        },
                     },
-                });
+                    flightEntityTemplate,
+                );
 
-                thirdFlightOverlapping = await EntityManager.createEntity({
-                    templateId: flightEntityTemplate._id,
-                    properties: {
-                        flightNumber: '3',
-                        departureDate: getNeo4jDateTime(new Date('2022-04-01T08:00:00.000Z')),
-                        landingDate: getNeo4jDateTime(new Date('2022-04-01T08:30:00.000Z')),
+                thirdFlightOverlapping = await EntityManager.createEntity(
+                    {
+                        templateId: flightEntityTemplate._id,
+                        properties: {
+                            flightNumber: '3',
+                            departureDate: '2022-04-01T08:00:00.000Z',
+                            landingDate: '2022-04-01T08:30:00.000Z',
+                        },
                     },
-                });
+                    flightEntityTemplate,
+                );
 
                 const firstRelationship = await RelationshipManager.createRelationshipByEntityIds(
                     {
@@ -681,32 +737,41 @@ describe('Relationship manager test rules', () => {
             });
 
             beforeAll(async () => {
-                trip = await EntityManager.createEntity({
-                    templateId: tripEntityTemplate._id,
-                    properties: {
-                        name: 'My trip',
-                        destination: 'New York',
-                        active: true,
+                trip = await EntityManager.createEntity(
+                    {
+                        templateId: tripEntityTemplate._id,
+                        properties: {
+                            name: 'My trip',
+                            destination: 'New York',
+                            active: true,
+                        },
                     },
-                });
+                    tripEntityTemplate,
+                );
 
-                firstFlight = await EntityManager.createEntity({
-                    templateId: flightEntityTemplate._id,
-                    properties: {
-                        flightNumber: '1',
-                        departureDate: getNeo4jDateTime(),
-                        landingDate: getNeo4jDateTime(),
+                firstFlight = await EntityManager.createEntity(
+                    {
+                        templateId: flightEntityTemplate._id,
+                        properties: {
+                            flightNumber: '1',
+                            departureDate: new Date().toISOString(),
+                            landingDate: new Date().toISOString(),
+                        },
                     },
-                });
+                    flightEntityTemplate,
+                );
 
-                secondFlight = await EntityManager.createEntity({
-                    templateId: flightEntityTemplate._id,
-                    properties: {
-                        flightNumber: '2',
-                        departureDate: getNeo4jDateTime(),
-                        landingDate: getNeo4jDateTime(),
+                secondFlight = await EntityManager.createEntity(
+                    {
+                        templateId: flightEntityTemplate._id,
+                        properties: {
+                            flightNumber: '2',
+                            departureDate: new Date().toISOString(),
+                            landingDate: new Date().toISOString(),
+                        },
                     },
-                });
+                    flightEntityTemplate,
+                );
 
                 const firstRelationship = await RelationshipManager.createRelationshipByEntityIds(
                     {

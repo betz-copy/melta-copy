@@ -4,11 +4,42 @@ import RedisClient from '../../../utils/redis';
 import { IEntity } from '../interface';
 import EntityManager from '../manager';
 import config from '../../../config';
+import { IMongoEntityTemplate } from '../../../externalServices/entityTemplateManager';
 
 const { neo4j, redis } = config;
 
 const defaultTemplateId = '1';
 const defaultProperties = { testProp: 'testProp' };
+
+const entityTemplate: IMongoEntityTemplate = {
+    _id: defaultTemplateId,
+    propertiesOrder: ['testProp'],
+    propertiesPreview: ['testProp'],
+    name: 'template',
+    displayName: 'template',
+    category: '999999999999999999999999',
+    properties: {
+        type: 'object',
+        properties: {
+            testProp: { type: 'string', title: 'testProp' },
+
+            name: { type: 'string', title: 'name' },
+            lastName: { type: 'string', title: 'name' },
+            age: { type: 'number', title: 'age' },
+            salary: { type: 'number', title: 'salary' },
+
+            bDate: { type: 'string', format: 'date', title: 'bDate' },
+
+            doesWork: { type: 'boolean', title: 'doesWork' },
+
+            num: { type: 'number', title: 'num' },
+        },
+        required: [],
+    },
+    disabled: false,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+};
 
 describe('e2e ag-grid entities tests', () => {
     beforeAll(async () => {
@@ -25,7 +56,7 @@ describe('e2e ag-grid entities tests', () => {
 
     describe('Get one entity', () => {
         beforeEach(async () => {
-            await EntityManager.createEntity({ templateId: defaultTemplateId, properties: defaultProperties });
+            await EntityManager.createEntity({ templateId: defaultTemplateId, properties: defaultProperties }, entityTemplate);
         });
 
         it('Get an entity', async () => {
@@ -52,9 +83,9 @@ describe('e2e ag-grid entities tests', () => {
 
     describe('Check sorting', () => {
         beforeEach(async () => {
-            await EntityManager.createEntity({ templateId: defaultTemplateId, properties: { age: 1, salary: 2 } });
-            await EntityManager.createEntity({ templateId: defaultTemplateId, properties: { age: 1, salary: 3 } });
-            await EntityManager.createEntity({ templateId: defaultTemplateId, properties: { age: 2, salary: 3 } });
+            await EntityManager.createEntity({ templateId: defaultTemplateId, properties: { age: 1, salary: 2 } }, entityTemplate);
+            await EntityManager.createEntity({ templateId: defaultTemplateId, properties: { age: 1, salary: 3 } }, entityTemplate);
+            await EntityManager.createEntity({ templateId: defaultTemplateId, properties: { age: 2, salary: 3 } }, entityTemplate);
         });
 
         it('Check single asc sorting', async () => {
@@ -202,8 +233,8 @@ describe('e2e ag-grid entities tests', () => {
 
     describe('Check text filter query', () => {
         beforeEach(async () => {
-            await EntityManager.createEntity({ templateId: defaultTemplateId, properties: { name: 'Name' } });
-            await EntityManager.createEntity({ templateId: defaultTemplateId, properties: { name: 'AnotherName' } });
+            await EntityManager.createEntity({ templateId: defaultTemplateId, properties: { name: 'Name' } }, entityTemplate);
+            await EntityManager.createEntity({ templateId: defaultTemplateId, properties: { name: 'AnotherName' } }, entityTemplate);
         });
 
         it('Equals', async () => {
@@ -476,9 +507,9 @@ describe('e2e ag-grid entities tests', () => {
 
     describe('Check number filter query', () => {
         beforeEach(async () => {
-            await EntityManager.createEntity({ templateId: defaultTemplateId, properties: { age: 1 } });
-            await EntityManager.createEntity({ templateId: defaultTemplateId, properties: { age: 2 } });
-            await EntityManager.createEntity({ templateId: defaultTemplateId, properties: { age: 3 } });
+            await EntityManager.createEntity({ templateId: defaultTemplateId, properties: { age: 1 } }, entityTemplate);
+            await EntityManager.createEntity({ templateId: defaultTemplateId, properties: { age: 2 } }, entityTemplate);
+            await EntityManager.createEntity({ templateId: defaultTemplateId, properties: { age: 3 } }, entityTemplate);
         });
 
         it('Equals', async () => {
@@ -758,9 +789,9 @@ describe('e2e ag-grid entities tests', () => {
         const thirdDate = '2002-05-05';
 
         beforeEach(async () => {
-            await EntityManager.createEntity({ templateId: defaultTemplateId, properties: { bDate: firstDate } });
-            await EntityManager.createEntity({ templateId: defaultTemplateId, properties: { bDate: secondDate } });
-            await EntityManager.createEntity({ templateId: defaultTemplateId, properties: { bDate: thirdDate } });
+            await EntityManager.createEntity({ templateId: defaultTemplateId, properties: { bDate: firstDate } }, entityTemplate);
+            await EntityManager.createEntity({ templateId: defaultTemplateId, properties: { bDate: secondDate } }, entityTemplate);
+            await EntityManager.createEntity({ templateId: defaultTemplateId, properties: { bDate: thirdDate } }, entityTemplate);
         });
 
         it('Equals', async () => {
@@ -1067,8 +1098,8 @@ describe('e2e ag-grid entities tests', () => {
 
     describe('Check set', () => {
         beforeEach(async () => {
-            await EntityManager.createEntity({ templateId: defaultTemplateId, properties: defaultProperties });
-            await EntityManager.createEntity({ templateId: defaultTemplateId, properties: { doesWork: true } });
+            await EntityManager.createEntity({ templateId: defaultTemplateId, properties: defaultProperties }, entityTemplate);
+            await EntityManager.createEntity({ templateId: defaultTemplateId, properties: { doesWork: true } }, entityTemplate);
         });
 
         it('Check single sort', async () => {
@@ -1229,7 +1260,7 @@ describe('e2e ag-grid entities tests', () => {
 
     describe('Filter query edge cases', () => {
         beforeEach(async () => {
-            await EntityManager.createEntity({ templateId: defaultTemplateId, properties: defaultProperties });
+            await EntityManager.createEntity({ templateId: defaultTemplateId, properties: defaultProperties }, entityTemplate);
         });
 
         it('Check invalid filter query', async () => {
@@ -1302,8 +1333,11 @@ describe('e2e ag-grid entities tests', () => {
         });
 
         beforeEach(async () => {
-            await EntityManager.createEntity({ templateId: defaultTemplateId, properties: { name: 'Name', age: 1, lastName: 'lastName' } });
-            await EntityManager.createEntity({ templateId: defaultTemplateId, properties: { name: 'AnotherName', age: 2 } });
+            await EntityManager.createEntity(
+                { templateId: defaultTemplateId, properties: { name: 'Name', age: 1, lastName: 'lastName' } },
+                entityTemplate,
+            );
+            await EntityManager.createEntity({ templateId: defaultTemplateId, properties: { name: 'AnotherName', age: 2 } }, entityTemplate);
         });
 
         it('Check simple search query', async () => {
@@ -1395,10 +1429,10 @@ describe('e2e ag-grid entities tests', () => {
     describe('Test skip and limit', () => {
         beforeEach(async () => {
             await Promise.all([
-                EntityManager.createEntity({ templateId: defaultTemplateId, properties: { num: 1 } }),
-                EntityManager.createEntity({ templateId: defaultTemplateId, properties: { num: 2 } }),
-                EntityManager.createEntity({ templateId: defaultTemplateId, properties: { num: 3 } }),
-                EntityManager.createEntity({ templateId: defaultTemplateId, properties: { num: 4 } }),
+                EntityManager.createEntity({ templateId: defaultTemplateId, properties: { num: 1 } }, entityTemplate),
+                EntityManager.createEntity({ templateId: defaultTemplateId, properties: { num: 2 } }, entityTemplate),
+                EntityManager.createEntity({ templateId: defaultTemplateId, properties: { num: 3 } }, entityTemplate),
+                EntityManager.createEntity({ templateId: defaultTemplateId, properties: { num: 4 } }, entityTemplate),
             ]);
         });
 
