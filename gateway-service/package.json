@@ -31,6 +31,7 @@
     "joi": "^17.6.0",
     "jsonwebtoken": "^8.5.1",
     "lodash.isequal": "^4.5.0",
+    "lodash.pickby": "^4.6.0",
     "lodash.uniqby": "^4.7.0",
     "menashmq": "^0.1.6",
     "morgan": "^1.10.0",

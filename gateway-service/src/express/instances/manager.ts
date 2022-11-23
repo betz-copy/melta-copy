@@ -214,14 +214,22 @@ export class InstancesManager {
         const fields = Object.keys(entityTemplate.properties.properties);
         for (let i = 0; i < fields.length; i++) {
             const field = fields[i];
+            const propertyTemplate = entityTemplate.properties.properties[field];
 
-            if (currentEntity.properties[field] === instanceData.properties[field]) continue;
+            let newValue: any;
+            if (propertyTemplate.format === 'fileId') {
+                newValue = uploadedFilesProperties[field] ?? updatedInstance.properties[field];
+            } else {
+                newValue = updatedInstance.properties[field];
+            }
 
-            updatedFields[field] = instanceData.properties[field];
+            if (currentEntity.properties[field] === newValue) continue;
+
+            updatedFields[field] = newValue ?? null;
             activityLogUpdatedFields.push({
                 fieldName: field,
-                oldValue: currentEntity.properties[field] || null,
-                newValue: updatedInstance.properties[field] || null,
+                oldValue: currentEntity.properties[field] ?? null,
+                newValue: newValue ?? null,
             });
         }
 
