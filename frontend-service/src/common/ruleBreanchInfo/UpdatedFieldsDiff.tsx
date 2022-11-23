@@ -1,18 +1,42 @@
 import React from 'react';
 import ReactDiffViewer from 'react-diff-viewer';
-import pickBy from 'lodash.pickby';
 import i18next from 'i18next';
 import { Typography } from '@mui/material';
+import pickBy from 'lodash.pickby';
 import { IUpdateEntityMetadataPopulated } from '../../interfaces/ruleBreaches/actionMetadata';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { formatToString } from '../EntityProperties';
+import { getFileName } from '../../utils/getFileName';
 
-const getEntityPropertiesString = (entityProperties: Record<string, any>, entityTemplate: IMongoEntityTemplatePopulated) => {
-    // todo: show file changed too (w/ fileName and fileId)
-    const fieldProperties = pickBy(entityTemplate.properties.properties, (propertyTemplate) => propertyTemplate.format !== 'fileId');
-    const fieldPropertiesStrings = Object.entries(fieldProperties).map(([propertyKey, propertyTemplate]) => {
+const getEntityPropertyString = (value: any, type: 'string' | 'number' | 'boolean', format: string | undefined, oldValue: any) => {
+    if (value === null || value === undefined) {
+        return '-';
+    }
+
+    if (format !== 'fileId') {
+        return formatToString(value, type, format);
+    }
+
+    const oldFileName = oldValue ? getFileName(oldValue) : undefined;
+    const fileName = value instanceof File ? value.name : getFileName(value);
+
+    const fileContentChanged = value instanceof File || value !== oldValue;
+
+    if (oldFileName === fileName && fileContentChanged) {
+        return `${fileName} (${i18next.t('ruleBreachInfo.updateEntityActionInfo.fileContentUpdated')})`;
+    }
+    return fileName;
+};
+
+const getEntityPropertiesString = (
+    entityProperties: Record<string, any>,
+    entityTemplate: IMongoEntityTemplatePopulated,
+    oldEntityProperties?: Record<string, any>,
+) => {
+    const fieldPropertiesStrings = Object.entries(entityTemplate.properties.properties).map(([propertyKey, propertyTemplate]) => {
+        const oldValue = oldEntityProperties?.[propertyKey];
         const value = entityProperties[propertyKey];
-        const valueFormatted = formatToString(value, propertyTemplate.type, propertyTemplate.format);
+        const valueFormatted = getEntityPropertyString(value, propertyTemplate.type, propertyTemplate.format, oldValue);
 
         return `${propertyTemplate.title}: ${valueFormatted}`;
     });
@@ -25,7 +49,11 @@ export const UpdatedFieldsDiff: React.FC<{
 }> = ({ actionMetadata, entityTemplate }) => {
     const { entity, before, updatedFields } = actionMetadata;
     const oldProperties = before ?? entity?.properties;
-    const newProperties = { ...oldProperties, ...updatedFields };
+
+    const newPropertiesWithNulls = { ...oldProperties, ...updatedFields };
+    // updatedFields specifies fields to remove w/ nulls. but shouldnt be in the IEntity properties
+    const newProperties = pickBy(newPropertiesWithNulls, (property) => property !== null);
+
     return (
         <ReactDiffViewer
             oldValue={
@@ -35,7 +63,7 @@ export const UpdatedFieldsDiff: React.FC<{
             }
             newValue={
                 entityTemplate
-                    ? getEntityPropertiesString(newProperties, entityTemplate)
+                    ? getEntityPropertiesString(newProperties, entityTemplate, oldProperties)
                     : i18next.t('ruleBreachInfo.updateEntityActionInfo.entityAfterUnknown')
             }
             hideLineNumbers

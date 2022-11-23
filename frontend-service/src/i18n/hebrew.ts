@@ -385,6 +385,7 @@ export default {
             entityBefore: 'ישות לפני',
             entityAfterUnknown: 'לא ידוע ישות אחרי',
             entityAfter: 'ישות אחרי',
+            fileContentUpdated: 'מעודכן',
         },
         brokeTheFollowingRule: 'הפרה את החוק',
         brokeTheFollowingRules: 'הפרה את החוקים',

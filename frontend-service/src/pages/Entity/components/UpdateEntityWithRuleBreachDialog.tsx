@@ -15,11 +15,20 @@ import { IMongoRule } from '../../../interfaces/rules';
 import { createRuleBreachRequestRequest } from '../../../services/ruleBreachesService';
 
 const getUpdateEntityActionMetadata = (currEntity: IEntity, updateEntityFormData: EntityWizardValues): IUpdateEntityMetadataPopulated => {
-    const templatePropertiesUpdated = pickBy(updateEntityFormData.template.properties.properties, ({ type, format }, propertyKey) => {
-        const isFileType = type === 'string' && format === 'fileId';
-        return !isFileType && currEntity.properties[propertyKey] !== updateEntityFormData.properties[propertyKey];
+    const templatePropertiesUpdated = pickBy(updateEntityFormData.template.properties.properties, ({ format }, propertyKey) => {
+        if (format === 'fileId') {
+            const attachmentProperty = updateEntityFormData.attachmentsProperties[propertyKey];
+            if (attachmentProperty instanceof File) return true;
+            return currEntity.properties[propertyKey] !== updateEntityFormData.attachmentsProperties[propertyKey]?.name;
+        }
+        return currEntity.properties[propertyKey] !== updateEntityFormData.properties[propertyKey];
     });
-    const updatedFields = mapValues(templatePropertiesUpdated, (_, propertyKey) => updateEntityFormData.properties[propertyKey]);
+    const updatedFields = mapValues(templatePropertiesUpdated, ({ format }, propertyKey) => {
+        if (format === 'fileId') {
+            return updateEntityFormData.attachmentsProperties[propertyKey] ?? null;
+        }
+        return updateEntityFormData.properties[propertyKey] ?? null;
+    });
 
     return {
         entity: currEntity,
