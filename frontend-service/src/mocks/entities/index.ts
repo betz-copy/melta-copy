@@ -2,8 +2,6 @@
 import MockAdapter from 'axios-mock-adapter';
 import faker from '@faker-js/faker';
 import { allEntities } from './allEntities';
-import { generateRuleBreachRequest } from '../ruleBreaches';
-import { unpopulateBrokenRules } from '../../services/ruleBreachesService';
 
 const mockEntites = (mock: MockAdapter) => {
     // Get entities by category
@@ -11,28 +9,20 @@ const mockEntites = (mock: MockAdapter) => {
         const { templateId } = params;
 
         const rowsOfTemplate = allEntities.filter((entity) => entity.templateId === templateId);
-        rowsOfTemplate.map((row, rowKey) => {
-            const propVals = Object.values(row.properties);
-            const propKeys = Object.keys(row.properties);
-            propVals.map((value, key) => {
-                if (typeof value === 'number' && value < 0) {
-                    propVals[key] = `${value * -1}-`;
-                }
-                return value;
-            });
-            rowsOfTemplate[rowKey].properties = propVals.reduce((accumulator, value, index) => {
-                return { ...accumulator, [propKeys[index]]: value };
-            }, {});
-            return rowsOfTemplate;
-        });
+
+        const countOfSearchedRows =
+            faker.datatype.boolean() || rowsOfTemplate.length === 0 ? 0 : faker.datatype.number({ min: 1, max: rowsOfTemplate.length });
+        const searchedRows = faker.helpers.arrayElements(rowsOfTemplate, countOfSearchedRows);
+
         return [
             200,
             {
-                rows: rowsOfTemplate,
-                lastRowIndex: rowsOfTemplate.length,
+                rows: searchedRows,
+                lastRowIndex: countOfSearchedRows,
             },
         ];
     });
+
     mock.onPost(/\/api\/instances\/entities\/expanded\/[0-9a-fA-F]{24}/).reply((config) => [
         200,
         {
@@ -41,9 +31,9 @@ const mockEntites = (mock: MockAdapter) => {
                 properties: {
                     firstName: 'נועה',
                     lastName: 'קירל',
-                    age: -20,
+                    age: 20,
                     gender: false,
-                    firstFile: '59604a2459b7433a8e876609617054feblabla.docx',
+                    firstFile: 'blabla.docx',
                     disabled: faker.datatype.boolean(),
                     _id: config.url!.split('/').at(-1)!.split('?')[0],
                     createdAt: new Date(2345, 10, 1).toISOString(),
@@ -64,9 +54,9 @@ const mockEntites = (mock: MockAdapter) => {
                         properties: {
                             firstName: 'נועה',
                             lastName: 'קירל',
-                            age: -20,
+                            age: 20,
                             gender: false,
-                            firstFile: '59604a2459b7433a8e876609617054feblabla.docx',
+                            firstFile: 'blabla.docx',
                             disabled: faker.datatype.boolean(),
                             _id: config.url!.split('/').at(-1)!.split('?')[0],
                             createdAt: new Date(2345, 10, 1).toISOString(),
@@ -99,9 +89,9 @@ const mockEntites = (mock: MockAdapter) => {
                         properties: {
                             firstName: 'נועה',
                             lastName: 'קירל',
-                            age: -20,
+                            age: 20,
                             gender: false,
-                            firstFile: '59604a2459b7433a8e876609617054feblabla.docx',
+                            firstFile: 'blabla.docx',
                             disabled: faker.datatype.boolean(),
                             _id: config.url!.split('/').at(-1)!.split('?')[0],
                             createdAt: new Date(2345, 10, 1).toISOString(),
@@ -150,9 +140,9 @@ const mockEntites = (mock: MockAdapter) => {
                         properties: {
                             firstName: 'נועה',
                             lastName: 'קירל',
-                            age: -20,
+                            age: 20,
                             gender: false,
-                            firstFile: '59604a2459b7433a8e876609617054feblabla.docx',
+                            firstFile: 'blabla.docx',
                             disabled: faker.datatype.boolean(),
                             _id: config.url!.split('/').at(-1)!.split('?')[0],
                             createdAt: new Date(2345, 10, 1).toISOString(),
@@ -172,9 +162,9 @@ const mockEntites = (mock: MockAdapter) => {
                         properties: {
                             firstName: 'נועה',
                             lastName: 'קירל',
-                            age: -20,
+                            age: 20,
                             gender: false,
-                            firstFile: '59604a2459b7433a8e876609617054feblabla.docx',
+                            firstFile: 'blabla.docx',
                             disabled: faker.datatype.boolean(),
                             _id: config.url!.split('/').at(-1)!.split('?')[0],
                             createdAt: new Date(2345, 10, 1).toISOString(),
@@ -209,9 +199,9 @@ const mockEntites = (mock: MockAdapter) => {
                         properties: {
                             firstName: 'נועה',
                             lastName: 'קירל',
-                            age: -20,
+                            age: 20,
                             gender: false,
-                            firstFile: '59604a2459b7433a8e876609617054feblabla.docx',
+                            firstFile: 'blabla.docx',
                             disabled: faker.datatype.boolean(),
                             _id: config.url!.split('/').at(-1)!.split('?')[0],
                             createdAt: new Date(2345, 10, 1).toISOString(),
@@ -244,9 +234,9 @@ const mockEntites = (mock: MockAdapter) => {
                         properties: {
                             firstName: 'נועה',
                             lastName: 'קירל',
-                            age: -20,
+                            age: 20,
                             gender: false,
-                            firstFile: '59604a2459b7433a8e876609617054feblabla.docx',
+                            firstFile: 'blabla.docx',
                             disabled: faker.datatype.boolean(),
                             _id: config.url!.split('/').at(-1)!.split('?')[0],
                             createdAt: new Date(2345, 10, 1).toISOString(),
@@ -473,7 +463,8 @@ const mockEntites = (mock: MockAdapter) => {
         },
     ]);
 
-    mock.onPost(/\/api\/instances\/entities\/[0-9a-fA-F]{24}\/duplicate/).reply((config) => {
+    // Update
+    mock.onPut(/\/api\/instances\/entities\/[0-9a-fA-F]{24}/).reply((config) => {
         return [
             200,
             {
@@ -484,66 +475,7 @@ const mockEntites = (mock: MockAdapter) => {
                     age: 20,
                     gender: false,
                     _id: config.url!.split('/')[2].split('?')[0],
-                    disabled: faker.datatype.boolean(),
-                },
-            },
-        ];
-    });
-
-    // Update
-    mock.onPut(/\/api\/instances\/entities\/[0-9a-fA-F]{24}/).reply((config) => {
-        const formData = config.data as FormData;
-
-        const isSuccess = formData.has('ignoredRules') ? true : faker.datatype.boolean();
-
-        if (isSuccess) {
-            return [
-                200,
-                {
-                    templateId: '61e3ea6e4d51a83e87e83c7f',
-                    properties: {
-                        firstName: 'נועה',
-                        lastName: 'קירללללל',
-                        age: 20,
-                        gender: false,
-                        _id: config.url!.split('/')[3].split('?')[0],
-                        disabled: false,
-                        createdAt: new Date(2345, 10, 1).toISOString(),
-                        updatedAt: new Date(2346, 10, 1).toISOString(),
-                    },
-                },
-            ];
-        }
-
-        const { brokenRules } = generateRuleBreachRequest({ nullable: false });
-
-        return [
-            400,
-            {
-                metadata: {
-                    errorCode: 'RULE_BLOCK',
-                    brokenRules,
-                    rawBrokenRules: unpopulateBrokenRules(brokenRules),
-                },
-            },
-        ];
-    });
-
-    mock.onPatch(/\/api\/instances\/entities\/[0-9a-fA-F]{24}\/status/).reply((config) => {
-        const { disabled } = JSON.parse(config.data);
-        return [
-            200,
-            {
-                templateId: '61e3ea6e4d51a83e87e83c7f',
-                properties: {
-                    firstName: 'נועה',
-                    lastName: 'קירל',
-                    age: 20,
-                    gender: false,
-                    _id: config.url!.split('/')[3],
-                    disabled,
-                    createdAt: new Date(2345, 10, 1).toISOString(),
-                    updatedAt: new Date(2346, 10, 1).toISOString(),
+                    disabled: false,
                 },
             },
         ];

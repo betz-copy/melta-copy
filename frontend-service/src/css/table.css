@@ -1,5 +1,5 @@
 .ag-theme-material .ag-rtl {
-    border-radius: 2px;
+    border-radius: 7px;
 }
 
 .ag-theme-material .ag-side-buttons {
@@ -47,20 +47,4 @@
 .ag-column-select-virtual-list-viewport {
     overflow: auto;
     padding: 0;
-}
-.ag-cell {
-    width: 120px;
-    left: auto;
-}
-.ag-cell-not-inline-editing {
-    width: 120px;
-    left: auto;
-}
-.ag-cell-normal-height {
-    width: 120px;
-    left: auto;
-}
-.ag-cell-last-left-pinned{
-    width: 120px;
-    left: auto;
 }

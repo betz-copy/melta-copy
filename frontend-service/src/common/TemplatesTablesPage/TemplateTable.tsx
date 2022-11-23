@@ -33,7 +33,6 @@ const TemplateTable = ({ template, quickFilterText, page }: { template: IMongoEn
             },
         },
     );
-    // const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
     const [openDeleteDialog, setOpenDeleteDialog] = useState<{
         isDialogOpen: boolean;
         entityId: string | null;
