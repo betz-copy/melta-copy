@@ -18,6 +18,7 @@ export interface IProcessStepTemplate {
 export interface IProcessTemplate {
     name: string;
     displayName: string;
+    description: IProcessStepTemplate;
     steps: IProcessStepTemplate[];
 }
 

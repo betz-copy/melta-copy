@@ -15,6 +15,12 @@ export const createTemplateRequestSchema = Joi.object({
     body: {
         name: variableNameValidation.required(),
         displayName: Joi.string().required(),
+        description: Joi.object({
+            name: variableNameValidation.required(),
+            displayName: Joi.string().required(),
+            properties: innerPropertiesSchema.required(),
+            propertiesOrder: orderPropertiesSchema.required(),
+        }).required(),
         steps: Joi.array()
             .items(
                 Joi.object({
@@ -35,6 +41,12 @@ export const updateTemplateByIdRequestSchema = Joi.object({
     body: {
         name: variableNameValidation,
         displayName: Joi.string(),
+        description: Joi.object({
+            name: variableNameValidation,
+            displayName: Joi.string(),
+            properties: innerPropertiesSchema,
+            propertiesOrder: orderPropertiesSchema,
+        }),
         steps: Joi.array().items(
             Joi.object({
                 name: variableNameValidation,

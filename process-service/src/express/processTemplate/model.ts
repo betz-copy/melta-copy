@@ -2,7 +2,7 @@ import * as mongoose from 'mongoose';
 import { IProcessTemplate, IProcessStepTemplate } from './interface';
 import config from '../../config';
 
-const ProcessTemplateSchema = new mongoose.Schema(
+const ProcessTemplateSchema = new mongoose.Schema<IProcessTemplate>(
     {
         name: {
             type: String,
@@ -11,6 +11,10 @@ const ProcessTemplateSchema = new mongoose.Schema(
         displayName: {
             type: String,
             required: true,
+        },
+        description: {
+            type: Object,
+            require: true,
         },
         steps: {
             type: Array<IProcessStepTemplate>,
