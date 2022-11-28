@@ -186,7 +186,10 @@ export const agGridSearchRequestToNeo4JRequest = (
             RETURN count(node)`;
     }
 
-    const sortQuery = `ORDER BY score ${agGridRequest.sortModel.length ? `,${sortModelToNeo4JSort(agGridRequest.sortModel)}` : ''} `;
+    const sortQueryOfUser = agGridRequest.sortModel.length ? `${sortModelToNeo4JSort(agGridRequest.sortModel)},` : '';
+    // sort by scoring, but only as the lowest priority, to not override user defined sorts
+    const defaultSortQuery = 'score DESC';
+    const sortQuery = `ORDER BY ${sortQueryOfUser} ${defaultSortQuery}`;
 
     return `
         CALL db.index.fulltext.queryNodes('${latestIndex}', '*${agGridRequest.quickFilter}*')
@@ -208,7 +211,14 @@ export const agGridRequestToNeo4JRequest = (templateId: string, agGridRequest: I
             RETURN count(node)`;
     }
 
-    const sortQuery = agGridRequest.sortModel.length ? `ORDER BY ${sortModelToNeo4JSort(agGridRequest.sortModel)}` : '';
+    const sortModel = [...agGridRequest.sortModel];
+    if (sortModel.every(({ colId }) => colId !== 'updatedAt')) {
+        // if user not specified, by default sort by updatedAt,
+        // but only as the lowest priority (end of array in sortModel), to not override user defined sorts
+        sortModel.push({ colId: 'updatedAt', sort: 'desc' });
+    }
+
+    const sortQuery = `ORDER BY ${sortModelToNeo4JSort(sortModel)}`;
 
     return `
         MATCH (node) 
