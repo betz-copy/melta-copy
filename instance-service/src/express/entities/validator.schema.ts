@@ -108,6 +108,9 @@ const agGridDateFilterSchema = Joi.object({
     dateTo: Joi.string().when('type', { is: Joi.valid('inRange'), then: Joi.required(), otherwise: Joi.allow(null) }),
 });
 
+// format of properties keys in entity template
+export const variableNameValidation = Joi.string().regex(/^[a-zA-Z][a-zA-Z_$0-9]*$/);
+
 /**
  * POST /api/instances/entities/search
  */
@@ -117,12 +120,15 @@ export const getEntitiesRequestSchema = Joi.object({
         endRow: Joi.number().required(),
         quickFilter: Joi.string(),
         filterModel: Joi.object()
-            .pattern(/^/, Joi.alternatives(agGridTextFilterSchema, agGridDateFilterSchema, agGridNumberFilterSchema, agGridSetFilterSchema))
+            .pattern(
+                variableNameValidation, // important when translating to neo4j query (prevent injection)
+                Joi.alternatives(agGridTextFilterSchema, agGridDateFilterSchema, agGridNumberFilterSchema, agGridSetFilterSchema),
+            )
             .required(),
         sortModel: Joi.array()
             .items(
                 Joi.object({
-                    colId: Joi.string(),
+                    colId: variableNameValidation, // important when translating to neo4j query (prevent injection)
                     sort: Joi.string().valid('asc', 'desc'),
                 }),
             )

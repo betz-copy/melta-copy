@@ -1,4 +1,4 @@
-import { IAGGridRequest } from '../../../utils/agGridFilterModelToNeoQuery';
+import { IAGGridRequest } from '../../../utils/agGrid/interfaces';
 import Neo4jClient from '../../../utils/neo4j';
 import RedisClient from '../../../utils/redis';
 import { IEntity } from '../interface';
@@ -232,20 +232,25 @@ describe('e2e ag-grid entities tests', () => {
     });
 
     describe('Check text filter query', () => {
+        const entityWithName: IEntity = { templateId: defaultTemplateId, properties: { name: 'Name' } };
+        const entityWithAnotherName: IEntity = { templateId: defaultTemplateId, properties: { name: 'AnotherName' } };
+        const entityWithDangerousChars: IEntity = { templateId: defaultTemplateId, properties: { name: 'Dangerous \' " / \\' } };
+
         beforeEach(async () => {
-            await EntityManager.createEntity({ templateId: defaultTemplateId, properties: { name: 'Name' } }, entityTemplate);
-            await EntityManager.createEntity({ templateId: defaultTemplateId, properties: { name: 'AnotherName' } }, entityTemplate);
+            await EntityManager.createEntity(entityWithName, entityTemplate);
+            await EntityManager.createEntity(entityWithAnotherName, entityTemplate);
+            await EntityManager.createEntity(entityWithDangerousChars, entityTemplate);
         });
 
         it('Equals', async () => {
             const agGridRequest: IAGGridRequest = {
                 startRow: 0,
-                endRow: 1,
+                endRow: 2,
                 filterModel: {
                     name: {
                         filterType: 'text',
                         type: 'equals',
-                        filter: 'Name',
+                        filter: entityWithName.properties.name,
                     },
                 },
                 sortModel: [],
@@ -260,7 +265,35 @@ describe('e2e ag-grid entities tests', () => {
             expect(res.rows[0].templateId).toBe(defaultTemplateId);
             expect(res.rows[0].properties).toEqual(
                 expect.objectContaining({
-                    name: 'Name',
+                    name: entityWithName.properties.name,
+                }),
+            );
+        });
+
+        it('Equals escape dangerous characters', async () => {
+            const agGridRequest: IAGGridRequest = {
+                startRow: 0,
+                endRow: 2,
+                filterModel: {
+                    name: {
+                        filterType: 'text',
+                        type: 'equals',
+                        filter: entityWithDangerousChars.properties.name,
+                    },
+                },
+                sortModel: [],
+            };
+
+            const res = await EntityManager.getEntities(defaultTemplateId, agGridRequest);
+
+            expect(res).toBeDefined();
+            expect(res.lastRowIndex).toBe(1);
+            expect(res.rows).toHaveLength(1);
+
+            expect(res.rows[0].templateId).toBe(defaultTemplateId);
+            expect(res.rows[0].properties).toEqual(
+                expect.objectContaining({
+                    name: entityWithDangerousChars.properties.name,
                 }),
             );
         });
@@ -268,7 +301,7 @@ describe('e2e ag-grid entities tests', () => {
         it('Equals (no entities found)', async () => {
             const agGridRequest: IAGGridRequest = {
                 startRow: 0,
-                endRow: 1,
+                endRow: 2,
                 filterModel: {
                     name: {
                         filterType: 'text',
@@ -289,12 +322,12 @@ describe('e2e ag-grid entities tests', () => {
         it('Not equals', async () => {
             const agGridRequest: IAGGridRequest = {
                 startRow: 0,
-                endRow: 1,
+                endRow: 2,
                 filterModel: {
                     name: {
                         filterType: 'text',
                         type: 'notEqual',
-                        filter: 'AnotherName',
+                        filter: entityWithAnotherName.properties.name,
                     },
                 },
                 sortModel: [],
@@ -303,21 +336,25 @@ describe('e2e ag-grid entities tests', () => {
             const res = await EntityManager.getEntities(defaultTemplateId, agGridRequest);
 
             expect(res).toBeDefined();
-            expect(res.lastRowIndex).toBe(1);
-            expect(res.rows).toHaveLength(1);
+            expect(res.lastRowIndex).toBe(2);
+            expect(res.rows).toHaveLength(2);
 
-            expect(res.rows[0].templateId).toBe(defaultTemplateId);
-            expect(res.rows[0].properties).toEqual(
-                expect.objectContaining({
-                    name: 'Name',
-                }),
+            expect(res.rows.map((row: IEntity) => row.properties)).toEqual(
+                expect.arrayContaining([
+                    expect.objectContaining({
+                        name: entityWithName.properties.name,
+                    }),
+                    expect.objectContaining({
+                        name: entityWithDangerousChars.properties.name,
+                    }),
+                ]),
             );
         });
 
         it('Contains', async () => {
             const agGridRequest: IAGGridRequest = {
                 startRow: 0,
-                endRow: 1,
+                endRow: 2,
                 filterModel: {
                     name: {
                         filterType: 'text',
@@ -337,10 +374,10 @@ describe('e2e ag-grid entities tests', () => {
             expect(res.rows.map((row: IEntity) => row.properties)).toEqual(
                 expect.arrayContaining([
                     expect.objectContaining({
-                        name: 'Name',
+                        name: entityWithName.properties.name,
                     }),
                     expect.objectContaining({
-                        name: 'AnotherName',
+                        name: entityWithAnotherName.properties.name,
                     }),
                 ]),
             );
@@ -349,7 +386,7 @@ describe('e2e ag-grid entities tests', () => {
         it('Not contains', async () => {
             const agGridRequest: IAGGridRequest = {
                 startRow: 0,
-                endRow: 1,
+                endRow: 2,
                 filterModel: {
                     name: {
                         filterType: 'text',
@@ -363,21 +400,25 @@ describe('e2e ag-grid entities tests', () => {
             const res = await EntityManager.getEntities(defaultTemplateId, agGridRequest);
 
             expect(res).toBeDefined();
-            expect(res.lastRowIndex).toBe(1);
-            expect(res.rows).toHaveLength(1);
+            expect(res.lastRowIndex).toBe(2);
+            expect(res.rows).toHaveLength(2);
 
-            expect(res.rows[0].templateId).toBe(defaultTemplateId);
-            expect(res.rows[0].properties).toEqual(
-                expect.objectContaining({
-                    name: 'Name',
-                }),
+            expect(res.rows.map((row: IEntity) => row.properties)).toEqual(
+                expect.arrayContaining([
+                    expect.objectContaining({
+                        name: entityWithName.properties.name,
+                    }),
+                    expect.objectContaining({
+                        name: entityWithDangerousChars.properties.name,
+                    }),
+                ]),
             );
         });
 
         it('Starts with', async () => {
             const agGridRequest: IAGGridRequest = {
                 startRow: 0,
-                endRow: 1,
+                endRow: 2,
                 filterModel: {
                     name: {
                         filterType: 'text',
@@ -397,7 +438,7 @@ describe('e2e ag-grid entities tests', () => {
             expect(res.rows[0].templateId).toBe(defaultTemplateId);
             expect(res.rows[0].properties).toEqual(
                 expect.objectContaining({
-                    name: 'AnotherName',
+                    name: entityWithAnotherName.properties.name,
                 }),
             );
         });
@@ -405,7 +446,7 @@ describe('e2e ag-grid entities tests', () => {
         it('Ends with', async () => {
             const agGridRequest: IAGGridRequest = {
                 startRow: 0,
-                endRow: 1,
+                endRow: 2,
                 filterModel: {
                     name: {
                         filterType: 'text',
@@ -425,10 +466,10 @@ describe('e2e ag-grid entities tests', () => {
             expect(res.rows.map((row: IEntity) => row.properties)).toEqual(
                 expect.arrayContaining([
                     expect.objectContaining({
-                        name: 'Name',
+                        name: entityWithName.properties.name,
                     }),
                     expect.objectContaining({
-                        name: 'AnotherName',
+                        name: entityWithAnotherName.properties.name,
                     }),
                 ]),
             );
@@ -437,7 +478,7 @@ describe('e2e ag-grid entities tests', () => {
         it('Blank', async () => {
             const agGridRequest: IAGGridRequest = {
                 startRow: 0,
-                endRow: 1,
+                endRow: 2,
                 filterModel: {
                     name: {
                         filterType: 'text',
@@ -457,7 +498,7 @@ describe('e2e ag-grid entities tests', () => {
         it('Not blank', async () => {
             const agGridRequest: IAGGridRequest = {
                 startRow: 0,
-                endRow: 1,
+                endRow: 2,
                 filterModel: {
                     name: {
                         filterType: 'text',
@@ -470,16 +511,19 @@ describe('e2e ag-grid entities tests', () => {
             const res = await EntityManager.getEntities(defaultTemplateId, agGridRequest);
 
             expect(res).toBeDefined();
-            expect(res.lastRowIndex).toBe(2);
-            expect(res.rows).toHaveLength(2);
+            expect(res.lastRowIndex).toBe(3);
+            expect(res.rows).toHaveLength(3);
 
             expect(res.rows.map((row: IEntity) => row.properties)).toEqual(
                 expect.arrayContaining([
                     expect.objectContaining({
-                        name: 'Name',
+                        name: entityWithName.properties.name,
                     }),
                     expect.objectContaining({
-                        name: 'AnotherName',
+                        name: entityWithAnotherName.properties.name,
+                    }),
+                    expect.objectContaining({
+                        name: entityWithDangerousChars.properties.name,
                     }),
                 ]),
             );
@@ -488,7 +532,7 @@ describe('e2e ag-grid entities tests', () => {
         it('Unknown filter', async () => {
             const agGridRequest = {
                 startRow: 0,
-                endRow: 1,
+                endRow: 2,
                 filterModel: {
                     name: {
                         filterType: 'text',
@@ -1308,7 +1352,12 @@ describe('e2e ag-grid entities tests', () => {
         beforeAll(async () => {
             // Configure global search index in neo4j
             await Neo4jClient.writeTransaction(
-                `CALL db.index.fulltext.createNodeIndex('globalSearchTest',['${defaultTemplateId}'],['name'])`,
+                `CALL db.index.fulltext.createNodeIndex(
+                    'globalSearchTest',
+                    ['${defaultTemplateId}'],
+                    ['name'],
+                    { analyzer: 'unicode_whitespace' }
+                )`,
                 () => {},
             );
 
@@ -1338,6 +1387,10 @@ describe('e2e ag-grid entities tests', () => {
                 entityTemplate,
             );
             await EntityManager.createEntity({ templateId: defaultTemplateId, properties: { name: 'AnotherName', age: 2 } }, entityTemplate);
+            await EntityManager.createEntity(
+                { templateId: defaultTemplateId, properties: { name: 'Name with lucene-special-chars (((', age: 3 } },
+                entityTemplate,
+            );
         });
 
         it('Check simple search query', async () => {
@@ -1365,7 +1418,7 @@ describe('e2e ag-grid entities tests', () => {
         it('Check search with sort query', async () => {
             const agGridRequest: IAGGridRequest = {
                 startRow: 0,
-                endRow: 1,
+                endRow: 2,
                 filterModel: {},
                 sortModel: [{ colId: 'age', sort: 'asc' }],
                 quickFilter: 'Name',
@@ -1374,8 +1427,8 @@ describe('e2e ag-grid entities tests', () => {
             const res = await EntityManager.getEntities(defaultTemplateId, agGridRequest);
 
             expect(res).toBeDefined();
-            expect(res.lastRowIndex).toBe(2);
-            expect(res.rows).toHaveLength(2);
+            expect(res.lastRowIndex).toBe(3);
+            expect(res.rows).toHaveLength(3);
 
             expect(res.rows[0].templateId).toBe(defaultTemplateId);
             expect(res.rows[0].properties).toEqual(
@@ -1392,12 +1445,20 @@ describe('e2e ag-grid entities tests', () => {
                     name: 'AnotherName',
                 }),
             );
+
+            expect(res.rows[2].templateId).toBe(defaultTemplateId);
+            expect(res.rows[2].properties).toEqual(
+                expect.objectContaining({
+                    age: 3,
+                    name: 'Name with lucene-special-chars (((',
+                }),
+            );
         });
 
         it('Check search with sort query and filter query', async () => {
             const agGridRequest: IAGGridRequest = {
                 startRow: 0,
-                endRow: 1,
+                endRow: 2,
                 filterModel: {
                     lastName: {
                         filterType: 'text',
@@ -1421,6 +1482,50 @@ describe('e2e ag-grid entities tests', () => {
                     age: 1,
                     name: 'Name',
                     lastName: 'lastName',
+                }),
+            );
+        });
+
+        it('Check search with lucene special characters', async () => {
+            const agGridRequest: IAGGridRequest = {
+                startRow: 0,
+                endRow: 0,
+                filterModel: {},
+                sortModel: [],
+                quickFilter: '(((',
+            };
+
+            const res = await EntityManager.getEntities(defaultTemplateId, agGridRequest);
+
+            expect(res).toBeDefined();
+            expect(res.lastRowIndex).toBe(1);
+            expect(res.rows).toHaveLength(1);
+            expect(res.rows[0].templateId).toBe(defaultTemplateId);
+            expect(res.rows[0].properties).toEqual(
+                expect.objectContaining({
+                    name: 'Name with lucene-special-chars (((',
+                }),
+            );
+        });
+
+        it('Check search with wildstar with non-letter characters', async () => {
+            const agGridRequest: IAGGridRequest = {
+                startRow: 0,
+                endRow: 0,
+                filterModel: {},
+                sortModel: [],
+                quickFilter: 'with lucene-speci',
+            };
+
+            const res = await EntityManager.getEntities(defaultTemplateId, agGridRequest);
+
+            expect(res).toBeDefined();
+            expect(res.lastRowIndex).toBe(1);
+            expect(res.rows).toHaveLength(1);
+            expect(res.rows[0].templateId).toBe(defaultTemplateId);
+            expect(res.rows[0].properties).toEqual(
+                expect.objectContaining({
+                    name: 'Name with lucene-special-chars (((',
                 }),
             );
         });

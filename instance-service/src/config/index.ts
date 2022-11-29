@@ -15,6 +15,9 @@ const config = {
         connectionRetries: env.get('NEO4J_CONNECTION_RETRIES').default(5).asIntPositive(),
         connectionRetryDelay: env.get('NEO4J_CONNECTION_RETRY_DELAY').default(3000).asIntPositive(),
         stringPropertySuffix: env.get('STRING_PROPERTY_SUFFIX').default('_tostring').asString(),
+        // taken from lucene 8.2.0 syntax (for neo4j 4.0.6):
+        // https://lucene.apache.org/core/8_2_0/queryparser/org/apache/lucene/queryparser/classic/package-summary.html#Escaping_Special_Characters
+        specialCharsToEscapeNeo4jQuery: env.get('SPECIAL_CHARS_TO_ESCAPE_NEO4J_QUERY').default('+,-,&&,||,!,(,),{,},[,],^,",~,*,?,:,\\,/').asArray(),
     },
     entityTemplateManager: {
         url: env.get('ENTITY_TEMPLATE_MANAGER_URL').required().asString(),

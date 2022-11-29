@@ -2,6 +2,7 @@ import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 import { Request } from 'express';
 import axios from 'axios';
+import { formatInTimeZone } from 'date-fns-tz';
 import { getNeo4jDate, getNeo4jDateTime } from '../../utils/neo4j/lib';
 import { ValidationError } from '../error';
 import { addPropertyToRequest } from '../../utils/express';
@@ -24,7 +25,7 @@ const getEntityTemplateByIdOrThrowValidationError = async (templateId: string) =
 
     if (getEntityTemplateByIdErr || !entityTemplate) {
         if (axios.isAxiosError(getEntityTemplateByIdErr) && getEntityTemplateByIdErr.response?.status === 404) {
-            throw new ValidationError(`Relationship template doesnt exist (id: "${templateId}")`);
+            throw new ValidationError(`Entity template doesnt exist (id: "${templateId}")`);
         }
 
         throw getEntityTemplateByIdErr;
@@ -44,6 +45,14 @@ export const validateEntity = async (req: Request) => {
     }
 
     addPropertyToRequest(req, 'entityTemplate', entityTemplate);
+};
+
+// same format as dates shown in UI
+export const formatDateTimeForFullTextSearch = (date: Date) => {
+    return formatInTimeZone(date, 'Asia/Jerusalem', 'dd/MM/yyyy, HH:mm:ss');
+};
+export const formatDateForFullTextSearch = (date: Date) => {
+    return formatInTimeZone(date, 'Asia/Jerusalem', 'dd/MM/yyyy');
 };
 
 export const addStringFieldsAndNormalizeDateValues = (
@@ -67,14 +76,14 @@ export const addStringFieldsAndNormalizeDateValues = (
 
         if (type === 'string' && format === 'date') {
             normalizedEntity[key] = getNeo4jDate(new Date(propertyValue));
-            normalizedEntity[`${key}${neo4j.stringPropertySuffix}`] = new Date(propertyValue).toLocaleDateString('en-uk');
+            normalizedEntity[`${key}${neo4j.stringPropertySuffix}`] = formatDateForFullTextSearch(new Date(propertyValue));
 
             return;
         }
 
         if (type === 'string' && format === 'date-time') {
             normalizedEntity[key] = getNeo4jDateTime(new Date(propertyValue));
-            normalizedEntity[`${key}${neo4j.stringPropertySuffix}`] = new Date(propertyValue).toLocaleString('en-uk');
+            normalizedEntity[`${key}${neo4j.stringPropertySuffix}`] = formatDateTimeForFullTextSearch(new Date(propertyValue));
 
             return;
         }

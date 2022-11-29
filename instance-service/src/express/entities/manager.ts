@@ -12,7 +12,8 @@ import {
 } from '../../utils/neo4j/lib';
 import { IEntity } from './interface';
 import { NotFoundError, ServiceError } from '../error';
-import { agGridRequestToNeo4JRequest, agGridSearchRequestToNeo4JRequest, IAGGridRequest } from '../../utils/agGridFilterModelToNeoQuery';
+import { agGridRequestToNeo4JRequest, agGridSearchRequestToNeo4JRequest } from '../../utils/agGrid/agGridFilterModelToNeoQuery';
+import { IAGGridRequest } from '../../utils/agGrid/interfaces';
 import getLatestIndex from '../../utils/redis/getLatestIndex';
 import { areAllBrokenRulesIgnored, getBrokenRules, runRulesOnRelationship, runRulesOnRelationshipsOfPinnedEntity } from '../rules/lib';
 import { IBrokenRule, IConnection } from '../rules/interfaces';
@@ -43,9 +44,11 @@ export class EntityManager {
             return EntityManager.getEntitiesWithSearch(templateId, agGridRequest);
         }
 
+        const searchCypherQuery = agGridRequestToNeo4JRequest(templateId, agGridRequest);
+        const searchCountCypherQuery = agGridRequestToNeo4JRequest(templateId, agGridRequest, true);
         const [nodes, nodesOverallCount] = await Promise.all([
-            Neo4jClient.readTransaction(agGridRequestToNeo4JRequest(templateId, agGridRequest), normalizeReturnedEntity('multipleResponses')),
-            Neo4jClient.readTransaction(agGridRequestToNeo4JRequest(templateId, agGridRequest, true), normalizeResponseCount),
+            Neo4jClient.readTransaction(searchCypherQuery.cypherQuery, normalizeReturnedEntity('multipleResponses'), searchCypherQuery.parameters),
+            Neo4jClient.readTransaction(searchCountCypherQuery.cypherQuery, normalizeResponseCount, searchCountCypherQuery.parameters),
         ]);
 
         return { rows: nodes, lastRowIndex: nodesOverallCount };
@@ -58,12 +61,12 @@ export class EntityManager {
             throw new ServiceError(400, `[NEO4J] Global search index not found.`);
         }
 
+        const searchCypherQuery = agGridSearchRequestToNeo4JRequest(templateId, latestIndex, agGridRequest);
+        const searchCountCypherQuery = agGridSearchRequestToNeo4JRequest(templateId, latestIndex, agGridRequest, true);
+
         const [nodes, nodesOverallCount] = await Promise.all([
-            Neo4jClient.readTransaction(
-                agGridSearchRequestToNeo4JRequest(templateId, latestIndex, agGridRequest),
-                normalizeReturnedEntity('multipleResponses'),
-            ),
-            Neo4jClient.readTransaction(agGridSearchRequestToNeo4JRequest(templateId, latestIndex, agGridRequest, true), normalizeResponseCount),
+            Neo4jClient.readTransaction(searchCypherQuery.cypherQuery, normalizeReturnedEntity('multipleResponses'), searchCypherQuery.parameters),
+            Neo4jClient.readTransaction(searchCountCypherQuery.cypherQuery, normalizeResponseCount, searchCountCypherQuery.parameters),
         ]);
 
         return { rows: nodes, lastRowIndex: nodesOverallCount };
