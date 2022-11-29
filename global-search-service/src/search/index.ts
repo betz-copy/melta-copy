@@ -10,8 +10,18 @@ const createIndex = async (indexName: string, labels: string[], properties: stri
     CALL db.index.fulltext.createNodeIndex(
         '${indexName}',
         ['${labels.join("','")}'],
-        ['${properties.join("','")}']
+        ['${properties.join("','")}'],
+        { analyzer: 'unicode_whitespace' }
     )`;
+
+    // we chose analyzer "unicode_whitespace" because we want to do searches of `*{search}*`.
+    // in fulltext (lucene) query '*' works only on terms, and not phrases.
+    // for example in the standard analyzer "foo,bar" is a phrase (with two terms), so searching "*foo,bar*" wont work at all.
+    // but with "unicode_whitespace" analyzer, adding '*' at start and end, will always search on terms and not phrases,
+    // because in whitespace analyzer "foo,bar" is one term, so '*' will work on it,
+    // and searching "*foo bar*" will also work, because it will search "*foo" and "bar*" separately
+    // read also this to understand: https://stackoverflow.com/questions/25450308/full-text-search-in-neo4j-with-spaces
+    // also it will work better for searching dates (standard analyzer breaks apart the dates)
 
     await Neo4jClient.writeTransaction(createFullTextIndexCommand);
 };
