@@ -20,4 +20,8 @@ export const updateEntityMetadataSchema = joi.object({
     updatedFields: joi.object().min(1).required(),
 });
 
+export const updateEntityStatusMetadataSchema = joi.object({
+    entityId: joi.string().required(),
+    disabled: joi.boolean().required(),
+});
 export const actionMetadataSchema = joi.alternatives(createRelationshipMetadataSchema, deleteRelationshipMetadataSchema, updateEntityMetadataSchema);

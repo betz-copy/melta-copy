@@ -17,10 +17,15 @@ export interface IUpdateEntityMetadata {
     updatedFields: Record<string, any>;
 }
 
-export type IActionMetadata = ICreateRelationshipMetadata | IDeleteRelationshipMetadata | IUpdateEntityMetadata;
+export interface IUpdateEntityStatusMetadata {
+    entityId: string;
+    disabled: boolean;
+}
+export type IActionMetadata = ICreateRelationshipMetadata | IDeleteRelationshipMetadata | IUpdateEntityMetadata | IUpdateEntityStatusMetadata;
 
 export enum ActionTypes {
     CreateRelationship = 'create-relationship',
     DeleteRelationship = 'delete-relationship',
     UpdateEntity = 'update-entity',
+    UpdateStatus = 'update-status',
 }

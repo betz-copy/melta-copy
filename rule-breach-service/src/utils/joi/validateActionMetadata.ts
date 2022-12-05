@@ -2,7 +2,12 @@
 import * as joi from 'joi';
 import { IRuleBreach } from '../interfaces/ruleBreach';
 import { ActionTypes } from '../interfaces/actionMetadata';
-import { createRelationshipMetadataSchema, deleteRelationshipMetadataSchema, updateEntityMetadataSchema } from './schemas/actionMetadata';
+import {
+    createRelationshipMetadataSchema,
+    deleteRelationshipMetadataSchema,
+    updateEntityMetadataSchema,
+    updateEntityStatusMetadataSchema,
+} from './schemas/actionMetadata';
 
 export const validateActionMetadata: joi.CustomValidator = (value, helpers) => {
     const parent: Omit<IRuleBreach, 'createdAt'> = helpers.state.ancestors[0];
@@ -17,6 +22,9 @@ export const validateActionMetadata: joi.CustomValidator = (value, helpers) => {
             break;
         case ActionTypes.UpdateEntity:
             schema = updateEntityMetadataSchema;
+            break;
+        case ActionTypes.UpdateStatus:
+            schema = updateEntityStatusMetadataSchema;
             break;
 
         default:
