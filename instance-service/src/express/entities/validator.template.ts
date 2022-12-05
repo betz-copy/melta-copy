@@ -2,7 +2,7 @@ import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 import { Request } from 'express';
 import axios from 'axios';
-import { formatInTimeZone } from 'date-fns-tz';
+import { formatInTimeZone, format } from 'date-fns-tz';
 import { getNeo4jDate, getNeo4jDateTime } from '../../utils/neo4j/lib';
 import { ValidationError } from '../error';
 import { addPropertyToRequest } from '../../utils/express';
@@ -52,7 +52,7 @@ export const formatDateTimeForFullTextSearch = (date: Date) => {
     return formatInTimeZone(date, 'Asia/Jerusalem', 'dd/MM/yyyy, HH:mm:ss');
 };
 export const formatDateForFullTextSearch = (date: Date) => {
-    return formatInTimeZone(date, 'Asia/Jerusalem', 'dd/MM/yyyy');
+    return format(date, 'dd/MM/yyyy');
 };
 
 export const addStringFieldsAndNormalizeDateValues = (
