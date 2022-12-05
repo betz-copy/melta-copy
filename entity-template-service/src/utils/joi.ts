@@ -46,14 +46,13 @@ const propertiesArraySchema = Joi.array()
     )
     .unique((a, b) => a.title === b.title);
 
-
 export const MongoIdSchema = Joi.string().regex(/^[0-9a-fA-F]{24}$/, 'valid MongoId');
 
 export const ColorSchema = Joi.string().regex(/^#[A-Fa-f0-9]{6}$/);
 
 export const variableNameValidation = Joi.string().regex(/^[a-zA-Z][a-zA-Z_$0-9]*$/);
 
-const propertiesKeysArraySchema= Joi.array().items(variableNameValidation.invalid('createdAt','updatedAt','disable'))
+const propertiesKeysArraySchema = Joi.array().items(variableNameValidation.invalid('createdAt', 'updatedAt', 'disable'));
 
 const validatePropertiesArray = (value, propertiesKeys) => {
     const isRequiredValid = value.every((item) => propertiesKeys.includes(item));
@@ -89,17 +88,16 @@ export const innerPropertiesSchema = Joi.object()
         properties: Joi.object()
             .custom((value) => {
                 const { error: propertiesError } = propertiesArraySchema.validate(Object.values(value)); // titles are unique
-                const { error: keyError } = propertiesKeysArraySchema.validate(Object.keys(value))
+                const { error: keyError } = propertiesKeysArraySchema.validate(Object.keys(value));
 
-                
-                if (propertiesError ) {
+                if (propertiesError) {
                     throw propertiesError;
                 }
 
-                if (keyError ) {
+                if (keyError) {
                     throw keyError;
                 }
-                
+
                 return value;
             })
             .unknown(true)
