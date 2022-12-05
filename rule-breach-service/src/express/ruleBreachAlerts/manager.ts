@@ -24,8 +24,12 @@ export class RuleBreachAlertsManager {
         return RuleBreachAlertsModel.create(ruleBreachAlertData);
     }
 
-    public static async getRuleBreachAlertById(ruleBreachAlertId: string): Promise<IRuleBreachAlertDocument> {
+    public static async getRuleBreachAlertsById(ruleBreachAlertId: string): Promise<IRuleBreachAlertDocument> {
         return RuleBreachAlertsModel.findById(ruleBreachAlertId).orFail(new RuleBreachDoesNotExistError(ruleBreachAlertId, 'alert')).exec();
+    }
+
+    public static async getRuleBreachAlertsByRuleId(ruleId: string): Promise<IRuleBreachAlertDocument> {
+        return RuleBreachAlertsModel.find({ 'brokenRules.ruleId': ruleId }).lean();
     }
 }
 

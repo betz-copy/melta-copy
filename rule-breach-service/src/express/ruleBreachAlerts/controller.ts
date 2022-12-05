@@ -13,7 +13,13 @@ class RuleBreachAlertsController {
     static async getRuleBreachAlertById(req: Request, res: Response) {
         const { ruleBreachAlertId } = req.params;
 
-        res.json(await RuleBreachAlertsManager.getRuleBreachAlertById(ruleBreachAlertId));
+        res.json(await RuleBreachAlertsManager.getRuleBreachAlertsById(ruleBreachAlertId));
+    }
+
+    static async getRuleBreachAlertsByRuleId(req: Request, res: Response) {
+        const { ruleId } = req.params;
+
+        res.json(await RuleBreachAlertsManager.getRuleBreachAlertsByRuleId(ruleId));
     }
 }
 
