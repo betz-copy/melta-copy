@@ -15,6 +15,7 @@ import { deleteRuleRequest, ruleObjectToRuleForm, updateDisabledRuleRequest } fr
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
 import { ErrorToast } from '../../../common/ErrorToast';
+import { ViewingBox } from './ViewingBox';
 
 const RulesRow: React.FC = () => {
     const queryClient = useQueryClient();
