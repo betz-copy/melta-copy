@@ -4,15 +4,17 @@ import { AddCircle as AddIcon, Search as SearchIcon } from '@mui/icons-material'
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import i18next from 'i18next';
+import { AxiosError } from 'axios';
 import { ViewingCard } from './ViewingCard';
 import { Header } from '../../../common/Header';
-import { replaceItemById } from '../../../utils/reactQuery';
+import { removeItemById, replaceItemById } from '../../../utils/reactQuery';
 import SearchInput from '../../../common/inputs/SearchInput';
 import { IMongoRule } from '../../../interfaces/rules';
 import { RuleWizard } from '../../../common/wizards/rule';
-import { ruleObjectToRuleForm, updateDisabledRuleRequest } from '../../../services/templates/rulesService';
+import { deleteRuleRequest, ruleObjectToRuleForm, updateDisabledRuleRequest } from '../../../services/templates/rulesService';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { ViewingBox } from './ViewingBox';
+import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
+import { ErrorToast } from '../../../common/ErrorToast';
 
 const RulesRow: React.FC = () => {
     const queryClient = useQueryClient();
@@ -28,7 +30,13 @@ const RulesRow: React.FC = () => {
         isWizardOpen: false,
         rule: null,
     });
-
+    const [deleteRuleWizardState, setDeleteRuleWizardState] = useState<{
+        isWizardOpen: boolean;
+        ruleId: string | null;
+    }>({
+        isWizardOpen: false,
+        ruleId: null,
+    });
     const { mutateAsync: updateDisabledMutateAsync } = useMutation((rule: IMongoRule) => updateDisabledRuleRequest(rule._id, !rule.disabled), {
         onSuccess: (data) => {
             queryClient.setQueryData<IMongoRule[]>('getRules', (prevData) => replaceItemById(data, prevData));
@@ -40,7 +48,16 @@ const RulesRow: React.FC = () => {
             else toast.error(i18next.t('wizard.rule.failedToDisable'));
         },
     });
-
+    const { isLoading, mutateAsync: deleteMutateAsync } = useMutation((id: string) => deleteRuleRequest(id), {
+        onSuccess: (_data, id) => {
+            queryClient.setQueryData<IMongoRule[]>('getRules', (prevData) => removeItemById(id, prevData));
+            setDeleteRuleWizardState({ isWizardOpen: false, ruleId: null });
+            toast.success(i18next.t('wizard.rule.deletedSuccessfully'));
+        },
+        onError: (error: AxiosError) => {
+            toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.rule.failedToDelete')} />);
+        },
+    });
     return (
         <Grid item container marginBottom="30px">
             <Header title={i18next.t('rules')}>
@@ -69,6 +86,7 @@ const RulesRow: React.FC = () => {
                                     rule,
                                 });
                             }}
+                            onDeleteClick={() => setDeleteRuleWizardState({ isWizardOpen: true, ruleId: rule._id })}
                             onDisableClick={() => updateDisabledMutateAsync(rule)}
                             disabledProps={{
                                 isDisabled: rule.disabled,
@@ -83,6 +101,12 @@ const RulesRow: React.FC = () => {
                 handleClose={() => setRuleWizardDialogState({ isWizardOpen: false, rule: null })}
                 initialValues={ruleObjectToRuleForm(ruleWizardDialogState.rule, entityTemplates)}
                 isEditMode={Boolean(ruleWizardDialogState.rule)}
+            />
+            <AreYouSureDialog
+                open={deleteRuleWizardState.isWizardOpen}
+                handleClose={() => setDeleteRuleWizardState({ isWizardOpen: false, ruleId: null })}
+                onYes={() => deleteMutateAsync(deleteRuleWizardState.ruleId!)}
+                isLoading={isLoading}
             />
         </Grid>
     );

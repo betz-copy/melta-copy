@@ -356,6 +356,7 @@ export default {
         RELATIONSHIP_ALREADY_EXISTS: 'הקשר קיים כבר',
         RELATIONSHIP_TEMPLATE_HAS_RULES: 'קיימים חוקים לתבנית קשר',
         RULE_BLOCK: 'עבר על חוקים',
+        RULE_HAS_ALERTS_OR_REQUESTS: 'לחוק קיימים התראות/בקשות. ניתן רק להשבית אותו',
     },
     tourText: {
         sideBar: 'סרגל הניווט הראשי של המערכת למעבר בין עולמות התוכן והעמודים השונים',

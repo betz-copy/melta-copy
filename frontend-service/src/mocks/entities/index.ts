@@ -7,7 +7,6 @@ const mockEntites = (mock: MockAdapter) => {
     // Get entities by category
     mock.onPost('/api/instances/entities/search').reply(({ params }) => {
         const { templateId } = params;
-
         const rowsOfTemplate = allEntities.filter((entity) => entity.templateId === templateId);
 
         const countOfSearchedRows =
