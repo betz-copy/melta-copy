@@ -1,0 +1,28 @@
+
+// ******************************************************************************************************
+// fix Date properties for searches
+// ******************************************************************************************************
+
+match (n)
+unwind keys(n) as key with n, key, n[key] as value
+where apoc.meta.type(value) in ['LocalDate'] and not key in ['createdAt', 'updatedAt']
+
+with *, datetime({date: value}) as valueWithTime
+with *, apoc.date.format(valueWithTime.epochMillis, 'ms', 'dd/MM/yyyy', 'GMT') as valueFormatted
+call apoc.create.setProperty(n, key+'_tostring', valueFormatted) yield node as unusedNode
+
+return key, apoc.meta.type(value)
+
+// ******************************************************************************************************
+// fix DateTime properties for searches
+// ******************************************************************************************************
+
+match (n)
+unwind keys(n) as key with n, key, n[key] as value
+where apoc.meta.type(value) in ['ZonedDateTime'] and not key in ['createdAt', 'updatedAt']
+
+with *, apoc.date.format(value.epochMillis, 'ms', 'dd/MM/yyyy, HH:mm:ss', 'Asia/Jerusalem') as valueFormatted
+call apoc.create.setProperty(n, key+'_tostring', valueFormatted) yield node as unusedNode
+
+return key, apoc.meta.type(value)
+
