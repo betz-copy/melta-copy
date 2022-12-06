@@ -87,7 +87,7 @@ const TemplateTablesHeadline: React.FC<{
                 <Grid container spacing={1} wrap="nowrap">
                     <Grid item>
                         <IconButton style={{ background: '#225AA7', borderRadius: '5px' }} onClick={onExcelExport}>
-                            {isLoadingExcel ? <CircularProgress size="24px" /> : <DownloadIcon htmlColor="white" />}
+                            {isLoadingExcel ? <CircularProgress sx={{ color: 'white' }} size="24px" /> : <DownloadIcon htmlColor="white" />}
                             <Typography fontSize={14} style={{ fontWeight: '500', padding: '0 10px', color: 'white' }}>
                                 {i18next.t('downloadMultipleTables')}
                             </Typography>
