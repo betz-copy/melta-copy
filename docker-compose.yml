@@ -2,8 +2,8 @@ version: '3.4'
 
 services:
   entity-template-manager:
-    image: jawsproject.azurecr.io/entity-template-manager
-    # build: ./entity-template-manager
+    # image: jawsproject.azurecr.io/entity-template-manager
+    build: ./entity-template-manager
     environment:
       PORT: 8000
       MONGO_URI: ${ENTITY_TEMPLATE_MANAGER_MONGO_URI}
@@ -34,8 +34,8 @@ services:
       MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
 
   relationship-template-manager:
-    image: jawsproject.azurecr.io/relationship-template-manager
-    # build: ./relationship-template-manager
+    # image: jawsproject.azurecr.io/relationship-template-manager
+    build: ./relationship-template-manager
     environment:
       PORT: 8000
       MONGO_URI: ${RELATIONSHIP_TEMPLATE_MANAGER_MONGO_URI}
@@ -87,8 +87,8 @@ services:
       RABBIT_URI: ${RABBIT_URI}
 
   rule-breach-service:
-    image: jawsproject.azurecr.io/rule-breach-service
-    # build: ./rule-breach-service
+    # image: jawsproject.azurecr.io/rule-breach-service
+    build: ./rule-breach-service
     environment:
       PORT: 8000
       MONGO_URI: ${RULE_BREACH_SERVICE_MONGO_URI}
@@ -96,8 +96,8 @@ services:
       MONGO_RULE_BREACH_REQUESTS_COLLECTION_NAME: ${MONGO_RULE_BREACH_REQUESTS_COLLECTION_NAME}
 
   backend:
-    image: jawsproject.azurecr.io/backend
-    # build: ./backend
+    # image: jawsproject.azurecr.io/backend
+    build: ./backend
     environment:
       PORT: 8000
       TOKEN_SECRET: ${TOKEN_SECRET}
