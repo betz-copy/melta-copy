@@ -226,8 +226,6 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef, EntitiesT
                             },
                             ...LocalStorage.get(`tableFilter-${filterStorageProps.pageType}-${template._id}`),
                         });
-
-                        params.columnApi.applyColumnState({ state: [{ colId: 'updatedAt', sort: 'desc' }] });
                     }}
                     defaultColDef={{
                         filterParams: {
