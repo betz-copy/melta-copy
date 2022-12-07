@@ -2,11 +2,8 @@ import { Request } from 'express';
 import * as Joi from 'joi';
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
-import * as path from 'path';
 import { wrapValidator } from './express';
-import config from '../config';
 
-const { supportedFilesTypes } = config.service;
 const ajv = new Ajv();
 ajv.addFormat('fileId', /.*/);
 addFormats(ajv);
@@ -14,18 +11,6 @@ ajv.addVocabulary(['patternCustomErrorMessage', 'hide']);
 
 const stringFormats = ['date', 'date-time', 'email', 'fileId'];
 const allowedJSONSchemaTypes = ['string', 'number', 'boolean'];
-const ExtendedJoi = Joi.extend({
-    base: Joi.string(),
-    type: 'fileName',
-    validate(value, _helpers) {
-        const fileExtension = path.extname(value).slice(1).toLowerCase();
-        if (!supportedFilesTypes.includes(fileExtension)) {
-            throw new Joi.ValidationError('File type not supported', 'File type not supported', '');
-        }
-
-        return value;
-    },
-});
 
 const propertiesArraySchema = Joi.array()
     .items(
@@ -120,21 +105,12 @@ const customOrderPropertiesValidation = (value, helpers) => {
 
     return validatePropertiesArray(value, propertiesKeys);
 };
-export const orderPropertiesSchema = ExtendedJoi.array().unique().items(Joi.string()).custom(customOrderPropertiesValidation).required();
+export const orderPropertiesSchema = Joi.array().unique().items(Joi.string()).custom(customOrderPropertiesValidation).required();
 
 const customPreviewPropertiesValidation = (value, helpers) => {
     return validatePropertiesArray(value, Object.keys(helpers.state.ancestors[0].properties.properties));
 };
-export const previewPropertiesSchema = ExtendedJoi.array().unique().items(Joi.string()).custom(customPreviewPropertiesValidation);
-
-export const fileSchema = Joi.object({
-    filename: Joi.string().required(),
-    originalname: ExtendedJoi.fileName().required(),
-    size: Joi.number().min(1).required(),
-    encoding: Joi.string().required(),
-    mimetype: Joi.string().required(),
-    path: Joi.string().required(),
-}).unknown(true);
+export const previewPropertiesSchema = Joi.array().unique().items(Joi.string()).custom(customPreviewPropertiesValidation);
 
 const defaultValidationOptions: Joi.ValidationOptions = {
     abortEarly: false,

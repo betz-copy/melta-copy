@@ -1,5 +1,5 @@
 import * as Joi from 'joi';
-import { MongoIdSchema, innerPropertiesSchema, orderPropertiesSchema, previewPropertiesSchema,variableNameValidation } from '../../utils/joi';
+import { MongoIdSchema, innerPropertiesSchema, orderPropertiesSchema, previewPropertiesSchema, variableNameValidation } from '../../utils/joi';
 
 // POST /api/entities/templates/search
 export const searchEntityTemplatesSchema = Joi.object({

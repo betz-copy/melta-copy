@@ -4,7 +4,6 @@ import './dotenv';
 const config = {
     service: {
         port: env.get('PORT').required().asPortNumber(),
-        supportedFilesTypes: env.get('SUPPORTED_FILES_TYPES').default(['png']).asJsonArray(),
     },
     mongo: {
         uri: env.get('MONGO_URI').required().asString(),
