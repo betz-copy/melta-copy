@@ -30,7 +30,7 @@ export class NotificationsManager {
         let populatedMetadata: INotificationMetadataPopulated;
 
         if (isAlertNotification(notification))
-            populatedMetadata = { alert: await RuleBreachesManager.getRuleBreachAlertById(notification.metadata.alertId) };
+            populatedMetadata = { alert: await RuleBreachesManager.getRuleBreachAlertsById(notification.metadata.alertId) };
         else if (isRequestNotification(notification) || isResponseNotification(notification)) {
             populatedMetadata = { request: await RuleBreachesManager.getRuleBreachRequestById(notification.metadata.requestId) };
         }

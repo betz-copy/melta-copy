@@ -299,7 +299,7 @@ export class RuleBreachesManager {
         return RuleBreachesManager.populateRuleBreachRequest(ruleBreachRequest);
     }
 
-    static async getRuleBreachAlertById(ruleBreachAlertId: string, user?: ShragaUser): Promise<IRuleBreachAlertPopulated> {
+    static async getRuleBreachAlertsById(ruleBreachAlertId: string, user?: ShragaUser): Promise<IRuleBreachAlertPopulated> {
         const ruleBreachAlert = await RuleBreachService.getRuleBreachAlertById(ruleBreachAlertId);
 
         if (user && ruleBreachAlert.originUserId !== user.id && !(await isRuleManager(user.id))) {

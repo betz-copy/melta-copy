@@ -55,6 +55,10 @@ class TemplatesController {
     static async updateRuleStatusById(req: Request, res: Response) {
         res.json(await TemplatesManager.updateRuleStatusById(req.params.ruleId, req.body.disabled));
     }
+
+    static async deleteRuleById(req: Request, res: Response) {
+        res.json(await TemplatesManager.deleteRuleById(req.params.ruleId));
+    }
 }
 
 export default TemplatesController;

@@ -24,6 +24,7 @@ import {
     deleteCategorySchema,
     deleteEntityTemplateSchema,
     deleteRelationshipTemplateSchema,
+    deleteRuleByIdRequestSchema,
     updateCategorySchema,
     updateEntityTemplateSchema,
     updateRelationshipTemplateSchema,
@@ -126,7 +127,12 @@ templatesRouter.patch(
     ValidateRequest(updateRuleStatusByIdRequestSchema),
     wrapController(TemplatesController.updateRuleStatusById),
 );
-templatesRouter.delete('/rules/:ruleId', wrapMiddleware(validateUserIsRulesManager), RelationshipTemplatesManagerProxy);
+templatesRouter.delete(
+    '/rules/:ruleId',
+    wrapMiddleware(validateUserIsRulesManager),
+    ValidateRequest(deleteRuleByIdRequestSchema),
+    wrapController(TemplatesController.deleteRuleById),
+);
 templatesRouter.post('/rules', wrapMiddleware(validateUserIsRulesManager), RelationshipTemplatesManagerProxy);
 
 export default templatesRouter;

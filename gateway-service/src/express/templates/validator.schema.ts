@@ -122,3 +122,11 @@ export const updateRuleStatusByIdRequestSchema = Joi.object({
         ruleId: Joi.string().required(),
     },
 });
+
+export const deleteRuleByIdRequestSchema = Joi.object({
+    body: {},
+    query: {},
+    params: {
+        ruleId: Joi.string().required(),
+    },
+});

@@ -71,4 +71,16 @@ export class RuleBreachService {
         });
         return data;
     }
+
+    static async getRuleBreachAlertsByRuleId(ruleId: string) {
+        const { data } = await this.ruleBreachService.get<IRuleBreachAlert[]>(`/alerts/broken-rules/${ruleId}`);
+
+        return data;
+    }
+
+    static async getRuleBreachRequestsByRuleId(ruleId: string) {
+        const { data } = await this.ruleBreachService.get<IRuleBreachRequest[]>(`/requests/broken-rules/${ruleId}`);
+
+        return data;
+    }
 }

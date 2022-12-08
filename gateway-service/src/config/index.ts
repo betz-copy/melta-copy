@@ -92,6 +92,7 @@ const config = {
         relationshipTemplateHasInstances: 'RELATIONSHIP_TEMPLATE_HAS_INSTANCES',
         relationshipTemplateHasRules: 'RELATIONSHIP_TEMPLATE_HAS_RULES',
         ruleBlock: 'RULE_BLOCK',
+        ruleHasAlertsOrRequests: 'RULE_HAS_ALERTS_OR_REQUESTS',
     },
     rabbit: {
         uri: env.get('RABBIT_URI').required().asUrlString(),

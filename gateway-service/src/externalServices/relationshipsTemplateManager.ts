@@ -88,4 +88,10 @@ export class RelationshipsTemplateManagerService {
 
         return data;
     }
+
+    static async deleteRuleById(ruleId: string) {
+        const { data } = await this.RelationshipsTemplateManagerApi.delete<IRule>(`${baseRulesRoute}/${ruleId}`);
+
+        return data;
+    }
 }

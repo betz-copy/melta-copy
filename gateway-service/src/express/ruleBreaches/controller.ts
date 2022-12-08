@@ -33,16 +33,16 @@ class RuleBreachesController {
         res.json(await RuleBreachesManager.searchRuleBreachAlerts(req.body, req.user as ShragaUser));
     }
 
-    static async getRuleBreachRequestById(req: Request, res: Response) {
+    static async getRuleBreachRequestsById(req: Request, res: Response) {
         const { ruleBreachRequestId } = req.params;
 
         res.json(await RuleBreachesManager.getRuleBreachRequestById(ruleBreachRequestId, req.user as ShragaUser));
     }
 
-    static async getRuleBreachAlertById(req: Request, res: Response) {
+    static async getRuleBreachAlertsById(req: Request, res: Response) {
         const { ruleBreachAlertId } = req.params;
 
-        res.json(await RuleBreachesManager.getRuleBreachAlertById(ruleBreachAlertId, req.user as ShragaUser));
+        res.json(await RuleBreachesManager.getRuleBreachAlertsById(ruleBreachAlertId, req.user as ShragaUser));
     }
 }
 

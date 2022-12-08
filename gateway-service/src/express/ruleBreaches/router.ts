@@ -65,14 +65,14 @@ RulesBreachesRouter.get(
     '/requests/:ruleBreachRequestId',
     ValidateRequest(getRuleBreachRequestByIdRequestSchema),
     wrapMiddleware(validateUserHasAtLeastSomePermissions),
-    wrapController(RuleBreachesController.getRuleBreachRequestById),
+    wrapController(RuleBreachesController.getRuleBreachRequestsById),
 );
 
 RulesBreachesRouter.get(
     '/alerts/:ruleBreachAlertId',
     ValidateRequest(getRuleBreachAlertByIdRequestSchema),
     wrapMiddleware(validateUserHasAtLeastSomePermissions),
-    wrapController(RuleBreachesController.getRuleBreachAlertById),
+    wrapController(RuleBreachesController.getRuleBreachAlertsById),
 );
 
 export default RulesBreachesRouter;

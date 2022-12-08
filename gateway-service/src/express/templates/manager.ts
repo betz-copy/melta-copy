@@ -13,6 +13,7 @@ import config from '../../config';
 import { IRule } from './rules/interfaces';
 import { getParametersOfFormula } from './rules';
 import { IFormula } from './rules/interfaces/formula';
+import { RuleBreachService } from '../../externalServices/ruleBreachService';
 
 const {
     categoryHasTemplates,
@@ -21,6 +22,7 @@ const {
     entityTemplateHasInstances,
     relationshipTemplateHasInstances,
     relationshipTemplateHasRules,
+    ruleHasAlertsOrRequests,
 } = config.errorCodes;
 
 export class TemplatesManager {
@@ -486,6 +488,15 @@ export class TemplatesManager {
         // }
 
         return RelationshipsTemplateManagerService.updateRuleStatusById(ruleId, disabled);
+    }
+
+    static async deleteRuleById(ruleId: string) {
+        const alerts = await RuleBreachService.getRuleBreachAlertsByRuleId(ruleId);
+        const requests = await RuleBreachService.getRuleBreachRequestsByRuleId(ruleId);
+        if (alerts.length !== 0 || requests.length !== 0) {
+            throw new ServiceError(400, 'rules has alerts/requests', { errorCode: ruleHasAlertsOrRequests });
+        }
+        return RelationshipsTemplateManagerService.deleteRuleById(ruleId);
     }
 }
 
