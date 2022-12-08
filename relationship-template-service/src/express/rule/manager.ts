@@ -20,12 +20,9 @@ export class RuleManager {
         return RuleModel.findByIdAndUpdate(ruleId, { disabled }, { new: true }).orFail(new ServiceError(404, 'Rule not found')).lean().exec();
     }
 
-    static async deleteRuleById(_ruleId: string) {
+    static async deleteRuleById(ruleId: string) {
         // todo: (extra feature) allow to delete if no existing alerts/requests breaches. or maybe allow to delete them together
-        throw new ServiceError(
-            501,
-            'deleting rule is not supported yet, due to possible existing alerts/requests breaches of that rule. currently only disabling',
-        );
+        return RuleModel.findByIdAndDelete(ruleId).orFail(new ServiceError(404, 'Rule not found')).lean().exec();
     }
 
     static async createRule(rule: Omit<IRule, 'disabled'>) {
