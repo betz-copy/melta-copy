@@ -7,6 +7,7 @@ import { CompareArrows as CompareArrowsIcon } from '@mui/icons-material';
 import { useMutation } from 'react-query';
 import { toast } from 'react-toastify';
 import { AxiosError } from 'axios';
+import { useSelector } from 'react-redux';
 import { IEntity } from '../../../interfaces/entities';
 import { IMongoRelationshipTemplatePopulated } from '../../../interfaces/relationshipTemplates';
 import RelationshipTemplateAutocomplete from '../../inputs/RelationshipTemplateAutocomplete';
@@ -19,6 +20,7 @@ import { ErrorToast } from '../../ErrorToast';
 import { IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
 import { ICreateRelationshipMetadataPopulated } from '../../../interfaces/ruleBreaches/actionMetadata';
 import CreateWithRuleBreachDialog from './CreateWithRuleBreachDialog';
+import { RootState } from '../../../store';
 
 export interface ICreateRelationshipValues {
     relationshipTemplate: IMongoRelationshipTemplatePopulated | null;
@@ -187,6 +189,8 @@ const CreateRelationshipDialog: React.FC<{
 }> = ({ isOpen, handleClose, onSubmitSuccess = () => {}, initialValues: parentInitialValues }) => {
     const initialValues = { ...defaultInitialValues, ...parentInitialValues };
 
+    const darkMode = useSelector((state: RootState) => state.darkMode);
+
     const [createWithRuleBreachDialogState, setCreateWithRuleBreachDialogState] = useState<{
         isOpen: boolean;
         brokenRules?: IRuleBreachPopulated['brokenRules'];
@@ -235,7 +239,7 @@ const CreateRelationshipDialog: React.FC<{
 
     return (
         <>
-            <Dialog open={isOpen} fullWidth maxWidth="xl">
+            <Dialog open={isOpen} fullWidth maxWidth="xl" PaperProps={{ sx: { bgcolor: darkMode ? '#060606' : 'white' } }}>
                 <Formik
                     initialValues={initialValues}
                     onSubmit={(values) =>
