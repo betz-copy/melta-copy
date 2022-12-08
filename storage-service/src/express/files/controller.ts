@@ -1,13 +1,15 @@
 import * as express from 'express';
+import { getFileName } from '../../utils/generatePath';
 import { FilesManager } from './manager';
 
 export class FilesController {
     static async downloadFile(req: express.Request, res: express.Response) {
         const { path } = req.params;
         const stream = await FilesManager.downloadFile(path.toString());
-
         const fileStats = await FilesManager.fileStat(path.toString());
+
         res.setHeader('Content-Type', fileStats.metaData['content-type']);
+        res.setHeader('Content-Disposition', `attachment; filename=${getFileName(path)}`);
 
         stream.pipe(res);
     }
