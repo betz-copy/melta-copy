@@ -100,6 +100,7 @@ export type EntitiesTableOfTemplateProps<Data> = {
 export type EntitiesTableOfTemplateRef = {
     getExcelData: () => string | undefined;
     resetFilter: () => void;
+    refreshServerSide: () => void;
 };
 
 const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef, EntitiesTableOfTemplateProps<unknown>>(
@@ -136,6 +137,9 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef, EntitiesT
                 },
                 resetFilter() {
                     gridRef.current?.api.setFilterModel(null);
+                },
+                refreshServerSide() {
+                    gridRef.current?.api.refreshServerSideStore({ purge: true });
                 },
             };
         });

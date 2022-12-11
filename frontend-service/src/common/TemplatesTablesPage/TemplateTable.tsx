@@ -48,6 +48,7 @@ const TemplateTable = ({ template, quickFilterText, page }: { template: IMongoEn
         onSuccess: () => {
             toast.success(i18next.t('wizard.entity.deletedSuccessfully'));
             setOpenDeleteDialog({ isDialogOpen: false, entityId: null });
+            entitiesTableRef.current?.refreshServerSide();
         },
     });
     return (
