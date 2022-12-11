@@ -103,11 +103,11 @@ describe('Entity manager', () => {
         });
 
         it('Should fail to update an entity (disabled status) + unknown id', async () => {
-            await expect(() => EntityManager.updateStatusById(unknownId, true)).rejects.toThrowError(`[NEO4J] entity "${unknownId}" not found`);
+            await expect(() => EntityManager.updateStatusById(unknownId, true, [])).rejects.toThrowError(`[NEO4J] entity "${unknownId}" not found`);
         });
 
         it('Should fail to update an entity (disabled status)', async () => {
-            await EntityManager.updateStatusById(id, true);
+            await EntityManager.updateStatusById(id, true, []);
 
             await expect(() => EntityManager.updateEntityById(id, newProperties, entityTemplate, [])).rejects.toThrowError(
                 `[NEO4J] cannot update disabled entity.`,

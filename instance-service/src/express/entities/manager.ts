@@ -19,7 +19,7 @@ import { areAllBrokenRulesIgnored, getBrokenRules, runRulesOnRelationship, runRu
 import { IBrokenRule, IConnection } from '../rules/interfaces';
 import { filterDependentRulesOnProperties, filterDependentRulesViaAggregation } from '../rules/getParametersOfFormula';
 import config from '../../config';
-import { IMongoEntityTemplate } from '../../externalServices/entityTemplateManager';
+import { EntityTemplateManagerService, IEntitySingleProperty, IMongoEntityTemplate } from '../../externalServices/entityTemplateManager';
 import { RelationshipsTemplateManagerService } from '../../externalServices/relationshipTemplateManager';
 import { addStringFieldsAndNormalizeDateValues } from './validator.template';
 
@@ -129,18 +129,36 @@ export class EntityManager {
         return Neo4jClient.writeTransaction(`MATCH (e: \`${templateId}\`) DETACH DELETE e`, normalizeReturnedEntity('multipleResponses'));
     }
 
-    static async updateStatusById(id: string, disabled: boolean) {
-        const node = await Neo4jClient.writeTransaction(
-            `MATCH (e {_id: '${id}'}) SET e.disabled = $disabled RETURN e`,
-            normalizeReturnedEntity('singleResponse'),
-            { disabled },
-        );
+    static async updateStatusById(id: string, disabled: boolean, ignoredRules: IBrokenRule[]) {
+        return Neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
+            const entity = await runInTransactionAndNormalize(
+                transaction,
+                `MATCH (e {_id: '${id}'}) RETURN e`,
+                normalizeReturnedEntity('singleResponse'),
+            );
 
-        if (!node) {
-            throw new NotFoundError(`[NEO4J] entity "${id}" not found`);
-        }
+            if (!entity) {
+                throw new NotFoundError(`[NEO4J] entity "${id}" not found`);
+            }
 
-        return node;
+            const updatedEntity = await runInTransactionAndNormalize(
+                transaction,
+                `MATCH (e {_id: '${id}'}) SET e.disabled = $disabled RETURN e`,
+                normalizeReturnedEntity('singleResponseNotNullable'),
+                { disabled },
+            );
+
+            const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(entity.templateId);
+
+            await EntityManager.verifyRuleForEntityUpdate(
+                transaction,
+                updatedEntity,
+                ignoredRules,
+                EntityManager.getUpdatedProperties(entity, updatedEntity, entityTemplate),
+            );
+
+            return updatedEntity;
+        });
     }
 
     private static runRulesOnAllRelationshipsOfUpdatedEntity = async (
@@ -242,7 +260,13 @@ export class EntityManager {
     }
 
     public static getUpdatedProperties(oldEntity: IEntity, newEntity: IEntity, entityTemplate: IMongoEntityTemplate) {
-        const templateUpdatedProperties = pickBy(entityTemplate.properties.properties, (_propertyTemplate, key) => {
+        const propertiesWithGeneratedProperties: Record<string, IEntitySingleProperty> = {
+            ...entityTemplate.properties.properties,
+            disabled: { title: 'doesntMatter', type: 'boolean' },
+            createdAt: { title: 'doesntMatter', type: 'string', format: 'date-time' },
+            updatedAt: { title: 'doesntMatter', type: 'string', format: 'date-time' },
+        };
+        const templateUpdatedProperties = pickBy(propertiesWithGeneratedProperties, (_propertyTemplate, key) => {
             return newEntity.properties[key] !== oldEntity.properties[key];
         });
 
@@ -277,7 +301,7 @@ export class EntityManager {
                  WITH e.createdAt AS createdAt, e.disabled AS disabled, e AS e
                  SET e = $props 
                  SET e.createdAt = createdAt
-                 SET e.disabled = disabled 
+                 SET e.disabled = disabled
                  RETURN e`,
                 normalizeReturnedEntity('singleResponseNotNullable'),
                 {

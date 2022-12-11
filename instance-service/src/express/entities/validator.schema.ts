@@ -146,6 +146,7 @@ export const getEntitiesRequestSchema = Joi.object({
 export const updateEntityStatusByIdRequestSchema = Joi.object({
     body: {
         disabled: Joi.boolean().required(),
+        ignoredRules: Joi.array().items(ignoredRuleSchema).default([]),
     },
     query: {},
     params: {

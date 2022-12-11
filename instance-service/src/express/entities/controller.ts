@@ -33,7 +33,7 @@ class EntityController {
     }
 
     static async updateStatusById(req: Request, res: Response) {
-        res.json(await EntityManager.updateStatusById(req.params.id, req.body.disabled));
+        res.json(await EntityManager.updateStatusById(req.params.id, req.body.disabled, req.body.ignoredRules));
     }
 
     static async updateEntityById(req: Request, res: Response) {
