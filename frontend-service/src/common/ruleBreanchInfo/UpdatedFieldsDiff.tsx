@@ -55,7 +55,7 @@ export const UpdatedFieldsDiff: React.FC<{
     const darkMode = useSelector((state: RootState) => state.darkMode);
 
     const newPropertiesWithNulls = { ...oldProperties, ...updatedFields };
-    // updatedFields specifies fields to remove w/ nulls. but shouldnt be in the IEntity properties
+    // updatedFields specifies fields to remove w/ nulls. but shouldn't be in the IEntity properties
     const newProperties = pickBy(newPropertiesWithNulls, (property) => property !== null);
 
     return (

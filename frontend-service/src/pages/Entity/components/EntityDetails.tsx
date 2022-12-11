@@ -17,7 +17,7 @@ import { useNavigate } from 'react-router-dom';
 import { AxiosError } from 'axios';
 import { useSelector } from 'react-redux';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { IEntityExpanded } from '../../../interfaces/entities';
+import { IEntity, IEntityExpanded } from '../../../interfaces/entities';
 import { deleteEntityRequest, updateEntityStatusRequest } from '../../../services/entitiesService';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
 import { EntityProperties } from '../../../common/EntityProperties';
@@ -28,6 +28,8 @@ import { MenuButton } from '../../../common/MenuButton';
 import { EntityDisableCheckbox } from './EntityDisableCheckbox';
 import { EntityDates } from './EntityDates';
 import { RootState } from '../../../store';
+import { IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
+import UpdateStatusWithRuleBreachDialog from './UpdateStatusWithRuleBreachDialog';
 
 const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; expandedEntity: IEntityExpanded }> = ({
     entityTemplate,
@@ -61,9 +63,15 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
 
     const entityTemplates = queryClient.getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates')!;
     const currentEntityTemplate = entityTemplates.find((currTemplate) => currTemplate._id === expandedEntity?.entity.templateId);
-
-    const { mutateAsync: updateEntityStatus } = useMutation(
-        ({ entityId, disabled }: { entityId: string; disabled: boolean }) => updateEntityStatusRequest(entityId, disabled),
+    const [updateStatusWithRuleBreachDialogState, setUpdateStatusWithRuleBreachDialogState] = useState<{
+        isOpen: boolean;
+        brokenRules?: IRuleBreachPopulated['brokenRules'];
+        rawBrokenRules?: IRuleBreach['brokenRules'];
+        disabledStatus?: boolean;
+    }>({ isOpen: false });
+    const { isLoading: isUpdateStatusLoading, mutateAsync: updateEntityStatus } = useMutation(
+        ({ currEntity, disabled, ignoredRules }: { currEntity: IEntity; disabled: boolean; ignoredRules?: IRuleBreach['brokenRules'] }) =>
+            updateEntityStatusRequest(currEntity.properties._id, disabled, JSON.stringify(ignoredRules)),
         {
             onSuccess: (data) => {
                 const templateIds = entityTemplates.map((template) => template._id);
@@ -73,12 +81,22 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                         entity: data,
                     };
                 });
+                setUpdateStatusWithRuleBreachDialogState({ isOpen: false });
 
                 if (data.properties.disabled) toast.success(i18next.t('entityPage.disabledSuccessfully'));
                 else toast.success(i18next.t('entityPage.activatedSuccessfully'));
             },
-            onError: (_err, variables) => {
-                if (variables.disabled) toast.error(i18next.t('entityPage.failedToDisable'));
+            onError: (err: AxiosError, { disabled }) => {
+                const errorMetadata = err.response?.data?.metadata;
+                if (errorMetadata?.errorCode === 'RULE_BLOCK') {
+                    setUpdateStatusWithRuleBreachDialogState({
+                        isOpen: true,
+                        brokenRules: errorMetadata.brokenRules,
+                        rawBrokenRules: errorMetadata.rawBrokenRules,
+                        disabledStatus: disabled,
+                    });
+                }
+                if (disabled) toast.error(i18next.t('entityPage.failedToDisable'));
                 else toast.error(i18next.t('entityPage.failedToActivate'));
             },
         },
@@ -102,113 +120,143 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
     const isEntityDisabled = expandedEntity.entity.properties.disabled;
 
     return (
-        <Card style={{ background: darkMode ? '#171717' : 'white', opacity: isEntityDisabled ? '0.666' : '1' }}>
-            <CardContent sx={{ '&:last-child': { padding: 0 } }}>
-                <Grid item container justifyContent="space-between" alignItems="stretch" padding="1rem">
-                    <Grid item xs={11}>
-                        <Box padding="0.2rem">
-                            <EntityProperties entityTemplate={entityTemplate} properties={entity.properties} hideFields={hideField} />
-                        </Box>
-                    </Grid>
-                    <Grid item>
-                        <Grid container>
-                            {entityTemplate.properties.hide.length > 0 && (
-                                <IconButton onClick={() => setHideField((cur) => !cur)}>{hideField ? <VisibilityOff /> : <Visibility />}</IconButton>
-                            )}
-                            <IconButton onClick={handleClick}>
-                                <MoreVertOutlined />
-                            </IconButton>
-                            <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
-                                <MenuButton
-                                    onClick={() => {
-                                        navigate(`/entity/${entity.properties._id}/graph`);
-                                        handleClose();
-                                    }}
-                                    text={i18next.t('actions.graph')}
-                                    icon={<GraphIcon color="action" />}
-                                />
-
-                                <Tooltip
-                                    arrow
-                                    placement="right"
-                                    title={
-                                        isEntityDisabled
-                                            ? (i18next.t('entityPage.disabledEntity') as string)
-                                            : (i18next.t('permissions.dontHavePermissionsToCategory') as string)
-                                    }
-                                    disableHoverListener={!isEntityDisabled && hasPermissionToCategory}
-                                >
-                                    <Grid>
-                                        <MenuButton
-                                            onClick={(e) => {
-                                                if (isEntityDisabled) e.preventDefault();
-                                                else {
-                                                    setIsEditMode(true);
-                                                    handleClose();
-                                                }
-                                            }}
-                                            text={i18next.t('actions.edit')}
-                                            icon={<EditIcon color="action" />}
-                                        />
-                                    </Grid>
-                                </Tooltip>
-
-                                <Grid>
-                                    <MenuButton
-                                        onClick={() => {
-                                            navigate(`/entity/${entity.properties._id}/duplicate`, {
-                                                state: { entityTemplate, expandedEntity, currentEntityTemplate },
-                                            });
-                                            handleClose();
-                                        }}
-                                        text={i18next.t('actions.duplicate')}
-                                        icon={<DuplicateIcon color="action" />}
-                                    />
-                                </Grid>
-                                <Tooltip
-                                    arrow
-                                    title={i18next.t('permissions.dontHavePermissionsToCategory') as string}
-                                    disableHoverListener={hasPermissionToCategory}
-                                    placement="right"
-                                >
+        <>
+            <Card style={{ background: darkMode ? '#171717' : 'white', opacity: isEntityDisabled ? '0.666' : '1' }}>
+                <CardContent sx={{ '&:last-child': { padding: 0 } }}>
+                    <Grid item container justifyContent="space-between" alignItems="stretch" padding="1rem">
+                        <Grid item xs={11}>
+                            <Box padding="0.2rem">
+                                <EntityProperties entityTemplate={entityTemplate} properties={entity.properties} hideFields={hideField} />
+                            </Box>
+                        </Grid>
+                        <Grid item>
+                            <Grid container>
+                                {entityTemplate.properties.hide.length > 0 && (
+                                    <IconButton onClick={() => setHideField((cur) => !cur)}>
+                                        {hideField ? <VisibilityOff /> : <Visibility />}
+                                    </IconButton>
+                                )}
+                                <IconButton onClick={handleClick}>
+                                    <MoreVertOutlined />
+                                </IconButton>
+                                <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
                                     <Grid>
                                         <MenuButton
                                             onClick={() => {
-                                                setOpenDeleteDialog(true);
+                                                navigate(`/entity/${entity.properties._id}/graph`);
                                                 handleClose();
                                             }}
-                                            disabled={!hasPermissionToCategory}
-                                            text={i18next.t('actions.delete')}
-                                            icon={<DeleteIcon color="action" />}
+                                            text={i18next.t('actions.graph')}
+                                            icon={<GraphIcon color="action" />}
                                         />
                                     </Grid>
-                                </Tooltip>
+                                    <Tooltip
+                                        arrow
+                                        placement="right"
+                                        title={
+                                            isEntityDisabled
+                                                ? (i18next.t('entityPage.disabledEntity') as string)
+                                                : (i18next.t('permissions.dontHavePermissionsToCategory') as string)
+                                        }
+                                        disableHoverListener={!isEntityDisabled && hasPermissionToCategory}
+                                    >
+                                        <Grid>
+                                            <MenuButton
+                                                onClick={(e) => {
+                                                    if (isEntityDisabled) e.preventDefault();
+                                                    else {
+                                                        setIsEditMode(true);
+                                                        handleClose();
+                                                    }
+                                                }}
+                                                text={i18next.t('actions.edit')}
+                                                icon={<EditIcon color="action" />}
+                                            />
+                                        </Grid>
+                                    </Tooltip>
 
-                                <MenuButton
-                                    onClick={() => {
-                                        updateEntityStatus({
-                                            entityId: entity.properties._id,
-                                            disabled: !entity.properties.disabled,
-                                        });
-                                        handleClose();
-                                    }}
-                                    disabled={!hasPermissionToCategory}
-                                    text={isEntityDisabled ? i18next.t('actions.activate') : i18next.t('actions.disable')}
-                                    icon={<DoDisturbAlt color="action" />}
-                                />
-                            </Menu>
+                                    <Grid>
+                                        <MenuButton
+                                            onClick={() => {
+                                                navigate(`/entity/${entity.properties._id}/duplicate`, {
+                                                    state: { entityTemplate, expandedEntity, currentEntityTemplate },
+                                                });
+                                                handleClose();
+                                            }}
+                                            text={i18next.t('actions.duplicate')}
+                                            icon={<DuplicateIcon color="action" />}
+                                        />
+                                    </Grid>
+                                    <Tooltip
+                                        arrow
+                                        title={i18next.t('permissions.dontHavePermissionsToCategory') as string}
+                                        disableHoverListener={hasPermissionToCategory}
+                                        placement="right"
+                                    >
+                                        <Grid>
+                                            <MenuButton
+                                                onClick={() => {
+                                                    setOpenDeleteDialog(true);
+                                                    handleClose();
+                                                }}
+                                                disabled={!hasPermissionToCategory}
+                                                text={i18next.t('actions.delete')}
+                                                icon={<DeleteIcon color="action" />}
+                                            />
+                                        </Grid>
+                                    </Tooltip>
+
+                                    <MenuButton
+                                        onClick={() => {
+                                            updateEntityStatus({ currEntity: entity, disabled: !entity.properties.disabled });
+                                            handleClose();
+                                        }}
+                                        disabled={!hasPermissionToCategory}
+                                        text={isEntityDisabled ? i18next.t('actions.activate') : i18next.t('actions.disable')}
+                                        icon={<DoDisturbAlt color="action" />}
+                                    />
+                                </Menu>
+                            </Grid>
                         </Grid>
-                    </Grid>
 
-                    <Grid container>
-                        <EntityDisableCheckbox isEntityDisabled={isEntityDisabled}> </EntityDisableCheckbox>
+                        <Grid container>
+                            <EntityDisableCheckbox isEntityDisabled={isEntityDisabled}> </EntityDisableCheckbox>
+                        </Grid>
+                        <EntityDates createdAt={expandedEntity.entity.properties.createdAt} updatedAt={expandedEntity.entity.properties.updatedAt} />
                     </Grid>
-                    <EntityDates createdAt={expandedEntity.entity.properties.createdAt} updatedAt={expandedEntity.entity.properties.updatedAt} />
-                </Grid>
-            </CardContent>
+                </CardContent>
 
-            <AreYouSureDialog open={openDeleteDialog} handleClose={closeDeleteDialog} onYes={() => deleteMutation()} isLoading={isDeleteLoading} />
-        </Card>
+                <AreYouSureDialog
+                    open={openDeleteDialog}
+                    handleClose={closeDeleteDialog}
+                    onYes={() => deleteMutation()}
+                    isLoading={isDeleteLoading}
+                />
+            </Card>
+            {updateStatusWithRuleBreachDialogState.isOpen && (
+                <UpdateStatusWithRuleBreachDialog
+                    isLoadingUpdateEntity={isUpdateStatusLoading}
+                    handleClose={() => setUpdateStatusWithRuleBreachDialogState({ isOpen: false })}
+                    onUpdateStatus={() => {
+                        return updateEntityStatus({
+                            currEntity: entity,
+                            disabled: updateStatusWithRuleBreachDialogState.disabledStatus!,
+                            ignoredRules: updateStatusWithRuleBreachDialogState.rawBrokenRules!,
+                        });
+                    }}
+                    brokenRules={updateStatusWithRuleBreachDialogState.brokenRules!}
+                    rawBrokenRules={updateStatusWithRuleBreachDialogState.rawBrokenRules!}
+                    currEntity={expandedEntity.entity}
+                    disabled={updateStatusWithRuleBreachDialogState.disabledStatus!}
+                    onUpdatedRuleBlock={(brokenRules) =>
+                        setUpdateStatusWithRuleBreachDialogState((prevState) => ({
+                            ...prevState,
+                            brokenRules,
+                        }))
+                    }
+                />
+            )}
+        </>
     );
 };
 

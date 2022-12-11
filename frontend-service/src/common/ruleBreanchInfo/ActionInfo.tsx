@@ -11,6 +11,7 @@ import {
     ICreateRelationshipMetadataPopulated,
     IDeleteRelationshipMetadataPopulated,
     IUpdateEntityMetadataPopulated,
+    IUpdateEntityStatusMetadataPopulated,
 } from '../../interfaces/ruleBreaches/actionMetadata';
 import { populateRelationshipTemplate } from '../../utils/templates';
 import { UpdatedFieldsDiff } from './UpdatedFieldsDiff';
@@ -94,6 +95,28 @@ const UpdateEntityActionInfo: React.FC<{
     );
 };
 
+const UpdateEntityStatusActionInfo: React.FC<{
+    actionMetadata: IUpdateEntityStatusMetadataPopulated;
+}> = ({ actionMetadata }) => {
+    const queryClient = useQueryClient();
+
+    const { entity, disabled } = actionMetadata;
+
+    const entityTemplates = queryClient.getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates')!;
+    const entityTemplate = !entity ? null : entityTemplates.find(({ _id }) => _id === entity.templateId)!;
+    return (
+        <Typography component="p" variant="body1">
+            <Box component="span">{i18next.t('ruleBreachInfo.updateEntityStatusActionInfo.updatingStatus')}</Box>{' '}
+            <EntityLink entity={entity} entityTemplate={entityTemplate} />{' '}
+            <Box component="span" fontWeight="bold">
+                {disabled
+                    ? i18next.t('ruleBreachInfo.updateEntityStatusActionInfo.toDisabled')
+                    : i18next.t('ruleBreachInfo.updateEntityStatusActionInfo.toActive')}
+            </Box>{' '}
+        </Typography>
+    );
+};
+
 export const ActionInfo: React.FC<{
     originUser?: IUser;
     actionType: ActionTypes;
@@ -103,14 +126,18 @@ export const ActionInfo: React.FC<{
     return (
         <Grid container flexDirection="column">
             <Grid item>
-                {actionType !== ActionTypes.UpdateEntity && (
-                    <CreateOrDeleteRelActionInfo
-                        actionType={actionType}
-                        actionMetadata={actionMetadata as Exclude<IActionMetadataPopulated, IUpdateEntityMetadataPopulated>}
-                    />
-                )}
+                {actionType === ActionTypes.CreateRelationship ||
+                    (actionType === ActionTypes.DeleteRelationship && (
+                        <CreateOrDeleteRelActionInfo
+                            actionType={actionType}
+                            actionMetadata={actionMetadata as ICreateRelationshipMetadataPopulated | IDeleteRelationshipMetadataPopulated}
+                        />
+                    ))}
                 {actionType === ActionTypes.UpdateEntity && (
                     <UpdateEntityActionInfo actionMetadata={actionMetadata as IUpdateEntityMetadataPopulated} isCompact={isCompact} />
+                )}
+                {actionType === ActionTypes.UpdateStatus && (
+                    <UpdateEntityStatusActionInfo actionMetadata={actionMetadata as IUpdateEntityStatusMetadataPopulated} />
                 )}
             </Grid>
             {originUser && (

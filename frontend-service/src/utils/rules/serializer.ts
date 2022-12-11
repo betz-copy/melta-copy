@@ -57,6 +57,8 @@ export class RuleSerializer {
         const { variableName, property: propertyName } = argument;
 
         if (propertyName === '_id') return 'text';
+        if (propertyName === 'disabled') return 'boolean';
+        if (propertyName === 'updatedAt' || propertyName === 'createdAt') return 'datetime';
 
         const entityTemplateId = variableName.substring(variableName.lastIndexOf('.') + 1);
         const template = RuleSerializer.entityTemplates.find(({ _id }) => _id === entityTemplateId)!;

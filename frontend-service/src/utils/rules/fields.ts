@@ -3,23 +3,41 @@ import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates'
 import { IMongoRelationshipTemplate } from '../../interfaces/relationshipTemplates';
 import { getOppositeEntityTemplate, isRelationshipConnectedToEntityTemplate, populateRelationshipTemplate } from '../templates';
 
+const defaultFields = [
+    {
+        name: '_id',
+        type: 'text',
+    },
+    {
+        name: 'disabled',
+        type: 'boolean',
+    },
+    {
+        name: 'createdAt',
+        type: 'datetime',
+    },
+    {
+        name: 'updatedAt',
+        type: 'datetime',
+    },
+];
 const entityTemplateToSubfields = (
     entityTemplate: IMongoEntityTemplatePopulated,
     options: { hideForCompare?: boolean },
     initials?: { key: string; label: string },
 ) => {
-    const fieldEntries: [string, SimpleField][] = [
-        [
-            initials ? `${initials.key}-${entityTemplate._id}-_id` : `${entityTemplate._id}-_id`,
+    const fieldEntries: [string, SimpleField][] = [];
+    defaultFields.forEach((field) => {
+        fieldEntries.push([
+            initials ? `${initials.key}-${entityTemplate._id}-${field.name}` : `${entityTemplate._id}-${field.name}`,
             {
-                type: 'text',
+                type: field.type,
                 valueSources: ['field', 'value'],
-                label: initials ? `${initials.label}.${entityTemplate.name}._id` : `${entityTemplate.name}._id`,
+                label: initials ? `${initials.label}.${entityTemplate.name}.${field.name}` : `${entityTemplate.name}.${field.name}`,
                 ...options,
             },
-        ],
-    ];
-
+        ]);
+    });
     Object.entries(entityTemplate.properties.properties).forEach(([key, value]) => {
         let type = 'text';
 
@@ -108,7 +126,6 @@ const entityTemplatesToFieldsConfig = (
             ];
         }),
     );
-
     return {
         ...entityTemplateToSubfields(pinnedEntityTemplate, {}),
         ...entityTemplateToSubfields(nonPinnedEntityTemplate, {}),
