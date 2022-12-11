@@ -6,19 +6,24 @@ export interface IProcessSingleProperty {
     pattern?: string;
     patternCustomErrorMessage?: string;
 }
-export interface IProcessStepTemplate {
-    name: string;
-    displayName: string;
+export interface IProcessBasicStepTemplate {
     properties: {
         type: 'object';
         properties: Record<string, IProcessSingleProperty>;
     };
     propertiesOrder: string[];
 }
+export interface IProcessStepTemplate extends IProcessBasicStepTemplate {
+    name: string;
+    displayName: string;
+    approvers: string[];
+    iconFileId: string | null;
+}
+
 export interface IProcessTemplate {
     name: string;
     displayName: string;
-    description: IProcessStepTemplate;
+    details: IProcessBasicStepTemplate;
     steps: IProcessStepTemplate[];
 }
 

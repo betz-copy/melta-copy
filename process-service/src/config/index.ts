@@ -8,6 +8,7 @@ const config = {
     mongo: {
         uri: env.get('MONGO_URI').required().asString(),
         processTemplateCollectionName: env.get('MONGO_PROCESS_TEMPLATE_COLLECTION_NAME').required().asString(),
+        processInstanceCollectionName: env.get('MONGO_PROCESS_INSTANCE_COLLECTION_NAME').required().asString(),
     },
 };
 

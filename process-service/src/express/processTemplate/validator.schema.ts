@@ -15,7 +15,7 @@ export const createTemplateRequestSchema = Joi.object({
     body: {
         name: variableNameValidation.required(),
         displayName: Joi.string().required(),
-        description: Joi.object({
+        details: Joi.object({
             name: variableNameValidation.required(),
             displayName: Joi.string().required(),
             properties: innerPropertiesSchema.required(),
@@ -28,6 +28,8 @@ export const createTemplateRequestSchema = Joi.object({
                     displayName: Joi.string().required(),
                     properties: innerPropertiesSchema.required(),
                     propertiesOrder: orderPropertiesSchema.required(),
+                    approvers: Joi.array().items(Joi.string()).required(),
+                    iconFileId: Joi.string().allow(null),
                 }),
             )
             .required(),
@@ -41,7 +43,7 @@ export const updateTemplateByIdRequestSchema = Joi.object({
     body: {
         name: variableNameValidation,
         displayName: Joi.string(),
-        description: Joi.object({
+        details: Joi.object({
             name: variableNameValidation,
             displayName: Joi.string(),
             properties: innerPropertiesSchema,
@@ -53,6 +55,8 @@ export const updateTemplateByIdRequestSchema = Joi.object({
                 displayName: Joi.string(),
                 properties: innerPropertiesSchema,
                 propertiesOrder: orderPropertiesSchema,
+                approvers: Joi.array().items(Joi.string()),
+                iconFileId: Joi.string().allow(null),
             }),
         ),
     },
@@ -77,7 +81,7 @@ export const searchTemplateRequestSchema = Joi.object({
     body: {
         search: Joi.string(),
         ids: Joi.array().items(MongoIdSchema),
-        limit: Joi.number().integer().min(0).default(0),
+        limit: Joi.number().integer().min(0).default(10),
         skip: Joi.number().integer().min(0).default(0),
     },
     params: {},
