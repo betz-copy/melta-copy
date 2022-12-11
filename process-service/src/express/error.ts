@@ -9,6 +9,13 @@ export class ServiceError extends Error {
     }
 }
 
+export class ValidationError extends ServiceError {
+    constructor(message: string) {
+        super(400, message);
+        this.name = 'TemplateValidationError';
+    }
+}
+
 export const errorMiddleware = (error: Error, _req: express.Request, res: express.Response, next: express.NextFunction) => {
     if (error.name === 'ValidationError') {
         res.status(400).send({

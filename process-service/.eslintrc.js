@@ -35,5 +35,7 @@ module.exports = {
         ],
         'no-unused-vars': 'off', // Checked by typescript
         'no-underscore-dangle': ['error', { allow: ['_id'] }],
+        'no-shadow': 'off',
+        '@typescript-eslint/no-shadow': 'error',
     },
 };

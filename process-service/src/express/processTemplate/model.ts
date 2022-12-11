@@ -12,9 +12,9 @@ const ProcessTemplateSchema = new mongoose.Schema<IProcessTemplate>(
             type: String,
             required: true,
         },
-        description: {
+        details: {
             type: Object,
-            require: true,
+            required: true,
         },
         steps: {
             type: Array<IProcessStepTemplate>,

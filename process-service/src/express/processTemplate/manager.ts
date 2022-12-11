@@ -13,12 +13,8 @@ export class ProcessTemplateManager {
         return ProcessTemplateModel.create(template);
     }
 
-    static async deleteTemplate(id: string) {
-        const processTemplate = await ProcessTemplateModel.findByIdAndDelete(id)
-            .orFail(new ServiceError(404, 'Process Template not found'))
-            .lean()
-            .exec();
-        return processTemplate;
+    static deleteTemplate(id: string) {
+        return ProcessTemplateModel.findByIdAndDelete(id).orFail(new ServiceError(404, 'Process Template not found')).lean().exec();
     }
 
     static async updateTemplate(id: string, updatedData: Partial<IProcessTemplate>) {
