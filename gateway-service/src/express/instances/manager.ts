@@ -15,6 +15,7 @@ import {
     ICreateRelationshipMetadata,
     IDeleteRelationshipMetadata,
     IUpdateEntityMetadata,
+    IUpdateEntityStatusMetadata,
 } from '../../externalServices/ruleBreachService/interfaces';
 import RuleBreachesManager from '../ruleBreaches/manager';
 import config from '../../config';
@@ -136,15 +137,31 @@ export class InstancesManager {
         return deleteFiles(filesToDelete);
     }
 
-    static async updateEntityStatus(id: string, disabled: boolean, user: Express.User) {
-        const entity = await InstanceManagerService.updateEntityStatus(id, disabled);
+    static async updateEntityStatus(id: string, disabledStatus: boolean, ignoredRules: IBrokenRule[], userId: string, createAlert: boolean = true) {
+        const entity = await InstanceManagerService.updateEntityStatus(id, disabledStatus, ignoredRules).catch(
+            InstancesManager.handleBrokenRulesError,
+        );
+
+        if (createAlert && ignoredRules.length) {
+            await RuleBreachesManager.createRuleBreachAlert<IUpdateEntityStatusMetadata>(
+                {
+                    brokenRules: ignoredRules,
+                    actionType: ActionTypes.UpdateStatus,
+                    actionMetadata: {
+                        entityId: id,
+                        disabled: disabledStatus,
+                    },
+                },
+                userId,
+            );
+        }
 
         await ActivityLogManagerService.createActivityLog({
-            action: disabled ? 'DISABLE_ENTITY' : 'ACTIVATE_ENTITY',
+            action: disabledStatus ? 'DISABLE_ENTITY' : 'ACTIVATE_ENTITY',
             metadata: {},
             entityId: id,
             timestamp: new Date(),
-            userId: user.id,
+            userId,
         });
         return entity;
     }
@@ -248,20 +265,13 @@ export class InstancesManager {
             );
         }
 
-        const updateInfo = { entityId: instanceData.properties._id, timestamp: new Date(), userId };
-        if (currentEntity.properties.disabled === updatedInstance.properties.disabled) {
-            await ActivityLogManagerService.createActivityLog({
-                action: 'UPDATE_ENTITY',
-                metadata: { updatedFields: activityLogUpdatedFields },
-                ...updateInfo,
-            });
-        } else {
-            await ActivityLogManagerService.createActivityLog({
-                action: updatedInstance.properties.disabled ? 'DISABLE_ENTITY' : 'ACTIVATE_ENTITY',
-                metadata: {},
-                ...updateInfo,
-            });
-        }
+        await ActivityLogManagerService.createActivityLog({
+            action: 'UPDATE_ENTITY',
+            metadata: { updatedFields: activityLogUpdatedFields },
+            entityId: instanceData.properties._id,
+            timestamp: new Date(),
+            userId,
+        });
 
         return updatedInstance;
     }

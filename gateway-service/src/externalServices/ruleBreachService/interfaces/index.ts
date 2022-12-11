@@ -17,12 +17,17 @@ export interface IUpdateEntityMetadata {
     updatedFields: Record<string, any>;
 }
 
-export type IActionMetadata = ICreateRelationshipMetadata | IDeleteRelationshipMetadata | IUpdateEntityMetadata;
+export interface IUpdateEntityStatusMetadata {
+    entityId: string;
+    disabled: boolean;
+}
+export type IActionMetadata = ICreateRelationshipMetadata | IDeleteRelationshipMetadata | IUpdateEntityMetadata | IUpdateEntityStatusMetadata;
 
 export enum ActionTypes {
     CreateRelationship = 'create-relationship',
     DeleteRelationship = 'delete-relationship',
     UpdateEntity = 'update-entity',
+    UpdateStatus = 'update-status',
 }
 
 export interface IBrokenRule {
@@ -59,3 +64,5 @@ export const isDeleteRelationshipRuleBreach = (ruleBreach: Partial<IRuleBreach>)
     ruleBreach.actionType === ActionTypes.DeleteRelationship;
 export const isUpdateEntityRuleBreach = (ruleBreach: Partial<IRuleBreach>): ruleBreach is IRuleBreach<IUpdateEntityMetadata> =>
     ruleBreach.actionType === ActionTypes.UpdateEntity;
+export const isUpdateEntityStatusRuleBreach = (ruleBreach: Partial<IRuleBreach>): ruleBreach is IRuleBreach<IUpdateEntityStatusMetadata> =>
+    ruleBreach.actionType === ActionTypes.UpdateStatus;

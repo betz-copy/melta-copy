@@ -4,6 +4,7 @@ import {
     IDeleteRelationshipMetadata,
     IRuleBreach,
     IUpdateEntityMetadata,
+    IUpdateEntityStatusMetadata,
     RuleBreachRequestStatus,
 } from '.';
 import { IUser } from '../../../express/users/interface';
@@ -23,7 +24,15 @@ export interface IUpdateEntityMetadataPopulated extends Omit<IUpdateEntityMetada
     entity: IEntity | null;
 }
 
-export type IActionMetadataPopulated = ICreateRelationshipMetadataPopulated | IDeleteRelationshipMetadataPopulated | IUpdateEntityMetadataPopulated;
+export interface IUpdateEntityStatusMetadataPopulated extends Omit<IUpdateEntityStatusMetadata, 'entityId'> {
+    entity: IEntity | null;
+}
+
+export type IActionMetadataPopulated =
+    | ICreateRelationshipMetadataPopulated
+    | IDeleteRelationshipMetadataPopulated
+    | IUpdateEntityMetadataPopulated
+    | IUpdateEntityStatusMetadataPopulated;
 
 export interface IBrokenRulePopulated extends Omit<IBrokenRule, 'relationshipIds'> {
     ruleId: string;

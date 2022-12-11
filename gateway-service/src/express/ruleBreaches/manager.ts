@@ -25,6 +25,7 @@ import {
     IActionMetadataPopulated,
     IRuleBreachRequestPopulated,
     IRuleBreachAlertPopulated,
+    IUpdateEntityStatusMetadataPopulated,
 } from '../../externalServices/ruleBreachService/interfaces/populated';
 import {
     IBrokenRule,
@@ -36,7 +37,9 @@ import {
     isCreateRelationshipRuleBreach,
     isDeleteRelationshipRuleBreach,
     isUpdateEntityRuleBreach,
+    isUpdateEntityStatusRuleBreach,
     IUpdateEntityMetadata,
+    IUpdateEntityStatusMetadata,
     RuleBreachRequestStatus,
 } from '../../externalServices/ruleBreachService/interfaces';
 import { RuleBreachService } from '../../externalServices/ruleBreachService';
@@ -114,6 +117,7 @@ export class RuleBreachesManager {
             if (isCreateRelationshipRuleBreach(ruleBreachRequest)) await RuleBreachesManager.createRelationship(ruleBreachRequest);
             else if (isDeleteRelationshipRuleBreach(ruleBreachRequest)) await RuleBreachesManager.deleteRelationship(ruleBreachRequest);
             else if (isUpdateEntityRuleBreach(ruleBreachRequest)) await RuleBreachesManager.updateEntity(ruleBreachRequest);
+            else if (isUpdateEntityStatusRuleBreach(ruleBreachRequest)) await RuleBreachesManager.updateEntityStatus(ruleBreachRequest);
         } catch (error: any) {
             if (error.metadata.errorCode === errorCodes.ruleBlock) {
                 await RuleBreachService.updateRuleBreachRequestBrokenRules(ruleBreachRequestId, error.metadata.rawBrokenRules);
@@ -168,13 +172,23 @@ export class RuleBreachesManager {
         );
     }
 
+    private static async updateEntityStatus(ruleBreachRequest: IRuleBreachRequest<IUpdateEntityStatusMetadata>) {
+        await InstancesManager.updateEntityStatus(
+            ruleBreachRequest.actionMetadata.entityId,
+            ruleBreachRequest.actionMetadata.disabled,
+            ruleBreachRequest.brokenRules,
+            ruleBreachRequest.originUserId,
+            false,
+        );
+    }
+
     private static async updateEntity(ruleBreachRequest: IRuleBreachRequest<IUpdateEntityMetadata>) {
         const { entityId, updatedFields } = ruleBreachRequest.actionMetadata;
 
         const entity = await InstanceManagerService.getEntityInstanceById(entityId);
         const newEntityProperties = { ...entity.properties, ...updatedFields };
 
-        // updatedFields specifies fields to remove w/ nulls. but shouldnt be in the IEntity properties
+        // updatedFields specifies fields to remove w/ nulls. but shouldn't be in the IEntity properties
         const newEntityPropertiesWithoutNulls = pickBy(newEntityProperties, (property) => property !== null);
 
         await InstancesManager.updateEntityInstance(
@@ -398,6 +412,19 @@ export class RuleBreachesManager {
         };
     }
 
+    public static async populateUpdateEntityStatusActionMetadata(
+        actionMetadata: IUpdateEntityStatusMetadata,
+    ): Promise<IUpdateEntityStatusMetadataPopulated> {
+        const { entityId, ...restOfMetadata } = actionMetadata;
+
+        const entity = await InstanceManagerService.getEntityInstanceById(entityId).catch(() => null);
+
+        return {
+            ...restOfMetadata,
+            entity,
+        };
+    }
+
     public static async populateRuleBreach(ruleBreach: IRuleBreach): Promise<IRuleBreachPopulated> {
         const { originUserId, brokenRules, ...restOfRuleBreach } = ruleBreach;
 
@@ -409,6 +436,8 @@ export class RuleBreachesManager {
             populatedActionMetadataPromise = RuleBreachesManager.populateDeleteRelationshipActionMetadata(ruleBreach.actionMetadata);
         else if (isUpdateEntityRuleBreach(ruleBreach))
             populatedActionMetadataPromise = RuleBreachesManager.populateUpdateEntityActionMetadata(ruleBreach.actionMetadata);
+        else if (isUpdateEntityStatusRuleBreach(ruleBreach))
+            populatedActionMetadataPromise = RuleBreachesManager.populateUpdateEntityStatusActionMetadata(ruleBreach.actionMetadata);
 
         const [populatedBrokenRules, originUser, actionMetadata] = await Promise.all([
             RuleBreachesManager.populateBrokenRules(brokenRules),

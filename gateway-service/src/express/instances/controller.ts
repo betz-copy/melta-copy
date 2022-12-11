@@ -46,7 +46,8 @@ class InstancesController {
     }
 
     static async updateEntityStatus(req: Request, res: Response) {
-        res.json(await InstancesManager.updateEntityStatus(req.params.id, req.body.disabled, req.user!));
+        const { disabled, ignoredRules } = req.body;
+        res.json(await InstancesManager.updateEntityStatus(req.params.id, disabled, ignoredRules, req.user!.id));
     }
 }
 

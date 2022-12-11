@@ -25,10 +25,11 @@ export const updateEntityInstanceSchema = Joi.object({
     files: Joi.array().items(fileSchema),
 });
 
-// PATCH /api/instances/entities/:id
+// PATCH /api/instances/entities/:id/status
 export const updateEntityStatusSchema = Joi.object({
     body: Joi.object({
         disabled: Joi.boolean().required(),
+        ignoredRules: ExtendedJoi.stringToArray().items(brokenRuleSchema).default([]),
     }).unknown(true),
     query: {},
     params: { id: Joi.string().required() },

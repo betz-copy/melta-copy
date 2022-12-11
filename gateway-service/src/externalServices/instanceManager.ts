@@ -66,8 +66,8 @@ export class InstanceManagerService {
         return data;
     }
 
-    static async updateEntityStatus(id: string, disabled: boolean) {
-        const { data } = await this.InstanceManagerApi.patch<IEntity>(`${baseEntitiesRoute}/${id}/status`, { disabled });
+    static async updateEntityStatus(id: string, disabled: boolean, ignoredRules: IBrokenRule[]) {
+        const { data } = await this.InstanceManagerApi.patch<IEntity>(`${baseEntitiesRoute}/${id}/status`, { disabled, ignoredRules });
 
         return data;
     }
