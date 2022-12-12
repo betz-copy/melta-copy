@@ -6,5 +6,5 @@ export const generatePath = (fileName) => {
 };
 
 export const getFileName = (path: string) => {
-    return path.toString().slice(32);
+    return encodeURIComponent(path.toString().slice(32));
 };
