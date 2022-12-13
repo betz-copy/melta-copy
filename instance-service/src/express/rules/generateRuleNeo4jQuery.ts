@@ -262,7 +262,16 @@ const generateNeo4jQueryFromAggregationGroup = (formula: IAggregationGroup, rele
                         pinnedEntityTemplateId: \`${pinnedEntityTemplateId}\`,
                         unpinnedEntityTemplateId: \`${relevantTemplates.unpinnedEntityTemplateId}\`
                     }) yield value as \`${aggResultVariableName}_value\`
-                    with *, \`${aggResultVariableName}_value\`.aggResult as \`${aggResultVariableName}\`
+                    with *, \`${aggResultVariableName}_value\`.aggResult as \`${aggResultVariableName}_orNull\`
+                    // min/max agg on zero results returns nulls
+                    with *,
+                    CASE
+                        // for "Every" agg ("min") if no results in agg (=null), consider as true
+                        // for "Some" agg ("max") if no results in agg (=null), consider as false (because at least one should exist)
+                        WHEN (\`${aggResultVariableName}_orNull\` IS NULL AND "${neoAggregation}" = "min") THEN true
+                        WHEN (\`${aggResultVariableName}_orNull\` IS NULL AND "${neoAggregation}" = "max") THEN false
+                        ELSE \`${aggResultVariableName}_orNull\`
+                    END as \`${aggResultVariableName}\`
                 `,
                 resultVariableName: `\`${aggResultVariableName}\``,
             },
