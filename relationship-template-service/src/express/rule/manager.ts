@@ -59,7 +59,7 @@ export class RuleManager {
         }
 
         if (unpinnedEntityTemplateIds) {
-            query.unpinnedEntityTemplateId = { $in: pinnedEntityTemplateIds };
+            query.unpinnedEntityTemplateId = { $in: unpinnedEntityTemplateIds };
         }
 
         return RuleModel.find(query).limit(limit).skip(skip).lean().exec();
