@@ -5,8 +5,8 @@ import i18next from 'i18next';
 import { useQueryClient } from 'react-query';
 import { StepComponentProps } from '../index';
 import { RelationshipTemplateRuleWizardValues } from '.';
-import { IMongoRelationshipTemplate } from '../../../interfaces/relationshipTemplates';
-import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
+import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { getOppositeEntityTemplate, populateRelationshipTemplate } from '../../../utils/templates';
 import RelationshipTemplateAutocomplete from '../../inputs/RelationshipTemplateAutocomplete';
 
@@ -27,12 +27,13 @@ const CreateRule: React.FC<StepComponentProps<RelationshipTemplateRuleWizardValu
     isEditMode,
 }) => {
     const queryClient = useQueryClient();
-    const relationshipTemplates = queryClient.getQueryData<IMongoRelationshipTemplate[]>('getRelationshipTemplates')!;
-    const entityTemplates = queryClient.getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates')!;
+
+    const relationshipTemplates = queryClient.getQueryData<IRelationshipTemplateMap>('getRelationshipTemplates')!;
+    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
 
     const { pinnedEntityTemplateId, relationshipTemplateId } = values;
 
-    const selectedRelationshipTemplate = relationshipTemplates.find(({ _id }) => relationshipTemplateId === _id);
+    const selectedRelationshipTemplate = relationshipTemplates.get(relationshipTemplateId);
     const selectedRelationshipTemplatePopulated = selectedRelationshipTemplate
         ? populateRelationshipTemplate(selectedRelationshipTemplate, entityTemplates)
         : null;

@@ -5,11 +5,11 @@ import { RestartAltOutlined as ResetIcon, LinkOutlined as CopyUrlIcon } from '@m
 import i18next from 'i18next';
 import { toast } from 'react-toastify';
 import { useSelector } from 'react-redux';
-import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { getExpandedEntityByIdRequest } from '../../services/entitiesService';
 import IconButtonWithPopoverText from '../../common/IconButtonWithPopover';
 import TemplatesSelectCheckbox from '../../common/templatesSelectCheckbox';
-import { IMongoCategory } from '../../interfaces/categories';
+import { ICategoryMap } from '../../interfaces/categories';
 import { RootState } from '../../store';
 
 const GraphTopBar: React.FC<{
@@ -19,19 +19,19 @@ const GraphTopBar: React.FC<{
     setFilteredEntityTemplates: React.Dispatch<React.SetStateAction<IMongoEntityTemplatePopulated[]>>;
 }> = ({ onReset, entityId, filteredEntityTemplates, setFilteredEntityTemplates }) => {
     const queryClient = useQueryClient();
-    const entityTemplates = queryClient.getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates')!;
-    const categories = queryClient.getQueryData<IMongoCategory[]>('getCategories')!;
-    const templateIds = entityTemplates.map((entityTemplate) => entityTemplate._id);
 
     const darkMode = useSelector((state: RootState) => state.darkMode);
+
+    const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
+    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+
+    const templateIds = Array.from(entityTemplates.keys());
 
     const { data: expandedEntity } = useQuery(['getExpandedEntity', entityId, { templateIds, numberOfConnections: 1 }], () =>
         getExpandedEntityByIdRequest(entityId!, { templateIds, numberOfConnections: 1 }),
     );
 
-    const entityTemplate: IMongoEntityTemplatePopulated = entityTemplates.find(
-        (currTemplate) => currTemplate._id === expandedEntity?.entity.templateId,
-    )!;
+    const entityTemplate = entityTemplates.get(expandedEntity!.entity.templateId);
 
     const handleCopy = () => {
         navigator.clipboard.writeText(window.location.href);
@@ -68,11 +68,11 @@ const GraphTopBar: React.FC<{
                 <Box marginLeft="3rem">
                     <TemplatesSelectCheckbox
                         title={i18next.t('graph.filterTemplates')}
-                        templates={entityTemplates}
+                        templates={Array.from(entityTemplates.values())}
                         selectedTemplates={filteredEntityTemplates}
                         setSelectedTemplates={setFilteredEntityTemplates}
                         size="small"
-                        categories={categories}
+                        categories={Array.from(categories.values())}
                     />
                 </Box>
             </Box>

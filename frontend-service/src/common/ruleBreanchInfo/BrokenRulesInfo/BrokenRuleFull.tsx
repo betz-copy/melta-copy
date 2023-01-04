@@ -3,8 +3,8 @@ import { Box, Collapse, List, ListItemButton, ListItemIcon, ListItemText, Toolti
 import { useQueryClient } from 'react-query';
 import i18next from 'i18next';
 import { ExpandLess as ExpandLessIcon, ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
-import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { IMongoRelationshipTemplate } from '../../../interfaces/relationshipTemplates';
+import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
+import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
 import { IActionMetadataPopulated, ICreateRelationshipMetadataPopulated } from '../../../interfaces/ruleBreaches/actionMetadata';
 import { IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
 import { IMongoRule } from '../../../interfaces/rules';
@@ -20,8 +20,8 @@ export const BrokenRuleFull: React.FC<{
     const [open, setOpen] = useState(false);
     const queryClient = useQueryClient();
 
-    const relationshipTemplates = queryClient.getQueryData<IMongoRelationshipTemplate[]>('getRelationshipTemplates')!;
-    const entityTemplates = queryClient.getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates')!;
+    const relationshipTemplates = queryClient.getQueryData<IRelationshipTemplateMap>('getRelationshipTemplates')!;
+    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
 
     return (
         <>
@@ -43,7 +43,7 @@ export const BrokenRuleFull: React.FC<{
                     {brokenRule.relationships.map((relationship, i) => {
                         const relationshipTemplate = !relationship
                             ? null
-                            : relationshipTemplates.find(({ _id }) => {
+                            : Array.from(relationshipTemplates.values()).find(({ _id }) => {
                                   if (typeof relationship === 'string') {
                                       return _id === (actionMetadata as ICreateRelationshipMetadataPopulated).relationshipTemplateId;
                                   }

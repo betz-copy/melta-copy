@@ -1,6 +1,6 @@
 import { Fields, SimpleField } from 'react-awesome-query-builder';
-import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
-import { IMongoRelationshipTemplate } from '../../interfaces/relationshipTemplates';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IMongoRelationshipTemplate, IRelationshipTemplateMap } from '../../interfaces/relationshipTemplates';
 import { getOppositeEntityTemplate, isRelationshipConnectedToEntityTemplate, populateRelationshipTemplate } from '../templates';
 
 const defaultFields = [
@@ -78,8 +78,8 @@ const entityTemplateToSubfields = (
 const entityTemplatesToFieldsConfig = (
     pinnedEntityTemplateId: string,
     selectedRelationshipTemplate: IMongoRelationshipTemplate,
-    entityTemplates: IMongoEntityTemplatePopulated[],
-    relationshipTemplates: IMongoRelationshipTemplate[],
+    entityTemplates: IEntityTemplateMap,
+    relationshipTemplates: IRelationshipTemplateMap,
 ): Fields => {
     const selectedRelationshipTemplatePopulated = populateRelationshipTemplate(selectedRelationshipTemplate, entityTemplates);
     const { sourceEntity, destinationEntity } = selectedRelationshipTemplatePopulated;
@@ -87,7 +87,7 @@ const entityTemplatesToFieldsConfig = (
     const [pinnedEntityTemplate, nonPinnedEntityTemplate] =
         sourceEntity._id === pinnedEntityTemplateId ? [sourceEntity, destinationEntity] : [destinationEntity, sourceEntity];
 
-    const connectedTemplatesWithRelationship = relationshipTemplates
+    const connectedTemplatesWithRelationship = Array.from(relationshipTemplates.values())
         .map((relationshipTemplate) => populateRelationshipTemplate(relationshipTemplate, entityTemplates))
         .filter((relationshipTemplate) => isRelationshipConnectedToEntityTemplate(pinnedEntityTemplate, relationshipTemplate))!
         .map((relationshipTemplatePopulated) => {

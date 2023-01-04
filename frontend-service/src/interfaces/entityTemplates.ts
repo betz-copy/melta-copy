@@ -36,3 +36,5 @@ export interface IMongoEntityTemplate extends IEntityTemplate {
 export interface IMongoEntityTemplatePopulated extends IEntityTemplatePopulated {
     _id: string;
 }
+
+export type IEntityTemplateMap = Map<string, IMongoEntityTemplatePopulated>;

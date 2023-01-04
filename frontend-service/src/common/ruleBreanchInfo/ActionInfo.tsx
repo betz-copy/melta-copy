@@ -3,8 +3,8 @@ import { Box, Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
 import { useQueryClient } from 'react-query';
 import { IEntity } from '../../interfaces/entities';
-import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
-import { IMongoRelationshipTemplate, IMongoRelationshipTemplatePopulated } from '../../interfaces/relationshipTemplates';
+import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
+import { IMongoRelationshipTemplatePopulated, IRelationshipTemplateMap } from '../../interfaces/relationshipTemplates';
 import {
     ActionTypes,
     IActionMetadataPopulated,
@@ -45,10 +45,10 @@ const CreateOrDeleteRelActionInfo: React.FC<{
 
     const { sourceEntity, destinationEntity, relationshipTemplateId } = actionMetadata;
 
-    const relationshipTemplates = queryClient.getQueryData<IMongoRelationshipTemplate[]>('getRelationshipTemplates')!;
-    const entityTemplates = queryClient.getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates')!;
+    const relationshipTemplates = queryClient.getQueryData<IRelationshipTemplateMap>('getRelationshipTemplates')!;
+    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
 
-    const relationshipTemplate = relationshipTemplates.find(({ _id }) => _id === relationshipTemplateId)!;
+    const relationshipTemplate = relationshipTemplates.get(relationshipTemplateId)!;
     const relationshipTemplatePopulated = populateRelationshipTemplate(relationshipTemplate, entityTemplates);
 
     return (
@@ -74,8 +74,8 @@ const UpdateEntityActionInfo: React.FC<{
 
     const { entity } = actionMetadata;
 
-    const entityTemplates = queryClient.getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates')!;
-    const entityTemplate = !entity ? null : entityTemplates.find(({ _id }) => _id === entity.templateId)!;
+    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+    const entityTemplate = !entity ? null : entityTemplates.get(entity.templateId)!;
 
     return (
         <Grid container direction="column">
@@ -102,8 +102,8 @@ const UpdateEntityStatusActionInfo: React.FC<{
 
     const { entity, disabled } = actionMetadata;
 
-    const entityTemplates = queryClient.getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates')!;
-    const entityTemplate = !entity ? null : entityTemplates.find(({ _id }) => _id === entity.templateId)!;
+    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+    const entityTemplate = !entity ? null : entityTemplates.get(entity.templateId)!;
     return (
         <Typography component="p" variant="body1">
             <Box component="span">{i18next.t('ruleBreachInfo.updateEntityStatusActionInfo.updatingStatus')}</Box>{' '}

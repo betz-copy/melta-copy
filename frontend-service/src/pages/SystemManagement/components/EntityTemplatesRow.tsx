@@ -6,12 +6,12 @@ import { toast } from 'react-toastify';
 
 import i18next from 'i18next';
 import { AxiosError } from 'axios';
-import { IMongoCategory } from '../../../interfaces/categories';
+import { ICategoryMap, IMongoCategory } from '../../../interfaces/categories';
 import { ViewingCard } from './ViewingCard';
 import { CustomIcon } from '../../../common/CustomIcon';
 import { Header } from '../../../common/Header';
 import { SelectCheckbox } from '../../../common/SelectCheckbox';
-import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { EntityTemplateWizard } from '../../../common/wizards/entityTemplate';
 import {
     deleteEntityTemplateRequest,
@@ -19,7 +19,6 @@ import {
     updateDisabledFieldEntityTemplateRequest,
 } from '../../../services/templates/enitityTemplatesService';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
-import { removeItemById, replaceItemById } from '../../../utils/reactQuery';
 import SearchInput from '../../../common/inputs/SearchInput';
 import { templatesCompareFunc } from '../../../utils/templates';
 import { ErrorToast } from '../../../common/ErrorToast';
@@ -28,10 +27,11 @@ import { ViewingBox } from './ViewingBox';
 const EntityTemplatesRow: React.FC = () => {
     const queryClient = useQueryClient();
 
-    const categories = queryClient.getQueryData<IMongoCategory[]>('getCategories')!;
-    const entityTemplates = queryClient.getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates')!;
+    const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
+    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
 
-    const [categoriesToShow, setCategoriesToShow] = useState<IMongoCategory[]>(categories);
+    const categoriesArray = Array.from(categories.values());
+    const [categoriesToShow, setCategoriesToShow] = useState<IMongoCategory[]>(categoriesArray);
 
     const [searchText, setSearchText] = useState('');
     const [deleteEntityTemplateDialogState, setDeleteEntityTemplateDialogState] = useState<{
@@ -54,7 +54,7 @@ const EntityTemplatesRow: React.FC = () => {
         (entityTemplate: IMongoEntityTemplatePopulated) => updateDisabledFieldEntityTemplateRequest(entityTemplate._id, entityTemplate),
         {
             onSuccess: (data) => {
-                queryClient.setQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates', (prevData) => replaceItemById(data, prevData));
+                queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) => entityTemplateMap!.set(data._id, data));
                 if (data.disabled) toast.success(i18next.t('wizard.entityTemplate.disabledSuccessfully'));
                 else toast.success(i18next.t('wizard.entityTemplate.activatedSuccessfully'));
             },
@@ -69,7 +69,10 @@ const EntityTemplatesRow: React.FC = () => {
         (id: string) => deleteEntityTemplateRequest(id),
         {
             onSuccess: (_data, id) => {
-                queryClient.setQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates', (prevData) => removeItemById(id, prevData));
+                queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) => {
+                    entityTemplateMap!.delete(id);
+                    return entityTemplateMap!;
+                });
                 setDeleteEntityTemplateDialogState({ isDialogOpen: false, entityTemplateId: null });
                 toast.success(i18next.t('wizard.entityTemplate.deletedSuccessfully'));
             },
@@ -89,7 +92,7 @@ const EntityTemplatesRow: React.FC = () => {
                     <Grid item>
                         <SelectCheckbox
                             title={i18next.t('categories')}
-                            options={categories}
+                            options={categoriesArray}
                             selectedOptions={categoriesToShow}
                             setSelectedOptions={setCategoriesToShow}
                             getOptionId={(category) => category._id}
@@ -105,11 +108,17 @@ const EntityTemplatesRow: React.FC = () => {
                 </Grid>
             </Header>
             <ViewingBox>
-                {entityTemplates
-                    .sort(templatesCompareFunc)
-                    .filter((entityTemplate) => categoriesToShow.some((categoryToShow) => categoryToShow._id === entityTemplate.category._id))
-                    .filter((entityTemplate) => searchText === '' || entityTemplate.displayName.includes(searchText))
-                    .sort((a, b) => Number(a.disabled) - Number(b.disabled))
+                {Array.from(entityTemplates.values())
+                    .filter(
+                        (entityTemplate) =>
+                            categoriesToShow.some((categoryToShow) => categoryToShow._id === entityTemplate.category._id) &&
+                            (searchText === '' || entityTemplate.displayName.includes(searchText)),
+                    )
+                    .sort((a, b) => {
+                        const res = templatesCompareFunc(a, b);
+                        if (res === 0) return Number(a.disabled) - Number(b.disabled);
+                        return res;
+                    })
                     .map((entityTemplate) => (
                         <ViewingCard
                             minWidth={250}

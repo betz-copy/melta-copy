@@ -14,7 +14,7 @@ import { SideBar } from './common/sideBar';
 import { MainBox } from './Main.styled';
 import { TopBar } from './common/TopBar';
 import { IPermissionsOfUser } from './services/permissionsService';
-import { IMongoEntityTemplatePopulated } from './interfaces/entityTemplates';
+import { IEntityTemplateMap } from './interfaces/entityTemplates';
 import {
     PermissionsManagementProtectedRoute,
     SystemManagementProtectedRoute,
@@ -55,7 +55,7 @@ const Main = () => {
     const queryClient = useQueryClient();
 
     const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
-    const entityTemplates = queryClient.getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates')!;
+    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
 
     const meltaPlus = useSelector((state: RootState) => state.meltaPlus);
 

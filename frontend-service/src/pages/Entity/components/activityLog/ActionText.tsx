@@ -4,8 +4,8 @@ import { useQueryClient } from 'react-query';
 import i18next from 'i18next';
 import { useNavigate } from 'react-router-dom';
 import { IActivityLog } from '../../../../services/activityLogService';
-import { IMongoRelationshipTemplate } from '../../../../interfaces/relationshipTemplates';
-import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
+import { IRelationshipTemplateMap } from '../../../../interfaces/relationshipTemplates';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 
 const StyledTypography = styled(Typography)({
     fontFamily: 'Rubik',
@@ -35,15 +35,16 @@ const RelationshipMetadataActionText: React.FC<{
     actionMetadata: { relationshipId: string; relationshipTemplateId: string; entityId: string };
     entityTemplate: IMongoEntityTemplatePopulated;
 }> = ({ action, actionMetadata, entityTemplate }) => {
-    const queryClient = useQueryClient();
     const navigate = useNavigate();
+    const queryClient = useQueryClient();
 
-    const relationshipTemplate = queryClient
-        .getQueryData<IMongoRelationshipTemplate[]>('getRelationshipTemplates')!
-        .find((template) => template._id === actionMetadata.relationshipTemplateId);
-    const sourceAndDestinationTemplate = queryClient
-        .getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates')!
-        .filter((template) => template._id === relationshipTemplate?.sourceEntityId || template._id === relationshipTemplate?.destinationEntityId);
+    const relationshipTemplates = queryClient.getQueryData<IRelationshipTemplateMap>('getRelationshipTemplates')!;
+    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+
+    const relationshipTemplate = relationshipTemplates.get(actionMetadata.relationshipTemplateId);
+    const sourceAndDestinationTemplate = Array.from(entityTemplates.values()).filter(
+        (template) => template._id === relationshipTemplate?.sourceEntityId || template._id === relationshipTemplate?.destinationEntityId,
+    );
 
     return (
         <Grid item container>

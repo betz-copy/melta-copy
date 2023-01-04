@@ -11,8 +11,7 @@ import {
     relationshipTemplateFormToRelationshipTemplateObject,
 } from '../../../services/templates/relationshipTemplatesService';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { replaceItemById } from '../../../utils/reactQuery';
-import { IMongoRelationshipTemplate } from '../../../interfaces/relationshipTemplates';
+import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
 import { ErrorToast } from '../../ErrorToast';
 
 export interface RelationshipTemplateWizardValues {
@@ -80,11 +79,14 @@ const RelationshipTemplateWizard: React.FC<WizardBaseType<RelationshipTemplateWi
         },
         {
             onSuccess: (data) => {
+                queryClient.setQueryData<IRelationshipTemplateMap>(
+                    'getRelationshipTemplates',
+                    (relationshipTemplateMap) => relationshipTemplateMap!.set(data._id, data),
+                );
+
                 if (isEditMode) {
-                    queryClient.setQueryData<IMongoRelationshipTemplate[]>('getRelationshipTemplates', (prevData) => replaceItemById(data, prevData));
                     toast.success(i18next.t('wizard.relationshipTemplate.editedSuccefully'));
                 } else {
-                    queryClient.setQueryData<IMongoRelationshipTemplate[]>('getRelationshipTemplates', (prevData) => [...prevData!, data]);
                     toast.success(i18next.t('wizard.relationshipTemplate.createdSuccessfully'));
                 }
                 handleClose();

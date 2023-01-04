@@ -16,7 +16,7 @@ import {
 import i18next from 'i18next';
 import { useDispatch, useSelector } from 'react-redux';
 import { Drawer } from './SideBar.styled';
-import { IMongoCategory } from '../../interfaces/categories';
+import { ICategoryMap } from '../../interfaces/categories';
 import { NavButton } from './NavButton';
 import { IPermissionsOfUser } from '../../services/permissionsService';
 import PermissionsOfUserDialog from '../permissionsOfUserDialog';
@@ -41,7 +41,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
 
     const queryClient = useQueryClient();
 
-    const categories = queryClient.getQueryData<IMongoCategory[]>('getCategories')!;
+    const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
     const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
 
     const { data: notificationsCount, refetch: updateNotificationCount } = useQuery('getMyNotificationCount', getMyNotificationCountRequest, {
@@ -117,7 +117,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                         '::-webkit-scrollbar-thumb': { background: 'lightgray' },
                     }}
                 >
-                    {categories.map((category) => {
+                    {Array.from(categories.values(), (category) => {
                         return (
                             <NavButton
                                 key={category._id}

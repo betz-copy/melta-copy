@@ -11,7 +11,7 @@ import { EntityWizardValues } from '../../../common/wizards/entity';
 import { IEntity } from '../../../interfaces/entities';
 import { ActionTypes, IUpdateEntityMetadata, IUpdateEntityMetadataPopulated } from '../../../interfaces/ruleBreaches/actionMetadata';
 import { IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
-import { IMongoRule } from '../../../interfaces/rules';
+import { IRuleMap } from '../../../interfaces/rules';
 import { createRuleBreachRequestRequest } from '../../../services/ruleBreachesService';
 
 const getUpdateEntityActionMetadata = (currEntity: IEntity, updateEntityFormData: EntityWizardValues): IUpdateEntityMetadataPopulated => {
@@ -47,7 +47,7 @@ const UpdateEntityWithRuleBreachDialog: React.FC<{
     onUpdatedRuleBlock: (brokenRules: IRuleBreachPopulated['brokenRules'], rawBrokenRules: IRuleBreach['brokenRules']) => void;
 }> = ({ isLoadingUpdateEntity, handleClose, onUpdateEntity, brokenRules, rawBrokenRules, currEntity, updateEntityFormData, onUpdatedRuleBlock }) => {
     const queryClient = useQueryClient();
-    const rules = queryClient.getQueryData<IMongoRule[]>('getRules')!;
+    const rules = queryClient.getQueryData<IRuleMap>('getRules')!;
 
     const actionMetadata = getUpdateEntityActionMetadata(currEntity, updateEntityFormData);
     const { mutateAsync: createRuleBreachRequest, isLoading: isLoadingCreateRuleBreachRequest } = useMutation(
@@ -87,7 +87,7 @@ const UpdateEntityWithRuleBreachDialog: React.FC<{
             onCancel={handleClose}
             onSubmit={async () => {
                 const someBrokenRuleIsEnforcement = brokenRules.some(({ ruleId }) => {
-                    const rule = rules.find((currRule) => currRule._id === ruleId)!;
+                    const rule = rules.get(ruleId)!;
                     return rule.actionOnFail === 'ENFORCEMENT';
                 });
 

@@ -6,11 +6,11 @@ import { AddCircle } from '@mui/icons-material';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import i18next from 'i18next';
 import { useTour } from '@reactour/tour';
-import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
 import { getExpandedEntityByIdRequest } from '../../services/entitiesService';
-import { IMongoRelationshipTemplate, IMongoRelationshipTemplatePopulated } from '../../interfaces/relationshipTemplates';
+import { IMongoRelationshipTemplatePopulated, IRelationshipTemplateMap } from '../../interfaces/relationshipTemplates';
 import { EntityDetails } from './components/EntityDetails';
-import { IMongoCategory } from '../../interfaces/categories';
+import { ICategoryMap, IMongoCategory } from '../../interfaces/categories';
 import { RelationshipTitle } from '../../common/RelationshipTitle';
 import CreateRelationshipDialog from '../../common/dialogs/createRelationshipDialog';
 import { IEntity, IEntityExpanded } from '../../interfaces/entities';
@@ -32,20 +32,21 @@ const Entity: React.FC = () => {
     const { entityId } = params;
     const { setDisabledActions, setCurrentStep } = useTour();
 
+    const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
+
+    const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
+    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+    const relationshipTemplates = queryClient.getQueryData<IRelationshipTemplateMap>('getRelationshipTemplates')!;
+
     const entitiesTableRef = useRef<EntitiesTableOfTemplateRef>(null);
-    const templateIds = queryClient.getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates')!.map((entityTemplate) => entityTemplate._id);
+    const templateIds = Array.from(entityTemplates.keys());
 
     const { data: expandedEntity } = useQuery(['getExpandedEntity', entityId, { templateIds, numberOfConnections: 1 }], () =>
         getExpandedEntityByIdRequest(entityId!, { templateIds, numberOfConnections: 1 }),
     );
 
     const isEntityDisabled = expandedEntity?.entity.properties.disabled;
-
-    const categories = queryClient.getQueryData<IMongoCategory[]>('getCategories')!;
-    const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
-    const entityTemplates = queryClient.getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates')!;
-    const relationshipTemplates = queryClient.getQueryData<IMongoRelationshipTemplate[]>('getRelationshipTemplates')!;
-    const currentEntityTemplate = entityTemplates.find((currTemplate) => currTemplate._id === expandedEntity?.entity.templateId)!;
+    const currentEntityTemplate = entityTemplates.get(expandedEntity!.entity.templateId)!;
 
     const [createRelationshipDialogState, setCreateRelationshipDialogState] = useState<{
         isOpen: boolean;
@@ -64,28 +65,27 @@ const Entity: React.FC = () => {
 
         setCurrentStep((currStep) => currStep + 1);
         setDisabledActions(false);
-    }, [expandedEntity]);
+    }, [expandedEntity]); // eslint-disable-line react-hooks/exhaustive-deps
 
     if (!expandedEntity) return <CircularProgress />;
 
-    const relevantRelationshipTemplates = relationshipTemplates
-        .map((currRelationshipTemplate) => populateRelationshipTemplate(currRelationshipTemplate, entityTemplates))
-        .filter((currRelationshipTemplatePopulated) =>
-            isRelationshipConnectedToEntityTemplate(currentEntityTemplate, currRelationshipTemplatePopulated),
-        );
+    const relevantRelationshipTemplates = Array.from(relationshipTemplates.values(), (currRelationshipTemplate) =>
+        populateRelationshipTemplate(currRelationshipTemplate, entityTemplates),
+    ).filter((currRelationshipTemplatePopulated) =>
+        isRelationshipConnectedToEntityTemplate(currentEntityTemplate, currRelationshipTemplatePopulated),
+    );
 
-    const categoriesWithRelationshipTemplates = categories
-        .map((category) => {
-            return {
-                ...category,
-                relationshipTemplates: relevantRelationshipTemplates.filter((currRelationshipTemplatePopulated) => {
-                    const otherEntityTemplate = getOppositeEntityTemplate(currentEntityTemplate._id, currRelationshipTemplatePopulated);
+    const categoriesWithRelationshipTemplates = Array.from(categories.values(), (category) => {
+        return {
+            ...category,
+            relationshipTemplates: relevantRelationshipTemplates.filter((currRelationshipTemplatePopulated) => {
+                const otherEntityTemplate = getOppositeEntityTemplate(currentEntityTemplate._id, currRelationshipTemplatePopulated);
 
-                    return otherEntityTemplate.category._id === category._id;
-                }),
-            } as IMongoCategory & { relationshipTemplates: IMongoRelationshipTemplatePopulated[] };
-        })
-        .filter((currCategory) => currCategory.relationshipTemplates?.length > 0);
+                return otherEntityTemplate.category._id === category._id;
+            }),
+        } as IMongoCategory & { relationshipTemplates: IMongoRelationshipTemplatePopulated[] };
+    }).filter((currCategory) => currCategory.relationshipTemplates?.length > 0);
+
     const onCreateRelationship = (createdRelationship: IRelationship, sourceEntity: IEntity, destinationEntity: IEntity) => {
         const doesCreatedRelationshipWithCurrEntity = [createdRelationship.sourceEntityId, createdRelationship.destinationEntityId].includes(
             entityId!,

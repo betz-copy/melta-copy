@@ -1,22 +1,23 @@
 import axios from '../../axios';
 import { RelationshipTemplateWizardValues } from '../../common/wizards/relationshipTemplate';
 import { environment } from '../../globals';
-import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
 import { IMongoRelationshipTemplate, IRelationshipTemplate } from '../../interfaces/relationshipTemplates';
 
 const { relationshipTemplates } = environment.api;
 
 const relationshipTemplateObjectToRelationshipTemplateForm = (
-    entityTemplates: IMongoEntityTemplatePopulated[],
+    entityTemplates: IEntityTemplateMap,
     relationshipTemplate: IMongoRelationshipTemplate | null,
 ): RelationshipTemplateWizardValues | undefined => {
     if (!relationshipTemplate) return undefined;
     const { sourceEntityId, destinationEntityId, ...restOfEntityTemplate } = relationshipTemplate;
 
-    const sourceEntity = entityTemplates.find((entityTemplate) => entityTemplate._id === sourceEntityId)!;
-    const destinationEntity = entityTemplates.find((entityTemplate) => entityTemplate._id === destinationEntityId)!;
-
-    return { sourceEntity, destinationEntity, ...restOfEntityTemplate };
+    return {
+        sourceEntity: entityTemplates.get(sourceEntityId)!,
+        destinationEntity: entityTemplates.get(destinationEntityId)!,
+        ...restOfEntityTemplate,
+    };
 };
 
 const relationshipTemplateFormToRelationshipTemplateObject = (

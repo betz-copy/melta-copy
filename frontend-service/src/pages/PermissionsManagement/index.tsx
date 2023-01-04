@@ -8,7 +8,7 @@ import { toast } from 'react-toastify';
 import { AddCircle } from '@mui/icons-material';
 import Table from './table';
 import { getAllPermissionsOfUsersRequest, IPermissionsOfUser } from '../../services/permissionsService';
-import { IMongoCategory } from '../../interfaces/categories';
+import { ICategoryMap } from '../../interfaces/categories';
 import DeletePermissionsOfUserDialog from './deleteDialog';
 import PermissionsOfUserDialog from '../../common/permissionsOfUserDialog';
 
@@ -16,7 +16,7 @@ import '../../css/pages.css';
 
 const PermissionsManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> }> = ({ setTitle }) => {
     const queryClient = useQueryClient();
-    const categories = queryClient.getQueryData<IMongoCategory[]>('getCategories')!;
+    const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
 
     const { data: permissionsOfUsers, isLoading: isLoadingPermissions } = useQuery('getAllPermissions', () => getAllPermissionsOfUsersRequest(), {
         onError: (error) => {
@@ -71,7 +71,7 @@ const PermissionsManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateA
                     {Boolean(permissionsOfUsers) && Boolean(categories) && (
                         <Table
                             permissionsOfUsers={permissionsOfUsers!}
-                            categories={categories}
+                            categories={Array.from(categories.values())}
                             onDeletePermissionsOfUser={(permissionsOfUser) =>
                                 setDeletePermissionDialogState({ isDialogOpen: true, permissionsOfUser })
                             }

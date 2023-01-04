@@ -7,8 +7,7 @@ import { AxiosError } from 'axios';
 import { StepsType, Wizard, WizardBaseType } from '../index';
 import { CreateCategoryName, createCategoryNameSchema } from './CreateCategoryName';
 import { createCategoryRequest, updateCategoryRequest } from '../../../services/templates/categoriesService';
-import { ICategory, IMongoCategory } from '../../../interfaces/categories';
-import { replaceItemById } from '../../../utils/reactQuery';
+import { ICategory, ICategoryMap } from '../../../interfaces/categories';
 import { ChooseIcon } from './ChooseIcon';
 import { ChooseColor } from './ChooseColor';
 import fileDetails from '../../../interfaces/fileDetails';
@@ -48,13 +47,9 @@ const CategoryWizard: React.FC<WizardBaseType<CategoryWizardValues>> = ({
                 : createCategoryRequest(category),
         {
             onSuccess: (data) => {
-                if (isEditMode) {
-                    queryClient.setQueryData<IMongoCategory[]>('getCategories', (prevData) => replaceItemById(data, prevData));
-                    toast.success(i18next.t('wizard.category.editedSuccefully'));
-                } else {
-                    queryClient.setQueryData<IMongoCategory[]>('getCategories', (prevData) => [...prevData!, data]);
-                    toast.success(i18next.t('wizard.category.createdSuccessfully'));
-                }
+                queryClient.setQueryData<ICategoryMap>('getCategories', (categories) => categories!.set(data._id, data));
+
+                i18next.t(isEditMode ? 'wizard.category.editedSuccefully' : 'wizard.category.createdSuccefully');
                 handleClose();
             },
             onError: (error: AxiosError) => {

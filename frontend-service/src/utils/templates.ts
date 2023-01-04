@@ -1,4 +1,4 @@
-import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { IMongoRelationshipTemplate, IMongoRelationshipTemplatePopulated } from '../interfaces/relationshipTemplates';
 
 export const templatesCompareFunc = (templateA: IMongoEntityTemplatePopulated, templateB: IMongoEntityTemplatePopulated) => {
@@ -10,16 +10,13 @@ export const templatesCompareFunc = (templateA: IMongoEntityTemplatePopulated, t
 
 export const populateRelationshipTemplate = (
     relationshipTemplate: IMongoRelationshipTemplate,
-    entityTemplates: IMongoEntityTemplatePopulated[],
+    entityTemplates: IEntityTemplateMap,
 ): IMongoRelationshipTemplatePopulated => {
     const { sourceEntityId, destinationEntityId, ...restOfRelationshipTemplate } = relationshipTemplate;
 
-    const sourceEntity = entityTemplates.find(({ _id }) => _id === sourceEntityId)!;
-    const destinationEntity = entityTemplates.find(({ _id }) => _id === destinationEntityId)!;
-
     return {
-        sourceEntity,
-        destinationEntity,
+        sourceEntity: entityTemplates.get(sourceEntityId)!,
+        destinationEntity: entityTemplates.get(destinationEntityId)!,
         ...restOfRelationshipTemplate,
     };
 };
@@ -37,6 +34,14 @@ export const isRelationshipConnectedToEntityTemplate = (
     return sourceEntity._id === entityTemplate._id || destinationEntity._id === entityTemplate._id;
 };
 
-export const sortByDisplayName = (itemsToSort) => {
-    return itemsToSort.sort((itemA, itemB) => itemA.displayName.localeCompare(itemB.displayName));
+export const mapTemplates = <T extends Record<string, any> & { _id: string }>(templates: T[], sortByField: keyof T = 'displayName') => {
+    const map: Map<string, T> = new Map();
+
+    const sortedTemplates = templates.sort((a, b) => a[sortByField].localeCompare(b[sortByField]));
+
+    sortedTemplates.forEach((template) => {
+        map.set(template._id, template);
+    });
+
+    return map;
 };

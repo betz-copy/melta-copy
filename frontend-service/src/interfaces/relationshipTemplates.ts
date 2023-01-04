@@ -17,3 +17,5 @@ export type IMongoRelationshipTemplatePopulated = Omit<IMongoRelationshipTemplat
     sourceEntity: IMongoEntityTemplatePopulated;
     destinationEntity: IMongoEntityTemplatePopulated;
 };
+
+export type IRelationshipTemplateMap = Map<string, IMongoRelationshipTemplate>;

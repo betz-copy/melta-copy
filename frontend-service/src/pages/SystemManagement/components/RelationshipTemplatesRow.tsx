@@ -8,16 +8,15 @@ import i18next from 'i18next';
 import { AxiosError } from 'axios';
 import { ViewingCard } from './ViewingCard';
 import { Header } from '../../../common/Header';
-import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { IMongoRelationshipTemplate } from '../../../interfaces/relationshipTemplates';
-import { IMongoCategory } from '../../../interfaces/categories';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { IMongoRelationshipTemplate, IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
+import { ICategoryMap } from '../../../interfaces/categories';
 import { RelationshipTemplateWizard } from '../../../common/wizards/relationshipTemplate';
 import {
     deleteRelationshipTemplateRequest,
     relationshipTemplateObjectToRelationshipTemplateForm,
 } from '../../../services/templates/relationshipTemplatesService';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
-import { removeItemById } from '../../../utils/reactQuery';
 import { RelationshipTitle } from '../../../common/RelationshipTitle';
 import SearchInput from '../../../common/inputs/SearchInput';
 import TemplatesSelectCheckbox from '../../../common/templatesSelectCheckbox';
@@ -28,12 +27,15 @@ import { ViewingBox } from './ViewingBox';
 const RelationshipTemplatesRow: React.FC = () => {
     const queryClient = useQueryClient();
 
-    const categories = queryClient.getQueryData<IMongoCategory[]>('getCategories')!;
-    const entityTemplates = queryClient.getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates')!;
-    const relationshipTemplates = queryClient.getQueryData<IMongoRelationshipTemplate[]>('getRelationshipTemplates')!;
+    const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
+    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+    const relationshipTemplates = queryClient.getQueryData<IRelationshipTemplateMap>('getRelationshipTemplates')!;
 
-    const [sourceEntityTemplatesToShow, setSourceEntityTemplatesToShow] = useState<IMongoEntityTemplatePopulated[]>(entityTemplates);
-    const [destinationEntityTemplatesToShow, setDestinationEntityTemplatesToShow] = useState<IMongoEntityTemplatePopulated[]>(entityTemplates);
+    const categoriesArray = Array.from(categories.values());
+    const entityTemplatesArray = Array.from(entityTemplates.values());
+
+    const [sourceEntityTemplatesToShow, setSourceEntityTemplatesToShow] = useState<IMongoEntityTemplatePopulated[]>(entityTemplatesArray);
+    const [destinationEntityTemplatesToShow, setDestinationEntityTemplatesToShow] = useState<IMongoEntityTemplatePopulated[]>(entityTemplatesArray);
 
     const [searchText, setSearchText] = useState('');
 
@@ -55,7 +57,10 @@ const RelationshipTemplatesRow: React.FC = () => {
 
     const { isLoading, mutateAsync } = useMutation((id: string) => deleteRelationshipTemplateRequest(id), {
         onSuccess: (_data, id) => {
-            queryClient.setQueryData<IMongoRelationshipTemplate[]>('getRelationshipTemplates', (prevData) => removeItemById(id, prevData));
+            queryClient.setQueryData<IRelationshipTemplateMap>('getRelationshipTemplates', (relationshipTemplateMap) => {
+                relationshipTemplateMap!.delete(id);
+                return relationshipTemplateMap!;
+            });
             setDeleteRelationshipTemplateDialogState({ isDialogOpen: false, relationshipTemplateId: null });
             toast.success(i18next.t('wizard.relationshipTemplate.deletedSuccessfully'));
         },
@@ -74,20 +79,20 @@ const RelationshipTemplatesRow: React.FC = () => {
                     <Grid item>
                         <TemplatesSelectCheckbox
                             title={i18next.t('systemManagement.sourceTemplates')}
-                            templates={entityTemplates}
+                            templates={entityTemplatesArray}
                             selectedTemplates={sourceEntityTemplatesToShow}
                             setSelectedTemplates={setSourceEntityTemplatesToShow}
-                            categories={categories}
+                            categories={categoriesArray}
                             size="small"
                         />
                     </Grid>
                     <Grid item>
                         <TemplatesSelectCheckbox
                             title={i18next.t('systemManagement.destinationTemplates')}
-                            templates={entityTemplates}
+                            templates={entityTemplatesArray}
                             selectedTemplates={destinationEntityTemplatesToShow}
                             setSelectedTemplates={setDestinationEntityTemplatesToShow}
-                            categories={categories}
+                            categories={categoriesArray}
                             size="small"
                         />
                     </Grid>
@@ -99,7 +104,7 @@ const RelationshipTemplatesRow: React.FC = () => {
                 </Grid>
             </Header>
             <ViewingBox>
-                {relationshipTemplates
+                {Array.from(relationshipTemplates.values())
                     .map((relationshipTemplate) => populateRelationshipTemplate(relationshipTemplate, entityTemplates))
                     .filter((relationshipTemplate) => {
                         return (

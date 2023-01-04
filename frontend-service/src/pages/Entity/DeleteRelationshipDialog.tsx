@@ -7,7 +7,7 @@ import { AreYouSureDialog } from '../../common/dialogs/AreYouSureDialog';
 import ExecWithRuleBreachDialog from '../../common/dialogs/execWithRuleBreachDialog';
 import { IEntityExpanded } from '../../interfaces/entities';
 import { deleteRelationshipRequest } from '../../services/relationshipsService';
-import { IMongoRule } from '../../interfaces/rules';
+import { IRuleMap } from '../../interfaces/rules';
 import { IRuleBreach, IRuleBreachPopulated } from '../../interfaces/ruleBreaches/ruleBreach';
 import { ActionTypes, IDeleteRelationshipMetadata, IDeleteRelationshipMetadataPopulated } from '../../interfaces/ruleBreaches/actionMetadata';
 import { createRuleBreachRequestRequest } from '../../services/ruleBreachesService';
@@ -20,7 +20,7 @@ const DeleteRelationshipDialog: React.FC<{
     onSubmitSuccess: () => void;
 }> = ({ isOpen, handleClose, connectionToDelete, onSubmitSuccess }) => {
     const queryClient = useQueryClient();
-    const rules = queryClient.getQueryData<IMongoRule[]>('getRules')!;
+    const rules = queryClient.getQueryData<IRuleMap>('getRules')!;
 
     const [deleteWithRuleBreachDialogState, setDeleteWithRuleBreachDialogState] = useState<{
         isOpen: boolean;
@@ -105,7 +105,7 @@ const DeleteRelationshipDialog: React.FC<{
                     onCancel={() => setDeleteWithRuleBreachDialogState({ isOpen: false })}
                     onSubmit={async () => {
                         const someBrokenRuleIsEnforcement = deleteWithRuleBreachDialogState.brokenRules!.some(({ ruleId }) => {
-                            const rule = rules.find((currRule) => currRule._id === ruleId)!;
+                            const rule = rules.get(ruleId)!;
                             return rule.actionOnFail === 'ENFORCEMENT';
                         });
 

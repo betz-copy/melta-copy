@@ -7,20 +7,21 @@ import i18next from 'i18next';
 import { AxiosError } from 'axios';
 import { ViewingCard } from './ViewingCard';
 import { Header } from '../../../common/Header';
-import { removeItemById, replaceItemById } from '../../../utils/reactQuery';
+import { removeItemById } from '../../../utils/reactQuery';
 import SearchInput from '../../../common/inputs/SearchInput';
-import { IMongoRule } from '../../../interfaces/rules';
+import { IMongoRule, IRuleMap } from '../../../interfaces/rules';
 import { RuleWizard } from '../../../common/wizards/rule';
 import { deleteRuleRequest, ruleObjectToRuleForm, updateDisabledRuleRequest } from '../../../services/templates/rulesService';
-import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
 import { ErrorToast } from '../../../common/ErrorToast';
+import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { ViewingBox } from './ViewingBox';
 
 const RulesRow: React.FC = () => {
     const queryClient = useQueryClient();
-    const rules = queryClient.getQueryData<IMongoRule[]>('getRules')!;
-    const entityTemplates = queryClient.getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates')!;
+
+    const rules = queryClient.getQueryData<IRuleMap>('getRules')!;
+    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
 
     const [searchText, setSearchText] = useState('');
 
@@ -40,7 +41,7 @@ const RulesRow: React.FC = () => {
     });
     const { mutateAsync: updateDisabledMutateAsync } = useMutation((rule: IMongoRule) => updateDisabledRuleRequest(rule._id, !rule.disabled), {
         onSuccess: (data) => {
-            queryClient.setQueryData<IMongoRule[]>('getRules', (prevData) => replaceItemById(data, prevData));
+            queryClient.setQueryData<IRuleMap>('getRules', (ruleMap) => ruleMap!.set(data._id, data));
             if (data.disabled) toast.success(i18next.t('wizard.rule.disabledSuccessfully'));
             else toast.success(i18next.t('wizard.rule.activatedSuccessfully'));
         },
@@ -74,7 +75,7 @@ const RulesRow: React.FC = () => {
                 </Grid>
             </Header>
             <ViewingBox>
-                {rules
+                {Array.from(rules.values())
                     .filter(({ name }) => searchText === '' || name.includes(searchText))
                     .map((rule) => (
                         <ViewingCard

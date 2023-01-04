@@ -2,7 +2,7 @@
 import { GraphData, LinkObject, NodeObject } from 'react-force-graph-2d';
 import uniqBy from 'lodash.uniqby';
 import { IEntity, IEntityExpanded } from '../interfaces/entities';
-import { IMongoRelationshipTemplate } from '../interfaces/relationshipTemplates';
+import { IRelationshipTemplateMap } from '../interfaces/relationshipTemplates';
 import { drawRectangle, drawText, getLineAngle, getRectangleDimensionsByString } from './canvas';
 import { environment } from '../globals';
 import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
@@ -78,7 +78,7 @@ export const entityToNode = (entity: IEntity): NodeObject => {
     };
 };
 
-export const expandedEntityToGraphData = (expandedEntity: IEntityExpanded, relationshipTemplates: IMongoRelationshipTemplate[]): GraphData => {
+export const expandedEntityToGraphData = (expandedEntity: IEntityExpanded, relationshipTemplates: IRelationshipTemplateMap): GraphData => {
     const nodes = [entityToNode(expandedEntity.entity)];
     expandedEntity.connections.forEach((connection) => {
         nodes.push(entityToNode(connection.sourceEntity));
@@ -87,7 +87,7 @@ export const expandedEntityToGraphData = (expandedEntity: IEntityExpanded, relat
     const uniqueGraphNodes = uniqBy(nodes, ({ id }) => id);
 
     const links = expandedEntity.connections.map(({ sourceEntity, destinationEntity, relationship }) => {
-        const relationshipTemplate = relationshipTemplates.find((template) => template._id === relationship.templateId);
+        const relationshipTemplate = relationshipTemplates.get(relationship.templateId);
 
         if (!relationshipTemplate) throw new Error('must have relationship template');
 

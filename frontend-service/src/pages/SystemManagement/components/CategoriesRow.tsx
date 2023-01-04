@@ -6,21 +6,20 @@ import { toast } from 'react-toastify';
 
 import i18next from 'i18next';
 import { AxiosError } from 'axios';
-import { IMongoCategory } from '../../../interfaces/categories';
+import { ICategoryMap, IMongoCategory } from '../../../interfaces/categories';
 import { ViewingCard } from './ViewingCard';
 import { CustomIcon } from '../../../common/CustomIcon';
 import { Header } from '../../../common/Header';
 import { CategoryWizard } from '../../../common/wizards/category';
 import { categoryObjectToCategoryForm, deleteCategoryRequest } from '../../../services/templates/categoriesService';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
-import { removeItemById } from '../../../utils/reactQuery';
 import { ErrorToast } from '../../../common/ErrorToast';
 import { ViewingBox } from './ViewingBox';
 
 const CategoriesRow: React.FC = () => {
     const queryClient = useQueryClient();
 
-    const categories = queryClient.getQueryData<IMongoCategory[]>('getCategories')!;
+    const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
 
     const [deleteCategoryDialogState, setDeleteCategoryDialogState] = useState<{
         isDialogOpen: boolean;
@@ -40,7 +39,11 @@ const CategoriesRow: React.FC = () => {
 
     const { isLoading, mutateAsync } = useMutation((id: string) => deleteCategoryRequest(id), {
         onSuccess: (_data, id) => {
-            queryClient.setQueryData<IMongoCategory[]>('getCategories', (prevData) => removeItemById(id, prevData));
+            queryClient.setQueryData<ICategoryMap>('getCategories', (data) => {
+                data!.delete(id);
+                return data!;
+            });
+
             setDeleteCategoryDialogState({ isDialogOpen: false, categoryId: null });
             toast.success(i18next.t('wizard.category.deletedSuccessfully'));
         },
@@ -57,7 +60,7 @@ const CategoriesRow: React.FC = () => {
                 </IconButton>
             </Header>
             <ViewingBox>
-                {categories.map((category) => (
+                {Array.from(categories.values(), (category) => (
                     <ViewingCard
                         minWidth={250}
                         key={category._id}

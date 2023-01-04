@@ -2,8 +2,8 @@ import React from 'react';
 import { Autocomplete, AutocompleteChangeDetails, AutocompleteProps, TextField } from '@mui/material';
 import { useQueryClient } from 'react-query';
 import i18next from 'i18next';
-import { IMongoRelationshipTemplate, IMongoRelationshipTemplatePopulated } from '../../interfaces/relationshipTemplates';
-import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IMongoRelationshipTemplatePopulated, IRelationshipTemplateMap } from '../../interfaces/relationshipTemplates';
+import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
 import { populateRelationshipTemplate } from '../../utils/templates';
 
 type PartialByKeys<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
@@ -36,10 +36,11 @@ const RelationshipTemplateAutocomplete: React.FC<{
     helperText?: string;
 }> = ({ value, onChange, entityTemplatesIdsConstraints = [], onBlur, disabled, isError, helperText }) => {
     const queryClient = useQueryClient();
-    const relationshipTemplates = queryClient.getQueryData<IMongoRelationshipTemplate[]>('getRelationshipTemplates')!;
-    const entityTemplates = queryClient.getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates')!;
 
-    const relationshipTemplatesPopulatedOptions = relationshipTemplates.map((relationshipTemplate) =>
+    const relationshipTemplates = queryClient.getQueryData<IRelationshipTemplateMap>('getRelationshipTemplates')!;
+    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+
+    const relationshipTemplatesPopulatedOptions = Array.from(relationshipTemplates.values()).map((relationshipTemplate) =>
         populateRelationshipTemplate(relationshipTemplate, entityTemplates),
     );
 

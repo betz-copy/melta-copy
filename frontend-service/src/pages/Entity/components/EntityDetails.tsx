@@ -16,7 +16,7 @@ import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import { AxiosError } from 'axios';
 import { useSelector } from 'react-redux';
-import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { IMongoEntityTemplatePopulated, IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { IEntity, IEntityExpanded } from '../../../interfaces/entities';
 import { deleteEntityRequest, updateEntityStatusRequest } from '../../../services/entitiesService';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
@@ -61,8 +61,9 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
         setOpenDeleteDialog(false);
     };
 
-    const entityTemplates = queryClient.getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates')!;
-    const currentEntityTemplate = entityTemplates.find((currTemplate) => currTemplate._id === expandedEntity?.entity.templateId);
+    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+    const currentEntityTemplate = entityTemplates.get(expandedEntity?.entity.templateId);
+
     const [updateStatusWithRuleBreachDialogState, setUpdateStatusWithRuleBreachDialogState] = useState<{
         isOpen: boolean;
         brokenRules?: IRuleBreachPopulated['brokenRules'];
@@ -74,7 +75,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
             updateEntityStatusRequest(currEntity.properties._id, disabled, JSON.stringify(ignoredRules)),
         {
             onSuccess: (data) => {
-                const templateIds = entityTemplates.map((template) => template._id);
+                const templateIds = Array.from(entityTemplates.keys());
                 queryClient.setQueryData(['getExpandedEntity', entity.properties._id, { templateIds, numberOfConnections: 1 }], () => {
                     return {
                         ...expandedEntity,

@@ -5,7 +5,7 @@ import i18next from 'i18next';
 import { useQueryClient } from 'react-query';
 import { EntityTemplateWizardValues } from './index';
 import { StepComponentProps } from '../index';
-import { IMongoCategory } from '../../../interfaces/categories';
+import { ICategoryMap } from '../../../interfaces/categories';
 
 const chooseCategorySchema = {
     category: Yup.object({
@@ -18,12 +18,12 @@ const chooseCategorySchema = {
 const ChooseCategory: React.FC<StepComponentProps<EntityTemplateWizardValues>> = ({ values, touched, errors, setFieldValue }) => {
     const queryClient = useQueryClient();
 
-    const categories = queryClient.getQueryData<IMongoCategory[]>('getCategories')!;
+    const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
 
     return (
         <Autocomplete
             id="category"
-            options={categories}
+            options={Array.from(categories.values())}
             onChange={(_e, value) => setFieldValue('category', value || '')}
             value={values.category._id ? values.category : null}
             getOptionLabel={(option) => option.displayName}

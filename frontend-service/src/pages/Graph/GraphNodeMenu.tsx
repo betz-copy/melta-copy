@@ -5,7 +5,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { GraphData, NodeObject } from 'react-force-graph-2d';
 import { useQuery, useQueryClient } from 'react-query';
 import i18next from 'i18next';
-import { IMongoRelationshipTemplate } from '../../interfaces/relationshipTemplates';
+import { IRelationshipTemplateMap } from '../../interfaces/relationshipTemplates';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IEntityExpanded } from '../../interfaces/entities';
 import { getExpandedEntityByIdRequest } from '../../services/entitiesService';
@@ -24,7 +24,7 @@ const GraphNodeMenu: React.FC<{
     const [searchParams, setSearchParams] = useSearchParams();
 
     const queryClient = useQueryClient();
-    const relationshipTemplates = queryClient.getQueryData<IMongoRelationshipTemplate[]>('getRelationshipTemplates');
+    const relationshipTemplates = queryClient.getQueryData<IRelationshipTemplateMap>('getRelationshipTemplates')!;
 
     const { refetch: getExpandedData } = useQuery<IEntityExpanded>(
         [
@@ -45,7 +45,7 @@ const GraphNodeMenu: React.FC<{
         {
             enabled: false,
             onSuccess: (data) => {
-                const newGraphData = expandedEntityToGraphData(data, relationshipTemplates!);
+                const newGraphData = expandedEntityToGraphData(data, relationshipTemplates);
                 node.numberOfConnectionsExpanded++;
 
                 addNewGraphData(newGraphData);

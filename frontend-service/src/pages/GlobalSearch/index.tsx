@@ -3,10 +3,10 @@ import i18next from 'i18next';
 import { Grid } from '@mui/material';
 import { useQueryClient } from 'react-query';
 import _debounce from 'lodash.debounce';
-import { IMongoCategory } from '../../interfaces/categories';
+import { ICategoryMap } from '../../interfaces/categories';
 
 import '../../css/pages.css';
-import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
 import { IPermissionsOfUser } from '../../services/permissionsService';
 import TemplatesTablesPage from '../../common/TemplatesTablesPage';
 
@@ -15,12 +15,15 @@ const GlobalSearch: React.FC = () => {
 
     const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
 
-    const allowedCategories = queryClient.getQueryData<IMongoCategory[]>('getCategories')!.filter((category) => {
+    const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
+    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+
+    const allowedCategories = Array.from(categories.values()).filter((category) => {
         return myPermissions.instancesPermissions.some(({ category: categoryId }) => categoryId === category._id);
     });
 
-    const allowedTemplates = queryClient.getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates')!.filter((entityTemplate) => {
-        return allowedCategories.map(({ _id }) => _id).includes(entityTemplate.category._id);
+    const allowedTemplates = Array.from(entityTemplates.values()).filter((entityTemplate) => {
+        return allowedCategories.find((category) => category._id === entityTemplate.category._id);
     });
 
     return (

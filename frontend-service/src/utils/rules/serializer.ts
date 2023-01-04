@@ -1,6 +1,6 @@
 import { JsonGroup, JsonItem, JsonRule, JsonRuleGroupExt } from 'react-awesome-query-builder';
 import { v4 as uuid } from 'uuid';
-import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
 import {
     IAggregationGroup,
     ICountAggFunction,
@@ -17,7 +17,7 @@ import { IArgument, IConstant, IPropertyOfVariable, isConstant, isPropertyOfVari
 import { IFormula } from '../../interfaces/rules/formula';
 
 export class RuleSerializer {
-    private static entityTemplates: IMongoEntityTemplatePopulated[] = [];
+    private static entityTemplates: IEntityTemplateMap = new Map();
 
     private static propertyOfVariableSerializer = (argument: IPropertyOfVariable) => {
         const { variableName, property } = argument;
@@ -61,7 +61,7 @@ export class RuleSerializer {
         if (propertyName === 'updatedAt' || propertyName === 'createdAt') return 'datetime';
 
         const entityTemplateId = variableName.substring(variableName.lastIndexOf('.') + 1);
-        const template = RuleSerializer.entityTemplates.find(({ _id }) => _id === entityTemplateId)!;
+        const template = RuleSerializer.entityTemplates.get(entityTemplateId)!;
         const property = template.properties.properties[propertyName];
 
         if (property.type !== 'string') return property.type;
@@ -172,7 +172,7 @@ export class RuleSerializer {
         };
     };
 
-    static formulaToJsonTreeWrapper = (formula: IFormula, entityTemplates: IMongoEntityTemplatePopulated[]): JsonItem => {
+    static formulaToJsonTreeWrapper = (formula: IFormula, entityTemplates: IEntityTemplateMap): JsonItem => {
         RuleSerializer.entityTemplates = entityTemplates;
 
         return RuleSerializer.formulaComponentToRuleItem(formula);

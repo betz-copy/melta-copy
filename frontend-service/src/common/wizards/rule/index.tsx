@@ -8,9 +8,8 @@ import { Utils as QbUtils, ImmutableTree } from 'react-awesome-query-builder';
 
 import { StepsType, Wizard, WizardBaseType } from '../index';
 import { CreateRule, createRuleSchema } from './CreateRule';
-import { replaceItemById } from '../../../utils/reactQuery';
 import { ErrorToast } from '../../ErrorToast';
-import { IMongoRule, IRule } from '../../../interfaces/rules';
+import { IRule, IRuleMap } from '../../../interfaces/rules';
 import { createRuleRequest, updateRuleRequest } from '../../../services/templates/rulesService';
 import { CreateFormula, formulaValidation } from './CreateFormula';
 
@@ -55,11 +54,10 @@ const RuleWizard: React.FC<WizardBaseType<RelationshipTemplateRuleWizardValues>>
                 : createRuleRequest(rule),
         {
             onSuccess: (data) => {
+                queryClient.setQueryData<IRuleMap>('getRules', (ruleMap) => ruleMap!.set(data._id, data));
                 if (isEditMode) {
-                    queryClient.setQueryData<IMongoRule[]>('getRules', (prevData) => replaceItemById(data, prevData));
                     toast.success(i18next.t('wizard.rule.editedSuccefully'));
                 } else {
-                    queryClient.setQueryData<IMongoRule[]>('getRules', (prevData) => [...prevData!, data]);
                     toast.success(i18next.t('wizard.rule.createdSuccessfully'));
                 }
                 handleClose();

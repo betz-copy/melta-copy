@@ -3,8 +3,8 @@ import { useQueryClient } from 'react-query';
 import { Query, Builder, Config, ImmutableTree, BuilderProps, BasicConfig, Utils, JsonItem } from 'react-awesome-query-builder';
 import i18next from 'i18next';
 import { StepComponentProps, StepsType } from '../index';
-import { IMongoRelationshipTemplate } from '../../../interfaces/relationshipTemplates';
-import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
+import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { entityTemplatesToFieldsConfig } from '../../../utils/rules/fields';
 import { RelationshipTemplateRuleWizardValues } from '.';
 import VanillaConjs from './VanillaConjs';
@@ -29,12 +29,13 @@ export const formulaValidation: StepsType<RelationshipTemplateRuleWizardValues>[
 
 const CreateFormula: React.FC<StepComponentProps<RelationshipTemplateRuleWizardValues>> = ({ values, setFieldValue, errors }) => {
     const queryClient = useQueryClient();
-    const relationshipTemplates = queryClient.getQueryData<IMongoRelationshipTemplate[]>('getRelationshipTemplates')!;
-    const entityTemplates = queryClient.getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates')!;
+
+    const relationshipTemplates = queryClient.getQueryData<IRelationshipTemplateMap>('getRelationshipTemplates')!;
+    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
 
     const { pinnedEntityTemplateId, relationshipTemplateId } = values;
 
-    const selectedRelationshipTemplate = relationshipTemplates.find(({ _id }) => relationshipTemplateId === _id)!;
+    const selectedRelationshipTemplate = relationshipTemplates.get(relationshipTemplateId)!;
 
     const config: Config = {
         ...BasicConfig,
@@ -61,7 +62,7 @@ const CreateFormula: React.FC<StepComponentProps<RelationshipTemplateRuleWizardV
 
     const onChange = useCallback((immutableTree: ImmutableTree) => {
         setFieldValue('formula', immutableTree);
-    }, []);
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     const renderBuilder = useCallback((props: BuilderProps) => {
         return (

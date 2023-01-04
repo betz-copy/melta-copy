@@ -8,7 +8,7 @@ import { ErrorToast } from '../../../common/ErrorToast';
 import { IEntity } from '../../../interfaces/entities';
 import { ActionTypes, IUpdateEntityStatusMetadata, IUpdateEntityStatusMetadataPopulated } from '../../../interfaces/ruleBreaches/actionMetadata';
 import { IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
-import { IMongoRule } from '../../../interfaces/rules';
+import { IRuleMap } from '../../../interfaces/rules';
 import { createRuleBreachRequestRequest } from '../../../services/ruleBreachesService';
 
 const getActionMetadata = (currEntity: IEntity, disabledStatus: boolean): IUpdateEntityStatusMetadataPopulated => {
@@ -28,7 +28,7 @@ const UpdateStatusWithRuleBreachDialog: React.FC<{
     onUpdatedRuleBlock: (brokenRules: IRuleBreachPopulated['brokenRules'], rawBrokenRules: IRuleBreach['brokenRules']) => void;
 }> = ({ isLoadingUpdateEntity, handleClose, onUpdateStatus, brokenRules, rawBrokenRules, currEntity, disabled, onUpdatedRuleBlock }) => {
     const queryClient = useQueryClient();
-    const rules = queryClient.getQueryData<IMongoRule[]>('getRules')!;
+    const rules = queryClient.getQueryData<IRuleMap>('getRules')!;
     const actionMetadata = getActionMetadata(currEntity, disabled);
     const { mutateAsync: createRuleBreachRequest, isLoading: isLoadingCreateRuleBreachRequest } = useMutation(
         () => {
@@ -61,7 +61,7 @@ const UpdateStatusWithRuleBreachDialog: React.FC<{
             onCancel={handleClose}
             onSubmit={async () => {
                 const someBrokenRuleIsEnforcement = brokenRules.some(({ ruleId }) => {
-                    const rule = rules.find((currRule) => currRule._id === ruleId)!;
+                    const rule = rules.get(ruleId)!;
                     return rule.actionOnFail === 'ENFORCEMENT';
                 });
 

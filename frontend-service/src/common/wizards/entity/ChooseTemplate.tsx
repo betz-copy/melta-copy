@@ -6,7 +6,7 @@ import { useQueryClient } from 'react-query';
 import { useParams } from 'react-router-dom';
 import { EntityWizardValues } from './index';
 import { StepComponentProps } from '../index';
-import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IPermissionsOfUser } from '../../../services/permissionsService';
 
 const chooseTemplateSchema = {
@@ -22,16 +22,16 @@ const ChooseTemplate: React.FC<StepComponentProps<EntityWizardValues>> = ({ valu
     const { categoryId } = param; // assuming if in category page
     const queryClient = useQueryClient();
 
-    const entityTemplates = queryClient.getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates')!;
+    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
 
     let entityTemplatesFilteredByCategory: IMongoEntityTemplatePopulated[];
     if (categoryId) {
-        entityTemplatesFilteredByCategory = entityTemplates.filter((entity) => entity.category._id === categoryId);
+        entityTemplatesFilteredByCategory = Array.from(entityTemplates.values()).filter((entity) => entity.category._id === categoryId);
     } else {
-        entityTemplatesFilteredByCategory = entityTemplates.filter((entity) => {
-            return myPermissions.instancesPermissions.some(({ category }) => category === entity.category._id);
-        });
+        entityTemplatesFilteredByCategory = Array.from(entityTemplates.values()).filter((entity) =>
+            myPermissions.instancesPermissions.some(({ category }) => category === entity.category._id),
+        );
     }
 
     const activeEntityTemplatesFiltered = entityTemplatesFilteredByCategory.filter((entity) => !entity.disabled);

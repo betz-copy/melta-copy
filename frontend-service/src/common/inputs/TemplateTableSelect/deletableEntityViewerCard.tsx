@@ -5,14 +5,15 @@ import { useQueryClient } from 'react-query';
 import { useSelector } from 'react-redux';
 import { IEntity } from '../../../interfaces/entities';
 import { EntityProperties } from '../../EntityProperties';
-import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { CustomIcon } from '../../CustomIcon';
 import { RootState } from '../../../store';
 
 const DeletableEntityViewerCard: React.FC<{ entity: IEntity; onDelete: () => void }> = ({ entity, onDelete }) => {
     const queryClient = useQueryClient();
-    const entityTemplates = queryClient.getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates')!;
-    const entityTemplate = entityTemplates.find((currEntityTemplate) => currEntityTemplate._id === entity.templateId);
+
+    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+    const entityTemplate = entityTemplates.get(entity.templateId);
 
     const darkMode = useSelector((state: RootState) => state.darkMode);
 

@@ -5,7 +5,7 @@ import i18next from 'i18next';
 import { useQuery, useQueryClient } from 'react-query';
 import { RelationshipTemplateWizardValues } from './index';
 import { StepComponentProps } from '../index';
-import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { variableNameValidation } from '../../../utils/validation';
 import { getRelationshipInstancesCountByTemplateIdRequest } from '../../../services/entitiesService';
 
@@ -32,7 +32,8 @@ const CreateRelationshipTemplateName: React.FC<StepComponentProps<RelationshipTe
 }) => {
     const queryClient = useQueryClient();
 
-    const entityTemplates = queryClient.getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates')!.filter((entity) => !entity.disabled);
+    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates');
+    const entityTemplatesArray = Array.from(entityTemplates!.values());
 
     const { data: areThereRelationshipInstancesByTemplateId } = useQuery(
         ['areThereRelationshipInstancesByTemplateId', (values as RelationshipTemplateWizardValues & { _id: string })._id],
@@ -69,7 +70,7 @@ const CreateRelationshipTemplateName: React.FC<StepComponentProps<RelationshipTe
             <Box margin={1}>
                 <Autocomplete
                     id="sourceEntity"
-                    options={entityTemplates}
+                    options={entityTemplatesArray}
                     onChange={(_e, value) => setFieldValue('sourceEntity', value || '')}
                     value={values.sourceEntity._id ? values.sourceEntity : null}
                     getOptionLabel={(option) => option.displayName}
@@ -91,7 +92,7 @@ const CreateRelationshipTemplateName: React.FC<StepComponentProps<RelationshipTe
             <Box margin={1}>
                 <Autocomplete
                     id="destinationEntity"
-                    options={entityTemplates}
+                    options={entityTemplatesArray}
                     onChange={(_e, value) => setFieldValue('destinationEntity', value || '')}
                     value={values.destinationEntity._id ? values.destinationEntity : null}
                     disabled={areThereRelationshipInstancesByTemplateId! > 0}

@@ -20,8 +20,8 @@ import {
     drawNode,
     fixHighlighted,
 } from '../../utils/graph';
-import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
-import { IMongoRelationshipTemplate } from '../../interfaces/relationshipTemplates';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IRelationshipTemplateMap } from '../../interfaces/relationshipTemplates';
 import { IEntityExpanded } from '../../interfaces/entities';
 import { getExpandedEntityByIdRequest } from '../../services/entitiesService';
 import { EntityPropertiesInternal } from '../../common/EntityProperties';
@@ -54,12 +54,13 @@ const Graph: React.FC = () => {
     const darkMode = useSelector((state: RootState) => state.darkMode);
 
     const queryClient = useQueryClient();
-    const entityTemplates = queryClient.getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates')!;
-    const relationshipTemplates = queryClient.getQueryData<IMongoRelationshipTemplate[]>('getRelationshipTemplates')!;
+
+    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+    const relationshipTemplates = queryClient.getQueryData<IRelationshipTemplateMap>('getRelationshipTemplates')!;
 
     const [graphData, setGraphData] = useState<GraphData>({ nodes: [], links: [] });
     const [loadAgain, setLoadAgain] = useState<boolean>(false);
-    const [filteredEntityTemplates, setFilteredEntityTemplates] = useState<IMongoEntityTemplatePopulated[]>(entityTemplates);
+    const [filteredEntityTemplates, setFilteredEntityTemplates] = useState<IMongoEntityTemplatePopulated[]>(Array.from(entityTemplates.values()));
 
     const updateGraphSize = () => {
         const mainBox = ref.current?.parentElement;
@@ -167,7 +168,7 @@ const Graph: React.FC = () => {
     }, [entityId, loadAgain, filteredEntityTemplates]); // eslint-disable-line react-hooks/exhaustive-deps
 
     const renderTooltip = (node: NodeObject) => {
-        const entityTemplate = entityTemplates.find((template) => template._id === node.templateId)!;
+        const entityTemplate = entityTemplates.get(node.templateId)!;
 
         return ReactDOMServer.renderToString(
             entityTemplate.propertiesPreview.length < 1 ? (
@@ -179,13 +180,13 @@ const Graph: React.FC = () => {
     };
 
     const getNodeColor = (node: NodeObject) => {
-        const entityTemplate = entityTemplates.find((template) => template._id === node.templateId)!;
+        const entityTemplate = entityTemplates.get(node.templateId)!;
 
         return randomColor({ hue: entityTemplate.category.color || '#000000', seed: entityTemplate.name });
     };
 
     const getLinkColor = (link: LinkObject) => {
-        const relationshipTemplate = relationshipTemplates.find((template) => template._id === link.templateId)!;
+        const relationshipTemplate = relationshipTemplates.get(link.templateId)!;
 
         return randomColor({ luminosity: 'dark', seed: relationshipTemplate.name });
     };
@@ -201,7 +202,7 @@ const Graph: React.FC = () => {
                 setFilteredEntityTemplates={setFilteredEntityTemplates}
                 onReset={() => {
                     setSearchParams({});
-                    setFilteredEntityTemplates(entityTemplates);
+                    setFilteredEntityTemplates(Array.from(entityTemplates.values()));
                     setLoadAgain(true);
                 }}
             />
@@ -250,15 +251,14 @@ const Graph: React.FC = () => {
                         }}
                         nodeCanvasObjectMode={() => 'after'}
                         nodeCanvasObject={(node: NodeObject, ctx) => {
-                            const entityTemplate = entityTemplates.find((template) => template._id === node.templateId)!;
+                            const entityTemplate = entityTemplates.get(node.templateId)!;
 
                             drawNode(node as PartialRequired<NodeObject, 'x' | 'y' | 'nodeSize'>, ctx, entityTemplate, entityId === node.data._id);
                             drawNodeLabel(node as PartialRequired<NodeObject, 'x' | 'y' | 'nodeSize'>, ctx, entityTemplate.displayName);
                         }}
                         linkCanvasObjectMode={() => 'after'}
                         linkCanvasObject={(link, ctx) => {
-                            const label =
-                                relationshipTemplates.find((relationshipTemplate) => relationshipTemplate._id === link.templateId)?.displayName || '';
+                            const label = relationshipTemplates.get(link.templateId)?.displayName || '';
 
                             drawLinkLabel(link, label, ctx);
                         }}

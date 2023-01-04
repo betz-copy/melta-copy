@@ -1,10 +1,10 @@
 import React, { isValidElement } from 'react';
 import { useParams, Navigate, useNavigate } from 'react-router-dom';
-import { useQuery, useQueryClient } from 'react-query';
+import { useQuery } from 'react-query';
 import { CircularProgress } from '@mui/material';
 import { AxiosError } from 'axios';
 import { getExpandedEntityByIdRequest } from '../services/entitiesService';
-import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
+import { IEntityTemplateMap } from '../interfaces/entityTemplates';
 import { IPermissionsOfUser } from '../services/permissionsService';
 
 export const protectedRoute = (children: React.ReactNode, isAllowed: boolean) => {
@@ -26,17 +26,16 @@ export const CategoryProtectedRoute: React.FC<{ permissions: IPermissionsOfUser 
     return protectedRoute(children, !permissions.instancesPermissions.find((instance) => instance.category === categoryId));
 };
 
-export const EntityProtectedRoute: React.FC<{ permissions: IPermissionsOfUser; entityTemplates: IMongoEntityTemplatePopulated[] }> = ({
+export const EntityProtectedRoute: React.FC<{ permissions: IPermissionsOfUser; entityTemplates: IEntityTemplateMap }> = ({
     children,
     permissions,
     entityTemplates,
 }) => {
     const params = useParams();
     const { entityId } = params;
-    const queryClient = useQueryClient();
     const navigate = useNavigate();
 
-    const templateIds = queryClient.getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates')!.map((entityTemplate) => entityTemplate._id);
+    const templateIds = Array.from(entityTemplates.keys());
 
     const { data: expandedEntity, isLoading } = useQuery(
         ['getExpandedEntity', entityId, { templateIds, numberOfConnections: 0 }],
@@ -51,7 +50,7 @@ export const EntityProtectedRoute: React.FC<{ permissions: IPermissionsOfUser; e
     );
 
     if (isLoading) return <CircularProgress />;
-    const currentEntityTemplate = entityTemplates.find((currTemplate) => currTemplate._id === expandedEntity?.entity.templateId);
+    const currentEntityTemplate = entityTemplates.get(expandedEntity!.entity.templateId);
 
     return protectedRoute(children, !permissions.instancesPermissions.find((instance) => instance.category === currentEntityTemplate?.category._id));
 };

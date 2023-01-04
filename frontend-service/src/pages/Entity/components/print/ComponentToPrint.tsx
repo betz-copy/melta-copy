@@ -4,7 +4,7 @@ import i18next from 'i18next';
 import { useQueryClient } from 'react-query';
 import { BlueTitle } from '../../../../common/BlueTitle';
 import { IEntityExpanded } from '../../../../interfaces/entities';
-import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { IMongoRelationshipTemplatePopulated } from '../../../../interfaces/relationshipTemplates';
 import { EntityComponentToPrint } from './EntityComponentToPrint';
 
@@ -22,7 +22,7 @@ const ComponentToPrint = React.forwardRef<
     }
 >(({ entityTemplate, expandedEntity, relationshipTemplatesToPrint, options }, ref) => {
     const queryClient = useQueryClient();
-    const entityTemplates = queryClient.getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates')!;
+    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
 
     return (
         <Box ref={ref} margin="20px" style={{ direction: 'rtl' }}>
@@ -76,7 +76,7 @@ const ComponentToPrint = React.forwardRef<
                                     {entities.map((entity) => (
                                         <div key={entity.properties._id} style={{ marginBottom: '0.5rem' }}>
                                             <EntityComponentToPrint
-                                                entityTemplate={entityTemplates.find((currTemplate) => currTemplate._id === entity.templateId)!}
+                                                entityTemplate={entityTemplates.get(entity.templateId)!}
                                                 entity={entity}
                                                 options={{ showDates: options.showEntityDates }}
                                             />

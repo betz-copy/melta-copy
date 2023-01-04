@@ -13,7 +13,7 @@ import { useNavigate } from 'react-router-dom';
 import { createPermissionsBulkRequest, deletePermissionsBulkRequest, IPermission, IPermissionsOfUser } from '../../services/permissionsService';
 import UserAutocomplete from '../inputs/UserAutocomplete';
 import { IUser } from '../../services/kartoffelService';
-import { IMongoCategory } from '../../interfaces/categories';
+import { ICategoryMap } from '../../interfaces/categories';
 import ManagementPermissionsCard from './managementPermissionsCard';
 import InstancesPermissionsCard from './instancesPermissionsCard';
 import { RootState } from '../../store';
@@ -74,7 +74,7 @@ const permissionsToFormPermissions = ({
 
 const getPermissionsToDeleteAndCreate = (
     formPermissionsOfUser: Omit<IFormPermissionsOfUser, 'user'> & { user: IUser },
-    categories: IMongoCategory[],
+    categories: ICategoryMap,
     existingPermissionsOfUser?: IPermissionsOfUser,
 ): { permissonsIdsToDelete: string[]; permissionsToCreate: Omit<IPermission, '_id'>[] } => {
     const permissonsIdsToDelete: string[] = [];
@@ -98,27 +98,27 @@ const getPermissionsToDeleteAndCreate = (
         permissonsIdsToDelete.push(existingPermissionsOfUser.rulesManagementId);
     }
 
-    categories.forEach((category) => {
+    for (const id of categories.keys()) {
         const permissionsOfUserDialogStateForCategory = formPermissionsOfUser.instancesPermissions.find(
-            ({ category: currCategoryId }) => currCategoryId === category._id,
+            ({ category: currCategoryId }) => currCategoryId === id,
         );
         const existingPermissionsOfUserForCategory = existingPermissionsOfUser?.instancesPermissions.find(
-            ({ category: currCategoryId }) => currCategoryId === category._id,
+            ({ category: currCategoryId }) => currCategoryId === id,
         );
 
         if (permissionsOfUserDialogStateForCategory && !existingPermissionsOfUserForCategory) {
-            permissionsToCreate.push({ userId: formPermissionsOfUser.user.id, resourceType: 'Instances', category: category._id });
+            permissionsToCreate.push({ userId: formPermissionsOfUser.user.id, resourceType: 'Instances', category: id });
         } else if (!permissionsOfUserDialogStateForCategory && existingPermissionsOfUserForCategory) {
             permissonsIdsToDelete.push(existingPermissionsOfUserForCategory._id);
         }
-    });
+    }
 
     return { permissonsIdsToDelete, permissionsToCreate };
 };
 
 const createOrEditPermissionsOfUserRequest = async (
     formPermissionsOfUser: Omit<IFormPermissionsOfUser, 'user'> & { user: IUser },
-    categories: IMongoCategory[],
+    categories: ICategoryMap,
     existingPermissionsOfUser?: IPermissionsOfUser,
 ) => {
     const { permissonsIdsToDelete, permissionsToCreate } = getPermissionsToDeleteAndCreate(
@@ -147,29 +147,26 @@ const createOrEditPermissionsOfUserRequest = async (
         rulesManagementId: !formPermissionsOfUser.doesHaveRulesManagement
             ? null
             : createdRulesManagement?._id ?? existingPermissionsOfUser!.rulesManagementId,
-        instancesPermissions: categories
-            .map((category) => {
-                const doesUserHasPermissionForCategory = formPermissionsOfUser.instancesPermissions.some(
-                    ({ category: categoryId }) => categoryId === category._id,
-                );
-                if (!doesUserHasPermissionForCategory) {
-                    return null;
-                }
+        instancesPermissions: Array.from(categories.keys(), (id) => {
+            const doesUserHasPermissionForCategory = formPermissionsOfUser.instancesPermissions.some(({ category: categoryId }) => categoryId === id);
+            if (!doesUserHasPermissionForCategory) {
+                return null;
+            }
 
-                const createdPermissionForCategory = createdPermissions.find(({ category: categoryId }) => categoryId === category._id);
-                if (createdPermissionForCategory) {
-                    return { _id: createdPermissionForCategory._id, category: createdPermissionForCategory.category };
-                }
-                const existingPermissionForCategory = existingPermissionsOfUser?.instancesPermissions.find(
-                    ({ category: categoryId }) => categoryId === category._id,
-                );
-                if (existingPermissionForCategory) {
-                    return existingPermissionForCategory;
-                }
+            const createdPermissionForCategory = createdPermissions.find(({ category: categoryId }) => categoryId === id);
+            if (createdPermissionForCategory) {
+                return { _id: createdPermissionForCategory._id, category: createdPermissionForCategory.category };
+            }
 
-                throw new Error('if user has permission to category, it should exist or be created');
-            })
-            .filter(Boolean) as Pick<IPermission, '_id' | 'category'>[],
+            const existingPermissionForCategory = existingPermissionsOfUser?.instancesPermissions.find(
+                ({ category: categoryId }) => categoryId === id,
+            );
+            if (existingPermissionForCategory) {
+                return existingPermissionForCategory;
+            }
+
+            throw new Error('if user has permission to category, it should exist or be created');
+        }).filter(Boolean) as Pick<IPermission, '_id' | 'category'>[],
     };
     return newPermissionsOfUser;
 };
@@ -188,13 +185,14 @@ const PermissionsOfUserDialog: React.FC<{
 
     const queryClient = useQueryClient();
     const allPermissions = queryClient.getQueryData<IPermissionsOfUser[]>('getAllPermissions');
-    const categories = queryClient.getQueryData<IMongoCategory[]>('getCategories')!;
+    const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
 
     const { mutateAsync: createOrEditPermissionsOfUser } = useMutation(
         (formPermissionsOfUser: Omit<IFormPermissionsOfUser, 'user'> & { user: IUser }) =>
             createOrEditPermissionsOfUserRequest(formPermissionsOfUser, categories, existingPermissionsOfUser),
         {
             onError: (error) => {
+                // eslint-disable-next-line no-console
                 console.log('failed to upsert permission. error:', error);
                 if (mode === 'create') {
                     toast.error(i18next.t('permissions.permissionsOfUserDialog.failedToCreatePermissionsOfUser'));
@@ -331,7 +329,7 @@ const PermissionsOfUserDialog: React.FC<{
                             )}
                             <Box margin={1}>
                                 <InstancesPermissionsCard
-                                    categoriesCheckboxProps={categories.map(({ _id, displayName }) => ({
+                                    categoriesCheckboxProps={Array.from(categories.values(), ({ _id, displayName }) => ({
                                         categoryId: _id,
                                         categoryDisplayName: displayName,
                                         disabled: formikProps.isSubmitting,
@@ -360,10 +358,10 @@ const PermissionsOfUserDialog: React.FC<{
                                         mode === 'read'
                                             ? undefined
                                             : {
-                                                  checked: formikProps.values.instancesPermissions.length === categories.length,
+                                                  checked: formikProps.values.instancesPermissions.length === categories.size,
                                                   indeterminate:
                                                       formikProps.values.instancesPermissions.length > 0 &&
-                                                      formikProps.values.instancesPermissions.length < categories.length,
+                                                      formikProps.values.instancesPermissions.length < categories.size,
                                                   onChange: (_e, checked) => {
                                                       if (!checked) {
                                                           formikProps.setFieldValue('instancesPermissions', []);
@@ -371,7 +369,7 @@ const PermissionsOfUserDialog: React.FC<{
                                                       }
                                                       formikProps.setFieldValue(
                                                           'instancesPermissions',
-                                                          categories.map(({ _id }) => ({ category: _id })),
+                                                          Array.from(categories.keys(), (id) => ({ category: id })),
                                                       );
                                                   },
                                               }

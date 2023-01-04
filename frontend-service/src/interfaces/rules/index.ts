@@ -82,3 +82,5 @@ export interface IRule {
 export interface IMongoRule extends IRule {
     _id: string;
 }
+
+export type IRuleMap = Map<string, IMongoRule>;

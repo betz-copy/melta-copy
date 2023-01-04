@@ -13,15 +13,15 @@ import { BackendConfigState, getBackendConfigRequest } from './services/backendC
 import { getAllTemplates, GetAllTemplatesType } from './services/templates/getAllTemplates';
 import { getMyPermissionsRequest, IPermissionsOfUser } from './services/permissionsService';
 import './css/index.css';
-import { IMongoCategory } from './interfaces/categories';
-import { IMongoEntityTemplatePopulated } from './interfaces/entityTemplates';
-import { IMongoRelationshipTemplate } from './interfaces/relationshipTemplates';
+import { ICategoryMap } from './interfaces/categories';
+import { IEntityTemplateMap } from './interfaces/entityTemplates';
+import { IRelationshipTemplateMap } from './interfaces/relationshipTemplates';
 import ErrorPage from './pages/ErrorPage';
 import { environment } from './globals';
 import loadingAnimation from './assets/icons/Melta_Logo.svg';
 import './css/loading.css';
-import { IMongoRule } from './interfaces/rules';
-import { sortByDisplayName } from './utils/templates';
+import { IRuleMap } from './interfaces/rules';
+import { mapTemplates } from './utils/templates';
 
 const App: React.FC = () => {
     const queryClient = useQueryClient();
@@ -53,13 +53,14 @@ const App: React.FC = () => {
     const { isLoading: isLoadingAllTemplates, isError: isErrorAllTemplates } = useQuery<GetAllTemplatesType>('getAllTemplates', getAllTemplates, {
         onError: (error) => {
             toast.error(i18next.t('failedToGetTemplates'));
+            // eslint-disable-next-line no-console
             console.log('failed to get templates error:', error);
         },
         onSuccess: ({ categories, entityTemplates, relationshipTemplates, rules }) => {
-            queryClient.setQueryData<IMongoCategory[]>('getCategories', sortByDisplayName(categories));
-            queryClient.setQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates', sortByDisplayName(entityTemplates));
-            queryClient.setQueryData<IMongoRelationshipTemplate[]>('getRelationshipTemplates', sortByDisplayName(relationshipTemplates));
-            queryClient.setQueryData<IMongoRule[]>('getRules', rules);
+            queryClient.setQueryData<ICategoryMap>('getCategories', mapTemplates(categories));
+            queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', mapTemplates(entityTemplates));
+            queryClient.setQueryData<IRelationshipTemplateMap>('getRelationshipTemplates', mapTemplates(relationshipTemplates));
+            queryClient.setQueryData<IRuleMap>('getRules', mapTemplates(rules, 'name'));
         },
     });
     const { isLoading: isLoadingMyPermissions, isError: isErrorMyPermissions } = useQuery<IPermissionsOfUser>(
@@ -67,6 +68,7 @@ const App: React.FC = () => {
         getMyPermissionsRequest,
         {
             onError: (error) => {
+                // eslint-disable-next-line no-console
                 console.log('failed loading my permissions:', error);
                 toast.error(i18next.t('permissions.failedToLoadMyPermissions'));
             },

@@ -2,17 +2,14 @@ import { JsonItem, JsonTree, Utils as QbUtils } from 'react-awesome-query-builde
 import axios from '../../axios';
 import { RelationshipTemplateRuleWizardValues } from '../../common/wizards/rule';
 import { environment } from '../../globals';
-import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
 import { IMongoRule, IRule } from '../../interfaces/rules';
 import { RuleParser } from '../../utils/rules/parser';
 import { RuleSerializer } from '../../utils/rules/serializer';
 
 const { rules } = environment.api;
 
-const ruleObjectToRuleForm = (
-    rule: IRule | null,
-    entityTemplates: IMongoEntityTemplatePopulated[],
-): RelationshipTemplateRuleWizardValues | undefined => {
+const ruleObjectToRuleForm = (rule: IRule | null, entityTemplates: IEntityTemplateMap): RelationshipTemplateRuleWizardValues | undefined => {
     if (!rule) return undefined;
     const { formula, ...restOfRule } = rule;
 

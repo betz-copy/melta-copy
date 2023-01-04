@@ -4,7 +4,7 @@ import { useQueryClient } from 'react-query';
 import i18next from 'i18next';
 import { BrokenRuleCompact } from './BrokenRuleCompact';
 import { BrokenRuleFull } from './BrokenRuleFull';
-import { IMongoRule } from '../../../interfaces/rules';
+import { IRuleMap } from '../../../interfaces/rules';
 import { IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
 import { IActionMetadataPopulated } from '../../../interfaces/ruleBreaches/actionMetadata';
 
@@ -14,7 +14,7 @@ export const BrokenRulesInfo: React.FC<{
     isCompact: boolean;
 }> = ({ brokenRules, actionMetadata, isCompact }) => {
     const queryClient = useQueryClient();
-    const rules = queryClient.getQueryData<IMongoRule[]>('getRules')!;
+    const rules = queryClient.getQueryData<IRuleMap>('getRules')!;
 
     return (
         <Grid container direction="column" spacing={1}>
@@ -26,7 +26,7 @@ export const BrokenRulesInfo: React.FC<{
             <Grid item>
                 <List dense={isCompact}>
                     {brokenRules.map((brokenRule) => {
-                        const ruleTemplate = rules.find(({ _id }) => _id === brokenRule.ruleId)!;
+                        const ruleTemplate = rules.get(brokenRule.ruleId)!;
                         return isCompact ? (
                             <BrokenRuleCompact key={brokenRule.ruleId} brokenRule={brokenRule} ruleTemplate={ruleTemplate} />
                         ) : (

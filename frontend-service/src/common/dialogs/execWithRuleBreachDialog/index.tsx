@@ -5,7 +5,7 @@ import { useQueryClient } from 'react-query';
 import { useSelector } from 'react-redux';
 import { ActionTypes, IActionMetadataPopulated } from '../../../interfaces/ruleBreaches/actionMetadata';
 import { IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
-import { IMongoRule } from '../../../interfaces/rules';
+import { IRuleMap } from '../../../interfaces/rules';
 import { RootState } from '../../../store';
 import RuleBreachInfo from '../../ruleBreanchInfo/RuleBreachInfo';
 
@@ -18,12 +18,12 @@ const ExecWithRuleBreachDialog: React.FC<{
     actionMetadata: IActionMetadataPopulated;
 }> = ({ isSubmitting, onCancel, onSubmit, brokenRules, actionType, actionMetadata }) => {
     const queryClient = useQueryClient();
-    const rules = queryClient.getQueryData<IMongoRule[]>('getRules')!;
+    const rules = queryClient.getQueryData<IRuleMap>('getRules')!;
 
     const darkMode = useSelector((state: RootState) => state.darkMode);
 
     const someBrokenRuleIsEnforcement = brokenRules.some(({ ruleId }) => {
-        const rule = rules.find((currRule) => currRule._id === ruleId)!;
+        const rule = rules.get(ruleId)!;
         return rule.actionOnFail === 'ENFORCEMENT';
     });
 

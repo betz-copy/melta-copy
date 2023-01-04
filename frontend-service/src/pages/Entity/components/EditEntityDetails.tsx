@@ -8,7 +8,7 @@ import { Form, Formik } from 'formik';
 import mapValues from 'lodash.mapvalues';
 import pickBy from 'lodash.pickby';
 import { AxiosError } from 'axios';
-import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IEntity, IEntityExpanded } from '../../../interfaces/entities';
 import { updateEntityRequest } from '../../../services/entitiesService';
 import { EntityWizardValues } from '../../../common/wizards/entity';
@@ -27,7 +27,8 @@ const EditEntityDetails: React.FC<{
     const { entity } = expandedEntity;
     const queryClient = useQueryClient();
 
-    const templateIds = queryClient.getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates')!.map((template) => template._id);
+    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+    const templateIds = Array.from(entityTemplates.keys());
 
     const [updateWithRuleBreachDialogState, setUpdateWithRuleBreachDialogState] = useState<{
         isOpen: boolean;
