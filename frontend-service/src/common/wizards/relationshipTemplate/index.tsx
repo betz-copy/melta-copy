@@ -79,9 +79,8 @@ const RelationshipTemplateWizard: React.FC<WizardBaseType<RelationshipTemplateWi
         },
         {
             onSuccess: (data) => {
-                queryClient.setQueryData<IRelationshipTemplateMap>(
-                    'getRelationshipTemplates',
-                    (relationshipTemplateMap) => relationshipTemplateMap!.set(data._id, data),
+                queryClient.setQueryData<IRelationshipTemplateMap>('getRelationshipTemplates', (relationshipTemplateMap) =>
+                    relationshipTemplateMap!.set(data._id, data),
                 );
 
                 if (isEditMode) {
