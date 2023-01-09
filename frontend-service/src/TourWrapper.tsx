@@ -5,7 +5,7 @@ import i18next from 'i18next';
 import hebrew from './i18n/hebrew';
 
 const TourWrapper: React.FC = ({ children }) => {
-    const tourText = i18next.t('tourText', { returnObjects: true }) as typeof hebrew['tourText'];
+    const tourText = i18next.t('tourText', { returnObjects: true }) as (typeof hebrew)['tourText'];
 
     const steps: StepType[] = [
         {
