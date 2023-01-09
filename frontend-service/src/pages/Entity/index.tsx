@@ -45,9 +45,6 @@ const Entity: React.FC = () => {
         getExpandedEntityByIdRequest(entityId!, { templateIds, numberOfConnections: 1 }),
     );
 
-    const isEntityDisabled = expandedEntity?.entity.properties.disabled;
-    const currentEntityTemplate = entityTemplates.get(expandedEntity!.entity.templateId)!;
-
     const [createRelationshipDialogState, setCreateRelationshipDialogState] = useState<{
         isOpen: boolean;
         initialValues?: React.ComponentProps<typeof CreateRelationshipDialog>['initialValues'];
@@ -68,6 +65,9 @@ const Entity: React.FC = () => {
     }, [expandedEntity]); // eslint-disable-line react-hooks/exhaustive-deps
 
     if (!expandedEntity) return <CircularProgress />;
+
+    const isEntityDisabled = expandedEntity.entity.properties.disabled;
+    const currentEntityTemplate = entityTemplates.get(expandedEntity.entity.templateId)!;
 
     const relevantRelationshipTemplates = Array.from(relationshipTemplates.values(), (currRelationshipTemplate) =>
         populateRelationshipTemplate(currRelationshipTemplate, entityTemplates),
