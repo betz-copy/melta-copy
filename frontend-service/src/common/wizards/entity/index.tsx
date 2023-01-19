@@ -1,9 +1,10 @@
 import React from 'react';
 
 import { toast } from 'react-toastify';
-import { useMutation } from 'react-query';
+import { useMutation, useQueryClient } from 'react-query';
 import i18next from 'i18next';
 import { useNavigate } from 'react-router-dom';
+import { AxiosError } from 'axios';
 import { StepsType, Wizard, WizardBaseType } from '../index';
 import { ChooseTemplate, chooseTemplateSchema } from './ChooseTemplate';
 import { FillFields, fillFieldsValidate } from './FillFields';
@@ -11,6 +12,10 @@ import { Summary } from './Summary';
 import { createEntityRequest } from '../../../services/entitiesService';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { FileFields, fileFieldsSchema } from './FileFields';
+import { environment } from '../../../globals';
+import { toastConstraintValidationError } from './toastConstraintValidationError';
+
+const { errorCodes } = environment;
 
 export interface EntityWizardValues {
     template: IMongoEntityTemplatePopulated;
@@ -63,6 +68,7 @@ const EntityWizard: React.FC<WizardBaseType<EntityWizardValues>> = ({
             },
             propertiesOrder: [],
             propertiesPreview: [],
+            uniqueConstraints: [],
             disabled: false,
         },
         properties: { disabled: false },
@@ -71,6 +77,7 @@ const EntityWizard: React.FC<WizardBaseType<EntityWizardValues>> = ({
     isEditMode = false,
 }) => {
     const navigate = useNavigate();
+    const queryClient = useQueryClient();
 
     const { isLoading, mutateAsync } = useMutation((entity: any) => createEntityRequest(entity), {
         onSuccess: (newEntity) => {
@@ -78,7 +85,13 @@ const EntityWizard: React.FC<WizardBaseType<EntityWizardValues>> = ({
             handleClose();
             navigate(`/entity/${newEntity.properties._id}`);
         },
-        onError: () => {
+        onError: (err: AxiosError) => {
+            const errorMetadata = err.response?.data?.metadata;
+            if (errorMetadata?.errorCode === errorCodes.failedConstraintsValidation) {
+                toastConstraintValidationError(queryClient, errorMetadata);
+                return;
+            }
+
             toast.error(i18next.t('wizard.entity.failedToCreate'));
         },
     });

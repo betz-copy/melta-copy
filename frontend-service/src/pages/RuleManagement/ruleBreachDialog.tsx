@@ -14,6 +14,9 @@ import { approveRuleBreachRequestRequest, cancelRuleBreachRequestRequest, denyRu
 import { BreachType } from '../../interfaces/ruleBreaches/ruleBreach';
 import { IPermissionsOfUser } from '../../services/permissionsService';
 import { RootState } from '../../store';
+import { environment } from '../../globals';
+
+const { errorCodes } = environment;
 
 const RuleBreachDialog: React.FC<{
     isOpen: boolean;
@@ -50,7 +53,7 @@ const RuleBreachDialog: React.FC<{
             onError: (error: AxiosError, status) => {
                 console.log('failed to review ruleBreach. error:', error);
 
-                if (error.response?.data?.metadata?.errorCode === 'RULE_BLOCK') {
+                if (error.response?.data?.metadata?.errorCode === errorCodes.ruleBlock) {
                     const newRuleBreach = { ...ruleBreach, brokenRules: error.response?.data?.metadata?.brokenRules } as IRuleBreachRequestPopulated;
                     onUpdatedRuleBreach(newRuleBreach);
 

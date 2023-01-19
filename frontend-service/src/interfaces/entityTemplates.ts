@@ -23,6 +23,7 @@ export interface IEntityTemplate {
     category: IMongoCategory['_id'];
     propertiesOrder: string[];
     propertiesPreview: string[];
+    uniqueConstraints: string[][];
 }
 
 export interface IEntityTemplatePopulated extends Omit<IEntityTemplate, 'category'> {

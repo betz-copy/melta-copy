@@ -12,6 +12,10 @@ import { IEntityTemplateMap, IEntityTemplatePopulated } from '../../../interface
 import { ChooseIcon } from './ChooseIcon';
 import fileDetails from '../../../interfaces/fileDetails';
 import { ErrorToast } from '../../ErrorToast';
+import { environment } from '../../../globals';
+import { IConstraint } from '../../../interfaces/entities';
+
+const { errorCodes } = environment;
 
 export interface EntityTemplateFormInputProperties {
     name: string;
@@ -20,13 +24,14 @@ export interface EntityTemplateFormInputProperties {
     required: boolean;
     preview: boolean;
     hide: boolean;
+    unique: boolean;
     id: string;
     options: string[];
     pattern: string;
     patternCustomErrorMessage: string;
 }
 export interface EntityTemplateWizardValues
-    extends Omit<IEntityTemplatePopulated, 'properties' | 'iconFileId' | 'propertiesOrder' | 'propertiesPreview'> {
+    extends Omit<IEntityTemplatePopulated, 'properties' | 'iconFileId' | 'propertiesOrder' | 'propertiesPreview' | 'uniqueConstraints'> {
     properties: EntityTemplateFormInputProperties[];
     attachmentProperties: EntityTemplateFormInputProperties[];
     icon?: fileDetails;
@@ -86,11 +91,41 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
                 handleClose();
             },
             onError: (error: AxiosError) => {
+                const errorMetadata = error.response?.data?.metadata;
+                if (isEditMode && errorMetadata?.errorCode === errorCodes.failedToCreateConstraints) {
+                    const { constraint }: { constraint: IConstraint } = errorMetadata;
+
+                    const entityTemplates = queryClient.getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates')!;
+                    const entityTemplate = entityTemplates.find(({ _id }) => _id === constraint.templateId)!;
+
+                    if (constraint.type === 'REQUIRED') {
+                        const { title: constraintPropertyDisplayName } = entityTemplate.properties.properties[constraint.property];
+                        toast.error(
+                            `${i18next.t(
+                                'wizard.entityTemplate.failedToUpdateRequiredConstraintsBecauseOfEntitiesWithMissing',
+                            )} ${constraintPropertyDisplayName}`,
+                        );
+                    } else {
+                        const constraintPropsDisplayNames = constraint.properties.map((prop) => entityTemplate.properties.properties[prop].title);
+
+                        const constraintPropsListString = constraintPropsDisplayNames.map((prop) => `"${prop}"`).join('+');
+                        toast.error(
+                            `${i18next.t(
+                                'wizard.entityTemplate.failedToUpdateUniqueConstraintsBecauseOfEntitiesWithDuplicates',
+                            )} ${constraintPropsListString}`,
+                        );
+                    }
+
+                    return;
+                }
+
                 if (isEditMode) {
                     toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.entityTemplate.failedToEdit')} />);
                 } else {
                     toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.entityTemplate.failedToCreate')} />);
                 }
+
+                console.log('failed to create/update entity template. error', error);
             },
         },
     );

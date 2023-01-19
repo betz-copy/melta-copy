@@ -52,6 +52,7 @@ const RelationshipTemplateWizard: React.FC<WizardBaseType<RelationshipTemplateWi
             category: { _id: '', displayName: '', name: '', color: '' },
             propertiesOrder: [],
             propertiesPreview: [],
+            uniqueConstraints: [],
             disabled: false,
         },
         destinationEntity: {
@@ -62,6 +63,7 @@ const RelationshipTemplateWizard: React.FC<WizardBaseType<RelationshipTemplateWi
             category: { _id: '', displayName: '', name: '', color: '' },
             propertiesOrder: [],
             propertiesPreview: [],
+            uniqueConstraints: [],
             disabled: false,
         },
     },

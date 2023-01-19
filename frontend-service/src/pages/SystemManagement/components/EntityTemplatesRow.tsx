@@ -16,7 +16,7 @@ import { EntityTemplateWizard } from '../../../common/wizards/entityTemplate';
 import {
     deleteEntityTemplateRequest,
     entityTemplateObjectToEntityTemplateForm,
-    updateDisabledFieldEntityTemplateRequest,
+    updateEntityTemplateStatusRequest,
 } from '../../../services/templates/enitityTemplatesService';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
 import SearchInput from '../../../common/inputs/SearchInput';
@@ -50,8 +50,9 @@ const EntityTemplatesRow: React.FC = () => {
         entityTemplate: null,
     });
 
-    const { mutateAsync: updateDisabledMutateAsync } = useMutation(
-        (entityTemplate: IMongoEntityTemplatePopulated) => updateDisabledFieldEntityTemplateRequest(entityTemplate._id, entityTemplate),
+    const { mutateAsync: updateEntityTemplateStatusAsync } = useMutation(
+        ({ entityTemplateId, disabled }: { entityTemplateId: string; disabled: boolean }) =>
+            updateEntityTemplateStatusRequest(entityTemplateId, disabled),
         {
             onSuccess: (data) => {
                 queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) => entityTemplateMap!.set(data._id, data));
@@ -59,8 +60,8 @@ const EntityTemplatesRow: React.FC = () => {
                 else toast.success(i18next.t('wizard.entityTemplate.activatedSuccessfully'));
             },
             onError: (_err, variables) => {
-                if (variables.disabled) toast.error(i18next.t('wizard.entityTemplate.failedToActivate'));
-                else toast.error(i18next.t('wizard.entityTemplate.failedToDisable'));
+                if (variables.disabled) toast.error(i18next.t('wizard.entityTemplate.failedToDisable'));
+                else toast.error(i18next.t('wizard.entityTemplate.failedToActivate'));
             },
         },
     );
@@ -133,7 +134,9 @@ const EntityTemplatesRow: React.FC = () => {
                             }
                             onEditClick={() => setEntityTemplateWizardDialogState({ isWizardOpen: true, entityTemplate })}
                             onDeleteClick={() => setDeleteEntityTemplateDialogState({ isDialogOpen: true, entityTemplateId: entityTemplate._id })}
-                            onDisableClick={() => updateDisabledMutateAsync(entityTemplate)}
+                            onDisableClick={() =>
+                                updateEntityTemplateStatusAsync({ entityTemplateId: entityTemplate._id, disabled: !entityTemplate.disabled })
+                            }
                             disabledProps={{
                                 isDisabled: entityTemplate.disabled,
                                 canEdit: entityTemplate.disabled,

@@ -1,6 +1,7 @@
 import MockAdapter from 'axios-mock-adapter';
+import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 
-const entityTemplates = [
+const entityTemplates: IMongoEntityTemplatePopulated[] = [
     {
         _id: '61e3ea6e4d51a83e87e83c7e',
         name: 'trip',
@@ -10,6 +11,7 @@ const entityTemplates = [
             _id: '61e3dee74d51a83e87e83c7b',
             name: 'trips',
             displayName: 'טיולים',
+            color: '#B3E5FC',
         },
         properties: {
             type: 'object',
@@ -48,6 +50,7 @@ const entityTemplates = [
         },
         propertiesOrder: ['name', 'destination', 'startDate', 'endDate', 'options', 'firstFile'],
         propertiesPreview: ['name', 'startDate', 'endDate'],
+        uniqueConstraints: [],
     },
     {
         _id: '61e3ea6e4d51a83e87e83c7f',
@@ -58,6 +61,7 @@ const entityTemplates = [
             _id: '61e3d8384d51a83e87e83c74',
             name: 'pepole',
             displayName: 'אנשים',
+            color: '#B80000',
         },
         properties: {
             type: 'object',
@@ -89,6 +93,7 @@ const entityTemplates = [
         },
         propertiesOrder: ['firstName', 'lastName', 'age', 'gender', 'firstFile'],
         propertiesPreview: ['firstName', 'lastName', 'age'],
+        uniqueConstraints: [],
     },
     {
         _id: '61e3ea6e4d51a83e87e83c80',
@@ -99,6 +104,7 @@ const entityTemplates = [
             _id: '61e3d8384d51a83e87e83c74',
             name: 'pepole',
             displayName: 'אנשים',
+            color: '#B80000',
         },
         properties: {
             type: 'object',
@@ -129,6 +135,7 @@ const entityTemplates = [
         },
         propertiesOrder: ['firstName', 'lastName', 'age', 'gender', 'agentId'],
         propertiesPreview: ['firstName', 'lastName', 'age'],
+        uniqueConstraints: [],
     },
     {
         _id: '61e3ea6e4d51a83e87e83c81',
@@ -139,6 +146,7 @@ const entityTemplates = [
             _id: '61e3d8384d51a83e87e83c75',
             name: 'flights',
             displayName: 'טיסות',
+            color: '#E65100',
         },
         properties: {
             type: 'object',
@@ -175,6 +183,7 @@ const entityTemplates = [
         },
         propertiesOrder: ['flightNumber', 'departureDate', 'landingDate', 'from', 'to', 'planeType'],
         propertiesPreview: ['flightNumber', 'from', 'to'],
+        uniqueConstraints: [],
     },
     {
         _id: '61e3ea6e4d51a83e87e83c82',
@@ -185,6 +194,7 @@ const entityTemplates = [
             _id: '61e3d8384d51a83e87e83c75',
             name: 'flights',
             displayName: 'טיסות',
+            color: '#E65100',
         },
         properties: {
             type: 'object',
@@ -207,6 +217,7 @@ const entityTemplates = [
         },
         propertiesOrder: ['airportName', 'airportId', 'country'],
         propertiesPreview: ['airportName', 'country'],
+        uniqueConstraints: [],
     },
     {
         _id: '61e3ea6e4d51a83e87e83c83',
@@ -217,6 +228,7 @@ const entityTemplates = [
             _id: '61e3d8384d51a83e87e83c76',
             name: 'hotels',
             displayName: 'מלונות',
+            color: '#FCDC00',
         },
         properties: {
             type: 'object',
@@ -247,8 +259,9 @@ const entityTemplates = [
             required: ['hotelName', 'checkInDate', 'checkOutDate', 'country'],
             hide: ['country'],
         },
-        propertiesOrder: ['hotelName', 'hotelChain', 'checkInDate', 'checkOutDate', 'country'],
+        uniqueConstraints: [],
         propertiesPreview: ['hotelName', 'checkInDate', 'checkOutDate'],
+        propertiesOrder: ['hotelName', 'hotelChain', 'checkInDate', 'checkOutDate', 'country'],
     },
     {
         _id: '61e3ea6e4d51a83e87e83c84',
@@ -259,6 +272,7 @@ const entityTemplates = [
             _id: '61e3d8384d51a83e87e83c76',
             name: 'hotels',
             displayName: 'מלונות',
+            color: '#FCDC00',
         },
         properties: {
             type: 'object',
@@ -287,6 +301,7 @@ const entityTemplates = [
         },
         propertiesOrder: ['name', 'checkInDate', 'checkOutDate', 'country'],
         propertiesPreview: ['name', 'checkInDate', 'checkOutDate'],
+        uniqueConstraints: [],
     },
     {
         _id: '61e3ea6e4d51a83e87e83c85',
@@ -297,6 +312,7 @@ const entityTemplates = [
             _id: '61e3d8384d51a83e87e83c77',
             name: 'money',
             displayName: 'כסף',
+            color: '#F78DA7',
         },
         properties: {
             type: 'object',
@@ -324,6 +340,7 @@ const entityTemplates = [
         },
         propertiesOrder: ['name', 'company', 'expirtaionDate', 'monthlyAmount'],
         propertiesPreview: ['name', 'expirtaionDate'],
+        uniqueConstraints: [],
     },
     {
         _id: '61e3ea6e4d51a83e87e83c86',
@@ -335,6 +352,7 @@ const entityTemplates = [
             _id: '61e3d8384d51a83e87e83c77',
             name: 'money',
             displayName: 'כסף',
+            color: '#F78DA7',
         },
         properties: {
             type: 'object',
@@ -353,6 +371,7 @@ const entityTemplates = [
         },
         propertiesOrder: ['name', 'amount'],
         propertiesPreview: ['name', 'amount'],
+        uniqueConstraints: [],
     },
     {
         _id: '61e3ea6e4d51a83e87e83c87',
@@ -363,6 +382,7 @@ const entityTemplates = [
             _id: '61e3d8384d51a83e87e83c79',
             name: 'communcation',
             displayName: 'תקשורת',
+            color: '#0D47A1',
         },
         properties: {
             type: 'object',
@@ -385,6 +405,7 @@ const entityTemplates = [
         },
         propertiesOrder: ['model', 'color', 'serialNumber'],
         propertiesPreview: ['model', 'serialNumber'],
+        uniqueConstraints: [],
     },
     {
         _id: '61e3ea6e4d51a83e87e83c88',
@@ -395,6 +416,7 @@ const entityTemplates = [
             _id: '61e3d8384d51a83e87e83c79',
             name: 'communcation',
             displayName: 'תקשורת',
+            color: '#0D47A1',
         },
         properties: {
             type: 'object',
@@ -413,6 +435,7 @@ const entityTemplates = [
         },
         propertiesOrder: ['company', 'number'],
         propertiesPreview: ['company', 'number'],
+        uniqueConstraints: [],
     },
     {
         _id: '61e3ea6e4d51a83e87e83c89',
@@ -423,6 +446,7 @@ const entityTemplates = [
             _id: '61e3d8384d51a83e87e83c78',
             name: 'things',
             displayName: 'דברים',
+            color: '#7B1FA2',
         },
         properties: {
             type: 'object',
@@ -445,6 +469,7 @@ const entityTemplates = [
         },
         propertiesOrder: ['company', 'color', 'weight'],
         propertiesPreview: ['company', 'weight'],
+        uniqueConstraints: [],
     },
 ];
 const mockEntityTemplates = (mock: MockAdapter) => {
@@ -459,6 +484,7 @@ const mockEntityTemplates = (mock: MockAdapter) => {
                 _id: '61e3dee74d51a83e87e83c7b',
                 name: 'trips',
                 displayName: 'טיולים',
+                color: '#B3E5FC',
             },
             properties: {
                 type: 'object',
@@ -483,6 +509,7 @@ const mockEntityTemplates = (mock: MockAdapter) => {
                     },
                 },
                 required: ['name', 'destination'],
+                unique: [],
                 hide: ['destination'],
             },
             propertiesOrder: ['name', 'destination', 'startDate', 'endDate'],
@@ -501,6 +528,7 @@ const mockEntityTemplates = (mock: MockAdapter) => {
                 _id: '61e3dee74d51a83e87e83c7b',
                 name: 'trips',
                 displayName: 'טיולים',
+                color: '#B3E5FC',
             },
             properties: {
                 type: 'object',
@@ -525,6 +553,7 @@ const mockEntityTemplates = (mock: MockAdapter) => {
                     },
                 },
                 required: ['name', 'destination'],
+                unique: [],
                 hide: ['destination'],
             },
             propertiesOrder: ['name', 'destination', 'startDate', 'endDate'],

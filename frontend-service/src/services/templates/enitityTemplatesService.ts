@@ -2,7 +2,7 @@ import { v4 as uuid } from 'uuid';
 import axios from '../../axios';
 import { EntityTemplateFormInputProperties, EntityTemplateWizardValues } from '../../common/wizards/entityTemplate';
 import { environment } from '../../globals';
-import { IEntityTemplate, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IEntitySingleProperty, IEntityTemplate, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { getFileName } from '../../utils/getFileName';
 
 const { entityTemplates } = environment.api;
@@ -11,7 +11,7 @@ export const stringFormats = ['date', 'date-time', 'email'];
 
 const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTemplatePopulated | null): EntityTemplateWizardValues | undefined => {
     if (!entityTemplate) return undefined;
-    const { iconFileId, properties, propertiesOrder, propertiesPreview, ...restOfEntityTemplate } = entityTemplate;
+    const { iconFileId, properties, propertiesOrder, propertiesPreview, uniqueConstraints, ...restOfEntityTemplate } = entityTemplate;
 
     const propertiesArray: EntityTemplateFormInputProperties[] = [];
     const attachmentProperties: EntityTemplateFormInputProperties[] = [];
@@ -34,6 +34,7 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
             required: properties.required.includes(key),
             preview: propertiesPreview.includes(key),
             hide: properties.hide.includes(key),
+            unique: uniqueConstraints[0]?.includes(key) ?? false, // UI supports only single unique constraint
             type,
             options: value.enum || [],
             pattern: value.pattern || '',
@@ -55,22 +56,23 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
     return { ...restOfEntityTemplate, properties: propertiesArray, attachmentProperties };
 };
 
-const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTemplate => {
+export const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTemplate => {
     const { properties, attachmentProperties, ...restOfProperties } = values;
 
     const propertiesOrder: string[] = [];
     const propertiesPreview: string[] = [];
-    const schema = {
-        type: 'object' as 'object',
-        properties: {} as any,
-        required: [] as string[],
-        hide: [] as string[],
+    const uniqueConstraint: string[] = []; // UI supports only single unique constraint
+    const schema: IEntityTemplate['properties'] = {
+        type: 'object',
+        properties: {},
+        required: [],
+        hide: [],
     };
 
-    properties.forEach(({ name, title, type, required, preview, options, pattern, patternCustomErrorMessage, hide }) => {
+    properties.forEach(({ name, title, type, required, preview, options, pattern, patternCustomErrorMessage, hide, unique }) => {
         schema.properties[name] = {
             title,
-            type: basePropertyTypes.includes(type) ? type : 'string',
+            type: basePropertyTypes.includes(type) ? (type as IEntitySingleProperty['type']) : 'string',
             format: stringFormats.includes(type) ? type : undefined,
             enum: type === 'enum' ? options : undefined,
             pattern: type === 'pattern' ? pattern : undefined,
@@ -81,6 +83,7 @@ const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTemplate =
 
         if (required) schema.required.push(name);
         if (hide) schema.hide.push(name);
+        if (unique) uniqueConstraint.push(name);
         if (preview) propertiesPreview.push(name);
     });
 
@@ -96,7 +99,9 @@ const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTemplate =
         if (required) schema.required.push(name);
     });
 
-    return { ...restOfProperties, properties: schema, category: values.category._id, propertiesOrder, propertiesPreview };
+    const uniqueConstraints = uniqueConstraint.length > 0 ? [uniqueConstraint] : [];
+
+    return { ...restOfProperties, properties: schema, category: values.category._id, propertiesOrder, propertiesPreview, uniqueConstraints };
 };
 
 const createEntityTemplateRequest = async (newEntityTemplate: EntityTemplateWizardValues) => {
@@ -115,23 +120,16 @@ const createEntityTemplateRequest = async (newEntityTemplate: EntityTemplateWiza
     formData.append('properties', JSON.stringify(entityTemplate.properties));
     formData.append('propertiesOrder', JSON.stringify(entityTemplate.propertiesOrder));
     formData.append('propertiesPreview', JSON.stringify(entityTemplate.propertiesPreview));
+    formData.append('uniqueConstraints', JSON.stringify(entityTemplate.uniqueConstraints));
 
     const { data } = await axios.post<IMongoEntityTemplatePopulated>(entityTemplates, formData);
     return data;
 };
 
-const updateDisabledFieldEntityTemplateRequest = async (entityTemplateId: string, entityTemplate: IMongoEntityTemplatePopulated) => {
-    const formData = new FormData();
-    formData.append('displayName', entityTemplate.displayName);
-    formData.append('name', entityTemplate.name);
-    formData.append('category', entityTemplate.category._id);
-    formData.append('properties', JSON.stringify(entityTemplate.properties));
-    formData.append('propertiesOrder', JSON.stringify(entityTemplate.propertiesOrder));
-    formData.append('disabled', String(!entityTemplate.disabled));
-
-    formData.append('propertiesPreview', JSON.stringify(entityTemplate.propertiesPreview));
-
-    const { data } = await axios.put<IMongoEntityTemplatePopulated>(`${entityTemplates}/${entityTemplateId}`, formData);
+const updateEntityTemplateStatusRequest = async (entityTemplateId: string, disabledStatus: boolean) => {
+    const { data } = await axios.patch<IMongoEntityTemplatePopulated>(`${entityTemplates}/${entityTemplateId}/status`, {
+        disabled: disabledStatus,
+    });
     return data;
 };
 
@@ -154,7 +152,7 @@ const updateEntityTemplateRequest = async (entityTemplateId: string, updatedEnti
     formData.append('properties', JSON.stringify(entityTemplate.properties));
     formData.append('propertiesOrder', JSON.stringify(entityTemplate.propertiesOrder));
     formData.append('propertiesPreview', JSON.stringify(entityTemplate.propertiesPreview));
-    formData.append('disabled', String(entityTemplate.disabled));
+    formData.append('uniqueConstraints', JSON.stringify(entityTemplate.uniqueConstraints));
 
     const { data } = await axios.put<IMongoEntityTemplatePopulated>(`${entityTemplates}/${entityTemplateId}`, formData);
     return data;
@@ -170,5 +168,5 @@ export {
     updateEntityTemplateRequest,
     entityTemplateObjectToEntityTemplateForm,
     deleteEntityTemplateRequest,
-    updateDisabledFieldEntityTemplateRequest,
+    updateEntityTemplateStatusRequest,
 };

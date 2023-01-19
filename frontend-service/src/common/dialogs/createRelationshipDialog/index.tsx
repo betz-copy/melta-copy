@@ -21,6 +21,9 @@ import { IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreac
 import { ICreateRelationshipMetadataPopulated } from '../../../interfaces/ruleBreaches/actionMetadata';
 import CreateWithRuleBreachDialog from './CreateWithRuleBreachDialog';
 import { RootState } from '../../../store';
+import { environment } from '../../../globals';
+
+const { errorCodes } = environment;
 
 export interface ICreateRelationshipValues {
     relationshipTemplate: IMongoRelationshipTemplatePopulated | null;
@@ -216,7 +219,7 @@ const CreateRelationshipDialog: React.FC<{
         {
             onError: (err: AxiosError, { relationshipInstancePopulated }) => {
                 const errorMetadata = err.response?.data?.metadata;
-                if (errorMetadata?.errorCode === 'RULE_BLOCK') {
+                if (errorMetadata?.errorCode === errorCodes.ruleBlock) {
                     setCreateWithRuleBreachDialogState({
                         isOpen: true,
                         brokenRules: errorMetadata.brokenRules,

@@ -3,6 +3,9 @@ import MockAdapter from 'axios-mock-adapter';
 import { Chance } from 'chance';
 import { unpopulateBrokenRules } from '../services/ruleBreachesService';
 import { generateRuleBreachRequest } from './ruleBreaches';
+import { environment } from '../globals';
+
+const { errorCodes } = environment;
 
 const chance = new Chance();
 
@@ -28,7 +31,7 @@ const mockRelationships = (mock: MockAdapter) => {
             400,
             {
                 metadata: {
-                    errorCode: 'RULE_BLOCK',
+                    errorCode: errorCodes.ruleBlock,
                     brokenRules,
                     rawBrokenRules: unpopulateBrokenRules(brokenRules),
                 },
@@ -54,7 +57,7 @@ const mockRelationships = (mock: MockAdapter) => {
             400,
             {
                 metadata: {
-                    errorCode: 'RULE_BLOCK',
+                    errorCode: errorCodes.ruleBlock,
                     brokenRules,
                     rawBrokenRules: unpopulateBrokenRules(brokenRules),
                 },

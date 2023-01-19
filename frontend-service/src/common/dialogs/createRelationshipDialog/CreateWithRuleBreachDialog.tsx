@@ -9,6 +9,9 @@ import { IRuleMap } from '../../../interfaces/rules';
 import { createRuleBreachRequestRequest } from '../../../services/ruleBreachesService';
 import { ErrorToast } from '../../ErrorToast';
 import ExecWithRuleBreachDialog from '../execWithRuleBreachDialog';
+import { environment } from '../../../globals';
+
+const { errorCodes } = environment;
 
 const CreateWithRuleBreachDialog: React.FC<{
     handleClose: () => void;
@@ -47,7 +50,7 @@ const CreateWithRuleBreachDialog: React.FC<{
         {
             onError: (err: AxiosError) => {
                 const errorMetadata = err.response?.data?.metadata;
-                if (errorMetadata?.errorCode === 'RULE_BLOCK') {
+                if (errorMetadata?.errorCode === errorCodes.ruleBlock) {
                     onUpdatedRuleBlock(errorMetadata.brokenRules, errorMetadata.rawBrokenRules);
                 }
 

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Grid, Card, CardContent, CircularProgress, Box, Divider, Button } from '@mui/material';
 import { Done as DoneIcon, Clear as ClearIcon } from '@mui/icons-material';
-import { useMutation } from 'react-query';
+import { useMutation, useQueryClient } from 'react-query';
 import i18next from 'i18next';
 import { toast } from 'react-toastify';
 import { Form, Formik } from 'formik';
@@ -9,6 +9,7 @@ import mapValues from 'lodash.mapvalues';
 import pickBy from 'lodash.pickby';
 import { useLocation } from 'react-router';
 import { useNavigate } from 'react-router-dom';
+import { AxiosError } from 'axios';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IEntity, IEntityExpanded } from '../../../interfaces/entities';
 import { duplicateEntityRequest } from '../../../services/entitiesService';
@@ -18,8 +19,13 @@ import { BlueTitle } from '../../../common/BlueTitle';
 import { filterAttachmentsPropertiesFromSchema } from '../../../utils/filterAttachmentsFromSchema';
 import { EntityFilesInput } from '../../../common/inputs/EntityFilesInput';
 import { DuplicateTopBar } from './DuplicateTopBar';
+import { environment } from '../../../globals';
+import { toastConstraintValidationError } from '../../../common/wizards/entity/toastConstraintValidationError';
+
+const { errorCodes } = environment;
 
 const DuplicateEntity: React.FC<{}> = () => {
+    const queryClient = useQueryClient();
     const { state } = useLocation();
     const { entityTemplate, expandedEntity } = state as {
         entityTemplate: IMongoEntityTemplatePopulated;
@@ -30,6 +36,7 @@ const DuplicateEntity: React.FC<{}> = () => {
     if (!state) {
         navigate(`/entity/${entity?.properties._id}`);
     }
+
     const { isLoading: isDuplicateLoading, mutateAsync: duplicateMutation } = useMutation(
         (newEntityDate: EntityWizardValues) => duplicateEntityRequest(entity.properties._id, newEntityDate),
         {
@@ -37,7 +44,13 @@ const DuplicateEntity: React.FC<{}> = () => {
                 toast.success(i18next.t('wizard.entity.duplicatedSuccessfully'));
                 navigate(`/entity/${data?.properties._id}`);
             },
-            onError: () => {
+            onError: (err: AxiosError) => {
+                const errorMetadata = err.response?.data?.metadata;
+                if (errorMetadata?.errorCode === errorCodes.failedConstraintsValidation) {
+                    toastConstraintValidationError(queryClient, errorMetadata);
+                    return;
+                }
+
                 toast.error(i18next.t('wizard.entity.failedToDuplicate'));
             },
         },

@@ -1,4 +1,4 @@
-import React, { useCallback, useRef } from 'react';
+import React, { SetStateAction, useCallback, useRef } from 'react';
 import { Accordion, AccordionDetails, AccordionSummary, Button, Grid, Typography } from '@mui/material';
 import { DragDropContext, Droppable } from 'react-beautiful-dnd';
 import { v4 as uuid } from 'uuid';
@@ -93,6 +93,22 @@ const FieldBlock: React.FC<FieldBlockProps> = ({
         updateFormik();
     };
 
+    const setDisplayValue = (index: number, valueOrFunc: SetStateAction<EntityTemplateFormInputProperties>) => {
+        const displayValuesCopy = [...displayValuesRef.current];
+
+        let value: EntityTemplateFormInputProperties;
+        if (typeof valueOrFunc === 'function') {
+            value = valueOrFunc(displayValuesCopy[index]);
+        } else {
+            value = valueOrFunc;
+        }
+
+        displayValuesCopy[index] = value;
+
+        setDisplayValues(displayValuesCopy);
+        updateFormik();
+    };
+
     const onChange = (index: number, event: React.ChangeEvent<HTMLInputElement>) => {
         const inputName = event.target.name.split('.')[1]; // the input name is in the format `properties[index].field`
         const inputValue = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
@@ -103,6 +119,7 @@ const FieldBlock: React.FC<FieldBlockProps> = ({
     const onChangeWrapper = (index: number) => (event: React.ChangeEvent<HTMLInputElement>) => onChange(index, event);
     const setFieldDisplayValueWrapper = (index: number) => (field: keyof EntityTemplateFormInputProperties, value: any) =>
         setFieldDisplayValue(index, field, value);
+    const setDisplayValueWrapper = (index: number) => (value: SetStateAction<EntityTemplateFormInputProperties>) => setDisplayValue(index, value);
 
     return (
         <Accordion
@@ -150,6 +167,7 @@ const FieldBlock: React.FC<FieldBlockProps> = ({
                                                         {...props}
                                                         key={property.id}
                                                         setFieldValue={setFieldDisplayValueWrapper(index)}
+                                                        setValues={setDisplayValueWrapper(index)}
                                                     />
                                                 );
                                             }
@@ -173,6 +191,7 @@ const FieldBlock: React.FC<FieldBlockProps> = ({
                                                     required: false,
                                                     preview: false,
                                                     hide: false,
+                                                    unique: false,
                                                     options: [],
                                                     pattern: '',
                                                     patternCustomErrorMessage: '',

@@ -13,6 +13,9 @@ import { ActionTypes, IUpdateEntityMetadata, IUpdateEntityMetadataPopulated } fr
 import { IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
 import { IRuleMap } from '../../../interfaces/rules';
 import { createRuleBreachRequestRequest } from '../../../services/ruleBreachesService';
+import { environment } from '../../../globals';
+
+const { errorCodes } = environment;
 
 const getUpdateEntityActionMetadata = (currEntity: IEntity, updateEntityFormData: EntityWizardValues): IUpdateEntityMetadataPopulated => {
     const templatePropertiesUpdated = pickBy(updateEntityFormData.template.properties.properties, ({ format }, propertyKey) => {
@@ -67,7 +70,7 @@ const UpdateEntityWithRuleBreachDialog: React.FC<{
         {
             onError: (err: AxiosError) => {
                 const errorMetadata = err.response?.data?.metadata;
-                if (errorMetadata?.errorCode === 'RULE_BLOCK') {
+                if (errorMetadata?.errorCode === errorCodes) {
                     onUpdatedRuleBlock(errorMetadata.brokenRules, errorMetadata.rawBrokenRules);
                 }
 

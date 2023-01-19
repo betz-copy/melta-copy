@@ -1,12 +1,32 @@
-import React, { memo } from 'react';
+import React, { memo, SetStateAction } from 'react';
 import { FormikErrors, FormikTouched } from 'formik';
-import { TextField, Box, MenuItem, Grid, Card, CardContent, Switch, FormControlLabel, IconButton, Chip, Autocomplete } from '@mui/material';
+import {
+    TextField,
+    Box,
+    MenuItem,
+    Grid,
+    Card,
+    CardContent,
+    Switch,
+    FormControlLabel,
+    IconButton,
+    Chip,
+    Autocomplete,
+    Tooltip,
+    Typography,
+} from '@mui/material';
 import { Delete as DeleteIcon, DragHandle as DragHandleIcon } from '@mui/icons-material';
 import { Draggable } from 'react-beautiful-dnd';
 import i18next from 'i18next';
 import isEqual from 'lodash.isequal';
 import { validPropertyTypes } from './AddFields';
 import { EntityTemplateFormInputProperties, EntityTemplateWizardValues } from './index';
+
+const UniqueCheckboxTooltipTitle = (
+    <Box sx={{ whiteSpace: 'pre-wrap' }}>
+        <Typography>{i18next.t('validation.uniqueTooltipTitle')}</Typography>
+    </Box>
+);
 
 interface FieldEditCardProps {
     value: EntityTemplateFormInputProperties;
@@ -17,6 +37,7 @@ interface FieldEditCardProps {
     touched?: FormikTouched<EntityTemplateFormInputProperties>;
     errors?: FormikErrors<EntityTemplateFormInputProperties>;
     setFieldValue: (field: keyof EntityTemplateFormInputProperties, value: any) => void;
+    setValues: (value: SetStateAction<EntityTemplateFormInputProperties>) => void;
     onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
     remove: (index: number) => any;
 }
@@ -30,6 +51,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     touched,
     errors,
     setFieldValue,
+    setValues,
     onChange,
     remove,
 }) => {
@@ -60,6 +82,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     const required = `properties[${index}].required`;
     const preview = `properties[${index}].preview`;
     const hide = `properties[${index}].hide`;
+    const unique = `properties[${index}].unique`;
 
     const initialEnumOptions = initialValues.properties.find((property) => property.id === value.id)?.options || [];
 
@@ -205,9 +228,15 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                     <Switch
                                                         id={required}
                                                         name={required}
-                                                        onChange={onChange}
+                                                        onChange={(_e, checked) => {
+                                                            setValues((prevValue) => ({
+                                                                ...prevValue,
+                                                                required: checked,
+                                                                // unique is allowed only if required=true, automatic uncheck 'unique' too
+                                                                unique: !checked ? false : prevValue.unique,
+                                                            }));
+                                                        }}
                                                         checked={value.required}
-                                                        disabled={isEditMode && areThereAnyInstances}
                                                     />
                                                 }
                                                 label={i18next.t('validation.required')}
@@ -230,6 +259,26 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                 }
                                                 label={i18next.t('validation.hide')}
                                             />
+                                            <Tooltip title={UniqueCheckboxTooltipTitle}>
+                                                <FormControlLabel
+                                                    control={
+                                                        <Switch
+                                                            id={unique}
+                                                            name={unique}
+                                                            onChange={(_e, checked) => {
+                                                                setValues((prevValue) => ({
+                                                                    ...prevValue,
+                                                                    unique: checked,
+                                                                    // unique is allowed only if required=true, automatic check 'required' too
+                                                                    required: checked ? true : prevValue.required,
+                                                                }));
+                                                            }}
+                                                            checked={value.unique}
+                                                        />
+                                                    }
+                                                    label={i18next.t('validation.unique')}
+                                                />
+                                            </Tooltip>
                                         </Box>
 
                                         <IconButton disabled={isDisabled} onClick={() => remove(index)}>

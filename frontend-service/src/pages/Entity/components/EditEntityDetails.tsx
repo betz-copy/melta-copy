@@ -18,6 +18,10 @@ import { BlueTitle } from '../../../common/BlueTitle';
 import { filterAttachmentsPropertiesFromSchema } from '../../../utils/filterAttachmentsFromSchema';
 import { IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
 import UpdateEntityWithRuleBreachDialog from './UpdateEntityWithRuleBreachDialog';
+import { environment } from '../../../globals';
+import { toastConstraintValidationError } from '../../../common/wizards/entity/toastConstraintValidationError';
+
+const { errorCodes } = environment;
 
 const EditEntityDetails: React.FC<{
     entityTemplate: IMongoEntityTemplatePopulated;
@@ -54,7 +58,12 @@ const EditEntityDetails: React.FC<{
             },
             onError: (err: AxiosError, { newEntityData: newEntityDate }) => {
                 const errorMetadata = err.response?.data?.metadata;
-                if (errorMetadata?.errorCode === 'RULE_BLOCK') {
+                if (errorMetadata?.errorCode === errorCodes.failedConstraintsValidation) {
+                    toastConstraintValidationError(queryClient, errorMetadata);
+                    return;
+                }
+
+                if (errorMetadata?.errorCode === errorCodes.ruleBlock) {
                     setUpdateWithRuleBreachDialogState({
                         isOpen: true,
                         brokenRules: errorMetadata.brokenRules,

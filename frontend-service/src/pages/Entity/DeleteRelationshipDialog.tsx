@@ -12,6 +12,9 @@ import { IRuleBreach, IRuleBreachPopulated } from '../../interfaces/ruleBreaches
 import { ActionTypes, IDeleteRelationshipMetadata, IDeleteRelationshipMetadataPopulated } from '../../interfaces/ruleBreaches/actionMetadata';
 import { createRuleBreachRequestRequest } from '../../services/ruleBreachesService';
 import { ErrorToast } from '../../common/ErrorToast';
+import { environment } from '../../globals';
+
+const { errorCodes } = environment;
 
 const DeleteRelationshipDialog: React.FC<{
     isOpen: boolean;
@@ -37,7 +40,7 @@ const DeleteRelationshipDialog: React.FC<{
         {
             onError: (err: AxiosError) => {
                 const errorMetadata = err.response?.data?.metadata;
-                if (errorMetadata?.errorCode === 'RULE_BLOCK') {
+                if (errorMetadata?.errorCode === errorCodes.ruleBlock) {
                     setDeleteWithRuleBreachDialogState({
                         isOpen: true,
                         brokenRules: errorMetadata.brokenRules,
@@ -73,7 +76,7 @@ const DeleteRelationshipDialog: React.FC<{
         {
             onError: (err: AxiosError) => {
                 const errorMetadata = err.response?.data?.metadata;
-                if (errorMetadata?.errorCode === 'RULE_BLOCK') {
+                if (errorMetadata?.errorCode === environment.errorCodes) {
                     setDeleteWithRuleBreachDialogState({
                         isOpen: true,
                         brokenRules: errorMetadata.brokenRules,

@@ -43,4 +43,9 @@ export const environment = {
     accessTokenName: 'rabaz-access-token',
     minimumSupportedChromeVersion: 80,
     fileIdLength: 32,
+    errorCodes: {
+        ruleBlock: 'RULE_BLOCK',
+        failedToCreateConstraints: 'FAILED_TO_CREATE_CONSTRAINTS',
+        failedConstraintsValidation: 'FAILED_CONSTRAINTS_VALIDATION',
+    },
 };
