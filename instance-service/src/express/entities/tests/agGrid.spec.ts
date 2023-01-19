@@ -34,7 +34,7 @@ const entityTemplate: IMongoEntityTemplate = {
 
             num: { type: 'number', title: 'num' },
         },
-        required: [],
+        hide: [],
     },
     disabled: false,
     createdAt: new Date().toISOString(),

@@ -211,6 +211,11 @@ export const normalizeRelAndEntitiesForRule = (result: QueryResult): IConnection
     });
 };
 
+export const normalizeGetDbConstraints = (constraintsQueryResult: QueryResult) => {
+    const constraints = constraintsQueryResult.records.map((constraint) => constraint.toObject());
+    return constraints as Array<{ name: string; description: string }>;
+};
+
 export const runInTransactionAndNormalize = async <T>(
     transaction: Transaction,
     cypherQuery: string,

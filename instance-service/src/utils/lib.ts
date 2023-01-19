@@ -1,5 +1,6 @@
 import { pipeline } from 'stream';
 import { promisify } from 'util';
+import isEqual from 'lodash.isequal';
 
 // eslint-disable-next-line import/prefer-default-export
 export const promisePipe = promisify(pipeline);
@@ -14,4 +15,8 @@ export const trycatch = async <Func extends (...args: any[]) => any>(func: Func,
     } catch (err) {
         return { err };
     }
+};
+
+export const arraysEqualsNonOrdered = (arr1: string[], arr2: string[]) => {
+    return isEqual(arr1.sort(), arr2.sort());
 };

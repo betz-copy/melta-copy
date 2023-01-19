@@ -20,7 +20,7 @@ export interface IEntityTemplate {
     properties: {
         type: 'object';
         properties: Record<string, IEntitySingleProperty>;
-        required: string[];
+        hide: [];
     };
     disabled: boolean;
     category: string;

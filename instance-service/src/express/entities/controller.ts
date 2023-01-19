@@ -41,6 +41,18 @@ class EntityController {
 
         res.json(await EntityManager.updateEntityById(req.params.id, req.body.properties, entityTemplate, req.body.ignoredRules));
     }
+
+    static async getConstraintsOfTemplate(req: Request, res: Response) {
+        res.json(await EntityManager.getConstraintsOfTemplate(req.params.templateId));
+    }
+
+    static async getAllConstraints(_req: Request, res: Response) {
+        res.json(await EntityManager.getAllConstraints());
+    }
+
+    static async updateConstraintsOfTemplate(req: Request, res: Response) {
+        res.json(await EntityManager.updateConstraintsOfTemplate(req.params.templateId, req.body));
+    }
 }
 
 export default EntityController;

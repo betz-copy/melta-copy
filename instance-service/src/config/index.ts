@@ -45,8 +45,12 @@ const config = {
         entityHasRelationships: 'ENTITY_HAS_RELATIONSHIPS',
         relationshipAlreadyExists: 'RELATIONSHIP_ALREADY_EXISTS',
         ruleBlock: 'RULE_BLOCK',
+        failedToCreateConstraints: 'FAILED_TO_CREATE_CONSTRAINTS',
+        failedConstraintsValidation: 'FAILED_CONSTRAINTS_VALIDATION',
     },
     createdRelationshipIdInBrokenRules: env.get('CREATED_RELATIONSHIP_ID_IN_BROKEN_RULES').default('created-relationship-id').asString(),
+    uniqueConstraintsPrefixName: env.get('UNIQUE_CONSTRAINTS_PREFIX_NAME').default('uniqueConstraint').asString(),
+    requiredConstraintsPrefixName: env.get('REQUIRED_CONSTRAINTS_PREFIX_NAME').default('requiredConstraint').asString(),
 };
 
 export default config;

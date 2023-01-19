@@ -168,3 +168,28 @@ export const updateEntityByIdRequestSchema = Joi.object({
         id: Joi.string().required(),
     },
 });
+
+export const getConstraintsOfTemplateRequestSchema = Joi.object({
+    body: {},
+    query: {},
+    params: {
+        templateId: Joi.string().required(),
+    },
+});
+
+export const getAllConstraintsRequestSchema = Joi.object({
+    body: {},
+    query: {},
+    params: {},
+});
+
+export const updateConstraintsOfTemplateRequestSchema = Joi.object({
+    body: Joi.object({
+        requiredConstraints: Joi.array().items(Joi.string()).required(),
+        uniqueConstraints: Joi.array().items(Joi.array().items(Joi.string())).required(),
+    }),
+    query: {},
+    params: {
+        templateId: Joi.string().required(),
+    },
+});

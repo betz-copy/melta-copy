@@ -1,2 +1,6 @@
-FROM neo4j:4.0.6
+# if enterprise image doesnt work, download Neo4j 4.0 Desktop Enterprise here:
+# https://neo4j.com/download-center/#enterprise (and see older version)
+# BTW, no need for license key to run neo4j enterprise, they trust users and assume they have valid license
+# see here: https://community.neo4j.com/t5/neo4j-graph-platform/where-do-i-enter-the-license-number-for-enterprise-on-docker/m-p/46892
+FROM neo4j:4.0.6-enterprise
 COPY ./plugins ./plugins/

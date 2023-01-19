@@ -93,3 +93,36 @@ export const addStringFieldsAndNormalizeDateValues = (
 
     return normalizedEntity;
 };
+
+export const validateConstraintsOfTemplate = async (req: Request) => {
+    const { properties } = await getEntityTemplateByIdOrThrowValidationError(req.params.templateId);
+    const propertiesKeys = Object.keys(properties.properties);
+
+    const { requiredConstraints, uniqueConstraints }: { requiredConstraints: string[]; uniqueConstraints: string[][] } = req.body;
+
+    requiredConstraints.forEach((constraintProp) => {
+        const isConstraintPropertyUnknown = !propertiesKeys.includes(constraintProp);
+        if (isConstraintPropertyUnknown) {
+            throw new ValidationError(`required constraint of ${constraintProp} is unknown in template`);
+        }
+    });
+    uniqueConstraints.forEach((constraintProps) => {
+        const unknownPropertyInConstraint = constraintProps.find((property) => !propertiesKeys.includes(property));
+        if (unknownPropertyInConstraint) {
+            throw new ValidationError(
+                `unique constraint of ${constraintProps} contains unknown property "${unknownPropertyInConstraint}" in template`,
+            );
+        }
+    });
+
+    uniqueConstraints.forEach((uniqueConstraint) => {
+        const uniqueConstraintPropertyThatIsNotInRequired = uniqueConstraint.find((property) => !requiredConstraints.includes(property));
+
+        if (uniqueConstraintPropertyThatIsNotInRequired) {
+            // because neo4j 4.0 supports unique constraints but makes them required too
+            throw new ValidationError(
+                `property ${uniqueConstraintPropertyThatIsNotInRequired} is in unique constraint, so it must be in required too`,
+            );
+        }
+    });
+};

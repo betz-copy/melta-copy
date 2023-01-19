@@ -1,5 +1,8 @@
 import { Neo4jError, Transaction } from 'neo4j-driver';
 import pickBy from 'lodash.pickby';
+import differenceWith from 'lodash.differencewith';
+import groupBy from 'lodash.groupby';
+import mapValues from 'lodash.mapvalues';
 import Neo4jClient from '../../utils/neo4j';
 import {
     generateDefaultProperties,
@@ -8,9 +11,10 @@ import {
     normalizeReturnedEntity,
     normalizeResponseCount,
     normalizeRelAndEntitiesForRule,
+    normalizeGetDbConstraints,
     runInTransactionAndNormalize,
 } from '../../utils/neo4j/lib';
-import { IEntity } from './interface';
+import { IConstraint, IConstraintsOfTemplate, IEntity, IRequiredConstraint, IUniqueConstraint } from './interface';
 import { NotFoundError, ServiceError } from '../error';
 import { agGridRequestToNeo4JRequest, agGridSearchRequestToNeo4JRequest } from '../../utils/agGrid/agGridFilterModelToNeoQuery';
 import { IAGGridRequest } from '../../utils/agGrid/interfaces';
@@ -22,9 +26,55 @@ import config from '../../config';
 import { EntityTemplateManagerService, IEntitySingleProperty, IMongoEntityTemplate } from '../../externalServices/entityTemplateManager';
 import { RelationshipsTemplateManagerService } from '../../externalServices/relationshipTemplateManager';
 import { addStringFieldsAndNormalizeDateValues } from './validator.template';
+import { arraysEqualsNonOrdered } from '../../utils/lib';
 
 export class EntityManager {
-    static createEntity(entity: IEntity, entityTemplate: IMongoEntityTemplate) {
+    private static throwServiceErrorIfFailedConstraintsValidation(err: unknown): never {
+        if (!(err instanceof Neo4jError) || err.code !== 'Neo.ClientError.Schema.ConstraintValidationFailed') {
+            throw err;
+        }
+
+        const { message: neo4jMessage } = err;
+
+        if (neo4jMessage.includes('must have the property')) {
+            // neo4jMessage = Node(...) with label `someLabel...` must have the property `property1`
+            const variableMatchesInMessage = neo4jMessage.matchAll(/`(.*?)`/g)!;
+            const [label, property] = Array.from(variableMatchesInMessage).map((match) => match[1]);
+
+            const requiredConstraint: Omit<IRequiredConstraint, 'constraintName'> = {
+                type: 'REQUIRED',
+                templateId: label,
+                property,
+            };
+            throw new ServiceError(400, `[NEO4J] instance is missing required property`, {
+                errorCode: config.errorCodes.failedConstraintsValidation,
+                constraint: requiredConstraint,
+                neo4jMessage,
+            });
+        } else if (neo4jMessage.includes('already exists with')) {
+            // neo4jMessage = Node(...) already exists with label `someLabel...` and properties `property1` = ..., `property2` = ...
+            // support unique w/ multiple props
+            const variableMatchesInMessage = neo4jMessage.matchAll(/`(.*?)`/g)!;
+            const [label, ...properties] = Array.from(variableMatchesInMessage).map((match) => match[1]);
+
+            const uniqueConstraint: Omit<IUniqueConstraint, 'constraintName'> = {
+                type: 'UNIQUE',
+                templateId: label,
+                properties,
+            };
+
+            throw new ServiceError(400, `[NEO4J] instance has duplicates on unique properties`, {
+                errorCode: config.errorCodes.failedConstraintsValidation,
+                constraint: uniqueConstraint,
+                neo4jMessage,
+            });
+        } else {
+            // unsupported constraint validation error. possibly neo4j broke expected message
+            throw err;
+        }
+    }
+
+    static async createEntity(entity: IEntity, entityTemplate: IMongoEntityTemplate) {
         const { templateId, properties } = entity;
 
         return Neo4jClient.writeTransaction(
@@ -36,7 +86,7 @@ export class EntityManager {
                     ...addStringFieldsAndNormalizeDateValues(properties, entityTemplate),
                 },
             },
-        );
+        ).catch(EntityManager.throwServiceErrorIfFailedConstraintsValidation);
     }
 
     static async getEntities(templateId: string, agGridRequest: IAGGridRequest) {
@@ -321,6 +371,191 @@ export class EntityManager {
             );
 
             return updatedEntity;
+        }).catch(EntityManager.throwServiceErrorIfFailedConstraintsValidation); // constraint validation is performed on end of transaction
+    }
+
+    private static getConstraintFromName(constraintName: string): IConstraint {
+        const [constraintTypePrefix, constraintTemplateId, ...properties] = constraintName.split('_');
+
+        switch (constraintTypePrefix) {
+            case config.requiredConstraintsPrefixName: {
+                return { constraintName, type: 'REQUIRED', templateId: constraintTemplateId, property: properties[0] };
+            }
+            case config.uniqueConstraintsPrefixName: {
+                return { constraintName, type: 'UNIQUE', templateId: constraintTemplateId, properties };
+            }
+            default:
+                throw new Error('unknown constraint type for template (checked by constraint name)');
+        }
+    }
+
+    private static buildConstraintsOfTemplate(templateId: string, constraints: IConstraint[]) {
+        return constraints.reduce<IConstraintsOfTemplate>(
+            (acc, curr) => ({
+                ...acc,
+                requiredConstraints: curr.type === 'REQUIRED' ? [...acc.requiredConstraints, curr.property] : acc.requiredConstraints,
+                uniqueConstraints: curr.type === 'UNIQUE' ? [...acc.uniqueConstraints, curr.properties] : acc.uniqueConstraints,
+            }),
+            {
+                templateId,
+                requiredConstraints: [],
+                uniqueConstraints: [],
+            },
+        );
+    }
+
+    static async getConstraintsOfTemplate(templateId: string) {
+        const constraints = await Neo4jClient.readTransaction('call db.constraints', normalizeGetDbConstraints);
+        const constraintsArrayOfTemplate = constraints
+            .filter(({ name }) => {
+                return name.startsWith(config.requiredConstraintsPrefixName) || name.startsWith(config.uniqueConstraintsPrefixName);
+            })
+            .map(({ name }) => EntityManager.getConstraintFromName(name))
+            .filter((constraint) => templateId === constraint.templateId);
+
+        return EntityManager.buildConstraintsOfTemplate(templateId, constraintsArrayOfTemplate);
+    }
+
+    static async getAllConstraints() {
+        const neo4jConstraints = await Neo4jClient.readTransaction('call db.constraints', normalizeGetDbConstraints);
+        const constraints = neo4jConstraints
+            .filter(({ name }) => {
+                return name.startsWith(config.requiredConstraintsPrefixName) || name.startsWith(config.uniqueConstraintsPrefixName);
+            })
+            .map(({ name }) => EntityManager.getConstraintFromName(name));
+
+        const constraintsByTemplateIds = groupBy(constraints, 'templateId');
+        const constraintsOfTemplates = Object.values(
+            mapValues(constraintsByTemplateIds, (constraintsArray, templateId) => {
+                return EntityManager.buildConstraintsOfTemplate(templateId, constraintsArray);
+            }),
+        );
+
+        return constraintsOfTemplates;
+    }
+
+    private static throwServiceErrorIfFailedToCreateConstraint(err: unknown, constraint: IConstraint) {
+        if (err instanceof Neo4jError && err.code === 'Neo.DatabaseError.Schema.ConstraintCreationFailed') {
+            throw new ServiceError(400, `[NEO4J] failed to create constraint due to existing invalid data`, {
+                errorCode: config.errorCodes.failedToCreateConstraints,
+                constraint,
+                neo4jMessage: err.message,
+            });
+        }
+        throw err;
+    }
+
+    private static async updateRequiredConstraintsOfTemplate(
+        transaction: Transaction,
+        templateId: string,
+        requiredConstraintsProps: string[],
+        existingRequiredConstraints: IRequiredConstraint[],
+    ) {
+        const existingRequiredConstraintsOfTemplate = existingRequiredConstraints.filter((constraint) => constraint.templateId === templateId);
+
+        const newRequiredConstraints: IRequiredConstraint[] = requiredConstraintsProps.map((requiredConstraintProp) => ({
+            type: 'REQUIRED',
+            constraintName: `${config.requiredConstraintsPrefixName}_${templateId}_${requiredConstraintProp}`,
+            templateId,
+            property: requiredConstraintProp,
+        }));
+
+        const requiredConstraintsToCreate = differenceWith(
+            newRequiredConstraints,
+            existingRequiredConstraintsOfTemplate,
+            (constraintA, constraintB) => constraintA.property === constraintB.property,
+        );
+
+        const existingRequiredConstraintsToDelete = differenceWith(
+            existingRequiredConstraintsOfTemplate,
+            newRequiredConstraints,
+            (constraintA, constraintB) => constraintA.property === constraintB.property,
+        );
+
+        const createRequiredConstraintsPromises = requiredConstraintsToCreate.map(async (constraint) => {
+            await transaction
+                .run(`CREATE CONSTRAINT \`${constraint.constraintName}\` ON (n:\`${templateId}\`) ASSERT exists(n.${constraint.property})`)
+                .catch((err) => EntityManager.throwServiceErrorIfFailedToCreateConstraint(err, constraint));
+        });
+
+        const deleteConstraintsPromises = existingRequiredConstraintsToDelete.map(({ constraintName }) =>
+            transaction.run(`DROP CONSTRAINT \`${constraintName}\``),
+        );
+
+        return Promise.all([...createRequiredConstraintsPromises, ...deleteConstraintsPromises]);
+    }
+
+    private static async updateUniqueConstraintsOfTemplate(
+        transaction: Transaction,
+        templateId: string,
+        uniqueConstraintsProps: string[][],
+        existingUniqueConstraints: IUniqueConstraint[],
+    ) {
+        const existingUniqueConstraintsOfTemplate = existingUniqueConstraints.filter((constraint) => constraint.templateId === templateId);
+
+        const newUniqueConstraints: IUniqueConstraint[] = uniqueConstraintsProps.map((uniqueConstraintProps) => ({
+            type: 'UNIQUE',
+            constraintName: `${config.uniqueConstraintsPrefixName}_${templateId}_${uniqueConstraintProps.join('_')}`,
+            templateId,
+            properties: uniqueConstraintProps,
+        }));
+
+        const uniqueConstraintsToCreate = differenceWith(newUniqueConstraints, existingUniqueConstraintsOfTemplate, (constraintA, constraintB) =>
+            arraysEqualsNonOrdered(constraintA.properties, constraintB.properties),
+        );
+
+        const existingUniqueConstraintsToDelete = differenceWith(
+            existingUniqueConstraintsOfTemplate,
+            newUniqueConstraints,
+            (constraintA, constraintB) => arraysEqualsNonOrdered(constraintA.properties, constraintB.properties),
+        );
+
+        const createUniqueConstraintsPromises = uniqueConstraintsToCreate.map(async (constraint) => {
+            const propsPart = constraint.properties.map((prop) => `n.${prop}`).join(', ');
+
+            await transaction
+                .run(`CREATE CONSTRAINT \`${constraint.constraintName}\` ON (n:\`${templateId}\`) ASSERT (${propsPart}) IS NODE KEY`)
+                .catch((err) => EntityManager.throwServiceErrorIfFailedToCreateConstraint(err, constraint));
+        });
+
+        const deleteConstraintsPromises = existingUniqueConstraintsToDelete.map(({ constraintName }) =>
+            transaction.run(`DROP CONSTRAINT \`${constraintName}\``),
+        );
+
+        await Promise.all([...createUniqueConstraintsPromises, ...deleteConstraintsPromises]);
+    }
+
+    static async updateConstraintsOfTemplate(templateId: string, constraints: { requiredConstraints: string[]; uniqueConstraints: string[][] }) {
+        return Neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
+            const existingNeo4jConstraints = await runInTransactionAndNormalize(transaction, 'call db.constraints', normalizeGetDbConstraints);
+
+            const updateConstraintsPromises: Promise<any>[] = [];
+
+            const existingRequiredConstraints = existingNeo4jConstraints
+                .filter(({ name }) => name.startsWith(config.requiredConstraintsPrefixName))
+                .map(({ name }) => EntityManager.getConstraintFromName(name) as IRequiredConstraint);
+
+            const updateRequiredConstraintsPromise = EntityManager.updateRequiredConstraintsOfTemplate(
+                transaction,
+                templateId,
+                constraints.requiredConstraints,
+                existingRequiredConstraints,
+            );
+            updateConstraintsPromises.push(updateRequiredConstraintsPromise);
+
+            const existingUniqueConstraints = existingNeo4jConstraints
+                .filter(({ name }) => name.startsWith(config.uniqueConstraintsPrefixName))
+                .map(({ name }) => EntityManager.getConstraintFromName(name) as IUniqueConstraint);
+
+            const updateUniqueConstraintsPromise = EntityManager.updateUniqueConstraintsOfTemplate(
+                transaction,
+                templateId,
+                constraints.uniqueConstraints,
+                existingUniqueConstraints,
+            );
+            updateConstraintsPromises.push(updateUniqueConstraintsPromise);
+
+            await Promise.all(updateConstraintsPromises);
         });
     }
 }

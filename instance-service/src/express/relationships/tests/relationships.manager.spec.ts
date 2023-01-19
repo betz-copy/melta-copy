@@ -40,7 +40,7 @@ const entityTemplate: IMongoEntityTemplate = {
         properties: {
             testProp: { type: 'string', title: 'testProp' },
         },
-        required: ['testProp'],
+        hide: [],
     },
     disabled: false,
     createdAt: new Date().toISOString(),

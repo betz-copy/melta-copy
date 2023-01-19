@@ -39,7 +39,7 @@ describe('Relationship router', () => {
             category: '888888888888888888888888',
             properties: {
                 type: 'object',
-                required: ['testProp'],
+                hide: [],
                 properties: {
                     testProp: {
                         type: 'string',

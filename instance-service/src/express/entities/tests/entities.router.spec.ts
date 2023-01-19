@@ -22,7 +22,7 @@ const defaultTemplate: IMongoEntityTemplate = {
     category: '1234',
     properties: {
         type: 'object',
-        required: ['testProp'],
+        hide: [],
         properties: {
             testProp: {
                 type: 'string',
