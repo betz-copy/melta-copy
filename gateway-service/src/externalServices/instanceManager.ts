@@ -4,7 +4,7 @@ import { IAgGridResult } from '../utils/agGrid/interface';
 import { IBrokenRule } from './ruleBreachService/interfaces';
 
 const {
-    instanceManager: { uri, baseEntitiesRoute, baseRelationshipsRoute, requestTimeout, searchRoute },
+    instanceManager: { uri, baseEntitiesRoute, baseRelationshipsRoute, baseConstraintsRoute, requestTimeout, searchRoute },
 } = config;
 
 export interface IEntity {
@@ -43,6 +43,28 @@ export interface IRelationshipConnections {
     relationship: IRelationship;
     sourceEntity: IEntity;
     destinationEntity: IEntity;
+}
+
+export interface IUniqueConstraint {
+    type: 'UNIQUE';
+    constraintName: string;
+    templateId: string;
+    properties: string[];
+}
+
+export interface IRequiredConstraint {
+    type: 'REQUIRED';
+    constraintName: string;
+    templateId: string;
+    property: string;
+}
+
+export type IConstraint = IRequiredConstraint | IUniqueConstraint;
+
+export interface IConstraintsOfTemplate {
+    templateId: string;
+    requiredConstraints: string[];
+    uniqueConstraints: string[][];
 }
 
 export class InstanceManagerService {
@@ -118,6 +140,25 @@ export class InstanceManagerService {
         const { data } = await this.InstanceManagerApi.post<IRelationshipConnections[]>(`${baseRelationshipsRoute}/connections`, {
             ids: relationshipIds,
         });
+
+        return data;
+    }
+
+    // constraints
+    static async getAllConstraints() {
+        const { data } = await this.InstanceManagerApi.get<IConstraintsOfTemplate[]>(baseConstraintsRoute);
+
+        return data;
+    }
+
+    static async getConstraintsOfTemplate(templateId: string) {
+        const { data } = await this.InstanceManagerApi.get<IConstraintsOfTemplate>(`${baseConstraintsRoute}/${templateId}`);
+
+        return data;
+    }
+
+    static async updateConstraintsOfTemplate(templateId: string, constraints: { requiredConstraints: string[]; uniqueConstraints: string[][] }) {
+        const { data } = await this.InstanceManagerApi.put<IConstraintsOfTemplate[]>(`${baseConstraintsRoute}/${templateId}`, constraints);
 
         return data;
     }

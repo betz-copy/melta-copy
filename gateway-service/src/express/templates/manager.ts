@@ -1,7 +1,12 @@
 import { AxiosError } from 'axios';
 import * as lodashUniqby from 'lodash.uniqby';
 import * as _isEqual from 'lodash.isequal';
-import { EntityTemplateManagerService, ICategory, IEntityTemplate, ISearchEntityTemplatesBody } from '../../externalServices/entityTemplateManager';
+import {
+    EntityTemplateManagerService,
+    ICategory,
+    IMongoEntityTemplatePopulated,
+    ISearchEntityTemplatesBody,
+} from '../../externalServices/entityTemplateManager';
 import { InstanceManagerService } from '../../externalServices/instanceManager';
 import { IRelationshipTemplate, RelationshipsTemplateManagerService } from '../../externalServices/relationshipsTemplateManager';
 import { deleteFile, uploadFile } from '../../externalServices/storageService';
@@ -14,6 +19,7 @@ import { IRule } from './rules/interfaces';
 import { getParametersOfFormula } from './rules';
 import { IFormula } from './rules/interfaces/formula';
 import { RuleBreachService } from '../../externalServices/ruleBreachService';
+import { IEntityTemplateWithConstraints, IMongoEntityTemplateWithConstraints, IMongoEntityTemplateWithConstraintsPopulated } from './interfaces';
 
 const {
     categoryHasTemplates,
@@ -143,9 +149,17 @@ export class TemplatesManager {
         const { allowedRules, allowedRelationshipTemplatesBecauseOfRules, allowedEntityTemplatesBecauseOfRules } =
             await TemplatesManager.getAllowedRules(allowedRelationshipsTemplates, allowedEntityTemplatesIdsByOneRelationship);
 
+        const allAllowedEntityTemplates = [
+            ...allowedEntityTemplates,
+            ...allowedEntityTemplatesByOneRelationship,
+            ...allowedEntityTemplatesBecauseOfRules,
+        ];
+
+        const allAllowedEntityTemplatesWithConstraints = await TemplatesManager.getAndPopulateAllTemplatesConstraints(allAllowedEntityTemplates);
+
         return {
             categories: allCategories,
-            entityTemplates: [...allowedEntityTemplates, ...allowedEntityTemplatesByOneRelationship, ...allowedEntityTemplatesBecauseOfRules],
+            entityTemplates: allAllowedEntityTemplatesWithConstraints,
             relationshipTemplates: [...allowedRelationshipsTemplates, ...allowedRelationshipTemplatesBecauseOfRules],
             rules: allowedRules,
         };
@@ -233,16 +247,62 @@ export class TemplatesManager {
     }
 
     // entity templates
-    static async createEntityTemplate(templateData: Omit<IEntityTemplate, 'iconFileId'>, file?: Express.Multer.File) {
+    private static populateTemplateConstraints(
+        entityTemplate: IMongoEntityTemplatePopulated,
+        requiredConstraints: string[],
+        uniqueConstraints: string[][],
+    ): IMongoEntityTemplateWithConstraintsPopulated {
+        return {
+            ...entityTemplate,
+            properties: {
+                ...entityTemplate.properties,
+                required: requiredConstraints,
+            },
+            uniqueConstraints,
+        };
+    }
+
+    private static async getAndPopulateAllTemplatesConstraints(entityTemplates: IMongoEntityTemplatePopulated[]) {
+        const allConstraints = await InstanceManagerService.getAllConstraints();
+
+        const entityTemplatesWithConstraints: IMongoEntityTemplateWithConstraintsPopulated[] = entityTemplates.map((entityTemplate) => {
+            const constraintsOfTemplate = allConstraints.find(({ templateId }) => templateId === entityTemplate._id);
+            return TemplatesManager.populateTemplateConstraints(
+                entityTemplate,
+                constraintsOfTemplate?.requiredConstraints ?? [],
+                constraintsOfTemplate?.uniqueConstraints ?? [],
+            );
+        });
+
+        return entityTemplatesWithConstraints;
+    }
+
+    static async createEntityTemplate(
+        templateData: Omit<IEntityTemplateWithConstraints, 'iconFileId'>,
+        file?: Express.Multer.File,
+    ): Promise<IMongoEntityTemplateWithConstraintsPopulated> {
         await EntityTemplateManagerService.getCategoryById(templateData.category);
 
+        let iconFileId: string | null;
         if (file) {
-            const newFileId = await uploadFile(file);
+            iconFileId = await uploadFile(file);
             await removeTmpFile(file.path);
-            return EntityTemplateManagerService.createEntityTemplate({ ...templateData, iconFileId: newFileId });
+        } else {
+            iconFileId = null;
         }
 
-        return EntityTemplateManagerService.createEntityTemplate({ ...templateData, iconFileId: null });
+        const { uniqueConstraints, properties, ...restOfTemplateData } = templateData;
+        const { required: requiredConstraints, ...restOfTemplatePropertiesObject } = properties;
+
+        const entityTemplate = await EntityTemplateManagerService.createEntityTemplate({
+            ...restOfTemplateData,
+            properties: restOfTemplatePropertiesObject,
+            iconFileId,
+        });
+
+        await InstanceManagerService.updateConstraintsOfTemplate(entityTemplate._id, { requiredConstraints, uniqueConstraints });
+
+        return TemplatesManager.populateTemplateConstraints(entityTemplate, requiredConstraints, uniqueConstraints);
     }
 
     static async throwIfEntityHasRelationships(id: string) {
@@ -267,7 +327,7 @@ export class TemplatesManager {
         }
     }
 
-    static async deleteEntityTemplate(id: string) {
+    static async deleteEntityTemplate(id: string): Promise<IMongoEntityTemplateWithConstraints> {
         await TemplatesManager.throwIfEntityHasRelationships(id);
         await TemplatesManager.throwIfEntityTemplateHasInstances(id);
 
@@ -276,62 +336,37 @@ export class TemplatesManager {
             await deleteFile(iconFileId);
         }
 
-        return EntityTemplateManagerService.deleteEntityTemplate(id);
+        await InstanceManagerService.updateConstraintsOfTemplate(id, { requiredConstraints: [], uniqueConstraints: [] });
+
+        const entityTemplate = await EntityTemplateManagerService.deleteEntityTemplate(id);
+
+        return {
+            ...entityTemplate,
+            properties: {
+                ...entityTemplate.properties,
+                required: [],
+            },
+            uniqueConstraints: [],
+        };
     }
 
-    static async updateEntityTemplate(id: string, updatedTemplate: Partial<IEntityTemplate> & { file?: string }, file?: Express.Multer.File) {
-        if (updatedTemplate.category) {
-            await EntityTemplateManagerService.getCategoryById(updatedTemplate.category);
-        }
-
-        const { iconFileId } = await EntityTemplateManagerService.getEntityTemplateById(id);
+    static async updateEntityTemplate(
+        id: string,
+        updatedTemplateData: Omit<IEntityTemplateWithConstraints, 'disabled'> & { file?: string },
+        file?: Express.Multer.File,
+    ): Promise<IMongoEntityTemplateWithConstraintsPopulated> {
+        await EntityTemplateManagerService.getCategoryById(updatedTemplateData.category);
 
         const { rows } = await InstanceManagerService.getInstancesByTemplateId(id, { startRow: 0, endRow: 0, sortModel: [], filterModel: {} });
         const currTemplate = await EntityTemplateManagerService.getEntityTemplateById(id);
 
-        if (currTemplate.disabled === true && updatedTemplate.disabled === true) throw new ServiceError(400, 'can not update disabled template');
-
-        if (
-            (currTemplate.disabled === false && updatedTemplate.disabled === true) ||
-            (currTemplate.disabled === true && updatedTemplate.disabled === false)
-        ) {
-            const {
-                displayName: currTemplateDisplayName,
-                name: currTemplateName,
-                category: { _id: currTemplateNameCategoryId },
-                properties: currTemplateProperties,
-                propertiesOrder: currTemplatePropertiesOrder,
-                propertiesPreview: currTemplatePropertiessPreview,
-            } = currTemplate;
-
-            const { disabled: updatedTemplateDisabled, ...restOfUpdatedTemplate } = updatedTemplate;
-
-            if (
-                !_isEqual(
-                    {
-                        displayName: currTemplateDisplayName,
-                        name: currTemplateName,
-                        category: currTemplateNameCategoryId,
-                        properties: currTemplateProperties,
-                        propertiesOrder: currTemplatePropertiesOrder,
-                        propertiesPreview: currTemplatePropertiessPreview,
-                    },
-                    restOfUpdatedTemplate,
-                )
-            ) {
-                throw new ServiceError(400, 'can not change disabled properties');
-            }
-        }
+        if (currTemplate.disabled === true) throw new ServiceError(400, 'can not update disabled template');
 
         if (rows.length > 0) {
-            if (updatedTemplate.category) {
-                await EntityTemplateManagerService.getCategoryById(updatedTemplate.category);
-            }
-
-            if (updatedTemplate.name !== currTemplate.name) throw new ServiceError(400, 'can not change template name');
+            if (updatedTemplateData.name !== currTemplate.name) throw new ServiceError(400, 'can not change template name');
 
             Object.entries(currTemplate.properties.properties).forEach(([key, value]) => {
-                const newValue = updatedTemplate.properties?.properties[key];
+                const newValue = updatedTemplateData.properties.properties[key];
                 if (!newValue) throw new ServiceError(400, 'can not remove property');
 
                 if (value.type !== newValue.type) throw new ServiceError(400, 'can not change property type');
@@ -339,34 +374,42 @@ export class TemplatesManager {
                 if (value.enum && !value.enum?.every((val) => newValue.enum?.includes(val)))
                     throw new ServiceError(400, 'can not remove options from enum');
             });
-
-            if (updatedTemplate.properties?.required.find((propertyName) => !currTemplate.properties.required.includes(propertyName))) {
-                throw new ServiceError(400, 'can not add required fields');
-            }
-
-            if (currTemplate.properties.required.find((propertyName) => !updatedTemplate.properties?.required.includes(propertyName))) {
-                throw new ServiceError(400, 'can not remove required fields');
-            }
         }
 
+        let iconFileId: string | null;
         if (file) {
-            if (iconFileId) {
-                await deleteFile(iconFileId);
+            if (currTemplate.iconFileId) {
+                await deleteFile(currTemplate.iconFileId);
             }
 
-            const newFileId = await uploadFile(file);
+            iconFileId = await uploadFile(file);
             await removeTmpFile(file.path);
+        } else if (currTemplate.iconFileId && !updatedTemplateData.iconFileId) {
+            await deleteFile(currTemplate.iconFileId);
 
-            return EntityTemplateManagerService.updateEntityTemplate(id, { ...updatedTemplate, iconFileId: newFileId });
+            iconFileId = null;
+        } else {
+            iconFileId = currTemplate.iconFileId;
         }
 
-        if (iconFileId && !updatedTemplate.iconFileId) {
-            await deleteFile(iconFileId);
+        const { uniqueConstraints, properties, ...restOfTemplateData } = updatedTemplateData;
+        const { required: requiredConstraints, ...restOfTemplatePropertiesObject } = properties;
+        const updatedTemplate = await EntityTemplateManagerService.updateEntityTemplate(id, {
+            ...restOfTemplateData,
+            properties: restOfTemplatePropertiesObject,
+            iconFileId,
+        });
 
-            return EntityTemplateManagerService.updateEntityTemplate(id, { ...updatedTemplate, iconFileId: null });
-        }
+        await InstanceManagerService.updateConstraintsOfTemplate(id, {
+            uniqueConstraints,
+            requiredConstraints,
+        });
 
-        return EntityTemplateManagerService.updateEntityTemplate(id, updatedTemplate);
+        return TemplatesManager.populateTemplateConstraints(updatedTemplate, requiredConstraints, uniqueConstraints);
+    }
+
+    static updateEntityTemplateStatus(id: string, disabledStatus: boolean) {
+        return EntityTemplateManagerService.updateEntityTemplateStatus(id, disabledStatus);
     }
 
     // relationship templates

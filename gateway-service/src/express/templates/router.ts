@@ -27,6 +27,7 @@ import {
     deleteRuleByIdRequestSchema,
     updateCategorySchema,
     updateEntityTemplateSchema,
+    updateEntityTemplateStatusSchema,
     updateRelationshipTemplateSchema,
     updateRuleStatusByIdRequestSchema,
 } from './validator.schema';
@@ -91,6 +92,11 @@ templatesRouter.put(
     ValidateRequest(updateEntityTemplateSchema),
     wrapMiddleware(validateUserCanUpdateOrDeleteEntityTemplate),
     wrapController(TemplatesController.updateEntityTemplate),
+);
+templatesRouter.patch(
+    '/entities/:id/status',
+    ValidateRequest(updateEntityTemplateStatusSchema),
+    wrapController(TemplatesController.updateEntityTemplateStatus),
 );
 templatesRouter.delete(
     '/entities/:id',

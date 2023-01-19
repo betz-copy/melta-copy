@@ -38,6 +38,10 @@ class TemplatesController {
         res.json(await TemplatesManager.updateEntityTemplate(req.params.id, req.body, req.file));
     }
 
+    static async updateEntityTemplateStatus(req: Request, res: Response) {
+        res.json(await TemplatesManager.updateEntityTemplateStatus(req.params.id, req.body.disabled));
+    }
+
     // relationshipTemplates
     static async createRelationshipTemplate(req: Request, res: Response) {
         res.json(await TemplatesManager.createRelationshipTemplate(req.body));

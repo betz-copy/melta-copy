@@ -47,6 +47,7 @@ export const createEntityTemplateSchema = Joi.object({
         properties: ExtendedJoi.stringToObject().required(),
         propertiesOrder: ExtendedJoi.stringToArray().required(),
         propertiesPreview: ExtendedJoi.stringToArray().required(),
+        uniqueConstraints: ExtendedJoi.stringToArray().required(),
     },
     query: {},
     params: {},
@@ -56,20 +57,29 @@ export const createEntityTemplateSchema = Joi.object({
 // PUT /api/templates/entities/:id
 export const updateEntityTemplateSchema = Joi.object({
     body: {
-        name: Joi.string(),
-        displayName: Joi.string(),
-        category: Joi.string(),
-        disabled: Joi.boolean(),
-        properties: ExtendedJoi.stringToObject(),
-        iconFileId: Joi.string().allow(null),
-        propertiesOrder: ExtendedJoi.stringToArray(),
-        propertiesPreview: ExtendedJoi.stringToArray(),
+        name: Joi.string().required(),
+        displayName: Joi.string().required(),
+        category: Joi.string().required(),
+        properties: ExtendedJoi.stringToObject().required(),
+        iconFileId: Joi.string().allow(null), // todo: iconFileId is optional and nullable, should be only one of them
+        propertiesOrder: ExtendedJoi.stringToArray().required(),
+        propertiesPreview: ExtendedJoi.stringToArray().required(),
+        uniqueConstraints: ExtendedJoi.stringToArray().required(),
     },
     query: {},
     params: {
         id: MongoIdSchema.required(),
     },
     file: fileSchema,
+});
+
+// PATCH /api/templates/entities/:id/status
+export const updateEntityTemplateStatusSchema = Joi.object({
+    body: {
+        disabled: Joi.boolean(),
+    },
+    query: {},
+    params: { id: MongoIdSchema.required() },
 });
 
 // DELETE /api/templates/entities/:id

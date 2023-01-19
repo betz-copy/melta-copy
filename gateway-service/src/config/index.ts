@@ -50,6 +50,7 @@ const config = {
         uri: env.get('INSTANCE_MANAGER_URI').required().asString(),
         baseEntitiesRoute: env.get('INSTANCE_MANAGER_BASE_ENTITIES_ROUTE').default('/api/instances/entities').asString(),
         baseRelationshipsRoute: env.get('INSTANCE_MANAGER_BASE_RELATIONSHIPS_ROUTE').default('/api/instances/relationships').asString(),
+        baseConstraintsRoute: env.get('INSTANCE_MANAGER_BASE_CONSTRAINTS_ROUTE').default('/api/instances/entities/constraints').asString(),
         requestTimeout: env.get('INSTANCE_MANAGER_REQUEST_TIMEOUT').default(10000).asIntPositive(),
         searchRoute: env.get('INSTANCE_MANAGER_SEARCH_ROUTE').default('search').asString(),
     },

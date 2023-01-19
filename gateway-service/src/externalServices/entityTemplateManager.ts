@@ -6,11 +6,16 @@ const {
 } = config;
 
 export interface ICategory {
-    _id: string;
     name: string;
     displayName: string;
     iconFileId: string | null;
     color: string;
+}
+
+export interface IMongoCategory extends ICategory {
+    _id: string;
+    createdAt: string;
+    updatedAt: string;
 }
 
 interface IEntitySingleProperty {
@@ -23,14 +28,13 @@ interface IEntitySingleProperty {
 }
 
 export interface IEntityTemplate {
-    _id: string;
     name: string;
     displayName: string;
     category: string;
     properties: {
         type: 'object';
         properties: Record<string, IEntitySingleProperty>;
-        required: string[];
+        hide: string[];
     };
     propertiesOrder: string[];
     propertiesPreview: string[];
@@ -39,7 +43,19 @@ export interface IEntityTemplate {
 }
 
 export interface IEntityTemplatePopulated extends Omit<IEntityTemplate, 'category'> {
-    category: ICategory;
+    category: IMongoCategory;
+}
+
+export interface IMongoEntityTemplate extends IEntityTemplate {
+    _id: string;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface IMongoEntityTemplatePopulated extends IEntityTemplatePopulated {
+    _id: string;
+    createdAt: string;
+    updatedAt: string;
 }
 
 export interface ISearchEntityTemplatesBody {
@@ -55,62 +71,73 @@ export class EntityTemplateManagerService {
 
     // categories
     static async getAllCategories() {
-        const { data } = await this.EntityTemplateManagerApi.get<ICategory[]>(baseCategoriesRoute);
+        const { data } = await this.EntityTemplateManagerApi.get<IMongoCategory[]>(baseCategoriesRoute);
 
         return data;
     }
 
-    static async createCategory(category: Omit<ICategory, '_id'>) {
-        const { data } = await this.EntityTemplateManagerApi.post<ICategory>(baseCategoriesRoute, category);
+    static async createCategory(category: ICategory) {
+        const { data } = await this.EntityTemplateManagerApi.post<IMongoCategory>(baseCategoriesRoute, category);
 
         return data;
     }
 
-    static async updateCategory(categoryId: string, updatedCategory: Partial<Omit<ICategory, '_id'>>) {
-        const { data } = await this.EntityTemplateManagerApi.put<ICategory>(`${baseCategoriesRoute}/${categoryId}`, updatedCategory);
+    static async updateCategory(categoryId: string, updatedCategory: Partial<ICategory>) {
+        const { data } = await this.EntityTemplateManagerApi.put<IMongoCategory>(`${baseCategoriesRoute}/${categoryId}`, updatedCategory);
 
         return data;
     }
 
     static async deleteCategory(categoryId: string) {
-        const { data } = await this.EntityTemplateManagerApi.delete<ICategory>(`${baseCategoriesRoute}/${categoryId}`);
+        const { data } = await this.EntityTemplateManagerApi.delete<IMongoCategory>(`${baseCategoriesRoute}/${categoryId}`);
 
         return data;
     }
 
     static async getCategoryById(categoryId: string) {
-        const { data } = await this.EntityTemplateManagerApi.get<ICategory>(`${baseCategoriesRoute}/${categoryId}`);
+        const { data } = await this.EntityTemplateManagerApi.get<IMongoCategory>(`${baseCategoriesRoute}/${categoryId}`);
 
         return data;
     }
 
     // entity templates
     static async searchEntityTemplates(body: ISearchEntityTemplatesBody = {}) {
-        const { data } = await this.EntityTemplateManagerApi.post<IEntityTemplatePopulated[]>(`${baseEntitiesRoute}/search`, body);
+        const { data } = await this.EntityTemplateManagerApi.post<IMongoEntityTemplatePopulated[]>(`${baseEntitiesRoute}/search`, body);
 
         return data;
     }
 
     static async getEntityTemplateById(id: string) {
-        const { data } = await this.EntityTemplateManagerApi.get<IEntityTemplatePopulated>(`${baseEntitiesRoute}/${id}`);
+        const { data } = await this.EntityTemplateManagerApi.get<IMongoEntityTemplatePopulated>(`${baseEntitiesRoute}/${id}`);
 
         return data;
     }
 
-    static async createEntityTemplate(entityTemplate: Omit<IEntityTemplate, '_id'>) {
-        const { data } = await this.EntityTemplateManagerApi.post(baseEntitiesRoute, entityTemplate);
+    static async createEntityTemplate(entityTemplate: IEntityTemplate) {
+        const { data } = await this.EntityTemplateManagerApi.post<IMongoEntityTemplatePopulated>(baseEntitiesRoute, entityTemplate);
 
         return data;
     }
 
-    static async updateEntityTemplate(entityTemplateId: string, updatedEntityTemplate: Partial<Omit<IEntityTemplate, '_id'>>) {
-        const { data } = await this.EntityTemplateManagerApi.put(`${baseEntitiesRoute}/${entityTemplateId}`, updatedEntityTemplate);
+    static async updateEntityTemplate(entityTemplateId: string, updatedEntityTemplate: Partial<Omit<IEntityTemplate, 'disabled'>>) {
+        const { data } = await this.EntityTemplateManagerApi.put<IMongoEntityTemplatePopulated>(
+            `${baseEntitiesRoute}/${entityTemplateId}`,
+            updatedEntityTemplate,
+        );
+
+        return data;
+    }
+
+    static async updateEntityTemplateStatus(entityTemplateId: string, disabledStatus: boolean) {
+        const { data } = await this.EntityTemplateManagerApi.patch<IMongoEntityTemplatePopulated>(`${baseEntitiesRoute}/${entityTemplateId}/status`, {
+            disabled: disabledStatus,
+        });
 
         return data;
     }
 
     static async deleteEntityTemplate(entityTemplateId: string) {
-        const { data } = await this.EntityTemplateManagerApi.delete(`${baseEntitiesRoute}/${entityTemplateId}`);
+        const { data } = await this.EntityTemplateManagerApi.delete<IMongoEntityTemplate>(`${baseEntitiesRoute}/${entityTemplateId}`);
 
         return data;
     }
