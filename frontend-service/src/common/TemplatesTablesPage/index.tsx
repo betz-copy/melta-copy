@@ -76,7 +76,7 @@ const TemplatesTablesPage: React.FC<{
             onSuccess: (data) => {
                 if (data.length === 0 && pageType === 'globalSearch') {
                     // if there are no entities to show in the global search page, stop the tour
-                    setSteps((currSteps) => currSteps.slice(0, 4));
+                    setSteps!((currSteps) => currSteps.slice(0, 4));
                 }
             },
         },
