@@ -36,7 +36,7 @@ export const createEntityTemplateSchema = Joi.object({
         category: Joi.string().required(),
         disabled: Joi.boolean().default(false),
         properties: innerPropertiesSchema.required(),
-        iconFileId: Joi.string().allow(null),
+        iconFileId: Joi.string().allow(null), // todo: iconFileId is optional and nullable, should be only one of them
         propertiesOrder: orderPropertiesSchema.required(),
         propertiesPreview: previewPropertiesSchema.required(),
     },
@@ -50,12 +50,22 @@ export const updateEntityTemplateSchema = Joi.object({
         name: variableNameValidation,
         displayName: Joi.string(),
         category: Joi.string(),
-        disabled: Joi.boolean(),
         properties: innerPropertiesSchema,
         iconFileId: Joi.string().allow(null),
         propertiesOrder: orderPropertiesSchema,
         propertiesPreview: previewPropertiesSchema,
     }).min(1),
+    query: {},
+    params: {
+        templateId: MongoIdSchema.required(),
+    },
+});
+
+// PUT /api/entities/templates/:templateId/status
+export const updateEntityTemplateStatusSchema = Joi.object({
+    body: {
+        disabled: Joi.boolean().required(),
+    },
     query: {},
     params: {
         templateId: MongoIdSchema.required(),

@@ -56,7 +56,7 @@ export class EntityTemplateManager {
         return entityTemplate;
     }
 
-    static async updateEntityTemplate(id: string, updatedTemplate: Partial<Omit<IEntityTemplate, 'iconFileId'>>) {
+    static async updateEntityTemplate(id: string, updatedTemplate: Partial<Omit<IEntityTemplate, 'disabled'>>) {
         const currentEntityTemplate = await EntityTemplateManager.getTemplateById(id);
 
         const newEntityTemplate = await EntityTemplateModel.findByIdAndUpdate(id, updatedTemplate, { new: true })
@@ -89,6 +89,14 @@ export class EntityTemplateManager {
         if (isNewPropertyAdded) await menash.send(rabbit.queueName, 'Template Updated.');
 
         return newEntityTemplate;
+    }
+
+    static async updateEntityTemplateStatus(id: string, disabledStatus: boolean) {
+        return EntityTemplateModel.findByIdAndUpdate(id, { disabled: disabledStatus }, { new: true })
+            .populate('category')
+            .orFail(new ServiceError(404, 'Entity Template not found'))
+            .lean()
+            .exec();
     }
 }
 

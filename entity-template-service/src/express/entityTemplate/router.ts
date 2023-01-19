@@ -8,6 +8,7 @@ import {
     getEntityTemplateByIdSchema,
     createEntityTemplateSchema,
     updateEntityTemplateSchema,
+    updateEntityTemplateStatusSchema,
 } from './validator.schema';
 
 const entityTemplateRouter: Router = Router();
@@ -29,5 +30,11 @@ entityTemplateRouter.delete(
 );
 
 entityTemplateRouter.put('/:templateId', ValidateRequest(updateEntityTemplateSchema), wrapController(EntityTemplateController.updateEntityTemplate));
+
+entityTemplateRouter.patch(
+    '/:templateId/status',
+    ValidateRequest(updateEntityTemplateStatusSchema),
+    wrapController(EntityTemplateController.updateEntityTemplateStatus),
+);
 
 export default entityTemplateRouter;

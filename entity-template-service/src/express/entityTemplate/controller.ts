@@ -27,6 +27,12 @@ class EntityTemplateController {
 
         res.json(await EntityTemplateManager.updateEntityTemplate(id, req.body));
     }
+
+    static async updateEntityTemplateStatus(req: Request, res: Response) {
+        const { templateId: id } = req.params;
+
+        res.json(await EntityTemplateManager.updateEntityTemplateStatus(id, req.body.disabled));
+    }
 }
 
 export default EntityTemplateController;

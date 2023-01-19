@@ -3,6 +3,7 @@ import * as Joi from 'joi';
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 import { wrapValidator } from './express';
+import { IProperties } from '../express/entityTemplate/interface';
 
 const ajv = new Ajv();
 ajv.addFormat('fileId', /.*/);
@@ -39,32 +40,31 @@ export const variableNameValidation = Joi.string().regex(/^[a-zA-Z][a-zA-Z_$0-9]
 
 const propertiesKeysArraySchema = Joi.array().items(variableNameValidation.invalid('createdAt', 'updatedAt', 'disable'));
 
-const validatePropertiesArray = (value, propertiesKeys) => {
-    const isRequiredValid = value.every((item) => propertiesKeys.includes(item));
+const validatePropertiesArrayInProperties = (propertiesArray: string[], properties: IProperties['properties']) => {
+    const propertiesKeys = Object.keys(properties);
+    const doesEveryPropertyInPropertiesKeys = propertiesArray.every((item) => propertiesKeys.includes(item));
 
-    if (!isRequiredValid) {
+    if (!doesEveryPropertyInPropertiesKeys) {
         throw new Error('not all items are properties');
     }
 
-    return value;
+    return propertiesArray;
 };
 
-const validatepropertiesPreviewArray = (value, propertiesKeys) => {
-    const isRequiredValid = value.every((item) => !propertiesKeys.includes(item));
+const validateHideArrayNotInPropertiesPreview = (hide: string[], propertiesPreview: string[]) => {
+    const isHideArrayNotInPreview = hide.every((item) => !propertiesPreview.includes(item));
 
-    if (!isRequiredValid) {
+    if (!isHideArrayNotInPreview) {
         throw new Error('item in hide array cannot be in preview array');
     }
 
-    return value;
+    return hide;
 };
 
-const customRequiredValidation = (value, helpers) => {
-    return validatePropertiesArray(value, Object.keys(helpers.state.ancestors[0].properties));
-};
+const customHideValidation: Joi.CustomValidator = (hide: string[], helpers) => {
+    validatePropertiesArrayInProperties(hide, helpers.state.ancestors[0].properties);
 
-const customHideValidation = (value, helpers) => {
-    return validatepropertiesPreviewArray(value, helpers.state.ancestors[1].propertiesPreview);
+    return validateHideArrayNotInPropertiesPreview(hide, helpers.state.ancestors[1].propertiesPreview);
 };
 
 export const innerPropertiesSchema = Joi.object()
@@ -87,8 +87,7 @@ export const innerPropertiesSchema = Joi.object()
             })
             .unknown(true)
             .required(),
-        required: Joi.array().unique().items(Joi.string()).custom(customRequiredValidation),
-        hide: Joi.array().unique().items(Joi.string()).custom(customRequiredValidation).custom(customHideValidation),
+        hide: Joi.array().unique().items(Joi.string()).custom(customHideValidation),
     })
     .custom((value) => {
         ajv.compile(value); // throws an error if JSONSchema is invalid
@@ -96,19 +95,20 @@ export const innerPropertiesSchema = Joi.object()
         return value;
     });
 
-const customOrderPropertiesValidation = (value, helpers) => {
-    const propertiesKeys = Object.keys(helpers.state.ancestors[0].properties.properties);
+const customOrderPropertiesValidation: Joi.CustomValidator = (propertiesOrder: string[], helpers) => {
+    const { properties } = helpers.state.ancestors[0].properties;
+    const propertiesKeys = Object.keys(properties);
 
-    if (propertiesKeys.length !== value.length) {
+    if (propertiesKeys.length !== propertiesOrder.length) {
         throw new Error('not all fields are ordered');
     }
 
-    return validatePropertiesArray(value, propertiesKeys);
+    return validatePropertiesArrayInProperties(propertiesOrder, properties);
 };
-export const orderPropertiesSchema = Joi.array().unique().items(Joi.string()).custom(customOrderPropertiesValidation).required();
+export const orderPropertiesSchema = Joi.array().unique().items(Joi.string()).custom(customOrderPropertiesValidation);
 
-const customPreviewPropertiesValidation = (value, helpers) => {
-    return validatePropertiesArray(value, Object.keys(helpers.state.ancestors[0].properties.properties));
+const customPreviewPropertiesValidation: Joi.CustomValidator = (propertiesPreview: string[], helpers) => {
+    return validatePropertiesArrayInProperties(propertiesPreview, helpers.state.ancestors[0].properties.properties);
 };
 export const previewPropertiesSchema = Joi.array().unique().items(Joi.string()).custom(customPreviewPropertiesValidation);
 

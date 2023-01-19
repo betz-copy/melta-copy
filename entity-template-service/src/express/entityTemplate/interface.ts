@@ -10,7 +10,7 @@ export interface IEntitySingleProperty {
 export interface IProperties {
     type: 'object';
     properties: Record<string, IEntitySingleProperty>;
-    required: string[];
+    hide: string[];
 }
 
 export interface IEntityTemplate {
