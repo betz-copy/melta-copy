@@ -20,6 +20,7 @@ readinessProbe:
   httpGet:
     path: /health
     port: 8000
+  initialDelaySeconds: 45
 
 config:
   configmaps: []
@@ -31,3 +32,10 @@ config:
     - name: MONGO_ACTIVITY_LOG_COLLECTION_NAME
       value: activity-log
     
+resources:
+  limits:
+    cpu: 400m
+    memory: 400Mi
+  requests:
+    cpu: 400m
+    memory: 400Mi
