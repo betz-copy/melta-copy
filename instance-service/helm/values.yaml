@@ -20,6 +20,7 @@ readinessProbe:
   httpGet:
     path: /isAlive
     port: 8000
+  initialDelaySeconds: 45
 
 config:
   configmaps: []
@@ -40,3 +41,11 @@ config:
       value: http://relationship-template-manager:8000      
     - name: REDIS_HOST
       value: redis://:ZjtUJvwPOY@redis:6379
+
+resources:
+  limits:
+    cpu: 400m
+    memory: 400Mi
+  requests:
+    cpu: 400m
+    memory: 400Mi
