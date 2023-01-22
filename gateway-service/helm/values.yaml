@@ -62,6 +62,7 @@ readinessProbe:
   httpGet:
     path: /health
     port: 8000
+  initialDelaySeconds: 45
 
 ingress:
   enabled: true
@@ -72,4 +73,10 @@ ingress:
           service: backend
           port: '8000'
 
-
+resources:
+  limits:
+    cpu: 400m
+    memory: 400Mi
+  requests:
+    cpu: 400m
+    memory: 400Mi
