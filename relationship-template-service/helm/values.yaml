@@ -20,6 +20,7 @@ readinessProbe:
   httpGet:
     path: /isAlive
     port: 8000
+  initialDelaySeconds: 45
 
 config:
   configmaps: []
@@ -37,8 +38,8 @@ config:
 
 resources:
   limits:
-    cpu: 240m
-    memory: 256Mi
+    cpu: 400m
+    memory: 400Mi
   requests:
-    cpu: 240m
-    memory: 256Mi
+    cpu: 400m
+    memory: 400Mi
