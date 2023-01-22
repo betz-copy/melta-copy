@@ -6,4 +6,6 @@ RUN npm install --production=false --silent
 # --production (in npm install) shouldnt be because need to run build typescript
 COPY . .
 
-CMD npm run dev 
+RUN npm run build
+
+CMD npm run start 
