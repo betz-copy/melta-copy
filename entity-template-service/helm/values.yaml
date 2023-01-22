@@ -20,7 +20,7 @@ readinessProbe:
   httpGet:
     path: /health
     port: 8000
-  initialDelaySeconds: 45
+  initialDelaySeconds: 30
 
 config:
   configmaps: []
