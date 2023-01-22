@@ -20,6 +20,7 @@ readinessProbe:
   httpGet:
     path: /isAlive
     port: 8000
+  initialDelaySeconds: 45
 
 config:
   configmaps: []
@@ -34,3 +35,11 @@ config:
       value: files
     - name: MINIO_ENDPOINT
       value: minio
+
+resources:
+  limits:
+    cpu: 400m
+    memory: 400Mi
+  requests:
+    cpu: 400m
+    memory: 400Mi
