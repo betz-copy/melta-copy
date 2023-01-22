@@ -2,7 +2,7 @@ import i18next from 'i18next';
 import { QueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { IConstraint, IRequiredConstraint, IUniqueConstraint } from '../../../interfaces/entities';
-import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 
 export const toastConstraintValidationError = (
     queryClient: QueryClient,
@@ -10,8 +10,8 @@ export const toastConstraintValidationError = (
 ) => {
     const { constraint } = errorMetadata;
 
-    const entityTemplates = queryClient.getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates')!;
-    const entityTemplate = entityTemplates.find(({ _id }) => _id === constraint.templateId)!;
+    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+    const entityTemplate = entityTemplates.get(constraint.templateId)!;
 
     if (constraint.type === 'REQUIRED') {
         // shouldnt enter here. UI should block submit w/o required fields

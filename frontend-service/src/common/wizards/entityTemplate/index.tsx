@@ -8,7 +8,7 @@ import { ChooseCategory, chooseCategorySchema } from './ChooseCategory';
 import { CreateTemplateName, createTemplateNameSchema } from './CreateTemplateName';
 import { AddFields, addFieldsSchema } from './AddFields';
 import { createEntityTemplateRequest, updateEntityTemplateRequest } from '../../../services/templates/enitityTemplatesService';
-import { IEntityTemplateMap, IEntityTemplatePopulated, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { IEntityTemplateMap, IEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { ChooseIcon } from './ChooseIcon';
 import fileDetails from '../../../interfaces/fileDetails';
 import { ErrorToast } from '../../ErrorToast';
@@ -95,8 +95,8 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
                 if (isEditMode && errorMetadata?.errorCode === errorCodes.failedToCreateConstraints) {
                     const { constraint }: { constraint: IConstraint } = errorMetadata;
 
-                    const entityTemplates = queryClient.getQueryData<IMongoEntityTemplatePopulated[]>('getEntityTemplates')!;
-                    const entityTemplate = entityTemplates.find(({ _id }) => _id === constraint.templateId)!;
+                    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+                    const entityTemplate = entityTemplates.get(constraint.templateId)!;
 
                     if (constraint.type === 'REQUIRED') {
                         const { title: constraintPropertyDisplayName } = entityTemplate.properties.properties[constraint.property];
