@@ -34,3 +34,11 @@ config:
       value: rules
     - name: ENTITY_TEMPLATE_MANAGER_URI
       value: http://entity-template-manager:8000
+
+resources:
+  limits:
+    cpu: 240m
+    memory: 256Mi
+  requests:
+    cpu: 240m
+    memory: 256Mi
