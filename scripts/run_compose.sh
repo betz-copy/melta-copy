@@ -1,3 +1,3 @@
 #!/bin/bash
 
-docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build
+bash $(dirname $0)/on_compose.sh up -d --build
