@@ -49,7 +49,7 @@ config:
     - name: RULE_BREACH_SERVICE_URI
       value: http://rule-breach-service:8000  
     - name: RABBIT_URI
-      value: amqp://user:McgIwOn8Yh@my-release-rabbitmq
+      value: amqp://jaws:jawsAreTheBest@20.105.9.117:5672/jaws
     - name:  STORAGE_SERVICE_FILE_HYPER_LINK
       value: http://jaws.branch-yesodot.org/api/files
 
