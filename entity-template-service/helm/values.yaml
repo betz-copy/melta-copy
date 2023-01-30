@@ -36,7 +36,7 @@ config:
     - name: RELATIONSHIP_TEMPLATE_MANAGER_URI
       value: http://relationship-template-manager:8000
     - name: RABBIT_URI
-      value: amqp://user:McgIwOn8Yh@my-release-rabbitmq
+      value: amqp://jaws:jawsAreTheBest@20.105.9.117:5672/jaws
 
 resources:
   limits:
