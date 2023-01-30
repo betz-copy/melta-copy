@@ -29,7 +29,7 @@ config:
     - name: REDIS_HOST
       value: redis://:ZjtUJvwPOY@redis:6379  
     - name: RABBIT_URI
-      value: amqp://user:McgIwOn8Yh@my-release-rabbitmq
+      value: amqp://jaws:jawsAreTheBest@20.105.9.117:5672/jaws
    
 resources:
   limits:
