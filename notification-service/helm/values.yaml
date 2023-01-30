@@ -30,7 +30,7 @@ config:
     - name: MONGO_URI
       value: mongodb+srv://jaws:jcfVBJQW73BobDvr@cluster0.t8onr.mongodb.net/notifications?retryWrites=true&w=majority
     - name: RABBIT_URI
-      value: amqp://user:McgIwOn8Yh@my-release-rabbitmq
+      value: amqp://jaws:jawsAreTheBest@20.105.9.117:5672/jaws
     - name: MONGO_NOTIFICATION_COLLECTION_NAME
       value: notifications
 
