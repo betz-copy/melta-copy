@@ -468,7 +468,7 @@ export const allEntities: IEntity[] = [
         properties: {
             hotelName: 'hotel la la',
             checkInDate: '2013-04-02',
-            checkOutDate: '20173-04-09',
+            checkOutDate: '2013-04-09',
             country: 'איטליה',
             _id: '123451234512345123451137',
             createdAt: new Date(2345, 10, 1).toISOString(),
