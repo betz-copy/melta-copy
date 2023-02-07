@@ -34,7 +34,8 @@ export const setFilterToQuery = (field: string, { values }: IAGGridSetFilter, pa
         };
     }
 
-    return { cypherQuery: isFieldInValuesQuery, parameters: { [valuesVariableName]: valuesWithoutNulls } };
+    // ensure node.field is not null before check in values (dont do `toString(null)`!)
+    return { cypherQuery: `((node.${field} IS NOT NULL) AND (${isFieldInValuesQuery}))`, parameters: { [valuesVariableName]: valuesWithoutNulls } };
 };
 
 export const textFilterToQuery = (
