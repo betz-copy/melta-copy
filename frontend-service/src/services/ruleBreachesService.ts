@@ -1,7 +1,7 @@
 import { IServerSideGetRowsRequest } from '@ag-grid-community/core';
 import axios from '../axios';
 import { environment } from '../globals';
-import { IRuleBreach, IRuleBreachPopulated } from '../interfaces/ruleBreaches/ruleBreach';
+import { IRuleBreach } from '../interfaces/ruleBreaches/ruleBreach';
 import { IRuleBreachAlertPopulated } from '../interfaces/ruleBreaches/ruleBreachAlert';
 import { IRuleBreachRequestPopulated } from '../interfaces/ruleBreaches/ruleBreachRequest';
 
@@ -25,18 +25,6 @@ export const createRuleBreachRequestRequest = async (
 
     const { data } = await axios.post<IRuleBreachRequestPopulated>(ruleBreachesRequests, formData);
     return data;
-};
-
-export const unpopulateBrokenRules = (brokenRulesPopulated: IRuleBreachPopulated['brokenRules']): IRuleBreach['brokenRules'] => {
-    return brokenRulesPopulated.map(({ ruleId, relationships }) => ({
-        ruleId,
-        relationshipIds: relationships.map((relationship) => {
-            if (typeof relationship === 'string') {
-                return relationship;
-            }
-            return relationship!.properties._id;
-        }),
-    }));
 };
 
 export const getRuleBreachRequestsRequest = async (

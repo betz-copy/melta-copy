@@ -1,4 +1,22 @@
 {
+  "scripts": {
+    "analyze": "npm run build && source-map-explorer 'build/static/js/*.js' --html analyzedBuild.html",
+    "start": "vite",
+    "start:docker": "export VITE_APP_IS_DOCKER=true && npm start",
+    "build": "tsc && vite build"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ]
+  },
   "name": "frontend",
   "version": "1.0.0",
   "description": "",
@@ -68,7 +86,6 @@
     "react-redux": "^7.2.6",
     "react-router": "6.2.1",
     "react-router-dom": "6.2.1",
-    "react-scripts": "5.0.0",
     "react-to-print": "^2.14.7",
     "react-toastify": "^8.1.0",
     "redux": "^4.1.2",
@@ -77,28 +94,6 @@
     "typescript": "^4.3.4",
     "uuid": "^8.3.2",
     "yup": "^0.32.11"
-  },
-  "scripts": {
-    "analyze": "npm run build && source-map-explorer 'build/static/js/*.js' --html analyzedBuild.html",
-    "start": "react-scripts start",
-    "start:docker": "export REACT_APP_IS_DOCKER=true && react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject",
-    "lint": "eslint . --ext .ts",
-    "lint:fix": "eslint . --ext .ts --fix"
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ]
   },
   "devDependencies": {
     "@faker-js/faker": "^6.1.1",

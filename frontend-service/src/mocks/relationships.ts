@@ -1,13 +1,24 @@
 import MockAdapter from 'axios-mock-adapter';
-/* eslint-disable import/no-extraneous-dependencies */
 import { Chance } from 'chance';
-import { unpopulateBrokenRules } from '../services/ruleBreachesService';
 import { generateRuleBreachRequest } from './ruleBreaches';
 import { environment } from '../globals';
+import { IRuleBreach, IRuleBreachPopulated } from '../interfaces/ruleBreaches/ruleBreach';
 
 const { errorCodes } = environment;
 
 const chance = new Chance();
+
+const unpopulateBrokenRules = (brokenRulesPopulated: IRuleBreachPopulated['brokenRules']): IRuleBreach['brokenRules'] => {
+    return brokenRulesPopulated.map(({ ruleId, relationships }) => ({
+        ruleId,
+        relationshipIds: relationships.map((relationship) => {
+            if (typeof relationship === 'string') {
+                return relationship;
+            }
+            return relationship!.properties._id;
+        }),
+    }));
+};
 
 const mockRelationships = (mock: MockAdapter) => {
     mock.onPost('/api/instances/relationships').reply(({ data }) => {

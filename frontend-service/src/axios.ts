@@ -1,8 +1,6 @@
-/* eslint-disable global-require */
 import axiosInstance from 'axios';
 import MockAdapter from 'axios-mock-adapter';
 import { AuthService } from './services/authService';
-// import faker from 'faker';
 
 const axios = axiosInstance.create({
     withCredentials: true,
@@ -23,46 +21,50 @@ axios.interceptors.response.use(
     },
 );
 
-if (process.env.NODE_ENV === 'development' && !process.env.REACT_APP_IS_DOCKER) {
+if (import.meta.env.DEV && !import.meta.env.VITE_APP_IS_DOCKER) {
     console.log('Development Environment, using axios mock');
 
-    const { mockCategories } = require('./mocks/templates/categories');
-    const { mockGetAllTemplates } = require('./mocks/templates/getAllTemplates');
-    const { mockConfig } = require('./mocks/config');
-    const { mockEntites } = require('./mocks/entities');
-    const { mockEntityTemplates } = require('./mocks/templates/entityTemplates');
-    const { mockRelationshipTemplates } = require('./mocks/templates/relationshipTemplates');
-    const { mockRules } = require('./mocks/templates/rules');
-    const { mockRelationships } = require('./mocks/relationships');
-    const { mockPermissions } = require('./mocks/permissions');
-    const { mockActivityLog } = require('./mocks/entities/activityLog');
-    const { mockNotifications } = require('./mocks/notifications');
-    const { mockRuleBreaches } = require('./mocks/ruleBreaches');
+    const [
+        { mockCategories },
+        { mockGetAllTemplates },
+        { mockConfig },
+        { mockEntites },
+        { mockEntityTemplates },
+        { mockRelationshipTemplates },
+        { mockRules },
+        { mockRelationships },
+        { mockPermissions },
+        { mockActivityLog },
+        { mockNotifications },
+        { mockRuleBreaches },
+    ] = await Promise.all([
+        import('./mocks/templates/categories'),
+        import('./mocks/templates/getAllTemplates'),
+        import('./mocks/config'),
+        import('./mocks/entities'),
+        import('./mocks/templates/entityTemplates'),
+        import('./mocks/templates/relationshipTemplates'),
+        import('./mocks/templates/rules'),
+        import('./mocks/relationships'),
+        import('./mocks/permissions'),
+        import('./mocks/entities/activityLog'),
+        import('./mocks/notifications'),
+        import('./mocks/ruleBreaches'),
+    ]);
 
     const mock = new MockAdapter(axios, { delayResponse: 500 });
 
     mockConfig(mock);
-
     mockGetAllTemplates(mock);
-
     mockCategories(mock);
-
     mockEntityTemplates(mock);
-
     mockRelationshipTemplates(mock);
-
     mockRules(mock);
-
     mockEntites(mock);
-
     mockRelationships(mock);
-
     mockPermissions(mock);
-
     mockActivityLog(mock);
-
     mockNotifications(mock);
-
     mockRuleBreaches(mock);
 }
 
