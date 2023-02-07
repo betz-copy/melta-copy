@@ -125,11 +125,13 @@
     "@types/stylis": "^4.0.2",
     "@typescript-eslint/eslint-plugin": "^5.9.0",
     "@typescript-eslint/parser": "^5.9.0",
+    "@vitejs/plugin-react": "^3.1.0",
     "chance": "^1.1.8",
     "eslint-plugin-jest": "^25.2.2",
     "eslint-plugin-prettier": "^4.0.0",
     "eslint-plugin-react-hooks": "^4.3.0",
     "prettier": "^2.3.1",
-    "source-map-explorer": "^2.5.2"
+    "source-map-explorer": "^2.5.2",
+    "vite": "^4.1.1"
   }
 }
