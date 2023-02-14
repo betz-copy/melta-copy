@@ -386,7 +386,7 @@ const PermissionsOfUserDialog: React.FC<{
                                                 handleClose();
                                                 setIsOpen(true);
                                                 setCurrentStep(0);
-                                                navigate('/');
+                                                navigate('/?search=&viewMode=templates-tables-view');
                                             }}
                                         >
                                             {i18next.t('showTour')}

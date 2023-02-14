@@ -22,7 +22,7 @@ import { IPermissionsOfUser } from '../../services/permissionsService';
 import '../../css/pages.css';
 import IconButtonWithPopoverText from '../../common/IconButtonWithPopover';
 import { BlueTitle } from '../../common/BlueTitle';
-import { ResetFilterButton } from '../../common/TemplatesTablesPage/ResetFilterButton';
+import { ResetFilterButton } from '../../common/EntitiesPage/ResetFilterButton';
 import { EntityTopBar } from './components/TopBar';
 import { getOppositeEntityTemplate, isRelationshipConnectedToEntityTemplate, populateRelationshipTemplate } from '../../utils/templates';
 

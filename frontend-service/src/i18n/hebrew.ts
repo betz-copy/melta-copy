@@ -11,7 +11,9 @@ export default {
     relationshipTemplates: 'תבניות קשר',
     rules: 'חוקים',
     failedToGetTemplates: 'נכשל לטעון תבניות',
-    templatesTablesEntityTemplatesCheckboxLabel: 'סינון תבניות',
+    entityTemplatesCheckboxLabel: 'סינון תבניות',
+    templateTablesView: 'תצוגת טבלאות',
+    cardsView: 'תצוגת כרטיסיות',
     selectChooseAll: 'בחר הכל',
     addEntity: 'הוסף ישות',
     showTour: 'הצג סיור במערכת',
@@ -206,6 +208,17 @@ export default {
             allCategories: 'הכל',
             chooseAll: 'סמן הכל',
         },
+    },
+    entitiesCardView: {
+        failedToLoadResults: 'נכשל לטעון תוצאות',
+        noSearchLeft: 'אין עוד תוצאות',
+        numberOfSearchResults: {
+            approximately: 'כ-',
+            results: 'תוצאות',
+        },
+    },
+    globalSearch: {
+        searchLabel: 'חיפוש ישויות...',
     },
     wizard: {
         next: 'הבא',

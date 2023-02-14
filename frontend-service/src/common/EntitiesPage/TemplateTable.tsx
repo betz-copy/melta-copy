@@ -57,7 +57,7 @@ const TemplateTable = ({ template, quickFilterText, page }: { template: IMongoEn
                 <Grid item container xs={5}>
                     <Grid item>{template.iconFileId && <CustomIcon iconUrl={template.iconFileId} height="30px" width="30px" color="#225AA7" />}</Grid>
                     <Grid item paddingLeft="10px">
-                        <BlueTitle title={template.displayName} component="h6" variant="h6" />
+                        <BlueTitle title={template.displayName} component="h5" variant="h5" />
                     </Grid>
                 </Grid>
                 <Grid>

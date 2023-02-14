@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Grid, IconButton } from '@mui/material';
-import { AddCircle as AddIcon, Search as SearchIcon } from '@mui/icons-material';
+import { AddCircle as AddIcon } from '@mui/icons-material';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import i18next from 'i18next';
@@ -65,7 +65,7 @@ const RulesRow: React.FC = () => {
             <Header title={i18next.t('rules')}>
                 <Grid container spacing={1} alignItems="center">
                     <Grid item>
-                        <SearchInput onChange={setSearchText} endAdornmentChildren={<SearchIcon />} />
+                        <SearchInput onChange={setSearchText} />
                     </Grid>
                     <Grid item>
                         <IconButton onClick={() => setRuleWizardDialogState({ isWizardOpen: true, rule: null })}>

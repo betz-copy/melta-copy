@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Box, Grid } from '@mui/material';
-import { Search as SearchIcon } from '@mui/icons-material';
 import _debounce from 'lodash.debounce';
 import { IEntity } from '../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
@@ -20,7 +19,7 @@ const EntitiesTableOfTemplateWithQuickFilter: React.FC<{
             <div>
                 <Grid container justifyContent="center">
                     <Grid item xs={8}>
-                        <SearchInput onChange={setQuickFilterTextDebounced} endAdornmentChildren={<SearchIcon />} />
+                        <SearchInput onChange={setQuickFilterTextDebounced} />
                     </Grid>
                 </Grid>
             </div>

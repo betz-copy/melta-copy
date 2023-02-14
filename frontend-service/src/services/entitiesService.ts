@@ -9,10 +9,15 @@ import { IRuleBreach } from '../interfaces/ruleBreaches/ruleBreach';
 const { entities, relationships } = environment.api;
 
 const getEntitiesByTemplateRequest = async (
-    templateId: string,
+    templateIds: string[],
     agGridRequest: Pick<IServerSideGetRowsRequest, 'startRow' | 'endRow' | 'sortModel' | 'filterModel'> & { quickFilter?: string },
 ) => {
-    const { data } = await axios.post<{ rows: IEntity[]; lastRowIndex: number }>(`${entities}/search`, agGridRequest, { params: { templateId } });
+    if (templateIds.length === 0) {
+        // backend assumes at least 1 templateId, if not, obvious answer
+        return { rows: [], lastRowIndex: 0 };
+    }
+
+    const { data } = await axios.post<{ rows: IEntity[]; lastRowIndex: number }>(`${entities}/search`, agGridRequest, { params: { templateIds } });
     return data;
 };
 

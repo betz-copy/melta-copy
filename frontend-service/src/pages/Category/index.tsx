@@ -7,7 +7,7 @@ import { ICategoryMap } from '../../interfaces/categories';
 import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
 
 import '../../css/pages.css';
-import TemplatesTablesPage from '../../common/TemplatesTablesPage';
+import EntitiesPage from '../../common/EntitiesPage';
 
 const Category: React.FC = () => {
     const { categoryId } = useParams();
@@ -22,7 +22,7 @@ const Category: React.FC = () => {
 
     return (
         <Grid container marginLeft="0" marginRight="0">
-            <TemplatesTablesPage
+            <EntitiesPage
                 key={category._id}
                 templates={categoryTemplates}
                 excelExportAllTablesFileName={`${category.displayName}.xlsx`}

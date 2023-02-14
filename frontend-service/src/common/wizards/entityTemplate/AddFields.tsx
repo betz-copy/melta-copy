@@ -57,7 +57,7 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
     const { data: areThereInstancesByTemplateIdResponse } = useQuery(
         ['areThereInstancesByTemplateId', (values as EntityTemplateWizardValues & { _id: string })._id],
         () =>
-            getEntitiesByTemplateRequest((values as EntityTemplateWizardValues & { _id: string })._id, {
+            getEntitiesByTemplateRequest([(values as EntityTemplateWizardValues & { _id: string })._id], {
                 startRow: 0,
                 endRow: 0,
                 filterModel: {},

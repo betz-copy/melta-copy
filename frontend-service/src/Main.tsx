@@ -76,7 +76,7 @@ const Main = () => {
                             LocalStorage.set('didTour', true);
                             setIsOpen(true);
                             setCurrentStep(0);
-                            navigate('/');
+                            navigate('/?search=&viewMode=templates-tables-view');
                         }}
                         sx={{ marginRight: '10px' }}
                     >

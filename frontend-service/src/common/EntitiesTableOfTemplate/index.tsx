@@ -34,7 +34,7 @@ export const getDatasource = (
         async getRows(params) {
             const { sortModel, startRow, endRow, filterModel } = params.request;
             const { result: data, err } = await trycatch(() =>
-                getEntitiesByTemplateRequest(templateId, {
+                getEntitiesByTemplateRequest([templateId], {
                     sortModel,
                     startRow,
                     endRow,

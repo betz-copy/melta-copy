@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Grid, IconButton } from '@mui/material';
-import { AppRegistration as AppRegistrationIcon, AddCircle as AddIcon, Search as SearchIcon } from '@mui/icons-material';
+import { AppRegistration as AppRegistrationIcon, AddCircle as AddIcon } from '@mui/icons-material';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 
@@ -88,7 +88,7 @@ const EntityTemplatesRow: React.FC = () => {
             <Header title={i18next.t('entityTemplates')}>
                 <Grid container spacing={1} alignItems="center">
                     <Grid item>
-                        <SearchInput onChange={setSearchText} endAdornmentChildren={<SearchIcon />} />
+                        <SearchInput onChange={setSearchText} />
                     </Grid>
                     <Grid item>
                         <SelectCheckbox

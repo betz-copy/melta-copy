@@ -32,6 +32,9 @@ export const environment = {
         maximumNodeSize: 7,
         defaultNodeRadius: 4,
     },
+    entitiesCardsView: {
+        infiniteScrollPageCount: 10,
+    },
     notifications: {
         updateInterval: 1000 * 60 * 10,
         infiniteScrollPageCount: 10,

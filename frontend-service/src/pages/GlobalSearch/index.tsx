@@ -1,16 +1,15 @@
 import React from 'react';
-import i18next from 'i18next';
-import { Grid } from '@mui/material';
 import { useQueryClient } from 'react-query';
-import _debounce from 'lodash.debounce';
+import { useSearchParams } from 'react-router-dom';
+import i18next from 'i18next';
 import { ICategoryMap } from '../../interfaces/categories';
 
-import '../../css/pages.css';
 import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
 import { IPermissionsOfUser } from '../../services/permissionsService';
-import TemplatesTablesPage from '../../common/TemplatesTablesPage';
+import StartPageSearch from './components/StartPageSearch';
+import EntitiesPage from '../../common/EntitiesPage';
 
-const GlobalSearch: React.FC = () => {
+const GlobalSearch: React.FC<{}> = () => {
     const queryClient = useQueryClient();
 
     const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
@@ -26,17 +25,18 @@ const GlobalSearch: React.FC = () => {
         return allowedCategories.find((category) => category._id === entityTemplate.category._id);
     });
 
-    return (
-        <Grid container marginLeft="0" marginRight="0">
-            <TemplatesTablesPage
-                pageType="globalSearch"
-                key="globalSearch"
-                templates={allowedTemplates}
-                categories={allowedCategories}
-                excelExportAllTablesFileName={`${i18next.t('pages.globalSearch')}.xlsx`}
-                pageTitle={i18next.t('pages.globalSearch')}
-            />
-        </Grid>
+    const [urlSearchParams, setUrlSearchParams] = useSearchParams({});
+
+    return urlSearchParams.get('search') === null ? (
+        <StartPageSearch onSearch={(searchValue) => setUrlSearchParams({ search: searchValue })} />
+    ) : (
+        <EntitiesPage
+            pageType="globalSearch"
+            templates={allowedTemplates}
+            categories={allowedCategories}
+            excelExportAllTablesFileName={`${i18next.t('pages.globalSearch')}.xlsx`}
+            pageTitle={i18next.t('pages.globalSearch')}
+        />
     );
 };
 

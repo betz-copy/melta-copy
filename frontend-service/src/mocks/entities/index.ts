@@ -6,13 +6,12 @@ import { allEntities } from './allEntities';
 const mockEntites = (mock: MockAdapter) => {
     // Get entities by category
     mock.onPost('/api/instances/entities/search').reply(({ params }) => {
-        const { templateId } = params;
-        const rowsOfTemplate = allEntities.filter((entity) => entity.templateId === templateId);
+        const { templateIds } = params;
 
+        const allPossibleRows = allEntities.filter((entity) => templateIds.includes(entity.templateId));
         const countOfSearchedRows =
-            faker.datatype.boolean() || rowsOfTemplate.length === 0 ? 0 : faker.datatype.number({ min: 1, max: rowsOfTemplate.length });
-        const searchedRows = faker.helpers.arrayElements(rowsOfTemplate, countOfSearchedRows);
-
+            faker.datatype.boolean() || allPossibleRows.length === 0 ? 0 : faker.datatype.number({ min: 1, max: allPossibleRows.length });
+        const searchedRows = faker.helpers.arrayElements(allPossibleRows, countOfSearchedRows);
         return [
             200,
             {
