@@ -321,7 +321,7 @@ export class TemplatesManager {
     }
 
     static async throwIfEntityTemplateHasInstances(id: string) {
-        const { rows } = await InstanceManagerService.getInstancesByTemplateId(id, { startRow: 0, endRow: 0, sortModel: [], filterModel: {} });
+        const { rows } = await InstanceManagerService.getInstancesByTemplateIds([id], { startRow: 0, endRow: 0, sortModel: [], filterModel: {} });
         if (rows.length !== 0) {
             throw new ServiceError(400, 'entity template still has instances', { errorCode: entityTemplateHasInstances });
         }
@@ -357,7 +357,7 @@ export class TemplatesManager {
     ): Promise<IMongoEntityTemplateWithConstraintsPopulated> {
         await EntityTemplateManagerService.getCategoryById(updatedTemplateData.category);
 
-        const { rows } = await InstanceManagerService.getInstancesByTemplateId(id, { startRow: 0, endRow: 0, sortModel: [], filterModel: {} });
+        const { rows } = await InstanceManagerService.getInstancesByTemplateIds([id], { startRow: 0, endRow: 0, sortModel: [], filterModel: {} });
         const currTemplate = await EntityTemplateManagerService.getEntityTemplateById(id);
 
         if (currTemplate.disabled === true) throw new ServiceError(400, 'can not update disabled template');

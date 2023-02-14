@@ -84,7 +84,7 @@ export class InstancesManager {
     }
 
     private static async getEntitiesChunk(id: string, filterParams: IEntityFilterParams, currentFirstRow: number, currentEndRow: number) {
-        return InstanceManagerService.getInstancesByTemplateId(id, {
+        return InstanceManagerService.getInstancesByTemplateIds([id], {
             ...filterParams,
             startRow: currentFirstRow,
             endRow: currentEndRow,

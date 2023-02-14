@@ -100,9 +100,9 @@ export class InstanceManagerService {
         return data;
     }
 
-    static async getInstancesByTemplateId(templateId: string, agGridRequest: IEntityFilterParams) {
+    static async getInstancesByTemplateIds(templateIds: string[], agGridRequest: IEntityFilterParams) {
         const { data } = await this.InstanceManagerApi.post<IAgGridResult<IEntity>>(`${baseEntitiesRoute}/${searchRoute}`, agGridRequest, {
-            params: { templateId },
+            params: { templateIds },
         });
 
         return data;

@@ -4,6 +4,7 @@ import { EntityTemplateManagerService } from '../../externalServices/entityTempl
 import { InstanceManagerService, IRelationship } from '../../externalServices/instanceManager';
 import { isRuleManager } from '../../externalServices/permissionsApi';
 import { RelationshipsTemplateManagerService } from '../../externalServices/relationshipsTemplateManager';
+import { ShragaUser } from '../../utils/express/passport';
 import { ServiceError } from '../error';
 import { validateAuthorization } from '../permissions/validateAuthorizationMiddleware';
 import { TemplatesManager } from '../templates/manager';
@@ -25,17 +26,25 @@ export const validateUserCanCreateEntityInstance = async (req: Request) => {
     return validateAuthorization(req, 'Instances', [categoryId]);
 };
 
-export const validateUserCanSearchEntityInstances = async (req: Request) => {
-    const categoryId = await getCategoryIdFromTemplateId(req.query.templateId as string);
+export const validateHasPermissionsToEntitiesInTemplates = async (user: ShragaUser, templateIds: string[]) => {
+    const allowedEntityTemplates = (await TemplatesManager.getAllowedEntitiesTemplates(user.id)).map((entityTemplate) => entityTemplate._id);
+    const unauthorizedTemplates = templateIds.filter((templateId) => !allowedEntityTemplates.includes(templateId));
 
-    return validateAuthorization(req, 'Instances', [categoryId]);
+    if (unauthorizedTemplates.length > 0) {
+        throw new ServiceError(403, 'user not authorized', { metadata: `unauthorized templates ${JSON.stringify(unauthorizedTemplates)}` });
+    }
+};
+
+export const validateUserCanSearchEntityInstances = async (req: Request) => {
+    const { templateIds } = req.query as { templateIds: string[] };
+
+    await validateHasPermissionsToEntitiesInTemplates(req.user!, templateIds);
 };
 
 export const validateUserCanExportEntityInstances = async (req: Request) => {
     const { templateIds } = req.body;
-    const categoryIdsPromises = templateIds.map((id: string) => getCategoryIdFromTemplateId(id));
-    const categoryIds = Array.from(new Set(await Promise.all(categoryIdsPromises)));
-    return validateAuthorization(req, 'Instances', Array.from(new Set(await Promise.all(categoryIds))));
+
+    await validateHasPermissionsToEntitiesInTemplates(req.user!, templateIds);
 };
 
 export const validateUserCanUpdateGetOrDeleteEntityInstance = async (req: Request) => {
