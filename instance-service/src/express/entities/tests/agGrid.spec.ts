@@ -67,7 +67,7 @@ describe('e2e ag-grid entities tests', () => {
                 sortModel: [],
             };
 
-            const res = await EntityManager.getEntities(defaultTemplateId, agGridRequest);
+            const res = await EntityManager.getEntities([defaultTemplateId], agGridRequest);
 
             expect(res).toBeDefined();
             expect(res.lastRowIndex).toBe(1);
@@ -96,7 +96,7 @@ describe('e2e ag-grid entities tests', () => {
                 sortModel: [{ colId: 'age', sort: 'asc' }],
             };
 
-            const res = await EntityManager.getEntities(defaultTemplateId, agGridRequest);
+            const res = await EntityManager.getEntities([defaultTemplateId], agGridRequest);
 
             expect(res).toBeDefined();
             expect(res.lastRowIndex).toBe(3);
@@ -125,7 +125,7 @@ describe('e2e ag-grid entities tests', () => {
                 sortModel: [{ colId: 'age', sort: 'desc' }],
             };
 
-            const res = await EntityManager.getEntities(defaultTemplateId, agGridRequest);
+            const res = await EntityManager.getEntities([defaultTemplateId], agGridRequest);
 
             expect(res).toBeDefined();
             expect(res.lastRowIndex).toBe(3);
@@ -157,7 +157,7 @@ describe('e2e ag-grid entities tests', () => {
                 ],
             };
 
-            const res = await EntityManager.getEntities(defaultTemplateId, agGridRequest);
+            const res = await EntityManager.getEntities([defaultTemplateId], agGridRequest);
 
             expect(res).toBeDefined();
             expect(res.lastRowIndex).toBe(3);
@@ -199,7 +199,7 @@ describe('e2e ag-grid entities tests', () => {
                 ],
             };
 
-            const res = await EntityManager.getEntities(defaultTemplateId, agGridRequest);
+            const res = await EntityManager.getEntities([defaultTemplateId], agGridRequest);
 
             expect(res).toBeDefined();
             expect(res.lastRowIndex).toBe(3);
@@ -256,7 +256,7 @@ describe('e2e ag-grid entities tests', () => {
                 sortModel: [],
             };
 
-            const res = await EntityManager.getEntities(defaultTemplateId, agGridRequest);
+            const res = await EntityManager.getEntities([defaultTemplateId], agGridRequest);
 
             expect(res).toBeDefined();
             expect(res.lastRowIndex).toBe(1);
@@ -284,7 +284,7 @@ describe('e2e ag-grid entities tests', () => {
                 sortModel: [],
             };
 
-            const res = await EntityManager.getEntities(defaultTemplateId, agGridRequest);
+            const res = await EntityManager.getEntities([defaultTemplateId], agGridRequest);
 
             expect(res).toBeDefined();
             expect(res.lastRowIndex).toBe(1);
@@ -312,7 +312,7 @@ describe('e2e ag-grid entities tests', () => {
                 sortModel: [],
             };
 
-            const res = await EntityManager.getEntities(defaultTemplateId, agGridRequest);
+            const res = await EntityManager.getEntities([defaultTemplateId], agGridRequest);
 
             expect(res).toBeDefined();
             expect(res.lastRowIndex).toBe(0);
@@ -333,7 +333,7 @@ describe('e2e ag-grid entities tests', () => {
                 sortModel: [],
             };
 
-            const res = await EntityManager.getEntities(defaultTemplateId, agGridRequest);
+            const res = await EntityManager.getEntities([defaultTemplateId], agGridRequest);
 
             expect(res).toBeDefined();
             expect(res.lastRowIndex).toBe(2);
@@ -365,7 +365,7 @@ describe('e2e ag-grid entities tests', () => {
                 sortModel: [],
             };
 
-            const res = await EntityManager.getEntities(defaultTemplateId, agGridRequest);
+            const res = await EntityManager.getEntities([defaultTemplateId], agGridRequest);
 
             expect(res).toBeDefined();
             expect(res.lastRowIndex).toBe(2);
@@ -397,7 +397,7 @@ describe('e2e ag-grid entities tests', () => {
                 sortModel: [],
             };
 
-            const res = await EntityManager.getEntities(defaultTemplateId, agGridRequest);
+            const res = await EntityManager.getEntities([defaultTemplateId], agGridRequest);
 
             expect(res).toBeDefined();
             expect(res.lastRowIndex).toBe(2);
@@ -429,7 +429,7 @@ describe('e2e ag-grid entities tests', () => {
                 sortModel: [],
             };
 
-            const res = await EntityManager.getEntities(defaultTemplateId, agGridRequest);
+            const res = await EntityManager.getEntities([defaultTemplateId], agGridRequest);
 
             expect(res).toBeDefined();
             expect(res.lastRowIndex).toBe(1);
@@ -457,7 +457,7 @@ describe('e2e ag-grid entities tests', () => {
                 sortModel: [],
             };
 
-            const res = await EntityManager.getEntities(defaultTemplateId, agGridRequest);
+            const res = await EntityManager.getEntities([defaultTemplateId], agGridRequest);
 
             expect(res).toBeDefined();
             expect(res.lastRowIndex).toBe(2);
@@ -488,7 +488,7 @@ describe('e2e ag-grid entities tests', () => {
                 sortModel: [],
             };
 
-            const res = await EntityManager.getEntities(defaultTemplateId, agGridRequest);
+            const res = await EntityManager.getEntities([defaultTemplateId], agGridRequest);
 
             expect(res).toBeDefined();
             expect(res.lastRowIndex).toBe(0);
@@ -508,7 +508,7 @@ describe('e2e ag-grid entities tests', () => {
                 sortModel: [],
             };
 
-            const res = await EntityManager.getEntities(defaultTemplateId, agGridRequest);
+            const res = await EntityManager.getEntities([defaultTemplateId], agGridRequest);
 
             expect(res).toBeDefined();
             expect(res.lastRowIndex).toBe(3);
@@ -543,7 +543,7 @@ describe('e2e ag-grid entities tests', () => {
                 sortModel: [],
             };
 
-            expect(() => EntityManager.getEntities(defaultTemplateId, agGridRequest as IAGGridRequest)).rejects.toThrowError(
+            expect(() => EntityManager.getEntities([defaultTemplateId], agGridRequest as IAGGridRequest)).rejects.toThrowError(
                 'Invalid supported ag-grid filter type method',
             );
         });
@@ -570,7 +570,7 @@ describe('e2e ag-grid entities tests', () => {
                 sortModel: [],
             };
 
-            const res = await EntityManager.getEntities(defaultTemplateId, agGridRequest);
+            const res = await EntityManager.getEntities([defaultTemplateId], agGridRequest);
 
             expect(res).toBeDefined();
             expect(res.lastRowIndex).toBe(1);
@@ -598,7 +598,7 @@ describe('e2e ag-grid entities tests', () => {
                 sortModel: [],
             };
 
-            const res = await EntityManager.getEntities(defaultTemplateId, agGridRequest);
+            const res = await EntityManager.getEntities([defaultTemplateId], agGridRequest);
 
             expect(res.rows.map((row: IEntity) => row.properties)).toEqual(
                 expect.arrayContaining([
@@ -626,7 +626,7 @@ describe('e2e ag-grid entities tests', () => {
                 sortModel: [],
             };
 
-            const res = await EntityManager.getEntities(defaultTemplateId, agGridRequest);
+            const res = await EntityManager.getEntities([defaultTemplateId], agGridRequest);
 
             expect(res.rows.map((row: IEntity) => row.properties)).toEqual(
                 expect.arrayContaining([
@@ -654,7 +654,7 @@ describe('e2e ag-grid entities tests', () => {
                 sortModel: [],
             };
 
-            const res = await EntityManager.getEntities(defaultTemplateId, agGridRequest);
+            const res = await EntityManager.getEntities([defaultTemplateId], agGridRequest);
 
             expect(res.rows.map((row: IEntity) => row.properties)).toEqual(
                 expect.arrayContaining([
@@ -682,7 +682,7 @@ describe('e2e ag-grid entities tests', () => {
                 sortModel: [],
             };
 
-            const res = await EntityManager.getEntities(defaultTemplateId, agGridRequest);
+            const res = await EntityManager.getEntities([defaultTemplateId], agGridRequest);
 
             expect(res.rows.map((row: IEntity) => row.properties)).toEqual(
                 expect.arrayContaining([
@@ -710,7 +710,7 @@ describe('e2e ag-grid entities tests', () => {
                 sortModel: [],
             };
 
-            const res = await EntityManager.getEntities(defaultTemplateId, agGridRequest);
+            const res = await EntityManager.getEntities([defaultTemplateId], agGridRequest);
 
             expect(res.rows.map((row: IEntity) => row.properties)).toEqual(
                 expect.arrayContaining([
@@ -739,7 +739,7 @@ describe('e2e ag-grid entities tests', () => {
                 sortModel: [],
             };
 
-            const res = await EntityManager.getEntities(defaultTemplateId, agGridRequest);
+            const res = await EntityManager.getEntities([defaultTemplateId], agGridRequest);
 
             expect(res.rows.map((row: IEntity) => row.properties)).toEqual(
                 expect.arrayContaining([
@@ -766,7 +766,7 @@ describe('e2e ag-grid entities tests', () => {
                 sortModel: [],
             };
 
-            const res = await EntityManager.getEntities(defaultTemplateId, agGridRequest);
+            const res = await EntityManager.getEntities([defaultTemplateId], agGridRequest);
 
             expect(res).toBeDefined();
             expect(res.lastRowIndex).toBe(0);
@@ -786,7 +786,7 @@ describe('e2e ag-grid entities tests', () => {
                 sortModel: [],
             };
 
-            const res = await EntityManager.getEntities(defaultTemplateId, agGridRequest);
+            const res = await EntityManager.getEntities([defaultTemplateId], agGridRequest);
 
             expect(res).toBeDefined();
             expect(res.lastRowIndex).toBe(3);
@@ -821,7 +821,7 @@ describe('e2e ag-grid entities tests', () => {
                 sortModel: [],
             };
 
-            expect(() => EntityManager.getEntities(defaultTemplateId, agGridRequest as IAGGridRequest)).rejects.toThrowError(
+            expect(() => EntityManager.getEntities([defaultTemplateId], agGridRequest as IAGGridRequest)).rejects.toThrowError(
                 'Invalid supported ag-grid filter type method',
             );
         });
@@ -853,7 +853,7 @@ describe('e2e ag-grid entities tests', () => {
                 sortModel: [],
             };
 
-            const res = await EntityManager.getEntities(defaultTemplateId, agGridRequest);
+            const res = await EntityManager.getEntities([defaultTemplateId], agGridRequest);
 
             expect(res).toBeDefined();
             expect(res.lastRowIndex).toBe(1);
@@ -882,7 +882,7 @@ describe('e2e ag-grid entities tests', () => {
                 sortModel: [],
             };
 
-            const res = await EntityManager.getEntities(defaultTemplateId, agGridRequest);
+            const res = await EntityManager.getEntities([defaultTemplateId], agGridRequest);
 
             expect(res.rows.map((row: IEntity) => row.properties)).toEqual(
                 expect.arrayContaining([
@@ -911,7 +911,7 @@ describe('e2e ag-grid entities tests', () => {
                 sortModel: [],
             };
 
-            const res = await EntityManager.getEntities(defaultTemplateId, agGridRequest);
+            const res = await EntityManager.getEntities([defaultTemplateId], agGridRequest);
 
             expect(res.rows.map((row: IEntity) => row.properties)).toEqual(
                 expect.arrayContaining([
@@ -940,7 +940,7 @@ describe('e2e ag-grid entities tests', () => {
                 sortModel: [],
             };
 
-            const res = await EntityManager.getEntities(defaultTemplateId, agGridRequest);
+            const res = await EntityManager.getEntities([defaultTemplateId], agGridRequest);
 
             expect(res.rows.map((row: IEntity) => row.properties)).toEqual(
                 expect.arrayContaining([
@@ -969,7 +969,7 @@ describe('e2e ag-grid entities tests', () => {
                 sortModel: [],
             };
 
-            const res = await EntityManager.getEntities(defaultTemplateId, agGridRequest);
+            const res = await EntityManager.getEntities([defaultTemplateId], agGridRequest);
 
             expect(res.rows.map((row: IEntity) => row.properties)).toEqual(
                 expect.arrayContaining([
@@ -998,7 +998,7 @@ describe('e2e ag-grid entities tests', () => {
                 sortModel: [],
             };
 
-            const res = await EntityManager.getEntities(defaultTemplateId, agGridRequest);
+            const res = await EntityManager.getEntities([defaultTemplateId], agGridRequest);
 
             expect(res.rows.map((row: IEntity) => row.properties)).toEqual(
                 expect.arrayContaining([
@@ -1027,7 +1027,7 @@ describe('e2e ag-grid entities tests', () => {
                 sortModel: [],
             };
 
-            const res = await EntityManager.getEntities(defaultTemplateId, agGridRequest);
+            const res = await EntityManager.getEntities([defaultTemplateId], agGridRequest);
 
             expect(res.rows.map((row: IEntity) => row.properties)).toEqual(
                 expect.arrayContaining([
@@ -1056,7 +1056,7 @@ describe('e2e ag-grid entities tests', () => {
                 sortModel: [],
             };
 
-            const res = await EntityManager.getEntities(defaultTemplateId, agGridRequest);
+            const res = await EntityManager.getEntities([defaultTemplateId], agGridRequest);
 
             expect(res).toBeDefined();
             expect(res.lastRowIndex).toBe(0);
@@ -1078,7 +1078,7 @@ describe('e2e ag-grid entities tests', () => {
                 sortModel: [],
             };
 
-            const res = await EntityManager.getEntities(defaultTemplateId, agGridRequest);
+            const res = await EntityManager.getEntities([defaultTemplateId], agGridRequest);
 
             expect(res).toBeDefined();
             expect(res.lastRowIndex).toBe(3);
@@ -1114,7 +1114,7 @@ describe('e2e ag-grid entities tests', () => {
                 sortModel: [],
             };
 
-            expect(() => EntityManager.getEntities(defaultTemplateId, agGridRequest as IAGGridRequest)).rejects.toThrowError(
+            expect(() => EntityManager.getEntities([defaultTemplateId], agGridRequest as IAGGridRequest)).rejects.toThrowError(
                 'Invalid supported ag-grid filter type method',
             );
         });
@@ -1134,7 +1134,7 @@ describe('e2e ag-grid entities tests', () => {
                 sortModel: [],
             };
 
-            expect(() => EntityManager.getEntities(defaultTemplateId, agGridRequest as IAGGridRequest)).rejects.toThrowError(
+            expect(() => EntityManager.getEntities([defaultTemplateId], agGridRequest as IAGGridRequest)).rejects.toThrowError(
                 'Invalid supported ag-grid filter type method',
             );
         });
@@ -1159,7 +1159,7 @@ describe('e2e ag-grid entities tests', () => {
                 sortModel: [],
             };
 
-            const res = await EntityManager.getEntities(defaultTemplateId, agGridRequest);
+            const res = await EntityManager.getEntities([defaultTemplateId], agGridRequest);
 
             expect(res).toBeDefined();
             expect(res.lastRowIndex).toBe(1);
@@ -1185,7 +1185,7 @@ describe('e2e ag-grid entities tests', () => {
                 sortModel: [],
             };
 
-            const res = await EntityManager.getEntities(defaultTemplateId, agGridRequest);
+            const res = await EntityManager.getEntities([defaultTemplateId], agGridRequest);
 
             expect(res).toBeDefined();
             expect(res.lastRowIndex).toBe(1);
@@ -1211,7 +1211,7 @@ describe('e2e ag-grid entities tests', () => {
                 sortModel: [],
             };
 
-            const res = await EntityManager.getEntities(defaultTemplateId, agGridRequest);
+            const res = await EntityManager.getEntities([defaultTemplateId], agGridRequest);
 
             expect(res).toBeDefined();
             expect(res.lastRowIndex).toBe(1);
@@ -1237,7 +1237,7 @@ describe('e2e ag-grid entities tests', () => {
                 sortModel: [],
             };
 
-            const res = await EntityManager.getEntities(defaultTemplateId, agGridRequest);
+            const res = await EntityManager.getEntities([defaultTemplateId], agGridRequest);
 
             expect(res).toBeDefined();
             expect(res.lastRowIndex).toBe(0);
@@ -1257,7 +1257,7 @@ describe('e2e ag-grid entities tests', () => {
                 sortModel: [],
             };
 
-            const res = await EntityManager.getEntities(defaultTemplateId, agGridRequest);
+            const res = await EntityManager.getEntities([defaultTemplateId], agGridRequest);
 
             expect(res).toBeDefined();
             expect(res.lastRowIndex).toBe(1);
@@ -1283,7 +1283,7 @@ describe('e2e ag-grid entities tests', () => {
                 sortModel: [],
             };
 
-            const res = await EntityManager.getEntities(defaultTemplateId, agGridRequest);
+            const res = await EntityManager.getEntities([defaultTemplateId], agGridRequest);
 
             expect(res).toBeDefined();
             expect(res.lastRowIndex).toBe(2);
@@ -1320,7 +1320,7 @@ describe('e2e ag-grid entities tests', () => {
                 sortModel: [],
             };
 
-            expect(() => EntityManager.getEntities(defaultTemplateId, agGridRequest as IAGGridRequest)).rejects.toThrowError(
+            expect(() => EntityManager.getEntities([defaultTemplateId], agGridRequest as IAGGridRequest)).rejects.toThrowError(
                 'Invalid supported ag-grid filter type',
             );
         });
@@ -1333,7 +1333,7 @@ describe('e2e ag-grid entities tests', () => {
                 sortModel: [],
             };
 
-            const res = await EntityManager.getEntities(defaultTemplateId, agGridRequest);
+            const res = await EntityManager.getEntities([defaultTemplateId], agGridRequest);
 
             expect(res).toBeDefined();
             expect(res.lastRowIndex).toBe(1);
@@ -1402,7 +1402,7 @@ describe('e2e ag-grid entities tests', () => {
                 quickFilter: 'Another',
             };
 
-            const res = await EntityManager.getEntities(defaultTemplateId, agGridRequest);
+            const res = await EntityManager.getEntities([defaultTemplateId], agGridRequest);
 
             expect(res).toBeDefined();
             expect(res.lastRowIndex).toBe(1);
@@ -1424,7 +1424,7 @@ describe('e2e ag-grid entities tests', () => {
                 quickFilter: 'Name',
             };
 
-            const res = await EntityManager.getEntities(defaultTemplateId, agGridRequest);
+            const res = await EntityManager.getEntities([defaultTemplateId], agGridRequest);
 
             expect(res).toBeDefined();
             expect(res.lastRowIndex).toBe(3);
@@ -1470,7 +1470,7 @@ describe('e2e ag-grid entities tests', () => {
                 quickFilter: 'Name',
             };
 
-            const res = await EntityManager.getEntities(defaultTemplateId, agGridRequest);
+            const res = await EntityManager.getEntities([defaultTemplateId], agGridRequest);
 
             expect(res).toBeDefined();
             expect(res.lastRowIndex).toBe(1);
@@ -1495,7 +1495,7 @@ describe('e2e ag-grid entities tests', () => {
                 quickFilter: '(((',
             };
 
-            const res = await EntityManager.getEntities(defaultTemplateId, agGridRequest);
+            const res = await EntityManager.getEntities([defaultTemplateId], agGridRequest);
 
             expect(res).toBeDefined();
             expect(res.lastRowIndex).toBe(1);
@@ -1517,7 +1517,7 @@ describe('e2e ag-grid entities tests', () => {
                 quickFilter: 'with lucene-speci',
             };
 
-            const res = await EntityManager.getEntities(defaultTemplateId, agGridRequest);
+            const res = await EntityManager.getEntities([defaultTemplateId], agGridRequest);
 
             expect(res).toBeDefined();
             expect(res.lastRowIndex).toBe(1);
@@ -1549,7 +1549,7 @@ describe('e2e ag-grid entities tests', () => {
                 sortModel: [{ colId: 'num', sort: 'asc' }],
             };
 
-            const res = await EntityManager.getEntities(defaultTemplateId, agGridRequest);
+            const res = await EntityManager.getEntities([defaultTemplateId], agGridRequest);
 
             expect(res).toBeDefined();
             expect(res.lastRowIndex).toBe(4);
@@ -1573,7 +1573,7 @@ describe('e2e ag-grid entities tests', () => {
                 sortModel: [{ colId: 'num', sort: 'asc' }],
             };
 
-            const secondRes = await EntityManager.getEntities(defaultTemplateId, secondAgGridRequest);
+            const secondRes = await EntityManager.getEntities([defaultTemplateId], secondAgGridRequest);
 
             expect(secondRes).toBeDefined();
             expect(secondRes.lastRowIndex).toBe(4);

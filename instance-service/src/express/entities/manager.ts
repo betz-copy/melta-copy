@@ -89,13 +89,13 @@ export class EntityManager {
         ).catch(EntityManager.throwServiceErrorIfFailedConstraintsValidation);
     }
 
-    static async getEntities(templateId: string, agGridRequest: IAGGridRequest) {
+    static async getEntities(templateIds: string[], agGridRequest: IAGGridRequest) {
         if (agGridRequest.quickFilter) {
-            return EntityManager.getEntitiesWithSearch(templateId, agGridRequest);
+            return EntityManager.getEntitiesWithSearch(templateIds, agGridRequest);
         }
 
-        const searchCypherQuery = agGridRequestToNeo4JRequest(templateId, agGridRequest);
-        const searchCountCypherQuery = agGridRequestToNeo4JRequest(templateId, agGridRequest, true);
+        const searchCypherQuery = agGridRequestToNeo4JRequest(templateIds, agGridRequest);
+        const searchCountCypherQuery = agGridRequestToNeo4JRequest(templateIds, agGridRequest, true);
         const [nodes, nodesOverallCount] = await Promise.all([
             Neo4jClient.readTransaction(searchCypherQuery.cypherQuery, normalizeReturnedEntity('multipleResponses'), searchCypherQuery.parameters),
             Neo4jClient.readTransaction(searchCountCypherQuery.cypherQuery, normalizeResponseCount, searchCountCypherQuery.parameters),
@@ -104,15 +104,15 @@ export class EntityManager {
         return { rows: nodes, lastRowIndex: nodesOverallCount };
     }
 
-    private static async getEntitiesWithSearch(templateId: string, agGridRequest: IAGGridRequest) {
+    private static async getEntitiesWithSearch(templateIds: string[], agGridRequest: IAGGridRequest) {
         const latestIndex = await getLatestIndex();
 
         if (!latestIndex) {
             throw new ServiceError(400, `[NEO4J] Global search index not found.`);
         }
 
-        const searchCypherQuery = agGridSearchRequestToNeo4JRequest(templateId, latestIndex, agGridRequest);
-        const searchCountCypherQuery = agGridSearchRequestToNeo4JRequest(templateId, latestIndex, agGridRequest, true);
+        const searchCypherQuery = agGridSearchRequestToNeo4JRequest(templateIds, latestIndex, agGridRequest);
+        const searchCountCypherQuery = agGridSearchRequestToNeo4JRequest(templateIds, latestIndex, agGridRequest, true);
 
         const [nodes, nodesOverallCount] = await Promise.all([
             Neo4jClient.readTransaction(searchCypherQuery.cypherQuery, normalizeReturnedEntity('multipleResponses'), searchCypherQuery.parameters),

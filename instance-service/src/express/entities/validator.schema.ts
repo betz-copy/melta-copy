@@ -118,7 +118,7 @@ export const getEntitiesRequestSchema = Joi.object({
     body: {
         startRow: Joi.number().required(),
         endRow: Joi.number().required(),
-        quickFilter: Joi.string(),
+        quickFilter: Joi.string().allow(''),
         filterModel: Joi.object()
             .pattern(
                 variableNameValidation, // important when translating to neo4j query (prevent injection)
@@ -135,7 +135,7 @@ export const getEntitiesRequestSchema = Joi.object({
             .required(),
     },
     query: {
-        templateId: Joi.string().required(),
+        templateIds: Joi.array().items(Joi.string()).required(),
     },
     params: {},
 });

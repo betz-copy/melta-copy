@@ -209,14 +209,17 @@ export const sortModelToNeo4JSort = (sortModel: IAGGridSort[]) => {
 };
 
 const constructFilterQuery = (
-    templateId: string,
+    templateIds: string[],
     filterModel: IAGGridFilterModel,
     parametersParentVariableName: string,
 ): CypherQueryWithParameters => {
     const filterModelQuery = filterModelToQuery(filterModel, parametersParentVariableName);
+    const filterTemplateIds = templateIds.map((templateId) => `node:\`${templateId}\``).join(' OR ');
+
+    const doesBothFiltersPartsExist = templateIds.length > 0 && Object.keys(filterModel).length;
 
     return {
-        cypherQuery: `WHERE node:\`${templateId}\` ${Object.keys(filterModel).length ? `AND ${filterModelQuery.cypherQuery}` : ''}`,
+        cypherQuery: `WHERE ${filterTemplateIds}${doesBothFiltersPartsExist ? ' AND ' : ''}${filterModelQuery.cypherQuery}`,
         parameters: filterModelQuery.parameters,
     };
 };
@@ -235,13 +238,13 @@ const escapeNeo4jQuerySpecialChars = (quickFilter: string) => {
 };
 
 export const agGridSearchRequestToNeo4JRequest = (
-    templateId: string,
+    templateIds: string[],
     latestIndex: string,
     agGridRequest: IAGGridRequest,
     calculateOverallCount = false,
 ): CypherQueryWithParameters => {
     const filterParamsVariableName = 'filterParams';
-    const filterQuery = constructFilterQuery(templateId, agGridRequest.filterModel, 'filterParams');
+    const filterQuery = constructFilterQuery(templateIds, agGridRequest.filterModel, 'filterParams');
 
     // warning, in fulltext (lucene) query '*' works only on terms, and not phrases, we assume here the analyzer is "unicode_whitespace".
     // for example in the standard analyzer "foo,bar" is a phrase (with two terms), so searching "*foo,bar*" wont work at all.
@@ -287,12 +290,12 @@ export const agGridSearchRequestToNeo4JRequest = (
 };
 
 export const agGridRequestToNeo4JRequest = (
-    templateId: string,
+    templateIds: string[],
     agGridRequest: IAGGridRequest,
     calculateOverallCount = false,
 ): CypherQueryWithParameters => {
     const filterParamsVariableName = 'filterParams';
-    const filterQuery = constructFilterQuery(templateId, agGridRequest.filterModel, filterParamsVariableName);
+    const filterQuery = constructFilterQuery(templateIds, agGridRequest.filterModel, filterParamsVariableName);
 
     if (calculateOverallCount) {
         return {
