@@ -29,7 +29,7 @@ module.exports = {
         'no-use-before-define': 'off',
         '@typescript-eslint/no-use-before-define': ['error'],
         'react/jsx-key': ['error'],
-        'no-underscore-dangle': ['error', { allow: ['_id'] }],
+        'no-underscore-dangle': ['error', { allow: ['_id', '__threeObj'] }],
         'react/require-default-props': 'off',
         'react/jsx-props-no-spreading': 'off',
         'no-plusplus': 'off',

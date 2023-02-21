@@ -5,18 +5,20 @@ import { GraphData } from 'react-force-graph-2d';
 import i18next from 'i18next';
 
 const GraphMenu: React.FC<{
-    showMenu: boolean;
+    graphData: GraphData;
+    location: { top: number; left: number };
     onCloseMenu: () => void;
     onCenterMain: () => void;
-    location: { top: number; left: number };
-    graphData: GraphData;
-}> = ({ showMenu, onCloseMenu, onCenterMain, location, graphData }) => {
+}> = ({ graphData, location, onCloseMenu, onCenterMain }) => {
+    const areThereLockedNodes = graphData.nodes.some((node) => node.locked);
+    const areThereHighlightedNodes = graphData.nodes.some((node) => node.highlighted || node.mainHighlighted);
+
     return (
         <MuiMenu
-            open={showMenu}
+            open
             onClose={onCloseMenu}
             anchorReference="anchorPosition"
-            anchorPosition={showMenu ? location : undefined}
+            anchorPosition={location}
             onContextMenu={(event) => {
                 event.preventDefault();
                 onCloseMenu();
@@ -27,11 +29,13 @@ const GraphMenu: React.FC<{
                     graphData.nodes.forEach((node) => {
                         node.fx = undefined;
                         node.fy = undefined;
+                        node.fz = undefined;
                         node.locked = false;
                     });
 
                     onCloseMenu();
                 }}
+                disabled={!areThereLockedNodes}
             >
                 {i18next.t('graph.freeAll')}
             </MenuItem>
@@ -47,6 +51,7 @@ const GraphMenu: React.FC<{
 
                     onCloseMenu();
                 }}
+                disabled={!areThereHighlightedNodes}
             >
                 {i18next.t('graph.cancelAllHighlights')}
             </MenuItem>

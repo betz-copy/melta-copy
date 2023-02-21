@@ -120,6 +120,7 @@ export default {
     searchLabel: 'חיפוש...',
     booleanOptions: { yes: 'כן', no: 'לא' },
     graph: {
+        navigateToEntityPage: 'עבור לעמוד הפרט',
         navigateToGraph: 'עבור לגרף',
         center: 'מרכז',
         expand: 'הרחב', // הצג שכנים
@@ -134,6 +135,14 @@ export default {
         copiedSuccessfully: 'הקישור הועתק בהצלחה',
         filterTemplates: 'סינון תבניות',
         noPreviewProperties: 'לא נבחרו שדות לתצוגה מצומצמת',
+        '3DViewOff': 'השבת תצוגה בתלת מימד',
+        '3DViewOn': 'הפעל תצוגה בתלת מימד',
+        labelIconDescriptions: {
+            [environment.graphSettings.labelIcons.original.icon]: 'ישות מרכזית',
+            [environment.graphSettings.labelIcons.locked.icon]: 'ישות נעולה',
+            [environment.graphSettings.labelIcons.mainHighlighted.icon]: 'ישות מסומנת',
+            [environment.graphSettings.labelIcons.highlighted.icon]: 'ישות מחוברת לישות מסומנת',
+        },
     },
     pages: {
         globalSearch: 'חיפוש גלובלי',

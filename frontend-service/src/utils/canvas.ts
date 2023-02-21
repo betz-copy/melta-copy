@@ -1,14 +1,9 @@
 /* eslint-disable no-param-reassign */
-export const drawRectangle = (
-    ctx: CanvasRenderingContext2D,
-    x: number,
-    y: number,
-    width: number,
-    height: number,
-    color: string,
-    radius: number = 2,
-) => {
-    ctx.beginPath();
+import { environment } from '../globals';
+
+const { canvasSettings } = environment;
+
+export const traceRectangle = (ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, radius: number) => {
     ctx.moveTo(x + radius, y);
 
     if (width < radius * 2) radius = width / 2;
@@ -18,7 +13,11 @@ export const drawRectangle = (
     ctx.arcTo(x + width, y + height, x, y + height, radius);
     ctx.arcTo(x, y + height, x, y, radius);
     ctx.arcTo(x, y, x + width, y, radius);
+};
 
+export const drawRectangle = (ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, color: string, radius: number) => {
+    ctx.beginPath();
+    traceRectangle(ctx, x, y, width, height, radius);
     ctx.closePath();
 
     ctx.fillStyle = color;
@@ -33,21 +32,22 @@ export const getLineAngle = (x: number, y: number) => {
     return angle;
 };
 
-export const drawText = (ctx: CanvasRenderingContext2D, text: string, x: number, y: number, color: string) => {
+export const drawText = (ctx: CanvasRenderingContext2D, text: string, x: number, y: number, fontSize: number, color: string) => {
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillStyle = color;
+    ctx.font = `${fontSize}px Sans-Serif`;
     ctx.fillText(text, x, y);
 };
 
-export const getRectangleDimensionsByString = (ctx: CanvasRenderingContext2D, text: string, nodeSize: number = 2) => {
-    const fontSize = nodeSize;
-
+export const getRectangleDimensionsByString = (ctx: CanvasRenderingContext2D, text: string, fontSize: number) => {
     ctx.font = `${fontSize}px Sans-Serif`;
     const textWidth = ctx.measureText(text).width;
 
-    const heightPadding = fontSize * 0.2;
-    const widthPadding = fontSize * 0.65;
-
-    return { width: textWidth + widthPadding, height: fontSize + heightPadding };
+    return {
+        width: textWidth + canvasSettings.widthPaddingMultiplier * fontSize,
+        height: fontSize + canvasSettings.heightPaddingMultiplier * fontSize,
+        originalWidth: textWidth,
+        originalHeight: fontSize,
+    };
 };

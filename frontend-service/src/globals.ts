@@ -1,3 +1,5 @@
+import { ILabelIcon } from './utils/graph/helperTypes';
+
 export const environment = {
     api: {
         login: '/api/auth/login',
@@ -21,7 +23,6 @@ export const environment = {
         ruleBreachesAlerts: '/rule-breaches/alerts',
     },
     graphSettings: {
-        // TODO: instead of here get this from the backend ( so it could be configurable ) + dont allow range overlaps ( validation )
         nodeConnectionsCountRangesToNodeSize: {
             '0-2': 3,
             '3-4': 4,
@@ -30,7 +31,31 @@ export const environment = {
             '9-10': 8,
         },
         maximumNodeSize: 7,
-        defaultNodeRadius: 4,
+        nodeSizeMultiplier: 4,
+        nodeIconSizeMultiplier: 0.7,
+        nodeHoverSizeMultiplier: 1.2,
+        labelBackgroundColor: 'rgba(255, 255, 255, 0.8)',
+        linkLabelFontSize: 2,
+        labelIconsSizeMultiplier: 0.6,
+        labelIcons: {
+            original: { icon: '⊛', color: '#5dc457' },
+            locked: { icon: '⊗', color: '#0090d0' },
+            highlighted: { icon: '⊙', color: '#FF8C00' },
+            mainHighlighted: { icon: '⊚', color: '#ff0000' },
+        } as Record<string, ILabelIcon>,
+        lookAt: {
+            duration: 250,
+            scale: 5,
+        },
+        lookAt3D: {
+            distance: 250,
+        },
+        is3DViewLocalStorageKey: 'isGraph3DView',
+        detailsResolution3D: 100,
+    },
+    canvasSettings: {
+        heightPaddingMultiplier: 0.3,
+        widthPaddingMultiplier: 0.6,
     },
     entitiesCardsView: {
         infiniteScrollPageCount: 10,

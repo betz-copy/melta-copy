@@ -6,25 +6,26 @@ import { GraphData, NodeObject } from 'react-force-graph-2d';
 import { useQuery, useQueryClient } from 'react-query';
 import i18next from 'i18next';
 import { IRelationshipTemplateMap } from '../../interfaces/relationshipTemplates';
-import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IEntityExpanded } from '../../interfaces/entities';
 import { getExpandedEntityByIdRequest } from '../../services/entitiesService';
 import { expandedEntityToGraphData, highlightNode } from '../../utils/graph';
 
 const GraphNodeMenu: React.FC<{
-    showMenu: boolean;
-    node: NodeObject;
-    onCloseMenu: () => void;
-    location: { top: number; left: number };
-    addNewGraphData: (graphData: GraphData) => void;
     graphData: GraphData;
     filteredEntityTemplates: IMongoEntityTemplatePopulated[];
-}> = ({ showMenu, node, onCloseMenu, location, addNewGraphData, graphData, filteredEntityTemplates }) => {
+    node: NodeObject;
+    location: { top: number; left: number };
+    onCloseMenu: () => void;
+    addNewGraphData: (graphData: GraphData) => void;
+}> = ({ graphData, filteredEntityTemplates, node, location, onCloseMenu, addNewGraphData }) => {
     const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();
 
     const queryClient = useQueryClient();
+
     const relationshipTemplates = queryClient.getQueryData<IRelationshipTemplateMap>('getRelationshipTemplates')!;
+    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
 
     const { refetch: getExpandedData } = useQuery<IEntityExpanded>(
         [
@@ -45,7 +46,7 @@ const GraphNodeMenu: React.FC<{
         {
             enabled: false,
             onSuccess: (data) => {
-                const newGraphData = expandedEntityToGraphData(data, relationshipTemplates);
+                const newGraphData = expandedEntityToGraphData(data, entityTemplates, relationshipTemplates);
                 node.numberOfConnectionsExpanded++;
 
                 addNewGraphData(newGraphData);
@@ -55,15 +56,23 @@ const GraphNodeMenu: React.FC<{
 
     return (
         <MuiMenu
-            open={showMenu}
+            open
             onClose={onCloseMenu}
             anchorReference="anchorPosition"
-            anchorPosition={showMenu ? location : undefined}
+            anchorPosition={location}
             onContextMenu={(event) => {
                 event.preventDefault();
                 onCloseMenu();
             }}
         >
+            <MenuItem
+                onClick={() => {
+                    onCloseMenu();
+                    navigate(`/entity/${node.id}`);
+                }}
+            >
+                {i18next.t('graph.navigateToEntityPage')}
+            </MenuItem>
             <MenuItem
                 onClick={() => {
                     onCloseMenu();
@@ -89,11 +98,12 @@ const GraphNodeMenu: React.FC<{
             >
                 {i18next.t('graph.expand')} {node.numberOfConnectionsExpanded !== 0 && `(x${node.numberOfConnectionsExpanded})`}
             </MenuItem>
-            {node.fx || node.fy ? (
+            {node.fx || node.fy || node.fz ? (
                 <MenuItem
                     onClick={() => {
                         node.fx = undefined;
                         node.fy = undefined;
+                        node.fz = undefined;
 
                         node.locked = false;
                         onCloseMenu();
@@ -106,6 +116,7 @@ const GraphNodeMenu: React.FC<{
                     onClick={() => {
                         node.fx = node.x;
                         node.fy = node.y;
+                        node.fz = node.z;
 
                         node.locked = true;
                         onCloseMenu();

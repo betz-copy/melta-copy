@@ -1,0 +1,23 @@
+import React from 'react';
+import i18next from 'i18next';
+import { NodeObject } from 'react-force-graph-2d';
+import { Grid, Typography } from '@mui/material';
+
+interface NodeLabelIconsDescriptionProps {
+    node: NodeObject;
+}
+
+export const NodeLabelIconsDescription: React.FC<NodeLabelIconsDescriptionProps> = ({ node }) => {
+    return (
+        <Grid container direction="column" alignItems="center">
+            {node.labelIcons.map((labelIcon) => (
+                <Grid item key={labelIcon.icon}>
+                    <Typography display="inline" color={labelIcon.color}>
+                        {labelIcon.icon}
+                    </Typography>
+                    <Typography display="inline">{` - ${i18next.t('graph.labelIconDescriptions', { returnObjects: true })[labelIcon.icon]}`}</Typography>
+                </Grid>
+            ))}
+        </Grid>
+    );
+};

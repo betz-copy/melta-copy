@@ -186,12 +186,12 @@ const Entity: React.FC = () => {
                                                                                 relationshipTemplate: currRelationshipTemplate,
                                                                                 sourceEntity:
                                                                                     currentEntityTemplate._id ===
-                                                                                    currRelationshipTemplate.sourceEntity._id
+                                                                                        currRelationshipTemplate.sourceEntity._id
                                                                                         ? expandedEntity.entity
                                                                                         : null,
                                                                                 destinationEntity:
                                                                                     currentEntityTemplate._id ===
-                                                                                    currRelationshipTemplate.destinationEntity._id
+                                                                                        currRelationshipTemplate.destinationEntity._id
                                                                                         ? expandedEntity.entity
                                                                                         : null,
                                                                             },

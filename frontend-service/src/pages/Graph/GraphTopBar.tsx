@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Typography } from '@mui/material';
+import { Box, Grid, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
 import { useQueryClient, useQuery } from 'react-query';
 import { RestartAltOutlined as ResetIcon, LinkOutlined as CopyUrlIcon } from '@mui/icons-material';
 import i18next from 'i18next';
@@ -12,12 +12,16 @@ import TemplatesSelectCheckbox from '../../common/templatesSelectCheckbox';
 import { ICategoryMap } from '../../interfaces/categories';
 import { RootState } from '../../store';
 
-const GraphTopBar: React.FC<{
+interface GraphTopBarProps {
     onReset: React.MouseEventHandler<HTMLButtonElement>;
+    set3DView: (is3DView: boolean) => void;
+    is3DView: boolean;
     entityId: string;
     filteredEntityTemplates: IMongoEntityTemplatePopulated[];
     setFilteredEntityTemplates: React.Dispatch<React.SetStateAction<IMongoEntityTemplatePopulated[]>>;
-}> = ({ onReset, entityId, filteredEntityTemplates, setFilteredEntityTemplates }) => {
+}
+
+const GraphTopBar: React.FC<GraphTopBarProps> = ({ onReset, set3DView, is3DView, entityId, filteredEntityTemplates, setFilteredEntityTemplates }) => {
     const queryClient = useQueryClient();
 
     const darkMode = useSelector((state: RootState) => state.darkMode);
@@ -31,14 +35,15 @@ const GraphTopBar: React.FC<{
         getExpandedEntityByIdRequest(entityId!, { templateIds, numberOfConnections: 1 }),
     );
 
-    const entityTemplate = entityTemplates.get(expandedEntity!.entity.templateId);
+    const entityTemplate = entityTemplates.get(expandedEntity?.entity.templateId || '');
 
     const handleCopy = () => {
         navigator.clipboard.writeText(window.location.href);
         toast.success(i18next.t('graph.copiedSuccessfully'));
     };
     return (
-        <Box
+        <Grid
+            container
             bgcolor={darkMode ? '#131313' : '#fcfeff'}
             height="3.6rem"
             paddingRight="2.5rem"
@@ -48,7 +53,7 @@ const GraphTopBar: React.FC<{
             boxShadow="0px 4px 4px #0000000D"
             sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
         >
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <Grid item sx={{ display: 'flex', alignItems: 'center' }}>
                 <Typography
                     style={{
                         color: '#225AA7',
@@ -75,22 +80,44 @@ const GraphTopBar: React.FC<{
                         categories={Array.from(categories.values())}
                     />
                 </Box>
-            </Box>
+            </Grid>
 
-            <Box>
-                <IconButtonWithPopoverText
-                    popoverText={i18next.t('graph.copy')}
-                    iconButtonProps={{
-                        onClick: handleCopy,
-                    }}
-                >
-                    <CopyUrlIcon color="primary" fontSize="inherit" />
-                </IconButtonWithPopoverText>
-                <IconButtonWithPopoverText popoverText={i18next.t('graph.reset')} iconButtonProps={{ onClick: onReset }}>
-                    <ResetIcon color="primary" fontSize="inherit" />
-                </IconButtonWithPopoverText>
-            </Box>
-        </Box>
+            <Grid item>
+                <Grid container alignItems="center" spacing={0.8}>
+                    <Grid item>
+                        <ToggleButtonGroup value={is3DView ? '3D' : '2D'} size="small" sx={{ height: '2rem', marginX: '0.2rem' }}>
+                            <ToggleButton value="3D" onClick={() => set3DView(true)} sx={{ borderRadius: 4 }}>
+                                <Typography color="primary" fontWeight="bold">
+                                    3D
+                                </Typography>
+                            </ToggleButton>
+                            <ToggleButton value="2D" onClick={() => set3DView(false)} sx={{ borderRadius: 4 }}>
+                                <Typography color="primary" fontWeight="bold">
+                                    2D
+                                </Typography>
+                            </ToggleButton>
+                        </ToggleButtonGroup>
+                    </Grid>
+
+                    <Grid item>
+                        <IconButtonWithPopoverText
+                            popoverText={i18next.t('graph.copy')}
+                            iconButtonProps={{
+                                onClick: handleCopy,
+                            }}
+                        >
+                            <CopyUrlIcon color="primary" />
+                        </IconButtonWithPopoverText>
+                    </Grid>
+
+                    <Grid item>
+                        <IconButtonWithPopoverText popoverText={i18next.t('graph.reset')} iconButtonProps={{ onClick: onReset }}>
+                            <ResetIcon color="primary" />
+                        </IconButtonWithPopoverText>
+                    </Grid>
+                </Grid>
+            </Grid>
+        </Grid>
     );
 };
 
