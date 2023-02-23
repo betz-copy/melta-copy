@@ -168,6 +168,7 @@ const entityTemplates: IMongoEntityTemplatePopulated[] = [
                 from: {
                     type: 'string',
                     title: 'מקום המראה',
+                    enum: ['a', 'b', 'c', 'd'],
                 },
                 to: {
                     type: 'string',

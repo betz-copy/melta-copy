@@ -1,8 +1,9 @@
 /* eslint-disable no-underscore-dangle */
-import React from 'react';
+import React, { useState } from 'react';
 import { WidgetProps, utils } from '@rjsf/core';
 import i18next from 'i18next';
 import { useMuiComponent } from './rjsfUseMuiComponent';
+import { MiniFilter } from '../../SelectCheckbox'
 
 const { asNumber, guessType } = utils;
 
@@ -63,6 +64,7 @@ const RjfsSelectWidget = ({
 }: WidgetProps) => {
     const { TextField, MenuItem } = useMuiComponent();
     const { enumOptions, enumDisabled } = options;
+    const [miniFilterValue, setMiniFilterValue] = useState('');
 
     const emptyValue = multiple ? [] : '';
 
@@ -91,8 +93,13 @@ const RjfsSelectWidget = ({
                 multiple: typeof multiple === 'undefined' ? false : multiple,
             }}
         >
-            <MenuItem value="">{placeholder || i18next.t('wizard.entity.enumEmptyOption')}</MenuItem>
-            {(enumOptions as any).map(({ value: currValue, label: currLabel }: any, i: number) => {
+            <MenuItem value="">{placeholder || i18next.t('wizard.entity.enumEmptyOption')}
+            </MenuItem>
+            <MenuItem><MiniFilter value={miniFilterValue} onChange={setMiniFilterValue} /></MenuItem>
+            {(enumOptions as any).filter(
+                ({label: currLabel }: any) =>
+                    (miniFilterValue === '' || currLabel.includes(miniFilterValue)),
+            ).map(({ value: currValue, label: currLabel }: any, i: number) => {
                 const isDisabled: any = enumDisabled && (enumDisabled as any).indexOf(currValue) !== -1;
                 return (
                     // eslint-disable-next-line react/no-array-index-key

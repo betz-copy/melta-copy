@@ -196,7 +196,7 @@ const getOptionsAndGroupsMiniFiltered = <Option extends any, Group extends any>(
     return { optionsFiltered, groupsFiltered };
 };
 
-const MiniFilter: React.FC<{ value: string; onChange: (value: string) => void }> = ({ value, onChange }) => {
+export const MiniFilter: React.FC<{ value: string; onChange: (value: string) => void }> = ({ value, onChange }) => {
     // must wrap with TextField with Grid. no idea why, but it works :O
     return (
         <Grid container padding="8px 16px 8px 16px">
