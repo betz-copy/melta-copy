@@ -2,7 +2,7 @@ import React, { forwardRef, ForwardedRef, useImperativeHandle, useRef, useMemo }
 import { useNavigate } from 'react-router-dom';
 import { Box, GlobalStyles } from '@mui/material';
 import pickBy from 'lodash.pickby';
-import { ColDef, IServerSideDatasource } from '@ag-grid-community/core';
+import { IServerSideDatasource, IServerSideGetRowsParams } from '@ag-grid-community/core';
 import { AgGridReact } from '@ag-grid-community/react';
 import '@noam7700/ag-grid-enterprise-core';
 import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
@@ -14,8 +14,8 @@ import i18next from 'i18next';
 import { toast } from 'react-toastify';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 
-import '@ag-grid-community/core/dist/styles/ag-grid.css';
-import '@ag-grid-community/core/dist/styles/ag-theme-material.css';
+import '@ag-grid-community/styles/ag-grid.css';
+import '@ag-grid-community/styles/ag-theme-material.css';
 import '../../css/table.css';
 
 import { DateFilterComponent } from '../../utils/agGrid/DateFilterComponent';
@@ -25,13 +25,13 @@ import { getColumnDefs } from './getColumnDefs';
 import { trycatch } from '../../utils/trycatch';
 import { LocalStorage } from '../../utils/localStorage';
 
-export const getDatasource = (
+export const getDatasource = <Data extends any = IEntity>(
     templateId: IMongoEntityTemplatePopulated['_id'],
     quickFilterText: string | undefined,
     onFail: ((err: unknown) => void) | undefined,
 ): IServerSideDatasource => {
     return {
-        async getRows(params) {
+        async getRows(params: IServerSideGetRowsParams<Data>) {
             const { sortModel, startRow, endRow, filterModel } = params.request;
             const { result: data, err } = await trycatch(() =>
                 getEntitiesByTemplateRequest([templateId], {
@@ -53,21 +53,20 @@ export const getDatasource = (
     };
 };
 
-const getRowModelProps = <Data extends any>(
+const getRowModelProps = <Data extends any = IEntity>(
     rowModelType: 'serverSide' | 'clientSide',
     templateId: IMongoEntityTemplatePopulated['_id'],
     rowData: Data[] | undefined,
     datasource: IServerSideDatasource | undefined,
     quickFilterText: string | undefined,
     datasourceOnFail: ((err: unknown) => void) | undefined,
-): React.ComponentProps<typeof AgGridReact> => {
+): React.ComponentProps<typeof AgGridReact<Data>> => {
     if (rowModelType === 'clientSide') {
         return { rowModelType, rowData };
     }
     return {
         rowModelType,
         serverSideDatasource: datasource ?? getDatasource(templateId, quickFilterText, datasourceOnFail),
-        serverSideStoreType: 'partial',
         cacheBlockSize: 50,
         maxBlocksInCache: 1000,
     };
@@ -139,12 +138,12 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef, EntitiesT
                     gridRef.current?.api.setFilterModel(null);
                 },
                 refreshServerSide() {
-                    gridRef.current?.api.refreshServerSideStore({ purge: true });
+                    gridRef.current?.api.refreshServerSide({ purge: true });
                 },
             };
         });
 
-        const columnDefs: ColDef[] = getColumnDefs(
+        const columnDefs = getColumnDefs(
             template,
             getEntityPropertiesData,
             !showNavigateToRowButton ? undefined : (data) => navigate(`/entity/${getEntityPropertiesData(data)._id}`),
@@ -175,7 +174,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef, EntitiesT
         return (
             <Box>
                 <GlobalStyles styles={getGlobalStyles()} />
-                <AgGridReact
+                <AgGridReact<Data>
                     ref={gridRef}
                     getRowStyle={(params) => {
                         if (params.data && getEntityPropertiesData(params.data).disabled) return { background: 'rgb(159 147 147 / 16%)' };
@@ -202,7 +201,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef, EntitiesT
                     enableRtl
                     enableCellTextSelection
                     rowSelection={onRowSelected ? 'single' : undefined}
-                    onRowSelected={!onRowSelected ? undefined : ({ data }) => onRowSelected(data)}
+                    onRowSelected={!onRowSelected ? undefined : ({ data }) => onRowSelected(data!)}
                     rowStyle={onRowSelected ? { cursor: 'pointer' } : undefined}
                     suppressCellFocus
                     onFilterChanged={(params) => {

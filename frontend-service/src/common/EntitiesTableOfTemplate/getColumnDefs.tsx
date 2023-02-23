@@ -8,7 +8,7 @@ import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates'
 import { booleanColDef, dateColDef, enumColDef, fileColDef, numberColDef, regexColDef, stringColDef } from '../../utils/agGrid/commonColDefs';
 import IconButtonWithPopoverText from '../IconButtonWithPopover';
 
-export const getColumnDefs = <Data extends any>(
+export const getColumnDefs = <Data extends any = IEntity>(
     template: IMongoEntityTemplatePopulated,
     getEntityPropertiesData: (data: Data) => IEntity['properties'],
     onNavigateToRow: ((entity: Data) => void) | undefined,
@@ -25,7 +25,7 @@ export const getColumnDefs = <Data extends any>(
 
         const hideField = template.properties.hide.includes(key);
 
-        const valueGetter: ValueGetterFunc = ({ data }) => getEntityPropertiesData(data)[key];
+        const valueGetter: ValueGetterFunc<Data> = ({ data }) => (data ? getEntityPropertiesData(data)[key] : undefined);
 
         const hideColumn = hideNonPreview && !template.propertiesPreview.includes(key);
 
@@ -41,7 +41,7 @@ export const getColumnDefs = <Data extends any>(
     columnDefs.push(
         booleanColDef(
             'disabled',
-            ({ data }) => getEntityPropertiesData(data).disabled,
+            ({ data }) => (data ? getEntityPropertiesData(data).disabled : undefined),
             {
                 title: i18next.t('entitiesTableOfTemplate.disabledHeaderName'),
             },
@@ -52,7 +52,7 @@ export const getColumnDefs = <Data extends any>(
     columnDefs.push(
         dateColDef(
             'createdAt',
-            ({ data }) => getEntityPropertiesData(data).createdAt,
+            ({ data }) => (data ? getEntityPropertiesData(data).createdAt : undefined),
             {
                 title: i18next.t('entityPage.createdAt'),
                 format: 'date-time',
@@ -63,7 +63,7 @@ export const getColumnDefs = <Data extends any>(
     columnDefs.push(
         dateColDef(
             'updatedAt',
-            ({ data }) => getEntityPropertiesData(data).updatedAt,
+            ({ data }) => (data ? getEntityPropertiesData(data).updatedAt : undefined),
             {
                 title: i18next.t('entityPage.updatedAt'),
                 format: 'date-time',

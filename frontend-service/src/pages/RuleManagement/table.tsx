@@ -2,7 +2,7 @@ import React, { forwardRef, memo, useImperativeHandle, useMemo, useRef } from 'r
 import { Box, GlobalStyles } from '@mui/material';
 import { ReadMore as ReadMoreIcon } from '@mui/icons-material';
 
-import { ColDef, ICellRendererParams, IServerSideDatasource } from '@ag-grid-community/core';
+import { ColDef, ICellRendererParams, IServerSideDatasource, ValueFormatterParams } from '@ag-grid-community/core';
 import { AgGridReact } from '@ag-grid-community/react';
 import '@noam7700/ag-grid-enterprise-core';
 import { ColumnsToolPanelModule } from '@noam7700/ag-grid-enterprise-column-tool-panel';
@@ -12,8 +12,8 @@ import { ServerSideRowModelModule } from '@noam7700/ag-grid-enterprise-server-si
 import i18next from 'i18next';
 import { toast } from 'react-toastify';
 
-import '@ag-grid-community/core/dist/styles/ag-grid.css';
-import '@ag-grid-community/core/dist/styles/ag-theme-material.css';
+import '@ag-grid-community/styles/ag-grid.css';
+import '@ag-grid-community/styles/ag-theme-material.css';
 import '../../css/table.css';
 
 import { DateFilterComponent } from '../../utils/agGrid/DateFilterComponent';
@@ -24,7 +24,7 @@ import IconButtonWithPopoverText from '../../common/IconButtonWithPopover';
 import { ActionTypes } from '../../interfaces/ruleBreaches/actionMetadata';
 import { IRuleBreachAlertPopulated } from '../../interfaces/ruleBreaches/ruleBreachAlert';
 import { IRuleBreachRequestPopulated, RuleBreachRequestStatus } from '../../interfaces/ruleBreaches/ruleBreachRequest';
-import { BreachType } from '../../interfaces/ruleBreaches/ruleBreach';
+import { BreachType, IRuleBreachPopulated } from '../../interfaces/ruleBreaches/ruleBreach';
 
 const getDatasource = (breachType: BreachType, onFail: ((err: unknown) => void) | undefined): IServerSideDatasource => {
     return {
@@ -55,14 +55,14 @@ const getDatasource = (breachType: BreachType, onFail: ((err: unknown) => void) 
 const getColumnDefs = (
     breachType: BreachType,
     onReviewBreachClick: (ruleBreach: IRuleBreachAlertPopulated | IRuleBreachRequestPopulated, breachType: BreachType) => void,
-): ColDef[] => {
+) => {
     const cellPadding = 46;
     const iconButtonWidth = 42;
     const widthToFitButtons = cellPadding + iconButtonWidth;
     const headerNameWidth = 100;
     const columnWidth = Math.max(headerNameWidth, widthToFitButtons);
 
-    const actionColDef = {
+    const actionColDef: ColDef<IRuleBreachPopulated> = {
         headerName: i18next.t('ruleManagement.actionsHeaderName'),
         colId: 'actions',
         sortable: false,
@@ -93,7 +93,7 @@ const getColumnDefs = (
         Object.values(ActionTypes).map((action) => [action, i18next.t(`ruleManagement.${action}`) as string]),
     );
 
-    const commonRuleBreachColumns: ColDef[] = [
+    const commonRuleBreachColumns: ColDef<IRuleBreachPopulated>[] = [
         {
             field: 'originUser',
             headerName: i18next.t('ruleManagement.originUser'),
@@ -101,17 +101,17 @@ const getColumnDefs = (
             menuTabs: [],
             sortable: false,
         },
-        translatedEnumColDef('actionType', ({ data }) => data.actionType, { title: i18next.t('ruleManagement.actionType') }, actionTypeTranslations),
-        dateColDef('createdAt', ({ data }) => data.createdAt, {
+        translatedEnumColDef('actionType', ({ data }) => data?.actionType, { title: i18next.t('ruleManagement.actionType') }, actionTypeTranslations),
+        dateColDef('createdAt', ({ data }) => data?.createdAt, {
             title: i18next.t('ruleManagement.createdAt'),
             format: 'date-time',
         }),
     ];
 
-    const requestColDef: ColDef[] = [
+    const requestColDef: ColDef<IRuleBreachRequestPopulated>[] = [
         translatedEnumColDef(
             'status',
-            ({ data }) => data.status,
+            ({ data }) => data?.status,
             { title: i18next.t('ruleManagement.approvalStatus') },
             {
                 [RuleBreachRequestStatus.Approved]: i18next.t('ruleManagement.approved'),
@@ -123,11 +123,12 @@ const getColumnDefs = (
         {
             field: 'reviewer',
             headerName: i18next.t('ruleManagement.reviewer'),
-            valueFormatter: (params) => params.value?.displayName,
+            valueFormatter: (params: ValueFormatterParams<IRuleBreachRequestPopulated, IRuleBreachRequestPopulated['reviewer']>) =>
+                params.value?.displayName ?? '',
             menuTabs: [],
             sortable: false,
         },
-        dateColDef('reviewedAt', ({ data }) => data.reviewedAt, {
+        dateColDef('reviewedAt', ({ data }) => data?.reviewedAt, {
             title: i18next.t('ruleManagement.reviewedAt'),
             format: 'date-time',
         }),
@@ -171,7 +172,7 @@ const RuleBreachTable = forwardRef<
 
     useImperativeHandle(ref, () => ({
         refreshBreaches() {
-            gridRef.current?.api.refreshServerSideStore({ purge: true });
+            gridRef.current?.api.refreshServerSide({ purge: true });
         },
     }));
 
@@ -180,7 +181,7 @@ const RuleBreachTable = forwardRef<
     return (
         <Box>
             <GlobalStyles styles={getGlobalStyles()} />
-            <AgGridReact
+            <AgGridReact<IRuleBreachPopulated>
                 className="ag-theme-material"
                 ref={gridRef}
                 containerStyle={{
@@ -195,7 +196,6 @@ const RuleBreachTable = forwardRef<
                 columnDefs={columnDefs}
                 rowModelType="serverSide"
                 serverSideDatasource={rowDataSource}
-                serverSideStoreType="partial"
                 cacheBlockSize={50}
                 maxBlocksInCache={1000}
                 pagination

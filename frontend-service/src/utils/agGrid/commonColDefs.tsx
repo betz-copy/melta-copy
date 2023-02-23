@@ -1,184 +1,209 @@
 import React from 'react';
-import { ColDef, ValueGetterFunc } from '@ag-grid-community/core';
+import { ColDef, ICellRendererParams, IDateFilterParams, ISetFilterParams, ValueFormatterParams, ValueGetterFunc } from '@ag-grid-community/core';
 import i18next from 'i18next';
 import { DownloadButton } from '../../common/DownloadButton';
 import { Value } from './Value';
 import { getDateWithoutTime, getLongDate } from '../date';
+import { IEntity } from '../../interfaces/entities';
+import { agGridLocaleText } from './agGridLocaleText';
 
-export const numberColDef = (
+export const numberColDef = <Data extends any = IEntity>(
     field: string,
-    valueGetter: ValueGetterFunc,
+    valueGetter: ValueGetterFunc<Data>,
     value: { title: string },
     hideColumn = false,
     hideValue = false,
-): ColDef => {
+): ColDef<Data> => {
     return {
         field,
         headerName: value.title,
         valueGetter,
         filter: 'agNumberColumnFilter',
-        cellRenderer: (props) => <Value hideValue={hideValue} value={props.value} />,
+        cellRenderer: (props: ICellRendererParams<Data, number | undefined>) => <Value hideValue={hideValue} value={props.value?.toString() ?? ''} />,
         hide: hideColumn,
         cellStyle: { direction: 'ltr' },
     };
 };
 
-export const regexColDef = (field: string, valueGetter: ValueGetterFunc, value: { title: string }, hideColumn = false, hideValue = false): ColDef => {
-    return {
-        field,
-        headerName: value.title,
-        cellRenderer: (props) => <Value hideValue={hideValue} value={props.value} />,
-        valueGetter,
-        filter: 'agTextColumnFilter',
-        hide: hideColumn,
-        cellStyle: { direction: 'ltr' },
-    };
-};
-
-export const stringColDef = (
+export const regexColDef = <Data extends any = IEntity>(
     field: string,
-    valueGetter: ValueGetterFunc,
+    valueGetter: ValueGetterFunc<Data>,
     value: { title: string },
     hideColumn = false,
     hideValue = false,
-): ColDef => {
+): ColDef<Data> => {
     return {
         field,
         headerName: value.title,
-        cellRenderer: (props) => <Value hideValue={hideValue} value={props.value} />,
+        cellRenderer: (props: ICellRendererParams<Data, string | undefined>) => <Value hideValue={hideValue} value={props.value ?? ''} />,
+        valueGetter,
+        filter: 'agTextColumnFilter',
+        hide: hideColumn,
+        cellStyle: { direction: 'ltr' },
+    };
+};
+
+export const stringColDef = <Data extends any = IEntity>(
+    field: string,
+    valueGetter: ValueGetterFunc<Data>,
+    value: { title: string },
+    hideColumn = false,
+    hideValue = false,
+): ColDef<Data> => {
+    return {
+        field,
+        headerName: value.title,
+        cellRenderer: (props: ICellRendererParams<Data, string | undefined>) => <Value hideValue={hideValue} value={props.value ?? ''} />,
         valueGetter,
         filter: 'agTextColumnFilter',
         hide: hideColumn,
     };
 };
 
-export const fileColDef = (field: string, valueGetter: ValueGetterFunc, value: { title: string }, hideColumn = false): ColDef => {
+export const fileColDef = <Data extends any = IEntity>(
+    field: string,
+    valueGetter: ValueGetterFunc<Data>,
+    value: { title: string },
+    hideColumn = false,
+): ColDef<Data> => {
     return {
         field,
         headerName: value.title,
         valueGetter,
         menuTabs: [],
-        cellRenderer: (props) => <DownloadButton fileId={props.value} />,
+        cellRenderer: (props: ICellRendererParams<Data, string | undefined>) => (props.value ? <DownloadButton fileId={props.value} /> : null),
         hide: hideColumn,
     };
 };
 
-export const booleanColDef = (
+export const booleanColDef = <Data extends any = IEntity>(
     field: string,
-    valueGetter: ValueGetterFunc,
+    valueGetter: ValueGetterFunc<Data>,
     value: { title: string },
     hideColumn = false,
     hideValue = false,
-): ColDef => {
-    const valueFormatter = (props) => {
-        if (String(props.value) === 'true') return i18next.t('booleanOptions.yes');
-        if (String(props.value) === 'false') return i18next.t('booleanOptions.no');
+): ColDef<Data> => {
+    const formatValue = (propertyValue: boolean | undefined) => {
+        if (propertyValue === true) return i18next.t('booleanOptions.yes');
+        if (propertyValue === false) return i18next.t('booleanOptions.no');
+        return '';
+    };
 
-        return props.value;
+    const filterParams: ISetFilterParams<Data, boolean | undefined> = {
+        valueFormatter: (params: ValueFormatterParams<Data, boolean | undefined>) => {
+            if (params.value === null) return agGridLocaleText.blanks;
+
+            return formatValue(params.value);
+        },
+        suppressMiniFilter: true,
+        values: [true, false, undefined],
     };
 
     return {
         field,
         headerName: value.title,
         valueGetter,
-        cellRenderer: (props) => <Value hideValue={hideValue} value={valueFormatter(props)} />,
+        cellRenderer: (props: ICellRendererParams<Data, boolean | undefined>) => <Value hideValue={hideValue} value={formatValue(props.value)} />,
         filter: 'agSetColumnFilter',
-        filterParams: {
-            valueFormatter,
-            suppressMiniFilter: true,
-            values: [true, false, undefined],
-        },
+        filterParams,
         hide: hideColumn,
     };
 };
-export const enumColDef = (
+export const enumColDef = <Data extends any = IEntity>(
     field: string,
-    valueGetter: ValueGetterFunc,
+    valueGetter: ValueGetterFunc<Data>,
     value: { title: string },
     values: Array<string>,
     hideColumn = false,
     hideValue = false,
-): ColDef => {
+): ColDef<Data> => {
+    const filterParams: ISetFilterParams<Data, string | undefined> = {
+        suppressMiniFilter: true,
+        values: [...values, undefined],
+    };
+
     return {
         field,
         headerName: value.title,
         valueGetter,
-        cellRenderer: (props) => <Value hideValue={hideValue} value={props.value} />,
+        cellRenderer: (props: ICellRendererParams<Data, string | undefined>) => <Value hideValue={hideValue} value={props.value ?? ''} />,
         filter: 'agSetColumnFilter',
-        filterParams: {
-            suppressMiniFilter: true,
-            values: [...values, undefined],
-        },
+        filterParams,
         hide: hideColumn,
     };
 };
-export const dateColDef = (
+export const dateColDef = <Data extends any = IEntity>(
     field: string,
-    valueGetter: ValueGetterFunc,
+    valueGetter: ValueGetterFunc<Data>,
     value: { title: string; format?: string },
     hideColumn = false,
     hideValue = false,
-): ColDef => {
+): ColDef<Data> => {
     const { format } = value;
 
-    const valueFormatter = (props) => {
-        if (!props.value) return '';
+    const formatDate = (dateValue: string | undefined) => {
+        if (!dateValue) return '';
 
-        if (format === 'date') return getDateWithoutTime(props.value);
+        if (format === 'date') return getDateWithoutTime(new Date(dateValue));
 
-        if (format === 'date-time') return getLongDate(props.value);
+        if (format === 'date-time') return getLongDate(new Date(dateValue));
 
-        return props.value;
+        throw new Error(`dateColfDef must be on date/date-time property, but found property: ${value}`);
     };
 
-    const comparator = (filterLocalDateAtMidnight: Date, cellValue: string) => {
-        if (!cellValue) {
+    const filterParams: IDateFilterParams = {
+        comparator: (filterLocalDateAtMidnight, cellValue: string) => {
+            if (!cellValue) {
+                return 0;
+            }
+
+            const cellDate = new Date(cellValue);
+
+            if (cellDate < filterLocalDateAtMidnight) return -1;
+            if (cellDate > filterLocalDateAtMidnight) return 1;
             return 0;
-        }
-
-        const cellDate = new Date(cellValue);
-
-        if (cellDate < filterLocalDateAtMidnight) return -1;
-        if (cellDate > filterLocalDateAtMidnight) return 1;
-        return 0;
+        },
     };
 
     return {
         field,
         headerName: value.title,
         valueGetter,
-        cellRenderer: (props) => <Value hideValue={hideValue} value={valueFormatter(props)} />,
+        cellRenderer: (props: ICellRendererParams<Data, string | undefined>) => <Value hideValue={hideValue} value={formatDate(props.value)} />,
         filter: 'agDateColumnFilter',
-        filterParams: {
-            valueFormatter,
-            comparator,
-        },
+        filterParams,
         minWidth: format === 'date-time' ? 220 : undefined,
         hide: hideColumn,
     };
 };
 
-export const translatedEnumColDef = (
+export const translatedEnumColDef = <Data extends any = IEntity>(
     field: string,
-    valueGetter: ValueGetterFunc,
+    valueGetter: ValueGetterFunc<Data>,
     value: { title: string },
     valuesMap: Record<string, string>,
     hideColumn = false,
     hideValue = false,
-): ColDef => {
-    const valueFormatter = (props) => valuesMap[props.value];
+): ColDef<Data> => {
+    const formatValue = (propertyValue: string | undefined) => (propertyValue ? valuesMap[propertyValue] : '');
+
+    const filterParams: ISetFilterParams<Data, string | undefined> = {
+        suppressMiniFilter: true,
+        valueFormatter: (params: ValueFormatterParams<Date, string | undefined>) => {
+            if (params.value === null) return agGridLocaleText.blanks;
+
+            return formatValue(params.value);
+        },
+        values: [...Object.keys(valuesMap), undefined],
+    };
 
     return {
         field,
         headerName: value.title,
         valueGetter,
-        cellRenderer: (props) => <Value hideValue={hideValue} value={valueFormatter(props)} />,
+        cellRenderer: (props: ICellRendererParams<Data, string | undefined>) => <Value hideValue={hideValue} value={formatValue(props.value)} />,
         filter: 'agSetColumnFilter',
-        filterParams: {
-            suppressMiniFilter: true,
-            valueFormatter,
-            values: [...Object.keys(valuesMap), undefined],
-        },
+        filterParams,
         hide: hideColumn,
     };
 };
