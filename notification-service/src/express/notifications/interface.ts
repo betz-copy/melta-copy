@@ -4,21 +4,34 @@ export enum NotificationType {
     ruleBreachAlert = 'ruleBreachAlert',
     ruleBreachRequest = 'ruleBreachRequest',
     ruleBreachResponse = 'ruleBreachResponse',
+    processApproverUpdate = 'processApproverUpdate',
+    newProcess = 'newProcess',
 }
 
-interface IAlertMetadata {
+interface IRuleBreachAlertMetadata {
     alertId: string;
 }
-
-interface IRequestMetadata {
+interface IRuleBreachRequestMetadata {
+    requestId: string;
+}
+interface IRuleBreachResponseMetadata {
     requestId: string;
 }
 
-interface IResponseMetadata {
-    requestId: string;
+interface IProcessApproverUpdateMetadata {
+    processId: string;
+    approverStepIds: string[];
+}
+interface INewProcessMetadata {
+    processId: string;
 }
 
-type INotificationMetadata = IAlertMetadata | IRequestMetadata | IResponseMetadata;
+type INotificationMetadata =
+    | IRuleBreachAlertMetadata
+    | IRuleBreachRequestMetadata
+    | IRuleBreachResponseMetadata
+    | IProcessApproverUpdateMetadata
+    | INewProcessMetadata;
 
 export interface INotification {
     viewers: string[];
@@ -28,3 +41,14 @@ export interface INotification {
 }
 
 export type INotificationDocument = INotification & Document;
+
+export type INotificationCountGroups = Record<string, NotificationType[]>;
+export interface INotificationGroupCountDetails {
+    groups: Record<string, number>;
+    total: number;
+}
+
+export interface IBasicNotificationQuery {
+    types?: NotificationType[];
+    viewerId?: string;
+}

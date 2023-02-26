@@ -6,7 +6,9 @@ import {
     createNotificationRequestSchema,
     getNotificationByIdRequestSchema,
     getNotificationCountRequestSchema,
+    getNotificationGroupCountRequestSchema,
     getNotificationsRequestSchema,
+    manyNotificationSeenRequestSchema,
     notificationSeenRequestSchema,
 } from './validator.schema';
 
@@ -20,11 +22,19 @@ notificationsRouter.get(
     wrapController(NotificationsController.getNotificationById),
 );
 
+notificationsRouter.post(
+    '/group-count',
+    ValidateRequest(getNotificationGroupCountRequestSchema),
+    wrapController(NotificationsController.getNotificationGroupCount),
+);
+
 notificationsRouter.post('/', ValidateRequest(createNotificationRequestSchema), wrapController(NotificationsController.createNotification));
-notificationsRouter.patch(
+
+notificationsRouter.post(
     '/:notificationId/seen',
     ValidateRequest(notificationSeenRequestSchema),
     wrapController(NotificationsController.notificationSeen),
 );
+notificationsRouter.post('/seen', ValidateRequest(manyNotificationSeenRequestSchema), wrapController(NotificationsController.manyNotificationSeen));
 
 export default notificationsRouter;

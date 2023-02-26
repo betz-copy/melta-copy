@@ -1,32 +1,45 @@
 /* eslint-disable import/prefer-default-export */
 import * as joi from 'joi';
 import config from '../../config';
-import { createNotificationMessageSchema } from '../../rabbit/validator.schema';
+import { mongoIdSchema } from '../../utils/joi/schemas';
+import { basicNotificationSearchSchema, notificationSchema } from '../../utils/joi/schemas/notification';
 import { NotificationType } from './interface';
 
 const { maxFindLimit } = config.mongo;
 
-export const mongoIdSchema = joi.string().regex(/^[0-9a-fA-F]{24}$/, 'valid MongoId');
-
 // GET /api/notifications
 export const getNotificationsRequestSchema = joi.object({
-    query: {
+    query: basicNotificationSearchSchema.keys({
         limit: joi.number().integer().min(1).max(maxFindLimit).required(),
         step: joi.number().integer().min(0).default(0),
-        type: joi.string().valid(...Object.values(NotificationType)),
-        viewerId: mongoIdSchema,
-    },
+    }),
     body: {},
     params: {},
 });
 
 // GET /api/notifications/count
 export const getNotificationCountRequestSchema = joi.object({
-    query: {
-        type: joi.string().valid(...Object.values(NotificationType)),
-        viewerId: mongoIdSchema,
-    },
+    query: basicNotificationSearchSchema,
     body: {},
+    params: {},
+});
+
+// POST /api/notifications/group-count
+export const getNotificationGroupCountRequestSchema = joi.object({
+    query: {},
+    body: basicNotificationSearchSchema.keys({
+        types: joi.forbidden(),
+        groups: joi
+            .object()
+            .pattern(
+                joi.string(),
+                joi
+                    .array()
+                    .items(joi.string().valid(...Object.values(NotificationType)))
+                    .min(1),
+            )
+            .required(),
+    }),
     params: {},
 });
 
@@ -42,11 +55,11 @@ export const getNotificationByIdRequestSchema = joi.object({
 // POST /api/notifications
 export const createNotificationRequestSchema = joi.object({
     query: {},
-    body: createNotificationMessageSchema,
+    body: notificationSchema,
     params: {},
 });
 
-// PATCH /api/notifications/seen
+// POST /api/notifications/:notificationId/seen
 export const notificationSeenRequestSchema = joi.object({
     query: {},
     body: {
@@ -55,4 +68,13 @@ export const notificationSeenRequestSchema = joi.object({
     params: {
         notificationId: mongoIdSchema.required(),
     },
+});
+
+// POST /api/notifications/seen
+export const manyNotificationSeenRequestSchema = joi.object({
+    query: {},
+    body: basicNotificationSearchSchema.keys({
+        viewerId: mongoIdSchema.required(),
+    }),
+    params: {},
 });

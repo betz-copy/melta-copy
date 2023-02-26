@@ -24,6 +24,7 @@ module.exports = {
     },
     ignorePatterns: ['dist'],
     rules: {
+        'no-underscore-dangle': ['error', { allow: ['_id'] }],
         'import/extensions': [
             'error',
             'ignorePackages',
@@ -36,5 +37,6 @@ module.exports = {
         'no-unused-vars': 'off', // Checked by typescript
         'no-shadow': 'off',
         '@typescript-eslint/no-shadow': 'error',
+        'import/prefer-default-export': 'off',
     },
 };
