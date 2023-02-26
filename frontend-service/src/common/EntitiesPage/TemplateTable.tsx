@@ -15,7 +15,6 @@ import { CustomIcon } from '../CustomIcon';
 import { exportTemplatesToExcelRequest } from '../../services/entitiesService';
 import { EditEntityDetails } from '../../pages/Entity/components/EditEntityDetails';
 import { IEntity } from '../../interfaces/entities';
-import { AgDialog } from '@ag-grid-community/core';
 
 const TemplateTable = ({ template, quickFilterText, page }: { template: IMongoEntityTemplatePopulated; quickFilterText: string; page: string }) => {
     const entitiesTableRef = useRef<EntitiesTableOfTemplateRef<IEntity>>(null);

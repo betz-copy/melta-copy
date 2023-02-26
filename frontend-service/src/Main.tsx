@@ -44,7 +44,7 @@ const cacheRtl = createCache({
 });
 
 const Main = () => {
-    const [open, setOpen] = useState(true);
+    const [open, setOpen] = useState(false);
     const [title, setTitle] = useState('');
     const navigate = useNavigate();
     const { setIsOpen, setCurrentStep } = useTour();
