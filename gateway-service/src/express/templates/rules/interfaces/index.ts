@@ -3,7 +3,7 @@ import { IFormula } from './formula';
 
 export interface IRegularFunction {
     isRegularFunction: true; // to identify interface runtime (instead of class' instanceof)
-    functionType: 'toDate';
+    functionType: 'toDate' | 'addToDate' | 'addToDateTime' | 'subFromDate' | 'subFromDateTime';
     arguments: IArgument[];
 }
 export const isRegularFunction = (regularFunction: any): regularFunction is IRegularFunction => {
@@ -73,8 +73,8 @@ export interface IRule {
     description: string;
     actionOnFail: 'WARNING' | 'ENFORCEMENT';
     relationshipTemplateId: string;
-    pinnedEntityTemplateId: string;
-    unpinnedEntityTemplateId: string;
+    pinnedEntityTemplateId: string; // sourceEntityTemplate or destinationEntityTemplate
+    unpinnedEntityTemplateId: string; // just to allow for searches
     formula: IFormula;
     disabled: boolean;
 }
