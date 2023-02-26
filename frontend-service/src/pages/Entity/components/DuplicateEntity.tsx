@@ -1,7 +1,7 @@
 import React from 'react';
 import { Grid, Card, CardContent, CircularProgress, Box, Divider, Button } from '@mui/material';
 import { Done as DoneIcon, Clear as ClearIcon } from '@mui/icons-material';
-import { useMutation, useQueryClient } from 'react-query';
+import { useMutation } from 'react-query';
 import i18next from 'i18next';
 import { toast } from 'react-toastify';
 import { Form, Formik } from 'formik';
@@ -25,7 +25,6 @@ import { toastConstraintValidationError } from '../../../common/wizards/entity/t
 const { errorCodes } = environment;
 
 const DuplicateEntity: React.FC<{}> = () => {
-    const queryClient = useQueryClient();
     const { state } = useLocation();
     const { entityTemplate, expandedEntity } = state as {
         entityTemplate: IMongoEntityTemplatePopulated;
@@ -47,7 +46,7 @@ const DuplicateEntity: React.FC<{}> = () => {
             onError: (err: AxiosError) => {
                 const errorMetadata = err.response?.data?.metadata;
                 if (errorMetadata?.errorCode === errorCodes.failedConstraintsValidation) {
-                    toastConstraintValidationError(queryClient, errorMetadata);
+                    toastConstraintValidationError(errorMetadata);
                     return;
                 }
 

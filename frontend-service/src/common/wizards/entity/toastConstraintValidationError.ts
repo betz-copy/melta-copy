@@ -1,15 +1,15 @@
 import i18next from 'i18next';
-import { QueryClient } from 'react-query';
+import { useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { IConstraint, IRequiredConstraint, IUniqueConstraint } from '../../../interfaces/entities';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 
 export const toastConstraintValidationError = (
-    queryClient: QueryClient,
     errorMetadata: { errorCode: string; constraint: Omit<IConstraint, 'constraintName'> },
 ) => {
     const { constraint } = errorMetadata;
 
+    const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const entityTemplate = entityTemplates.get(constraint.templateId)!;
 

@@ -1,9 +1,8 @@
 import React, { useRef, useState } from 'react';
-import { Grid, Box, CircularProgress } from '@mui/material';
+import { Grid, Box, CircularProgress, Dialog, Modal } from '@mui/material';
 import { AddCircle, VerticalAlignBottomOutlined as DownloadIcon } from '@mui/icons-material';
 import i18next from 'i18next';
-import { AxiosError } from 'axios';
-import { useMutation, useQuery } from 'react-query';
+import { useQuery } from 'react-query';
 import { toast } from 'react-toastify';
 import fileDownload from 'js-file-download';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
@@ -13,12 +12,13 @@ import { BlueTitle } from '../BlueTitle';
 import { ResetFilterButton } from './ResetFilterButton';
 import IconButtonWithPopoverText from '../IconButtonWithPopover';
 import { CustomIcon } from '../CustomIcon';
-import { exportTemplatesToExcelRequest, deleteEntityRequest } from '../../services/entitiesService';
-import { ErrorToast } from '../ErrorToast';
-import { AreYouSureDialog } from '../dialogs/AreYouSureDialog';
+import { exportTemplatesToExcelRequest } from '../../services/entitiesService';
+import { EditEntityDetails } from '../../pages/Entity/components/EditEntityDetails';
+import { IEntity } from '../../interfaces/entities';
+import { AgDialog } from '@ag-grid-community/core';
 
 const TemplateTable = ({ template, quickFilterText, page }: { template: IMongoEntityTemplatePopulated; quickFilterText: string; page: string }) => {
-    const entitiesTableRef = useRef<EntitiesTableOfTemplateRef>(null);
+    const entitiesTableRef = useRef<EntitiesTableOfTemplateRef<IEntity>>(null);
     const { isFetching: isExportingTableToExcelFile, refetch: exportTemplateToExcel } = useQuery(
         ['exportTemplateToExcel', [template._id], `${template.displayName}.xlsx`],
         () => exportTemplatesToExcelRequest([template._id], `${template.displayName}.xlsx`),
@@ -33,24 +33,14 @@ const TemplateTable = ({ template, quickFilterText, page }: { template: IMongoEn
             },
         },
     );
-    const [openDeleteDialog, setOpenDeleteDialog] = useState<{
-        isDialogOpen: boolean;
-        entityId: string | null;
+
+    const [editDialog, setEditDialog] = useState<{
+        isOpen: boolean;
+        entity?: IEntity;
     }>({
-        isDialogOpen: false,
-        entityId: null,
+        isOpen: false,
     });
-    const { isLoading: isDeleteLoading, mutateAsync: deleteMutation } = useMutation((id: string) => deleteEntityRequest(id), {
-        onError: (error: AxiosError) => {
-            setOpenDeleteDialog({ isDialogOpen: false, entityId: null });
-            toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.entity.failedToDelete')} />);
-        },
-        onSuccess: () => {
-            toast.success(i18next.t('wizard.entity.deletedSuccessfully'));
-            setOpenDeleteDialog({ isDialogOpen: false, entityId: null });
-            entitiesTableRef.current?.refreshServerSide();
-        },
-    });
+
     return (
         <Grid container>
             <Grid container paddingLeft={3} justifyContent="space-between" width="100%">
@@ -81,11 +71,6 @@ const TemplateTable = ({ template, quickFilterText, page }: { template: IMongoEn
             </Grid>
             <Box sx={{ marginBottom: '30px', width: '100%' }}>
                 <EntitiesTableOfTemplate
-                    deleteRowButtonProps={{
-                        popoverText: i18next.t('entitiesTableOfTemplate.deleteEntity'),
-                        onClick: (entity) => setOpenDeleteDialog({ isDialogOpen: true, entityId: entity.properties._id }),
-                        disabled: false,
-                    }}
                     ref={entitiesTableRef}
                     template={template}
                     showNavigateToRowButton
@@ -97,14 +82,27 @@ const TemplateTable = ({ template, quickFilterText, page }: { template: IMongoEn
                     fontSize="16px"
                     minColumnWidth={200}
                     filterStorageProps={{ shouldSaveFilter: true, pageType: page }}
+                    editRowButtonProps={{
+                        onClick: (currEntity) => {
+                            setEditDialog({
+                                isOpen: true,
+                                entity: currEntity,
+                            });
+                        },
+                    }}
                 />
             </Box>
-            <AreYouSureDialog
-                open={openDeleteDialog.isDialogOpen}
-                handleClose={() => setOpenDeleteDialog({ isDialogOpen: false, entityId: null })}
-                onYes={() => deleteMutation(openDeleteDialog.entityId!)}
-                isLoading={isDeleteLoading}
-            />
+            <Dialog open={editDialog.isOpen} >
+                <EditEntityDetails
+                    entityTemplate={template}
+                    entity={editDialog.entity!}
+                    onSuccessUpdate={(entity) => {
+                        entitiesTableRef.current?.updateRowDataClientSide(entity);
+                        setEditDialog((prev) => ({ ...prev, isOpen: false }));
+                    }}
+                    onCancelUpdate={() => setEditDialog((prev) => ({ ...prev, isOpen: false }))}
+                />
+            </Dialog>
         </Grid>
     );
 };

@@ -63,7 +63,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
 
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const currentEntityTemplate = entityTemplates.get(expandedEntity?.entity.templateId);
-
+    const templateIds = Array.from(entityTemplates.keys());
     const [updateStatusWithRuleBreachDialogState, setUpdateStatusWithRuleBreachDialogState] = useState<{
         isOpen: boolean;
         brokenRules?: IRuleBreachPopulated['brokenRules'];
@@ -75,7 +75,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
             updateEntityStatusRequest(currEntity.properties._id, disabled, JSON.stringify(ignoredRules)),
         {
             onSuccess: (data) => {
-                const templateIds = Array.from(entityTemplates.keys());
+                
                 queryClient.setQueryData(['getExpandedEntity', entity.properties._id, { templateIds, numberOfConnections: 1 }], () => {
                     return {
                         ...expandedEntity,
@@ -115,7 +115,25 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
         },
     });
 
-    if (isEditMode) return <EditEntityDetails entityTemplate={entityTemplate} setIsEditMode={setIsEditMode} expandedEntity={expandedEntity} />;
+    if (isEditMode) {
+        return (
+            <EditEntityDetails
+                entityTemplate={entityTemplate}
+                entity={expandedEntity.entity}
+                onSuccessUpdate={(data) => {
+                    setIsEditMode(false);
+                    queryClient.setQueryData(['getExpandedEntity', entity.properties._id, { templateIds, numberOfConnections: 1 }], () => {
+                        return {
+                            ...expandedEntity,
+                            entity: data,
+                        };
+                    });
+    
+                }}
+                onCancelUpdate={() => setIsEditMode(false)}
+            />
+        );
+    }
 
     const hasPermissionToCategory = Boolean(myPermissions.instancesPermissions.find((instance) => instance.category === entityTemplate.category._id));
     const isEntityDisabled = expandedEntity.entity.properties.disabled;

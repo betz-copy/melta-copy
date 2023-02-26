@@ -26,6 +26,7 @@ export default {
         addRelationship: 'הוסף קשר',
         addEntity: 'הוסף ישות',
         deleteEntity: 'מחק ישות',
+        editEntity: 'ערוך ישות',
         actionsHeaderName: 'פעולות',
         disabledHeaderName: 'מושבת',
         navigateToEntityPage: 'עמוד פרט',
