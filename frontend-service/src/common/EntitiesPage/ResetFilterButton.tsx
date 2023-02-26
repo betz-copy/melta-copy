@@ -3,9 +3,10 @@ import { FilterListOffOutlined } from '@mui/icons-material';
 import i18next from 'i18next';
 import IconButtonWithPopoverText from '../IconButtonWithPopover';
 import { EntitiesTableOfTemplateRef } from '../EntitiesTableOfTemplate';
+import { IEntity } from '../../interfaces/entities';
 
 const ResetFilterButton: React.FC<{
-    entitiesTableRef: React.RefObject<EntitiesTableOfTemplateRef>;
+    entitiesTableRef: React.RefObject<EntitiesTableOfTemplateRef<IEntity>>;
 }> = ({ entitiesTableRef }) => {
     return (
         <IconButtonWithPopoverText
