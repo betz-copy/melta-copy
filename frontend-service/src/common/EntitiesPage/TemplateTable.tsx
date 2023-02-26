@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { Grid, Box, CircularProgress, Dialog, Modal } from '@mui/material';
+import { Grid, Box, CircularProgress, Dialog } from '@mui/material';
 import { AddCircle, VerticalAlignBottomOutlined as DownloadIcon } from '@mui/icons-material';
 import i18next from 'i18next';
 import { useQuery } from 'react-query';
@@ -91,7 +91,7 @@ const TemplateTable = ({ template, quickFilterText, page }: { template: IMongoEn
                     }}
                 />
             </Box>
-            <Dialog open={editDialog.isOpen} >
+            <Dialog open={editDialog.isOpen}>
                 <EditEntityDetails
                     entityTemplate={template}
                     entity={editDialog.entity!}

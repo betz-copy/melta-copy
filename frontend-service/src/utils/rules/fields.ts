@@ -32,7 +32,7 @@ const entityTemplateToSubfields = (
             initials ? `${initials.key}-${entityTemplate._id}-${field.name}` : `${entityTemplate._id}-${field.name}`,
             {
                 type: field.type,
-                valueSources: ['field', 'value'],
+                valueSources: ['field', 'value', 'func'],
                 label: initials ? `${initials.label}.${entityTemplate.name}.${field.name}` : `${entityTemplate.name}.${field.name}`,
                 ...options,
             },
@@ -53,7 +53,7 @@ const entityTemplateToSubfields = (
             initials ? `${initials.key}-${entityTemplate._id}-${key}` : `${entityTemplate._id}-${key}`,
             {
                 type,
-                valueSources: ['field', 'value'],
+                valueSources: ['field', 'value', 'func'],
                 label: initials ? `${initials.label}.${entityTemplate.name}.${key}` : `${entityTemplate.name}.${key}`,
                 ...options,
             },
@@ -64,7 +64,7 @@ const entityTemplateToSubfields = (
                 initials ? `${initials.key}-${entityTemplate._id}-${key}-ignoreHour` : `${entityTemplate._id}-${key}-ignoreHour`,
                 {
                     type: 'date',
-                    valueSources: ['field', 'value'],
+                    valueSources: ['field', 'value', 'func'],
                     label: initials ? `${initials.label}.${entityTemplate.name}.${key} (ignore hour)` : `${entityTemplate.name}.${key} (ignore hour)`,
                     ...options,
                 },

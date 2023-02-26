@@ -7,7 +7,6 @@ import i18next from 'i18next';
 import { AxiosError } from 'axios';
 import { ViewingCard } from './ViewingCard';
 import { Header } from '../../../common/Header';
-import { removeItemById } from '../../../utils/reactQuery';
 import SearchInput from '../../../common/inputs/SearchInput';
 import { IMongoRule, IRuleMap } from '../../../interfaces/rules';
 import { RuleWizard } from '../../../common/wizards/rule';
@@ -52,7 +51,10 @@ const RulesRow: React.FC = () => {
     });
     const { isLoading, mutateAsync: deleteMutateAsync } = useMutation((id: string) => deleteRuleRequest(id), {
         onSuccess: (_data, id) => {
-            queryClient.setQueryData<IMongoRule[]>('getRules', (prevData) => removeItemById(id, prevData));
+            queryClient.setQueryData<IRuleMap>('getRules', (ruleMap) => {
+                ruleMap!.delete(id);
+                return ruleMap!;
+            });
             setDeleteRuleWizardState({ isWizardOpen: false, ruleId: null });
             toast.success(i18next.t('wizard.rule.deletedSuccessfully'));
         },

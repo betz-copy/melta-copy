@@ -103,7 +103,7 @@ export type EntitiesTableOfTemplateRef<Data> = {
     getExcelData: () => string | undefined;
     resetFilter: () => void;
     refreshServerSide: () => void;
-    updateRowDataClientSide: (data: IEntity) => void;
+    updateRowDataClientSide: (data: Data) => void;
 };
 
 const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, EntitiesTableOfTemplateProps<unknown>>(
@@ -132,7 +132,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
     ) => {
         const navigate = useNavigate();
 
-        const gridRef = useRef<AgGridReact>(null);
+        const gridRef = useRef<AgGridReact<Data>>(null);
 
         useImperativeHandle(ref, () => {
             return {
@@ -145,16 +145,13 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                 refreshServerSide() {
                     gridRef.current?.api.refreshServerSide({ purge: true });
                 },
-                updateRowDataClientSide(data: IEntity) {
-                    gridRef.current?.api.forEachNode(rowNode => {
-                        if (data.properties._id === rowNode.data.properties._id) {
+                updateRowDataClientSide(data: Data) {
+                    gridRef.current?.api.forEachNode((rowNode) => {
+                        if (rowNode.data && getRowId(data) === getRowId(rowNode.data)) {
                             rowNode.updateData(data);
                         }
                     });
-
-                }
-
-
+                },
             };
         });
         const columnDefs: ColDef[] = getColumnDefs({

@@ -1,14 +1,15 @@
 import { JsonGroup, RuleProperties, JsonItem, JsonRuleGroupExt } from 'react-awesome-query-builder';
 import { IAggregationGroup, IEquation, IGroup, IOperatorBool, IRegularFunction } from '../../interfaces/rules';
-import { IConstant, IPropertyOfVariable } from '../../interfaces/rules/argument';
+import { IArgument, IConstant, IPropertyOfVariable } from '../../interfaces/rules/argument';
 import { IFormula } from '../../interfaces/rules/formula';
+import { FunctionObject, ValueType } from './interfaces';
 
 export class RuleParser {
     private static formatAggregationField = (field: string) => {
         return field.includes('.') ? field.split('.')[1] : field;
     };
 
-    private static functionParser = (property): IRegularFunction => {
+    private static toDateFunctionParser = (property: string): IRegularFunction => {
         const formattedField = property.replace('-ignoreHour', '');
 
         return {
@@ -18,11 +19,11 @@ export class RuleParser {
         };
     };
 
-    private static propertyParser(property): IPropertyOfVariable | IRegularFunction {
+    private static propertyParser(property: string): IPropertyOfVariable | IRegularFunction {
         const formattedField = RuleParser.formatAggregationField(property);
 
         if (property.includes('-ignoreHour')) {
-            return RuleParser.functionParser(property);
+            return RuleParser.toDateFunctionParser(property);
         }
 
         const lastDashIndex = formattedField.lastIndexOf('-');
@@ -38,35 +39,86 @@ export class RuleParser {
         };
     }
 
-    private static constantParser = (value): IConstant => {
+    private static addToDateFunctionParser = (funcObj: FunctionObject): IRegularFunction => {
+        const dateArgumentKey = funcObj.func === 'addToDate' || funcObj.func === 'subFromDate' ? 'date' : 'dateTime';
+        const dateArgument = RuleParser.propertyParser(funcObj.args[dateArgumentKey].value); // assuming dateArgument is a property
+
+        const durationValueType: ValueType = funcObj.func === 'addToDate' || funcObj.func === 'subFromDate' ? 'dateDuration' : 'dateTimeDuration';
+        const durationArgument = RuleParser.constantParser(funcObj.args.duration.value, durationValueType);
+
+        return {
+            isRegularFunction: true,
+            functionType: funcObj.func,
+            arguments: [dateArgument, durationArgument],
+        };
+    };
+
+    private static valueTypeParser = (valueType: ValueType): IConstant['type'] => {
+        switch (valueType) {
+            case 'text':
+                return 'string';
+            case 'number':
+                return 'number';
+            case 'date':
+                return 'date';
+            case 'datetime':
+                return 'dateTime';
+            case 'boolean':
+                return 'boolean';
+            case 'dateDuration':
+                return 'dateDuration';
+            case 'dateTimeDuration':
+                return 'dateTimeDuration';
+            default:
+                throw new Error('invalid valueType shouldnt reach here');
+        }
+    };
+
+    private static constantParser = (value: any, valueType: ValueType): IConstant => {
         if (value === null || value === undefined) throw new Error('value can not be empty');
         return {
             isConstant: true,
+            type: RuleParser.valueTypeParser(valueType),
             value,
         };
     };
 
     private static operatorParser = (operator: string): IOperatorBool => {
-        if (operator === 'equal') return 'equals';
-        if (operator === 'not_equal') return 'notEqual';
-        if (operator === 'less') return 'lessThan';
-        if (operator === 'less_or_equal') return 'lessThanOrEqual';
-        if (operator === 'greater') return 'greaterThan';
-        if (operator === 'greater_or_equal') return 'greaterThanOrEqual';
-
-        throw new Error('operator not supported');
+        switch (operator) {
+            case 'equal':
+                return 'equals';
+            case 'not_equal':
+                return 'notEqual';
+            case 'less':
+                return 'lessThan';
+            case 'less_or_equal':
+                return 'lessThanOrEqual';
+            case 'greater':
+                return 'greaterThan';
+            case 'greater_or_equal':
+                return 'greaterThanOrEqual';
+            default:
+                throw new Error('operator not supported');
+        }
     };
 
     private static equationParser = (properties: RuleProperties): IEquation => {
-        const isRhsArgumentPropertyOfVariable = properties.valueSrc![0] === 'field';
+        const [rhsArgumentValueSrc] = properties.valueSrc!;
 
+        let rhsArgument: IArgument;
+        if (rhsArgumentValueSrc === 'field') {
+            rhsArgument = RuleParser.propertyParser(properties.value[0]);
+        } else if (rhsArgumentValueSrc === 'func') {
+            // only add/subToDate[Time] functions can be in rhs
+            rhsArgument = RuleParser.addToDateFunctionParser(properties.value[0]);
+        } else {
+            rhsArgument = RuleParser.constantParser(properties.value[0], properties.valueType![0] as ValueType);
+        }
         return {
             isEquation: true,
             operatorBool: RuleParser.operatorParser(properties.operator!),
             lhsArgument: RuleParser.propertyParser(properties.field!),
-            rhsArgument: isRhsArgumentPropertyOfVariable
-                ? RuleParser.propertyParser(properties.value[0])
-                : RuleParser.constantParser(properties.value[0]),
+            rhsArgument,
         };
     };
 
@@ -108,25 +160,22 @@ export class RuleParser {
                 isCountAggFunction: true,
                 variableName: ruleGroup.properties!.field!.replaceAll('-', '.'),
             },
-            rhsArgument: RuleParser.constantParser(ruleGroup.properties!.value[0]),
+            rhsArgument: RuleParser.constantParser(ruleGroup.properties!.value[0], ruleGroup.properties!.valueType![0] as ValueType),
         } as IEquation;
     };
 
     static jsonTreeToFormula = (child: JsonItem): IFormula => {
         const { properties, type } = child;
 
-        if (type === 'rule') {
-            return RuleParser.equationParser(properties);
+        switch (type) {
+            case 'rule':
+                return RuleParser.equationParser(properties);
+            case 'group':
+                return RuleParser.groupParser(child);
+            case 'rule_group':
+                return RuleParser.aggregationGroupParser(child as JsonRuleGroupExt);
+            default:
+                throw new Error('child rule not suported');
         }
-
-        if (type === 'group') {
-            return RuleParser.groupParser(child);
-        }
-
-        if (type === 'rule_group') {
-            return RuleParser.aggregationGroupParser(child as JsonRuleGroupExt);
-        }
-
-        throw new Error('child rule not suported');
     };
 }
