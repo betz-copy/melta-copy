@@ -5,38 +5,35 @@ export enum NotificationType {
     ruleBreachAlert = 'ruleBreachAlert',
     ruleBreachRequest = 'ruleBreachRequest',
     ruleBreachResponse = 'ruleBreachResponse',
+    processApproverUpdate = 'processApproverUpdate',
+    newProcess = 'newProcess',
 }
 
-interface IAlertMetadata {
-    alertId: string;
-}
-export interface IAlertMetadataPopulated {
+export interface IRuleBreachAlertNotificationMetadataPopulated {
     alert: IRuleBreachAlertPopulated;
 }
-
-interface IRequestMetadata {
-    requestId: string;
+export interface IRuleBreachRequestNotificationMetadataPopulated {
+    request: IRuleBreachRequestPopulated;
 }
-export interface IRequestMetadataPopulated {
+export interface IRuleBreachResponseNotificationMetadataPopulated {
     request: IRuleBreachRequestPopulated;
 }
 
-interface IResponseMetadata {
-    requestId: string;
+export interface IProcessApproverUpdateNotificationMetadataPopulated {
+    process: object; // TODO: add process interface
+    approverStepNames: string[];
+    previousApproverStepNames: string[];
 }
-export interface IResponseMetadataPopulated {
-    request: IRuleBreachRequestPopulated;
+export interface INewProcessNotificationMetadataPopulated {
+    process: object; // TODO: add process interface
 }
 
-type INotificationMetadata = IAlertMetadata | IRequestMetadata | IResponseMetadata;
-export type INotificationMetadataPopulated = IAlertMetadataPopulated | IRequestMetadataPopulated | IResponseMetadataPopulated;
-
-export interface INotification {
-    type: NotificationType;
-    metadata: INotificationMetadata;
-    createdAt: Date;
-    _id: string;
-}
+export type INotificationMetadataPopulated =
+    | IRuleBreachAlertNotificationMetadataPopulated
+    | IRuleBreachRequestNotificationMetadataPopulated
+    | IRuleBreachResponseNotificationMetadataPopulated
+    | IProcessApproverUpdateNotificationMetadataPopulated
+    | INewProcessNotificationMetadataPopulated;
 
 export interface INotificationPopulated<T = INotificationMetadataPopulated> {
     type: NotificationType;
@@ -45,20 +42,35 @@ export interface INotificationPopulated<T = INotificationMetadataPopulated> {
     _id: string;
 }
 
-export const isAlertNotification = (
+export const isRuleBreachAlertNotification = (
     notification: Partial<INotificationPopulated>,
-): notification is INotificationPopulated<IAlertMetadataPopulated> => {
+): notification is INotificationPopulated<IRuleBreachAlertNotificationMetadataPopulated> => {
     return notification.type === NotificationType.ruleBreachAlert;
 };
 
-export const isRequestNotification = (
+export const isRuleBreachRequestNotification = (
     notification: Partial<INotificationPopulated>,
-): notification is INotificationPopulated<IRequestMetadataPopulated> => {
+): notification is INotificationPopulated<IRuleBreachRequestNotificationMetadataPopulated> => {
     return notification.type === NotificationType.ruleBreachRequest;
 };
 
-export const isResponseNotification = (
+export const isRuleBreachResponseNotification = (
     notification: Partial<INotificationPopulated>,
-): notification is INotificationPopulated<IResponseMetadataPopulated> => {
+): notification is INotificationPopulated<IRuleBreachResponseNotificationMetadataPopulated> => {
     return notification.type === NotificationType.ruleBreachResponse;
 };
+
+export const isProcessApproverUpdateNotification = (
+    notification: Partial<INotificationPopulated>,
+): notification is INotificationPopulated<IProcessApproverUpdateNotificationMetadataPopulated> =>
+    notification.type === NotificationType.processApproverUpdate;
+
+export const isNewProcessNotification = (
+    notification: Partial<INotificationPopulated>,
+): notification is INotificationPopulated<INewProcessNotificationMetadataPopulated> => notification.type === NotificationType.newProcess;
+
+export type INotificationCountGroups = Record<string, NotificationType[]>;
+export interface INotificationGroupCountDetails {
+    groups: Record<string, number>;
+    total: number;
+}

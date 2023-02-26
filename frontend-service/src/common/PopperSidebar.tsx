@@ -10,9 +10,10 @@ const PopperSidebar: React.FC<{
     setOpen: React.Dispatch<React.SetStateAction<boolean>>;
     title: string;
     side: 'right' | 'left';
+    topButtons?: React.ReactNode;
     sideMargin?: CSSProperties['margin'];
     width?: CSSProperties['width'];
-}> = ({ children, open, setOpen, title, side, sideMargin = 0, width = '22rem' }) => {
+}> = ({ children, open, setOpen, title, side, topButtons, sideMargin = 0, width = '22rem' }) => {
     const darkMode = useSelector((state: RootState) => state.darkMode);
 
     return (
@@ -40,17 +41,17 @@ const PopperSidebar: React.FC<{
                                         </IconButton>
 
                                         <Typography
-                                            style={{
-                                                color: '#225AA7',
-                                                fontWeight: 400,
-                                                fontFamily: 'Rubik',
-                                            }}
-                                            component="h6"
-                                            variant="h6"
+                                            color='#225AA7'
+                                            fontFamily='Rubik'
+                                            component="h5"
+                                            variant="h5"
                                             marginX="auto"
+                                            fontWeight="bold"
                                         >
                                             {title}
                                         </Typography>
+
+                                        <Grid container position="absolute" right={10} direction="row-reverse">{topButtons}</Grid>
                                     </Grid>
                                     <Divider sx={{ marginX: '10px' }} />
                                 </Grid>

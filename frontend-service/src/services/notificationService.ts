@@ -1,14 +1,10 @@
 import axios from '../axios';
 import { environment } from '../globals';
-import { INotificationPopulated } from '../interfaces/notifications';
+import { INotificationCountGroups, INotificationGroupCountDetails, INotificationPopulated, NotificationType } from '../interfaces/notifications';
 
 const { notifications } = environment.api;
 
-export const getMyNotificationsRequest = async (limit: number, step?: number, type?: string) => {
-    const query: any = { limit };
-    if (step) query.step = step;
-    if (type) query.type = type;
-
+export const getMyNotificationsRequest = async (query: { limit: number; step?: number; types?: NotificationType[] }) => {
     const { data } = await axios.get<INotificationPopulated[]>(`${notifications}/my`, { params: query });
     return data;
 };
@@ -18,7 +14,17 @@ export const getMyNotificationCountRequest = async () => {
     return data;
 };
 
-export const NotificationSeenRequest = async (notificationId: string) => {
-    const { data } = await axios.patch<number>(`${notifications}/${notificationId}/seen`);
+export const getMyNotificationGroupCountRequest = async (groups: INotificationCountGroups) => {
+    const { data } = await axios.post<INotificationGroupCountDetails>(`${notifications}/my/group-count`, { groups });
+    return data;
+};
+
+export const notificationSeenRequest = async (notificationId: string) => {
+    const { data } = await axios.post<INotificationPopulated>(`${notifications}/${notificationId}/seen`);
+    return data;
+};
+
+export const manyNotificationSeenRequest = async (types: NotificationType[]) => {
+    const { data } = await axios.post<INotificationPopulated[]>(`${notifications}/seen`, { types });
     return data;
 };

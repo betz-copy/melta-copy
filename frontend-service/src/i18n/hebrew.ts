@@ -186,6 +186,14 @@ export default {
         noNotificationsLeft: 'אין עוד התראות',
         setAsSeen: 'סמן כנקרא',
         failedSetAsSeen: 'נכשל לסמן כנקרא',
+        setAllAsSeen: 'סמן את כל ההתראות ב"{{group}}" כנקרא',
+        allSeen: 'כל ההתראות סומנו כנקרא בהצלחה',
+        failedSetAllAsSeen: 'נכשל לסמן את כל ההתראות ב"{{group}}" כנקרא',
+        infoRightClickTab: 'ניתן ללחוץ מקש ימני על קבוצת התראות כדי לגשת לאפשרויות שלה',
+        groups: {
+            requests: 'בקשות',
+            general: 'כללי',
+        },
     },
     permissions: {
         failedToLoadMyPermissions: 'נכשל לטעון הרשאות',

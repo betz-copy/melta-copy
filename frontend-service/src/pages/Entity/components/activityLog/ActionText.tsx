@@ -7,12 +7,12 @@ import { IActivityLog } from '../../../../services/activityLogService';
 import { IRelationshipTemplateMap } from '../../../../interfaces/relationshipTemplates';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 
-const StyledTypography = styled(Typography)({
+const StyledTypography = styled(Typography)(({ theme }) => ({
     fontFamily: 'Rubik',
     fontWeight: 400,
     fontSize: '16px',
-    color: 'rgb(110 104 104 / 87%)',
-}) as typeof Typography;
+    color: theme.palette.mode === 'dark' ? 'lightgray' : 'gray',
+})) as typeof Typography;
 
 const EmptyMetadataActionText: React.FC<{
     action: 'CREATE_ENTITY' | 'DISABLE_ENTITY' | 'ACTIVATE_ENTITY';

@@ -25,16 +25,18 @@ import { RootState } from '../../store';
 import { ProfileButton } from './ProfileButton';
 import { toggleMeltaPlus } from '../../store/reducers/meltaPlus';
 import { NotificationsButton } from './notifications/NotificationsButton';
-import { getMyNotificationCountRequest } from '../../services/notificationService';
 import { environment } from '../../globals';
 import { NotificationsScreen } from './notifications/NotificationsScreen';
 import { toggleDarkMode } from '../../store/reducers/darkMode';
 import { SwitchThemeButton } from './SwitchThemeButton';
+import { getMyNotificationGroupCountRequest } from '../../services/notificationService';
 
 type SideBarProps = {
     toggleDrawer: () => any;
     isDrawerOpen: boolean;
 };
+
+const { notifications } = environment;
 
 const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
     const drawerRef = useRef<React.ComponentRef<typeof Drawer>>(null);
@@ -44,16 +46,21 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
     const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
 
-    const { data: notificationsCount, refetch: updateNotificationCount } = useQuery('getMyNotificationCount', getMyNotificationCountRequest, {
-        refetchInterval: environment.notifications.updateInterval,
-        refetchOnWindowFocus: true,
-    });
+    const [isMyPermissionsDialogOpen, setIsMyPermissionsDialogOpen] = useState<boolean>(false);
+    const [isNotificationsScreenOpen, setIsNotificationsScreenOpen] = useState<boolean>(false);
+
+    const { data: notificationCountDetailsResponse, refetch: updateNotificationCountDetails } = useQuery(
+        ['getMyNotificationCount', isNotificationsScreenOpen],
+        () => getMyNotificationGroupCountRequest(isNotificationsScreenOpen ? notifications.groups : {}),
+        {
+            refetchInterval: environment.notifications.updateInterval,
+            refetchOnWindowFocus: true,
+        },
+    );
+    const notificationCountDetails = notificationCountDetailsResponse || { total: 0, groups: {} };
 
     const { user: currentUser, meltaPlus, darkMode } = useSelector((state: RootState) => state);
     const dispatch = useDispatch();
-
-    const [isMyPermissionsDialogOpen, setIsMyPermissionsDialogOpen] = useState<boolean>(false);
-    const [isNotificationsScreenOpen, setIsNotificationsScreenOpen] = useState<boolean>(false);
 
     return (
         <Drawer ref={drawerRef} variant="permanent" open={isDrawerOpen} PaperProps={{ sx: { backgroundColor: '#225AA7' } }} data-tour="side-bar">
@@ -84,12 +91,11 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                     />
 
                     <NotificationsButton
-                        notificationCount={notificationsCount || 0}
+                        notificationCountDetails={notificationCountDetails}
                         text={i18next.t('notifications.title')}
                         isDrawerOpen={isDrawerOpen}
                         onClick={() => {
                             setIsNotificationsScreenOpen(!isNotificationsScreenOpen);
-                            updateNotificationCount();
                         }}
                     />
 
@@ -204,7 +210,8 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                 open={isNotificationsScreenOpen}
                 setOpen={setIsNotificationsScreenOpen}
                 sideBarWidth={`${drawerRef.current?.offsetWidth}px`}
-                updateNotificationCount={updateNotificationCount}
+                notificationCountDetails={notificationCountDetails}
+                updateNotificationCountDetails={updateNotificationCountDetails}
             />
         </Drawer>
     );
