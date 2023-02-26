@@ -8,7 +8,7 @@ import { Express } from 'express';
 
 import config from '../src/config';
 import Server from '../src/express/server';
-import { INotification } from '../src/express/notifications/interface';
+import { INotification, NotificationType } from '../src/express/notifications/interface';
 
 const { mongo } = config;
 
@@ -63,91 +63,111 @@ describe('e2e notifications api testing', () => {
             it('should get all the notifications', async () => {
                 const { body: notification1 } = await request(app)
                     .post('/api/notifications')
-                    .send({ viewers: [fakeObjectId], type: 'ruleBreachAlert', metadata: { alertId: fakeObjectId } })
+                    .send({ viewers: [fakeObjectId], type: NotificationType.ruleBreachAlert, metadata: { alertId: fakeObjectId } })
                     .expect(200);
                 const { body: notification2 } = await request(app)
                     .post('/api/notifications')
-                    .send({ viewers: [fakeObjectId], type: 'ruleBreachRequest', metadata: { requestId: fakeObjectId2 } })
+                    .send({ viewers: [fakeObjectId], type: NotificationType.ruleBreachRequest, metadata: { requestId: fakeObjectId2 } })
                     .expect(200);
                 const { body: notification3 } = await request(app)
                     .post('/api/notifications')
-                    .send({ viewers: [fakeObjectId], type: 'ruleBreachResponse', metadata: { requestId: fakeObjectId3 } })
+                    .send({ viewers: [fakeObjectId], type: NotificationType.ruleBreachResponse, metadata: { requestId: fakeObjectId3 } })
                     .expect(200);
 
                 const { body } = await request(app).get('/api/notifications').query({ limit: 100 }).expect(200);
 
-                expect(body).toEqual([notification1, notification2, notification3]);
+                expect(body).toEqual([notification3, notification2, notification1]);
             });
 
-            it('should get all the notifications of type "ruleBreachAlert"', async () => {
-                const { body: notification1 } = await request(app)
+            it('should get all the notifications with specific types', async () => {
+                const { body: ruleBreachAlertNotification1 } = await request(app)
                     .post('/api/notifications')
-                    .send({ viewers: [fakeObjectId], type: 'ruleBreachAlert', metadata: { alertId: fakeObjectId } })
+                    .send({ viewers: [fakeObjectId], type: NotificationType.ruleBreachAlert, metadata: { alertId: fakeObjectId } })
                     .expect(200);
-                await request(app)
+                const { body: ruleBreachRequestNotification } = await request(app)
                     .post('/api/notifications')
-                    .send({ viewers: [fakeObjectId], type: 'ruleBreachRequest', metadata: { requestId: fakeObjectId2 } })
+                    .send({ viewers: [fakeObjectId], type: NotificationType.ruleBreachRequest, metadata: { requestId: fakeObjectId2 } })
                     .expect(200);
-                const { body: notification3 } = await request(app)
+                const { body: ruleBreachAlertNotification2 } = await request(app)
                     .post('/api/notifications')
-                    .send({ viewers: [fakeObjectId], type: 'ruleBreachAlert', metadata: { requestId: fakeObjectId3 } })
+                    .send({ viewers: [fakeObjectId], type: NotificationType.ruleBreachAlert, metadata: { alertId: fakeObjectId3 } })
+                    .expect(200);
+                const { body: newProcessNotification1 } = await request(app)
+                    .post('/api/notifications')
+                    .send({ viewers: [fakeObjectId], type: NotificationType.newProcess, metadata: { processId: fakeObjectId } })
+                    .expect(200);
+                const { body: newProcessNotification2 } = await request(app)
+                    .post('/api/notifications')
+                    .send({ viewers: [fakeObjectId], type: NotificationType.newProcess, metadata: { processId: fakeObjectId2 } })
+                    .expect(200);
+                const { body: processApproverUpdateNotification } = await request(app)
+                    .post('/api/notifications')
+                    .send({
+                        viewers: [fakeObjectId],
+                        type: NotificationType.processApproverUpdate,
+                        metadata: { processId: fakeObjectId3, approverStepIds: [fakeObjectId] },
+                    })
                     .expect(200);
 
-                const { body } = await request(app).get('/api/notifications').query({ limit: 100, type: 'ruleBreachAlert' }).expect(200);
+                const { body: ruleBreachNotifications } = await request(app)
+                    .get('/api/notifications')
+                    .query({ limit: 100, types: [NotificationType.ruleBreachAlert, NotificationType.ruleBreachRequest] })
+                    .expect(200);
+                const { body: processesNotifications } = await request(app)
+                    .get('/api/notifications')
+                    .query({ limit: 100, types: [NotificationType.newProcess, NotificationType.processApproverUpdate] })
+                    .expect(200);
 
-                expect(body).toEqual([notification1, notification3]);
+                expect(ruleBreachNotifications).toEqual([ruleBreachAlertNotification2, ruleBreachRequestNotification, ruleBreachAlertNotification1]);
+                expect(processesNotifications).toEqual([processApproverUpdateNotification, newProcessNotification2, newProcessNotification1]);
             });
 
             it('should get all the notifications of user', async () => {
                 await request(app)
                     .post('/api/notifications')
-                    .send({ viewers: [fakeObjectId, fakeObjectId2], type: 'ruleBreachAlert', metadata: { alertId: fakeObjectId } })
+                    .send({ viewers: [fakeObjectId, fakeObjectId2], type: NotificationType.ruleBreachAlert, metadata: { alertId: fakeObjectId } })
                     .expect(200);
                 const { body: notification2 } = await request(app)
                     .post('/api/notifications')
                     .send({
                         viewers: [fakeObjectId2, fakeObjectId, fakeObjectId3],
-                        type: 'ruleBreachRequest',
+                        type: NotificationType.ruleBreachRequest,
                         metadata: { requestId: fakeObjectId2 },
                     })
                     .expect(200);
                 const { body: notification3 } = await request(app)
                     .post('/api/notifications')
-                    .send({ viewers: [fakeObjectId2, fakeObjectId3], type: 'ruleBreachResponse', metadata: { requestId: fakeObjectId3 } })
+                    .send({
+                        viewers: [fakeObjectId2, fakeObjectId3],
+                        type: NotificationType.ruleBreachResponse,
+                        metadata: { requestId: fakeObjectId3 },
+                    })
                     .expect(200);
 
                 const { body } = await request(app).get('/api/notifications').query({ limit: 100, viewerId: fakeObjectId3 }).expect(200);
 
-                expect(body).toEqual([notification2, notification3]);
+                expect(body).toEqual([notification3, notification2]);
             });
 
             it('should get notifications with pagination', async () => {
-                const page1Notifications: INotification[] = [];
-                const page2Notifications: INotification[] = [];
-                const page3Notifications: INotification[] = [];
+                const notifications: INotification[] = [];
 
                 for (let i = 0; i < 15; i++) {
                     const { body: notification } = await request(app)
                         .post('/api/notifications')
-                        .send({ viewers: [fakeObjectId], type: 'ruleBreachAlert', metadata: { alertId: fakeObjectId } })
+                        .send({ viewers: [fakeObjectId], type: NotificationType.ruleBreachAlert, metadata: { alertId: fakeObjectId } })
                         .expect(200);
 
-                    if (i < 5) {
-                        page1Notifications.push(notification);
-                    } else if (i < 10) {
-                        page2Notifications.push(notification);
-                    } else {
-                        page3Notifications.push(notification);
-                    }
+                    notifications.unshift(notification);
                 }
 
                 const { body: body1 } = await request(app).get(`/api/notifications`).query({ limit: 5, step: 0 }).expect(200);
                 const { body: body2 } = await request(app).get(`/api/notifications`).query({ limit: 5, step: 1 }).expect(200);
                 const { body: body3 } = await request(app).get(`/api/notifications`).query({ limit: 5, step: 2 }).expect(200);
 
-                expect(body1).toEqual(page1Notifications);
-                expect(body2).toEqual(page2Notifications);
-                expect(body3).toEqual(page3Notifications);
+                expect(body1).toEqual(notifications.slice(0, 5));
+                expect(body2).toEqual(notifications.slice(5, 10));
+                expect(body3).toEqual(notifications.slice(10, 15));
             });
 
             it('should get an empty array', async () => {
@@ -161,11 +181,11 @@ describe('e2e notifications api testing', () => {
             it('should get a notification', async () => {
                 const { body: notification } = await request(app)
                     .post('/api/notifications')
-                    .send({ viewers: [fakeObjectId], type: 'ruleBreachAlert', metadata: { alertId: fakeObjectId } })
+                    .send({ viewers: [fakeObjectId], type: NotificationType.ruleBreachAlert, metadata: { alertId: fakeObjectId } })
                     .expect(200);
                 await request(app)
                     .post('/api/notifications')
-                    .send({ viewers: [fakeObjectId2], type: 'ruleBreachRequest', metadata: { alertId: fakeObjectId2 } })
+                    .send({ viewers: [fakeObjectId2], type: NotificationType.ruleBreachRequest, metadata: { requestId: fakeObjectId2 } })
                     .expect(200);
 
                 const { body } = await request(app).get(`/api/notifications/${notification._id}`).expect(200);
@@ -186,19 +206,19 @@ describe('e2e notifications api testing', () => {
             it('should get notification count', async () => {
                 await request(app)
                     .post('/api/notifications')
-                    .send({ viewers: [fakeObjectId], type: 'ruleBreachAlert', metadata: { alertId: fakeObjectId } })
+                    .send({ viewers: [fakeObjectId], type: NotificationType.ruleBreachAlert, metadata: { alertId: fakeObjectId } })
                     .expect(200);
                 await request(app)
                     .post('/api/notifications')
-                    .send({ viewers: [fakeObjectId2], type: 'ruleBreachRequest', metadata: { alertId: fakeObjectId2 } })
+                    .send({ viewers: [fakeObjectId2], type: NotificationType.ruleBreachRequest, metadata: { requestId: fakeObjectId2 } })
                     .expect(200);
                 await request(app)
                     .post('/api/notifications')
-                    .send({ viewers: [fakeObjectId2], type: 'ruleBreachRequest', metadata: { alertId: fakeObjectId2 } })
+                    .send({ viewers: [fakeObjectId2], type: NotificationType.ruleBreachRequest, metadata: { requestId: fakeObjectId2 } })
                     .expect(200);
                 await request(app)
                     .post('/api/notifications')
-                    .send({ viewers: [fakeObjectId2], type: 'ruleBreachRequest', metadata: { alertId: fakeObjectId2 } })
+                    .send({ viewers: [fakeObjectId2], type: NotificationType.ruleBreachRequest, metadata: { requestId: fakeObjectId2 } })
                     .expect(200);
 
                 const { body } = await request(app).get('/api/notifications/count').expect(200);
@@ -215,19 +235,19 @@ describe('e2e notifications api testing', () => {
             it('should get notification count of user', async () => {
                 await request(app)
                     .post('/api/notifications')
-                    .send({ viewers: [fakeObjectId], type: 'ruleBreachAlert', metadata: { alertId: fakeObjectId } })
+                    .send({ viewers: [fakeObjectId], type: NotificationType.ruleBreachAlert, metadata: { alertId: fakeObjectId } })
                     .expect(200);
                 await request(app)
                     .post('/api/notifications')
-                    .send({ viewers: [fakeObjectId2], type: 'ruleBreachRequest', metadata: { alertId: fakeObjectId2 } })
+                    .send({ viewers: [fakeObjectId2], type: NotificationType.ruleBreachRequest, metadata: { requestId: fakeObjectId2 } })
                     .expect(200);
                 await request(app)
                     .post('/api/notifications')
-                    .send({ viewers: [fakeObjectId2], type: 'ruleBreachRequest', metadata: { alertId: fakeObjectId2 } })
+                    .send({ viewers: [fakeObjectId2], type: NotificationType.ruleBreachRequest, metadata: { requestId: fakeObjectId2 } })
                     .expect(200);
                 await request(app)
                     .post('/api/notifications')
-                    .send({ viewers: [fakeObjectId2], type: 'ruleBreachRequest', metadata: { alertId: fakeObjectId2 } })
+                    .send({ viewers: [fakeObjectId2], type: NotificationType.ruleBreachRequest, metadata: { requestId: fakeObjectId2 } })
                     .expect(200);
 
                 const { body } = await request(app).get('/api/notifications/count').query({ viewerId: fakeObjectId2 }).expect(200);
@@ -235,27 +255,153 @@ describe('e2e notifications api testing', () => {
                 expect(body).toEqual(3);
             });
 
-            it('should get notification count of specific type', async () => {
+            it('should get the notification count of specific type', async () => {
                 await request(app)
                     .post('/api/notifications')
-                    .send({ viewers: [fakeObjectId], type: 'ruleBreachAlert', metadata: { alertId: fakeObjectId } })
+                    .send({ viewers: [fakeObjectId], type: NotificationType.ruleBreachAlert, metadata: { alertId: fakeObjectId } })
                     .expect(200);
                 await request(app)
                     .post('/api/notifications')
-                    .send({ viewers: [fakeObjectId2], type: 'ruleBreachRequest', metadata: { alertId: fakeObjectId2 } })
+                    .send({ viewers: [fakeObjectId], type: NotificationType.ruleBreachRequest, metadata: { requestId: fakeObjectId2 } })
                     .expect(200);
                 await request(app)
                     .post('/api/notifications')
-                    .send({ viewers: [fakeObjectId2], type: 'ruleBreachResponse', metadata: { alertId: fakeObjectId2 } })
+                    .send({ viewers: [fakeObjectId], type: NotificationType.ruleBreachAlert, metadata: { alertId: fakeObjectId3 } })
                     .expect(200);
                 await request(app)
                     .post('/api/notifications')
-                    .send({ viewers: [fakeObjectId2], type: 'ruleBreachRequest', metadata: { alertId: fakeObjectId2 } })
+                    .send({ viewers: [fakeObjectId], type: NotificationType.newProcess, metadata: { processId: fakeObjectId } })
+                    .expect(200);
+                await request(app)
+                    .post('/api/notifications')
+                    .send({ viewers: [fakeObjectId], type: NotificationType.newProcess, metadata: { processId: fakeObjectId2 } })
                     .expect(200);
 
-                const { body } = await request(app).get('/api/notifications/count').query({ type: 'ruleBreachRequest' }).expect(200);
+                const { body: ruleBreachNotificationsCount } = await request(app)
+                    .get('/api/notifications/count')
+                    .query({ types: [NotificationType.ruleBreachAlert, NotificationType.ruleBreachRequest] })
+                    .expect(200);
+                const { body: processesNotificationsCount } = await request(app)
+                    .get('/api/notifications/count')
+                    .query({ types: [NotificationType.newProcess, NotificationType.processApproverUpdate] })
+                    .expect(200);
 
-                expect(body).toEqual(2);
+                expect(ruleBreachNotificationsCount).toEqual(3);
+                expect(processesNotificationsCount).toEqual(2);
+            });
+        });
+
+        describe('POST /api/notifications/group-count', () => {
+            it('should fail validation for unknown fields', async () => {
+                return request(app).post('/api/notifications/group-count').send({ test: 'test' }).expect(400);
+            });
+
+            it('should fail validation for missing fields', async () => {
+                await request(app).post(`/api/notifications/group-count`).send({}).expect(400);
+            });
+
+            it('should get notification group count', async () => {
+                await request(app)
+                    .post('/api/notifications')
+                    .send({ viewers: [fakeObjectId], type: NotificationType.ruleBreachAlert, metadata: { alertId: fakeObjectId } })
+                    .expect(200);
+                await request(app)
+                    .post('/api/notifications')
+                    .send({ viewers: [fakeObjectId2], type: NotificationType.ruleBreachRequest, metadata: { requestId: fakeObjectId2 } })
+                    .expect(200);
+                await request(app)
+                    .post('/api/notifications')
+                    .send({ viewers: [fakeObjectId2], type: NotificationType.ruleBreachRequest, metadata: { requestId: fakeObjectId2 } })
+                    .expect(200);
+                await request(app)
+                    .post('/api/notifications')
+                    .send({ viewers: [fakeObjectId2], type: NotificationType.ruleBreachRequest, metadata: { requestId: fakeObjectId2 } })
+                    .expect(200);
+                await request(app)
+                    .post('/api/notifications')
+                    .send({ viewers: [fakeObjectId], type: NotificationType.newProcess, metadata: { processId: fakeObjectId2 } })
+                    .expect(200);
+                await request(app)
+                    .post('/api/notifications')
+                    .send({
+                        viewers: [fakeObjectId],
+                        type: NotificationType.processApproverUpdate,
+                        metadata: { processId: fakeObjectId3, approverStepIds: [fakeObjectId] },
+                    })
+                    .expect(200);
+
+                const { body } = await request(app)
+                    .post('/api/notifications/group-count')
+                    .send({
+                        groups: {
+                            rules: [NotificationType.ruleBreachAlert, NotificationType.ruleBreachRequest],
+                            processes: [NotificationType.newProcess, NotificationType.processApproverUpdate],
+                        },
+                    })
+                    .expect(200);
+
+                expect(body).toEqual({
+                    total: 6,
+                    groups: {
+                        rules: 4,
+                        processes: 2,
+                    },
+                });
+            });
+
+            it('should get zero when there are no notifications', async () => {
+                const { body } = await request(app)
+                    .post('/api/notifications/group-count')
+                    .send({ groups: { test1: [NotificationType.ruleBreachAlert], test2: [NotificationType.newProcess] } })
+                    .expect(200);
+
+                expect(body).toEqual({
+                    total: 0,
+                    groups: {
+                        test1: 0,
+                        test2: 0,
+                    },
+                });
+            });
+
+            it('should not allow zero groups', async () => {
+                await request(app).post('/api/notifications/group-count').send({ groups: {} }).expect(400);
+            });
+
+            it('should not allow zero types in group', async () => {
+                await request(app)
+                    .post('/api/notifications/group-count')
+                    .send({ groups: { test: [] } })
+                    .expect(400);
+            });
+
+            it('should get notification count of user', async () => {
+                await request(app)
+                    .post('/api/notifications')
+                    .send({ viewers: [fakeObjectId], type: NotificationType.ruleBreachAlert, metadata: { alertId: fakeObjectId } })
+                    .expect(200);
+                await request(app)
+                    .post('/api/notifications')
+                    .send({ viewers: [fakeObjectId2], type: NotificationType.ruleBreachRequest, metadata: { requestId: fakeObjectId2 } })
+                    .expect(200);
+                await request(app)
+                    .post('/api/notifications')
+                    .send({ viewers: [fakeObjectId2], type: NotificationType.ruleBreachRequest, metadata: { requestId: fakeObjectId2 } })
+                    .expect(200);
+                await request(app)
+                    .post('/api/notifications')
+                    .send({ viewers: [fakeObjectId2], type: NotificationType.ruleBreachRequest, metadata: { requestId: fakeObjectId2 } })
+                    .expect(200);
+
+                const { body } = await request(app)
+                    .post('/api/notifications/group-count')
+                    .send({
+                        groups: { alerts: [NotificationType.ruleBreachAlert], requests: [NotificationType.ruleBreachRequest] },
+                        viewerId: fakeObjectId2,
+                    })
+                    .expect(200);
+
+                expect(body).toEqual({ total: 3, groups: { alerts: 0, requests: 3 } });
             });
         });
 
@@ -271,13 +417,13 @@ describe('e2e notifications api testing', () => {
             it('should create a new notification', async () => {
                 const { body } = await request(app)
                     .post('/api/notifications')
-                    .send({ viewers: [fakeObjectId], type: 'ruleBreachAlert', metadata: { alertId: fakeObjectId } })
+                    .send({ viewers: [fakeObjectId], type: NotificationType.ruleBreachAlert, metadata: { alertId: fakeObjectId } })
                     .expect(200);
 
                 expect(body).toEqual(
                     expect.objectContaining({
                         viewers: [fakeObjectId],
-                        type: 'ruleBreachAlert',
+                        type: NotificationType.ruleBreachAlert,
                         metadata: expect.objectContaining({ alertId: fakeObjectId }),
                     }),
                 );
@@ -289,37 +435,73 @@ describe('e2e notifications api testing', () => {
                     .send({ viewers: [fakeObjectId], type: 'test', metadata: { alertId: fakeObjectId } })
                     .expect(400);
             });
+
+            it('should not allow incorrect notification metadata', async () => {
+                await request(app)
+                    .post('/api/notifications')
+                    .send({ viewers: [fakeObjectId], type: NotificationType.ruleBreachAlert, metadata: { requestId: fakeObjectId } })
+                    .expect(400);
+
+                await request(app)
+                    .post('/api/notifications')
+                    .send({ viewers: [fakeObjectId], type: NotificationType.ruleBreachRequest, metadata: { alertId: fakeObjectId } })
+                    .expect(400);
+
+                await request(app)
+                    .post('/api/notifications')
+                    .send({ viewers: [fakeObjectId], type: NotificationType.ruleBreachResponse, metadata: { alertId: fakeObjectId } })
+                    .expect(400);
+
+                await request(app)
+                    .post('/api/notifications')
+                    .send({
+                        viewers: [fakeObjectId],
+                        type: NotificationType.newProcess,
+                        metadata: { processId: fakeObjectId, approverStepNames: ['test'], previousApproverStepNames: [] },
+                    })
+                    .expect(400);
+
+                await request(app)
+                    .post('/api/notifications')
+                    .send({
+                        viewers: [fakeObjectId],
+                        type: NotificationType.processApproverUpdate,
+                        metadata: { processId: fakeObjectId },
+                    })
+                    .expect(400);
+            });
         });
 
-        describe('PATCH /api/notifications/:notificationId/seen', () => {
+        describe('POST /api/notifications/:notificationId/seen', () => {
             it('should fail validation for unknown fields', async () => {
                 const { body: notification } = await request(app)
                     .post('/api/notifications')
-                    .send({ viewers: [fakeObjectId], type: 'ruleBreachAlert', metadata: { alertId: fakeObjectId } })
+                    .send({ viewers: [fakeObjectId], type: NotificationType.ruleBreachAlert, metadata: { alertId: fakeObjectId } })
                     .expect(200);
 
-                await request(app).patch(`/api/notifications/${notification._id}/seen`).send({ test: 'test', viewerId: fakeObjectId }).expect(400);
+                await request(app).post(`/api/notifications/${notification._id}/seen`).send({ test: 'test', viewerId: fakeObjectId }).expect(400);
             });
 
             it('should fail validation for missing fields', async () => {
                 const { body: notification } = await request(app)
                     .post('/api/notifications')
-                    .send({ viewers: [fakeObjectId], type: 'ruleBreachAlert', metadata: { alertId: fakeObjectId } })
+                    .send({ viewers: [fakeObjectId], type: NotificationType.ruleBreachAlert, metadata: { alertId: fakeObjectId } })
                     .expect(200);
 
-                await request(app).patch(`/api/notifications/${notification._id}/seen`).send({}).expect(400);
+                await request(app).post(`/api/notifications/${notification._id}/seen`).send({}).expect(400);
             });
 
             it('should update a notification', async () => {
                 const { body: notification } = await request(app)
                     .post('/api/notifications')
-                    .send({ viewers: [fakeObjectId, fakeObjectId2, fakeObjectId3], type: 'ruleBreachAlert', metadata: { alertId: fakeObjectId } })
+                    .send({
+                        viewers: [fakeObjectId, fakeObjectId2, fakeObjectId3],
+                        type: NotificationType.ruleBreachAlert,
+                        metadata: { alertId: fakeObjectId },
+                    })
                     .expect(200);
 
-                const { body } = await request(app)
-                    .patch(`/api/notifications/${notification._id}/seen`)
-                    .send({ viewerId: fakeObjectId2 })
-                    .expect(200);
+                const { body } = await request(app).post(`/api/notifications/${notification._id}/seen`).send({ viewerId: fakeObjectId2 }).expect(200);
 
                 expect(body).toEqual(expect.objectContaining({ viewers: [fakeObjectId, fakeObjectId3] }));
             });
@@ -327,15 +509,15 @@ describe('e2e notifications api testing', () => {
             it('should delete a notification with no viewers', async () => {
                 const { body: notification } = await request(app)
                     .post('/api/notifications')
-                    .send({ viewers: [fakeObjectId, fakeObjectId2], type: 'ruleBreachAlert', metadata: { alertId: fakeObjectId } })
+                    .send({ viewers: [fakeObjectId, fakeObjectId2], type: NotificationType.ruleBreachAlert, metadata: { alertId: fakeObjectId } })
                     .expect(200);
 
                 const { body: request1 } = await request(app)
-                    .patch(`/api/notifications/${notification._id}/seen`)
+                    .post(`/api/notifications/${notification._id}/seen`)
                     .send({ viewerId: fakeObjectId })
                     .expect(200);
                 const { body: request2 } = await request(app)
-                    .patch(`/api/notifications/${notification._id}/seen`)
+                    .post(`/api/notifications/${notification._id}/seen`)
                     .send({ viewerId: fakeObjectId2 })
                     .expect(200);
 
@@ -348,15 +530,108 @@ describe('e2e notifications api testing', () => {
             it('should not change the notification', async () => {
                 const { body: notification } = await request(app)
                     .post('/api/notifications')
-                    .send({ viewers: [fakeObjectId, fakeObjectId2], type: 'ruleBreachAlert', metadata: { alertId: fakeObjectId } })
+                    .send({ viewers: [fakeObjectId, fakeObjectId2], type: NotificationType.ruleBreachAlert, metadata: { alertId: fakeObjectId } })
                     .expect(200);
 
-                const { body } = await request(app)
-                    .patch(`/api/notifications/${notification._id}/seen`)
-                    .send({ viewerId: fakeObjectId3 })
-                    .expect(200);
+                const { body } = await request(app).post(`/api/notifications/${notification._id}/seen`).send({ viewerId: fakeObjectId3 }).expect(200);
 
                 expect(body).toEqual(expect.objectContaining({ viewers: [fakeObjectId, fakeObjectId2] }));
+            });
+        });
+
+        describe('POST /api/notifications/seen', () => {
+            it('should fail validation for unknown fields', async () => {
+                await request(app).post(`/api/notifications/seen`).send({ test: 'test', viewerId: fakeObjectId }).expect(400);
+            });
+
+            it('should fail validation for missing fields', async () => {
+                await request(app).post(`/api/notifications/seen`).send({}).expect(400);
+            });
+
+            it('should update notifications', async () => {
+                await request(app)
+                    .post('/api/notifications')
+                    .send({
+                        viewers: [fakeObjectId, fakeObjectId2, fakeObjectId3],
+                        type: NotificationType.ruleBreachAlert,
+                        metadata: { alertId: fakeObjectId },
+                    })
+                    .expect(200);
+                await request(app)
+                    .post('/api/notifications')
+                    .send({
+                        viewers: [fakeObjectId2, fakeObjectId, fakeObjectId3],
+                        type: NotificationType.ruleBreachAlert,
+                        metadata: { alertId: fakeObjectId },
+                    })
+                    .expect(200);
+                await request(app)
+                    .post('/api/notifications')
+                    .send({
+                        viewers: [fakeObjectId3, fakeObjectId2, fakeObjectId],
+                        type: NotificationType.ruleBreachAlert,
+                        metadata: { alertId: fakeObjectId },
+                    })
+                    .expect(200);
+
+                const { body } = await request(app).post(`/api/notifications/seen`).send({ viewerId: fakeObjectId2 }).expect(200);
+
+                expect(body).toEqual([
+                    expect.objectContaining({ viewers: [fakeObjectId, fakeObjectId3] }),
+                    expect.objectContaining({ viewers: [fakeObjectId, fakeObjectId3] }),
+                    expect.objectContaining({ viewers: [fakeObjectId3, fakeObjectId] }),
+                ]);
+            });
+
+            it('should delete notifications with no viewers', async () => {
+                const { body: notification1 } = await request(app)
+                    .post('/api/notifications')
+                    .send({ viewers: [fakeObjectId, fakeObjectId2], type: NotificationType.ruleBreachAlert, metadata: { alertId: fakeObjectId } })
+                    .expect(200);
+                const { body: notification2 } = await request(app)
+                    .post('/api/notifications')
+                    .send({
+                        viewers: [fakeObjectId, fakeObjectId2, fakeObjectId3],
+                        type: NotificationType.ruleBreachAlert,
+                        metadata: { alertId: fakeObjectId },
+                    })
+                    .expect(200);
+
+                const { body: request1 } = await request(app).post(`/api/notifications/seen`).send({ viewerId: fakeObjectId }).expect(200);
+                const { body: request2 } = await request(app).post(`/api/notifications/seen`).send({ viewerId: fakeObjectId2 }).expect(200);
+
+                expect(request1).toEqual([
+                    expect.objectContaining({ viewers: [fakeObjectId2] }),
+                    expect.objectContaining({ viewers: [fakeObjectId2, fakeObjectId3] }),
+                ]);
+                expect(request2).toEqual([expect.objectContaining({ viewers: [] }), expect.objectContaining({ viewers: [fakeObjectId3] })]);
+
+                await request(app).get(`/api/notifications/${notification1._id}`).expect(404);
+                await request(app).get(`/api/notifications/${notification2._id}`).expect(200);
+
+                const { body: request3 } = await request(app).post(`/api/notifications/seen`).send({ viewerId: fakeObjectId3 }).expect(200);
+
+                expect(request3).toEqual([expect.objectContaining({ viewers: [] })]);
+
+                await request(app).get(`/api/notifications/${notification2._id}`).expect(404);
+            });
+
+            it('should not change notifications', async () => {
+                await request(app)
+                    .post('/api/notifications')
+                    .send({ viewers: [fakeObjectId, fakeObjectId2], type: NotificationType.ruleBreachAlert, metadata: { alertId: fakeObjectId } })
+                    .expect(200);
+                await request(app)
+                    .post('/api/notifications')
+                    .send({ viewers: [fakeObjectId], type: NotificationType.ruleBreachAlert, metadata: { alertId: fakeObjectId } })
+                    .expect(200);
+
+                const { body } = await request(app).post(`/api/notifications/seen`).send({ viewerId: fakeObjectId3 }).expect(200);
+
+                expect(body).toEqual([
+                    expect.objectContaining({ viewers: [fakeObjectId, fakeObjectId2] }),
+                    expect.objectContaining({ viewers: [fakeObjectId] }),
+                ]);
             });
         });
     });

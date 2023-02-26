@@ -1,5 +1,6 @@
 /* eslint-disable max-classes-per-file */
 import * as express from 'express';
+import { NotificationType } from './notifications/interface';
 
 export class ServiceError extends Error {
     public code;
@@ -35,5 +36,12 @@ export const errorMiddleware = (error: Error, _req: express.Request, res: expres
 export class NotificationDoesNotExistError extends ServiceError {
     constructor(notificationId: string) {
         super(404, `A notification with the id '${notificationId}' does not exist`);
+    }
+}
+
+/* istanbul ignore next */
+export class InvalidNotificationTypeError extends ServiceError {
+    constructor(type: NotificationType) {
+        super(404, `'${type} is not a valid notification type`);
     }
 }

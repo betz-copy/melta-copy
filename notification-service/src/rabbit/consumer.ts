@@ -2,13 +2,13 @@
 import { ConsumerMessage } from 'menashmq';
 import NotificationsManager from '../express/notifications/manager';
 import { basicValidateRequest } from '../utils/joi';
-import { createNotificationMessageSchema } from './validator.schema';
+import { notificationSchema } from '../utils/joi/schemas/notification';
 
 class NotificationsConsumer {
     static async createNotification(msg: ConsumerMessage) {
         try {
             const msgContent = msg.getContent();
-            const value = basicValidateRequest(createNotificationMessageSchema, msgContent);
+            const value = basicValidateRequest(notificationSchema, msgContent);
 
             await NotificationsManager.createNotification(value);
 
