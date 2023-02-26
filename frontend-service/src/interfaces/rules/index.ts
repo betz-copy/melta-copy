@@ -3,7 +3,7 @@ import { IFormula } from './formula';
 
 export interface IRegularFunction {
     isRegularFunction: true; // to identify interface runtime (instead of class' instanceof)
-    functionType: 'toDate';
+    functionType: 'toDate' | 'addToDate' | 'addToDateTime' | 'subFromDate' | 'subFromDateTime';
     arguments: IArgument[];
 }
 export const isRegularFunction = (regularFunction: any): regularFunction is IRegularFunction => {
