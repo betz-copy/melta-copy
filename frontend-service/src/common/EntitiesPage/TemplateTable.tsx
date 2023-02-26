@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { Grid, Box, CircularProgress } from '@mui/material';
-import { AddCircle, VerticalAlignBottomOutlined as DownloadIcon } from '@mui/icons-material';
+import { ExpandLess, ExpandMore, AddCircle, VerticalAlignBottomOutlined as DownloadIcon } from '@mui/icons-material';
 import i18next from 'i18next';
 import { AxiosError } from 'axios';
 import { useMutation, useQuery } from 'react-query';
@@ -51,6 +51,8 @@ const TemplateTable = ({ template, quickFilterText, page }: { template: IMongoEn
             entitiesTableRef.current?.refreshServerSide();
         },
     });
+    const [pageRowCount, setPageRowCount] = useState(5);
+    const [isExpandLess, setIsExpandLess] = useState(false);
     return (
         <Grid container>
             <Grid container paddingLeft={3} justifyContent="space-between" width="100%">
@@ -62,6 +64,27 @@ const TemplateTable = ({ template, quickFilterText, page }: { template: IMongoEn
                 </Grid>
                 <Grid>
                     <Grid item>
+                        <IconButtonWithPopoverText
+                            popoverText={
+                                isExpandLess ? i18next.t('entitiesTableOfTemplate.expandLess') : i18next.t('entitiesTableOfTemplate.expandMore')
+                            }
+                            iconButtonProps={{
+                                onClick: () => {
+                                    console.log(pageRowCount);
+                                    setIsExpandLess((prev) => !prev);
+                                    console.log(pageRowCount);
+                                },
+                                size: 'medium',
+                            }}
+                        >
+                            {isExpandLess
+                                ? !entitiesTableRef.current?.expandRows(false) && (
+                                      <ExpandLess color={!template.disabled ? 'primary' : 'disabled'} fontSize="large" data-tour="create-entity" />
+                                  )
+                                : !entitiesTableRef.current?.expandRows(true) && (
+                                      <ExpandMore color={!template.disabled ? 'primary' : 'disabled'} fontSize="large" data-tour="create-entity" />
+                                  )}
+                        </IconButtonWithPopoverText>
                         <ResetFilterButton entitiesTableRef={entitiesTableRef} />
                         <IconButtonWithPopoverText
                             popoverText={i18next.t('entitiesTableOfTemplate.downloadOneTable')}

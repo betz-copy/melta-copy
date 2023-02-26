@@ -23,6 +23,8 @@ export default {
     entitiesTableOfTemplate: {
         resetFilters: 'איפוס סינונים',
         downloadOneTable: 'הורד טבלה',
+        expandMore: 'הרחב כמות שורות',
+        expandLess: 'צמצם כמות שורות',
         addRelationship: 'הוסף קשר',
         addEntity: 'הוסף ישות',
         deleteEntity: 'מחק ישות',

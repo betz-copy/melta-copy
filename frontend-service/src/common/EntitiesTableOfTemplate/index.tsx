@@ -100,8 +100,9 @@ export type EntitiesTableOfTemplateRef = {
     getExcelData: () => string | undefined;
     resetFilter: () => void;
     refreshServerSide: () => void;
+    expandRows: (isExpand: boolean) => void;
 };
-
+///////////////////////////////////////////////////
 const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef, EntitiesTableOfTemplateProps<unknown>>(
     <Data extends any>(
         {
@@ -131,6 +132,10 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef, EntitiesT
 
         useImperativeHandle(ref, () => {
             return {
+                expandRows(isExpand) {
+                    console.log('ffff');
+                    gridRef.current?.api.paginationSetPageSize(isExpand ? 5 : 10);
+                },
                 getExcelData() {
                     return gridRef.current?.api.getSheetDataForExcel({ sheetName: template.displayName });
                 },
