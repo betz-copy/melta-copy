@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { Grid, Box, CircularProgress, Dialog, Modal } from '@mui/material';
+import { Grid, Box, CircularProgress, Dialog } from '@mui/material';
 import { AddCircle, VerticalAlignBottomOutlined as DownloadIcon } from '@mui/icons-material';
 import i18next from 'i18next';
 import { useQuery } from 'react-query';
@@ -15,7 +15,6 @@ import { CustomIcon } from '../CustomIcon';
 import { exportTemplatesToExcelRequest } from '../../services/entitiesService';
 import { EditEntityDetails } from '../../pages/Entity/components/EditEntityDetails';
 import { IEntity } from '../../interfaces/entities';
-import { AgDialog } from '@ag-grid-community/core';
 
 const TemplateTable = ({ template, quickFilterText, page }: { template: IMongoEntityTemplatePopulated; quickFilterText: string; page: string }) => {
     const entitiesTableRef = useRef<EntitiesTableOfTemplateRef<IEntity>>(null);
@@ -92,7 +91,7 @@ const TemplateTable = ({ template, quickFilterText, page }: { template: IMongoEn
                     }}
                 />
             </Box>
-            <Dialog open={editDialog.isOpen} >
+            <Dialog open={editDialog.isOpen}>
                 <EditEntityDetails
                     entityTemplate={template}
                     entity={editDialog.entity!}
