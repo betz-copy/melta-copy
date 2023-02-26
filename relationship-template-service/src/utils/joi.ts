@@ -8,6 +8,13 @@ export const defaultValidationOptions: Joi.ValidationOptions = {
     convert: true,
 };
 
+export const joiValidate = (schema: Joi.AnySchema<any>, data: any, options: Joi.ValidationOptions = defaultValidationOptions): void => {
+    const { error } = schema.validate(data, options);
+    if (error) {
+        throw error;
+    }
+};
+
 const normalizeRequest = (req: any, value: any) => {
     req.originalBody = req.body;
     req.body = value.body;

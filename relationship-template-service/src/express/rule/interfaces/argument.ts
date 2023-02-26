@@ -2,6 +2,7 @@ import { IFunction } from './index';
 
 export type IConstant = {
     isConstant: true;
+    type: 'number' | 'string' | 'boolean' | 'date' | 'dateTime' | 'dateDuration' | 'dateTimeDuration';
     value: number | string | boolean;
 };
 

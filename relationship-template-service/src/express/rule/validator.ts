@@ -1,40 +1,92 @@
 import * as Joi from 'joi';
+import { isValid as isValidDate, parse } from 'date-fns';
 import { Request } from 'express';
 import * as assert from 'assert';
-import { defaultValidationOptions } from '../../utils/joi';
-import { IRule, IRelevantTemplates } from './interfaces';
+import { IRule, IRelevantTemplates, IRegularFunction } from './interfaces';
 import { RelationshipTemplateManager } from '../relationshipTemplate/manager';
-import { EntityTemplateManagerService, IEntityTemplatePopulated } from '../externalServices/entityTemplateManager';
+import { EntityTemplateManagerService, IEntitySingleProperty, IEntityTemplatePopulated } from '../externalServices/entityTemplateManager';
 import { IMongoRelationshipTemplate } from '../relationshipTemplate/interface';
+import { IConstant, isConstant } from './interfaces/argument';
+import { defaultValidationOptions, joiValidate } from '../../utils/joi';
 
-const joiValidate = (schema: Joi.AnySchema<any>, data: any): void => {
-    const { error } = schema.validate(data, defaultValidationOptions);
-    if (error) {
-        throw error;
+const joiValidateNoConvert = (schema: Joi.AnySchema<any>, data: any) => joiValidate(schema, data, { ...defaultValidationOptions, convert: false });
+
+const addDefaultFieldsToTemplate = (entityTemplate: IEntityTemplatePopulated): IEntityTemplatePopulated => {
+    return {
+        ...entityTemplate,
+        properties: {
+            ...entityTemplate.properties,
+            properties: {
+                ...entityTemplate.properties.properties,
+                _id: { title: '_id', type: 'string' },
+                disabled: { title: 'disabled', type: 'boolean' },
+                createdAt: { title: 'createdAt', type: 'string', format: 'date-time' },
+                updatedAt: { title: 'updatedAt', type: 'string', format: 'date-time' },
+            },
+        },
+    };
+};
+const jsonSchemaTypeToType = ({ type, format }: IEntitySingleProperty): IConstant['type'] => {
+    switch (format) {
+        case 'date':
+            return 'date';
+        case 'date-time':
+            return 'dateTime';
+        default:
+            return type;
     }
 };
+const validatePropertyExistInEntityTemplate = (property: string, entityTemplate: IEntityTemplatePopulated): IConstant['type'] => {
+    const entityTemplateWithDefaults = addDefaultFieldsToTemplate(entityTemplate);
 
-const validatePropertyExistInEntityTemplate = (property: string, entityTemplate: IEntityTemplatePopulated) => {
-    if (property === '_id' || property === 'createdAt' || property === 'updatedAt' || property === 'disabled') {
-        return;
-    }
-
-    const doesPropertyExistUnderTemplate = Object.keys(entityTemplate.properties.properties).some((propertyName) => propertyName === property);
-    if (doesPropertyExistUnderTemplate) {
-        return;
+    const propertyTemplate = entityTemplateWithDefaults.properties.properties[property];
+    if (propertyTemplate) {
+        return jsonSchemaTypeToType(propertyTemplate);
     }
 
     throw new Error(`property "${property}" must exist in template "${entityTemplate._id}"`);
 };
 
+const numberRegExp = '[1-9]\\d*'; // digits that doesnt start with 0
+const dateDurationRegExp = new RegExp(`^(${numberRegExp}Y)?(${numberRegExp}M)?(${numberRegExp}D)?$`);
+const dateTimeDurationRegExp = new RegExp(`^(${numberRegExp}Y)?(${numberRegExp}M)?(${numberRegExp}D)?(${numberRegExp}H)?$`);
+
 const constantSchema = Joi.object({
     isConstant: Joi.boolean().valid(true).required(),
-    value: Joi.alternatives(Joi.string(), Joi.number(), Joi.boolean())
-        .messages({ 'alternatives.match': 'constant value must be one of string/number/boolean/isostring' })
-        .required(),
+    type: Joi.string().valid('number', 'string', 'boolean', 'date', 'dateTime', 'dateDuration', 'dateTimeDuration').required(),
+    value: Joi.when('type', {
+        switch: [
+            { is: 'number', then: Joi.number() },
+            { is: 'string', then: Joi.string() },
+            { is: 'boolean', then: Joi.boolean() },
+            {
+                is: 'date',
+                then: Joi.string().custom((value: string) => {
+                    const isValid = isValidDate(parse(value, 'yyyy-MM-dd', new Date()));
+                    assert(isValid, 'invalid date of format yyyy-MM-dd');
+                }),
+            },
+            { is: 'dateTime', then: Joi.string().isoDate() },
+            {
+                is: 'dateDuration',
+                then: Joi.string()
+                    .pattern(dateDurationRegExp)
+                    .min(1) // added at least one component of duration (Y/M/D)
+                    .message('dateDuration must be of format "[nY][nM][nD]" (square brackets means optional)'),
+            },
+            {
+                is: 'dateTimeDuration',
+                then: Joi.string()
+                    .pattern(dateTimeDurationRegExp)
+                    .min(1) // added at least one component of duration (Y/M/D/H)
+                    .message('dateDuration must be of format "[nY][nM][nD][nH]" (square brackets means optional)'),
+            },
+        ],
+    }).required(),
 });
-const validateConstant = (constant: any) => {
-    joiValidate(constantSchema, constant);
+const validateConstant = (constant: any): IConstant['type'] => {
+    joiValidateNoConvert(constantSchema, constant);
+    return constant.type;
 };
 
 const propertyOfVariableSchema = Joi.object({
@@ -46,8 +98,8 @@ const validatePropertyOfVariable = (
     propertyOfVariable: any,
     relevantTemplates: IRelevantTemplates,
     aggregationContext: IRelevantTemplates['connectionsTemplatesOfPinnedEntityTemplate'][number] | undefined,
-) => {
-    joiValidate(propertyOfVariableSchema, propertyOfVariable);
+): IConstant['type'] => {
+    joiValidateNoConvert(propertyOfVariableSchema, propertyOfVariable);
 
     if (propertyOfVariable.variableName.indexOf('.') > -1) {
         assert(aggregationContext, `variableName "${propertyOfVariable.variableName}" contains dot notation, but not under aggregation`);
@@ -58,8 +110,7 @@ const validatePropertyOfVariable = (
             `aggregation variable name "${propertyOfVariable.variableName}" with dot notation must be "${expectedAggregationVariableName}"`,
         );
 
-        validatePropertyExistInEntityTemplate(propertyOfVariable.property, aggregationContext.otherEntityTemplate);
-        return;
+        return validatePropertyExistInEntityTemplate(propertyOfVariable.property, aggregationContext.otherEntityTemplate);
     }
 
     const variableEntityTemplate = [relevantTemplates.pinnedEntityTemplate, relevantTemplates.unpinnedEntityTemplate].find(
@@ -68,7 +119,7 @@ const validatePropertyOfVariable = (
 
     assert(variableEntityTemplate, 'variable name must be of pinnedEntityTemplateId or unpinnedEntityTemplateId');
 
-    validatePropertyExistInEntityTemplate(propertyOfVariable.property, variableEntityTemplate);
+    return validatePropertyExistInEntityTemplate(propertyOfVariable.property, variableEntityTemplate);
 };
 
 const validateVariableNameOfAggregation = (variableName: string, relevantTemplates: IRelevantTemplates) => {
@@ -100,7 +151,7 @@ const countAggFunctionSchema = Joi.object({
     variableName: Joi.string().required(),
 });
 const validateCountAggFunction = (countAggFunction: any, relevantTemplates: IRelevantTemplates) => {
-    joiValidate(countAggFunctionSchema, countAggFunction);
+    joiValidateNoConvert(countAggFunctionSchema, countAggFunction);
 
     validateVariableNameOfAggregation(countAggFunction.variableName, relevantTemplates);
 };
@@ -111,27 +162,67 @@ const sumAggFunctionSchema = Joi.object({
     property: Joi.string().required(),
 });
 const validateSumAggFunction = (sumAggFunction: any, relevantTemplates: IRelevantTemplates) => {
-    joiValidate(sumAggFunctionSchema, sumAggFunction);
+    joiValidateNoConvert(sumAggFunctionSchema, sumAggFunction);
 
     validateVariableNameOfAggregation(sumAggFunction.variableName, relevantTemplates);
 };
 
 const regularFunctionSchema = Joi.object({
     isRegularFunction: Joi.boolean().valid(true).required(),
-    functionType: Joi.string().valid('toDate').required(),
-    arguments: Joi.array().items(Joi.object()).length(1).required(),
+    functionType: Joi.string().valid('toDate', 'addToDate', 'addToDateTime', 'subFromDate', 'subFromDateTime').required(),
+    arguments: Joi.array().items(Joi.object()).required(),
 });
-const validateRegularSumFunction = (
-    regularSumFunction: any,
+const validateRegularFunction = (
+    data: any,
     relevantTemplates: IRelevantTemplates,
     aggregationContext: IRelevantTemplates['connectionsTemplatesOfPinnedEntityTemplate'][number] | undefined,
-) => {
-    joiValidate(regularFunctionSchema, regularSumFunction);
+): IConstant['type'] => {
+    joiValidateNoConvert(regularFunctionSchema, data);
+    const { arguments: funcArguments, functionType } = data as {
+        isRegularFunction: true;
+        functionType: IRegularFunction['functionType'];
+        arguments: object[];
+    };
 
-    regularSumFunction.arguments.forEach((argument) => {
+    funcArguments.forEach((argument) => {
         // eslint-disable-next-line no-use-before-define -- circular recursive functions
         validateArgument(argument, relevantTemplates, aggregationContext);
     });
+    switch (functionType) {
+        case 'toDate': {
+            assert(funcArguments.length === 1, 'toDate must contain exactly 1 argument');
+            return 'date';
+        }
+
+        case 'addToDate':
+        case 'subFromDate': {
+            assert(funcArguments.length === 2, 'add/subToDate function must contain exactly 2 arguments');
+
+            const [_, secondArgument] = funcArguments;
+            assert(
+                isConstant(secondArgument) && secondArgument.type === 'dateDuration',
+                'add/subToDate function second argument be of type dateDuration',
+            );
+
+            return 'date';
+        }
+
+        case 'addToDateTime':
+        case 'subFromDateTime': {
+            assert(funcArguments.length === 2, 'add/subToDateTime function must contain exactly 2 arguments');
+
+            const [_, secondArgument] = funcArguments;
+            assert(
+                isConstant(secondArgument) && secondArgument.type === 'dateTimeDuration',
+                'add/subToDate function second argument be of type dateTimeDuration',
+            );
+
+            return 'dateTime';
+        }
+
+        default:
+            throw new Error('Shouldnt reach here. functionType must be one of allowed types');
+    }
 };
 
 const argumentSchema = Joi.alternatives(
@@ -145,20 +236,24 @@ const validateArgument = (
     argument: any,
     relevantTemplates: IRelevantTemplates,
     aggregationContext: IRelevantTemplates['connectionsTemplatesOfPinnedEntityTemplate'][number] | undefined,
-) => {
-    joiValidate(argumentSchema, argument);
+): IConstant['type'] => {
+    joiValidateNoConvert(argumentSchema, argument);
 
-    if (argument.isConstant) validateConstant(argument);
-    if (argument.isPropertyOfVariable) validatePropertyOfVariable(argument, relevantTemplates, aggregationContext);
+    if (argument.isConstant) return validateConstant(argument);
+    if (argument.isPropertyOfVariable) return validatePropertyOfVariable(argument, relevantTemplates, aggregationContext);
     if (argument.isCountAggFunction) {
         assert(!aggregationContext, 'aggregation (countAgg) inside of an aggregation is not allowed');
         validateCountAggFunction(argument, relevantTemplates);
+        return 'number';
     }
     if (argument.isSumAggFunction) {
-        assert(!aggregationContext, 'aggregation (countAgg) inside of an aggregation is not allowed');
+        assert(!aggregationContext, 'aggregation (sumAgg) inside of an aggregation is not allowed');
         validateSumAggFunction(argument, relevantTemplates);
+        return 'number';
     }
-    if (argument.isRegularSumFunction) validateRegularSumFunction(argument, relevantTemplates, aggregationContext);
+    if (argument.isRegularFunction) return validateRegularFunction(argument, relevantTemplates, aggregationContext);
+
+    throw new Error('Shouldnt reach here. argument must be one of allowed options');
 };
 
 const equationSchema = Joi.object({
@@ -174,11 +269,15 @@ const validateEquation = (
     relevantTemplates: IRelevantTemplates,
     aggregationContext: IRelevantTemplates['connectionsTemplatesOfPinnedEntityTemplate'][number] | undefined,
 ) => {
-    joiValidate(equationSchema, equation);
-    // todo: check lhs & rhs are from the same type (both date/number/string)
+    joiValidateNoConvert(equationSchema, equation);
 
-    validateArgument(equation.lhsArgument, relevantTemplates, aggregationContext);
-    validateArgument(equation.rhsArgument, relevantTemplates, aggregationContext);
+    const lhsArgumentType = validateArgument(equation.lhsArgument, relevantTemplates, aggregationContext);
+    const rhsArgumentType = validateArgument(equation.rhsArgument, relevantTemplates, aggregationContext);
+
+    assert(
+        lhsArgumentType === rhsArgumentType,
+        `both sides of equation must be of same type. found "${lhsArgumentType}" (left), "${rhsArgumentType}" (right)`,
+    );
 };
 
 const groupSchema = Joi.object({
@@ -191,7 +290,7 @@ const validateGroup = (
     relevantTemplates: IRelevantTemplates,
     aggregationContext: IRelevantTemplates['connectionsTemplatesOfPinnedEntityTemplate'][number] | undefined,
 ) => {
-    joiValidate(groupSchema, group);
+    joiValidateNoConvert(groupSchema, group);
 
     (group.subFormulas as Array<any>).forEach((subFormula) => {
         // eslint-disable-next-line no-use-before-define -- circular recursive functions
@@ -207,7 +306,7 @@ const aggregationGroupSchema = Joi.object({
     subFormulas: Joi.array().required(),
 });
 const validateAggregationGroup = (aggregationGroup: any, relevantTemplates: IRelevantTemplates) => {
-    joiValidate(aggregationGroupSchema, aggregationGroup);
+    joiValidateNoConvert(aggregationGroupSchema, aggregationGroup);
 
     validateVariableNameOfAggregation(aggregationGroup.variableNameOfAggregation, relevantTemplates);
 
@@ -232,7 +331,7 @@ const validateFormula = (
     relevantTemplates: IRelevantTemplates,
     aggregationContext: IRelevantTemplates['connectionsTemplatesOfPinnedEntityTemplate'][number] | undefined,
 ) => {
-    joiValidate(formulaSchema, formula);
+    joiValidateNoConvert(formulaSchema, formula);
 
     if (formula.isEquation) validateEquation(formula, relevantTemplates, aggregationContext);
     if (formula.isGroup) validateGroup(formula, relevantTemplates, aggregationContext);
