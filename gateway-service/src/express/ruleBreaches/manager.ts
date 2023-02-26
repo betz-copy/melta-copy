@@ -10,9 +10,9 @@ import { ServiceError } from '../error';
 import { InstancesManager } from '../instances/manager';
 
 import {
-    IAlertNotificationMetadata,
-    IRequestNotificationMetadata,
-    IResponseNotificationMetadata,
+    IRuleBreachAlertNotificationMetadata,
+    IRuleBreachRequestNotificationMetadata,
+    IRuleBreachResponseNotificationMetadata,
     NotificationType,
 } from '../../externalServices/notificationService/interfaces';
 import config from '../../config';
@@ -59,7 +59,7 @@ export class RuleBreachesManager {
 
         const { result, err } = await trycatch(async () => {
             const ruleBreachRequest = await RuleBreachService.createRuleBreachRequest<T>({ ...ruleBreachRequestData, originUserId: userId });
-            await RuleBreachesManager.sendNotification<IRequestNotificationMetadata>(
+            await RuleBreachesManager.sendNotification<IRuleBreachRequestNotificationMetadata>(
                 NotificationType.ruleBreachRequest,
                 { requestId: ruleBreachRequest._id },
                 [userId],
@@ -85,7 +85,7 @@ export class RuleBreachesManager {
 
         const { result, err } = await trycatch(async () => {
             const rulesBreachAlert = await RuleBreachService.createRuleBreachAlert<T>({ ...ruleBreachAlertData, originUserId: userId });
-            await RuleBreachesManager.sendNotification<IAlertNotificationMetadata>(
+            await RuleBreachesManager.sendNotification<IRuleBreachAlertNotificationMetadata>(
                 NotificationType.ruleBreachAlert,
                 { alertId: rulesBreachAlert._id },
                 [userId],
@@ -131,7 +131,7 @@ export class RuleBreachesManager {
             user.id,
             RuleBreachRequestStatus.Approved,
         );
-        await RuleBreachesManager.sendNotification<IResponseNotificationMetadata>(
+        await RuleBreachesManager.sendNotification<IRuleBreachResponseNotificationMetadata>(
             NotificationType.ruleBreachResponse,
             {
                 requestId: ruleBreachRequest._id,
@@ -227,7 +227,7 @@ export class RuleBreachesManager {
                 : { actionMetadata: ruleBreachRequest.actionMetadata },
         ]);
 
-        await RuleBreachesManager.sendNotification<IResponseNotificationMetadata>(
+        await RuleBreachesManager.sendNotification<IRuleBreachResponseNotificationMetadata>(
             NotificationType.ruleBreachResponse,
             {
                 requestId: ruleBreachRequest._id,

@@ -1,14 +1,12 @@
 import * as joi from 'joi';
-import { NotificationType } from '../../externalServices/notificationService/interfaces';
-
-const mongoIdSchema = joi.string().regex(/^[0-9a-fA-F]{24}$/, 'valid MongoId');
+import { MongoIdSchema } from '../../utils/joi';
 
 // GET /api/notifications/my
 export const getMyNotificationsRequestSchema = joi.object({
     query: {
+        types: joi.array().items(joi.string()),
         limit: joi.number().integer().min(1).required(),
         step: joi.number().integer().min(0),
-        type: joi.string().valid(...Object.values(NotificationType)),
     },
     body: {},
     params: {},
@@ -17,17 +15,35 @@ export const getMyNotificationsRequestSchema = joi.object({
 // GET /api/notifications/count
 export const getMyNotificationCountRequestSchema = joi.object({
     query: {
-        type: joi.string().valid(...Object.values(NotificationType)),
+        types: joi.array().items(joi.string()),
     },
     body: {},
     params: {},
 });
 
-// PATCH /api/notifications/:notificationId/seen
+// POST /api/notifications/group-count
+export const getMyNotificationGroupCountRequestSchema = joi.object({
+    query: {},
+    body: {
+        groups: joi.object().required(),
+    },
+    params: {},
+});
+
+// POST /api/notifications/:notificationId/seen
 export const notificationSeenRequestSchema = joi.object({
     query: {},
     body: {},
     params: {
-        notificationId: mongoIdSchema.required(),
+        notificationId: MongoIdSchema.required(),
     },
+});
+
+// POST /api/notifications/:notificationId/seen
+export const manyNotificationSeenRequestSchema = joi.object({
+    query: {},
+    body: {
+        types: joi.array().items(joi.string()),
+    },
+    params: {},
 });

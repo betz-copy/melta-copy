@@ -24,8 +24,18 @@ export class NotificationService {
         return data;
     }
 
-    static async notificationsSeen(notificationId: string, viewerId: string): Promise<INotification> {
-        const { data } = await this.notificationService.patch<INotification>(`/${notificationId}/seen`, { viewerId });
+    static async getNotificationGroupCount(query: object) {
+        const { data } = await this.notificationService.post('/group-count', query);
+        return data;
+    }
+
+    static async notificationSeen(notificationId: string, viewerId: string): Promise<INotification> {
+        const { data } = await this.notificationService.post<INotification>(`/${notificationId}/seen`, { viewerId });
+        return data;
+    }
+
+    static async manyNotificationsSeen(query: object): Promise<INotification[]> {
+        const { data } = await this.notificationService.post<INotification[]>(`/seen`, query);
         return data;
     }
 
