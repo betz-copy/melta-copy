@@ -17,7 +17,7 @@ import {
     IRegularFunction,
     IMongoRule,
 } from './interfaces';
-import { IArgument, isConstant, isPropertyOfVariable } from './interfaces/argument';
+import { IArgument, IConstant, isConstant, isPropertyOfVariable } from './interfaces/argument';
 import { IFormula } from './interfaces/formula';
 
 const generateNeo4jQueryFromCountAggFunction = (
@@ -98,41 +98,79 @@ const generateNeo4jQueryFromSumAggFunction = (
     };
 };
 
-const generateNeo4jQueryFromRegularFunction = (func: IRegularFunction, relevantTemplates: IRelevantTemplates) => {
+const generateNeo4jQueryFromRegularFunction = (func: IRegularFunction, relevantTemplates: IRelevantTemplates): CypherQuery => {
     // eslint-disable-next-line no-use-before-define -- circular recursive functions (formula->group->formulas)
-    const dateTimeArgumentQuery = generateNeo4jQueryFromArgument(func.arguments[0], relevantTemplates);
+    const funcArguments = func.arguments.map((argument) => generateNeo4jQueryFromArgument(argument, relevantTemplates));
+    if (func.functionType === 'toDate') {
+        const [dateTimeArgumentQuery] = funcArguments;
+        return {
+            cypherQuery: `date(${dateTimeArgumentQuery.cypherQuery})`,
+            aggergationSubQueries: dateTimeArgumentQuery.aggergationSubQueries,
+            parameters: dateTimeArgumentQuery.parameters,
+        };
+    }
+    if (func.functionType === 'addToDate' || func.functionType === 'addToDateTime') {
+        const [date, duration] = funcArguments;
+        return {
+            cypherQuery: `${date.cypherQuery} + ${duration.cypherQuery}`,
+            aggergationSubQueries: [...date.aggergationSubQueries, ...duration.aggergationSubQueries],
+            parameters: { ...date.parameters, ...duration.parameters },
+        };
+    }
+    if (func.functionType === 'subFromDate' || func.functionType === 'subFromDateTime') {
+        const [date, duration] = funcArguments;
+        return {
+            cypherQuery: `${date.cypherQuery} - ${duration.cypherQuery}`,
+            aggergationSubQueries: [...date.aggergationSubQueries, ...duration.aggergationSubQueries],
+            parameters: { ...date.parameters, ...duration.parameters },
+        };
+    }
+
+    throw new Error('invalid functionType, shouldnt reach here');
+};
+
+// duration is of format "[nY][nM][nD][nH]" (square brackets means optional)
+const getDurationComponents = (duration: string): { Y?: number; M?: number; D?: number; H?: number } => {
+    const numberRegExp = '[1-9]\\d*'; // digits that doesnt start with 0
+    const componentRegExp = new RegExp(`(${numberRegExp})(Y|M|D|H)`, 'g');
+
+    const components = duration.matchAll(componentRegExp);
+
+    const durationComponentsEntries = Array.from(components).map((match) => {
+        const [_, number, durationLetter] = match;
+        return [durationLetter, Number(number)];
+    });
+
+    return Object.fromEntries(durationComponentsEntries);
+};
+
+const generateNeo4jQueryFromConstant = (constant: IConstant): CypherQuery => {
+    let valueCypherQuery: string;
+
+    if (constant.type === 'string' || constant.type === 'date' || constant.type === 'dateTime') {
+        valueCypherQuery = `'${constant.value as string}'`; // todo: if constant.value contains quotes, we're doomed
+    } else if (constant.type === 'number') {
+        valueCypherQuery = constant.value.toString();
+    } else if (constant.type === 'boolean') {
+        valueCypherQuery = constant.value.toString();
+    } else if (constant.type === 'dateDuration' || constant.type === 'dateTimeDuration') {
+        const durationComponents = getDurationComponents(constant.value as string);
+        const { Y = 0, M = 0, D = 0, H = 0 } = durationComponents;
+
+        valueCypherQuery = `duration('P${Y}Y${M}M${D}DT${H}H')`;
+    } else {
+        throw new Error('unexpected constant type string/number/boolean');
+    }
     return {
-        cypherQuery: `date(${dateTimeArgumentQuery.cypherQuery})`,
-        aggergationSubQueries: dateTimeArgumentQuery.aggergationSubQueries,
-        parameters: dateTimeArgumentQuery.parameters,
+        cypherQuery: valueCypherQuery,
+        aggergationSubQueries: [],
+        parameters: {},
     };
 };
 
 const generateNeo4jQueryFromArgument = (argument: IArgument, relevantTemplates: IRelevantTemplates): CypherQuery => {
     if (isConstant(argument)) {
-        let valueCypherQuery: string;
-        switch (typeof argument.value) {
-            case 'string': {
-                valueCypherQuery = `'${argument.value}'`; // todo: if argument.value contains quotes, we're doomed
-                break;
-            }
-            case 'number': {
-                valueCypherQuery = argument.value.toString();
-                break;
-            }
-            case 'boolean': {
-                valueCypherQuery = argument.value.toString();
-                break;
-            }
-            default: {
-                throw new Error('unexpected constant type string/number/boolean');
-            }
-        }
-        return {
-            cypherQuery: valueCypherQuery,
-            aggergationSubQueries: [],
-            parameters: {},
-        };
+        return generateNeo4jQueryFromConstant(argument);
     }
     if (isPropertyOfVariable(argument)) {
         return {

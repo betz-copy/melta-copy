@@ -220,7 +220,7 @@ export const oneTravelAgentPerFlight: IMongoRule = {
                     isCountAggFunction: true,
                     variableName: `${flightEntityTemplate._id}.${flightsOnRelationshipTemplate._id}.${travelAgentEntityTemplate._id}`,
                 },
-                rhsArgument: { isConstant: true, value: 1 },
+                rhsArgument: { isConstant: true, type: 'number', value: 1 },
             },
             // just for tests - to be dependent on tripConnectedToFlight
             {
@@ -239,6 +239,7 @@ export const oneTravelAgentPerFlight: IMongoRule = {
                         },
                         rhsArgument: {
                             isConstant: true,
+                            type: 'string',
                             value: 'justForTesting',
                         },
                     },
@@ -326,7 +327,7 @@ export const warnOnEveryFlightOnActiveZone: IMongoRule = {
                 isEquation: true,
                 operatorBool: 'equals',
                 lhsArgument: { isPropertyOfVariable: true, variableName: tripEntityTemplate._id, property: 'active' },
-                rhsArgument: { isConstant: true, value: false },
+                rhsArgument: { isConstant: true, type: 'boolean', value: false },
             },
             // will always pass, but more intuitive
             {
@@ -336,7 +337,7 @@ export const warnOnEveryFlightOnActiveZone: IMongoRule = {
                     isCountAggFunction: true,
                     variableName: `${tripEntityTemplate._id}.${tripConnectedToFlightRelationshipTemplate._id}.${flightEntityTemplate._id}`,
                 },
-                rhsArgument: { isConstant: true, value: 0 },
+                rhsArgument: { isConstant: true, type: 'boolean', value: 0 },
             },
         ],
     },
