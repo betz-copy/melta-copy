@@ -151,10 +151,7 @@ interface IGetColumnDefsOptions<Data extends any> {
                                 popoverText={i18next.t('entitiesTableOfTemplate.editEntity')}
                                 iconButtonProps={{
                                     disabled: disabledEntity,
-                                    onClick: () => {
-                                        editRowButtonProps.onClick(data);
-                                    }
-                                    
+                                    onClick: () => editRowButtonProps.onClick(data),
                                 }}
                             >
                                 <EditIcon />
