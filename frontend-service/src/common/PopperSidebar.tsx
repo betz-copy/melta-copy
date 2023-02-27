@@ -51,7 +51,7 @@ const PopperSidebar: React.FC<{
                                             {title}
                                         </Typography>
 
-                                        <Grid container position="absolute" right={10} direction="row-reverse">{topButtons}</Grid>
+                                        <Box position="absolute" right={10}>{topButtons}</Box>
                                     </Grid>
                                     <Divider sx={{ marginX: '10px' }} />
                                 </Grid>
