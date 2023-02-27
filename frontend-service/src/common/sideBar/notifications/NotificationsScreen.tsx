@@ -67,7 +67,7 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
             title={i18next.t('notifications.title')}
             topButtons={
                 <Tooltip title={i18next.t('notifications.infoRightClickTab')}>
-                    <InfoIcon />
+                    <InfoIcon sx={{ marginTop: '0.4rem' }} />
                 </Tooltip>
             }
             side="right"
