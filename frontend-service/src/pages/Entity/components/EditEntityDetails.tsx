@@ -56,7 +56,7 @@ const EditEntityDetails: React.FC<{
             onError: (err: AxiosError, { newEntityData: newEntityDate }) => {
                 const errorMetadata = err.response?.data?.metadata;
                 if (errorMetadata?.errorCode === errorCodes.failedConstraintsValidation) {
-                    toastConstraintValidationError(errorMetadata);
+                    toastConstraintValidationError(errorMetadata, entityTemplate );
                     return;
                 }
 

@@ -84,10 +84,10 @@ const EntityWizard: React.FC<WizardBaseType<EntityWizardValues>> = ({
             handleClose();
             navigate(`/entity/${newEntity.properties._id}`);
         },
-        onError: (err: AxiosError) => {
+        onError: (err: AxiosError, { template }: EntityWizardValues) => {
             const errorMetadata = err.response?.data?.metadata;
             if (errorMetadata?.errorCode === errorCodes.failedConstraintsValidation) {
-                toastConstraintValidationError(errorMetadata);
+                toastConstraintValidationError(errorMetadata, template);
                 return;
             }
 
