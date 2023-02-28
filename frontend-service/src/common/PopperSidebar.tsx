@@ -17,7 +17,7 @@ const PopperSidebar: React.FC<{
     const darkMode = useSelector((state: RootState) => state.darkMode);
 
     return (
-        <Popper open={open} transition sx={{ zIndex: 10, left: side === 'right' ? 0 : 'auto', marginX: sideMargin }}>
+        <Popper open={open} transition sx={{ left: side === 'right' ? 0 : 'auto', marginX: sideMargin }}>
             {({ TransitionProps }) => (
                 <Slide {...TransitionProps} direction={side === 'right' ? 'left' : 'right'}>
                     <Box paddingTop="3.8rem" paddingX="1.1rem">
