@@ -375,7 +375,7 @@ export class EntityManager {
     }
 
     private static getConstraintFromName(constraintName: string): IConstraint {
-        const [constraintTypePrefix, constraintTemplateId, ...properties] = constraintName.split('_');
+        const [constraintTypePrefix, constraintTemplateId, ...properties] = constraintName.split(config.constraintsNameDelimiter);
 
         switch (constraintTypePrefix) {
             case config.requiredConstraintsPrefixName: {
@@ -455,7 +455,7 @@ export class EntityManager {
 
         const newRequiredConstraints: IRequiredConstraint[] = requiredConstraintsProps.map((requiredConstraintProp) => ({
             type: 'REQUIRED',
-            constraintName: `${config.requiredConstraintsPrefixName}_${templateId}_${requiredConstraintProp}`,
+            constraintName: `${config.requiredConstraintsPrefixName}${config.constraintsNameDelimiter}${templateId}${config.constraintsNameDelimiter}${requiredConstraintProp}`,
             templateId,
             property: requiredConstraintProp,
         }));
@@ -495,7 +495,9 @@ export class EntityManager {
 
         const newUniqueConstraints: IUniqueConstraint[] = uniqueConstraintsProps.map((uniqueConstraintProps) => ({
             type: 'UNIQUE',
-            constraintName: `${config.uniqueConstraintsPrefixName}_${templateId}_${uniqueConstraintProps.join('_')}`,
+            constraintName: `${config.uniqueConstraintsPrefixName}${config.constraintsNameDelimiter}${templateId}${
+                config.constraintsNameDelimiter
+            }${uniqueConstraintProps.join(config.constraintsNameDelimiter)}`,
             templateId,
             properties: uniqueConstraintProps,
         }));
