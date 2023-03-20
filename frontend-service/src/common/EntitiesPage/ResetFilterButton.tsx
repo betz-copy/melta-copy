@@ -5,7 +5,7 @@ import IconButtonWithPopoverText from '../IconButtonWithPopover';
 import { EntitiesTableOfTemplateRef } from '../EntitiesTableOfTemplate';
 
 const ResetFilterButton: React.FC<{
-    entitiesTableRef: React.RefObject<EntitiesTableOfTemplateRef>;
+    entitiesTableRef: React.RefObject<EntitiesTableOfTemplateRef<any>>;
 }> = ({ entitiesTableRef }) => {
     return (
         <IconButtonWithPopoverText

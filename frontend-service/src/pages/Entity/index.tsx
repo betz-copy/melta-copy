@@ -38,7 +38,7 @@ const Entity: React.FC = () => {
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const relationshipTemplates = queryClient.getQueryData<IRelationshipTemplateMap>('getRelationshipTemplates')!;
 
-    const entitiesTableRef = useRef<EntitiesTableOfTemplateRef>(null);
+    const entitiesTableRef = useRef<EntitiesTableOfTemplateRef<IEntityExpanded['connections'][number]>>(null);
     const templateIds = Array.from(entityTemplates.keys());
 
     const { data: expandedEntity } = useQuery(['getExpandedEntity', entityId, { templateIds, numberOfConnections: 1 }], () =>

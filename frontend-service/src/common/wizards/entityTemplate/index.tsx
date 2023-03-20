@@ -7,7 +7,7 @@ import { StepsType, Wizard, WizardBaseType } from '../index';
 import { ChooseCategory, chooseCategorySchema } from './ChooseCategory';
 import { CreateTemplateName, createTemplateNameSchema } from './CreateTemplateName';
 import { AddFields, addFieldsSchema } from './AddFields';
-import { createEntityTemplateRequest, updateEntityTemplateRequest } from '../../../services/templates/enitityTemplatesService';
+import { createEntityTemplateRequest, formToJSONSchema, updateEntityTemplateRequest } from '../../../services/templates/enitityTemplatesService';
 import { IEntityTemplateMap, IEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { ChooseIcon } from './ChooseIcon';
 import fileDetails from '../../../interfaces/fileDetails';
@@ -90,23 +90,22 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
                 }
                 handleClose();
             },
-            onError: (error: AxiosError) => {
+            onError: (error: AxiosError, enitiyTemplateValues) => {
                 const errorMetadata = error.response?.data?.metadata;
                 if (isEditMode && errorMetadata?.errorCode === errorCodes.failedToCreateConstraints) {
                     const { constraint }: { constraint: IConstraint } = errorMetadata;
-
-                    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-                    const entityTemplate = entityTemplates.get(constraint.templateId)!;
+                    
+                    const newEntityTemplate = formToJSONSchema(enitiyTemplateValues);
 
                     if (constraint.type === 'REQUIRED') {
-                        const { title: constraintPropertyDisplayName } = entityTemplate.properties.properties[constraint.property];
+                        const { title: constraintPropertyDisplayName } = newEntityTemplate.properties.properties[constraint.property];
                         toast.error(
                             `${i18next.t(
                                 'wizard.entityTemplate.failedToUpdateRequiredConstraintsBecauseOfEntitiesWithMissing',
                             )} ${constraintPropertyDisplayName}`,
                         );
                     } else {
-                        const constraintPropsDisplayNames = constraint.properties.map((prop) => entityTemplate.properties.properties[prop].title);
+                        const constraintPropsDisplayNames = constraint.properties.map((prop) => newEntityTemplate.properties.properties[prop].title);
 
                         const constraintPropsListString = constraintPropsDisplayNames.map((prop) => `"${prop}"`).join('+');
                         toast.error(

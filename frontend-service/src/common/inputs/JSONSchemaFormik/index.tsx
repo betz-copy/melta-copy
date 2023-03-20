@@ -1,5 +1,5 @@
 import React from 'react';
-import { MuiForm5 as JSONSchemaForm } from '@rjsf/material-ui';
+import { Form as JSONSchemaForm, } from '@rjsf/mui';
 import Ajv, { ErrorObject } from 'ajv';
 import addFormats from 'ajv-formats';
 import i18next from 'i18next';
@@ -8,8 +8,10 @@ import mapValues from 'lodash.mapvalues';
 import pickBy from 'lodash.pickby';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { RjfsDateWidget, RjfsDateTimeWidget } from './RjfsDatesWidgets';
+import validator from '@rjsf/validator-ajv8';
 import RjfsSelectWidget from './RjfsSelectWidget';
 import RjsfTextWidget from './RjsfStringWidget';
+import { ErrorSchema } from '@rjsf/utils';
 
 const ajvErrorsToFormikErrors = (schema: IMongoEntityTemplatePopulated['properties'], ajvErrors: ErrorObject[]): FormikErrors<any> => {
     const formikErrorsEntries = ajvErrors.map((ajvError) => {
@@ -42,7 +44,7 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
     return ajvErrorsToFormikErrors(schema, ajvErrors);
 };
 
-const formikErrorsToRjsfExtraErrors = (formikErrors: Record<string, string>): Record<string, { __errors: string[] }> => {
+const formikErrorsToRjsfExtraErrors = (formikErrors: Record<string, string>): ErrorSchema<{}> => {
     // assuming no complex fields (nested/array). need recursion for nested fields
     return mapValues(formikErrors, (errorMessage) => ({ __errors: [errorMessage] }));
 };
@@ -58,7 +60,7 @@ interface JSONSchemaFormFormikProps {
 
 export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({ schema, values, setValues, errors, touched, setFieldTouched }) => {
     const rjsfExtraErrors = formikErrorsToRjsfExtraErrors(errors as Record<string, string>);
-    const ajvExtraErrorsOnlyTouched = pickBy(rjsfExtraErrors, (_value, key) => touched[key]);
+    const ajvExtraErrorsOnlyTouched: ErrorSchema<{}> = pickBy(rjsfExtraErrors, (_value, key) => touched[key]);
 
     return (
         <JSONSchemaForm
@@ -74,6 +76,7 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({ schema, 
                 setFieldTouched(field);
             }}
             noValidate
+            validator={validator}
             extraErrors={ajvExtraErrorsOnlyTouched}
             tagName="div"
             widgets={{

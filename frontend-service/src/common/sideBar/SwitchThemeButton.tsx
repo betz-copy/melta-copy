@@ -21,7 +21,7 @@ export const SwitchThemeButton: React.FC<SwitchThemeButtonProps> = ({ text, isDr
             }}
         >
             <Grid container alignItems="center" justifyContent="space-around" spacing={isDrawerOpen ? -9 : 0}>
-                <Grid item width="5rem">
+                <Grid item width="4rem">
                     <DayNightSwitch checked={darkMode} onClick={onClick} />
                 </Grid>
 

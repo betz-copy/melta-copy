@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { toast } from 'react-toastify';
-import { useMutation, useQueryClient } from 'react-query';
+import { useMutation } from 'react-query';
 import i18next from 'i18next';
 import { useNavigate } from 'react-router-dom';
 import { AxiosError } from 'axios';
@@ -77,7 +77,6 @@ const EntityWizard: React.FC<WizardBaseType<EntityWizardValues>> = ({
     isEditMode = false,
 }) => {
     const navigate = useNavigate();
-    const queryClient = useQueryClient();
 
     const { isLoading, mutateAsync } = useMutation((entity: any) => createEntityRequest(entity), {
         onSuccess: (newEntity) => {
@@ -85,10 +84,10 @@ const EntityWizard: React.FC<WizardBaseType<EntityWizardValues>> = ({
             handleClose();
             navigate(`/entity/${newEntity.properties._id}`);
         },
-        onError: (err: AxiosError) => {
+        onError: (err: AxiosError, { template }: EntityWizardValues) => {
             const errorMetadata = err.response?.data?.metadata;
             if (errorMetadata?.errorCode === errorCodes.failedConstraintsValidation) {
-                toastConstraintValidationError(queryClient, errorMetadata);
+                toastConstraintValidationError(errorMetadata, template);
                 return;
             }
 

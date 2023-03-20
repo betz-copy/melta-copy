@@ -25,20 +25,18 @@ export const InfiniteScroll = <T extends any>({
 }: InfiniteScrollProps<T>) => {
     const showMoreRef = useRef(null);
 
-    const { data, fetchNextPage, isFetchingNextPage, hasNextPage } = useInfiniteQuery(queryKey, queryFunction, {
+    const { data, fetchNextPage, isFetchingNextPage, hasNextPage, isLoading, isRefetching } = useInfiniteQuery(queryKey, queryFunction, {
         getNextPageParam,
         onError: onQueryError,
-        enabled: false,
-        cacheTime: 0,
     });
 
     useEffect(() => {
         const currentShowMoreRef = showMoreRef.current;
-        if (!currentShowMoreRef) return () => {};
+        if (!currentShowMoreRef) return () => { };
 
         const observer = new IntersectionObserver(
             ([entry]) => {
-                if (entry.isIntersecting && !isFetchingNextPage) {
+                if (entry.isIntersecting && !isFetchingNextPage && hasNextPage) {
                     fetchNextPage();
                 }
             },
@@ -50,7 +48,7 @@ export const InfiniteScroll = <T extends any>({
 
         observer.observe(currentShowMoreRef);
         return () => observer.unobserve(currentShowMoreRef);
-    }, [showMoreRef, isFetchingNextPage]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [showMoreRef, isFetchingNextPage, hasNextPage]); // eslint-disable-line react-hooks/exhaustive-deps
 
     return (
         <Grid
@@ -74,7 +72,7 @@ export const InfiniteScroll = <T extends any>({
 
             <Grid container ref={showMoreRef} justifyContent="center" marginTop="0.5rem">
                 {/* always show loading if hasNextPage, even if not started loading */}
-                {isFetchingNextPage || hasNextPage ? <CircularProgress /> : endText}
+                {isLoading || isFetchingNextPage || hasNextPage || isRefetching ? <CircularProgress /> : endText}
             </Grid>
         </Grid>
     );

@@ -10,13 +10,14 @@ const PopperSidebar: React.FC<{
     setOpen: React.Dispatch<React.SetStateAction<boolean>>;
     title: string;
     side: 'right' | 'left';
+    topButtons?: React.ReactNode;
     sideMargin?: CSSProperties['margin'];
     width?: CSSProperties['width'];
-}> = ({ children, open, setOpen, title, side, sideMargin = 0, width = '22rem' }) => {
+}> = ({ children, open, setOpen, title, side, topButtons, sideMargin = 0, width = '22rem' }) => {
     const darkMode = useSelector((state: RootState) => state.darkMode);
 
     return (
-        <Popper open={open} transition sx={{ zIndex: 10, left: side === 'right' ? 0 : 'auto', marginX: sideMargin }}>
+        <Popper open={open} transition sx={{ left: side === 'right' ? 0 : 'auto', marginX: sideMargin }}>
             {({ TransitionProps }) => (
                 <Slide {...TransitionProps} direction={side === 'right' ? 'left' : 'right'}>
                     <Box paddingTop="3.8rem" paddingX="1.1rem">
@@ -40,17 +41,17 @@ const PopperSidebar: React.FC<{
                                         </IconButton>
 
                                         <Typography
-                                            style={{
-                                                color: '#225AA7',
-                                                fontWeight: 400,
-                                                fontFamily: 'Rubik',
-                                            }}
-                                            component="h6"
-                                            variant="h6"
+                                            color='#225AA7'
+                                            fontFamily='Rubik'
+                                            component="h5"
+                                            variant="h5"
                                             marginX="auto"
+                                            fontWeight="bold"
                                         >
                                             {title}
                                         </Typography>
+
+                                        <Box position="absolute" right={10}>{topButtons}</Box>
                                     </Grid>
                                     <Divider sx={{ marginX: '10px' }} />
                                 </Grid>

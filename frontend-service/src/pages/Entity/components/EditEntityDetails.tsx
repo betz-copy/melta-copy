@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
 import { Grid, Card, CardContent, CircularProgress, Box, Divider, Button } from '@mui/material';
 import { Done as DoneIcon, Clear as ClearIcon } from '@mui/icons-material';
-import { useMutation, useQueryClient } from 'react-query';
+import { useMutation } from 'react-query';
 import i18next from 'i18next';
 import { toast } from 'react-toastify';
 import { Form, Formik } from 'formik';
 import mapValues from 'lodash.mapvalues';
 import pickBy from 'lodash.pickby';
 import { AxiosError } from 'axios';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { IEntity, IEntityExpanded } from '../../../interfaces/entities';
+import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { IEntity } from '../../../interfaces/entities';
 import { updateEntityRequest } from '../../../services/entitiesService';
 import { EntityWizardValues } from '../../../common/wizards/entity';
 import { EntityFilesInput } from '../../../common/inputs/EntityFilesInput';
@@ -25,14 +25,10 @@ const { errorCodes } = environment;
 
 const EditEntityDetails: React.FC<{
     entityTemplate: IMongoEntityTemplatePopulated;
-    expandedEntity: IEntityExpanded;
-    setIsEditMode: React.Dispatch<React.SetStateAction<boolean>>;
-}> = ({ entityTemplate, expandedEntity, setIsEditMode }) => {
-    const { entity } = expandedEntity;
-    const queryClient = useQueryClient();
-
-    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-    const templateIds = Array.from(entityTemplates.keys());
+    entity: IEntity;
+    onSuccessUpdate: (data: IEntity) => void;
+    onCancelUpdate: () => void;
+}> = ({ entityTemplate, entity, onSuccessUpdate, onCancelUpdate }) => {
 
     const [updateWithRuleBreachDialogState, setUpdateWithRuleBreachDialogState] = useState<{
         isOpen: boolean;
@@ -41,25 +37,26 @@ const EditEntityDetails: React.FC<{
         updateEntityFormData?: EntityWizardValues;
     }>({ isOpen: false });
 
+    const templateFilesProperties = pickBy(entityTemplate.properties.properties, (value) => value.format === 'fileId');
+    const templateFileKeys = Object.keys(templateFilesProperties);
+    const requiredFilesNames = entityTemplate.properties.required.filter((name) => templateFileKeys.includes(name));
+    
+    const fieldProperties = pickBy(entity.properties, (_value, key) => !templateFileKeys.includes(key)) as IEntity['properties'];
+    const fileIdsProperties = pickBy(entity.properties, (_value, key) => templateFileKeys.includes(key));
+    const fileProperties = mapValues(fileIdsProperties, (value) => ({ name: value }));
+
     const { isLoading: isUpdateLoading, mutateAsync: updateMutation } = useMutation(
         ({ newEntityData, ignoredRules }: { newEntityData: EntityWizardValues; ignoredRules?: IRuleBreach['brokenRules'] }) =>
             updateEntityRequest(entity.properties._id, newEntityData, ignoredRules),
         {
             onSuccess: (data) => {
-                queryClient.setQueryData(['getExpandedEntity', entity.properties._id, { templateIds, numberOfConnections: 1 }], () => {
-                    return {
-                        ...expandedEntity,
-                        entity: data,
-                    };
-                });
-
                 toast.success(i18next.t('wizard.entity.editedSuccefully'));
-                setIsEditMode(false);
+                onSuccessUpdate(data);
             },
             onError: (err: AxiosError, { newEntityData: newEntityDate }) => {
                 const errorMetadata = err.response?.data?.metadata;
                 if (errorMetadata?.errorCode === errorCodes.failedConstraintsValidation) {
-                    toastConstraintValidationError(queryClient, errorMetadata);
+                    toastConstraintValidationError(errorMetadata, entityTemplate );
                     return;
                 }
 
@@ -71,19 +68,10 @@ const EditEntityDetails: React.FC<{
                         updateEntityFormData: newEntityDate,
                     });
                 }
-
                 toast.error(i18next.t('wizard.entity.failedToEdit'));
             },
         },
     );
-
-    const templateFilesProperties = pickBy(entityTemplate.properties.properties, (value) => value.format === 'fileId');
-    const templateFileKeys = Object.keys(templateFilesProperties);
-    const requiredFilesNames = entityTemplate.properties.required.filter((name) => templateFileKeys.includes(name));
-
-    const fieldProperties = pickBy(entity.properties, (_value, key) => !templateFileKeys.includes(key)) as IEntity['properties'];
-    const fileIdsProperties = pickBy(entity.properties, (_value, key) => templateFileKeys.includes(key));
-    const fileProperties = mapValues(fileIdsProperties, (value) => ({ name: value }));
 
     return (
         <Formik
@@ -97,6 +85,7 @@ const EditEntityDetails: React.FC<{
                 if (Object.keys(propertiesErrors).length === 0) {
                     return {};
                 }
+                
                 return { properties: propertiesErrors };
             }}
         >
@@ -109,7 +98,7 @@ const EditEntityDetails: React.FC<{
                                     <Grid container justifyContent="center">
                                         <Grid item xs={12}>
                                             <Grid container flexDirection="row">
-                                                <Box sx={{ marginRight: '50px' }}>
+                                                <Box>
                                                     <BlueTitle title={i18next.t('wizard.entityTemplate.properties')} component="h6" variant="h6" />
                                                     <JSONSchemaFormik
                                                         schema={filterAttachmentsPropertiesFromSchema(entityTemplate.properties)}
@@ -157,13 +146,7 @@ const EditEntityDetails: React.FC<{
                                                     </Button>
                                                 </Grid>
                                                 <Grid item>
-                                                    <Button
-                                                        variant="outlined"
-                                                        startIcon={<ClearIcon />}
-                                                        onClick={() => {
-                                                            setIsEditMode(false);
-                                                        }}
-                                                    >
+                                                    <Button variant="outlined" startIcon={<ClearIcon />} onClick={() => onCancelUpdate()}>
                                                         {i18next.t('entityPage.cancel')}
                                                     </Button>
                                                 </Grid>
@@ -185,7 +168,7 @@ const EditEntityDetails: React.FC<{
                                 }}
                                 brokenRules={updateWithRuleBreachDialogState.brokenRules!}
                                 rawBrokenRules={updateWithRuleBreachDialogState.rawBrokenRules!}
-                                currEntity={expandedEntity.entity}
+                                currEntity={entity}
                                 updateEntityFormData={updateWithRuleBreachDialogState.updateEntityFormData!}
                                 onUpdatedRuleBlock={(brokenRules) =>
                                     setUpdateWithRuleBreachDialogState((prevState) => ({

@@ -8,9 +8,13 @@ import { getUserByIdRequest } from '../../../../services/kartoffelService';
 import ActionText from './ActionText';
 import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { getShortDate } from '../../../../utils/date';
+import { useSelector } from 'react-redux';
+import { RootState } from '../../../../store';
 
 const ActivityLogRow: React.FC<{ log: IActivityLog; entityTemplate: IMongoEntityTemplatePopulated }> = ({ log, entityTemplate }) => {
     const { data: user, isLoading } = useQuery(['getUserById', log.userId], () => getUserByIdRequest(log.userId));
+
+    const darkMode = useSelector((state: RootState) => state.darkMode);
 
     return (
         <Grid container>
@@ -46,7 +50,7 @@ const ActivityLogRow: React.FC<{ log: IActivityLog; entityTemplate: IMongoEntity
                         {isLoading ? (
                             <Skeleton variant="text" width="5vw" />
                         ) : (
-                            <Typography variant="subtitle1" color="rgb(110 104 104 / 87%)" fontFamily="Rubik" fontSize="15px">
+                            <Typography variant="subtitle1" color={darkMode ? 'lightgray' : 'gray'} fontFamily="Rubik" fontSize="15px">
                                 {getShortDate(log.timestamp)}
                             </Typography>
                         )}
@@ -57,7 +61,7 @@ const ActivityLogRow: React.FC<{ log: IActivityLog; entityTemplate: IMongoEntity
                     {isLoading ? <Skeleton width="15vw" /> : <ActionText log={log} entityTemplate={entityTemplate} />}
                 </Grid>
             </Grid>
-        </Grid>
+        </Grid >
     );
 };
 

@@ -1,4 +1,5 @@
 import { ILabelIcon } from './utils/graph/helperTypes';
+import { NotificationType } from './interfaces/notifications';
 
 export const environment = {
     api: {
@@ -63,6 +64,15 @@ export const environment = {
     notifications: {
         updateInterval: 1000 * 60 * 10,
         infiniteScrollPageCount: 10,
+        groups: {
+            requests: [NotificationType.ruleBreachRequest],
+            general: [
+                NotificationType.ruleBreachAlert,
+                NotificationType.ruleBreachResponse,
+                NotificationType.processApproverUpdate,
+                NotificationType.newProcess,
+            ],
+        },
     },
     activityLog: {
         infiniteScrollPageCount: 10,

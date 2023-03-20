@@ -2,7 +2,7 @@ import React, { forwardRef, ForwardedRef, useImperativeHandle, useRef, useMemo }
 import { useNavigate } from 'react-router-dom';
 import { Box, GlobalStyles } from '@mui/material';
 import pickBy from 'lodash.pickby';
-import { IServerSideDatasource, IServerSideGetRowsParams } from '@ag-grid-community/core';
+import { ColDef, IServerSideDatasource, IServerSideGetRowsParams } from '@ag-grid-community/core';
 import { AgGridReact } from '@ag-grid-community/react';
 import '@noam7700/ag-grid-enterprise-core';
 import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
@@ -81,6 +81,9 @@ export type EntitiesTableOfTemplateProps<Data> = {
         popoverText: string;
         disabled: boolean;
     };
+    editRowButtonProps?: {
+        onClick: (data: Data) => void;
+    };
     disabledEntity?: boolean;
     getRowId: (data: Data) => string;
     getEntityPropertiesData: (data: Data) => IEntity['properties'];
@@ -96,24 +99,26 @@ export type EntitiesTableOfTemplateProps<Data> = {
     filterStorageProps: { shouldSaveFilter: boolean; pageType?: string };
 };
 
-export type EntitiesTableOfTemplateRef = {
+export type EntitiesTableOfTemplateRef<Data> = {
     getExcelData: () => string | undefined;
     resetFilter: () => void;
     refreshServerSide: () => void;
     expandRows: (isExpand: boolean) => void;
+    updateRowDataClientSide: (data: Data) => void;
 };
-///////////////////////////////////////////////////
-const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef, EntitiesTableOfTemplateProps<unknown>>(
+
+const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, EntitiesTableOfTemplateProps<unknown>>(
     <Data extends any>(
         {
             template,
             onRowSelected,
             showNavigateToRowButton,
-            deleteRowButtonProps,
             disabledEntity,
             getRowId,
             getEntityPropertiesData,
             rowModelType,
+            deleteRowButtonProps,
+            editRowButtonProps,
             rowData,
             datasource,
             quickFilterText,
@@ -124,11 +129,11 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef, EntitiesT
             hideNonPreview,
             filterStorageProps,
         }: EntitiesTableOfTemplateProps<Data>,
-        ref: ForwardedRef<EntitiesTableOfTemplateRef>,
+        ref: ForwardedRef<EntitiesTableOfTemplateRef<Data>>,
     ) => {
         const navigate = useNavigate();
 
-        const gridRef = useRef<AgGridReact>(null);
+        const gridRef = useRef<AgGridReact<Data>>(null);
 
         useImperativeHandle(ref, () => {
             return {
@@ -145,17 +150,24 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef, EntitiesT
                 refreshServerSide() {
                     gridRef.current?.api.refreshServerSide({ purge: true });
                 },
+                updateRowDataClientSide(data: Data) {
+                    gridRef.current?.api.forEachNode((rowNode) => {
+                        if (rowNode.data && getRowId(data) === getRowId(rowNode.data)) {
+                            rowNode.updateData(data);
+                        }
+                    });
+                },
             };
         });
-
-        const columnDefs = getColumnDefs(
-            template,
-            getEntityPropertiesData,
-            !showNavigateToRowButton ? undefined : (data) => navigate(`/entity/${getEntityPropertiesData(data)._id}`),
-            disabledEntity,
-            deleteRowButtonProps,
-            hideNonPreview,
-        );
+        const columnDefs: ColDef[] = getColumnDefs({
+            template: template,
+            getEntityPropertiesData: getEntityPropertiesData,
+            onNavigateToRow: !showNavigateToRowButton ? undefined : (data) => navigate(`/entity/${getEntityPropertiesData(data)._id}`),
+            disabledEntity: disabledEntity,
+            deleteRowButtonProps: deleteRowButtonProps,
+            hideNonPreview: hideNonPreview,
+            editRowButtonProps: editRowButtonProps,
+        });
 
         const datasourceOnFail = (err: unknown) => {
             toast.error(i18next.t('entitiesTableOfTemplate.failedToLoadData'));
@@ -272,5 +284,5 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef, EntitiesT
 
 // forwardRef loses generic type of component. see https://stackoverflow.com/questions/58469229/react-with-typescript-generics-while-using-react-forwardref
 export default EntitiesTableOfTemplate as <Data = IEntity>(
-    props: EntitiesTableOfTemplateProps<Data> & { ref?: React.ForwardedRef<EntitiesTableOfTemplateRef> },
+    props: EntitiesTableOfTemplateProps<Data> & { ref?: React.ForwardedRef<EntitiesTableOfTemplateRef<Data>> },
 ) => ReturnType<typeof EntitiesTableOfTemplate>;

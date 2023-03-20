@@ -1,11 +1,9 @@
 /* eslint-disable no-underscore-dangle */
 import React, { useState } from 'react';
-import { WidgetProps, utils } from '@rjsf/core';
+import { WidgetProps, asNumber, guessType } from '@rjsf/utils';
 import i18next from 'i18next';
-import { useMuiComponent } from './rjsfUseMuiComponent';
 import { MiniFilter } from '../../SelectCheckbox'
-
-const { asNumber, guessType } = utils;
+import { Divider, MenuItem, TextField, TextFieldProps } from '@mui/material';
 
 const nums = new Set(['number', 'integer']);
 
@@ -61,8 +59,11 @@ const RjfsSelectWidget = ({
     onFocus,
     placeholder,
     rawErrors = [],
+    formContext,
+    uiSchema,
+    color,
+    ...textFieldProps
 }: WidgetProps) => {
-    const { TextField, MenuItem } = useMuiComponent();
     const { enumOptions, enumDisabled } = options;
     const [miniFilterValue, setMiniFilterValue] = useState('');
 
@@ -75,9 +76,10 @@ const RjfsSelectWidget = ({
 
     return (
         <TextField
+            {...textFieldProps}
+            color={color as TextFieldProps['color']}
             id={id}
             label={label || schema.title}
-            select
             value={typeof value === 'undefined' ? emptyValue : value}
             required={required}
             disabled={disabled || readonly}
@@ -86,28 +88,33 @@ const RjfsSelectWidget = ({
             onChange={_onChange}
             onBlur={_onBlur}
             onFocus={_onFocus}
+            select
             InputLabelProps={{
                 shrink: true,
             }}
             SelectProps={{
                 multiple: typeof multiple === 'undefined' ? false : multiple,
+                sx: { maxHeight: '80vh' },
             }}
         >
-            <MenuItem value="">{placeholder || i18next.t('wizard.entity.enumEmptyOption')}
-            </MenuItem>
-            <MenuItem><MiniFilter value={miniFilterValue} onChange={setMiniFilterValue} /></MenuItem>
-            {(enumOptions as any).filter(
-                ({label: currLabel }: any) =>
-                    (miniFilterValue === '' || currLabel.includes(miniFilterValue)),
-            ).map(({ value: currValue, label: currLabel }: any, i: number) => {
-                const isDisabled: any = enumDisabled && (enumDisabled as any).indexOf(currValue) !== -1;
-                return (
-                    // eslint-disable-next-line react/no-array-index-key
-                    <MenuItem key={i} value={currValue} disabled={isDisabled}>
-                        {currLabel}
-                    </MenuItem>
-                );
-            })}
+            <MiniFilter value={miniFilterValue} onChange={setMiniFilterValue} />
+
+            {enumOptions?.filter(({ label: currLabel }) => (miniFilterValue === '' || currLabel.includes(miniFilterValue)))
+                .map(({ value: currValue, label: currLabel }, index: number) => {
+                    const isDisabled = enumDisabled && (enumDisabled).includes(currValue);
+                    return (
+                        // eslint-disable-next-line react/no-array-index-key
+                        <MenuItem key={index} value={currValue} disabled={isDisabled} onClick={(event) => {
+                            onChange(processValue(schema, currValue));
+                            event.preventDefault()
+                        }}>
+                            {currLabel}
+                        </MenuItem>
+                    );
+                })}
+
+            <Divider />
+            <MenuItem value="">{placeholder || i18next.t('wizard.entity.enumEmptyOption')}</MenuItem>
         </TextField>
     );
 };
