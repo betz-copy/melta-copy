@@ -143,7 +143,6 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                     return gridRef.current?.api.getSheetDataForExcel({ sheetName: template.displayName });
                 },
                 resetFilter() {
-                    console.log(gridRef.current?.api.getFilterModel());
                     gridRef.current?.api.setFilterModel(null);
                 },
                 refreshServerSide() {
