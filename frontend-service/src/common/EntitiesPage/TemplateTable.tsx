@@ -15,6 +15,9 @@ import { CustomIcon } from '../CustomIcon';
 import { exportTemplatesToExcelRequest } from '../../services/entitiesService';
 import { EditEntityDetails } from '../../pages/Entity/components/EditEntityDetails';
 import { IEntity } from '../../interfaces/entities';
+import { environment } from '../../globals';
+
+const { expandedRowCount } = environment.agGrid;
 
 const TemplateTable = ({ template, quickFilterText, page }: { template: IMongoEntityTemplatePopulated; quickFilterText: string; page: string }) => {
     const entitiesTableRef = useRef<EntitiesTableOfTemplateRef<IEntity>>(null);
@@ -39,7 +42,6 @@ const TemplateTable = ({ template, quickFilterText, page }: { template: IMongoEn
     }>({
         isOpen: false,
     });
-    const [pageRowCount, setPageRowCount] = useState(5);
     const [isExpandLess, setIsExpandLess] = useState(false);
 
     return (
@@ -59,20 +61,12 @@ const TemplateTable = ({ template, quickFilterText, page }: { template: IMongoEn
                             }
                             iconButtonProps={{
                                 onClick: () => {
-                                    console.log(pageRowCount);
-                                    setIsExpandLess((prev) => !prev);
-                                    console.log(pageRowCount);
+                                    setIsExpandLess(!isExpandLess);
                                 },
                                 size: 'medium',
                             }}
                         >
-                            {isExpandLess
-                                ? !entitiesTableRef.current?.expandRows(false) && (
-                                      <ExpandLess color={!template.disabled ? 'primary' : 'disabled'} fontSize="large" data-tour="create-entity" />
-                                  )
-                                : !entitiesTableRef.current?.expandRows(true) && (
-                                      <ExpandMore color={!template.disabled ? 'primary' : 'disabled'} fontSize="large" data-tour="create-entity" />
-                                  )}
+                            {isExpandLess ? <ExpandLess color="primary" fontSize="large" /> : <ExpandMore color="primary" fontSize="large" />}
                         </IconButtonWithPopoverText>
                         <ResetFilterButton entitiesTableRef={entitiesTableRef} />
                         <IconButtonWithPopoverText
@@ -101,6 +95,7 @@ const TemplateTable = ({ template, quickFilterText, page }: { template: IMongoEn
                     rowModelType="serverSide"
                     quickFilterText={quickFilterText}
                     rowHeight={50}
+                    pageRowCount={isExpandLess ? expandedRowCount : undefined}
                     fontSize="16px"
                     minColumnWidth={200}
                     filterStorageProps={{ shouldSaveFilter: true, pageType: page }}

@@ -1,6 +1,6 @@
 import React, { forwardRef, ForwardedRef, useImperativeHandle, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Box, GlobalStyles } from '@mui/material';
+import { Box } from '@mui/material';
 import pickBy from 'lodash.pickby';
 import { ColDef, IServerSideDatasource, IServerSideGetRowsParams } from '@ag-grid-community/core';
 import { AgGridReact } from '@ag-grid-community/react';
@@ -24,6 +24,9 @@ import { getEntitiesByTemplateRequest } from '../../services/entitiesService';
 import { getColumnDefs } from './getColumnDefs';
 import { trycatch } from '../../utils/trycatch';
 import { LocalStorage } from '../../utils/localStorage';
+import { environment } from '../../globals';
+
+const { rowCount } = environment.agGrid;
 
 export const getDatasource = <Data extends any = IEntity>(
     templateId: IMongoEntityTemplatePopulated['_id'],
@@ -103,7 +106,6 @@ export type EntitiesTableOfTemplateRef<Data> = {
     getExcelData: () => string | undefined;
     resetFilter: () => void;
     refreshServerSide: () => void;
-    expandRows: (isExpand: boolean) => void;
     updateRowDataClientSide: (data: Data) => void;
 };
 
@@ -123,7 +125,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             datasource,
             quickFilterText,
             rowHeight,
-            pageRowCount = 5,
+            pageRowCount = rowCount,
             fontSize,
             minColumnWidth,
             hideNonPreview,
@@ -137,10 +139,6 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
 
         useImperativeHandle(ref, () => {
             return {
-                expandRows(isExpand) {
-                    console.log('ffff');
-                    gridRef.current?.api.paginationSetPageSize(isExpand ? 5 : 10);
-                },
                 getExcelData() {
                     return gridRef.current?.api.getSheetDataForExcel({ sheetName: template.displayName });
                 },
@@ -189,8 +187,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
         });
 
         return (
-            <Box>
-                <GlobalStyles styles={getGlobalStyles()} />
+            <Box sx={getGlobalStyles()}>
                 <AgGridReact<Data>
                     ref={gridRef}
                     getRowStyle={(params) => {

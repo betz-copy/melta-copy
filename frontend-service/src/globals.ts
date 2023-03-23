@@ -74,6 +74,10 @@ export const environment = {
             ],
         },
     },
+    agGrid: {
+        rowCount: 5,
+        expandedRowCount: 10,
+    },
     activityLog: {
         infiniteScrollPageCount: 10,
     },
