@@ -143,6 +143,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                     return gridRef.current?.api.getSheetDataForExcel({ sheetName: template.displayName });
                 },
                 resetFilter() {
+                    console.log(gridRef.current?.api.getFilterModel());
                     gridRef.current?.api.setFilterModel(null);
                 },
                 refreshServerSide() {
@@ -181,13 +182,13 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             [rowModelType, template._id, rowData, datasource, quickFilterText],
         );
 
-        const getGlobalStyles = () => ({
+        const getStyles = () => ({
             '.ag-column-select-virtual-list-viewport': { height: `${rowHeight * pageRowCount}px !important` },
             '.ag-center-cols-clipper': { minHeight: `${rowHeight * pageRowCount}px !important` },
         });
 
         return (
-            <Box sx={getGlobalStyles()}>
+            <Box sx={getStyles()}>
                 <AgGridReact<Data>
                     ref={gridRef}
                     getRowStyle={(params) => {

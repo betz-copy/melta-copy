@@ -42,7 +42,7 @@ const TemplateTable = ({ template, quickFilterText, page }: { template: IMongoEn
     }>({
         isOpen: false,
     });
-    const [isExpandLess, setIsExpandLess] = useState(false);
+    const [isExpand, setIsExpand] = useState(false);
 
     return (
         <Grid container>
@@ -57,16 +57,16 @@ const TemplateTable = ({ template, quickFilterText, page }: { template: IMongoEn
                     <Grid item>
                         <IconButtonWithPopoverText
                             popoverText={
-                                isExpandLess ? i18next.t('entitiesTableOfTemplate.expandLess') : i18next.t('entitiesTableOfTemplate.expandMore')
+                                isExpand ? i18next.t('entitiesTableOfTemplate.expandLess') : i18next.t('entitiesTableOfTemplate.expandMore')
                             }
                             iconButtonProps={{
                                 onClick: () => {
-                                    setIsExpandLess(!isExpandLess);
+                                    setIsExpand(!isExpand);
                                 },
                                 size: 'medium',
                             }}
                         >
-                            {isExpandLess ? <ExpandLess color="primary" fontSize="large" /> : <ExpandMore color="primary" fontSize="large" />}
+                            {isExpand ? <ExpandLess color="primary" fontSize="large" /> : <ExpandMore color="primary" fontSize="large" />}
                         </IconButtonWithPopoverText>
                         <ResetFilterButton entitiesTableRef={entitiesTableRef} />
                         <IconButtonWithPopoverText
@@ -95,7 +95,7 @@ const TemplateTable = ({ template, quickFilterText, page }: { template: IMongoEn
                     rowModelType="serverSide"
                     quickFilterText={quickFilterText}
                     rowHeight={50}
-                    pageRowCount={isExpandLess ? expandedRowCount : undefined}
+                    pageRowCount={isExpand ? expandedRowCount : undefined}
                     fontSize="16px"
                     minColumnWidth={200}
                     filterStorageProps={{ shouldSaveFilter: true, pageType: page }}
