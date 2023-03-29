@@ -126,13 +126,12 @@ export const ActionInfo: React.FC<{
     return (
         <Grid container flexDirection="column">
             <Grid item>
-                {actionType === ActionTypes.CreateRelationship ||
-                    (actionType === ActionTypes.DeleteRelationship && (
-                        <CreateOrDeleteRelActionInfo
-                            actionType={actionType}
-                            actionMetadata={actionMetadata as ICreateRelationshipMetadataPopulated | IDeleteRelationshipMetadataPopulated}
-                        />
-                    ))}
+                {(actionType === ActionTypes.CreateRelationship || actionType === ActionTypes.DeleteRelationship) && (
+                    <CreateOrDeleteRelActionInfo
+                        actionType={actionType}
+                        actionMetadata={actionMetadata as ICreateRelationshipMetadataPopulated | IDeleteRelationshipMetadataPopulated}
+                    />
+                )}
                 {actionType === ActionTypes.UpdateEntity && (
                     <UpdateEntityActionInfo actionMetadata={actionMetadata as IUpdateEntityMetadataPopulated} isCompact={isCompact} />
                 )}
