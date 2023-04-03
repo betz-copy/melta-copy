@@ -90,9 +90,18 @@ export class RelationshipManager {
         destinationEntityId: string,
         relationshipId?: string, // undefined when running rules before relationship created or after was deleted
     ) {
-        const ruleFailuresAgainstRelationshipPromise = relationshipId
-            ? RelationshipManager.runRulesOnRelationship(transaction, relationshipTemplate, sourceEntityId, destinationEntityId, relationshipId)
-            : Promise.resolve([]);
+        const ruleFailuresPromises: Promise<IRuleFailureWithCauses[]>[] = [];
+
+        if (relationshipId) {
+            const ruleFailuresAgainstRelationshipPromise = RelationshipManager.runRulesOnRelationship(
+                transaction,
+                relationshipTemplate,
+                sourceEntityId,
+                destinationEntityId,
+                relationshipId,
+            );
+            ruleFailuresPromises.push(ruleFailuresAgainstRelationshipPromise);
+        }
 
         const ruleFailuresAgainstSourceEntityPromise = RelationshipManager.runRulesOfPinnedEntityDependentViaAggregation(
             transaction,
@@ -101,6 +110,7 @@ export class RelationshipManager {
             relationshipTemplate._id,
             destinationEntityId,
         );
+        ruleFailuresPromises.push(ruleFailuresAgainstSourceEntityPromise);
 
         const ruleFailuresAgainstDestinationEntityPromise = RelationshipManager.runRulesOfPinnedEntityDependentViaAggregation(
             transaction,
@@ -109,15 +119,11 @@ export class RelationshipManager {
             relationshipTemplate._id,
             sourceEntityId,
         );
+        ruleFailuresPromises.push(ruleFailuresAgainstDestinationEntityPromise);
 
-        const [ruleFailuresAgainstCreatedRelationship, ruleFailuresAgainstSourceEntity, ruleFailuresAgainstDestinationEntity] = await Promise.all([
-            ruleFailuresAgainstRelationshipPromise,
-            ruleFailuresAgainstSourceEntityPromise,
-            ruleFailuresAgainstDestinationEntityPromise,
-        ]);
+        const ruleFailures = await Promise.all(ruleFailuresPromises);
 
-        const ruleFailures = [...ruleFailuresAgainstCreatedRelationship, ...ruleFailuresAgainstSourceEntity, ...ruleFailuresAgainstDestinationEntity];
-        return ruleFailures;
+        return ruleFailures.flat();
     }
 
     static async createRelationshipByEntityIds(
