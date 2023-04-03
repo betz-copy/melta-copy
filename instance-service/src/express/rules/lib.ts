@@ -1,13 +1,13 @@
 import _groupBy from 'lodash.groupby';
 import _difference from 'lodash.difference';
 import { Transaction } from 'neo4j-driver';
-import { IBrokenRule, IMongoRule, IRuleTransactionResult } from './interfaces';
+import { IBrokenRule, IMongoRule, IRuleFailure, IRuleFailureWithCauses } from './interfaces';
 import { generateNeo4jRuleQueryAgainstPair, generateNeo4jRuleQueryAgainstPinnedEntity } from './generateRuleNeo4jQuery';
 import config from '../../config';
 import { EntityTemplateManagerService } from '../../externalServices/entityTemplateManager';
 import { RelationshipsTemplateManagerService } from '../../externalServices/relationshipTemplateManager';
-import { normalizeRuleResultAgainstPair, normalizeRuleResultsAgainstPinnedEntity, runInTransactionAndNormalize } from '../../utils/neo4j/lib';
-import { IRelationship } from '../relationships/interface';
+import { normalizeRuleResultAgainstPair, normalizeRuleFailuresAgainstPinnedEntity, runInTransactionAndNormalize } from '../../utils/neo4j/lib';
+import { ServiceError } from '../error';
 
 const { createdRelationshipIdInBrokenRules } = config;
 
@@ -29,14 +29,11 @@ export const getRulesByEntityTemplateId = async (entityTemplateId: string) => {
     return rules.flat();
 };
 
-export const getBrokenRules = (ruleResults: IRuleTransactionResult[], createdRelationshipId?: string) => {
-    const resultsByRuleId = _groupBy(
-        ruleResults.filter((ruleResult) => !ruleResult.doesRuleStillApply),
-        'ruleId',
-    );
+export const getBrokenRules = (ruleFailures: IRuleFailureWithCauses[], createdRelationshipId?: string) => {
+    const failuresByRuleId = _groupBy(ruleFailures, 'ruleId');
 
-    const brokenRules = Object.entries(resultsByRuleId).map(([ruleId, ruleTransactionResults]) => {
-        const relationshipIds = ruleTransactionResults.map((ruleTransactionResult) => {
+    const brokenRules = Object.entries(failuresByRuleId).map(([ruleId, failuresOfRule]) => {
+        const relationshipIds = failuresOfRule.map((ruleTransactionResult) => {
             if (ruleTransactionResult.relationshipId === createdRelationshipId) {
                 return createdRelationshipIdInBrokenRules;
             }
@@ -60,6 +57,33 @@ export const areAllBrokenRulesIgnored = (brokenRules: IBrokenRule[], ignoredRule
 
         return _difference(brokenRule.relationshipIds, ignoredRule.relationshipIds).length === 0;
     });
+};
+
+export const throwIfActionCausedBrokenRules = (
+    ignoredRules: IBrokenRule[],
+    ruleFailuresBeforeAction: IRuleFailureWithCauses[],
+    ruleFailuresAfterAction: IRuleFailureWithCauses[],
+    createdRelationshipId?: string,
+) => {
+    const ruleFailuresCausedByAction = ruleFailuresAfterAction.filter((ruleFailureAfterAction) => {
+        const didFailBeforeAction = ruleFailuresBeforeAction.some((currRuleFailure) => {
+            return (
+                currRuleFailure.ruleId === ruleFailureAfterAction.ruleId && currRuleFailure.relationshipId === ruleFailureAfterAction.relationshipId
+            );
+        });
+
+        // keep failed rules that werent before OR (were before but) triggered directly and not via aggregation
+        return !didFailBeforeAction || !ruleFailureAfterAction.isTriggeredViaAggregation;
+    });
+
+    const brokenRules = getBrokenRules(ruleFailuresCausedByAction, createdRelationshipId);
+
+    if (!areAllBrokenRulesIgnored(brokenRules, ignoredRules)) {
+        throw new ServiceError(400, `[NEO4J] action is blocked by rules.`, {
+            errorCode: config.errorCodes.ruleBlock,
+            brokenRules,
+        });
+    }
 };
 
 export const getRelevantTemplatesOfRule = async (rule: IMongoRule) => {
@@ -90,14 +114,14 @@ export const runRuleOnRelationshipsOfPinnedEntity = async (transaction: Transact
 
     const ruleQuery = generateNeo4jRuleQueryAgainstPinnedEntity(rule, pinnedEntityId, relevantTemplates);
 
-    const ruleResults = await runInTransactionAndNormalize(
+    const ruleFailures = await runInTransactionAndNormalize(
         transaction,
         ruleQuery.cypherQuery,
-        normalizeRuleResultsAgainstPinnedEntity,
+        normalizeRuleFailuresAgainstPinnedEntity,
         ruleQuery.parameters,
     );
 
-    return ruleResults;
+    return ruleFailures;
 };
 
 export const runRulesOnRelationshipsOfPinnedEntity = async (
@@ -106,20 +130,19 @@ export const runRulesOnRelationshipsOfPinnedEntity = async (
     rules: IMongoRule[],
     excludedUnpinnedEntityId?: string,
 ) => {
-    const ruleResultsForEachRulePromises = rules.map(async (rule) => {
-        const ruleResults = await runRuleOnRelationshipsOfPinnedEntity(transaction, pinnedEntityId, rule);
+    const ruleFailuresForEachRulePromises = rules.map(async (rule) => {
+        const ruleFailures = await runRuleOnRelationshipsOfPinnedEntity(transaction, pinnedEntityId, rule);
 
-        const ruleResultsWithoutExcludedEntity = ruleResults.filter(({ unpinnedEntityId }) => unpinnedEntityId !== excludedUnpinnedEntityId);
+        const ruleFailuresWithoutExcludedEntity = ruleFailures.filter(({ unpinnedEntityId }) => unpinnedEntityId !== excludedUnpinnedEntityId);
 
-        return ruleResultsWithoutExcludedEntity.map(({ unpinnedRelationshipId, doesRuleStillApply }) => ({
+        return ruleFailuresWithoutExcludedEntity.map(({ unpinnedRelationshipId }) => ({
             ruleId: rule._id,
             relationshipId: unpinnedRelationshipId,
-            doesRuleStillApply,
-        })) as IRuleTransactionResult[];
+        })) as IRuleFailure[];
     });
-    const ruleResultsForEachRule = await Promise.all(ruleResultsForEachRulePromises);
+    const ruleFailuresForEachRule = await Promise.all(ruleFailuresForEachRulePromises);
 
-    return ruleResultsForEachRule.flat();
+    return ruleFailuresForEachRule.flat();
 };
 
 export const runRuleOnPair = async (
@@ -146,20 +169,21 @@ export const runRuleOnPair = async (
 export const runRulesOnRelationship = async (
     transaction: Transaction,
     rules: IMongoRule[],
-    relationship: IRelationship,
+    sourceEntityId: string,
+    destinationEntityId: string,
+    relationshipId: string,
     sourceEntityTemplateId: string,
-) => {
+): Promise<IRuleFailure[]> => {
     const ruleResultsPromises = rules.map(async (rule) => {
         const [pinnedEntityId, nonPinnedEntityId] =
-            rule.pinnedEntityTemplateId === sourceEntityTemplateId
-                ? [relationship.sourceEntityId, relationship.destinationEntityId]
-                : [relationship.destinationEntityId, relationship.sourceEntityId];
+            rule.pinnedEntityTemplateId === sourceEntityTemplateId ? [sourceEntityId, destinationEntityId] : [destinationEntityId, sourceEntityId];
 
-        const doesRuleStillApply = await runRuleOnPair(transaction, pinnedEntityId, nonPinnedEntityId, relationship.properties._id, rule);
+        const doesRuleStillApply = await runRuleOnPair(transaction, pinnedEntityId, nonPinnedEntityId, relationshipId, rule);
 
-        return { ruleId: rule._id, doesRuleStillApply, relationshipId: relationship.properties._id } as IRuleTransactionResult;
+        return { ruleId: rule._id, doesRuleStillApply };
     });
     const ruleResults = await Promise.all(ruleResultsPromises);
+    const ruleFailures = ruleResults.filter(({ doesRuleStillApply }) => !doesRuleStillApply);
 
-    return ruleResults;
+    return ruleFailures.map(({ ruleId }) => ({ ruleId, relationshipId }));
 };

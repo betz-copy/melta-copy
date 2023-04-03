@@ -49,7 +49,7 @@ const createRelationshipAndExpectRuleBlock = async (
         ),
     );
     expect(err).toStrictEqual(
-        new ServiceError(400, '[NEO4J] relationship creation is blocked by rules.', {
+        new ServiceError(400, '[NEO4J] action is blocked by rules.', {
             errorCode: config.errorCodes.ruleBlock,
             brokenRules: [
                 {
@@ -89,7 +89,7 @@ const createRelationshipAndExpectToSucceed = async (
 const deleteRelationshipAndExpectRuleBlock = async (relationshipId: string, brokenRule: IBrokenRule) => {
     const { err } = await trycatch(() => RelationshipManager.deleteRelationshipById(relationshipId, []));
     expect(err).toStrictEqual(
-        new ServiceError(400, '[NEO4J] relationship deletion is blocked by rules.', {
+        new ServiceError(400, '[NEO4J] action is blocked by rules.', {
             errorCode: config.errorCodes.ruleBlock,
             brokenRules: [
                 {
@@ -244,11 +244,17 @@ describe('Relationship manager test rules', () => {
                 secondRelationshipId = relationship.properties._id;
             });
 
-            it('Should fail to create relationship between trip and flight, because dependent in rule', async () => {
+            // todo: currently we dont fail it, because it considers travelAgent1+2 as "old" brokenRules.
+            // but in the future maybe should fail them, because they failed with a "different" reason (2 travelAgents AND trip name is not "justForTesting")
+            it.skip('Should fail to create relationship between trip and flight, because dependent in rule', async () => {
                 await createRelationshipAndExpectRuleBlock(flight, trip, tripConnectedToFlightRelationshipTemplate, {
                     ruleId: oneTravelAgentPerFlight._id,
                     relationshipIds: [firstRelationshipId, secondRelationshipId],
                 });
+            });
+            // TODO: test only temporary for hotfix
+            it('Should create relationship between trip and flight, because dependent in rule but not directly', async () => {
+                await createRelationshipAndExpectToSucceed(flight, trip, tripConnectedToFlightRelationshipTemplate);
             });
 
             it('Should create relationship between airport and flight, because not dependent rule', async () => {
@@ -261,6 +267,7 @@ describe('Relationship manager test rules', () => {
             let firstFlight: IEntity;
             let secondFlightNotOverlapping: IEntity;
             let thirdFlightOverlapping: IEntity;
+            let fourthFlightNotOverlapping: IEntity;
 
             let firstRelationshipId: string;
 
@@ -319,6 +326,18 @@ describe('Relationship manager test rules', () => {
                     },
                     flightEntityTemplate,
                 );
+
+                fourthFlightNotOverlapping = await EntityManager.createEntity(
+                    {
+                        templateId: flightEntityTemplate._id,
+                        properties: {
+                            flightNumber: '4',
+                            departureDate: '2022-04-29T17:00:00.000Z',
+                            landingDate: '2022-04-29T19:00:00.000Z',
+                        },
+                    },
+                    flightEntityTemplate,
+                );
             });
 
             afterAll(async () => {
@@ -366,14 +385,42 @@ describe('Relationship manager test rules', () => {
                 expect(relationship.sourceEntityId).toStrictEqual(secondFlightNotOverlapping.properties._id);
                 expect(relationship.destinationEntityId).toStrictEqual(trip.properties._id);
             });
+
             it('Should fail to create a new relationship because overlapping', async () => {
                 await createRelationshipAndExpectRuleBlock(thirdFlightOverlapping, trip, tripConnectedToFlightRelationshipTemplate, {
                     ruleId: noOverlappingFlightsInTrip._id,
                     relationshipIds: [config.createdRelationshipIdInBrokenRules, firstRelationshipId],
                 });
             });
+
+            it('Should ignore failed rule and create relationship', async () => {
+                await createRelationshipAndExpectToSucceed(thirdFlightOverlapping, trip, tripConnectedToFlightRelationshipTemplate, [
+                    {
+                        ruleId: noOverlappingFlightsInTrip._id,
+                        relationshipIds: [config.createdRelationshipIdInBrokenRules, firstRelationshipId],
+                    },
+                ]);
+            });
+
+            it('Should create a new fourth relationship because not overlapping', async () => {
+                const relationship = await RelationshipManager.createRelationshipByEntityIds(
+                    {
+                        templateId: tripConnectedToFlightRelationshipTemplate._id,
+                        properties: { testProp: 'testProp' },
+                        sourceEntityId: fourthFlightNotOverlapping.properties._id,
+                        destinationEntityId: trip.properties._id,
+                    },
+                    tripConnectedToFlightRelationshipTemplate,
+                    [],
+                );
+
+                expect(relationship.templateId).toStrictEqual(tripConnectedToFlightRelationshipTemplate._id);
+                expect(relationship.sourceEntityId).toStrictEqual(fourthFlightNotOverlapping.properties._id);
+                expect(relationship.destinationEntityId).toStrictEqual(trip.properties._id);
+            });
         });
 
+        // todo: remove, rule is not relevant anymore
         describe('Rule 3 - Warn On Every Flight On Active Zone', () => {
             let flight: IEntity;
             let trip: IEntity;
@@ -551,20 +598,27 @@ describe('Relationship manager test rules', () => {
                 );
             });
 
-            it('Should fail to delete third relationship because still rule fails', async () => {
+            // todo: currently we dont fail it, because it considers travelAgent1+2 as "old" brokenRules.
+            // but in the future maybe should fail them, because they failed with a "different" reason (only 2 flights and not 3)
+            it.skip('Should fail to delete third relationship because still rule fails', async () => {
                 await deleteRelationshipAndExpectRuleBlock(thirdRelationshipId, {
                     ruleId: oneTravelAgentPerFlight._id,
                     relationshipIds: [firstRelationshipId, secondRelationshipId],
                 });
             });
 
-            it('Should ignore failed rule and delete third relationship', async () => {
+            // todo: currently we dont fail it, because it considers travelAgent1+2 as "old" brokenRules.
+            // but in the future maybe should fail them, because they failed with a "different" reason (only 2 flights and not 3)
+            it.skip('Should ignore failed rule and delete third relationship', async () => {
                 await deleteRelationshipAndExpectToSucceed(thirdRelationshipId, flightsOnRelationshipTemplate._id, thirdTravelAgent, flight, [
                     {
                         ruleId: oneTravelAgentPerFlight._id,
                         relationshipIds: [firstRelationshipId, secondRelationshipId],
                     },
                 ]);
+            });
+            it('Should delete third relationship because rule passes', async () => {
+                await deleteRelationshipAndExpectToSucceed(thirdRelationshipId, flightsOnRelationshipTemplate._id, thirdTravelAgent, flight, []);
             });
 
             it('Should delete second relationship because rule passes', async () => {
@@ -690,27 +744,16 @@ describe('Relationship manager test rules', () => {
                 );
             });
 
-            it('Should fail to delete second relationship because still overlapping', async () => {
-                await deleteRelationshipAndExpectRuleBlock(secondRelationshipId, {
-                    ruleId: noOverlappingFlightsInTrip._id,
-                    relationshipIds: [firstRelationshipId, thirdRelationshipId],
-                });
-            });
-            it('Should ignore failed rule and delete second relationship', async () => {
+            it('Should delete second relationship because not related to existing overlapping', async () => {
                 await deleteRelationshipAndExpectToSucceed(
                     secondRelationshipId,
                     tripConnectedToFlightRelationshipTemplate._id,
                     secondFlightNotOverlapping,
                     trip,
-                    [
-                        {
-                            ruleId: noOverlappingFlightsInTrip._id,
-                            relationshipIds: [firstRelationshipId, thirdRelationshipId],
-                        },
-                    ],
+                    [],
                 );
             });
-            it('Should delete second relationship because rule passes', async () => {
+            it('Should delete third relationship because removes the overlapping', async () => {
                 await deleteRelationshipAndExpectToSucceed(
                     thirdRelationshipId,
                     tripConnectedToFlightRelationshipTemplate._id,
@@ -818,19 +861,14 @@ describe('Relationship manager test rules', () => {
                 );
             });
 
-            it('Should fail to delete second relationship because still rule fails', async () => {
-                await deleteRelationshipAndExpectRuleBlock(secondRelationshipId, {
-                    ruleId: warnOnEveryFlightOnActiveZone._id,
-                    relationshipIds: [firstRelationshipId],
-                });
-            });
-            it('Should ignore failed rule and delete second relationship', async () => {
-                await deleteRelationshipAndExpectToSucceed(secondRelationshipId, tripConnectedToFlightRelationshipTemplate._id, secondFlight, trip, [
-                    {
-                        ruleId: warnOnEveryFlightOnActiveZone._id,
-                        relationshipIds: [firstRelationshipId],
-                    },
-                ]);
+            it('Should delete second relationship because not related to existing other overlapping', async () => {
+                await deleteRelationshipAndExpectToSucceed(
+                    secondRelationshipId,
+                    tripConnectedToFlightRelationshipTemplate._id,
+                    secondFlight,
+                    trip,
+                    [],
+                );
             });
         });
     });

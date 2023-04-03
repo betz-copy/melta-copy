@@ -405,7 +405,8 @@ export const generateNeo4jRuleQueryAgainstPinnedEntity = (
         }) yield value as doesRuleStillApply_value
 
         WITH rel._id as unpinnedRelationshipId, \`${unpinnedEntityTemplateId}\`._id as unpinnedEntityId, doesRuleStillApply_value.doesRuleStillApply as doesRuleStillApply
-        return unpinnedRelationshipId, unpinnedEntityId, doesRuleStillApply;                           
+        WHERE doesRuleStillApply = false
+        return unpinnedRelationshipId, unpinnedEntityId;                           
         `,
         parameters: { pinnedEntityId, ...formulaQuery.parameters },
     };

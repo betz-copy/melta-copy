@@ -19,8 +19,8 @@ import { NotFoundError, ServiceError } from '../error';
 import { agGridRequestToNeo4JRequest, agGridSearchRequestToNeo4JRequest } from '../../utils/agGrid/agGridFilterModelToNeoQuery';
 import { IAGGridRequest } from '../../utils/agGrid/interfaces';
 import getLatestIndex from '../../utils/redis/getLatestIndex';
-import { areAllBrokenRulesIgnored, getBrokenRules, runRulesOnRelationship, runRulesOnRelationshipsOfPinnedEntity } from '../rules/lib';
-import { IBrokenRule, IConnection } from '../rules/interfaces';
+import { runRulesOnRelationship, runRulesOnRelationshipsOfPinnedEntity, throwIfActionCausedBrokenRules } from '../rules/lib';
+import { IBrokenRule, IConnection, IRuleFailureWithCauses } from '../rules/interfaces';
 import { filterDependentRulesOnProperties, filterDependentRulesViaAggregation } from '../rules/getParametersOfFormula';
 import config from '../../config';
 import { EntityTemplateManagerService, IEntitySingleProperty, IMongoEntityTemplate } from '../../externalServices/entityTemplateManager';
@@ -191,6 +191,15 @@ export class EntityManager {
                 throw new NotFoundError(`[NEO4J] entity "${id}" not found`);
             }
 
+            const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(entity.templateId);
+            const updatedProperties = EntityManager.getUpdatedProperties(
+                entity,
+                { ...entity, properties: { ...entity.properties, disabled, updatedAt: new Date().toISOString() } },
+                entityTemplate,
+            );
+
+            const ruleFailuresBeforeAction = await EntityManager.runRulesDependOnEntityUpdate(transaction, entity, updatedProperties);
+
             const updatedEntity = await runInTransactionAndNormalize(
                 transaction,
                 `MATCH (e {_id: '${id}'}) SET e.disabled = $disabled RETURN e`,
@@ -198,14 +207,9 @@ export class EntityManager {
                 { disabled },
             );
 
-            const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(entity.templateId);
+            const ruleFailuresAfterAction = await EntityManager.runRulesDependOnEntityUpdate(transaction, updatedEntity, updatedProperties);
 
-            await EntityManager.verifyRuleForEntityUpdate(
-                transaction,
-                updatedEntity,
-                ignoredRules,
-                EntityManager.getUpdatedProperties(entity, updatedEntity, entityTemplate),
-            );
+            throwIfActionCausedBrokenRules(ignoredRules, ruleFailuresBeforeAction, ruleFailuresAfterAction);
 
             return updatedEntity;
         });
@@ -216,7 +220,7 @@ export class EntityManager {
         connectionsOfEntity: IConnection[],
         entity: IEntity,
         updatedProperties: string[],
-    ) => {
+    ): Promise<IRuleFailureWithCauses[]> => {
         const rulesOfEntityWhenPinned = await RelationshipsTemplateManagerService.searchRules({
             pinnedEntityTemplateIds: [entity.templateId],
         });
@@ -226,18 +230,26 @@ export class EntityManager {
         const rulesOfEntity = [...rulesOfEntityWhenPinned, ...rulesOfEntityWhenUnpinned];
         const relevantRulesOfEntity = filterDependentRulesOnProperties(rulesOfEntity, entity.templateId, updatedProperties);
 
-        const ruleResultsForEachConnectionPromises = connectionsOfEntity.map(async ({ relationship, destinationEntity: neighbourOfEntity }) => {
+        const ruleFailuresForEachConnectionPromises = connectionsOfEntity.map(async ({ relationship, destinationEntity: neighbourOfEntity }) => {
             const relevantRulesOfRelationship = relevantRulesOfEntity.filter(
                 ({ relationshipTemplateId }) => relationshipTemplateId === relationship.templateId,
             );
 
             const sourceEntityTemplateId = entity.properties._id === relationship.sourceEntityId ? entity.templateId : neighbourOfEntity.templateId;
-            return runRulesOnRelationship(transaction, relevantRulesOfRelationship, relationship, sourceEntityTemplateId);
+            return runRulesOnRelationship(
+                transaction,
+                relevantRulesOfRelationship,
+                relationship.sourceEntityId,
+                relationship.destinationEntityId,
+                relationship.properties._id,
+                sourceEntityTemplateId,
+            );
         });
 
-        const ruleResultsForEachConnection = await Promise.all(ruleResultsForEachConnectionPromises);
+        const ruleFailuresForEachConnection = await Promise.all(ruleFailuresForEachConnectionPromises);
+        const ruleFailures = ruleFailuresForEachConnection.flat();
 
-        return ruleResultsForEachConnection.flat();
+        return ruleFailures.map((ruleFailure) => ({ ...ruleFailure, isTriggeredViaAggregation: false }));
     };
 
     private static runRulesOnRelationshipsOfNeighboursOfEntityDependentViaAggregation = async (
@@ -245,8 +257,8 @@ export class EntityManager {
         connectionsOfDependent: IConnection[],
         dependentEntity: IEntity,
         updatedProperties: string[],
-    ) => {
-        const ruleResultsForEachConnectionPromises = connectionsOfDependent.map(async ({ relationship, destinationEntity: neighbourOfEntity }) => {
+    ): Promise<IRuleFailureWithCauses[]> => {
+        const ruleFailuresForEachConnectionPromises = connectionsOfDependent.map(async ({ relationship, destinationEntity: neighbourOfEntity }) => {
             const rulesOfPinnedEntity = await RelationshipsTemplateManagerService.searchRules({
                 pinnedEntityTemplateIds: [neighbourOfEntity.templateId],
             });
@@ -261,31 +273,27 @@ export class EntityManager {
             );
         });
 
-        const ruleResultsForEachConnection = await Promise.all(ruleResultsForEachConnectionPromises);
+        const ruleFailuresForEachConnection = await Promise.all(ruleFailuresForEachConnectionPromises);
+        const ruleFailures = ruleFailuresForEachConnection.flat();
 
-        return ruleResultsForEachConnection.flat();
+        return ruleFailures.map((ruleFailure) => ({ ...ruleFailure, isTriggeredViaAggregation: true }));
     };
 
-    private static async verifyRuleForEntityUpdate(
-        transaction: Transaction,
-        updatedEntity: IEntity,
-        ignoredRules: IBrokenRule[],
-        updatedProperties: string[],
-    ) {
+    private static async runRulesDependOnEntityUpdate(transaction: Transaction, updatedEntity: IEntity, updatedProperties: string[]) {
         const connectionsOfEntity = await runInTransactionAndNormalize(
             transaction,
             `MATCH (s {_id: '${updatedEntity.properties._id}'})-[r]-(d)  RETURN s, r, d`,
             normalizeRelAndEntitiesForRule,
         );
 
-        const ruleResultsOnAllRelationshipsOfUpdatedEntityPromise = EntityManager.runRulesOnAllRelationshipsOfUpdatedEntity(
+        const ruleFailuresOnAllRelationshipsOfUpdatedEntityPromise = EntityManager.runRulesOnAllRelationshipsOfUpdatedEntity(
             transaction,
             connectionsOfEntity,
             updatedEntity,
             updatedProperties,
         );
 
-        const ruleResultsOnRelationshipsOfNeighboursOfEntityPromise =
+        const ruleFailuresOnRelationshipsOfNeighboursOfEntityPromise =
             EntityManager.runRulesOnRelationshipsOfNeighboursOfEntityDependentViaAggregation(
                 transaction,
                 connectionsOfEntity,
@@ -293,20 +301,13 @@ export class EntityManager {
                 updatedProperties,
             );
 
-        const [ruleResultsOnAllRelationshipsOfUpdatedEntity, ruleResultsOnRelationshipsOfNeighboursOfEntity] = await Promise.all([
-            ruleResultsOnAllRelationshipsOfUpdatedEntityPromise,
-            ruleResultsOnRelationshipsOfNeighboursOfEntityPromise,
+        const [ruleFailuresOnAllRelationshipsOfUpdatedEntity, ruleFailuresOnRelationshipsOfNeighboursOfEntity] = await Promise.all([
+            ruleFailuresOnAllRelationshipsOfUpdatedEntityPromise,
+            ruleFailuresOnRelationshipsOfNeighboursOfEntityPromise,
         ]);
-        const ruleResults = [...ruleResultsOnAllRelationshipsOfUpdatedEntity, ...ruleResultsOnRelationshipsOfNeighboursOfEntity];
+        const ruleFailures = [...ruleFailuresOnAllRelationshipsOfUpdatedEntity, ...ruleFailuresOnRelationshipsOfNeighboursOfEntity];
 
-        const brokenRules = getBrokenRules(ruleResults);
-
-        if (!areAllBrokenRulesIgnored(brokenRules, ignoredRules)) {
-            throw new ServiceError(400, `[NEO4J] entity update is blocked by rules.`, {
-                errorCode: config.errorCodes.ruleBlock,
-                brokenRules,
-            });
-        }
+        return ruleFailures;
     }
 
     public static getUpdatedProperties(oldEntity: IEntity, newEntity: IEntity, entityTemplate: IMongoEntityTemplate) {
@@ -345,6 +346,14 @@ export class EntityManager {
                 throw new ServiceError(400, `[NEO4J] cannot update disabled entity.`);
             }
 
+            const updatedProperties = EntityManager.getUpdatedProperties(
+                entity,
+                { templateId: entity.templateId, properties: { ...entityProperties, updatedAt: new Date().toISOString() } },
+                entityTemplate,
+            );
+
+            const ruleFailuresBeforeAction = await EntityManager.runRulesDependOnEntityUpdate(transaction, entity, updatedProperties);
+
             const updatedEntity = await runInTransactionAndNormalize(
                 transaction,
                 `MATCH (e {_id: $props._id})
@@ -363,12 +372,9 @@ export class EntityManager {
                 },
             );
 
-            await EntityManager.verifyRuleForEntityUpdate(
-                transaction,
-                updatedEntity,
-                ignoredRules,
-                EntityManager.getUpdatedProperties(entity, updatedEntity, entityTemplate),
-            );
+            const ruleFailuresAfterAction = await EntityManager.runRulesDependOnEntityUpdate(transaction, updatedEntity, updatedProperties);
+
+            throwIfActionCausedBrokenRules(ignoredRules, ruleFailuresBeforeAction, ruleFailuresAfterAction);
 
             return updatedEntity;
         }).catch(EntityManager.throwServiceErrorIfFailedConstraintsValidation); // constraint validation is performed on end of transaction

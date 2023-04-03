@@ -76,10 +76,10 @@ export const normalizeRuleResultAgainstPair = (result: QueryResult): boolean => 
     return result.records[0].get('doesRuleStillApply');
 };
 
-export const normalizeRuleResultsAgainstPinnedEntity = (result: QueryResult) => {
+export const normalizeRuleFailuresAgainstPinnedEntity = (result: QueryResult) => {
     return result.records.map((resultOfPairRecord) => {
         const resultOfPair = resultOfPairRecord.toObject();
-        return resultOfPair as { unpinnedRelationshipId: string; unpinnedEntityId: string; doesRuleStillApply: boolean };
+        return resultOfPair as { unpinnedRelationshipId: string; unpinnedEntityId: string };
     });
 };
 

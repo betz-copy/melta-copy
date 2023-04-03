@@ -117,10 +117,15 @@ export interface IBrokenRule {
     relationshipIds: string[];
 }
 
-export interface IRuleTransactionResult {
-    doesRuleStillApply: boolean;
+export interface IRuleFailure {
     ruleId: string;
     relationshipId: string;
+}
+
+export interface IRuleFailureWithCauses extends IRuleFailure {
+    // todo: currently can only tell if caused by aggregation or not.
+    // in the future will know which entities/relations exactly caused the failure
+    isTriggeredViaAggregation: boolean;
 }
 
 export interface IRuleTransactionQuery {
