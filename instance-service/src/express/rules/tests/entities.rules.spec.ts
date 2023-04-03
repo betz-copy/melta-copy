@@ -190,7 +190,7 @@ describe('Entity manager test rules', () => {
                         destinationEntityId: trip.properties._id,
                     },
                     tripConnectedToFlightRelationshipTemplate,
-                    [{ ruleId: oneTravelAgentPerFlight._id, relationshipIds: [firstRelationshipId, secondRelationshipId] }],
+                    [],
                 );
             });
 
