@@ -1,11 +1,18 @@
 import Ajv from 'ajv';
 import { Request } from 'express';
 import * as Joi from 'joi';
+import addFormats from 'ajv-formats';
 import { wrapValidator } from './express';
+import config from '../config';
 
-const stringFormats = ['date', 'date-time', 'email', 'fileId'];
-const allowedJSONSchemaTypes = ['string', 'number', 'boolean'];
 const ajv = new Ajv();
+ajv.addFormat('fileId', /.*/);
+ajv.addFormat('entityId', /.*/);
+addFormats(ajv);
+ajv.addVocabulary(['patternCustomErrorMessage']);
+
+const stringFormats = ['date', 'date-time', 'email', 'fileId', 'entityId'];
+const allowedJSONSchemaTypes = ['string', 'number', 'boolean'];
 
 const defaultValidationOptions: Joi.ValidationOptions = {
     abortEarly: false,
@@ -42,6 +49,14 @@ const ValidateRequest = (schema: Joi.ObjectSchema<any>, options: Joi.ValidationO
 export const variableNameValidation = Joi.string().regex(/^[a-zA-Z][a-zA-Z_$0-9]*$/);
 
 export const MongoIdSchema = Joi.string().regex(/^[0-9a-fA-F]{24}$/, 'valid MongoId');
+
+export const updateAndCreateStepsSchema = Joi.object().pattern(MongoIdSchema, Joi.array().items(Joi.string()));
+
+export const updateStatusPropertiesSchema = Joi.string().when('status', {
+    is: Joi.exist(),
+    then: Joi.required(),
+    otherwise: Joi.optional(),
+});
 
 const propertiesArraySchema = Joi.array()
     .items(
@@ -99,7 +114,6 @@ export const innerPropertiesSchema = Joi.object()
             .custom((value) => {
                 const { error: propertiesError } = propertiesArraySchema.validate(Object.values(value)); // titles are unique
                 const { error: keyError } = propertiesKeysArraySchema.validate(Object.keys(value));
-
                 if (propertiesError) {
                     throw propertiesError;
                 }
@@ -117,7 +131,6 @@ export const innerPropertiesSchema = Joi.object()
     })
     .custom((value) => {
         ajv.compile(value); // throws an error if JSONSchema is invalid
-
         return value;
     });
 
@@ -127,10 +140,45 @@ const customOrderPropertiesValidation = (value, helpers) => {
     if (propertiesKeys.length !== value.length) {
         throw new Error('not all fields are ordered');
     }
-
     return validatePropertiesArray(value, propertiesKeys);
 };
 
-export const orderPropertiesSchema = Joi.array().unique().items(Joi.string()).custom(customOrderPropertiesValidation).required();
+const orderPropertiesSchema = Joi.array().unique().items(Joi.string()).custom(customOrderPropertiesValidation).required();
+
+const baseStepSchema = Joi.object({
+    name: variableNameValidation,
+    displayName: Joi.string(),
+    properties: innerPropertiesSchema,
+    propertiesOrder: orderPropertiesSchema,
+    reviewers: Joi.array().items(Joi.string()),
+    iconFileId: Joi.string().allow(null),
+});
+
+const processTemplateBaseSchema = {
+    name: variableNameValidation,
+    displayName: Joi.string(),
+    details: Joi.object({
+        properties: innerPropertiesSchema,
+        propertiesOrder: orderPropertiesSchema,
+    }),
+    steps: Joi.array().items(baseStepSchema),
+    summaryDetails: Joi.object({
+        properties: innerPropertiesSchema,
+        propertiesOrder: orderPropertiesSchema,
+    }),
+};
+
+const topLevelRequiredFields = Object.values(config.processFields);
+
+export const createProcessTemplateBody = Joi.object({
+    ...processTemplateBaseSchema,
+})
+    .options({ abortEarly: false })
+    .with(topLevelRequiredFields[0], topLevelRequiredFields.slice(1));
+
+export const updateProcessTemplateBody = Joi.object({
+    ...processTemplateBaseSchema,
+    steps: Joi.array().items(baseStepSchema.keys({ _id: Joi.string() })),
+}).options({ abortEarly: false });
 
 export default ValidateRequest;

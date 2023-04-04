@@ -1,6 +1,6 @@
 import * as mongoose from 'mongoose';
-import { IProcessTemplate, IProcessStepTemplate } from './interface';
-import config from '../../config';
+import { IProcessTemplate, ProcessTemplateDocument } from './interface';
+import config from '../../../config';
 
 const ProcessTemplateSchema = new mongoose.Schema<IProcessTemplate>(
     {
@@ -16,8 +16,15 @@ const ProcessTemplateSchema = new mongoose.Schema<IProcessTemplate>(
             type: Object,
             required: true,
         },
-        steps: {
-            type: Array<IProcessStepTemplate>,
+        steps: [
+            {
+                type: String,
+                ref: config.mongo.stepTemplateCollectionName,
+                required: true,
+            },
+        ],
+        summaryDetails: {
+            type: Object,
             required: true,
         },
     },
@@ -30,6 +37,6 @@ const ProcessTemplateSchema = new mongoose.Schema<IProcessTemplate>(
 ProcessTemplateSchema.index({ name: 1 }, { unique: true });
 ProcessTemplateSchema.index({ displayName: 1 }, { unique: true });
 
-const ProcessTemplateModel = mongoose.model<IProcessTemplate & mongoose.Document>(config.mongo.processTemplateCollectionName, ProcessTemplateSchema);
+const ProcessTemplateModel = mongoose.model<ProcessTemplateDocument>(config.mongo.processTemplateCollectionName, ProcessTemplateSchema);
 
 export default ProcessTemplateModel;
