@@ -22,6 +22,8 @@ const createIndex = async (indexName: string, labels: string[], properties: stri
     // and searching "*foo bar*" will also work, because it will search "*foo" and "bar*" separately
     // read also this to understand: https://stackoverflow.com/questions/25450308/full-text-search-in-neo4j-with-spaces
     // also it will work better for searching dates (standard analyzer breaks apart the dates)
+    // btw, adding custom analyzer to support autocomplete (for example edge-n-gram analyzer) instead of '*' is not possible.
+    // because it requires one analyzer for the index task and one analyzer for the search/query task different analyzer see https://github.com/neo4j/neo4j/issues/9787
 
     await Neo4jClient.writeTransaction(createFullTextIndexCommand);
 };
