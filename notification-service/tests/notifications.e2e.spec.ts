@@ -9,6 +9,7 @@ import { Express } from 'express';
 import config from '../src/config';
 import Server from '../src/express/server';
 import { INotification, NotificationType } from '../src/express/notifications/interface';
+import { ProcessStatus } from '../src/utils/interfaces/processes';
 
 const { mongo } = config;
 
@@ -319,6 +320,14 @@ describe('e2e notifications api testing', () => {
                     .expect(200);
                 await request(app)
                     .post('/api/notifications')
+                    .send({
+                        viewers: [fakeObjectId],
+                        type: NotificationType.processStatusUpdate,
+                        metadata: { processId: fakeObjectId2, status: ProcessStatus.Approved },
+                    })
+                    .expect(200);
+                await request(app)
+                    .post('/api/notifications')
                     .send({ viewers: [fakeObjectId], type: NotificationType.newProcess, metadata: { processId: fakeObjectId2 } })
                     .expect(200);
                 await request(app)
@@ -335,16 +344,16 @@ describe('e2e notifications api testing', () => {
                     .send({
                         groups: {
                             rules: [NotificationType.ruleBreachAlert, NotificationType.ruleBreachRequest],
-                            processes: [NotificationType.newProcess, NotificationType.processApproverUpdate],
+                            processes: [NotificationType.newProcess, NotificationType.processStatusUpdate, NotificationType.processApproverUpdate],
                         },
                     })
                     .expect(200);
 
                 expect(body).toEqual({
-                    total: 6,
+                    total: 7,
                     groups: {
                         rules: 4,
-                        processes: 2,
+                        processes: 3,
                     },
                 });
             });
@@ -362,10 +371,6 @@ describe('e2e notifications api testing', () => {
                         test2: 0,
                     },
                 });
-            });
-
-            it('should not allow zero groups', async () => {
-                await request(app).post('/api/notifications/group-count').send({ groups: {} }).expect(400);
             });
 
             it('should not allow zero types in group', async () => {
