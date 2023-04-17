@@ -1,10 +1,13 @@
 import { Document } from 'mongoose';
+import { ProcessStatus } from '../../utils/interfaces/processes';
 
 export enum NotificationType {
     ruleBreachAlert = 'ruleBreachAlert',
     ruleBreachRequest = 'ruleBreachRequest',
     ruleBreachResponse = 'ruleBreachResponse',
+
     processApproverUpdate = 'processApproverUpdate',
+    processStatusUpdate = 'processStatusUpdate',
     newProcess = 'newProcess',
 }
 
@@ -21,6 +24,12 @@ interface IRuleBreachResponseMetadata {
 interface IProcessApproverUpdateMetadata {
     processId: string;
     approverStepIds: string[];
+    previousApproverStepIds?: string[];
+}
+interface IProcessStatusUpdateMetadata {
+    processId: string;
+    stepId?: string;
+    status: ProcessStatus;
 }
 interface INewProcessMetadata {
     processId: string;
@@ -31,6 +40,7 @@ type INotificationMetadata =
     | IRuleBreachRequestMetadata
     | IRuleBreachResponseMetadata
     | IProcessApproverUpdateMetadata
+    | IProcessStatusUpdateMetadata
     | INewProcessMetadata;
 
 export interface INotification {
