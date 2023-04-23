@@ -1,4 +1,4 @@
-import { FilterQuery } from 'mongoose';
+import { Document, FilterQuery } from 'mongoose';
 import ProcessTemplateModel from './model';
 import {
     IMongoProcessTemplate,
@@ -14,19 +14,16 @@ import { transaction } from '../../../utils/mongoose';
 import StepTemplateManager from '../steps/manager';
 import config from '../../../config';
 
-type ProcessTemplateType<T extends boolean> = T extends true ? IMongoProcessTemplatePopulated : IMongoProcessTemplate;
+type ProcessTemplateType<T extends boolean> = T extends true ? IMongoProcessTemplatePopulated & Document : IMongoProcessTemplate & Document;
 
 class ProcessTemplateManager {
-    static async getProcessTemplateById<T extends boolean = true>(id: string, shouldPopulate?: T): Promise<ProcessTemplateType<T>> {
-        return ProcessTemplateModel.findById(id)
-            .orFail(new TemplateNotFoundError('process', id))
-            .populate(shouldPopulate ? config.processFields.steps : null)
-            .lean()
-            .exec() as Promise<ProcessTemplateType<T>>;
+    static async getProcessTemplateById<T extends boolean = true>(id: string, shouldPopulate: T = true as T): Promise<ProcessTemplateType<T>> {
+        const query = ProcessTemplateModel.findById(id).orFail(new TemplateNotFoundError('process', id)).lean();
+        return (shouldPopulate ? query.populate(config.processFields.steps) : query).exec() as Promise<ProcessTemplateType<T>>;
     }
 
     static async createProcessTemplate(processTemplate: IProcessTemplatePopulated): Promise<IMongoProcessTemplatePopulated> {
-        const templateId = await transaction(async (session) => {
+        const templateId: string = await transaction(async (session) => {
             const steps = await StepTemplateManager.createStepsTemplates(processTemplate.steps, session);
             const stepsIds = steps.map((step) => step._id);
             // mongoose create doesn't work well with sessions,the first argument must be an array
@@ -34,7 +31,7 @@ class ProcessTemplateManager {
             const [{ _id }] = await ProcessTemplateModel.insertMany([{ ...processTemplate, steps: stepsIds }], { session });
             return _id;
         });
-        return ProcessTemplateModel.findById(templateId).populate(config.processFields.steps).lean();
+        return this.getProcessTemplateById(templateId);
     }
 
     static async throwIfProcessTemplateHasInstances(templateId: string) {
@@ -47,7 +44,10 @@ class ProcessTemplateManager {
         await ProcessTemplateManager.throwIfProcessTemplateHasInstances(id);
         return transaction(async (session) => {
             await StepTemplateManager.deleteStepsByIds(processTemplateToDelete.steps, session);
-            return ProcessTemplateModel.findByIdAndDelete(id).orFail(new TemplateNotFoundError('process', id)).lean();
+            return ProcessTemplateModel.findByIdAndDelete(id)
+                .orFail(new TemplateNotFoundError('process', id))
+                .populate(config.processFields.steps)
+                .lean();
         });
     }
 
@@ -67,7 +67,7 @@ class ProcessTemplateManager {
 
     private static throwIfCantUpdateProcessTemplate(updatedTemplate: IProcessTemplatePopulated, currTemplate: IMongoProcessTemplatePopulated) {
         const { details: updatedDetails, summaryDetails: updatedSummary, name: updatedName, steps: updatedSteps } = updatedTemplate;
-        if (updatedName !== currTemplate.name) throw new ServiceError(400, 'can not change step templateName');
+        if (updatedName !== currTemplate.name) throw new ServiceError(400, 'can not change step template name');
         this.validateProperties(updatedDetails.properties.properties, currTemplate.details.properties.properties);
         this.validateProperties(updatedSummary.properties.properties, currTemplate.summaryDetails.properties.properties);
         if (updatedSteps.length !== currTemplate.steps.length) throw new ServiceError(400, 'can not delete or add steps');
@@ -93,7 +93,7 @@ class ProcessTemplateManager {
         });
     }
 
-    static searchTemplates({ displayName, ids, limit, skip }: { displayName?: string; ids?: string[]; limit: number; skip: number }) {
+    static async searchTemplates({ displayName, ids, limit, skip }: { displayName?: string; ids?: string[]; limit: number; skip: number }) {
         const query: FilterQuery<ProcessTemplateDocument> = {};
 
         if (displayName) query.displayName = { $regex: escapeRegExp(displayName) };

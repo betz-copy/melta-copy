@@ -13,7 +13,7 @@ const StepTemplateSchema = new mongoose.Schema<IStepTemplate>(
             required: true,
         },
         reviewers: {
-            type: Array<String>,
+            type: [String],
             required: true,
         },
         properties: {
@@ -21,7 +21,7 @@ const StepTemplateSchema = new mongoose.Schema<IStepTemplate>(
             required: true,
         },
         propertiesOrder: {
-            type: Array<String>,
+            type: [String],
             required: true,
         },
         iconFileId: {
