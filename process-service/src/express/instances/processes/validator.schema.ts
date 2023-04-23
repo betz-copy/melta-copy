@@ -31,7 +31,6 @@ export const updateInstanceByIdRequestSchema = Joi.object({
         steps: updateAndCreateStepsSchema,
         status: Joi.string().valid(...Object.values(Status)),
         reviewerId: updateStatusPropertiesSchema,
-        reviewedAt: updateStatusPropertiesSchema,
         summaryDetails: Joi.object(),
     },
     query: {},

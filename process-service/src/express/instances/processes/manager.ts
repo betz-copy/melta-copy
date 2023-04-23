@@ -10,18 +10,15 @@ import { validateStepIds } from './validator.template';
 import { escapeRegExp } from '../../../utils';
 import { IMongoProcessTemplate } from '../../templates/processes/interface';
 
-type ProcessInstanceType<T extends boolean> = T extends true ? IMongoProcessInstancePopulated : IMongoProcessInstance;
+type ProcessInstanceType<T extends boolean> = T extends true ? IMongoProcessInstancePopulated & Document : IMongoProcessInstance & Document;
 
 class ProcessInstanceManager {
-    static getProcessById<T extends boolean = true>(id: string, shouldPopulate?: T): Promise<ProcessInstanceType<T>> {
-        return ProcessInstanceModel.findById(id)
-            .populate(shouldPopulate ? config.processFields.steps : null)
-            .orFail(new NotFoundError('process', id))
-            .lean()
-            .exec() as Promise<ProcessInstanceType<T>>;
+    static async getProcessById<T extends boolean = true>(id: string, shouldPopulate: T = true as T): Promise<ProcessInstanceType<T>> {
+        const query = ProcessInstanceModel.findById(id).orFail(new NotFoundError('process', id)).lean();
+        return (shouldPopulate ? query.populate(config.processFields.steps) : query).exec() as Promise<ProcessInstanceType<T>>;
     }
 
-    static getProcessesByTemplateId(id: string) {
+    static async getProcessesByTemplateId(id: string) {
         return ProcessInstanceModel.find({ templateId: id }).orFail(new NotFoundError('process', id)).lean().exec();
     }
 
@@ -54,13 +51,12 @@ class ProcessInstanceManager {
 
     static async deleteProcess(id: string): Promise<IMongoProcessInstancePopulated> {
         const { steps: stepsIds } = await this.getProcessById(id, false);
-        return transaction(async (session) => {
+        const { steps: processSteps } = await this.getProcessById(id);
+        const deletedProcess: IMongoProcessInstance = await transaction(async (session) => {
             await StepInstanceManager.deleteStepsByIds(stepsIds, session);
-            return ProcessInstanceModel.findByIdAndDelete(id, { session })
-                .populate(config.processFields.steps)
-                .orFail(new NotFoundError('process', id))
-                .lean();
+            return ProcessInstanceModel.findByIdAndDelete(id, { session }).orFail(new NotFoundError('process', id)).lean();
         });
+        return { ...deletedProcess, steps: processSteps };
     }
 
     static async updateProcess(id: string, updatedData: Partial<IProcessInstance & { steps: Record<string, string[]> }>) {
@@ -83,14 +79,21 @@ class ProcessInstanceManager {
             await StepInstanceManager.updateStepsReviewers(stepsReviewers, session);
 
             const { steps, ...updatedProcess } = updatedData;
-            return ProcessInstanceModel.findByIdAndUpdate(id, updatedProcess, { new: true, session, runValidators: true })
+            return ProcessInstanceModel.findByIdAndUpdate(
+                id,
+                updatedProcess.status ? { ...updatedProcess, reviewedAt: new Date() } : updatedProcess,
+                {
+                    new: true,
+                    session,
+                },
+            )
                 .populate(config.processFields.steps)
                 .orFail(new NotFoundError('process', id))
                 .lean();
         });
     }
 
-    static searchProcesses({ name, ids, limit, skip }: { name?: string; ids?: string[]; limit: number; skip: number }) {
+    static async searchProcesses({ name, ids, limit, skip }: { name?: string; ids?: string[]; limit: number; skip: number }) {
         const query: FilterQuery<IProcessInstance & Document> = {};
         if (name) query.name = { $regex: escapeRegExp(name) };
         if (ids) query._id = { $in: ids };

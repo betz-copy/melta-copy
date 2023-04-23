@@ -20,7 +20,7 @@ export const getTemplateAggregation = async (
     return model.aggregate([
         {
             $match: {
-                _id: new Types.ObjectId(id),
+                _id: Types.ObjectId(id),
             },
         },
         {

@@ -35,17 +35,13 @@ export default class StepInstanceManager {
     }
 
     static async updateStepProperties(id: string, properties: IStepInstance['properties']): Promise<IMongoStepInstance> {
-        return StepInstanceModel.findByIdAndUpdate(id, { $set: { properties } }, { new: true })
-            .orFail(new NotFoundError('step', id))
-            .lean()
-            .exec() as Promise<IMongoStepInstance>;
+        return StepInstanceModel.findByIdAndUpdate(id, { $set: properties }, { new: true }).orFail(new NotFoundError('step', id)).lean();
     }
 
     static async updateStepStatus(id: string, statusData: { status: IStepInstance['status']; reviewerId: string }): Promise<IMongoStepInstance> {
         return StepInstanceModel.findByIdAndUpdate(id, { ...statusData, reviewedAt: new Date() }, { new: true })
             .orFail(new NotFoundError('step', id))
-            .lean()
-            .exec() as Promise<IMongoStepInstance>;
+            .lean();
     }
 
     static async deleteStepsByIds(stepIds: string[], session?: ClientSession) {

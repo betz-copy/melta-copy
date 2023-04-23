@@ -33,7 +33,7 @@ export interface IMongoProcessInstancePopulated extends IProcessInstancePopulate
 }
 
 export type CreateAndUpdateProcessReqBody = Pick<IProcessInstance, 'details' | 'name' | 'summaryDetails'> &
-    Partial<Pick<IProcessInstance, 'templateId'>> & {
+    Partial<Pick<IProcessInstance, 'templateId' | 'status' | 'reviewerId'>> & {
         steps: Record<string, string[]>;
     };
 

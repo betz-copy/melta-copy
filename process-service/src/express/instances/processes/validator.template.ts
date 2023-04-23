@@ -17,7 +17,7 @@ const validateInstanceProperties = (
     checkFor: 'Details' | 'Summary',
 ) => {
     const validate = ajv.compile(templateProperties);
-    const isValid = validate(instanceProperties.properties);
+    const isValid = validate(instanceProperties);
 
     if (!isValid) {
         throw new InstancePropertiesValidationError(checkFor, JSON.stringify(validate.errors));
