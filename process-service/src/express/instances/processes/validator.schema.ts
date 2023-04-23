@@ -1,13 +1,13 @@
 import * as Joi from 'joi';
-import { MongoIdSchema } from '../../utils/joi';
-import { StepStatus } from './interface';
+import { updateAndCreateStepsSchema, MongoIdSchema, updateStatusPropertiesSchema } from '../../../utils/joi';
+import { Status } from './interface';
 
 // GET /api/instances/process/:processId
 export const getInstanceByIdRequestSchema = Joi.object({
     query: {},
     body: {},
     params: {
-        processId: MongoIdSchema.required(),
+        id: MongoIdSchema.required(),
     },
 });
 
@@ -15,18 +15,9 @@ export const getInstanceByIdRequestSchema = Joi.object({
 export const createInstanceRequestSchema = Joi.object({
     body: {
         templateId: MongoIdSchema.required(),
+        name: Joi.string().required(),
         details: Joi.object().required(),
-        steps: Joi.array()
-            .items(
-                Joi.object({
-                    properties: Joi.object().required(),
-                    status: Joi.string()
-                        .valid(...Object.values(StepStatus))
-                        .required(),
-                }),
-            )
-            .required(),
-        approvers: Joi.array().items(Joi.string()).required(),
+        steps: updateAndCreateStepsSchema.required(),
     },
     query: {},
     params: {},
@@ -36,18 +27,16 @@ export const createInstanceRequestSchema = Joi.object({
 export const updateInstanceByIdRequestSchema = Joi.object({
     body: {
         details: Joi.object(),
-        steps: Joi.array().items(
-            Joi.object({
-                properties: Joi.object(),
-                status: Joi.string().valid(...Object.values(StepStatus)),
-            }),
-        ),
-        approvers: Joi.array().items(Joi.string()),
-        approverId: Joi.string(),
-        approvedAt: Joi.date(),
+        name: Joi.string(),
+        steps: updateAndCreateStepsSchema,
+        status: Joi.string().valid(...Object.values(Status)),
+        reviewerId: updateStatusPropertiesSchema,
+        summaryDetails: Joi.object(),
     },
     query: {},
-    params: {},
+    params: {
+        id: MongoIdSchema.required(),
+    },
 });
 
 // DELETE /api/instances/process/:processId
@@ -55,7 +44,7 @@ export const deleteInstanceByIdRequestSchema = Joi.object({
     body: {},
     query: {},
     params: {
-        processId: MongoIdSchema.required(),
+        id: MongoIdSchema.required(),
     },
 });
 
@@ -63,7 +52,7 @@ export const deleteInstanceByIdRequestSchema = Joi.object({
 export const searchInstanceRequestSchema = Joi.object({
     query: {},
     body: {
-        search: Joi.string(),
+        name: Joi.string(),
         ids: Joi.array().items(MongoIdSchema),
         limit: Joi.number().integer().min(0).default(0),
         skip: Joi.number().integer().min(0).default(0),

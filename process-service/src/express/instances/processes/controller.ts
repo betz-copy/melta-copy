@@ -3,8 +3,7 @@ import ProcessInstanceManager from './manager';
 
 class ProcessInstanceController {
     static async getProcessById(req: Request, res: Response) {
-        const { processId: id } = req.params;
-        res.json(await ProcessInstanceManager.getProcessById(id));
+        res.json(await ProcessInstanceManager.getProcessById(req.params.id));
     }
 
     static async createProcess(req: Request, res: Response) {
@@ -12,13 +11,11 @@ class ProcessInstanceController {
     }
 
     static async deleteProcess(req: Request, res: Response) {
-        const { processId: id } = req.params;
-        res.json(await ProcessInstanceManager.deleteProcess(id));
+        res.json(await ProcessInstanceManager.deleteProcess(req.params.id));
     }
 
     static async updateProcess(req: Request, res: Response) {
-        const { processId: id } = req.params;
-        res.json(await ProcessInstanceManager.updateProcess(id, req.body));
+        res.json(await ProcessInstanceManager.updateProcess(req.params.id, req.body));
     }
 
     static async searchProcesses(req: Request, res: Response) {

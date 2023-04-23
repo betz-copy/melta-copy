@@ -1,11 +1,13 @@
 import { Router } from 'express';
-import processInstanceRouter from './processInstance/router';
-import processTemplateRouter from './processTemplate/router';
+import ProcessInstanceRouter from './instances/processes/router';
+import StepInstanceRouter from './instances/steps/router';
+import ProcessTemplateRouter from './templates/processes/router';
 
 const appRouter = Router();
 
-appRouter.use('/api/templates/processes', processTemplateRouter);
-appRouter.use('/api/instances/processes', processInstanceRouter);
+appRouter.use('/api/processes/templates', ProcessTemplateRouter);
+appRouter.use('/api/processes/instances/steps', StepInstanceRouter);
+appRouter.use('/api/processes/instances', ProcessInstanceRouter);
 
 appRouter.use('/isAlive', (_req, res) => {
     res.status(200).send('alive');

@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import ProcessInstance from './controller';
-import { wrapController, wrapMiddleware } from '../../utils/express';
-import ValidateRequest from '../../utils/joi';
+import { wrapController, wrapMiddleware } from '../../../utils/express';
+import ValidateRequest from '../../../utils/joi';
 import {
     getInstanceByIdRequestSchema,
     updateInstanceByIdRequestSchema,
@@ -14,7 +14,7 @@ import { validateProcessInstance } from './validator.template';
 
 const processInstanceRouter: Router = Router();
 
-processInstanceRouter.get('/:processId', ValidateRequest(getInstanceByIdRequestSchema), wrapController(ProcessInstance.getProcessById));
+processInstanceRouter.get('/:id', ValidateRequest(getInstanceByIdRequestSchema), wrapController(ProcessInstance.getProcessById));
 processInstanceRouter.post(
     '/',
     ValidateRequest(createInstanceRequestSchema),
@@ -22,11 +22,12 @@ processInstanceRouter.post(
     wrapController(ProcessInstance.createProcess),
 );
 processInstanceRouter.post('/search', ValidateRequest(searchInstanceRequestSchema), wrapController(ProcessInstance.searchProcesses));
-export default processInstanceRouter;
-processInstanceRouter.delete('/:processId', ValidateRequest(deleteInstanceByIdRequestSchema), wrapController(ProcessInstance.deleteProcess));
+processInstanceRouter.delete('/:id', ValidateRequest(deleteInstanceByIdRequestSchema), wrapController(ProcessInstance.deleteProcess));
 processInstanceRouter.put(
-    '/:processId',
+    '/:id',
     ValidateRequest(updateInstanceByIdRequestSchema),
     wrapMiddleware(validateProcessInstance),
     wrapController(ProcessInstance.updateProcess),
 );
+
+export default processInstanceRouter;
