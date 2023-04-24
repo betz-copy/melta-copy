@@ -146,11 +146,11 @@ const customOrderPropertiesValidation = (value, helpers) => {
 const orderPropertiesSchema = Joi.array().unique().items(Joi.string()).custom(customOrderPropertiesValidation).required();
 
 const baseStepSchema = Joi.object({
-    name: variableNameValidation,
-    displayName: Joi.string(),
-    properties: innerPropertiesSchema,
-    propertiesOrder: orderPropertiesSchema,
-    reviewers: Joi.array().items(Joi.string()),
+    name: variableNameValidation.required(),
+    displayName: Joi.string().required(),
+    properties: innerPropertiesSchema.required(),
+    propertiesOrder: orderPropertiesSchema.required(),
+    reviewers: Joi.array().items(Joi.string()).required(),
     iconFileId: Joi.string().allow(null),
 });
 
@@ -161,7 +161,7 @@ const processTemplateBaseSchema = {
         properties: innerPropertiesSchema,
         propertiesOrder: orderPropertiesSchema,
     }),
-    steps: Joi.array().items(baseStepSchema),
+    steps: Joi.array().items(baseStepSchema).min(1),
     summaryDetails: Joi.object({
         properties: innerPropertiesSchema,
         propertiesOrder: orderPropertiesSchema,
@@ -178,7 +178,9 @@ export const createProcessTemplateBody = Joi.object({
 
 export const updateProcessTemplateBody = Joi.object({
     ...processTemplateBaseSchema,
-    steps: Joi.array().items(baseStepSchema.keys({ _id: Joi.string() })),
+    steps: Joi.array()
+        .items(baseStepSchema.keys({ _id: Joi.string() }))
+        .min(1),
 }).options({ abortEarly: false });
 
 export default ValidateRequest;
