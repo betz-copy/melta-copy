@@ -1,5 +1,6 @@
 import { Document } from 'mongoose';
 import { IMongoStepInstance } from '../steps/interface';
+import { IBaseSearchProperties } from '../../templates/processes/interface';
 
 export enum Status {
     Pending = 'pending',
@@ -36,5 +37,9 @@ export type CreateAndUpdateProcessReqBody = Pick<IProcessInstance, 'details' | '
     Partial<Pick<IProcessInstance, 'templateId' | 'status' | 'reviewerId'>> & {
         steps: Record<string, string[]>;
     };
+
+export interface IProcessInstanceSearchProperties extends IBaseSearchProperties {
+    name?: string;
+}
 
 export type ProcessInstanceDocument = IProcessInstance & Document;

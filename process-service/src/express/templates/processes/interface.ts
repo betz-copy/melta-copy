@@ -40,4 +40,12 @@ export interface IMongoProcessTemplatePopulated extends IProcessTemplatePopulate
     updatedAt: Date;
 }
 
+export interface IBaseSearchProperties {
+    ids?: string[];
+    limit: number;
+    skip: number;
+}
+export interface IProcessTemplateSearchProperties extends IBaseSearchProperties {
+    displayName?: string;
+}
 export type ProcessTemplateDocument = IProcessTemplate & Document;

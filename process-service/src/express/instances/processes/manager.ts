@@ -1,6 +1,12 @@
 import { FilterQuery, Document } from 'mongoose';
 import ProcessInstanceModel from './model';
-import { IProcessInstance, CreateAndUpdateProcessReqBody, IMongoProcessInstance, IMongoProcessInstancePopulated } from './interface';
+import {
+    IProcessInstance,
+    CreateAndUpdateProcessReqBody,
+    IMongoProcessInstance,
+    IMongoProcessInstancePopulated,
+    IProcessInstanceSearchProperties,
+} from './interface';
 import { NotFoundError } from '../../error';
 import StepInstanceManager from '../steps/manager';
 import { transaction, getTemplateAggregation } from '../../../utils/mongoose';
@@ -93,7 +99,7 @@ class ProcessInstanceManager {
         });
     }
 
-    static async searchProcesses({ name, ids, limit, skip }: { name?: string; ids?: string[]; limit: number; skip: number }) {
+    static async searchProcesses({ name, ids, limit, skip }: IProcessInstanceSearchProperties) {
         const query: FilterQuery<IProcessInstance & Document> = {};
         if (name) query.name = { $regex: escapeRegExp(name) };
         if (ids) query._id = { $in: ids };

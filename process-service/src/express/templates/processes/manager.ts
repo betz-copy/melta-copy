@@ -5,6 +5,7 @@ import {
     IMongoProcessTemplatePopulated,
     IProcessSingleProperty,
     IProcessTemplatePopulated,
+    IProcessTemplateSearchProperties,
     ProcessTemplateDocument,
 } from './interface';
 import { TemplateNotFoundError, ServiceError } from '../../error';
@@ -93,7 +94,7 @@ class ProcessTemplateManager {
         });
     }
 
-    static async searchTemplates({ displayName, ids, limit, skip }: { displayName?: string; ids?: string[]; limit: number; skip: number }) {
+    static async searchTemplates({ displayName, ids, limit, skip }: IProcessTemplateSearchProperties) {
         const query: FilterQuery<ProcessTemplateDocument> = {};
 
         if (displayName) query.displayName = { $regex: escapeRegExp(displayName) };
