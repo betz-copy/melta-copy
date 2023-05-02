@@ -20,7 +20,6 @@ readinessProbe:
   httpGet:
     path: /health
     port: 8000
-  initialDelaySeconds: 30
 
 config:
   configmaps: []
@@ -37,11 +36,3 @@ config:
       value: http://relationship-template-manager:8000
     - name: RABBIT_URI
       value: amqp://jaws:jawsAreTheBest@20.105.9.117:5672/jaws
-
-resources:
-  limits:
-    cpu: 400m
-    memory: 400Mi
-  requests:
-    cpu: 400m
-    memory: 400Mi
