@@ -20,7 +20,6 @@ readinessProbe:
   httpGet:
     path: /isAlive
     port: 8000
-  initialDelaySeconds: 30
 
 config:
   configmaps: []
@@ -35,11 +34,3 @@ config:
       value: rules
     - name: ENTITY_TEMPLATE_MANAGER_URI
       value: http://entity-template-manager:8000
-
-resources:
-  limits:
-    cpu: 400m
-    memory: 400Mi
-  requests:
-    cpu: 400m
-    memory: 400Mi
