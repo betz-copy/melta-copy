@@ -20,7 +20,6 @@ readinessProbe:
   httpGet:
     path: /isAlive
     port: 8000
-  initialDelaySeconds: 30
 
 config:
   configmaps: []
@@ -31,11 +30,3 @@ config:
       value: mongodb+srv://jaws:jcfVBJQW73BobDvr@cluster0.t8onr.mongodb.net/permission-api?retryWrites=true&w=majority
     - name: MONGO_PERMISSIONS_COLLECTION_NAME
       value: permissions
-
-resources:
-  limits:
-    cpu: 400m
-    memory: 400Mi
-  requests:
-    cpu: 400m
-    memory: 400Mi
