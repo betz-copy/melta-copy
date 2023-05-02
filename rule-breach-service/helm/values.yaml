@@ -20,7 +20,6 @@ readinessProbe:
   httpGet:
     path: /isAlive
     port: 8000
-  initialDelaySeconds: 30
 
 config:
   configmaps: []
@@ -33,11 +32,3 @@ config:
       value: rule-breach-alerts
     - name: MONGO_RULE_BREACH_REQUESTS_COLLECTION_NAME
       value: rule-breach-requests
-
-resources:
-  limits:
-    cpu: 400m
-    memory: 400Mi
-  requests:
-    cpu: 400m
-    memory: 400Mi
