@@ -29,15 +29,6 @@ readinessProbe:
   httpGet:
     path: /health
     port: 8000
-  initialDelaySeconds: 30
 
 config:
   configmaps: []
-
-resources:
-  limits:
-    cpu: 400m
-    memory: 400Mi
-  requests:
-    cpu: 400m
-    memory: 400Mi
