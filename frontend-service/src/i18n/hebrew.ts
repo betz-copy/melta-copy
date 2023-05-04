@@ -321,7 +321,6 @@ export default {
             summary: 'סיכום',
             classificationCategory: 'סיווג לקטגוריה',
             anotherParams: 'פרמטרים נוספים',
-            enumEmptyOption: 'ריק',
         },
         rule: {
             title: 'יצירת חוק',
