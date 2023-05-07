@@ -2,7 +2,7 @@ import * as Joi from 'joi';
 import { updateAndCreateStepsSchema, MongoIdSchema, updateStatusPropertiesSchema } from '../../../utils/joi';
 import { Status } from './interface';
 
-// GET /api/instances/process/:processId
+// GET /api/processes/instances/:processId
 export const getInstanceByIdRequestSchema = Joi.object({
     query: {},
     body: {},
@@ -11,7 +11,7 @@ export const getInstanceByIdRequestSchema = Joi.object({
     },
 });
 
-// POST /api/instances/process
+// POST /api/processes/instances
 export const createInstanceRequestSchema = Joi.object({
     body: {
         templateId: MongoIdSchema.required(),
@@ -23,7 +23,7 @@ export const createInstanceRequestSchema = Joi.object({
     params: {},
 });
 
-// PUT /api/instances/process/:processId
+// PUT /api/processes/instances/:processId
 export const updateInstanceByIdRequestSchema = Joi.object({
     body: {
         details: Joi.object(),
@@ -39,7 +39,7 @@ export const updateInstanceByIdRequestSchema = Joi.object({
     },
 });
 
-// DELETE /api/instances/process/:processId
+// DELETE /api/processes/instances/:processId
 export const deleteInstanceByIdRequestSchema = Joi.object({
     body: {},
     query: {},
@@ -48,7 +48,7 @@ export const deleteInstanceByIdRequestSchema = Joi.object({
     },
 });
 
-// POST /api/instances/process/search
+// POST /api/processes/instances/search
 export const searchInstanceRequestSchema = Joi.object({
     query: {},
     body: {

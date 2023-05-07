@@ -2,6 +2,24 @@ import * as Joi from 'joi';
 import { MongoIdSchema } from '../../../utils/joi';
 import { Status } from '../processes/interface';
 
+// GET /api/processes/instances/:id
+export const getStepByIdRequestSchema = Joi.object({
+    query: {},
+    body: {},
+    params: {
+        id: MongoIdSchema.required(),
+    },
+});
+
+// GET /api/processes/instances/:id/template
+export const getTemplateByInstanceIdRequestSchema = Joi.object({
+    query: {},
+    body: {},
+    params: {
+        id: MongoIdSchema.required(),
+    },
+});
+
 // PATCH api/processes/instances/steps/:id/properties
 export const updateStepPropertiesSchema = Joi.object({
     body: {
