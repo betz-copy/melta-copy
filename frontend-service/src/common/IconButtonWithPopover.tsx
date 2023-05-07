@@ -6,11 +6,12 @@ const IconButtonWithPopoverText: React.FC<{
     popoverText: string;
     disabledToolTip?: boolean;
     style?: CSSProperties;
-}> = ({ children, iconButtonProps, popoverText, disabledToolTip = false, style }) => {
+    disabled?: boolean;
+}> = ({ children, iconButtonProps, popoverText, disabledToolTip = false, disabled = false, style }) => {
     return (
         <Tooltip title={popoverText} disableHoverListener={disabledToolTip} arrow>
             <span>
-                <IconButton {...iconButtonProps} style={style}>
+                <IconButton {...iconButtonProps} style={style} disabled={disabled}>
                     {children}
                 </IconButton>
             </span>

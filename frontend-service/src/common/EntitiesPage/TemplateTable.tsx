@@ -35,7 +35,7 @@ const TemplateTable = ({ template, quickFilterText, page }: { template: IMongoEn
             },
         },
     );
-
+    const [isFiltered, setIsFiltered] = useState(false);
     const [editDialog, setEditDialog] = useState<{
         isOpen: boolean;
         entity?: IEntity;
@@ -56,9 +56,7 @@ const TemplateTable = ({ template, quickFilterText, page }: { template: IMongoEn
                 <Grid>
                     <Grid item>
                         <IconButtonWithPopoverText
-                            popoverText={
-                                isExpand ? i18next.t('entitiesTableOfTemplate.expandLess') : i18next.t('entitiesTableOfTemplate.expandMore')
-                            }
+                            popoverText={isExpand ? i18next.t('entitiesTableOfTemplate.expandLess') : i18next.t('entitiesTableOfTemplate.expandMore')}
                             iconButtonProps={{
                                 onClick: () => {
                                     setIsExpand(!isExpand);
@@ -68,7 +66,7 @@ const TemplateTable = ({ template, quickFilterText, page }: { template: IMongoEn
                         >
                             {isExpand ? <ExpandLess color="primary" fontSize="large" /> : <ExpandMore color="primary" fontSize="large" />}
                         </IconButtonWithPopoverText>
-                        <ResetFilterButton entitiesTableRef={entitiesTableRef} />
+                        <ResetFilterButton entitiesTableRef={entitiesTableRef} disableButton={!isFiltered} />
                         <IconButtonWithPopoverText
                             popoverText={i18next.t('entitiesTableOfTemplate.downloadOneTable')}
                             iconButtonProps={{ onClick: () => exportTemplateToExcel(), size: 'medium' }}
@@ -107,6 +105,7 @@ const TemplateTable = ({ template, quickFilterText, page }: { template: IMongoEn
                             });
                         },
                     }}
+                    onFilter={() => setIsFiltered(entitiesTableRef.current?.isFiltered() ?? false)}
                 />
             </Box>
             <Dialog open={editDialog.isOpen}>

@@ -2,6 +2,7 @@ import React, { forwardRef, ForwardedRef, useImperativeHandle, useRef, useMemo }
 import { useNavigate } from 'react-router-dom';
 import { Box } from '@mui/material';
 import pickBy from 'lodash.pickby';
+import isEqual from 'lodash.isequal';
 import { ColDef, IServerSideDatasource, IServerSideGetRowsParams } from '@ag-grid-community/core';
 import { AgGridReact } from '@ag-grid-community/react';
 import '@noam7700/ag-grid-enterprise-core';
@@ -27,6 +28,13 @@ import { LocalStorage } from '../../utils/localStorage';
 import { environment } from '../../globals';
 
 const { rowCount } = environment.agGrid;
+
+const defaultFilterModel = {
+    disabled: {
+        filterType: 'set',
+        values: ['false'],
+    },
+};
 
 export const getDatasource = <Data extends any = IEntity>(
     templateId: IMongoEntityTemplatePopulated['_id'],
@@ -100,6 +108,7 @@ export type EntitiesTableOfTemplateProps<Data> = {
     minColumnWidth: number;
     hideNonPreview?: boolean;
     filterStorageProps: { shouldSaveFilter: boolean; pageType?: string };
+    onFilter?: () => void;
 };
 
 export type EntitiesTableOfTemplateRef<Data> = {
@@ -107,6 +116,7 @@ export type EntitiesTableOfTemplateRef<Data> = {
     resetFilter: () => void;
     refreshServerSide: () => void;
     updateRowDataClientSide: (data: Data) => void;
+    isFiltered: () => boolean;
 };
 
 const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, EntitiesTableOfTemplateProps<unknown>>(
@@ -130,6 +140,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             minColumnWidth,
             hideNonPreview,
             filterStorageProps,
+            onFilter,
         }: EntitiesTableOfTemplateProps<Data>,
         ref: ForwardedRef<EntitiesTableOfTemplateRef<Data>>,
     ) => {
@@ -143,7 +154,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                     return gridRef.current?.api.getSheetDataForExcel({ sheetName: template.displayName });
                 },
                 resetFilter() {
-                    gridRef.current?.api.setFilterModel(null);
+                    gridRef.current?.api.setFilterModel(defaultFilterModel);
                 },
                 refreshServerSide() {
                     gridRef.current?.api.refreshServerSide({ purge: true });
@@ -154,6 +165,10 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                             rowNode.updateData(data);
                         }
                     });
+                },
+                isFiltered() {
+                    const filters = gridRef.current?.api.getFilterModel();
+                    return !filters || !isEqual(filters, defaultFilterModel);
                 },
             };
         });
@@ -219,11 +234,10 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                     rowStyle={onRowSelected ? { cursor: 'pointer' } : undefined}
                     suppressCellFocus
                     onFilterChanged={(params) => {
+                        onFilter?.();
                         if (filterStorageProps.shouldSaveFilter) {
                             const filterModel = params.api.getFilterModel();
-                            const filterModelKeys = Object.keys(filterModel);
-
-                            if (filterModelKeys.length === 1 && filterModelKeys[0] === 'disabled') {
+                            if (isEqual(filterModel, defaultFilterModel)) {
                                 LocalStorage.remove(`tableFilter-${filterStorageProps.pageType}-${template._id}`);
                             } else {
                                 LocalStorage.set(
@@ -237,10 +251,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                     suppressContextMenu
                     onGridReady={(params) => {
                         params.api.setFilterModel({
-                            disabled: {
-                                filterType: 'set',
-                                values: ['false'],
-                            },
+                            ...defaultFilterModel,
                             ...LocalStorage.get(`tableFilter-${filterStorageProps.pageType}-${template._id}`),
                         });
                     }}

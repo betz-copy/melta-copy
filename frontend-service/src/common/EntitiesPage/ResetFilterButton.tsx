@@ -6,13 +6,17 @@ import { EntitiesTableOfTemplateRef } from '../EntitiesTableOfTemplate';
 
 const ResetFilterButton: React.FC<{
     entitiesTableRef: React.RefObject<EntitiesTableOfTemplateRef<any>>;
-}> = ({ entitiesTableRef }) => {
+    disableButton: boolean;
+}> = ({ entitiesTableRef, disableButton }) => {
+    const buttonColor = disableButton ? 'disabled' : 'primary';
+
     return (
         <IconButtonWithPopoverText
             iconButtonProps={{ onClick: () => entitiesTableRef.current?.resetFilter() }}
             popoverText={i18next.t('entitiesTableOfTemplate.resetFilters')}
+            disabled={disableButton}
         >
-            <FilterListOffOutlined color="primary" fontSize="medium" />
+            <FilterListOffOutlined color={buttonColor} fontSize="medium" />
         </IconButtonWithPopoverText>
     );
 };
