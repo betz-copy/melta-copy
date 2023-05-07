@@ -4,7 +4,7 @@ import { NotificationType } from '../../../express/notifications/interface';
 import { validateNotificationMetadataSchema } from './notificationMetadata';
 
 export const notificationSchema = joi.object({
-    viewers: joi.array().items(mongoIdSchema).required(),
+    viewers: joi.array().items(mongoIdSchema).min(1).required(),
     type: joi
         .string()
         .valid(...Object.values(NotificationType))
