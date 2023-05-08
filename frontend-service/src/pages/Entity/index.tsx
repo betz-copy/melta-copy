@@ -27,6 +27,7 @@ import { EntityTopBar } from './components/TopBar';
 import { getOppositeEntityTemplate, isRelationshipConnectedToEntityTemplate, populateRelationshipTemplate } from '../../utils/templates';
 
 const Entity: React.FC = () => {
+    const [isFiltered, setIsFiltered] = useState(false);
     const params = useParams();
     const queryClient = useQueryClient();
     const { entityId } = params;
@@ -169,7 +170,7 @@ const Entity: React.FC = () => {
                                                         </Grid>
 
                                                         <Grid item>
-                                                            <ResetFilterButton entitiesTableRef={entitiesTableRef} />
+                                                            <ResetFilterButton entitiesTableRef={entitiesTableRef} disableButton={!isFiltered} />
                                                             <IconButtonWithPopoverText
                                                                 popoverText={
                                                                     hasPermissionToCategory
@@ -238,6 +239,7 @@ const Entity: React.FC = () => {
                                                             fontSize="16px"
                                                             minColumnWidth={200}
                                                             filterStorageProps={{ shouldSaveFilter: true, pageType: `entity-${entityId}` }}
+                                                            onFilter={() => setIsFiltered(entitiesTableRef.current?.isFiltered() ?? false)}
                                                         />
                                                     </Box>
                                                 </Grid>
