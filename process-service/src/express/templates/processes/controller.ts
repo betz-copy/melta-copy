@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import ProcessTemplateManager from './manager';
 
 class ProcessTemplateController {
-    static async getAllTemplates(req: Request, res: Response) {
+    static async getAllTemplates(_req: Request, res: Response) {
         res.json(await ProcessTemplateManager.getAllTemplates());
     }
 

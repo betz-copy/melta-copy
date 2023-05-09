@@ -19,7 +19,7 @@ type ProcessTemplateType<T extends boolean> = T extends true ? IMongoProcessTemp
 
 class ProcessTemplateManager {
     static async getAllTemplates() {
-        return ProcessTemplateModel.find();
+        return ProcessTemplateModel.find().populate(config.processFields.steps);
     }
 
     static async getProcessTemplateById<T extends boolean = true>(id: string, shouldPopulate: T = true as T): Promise<ProcessTemplateType<T>> {
