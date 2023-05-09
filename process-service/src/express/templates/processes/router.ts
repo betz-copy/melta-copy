@@ -12,6 +12,8 @@ import {
 
 const processTemplateRouter: Router = Router();
 
+// TODO add permission checking
+processTemplateRouter.get('/all', wrapController(ProcessTemplate.getAllTemplates));
 processTemplateRouter.get('/:id', ValidateRequest(getTemplateByIdRequestSchema), wrapController(ProcessTemplate.getTemplateById));
 processTemplateRouter.post('/', ValidateRequest(createTemplateRequestSchema), wrapController(ProcessTemplate.createTemplate));
 processTemplateRouter.delete('/:id', ValidateRequest(deleteTemplateByIdRequestSchema), wrapController(ProcessTemplate.deleteTemplate));

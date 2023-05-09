@@ -18,6 +18,10 @@ import config from '../../../config';
 type ProcessTemplateType<T extends boolean> = T extends true ? IMongoProcessTemplatePopulated & Document : IMongoProcessTemplate & Document;
 
 class ProcessTemplateManager {
+    static async getAllTemplates() {
+        return ProcessTemplateModel.find();
+    }
+
     static async getProcessTemplateById<T extends boolean = true>(id: string, shouldPopulate: T = true as T): Promise<ProcessTemplateType<T>> {
         const query = ProcessTemplateModel.findById(id).orFail(new TemplateNotFoundError('process', id)).lean();
         return (shouldPopulate ? query.populate(config.processFields.steps) : query).exec() as Promise<ProcessTemplateType<T>>;
