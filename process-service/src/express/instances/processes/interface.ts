@@ -40,6 +40,7 @@ export type CreateAndUpdateProcessReqBody = Pick<IProcessInstance, 'details' | '
 
 export interface IProcessInstanceSearchProperties extends IBaseSearchProperties {
     name?: string;
+    templateIds?: string[];
 }
 
 export type ProcessInstanceDocument = IProcessInstance & Document;

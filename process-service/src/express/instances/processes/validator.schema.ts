@@ -53,6 +53,7 @@ export const searchInstanceRequestSchema = Joi.object({
     query: {},
     body: {
         name: Joi.string(),
+        templateIds: Joi.array().items(MongoIdSchema),
         ids: Joi.array().items(MongoIdSchema),
         limit: Joi.number().integer().min(0).default(0),
         skip: Joi.number().integer().min(0).default(0),
