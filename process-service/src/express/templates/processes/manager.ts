@@ -70,7 +70,12 @@ class ProcessTemplateManager {
         });
     }
 
-    private static throwIfCantUpdateProcessTemplate(updatedTemplate: IProcessTemplatePopulated, currTemplate: IMongoProcessTemplatePopulated) {
+    private static async throwIfCantUpdateProcessTemplate(updatedTemplate: IProcessTemplatePopulated, currTemplate: IMongoProcessTemplatePopulated) {
+        const processInstances = await ProcessInstanceManager.searchProcesses({ templateIds: [currTemplate._id], limit: 0, skip: 0 });
+        if (processInstances.length === 0) {
+            return;
+        }
+
         const { details: updatedDetails, summaryDetails: updatedSummary, name: updatedName, steps: updatedSteps } = updatedTemplate;
         if (updatedName !== currTemplate.name) throw new ServiceError(400, 'can not change step template name');
         this.validateProperties(updatedDetails.properties.properties, currTemplate.details.properties.properties);
