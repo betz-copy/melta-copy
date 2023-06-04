@@ -68,7 +68,9 @@ class ProcessInstanceManager {
     static async updateProcess(id: string, updatedData: Partial<IProcessInstance & { steps: Record<string, string[]> }>) {
         const currProcess = await this.getProcessById(id, false);
         if (!updatedData.steps) {
-            return ProcessInstanceModel.findByIdAndUpdate(id, updatedData, { new: true })
+            return ProcessInstanceModel.findByIdAndUpdate(id, updatedData.status ? { ...updatedData, reviewedAt: new Date() } : updatedData, {
+                new: true,
+            })
                 .populate(config.processFields.steps)
                 .orFail(new NotFoundError('process', id))
                 .lean();
