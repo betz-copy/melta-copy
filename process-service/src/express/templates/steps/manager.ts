@@ -4,15 +4,14 @@ import { IMongoStepTemplate, IStepTemplate, StepTemplateDocument } from './inter
 import { ServiceError, TemplateNotFoundError } from '../../error';
 
 export default class StepTemplateManager {
-    static async getStepTemplate(id: string): Promise<IStepTemplate> {
-        return StepTemplateModel.findById(id).orFail(new TemplateNotFoundError('step', id)).lean().exec();
+    static async getStepTemplate(id: string): Promise<IMongoStepTemplate> {
+        return StepTemplateModel.findById(id).orFail(new TemplateNotFoundError('step', id)).lean();
     }
 
-    static async getStepTemplates(ids: string[]): Promise<IStepTemplate[]> {
+    static async getStepTemplates(ids: string[]): Promise<IMongoStepTemplate[]> {
         return StepTemplateModel.find({ _id: { $in: ids } })
             .orFail(new ServiceError(404, 'No matching step Templates found'))
-            .lean()
-            .exec();
+            .lean();
     }
 
     static async createStepsTemplates(steps: IStepTemplate[], session?: ClientSession): Promise<StepTemplateDocument[]> {

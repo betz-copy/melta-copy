@@ -1,7 +1,7 @@
 import { ClientSession } from 'mongoose';
 import StepInstanceModel from './model';
 import { IMongoStepInstance, IStepInstance, StepInstanceDocument } from './interface';
-import { NotFoundError } from '../../error';
+import { NotFoundError, ServiceError } from '../../error';
 import config from '../../../config';
 import { IMongoStepTemplate } from '../../templates/steps/interface';
 import { getTemplateAggregation } from '../../../utils/mongoose';
@@ -9,6 +9,12 @@ import { getTemplateAggregation } from '../../../utils/mongoose';
 export default class StepInstanceManager {
     static async getStepById(id: string): Promise<IMongoStepInstance> {
         return StepInstanceModel.findById(id).orFail(new NotFoundError('step', id)).lean();
+    }
+
+    static async getSteps(ids: string[]): Promise<IMongoStepInstance[]> {
+        return StepInstanceModel.find({ _id: { $in: ids } })
+            .orFail(new ServiceError(404, 'No matching step Templates found'))
+            .lean();
     }
 
     static async getStepTemplateByStepInstanceId(id: string): Promise<IMongoStepTemplate> {

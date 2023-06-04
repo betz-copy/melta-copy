@@ -33,14 +33,13 @@ export interface IMongoProcessInstancePopulated extends IProcessInstancePopulate
     updatedAt: Date;
 }
 
-export type CreateAndUpdateProcessReqBody = Pick<IProcessInstance, 'details' | 'name' | 'summaryDetails'> &
-    Partial<Pick<IProcessInstance, 'templateId' | 'status' | 'reviewerId'>> & {
-        steps: Record<string, string[]>;
-    };
+export type CreateProcessReqBody = Pick<IProcessInstance, 'templateId' | 'name' | 'details'> & { steps: Record<string, string[]> };
+export type UpdateProcessReqBody = Partial<Omit<IProcessInstance, 'templateId' | 'reviewedAt' | 'steps'> & { steps: Record<string, string[]> }>;
 
 export interface IProcessInstanceSearchProperties extends IBaseSearchProperties {
     name?: string;
     templateIds?: string[];
+    status?: Status;
 }
 
 export type ProcessInstanceDocument = IProcessInstance & Document;

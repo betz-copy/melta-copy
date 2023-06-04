@@ -2,10 +2,11 @@ import { FilterQuery, Document } from 'mongoose';
 import ProcessInstanceModel from './model';
 import {
     IProcessInstance,
-    CreateAndUpdateProcessReqBody,
+    CreateProcessReqBody,
     IMongoProcessInstance,
     IMongoProcessInstancePopulated,
     IProcessInstanceSearchProperties,
+    UpdateProcessReqBody,
 } from './interface';
 import { NotFoundError } from '../../error';
 import StepInstanceManager from '../steps/manager';
@@ -34,7 +35,7 @@ class ProcessInstanceManager {
         return result;
     }
 
-    static async createProcess(process: CreateAndUpdateProcessReqBody): Promise<IMongoProcessInstancePopulated> {
+    static async createProcess(process: CreateProcessReqBody): Promise<IMongoProcessInstancePopulated> {
         const initialSteps = Object.entries(process.steps).map(([templateId, reviewers]) => ({
             templateId,
             reviewers,
@@ -65,7 +66,7 @@ class ProcessInstanceManager {
         return { ...deletedProcess, steps: processSteps };
     }
 
-    static async updateProcess(id: string, updatedData: Partial<IProcessInstance & { steps: Record<string, string[]> }>) {
+    static async updateProcess(id: string, updatedData: UpdateProcessReqBody) {
         const currProcess = await this.getProcessById(id, false);
         if (!updatedData.steps) {
             return ProcessInstanceModel.findByIdAndUpdate(id, updatedData.status ? { ...updatedData, reviewedAt: new Date() } : updatedData, {
@@ -101,8 +102,9 @@ class ProcessInstanceManager {
         });
     }
 
-    static async searchProcesses({ name, ids, templateIds, limit, skip }: IProcessInstanceSearchProperties) {
-        const query: FilterQuery<IProcessInstance & Document> = {};
+    static async searchProcesses({ name, ids, templateIds, limit, skip, ...restOfQuery }: IProcessInstanceSearchProperties) {
+        const query: FilterQuery<IProcessInstance & Document> = { ...restOfQuery };
+
         if (name) query.name = { $regex: escapeRegExp(name) };
         if (ids) query._id = { $in: ids };
         if (templateIds) query.templateId = { $in: templateIds };
