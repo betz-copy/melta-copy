@@ -6,10 +6,11 @@ import Server from '../src/express/server';
 import processTemplateExample1 from './mock/templates';
 import { IMongoProcessTemplatePopulated } from '../src/express/templates/processes/interface';
 import {
-    CreateAndUpdateProcessReqBody,
+    CreateProcessReqBody,
     IMongoProcessInstancePopulated,
     IProcessInstance,
     Status,
+    UpdateProcessReqBody,
 } from '../src/express/instances/processes/interface';
 import processInstanceExample1, { errStepsPropertiesExample1, stepsPropertiesExample1 } from './mock/instances';
 import { IMongoStepInstance } from '../src/express/instances/steps/interface';
@@ -43,7 +44,7 @@ const prepareProcessTemplateToUpdate = (processTemplate: IMongoProcessTemplatePo
 const prepareDataForCreateProcessInstance = (
     processTemplate: IMongoProcessTemplatePopulated,
     processInstanceData: Pick<IProcessInstance, 'name' | 'details'>,
-): CreateAndUpdateProcessReqBody => {
+): CreateProcessReqBody => {
     return {
         templateId: processTemplate._id,
         name: processInstanceData.name,
@@ -59,8 +60,8 @@ const prepareDataForUpdateProcessInstance = (
     processInstanceData: Partial<Pick<Omit<IProcessInstance, 'templateId' | 'steps'>, 'status'>> &
         Omit<IProcessInstance, 'templateId' | 'steps' | 'status'>,
     steps: IMongoStepInstance[],
-): CreateAndUpdateProcessReqBody => {
-    const updateData: CreateAndUpdateProcessReqBody = {
+): UpdateProcessReqBody => {
+    const updateData: UpdateProcessReqBody = {
         details: processInstanceData.details,
         name: processInstanceData.name,
         steps: steps.reduce((acc, obj) => {
@@ -367,7 +368,7 @@ describe('Test Process Service', () => {
                 expect(response.status).toBe(400);
                 expect(response.text).toContain('TemplateValidationError');
             });
-            it('Should try update process steps ids steps and return validation error with 400', async () => {
+            it('Should try update process steps ids steps and return 404', async () => {
                 const { steps } = processInstance;
                 const errSteps = steps.map((step) => {
                     return {
@@ -377,8 +378,8 @@ describe('Test Process Service', () => {
                 });
                 const updatedData = prepareDataForUpdateProcessInstance(processInstanceExample1, errSteps);
                 const response = await request(app).put(`/api/processes/instances/${processInstance._id}`).send(updatedData);
-                expect(response.status).toBe(400);
-                expect(response.text).toContain('TemplateValidationError');
+                expect(response.status).toBe(404);
+                expect(response.text).toContain('No matching step Templates found');
             });
             it('Should try update status without send reviewerId, fail and return 400', async () => {
                 const updatedData = prepareDataForUpdateProcessInstance(
@@ -509,6 +510,7 @@ describe('Test Process Service', () => {
                                 const response = await request(app).patch(`/api/processes/instances/steps/${_id}/status`).send({
                                     status: Status.Rejected,
                                     reviewerId: randomMongoId(),
+                                    processId: processInstance._id,
                                 });
 
                                 expect(response.status).toBe(200);
@@ -521,10 +523,31 @@ describe('Test Process Service', () => {
                             processInstance.steps.map(async ({ _id }) => {
                                 const response = await request(app).patch(`/api/processes/instances/steps/${_id}/status`).send({
                                     status: Status.Approved,
+                                    processId: processInstance._id,
                                 });
 
                                 expect(response.status).toBe(400);
                                 expect(response.text).toContain('reviewerId');
+                            }),
+                        );
+                    });
+                    it('should not update step when it is not part of process', async () => {
+                        const instanceToCreate = prepareDataForCreateProcessInstance(processTemplate, {
+                            ...processInstanceExample1,
+                            name: 'test-test',
+                        });
+                        const { body: instanceBody } = await request(app).post('/api/processes/instances').send(instanceToCreate);
+
+                        await Promise.all(
+                            processInstance.steps.map(async ({ _id }) => {
+                                const response = await request(app).patch(`/api/processes/instances/steps/${_id}/status`).send({
+                                    status: Status.Approved,
+                                    reviewerId: randomMongoId(),
+                                    processId: instanceBody._id,
+                                });
+
+                                expect(response.status).toBe(400);
+                                expect(response.text).toContain('not part of');
                             }),
                         );
                     });

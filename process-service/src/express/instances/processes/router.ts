@@ -10,7 +10,7 @@ import {
     searchInstanceRequestSchema,
 } from './validator.schema';
 
-import { validateProcessInstance } from './validator.template';
+import { validateCreateProcessInstance, validateUpdateProcessInstance } from './validator.template';
 
 const processInstanceRouter: Router = Router();
 
@@ -18,7 +18,7 @@ processInstanceRouter.get('/:id', ValidateRequest(getInstanceByIdRequestSchema),
 processInstanceRouter.post(
     '/',
     ValidateRequest(createInstanceRequestSchema),
-    wrapMiddleware(validateProcessInstance),
+    wrapMiddleware(validateCreateProcessInstance),
     wrapController(ProcessInstance.createProcess),
 );
 processInstanceRouter.post('/search', ValidateRequest(searchInstanceRequestSchema), wrapController(ProcessInstance.searchProcesses));
@@ -26,7 +26,7 @@ processInstanceRouter.delete('/:id', ValidateRequest(deleteInstanceByIdRequestSc
 processInstanceRouter.put(
     '/:id',
     ValidateRequest(updateInstanceByIdRequestSchema),
-    wrapMiddleware(validateProcessInstance),
+    wrapMiddleware(validateUpdateProcessInstance),
     wrapController(ProcessInstance.updateProcess),
 );
 
