@@ -17,6 +17,8 @@ export const createInstanceRequestSchema = Joi.object({
         templateId: MongoIdSchema.required(),
         name: Joi.string().required(),
         details: Joi.object().required(),
+        startDate: Joi.date().required(),
+        endDate: Joi.date().required(),
         steps: updateAndCreateStepsSchema.required(),
     },
     query: {},
@@ -27,6 +29,8 @@ export const createInstanceRequestSchema = Joi.object({
 export const updateInstanceByIdRequestSchema = Joi.object({
     body: {
         details: Joi.object(),
+        startDate: Joi.date(),
+        endDate: Joi.date(),
         name: Joi.string(),
         steps: updateAndCreateStepsSchema,
         status: Joi.string().valid(...Object.values(Status)),
@@ -55,6 +59,8 @@ export const searchInstanceRequestSchema = Joi.object({
         name: Joi.string(),
         templateIds: Joi.array().items(MongoIdSchema),
         ids: Joi.array().items(MongoIdSchema),
+        startDate: Joi.date(),
+        endDate: Joi.date(),
         status: Joi.string().valid(...Object.values(Status)),
         limit: Joi.number().integer().min(0).default(0),
         skip: Joi.number().integer().min(0).default(0),

@@ -13,6 +13,8 @@ export interface IProcessInstance {
     templateId: string;
     name: string;
     details: Record<string, any>;
+    startDate: Date;
+    endDate: Date;
     steps: string[];
     status: Status;
     reviewerId?: string;
@@ -39,6 +41,8 @@ export type UpdateProcessReqBody = Partial<Omit<IProcessInstance, 'templateId' |
 export interface IProcessInstanceSearchProperties extends IBaseSearchProperties {
     name?: string;
     templateIds?: string[];
+    startDate?: Date;
+    endDate?: Date;
     status?: Status;
 }
 

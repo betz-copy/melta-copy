@@ -105,13 +105,13 @@ class ProcessInstanceManager {
         });
     }
 
-    static async searchProcesses({ name, ids, templateIds, limit, skip, ...restOfQuery }: IProcessInstanceSearchProperties) {
+    static async searchProcesses({ name, ids, templateIds, startDate, endDate, limit, skip, ...restOfQuery }: IProcessInstanceSearchProperties) {
         const query: FilterQuery<IProcessInstance & Document> = { ...restOfQuery };
-
         if (name) query.name = { $regex: escapeRegExp(name) };
         if (ids) query._id = { $in: ids };
         if (templateIds) query.templateId = { $in: templateIds };
-
+        if (startDate) query.startDate = { $gte: startDate };
+        if (endDate) query.endDate = { $lte: endDate };
         return ProcessInstanceModel.find(query, {}, { limit, skip }).populate(config.processFields.steps).lean().exec();
     }
 }

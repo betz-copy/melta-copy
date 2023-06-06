@@ -17,6 +17,8 @@ const ProcessInstanceSchema = new mongoose.Schema<IProcessInstance>(
             type: Object,
             required: true,
         },
+        startDate: { type: Date, required: true },
+        endDate: { type: Date, required: true },
         steps: [
             {
                 type: String,
