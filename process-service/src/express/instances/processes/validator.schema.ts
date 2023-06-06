@@ -62,6 +62,7 @@ export const searchInstanceRequestSchema = Joi.object({
         startDate: Joi.date(),
         endDate: Joi.date(),
         status: Joi.string().valid(...Object.values(Status)),
+        reviewerId: MongoIdSchema,
         limit: Joi.number().integer().min(0).default(0),
         skip: Joi.number().integer().min(0).default(0),
     },

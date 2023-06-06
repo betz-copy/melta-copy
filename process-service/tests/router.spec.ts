@@ -1,7 +1,6 @@
 import * as request from 'supertest';
 import * as mongoose from 'mongoose';
 import { Express } from 'express';
-import config from '../src/config';
 import Server from '../src/express/server';
 import processTemplateExample1 from './mock/templates';
 import { IMongoProcessTemplatePopulated } from '../src/express/templates/processes/interface';
@@ -16,8 +15,7 @@ import processInstanceExample1, { errStepsPropertiesExample1, stepsPropertiesExa
 import { IMongoStepInstance } from '../src/express/instances/steps/interface';
 import StepInstanceManager from '../src/express/instances/steps/manager';
 
-const { mongo } = config;
-
+const testUri = 'mongodb://localhost:27017/test';
 const randomMongoId = () => {
     return String(new mongoose.Types.ObjectId());
 };
@@ -98,7 +96,7 @@ describe('Test Process Service', () => {
     let processInstance: IMongoProcessInstancePopulated;
 
     beforeAll(async () => {
-        await mongoose.connect(mongo.uri);
+        await mongoose.connect(testUri);
         app = Server.createExpressApp();
     });
 
@@ -260,6 +258,22 @@ describe('Test Process Service', () => {
             it('Should return empty array and 200', async () => {
                 const response = await request(app).post('/api/processes/templates/search').send({
                     displayName: 'aaaaaaaaaaaaaaaaaaaaa',
+                });
+                expect(response.status).toBe(200);
+                expect(response.body).toHaveLength(0);
+            });
+            it('Should check reviewer permission and return processTemplate with 200', async () => {
+                const response = await request(app).post('/api/processes/templates/search').send({
+                    reviewerId: processTemplate.steps[0].reviewers[0],
+                });
+                console.log(response.error);
+
+                expect(response.status).toBe(200);
+                expect(response.body).toContainEqual(processTemplate);
+            });
+            it('Should check reviewer permission and return emptyArray with 200', async () => {
+                const response = await request(app).post('/api/processes/templates/search').send({
+                    reviewerId: randomMongoId(),
                 });
                 expect(response.status).toBe(200);
                 expect(response.body).toHaveLength(0);
@@ -432,6 +446,27 @@ describe('Test Process Service', () => {
             it('Should return empty array and 200', async () => {
                 const response = await request(app).post('/api/processes/instances/search').send({
                     name: 'aaaaaaaaaaaaaaaaaaaaa',
+                });
+                expect(response.status).toBe(200);
+                expect(response.body).toHaveLength(0);
+            });
+            it('should check (instance) reviewer permission and processInstance in array with 200', async () => {
+                const response = await request(app).post('/api/processes/instances/search').send({
+                    reviewerId: processInstance.steps[0].reviewers[0],
+                });
+                expect(response.status).toBe(200);
+                expect(response.body).toContainEqual(processInstance);
+            });
+            it('should check (template) reviewer permission and processInstance in array with 200', async () => {
+                const response = await request(app).post('/api/processes/instances/search').send({
+                    reviewerId: processTemplate.steps[0].reviewers[0],
+                });
+                expect(response.status).toBe(200);
+                expect(response.body).toContainEqual(processInstance);
+            });
+            it('should check reviewer permission and return empty array with 200', async () => {
+                const response = await request(app).post('/api/processes/instances/search').send({
+                    reviewerId: randomMongoId(),
                 });
                 expect(response.status).toBe(200);
                 expect(response.body).toHaveLength(0);

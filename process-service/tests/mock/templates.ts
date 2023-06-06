@@ -1,3 +1,4 @@
+export const reviewerIds = ['5e5688324203fc40043591aa', '61d37cb5e4de0300121e31ef', '61db10dae4de0300121f72a7', '61a0c2e3e4de0300121dd622'];
 const processTemplateExample1 = {
     name: 'example',
     displayName: 'דוגמה',
@@ -28,7 +29,7 @@ const processTemplateExample1 = {
             name: 'exampleStep1',
             displayName: 'שלב דוגמה 1',
             propertiesOrder: ['name', 'age', 'email'],
-            reviewers: ['5e5688324203fc40043591aa', '61d37cb5e4de0300121e31ef'],
+            reviewers: [reviewerIds[0]],
             properties: {
                 type: 'object',
                 properties: {
@@ -53,7 +54,7 @@ const processTemplateExample1 = {
             name: 'exampleStep2',
             displayName: 'שלב דוגמה 2',
             propertiesOrder: ['phone', 'address'],
-            reviewers: ['61db10dae4de0300121f72a7', '61a0c2e3e4de0300121dd622'],
+            reviewers: [reviewerIds[1]],
             properties: {
                 type: 'object',
                 properties: {

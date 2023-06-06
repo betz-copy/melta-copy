@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import ProcessTemplate from './controller';
+import ProcessTemplateController from './controller';
 import { wrapController } from '../../../utils/express';
 import ValidateRequest from '../../../utils/joi';
 import {
@@ -12,12 +12,10 @@ import {
 
 const processTemplateRouter: Router = Router();
 
-// TODO add permission checking
-processTemplateRouter.get('/all', wrapController(ProcessTemplate.getAllTemplates));
-processTemplateRouter.get('/:id', ValidateRequest(getTemplateByIdRequestSchema), wrapController(ProcessTemplate.getTemplateById));
-processTemplateRouter.post('/', ValidateRequest(createTemplateRequestSchema), wrapController(ProcessTemplate.createTemplate));
-processTemplateRouter.delete('/:id', ValidateRequest(deleteTemplateByIdRequestSchema), wrapController(ProcessTemplate.deleteTemplate));
-processTemplateRouter.put('/:id', ValidateRequest(updateTemplateByIdRequestSchema), wrapController(ProcessTemplate.updateTemplate));
-processTemplateRouter.post('/search', ValidateRequest(searchTemplateRequestSchema), wrapController(ProcessTemplate.searchTemplates));
+processTemplateRouter.get('/:id', ValidateRequest(getTemplateByIdRequestSchema), wrapController(ProcessTemplateController.getTemplateById));
+processTemplateRouter.post('/', ValidateRequest(createTemplateRequestSchema), wrapController(ProcessTemplateController.createTemplate));
+processTemplateRouter.delete('/:id', ValidateRequest(deleteTemplateByIdRequestSchema), wrapController(ProcessTemplateController.deleteTemplate));
+processTemplateRouter.put('/:id', ValidateRequest(updateTemplateByIdRequestSchema), wrapController(ProcessTemplateController.updateTemplate));
+processTemplateRouter.post('/search', ValidateRequest(searchTemplateRequestSchema), wrapController(ProcessTemplateController.searchTemplates));
 
 export default processTemplateRouter;

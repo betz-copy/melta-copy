@@ -42,6 +42,7 @@ export interface IMongoProcessTemplatePopulated extends IProcessTemplatePopulate
 
 export interface IBaseSearchProperties {
     ids?: string[];
+    reviewerId?: string;
     limit: number;
     skip: number;
 }

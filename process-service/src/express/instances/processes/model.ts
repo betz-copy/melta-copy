@@ -41,6 +41,6 @@ const ProcessInstanceSchema = new mongoose.Schema<IProcessInstance>(
 );
 
 ProcessInstanceSchema.index({ name: 1 }, { unique: true });
-const ProcessTemplateModel = mongoose.model<ProcessInstanceDocument>(config.mongo.processInstanceCollectionName, ProcessInstanceSchema);
+const ProcessInstanceModel = mongoose.model<ProcessInstanceDocument>(config.mongo.processInstanceCollectionName, ProcessInstanceSchema);
 
-export default ProcessTemplateModel;
+export default ProcessInstanceModel;

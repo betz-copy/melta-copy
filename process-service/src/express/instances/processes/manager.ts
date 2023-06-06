@@ -7,10 +7,11 @@ import {
     IMongoProcessInstancePopulated,
     IProcessInstanceSearchProperties,
     UpdateProcessReqBody,
+    ProcessInstanceDocument,
 } from './interface';
 import { NotFoundError } from '../../error';
 import StepInstanceManager from '../steps/manager';
-import { transaction, getTemplateAggregation } from '../../../utils/mongoose';
+import { transaction, getTemplateAggregation, searchAllowedProcessInstanceForReviewerAggregation } from '../../../utils/mongoose';
 import ProcessTemplateManager from '../../templates/processes/manager';
 import config from '../../../config';
 import { validateStepIds } from './validator.template';
@@ -105,13 +106,28 @@ class ProcessInstanceManager {
         });
     }
 
-    static async searchProcesses({ name, ids, templateIds, startDate, endDate, limit, skip, ...restOfQuery }: IProcessInstanceSearchProperties) {
-        const query: FilterQuery<IProcessInstance & Document> = { ...restOfQuery };
-        if (name) query.name = { $regex: escapeRegExp(name) };
-        if (ids) query._id = { $in: ids };
+    static async searchProcesses({
+        name,
+        reviewerId,
+        ids,
+        limit,
+        skip,
+        templateIds,
+        startDate,
+        endDate,
+        ...restOfQuery
+    }: IProcessInstanceSearchProperties) {
+        const query: FilterQuery<ProcessInstanceDocument> = { ...restOfQuery };
+
         if (templateIds) query.templateId = { $in: templateIds };
         if (startDate) query.startDate = { $gte: startDate };
         if (endDate) query.endDate = { $lte: endDate };
+        if (name) query.name = { $regex: escapeRegExp(name) };
+        if (ids) query._id = { $in: ids };
+
+        if (reviewerId) {
+            return searchAllowedProcessInstanceForReviewerAggregation(query, reviewerId, limit, skip);
+        }
         return ProcessInstanceModel.find(query, {}, { limit, skip }).populate(config.processFields.steps).lean().exec();
     }
 }

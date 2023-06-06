@@ -21,6 +21,7 @@ const config = {
     },
     stepFields: {
         templateId: env.get('STEP_FIELDS_TEMPLATE_ID').default('templateId').asString(),
+        reviewers: env.get('STEP_FIELDS_REVIEWERS').default('reviewers').asString(),
     },
 };
 

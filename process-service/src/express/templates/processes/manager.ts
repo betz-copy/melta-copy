@@ -11,17 +11,13 @@ import {
 import { TemplateNotFoundError, ServiceError } from '../../error';
 import { escapeRegExp } from '../../../utils';
 import ProcessInstanceManager from '../../instances/processes/manager';
-import { transaction } from '../../../utils/mongoose';
+import { getProcessTemplatesByReviewerIdAggregation, transaction } from '../../../utils/mongoose';
 import StepTemplateManager from '../steps/manager';
 import config from '../../../config';
 
 type ProcessTemplateType<T extends boolean> = T extends true ? IMongoProcessTemplatePopulated & Document : IMongoProcessTemplate & Document;
 
 class ProcessTemplateManager {
-    static async getAllTemplates() {
-        return ProcessTemplateModel.find().populate(config.processFields.steps);
-    }
-
     static async getProcessTemplateById<T extends boolean = true>(id: string, shouldPopulate: T = true as T): Promise<ProcessTemplateType<T>> {
         const query = ProcessTemplateModel.findById(id).orFail(new TemplateNotFoundError('process', id)).lean();
         return (shouldPopulate ? query.populate(config.processFields.steps) : query).exec() as Promise<ProcessTemplateType<T>>;
@@ -103,11 +99,14 @@ class ProcessTemplateManager {
         });
     }
 
-    static async searchTemplates({ displayName, ids, limit, skip }: IProcessTemplateSearchProperties) {
+    static async searchTemplates({ displayName, ids, limit, skip, reviewerId }: IProcessTemplateSearchProperties) {
         const query: FilterQuery<ProcessTemplateDocument> = {};
 
         if (displayName) query.displayName = { $regex: escapeRegExp(displayName) };
         if (ids) query._id = { $in: ids };
+        if (reviewerId) {
+            return getProcessTemplatesByReviewerIdAggregation(query, reviewerId, limit, skip);
+        }
 
         return ProcessTemplateModel.find(query, {}, { limit, skip }).populate(config.processFields.steps).lean().exec();
     }
