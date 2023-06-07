@@ -43,7 +43,6 @@ export const useAreThereProcessInstancesByTemplateId = (templateId: string, enab
 };
 
 export const initialFieldCardDataOnAdd = {
-    id: uuid(),
     name: '',
     title: '',
     type: '',

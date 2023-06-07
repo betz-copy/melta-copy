@@ -29,7 +29,7 @@ interface FieldBlockProps<PropertiesType extends string, Values extends Record<P
     addPropertyButtonLabel: string;
     touched: FormikTouched<Values> | undefined;
     errors: FormikErrors<Values> | undefined;
-    initialFieldCardDataOnAdd?: CommonFormInputProperties;
+    initialFieldCardDataOnAdd?: Omit<CommonFormInputProperties, 'id'>;
 }
 
 const FieldBlock = <PropertiesType extends string, Values extends Record<PropertiesType, CommonFormInputProperties[]>>({
@@ -45,7 +45,6 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
     touched,
     errors,
     initialFieldCardDataOnAdd = {
-        id: uuid(),
         name: '',
         title: '',
         type: '',
@@ -196,7 +195,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
                                             type="button"
                                             variant="contained"
                                             style={{ margin: '8px' }}
-                                            onClick={() => push(initialFieldCardDataOnAdd)}
+                                            onClick={() => push({ id: uuid(), ...initialFieldCardDataOnAdd })}
                                         >
                                             <Typography>{addPropertyButtonLabel}</Typography>
                                         </Button>
