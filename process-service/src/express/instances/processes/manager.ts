@@ -1,4 +1,4 @@
-import { FilterQuery, Document } from 'mongoose';
+import { FilterQuery, Document, Types } from 'mongoose';
 import ProcessInstanceModel from './model';
 import {
     IProcessInstance,
@@ -123,7 +123,7 @@ class ProcessInstanceManager {
         if (startDate) query.startDate = { $gte: startDate };
         if (endDate) query.endDate = { $lte: endDate };
         if (name) query.name = { $regex: escapeRegExp(name) };
-        if (ids) query._id = { $in: ids };
+        if (ids) query._id = { $in: ids.map((id) => Types.ObjectId(id)) };
 
         if (reviewerId) {
             return searchAllowedProcessInstanceForReviewerAggregation(query, reviewerId, limit, skip);
