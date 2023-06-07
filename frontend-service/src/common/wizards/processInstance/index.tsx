@@ -52,7 +52,7 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({ open, onClose
     const [currProcessInstance, setCurrProcessInstance] = useState<IMongoProcessInstancePopulated>(processInstance);
 
     const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
-    const canEditDetailsAndSummary = Boolean(myPermissions.processesManagementId) && processInstance.status === Status.Pending;
+    const hasPermissionsToEditDetailsAndSummary = Boolean(myPermissions.processesManagementId);
 
     const [isEditMode, setIsEditMode] = useState<boolean>(false);
     const [isStepEditMode, setIsStepEditMode] = useState(false);
@@ -171,11 +171,13 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({ open, onClose
                         </Grid>
                     )}
 
-                    {!isEditMode && activeStep !== 1 && canEditDetailsAndSummary && (
-                        <Button variant="contained" size="large" startIcon={<EditIcon />} onClick={() => setIsEditMode(true)}>
-                            {i18next.t('wizard.processInstance.editProcessBth')}
-                        </Button>
-                    )}
+                    {!isEditMode &&
+                        hasPermissionsToEditDetailsAndSummary &&
+                        ((activeStep === 0 && processInstance.status === Status.Pending) || activeStep === 2) && (
+                            <Button variant="contained" size="large" startIcon={<EditIcon />} onClick={() => setIsEditMode(true)}>
+                                {i18next.t('wizard.processInstance.editProcessBth')}
+                            </Button>
+                        )}
                 </Grid>
             </DialogTitle>
             <DialogContent dividers className={classes.container}>
