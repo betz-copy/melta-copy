@@ -181,5 +181,7 @@ export const searchAllowedProcessInstanceForReviewerAggregation = (
     if (limit > 0) {
         aggregationPipeline.push({ $limit: limit });
     }
+    aggregationPipeline.push({ $sort: { createdAt: -1 } });
+
     return ProcessInstanceModel.aggregate(aggregationPipeline);
 };
