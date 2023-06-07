@@ -16,6 +16,29 @@ import FieldBlock, { FieldBlockAccordion } from '../entityTemplate/FieldBlock';
 import { attachmentPropertiesBaseSchema, propertiesBaseSchema } from '../entityTemplate/AddFields';
 import { initialFieldCardDataOnAdd, useAreThereProcessInstancesByTemplateId } from './AddGenericFields';
 
+const stepTemplateUniqueNames = (value, context: Yup.TestContext) => {
+    if (!value) return true;
+    const steps = value.steps as ProcessTemplateWizardValues['steps'];
+    const errors: Yup.ValidationError[] = [];
+    steps.forEach((step, index) => {
+        const doesStepHasDuplicateName = steps.some(({ name }, restStepsIndex) => step.name === name && index !== restStepsIndex);
+        const doesStepHasDuplicateDisplayName = steps.some(
+            ({ displayName }, restStepsIndex) => step.displayName === displayName && index !== restStepsIndex,
+        );
+        if (doesStepHasDuplicateName) {
+            errors.push(context.createError({ message: i18next.t('validation.stepNameExists'), path: `steps[${index}].name` }));
+        }
+        if (doesStepHasDuplicateDisplayName) {
+            errors.push(context.createError({ message: i18next.t('validation.stepDisplayNameExists'), path: `steps[${index}].displayName` }));
+        }
+    });
+
+    if (errors.length) {
+        return new Yup.ValidationError(errors);
+    }
+
+    return true;
+};
 const addStepsFieldsSchema = Yup.object({
     steps: Yup.array()
         .of(
@@ -32,7 +55,9 @@ const addStepsFieldsSchema = Yup.object({
         )
         .required(i18next.t('validation.oneField'))
         .min(1, i18next.t('validation.oneField')),
-}).test('uniqueProperties', processTemplateUniquePropertiesSteps);
+})
+    .test('uniqueProperties', processTemplateUniquePropertiesSteps)
+    .test('uniqueStepNames', stepTemplateUniqueNames);
 
 const AddStepsFields: React.FC<StepComponentProps<ProcessTemplateWizardValues, 'isEditMode' | 'setBlock'>> = ({
     values,

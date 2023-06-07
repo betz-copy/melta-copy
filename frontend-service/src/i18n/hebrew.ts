@@ -447,6 +447,8 @@ export default {
         fieldExist: 'שדה זה קיים במערכת',
         attachmentFieldNameExists: 'קיים שם קובץ באנגלית זהה',
         attachmentFieldTitleExists: 'קיים שם קובץ לתצוגה זהה',
+        stepNameExists: 'קיים שלב עם שם באנגלית זהה',
+        stepDisplayNameExists: 'קיים שלב עם שם לתצוגה זהה',
     },
     propertyTypes: {
         string: 'מחרוזת',
