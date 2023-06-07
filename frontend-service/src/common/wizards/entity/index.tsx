@@ -20,7 +20,7 @@ const { errorCodes } = environment;
 export interface EntityWizardValues {
     template: IMongoEntityTemplatePopulated;
     properties: object & { disabled: boolean };
-    attachmentsProperties: object;
+    attachmentsProperties: Record<string, File | undefined>;
 }
 
 const steps: StepsType<EntityWizardValues> = [

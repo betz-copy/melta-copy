@@ -20,7 +20,7 @@ import { Draggable } from 'react-beautiful-dnd';
 import i18next from 'i18next';
 import isEqual from 'lodash.isequal';
 import { validPropertyTypes } from './AddFields';
-import { EntityTemplateFormInputProperties, EntityTemplateWizardValues } from './index';
+import { CommonFormInputProperties } from './commonInterfaces';
 
 const UniqueCheckboxTooltipTitle = (
     <Box sx={{ whiteSpace: 'pre-wrap' }}>
@@ -28,16 +28,16 @@ const UniqueCheckboxTooltipTitle = (
     </Box>
 );
 
-interface FieldEditCardProps {
-    value: EntityTemplateFormInputProperties;
+export interface FieldEditCardProps {
+    value: CommonFormInputProperties;
     index: number;
     isEditMode?: boolean;
-    initialValues: EntityTemplateWizardValues;
+    initialValue: CommonFormInputProperties | undefined;
     areThereAnyInstances?: boolean;
-    touched?: FormikTouched<EntityTemplateFormInputProperties>;
-    errors?: FormikErrors<EntityTemplateFormInputProperties>;
-    setFieldValue: (field: keyof EntityTemplateFormInputProperties, value: any) => void;
-    setValues: (value: SetStateAction<EntityTemplateFormInputProperties>) => void;
+    setValues?: (value: SetStateAction<CommonFormInputProperties>) => void;
+    touched?: FormikTouched<CommonFormInputProperties>;
+    errors?: FormikErrors<CommonFormInputProperties>;
+    setFieldValue: (field: keyof CommonFormInputProperties, value: any) => void;
     onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
     remove: (index: number) => any;
 }
@@ -46,7 +46,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     value,
     index,
     isEditMode,
-    initialValues,
+    initialValue,
     areThereAnyInstances,
     touched,
     errors,
@@ -84,12 +84,10 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     const hide = `properties[${index}].hide`;
     const unique = `properties[${index}].unique`;
 
-    const initialEnumOptions = initialValues.properties.find((property) => property.id === value.id)?.options || [];
+    const initialEnumOptions = initialValue?.options || [];
 
-    const isNewProperty = !initialValues.properties.find((property) => property.id === value.id);
-
+    const isNewProperty = !initialValue;
     const isDisabled = Boolean(isEditMode && !isNewProperty && areThereAnyInstances);
-
     return (
         <Draggable draggableId={value.id} index={index}>
             {(draggableProvided) => (
@@ -223,62 +221,76 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                     </Grid>
                                     <Grid item container justifyContent="space-between">
                                         <Box>
-                                            <FormControlLabel
-                                                control={
-                                                    <Switch
-                                                        id={required}
-                                                        name={required}
-                                                        onChange={(_e, checked) => {
-                                                            setValues((prevValue) => ({
-                                                                ...prevValue,
-                                                                required: checked,
-                                                                // unique is allowed only if required=true, automatic uncheck 'unique' too
-                                                                unique: !checked ? false : prevValue.unique,
-                                                            }));
-                                                        }}
-                                                        checked={value.required}
-                                                    />
-                                                }
-                                                label={i18next.t('validation.required')}
-                                            />
-                                            <FormControlLabel
-                                                control={
-                                                    <Switch
-                                                        id={preview}
-                                                        name={preview}
-                                                        onChange={onChange}
-                                                        disabled={value.hide}
-                                                        checked={value.preview}
-                                                    />
-                                                }
-                                                label={i18next.t('validation.preview')}
-                                            />
-                                            <FormControlLabel
-                                                control={
-                                                    <Switch id={hide} name={hide} onChange={onChange} disabled={value.preview} checked={value.hide} />
-                                                }
-                                                label={i18next.t('validation.hide')}
-                                            />
-                                            <Tooltip title={UniqueCheckboxTooltipTitle}>
+                                            {value.required !== undefined && setValues && (
                                                 <FormControlLabel
                                                     control={
                                                         <Switch
-                                                            id={unique}
-                                                            name={unique}
+                                                            id={required}
+                                                            name={required}
                                                             onChange={(_e, checked) => {
                                                                 setValues((prevValue) => ({
                                                                     ...prevValue,
-                                                                    unique: checked,
-                                                                    // unique is allowed only if required=true, automatic check 'required' too
-                                                                    required: checked ? true : prevValue.required,
+                                                                    required: checked,
+                                                                    // unique is allowed only if required=true, automatic uncheck 'unique' too
+                                                                    unique: !checked ? false : prevValue.unique,
                                                                 }));
                                                             }}
-                                                            checked={value.unique}
+                                                            checked={value.required}
                                                         />
                                                     }
-                                                    label={i18next.t('validation.unique')}
+                                                    label={i18next.t('validation.required')}
                                                 />
-                                            </Tooltip>
+                                            )}
+                                            {value.preview !== undefined && (
+                                                <FormControlLabel
+                                                    control={
+                                                        <Switch
+                                                            id={preview}
+                                                            name={preview}
+                                                            onChange={onChange}
+                                                            disabled={value.hide}
+                                                            checked={value.preview}
+                                                        />
+                                                    }
+                                                    label={i18next.t('validation.preview')}
+                                                />
+                                            )}
+                                            {value.hide !== undefined && (
+                                                <FormControlLabel
+                                                    control={
+                                                        <Switch
+                                                            id={hide}
+                                                            name={hide}
+                                                            onChange={onChange}
+                                                            disabled={value.preview}
+                                                            checked={value.hide}
+                                                        />
+                                                    }
+                                                    label={i18next.t('validation.hide')}
+                                                />
+                                            )}
+                                            {value.unique !== undefined && setValues && (
+                                                <Tooltip title={UniqueCheckboxTooltipTitle}>
+                                                    <FormControlLabel
+                                                        control={
+                                                            <Switch
+                                                                id={unique}
+                                                                name={unique}
+                                                                onChange={(_e, checked) => {
+                                                                    setValues((prevValue) => ({
+                                                                        ...prevValue,
+                                                                        unique: checked,
+                                                                        // unique is allowed only if required=true, automatic check 'required' too
+                                                                        required: checked ? true : prevValue.required,
+                                                                    }));
+                                                                }}
+                                                                checked={value.unique}
+                                                            />
+                                                        }
+                                                        label={i18next.t('validation.unique')}
+                                                    />
+                                                </Tooltip>
+                                            )}
                                         </Box>
 
                                         <IconButton disabled={isDisabled} onClick={() => remove(index)}>

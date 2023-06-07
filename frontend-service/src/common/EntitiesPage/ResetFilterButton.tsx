@@ -1,7 +1,7 @@
 import React from 'react';
 import { FilterListOffOutlined } from '@mui/icons-material';
 import i18next from 'i18next';
-import IconButtonWithPopoverText from '../IconButtonWithPopover';
+import IconButtonWithPopover from '../IconButtonWithPopover';
 import { EntitiesTableOfTemplateRef } from '../EntitiesTableOfTemplate';
 
 const ResetFilterButton: React.FC<{
@@ -11,13 +11,13 @@ const ResetFilterButton: React.FC<{
     const buttonColor = disableButton ? 'disabled' : 'primary';
 
     return (
-        <IconButtonWithPopoverText
+        <IconButtonWithPopover
             iconButtonProps={{ onClick: () => entitiesTableRef.current?.resetFilter() }}
             popoverText={i18next.t('entitiesTableOfTemplate.resetFilters')}
             disabled={disableButton}
         >
             <FilterListOffOutlined color={buttonColor} fontSize="medium" />
-        </IconButtonWithPopoverText>
+        </IconButtonWithPopover>
     );
 };
 

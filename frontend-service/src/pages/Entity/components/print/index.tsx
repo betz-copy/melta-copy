@@ -2,7 +2,7 @@ import { FileDownloadOutlined } from '@mui/icons-material';
 import i18next from 'i18next';
 import React from 'react';
 import { useReactToPrint } from 'react-to-print';
-import IconButtonWithPopoverText from '../../../../common/IconButtonWithPopover';
+import IconButtonWithPopover from '../../../../common/IconButtonWithPopover';
 import { IMongoCategory } from '../../../../interfaces/categories';
 import { IEntityExpanded } from '../../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
@@ -40,9 +40,9 @@ const Print: React.FC<{
 
     return (
         <>
-            <IconButtonWithPopoverText popoverText={i18next.t('entityPage.print.header')} iconButtonProps={{ onClick: handleOpen }}>
+            <IconButtonWithPopover popoverText={i18next.t('entityPage.print.header')} iconButtonProps={{ onClick: handleOpen }}>
                 <FileDownloadOutlined color="primary" fontSize="inherit" />
-            </IconButtonWithPopoverText>
+            </IconButtonWithPopover>
             <div style={{ display: 'none' }}>
                 <style>{getPageMargins()}</style>
 

@@ -17,7 +17,6 @@ const getUserByIdRequest = async (userId: string) => {
     const { data } = await axios.get<IUser>(`${users}/${userId}`);
     return data;
 };
-
 const searchUsersRequest = async (search: string) => {
     if (search.length >= 2) {
         const { data } = await axios.get<IUser[]>(`${users}/search`, { params: { search } });

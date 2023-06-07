@@ -2,11 +2,9 @@ import React from 'react';
 import { Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
 import RuleBreachInfo from '../../../ruleBreanchInfo/RuleBreachInfo';
-import { IRuleBreachRequestPopulated } from '../../../../interfaces/ruleBreaches/ruleBreachRequest';
+import { IRuleBreachRequestNotificationMetadataPopulated } from '../../../../interfaces/notifications';
 
-export const RuleBreachRequestNotification: React.FC<{
-    ruleBreachRequest: IRuleBreachRequestPopulated;
-}> = ({ ruleBreachRequest }) => {
+export const RuleBreachRequestNotification: React.FC<IRuleBreachRequestNotificationMetadataPopulated> = ({ request }) => {
     return (
         <Grid container direction="column" spacing={1}>
             <Grid item>
@@ -16,10 +14,10 @@ export const RuleBreachRequestNotification: React.FC<{
             </Grid>
             <Grid item>
                 <RuleBreachInfo
-                    originUser={ruleBreachRequest.originUser}
-                    brokenRules={ruleBreachRequest.brokenRules}
-                    actionType={ruleBreachRequest.actionType}
-                    actionMetadata={ruleBreachRequest.actionMetadata}
+                    originUser={request.originUser}
+                    brokenRules={request.brokenRules}
+                    actionType={request.actionType}
+                    actionMetadata={request.actionMetadata}
                     isCompact
                 />
             </Grid>

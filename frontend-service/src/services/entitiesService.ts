@@ -42,7 +42,7 @@ const getRelationshipInstancesCountByTemplateIdRequest = async (templateId: stri
 
 const createEntityRequest = async (entity: EntityWizardValues) => {
     const formData = new FormData();
-    Object.entries(entity.attachmentsProperties).forEach(([key, value]) => formData.append(key, value));
+    Object.entries(entity.attachmentsProperties).forEach(([key, value]) => formData.append(key, value!));
     formData.append('properties', JSON.stringify(entity.properties));
     formData.append('templateId', entity.template._id);
     const { data } = await axios.post<IEntity>(entities, formData);
@@ -58,7 +58,7 @@ const updateEntityRequest = async (entityId: string, newEntityData: EntityWizard
     const formData = new FormData();
     const [fileToUpload, unchangedFiles] = partition(Object.entries(newEntityData.attachmentsProperties), ([_key, value]) => value instanceof File);
 
-    fileToUpload.forEach(([key, value]) => formData.append(key, value));
+    fileToUpload.forEach(([key, value]) => formData.append(key, value as Blob));
     const fileProperties = {};
     unchangedFiles.forEach(([key, value]) => {
         if (value) {
@@ -72,6 +72,7 @@ const updateEntityRequest = async (entityId: string, newEntityData: EntityWizard
     if (ignoredRules) {
         formData.append('ignoredRules', JSON.stringify(ignoredRules));
     }
+    
     const { data } = await axios.put<IEntity>(`${entities}/${entityId}`, formData);
 
     return data;
@@ -80,7 +81,7 @@ const duplicateEntityRequest = async (entityId: string, newEntityData: EntityWiz
     const formData = new FormData();
     const [fileToUpload, unchangedFiles] = partition(Object.entries(newEntityData.attachmentsProperties), ([_key, value]) => value instanceof File);
 
-    fileToUpload.forEach(([key, value]) => formData.append(key, value));
+    fileToUpload.forEach(([key, value]) => formData.append(key, value as Blob));
     const fileProperties = {};
     unchangedFiles.forEach(([key, value]) => {
         if (value) {

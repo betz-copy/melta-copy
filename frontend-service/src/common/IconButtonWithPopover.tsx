@@ -1,7 +1,7 @@
 import React, { CSSProperties } from 'react';
 import { IconButton, Tooltip } from '@mui/material';
 
-const IconButtonWithPopoverText: React.FC<{
+const IconButtonWithPopover: React.FC<{
     iconButtonProps: React.ComponentProps<typeof IconButton>;
     popoverText: string;
     disabledToolTip?: boolean;
@@ -19,4 +19,4 @@ const IconButtonWithPopoverText: React.FC<{
     );
 };
 
-export default IconButtonWithPopoverText;
+export default IconButtonWithPopover;

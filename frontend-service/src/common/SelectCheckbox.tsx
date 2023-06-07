@@ -55,6 +55,7 @@ const SelectOptionsMenuItems = <Option extends any, Group extends any>({
     getOptionId: SelectCheckboxProps<Option, Group>['getOptionId'];
     getOptionLabel: SelectCheckboxProps<Option, Group>['getOptionLabel'];
     menuItemSx?: SxProps<Theme>;
+
 }) => {
     return (
         <>
@@ -229,6 +230,7 @@ const ChooseAllMenuItem = <Option extends any, Group extends any>({
     setSelectedOptions: SelectCheckboxProps<Option, Group>['setSelectedOptions'];
     optionsFiltered: Option[];
     getOptionId: SelectCheckboxProps<Option, Group>['getOptionId'];
+
 }) => {
     return (
         <MenuItem
@@ -258,6 +260,7 @@ const ChooseAllMenuItem = <Option extends any, Group extends any>({
                 label={i18next.t('selectChooseAll')}
             />
         </MenuItem>
+
     );
 };
 

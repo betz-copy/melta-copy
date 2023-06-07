@@ -8,20 +8,42 @@ import { IUser, searchUsersRequest } from '../../services/kartoffelService';
 
 const UserAutocomplete: React.FC<{
     value: IUser | null;
+    displayValue?: string;
     onChange: AutocompleteProps<IUser, undefined, undefined, undefined>['onChange'];
+    onDisplayValueChange?: AutocompleteProps<IUser, undefined, undefined, undefined>['onInputChange'];
     onBlur?: AutocompleteProps<IUser, undefined, undefined, undefined>['onBlur'];
+    isOptionDisabled?: AutocompleteProps<IUser, undefined, undefined, undefined>['getOptionDisabled'];
     disabled?: boolean;
     readOnly?: boolean;
+    label?: string;
     isError: boolean;
     helperText?: string;
     minInputLengthToSearch?: number;
-}> = ({ value, onChange, onBlur, disabled = false, readOnly = false, isError, helperText, minInputLengthToSearch = 2 }) => {
-    const [inputValue, setInputValue] = useState<string>(value ? value.displayName : '');
+    size?: 'small' | 'medium';
+}> = ({
+    value,
+    displayValue,
+    onChange,
+    onDisplayValueChange,
+    onBlur,
+    isOptionDisabled,
+    disabled = false,
+    readOnly = false,
+    label = i18next.t('userAutocomplete.label'),
+    isError,
+    helperText,
+    minInputLengthToSearch = 2,
+    size,
+}) => {
+    const [internalDisplayValue, setInputValue] = useState<string>(value ? value.displayName : '');
+
+    const currentDisplayValue = displayValue ?? internalDisplayValue;
+
     const {
         data: usersOptions,
         refetch: searchUsersOptions,
         isFetching: isFetchingUsersOptions,
-    } = useQuery(['searchUsers', inputValue], () => searchUsersRequest(inputValue), {
+    } = useQuery(['searchUsers', currentDisplayValue], () => searchUsersRequest(currentDisplayValue), {
         onError: (error) => {
             console.log('failed to search users. error:', error);
             toast.error(i18next.t('userAutocomplete.failedToSearchUsers'));
@@ -56,10 +78,11 @@ const UserAutocomplete: React.FC<{
         <Tooltip title={value?.displayName || ''} placement="top" sx={{ maxWidth: 'none' }}>
             <Autocomplete
                 value={value}
-                inputValue={inputValue}
+                inputValue={currentDisplayValue}
                 onChange={onChange}
                 onInputChange={(_e, newValue, reason) => {
                     setInputValue(newValue);
+                    onDisplayValueChange?.(_e, newValue, reason);
                     if (reason === 'input' && newValue.length >= minInputLengthToSearch) {
                         searchUsersOptionsDebounced();
                     }
@@ -68,6 +91,7 @@ const UserAutocomplete: React.FC<{
                 onBlur={onBlur}
                 filterOptions={(o) => o} // the "autoComplete" is done at server side
                 getOptionLabel={(option) => option.displayName}
+                getOptionDisabled={isOptionDisabled}
                 isOptionEqualToValue={(option, currValue) => option.id === currValue.id}
                 options={usersOptions!}
                 loading={isFetchingUsersOptions}
@@ -79,13 +103,14 @@ const UserAutocomplete: React.FC<{
                         error={isError}
                         fullWidth
                         helperText={helperText}
-                        label={i18next.t('userAutocomplete.label')}
+                        label={label}
                         InputProps={{ ...params.InputProps, readOnly, endAdornment: (readOnly || disabled) && undefined }}
                         InputLabelProps={{ ...(params.InputLabelProps, readOnly && readOnlyInputLabelProps) }}
                         sx={readOnly ? readOnlyValueSx : {}}
                     />
                 )}
                 readOnly={readOnly}
+                size={size}
             />
         </Tooltip>
     );

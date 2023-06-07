@@ -73,7 +73,7 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
                         return lastPage.length ? nextPage : undefined;
                     }}
                     endText={i18next.t('entitiesCardView.noSearchLeft')}
-                    styles={{ overflowY: 'hidden' }}
+                    style={{ overflowY: 'hidden' }}
                 >
                     {(entity) => (
                         <Box sx={{ marginBottom: '0.5rem' }}>

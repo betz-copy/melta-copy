@@ -29,20 +29,18 @@ const TemplatesSelectCheckbox: React.FC<{
     categories?: any[];
     size?: 'small' | 'medium';
     toTopBar?: boolean;
-}> = ({ title, templates, selectedTemplates, setSelectedTemplates, categories, size, toTopBar }) => {
-    return (
-        <SelectCheckbox
-            title={title}
-            options={templates}
-            selectedOptions={selectedTemplates}
-            setSelectedOptions={setSelectedTemplates}
-            getOptionId={({ _id }) => _id}
-            getOptionLabel={({ displayName }) => displayName}
-            groupsProps={getCategoriesSelectCheckboxGroupProps(categories)}
-            size={size}
-            toTopBar={toTopBar}
-        />
-    );
-};
+}> = ({ title, templates, selectedTemplates, setSelectedTemplates, categories, size, toTopBar }) => (
+    <SelectCheckbox
+        title={title}
+        options={templates}
+        selectedOptions={selectedTemplates}
+        setSelectedOptions={setSelectedTemplates}
+        getOptionId={({ _id }) => _id}
+        getOptionLabel={({ displayName }) => displayName}
+        groupsProps={getCategoriesSelectCheckboxGroupProps(categories)}
+        size={size}
+        toTopBar={toTopBar}
+    />
+);
 
 export default TemplatesSelectCheckbox;

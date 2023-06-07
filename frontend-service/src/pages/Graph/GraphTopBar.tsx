@@ -7,7 +7,7 @@ import { toast } from 'react-toastify';
 import { useSelector } from 'react-redux';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { getExpandedEntityByIdRequest } from '../../services/entitiesService';
-import IconButtonWithPopoverText from '../../common/IconButtonWithPopover';
+import IconButtonWithPopover from '../../common/IconButtonWithPopover';
 import TemplatesSelectCheckbox from '../../common/templatesSelectCheckbox';
 import { ICategoryMap } from '../../interfaces/categories';
 import { RootState } from '../../store';
@@ -100,20 +100,20 @@ const GraphTopBar: React.FC<GraphTopBarProps> = ({ onReset, set3DView, is3DView,
                     </Grid>
 
                     <Grid item>
-                        <IconButtonWithPopoverText
+                        <IconButtonWithPopover
                             popoverText={i18next.t('graph.copy')}
                             iconButtonProps={{
                                 onClick: handleCopy,
                             }}
                         >
                             <CopyUrlIcon color="primary" />
-                        </IconButtonWithPopoverText>
+                        </IconButtonWithPopover>
                     </Grid>
 
                     <Grid item>
-                        <IconButtonWithPopoverText popoverText={i18next.t('graph.reset')} iconButtonProps={{ onClick: onReset }}>
+                        <IconButtonWithPopover popoverText={i18next.t('graph.reset')} iconButtonProps={{ onClick: onReset }}>
                             <ResetIcon color="primary" />
-                        </IconButtonWithPopoverText>
+                        </IconButtonWithPopover>
                     </Grid>
                 </Grid>
             </Grid>

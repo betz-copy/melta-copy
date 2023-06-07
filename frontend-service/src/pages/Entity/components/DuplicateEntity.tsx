@@ -17,10 +17,10 @@ import { EntityWizardValues } from '../../../common/wizards/entity';
 import { JSONSchemaFormik, ajvValidate } from '../../../common/inputs/JSONSchemaFormik';
 import { BlueTitle } from '../../../common/BlueTitle';
 import { filterAttachmentsPropertiesFromSchema } from '../../../utils/filterAttachmentsFromSchema';
-import { EntityFilesInput } from '../../../common/inputs/EntityFilesInput';
 import { DuplicateTopBar } from './DuplicateTopBar';
 import { environment } from '../../../globals';
 import { toastConstraintValidationError } from '../../../common/wizards/entity/toastConstraintValidationError';
+import { InstanceFileInput } from '../../../common/inputs/InstanceFilesInput/InstanceFileInput';
 
 const { errorCodes } = environment;
 
@@ -61,7 +61,7 @@ const DuplicateEntity: React.FC<{}> = () => {
 
     const fieldProperties = pickBy(entity.properties, (_value, key) => !templateFileKeys.includes(key)) as IEntity['properties'];
     const fileIdsProperties = pickBy(entity.properties, (_value, key) => templateFileKeys.includes(key));
-    const fileProperties = mapValues(fileIdsProperties, (value) => ({ name: value }));
+    const fileProperties = mapValues(fileIdsProperties, (value) => ({ name: value })) as Record<string, File>;
 
     return (
         <Formik
@@ -113,13 +113,25 @@ const DuplicateEntity: React.FC<{}> = () => {
                                                                     variant="h6"
                                                                     style={{ marginBottom: '22px' }}
                                                                 />
-                                                                <EntityFilesInput
-                                                                    requiredFilesNames={requiredFilesNames}
-                                                                    filesProperties={templateFilesProperties}
-                                                                    setFieldValue={setFieldValue}
-                                                                    errors={errors}
-                                                                    values={values}
-                                                                />
+                                                                <>
+                                                                    {Object.entries(templateFilesProperties).map(([key, value]) => (
+                                                                        <InstanceFileInput
+                                                                            key={key}
+                                                                            fileFieldName={key}
+                                                                            fieldTemplateTitle={value.title}
+                                                                            setFieldValue={(field, value) =>
+                                                                                setFieldValue(`attachmentsProperties.${field}`, value)
+                                                                            }
+                                                                            required={requiredFilesNames.includes(key)}
+                                                                            value={values.attachmentsProperties[key]}
+                                                                            error={
+                                                                                errors.attachmentsProperties?.[key]
+                                                                                    ? JSON.stringify(errors.attachmentsProperties?.[key])
+                                                                                    : undefined
+                                                                            }
+                                                                        />
+                                                                    ))}
+                                                                </>
                                                             </Box>
                                                         )}
                                                     </Grid>

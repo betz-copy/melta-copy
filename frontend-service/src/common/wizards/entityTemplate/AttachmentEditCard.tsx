@@ -5,16 +5,16 @@ import { Delete as DeleteIcon, DragHandle as DragHandleIcon } from '@mui/icons-m
 import { Draggable } from 'react-beautiful-dnd';
 import i18next from 'i18next';
 import isEqual from 'lodash.isequal';
-import { EntityTemplateFormInputProperties, EntityTemplateWizardValues } from './index';
+import { CommonFormInputProperties } from './commonInterfaces';
 
 interface AttachmentEditCardProps {
-    value: EntityTemplateFormInputProperties;
+    value: CommonFormInputProperties;
     index: number;
     isEditMode?: boolean;
-    initialValues: EntityTemplateWizardValues;
+    initialValue: CommonFormInputProperties | undefined;
     areThereAnyInstances?: boolean;
-    touched?: FormikTouched<EntityTemplateFormInputProperties>;
-    errors?: FormikErrors<EntityTemplateFormInputProperties>;
+    touched?: FormikTouched<CommonFormInputProperties>;
+    errors?: FormikErrors<CommonFormInputProperties>;
     onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
     remove: (index: number) => any;
 }
@@ -23,7 +23,7 @@ export const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
     value,
     index,
     isEditMode,
-    initialValues,
+    initialValue,
     areThereAnyInstances,
     touched,
     errors,
@@ -40,7 +40,7 @@ export const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
 
     const required = `attachmentProperties[${index}].required`;
 
-    const isNewProperty = !initialValues.attachmentProperties.find((property) => property.id === value.id);
+    const isNewProperty = !initialValue;
 
     const isDisabled = Boolean(isEditMode && !isNewProperty && areThereAnyInstances);
 
@@ -81,7 +81,7 @@ export const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
                                     </Grid>
                                     <Grid container justifyContent="space-between">
                                         <Box>
-                                            <FormControlLabel
+                                            {value.required !== undefined && <FormControlLabel
                                                 control={
                                                     <Switch
                                                         id={required}
@@ -92,7 +92,7 @@ export const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
                                                     />
                                                 }
                                                 label={i18next.t('validation.required')}
-                                            />
+                                            />}
                                         </Box>
 
                                         <IconButton disabled={isDisabled} onClick={() => remove(index)}>

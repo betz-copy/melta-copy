@@ -66,11 +66,13 @@ const RjfsSelectWidget = ({
         onChange(processValue(schema, newValue));
     const _onBlur = ({ target: { value: newValue } }: React.FocusEvent<HTMLInputElement>) => onBlur(id, processValue(schema, newValue));
     const _onFocus = ({ target: { value: newValue } }: React.FocusEvent<HTMLInputElement>) => onFocus(id, processValue(schema, newValue));
+    const variant = readonly ? 'standard' : 'outlined';
 
     return (
         <Autocomplete
             id={id}
-            disabled={disabled || readonly}
+            disabled={disabled}
+            readOnly={readonly}
             value={typeof value === 'undefined' ? emptyValue : value}
             onChange={(event, value) => {
                 onChange(processValue(schema, value?.label));
@@ -85,6 +87,10 @@ const RjfsSelectWidget = ({
                     onChange={_onChange}
                     onBlur={_onBlur}
                     onFocus={_onFocus}
+                    variant={variant}
+                    InputLabelProps={{
+                        shrink: readonly,
+                    }}
                     error={rawErrors.length > 0}
                     color={color as TextFieldProps['color']}
                     label={label || schema.title}

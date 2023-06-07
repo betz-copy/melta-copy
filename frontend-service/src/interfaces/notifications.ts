@@ -1,3 +1,6 @@
+import { IMongoProcessInstancePopulated } from './processes/processInstance';
+import { Status } from './processes/processInstance';
+import { IMongoStepInstancePopulated } from './processes/stepInstance';
 import { IRuleBreachAlertPopulated } from './ruleBreaches/ruleBreachAlert';
 import { IRuleBreachRequestPopulated } from './ruleBreaches/ruleBreachRequest';
 
@@ -5,7 +8,9 @@ export enum NotificationType {
     ruleBreachAlert = 'ruleBreachAlert',
     ruleBreachRequest = 'ruleBreachRequest',
     ruleBreachResponse = 'ruleBreachResponse',
-    processApproverUpdate = 'processApproverUpdate',
+
+    processReviewerUpdate = 'processReviewerUpdate',
+    processStatusUpdate = 'processStatusUpdate',
     newProcess = 'newProcess',
 }
 
@@ -19,20 +24,27 @@ export interface IRuleBreachResponseNotificationMetadataPopulated {
     request: IRuleBreachRequestPopulated;
 }
 
-export interface IProcessApproverUpdateNotificationMetadataPopulated {
-    process: object; // TODO: add process interface
-    approverStepNames: string[];
-    previousApproverStepNames: string[];
+export interface IProcessReviewerUpdateNotificationMetadataPopulated {
+    process: IMongoProcessInstancePopulated;
+    addedSteps: IMongoStepInstancePopulated[];
+    deletedSteps: IMongoStepInstancePopulated[];
+    unchangedSteps: IMongoStepInstancePopulated[];
+}
+export interface IProcessStatusUpdateNotificationMetadataPopulated {
+    process: IMongoProcessInstancePopulated;
+    step?: IMongoStepInstancePopulated;
+    status: Status;
 }
 export interface INewProcessNotificationMetadataPopulated {
-    process: object; // TODO: add process interface
+    process: IMongoProcessInstancePopulated;
 }
 
 export type INotificationMetadataPopulated =
     | IRuleBreachAlertNotificationMetadataPopulated
     | IRuleBreachRequestNotificationMetadataPopulated
     | IRuleBreachResponseNotificationMetadataPopulated
-    | IProcessApproverUpdateNotificationMetadataPopulated
+    | IProcessReviewerUpdateNotificationMetadataPopulated
+    | IProcessStatusUpdateNotificationMetadataPopulated
     | INewProcessNotificationMetadataPopulated;
 
 export interface INotificationPopulated<T = INotificationMetadataPopulated> {
@@ -47,24 +59,25 @@ export const isRuleBreachAlertNotification = (
 ): notification is INotificationPopulated<IRuleBreachAlertNotificationMetadataPopulated> => {
     return notification.type === NotificationType.ruleBreachAlert;
 };
-
 export const isRuleBreachRequestNotification = (
     notification: Partial<INotificationPopulated>,
 ): notification is INotificationPopulated<IRuleBreachRequestNotificationMetadataPopulated> => {
     return notification.type === NotificationType.ruleBreachRequest;
 };
-
 export const isRuleBreachResponseNotification = (
     notification: Partial<INotificationPopulated>,
 ): notification is INotificationPopulated<IRuleBreachResponseNotificationMetadataPopulated> => {
     return notification.type === NotificationType.ruleBreachResponse;
 };
 
-export const isProcessApproverUpdateNotification = (
+export const isProcessReviewerUpdateNotification = (
     notification: Partial<INotificationPopulated>,
-): notification is INotificationPopulated<IProcessApproverUpdateNotificationMetadataPopulated> =>
-    notification.type === NotificationType.processApproverUpdate;
-
+): notification is INotificationPopulated<IProcessReviewerUpdateNotificationMetadataPopulated> =>
+    notification.type === NotificationType.processReviewerUpdate;
+export const isProcessStatusUpdateNotification = (
+    notification: Partial<INotificationPopulated>,
+): notification is INotificationPopulated<IProcessStatusUpdateNotificationMetadataPopulated> =>
+    notification.type === NotificationType.processStatusUpdate;
 export const isNewProcessNotification = (
     notification: Partial<INotificationPopulated>,
 ): notification is INotificationPopulated<INewProcessNotificationMetadataPopulated> => notification.type === NotificationType.newProcess;

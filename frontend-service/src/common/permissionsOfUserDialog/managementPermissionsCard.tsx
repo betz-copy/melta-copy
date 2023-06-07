@@ -10,7 +10,8 @@ const ManagementPermissionsCard: React.FC<{
     permissionsManagement: ManagementCheckboxProps;
     templatesManagement: ManagementCheckboxProps;
     rulesManagement: ManagementCheckboxProps;
-}> = ({ permissionsManagement, templatesManagement, rulesManagement }) => {
+    processesManagement: ManagementCheckboxProps;
+}> = ({ permissionsManagement, templatesManagement, rulesManagement, processesManagement }) => {
     const darkMode = useSelector((state: RootState) => state.darkMode);
 
     return (
@@ -53,6 +54,18 @@ const ManagementPermissionsCard: React.FC<{
                                 <CheckboxReadOnly checked={rulesManagement.checked} />
                             ) : (
                                 <Checkbox checked={rulesManagement.checked} onChange={rulesManagement.onChange} />
+                            )
+                        }
+                    />
+                    <FormControlLabel
+                        label={i18next.t('permissions.permissionsOfUserDialog.processesManagement') as string}
+                        labelPlacement="end"
+                        disabled={processesManagement.disabled}
+                        control={
+                            processesManagement.readOnly ? (
+                                <CheckboxReadOnly checked={processesManagement.checked} />
+                            ) : (
+                                <Checkbox checked={processesManagement.checked} onChange={processesManagement.onChange} />
                             )
                         }
                     />

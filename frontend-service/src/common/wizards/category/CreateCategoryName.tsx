@@ -10,6 +10,7 @@ const createCategoryNameSchema = {
     name: Yup.string().matches(variableNameValidation, i18next.t('validation.variableName')).required(i18next.t('validation.required')),
     displayName: Yup.string().required(i18next.t('validation.required')),
 };
+
 const CreateCategoryName: React.FC<StepComponentProps<CategoryWizardValues>> = ({ values, touched, errors, handleChange }) => {
     return (
         <Grid container direction="column" alignItems="center" spacing={1}>
@@ -35,6 +36,7 @@ const CreateCategoryName: React.FC<StepComponentProps<CategoryWizardValues>> = (
                 />
             </Grid>
         </Grid>
+
     );
 };
 

@@ -12,6 +12,8 @@ export const environment = {
         rules: '/templates/rules',
         entities: '/instances/entities',
         relationships: '/instances/relationships',
+        processTemplates: '/processes/templates',
+        processes: '/processes/instances',
         storage: '/files',
         getMyPermissions: '/permissions/my',
         getAllPermissions: '/permissions',
@@ -69,7 +71,8 @@ export const environment = {
             general: [
                 NotificationType.ruleBreachAlert,
                 NotificationType.ruleBreachResponse,
-                NotificationType.processApproverUpdate,
+                NotificationType.processReviewerUpdate,
+                NotificationType.processStatusUpdate,
                 NotificationType.newProcess,
             ],
         },
@@ -79,6 +82,9 @@ export const environment = {
         expandedRowCount: 10,
     },
     activityLog: {
+        infiniteScrollPageCount: 10,
+    },
+    processInstances: {
         infiniteScrollPageCount: 10,
     },
     createdRelationshipIdInBrokenRules: 'created-relationship-id',

@@ -17,13 +17,9 @@ const GlobalSearch: React.FC<{}> = () => {
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
 
-    const allowedCategories = Array.from(categories.values()).filter((category) => {
-        return myPermissions.instancesPermissions.some(({ category: categoryId }) => categoryId === category._id);
-    });
+    const allowedCategories = Array.from(categories.values()).filter((category) => myPermissions.instancesPermissions.some(({ category: categoryId }) => categoryId === category._id));
 
-    const allowedTemplates = Array.from(entityTemplates.values()).filter((entityTemplate) => {
-        return allowedCategories.find((category) => category._id === entityTemplate.category._id);
-    });
+    const allowedTemplates = Array.from(entityTemplates.values()).filter((entityTemplate) => allowedCategories.find((category) => category._id === entityTemplate.category._id));
 
     const [urlSearchParams, setUrlSearchParams] = useSearchParams({});
 

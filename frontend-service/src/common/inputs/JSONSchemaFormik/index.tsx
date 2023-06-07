@@ -1,3 +1,4 @@
+/* eslint-disable import/no-extraneous-dependencies */
 import React from 'react';
 import { Form as JSONSchemaForm, } from '@rjsf/mui';
 import Ajv, { ErrorObject } from 'ajv';
@@ -6,12 +7,12 @@ import i18next from 'i18next';
 import { FormikErrors, FormikHelpers, FormikTouched } from 'formik';
 import mapValues from 'lodash.mapvalues';
 import pickBy from 'lodash.pickby';
+import validator from '@rjsf/validator-ajv8';
+import { ErrorSchema } from '@rjsf/utils';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { RjfsDateWidget, RjfsDateTimeWidget } from './RjfsDatesWidgets';
-import validator from '@rjsf/validator-ajv8';
 import RjfsSelectWidget from './RjfsSelectWidget';
 import RjsfTextWidget from './RjsfStringWidget';
-import { ErrorSchema } from '@rjsf/utils';
 
 const ajvErrorsToFormikErrors = (schema: IMongoEntityTemplatePopulated['properties'], ajvErrors: ErrorObject[]): FormikErrors<any> => {
     const formikErrorsEntries = ajvErrors.map((ajvError) => {
@@ -46,6 +47,7 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
 
 const formikErrorsToRjsfExtraErrors = (formikErrors: Record<string, string>): ErrorSchema<{}> => {
     // assuming no complex fields (nested/array). need recursion for nested fields
+
     return mapValues(formikErrors, (errorMessage) => ({ __errors: [errorMessage] }));
 };
 
@@ -56,12 +58,12 @@ interface JSONSchemaFormFormikProps {
     errors: FormikErrors<any>;
     touched: FormikTouched<any>;
     setFieldTouched: FormikHelpers<any>['setFieldTouched'];
+    readonly?: boolean;
 }
 
-export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({ schema, values, setValues, errors, touched, setFieldTouched }) => {
+export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({ readonly, schema, values, setValues, errors, touched, setFieldTouched}) => {
     const rjsfExtraErrors = formikErrorsToRjsfExtraErrors(errors as Record<string, string>);
     const ajvExtraErrorsOnlyTouched: ErrorSchema<{}> = pickBy(rjsfExtraErrors, (_value, key) => touched[key]);
-
     return (
         <JSONSchemaForm
             schema={schema}
@@ -79,6 +81,7 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({ schema, 
             validator={validator}
             extraErrors={ajvExtraErrorsOnlyTouched}
             tagName="div"
+            readonly={readonly}
             widgets={{
                 SelectWidget: RjfsSelectWidget,
                 DateWidget: RjfsDateWidget,

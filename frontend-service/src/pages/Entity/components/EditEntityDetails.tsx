@@ -12,7 +12,6 @@ import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplat
 import { IEntity } from '../../../interfaces/entities';
 import { updateEntityRequest } from '../../../services/entitiesService';
 import { EntityWizardValues } from '../../../common/wizards/entity';
-import { EntityFilesInput } from '../../../common/inputs/EntityFilesInput';
 import { JSONSchemaFormik, ajvValidate } from '../../../common/inputs/JSONSchemaFormik';
 import { BlueTitle } from '../../../common/BlueTitle';
 import { filterAttachmentsPropertiesFromSchema } from '../../../utils/filterAttachmentsFromSchema';
@@ -20,6 +19,7 @@ import { IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreac
 import UpdateEntityWithRuleBreachDialog from './UpdateEntityWithRuleBreachDialog';
 import { environment } from '../../../globals';
 import { toastConstraintValidationError } from '../../../common/wizards/entity/toastConstraintValidationError';
+import { InstanceFileInput } from '../../../common/inputs/InstanceFilesInput/InstanceFileInput';
 
 const { errorCodes } = environment;
 
@@ -29,7 +29,6 @@ const EditEntityDetails: React.FC<{
     onSuccessUpdate: (data: IEntity) => void;
     onCancelUpdate: () => void;
 }> = ({ entityTemplate, entity, onSuccessUpdate, onCancelUpdate }) => {
-
     const [updateWithRuleBreachDialogState, setUpdateWithRuleBreachDialogState] = useState<{
         isOpen: boolean;
         brokenRules?: IRuleBreachPopulated['brokenRules'];
@@ -40,10 +39,10 @@ const EditEntityDetails: React.FC<{
     const templateFilesProperties = pickBy(entityTemplate.properties.properties, (value) => value.format === 'fileId');
     const templateFileKeys = Object.keys(templateFilesProperties);
     const requiredFilesNames = entityTemplate.properties.required.filter((name) => templateFileKeys.includes(name));
-    
+
     const fieldProperties = pickBy(entity.properties, (_value, key) => !templateFileKeys.includes(key)) as IEntity['properties'];
     const fileIdsProperties = pickBy(entity.properties, (_value, key) => templateFileKeys.includes(key));
-    const fileProperties = mapValues(fileIdsProperties, (value) => ({ name: value }));
+    const fileProperties = mapValues(fileIdsProperties, (value) => ({ name: value })) as Record<string, File>;
 
     const { isLoading: isUpdateLoading, mutateAsync: updateMutation } = useMutation(
         ({ newEntityData, ignoredRules }: { newEntityData: EntityWizardValues; ignoredRules?: IRuleBreach['brokenRules'] }) =>
@@ -56,7 +55,7 @@ const EditEntityDetails: React.FC<{
             onError: (err: AxiosError, { newEntityData: newEntityDate }) => {
                 const errorMetadata = err.response?.data?.metadata;
                 if (errorMetadata?.errorCode === errorCodes.failedConstraintsValidation) {
-                    toastConstraintValidationError(errorMetadata, entityTemplate );
+                    toastConstraintValidationError(errorMetadata, entityTemplate);
                     return;
                 }
 
@@ -85,7 +84,6 @@ const EditEntityDetails: React.FC<{
                 if (Object.keys(propertiesErrors).length === 0) {
                     return {};
                 }
-                
                 return { properties: propertiesErrors };
             }}
         >
@@ -117,13 +115,25 @@ const EditEntityDetails: React.FC<{
                                                             variant="h6"
                                                             style={{ marginBottom: '22px' }}
                                                         />
-                                                        <EntityFilesInput
-                                                            requiredFilesNames={requiredFilesNames}
-                                                            filesProperties={templateFilesProperties}
-                                                            setFieldValue={setFieldValue}
-                                                            errors={errors}
-                                                            values={values}
-                                                        />
+                                                        <>
+                                                            {Object.entries(templateFilesProperties).map(([key, value]) => (
+                                                                <InstanceFileInput
+                                                                    key={key}
+                                                                    fileFieldName={key}
+                                                                    fieldTemplateTitle={value.title}
+                                                                    setFieldValue={(field, value) =>
+                                                                        setFieldValue(`attachmentsProperties.${field}`, value)
+                                                                    }
+                                                                    required={requiredFilesNames.includes(key)}
+                                                                    value={values.attachmentsProperties[key]}
+                                                                    error={
+                                                                        errors.attachmentsProperties?.[key]
+                                                                            ? JSON.stringify(errors.attachmentsProperties?.[key])
+                                                                            : undefined
+                                                                    }
+                                                                />
+                                                            ))}
+                                                        </>
                                                     </Box>
                                                 )}
                                             </Grid>

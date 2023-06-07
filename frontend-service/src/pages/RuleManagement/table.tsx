@@ -20,7 +20,7 @@ import { DateFilterComponent } from '../../utils/agGrid/DateFilterComponent';
 import { trycatch } from '../../utils/trycatch';
 import { getRuleBreachAlertsRequest, getRuleBreachRequestsRequest } from '../../services/ruleBreachesService';
 import { dateColDef, translatedEnumColDef } from '../../utils/agGrid/commonColDefs';
-import IconButtonWithPopoverText from '../../common/IconButtonWithPopover';
+import IconButtonWithPopover from '../../common/IconButtonWithPopover';
 import { ActionTypes } from '../../interfaces/ruleBreaches/actionMetadata';
 import { IRuleBreachAlertPopulated } from '../../interfaces/ruleBreaches/ruleBreachAlert';
 import { IRuleBreachRequestPopulated, RuleBreachRequestStatus } from '../../interfaces/ruleBreaches/ruleBreachRequest';
@@ -73,7 +73,7 @@ const getColumnDefs = (
         minWidth: columnWidth,
         cellRenderer: memo<ICellRendererParams>(({ data }) => {
             return (
-                <IconButtonWithPopoverText
+                <IconButtonWithPopover
                     popoverText={i18next.t('ruleManagement.moreDetails')}
                     iconButtonProps={{
                         onClick: () => onReviewBreachClick(data, breachType),
@@ -84,7 +84,7 @@ const getColumnDefs = (
                             transform: 'scaleX(-1)',
                         }}
                     />
-                </IconButtonWithPopoverText>
+                </IconButtonWithPopover>
             );
         }),
     };

@@ -7,6 +7,7 @@ import { CategoriesRow } from './components/CategoriesRow';
 import { EntityTemplatesRow } from './components/EntityTemplatesRow';
 import { RelationshipTemplatesRow } from './components/RelationshipTemplatesRow';
 import { RulesRow } from './components/RulesRow';
+import { ProcessTemplatesRow } from './components/ProcessTemplatesRow';
 
 import '../../css/pages.css';
 import { IPermissionsOfUser } from '../../services/permissionsService';
@@ -19,10 +20,11 @@ const SystemManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateAction
 
     return (
         <Grid container className="pageMargin" spacing={4}>
-            <CategoriesRow />
-            <EntityTemplatesRow />
-            <RelationshipTemplatesRow />
+            {myPermissions.templatesManagementId && <CategoriesRow />}
+            {myPermissions.templatesManagementId && <EntityTemplatesRow />}
+            {myPermissions.templatesManagementId && <RelationshipTemplatesRow />}
             {myPermissions.rulesManagementId && <RulesRow />}
+            {myPermissions.processesManagementId && <ProcessTemplatesRow />}
         </Grid>
     );
 };

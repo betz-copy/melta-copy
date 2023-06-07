@@ -56,7 +56,7 @@ export const EntityProtectedRoute: React.FC<{ permissions: IPermissionsOfUser; e
 };
 
 export const SystemManagementProtectedRoute: React.FC<{ permissions: IPermissionsOfUser }> = ({ children, permissions }) => {
-    return protectedRoute(children, !permissions.templatesManagementId);
+    return protectedRoute(children, !permissions.templatesManagementId && !permissions.processesManagementId);
 };
 
 export const PermissionsManagementProtectedRoute: React.FC<{ permissions: IPermissionsOfUser }> = ({ children, permissions }) => {

@@ -10,7 +10,8 @@ interface InfiniteScrollProps<T> {
     onQueryError: (err: any) => void;
     getNextPageParam?: GetNextPageParamFunction<T[]>;
     endText: string;
-    styles?: CSSProperties;
+    style?: CSSProperties;
+    useContainer?: boolean;
 }
 
 export const InfiniteScroll = <T extends any>({
@@ -21,10 +22,11 @@ export const InfiniteScroll = <T extends any>({
     getItemId = (item) => (item as { _id: string })._id,
     getNextPageParam = (lastPage, allPages) => (lastPage.length ? allPages.length : undefined),
     endText,
-    styles = {},
+    style = {},
+    useContainer = true,
 }: InfiniteScrollProps<T>) => {
     const showMoreRef = useRef(null);
-
+    
     const { data, fetchNextPage, isFetchingNextPage, hasNextPage, isLoading, isRefetching } = useInfiniteQuery(queryKey, queryFunction, {
         getNextPageParam,
         onError: onQueryError,
@@ -50,18 +52,8 @@ export const InfiniteScroll = <T extends any>({
         return () => observer.unobserve(currentShowMoreRef);
     }, [showMoreRef, isFetchingNextPage, hasNextPage]); // eslint-disable-line react-hooks/exhaustive-deps
 
-    return (
-        <Grid
-            container
-            direction="column"
-            wrap="nowrap"
-            marginBottom="3%"
-            sx={{
-                overflowX: 'hidden',
-                overflowY: 'overlay',
-                ...styles,
-            }}
-        >
+    const innerInfiniteScroll = (
+        <>
             {data?.pages.map((page) =>
                 page.map((item) => (
                     <Grid item key={getItemId(item)}>
@@ -74,6 +66,26 @@ export const InfiniteScroll = <T extends any>({
                 {/* always show loading if hasNextPage, even if not started loading */}
                 {isLoading || isFetchingNextPage || hasNextPage || isRefetching ? <CircularProgress /> : endText}
             </Grid>
-        </Grid>
-    );
+        </>
+    )
+
+    if (useContainer) {
+        return (
+            <Grid
+                container
+                direction="column"
+                wrap="nowrap"
+                marginBottom="3%"
+                sx={{
+                    overflowX: 'hidden',
+                    overflowY: 'overlay',
+                    ...style,
+                }}
+            >
+                {innerInfiniteScroll}
+            </Grid>
+        );
+    }
+
+    return innerInfiniteScroll;
 };

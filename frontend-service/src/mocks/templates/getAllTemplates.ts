@@ -2,6 +2,7 @@ import MockAdapter from 'axios-mock-adapter';
 import { categories } from './categories';
 import { entityTemplates } from './entityTemplates';
 import { relationshipTemplates } from './relationshipTemplates';
+import { processTemplates } from './processTemplates';
 import { rules } from './rules';
 
 const mockGetAllTemplates = (mock: MockAdapter) => {
@@ -11,6 +12,7 @@ const mockGetAllTemplates = (mock: MockAdapter) => {
             categories,
             entityTemplates,
             relationshipTemplates,
+            processTemplates,
             rules,
         },
     ]);

@@ -10,7 +10,7 @@ import { AddEntityButton } from './AddEntityButton';
 import EntitiesTableOfTemplate, { EntitiesTableOfTemplateRef } from '../EntitiesTableOfTemplate';
 import { BlueTitle } from '../BlueTitle';
 import { ResetFilterButton } from './ResetFilterButton';
-import IconButtonWithPopoverText from '../IconButtonWithPopover';
+import IconButtonWithPopover from '../IconButtonWithPopover';
 import { CustomIcon } from '../CustomIcon';
 import { exportTemplatesToExcelRequest } from '../../services/entitiesService';
 import { EditEntityDetails } from '../../pages/Entity/components/EditEntityDetails';
@@ -36,6 +36,7 @@ const TemplateTable = ({ template, quickFilterText, page }: { template: IMongoEn
         },
     );
     const [isFiltered, setIsFiltered] = useState(false);
+
     const [editDialog, setEditDialog] = useState<{
         isOpen: boolean;
         entity?: IEntity;
@@ -55,7 +56,7 @@ const TemplateTable = ({ template, quickFilterText, page }: { template: IMongoEn
                 </Grid>
                 <Grid>
                     <Grid item>
-                        <IconButtonWithPopoverText
+                        <IconButtonWithPopover
                             popoverText={isExpand ? i18next.t('entitiesTableOfTemplate.expandLess') : i18next.t('entitiesTableOfTemplate.expandMore')}
                             iconButtonProps={{
                                 onClick: () => {
@@ -65,14 +66,14 @@ const TemplateTable = ({ template, quickFilterText, page }: { template: IMongoEn
                             }}
                         >
                             {isExpand ? <ExpandLess color="primary" fontSize="large" /> : <ExpandMore color="primary" fontSize="large" />}
-                        </IconButtonWithPopoverText>
+                        </IconButtonWithPopover>
                         <ResetFilterButton entitiesTableRef={entitiesTableRef} disableButton={!isFiltered} />
-                        <IconButtonWithPopoverText
+                        <IconButtonWithPopover
                             popoverText={i18next.t('entitiesTableOfTemplate.downloadOneTable')}
                             iconButtonProps={{ onClick: () => exportTemplateToExcel(), size: 'medium' }}
                         >
                             {isExportingTableToExcelFile ? <CircularProgress size="24px" /> : <DownloadIcon color="primary" fontSize="medium" />}
-                        </IconButtonWithPopoverText>
+                        </IconButtonWithPopover>
                         <AddEntityButton
                             initialStep={1}
                             disabled={template.disabled}

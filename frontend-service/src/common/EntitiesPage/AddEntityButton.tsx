@@ -1,7 +1,7 @@
 import React, { useState, CSSProperties } from 'react';
 import i18next from 'i18next';
 import { EntityWizard, EntityWizardValues } from '../wizards/entity';
-import IconButtonWithPopoverText from '../IconButtonWithPopover';
+import IconButtonWithPopover from '../IconButtonWithPopover';
 
 const AddEntityButton: React.FC<{
     style?: CSSProperties;
@@ -16,7 +16,7 @@ const AddEntityButton: React.FC<{
 
     return (
         <>
-            <IconButtonWithPopoverText
+            <IconButtonWithPopover
                 popoverText={disabled ? i18next.t('categoryPage.disabledTemplate') : i18next.t('entitiesTableOfTemplate.addEntity')}
                 disabledToolTip={disabledToolTip}
                 iconButtonProps={{
@@ -29,7 +29,7 @@ const AddEntityButton: React.FC<{
                 style={style}
             >
                 {children}
-            </IconButtonWithPopoverText>
+            </IconButtonWithPopover>
             <EntityWizard
                 open={addEntityWizardState.isOpen}
                 handleClose={() =>

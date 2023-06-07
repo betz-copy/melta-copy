@@ -175,7 +175,6 @@ const Graph: React.FC = () => {
 
     const renderTooltip = (node: NodeObject) => {
         const entityTemplate = entityTemplates.get(node.templateId)!;
-
         return ReactDOMServer.renderToString(
             <NodeTooltip node={node} entityTemplate={entityTemplate} darkMode={darkMode} />
         );

@@ -1,0 +1,13 @@
+import { FormikErrors, FormikTouched } from 'formik';
+import { ProcessTemplateWizardValues } from '.';
+import fileDetails from '../../../interfaces/fileDetails';
+import { IUser } from '../../../services/kartoffelService';
+
+export interface StepsGenericBlockProps {
+    values: ProcessTemplateWizardValues;
+    propIndex: number;
+    errors: FormikErrors<ProcessTemplateWizardValues>;
+    touched?: FormikTouched<ProcessTemplateWizardValues>;
+    setFieldValue: (field: string, value: string | IUser | null | fileDetails | undefined, shouldValidate?: boolean) => void;
+    title?: string;
+}

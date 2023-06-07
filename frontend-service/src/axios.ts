@@ -9,9 +9,7 @@ const axios = axiosInstance.create({
 });
 
 axios.interceptors.response.use(
-    (response) => {
-        return response;
-    },
+    (response) => response,
     (error) => {
         if (error.response?.status === 401) {
             AuthService.logout();
@@ -37,6 +35,8 @@ if (import.meta.env.DEV && !import.meta.env.VITE_APP_IS_DOCKER) {
         { mockActivityLog },
         { mockNotifications },
         { mockRuleBreaches },
+        { mockProcessInstances },
+        { mockProcessTemplates },
     ] = await Promise.all([
         import('./mocks/templates/categories'),
         import('./mocks/templates/getAllTemplates'),
@@ -50,6 +50,8 @@ if (import.meta.env.DEV && !import.meta.env.VITE_APP_IS_DOCKER) {
         import('./mocks/entities/activityLog'),
         import('./mocks/notifications'),
         import('./mocks/ruleBreaches'),
+        import('./mocks/processInstances'),
+        import('./mocks/templates/processTemplates'),
     ]);
 
     const mock = new MockAdapter(axios, { delayResponse: 500 });
@@ -59,6 +61,9 @@ if (import.meta.env.DEV && !import.meta.env.VITE_APP_IS_DOCKER) {
     mockCategories(mock);
     mockEntityTemplates(mock);
     mockRelationshipTemplates(mock);
+
+    mockProcessTemplates(mock);
+
     mockRules(mock);
     mockEntites(mock);
     mockRelationships(mock);
@@ -66,6 +71,7 @@ if (import.meta.env.DEV && !import.meta.env.VITE_APP_IS_DOCKER) {
     mockActivityLog(mock);
     mockNotifications(mock);
     mockRuleBreaches(mock);
+    mockProcessInstances(mock);
 }
 
 export default axios;

@@ -4,24 +4,28 @@ import i18next from 'i18next';
 import pickBy from 'lodash.pickby';
 import { EntityWizardValues } from './index';
 import { StepComponentProps } from '../index';
-import { EntityFilesInput } from '../../inputs/EntityFilesInput/index';
+import { InstanceFileInput } from '../../inputs/InstanceFilesInput/InstanceFileInput';
 
 const fileFieldsSchema = {
     attachmentsProperties: Yup.object().required(i18next.t('validation.required')),
 };
-
 const FileFields: React.FC<StepComponentProps<EntityWizardValues>> = ({ values, setFieldValue, errors }) => {
     const filesProperties = pickBy(values.template.properties.properties, (value) => value.format === 'fileId');
     const requiredFilesNames = values.template.properties.required.filter((name) => Object.keys(filesProperties).includes(name));
-
     return (
-        <EntityFilesInput
-            requiredFilesNames={requiredFilesNames}
-            filesProperties={filesProperties}
-            setFieldValue={setFieldValue}
-            errors={errors}
-            values={values}
-        />
+        <>
+            {Object.entries(filesProperties).map(([key, value]) => (
+                <InstanceFileInput
+                    key={key}
+                    fileFieldName={key}
+                    fieldTemplateTitle={value.title}
+                    setFieldValue={(field, value) => setFieldValue(`attachmentsProperties.${field}`, value)}
+                    required={requiredFilesNames.includes(key)}
+                    value={values.attachmentsProperties[key]}
+                    error={errors.attachmentsProperties?.[key]}
+                />
+            ))}
+        </>
     );
 };
 

@@ -1,3 +1,4 @@
+/* eslint-disable import/no-extraneous-dependencies */
 /* eslint-disable no-underscore-dangle */
 import React from 'react';
 import { getDisplayLabel, WidgetProps } from '@rjsf/utils';
@@ -30,6 +31,7 @@ const RjsfTextWidget = ({
         onChange(newValue === '' ? options.emptyValue : newValue);
     const _onBlur = ({ target: { value: newValue } }: React.FocusEvent<HTMLInputElement>) => onBlur(id, newValue);
     const _onFocus = ({ target: { value: newValue } }: React.FocusEvent<HTMLInputElement>) => onFocus(id, newValue);
+    const variant = readonly ? 'standard' : 'outlined';
 
     const { rootSchema } = registry;
     const displayLabel = getDisplayLabel(validator, schema, uiSchema, rootSchema);
@@ -41,12 +43,19 @@ const RjsfTextWidget = ({
         <TextField
             {...textFieldProps}
             color={color as TextFieldProps['color']}
+            variant={variant}
             id={id}
             placeholder={placeholder}
             label={displayLabel ? label || schema.title : false}
             autoFocus={autofocus}
             required={required}
-            disabled={disabled || readonly}
+            disabled={disabled}
+            inputProps={{
+                readOnly: readonly,
+            }}
+            InputLabelProps={{
+                shrink: readonly,
+            }}
             type={inputType as string}
             value={value || value === 0 ? value : ''}
             error={rawErrors.length > 0}

@@ -20,7 +20,7 @@ import { IMongoEntityTemplatePopulated, IEntityTemplateMap } from '../../../inte
 import { IEntity, IEntityExpanded } from '../../../interfaces/entities';
 import { deleteEntityRequest, updateEntityStatusRequest } from '../../../services/entitiesService';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
-import { EntityProperties } from '../../../common/EntityProperties';
+import { EntityPropertiesInternal } from '../../../common/EntityProperties';
 import { IPermissionsOfUser } from '../../../services/permissionsService';
 import { EditEntityDetails } from './EditEntityDetails';
 import { ErrorToast } from '../../../common/ErrorToast';
@@ -75,7 +75,6 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
             updateEntityStatusRequest(currEntity.properties._id, disabled, JSON.stringify(ignoredRules)),
         {
             onSuccess: (data) => {
-                
                 queryClient.setQueryData(['getExpandedEntity', entity.properties._id, { templateIds, numberOfConnections: 1 }], () => {
                     return {
                         ...expandedEntity,
@@ -128,7 +127,6 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                             entity: data,
                         };
                     });
-    
                 }}
                 onCancelUpdate={() => setIsEditMode(false)}
             />
@@ -145,7 +143,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                     <Grid item container justifyContent="space-between" alignItems="stretch" padding="1rem">
                         <Grid item xs={11}>
                             <Box padding="0.2rem">
-                                <EntityProperties entityTemplate={entityTemplate} properties={entity.properties} hideFields={hideField} />
+                                <EntityPropertiesInternal entityTemplate={entityTemplate} properties={entity['properties']} darkMode={darkMode} />
                             </Box>
                         </Grid>
                         <Grid item>

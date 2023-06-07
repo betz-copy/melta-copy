@@ -3,15 +3,15 @@ import { useSelector } from 'react-redux';
 import { environment } from '../globals';
 import { RootState } from '../store';
 
-interface CustomIconProps {
-    iconUrl: string;
+interface CustomImageProps {
+    imageUrl: string;
     width: string;
     height: string;
     color?: CSSProperties['color'];
     style?: CSSProperties;
 }
 
-const CustomIcon: React.FC<CustomIconProps> = ({ iconUrl, width, height, color, style }) => {
+export const CustomImage: React.FC<CustomImageProps> = ({ imageUrl, width, height, color, style }) => {
     const darkMode = useSelector((state: RootState) => state.darkMode);
 
     return (
@@ -21,11 +21,21 @@ const CustomIcon: React.FC<CustomIconProps> = ({ iconUrl, width, height, color, 
             style={{
                 ...style,
                 backgroundColor: color || (darkMode ? '#FFFFFF' : '#000000'),
-                WebkitMaskImage: `url(/api${environment.api.storage}/${iconUrl})`,
+                WebkitMaskImage: `url(${imageUrl})`,
                 WebkitMaskSize: 'contain',
             }}
         />
     );
 };
 
-export { CustomIcon };
+interface CustomIconProps {
+    iconUrl: string;
+    width: string;
+    height: string;
+    color?: CSSProperties['color'];
+    style?: CSSProperties;
+}
+
+export const CustomIcon: React.FC<CustomIconProps> = ({ iconUrl, width, height, color, style }) => {
+    return <CustomImage imageUrl={`/api${environment.api.storage}/${iconUrl}`} width={width} height={height} color={color} style={style} />;
+};

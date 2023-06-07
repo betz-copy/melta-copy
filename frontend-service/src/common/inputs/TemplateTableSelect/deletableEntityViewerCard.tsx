@@ -4,7 +4,7 @@ import { Clear as ClearIcon, AppRegistration as AppRegistrationIcon } from '@mui
 import { useQueryClient } from 'react-query';
 import { useSelector } from 'react-redux';
 import { IEntity } from '../../../interfaces/entities';
-import { EntityProperties } from '../../EntityProperties';
+import { EntityPropertiesInternal } from '../../EntityProperties';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { CustomIcon } from '../../CustomIcon';
 import { RootState } from '../../../store';
@@ -37,7 +37,7 @@ const DeletableEntityViewerCard: React.FC<{ entity: IEntity; onDelete: () => voi
             />
             <CardContent>
                 {/* if no entityTemplate, didnt find template of entity in react-query state */}
-                {!entityTemplate ? entity.properties._id : <EntityProperties entityTemplate={entityTemplate} properties={entity.properties} />}
+                {!entityTemplate ? entity.properties._id : <EntityPropertiesInternal properties={entity['properties']} entityTemplate={entityTemplate} darkMode={darkMode} showPreviewPropertiesOnly />}
             </CardContent>
         </Card>
     );

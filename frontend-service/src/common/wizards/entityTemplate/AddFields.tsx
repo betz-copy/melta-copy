@@ -3,42 +3,52 @@ import { Grid } from '@mui/material';
 import * as Yup from 'yup';
 import i18next from 'i18next';
 import { useQuery } from 'react-query';
+import { AxiosError } from 'axios';
+import { toast } from 'react-toastify';
 import { entityTemplateUniqueProperties, regexSchema, variableNameValidation } from '../../../utils/validation';
 import { EntityTemplateWizardValues } from './index';
 import { StepComponentProps } from '../index';
 import { getEntitiesByTemplateRequest } from '../../../services/entitiesService';
 import { basePropertyTypes, stringFormats } from '../../../services/templates/enitityTemplatesService';
 import FieldBlock from './FieldBlock';
+import { ErrorToast } from '../../ErrorToast';
 
 const validPropertyTypes = [...basePropertyTypes, ...stringFormats, 'pattern', 'enum'];
-const addFieldsSchema = Yup.object({
-    properties: Yup.array()
-        .of(
-            Yup.object({
-                name: Yup.string()
-                    .notOneOf(['createdAt', 'updatedAt', 'disable'], i18next.t('validation.fieldExist'))
-                    .matches(variableNameValidation, i18next.t('validation.variableName'))
-                    .required(i18next.t('validation.required')),
-                title: Yup.string()
-                    .notOneOf(['תאריך יצירה', 'תאריך עדכון', 'מושבת'], i18next.t('validation.fieldExist'))
-                    .required(i18next.t('validation.required')),
-                type: Yup.string().oneOf(validPropertyTypes, i18next.t('validation.invalidPropertyType')).required(i18next.t('validation.required')),
-                required: Yup.boolean().required(i18next.t('validation.required')),
-                preview: Yup.boolean().required(i18next.t('validation.required')),
-                options: Yup.array(Yup.string()).when('type', { is: 'enum', then: (schema) => schema.min(1, i18next.t('validation.required')) }),
-                pattern: regexSchema.when('type', { is: 'pattern', then: (schema) => schema.required(i18next.t('validation.required')) }),
-                patternCustomErrorMessage: Yup.string().when('type', {
-                    is: 'pattern',
-                    then: (schema) => schema.required(i18next.t('validation.required')),
-                }),
-            }),
-        )
-        .min(1, i18next.t('validation.oneField'))
+export const propertiesBaseSchema = Yup.object({
+    name: Yup.string()
+        .notOneOf(['createdAt', 'updatedAt', 'disable'], i18next.t('validation.fieldExist'))
+        .matches(variableNameValidation, i18next.t('validation.variableName'))
         .required(i18next.t('validation.required')),
+    title: Yup.string()
+        .notOneOf(['תאריך יצירה', 'תאריך עדכון', 'מושבת'], i18next.t('validation.fieldExist'))
+        .required(i18next.t('validation.required')),
+    type: Yup.string()
+        .oneOf(validPropertyTypes, i18next.t('validation.invalidPropertyType'))
+        .required(i18next.t('validation.required')),
+    options: Yup.array(Yup.string()).when('type', {
+        is: 'enum',
+        then: (schema) => schema.min(1, i18next.t('validation.required')),
+    }),
+    pattern: regexSchema.when('type', { is: 'pattern', then: (schema) => schema.required(i18next.t('validation.required')) }),
+    patternCustomErrorMessage: Yup.string().when('type', {
+        is: 'pattern',
+        then: (schema) => schema.required(i18next.t('validation.required')),
+    }),
+});
+export const attachmentPropertiesBaseSchema = Yup.object({
+    name: Yup.string().matches(variableNameValidation, i18next.t('validation.variableName')).required(i18next.t('validation.required')),
+    title: Yup.string().required(i18next.t('validation.required')),
+});
+
+const addFieldsSchema = Yup.object({
+    properties: Yup.array().of(
+        propertiesBaseSchema.shape({
+            required: Yup.boolean().required(i18next.t('validation.required')),
+            preview: Yup.boolean().required(i18next.t('validation.required'))
+        }))
+        .min(1, i18next.t('validation.oneField')),
     attachmentProperties: Yup.array().of(
-        Yup.object({
-            name: Yup.string().matches(variableNameValidation, i18next.t('validation.variableName')).required(i18next.t('validation.required')),
-            title: Yup.string().required(i18next.t('validation.required')),
+        attachmentPropertiesBaseSchema.shape({
             required: Yup.boolean().required(i18next.t('validation.required')),
         }),
     ),
@@ -49,7 +59,6 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
     touched,
     errors,
     setFieldValue,
-    handleChange,
     initialValues,
     isEditMode,
     setBlock,
@@ -66,6 +75,12 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
         {
             enabled: isEditMode,
             initialData: { lastRowIndex: 1, rows: [] },
+            onError: (error: AxiosError) => {
+                // eslint-disable-next-line no-console
+                console.log('failed to check areThereInstancesByTemplateId. error:', error);
+
+                toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('systemManagement.defaultCantEdit')} />);
+            },
         },
     );
 
@@ -79,7 +94,6 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
                     values={values}
                     initialValues={initialValues}
                     setFieldValue={setFieldValue}
-                    handleChange={handleChange}
                     areThereAnyInstances={areThereAnyInstances}
                     isEditMode={isEditMode}
                     setBlock={setBlock}
@@ -96,7 +110,6 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
                     values={values}
                     initialValues={initialValues}
                     setFieldValue={setFieldValue}
-                    handleChange={handleChange}
                     areThereAnyInstances={areThereAnyInstances}
                     isEditMode={isEditMode}
                     setBlock={setBlock}

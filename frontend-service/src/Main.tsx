@@ -30,6 +30,7 @@ const Category = lazy(() => import('./pages/Category'));
 const SystemManagement = lazy(() => import('./pages/SystemManagement'));
 const PermissionsManagement = lazy(() => import('./pages/PermissionsManagement'));
 const RuleManagement = lazy(() => import('./pages/RuleManagement'));
+const ProcessInstancesPage = lazy(() => import('./pages/ProcessInstances'));
 const Unavailable = lazy(() => import('./pages/Unavailable'));
 const ErrorPage = lazy(() => import('./pages/ErrorPage'));
 const Entity = lazy(() => import('./pages/Entity'));
@@ -137,6 +138,7 @@ const Main = () => {
                                         </>
                                     }
                                 />
+                                <Route path="/processes" element={<ProcessInstancesPage />} />
                                 <Route path="/unavailable" element={<Unavailable setTitle={setTitle} />} />
                                 <Route
                                     path="/category/:categoryId"

@@ -20,7 +20,7 @@ import { ICategoryMap } from '../../interfaces/categories';
 import { NavButton } from './NavButton';
 import { IPermissionsOfUser } from '../../services/permissionsService';
 import PermissionsOfUserDialog from '../permissionsOfUserDialog';
-import { CustomIcon } from '../CustomIcon';
+import { CustomIcon, CustomImage } from '../CustomIcon';
 import { RootState } from '../../store';
 import { ProfileButton } from './ProfileButton';
 import { toggleMeltaPlus } from '../../store/reducers/meltaPlus';
@@ -123,23 +123,21 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                         '::-webkit-scrollbar-thumb': { background: 'lightgray' },
                     }}
                 >
-                    {Array.from(categories.values(), (category) => {
-                        return (
-                            <NavButton
-                                key={category._id}
-                                to={`/category/${category._id}`}
-                                text={category.displayName}
-                                isDrawerOpen={isDrawerOpen}
-                                disabled={Boolean(!myPermissions.instancesPermissions.find((instance) => instance.category === category._id))}
-                            >
-                                {category.iconFileId ? (
-                                    <CustomIcon iconUrl={category.iconFileId} height="40px" width="40px" color="#FFFFFF" />
-                                ) : (
-                                    <HiveIcon fontSize="large" sx={{ color: 'white' }} />
-                                )}
-                            </NavButton>
-                        );
-                    })}
+                    {Array.from(categories.values(), (category) => (
+                        <NavButton
+                            key={category._id}
+                            to={`/category/${category._id}`}
+                            text={category.displayName}
+                            isDrawerOpen={isDrawerOpen}
+                            disabled={Boolean(!myPermissions.instancesPermissions.find((instance) => instance.category === category._id))}
+                        >
+                            {category.iconFileId ? (
+                                <CustomIcon iconUrl={category.iconFileId} height="40px" width="40px" color="#FFFFFF" />
+                            ) : (
+                                <HiveIcon fontSize="large" sx={{ color: 'white' }} />
+                            )}
+                        </NavButton>
+                    ))}
                 </Grid>
 
                 <Grid item container direction="column" alignItems="stretch" marginTop="auto">
@@ -162,7 +160,11 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                         <GavelIcon fontSize="large" sx={{ color: 'white' }} />
                     </NavButton>
 
-                    {myPermissions.templatesManagementId && (
+                    <NavButton to="/processes" text={i18next.t('pages.processInstances')} isDrawerOpen={isDrawerOpen}>
+                        <CustomImage imageUrl="/icons/flowchart-hierarchy.svg" width="40px" height="40px" color="#FFFFFF" />
+                    </NavButton>
+
+                    {(myPermissions.templatesManagementId || myPermissions.processesManagementId) && (
                         <NavButton to="/system-management" text={i18next.t('pages.systemManagement')} isDrawerOpen={isDrawerOpen}>
                             <WidgetsIcon fontSize="large" sx={{ color: 'white' }} />
                         </NavButton>

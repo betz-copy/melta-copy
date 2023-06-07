@@ -31,8 +31,10 @@ export const formatToString = (value: any, valueType: 'string' | 'number' | 'boo
     return value;
 };
 
+type Template = Pick<IMongoEntityTemplatePopulated, 'properties' | 'propertiesOrder'> &
+    Partial<Pick<IMongoEntityTemplatePopulated, 'propertiesPreview'>>;
 interface IEntityPropertiesProps {
-    entityTemplate: IMongoEntityTemplatePopulated;
+    entityTemplate: Template;
     properties: IEntity['properties'];
     hideFields?: boolean;
     showPreviewPropertiesOnly?: boolean;
@@ -48,7 +50,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
     darkMode,
 }) => {
     const propertiesOrderedToShow = showPreviewPropertiesOnly
-        ? entityTemplate.propertiesOrder.filter((propertyKey) => entityTemplate.propertiesPreview.includes(propertyKey))
+        ? entityTemplate.propertiesOrder.filter((propertyKey) => entityTemplate.propertiesPreview!.includes(propertyKey))
         : entityTemplate.propertiesOrder;
 
     return (

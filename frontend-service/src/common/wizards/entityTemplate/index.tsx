@@ -94,7 +94,7 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
                 const errorMetadata = error.response?.data?.metadata;
                 if (isEditMode && errorMetadata?.errorCode === errorCodes.failedToCreateConstraints) {
                     const { constraint }: { constraint: IConstraint } = errorMetadata;
-                    
+
                     const newEntityTemplate = formToJSONSchema(enitiyTemplateValues);
 
                     if (constraint.type === 'REQUIRED') {

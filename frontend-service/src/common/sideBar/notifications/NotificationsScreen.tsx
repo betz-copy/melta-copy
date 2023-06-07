@@ -5,6 +5,7 @@ import { toast } from 'react-toastify';
 import {
     InfoOutlined as InfoIcon,
 } from '@mui/icons-material';
+import { useMutation } from 'react-query';
 import { environment } from '../../../globals';
 import { INotificationGroupCountDetails, INotificationPopulated } from '../../../interfaces/notifications';
 import { getMyNotificationsRequest, manyNotificationSeenRequest } from '../../../services/notificationService';
@@ -12,7 +13,6 @@ import { InfiniteScroll } from '../../InfiniteScroll';
 import PopperSidebar from '../../PopperSidebar';
 import { NotificationCard } from './NotificationCard';
 import { NotificationCount } from './NotificationCount';
-import { useMutation } from 'react-query';
 
 const { infiniteScrollPageCount, groups } = environment.notifications;
 

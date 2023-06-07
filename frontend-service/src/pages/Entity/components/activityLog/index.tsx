@@ -3,7 +3,7 @@ import { HistoryRounded } from '@mui/icons-material';
 import i18next from 'i18next';
 import { toast } from 'react-toastify';
 import { Divider } from '@mui/material';
-import IconButtonWithPopoverText from '../../../../common/IconButtonWithPopover';
+import IconButtonWithPopover from '../../../../common/IconButtonWithPopover';
 import { IEntityExpanded } from '../../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import PopperSidebar from '../../../../common/PopperSidebar';
@@ -28,12 +28,12 @@ const ActivityLog: React.FC<{ expandedEntity: IEntityExpanded; entityTemplate: I
 
     return (
         <>
-            <IconButtonWithPopoverText
+            <IconButtonWithPopover
                 popoverText={i18next.t('entityPage.activityLog.header')}
                 iconButtonProps={{ onClick: () => setOpenPopper((previousOpen) => !previousOpen) }}
             >
                 <HistoryRounded color="primary" fontSize="inherit" />
-            </IconButtonWithPopoverText>
+            </IconButtonWithPopover>
 
             <PopperSidebar open={openPopper} setOpen={setOpenPopper} title={i18next.t('entityPage.activityLog.header')} side="left">
                 <InfiniteScroll<IActivityLog>

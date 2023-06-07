@@ -1,0 +1,12 @@
+.processList-datesRangeContainer .MuiInputBase-root fieldset {
+    border: none;
+}
+.processList-dateContainer {
+    padding: 0.8em;
+}
+#processesFilter {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-items: center;
+    align-items: center;
+}

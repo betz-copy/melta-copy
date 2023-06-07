@@ -28,7 +28,7 @@ export type WizardBaseType<T extends object> = {
 
 export type StepsType<T extends object> = {
     label: string;
-    component: (formikProps: StepComponentProps<T>, helpers: StepComponentHelpers) => JSX.Element;
+    component: (formikProps: FormikProps<T>, helpers: StepComponentHelpers) => JSX.Element;
     validationSchema?: ObjectShape | Yup.ObjectSchema<ObjectShape>;
     validate?: FormikConfig<T>['validate'];
 }[];

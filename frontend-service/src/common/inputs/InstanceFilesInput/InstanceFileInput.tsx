@@ -3,43 +3,39 @@ import i18next from 'i18next';
 import { Box } from '@mui/material';
 import { Field } from 'formik';
 import FileInput from '../FileInput';
-import { IEntitySingleProperty } from '../../../interfaces/entityTemplates';
 import { getFileName } from '../../../utils/getFileName';
 
-interface EntityFileInputProps {
-    fieldName: string;
-    value: IEntitySingleProperty;
+interface InstanceFileInputProps {
+    fileFieldName: string;
+    fieldTemplateTitle: string;
     setFieldValue: (field: string, value: File | undefined) => void;
     required: Boolean;
-    values: any;
-    errors: any;
+    value: File | undefined;
+    error: string | undefined;
 }
 
-export const EntityFileInput: React.FC<EntityFileInputProps> = ({ fieldName, value, setFieldValue, required, values, errors }) => {
-    const fileId = values.attachmentsProperties[fieldName]?.name;
-    const initialFileName = fileId ? getFileName(fileId) : undefined;
-
+export const InstanceFileInput: React.FC<InstanceFileInputProps> = ({ fileFieldName, fieldTemplateTitle, setFieldValue, required, value, error }) => {
+    const fileId = value?.name;
+    const initialFileName = fileId && !(value instanceof File) ? getFileName(fileId) : fileId;
     const [fileName, setFileName] = useState<string | undefined>(initialFileName);
 
-    const field = `attachmentsProperties.${fieldName}`;
-
     return (
-        <Box margin={1}>
+        <Box marginTop={1} marginBottom={1} paddingTop={0.5} paddingLeft={1}>
             <Field
                 validate={(changedValue) => required && !changedValue && i18next.t('validation.requiredFile')}
-                name={field}
+                name={fileFieldName}
                 component={FileInput}
-                inputText={`${value.title} ${required ? '*' : ''}`}
+                inputText={`${fieldTemplateTitle} ${required ? '*' : ''}`}
                 fileName={fileName}
                 onDropFile={(acceptedFile) => {
-                    setFieldValue(field, acceptedFile);
+                    setFieldValue(fileFieldName, acceptedFile);
                     setFileName(acceptedFile.name);
                 }}
                 onDeleteFile={() => {
-                    setFieldValue(field, undefined);
+                    setFieldValue(fileFieldName, undefined);
                     setFileName(undefined);
                 }}
-                errorText={errors.attachmentsProperties ? errors.attachmentsProperties[fieldName] : undefined}
+                errorText={error}
             />
         </Box>
     );

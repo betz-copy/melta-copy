@@ -5,13 +5,16 @@ import { useMutation } from 'react-query';
 import { LoadingButton } from '@mui/lab';
 import { toast } from 'react-toastify';
 import { useSelector } from 'react-redux';
-import { INotificationPopulated, isRuleBreachAlertNotification, isRuleBreachRequestNotification, isRuleBreachResponseNotification } from '../../../interfaces/notifications';
+import { INotificationPopulated, isNewProcessNotification, isProcessReviewerUpdateNotification, isProcessStatusUpdateNotification, isRuleBreachAlertNotification, isRuleBreachRequestNotification, isRuleBreachResponseNotification } from '../../../interfaces/notifications';
 import { getShortDate } from '../../../utils/date';
 import { notificationSeenRequest } from '../../../services/notificationService';
 import { RuleBreachAlertNotification } from './ruleBreachNotification/RuleBreachAlertNotification';
 import { RuleBreachRequestNotification } from './ruleBreachNotification/RuleBreachRequestNotification';
 import { RuleBreachResponseNotification } from './ruleBreachNotification/RuleBreachResponseNotification';
 import { RootState } from '../../../store';
+import { NewProcessNotification } from './processNotifications/NewProcessNotification';
+import { ProcessStatusUpdateNotification } from './processNotifications/ProcessStatusUpdateNotification';
+import { ProcessReviewerUpdateNotification } from './processNotifications/ProcessReviewerUpdateNotification';
 
 interface NotificationCardProps {
     notification: INotificationPopulated;
@@ -48,9 +51,12 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({ notification
                     </Grid>
 
                     <Grid item>
-                        {isRuleBreachAlertNotification(notification) && <RuleBreachAlertNotification ruleBreachAlert={notification.metadata.alert} />}
-                        {isRuleBreachRequestNotification(notification) && <RuleBreachRequestNotification ruleBreachRequest={notification.metadata.request} />}
-                        {isRuleBreachResponseNotification(notification) && <RuleBreachResponseNotification ruleBreachRequest={notification.metadata.request} />}
+                        {isRuleBreachAlertNotification(notification) && <RuleBreachAlertNotification {...notification.metadata} />}
+                        {isRuleBreachRequestNotification(notification) && <RuleBreachRequestNotification {...notification.metadata} />}
+                        {isRuleBreachResponseNotification(notification) && <RuleBreachResponseNotification {...notification.metadata} />}
+                        {isNewProcessNotification(notification) && <NewProcessNotification {...notification.metadata} />}
+                        {isProcessStatusUpdateNotification(notification) && <ProcessStatusUpdateNotification {...notification.metadata} />}
+                        {isProcessReviewerUpdateNotification(notification) && <ProcessReviewerUpdateNotification {...notification.metadata} />}
                     </Grid>
 
                     <Grid item container justifyContent="flex-end" wrap="nowrap">

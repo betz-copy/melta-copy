@@ -1,31 +1,30 @@
 import React, { memo } from 'react';
-import { Delete as DeleteIcon, ReadMore as ReadMoreIcon, Edit as EditIcon} from '@mui/icons-material';
+import { Delete as DeleteIcon, ReadMore as ReadMoreIcon, Edit as EditIcon } from '@mui/icons-material';
 import { ColDef, ValueGetterFunc } from '@ag-grid-community/core';
 import i18next from 'i18next';
 import { NavLink } from 'react-router-dom';
 import { IEntity } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { booleanColDef, dateColDef, enumColDef, fileColDef, numberColDef, regexColDef, stringColDef } from '../../utils/agGrid/commonColDefs';
-import IconButtonWithPopoverText from '../IconButtonWithPopover';
+import IconButtonWithPopover from '../IconButtonWithPopover';
 
 interface IGetColumnDefsOptions<Data extends any> {
-    template: IMongoEntityTemplatePopulated,
-    getEntityPropertiesData: (data: Data) => IEntity['properties'],
-    onNavigateToRow?: ((entity: Data) => void),
-    disabledEntity?: boolean,
+    template: IMongoEntityTemplatePopulated;
+    getEntityPropertiesData: (data: Data) => IEntity['properties'];
+    onNavigateToRow?: (entity: Data) => void;
+    disabledEntity?: boolean;
     deleteRowButtonProps?: {
-      onClick: (entity: Data) => void;
-      popoverText: string;
-      disabled: boolean;
-    },
-    hideNonPreview?: boolean,
+        onClick: (entity: Data) => void;
+        popoverText: string;
+        disabled: boolean;
+    };
+    hideNonPreview?: boolean;
     editRowButtonProps?: {
         onClick: (data: Data) => void;
     };
-  }
+}
 
-  
-  export const getColumnDefs = <Data extends any = IEntity>({
+export const getColumnDefs = <Data extends any = IEntity>({
     template,
     getEntityPropertiesData,
     onNavigateToRow,
@@ -33,14 +32,13 @@ interface IGetColumnDefsOptions<Data extends any> {
     deleteRowButtonProps,
     hideNonPreview = false,
     editRowButtonProps,
-  }: IGetColumnDefsOptions<Data>): ColDef[] => {
+}: IGetColumnDefsOptions<Data>): ColDef[] => {
     const columnDefs = Object.entries(template.properties.properties).map(([key, value]) => {
         const { type, format } = value;
 
         const hideField = template.properties.hide.includes(key);
 
         const valueGetter: ValueGetterFunc = ({ data }) => (data ? getEntityPropertiesData(data)[key] : undefined);
-        
 
         const hideColumn = hideNonPreview && !template.propertiesPreview.includes(key);
 
@@ -117,7 +115,7 @@ interface IGetColumnDefsOptions<Data extends any> {
                                 }}
                                 data-tour="entity-page"
                             >
-                                <IconButtonWithPopoverText
+                                <IconButtonWithPopover
                                     iconButtonProps={{
                                         disabled: disabledEntity,
                                     }}
@@ -132,11 +130,11 @@ interface IGetColumnDefsOptions<Data extends any> {
                                             transform: 'scaleX(-1)',
                                         }}
                                     />
-                                </IconButtonWithPopoverText>
+                                </IconButtonWithPopover>
                             </NavLink>
                         )}
                         {deleteRowButtonProps && (
-                            <IconButtonWithPopoverText
+                            <IconButtonWithPopover
                                 popoverText={deleteRowButtonProps.popoverText}
                                 iconButtonProps={{
                                     disabled: deleteRowButtonProps.disabled,
@@ -144,10 +142,10 @@ interface IGetColumnDefsOptions<Data extends any> {
                                 }}
                             >
                                 <DeleteIcon />
-                            </IconButtonWithPopoverText>
+                            </IconButtonWithPopover>
                         )}
-                         { editRowButtonProps && (
-                            <IconButtonWithPopoverText
+                        {editRowButtonProps && (
+                            <IconButtonWithPopover
                                 popoverText={i18next.t('entitiesTableOfTemplate.editEntity')}
                                 iconButtonProps={{
                                     disabled: disabledEntity,
@@ -155,7 +153,7 @@ interface IGetColumnDefsOptions<Data extends any> {
                                 }}
                             >
                                 <EditIcon />
-                            </IconButtonWithPopoverText>
+                            </IconButtonWithPopover>
                         )}
                     </div>
                 );

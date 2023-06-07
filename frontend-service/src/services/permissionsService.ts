@@ -4,10 +4,17 @@ import { IUser } from './kartoffelService';
 
 const { getMyPermissions, getAllPermissions, createPermissionsBulk, deletePermissionsBulk } = environment.api;
 
+export enum PermissionResourceType {
+    Permissions = 'Permissions',
+    Templates = 'Templates',
+    Instances = 'Instances',
+    Processes = 'Processes',
+    Rules = 'Rules',
+}
 export interface IPermission {
     _id: string;
     userId: string;
-    resourceType: 'Permissions' | 'Templates' | 'Instances' | 'Rules';
+    resourceType: PermissionResourceType;
     category: string;
 }
 
@@ -15,6 +22,7 @@ export interface IPermissionsOfUser {
     user: IUser;
     permissionsManagementId: string | null;
     templatesManagementId: string | null;
+    processesManagementId: string | null;
     rulesManagementId: string | null;
     instancesPermissions: Pick<IPermission, '_id' | 'category'>[];
 }

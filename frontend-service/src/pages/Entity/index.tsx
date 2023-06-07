@@ -20,7 +20,7 @@ import DeleteRelationshipDialog from './DeleteRelationshipDialog';
 import { IPermissionsOfUser } from '../../services/permissionsService';
 
 import '../../css/pages.css';
-import IconButtonWithPopoverText from '../../common/IconButtonWithPopover';
+import IconButtonWithPopover from '../../common/IconButtonWithPopover';
 import { BlueTitle } from '../../common/BlueTitle';
 import { ResetFilterButton } from '../../common/EntitiesPage/ResetFilterButton';
 import { EntityTopBar } from './components/TopBar';
@@ -171,7 +171,7 @@ const Entity: React.FC = () => {
 
                                                         <Grid item>
                                                             <ResetFilterButton entitiesTableRef={entitiesTableRef} disableButton={!isFiltered} />
-                                                            <IconButtonWithPopoverText
+                                                            <IconButtonWithPopover
                                                                 popoverText={
                                                                     hasPermissionToCategory
                                                                         ? i18next.t('entityPage.disabledEntity')
@@ -187,12 +187,12 @@ const Entity: React.FC = () => {
                                                                                 relationshipTemplate: currRelationshipTemplate,
                                                                                 sourceEntity:
                                                                                     currentEntityTemplate._id ===
-                                                                                        currRelationshipTemplate.sourceEntity._id
+                                                                                    currRelationshipTemplate.sourceEntity._id
                                                                                         ? expandedEntity.entity
                                                                                         : null,
                                                                                 destinationEntity:
                                                                                     currentEntityTemplate._id ===
-                                                                                        currRelationshipTemplate.destinationEntity._id
+                                                                                    currRelationshipTemplate.destinationEntity._id
                                                                                         ? expandedEntity.entity
                                                                                         : null,
                                                                             },
@@ -205,7 +205,7 @@ const Entity: React.FC = () => {
                                                                     fontSize="large"
                                                                     data-tour="create-relationship"
                                                                 />
-                                                            </IconButtonWithPopoverText>
+                                                            </IconButtonWithPopover>
                                                         </Grid>
                                                     </Grid>
                                                     <Box sx={{ marginBottom: '30px', width: '100%' }}>

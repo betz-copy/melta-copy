@@ -22,6 +22,7 @@ import loadingAnimation from './assets/icons/Melta_Logo.svg';
 import './css/loading.css';
 import { IRuleMap } from './interfaces/rules';
 import { mapTemplates } from './utils/templates';
+import { IProcessTemplateMap } from './interfaces/processes/processTemplate';
 
 const App: React.FC = () => {
     const queryClient = useQueryClient();
@@ -49,6 +50,7 @@ const App: React.FC = () => {
     useQuery('getEntityTemplates', () => undefined, { enabled: false });
     useQuery('getRelationshipTemplates', () => undefined, { enabled: false });
     useQuery('getRules', () => undefined, { enabled: false });
+    useQuery('getProcessTemplates', () => undefined, { enabled: false });
 
     const { isLoading: isLoadingAllTemplates, isError: isErrorAllTemplates } = useQuery<GetAllTemplatesType>('getAllTemplates', getAllTemplates, {
         onError: (error) => {
@@ -56,10 +58,11 @@ const App: React.FC = () => {
             // eslint-disable-next-line no-console
             console.log('failed to get templates error:', error);
         },
-        onSuccess: ({ categories, entityTemplates, relationshipTemplates, rules }) => {
+        onSuccess: ({ categories, entityTemplates, relationshipTemplates, processTemplates, rules }) => {
             queryClient.setQueryData<ICategoryMap>('getCategories', mapTemplates(categories));
             queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', mapTemplates(entityTemplates));
             queryClient.setQueryData<IRelationshipTemplateMap>('getRelationshipTemplates', mapTemplates(relationshipTemplates));
+            queryClient.setQueryData<IProcessTemplateMap>('getProcessTemplates', mapTemplates(processTemplates));
             queryClient.setQueryData<IRuleMap>('getRules', mapTemplates(rules, 'name'));
         },
     });
@@ -72,7 +75,7 @@ const App: React.FC = () => {
                 console.log('failed loading my permissions:', error);
                 toast.error(i18next.t('permissions.failedToLoadMyPermissions'));
             },
-        },
+        }, 
     );
 
     const dispatch = useDispatch();

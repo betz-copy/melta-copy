@@ -200,9 +200,7 @@ export const generateRuleBreach = (options?: { nullable?: boolean; actionType?: 
     return ruleBreach;
 };
 
-export const generateRuleBreachAlert = (options?: { nullable?: boolean; actionType?: ActionTypes | undefined }): IRuleBreachAlertPopulated => {
-    return generateRuleBreach(options);
-};
+export const generateRuleBreachAlert = (options?: { nullable?: boolean; actionType?: ActionTypes | undefined }): IRuleBreachAlertPopulated => generateRuleBreach(options);
 
 export const generateRuleBreachRequest = (options?: {
     isReviewed?: true;
@@ -236,9 +234,7 @@ export const generateRuleBreachAlertOrRequest = () => {
 };
 
 export const mockRuleBreaches = (mock: MockAdapter) => {
-    mock.onPost('/api/rule-breaches/requests').reply(() => {
-        return [200, generateRuleBreachRequest({ nullable: false })];
-    });
+    mock.onPost('/api/rule-breaches/requests').reply(() => [200, generateRuleBreachRequest({ nullable: false })]);
 
     mock.onPost('/api/rule-breaches/alerts/search').reply(() => {
         const numberOfBreaches = chance.integer({ min: 0, max: 20 });
@@ -253,15 +249,10 @@ export const mockRuleBreaches = (mock: MockAdapter) => {
         return [200, { rows: breaches, lastRowIndex: numberOfBreaches }];
     });
 
-    mock.onPost(/\/api\/rule-breaches\/requests\/.*\/approve/).reply(() => {
-        return [200, generateRuleBreachRequest({ isReviewed: true })];
-    });
+    mock.onPost(/\/api\/rule-breaches\/requests\/.*\/approve/).reply(() => [200, generateRuleBreachRequest({ isReviewed: true })]);
 
-    mock.onPost(/\/api\/rule-breaches\/requests\/.*\/deny/).reply(() => {
-        return [200, generateRuleBreachRequest({ isReviewed: true })];
-    });
+    mock.onPost(/\/api\/rule-breaches\/requests\/.*\/deny/).reply(() => [200, generateRuleBreachRequest({ isReviewed: true })]);
 
-    mock.onPost(/\/api\/rule-breaches\/requests\/.*\/cancel/).reply(() => {
-        return [200, generateRuleBreachRequest({})];
-    });
+    mock.onPost(/\/api\/rule-breaches\/requests\/.*\/cancel/).reply(() => [200, generateRuleBreachRequest({})]);
 };
+
