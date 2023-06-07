@@ -1,5 +1,5 @@
 import * as Joi from 'joi';
-import { MongoIdSchema, fileSchema, ColorSchema, ExtendedJoi } from '../../utils/joi';
+import { MongoIdSchema, ColorSchema, ExtendedJoi, iconFileSchema } from '../../utils/joi';
 
 // POST /api/templates/categories
 export const createCategorySchema = Joi.object({
@@ -10,7 +10,7 @@ export const createCategorySchema = Joi.object({
         color: ColorSchema.required(),
     },
     params: {},
-    file: fileSchema,
+    file: iconFileSchema,
 });
 
 // PUT /api/templates/categories
@@ -25,7 +25,7 @@ export const updateCategorySchema = Joi.object({
     params: {
         id: MongoIdSchema.required(),
     },
-    file: fileSchema,
+    file: iconFileSchema,
 });
 
 // DELETE /api/templates/categories/:id
@@ -51,7 +51,7 @@ export const createEntityTemplateSchema = Joi.object({
     },
     query: {},
     params: {},
-    file: fileSchema,
+    file: iconFileSchema,
 });
 
 // PUT /api/templates/entities/:id
@@ -70,7 +70,7 @@ export const updateEntityTemplateSchema = Joi.object({
     params: {
         id: MongoIdSchema.required(),
     },
-    file: fileSchema,
+    file: iconFileSchema,
 });
 
 // PATCH /api/templates/entities/:id/status

@@ -18,6 +18,7 @@ export class PermissionsManager {
         permissionsManagementId: null,
         templatesManagementId: null,
         rulesManagementId: null,
+        processesManagementId: null,
         instancesPermissions: [],
     };
 
@@ -35,6 +36,10 @@ export class PermissionsManager {
 
         if (permission.resourceType === 'Rules') {
             return { ...permissionsOfUser, rulesManagementId: permission._id };
+        }
+
+        if (permission.resourceType === 'Processes') {
+            return { ...permissionsOfUser, processesManagementId: permission._id };
         }
 
         const instancesPermissions: IPermissionsOfUser['instancesPermissions'] = [

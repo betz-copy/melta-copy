@@ -36,7 +36,6 @@ export class InstancesManager {
         const filePropertiesEntries = files.map((file, index) => {
             return [file.fieldname, fileIds[index]];
         });
-
         return Object.fromEntries(filePropertiesEntries);
     }
 

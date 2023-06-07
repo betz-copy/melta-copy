@@ -149,7 +149,7 @@ export class RuleBreachesManager {
         rulesPermissions.forEach((rulesPermission) => viewers.add(rulesPermission.userId));
         extraViewers.forEach((extraViewer) => viewers.add(extraViewer));
 
-        return NotificationService.rabbitCreateNotification<T>(Array.from(viewers), type, metadata);
+        await NotificationService.rabbitCreateNotification<T>(Array.from(viewers), type, metadata);
     }
 
     private static async createRelationship(ruleBreachRequest: IRuleBreachRequest<ICreateRelationshipMetadata>) {

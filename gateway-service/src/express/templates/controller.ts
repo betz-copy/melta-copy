@@ -2,7 +2,7 @@ import * as assert from 'assert';
 import { Request, Response } from 'express';
 import { TemplatesManager } from './manager';
 
-class TemplatesController {
+export default class TemplatesController {
     // all
     static async getAllAllowedTemplates(req: Request, res: Response) {
         const { user } = req;
@@ -64,5 +64,3 @@ class TemplatesController {
         res.json(await TemplatesManager.deleteRuleById(req.params.ruleId));
     }
 }
-
-export default TemplatesController;

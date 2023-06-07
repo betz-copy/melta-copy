@@ -8,6 +8,7 @@ import config from '../config';
 import { wrapMiddleware } from '../utils/express';
 import { validateUserHasAtLeastSomePermissions } from './permissions/validateAuthorizationMiddleware';
 import templatesRouter from './templates/router';
+import processesRouter from './processes/router';
 import instancesRouter from './instances/router';
 import ActivityLogRouter from './activityLog/router';
 import notificationsRouter from './notifications/router';
@@ -39,7 +40,6 @@ appRouter.use('/api/config', (_req, res) =>
 );
 
 appRouter.use('/api/templates', templatesRouter);
-
 appRouter.use('/api/instances', instancesRouter);
 
 appRouter.use(
@@ -47,6 +47,8 @@ appRouter.use(
     wrapMiddleware(validateUserHasAtLeastSomePermissions),
     createProxyMiddleware({ target: config.storageService.uri, onProxyReq: fixRequestBody }),
 );
+
+appRouter.use('/api/processes', processesRouter);
 
 appRouter.use('/api/users', usersRouter);
 

@@ -3,11 +3,11 @@ import config from '../config';
 
 const { permissionApi } = config;
 
-export const resourceTypeOptions = ['Templates', 'Instances', 'Permissions', 'Rules'] as const;
-export type ResourceType = typeof resourceTypeOptions[number];
+export const resourceTypeOptions = ['Templates', 'Instances', 'Permissions', 'Rules', 'Processes'] as const;
+export type ResourceType = (typeof resourceTypeOptions)[number];
 
 export const scopeOptions = ['Read', 'Write'] as const;
-export type Scope = typeof scopeOptions[number];
+export type Scope = (typeof scopeOptions)[number];
 
 export interface IPermission {
     _id: string;
@@ -65,5 +65,10 @@ export const checkUserAuthorization = async (userId: string, resourceType: Resou
 
 export const isRuleManager = async (userId: string) => {
     const { authorized } = await checkUserAuthorization(userId, 'Rules', ['All'], 'Read');
+    return authorized;
+};
+
+export const isProcessManager = async (userId: string) => {
+    const { authorized } = await checkUserAuthorization(userId, 'Processes', ['All'], 'Read');
     return authorized;
 };

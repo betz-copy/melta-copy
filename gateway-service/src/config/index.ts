@@ -75,6 +75,13 @@ const config = {
         baseRoute: env.get('RULE_BREACH_SERVICE_BASE_ROUTE').default('/api/rule-breaches').asString(),
         requestTimeout: env.get('RULE_BREACH_SERVICE_REQUEST_TIMEOUT').default(10000).asIntPositive(),
     },
+    processService: {
+        uri: env.get('PROCESS_SERVICE_URI').required().asString(),
+        templatesBaseRoute: env.get('PROCESSES_TEMPLATES_BASE_ROUTE').default('/api/processes/templates').asString(),
+        instancesBaseRoute: env.get('PROCESSES_INSTANCES_BASE_ROUTE').default('/api/processes/instances').asString(),
+        requestTimeout: env.get('PROCESS_SERVICE_REQUEST_TIMEOUT').default(10000).asIntPositive(),
+        internalSearchPullLimit: env.get('PROCESS_SERVICE_INTERNAL_SEARCH_PULL_LIMIT').default(1000).asIntPositive(),
+    },
     getUsersLimitForPermissionsOfUsers: env.get('GET_USERS_LIMIT_FOR_PERMISSIONS_OF_USERS').default(20).asIntPositive(),
     kartoffel: {
         baseUrl: env.get('KARTOFFEL_BASE_URL').required().asString(),

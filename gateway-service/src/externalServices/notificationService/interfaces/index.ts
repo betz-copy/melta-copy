@@ -1,8 +1,12 @@
+import { Status } from '../../processService/interfaces/processInstance';
+
 export enum NotificationType {
     ruleBreachAlert = 'ruleBreachAlert',
     ruleBreachRequest = 'ruleBreachRequest',
     ruleBreachResponse = 'ruleBreachResponse',
-    processApproverUpdate = 'processApproverUpdate',
+
+    processReviewerUpdate = 'processReviewerUpdate',
+    processStatusUpdate = 'processStatusUpdate',
     newProcess = 'newProcess',
 }
 
@@ -16,9 +20,16 @@ export interface IRuleBreachResponseNotificationMetadata {
     requestId: string;
 }
 
-export interface IProcessApproverUpdateNotificationMetadata {
+export interface IProcessReviewerUpdateNotificationMetadata {
     processId: string;
-    approverStepIds: string[];
+    addedStepIds: string[];
+    deletedStepIds: string[];
+    unchangedStepIds: string[];
+}
+export interface IProcessStatusUpdateNotificationMetadata {
+    processId: string;
+    stepId?: string;
+    status: Status;
 }
 export interface INewProcessNotificationMetadata {
     processId: string;
@@ -28,7 +39,8 @@ type INotificationMetadata =
     | IRuleBreachAlertNotificationMetadata
     | IRuleBreachRequestNotificationMetadata
     | IRuleBreachResponseNotificationMetadata
-    | IProcessApproverUpdateNotificationMetadata
+    | IProcessReviewerUpdateNotificationMetadata
+    | IProcessStatusUpdateNotificationMetadata
     | INewProcessNotificationMetadata;
 
 export interface INotification<T = INotificationMetadata> {
@@ -47,8 +59,11 @@ export const isRuleBreachRequestNotification = (
 export const isRuleBreachResponseNotification = (
     notification: Partial<INotification>,
 ): notification is INotification<IRuleBreachResponseNotificationMetadata> => notification.type === NotificationType.ruleBreachResponse;
-export const isProcessApproverUpdateNotification = (
+export const isProcessReviewerUpdateNotification = (
     notification: Partial<INotification>,
-): notification is INotification<IProcessApproverUpdateNotificationMetadata> => notification.type === NotificationType.processApproverUpdate;
+): notification is INotification<IProcessReviewerUpdateNotificationMetadata> => notification.type === NotificationType.processReviewerUpdate;
+export const isProcessStatusUpdateNotification = (
+    notification: Partial<INotification>,
+): notification is INotification<IProcessStatusUpdateNotificationMetadata> => notification.type === NotificationType.processStatusUpdate;
 export const isNewProcessNotification = (notification: Partial<INotification>): notification is INotification<INewProcessNotificationMetadata> =>
     notification.type === NotificationType.newProcess;

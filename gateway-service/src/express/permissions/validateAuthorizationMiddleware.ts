@@ -35,6 +35,7 @@ export const validateUserHasAtLeastSomePermissions = async (req: Request) => {
     }
 };
 
+export const validateUserIsProcessesManager = getValidateAuthorizationMiddleware('Processes', ['All']);
 export const validateUserIsTemplatesManager = getValidateAuthorizationMiddleware('Templates', ['All']);
 export const validateUserIsPermissionsManager = getValidateAuthorizationMiddleware('Permissions', ['All']);
 export const validateUserIsRulesManager = getValidateAuthorizationMiddleware('Rules', ['All']);

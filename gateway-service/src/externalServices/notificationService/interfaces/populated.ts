@@ -1,28 +1,38 @@
-import { INotification, IProcessApproverUpdateNotificationMetadata } from '.';
+import { INotification, IProcessStatusUpdateNotificationMetadata } from '.';
+import { IMongoProcessInstancePopulated } from '../../processService/interfaces/processInstance';
+import { IMongoStepInstancePopulated } from '../../processService/interfaces/stepInstance';
 import { IRuleBreachAlertPopulated, IRuleBreachRequestPopulated } from '../../ruleBreachService/interfaces/populated';
 
-export interface IAlertNotificationMetadataPopulated {
+export interface IRuleBreachAlertNotificationMetadataPopulated {
     alert: IRuleBreachAlertPopulated;
 }
-export interface IRequestNotificationMetadataPopulated {
+export interface IRuleBreachRequestNotificationMetadataPopulated {
     request: IRuleBreachRequestPopulated;
 }
-export interface IResponseNotificationMetadataPopulated {
+export interface IRuleBreachResponseNotificationMetadataPopulated {
     request: IRuleBreachRequestPopulated;
 }
 
-export interface IProcessApproverUpdateNotificationMetadataPopulated extends Omit<IProcessApproverUpdateNotificationMetadata, 'processId'> {
-    process: object; // TODO: add process interface
+export interface IProcessReviewerUpdateNotificationMetadataPopulated {
+    process: IMongoProcessInstancePopulated;
+    addedSteps: IMongoStepInstancePopulated[];
+    deletedSteps: IMongoStepInstancePopulated[];
+    unchangedSteps: IMongoStepInstancePopulated[];
+}
+export interface IProcessStatusUpdateNotificationMetadataPopulated extends Pick<IProcessStatusUpdateNotificationMetadata, 'status'> {
+    process: IMongoProcessInstancePopulated;
+    step?: IMongoStepInstancePopulated;
 }
 export interface INewProcessNotificationMetadataPopulated {
-    process: object; // TODO: add process interface
+    process: IMongoProcessInstancePopulated;
 }
 
 export type INotificationMetadataPopulated =
-    | IAlertNotificationMetadataPopulated
-    | IRequestNotificationMetadataPopulated
-    | IResponseNotificationMetadataPopulated
-    | IProcessApproverUpdateNotificationMetadataPopulated
+    | IRuleBreachAlertNotificationMetadataPopulated
+    | IRuleBreachRequestNotificationMetadataPopulated
+    | IRuleBreachResponseNotificationMetadataPopulated
+    | IProcessReviewerUpdateNotificationMetadataPopulated
+    | IProcessStatusUpdateNotificationMetadataPopulated
     | INewProcessNotificationMetadataPopulated;
 
 export interface INotificationPopulated<T = INotificationMetadataPopulated> extends Omit<INotification<T>, 'viewers'> {}

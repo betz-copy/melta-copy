@@ -40,6 +40,7 @@ export class NotificationService {
     }
 
     static async rabbitCreateNotification<T>(viewers: string[], type: NotificationType, metadata: T) {
-        return menash.send(rabbit.notificationQueue, { viewers, type, metadata });
+        if (!viewers.length) return;
+        await menash.send(rabbit.notificationQueue, { viewers, type, metadata });
     }
 }
