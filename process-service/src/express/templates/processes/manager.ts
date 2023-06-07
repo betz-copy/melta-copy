@@ -1,4 +1,4 @@
-import { Document, FilterQuery } from 'mongoose';
+import { Document, FilterQuery, Types } from 'mongoose';
 import ProcessTemplateModel from './model';
 import {
     IMongoProcessTemplate,
@@ -103,7 +103,7 @@ class ProcessTemplateManager {
         const query: FilterQuery<ProcessTemplateDocument> = {};
 
         if (displayName) query.displayName = { $regex: escapeRegExp(displayName) };
-        if (ids) query._id = { $in: ids };
+        if (ids) query._id = { $in: ids.map((id) => Types.ObjectId(id)) };
         if (reviewerId) {
             return getProcessTemplatesByReviewerIdAggregation(query, reviewerId, limit, skip);
         }
