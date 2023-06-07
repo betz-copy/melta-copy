@@ -67,7 +67,7 @@ export const validateUpdateProcessInstance = async (req: Request) => {
         const instanceStepsWithTemplateStepIds: Record<string, string[]> = {};
 
         stepInstances.forEach((step) => {
-            instanceStepsWithTemplateStepIds[step.templateId] = step.reviewers;
+            instanceStepsWithTemplateStepIds[step.templateId] = steps[step._id];
         });
 
         validateReviewersNotInTemplate(instanceStepsWithTemplateStepIds, stepTemplates);
