@@ -29,6 +29,7 @@ interface FieldBlockProps<PropertiesType extends string, Values extends Record<P
     addPropertyButtonLabel: string;
     touched: FormikTouched<Values> | undefined;
     errors: FormikErrors<Values> | undefined;
+    initialFieldCardDataOnAdd?: CommonFormInputProperties;
 }
 
 const FieldBlock = <PropertiesType extends string, Values extends Record<PropertiesType, CommonFormInputProperties[]>>({
@@ -43,6 +44,19 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
     addPropertyButtonLabel,
     touched,
     errors,
+    initialFieldCardDataOnAdd = {
+        id: uuid(),
+        name: '',
+        title: '',
+        type: '',
+        required: false,
+        preview: false,
+        hide: false,
+        unique: false,
+        options: [],
+        pattern: '',
+        patternCustomErrorMessage: '',
+    },
 }: React.PropsWithChildren<FieldBlockProps<PropertiesType, Values>>) => {
     // copy of values of formik in order to show changes on inputs fast (formik rerenders are slow)
     const [displayValues, setDisplayValues] = React.useState(values[propertiesType]);
@@ -182,20 +196,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
                                             type="button"
                                             variant="contained"
                                             style={{ margin: '8px' }}
-                                            onClick={() =>
-                                                push({
-                                                    id: uuid(),
-                                                    name: '',
-                                                    title: '',
-                                                    type: '',
-                                                    required: false,
-                                                    preview: false,
-                                                    hide: false,
-                                                    options: [],
-                                                    pattern: '',
-                                                    patternCustomErrorMessage: '',
-                                                })
-                                            }
+                                            onClick={() => push(initialFieldCardDataOnAdd)}
                                         >
                                             <Typography>{addPropertyButtonLabel}</Typography>
                                         </Button>

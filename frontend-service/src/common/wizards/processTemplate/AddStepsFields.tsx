@@ -14,7 +14,7 @@ import StepsIconBlock from './StepsIconBlock';
 import { StepsNameBlock } from './StepsNameBlock';
 import FieldBlock, { FieldBlockAccordion } from '../entityTemplate/FieldBlock';
 import { attachmentPropertiesBaseSchema, propertiesBaseSchema } from '../entityTemplate/AddFields';
-import { useAreThereProcessInstancesByTemplateId } from './AddGenericFields';
+import { initialFieldCardDataOnAdd, useAreThereProcessInstancesByTemplateId } from './AddGenericFields';
 
 const addStepsFieldsSchema = Yup.object({
     steps: Yup.array()
@@ -128,6 +128,7 @@ const AddStepsFields: React.FC<StepComponentProps<ProcessTemplateWizardValues, '
                                                                   | FormikErrors<ProcessTemplateWizardValues['steps'][number]>
                                                                   | undefined)
                                                     }
+                                                    initialFieldCardDataOnAdd={initialFieldCardDataOnAdd}
                                                 />
                                             </Grid>
 
@@ -150,6 +151,7 @@ const AddStepsFields: React.FC<StepComponentProps<ProcessTemplateWizardValues, '
                                                                   | FormikErrors<ProcessTemplateWizardValues['steps'][number]>
                                                                   | undefined)
                                                     }
+                                                    initialFieldCardDataOnAdd={initialFieldCardDataOnAdd}
                                                 />
                                             </Grid>
                                             <Grid item>

@@ -6,6 +6,7 @@ import { useQuery } from 'react-query';
 import { FormikTouched, FormikErrors } from 'formik';
 import { AxiosError } from 'axios';
 import { toast } from 'react-toastify';
+import { v4 as uuid } from 'uuid';
 import { ProcessTemplateWizardValues } from './index';
 import { searchProcessesRequest } from '../../../services/processesService';
 import { attachmentPropertiesBaseSchema, propertiesBaseSchema } from '../entityTemplate/AddFields';
@@ -25,8 +26,7 @@ const addSummaryDetailsFieldsSchema = Yup.object({
 export const useAreThereProcessInstancesByTemplateId = (templateId: string, enabled: boolean) => {
     const { data: areThereInstancesByTemplateIdResponse } = useQuery(
         ['areThereInstancesByTemplateId', templateId],
-        () =>
-            searchProcessesRequest({ templateIds: [templateId] }),
+        () => searchProcessesRequest({ templateIds: [templateId] }),
         {
             enabled,
             initialData: [],
@@ -40,25 +40,48 @@ export const useAreThereProcessInstancesByTemplateId = (templateId: string, enab
     );
 
     return { areThereAnyInstances: areThereInstancesByTemplateIdResponse!.length > 0 };
-}
+};
+
+export const initialFieldCardDataOnAdd = {
+    id: uuid(),
+    name: '',
+    title: '',
+    type: '',
+    options: [],
+    pattern: '',
+    patternCustomErrorMessage: '',
+};
 
 interface GenericFieldsProperties {
-    isEditMode: boolean,
-    setBlock: React.Dispatch<React.SetStateAction<boolean>>,
-    propertiesType: 'detailsProperties' | 'summaryDetailsProperties',
-    attachmentPropertiesType: 'detailsAttachmentProperties' | 'summaryDetailsAttachmentProperties',
-    values: ProcessTemplateWizardValues,
-    touched: FormikTouched<ProcessTemplateWizardValues>,
-    errors: FormikErrors<ProcessTemplateWizardValues>,
-    setFieldValue: (field: string, value: any, shouldValidate?: boolean | undefined) => void,
-    initialValues: ProcessTemplateWizardValues,
+    isEditMode: boolean;
+    setBlock: React.Dispatch<React.SetStateAction<boolean>>;
+    propertiesType: 'detailsProperties' | 'summaryDetailsProperties';
+    attachmentPropertiesType: 'detailsAttachmentProperties' | 'summaryDetailsAttachmentProperties';
+    values: ProcessTemplateWizardValues;
+    touched: FormikTouched<ProcessTemplateWizardValues>;
+    errors: FormikErrors<ProcessTemplateWizardValues>;
+    setFieldValue: (field: string, value: any, shouldValidate?: boolean | undefined) => void;
+    initialValues: ProcessTemplateWizardValues;
     handleChange: {
         (e: React.ChangeEvent<any>): void;
         <T = string | React.ChangeEvent<any>>(field: T): T extends React.ChangeEvent<any> ? void : (e: string | React.ChangeEvent<any>) => void;
-    }
+    };
 }
-const AddGenericFields: React.FC<GenericFieldsProperties> = ({ isEditMode, setBlock, propertiesType, attachmentPropertiesType, values, touched, errors, setFieldValue, initialValues }) => {
-    const { areThereAnyInstances } = useAreThereProcessInstancesByTemplateId((values as ProcessTemplateWizardValues & { _id: string })._id, isEditMode);
+const AddGenericFields: React.FC<GenericFieldsProperties> = ({
+    isEditMode,
+    setBlock,
+    propertiesType,
+    attachmentPropertiesType,
+    values,
+    touched,
+    errors,
+    setFieldValue,
+    initialValues,
+}) => {
+    const { areThereAnyInstances } = useAreThereProcessInstancesByTemplateId(
+        (values as ProcessTemplateWizardValues & { _id: string })._id,
+        isEditMode,
+    );
 
     return (
         <Grid container direction="column" alignItems="stretch" spacing={1}>
@@ -75,6 +98,7 @@ const AddGenericFields: React.FC<GenericFieldsProperties> = ({ isEditMode, setBl
                     addPropertyButtonLabel={i18next.t('wizard.entityTemplate.addProperty')}
                     touched={touched}
                     errors={errors}
+                    initialFieldCardDataOnAdd={initialFieldCardDataOnAdd}
                 />
             </Grid>
 
@@ -91,6 +115,7 @@ const AddGenericFields: React.FC<GenericFieldsProperties> = ({ isEditMode, setBl
                     addPropertyButtonLabel={i18next.t('wizard.entityTemplate.addAttachment')}
                     touched={touched}
                     errors={errors}
+                    initialFieldCardDataOnAdd={initialFieldCardDataOnAdd}
                 />
             </Grid>
         </Grid>
