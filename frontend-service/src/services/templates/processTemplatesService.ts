@@ -220,9 +220,6 @@ const formToJSONSchema = (values: ProcessTemplateWizardValues): ICreateProcessTe
         });
     });
     summaryDetailsProperties.forEach(({ name, title, type, options, pattern, patternCustomErrorMessage }) => {
-        if (name === 'comments') {
-            return;
-        }
         summaryDetailsSchema.properties[name] = {
             title,
             type: basePropertyTypes.includes(type) ? (type as IProcessSingleProperty['type']) : 'string',
