@@ -67,7 +67,7 @@ const StepsReviewers: React.FC<IDetailsStepProp> = ({ detailsFormikData, isEditM
     const { values, setFieldValue, submitForm } = detailsFormikData;
 
     return (
-        <Grid container height={'60vh'} direction={'column'} spacing={1} paddingLeft={4} justifyContent={'space-between'}>
+        <Grid container height={'60vh'} direction={'row'} spacing={1} paddingLeft={4} justifyContent={'space-between'}>
             <Grid item>
                 <Grid container rowSpacing={3}>
                     {values.template?.steps.map((stepTemplate: IMongoStepTemplatePopulated, index: number) => (
@@ -86,15 +86,15 @@ const StepsReviewers: React.FC<IDetailsStepProp> = ({ detailsFormikData, isEditM
                 </Grid>
             </Grid>
             <Grid item>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', position: 'relative' }}>
-                    <Box>
+                <Grid container sx={{ justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <Grid item>
                         <Fab onClick={onBack} color="primary" variant="extended">
                             <NavigateNextIcon />
                             {i18next.t('wizard.processInstance.backTo')}
                         </Fab>
-                    </Box>
+                    </Grid>
                     {!Boolean(processInstance) && (
-                        <Box>
+                        <Grid item>
                             <Fab
                                 onClick={() => {
                                     submitForm();
@@ -105,9 +105,9 @@ const StepsReviewers: React.FC<IDetailsStepProp> = ({ detailsFormikData, isEditM
                                 {i18next.t('wizard.processInstance.createProcess')}
                                 <NavigateBeforeIcon />
                             </Fab>
-                        </Box>
+                        </Grid>
                     )}
-                </Box>
+                </Grid>
             </Grid>
         </Grid>
     );
