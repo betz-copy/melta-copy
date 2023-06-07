@@ -1,4 +1,4 @@
-export const resourceTypeOptions = ['Templates', 'Instances', 'Permissions', 'Rules'] as const;
+export const resourceTypeOptions = ['Templates', 'Instances', 'Permissions', 'Rules', 'Processes'] as const;
 export type ResourceType = typeof resourceTypeOptions[number];
 
 export const scopeOptions = ['Read', 'Write'] as const;

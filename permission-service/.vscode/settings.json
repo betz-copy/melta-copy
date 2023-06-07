@@ -20,6 +20,18 @@
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.insertSpaces": true,
     "editor.tabSize": 2,
-    "editor.quickSuggestions": true
-  }
+    "editor.quickSuggestions": {
+      "comments": "on",
+      "strings": "on",
+      "other": "on"
+    }
+  },
+  "workbench.colorCustomizations": {
+    "statusBar.background": "#5b7d6b",
+    "statusBar.foreground": "#e7e7e7",
+    "statusBarItem.hoverBackground": "#729984",
+    "statusBarItem.remoteBackground": "#5b7d6b",
+    "statusBarItem.remoteForeground": "#e7e7e7"
+  },
+  "peacock.color": "#5b7d6b"
 }
