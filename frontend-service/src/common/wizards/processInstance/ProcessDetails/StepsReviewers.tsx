@@ -3,15 +3,13 @@ import _debounce from 'lodash.debounce';
 import { IMongoStepTemplatePopulated } from '../../../../interfaces/processes/stepTemplate';
 import { IDetailsStepProp } from '.';
 import { ReviewerSelector } from './ReviewerSelector';
-import { Card, Grid, CardHeader, CardContent, Typography, IconButton, Box, Fab } from '@mui/material';
+import { Card, Grid, CardHeader, CardContent, Typography, Box, Fab } from '@mui/material';
 import { ScatterPlotOutlined as HiveIcon } from '@mui/icons-material';
-import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import { CustomIcon } from '../../../CustomIcon';
 import { IUser } from '../../../../services/kartoffelService';
 import i18next from 'i18next';
 import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
-import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
 import { getStepInstanceByStepTemplateId } from '../../../../utils/processWizard/steps';
 
 const ReviewCard = ({ stepTemplate, index, values, setFieldValue, isEditMode, processInstance }) => {
@@ -21,13 +19,13 @@ const ReviewCard = ({ stepTemplate, index, values, setFieldValue, isEditMode, pr
                 <CardHeader
                     avatar={
                         stepTemplate.iconFileId ? (
-                            <CustomIcon iconUrl={stepTemplate.iconFileId} width="40px" height="40px" />
+                            <CustomIcon iconUrl={stepTemplate.iconFileId} width="30px" height="30px" />
                         ) : (
                             <HiveIcon fontSize="large" />
                         )
                     }
                     title={<Typography variant="h5">{stepTemplate.displayName}</Typography>}
-                    action={<IconButton>{processInstance && !isEditMode ? <PeopleAltIcon /> : <PersonAddIcon />}</IconButton>}
+                    // action={<IconButton>{processInstance && !isEditMode ? <PeopleAltIcon /> : <PersonAddIcon />}</IconButton>}
                 />
                 <CardContent onClick={(e) => e.stopPropagation()}>
                     <ReviewerSelector
