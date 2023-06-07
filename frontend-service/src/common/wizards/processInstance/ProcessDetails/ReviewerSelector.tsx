@@ -15,6 +15,8 @@ interface ReviewerSelectorProps {
 export const ReviewerSelector: React.FC<ReviewerSelectorProps> = ({ forcedReviewers = [], reviewers, onAdd, onRemove, isViewMode = false }) => {
     const [displayValue, setDisplayValue] = React.useState('');
 
+    const combinedReviewers = [...forcedReviewers, ...reviewers];
+
     return (
         <Grid container direction="column" paddingBottom={2} paddingLeft={2} spacing={2}>
             {!isViewMode && (
@@ -28,16 +30,23 @@ export const ReviewerSelector: React.FC<ReviewerSelectorProps> = ({ forcedReview
                             setDisplayValue('');
                         }}
                         onDisplayValueChange={(_, newDisplayValue) => setDisplayValue(newDisplayValue)}
-                        isOptionDisabled={(option) => reviewers.some((approver) => approver.id === option.id)}
+                        isOptionDisabled={(option) => combinedReviewers.some((approver) => approver.id === option.id)}
                         isError={false}
                         label={i18next.t('wizard.processInstance.addReviewer')}
-                        size='small'
-                        
+                        size="small"
                     />
                 </Grid>
             )}
 
-            <Grid item container direction="column" spacing={1} style={{ overflowY: 'scroll' }} maxHeight={!isViewMode? '90px' : '170px'} flexWrap="nowrap">
+            <Grid
+                item
+                container
+                direction="column"
+                spacing={1}
+                style={{ overflowY: 'scroll' }}
+                maxHeight={!isViewMode ? '90px' : '170px'}
+                flexWrap="nowrap"
+            >
                 {forcedReviewers?.map((reviewer) => (
                     <Grid item>
                         <Chip label={reviewer.fullName} variant="outlined" disabled />
