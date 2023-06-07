@@ -25,5 +25,13 @@
       "strings": "on",
       "other": "on"
     }
+  },
+  "peacock.color": "#885039",
+  "workbench.colorCustomizations": {
+    "statusBar.background": "#885039",
+    "statusBar.foreground": "#e7e7e7",
+    "statusBarItem.hoverBackground": "#ac6548",
+    "statusBarItem.remoteBackground": "#885039",
+    "statusBarItem.remoteForeground": "#e7e7e7"
   }
 }

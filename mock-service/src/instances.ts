@@ -21,9 +21,8 @@ const {
     isAliveRoute,
 } = config.instacnceManager;
 
-format('fileId', (_value) => '01234567890123456789012345678901bla bla.docx');
-
-export const createInstances = async (entityTemplates: IMongoEntityTemplate[], chance: Chance.Chance) => {
+export const createInstances = async (entityTemplates: IMongoEntityTemplate[], chance: Chance.Chance, fileId: string) => {
+    format('fileId', (_value) => fileId);
     const promises = entityTemplates
         .map((entityTemplate) => {
             return Array.from({ length: chance.integer({ min: minNumberOfEntities, max: maxNumberOfEntities }) }, () =>
