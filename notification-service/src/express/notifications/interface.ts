@@ -6,7 +6,7 @@ export enum NotificationType {
     ruleBreachRequest = 'ruleBreachRequest',
     ruleBreachResponse = 'ruleBreachResponse',
 
-    processApproverUpdate = 'processApproverUpdate',
+    processReviewerUpdate = 'processReviewerUpdate',
     processStatusUpdate = 'processStatusUpdate',
     newProcess = 'newProcess',
 }
@@ -21,10 +21,11 @@ interface IRuleBreachResponseMetadata {
     requestId: string;
 }
 
-interface IProcessApproverUpdateMetadata {
+interface IProcessReviewerUpdateMetadata {
     processId: string;
-    approverStepIds: string[];
-    previousApproverStepIds?: string[];
+    addedStepIds: string[];
+    deletedStepIds: string[];
+    unchangedStepIds: string[];
 }
 interface IProcessStatusUpdateMetadata {
     processId: string;
@@ -39,7 +40,7 @@ type INotificationMetadata =
     | IRuleBreachAlertMetadata
     | IRuleBreachRequestMetadata
     | IRuleBreachResponseMetadata
-    | IProcessApproverUpdateMetadata
+    | IProcessReviewerUpdateMetadata
     | IProcessStatusUpdateMetadata
     | INewProcessMetadata;
 
