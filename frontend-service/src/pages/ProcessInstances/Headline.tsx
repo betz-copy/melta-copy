@@ -29,7 +29,7 @@ const ProcessInstancesHeadline: React.FC<{
     const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
 
     return (
-        <TopBarGrid sx={{ height: '5em' }} container justifyContent="space-between" alignItems="center" wrap="nowrap">
+        <TopBarGrid sx={{ height: '3.6rem' }} container justifyContent="space-between" alignItems="center" wrap="nowrap">
             <Grid item>
                 <Grid container spacing={5} wrap="nowrap">
                     <Grid item>
