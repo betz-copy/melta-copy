@@ -118,7 +118,7 @@ const GeneralDetails: React.FC<IDetailsStepProp> = ({ detailsFormikData, onNext,
     }, [values.template?._id]);
 
     return (
-        <Grid container height={'60vh'} direction={'column'} spacing={1} paddingLeft={4} justifyContent={'space-between'}>
+        <Grid container height={'55vh'} direction={'column'} spacing={1} paddingLeft={4} justifyContent={'space-between'}>
             <Grid item>
                 <FormikProvider value={detailsFormikData}>
                     <Grid item container justifyContent="flex-start">

@@ -3,7 +3,7 @@ import _debounce from 'lodash.debounce';
 import { IMongoStepTemplatePopulated } from '../../../../interfaces/processes/stepTemplate';
 import { IDetailsStepProp } from '.';
 import { ReviewerSelector } from './ReviewerSelector';
-import { Card, Grid, CardHeader, CardContent, Typography, Box, Fab } from '@mui/material';
+import { Card, Grid, CardHeader, CardContent, Typography, Fab } from '@mui/material';
 import { ScatterPlotOutlined as HiveIcon } from '@mui/icons-material';
 import { CustomIcon } from '../../../CustomIcon';
 import { IUser } from '../../../../services/kartoffelService';
@@ -14,7 +14,7 @@ import { getStepInstanceByStepTemplateId } from '../../../../utils/processWizard
 
 const ReviewCard = ({ stepTemplate, index, values, setFieldValue, isEditMode, processInstance }) => {
     return (
-        <Grid item xs={2} sm={2} md={3} key={index} minWidth={'300px'}>
+        <Grid item xs={2} key={index} minWidth={'300px'}>
             <Card sx={{ height: '250px' }}>
                 <CardHeader
                     avatar={
@@ -67,8 +67,8 @@ const StepsReviewers: React.FC<IDetailsStepProp> = ({ detailsFormikData, isEditM
     const { values, setFieldValue, submitForm } = detailsFormikData;
 
     return (
-        <Grid container height={'60vh'} direction={'row'} spacing={1} paddingLeft={4} justifyContent={'space-between'}>
-            <Grid item>
+        <Grid container direction={'column'} spacing={1} paddingLeft={4} justifyContent={'space-between'}>
+            <Grid item maxHeight={'415px'} sx={{overflowY: 'auto'}} marginBottom={'30px'}>
                 <Grid container rowSpacing={3}>
                     {values.template?.steps.map((stepTemplate: IMongoStepTemplatePopulated, index: number) => (
                         <Grid item xs={4}>
