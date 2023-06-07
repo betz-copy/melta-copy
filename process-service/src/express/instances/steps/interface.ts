@@ -1,5 +1,5 @@
 import { Document } from 'mongoose';
-import { Status } from '../processes/interface';
+import { InstanceProperties, Status } from '../processes/interface';
 
 export interface IStepInstance {
     templateId: string;
@@ -14,6 +14,14 @@ export interface IMongoStepInstance extends IStepInstance {
     _id: string;
     createdAt: Date;
     updatedAt: Date;
+}
+
+export interface UpdateStepReqBody {
+    properties?: InstanceProperties;
+    statusReview?: {
+        status: Status;
+        reviewerId: string;
+    };
 }
 
 export type StepInstanceDocument = IStepInstance & Document;

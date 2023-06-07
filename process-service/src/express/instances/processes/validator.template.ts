@@ -2,7 +2,7 @@ import { Request } from 'express';
 import ProcessTemplateManager from '../../templates/processes/manager';
 import { InstancePropertiesValidationError, ValidationError } from '../../error';
 import { IProcessDetails } from '../../templates/processes/interface';
-import { CreateProcessReqBody, InstanceDetails, UpdateProcessReqBody } from './interface';
+import { CreateProcessReqBody, InstanceProperties, UpdateProcessReqBody } from './interface';
 import ProcessInstanceManager from './manager';
 import ajv from '../../../utils/ajv';
 import { IMongoStepTemplate } from '../../templates/steps/interface';
@@ -15,7 +15,7 @@ export const validateStepIds = (validStepIds: string[], stepIdsToCheck: string[]
     if (unmatchedStepTemplateIds.length) throw new ValidationError('unmatched step ids');
 };
 const validateInstanceProperties = (
-    instanceProperties: InstanceDetails,
+    instanceProperties: InstanceProperties,
     templateProperties: IProcessDetails['properties'],
     checkFor: 'Details' | 'Summary',
 ) => {

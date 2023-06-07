@@ -17,6 +17,10 @@ class StepInstanceController {
     static async updateStepStatus(req: Request, res: Response) {
         res.json(await StepInstanceManager.updateStepStatus(req.params.id, req.body));
     }
+
+    static async updateStep(req: Request, res: Response) {
+        res.json(await StepInstanceManager.updateStep(req.params.id, req.body));
+    }
 }
 
 export default StepInstanceController;

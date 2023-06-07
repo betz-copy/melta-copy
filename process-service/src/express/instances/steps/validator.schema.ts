@@ -44,3 +44,34 @@ export const updateStepStatusSchema = Joi.object({
         id: MongoIdSchema.required(),
     },
 });
+
+// PATCH api/processes/instances/steps/:id
+export const updateStepSchema = Joi.object({
+    body: Joi.object({
+        statusReview: Joi.object({
+            status: Joi.string()
+                .valid(...Object.values(Status))
+                .required(),
+            reviewerId: Joi.string().required(),
+        }),
+        properties: Joi.object(),
+    }).or('statusReview', 'properties'),
+    query: {},
+    params: {
+        id: MongoIdSchema.required(),
+    },
+});
+
+// export const updateStepSchema = Joi.object({
+//     body: Joi.object({
+//         status: Joi.string()
+//             .valid(...Object.values(Status))
+//             .when('reviewerId', { is: Joi.exist(), then: Joi.required(), otherwise: Joi.optional() }),
+//         reviewerId: Joi.string().when('status', { is: Joi.exist(), then: Joi.required(), otherwise: Joi.optional() }),
+//         properties: Joi.object(),
+//     }).min(1),
+//     query: {},
+//     params: {
+//         id: MongoIdSchema.required(),
+//     },
+// });

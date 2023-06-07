@@ -5,6 +5,7 @@ import {
     getStepByIdRequestSchema,
     getTemplateByInstanceIdRequestSchema,
     updateStepPropertiesSchema,
+    updateStepSchema,
     updateStepStatusSchema,
 } from './validator.schema';
 import StepInstanceController from './controller';
@@ -24,6 +25,13 @@ StepInstanceRouter.patch(
     ValidateRequest(updateStepPropertiesSchema),
     wrapMiddleware(validateStepInstance),
     wrapController(StepInstanceController.updateStepProperties),
+);
+
+StepInstanceRouter.patch(
+    '/:id',
+    ValidateRequest(updateStepSchema),
+    wrapMiddleware(validateStepInstance),
+    wrapController(StepInstanceController.updateStep),
 );
 
 StepInstanceRouter.patch('/:id/status', ValidateRequest(updateStepStatusSchema), wrapController(StepInstanceController.updateStepStatus));

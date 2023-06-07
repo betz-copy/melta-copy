@@ -5,6 +5,8 @@ import ajv from '../../../utils/ajv';
 
 const validateStepInstance = async (req: Request) => {
     const { properties: stepInstanceProp } = req.body;
+    if (!stepInstanceProp) return;
+
     const { id: stepId } = req.params;
     const stepTemplate = await StepInstanceManager.getStepTemplateByStepInstanceId(stepId);
     const validateStep = ajv.compile(stepTemplate.properties);

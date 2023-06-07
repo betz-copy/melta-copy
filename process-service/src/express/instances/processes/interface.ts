@@ -8,7 +8,7 @@ export enum Status {
     Rejected = 'rejected',
 }
 
-export type InstanceDetails = Record<string, any>;
+export type InstanceProperties = Record<string, any>;
 export interface IProcessInstance {
     templateId: string;
     name: string;

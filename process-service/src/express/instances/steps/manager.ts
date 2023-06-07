@@ -1,6 +1,6 @@
 import { ClientSession } from 'mongoose';
 import StepInstanceModel from './model';
-import { IMongoStepInstance, IStepInstance, StepInstanceDocument } from './interface';
+import { IMongoStepInstance, IStepInstance, StepInstanceDocument, UpdateStepReqBody } from './interface';
 import { NotFoundError, ServiceError } from '../../error';
 import config from '../../../config';
 import { IMongoStepTemplate } from '../../templates/steps/interface';
@@ -38,6 +38,15 @@ export default class StepInstanceManager {
             },
         }));
         await StepInstanceModel.bulkWrite(bulkWriteOperations, { session });
+    }
+
+    static async updateStep(id: string, data: UpdateStepReqBody) {
+        const { statusReview, properties } = data;
+        return StepInstanceModel.findByIdAndUpdate(id, data.statusReview ? { properties, ...statusReview, reviewedAt: new Date() } : { properties }, {
+            new: true,
+        })
+            .orFail(new NotFoundError('step', id))
+            .lean();
     }
 
     static async updateStepProperties(id: string, properties: IStepInstance['properties']): Promise<IMongoStepInstance> {
