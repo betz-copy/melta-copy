@@ -25,7 +25,6 @@ const ReviewCard = ({ stepTemplate, index, values, setFieldValue, isEditMode, pr
                         )
                     }
                     title={<Typography variant="h5">{stepTemplate.displayName}</Typography>}
-                    // action={<IconButton>{processInstance && !isEditMode ? <PeopleAltIcon /> : <PersonAddIcon />}</IconButton>}
                 />
                 <CardContent onClick={(e) => e.stopPropagation()}>
                     <ReviewerSelector
