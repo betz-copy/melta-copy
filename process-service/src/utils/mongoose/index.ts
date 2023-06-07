@@ -110,7 +110,7 @@ export const getProcessTemplatesByReviewerIdAggregation = async (
     ];
 
     if (skip > 0) {
-        aggregationPipeline.push({ $skip: skip });
+        aggregationPipeline.push({ $skip: skip + limit });
     }
 
     if (limit > 0) {
@@ -173,15 +173,9 @@ export const searchAllowedProcessInstanceForReviewerAggregation = (
             },
         },
         { $project: { stepTemplates: 0 } },
-        {
-            $limit: skip + limit,
-        },
-        {
-            $skip: skip,
-        },
     ];
     if (skip > 0) {
-        aggregationPipeline.push({ $skip: skip });
+        aggregationPipeline.push({ $skip: skip + limit });
     }
 
     if (limit > 0) {
