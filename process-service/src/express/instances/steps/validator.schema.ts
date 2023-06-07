@@ -61,17 +61,3 @@ export const updateStepSchema = Joi.object({
         id: MongoIdSchema.required(),
     },
 });
-
-// export const updateStepSchema = Joi.object({
-//     body: Joi.object({
-//         status: Joi.string()
-//             .valid(...Object.values(Status))
-//             .when('reviewerId', { is: Joi.exist(), then: Joi.required(), otherwise: Joi.optional() }),
-//         reviewerId: Joi.string().when('status', { is: Joi.exist(), then: Joi.required(), otherwise: Joi.optional() }),
-//         properties: Joi.object(),
-//     }).min(1),
-//     query: {},
-//     params: {
-//         id: MongoIdSchema.required(),
-//     },
-// });
