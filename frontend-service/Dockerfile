@@ -1,7 +1,7 @@
 FROM node:16.12-alpine as build
 WORKDIR /usr/src/app
-COPY ["package.json", ".npmrc", "./"]
-RUN npm install --silent
+COPY ["package.json", "package-lock.json", ".npmrc", "./"]
+RUN npm install
 COPY . .
 RUN npm run build --prod
 
