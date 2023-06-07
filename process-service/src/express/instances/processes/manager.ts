@@ -128,7 +128,10 @@ class ProcessInstanceManager {
         if (reviewerId) {
             return searchAllowedProcessInstanceForReviewerAggregation(query, reviewerId, limit, skip);
         }
-        return ProcessInstanceModel.find(query, {}, { limit, skip }).populate(config.processFields.steps).lean().exec();
+        return ProcessInstanceModel.find(query, {}, { limit, skip, sort: { createdAt: -1 } })
+            .populate(config.processFields.steps)
+            .lean()
+            .exec();
     }
 }
 

@@ -35,9 +35,6 @@ const StepTemplateSchema = new mongoose.Schema<IStepTemplate>(
     },
 );
 
-StepTemplateSchema.index({ name: 1 }, { unique: true });
-StepTemplateSchema.index({ displayName: 1 }, { unique: true });
-
 const StepTemplateModel = mongoose.model<StepTemplateDocument>(config.mongo.stepTemplateCollectionName, StepTemplateSchema);
 
 export default StepTemplateModel;
