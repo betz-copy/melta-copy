@@ -101,12 +101,12 @@ describe('e2e notifications api testing', () => {
                     .post('/api/notifications')
                     .send({ viewers: [fakeObjectId], type: NotificationType.newProcess, metadata: { processId: fakeObjectId2 } })
                     .expect(200);
-                const { body: processApproverUpdateNotification } = await request(app)
+                const { body: processReviewerUpdateNotification } = await request(app)
                     .post('/api/notifications')
                     .send({
                         viewers: [fakeObjectId],
-                        type: NotificationType.processApproverUpdate,
-                        metadata: { processId: fakeObjectId3, approverStepIds: [fakeObjectId] },
+                        type: NotificationType.processReviewerUpdate,
+                        metadata: { processId: fakeObjectId3, addedStepIds: [fakeObjectId], deletedStepIds: [], unchangedStepIds: [] },
                     })
                     .expect(200);
 
@@ -116,11 +116,11 @@ describe('e2e notifications api testing', () => {
                     .expect(200);
                 const { body: processesNotifications } = await request(app)
                     .get('/api/notifications')
-                    .query({ limit: 100, types: [NotificationType.newProcess, NotificationType.processApproverUpdate] })
+                    .query({ limit: 100, types: [NotificationType.newProcess, NotificationType.processReviewerUpdate] })
                     .expect(200);
 
                 expect(ruleBreachNotifications).toEqual([ruleBreachAlertNotification2, ruleBreachRequestNotification, ruleBreachAlertNotification1]);
-                expect(processesNotifications).toEqual([processApproverUpdateNotification, newProcessNotification2, newProcessNotification1]);
+                expect(processesNotifications).toEqual([processReviewerUpdateNotification, newProcessNotification2, newProcessNotification1]);
             });
 
             it('should get all the notifications of user', async () => {
@@ -284,7 +284,7 @@ describe('e2e notifications api testing', () => {
                     .expect(200);
                 const { body: processesNotificationsCount } = await request(app)
                     .get('/api/notifications/count')
-                    .query({ types: [NotificationType.newProcess, NotificationType.processApproverUpdate] })
+                    .query({ types: [NotificationType.newProcess, NotificationType.processReviewerUpdate] })
                     .expect(200);
 
                 expect(ruleBreachNotificationsCount).toEqual(3);
@@ -334,8 +334,8 @@ describe('e2e notifications api testing', () => {
                     .post('/api/notifications')
                     .send({
                         viewers: [fakeObjectId],
-                        type: NotificationType.processApproverUpdate,
-                        metadata: { processId: fakeObjectId3, approverStepIds: [fakeObjectId] },
+                        type: NotificationType.processReviewerUpdate,
+                        metadata: { processId: fakeObjectId3, addedStepIds: [], deletedStepIds: [fakeObjectId], unchangedStepIds: [] },
                     })
                     .expect(200);
 
@@ -344,7 +344,7 @@ describe('e2e notifications api testing', () => {
                     .send({
                         groups: {
                             rules: [NotificationType.ruleBreachAlert, NotificationType.ruleBreachRequest],
-                            processes: [NotificationType.newProcess, NotificationType.processStatusUpdate, NotificationType.processApproverUpdate],
+                            processes: [NotificationType.newProcess, NotificationType.processStatusUpdate, NotificationType.processReviewerUpdate],
                         },
                     })
                     .expect(200);
@@ -462,7 +462,7 @@ describe('e2e notifications api testing', () => {
                     .send({
                         viewers: [fakeObjectId],
                         type: NotificationType.newProcess,
-                        metadata: { processId: fakeObjectId, approverStepNames: ['test'], previousApproverStepNames: [] },
+                        metadata: { processId: fakeObjectId, reviewerStepNames: ['test'], previousReviewerStepNames: [] },
                     })
                     .expect(400);
 
@@ -470,7 +470,7 @@ describe('e2e notifications api testing', () => {
                     .post('/api/notifications')
                     .send({
                         viewers: [fakeObjectId],
-                        type: NotificationType.processApproverUpdate,
+                        type: NotificationType.processReviewerUpdate,
                         metadata: { processId: fakeObjectId },
                     })
                     .expect(400);

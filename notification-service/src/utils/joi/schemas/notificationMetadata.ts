@@ -13,9 +13,11 @@ export const ruleBreachResponseMetadataSchema = joi.object({
     requestId: mongoIdSchema.required(),
 });
 
-export const processApproverUpdateMetadataSchema = joi.object({
+export const processReviewerUpdateMetadataSchema = joi.object({
     processId: mongoIdSchema.required(),
-    approverStepIds: joi.array().items(mongoIdSchema).required(),
+    addedStepIds: joi.array().items(mongoIdSchema).required(),
+    deletedStepIds: joi.array().items(mongoIdSchema).required(),
+    unchangedStepIds: joi.array().items(mongoIdSchema).required(),
 });
 export const processStatusUpdateMetadataSchema = joi.object({
     processId: mongoIdSchema.required(),
@@ -44,8 +46,8 @@ export const validateNotificationMetadataSchema = joi.custom((value, helpers) =>
             schema = ruleBreachResponseMetadataSchema;
             break;
 
-        case NotificationType.processApproverUpdate:
-            schema = processApproverUpdateMetadataSchema;
+        case NotificationType.processReviewerUpdate:
+            schema = processReviewerUpdateMetadataSchema;
             break;
         case NotificationType.processStatusUpdate:
             schema = processStatusUpdateMetadataSchema;
