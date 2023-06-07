@@ -1,3 +1,4 @@
+import { isProcessManager } from '../../../externalServices/permissionsApi';
 import { ProcessManagerService } from '../../../externalServices/processService';
 import { IMongoProcessInstanceWithSteps, Status } from '../../../externalServices/processService/interfaces/processInstance';
 import {
@@ -81,7 +82,7 @@ export default class StepsInstancesManager {
         if (!step) throw new StepNotPartOfProcess(stepId, process.name);
         if (process.status !== Status.Pending) throw new StepNotEditable(stepId);
 
-        if (step.reviewers.includes(userId)) return;
+        if ((await isProcessManager(userId)) || step.reviewers.includes(userId)) return;
 
         const processTemplate = await ProcessManagerService.getProcessTemplateById(process.templateId, userId);
 

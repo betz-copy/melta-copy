@@ -22,7 +22,7 @@ import { RuleBreachService } from '../../externalServices/ruleBreachService';
 import { IEntityTemplateWithConstraints, IMongoEntityTemplateWithConstraints, IMongoEntityTemplateWithConstraintsPopulated } from './interfaces';
 import { ProcessManagerService } from '../../externalServices/processService';
 import ProcessTemplatesManager from '../processes/processTemplates/manager';
-import { ISearchProcessTemplatesBody } from '../../externalServices/processService/interfaces/processTemplate';
+import { isProcessManager } from '../../externalServices/permissionsApi';
 
 const {
     categoryHasTemplates,
@@ -159,12 +159,9 @@ export class TemplatesManager {
         ];
 
         const allAllowedEntityTemplatesWithConstraints = await TemplatesManager.getAndPopulateAllTemplatesConstraints(allAllowedEntityTemplates);
-        // TODO check if user is processes admin
-        // if is admin --> searchProcessesTemplates without reviewerId
-        // else --> pass searchProcessesTemplates userId as reviewerId in body
-        const processTemplatesBeforePopulate = await ProcessManagerService.searchProcessTemplates({
-            reviewerId: userId,
-        } as ISearchProcessTemplatesBody);
+        const processTemplatesBeforePopulate = await ProcessManagerService.searchProcessTemplates(
+            (await isProcessManager(userId)) ? {} : { reviewerId: userId },
+        );
         const processTemplates = await Promise.all(
             processTemplatesBeforePopulate.map((processTemplate) => ProcessTemplatesManager.getTemplateWithPopulatedStepReviewers(processTemplate)),
         );
