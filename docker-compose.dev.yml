@@ -59,20 +59,24 @@ services:
     restart: always
 
   mock:
-    image: jawsproject.azurecr.io/mock
-    # build: ./mock
+    # image: jawsproject.azurecr.io/mock
+    build: ./mock
     environment:
       ENTITY_TEMPLATE_MANAGER_URI: ${ENTITY_TEMPLATE_MANAGER_URI}
       RELATIONSHIP_TEMPLATE_MANAGER_URI: ${RELATIONSHIP_TEMPLATE_MANAGER_URI}
       INSTANCE_MANAGER_URI: ${INSTANCE_MANAGER_URI}
       PERMISSIONS_API_URI: ${PERMISSION_API_URL}
+      PROCESS_SERVICE_URI: ${PROCESS_SERVICE_URI}
+      STORAGE_SERVICE_URI: ${STORAGE_SERVICE_URI}
       KARTOFFEL_IDS: 5e5688324203fc40043591aa,61d37cb5e4de0300121e31ef
     depends_on:
       - neo4j
       - entity-template-manager
       - relationship-template-manager
+      - storage-service
       - instance-manager
       - permission-api
+      - process-service
     restart: on-failure
 
   #-------------------------------------------#
@@ -121,3 +125,9 @@ services:
 
   rule-breach-service:
     restart: always
+  
+  process-service:
+    ports:
+      - 8008:8000
+    restart: always
+  

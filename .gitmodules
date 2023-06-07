@@ -37,3 +37,6 @@
 [submodule "rule-breach-service"]
 	path = rule-breach-service
 	url = git@gitlab.com:yesodot/rnd/terminal-rabaz/jaws/microservices/rule-breach-service.git
+[submodule "process-service"]
+	path = process-service
+	url = git@gitlab.com:yesodot/rnd/terminal-rabaz/jaws/microservices/process-service.git
