@@ -89,7 +89,7 @@ const RjfsSelectWidget = ({
                     onFocus={_onFocus}
                     variant={variant}
                     InputLabelProps={{
-                        shrink: readonly,
+                        shrink: readonly || undefined,
                     }}
                     error={rawErrors.length > 0}
                     color={color as TextFieldProps['color']}

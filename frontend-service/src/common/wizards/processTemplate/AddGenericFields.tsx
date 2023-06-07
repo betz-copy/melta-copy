@@ -6,7 +6,6 @@ import { useQuery } from 'react-query';
 import { FormikTouched, FormikErrors } from 'formik';
 import { AxiosError } from 'axios';
 import { toast } from 'react-toastify';
-import { v4 as uuid } from 'uuid';
 import { ProcessTemplateWizardValues } from './index';
 import { searchProcessesRequest } from '../../../services/processesService';
 import { attachmentPropertiesBaseSchema, propertiesBaseSchema } from '../entityTemplate/AddFields';

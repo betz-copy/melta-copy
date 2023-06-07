@@ -54,7 +54,7 @@ const RjsfTextWidget = ({
                 readOnly: readonly,
             }}
             InputLabelProps={{
-                shrink: readonly,
+                shrink: readonly || undefined,
             }}
             type={inputType as string}
             value={value || value === 0 ? value : ''}

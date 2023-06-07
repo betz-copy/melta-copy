@@ -40,11 +40,11 @@ export const ProcessStep: FC<ProcessStepProps> = ({
     const queryClient = useQueryClient();
     const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
 
-    const canEditStep =
+    const hasPermissionsToEditStep =
         Boolean(myPermissions!.processesManagementId) ||
         stepTemplate.reviewers.some((reviewer) => reviewer.id === myPermissions.user.id) ||
-        stepInstance.reviewers.some((reviewer) => reviewer.id === myPermissions.user.id) ||
-        processInstance.status === Status.Pending;
+        stepInstance.reviewers.some((reviewer) => reviewer.id === myPermissions.user.id);
+    const canEditStep = hasPermissionsToEditStep && processInstance.status === Status.Pending;
 
     const templateFileProperties = pickBy(stepTemplate.properties.properties, (value) => value.format === 'fileId');
 

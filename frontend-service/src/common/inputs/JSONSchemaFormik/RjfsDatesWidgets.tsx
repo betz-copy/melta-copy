@@ -98,7 +98,7 @@ const getRjfsDateOrDateTimeWidget =
                                 error={rawErrors.length > 0}
                                 variant={variant}
                                 InputLabelProps={{
-                                    shrink: readonly,
+                                    shrink: readonly || undefined,
                                 }}
                             />
                         );

@@ -148,7 +148,7 @@ const GeneralDetails: React.FC<IDetailsStepProp> = ({ detailsFormikData, onNext,
                                                 name="template"
                                                 variant={variant}
                                                 InputLabelProps={{
-                                                    shrink: viewMode,
+                                                    shrink: viewMode || undefined,
                                                 }}
                                                 label={i18next.t(
                                                     processInstance
@@ -171,7 +171,7 @@ const GeneralDetails: React.FC<IDetailsStepProp> = ({ detailsFormikData, onNext,
                                         value={values.name}
                                         variant={variant}
                                         InputLabelProps={{
-                                            shrink: viewMode,
+                                            shrink: viewMode || undefined,
                                         }}
                                         onChange={(e) => {
                                             setFieldValue('name', e.target.value);
@@ -198,7 +198,7 @@ const GeneralDetails: React.FC<IDetailsStepProp> = ({ detailsFormikData, onNext,
                                                     fullWidth
                                                     variant={variant}
                                                     InputLabelProps={{
-                                                        shrink: viewMode,
+                                                        shrink: viewMode || undefined,
                                                     }}
                                                     {...params}
                                                     error={touched.startDate && Boolean(errors.startDate)}
@@ -224,7 +224,7 @@ const GeneralDetails: React.FC<IDetailsStepProp> = ({ detailsFormikData, onNext,
                                                     variant={variant}
                                                     fullWidth
                                                     InputLabelProps={{
-                                                        shrink: viewMode,
+                                                        shrink: viewMode || undefined,
                                                     }}
                                                     {...params}
                                                     error={touched.endDate && Boolean(errors.endDate)}
