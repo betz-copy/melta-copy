@@ -12,8 +12,10 @@ import i18next from 'i18next';
 
 const steps = [
     {
-        label: '',
-        description: ``,
+        label: 'Select campaign settings',
+        description: `For each ad campaign that you create, you can control how much
+              you're willing to spend on clicks and conversions, which networks
+              and geographical locations you want your ads to show on, and more.`,
     },
     {
         label: 'Create an ad group',
