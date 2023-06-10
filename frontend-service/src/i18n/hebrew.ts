@@ -603,6 +603,7 @@ export default {
         newBreachDetected: 'זוהתה הפרת חוק חדשה',
     },
     processInstancesPage: {
+        whatsNew: 'מה חדש?',
         failedToCreateProcess: 'נכשל ליצור תהליך',
         processCreatedSuccessfully: 'תהליך נוצר בהצלחה',
         addProcess: 'הוסף תהליך',
