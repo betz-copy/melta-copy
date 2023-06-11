@@ -57,9 +57,9 @@ const SummaryProperties: React.FC<SummaryPropertiesProps> = ({ formik, template,
                                     {Object.entries(templateFileProperties).map(([key, value]) => (
                                         <InstanceFileInput
                                             key={key}
-                                            fileFieldName={key}
+                                            fileFieldName={`summaryAttachments.${key}`}
                                             fieldTemplateTitle={value.title}
-                                            setFieldValue={(field, value) => setFieldValue(`summaryAttachments.${field}`, value)}
+                                            setFieldValue={setFieldValue}
                                             required={false}
                                             value={values.summaryAttachments[key]}
                                             error={errors.summaryAttachments?.[key] ? JSON.stringify(errors.summaryAttachments?.[key]) : undefined}

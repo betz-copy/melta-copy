@@ -117,11 +117,9 @@ const DuplicateEntity: React.FC<{}> = () => {
                                                                     {Object.entries(templateFilesProperties).map(([key, value]) => (
                                                                         <InstanceFileInput
                                                                             key={key}
-                                                                            fileFieldName={key}
+                                                                            fileFieldName={`attachmentsProperties.${key}`}
                                                                             fieldTemplateTitle={value.title}
-                                                                            setFieldValue={(field, value) =>
-                                                                                setFieldValue(`attachmentsProperties.${field}`, value)
-                                                                            }
+                                                                            setFieldValue={setFieldValue}
                                                                             required={requiredFilesNames.includes(key)}
                                                                             value={values.attachmentsProperties[key]}
                                                                             error={

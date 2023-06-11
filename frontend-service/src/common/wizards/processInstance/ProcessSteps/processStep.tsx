@@ -167,9 +167,9 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                             {Object.entries(templateFileProperties).map(([key, value]) => (
                                                 <InstanceFileInput
                                                     key={key}
-                                                    fileFieldName={key}
+                                                    fileFieldName={`attachmentsProperties.${key}`}
                                                     fieldTemplateTitle={value.title}
-                                                    setFieldValue={(field, value) => setFieldValue(`attachmentsProperties.${field}`, value)}
+                                                    setFieldValue={setFieldValue}
                                                     required={false}
                                                     value={values.attachmentsProperties?.[key]}
                                                     error={

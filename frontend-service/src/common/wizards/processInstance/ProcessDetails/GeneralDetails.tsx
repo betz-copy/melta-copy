@@ -45,9 +45,9 @@ const FileAttachmentsEdit: React.FC<FileAttachmentsProps> = ({ templateFilePrope
         {Object.entries(templateFileProperties).map(([key, value]) => (
             <InstanceFileInput
                 key={key}
-                fileFieldName={key}
+                fileFieldName={`detailsAttachments.${key}`}
                 fieldTemplateTitle={value.title}
-                setFieldValue={(field, value) => setFieldValue(`detailsAttachments.${field}`, value)}
+                setFieldValue={setFieldValue}
                 required={false}
                 value={values.detailsAttachments[key]}
                 error={errors.detailsAttachments?.[key] ? JSON.stringify(errors.detailsAttachments?.[key]) : undefined}
