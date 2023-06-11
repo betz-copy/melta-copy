@@ -425,6 +425,7 @@ export default {
             },
             editProcessBth: 'ערוך תהליך',
         },
+        dateNotificationTypes: { day: 'יום לפני', week: 'שבוע לפני', twoWeeks: 'שבועיים לפני' },
     },
     validation: {
         required: 'חובה',
@@ -460,6 +461,7 @@ export default {
         email: 'כתובת מייל',
         pattern: 'תבנית (regex)',
         enum: 'רשימה',
+        dateNotification: 'התראה לפני סיום',
     },
     input: {
         imagePicker: {

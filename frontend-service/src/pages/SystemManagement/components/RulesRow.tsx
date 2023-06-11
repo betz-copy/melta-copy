@@ -77,7 +77,7 @@ const RulesRow: React.FC = () => {
                 </Grid>
             </Header>
             <ViewingBox>
-                {Array.from(rules.values())
+                {Array.from(rules?.values() || [])
                     .filter(({ name }) => searchText === '' || name.includes(searchText))
                     .map((rule) => (
                         <ViewingCard
