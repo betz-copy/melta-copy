@@ -17,4 +17,4 @@ releases:
 
 helmDefaults:
   recreatePods: true
-  createNamespace: true
+  createNamespace: false
