@@ -24,3 +24,5 @@ config:
       value: http://process-service:8000
     - name: KARTOFFEL_IDS
       value: 61d37cb5e4de0300121e31ef
+    - name: STORAGE_SERVICE_URI
+      value: http://storage-service:8000
