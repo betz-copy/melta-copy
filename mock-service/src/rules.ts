@@ -3,11 +3,11 @@ import axios from 'axios';
 import config from './config';
 import { IMongoEntityTemplate } from './entityTemplates';
 import { rulesCreator } from './mocks/rules';
-import { IMongoRealtionshipTemplate } from './relationshipTemplates';
+import { IMongoRelationshipTemplate } from './relationshipTemplates';
 
 const { uri, createRuleRoute } = config.relationshipTemplateManager;
 
-export const createRules = async (entityTemplates: IMongoEntityTemplate[], relationshipTemplates: IMongoRealtionshipTemplate[]) => {
+export const createRules = async (entityTemplates: IMongoEntityTemplate[], relationshipTemplates: IMongoRelationshipTemplate[]) => {
     const fliesOnId = relationshipTemplates.find(({ name }) => name === 'fliesOn')!._id;
     const flightInTripId = relationshipTemplates.find(({ name }) => name === 'flightInTrip')!._id;
     const flightId = entityTemplates.find(({ name }) => name === 'flight')!._id;
@@ -17,7 +17,7 @@ export const createRules = async (entityTemplates: IMongoEntityTemplate[], relat
     const rules = rulesCreator(fliesOnId, flightInTripId, flightId, touristId, tripId);
 
     const promises = rules.map((rule) => {
-        return axios.post<IMongoRealtionshipTemplate>(uri + createRuleRoute, rule);
+        return axios.post<IMongoRelationshipTemplate>(uri + createRuleRoute, rule);
     });
 
     const results = await Promise.all(promises);

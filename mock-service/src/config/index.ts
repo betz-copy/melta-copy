@@ -33,7 +33,7 @@ const config = {
         createRelationshipTemplateRoute: env.get('CREATE_RELATIONSHIP_TEMPLATE_ROUTE').default('/api/templates/relationships').asString(),
         createRuleRoute: env.get('CREATE_RULE_ROUTE').default('/api/templates/rules').asString(),
     },
-    instacnceManager: {
+    instanceManager: {
         uri: env.get('INSTANCE_MANAGER_URI').required().asString(),
         isAliveRoute: env.get('INSTANCE_MANAGER_IS_ALIVE_ROUTE').default('/isAlive').asString(),
         createEntityRoute: env.get('CREATE_ENTITY_ROUTE').default('/api/instances/entities').asString(),

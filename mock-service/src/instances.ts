@@ -5,7 +5,7 @@ import { generate, format, JSONSchemaFaker } from 'json-schema-faker';
 import * as pLimit from 'p-limit';
 import config from './config';
 import { IMongoEntityTemplate } from './entityTemplates';
-import { IMongoRealtionshipTemplate } from './relationshipTemplates';
+import { IMongoRelationshipTemplate } from './relationshipTemplates';
 import { trycatch } from './utils';
 
 const limit = pLimit(config.requestLimit);
@@ -19,7 +19,7 @@ const {
     maxNumberOfRelationships,
     minNumberOfRelationships,
     isAliveRoute,
-} = config.instacnceManager;
+} = config.instanceManager;
 
 export const createInstances = async (entityTemplates: IMongoEntityTemplate[], chance: Chance.Chance, fileId: string) => {
     format('fileId', (_value) => fileId);
@@ -43,10 +43,10 @@ export const createInstances = async (entityTemplates: IMongoEntityTemplate[], c
 
 export const createRelationshipInstances = async (
     entities: { properties: { _id: string }; templateId: string }[],
-    relationsipTemplates: IMongoRealtionshipTemplate[],
+    relationshipTemplates: IMongoRelationshipTemplate[],
     chance: Chance.Chance,
 ) => {
-    const promises = relationsipTemplates
+    const promises = relationshipTemplates
         .map((relationshipTemplate) => {
             const relevantSourceEntities = entities.filter((entity) => entity.templateId === relationshipTemplate.sourceEntityId);
             const relevantDestinationEntities = entities.filter((entity) => entity.templateId === relationshipTemplate.destinationEntityId);

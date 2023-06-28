@@ -7,7 +7,7 @@ import { createEntityTemplates, isEntityTemplateManagerAlive } from './entityTem
 import { categories } from './mocks/categories';
 import { entityTemplates } from './mocks/entityTemplates';
 import { createInstances, createRelationshipInstances, isInstanceManagerAlive } from './instances';
-import { createRealtionshipTemplates, isRelationshipTemplateManagerAlive } from './relationshipTemplates';
+import { createRelationshipTemplates, isRelationshipTemplateManagerAlive } from './relationshipTemplates';
 import { relationshipTemplates } from './mocks/relationshipTemplates';
 import { createPermissionsBulk, isPermissionsApiAlive } from './permissionsApi';
 import { getPermissionsToCreate } from './mocks/permissionsApi';
@@ -79,7 +79,7 @@ const main = async () => {
 
     console.log('Creating relationshipTemplates templates');
 
-    const createdRelationshipTemplates = await createRealtionshipTemplates(relationshipTemplates, createdEntityTemplates);
+    const createdRelationshipTemplates = await createRelationshipTemplates(relationshipTemplates, createdEntityTemplates);
 
     console.log('Creating rules');
 
