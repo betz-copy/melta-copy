@@ -97,6 +97,8 @@ const main = async () => {
 
     const createdEntityInstances = await createInstances(createdEntityTemplates, chance, exampleFileId);
 
+    console.log('Creating relationships');
+
     await createRelationshipInstances(createdEntityInstances, createdRelationshipTemplates, chance);
 
     console.log('Creating process templates');
