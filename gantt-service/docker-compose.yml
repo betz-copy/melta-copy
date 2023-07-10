@@ -1,0 +1,16 @@
+version: '3.4'
+
+services:
+  mongo:
+    image: mongo
+    ports:
+      - 27017:27017
+
+  # gantts-service:
+  #   build: .
+  #   environment:
+  #     PORT: 8000
+  #     MONGO_URI: mongodb://mongo
+  #     MONGO_GANTTS_COLLECTION_NAME: gantts
+  #   ports:
+  #     - 8001:8000
