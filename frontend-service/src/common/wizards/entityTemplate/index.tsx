@@ -29,7 +29,6 @@ export interface EntityTemplateFormInputProperties {
     options: string[];
     pattern: string;
     patternCustomErrorMessage: string;
-    dateNotification: string;
 }
 export interface EntityTemplateWizardValues
     extends Omit<IEntityTemplatePopulated, 'properties' | 'iconFileId' | 'propertiesOrder' | 'propertiesPreview' | 'uniqueConstraints'> {

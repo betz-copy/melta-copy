@@ -19,8 +19,7 @@ import { Delete as DeleteIcon, DragHandle as DragHandleIcon } from '@mui/icons-m
 import { Draggable } from 'react-beautiful-dnd';
 import i18next from 'i18next';
 import isEqual from 'lodash.isequal';
-import { dateNotificationTypes, validPropertyTypes } from './AddFields';
-
+import { validPropertyTypes } from './AddFields';
 import { CommonFormInputProperties } from './commonInterfaces';
 
 const UniqueCheckboxTooltipTitle = (
@@ -79,10 +78,6 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     const options = `properties[${index}].options`;
     const touchedOptions = touched?.options;
     const errorOptions = errors?.options;
-
-    const dateNotification = `properties[${index}].dateNotification`;
-    const touchedDateNotification = touched?.dateNotification;
-    const errorDateNotification = errors?.dateNotification;
 
     const required = `properties[${index}].required`;
     const preview = `properties[${index}].preview`;
@@ -222,27 +217,6 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                     fullWidth
                                                 />
                                             </>
-                                        )}
-                                        {(value.type === 'date' || value.type === 'date-time') && (
-                                            <TextField
-                                                select
-                                                label={i18next.t('propertyTypes.dateNotification')}
-                                                id={dateNotification}
-                                                name={dateNotification}
-                                                value={value.dateNotification}
-                                                onChange={onChange}
-                                                error={touchedDateNotification && Boolean(errorDateNotification)}
-                                                helperText={touchedDateNotification && errorDateNotification}
-                                                disabled={isDisabled}
-                                                sx={{ marginRight: '5px' }}
-                                                fullWidth
-                                            >
-                                                {dateNotificationTypes.map((notificationType) => (
-                                                    <MenuItem key={notificationType} value={notificationType}>
-                                                        {i18next.t(`wizard.dateNotificationTypes.${notificationType}`)}
-                                                    </MenuItem>
-                                                ))}
-                                            </TextField>
                                         )}
                                     </Grid>
                                     <Grid item container justifyContent="space-between">

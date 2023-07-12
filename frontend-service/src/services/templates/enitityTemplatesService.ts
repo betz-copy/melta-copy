@@ -39,7 +39,6 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
             options: value.enum || [],
             pattern: value.pattern || '',
             patternCustomErrorMessage: value.patternCustomErrorMessage || '',
-            dateNotification: value.dateNotification || '',
         };
 
         if (value.format === 'fileId') {
@@ -70,7 +69,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTem
         hide: [],
     };
 
-    properties.forEach(({ name, title, type, required, preview, options, pattern, patternCustomErrorMessage, dateNotification, hide, unique }) => {
+    properties.forEach(({ name, title, type, required, preview, options, pattern, patternCustomErrorMessage, hide, unique }) => {
         schema.properties[name] = {
             title,
             type: basePropertyTypes.includes(type) ? (type as IEntitySingleProperty['type']) : 'string',
@@ -78,7 +77,6 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTem
             enum: type === 'enum' ? options : undefined,
             pattern: type === 'pattern' ? pattern : undefined,
             patternCustomErrorMessage: type === 'pattern' ? patternCustomErrorMessage : undefined,
-            dateNotification: type === 'date' || type === 'date-time' ? dateNotification : undefined,
         };
 
         propertiesOrder.push(name);
