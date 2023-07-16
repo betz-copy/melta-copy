@@ -187,6 +187,7 @@ const GeneralDetails: React.FC<IDetailsStepProp> = ({ detailsFormikData, onNext,
                                 <Grid item>
                                     <LocalizationProvider dateAdapter={AdapterDateFns}>
                                         <DatePicker
+                                            inputFormat={'dd/MM/yyyy'}
                                             maxDate={values.endDate}
                                             label={i18next.t('wizard.processInstance.processInstanceStartDate')}
                                             value={values.startDate}
@@ -213,6 +214,7 @@ const GeneralDetails: React.FC<IDetailsStepProp> = ({ detailsFormikData, onNext,
                                 <Grid item>
                                     <LocalizationProvider dateAdapter={AdapterDateFns}>
                                         <DatePicker
+                                            inputFormat={'dd/MM/yyyy'}
                                             minDate={values.startDate}
                                             label={i18next.t('wizard.processInstance.processInstanceEndDate')}
                                             value={values.endDate}

@@ -1,5 +1,5 @@
 import React, { Dispatch, SetStateAction } from 'react';
-import { Grid, Typography } from '@mui/material';
+import { Grid, IconButton, Typography } from '@mui/material';
 import { Add as AddIcon } from '@mui/icons-material';
 import i18next from 'i18next';
 import { TopBarGrid } from '../../common/TopBar';
@@ -10,6 +10,7 @@ import { AddProcessButton } from './AddProcessButton';
 import { IMongoProcessTemplatePopulated } from '../../interfaces/processes/processTemplate';
 import { useQueryClient } from 'react-query';
 import { IPermissionsOfUser } from '../../services/permissionsService';
+import FilterAltOffIcon from '@mui/icons-material/FilterAltOff';
 import './ProcessesList.css';
 import DateRange from '../../common/inputs/DateRange';
 
@@ -56,6 +57,17 @@ const ProcessInstancesHeadline: React.FC<{
                             startDateInput={startDateInput}
                             endDateInput={endDateInput}
                         />
+                    </Grid>
+                    <Grid item>
+                        <IconButton
+                            onClick={() => {
+                                onSetStartDate(null);
+                                onSetEndDate(null);
+                            }}
+                            sx={{ borderRadius: 10 }}
+                        >
+                            <FilterAltOffIcon />
+                        </IconButton>
                     </Grid>
                 </Grid>
             </Grid>
