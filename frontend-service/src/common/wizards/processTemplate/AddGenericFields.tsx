@@ -80,7 +80,7 @@ const AddGenericFields: React.FC<GenericFieldsProperties> = ({
         (values as ProcessTemplateWizardValues & { _id: string })._id,
         isEditMode,
     );
-
+   
     return (
         <Grid container direction="column" alignItems="stretch" spacing={1}>
             <Grid item>

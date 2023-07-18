@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Grid } from '@mui/material';
 import { FormikProps } from 'formik';
-
 import { StepsType } from '..';
 import { StepperActions } from './StepperActions';
 import { StepperSideBar } from './StepperSideBar';

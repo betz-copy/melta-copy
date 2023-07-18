@@ -10,10 +10,10 @@ import { ChooseStepsIcon } from './ChooseStepIcon';
 import { StepsGenericBlockProps } from './StepsBlocksInterface';
 import { FieldBlockAccordion } from '../entityTemplate/FieldBlock';
 
-const StepsIconBlock: React.FC<StepsGenericBlockProps> = ({ title, values, setFieldValue, propIndex, errors }) => {
+const StepsIconBlock: React.FC<StepsGenericBlockProps> = ({ title, values, setFieldValue, propIndex, errors, touched }) => {
     const errorsOfStep = errors.steps?.[propIndex] as FormikErrors<ProcessTemplateWizardValues['steps'][number]> | undefined;
     return (
-        <FieldBlockAccordion>
+        <FieldBlockAccordion  style={{border: (errorsOfStep?.icon && touched) && '1px solid red'}}>
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                 <Typography>{title}</Typography>
             </AccordionSummary>

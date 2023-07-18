@@ -7,10 +7,10 @@ import _debounce from 'lodash.debounce';
 import { ProcessTemplateWizardValues } from './index';
 import { StepsGenericBlockProps } from './StepsBlocksInterface';
 
-const StepsNameBlock: React.FC<StepsGenericBlockProps> = ({ values, touched, errors, propIndex, setFieldValue }) => {
+const StepsNameBlock: React.FC<StepsGenericBlockProps> = ({ values, touched, errors, propIndex, setFieldValue, isEditMode, areThereAnyInstances }) => {
     const errorsOfStep = errors.steps?.[propIndex] as FormikErrors<ProcessTemplateWizardValues['steps'][number]> | undefined;
     const touchedOfStep = touched?.steps?.[propIndex];
-
+    
     const [name, setName] = useState(values.steps[propIndex].name);
     const [displayName, setDisplayName] = useState(values.steps[propIndex].displayName);
 
@@ -32,6 +32,7 @@ const StepsNameBlock: React.FC<StepsGenericBlockProps> = ({ values, touched, err
             <Grid item>
                 <TextField
                     label={i18next.t('wizard.name')}
+                    disabled={isEditMode && areThereAnyInstances}
                     value={name}
                     onChange={(event) => {
                         setName(event.target.value);

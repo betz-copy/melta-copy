@@ -309,6 +309,7 @@ export default {
         },
         processTemplate: {
             title: 'יצירת תבנית תהליך',
+            editTitle: 'עריכת תבנית תהליך',
             createdSuccessfully: 'תבנית תהליך נוצרה בהצלחה',
             editedSuccefully: 'תבנית תהליך עודכנה בהצלחה',
             failedToCreate: 'נכשל ליצור תבנית תהליך',
@@ -327,8 +328,14 @@ export default {
             addProperty: 'הוסף שדה',
             addAttachment: 'הוסף קובץ',
             addStep: 'הוסף שלב',
+            blockAdd:'לא ניתן להוסיף שלב לתהליך בעל מופעים',
             approvers: 'גורמים מאשרים',
             labelApprovers: 'משתמשים',
+            field:'שדה',
+            file:'קובץ',
+            displayName:'שם לתצוגה',
+            englishName:'שם באנגלית',
+            type:'סוג',
         },
         entity: {
             title: 'יצירת ישות',

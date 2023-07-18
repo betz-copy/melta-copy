@@ -64,7 +64,6 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
     // therefore using a reference for them to always use the current displayValues.
     const displayValuesRef = useRef(displayValues);
     displayValuesRef.current = displayValues;
-
     // eslint-disable-next-line react-hooks/exhaustive-deps
     const updateFormikDebounced = useCallback(
         _debounce(() => {
@@ -130,16 +129,17 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
     const onChange = (index: number, event: React.ChangeEvent<HTMLInputElement>) => {
         const inputName = event.target.name.split('.')[1]; // the input name is in the format `properties[index].field`
         const inputValue = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
-
         setFieldDisplayValue(index, inputName as keyof Values, inputValue);
     };
 
     const onChangeWrapper = (index: number) => (event: React.ChangeEvent<HTMLInputElement>) => onChange(index, event);
     const setFieldDisplayValueWrapper = (index: number) => (field: keyof Values, value: any) => setFieldDisplayValue(index, field, value);
     const setDisplayValueWrapper = (index: number) => (value: SetStateAction<CommonFormInputProperties>) => setDisplayValue(index, value);
+    
+    const isFieldBlockError = touched?.[propertiesType] && errors?.hasOwnProperty(propertiesType)
 
     return (
-        <FieldBlockAccordion>
+        <FieldBlockAccordion style={{ border: isFieldBlockError ? '1px solid red' : '' }}>
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                 <Typography>{title}</Typography>
             </AccordionSummary>
@@ -210,7 +210,8 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
                     )}
                 </FieldArray>
             </AccordionDetails>
-        </FieldBlockAccordion>
+        </FieldBlockAccordion >
+
     );
 };
 

@@ -10,4 +10,6 @@ export interface StepsGenericBlockProps {
     touched?: FormikTouched<ProcessTemplateWizardValues>;
     setFieldValue: (field: string, value: string | IUser | null | fileDetails | undefined, shouldValidate?: boolean) => void;
     title?: string;
+    isEditMode: boolean;
+    areThereAnyInstances: boolean;
 }

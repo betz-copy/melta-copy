@@ -33,6 +33,7 @@ const StepperActions = <T extends object>({
                 </Button>
             </Grid>
             <Grid item>
+                {/* type submit for formik goto next step */}
                 <Button type="submit" variant="contained" disabled={isLoading || (isLastStep && isSameObject)}>
                     {i18next.t(isLastStep ? 'wizard.finish' : 'wizard.next')}
                     {isLoading && <CircularProgress size={20} />}
@@ -47,7 +48,8 @@ const StepperActions = <T extends object>({
                     )}
                 </Button>
             </Grid>
-        </Grid>
+        </Grid >
+
     );
 };
 

@@ -50,7 +50,7 @@ const ProcessSummary: React.FC<ProcessSummaryProp> = ({ processInstance, process
                 <Grid item xs={3}>
                     <SummaryProperties isEditMode={isEditMode} formik={summaryFormikData} template={processTemplate} />
                 </Grid>
-                <Grid item container xs={1}>
+                <Grid item container xs={1}> 
                     <Divider style={{ width: '100%' }} orientation="vertical" flexItem />
                 </Grid>
                 <Grid item xs={3}>

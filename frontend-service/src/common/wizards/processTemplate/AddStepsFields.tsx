@@ -80,6 +80,8 @@ const AddStepsFields: React.FC<StepComponentProps<ProcessTemplateWizardValues, '
     const handleChange = (index: number) => {
         setExpandedIndex((prevIndex) => (prevIndex === index ? false : index));
     };
+    const isFieldBlockTouched = touched?.steps;
+
     return (
         <Grid style={{ width: '100%' }}>
             <FieldArray name="steps">
@@ -91,13 +93,15 @@ const AddStepsFields: React.FC<StepComponentProps<ProcessTemplateWizardValues, '
                                     {i18next.t('validation.oneStep')}
                                 </div>
                             )}
-                            <Tooltip title={i18next.t('wizard.processTemplate.addStep')} placement="top" arrow sx={{ color: 'white' }}>
+                            <Tooltip title={(isEditMode && areThereAnyInstances) ? i18next.t('wizard.processTemplate.blockAdd') : i18next.t('wizard.processTemplate.addStep')} placement="top" arrow sx={{ color: 'white' }}>
                                 <span>
                                     <IconButton
                                         style={{ justifyContent: 'center', color: '#1B7BB9' }}
                                         disabled={isEditMode && areThereAnyInstances}
                                         onClick={() =>
                                             push({
+                                                name: "",
+                                                displayName: "",
                                                 properties: [],
                                                 attachmentProperties: [],
                                                 reviewers: [],
@@ -114,6 +118,7 @@ const AddStepsFields: React.FC<StepComponentProps<ProcessTemplateWizardValues, '
                         <Grid>
                             {values.steps.map((step, index) => (
                                 <FieldBlockAccordion
+                                    style={{ border: (isFieldBlockTouched && errors.steps?.[index]) ? '1px solid red' : '' }}
                                     expanded={expandedIndex === index}
                                     onChange={() => handleChange(index)}
                                     // eslint-disable-next-line react/no-array-index-key
@@ -121,7 +126,7 @@ const AddStepsFields: React.FC<StepComponentProps<ProcessTemplateWizardValues, '
                                     TransitionProps={{ unmountOnExit: true }} // performance issues with many steps
                                 >
                                     <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                                        <Typography>{i18next.t('wizard.processTemplate.level')}</Typography>
+                                        <Typography>{` ${i18next.t('wizard.processTemplate.level')}: ${values.steps[index].displayName || ""}`}</Typography>
                                     </AccordionSummary>
                                     <Grid item>
                                         <StepsNameBlock
@@ -130,6 +135,8 @@ const AddStepsFields: React.FC<StepComponentProps<ProcessTemplateWizardValues, '
                                             touched={touched}
                                             propIndex={index}
                                             setFieldValue={setFieldValue}
+                                            isEditMode={isEditMode}
+                                            areThereAnyInstances={areThereAnyInstances}
                                         />
                                     </Grid>
                                     <AccordionDetails>
@@ -150,8 +157,8 @@ const AddStepsFields: React.FC<StepComponentProps<ProcessTemplateWizardValues, '
                                                         typeof errors.steps === 'string'
                                                             ? undefined
                                                             : (errors.steps?.[index] as
-                                                                  | FormikErrors<ProcessTemplateWizardValues['steps'][number]>
-                                                                  | undefined)
+                                                                | FormikErrors<ProcessTemplateWizardValues['steps'][number]>
+                                                                | undefined)
                                                     }
                                                     initialFieldCardDataOnAdd={initialFieldCardDataOnAdd}
                                                 />
@@ -173,34 +180,38 @@ const AddStepsFields: React.FC<StepComponentProps<ProcessTemplateWizardValues, '
                                                         typeof errors.steps === 'string'
                                                             ? undefined
                                                             : (errors.steps?.[index] as
-                                                                  | FormikErrors<ProcessTemplateWizardValues['steps'][number]>
-                                                                  | undefined)
+                                                                | FormikErrors<ProcessTemplateWizardValues['steps'][number]>
+                                                                | undefined)
                                                     }
                                                     initialFieldCardDataOnAdd={initialFieldCardDataOnAdd}
                                                 />
                                             </Grid>
                                             <Grid item>
                                                 <StepsApproversBlock
+                                                    touched={touched.steps?.[index]}
                                                     values={values}
                                                     title={i18next.t('wizard.processTemplate.approvers')}
                                                     propIndex={index}
                                                     setFieldValue={setFieldValue}
                                                     errors={errors}
-                                                />
+                                                    isEditMode={isEditMode} areThereAnyInstances={areThereAnyInstances} />
                                             </Grid>
                                             <Grid item>
                                                 <StepsIconBlock
+                                                    touched={touched.steps?.[index]}
                                                     values={values}
                                                     setFieldValue={setFieldValue}
                                                     title={i18next.t('wizard.processTemplate.icon')}
                                                     propIndex={index}
                                                     errors={errors}
-                                                />
+                                                    isEditMode={isEditMode}
+                                                    areThereAnyInstances={areThereAnyInstances} />
                                             </Grid>
                                         </Grid>
                                         <Grid>
                                             <IconButton
                                                 style={{ marginRight: '95%' }}
+                                                disabled={isEditMode && areThereAnyInstances}
                                                 onClick={() => {
                                                     remove(index);
                                                 }}
@@ -214,9 +225,10 @@ const AddStepsFields: React.FC<StepComponentProps<ProcessTemplateWizardValues, '
                             ))}
                         </Grid>
                     </Grid>
-                )}
-            </FieldArray>
-        </Grid>
+                )
+                }
+            </FieldArray >
+        </Grid >
     );
 };
 

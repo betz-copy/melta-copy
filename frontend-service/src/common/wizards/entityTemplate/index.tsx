@@ -140,6 +140,7 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
             steps={steps}
             isLoading={isLoading}
             submitFucntion={(values) => mutateAsync(values)}
+            onTryToGoNextStep={(error) => toast.error(error)}
         />
     );
 };

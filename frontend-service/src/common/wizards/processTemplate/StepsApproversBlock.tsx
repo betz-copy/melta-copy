@@ -13,7 +13,7 @@ import { FieldBlockAccordion } from '../entityTemplate/FieldBlock';
 import { ProcessTemplateWizardValues } from '.';
 import i18next from 'i18next';
 
-const StepsApproversBlock: React.FC<StepsGenericBlockProps> = ({ title, values, propIndex, errors }) => {
+const StepsApproversBlock: React.FC<StepsGenericBlockProps> = ({ title, values, propIndex, errors , touched}) => {
     const errorsOfStep = errors.steps?.[propIndex] as FormikErrors<ProcessTemplateWizardValues['steps'][number]> | undefined;
 
     const darkMode = useSelector((state: RootState) => state.darkMode);
@@ -21,7 +21,7 @@ const StepsApproversBlock: React.FC<StepsGenericBlockProps> = ({ title, values, 
 
     return (
         <Grid>
-            <FieldBlockAccordion>
+            <FieldBlockAccordion  style={{border: (errorsOfStep?.reviewers && touched) && '1px solid red'}}>
                 <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                     <Typography>{title}</Typography>
                 </AccordionSummary>

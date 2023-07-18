@@ -149,7 +149,7 @@ const ProcessTemplateWizard: React.FC<WizardBaseType<ProcessTemplateWizardValues
             initialValues={initialValues}
             initalStep={initalStep}
             isEditMode={isEditMode}
-            title={i18next.t('wizard.processTemplate.title')}
+            title={i18next.t(isEditMode ? 'wizard.processTemplate.editTitle' : 'wizard.processTemplate.title')}
             steps={stepsComponents}
             isLoading={isLoading}
             submitFucntion={(values) => mutateAsync(values)}
