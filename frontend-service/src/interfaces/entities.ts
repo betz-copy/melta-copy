@@ -1,3 +1,4 @@
+import { IMongoRelationshipTemplate } from './relationshipTemplates';
 import { IRelationship } from './relationships';
 
 export interface IEntity {
@@ -39,4 +40,53 @@ export interface IConstraintsOfTemplate {
     templateId: string;
     requiredConstraints: string[];
     uniqueConstraints: string[][];
+}
+
+export interface IEntityWithDirectConnections {
+    entity: IEntity;
+    relationships?: {
+        relationship: Pick<IRelationship, 'templateId' | 'properties'>;
+        otherEntity: IEntity;
+    }[];
+}
+
+export interface IFilterOfField {
+    $eq?: boolean | string | number | null;
+    $ne?: boolean | string | number | null;
+    $eqi?: string; // case insensitive $eq
+    $gt?: boolean | string | number;
+    $gte?: boolean | string | number;
+    $lt?: boolean | string | number;
+    $lte?: boolean | string | number;
+    $in?: Array<boolean | string | number | null>;
+}
+
+export type IFilterOfTemplate<T extends Record<string, any> = Record<string, any>> = {
+    [field in keyof T]?: IFilterOfField;
+};
+
+export type ISearchBatchFilter<T extends Record<string, any> = Record<string, any>> = {
+    $and?: IFilterOfTemplate<T> | IFilterOfTemplate<T>[];
+    $or?: IFilterOfTemplate<T>[];
+};
+
+export interface ISearchBatchBody {
+    skip?: number;
+    limit: number;
+    textSearch?: string;
+    templates: {
+        [templateId: string]: {
+            filter?: ISearchBatchFilter;
+            showRelationships?: boolean | Array<IMongoRelationshipTemplate['_id']>;
+        };
+    };
+    sort?: Array<{
+        field: string;
+        sort: 'asc' | 'desc';
+    }>;
+}
+
+export interface ISearchBatchResult {
+    count: number;
+    entities: IEntityWithDirectConnections[];
 }

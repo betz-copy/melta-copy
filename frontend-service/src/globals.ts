@@ -14,6 +14,7 @@ export const environment = {
         relationships: '/instances/relationships',
         processTemplates: '/processes/templates',
         processes: '/processes/instances',
+        gantts: '/gantts',
         storage: '/files',
         getMyPermissions: '/permissions/my',
         getAllPermissions: '/permissions',
@@ -60,6 +61,11 @@ export const environment = {
         heightPaddingMultiplier: 0.3,
         widthPaddingMultiplier: 0.6,
     },
+    ganttSettings: {
+        isSidebarOpenLocalStorageKey: 'isGanttSidebarOpen',
+        fieldSeparator: ' × ',
+        templateSeparator: ' & ',
+    },
     entitiesCardsView: {
         infiniteScrollPageCount: 10,
     },
@@ -85,6 +91,9 @@ export const environment = {
         infiniteScrollPageCount: 10,
     },
     processInstances: {
+        infiniteScrollPageCount: 10,
+    },
+    gantts: {
         infiniteScrollPageCount: 10,
     },
     createdRelationshipIdInBrokenRules: 'created-relationship-id',

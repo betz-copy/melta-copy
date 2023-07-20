@@ -11,6 +11,7 @@ import {
     Add as PlusIcon,
     Air as FluidSimulationIcon,
     Gavel as GavelIcon,
+    CalendarMonth as CalendarIcon
 } from '@mui/icons-material';
 
 import i18next from 'i18next';
@@ -156,8 +157,13 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                     <NavButton to="/" text={i18next.t('pages.globalSearch')} isDrawerOpen={isDrawerOpen}>
                         <PublicIcon fontSize="large" sx={{ color: 'white' }} />
                     </NavButton>
+
                     <NavButton to="/rule-management" text={i18next.t('pages.ruleManagement')} isDrawerOpen={isDrawerOpen}>
                         <GavelIcon fontSize="large" sx={{ color: 'white' }} />
+                    </NavButton>
+
+                    <NavButton to="/gantts" text={i18next.t('pages.gantts')} isDrawerOpen={isDrawerOpen}>
+                        <CalendarIcon fontSize="large" sx={{ color: 'white' }} />
                     </NavButton>
 
                     <NavButton to="/processes" text={i18next.t('pages.processInstances')} isDrawerOpen={isDrawerOpen}>

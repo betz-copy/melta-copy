@@ -1,33 +1,32 @@
-import { CircularProgress, Grid } from '@mui/material';
-import React, { useRef, useEffect, Key, CSSProperties } from 'react';
+import React, { useRef, useEffect, Key } from 'react';
+import { Grid } from '@mui/material';
 import { GetNextPageParamFunction, QueryFunction, QueryKey, useInfiniteQuery } from 'react-query';
+import { ShowMore } from './ShowMore';
 
-interface InfiniteScrollProps<T> {
+export interface PureInfiniteScrollProps<T> {
     children: (item: T) => JSX.Element;
     getItemId?: (item: T) => Key;
     queryKey: QueryKey;
     queryFunction: QueryFunction<T[]>;
     onQueryError: (err: any) => void;
     getNextPageParam?: GetNextPageParamFunction<T[]>;
-    endText: string;
-    style?: CSSProperties;
-    useContainer?: boolean;
+    emptyText?: string;
+    endText?: string;
 }
 
-export const InfiniteScroll = <T extends any>({
+export const PureInfiniteScroll = <T extends any>({
     children,
     queryKey,
     queryFunction,
     onQueryError,
     getItemId = (item) => (item as { _id: string })._id,
     getNextPageParam = (lastPage, allPages) => (lastPage.length ? allPages.length : undefined),
+    emptyText,
     endText,
-    style = {},
-    useContainer = true,
-}: InfiniteScrollProps<T>) => {
-    const showMoreRef = useRef(null);
-    
-    const { data, fetchNextPage, isFetchingNextPage, hasNextPage, isLoading, isRefetching } = useInfiniteQuery(queryKey, queryFunction, {
+}: PureInfiniteScrollProps<T>) => {
+    const showMoreRef = useRef<HTMLDivElement>(null);
+
+    const { data, fetchNextPage, isFetchingNextPage, hasNextPage, isLoading, isRefetching, } = useInfiniteQuery(queryKey, queryFunction, {
         getNextPageParam,
         onError: onQueryError,
     });
@@ -52,40 +51,23 @@ export const InfiniteScroll = <T extends any>({
         return () => observer.unobserve(currentShowMoreRef);
     }, [showMoreRef, isFetchingNextPage, hasNextPage]); // eslint-disable-line react-hooks/exhaustive-deps
 
-    const innerInfiniteScroll = (
+    return (
         <>
             {data?.pages.map((page) =>
-                page.map((item) => (
+                page.map((item) =>
                     <Grid item key={getItemId(item)}>
                         {children(item)}
                     </Grid>
-                )),
+                ),
             )}
 
-            <Grid container ref={showMoreRef} justifyContent="center" marginTop="0.5rem">
-                {/* always show loading if hasNextPage, even if not started loading */}
-                {isLoading || isFetchingNextPage || hasNextPage || isRefetching ? <CircularProgress /> : endText}
-            </Grid>
+            <ShowMore
+                ref={showMoreRef}
+                isLoading={isLoading || isFetchingNextPage || hasNextPage || isRefetching}
+                isEmpty={Boolean(data && data.pages.length && !data.pages[0].length)}
+                emptyText={emptyText}
+                endText={endText}
+            />
         </>
     )
-
-    if (useContainer) {
-        return (
-            <Grid
-                container
-                direction="column"
-                wrap="nowrap"
-                marginBottom="3%"
-                sx={{
-                    overflowX: 'hidden',
-                    overflowY: 'overlay',
-                    ...style,
-                }}
-            >
-                {innerInfiniteScroll}
-            </Grid>
-        );
-    }
-
-    return innerInfiniteScroll;
 };

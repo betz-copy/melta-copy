@@ -1,7 +1,6 @@
 /* eslint-disable no-param-reassign */
 import { GraphData, LinkObject, NodeObject } from 'react-force-graph-2d';
 import uniqBy from 'lodash.uniqby';
-import randomColor from 'randomcolor';
 
 import { IEntity, IEntityExpanded } from '../../interfaces/entities';
 import { IMongoRelationshipTemplate, IRelationshipTemplateMap } from '../../interfaces/relationshipTemplates';
@@ -9,6 +8,7 @@ import { environment } from '../../globals';
 import { IEntityTemplateMap, IEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { drawText, getRectangleDimensionsByString, traceRectangle } from '../canvas';
 import { ILabelIcon, rangeAsString } from './helperTypes';
+import { getEntityTemplateColor, getRelationshipTemplateColor } from '../colors';
 
 const { graphSettings } = environment;
 
@@ -83,7 +83,7 @@ export const entityToNode = (entity: IEntity, entityTemplate: IEntityTemplatePop
         id: entity.properties._id,
         highlighted: 0,
         numberOfConnectionsExpanded: 0,
-        color: randomColor({ hue: entityTemplate.category.color, seed: entityTemplate.name, luminosity: 'bright' }),
+        color: getEntityTemplateColor(entityTemplate),
         labelIcons: [],
         icon,
     };
@@ -95,7 +95,7 @@ export const relationshipToLink = (sourceEntity, destinationEntity, relationship
         target: destinationEntity.properties._id,
         templateId: relationshipTemplate._id,
         highlighted: 0,
-        color: randomColor({ luminosity: 'dark', seed: relationshipTemplate.name }),
+        color: getRelationshipTemplateColor(relationshipTemplate),
     };
 };
 

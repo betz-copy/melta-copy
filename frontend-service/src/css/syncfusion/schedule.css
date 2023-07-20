@@ -1,0 +1,21 @@
+.e-time-slots,
+.e-work-cells {
+    height: 45px !important;
+}
+
+.e-timeline-month-view .e-date-header-wrap table col,
+.e-timeline-month-view .e-content-wrap table col {
+    width: 180px !important;
+} 
+.e-timeline-month-view .e-appointment {
+    height: 50px !important;
+    margin-bottom: 63px !important;
+} 
+
+.e-appointment {
+    border-radius: 6px !important;
+}
+
+.e-schedule-toolbar-container > .e-header-popup {
+    left: auto !important;
+}

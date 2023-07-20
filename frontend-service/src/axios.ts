@@ -37,6 +37,7 @@ if (import.meta.env.DEV && !import.meta.env.VITE_APP_IS_DOCKER) {
         { mockRuleBreaches },
         { mockProcessInstances },
         { mockProcessTemplates },
+        { mockGantts },
     ] = await Promise.all([
         import('./mocks/templates/categories'),
         import('./mocks/templates/getAllTemplates'),
@@ -52,6 +53,7 @@ if (import.meta.env.DEV && !import.meta.env.VITE_APP_IS_DOCKER) {
         import('./mocks/ruleBreaches'),
         import('./mocks/processInstances'),
         import('./mocks/templates/processTemplates'),
+        import('./mocks/gantts'),
     ]);
 
     const mock = new MockAdapter(axios, { delayResponse: 500 });
@@ -61,7 +63,6 @@ if (import.meta.env.DEV && !import.meta.env.VITE_APP_IS_DOCKER) {
     mockCategories(mock);
     mockEntityTemplates(mock);
     mockRelationshipTemplates(mock);
-
     mockProcessTemplates(mock);
 
     mockRules(mock);
@@ -72,6 +73,7 @@ if (import.meta.env.DEV && !import.meta.env.VITE_APP_IS_DOCKER) {
     mockNotifications(mock);
     mockRuleBreaches(mock);
     mockProcessInstances(mock);
+    mockGantts(mock);
 }
 
 export default axios;

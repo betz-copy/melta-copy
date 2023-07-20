@@ -6,7 +6,7 @@ import { useSelector } from 'react-redux';
 import { MenuButton } from '../../../common/MenuButton';
 import { RootState } from '../../../store';
 
-const ViewingCard: React.FC<{
+export const ViewingCard: React.FC<{
     title: React.ReactNode;
     icon?: React.ReactNode;
     color?: string;
@@ -99,5 +99,3 @@ const ViewingCard: React.FC<{
         </Grid>
     );
 };
-
-export { ViewingCard };

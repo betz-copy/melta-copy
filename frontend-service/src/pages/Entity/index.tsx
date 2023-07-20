@@ -28,9 +28,8 @@ import { getOppositeEntityTemplate, isRelationshipConnectedToEntityTemplate, pop
 
 const Entity: React.FC = () => {
     const [isFiltered, setIsFiltered] = useState(false);
-    const params = useParams();
+    const { entityId } = useParams();
     const queryClient = useQueryClient();
-    const { entityId } = params;
     const { setDisabledActions, setCurrentStep } = useTour();
 
     const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
@@ -187,12 +186,12 @@ const Entity: React.FC = () => {
                                                                                 relationshipTemplate: currRelationshipTemplate,
                                                                                 sourceEntity:
                                                                                     currentEntityTemplate._id ===
-                                                                                    currRelationshipTemplate.sourceEntity._id
+                                                                                        currRelationshipTemplate.sourceEntity._id
                                                                                         ? expandedEntity.entity
                                                                                         : null,
                                                                                 destinationEntity:
                                                                                     currentEntityTemplate._id ===
-                                                                                    currRelationshipTemplate.destinationEntity._id
+                                                                                        currRelationshipTemplate.destinationEntity._id
                                                                                         ? expandedEntity.entity
                                                                                         : null,
                                                                             },

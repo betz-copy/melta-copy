@@ -5,10 +5,11 @@ import { RootState } from '../../../store';
 
 interface ViewingBoxProps {
     children: React.ReactNode;
+    minHeight?: CSSProperties['height'];
     maxHeight?: CSSProperties['height'];
 }
 
-export const ViewingBox: React.FC<ViewingBoxProps> = ({ children, maxHeight = '21rem' }) => {
+export const ViewingBox: React.FC<ViewingBoxProps> = ({ children, minHeight = 'auto', maxHeight = '21rem' }) => {
     const darkMode = useSelector((state: RootState) => state.darkMode);
 
     if (Array.isArray(children) && !children.length) return null;
@@ -17,6 +18,7 @@ export const ViewingBox: React.FC<ViewingBoxProps> = ({ children, maxHeight = '2
         <Card
             sx={{
                 width: '100%',
+                minHeight,
                 maxHeight,
                 borderRadius: 5,
                 padding: '1.6rem',

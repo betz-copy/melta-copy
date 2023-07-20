@@ -46,7 +46,7 @@ const ProcessInstancesHeadline: React.FC<{
                                 />
                             </Grid>
                             <Grid item>
-                                <GlobalSearchBar onSearch={onSearch} />
+                                <GlobalSearchBar onSearch={onSearch} borderRadius="0 7px 7px 0" />
                             </Grid>
                         </Grid>
                     </Grid>

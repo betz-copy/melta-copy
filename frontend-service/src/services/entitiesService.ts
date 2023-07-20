@@ -2,13 +2,13 @@ import { IServerSideGetRowsRequest } from '@ag-grid-community/core';
 import partition from 'lodash.partition';
 import axios from '../axios';
 import { environment } from '../globals';
-import { IEntity, IEntityExpanded } from '../interfaces/entities';
+import { IEntity, IEntityExpanded, ISearchBatchBody, ISearchBatchResult } from '../interfaces/entities';
 import { EntityWizardValues } from '../common/wizards/entity';
 import { IRuleBreach } from '../interfaces/ruleBreaches/ruleBreach';
 
 const { entities, relationships } = environment.api;
 
-const getEntitiesByTemplateRequest = async (
+export const getEntitiesByTemplateRequest = async (
     templateIds: string[],
     agGridRequest: Pick<IServerSideGetRowsRequest, 'startRow' | 'endRow' | 'sortModel' | 'filterModel'> & { quickFilter?: string },
 ) => {
@@ -21,12 +21,12 @@ const getEntitiesByTemplateRequest = async (
     return data;
 };
 
-const exportTemplatesToExcelRequest = async (templateIds: string[], fileName: string) => {
+export const exportTemplatesToExcelRequest = async (templateIds: string[], fileName: string) => {
     const { data } = await axios.post(`${entities}/export`, { templateIds, fileName }, { responseType: 'blob', timeout: 60000 });
     return data;
 };
 
-const getExpandedEntityByIdRequest = async (
+export const getExpandedEntityByIdRequest = async (
     entityId: string,
     options?: { disabled?: boolean; templateIds: string[]; numberOfConnections?: number },
 ) => {
@@ -35,12 +35,12 @@ const getExpandedEntityByIdRequest = async (
     return data;
 };
 
-const getRelationshipInstancesCountByTemplateIdRequest = async (templateId: string) => {
+export const getRelationshipInstancesCountByTemplateIdRequest = async (templateId: string) => {
     const { data } = await axios.get<number>(`${relationships}/count`, { params: { templateId } });
     return data;
 };
 
-const createEntityRequest = async (entity: EntityWizardValues) => {
+export const createEntityRequest = async (entity: EntityWizardValues) => {
     const formData = new FormData();
     Object.entries(entity.attachmentsProperties).forEach(([key, value]) => formData.append(key, value!));
     formData.append('properties', JSON.stringify(entity.properties));
@@ -49,12 +49,12 @@ const createEntityRequest = async (entity: EntityWizardValues) => {
     return data;
 };
 
-const updateEntityStatusRequest = async (entityId: string, disabled: boolean, ignoredRules?: string) => {
+export const updateEntityStatusRequest = async (entityId: string, disabled: boolean, ignoredRules?: string) => {
     const { data } = await axios.patch<IEntity>(`${entities}/${entityId}/status`, { disabled, ignoredRules });
     return data;
 };
 
-const updateEntityRequest = async (entityId: string, newEntityData: EntityWizardValues, ignoredRules?: IRuleBreach['brokenRules']) => {
+export const updateEntityRequest = async (entityId: string, newEntityData: EntityWizardValues, ignoredRules?: IRuleBreach['brokenRules']) => {
     const formData = new FormData();
     const [fileToUpload, unchangedFiles] = partition(Object.entries(newEntityData.attachmentsProperties), ([_key, value]) => value instanceof File);
 
@@ -72,12 +72,12 @@ const updateEntityRequest = async (entityId: string, newEntityData: EntityWizard
     if (ignoredRules) {
         formData.append('ignoredRules', JSON.stringify(ignoredRules));
     }
-    
+
     const { data } = await axios.put<IEntity>(`${entities}/${entityId}`, formData);
 
     return data;
 };
-const duplicateEntityRequest = async (entityId: string, newEntityData: EntityWizardValues) => {
+export const duplicateEntityRequest = async (entityId: string, newEntityData: EntityWizardValues) => {
     const formData = new FormData();
     const [fileToUpload, unchangedFiles] = partition(Object.entries(newEntityData.attachmentsProperties), ([_key, value]) => value instanceof File);
 
@@ -96,19 +96,12 @@ const duplicateEntityRequest = async (entityId: string, newEntityData: EntityWiz
     return data;
 };
 
-const deleteEntityRequest = async (entityId: string) => {
+export const deleteEntityRequest = async (entityId: string) => {
     const { data } = await axios.delete(`${entities}/${entityId}`);
     return data;
 };
 
-export {
-    getEntitiesByTemplateRequest,
-    createEntityRequest,
-    deleteEntityRequest,
-    getExpandedEntityByIdRequest,
-    updateEntityRequest,
-    duplicateEntityRequest,
-    getRelationshipInstancesCountByTemplateIdRequest,
-    updateEntityStatusRequest,
-    exportTemplatesToExcelRequest,
+export const getEntitiesWithDirectConnections = async (searchBody: ISearchBatchBody) => {
+    const { data } = await axios.post<ISearchBatchResult>(`${entities}/search/batch`, searchBody);
+    return data;
 };

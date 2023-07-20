@@ -82,7 +82,7 @@ const ProcessesList: React.FC<{
                 </Grid>
             </Grid>
             <Grid item>
-                <ViewingBox maxHeight="51rem">
+                <ViewingBox minHeight="80vh">
                     <InfiniteScroll<IMongoProcessInstancePopulated>
                         queryKey={['searchProcesses', templatesToShowCheckbox, search, startDateInput, endDateInput, statusFilter]}
                         queryFunction={({ pageParam }) => {
@@ -105,7 +105,7 @@ const ProcessesList: React.FC<{
                             const nextPage = allPages.length * infiniteScrollPageCount;
                             return lastPage.length ? nextPage : undefined;
                         }}
-                        endText={i18next.t('processInstancesPage.noInstancesLeft')}
+                        emptyText={i18next.t('processInstancesPage.noInstancesFound')}
                         useContainer={false}
                     >
                         {(process) => (

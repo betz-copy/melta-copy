@@ -30,6 +30,8 @@ const Category = lazy(() => import('./pages/Category'));
 const SystemManagement = lazy(() => import('./pages/SystemManagement'));
 const PermissionsManagement = lazy(() => import('./pages/PermissionsManagement'));
 const RuleManagement = lazy(() => import('./pages/RuleManagement'));
+const Gantts = lazy(() => import('./pages/Gantts'));
+const GanttPage = lazy(() => import('./pages/Gantts/GanttPage'));
 const ProcessInstancesPage = lazy(() => import('./pages/ProcessInstances'));
 const Unavailable = lazy(() => import('./pages/Unavailable'));
 const ErrorPage = lazy(() => import('./pages/ErrorPage'));
@@ -136,6 +138,21 @@ const Main = () => {
                                             <TopBar title={title} />
                                             <RuleManagement setTitle={setTitle} />
                                         </>
+                                    }
+                                />
+                                <Route
+                                    path="/gantts"
+                                    element={
+                                        <>
+                                            <TopBar title={title} />
+                                            <Gantts setTitle={setTitle} />
+                                        </>
+                                    }
+                                />
+                                <Route
+                                    path="/gantts/:ganttId"
+                                    element={
+                                        <GanttPage setTitle={setTitle} />
                                     }
                                 />
                                 <Route path="/processes" element={<ProcessInstancesPage />} />
