@@ -1,7 +1,7 @@
 /* eslint-disable no-plusplus */
 import pickBy from 'lodash.pickby';
 import { EntityTemplateManagerService } from '../../externalServices/entityTemplateManager';
-import { InstanceManagerService, IRelationshipConnections } from '../../externalServices/instanceManager';
+import { IEntity, InstanceManagerService, IRelationshipConnections } from '../../externalServices/instanceManager';
 import { getPermissions, isRuleManager } from '../../externalServices/permissionsApi';
 import { deleteFiles } from '../../externalServices/storageService';
 import { filteredMap, trycatch } from '../../utils';
@@ -189,7 +189,7 @@ export class RuleBreachesManager {
         const newEntityProperties = { ...entity.properties, ...updatedFields };
 
         // updatedFields specifies fields to remove w/ nulls. but shouldn't be in the IEntity properties
-        const newEntityPropertiesWithoutNulls = pickBy(newEntityProperties, (property) => property !== null);
+        const newEntityPropertiesWithoutNulls = pickBy(newEntityProperties, (property) => property !== null) as IEntity['properties'];
 
         await InstancesManager.updateEntityInstance(
             entityId,

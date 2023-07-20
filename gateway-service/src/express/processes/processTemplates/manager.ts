@@ -1,4 +1,4 @@
-import * as _isEqual from 'lodash.isequal';
+import _isEqual from 'lodash.isequal';
 import { deleteFiles, uploadFiles } from '../../../externalServices/storageService';
 import { removeTmpFile } from '../../../utils/fs';
 import {

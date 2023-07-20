@@ -1,4 +1,4 @@
-import * as env from 'env-var';
+import env from 'env-var';
 import './dotenv';
 
 const config = {
@@ -81,6 +81,11 @@ const config = {
         instancesBaseRoute: env.get('PROCESSES_INSTANCES_BASE_ROUTE').default('/api/processes/instances').asString(),
         requestTimeout: env.get('PROCESS_SERVICE_REQUEST_TIMEOUT').default(10000).asIntPositive(),
         internalSearchPullLimit: env.get('PROCESS_SERVICE_INTERNAL_SEARCH_PULL_LIMIT').default(1000).asIntPositive(),
+    },
+    ganttsService: {
+        uri: env.get('GANTTS_SERVICE_URI').required().asString(),
+        baseRoute: env.get('GANTTS_SERVICE_BASE_ROUTE').default('/api/gantts').asString(),
+        requestTimeout: env.get('GANTTS_SERVICE_REQUEST_TIMEOUT').default(10000).asIntPositive(),
     },
     getUsersLimitForPermissionsOfUsers: env.get('GET_USERS_LIMIT_FOR_PERMISSIONS_OF_USERS').default(20).asIntPositive(),
     kartoffel: {

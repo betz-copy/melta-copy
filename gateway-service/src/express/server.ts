@@ -1,10 +1,10 @@
-import * as http from 'http';
-import * as express from 'express';
-import * as helmet from 'helmet';
-import * as logger from 'morgan';
-import * as session from 'express-session';
-import * as passport from 'passport';
-import * as cookieParser from 'cookie-parser';
+import http from 'http';
+import express from 'express';
+import helmet from 'helmet';
+import logger from 'morgan';
+import session from 'express-session';
+import passport from 'passport';
+import cookieParser from 'cookie-parser';
 import { once } from 'events';
 
 import { initPassport } from '../utils/express/passport';

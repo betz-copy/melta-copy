@@ -1,4 +1,5 @@
-import * as pLimit from 'p-limit';
+import pLimit from 'p-limit';
+import lodashGroupBy from 'lodash.groupby';
 import {
     IPermission,
     getPermissions,
@@ -9,7 +10,8 @@ import {
 import { IPermissionsOfUser, IPermission as IPermissionPopulated } from './interfaces';
 import UsersManager from '../users/manager';
 import config from '../../config';
-import { objectMap } from '../../utils/object/promises';
+import { objectMap } from '../../utils/object';
+import { objectMap as objectMapAsync } from '../../utils/object/promises';
 
 const { getUsersLimitForPermissionsOfUsers } = config;
 
@@ -49,27 +51,29 @@ export class PermissionsManager {
         return { ...permissionsOfUser, instancesPermissions };
     }
 
-    private static mergePermissionsOfUsersByUserId(permissions: IPermission[]) {
-        const permissionsOfUsersObj: Record<string, Omit<IPermissionsOfUser, 'user'>> = {};
+    static buildPermissionsOfUserId(permissionsArrOfUser: IPermission[]): Omit<IPermissionsOfUser, 'user'> {
+        const permissionsOfUser = permissionsArrOfUser.reduce(
+            (currPermissionsOfUser, currPermission) => PermissionsManager.addPermissionToPermissionsOfUser(currPermissionsOfUser, currPermission),
+            PermissionsManager.emptyPermissionsOfUser,
+        );
 
-        permissions.forEach((permission) => {
-            let currPermissionsOfUser = permissionsOfUsersObj[permission.userId];
+        return permissionsOfUser;
+    }
 
-            if (!currPermissionsOfUser) {
-                currPermissionsOfUser = PermissionsManager.emptyPermissionsOfUser;
-            }
+    private static buildPermissionsOfUsersByUserId(permissions: IPermission[]) {
+        const permissionsByUserId = lodashGroupBy(permissions, (permission) => permission.userId);
 
-            const newPermissionsOfUser = PermissionsManager.addPermissionToPermissionsOfUser(currPermissionsOfUser, permission);
-            permissionsOfUsersObj[permission.userId] = newPermissionsOfUser;
-        });
+        const permissionsOfUserByUserId = objectMap(permissionsByUserId, (_userId, permissionsArrOfUser) =>
+            PermissionsManager.buildPermissionsOfUserId(permissionsArrOfUser),
+        );
 
-        return permissionsOfUsersObj;
+        return permissionsOfUserByUserId;
     }
 
     private static async populateUsersToPermissionsOfUsers(permissionsOfUsersObj: Record<string, Omit<IPermissionsOfUser, 'user'>>) {
         const pLimitGetUsers = pLimit(getUsersLimitForPermissionsOfUsers);
 
-        const populatedPermissionsOfUsers = await objectMap(permissionsOfUsersObj, async (userId, permissionsOfUser) => {
+        const populatedPermissionsOfUsers = await objectMapAsync(permissionsOfUsersObj, async (userId, permissionsOfUser) => {
             const user = await pLimitGetUsers(() => UsersManager.getUserById(userId));
             return {
                 user,
@@ -83,7 +87,7 @@ export class PermissionsManager {
     static async getPermissionsOfUsers() {
         const permissions = await getPermissions();
 
-        const permissionsOfUsersIdsObj = PermissionsManager.mergePermissionsOfUsersByUserId(permissions);
+        const permissionsOfUsersIdsObj = PermissionsManager.buildPermissionsOfUsersByUserId(permissions);
         const permissionsOfUsersObj = await PermissionsManager.populateUsersToPermissionsOfUsers(permissionsOfUsersIdsObj);
 
         return Object.values(permissionsOfUsersObj);
@@ -91,14 +95,11 @@ export class PermissionsManager {
 
     static async getPermissionsOfUser(userId: string) {
         const user = await UsersManager.getUserById(userId);
-        let permissionsOfUser = PermissionsManager.emptyPermissionsOfUser;
 
         const permissions = await getPermissions({ userId: user.id });
-        permissions.forEach((permission) => {
-            permissionsOfUser = PermissionsManager.addPermissionToPermissionsOfUser(permissionsOfUser, permission);
-        });
+        const permissionsOfUserId = PermissionsManager.buildPermissionsOfUserId(permissions);
 
-        return { user, ...permissionsOfUser } as IPermissionsOfUser;
+        return { user, ...permissionsOfUserId } as IPermissionsOfUser;
     }
 
     private static getPermissionPopulatedFromPermission(permission: IPermission): IPermissionPopulated {

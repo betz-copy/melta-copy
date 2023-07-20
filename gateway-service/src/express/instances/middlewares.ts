@@ -1,11 +1,13 @@
 import { Request } from 'express';
-import * as lodashUniqby from 'lodash.uniqby';
+import lodashUniqby from 'lodash.uniqby';
 import { EntityTemplateManagerService } from '../../externalServices/entityTemplateManager';
 import { InstanceManagerService, IRelationship } from '../../externalServices/instanceManager';
-import { isRuleManager } from '../../externalServices/permissionsApi';
+import { getPermissions, isRuleManager } from '../../externalServices/permissionsApi';
 import { RelationshipsTemplateManagerService } from '../../externalServices/relationshipsTemplateManager';
 import { ShragaUser } from '../../utils/express/passport';
 import { ServiceError } from '../error';
+import { IPermissionsOfUser } from '../permissions/interfaces';
+import PermissionsManager from '../permissions/manager';
 import { validateAuthorization } from '../permissions/validateAuthorizationMiddleware';
 import { TemplatesManager } from '../templates/manager';
 import { IRule } from '../templates/rules/interfaces';
@@ -26,13 +28,25 @@ export const validateUserCanCreateEntityInstance = async (req: Request) => {
     return validateAuthorization(req, 'Instances', [categoryId]);
 };
 
-export const validateHasPermissionsToEntitiesInTemplates = async (user: ShragaUser, templateIds: string[]) => {
-    const allowedEntityTemplates = (await TemplatesManager.getAllowedEntitiesTemplates(user.id)).map((entityTemplate) => entityTemplate._id);
-    const unauthorizedTemplates = templateIds.filter((templateId) => !allowedEntityTemplates.includes(templateId));
+export const getAllowedEntityTemplatesForInstances = (userPermissions: Omit<IPermissionsOfUser, 'user'>) => {
+    const allowedCategories = userPermissions.instancesPermissions.map((permission) => permission.category);
+    return EntityTemplateManagerService.searchEntityTemplates({ categoryIds: allowedCategories });
+};
 
+export const validateHasPermissionsToEntitiesInTemplates = async (user: ShragaUser, templateIds: string[]) => {
+    const userPermissions = await PermissionsManager.getPermissionsOfUser(user.id);
+
+    const allowedEntityTemplates = await getAllowedEntityTemplatesForInstances(userPermissions);
+    const allowedEntityTemplateIds = allowedEntityTemplates.map((entityTemplate) => entityTemplate._id);
+
+    const unauthorizedTemplates = templateIds.filter((templateId) => !allowedEntityTemplateIds.includes(templateId));
     if (unauthorizedTemplates.length > 0) {
         throw new ServiceError(403, 'user not authorized', { metadata: `unauthorized templates ${JSON.stringify(unauthorizedTemplates)}` });
     }
+};
+
+export const validateUserCanSearchBatchEntityInstances = async (req: Request) => {
+    await validateHasPermissionsToEntitiesInTemplates(req.user!, Object.keys(req.body.templates));
 };
 
 export const validateUserCanSearchEntityInstances = async (req: Request) => {
@@ -47,6 +61,8 @@ export const validateUserCanExportEntityInstances = async (req: Request) => {
     await validateHasPermissionsToEntitiesInTemplates(req.user!, templateIds);
 };
 
+export type RequestWithPermissionsOfUserId = Request & { permissionsOfUserId: Omit<IPermissionsOfUser, 'user'> };
+
 export const validateUserCanUpdateGetOrDeleteEntityInstance = async (req: Request) => {
     const instanceId = req.params.id;
 
@@ -54,12 +70,23 @@ export const validateUserCanUpdateGetOrDeleteEntityInstance = async (req: Reques
 
     const categoryId = await getCategoryIdFromTemplateId(templateId);
 
-    return validateAuthorization(req, 'Instances', [categoryId]);
+    const permissionsArrOfUser = await getPermissions({ userId: req.user!.id });
+    const permissionsOfUserId = PermissionsManager.buildPermissionsOfUserId(permissionsArrOfUser);
+
+    if (!permissionsOfUserId.instancesPermissions.some(({ category }) => category === categoryId)) {
+        throw new ServiceError(403, `user not authorized, doesnt have permission on category ${categoryId}`);
+    }
+
+    (req as RequestWithPermissionsOfUserId).permissionsOfUserId = permissionsOfUserId;
 };
 
 export const validateUserCanGetExpandedEntity = async (req: Request) => {
-    const { templateIds } = req.body;
-    const allAllowedEntityTemplates = (await TemplatesManager.getAllAllowedEntityTemplates(req.user?.id!)).map(
+    const {
+        body: { templateIds },
+        permissionsOfUserId,
+    } = req as RequestWithPermissionsOfUserId;
+
+    const allAllowedEntityTemplates = (await TemplatesManager.getAllAllowedEntityTemplates(permissionsOfUserId)).map(
         (entityTemplate) => entityTemplate._id,
     );
     const isAllowedAllTemplates = templateIds.every((templateId) => allAllowedEntityTemplates.includes(templateId));
@@ -78,7 +105,7 @@ const getRelatedCategoriesFromRelationshipInstance = async (relationshipInstance
     const { category: srcCategory } = await EntityTemplateManagerService.getEntityTemplateById(sourceEntityId);
     const { category: dstCategory } = await EntityTemplateManagerService.getEntityTemplateById(destinationEntityId);
 
-    return lodashUniqby([srcCategory._id, dstCategory._id]);
+    return lodashUniqby([srcCategory._id, dstCategory._id], (categoryId) => categoryId);
 };
 
 export const validateUserCanCreateRelationshipInstance = async (req: Request) => {

@@ -1,4 +1,4 @@
-import * as Joi from 'joi';
+import Joi from 'joi';
 import { ExtendedJoi, MongoIdSchema, fileSchema } from '../../../utils/joi';
 
 // PATCH: processes/instances/:processId/steps/:stepId

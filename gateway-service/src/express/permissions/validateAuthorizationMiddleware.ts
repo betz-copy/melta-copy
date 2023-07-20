@@ -1,6 +1,8 @@
 import { Request } from 'express';
 import { checkUserAuthorization, getPermissions, ResourceType } from '../../externalServices/permissionsApi';
 import { ServiceError } from '../error';
+import { RequestWithPermissionsOfUserId } from '../instances/middlewares';
+import PermissionsManager from './manager';
 
 export const validateAuthorization = async (req: Request, resourceType: ResourceType, relatedCategories: string[]) => {
     const { user } = req;
@@ -29,10 +31,13 @@ export const validateUserHasAtLeastSomePermissions = async (req: Request) => {
         throw new Error('req.user expected to be defined for validateAuthorization');
     }
 
-    const permissionsOfUser = await getPermissions({ userId: user.id });
-    if (permissionsOfUser.length === 0) {
+    const permissionsArrOfUser = await getPermissions({ userId: user.id });
+    if (permissionsArrOfUser.length === 0) {
         throw new ServiceError(403, 'user not authorized, needs to have at least one permission');
     }
+    const permissionsOfUserId = PermissionsManager.buildPermissionsOfUserId(permissionsArrOfUser);
+
+    (req as RequestWithPermissionsOfUserId).permissionsOfUserId = permissionsOfUserId;
 };
 
 export const validateUserIsProcessesManager = getValidateAuthorizationMiddleware('Processes', ['All']);

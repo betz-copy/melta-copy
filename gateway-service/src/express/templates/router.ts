@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { createProxyMiddleware, fixRequestBody } from 'http-proxy-middleware';
-import * as multer from 'multer';
+import multer from 'multer';
 import { wrapController, wrapMiddleware } from '../../utils/express';
 import {
     validateUserHasAtLeastSomePermissions,

@@ -1,15 +1,16 @@
-import * as assert from 'assert';
+import assert from 'assert';
 import { Request, Response } from 'express';
+import { RequestWithPermissionsOfUserId } from '../instances/middlewares';
 import { TemplatesManager } from './manager';
 
 export default class TemplatesController {
     // all
     static async getAllAllowedTemplates(req: Request, res: Response) {
-        const { user } = req;
+        const { user, permissionsOfUserId } = req as RequestWithPermissionsOfUserId;
 
         assert(user, 'User doesnt exists under request');
 
-        res.json(await TemplatesManager.getAllAllowedTemplates(user.id));
+        res.json(await TemplatesManager.getAllAllowedTemplates(user.id, permissionsOfUserId));
     }
 
     // categories

@@ -1,6 +1,6 @@
 import { AxiosError } from 'axios';
-import * as lodashUniqby from 'lodash.uniqby';
-import * as _isEqual from 'lodash.isequal';
+import lodashUniqby from 'lodash.uniqby';
+import _isEqual from 'lodash.isequal';
 import {
     EntityTemplateManagerService,
     ICategory,
@@ -23,6 +23,7 @@ import { IEntityTemplateWithConstraints, IMongoEntityTemplateWithConstraints, IM
 import { ProcessManagerService } from '../../externalServices/processService';
 import ProcessTemplatesManager from '../processes/processTemplates/manager';
 import { isProcessManager } from '../../externalServices/permissionsApi';
+import { IPermissionsOfUser } from '../permissions/interfaces';
 
 const {
     categoryHasTemplates,
@@ -122,10 +123,10 @@ export class TemplatesManager {
     }
 
     // all
-    static async getAllAllowedTemplates(userId: string) {
+    static async getAllAllowedTemplates(userId: string, permissionsOfUserId: Omit<IPermissionsOfUser, 'user'>) {
         const allCategories = await TemplatesManager.getAllCategories();
 
-        const allowedEntityTemplates = await TemplatesManager.getAllowedEntitiesTemplates(userId);
+        const allowedEntityTemplates = await TemplatesManager.getAllowedEntitiesTemplates(permissionsOfUserId);
         const allowedEntityTemplatesIds = allowedEntityTemplates.map((entityTemplate) => entityTemplate._id);
 
         const allowedRelationshipsTemplatesBySource = await RelationshipsTemplateManagerService.searchRelationshipTemplates({
@@ -175,8 +176,8 @@ export class TemplatesManager {
         };
     }
 
-    static async getAllAllowedEntityTemplates(userId: string) {
-        const allowedEntityTemplates = await TemplatesManager.getAllowedEntitiesTemplates(userId);
+    static async getAllAllowedEntityTemplates(permissionsOfUserId: Omit<IPermissionsOfUser, 'user'>) {
+        const allowedEntityTemplates = await TemplatesManager.getAllowedEntitiesTemplates(permissionsOfUserId);
         const allowedEntityTemplatesIds = allowedEntityTemplates.map((entityTemplate) => entityTemplate._id);
 
         const allowedRelationshipsTemplatesBySource = await RelationshipsTemplateManagerService.searchRelationshipTemplates({
@@ -518,10 +519,9 @@ export class TemplatesManager {
     }
 
     // entities
-    static async getAllowedEntitiesTemplates(userId: string) {
+    static async getAllowedEntitiesTemplates(userPermissions: Omit<IPermissionsOfUser, 'user'>) {
         const searchBody: ISearchEntityTemplatesBody = {};
 
-        const userPermissions = await PermissionsManager.getPermissionsOfUser(userId);
         const { templatesManagementId, instancesPermissions } = userPermissions;
 
         if (!templatesManagementId) {

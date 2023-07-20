@@ -1,5 +1,5 @@
-import * as passport from 'passport';
-import * as jwt from 'jsonwebtoken';
+import passport from 'passport';
+import jwt from 'jsonwebtoken';
 import { Strategy } from 'passport-shraga';
 import { Strategy as JWTStrategy, VerifiedCallback } from 'passport-jwt';
 

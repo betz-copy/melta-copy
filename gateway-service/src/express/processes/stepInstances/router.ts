@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import * as multer from 'multer';
+import multer from 'multer';
 import config from '../../../config';
 import { wrapController } from '../../../utils/express';
 import ValidateRequest from '../../../utils/joi';

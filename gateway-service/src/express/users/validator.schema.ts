@@ -1,4 +1,4 @@
-import * as Joi from 'joi';
+import Joi from 'joi';
 
 // GET /api/users/search?fullName=
 export const searchUsersRequestSchema = Joi.object({

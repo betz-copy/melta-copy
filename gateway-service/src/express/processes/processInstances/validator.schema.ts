@@ -1,4 +1,4 @@
-import * as Joi from 'joi';
+import Joi from 'joi';
 import { ExtendedJoi, MongoIdSchema, processFileSchema } from '../../../utils/joi';
 import { Status } from '../../../externalServices/processService/interfaces/processInstance';
 

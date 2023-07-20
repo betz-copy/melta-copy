@@ -1,5 +1,5 @@
 import { Request } from 'express';
-import * as lodashUniqby from 'lodash.uniqby';
+import lodashUniqby from 'lodash.uniqby';
 import { EntityTemplateManagerService } from '../../externalServices/entityTemplateManager';
 import { IRelationshipTemplate, RelationshipsTemplateManagerService } from '../../externalServices/relationshipsTemplateManager';
 import { validateAuthorization } from '../permissions/validateAuthorizationMiddleware';

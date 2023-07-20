@@ -1,5 +1,5 @@
 /* eslint-disable no-param-reassign */
-import * as Excel from 'exceljs';
+import Excel from 'exceljs';
 import { v4 as uuidv4 } from 'uuid';
 import { IEntityTemplatePopulated } from '../../externalServices/entityTemplateManager';
 import { IEntity } from '../../externalServices/instanceManager';

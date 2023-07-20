@@ -1,4 +1,4 @@
-import * as jwt from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 import config from '../../config';
 
 const { tokenSecret, accessTokenExpirationTime } = config.authentication;

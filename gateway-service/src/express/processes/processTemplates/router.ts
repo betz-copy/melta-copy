@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import * as multer from 'multer';
+import multer from 'multer';
 import { wrapController, wrapMiddleware } from '../../../utils/express';
 import ProcessTemplatesController from './controller';
 import config from '../../../config';

@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { createProxyMiddleware, fixRequestBody } from 'http-proxy-middleware';
-import * as multer from 'multer';
+import multer from 'multer';
 import config from '../../config';
 import { wrapController, wrapMiddleware } from '../../utils/express';
 import {
@@ -9,6 +9,7 @@ import {
     validateUserCanExportEntityInstances,
     validateUserCanGetExpandedEntity,
     validateUserCanIgnoreRules,
+    validateUserCanSearchBatchEntityInstances,
     validateUserCanSearchEntityInstances,
     validateUserCanUpdateGetOrDeleteEntityInstance,
     validateUserCanUpdateOrDeleteRelationshipInstance,
@@ -21,6 +22,7 @@ import {
     deleteEntityInstanceSchema,
     deleteRelationshipSchema,
     exportEntitiesSchema,
+    searchEntitiesBatchRequestSchema,
     updateEntityInstanceSchema,
     updateEntityStatusSchema,
 } from './validator.schema';
@@ -36,6 +38,12 @@ const InstanceManagerProxy = createProxyMiddleware({
 const InstancesRouter: Router = Router();
 
 // entities (Instances)
+InstancesRouter.post(
+    '/entities/search/batch',
+    ValidateRequest(searchEntitiesBatchRequestSchema),
+    wrapMiddleware(validateUserCanSearchBatchEntityInstances),
+    InstanceManagerProxy,
+);
 InstancesRouter.post('/entities/search', wrapMiddleware(validateUserCanSearchEntityInstances), InstanceManagerProxy);
 InstancesRouter.post(
     '/entities/export',

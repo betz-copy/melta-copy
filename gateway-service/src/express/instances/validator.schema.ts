@@ -1,4 +1,4 @@
-import * as Joi from 'joi';
+import Joi from 'joi';
 import { ExtendedJoi, fileSchema, MongoIdSchema } from '../../utils/joi';
 import { brokenRuleSchema } from '../ruleBreaches/validator.schema';
 
@@ -47,6 +47,23 @@ export const exportEntitiesSchema = Joi.object({
     body: {
         templateIds: Joi.array().items(Joi.string()).required(),
         fileName: Joi.string().required(),
+    },
+    query: {},
+    params: {},
+});
+
+// POST /api/instances/search/batch
+export const searchEntitiesBatchRequestSchema = Joi.object({
+    body: {
+        skip: Joi.any(),
+        limit: Joi.any(),
+        textSearch: Joi.any(),
+        // validation only in order to check permissions to templates
+        templates: Joi.object().pattern(Joi.string(), {
+            filter: Joi.any(),
+            showRelationships: Joi.alternatives(Joi.boolean(), Joi.array().items(Joi.string())).default(false),
+        }),
+        sort: Joi.any(),
     },
     query: {},
     params: {},

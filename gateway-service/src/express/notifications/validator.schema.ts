@@ -1,4 +1,4 @@
-import * as joi from 'joi';
+import joi from 'joi';
 import { MongoIdSchema } from '../../utils/joi';
 
 // GET /api/notifications/my

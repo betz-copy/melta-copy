@@ -1,5 +1,5 @@
 import axios from 'axios';
-import * as express from 'express';
+import express from 'express';
 
 export class ServiceError extends Error {
     constructor(public code: number, message: string, public metadata: any = {}) {

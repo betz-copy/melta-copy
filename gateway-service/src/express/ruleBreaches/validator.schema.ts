@@ -1,4 +1,4 @@
-import * as joi from 'joi';
+import joi from 'joi';
 import { ExtendedJoi, fileSchema, MongoIdSchema } from '../../utils/joi';
 
 export const brokenRuleSchema = joi.object({

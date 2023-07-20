@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import * as passport from 'passport';
+import passport from 'passport';
 import AuthenticationController from './controller';
 import { wrapController } from '../../utils/express';
 

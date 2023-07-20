@@ -1,4 +1,4 @@
-import * as Joi from 'joi';
+import Joi from 'joi';
 import { MongoIdSchema, ExtendedJoi, iconFileSchema } from '../../../utils/joi';
 
 // GET /api/processes/templates

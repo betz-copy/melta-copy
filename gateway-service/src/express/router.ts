@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { createProxyMiddleware, fixRequestBody } from 'http-proxy-middleware';
-import * as passport from 'passport';
+import passport from 'passport';
 import authenticationRouter from './authentication/router';
 import usersRouter from './users/router';
 import permissionsRouter from './permissions/router';
@@ -13,6 +13,7 @@ import instancesRouter from './instances/router';
 import ActivityLogRouter from './activityLog/router';
 import notificationsRouter from './notifications/router';
 import RulesBreachesRouter from './ruleBreaches/router';
+import GanttsRouter from './gantts/router';
 
 const appRouter = Router();
 
@@ -59,6 +60,8 @@ appRouter.use('/api/activity-log', ActivityLogRouter);
 appRouter.use('/api/notifications', notificationsRouter);
 
 appRouter.use('/api/rule-breaches', RulesBreachesRouter);
+
+appRouter.use('/api/gantts', GanttsRouter);
 
 appRouter.use('*', (_req, res) => {
     res.status(404).send('Invalid Route');
