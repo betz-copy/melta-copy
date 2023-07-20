@@ -10,8 +10,14 @@ class EntityController {
         res.json(await EntityManager.createEntity(req.body, entityTemplate));
     }
 
-    static async getEntities(req: Request, res: Response) {
-        res.json(await EntityManager.getEntities(req.query.templateIds as string[], req.body));
+    static async searchEntities(req: Request, res: Response) {
+        res.json(await EntityManager.searchEntities(req.query.templateIds as string[], req.body));
+    }
+
+    static async searchEntitiesBatch(req: Request, res: Response) {
+        const entityTemplatesMap = fetchPropertyFromRequest<Map<string, IMongoEntityTemplate>>(req, 'entityTemplatesMap');
+
+        res.json(await EntityManager.searchEntitiesBatch(req.body, entityTemplatesMap));
     }
 
     static async getEntityById(req: Request, res: Response) {

@@ -38,6 +38,7 @@ module.exports = {
         'no-console': 'off',
         'no-unused-vars': 'off', // Checked by typescript
         'import/prefer-default-export': 'off',
+        'valid-typeof': ['error', { requireStringLiterals: false }],
         semi: [2, 'always'],
     },
 };

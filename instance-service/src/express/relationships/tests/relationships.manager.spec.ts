@@ -63,7 +63,7 @@ describe('Relationship manager', () => {
         await Neo4jClient.initialize(neo4j.url, neo4j.auth, neo4j.database);
 
         mockRulesRoutes(mockRelationshipTemplateManager, [], [defaultEntityTemplateId], [defaultRelationshipTemplateId]);
-        mockRelationshipTemplatesRoutes(mockRelationshipTemplateManager, [relationshipTemplate], [defaultEntityTemplateId]);
+        mockRelationshipTemplatesRoutes(mockRelationshipTemplateManager, [relationshipTemplate]);
     });
 
     afterAll(async () => {

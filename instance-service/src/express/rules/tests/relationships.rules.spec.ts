@@ -7,6 +7,17 @@ import RelationshipManager from '../../relationships/manager';
 import config from '../../../config';
 import { trycatch } from '../../../utils/lib';
 import {
+    generateTemplates,
+    mockEntityTemplatesRoutes,
+    mockRelationshipTemplatesRoutes,
+    mockRulesRoutes,
+} from '../../../externalServices/tests/externalServices.mock';
+import { IMongoRelationshipTemplate } from '../../../externalServices/relationshipTemplateManager';
+import { getMockAdapterEntityTemplateManager, getMockAdapterRelationshipTemplateManager } from '../../../externalServices/tests/axios.mock';
+
+const { neo4j } = config;
+
+const {
     airportEntityTemplate,
     allEntityTemplateIds,
     allEntityTemplates,
@@ -15,20 +26,13 @@ import {
     departureFromRelationshipTemplate,
     flightEntityTemplate,
     flightsOnRelationshipTemplate,
-    mockEntityTemplatesRoutes,
-    mockRelationshipTemplatesRoutes,
-    mockRulesRoutes,
     noOverlappingFlightsInTrip,
     oneTravelAgentPerFlight,
     travelAgentEntityTemplate,
     tripConnectedToFlightRelationshipTemplate,
     tripEntityTemplate,
     warnOnEveryFlightOnActiveZone,
-} from '../../../externalServices/tests/externalServices.mock';
-import { IMongoRelationshipTemplate } from '../../../externalServices/relationshipTemplateManager';
-import { getMockAdapterEntityTemplateManager, getMockAdapterRelationshipTemplateManager } from '../../../externalServices/tests/axios.mock';
-
-const { neo4j } = config;
+} = generateTemplates();
 
 const createRelationshipAndExpectRuleBlock = async (
     sourceEntity: IEntity,
@@ -143,7 +147,7 @@ describe('Relationship manager test rules', () => {
                 const rules = [oneTravelAgentPerFlight];
 
                 mockRulesRoutes(mockRelationshipTemplateManager, rules, allEntityTemplateIds, allRelationshipTemplateIds);
-                mockRelationshipTemplatesRoutes(mockRelationshipTemplateManager, allRelationshipTemplates, allEntityTemplateIds);
+                mockRelationshipTemplatesRoutes(mockRelationshipTemplateManager, allRelationshipTemplates);
                 mockEntityTemplatesRoutes(mockEntityTemplateManager, allEntityTemplates);
             });
 
@@ -275,7 +279,7 @@ describe('Relationship manager test rules', () => {
                 const rules = [noOverlappingFlightsInTrip];
 
                 mockRulesRoutes(mockRelationshipTemplateManager, rules, allEntityTemplateIds, allRelationshipTemplateIds);
-                mockRelationshipTemplatesRoutes(mockRelationshipTemplateManager, allRelationshipTemplates, allEntityTemplateIds);
+                mockRelationshipTemplatesRoutes(mockRelationshipTemplateManager, allRelationshipTemplates);
                 mockEntityTemplatesRoutes(mockEntityTemplateManager, allEntityTemplates);
             });
 
@@ -429,7 +433,7 @@ describe('Relationship manager test rules', () => {
                 const rules = [warnOnEveryFlightOnActiveZone];
 
                 mockRulesRoutes(mockRelationshipTemplateManager, rules, allEntityTemplateIds, allRelationshipTemplateIds);
-                mockRelationshipTemplatesRoutes(mockRelationshipTemplateManager, allRelationshipTemplates, allEntityTemplateIds);
+                mockRelationshipTemplatesRoutes(mockRelationshipTemplateManager, allRelationshipTemplates);
                 mockEntityTemplatesRoutes(mockEntityTemplateManager, allEntityTemplates);
             });
 
@@ -492,7 +496,7 @@ describe('Relationship manager test rules', () => {
                 const rules = [oneTravelAgentPerFlight];
 
                 mockRulesRoutes(mockRelationshipTemplateManager, rules, allEntityTemplateIds, allRelationshipTemplateIds);
-                mockRelationshipTemplatesRoutes(mockRelationshipTemplateManager, allRelationshipTemplates, allEntityTemplateIds);
+                mockRelationshipTemplatesRoutes(mockRelationshipTemplateManager, allRelationshipTemplates);
                 mockEntityTemplatesRoutes(mockEntityTemplateManager, allEntityTemplates);
             });
 
@@ -639,7 +643,7 @@ describe('Relationship manager test rules', () => {
                 const rules = [noOverlappingFlightsInTrip];
 
                 mockRulesRoutes(mockRelationshipTemplateManager, rules, allEntityTemplateIds, allRelationshipTemplateIds);
-                mockRelationshipTemplatesRoutes(mockRelationshipTemplateManager, allRelationshipTemplates, allEntityTemplateIds);
+                mockRelationshipTemplatesRoutes(mockRelationshipTemplateManager, allRelationshipTemplates);
                 mockEntityTemplatesRoutes(mockEntityTemplateManager, allEntityTemplates);
             });
 
@@ -775,7 +779,7 @@ describe('Relationship manager test rules', () => {
                 const rules = [warnOnEveryFlightOnActiveZone];
 
                 mockRulesRoutes(mockRelationshipTemplateManager, rules, allEntityTemplateIds, allRelationshipTemplateIds);
-                mockRelationshipTemplatesRoutes(mockRelationshipTemplateManager, allRelationshipTemplates, allEntityTemplateIds);
+                mockRelationshipTemplatesRoutes(mockRelationshipTemplateManager, allRelationshipTemplates);
                 mockEntityTemplatesRoutes(mockEntityTemplateManager, allEntityTemplates);
             });
 

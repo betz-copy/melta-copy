@@ -1,0 +1,404 @@
+import mapValues from 'lodash.mapvalues';
+import { Date as Neo4jDate, DateTime as Neo4jDateTime } from 'neo4j-driver';
+import { IMongoEntityTemplate, IEntitySingleProperty } from '../../externalServices/entityTemplateManager';
+import { escapeNeo4jQuerySpecialChars } from '../../utils/agGrid/agGridFilterModelToNeoQuery';
+import { getNeo4jDate, getNeo4jDateTime } from '../../utils/neo4j/lib';
+import { ISearchBatchBody, IFilterOfField, ISearchBatchFilter, IFilterOfTemplate } from './interface';
+
+type CypherQueryWithParameters = { cypherQuery: string; parameters: Record<string, any> };
+
+const simplePartFilterOfFieldToNeoQuery = (
+    field: string,
+    operator: Exclude<keyof IFilterOfField, '$eqi' | '$in'>,
+    rhs: boolean | string | number | null,
+    parametersParentVariableName: string,
+    fieldTemplate: IEntitySingleProperty,
+): CypherQueryWithParameters => {
+    if (rhs === null && operator === '$eq') {
+        return { cypherQuery: `node.${field} IS NULL`, parameters: {} };
+    }
+    if (rhs === null && operator === '$ne') {
+        return { cypherQuery: `node.${field} IS NOT NULL`, parameters: {} };
+    }
+
+    const rhsParamName = 'rhs';
+    const rhsParamPath = `${parametersParentVariableName}.${rhsParamName}`;
+
+    let rhsParamValue: boolean | string | number | Neo4jDate<number> | Neo4jDateTime<number> | null;
+    if (rhs && fieldTemplate.format === 'date') {
+        rhsParamValue = getNeo4jDate(new Date(rhs as string));
+    } else if (rhs && fieldTemplate.format === 'date-time') {
+        rhsParamValue = getNeo4jDateTime(new Date(rhs as string));
+    } else {
+        rhsParamValue = rhs;
+    }
+
+    let operatorQuery: string;
+    switch (operator) {
+        case '$eq':
+            operatorQuery = '=';
+            break;
+        case '$ne':
+            operatorQuery = '<>';
+            break;
+        case '$gt':
+            operatorQuery = '>';
+            break;
+        case '$gte':
+            operatorQuery = '>=';
+            break;
+        case '$lt':
+            operatorQuery = '<';
+            break;
+        case '$lte':
+            operatorQuery = '<=';
+            break;
+        default:
+            throw new Error(`missing implementation for operator "${operator}" of filter of field`);
+    }
+
+    return { cypherQuery: `node.${field} ${operatorQuery} $${rhsParamPath}`, parameters: { [rhsParamName]: rhsParamValue } };
+};
+
+const inFilterOfField = (
+    field: string,
+    rhs: NonNullable<IFilterOfField['$in']>,
+    parametersParentVariableName: string,
+    fieldTemplate: IEntitySingleProperty,
+) => {
+    const rhsParamName = 'rhs';
+    const rhsParamPath = `${parametersParentVariableName}.${rhsParamName}`;
+
+    const rhsParamValue = rhs.map((rhsItem) => {
+        if (!rhsItem) return rhsItem;
+
+        switch (fieldTemplate.format) {
+            case 'date':
+                return getNeo4jDate(new Date(rhsItem as string));
+            case 'date-time':
+                return getNeo4jDateTime(new Date(rhsItem as string));
+            default:
+                return rhsItem;
+        }
+    });
+
+    if (rhsParamValue.includes(null)) {
+        return {
+            cypherQuery: `(node.${field} IS NULL) OR (node.${field} IN $${rhsParamPath})`,
+            parameters: { [rhsParamName]: rhsParamValue.filter((rhsItem) => rhsItem !== null) },
+        };
+    }
+
+    return { cypherQuery: `node.${field} IN $${rhsParamPath}`, parameters: { [rhsParamName]: rhsParamValue } };
+};
+
+const caseInsensitiveEqualFilterOfField = (field: string, rhs: NonNullable<IFilterOfField['$eqi']>, parametersParentVariableName: string) => {
+    const rhsParamName = 'rhs';
+    const rhsParamPath = `${parametersParentVariableName}.${rhsParamName}`;
+
+    return { cypherQuery: `toLower(node.${field}) = toLower($${rhsParamPath})`, parameters: { [rhsParamName]: rhs } };
+};
+
+const filterOfFieldToNeoQuery = (
+    field: string,
+    filterOfField: IFilterOfField,
+    parametersParentVariableName: string,
+    fieldTemplate: IEntitySingleProperty,
+): CypherQueryWithParameters => {
+    const queries: CypherQueryWithParameters[] = Object.entries(filterOfField).map(([key, filterRhs]) => {
+        const filterType = key as keyof IFilterOfField;
+
+        let partFilterOfFieldQuery: CypherQueryWithParameters;
+        switch (filterType) {
+            case '$eq':
+            case '$ne':
+            case '$gt':
+            case '$gte':
+            case '$lt':
+            case '$lte':
+                partFilterOfFieldQuery = simplePartFilterOfFieldToNeoQuery(
+                    field,
+                    filterType,
+                    filterRhs,
+                    `${parametersParentVariableName}.\`${filterType}\``,
+                    fieldTemplate,
+                );
+                break;
+
+            case '$eqi':
+                partFilterOfFieldQuery = caseInsensitiveEqualFilterOfField(field, filterRhs, `${parametersParentVariableName}.\`$eqi\``);
+                break;
+
+            case '$in':
+                partFilterOfFieldQuery = inFilterOfField(field, filterRhs, `${parametersParentVariableName}.\`$in\``, fieldTemplate);
+                break;
+
+            default:
+                throw new Error(`missing implementation for filter type "${filterType}" of filter of field`);
+        }
+        return { cypherQuery: partFilterOfFieldQuery.cypherQuery, parameters: { [filterType]: partFilterOfFieldQuery.parameters } };
+    });
+
+    return {
+        cypherQuery: queries.map((query) => `(${query.cypherQuery})`).join(' AND '),
+        parameters: queries
+            .map(({ parameters }) => parameters)
+            .reduce((prevParameters, currParameters) => ({ ...prevParameters, ...currParameters }), {}),
+    };
+};
+
+const filterOfTemplateToNeoQuery = (
+    filterOfTemplate: IFilterOfTemplate,
+    parametersParentVariableName: string,
+    entityTemplate: IMongoEntityTemplate,
+): CypherQueryWithParameters => {
+    const fieldsNeoQueries: CypherQueryWithParameters[] = Object.entries(filterOfTemplate)
+        .filter(([_field, filterOfField]) => Boolean(filterOfField))
+        .map(([field, filterOfField]) => {
+            const filterOfFieldQuery = filterOfFieldToNeoQuery(
+                field,
+                filterOfField!,
+                `${parametersParentVariableName}.${field}`,
+                entityTemplate.properties.properties[field],
+            );
+            return {
+                cypherQuery: filterOfFieldQuery.cypherQuery,
+                parameters: { [field]: filterOfFieldQuery.parameters },
+            };
+        });
+
+    return {
+        cypherQuery: fieldsNeoQueries.map((fieldNeoQuery) => `(${fieldNeoQuery.cypherQuery})`).join(' AND '),
+        parameters: fieldsNeoQueries
+            .map(({ parameters }) => parameters)
+            .reduce((prevParameters, currParameters) => ({ ...prevParameters, ...currParameters }), {}),
+    };
+};
+
+const filterToNeoQuery = (
+    filter: ISearchBatchFilter,
+    parametersParentVariableName: string,
+    entityTemplate: IMongoEntityTemplate,
+): CypherQueryWithParameters => {
+    const { $or, $and } = filter;
+
+    let andQuery: CypherQueryWithParameters | null = null;
+    if (Array.isArray($and)) {
+        const andNeoQueries = $and.map((currFilterOfTemplate, i) =>
+            filterOfTemplateToNeoQuery(currFilterOfTemplate, `${parametersParentVariableName}.\`$and\`[${i}]`, entityTemplate),
+        );
+        andQuery = {
+            cypherQuery: andNeoQueries.map(({ cypherQuery }) => `(${cypherQuery})`).join(' AND '),
+            parameters: {
+                $and: andNeoQueries.map(({ parameters }) => parameters),
+            },
+        };
+    } else if ($and) {
+        const andSingleQuery = filterOfTemplateToNeoQuery($and, `${parametersParentVariableName}.\`$and\``, entityTemplate);
+        andQuery = {
+            cypherQuery: andSingleQuery.cypherQuery,
+            parameters: { $and: andSingleQuery.parameters },
+        };
+    }
+
+    let orQuery: CypherQueryWithParameters | null = null;
+    if ($or) {
+        const orNeoQueries = $or.map((currFilterOfTemplate, i) =>
+            filterOfTemplateToNeoQuery(currFilterOfTemplate, `${parametersParentVariableName}.\`$or\`[${i}]`, entityTemplate),
+        );
+        orQuery = {
+            cypherQuery: orNeoQueries.map(({ cypherQuery }) => `(${cypherQuery})`).join(' OR '),
+            parameters: {
+                $or: orNeoQueries.map(({ parameters }) => parameters),
+            },
+        };
+    }
+
+    const andCypherQuery = andQuery ? `(${andQuery.cypherQuery})` : '';
+    const orCypherQuery = orQuery ? `(${orQuery.cypherQuery})` : '';
+
+    return {
+        cypherQuery: `${andCypherQuery}${andQuery && orQuery ? 'AND' : ''}${orCypherQuery}`,
+        parameters: { ...andQuery?.parameters, ...orQuery?.parameters },
+    };
+};
+
+const templatesFilterToNeoQuery = (
+    templatesFilter: ISearchBatchBody['templates'],
+    entityTemplatesMap: Map<string, IMongoEntityTemplate>,
+): CypherQueryWithParameters => {
+    const filterParamsVariableName = 'filterParams';
+
+    const templatesFiltersQueries: CypherQueryWithParameters[] = Object.entries(templatesFilter).map(([templateId, { filter }]) => {
+        if (!filter) {
+            return { cypherQuery: `node:\`${templateId}\``, parameters: {} };
+        }
+
+        const filterOfTemplateQuery = filterToNeoQuery(filter, `${filterParamsVariableName}["${templateId}"]`, entityTemplatesMap.get(templateId)!);
+
+        return {
+            cypherQuery: `node:\`${templateId}\` AND (${filterOfTemplateQuery.cypherQuery})`,
+            parameters: { [templateId]: filterOfTemplateQuery.parameters },
+        };
+    });
+
+    return {
+        cypherQuery: templatesFiltersQueries.map(({ cypherQuery }) => `(${cypherQuery})`).join(' OR '),
+        parameters: {
+            [filterParamsVariableName]: templatesFiltersQueries
+                .map(({ parameters }) => parameters)
+                .reduce((prevParameters, currParameters) => ({ ...prevParameters, ...currParameters }), {}),
+        },
+    };
+};
+
+export const sortToNeo4JSort = (sortModel: ISearchBatchBody['sort']) => {
+    return sortModel.map(({ field, sort }) => `node.${field} ${sort}`).join(',');
+};
+
+const normalSearchToNeoQuery = (
+    searchBody: ISearchBatchBody,
+    entityTemplatesMap: Map<string, IMongoEntityTemplate>,
+    calculateOverallCount = false,
+) => {
+    const filterQuery = templatesFilterToNeoQuery(searchBody.templates, entityTemplatesMap);
+
+    if (calculateOverallCount) {
+        return {
+            cypherQuery: `
+                MATCH (node) 
+                WHERE ${filterQuery.cypherQuery}
+                RETURN count(node)`,
+            parameters: { ...filterQuery.parameters },
+        };
+    }
+
+    const sort = [...searchBody.sort];
+    if (sort.every(({ field }) => field !== 'updatedAt')) {
+        // if user not specified, by default sort by updatedAt,
+        // but only as the lowest priority (end of array in sortModel), to not override user defined sorts
+        sort.push({ field: 'updatedAt', sort: 'desc' });
+    }
+
+    const sortQuery = `ORDER BY ${sortToNeo4JSort(sort)}`;
+
+    return {
+        cypherQuery: `
+            MATCH (node) 
+            WHERE ${filterQuery.cypherQuery}
+            RETURN node 
+            ${sortQuery}
+            SKIP toInteger($skip)
+            LIMIT toInteger($limit)`,
+        parameters: {
+            skip: searchBody.skip,
+            limit: searchBody.limit,
+            ...filterQuery.parameters,
+        },
+    };
+};
+
+const fulltextSearchToNeoQuery = (
+    searchBody: ISearchBatchBody,
+    latestIndex: string,
+    entityTemplatesMap: Map<string, IMongoEntityTemplate>,
+    calculateOverallCount = false,
+) => {
+    const filterQuery = templatesFilterToNeoQuery(searchBody.templates, entityTemplatesMap);
+
+    // warning, in fulltext (lucene) query '*' works only on terms, and not phrases, we assume here the analyzer is "unicode_whitespace".
+    // for example in the standard analyzer "foo,bar" is a phrase (with two terms), so searching "*foo,bar*" wont work at all.
+    // but with "unicode_whitespace" analyzer, adding '*' at start and end, will always search on terms and not phrases,
+    // because in whitespace analyzer "foo,bar" is one term, so '*' will work on it,
+    // and searching "*foo bar*" will also work, because it will search "*foo" and "bar*" separately
+    // read also this to understand: https://stackoverflow.com/questions/25450308/full-text-search-in-neo4j-with-spaces
+    const query = `*${escapeNeo4jQuerySpecialChars(searchBody.textSearch!)}*`;
+
+    if (calculateOverallCount) {
+        return {
+            cypherQuery: `
+                CALL db.index.fulltext.queryNodes($latestIndex, $query)
+                YIELD node, score
+                WHERE ${filterQuery.cypherQuery}
+                RETURN count(node)`,
+            parameters: { latestIndex, query, ...filterQuery.parameters },
+        };
+    }
+
+    const sortQueryOfUser = searchBody.sort!.length > 0 ? `${sortToNeo4JSort(searchBody.sort)},` : '';
+    // sort by scoring, but only as the lowest priority, to not override user defined sorts
+    const defaultSortQuery = 'score DESC';
+    const sortQuery = `ORDER BY ${sortQueryOfUser} ${defaultSortQuery}`;
+
+    return {
+        cypherQuery: `
+            CALL db.index.fulltext.queryNodes($latestIndex, $query)
+            YIELD node, score
+            WHERE ${filterQuery.cypherQuery}
+            RETURN node
+            ${sortQuery}
+            SKIP toInteger($skip)
+            LIMIT toInteger($limit)`,
+        parameters: {
+            latestIndex,
+            query,
+            skip: searchBody.skip,
+            limit: searchBody.limit,
+            ...filterQuery.parameters,
+        },
+    };
+};
+
+const searchToNeoQuery = (
+    searchBody: ISearchBatchBody,
+    latestIndex: string | null,
+    entityTemplatesMap: Map<string, IMongoEntityTemplate>,
+    calculateOverallCount = false,
+): CypherQueryWithParameters => {
+    if (latestIndex) return fulltextSearchToNeoQuery(searchBody, latestIndex, entityTemplatesMap, calculateOverallCount);
+    return normalSearchToNeoQuery(searchBody, entityTemplatesMap, calculateOverallCount);
+};
+
+export const searchWithRelationshipsToNeoQuery = (
+    searchBody: ISearchBatchBody,
+    latestIndex: string | null,
+    entityTemplatesMap: Map<string, IMongoEntityTemplate>,
+    calculateOverallCount = false,
+): CypherQueryWithParameters => {
+    if (calculateOverallCount) {
+        return searchToNeoQuery(searchBody, latestIndex, entityTemplatesMap, true);
+    }
+
+    const searchNeoQuery = searchToNeoQuery(searchBody, latestIndex, entityTemplatesMap, false);
+
+    const showRelationshipsPerTemplate = mapValues(searchBody.templates, ({ showRelationships }) => ({
+        shouldShowRelationships: Boolean(showRelationships),
+        relationshipTemplateIds: typeof showRelationships === 'boolean' ? [] : showRelationships,
+    }));
+
+    return {
+        cypherQuery: `
+        CALL {
+            ${searchNeoQuery.cypherQuery}
+        }
+        
+        WITH *, $showRelationshipsPerTemplate[labels(node)[0]] as showRelationships
+        WITH *, showRelationships.shouldShowRelationships as shouldShowRelationships, showRelationships.relationshipTemplateIds as relationshipTemplateIds
+        
+        OPTIONAL MATCH (node)-[relationship]-(otherEntity)
+        WHERE shouldShowRelationships AND (size(relationshipTemplateIds) = 0 OR type(relationship) IN relationshipTemplateIds)
+
+        WITH node, CASE
+        WHEN NOT shouldShowRelationships THEN NULL
+        WHEN relationship is NULL then []
+        ELSE collect({relationship: relationship, otherEntity: otherEntity})
+        END as relationships
+
+        RETURN node, relationships
+        `,
+        parameters: {
+            ...searchNeoQuery.parameters,
+            showRelationshipsPerTemplate,
+        },
+    };
+};

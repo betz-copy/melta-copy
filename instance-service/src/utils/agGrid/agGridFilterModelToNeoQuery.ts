@@ -228,7 +228,7 @@ export const escapeRegExp = (text: string) => {
     return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
 };
 
-const escapeNeo4jQuerySpecialChars = (quickFilter: string) => {
+export const escapeNeo4jQuerySpecialChars = (quickFilter: string) => {
     const escapeNeo4jQueryRegexStr = specialCharsToEscapeNeo4jQuery
         .map(escapeRegExp)
         .map((char) => `(${char})`)

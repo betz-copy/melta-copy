@@ -13,8 +13,9 @@ import {
     normalizeRelAndEntitiesForRule,
     normalizeGetDbConstraints,
     runInTransactionAndNormalize,
+    normalizeSearchWithRelationships,
 } from '../../utils/neo4j/lib';
-import { IConstraint, IConstraintsOfTemplate, IEntity, IRequiredConstraint, IUniqueConstraint } from './interface';
+import { IConstraint, IConstraintsOfTemplate, IEntity, IRequiredConstraint, ISearchBatchBody, IUniqueConstraint } from './interface';
 import { NotFoundError, ServiceError } from '../error';
 import { agGridRequestToNeo4JRequest, agGridSearchRequestToNeo4JRequest } from '../../utils/agGrid/agGridFilterModelToNeoQuery';
 import { IAGGridRequest } from '../../utils/agGrid/interfaces';
@@ -27,6 +28,7 @@ import { EntityTemplateManagerService, IEntitySingleProperty, IMongoEntityTempla
 import { RelationshipsTemplateManagerService } from '../../externalServices/relationshipTemplateManager';
 import { addStringFieldsAndNormalizeDateValues } from './validator.template';
 import { arraysEqualsNonOrdered } from '../../utils/lib';
+import { searchWithRelationshipsToNeoQuery } from './searchBodyToNeoQuery';
 
 export class EntityManager {
     private static throwServiceErrorIfFailedConstraintsValidation(err: unknown): never {
@@ -89,9 +91,9 @@ export class EntityManager {
         ).catch(EntityManager.throwServiceErrorIfFailedConstraintsValidation);
     }
 
-    static async getEntities(templateIds: string[], agGridRequest: IAGGridRequest) {
+    static async searchEntities(templateIds: string[], agGridRequest: IAGGridRequest) {
         if (agGridRequest.quickFilter) {
-            return EntityManager.getEntitiesWithSearch(templateIds, agGridRequest);
+            return EntityManager.searchEntitiesWithFullText(templateIds, agGridRequest);
         }
 
         const searchCypherQuery = agGridRequestToNeo4JRequest(templateIds, agGridRequest);
@@ -104,7 +106,7 @@ export class EntityManager {
         return { rows: nodes, lastRowIndex: nodesOverallCount };
     }
 
-    private static async getEntitiesWithSearch(templateIds: string[], agGridRequest: IAGGridRequest) {
+    private static async searchEntitiesWithFullText(templateIds: string[], agGridRequest: IAGGridRequest) {
         const latestIndex = await getLatestIndex();
 
         if (!latestIndex) {
@@ -120,6 +122,27 @@ export class EntityManager {
         ]);
 
         return { rows: nodes, lastRowIndex: nodesOverallCount };
+    }
+
+    static async searchEntitiesBatch(searchBody: ISearchBatchBody, entityTemplatesMap: Map<string, IMongoEntityTemplate>) {
+        let latestIndex: string | null = null;
+        if (searchBody.textSearch) {
+            latestIndex = await getLatestIndex();
+
+            if (!latestIndex) {
+                throw new ServiceError(400, `[NEO4J] Global search index not found.`);
+            }
+        }
+
+        const searchCypherQuery = searchWithRelationshipsToNeoQuery(searchBody, latestIndex, entityTemplatesMap);
+        const searchCountCypherQuery = searchWithRelationshipsToNeoQuery(searchBody, latestIndex, entityTemplatesMap, true);
+
+        const [entities, count] = await Promise.all([
+            Neo4jClient.readTransaction(searchCypherQuery.cypherQuery, normalizeSearchWithRelationships, searchCypherQuery.parameters),
+            Neo4jClient.readTransaction(searchCountCypherQuery.cypherQuery, normalizeResponseCount, searchCountCypherQuery.parameters),
+        ]);
+
+        return { entities, count };
     }
 
     static async getEntityById(id: string) {

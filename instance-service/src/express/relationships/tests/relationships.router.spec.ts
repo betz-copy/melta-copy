@@ -65,7 +65,7 @@ describe('Relationship router', () => {
         };
 
         mockRulesRoutes(mockRelationshipTemplateManager, [], [defaultEntityTemplateId], [defaultRelationshipTemplateId]);
-        mockRelationshipTemplatesRoutes(mockRelationshipTemplateManager, [defaultRelationshipTemplate], [defaultEntityTemplateId]);
+        mockRelationshipTemplatesRoutes(mockRelationshipTemplateManager, [defaultRelationshipTemplate]);
         mockEntityTemplatesRoutes(mockEntityTemplateManager, [defaultEntityTemplate]);
 
         await Neo4jClient.initialize(neo4j.url, neo4j.auth, neo4j.database);
@@ -133,21 +133,17 @@ describe('Relationship router', () => {
             const secondEntity = await request(app).post('/api/instances/entities').send(defaultEntity);
 
             // Mock rel template response
-            mockRelationshipTemplatesRoutes(
-                mockRelationshipTemplateManager,
-                [
-                    {
-                        _id: relTemplateId,
-                        name: 'relTest',
-                        displayName: 'relTest',
-                        sourceEntityId: unknownId,
-                        destinationEntityId: unknownId,
-                        createdAt: mockDateStr,
-                        updatedAt: mockDateStr,
-                    },
-                ],
-                [defaultEntityTemplateId],
-            );
+            mockRelationshipTemplatesRoutes(mockRelationshipTemplateManager, [
+                {
+                    _id: relTemplateId,
+                    name: 'relTest',
+                    displayName: 'relTest',
+                    sourceEntityId: unknownId,
+                    destinationEntityId: unknownId,
+                    createdAt: mockDateStr,
+                    updatedAt: mockDateStr,
+                },
+            ]);
 
             const relationship = await request(app)
                 .post('/api/instances/relationships')

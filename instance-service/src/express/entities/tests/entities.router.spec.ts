@@ -267,21 +267,17 @@ describe('Entity router', () => {
                     .send({ templateId: defaultTemplateId, properties: secondEntityProperties });
 
                 // Mock get relationship template route
-                mockRelationshipTemplatesRoutes(
-                    mockRelationshipTemplateManager,
-                    [
-                        {
-                            _id: defaultRelationshipTemplateId,
-                            name: 'RelationshipMock',
-                            displayName: 'RelationshipMock',
-                            sourceEntityId: defaultTemplateId,
-                            destinationEntityId: defaultTemplateId,
-                            createdAt: mockDateStr,
-                            updatedAt: mockDateStr,
-                        },
-                    ],
-                    [defaultTemplateId],
-                );
+                mockRelationshipTemplatesRoutes(mockRelationshipTemplateManager, [
+                    {
+                        _id: defaultRelationshipTemplateId,
+                        name: 'RelationshipMock',
+                        displayName: 'RelationshipMock',
+                        sourceEntityId: defaultTemplateId,
+                        destinationEntityId: defaultTemplateId,
+                        createdAt: mockDateStr,
+                        updatedAt: mockDateStr,
+                    },
+                ]);
 
                 // Create relationship between two entities
                 await request(app)

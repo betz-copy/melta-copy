@@ -2,7 +2,7 @@ import axios from 'axios';
 import config from '../config';
 
 const {
-    entityTemplateManager: { url, getByIdRoute, timeout },
+    entityTemplateManager: { url, getByIdRoute, searchRoute, timeout },
 } = config;
 export interface IEntitySingleProperty {
     type: 'string' | 'number' | 'boolean';
@@ -34,12 +34,26 @@ export interface IMongoEntityTemplate extends IEntityTemplate {
     updatedAt: string;
 }
 
+export interface ISearchEntityTemplatesBody {
+    search?: string;
+    ids?: string[];
+    categoryIds?: string[];
+    limit?: number;
+    skip?: number;
+}
+
 export class EntityTemplateManagerService {
     static EntityTemplateManagerApi = axios.create({ baseURL: url, timeout });
 
     // entity templates
     static async getEntityTemplateById(id: string) {
         const { data } = await this.EntityTemplateManagerApi.get<IMongoEntityTemplate>(`${getByIdRoute}/${id}`);
+
+        return data;
+    }
+
+    static async searchEntityTemplates(body: ISearchEntityTemplatesBody = {}) {
+        const { data } = await this.EntityTemplateManagerApi.post<IMongoEntityTemplate[]>(searchRoute, body);
 
         return data;
     }

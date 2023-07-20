@@ -22,6 +22,7 @@ const config = {
     entityTemplateManager: {
         url: env.get('ENTITY_TEMPLATE_MANAGER_URL').required().asString(),
         getByIdRoute: env.get('ENTITY_TEMPLATE_MANAGER_GET_BY_ID_ROUTE').default('/api/templates/entities').asString(),
+        searchRoute: env.get('ENTITY_TEMPLATE_MANAGER_SEARCH_ROUTE').default('/api/templates/entities/search').asString(),
         timeout: env.get('ENTITY_TEMPLATE_MANAGER_TIMEOUT').default(5000).asIntPositive(),
     },
     relationshipManager: {
@@ -52,6 +53,7 @@ const config = {
     uniqueConstraintsPrefixName: env.get('UNIQUE_CONSTRAINTS_PREFIX_NAME').default('uniqueConstraint').asString(),
     requiredConstraintsPrefixName: env.get('REQUIRED_CONSTRAINTS_PREFIX_NAME').default('requiredConstraint').asString(),
     constraintsNameDelimiter: env.get('CONSTRAINTS_NAME_DELIMITER').default('-').asString(), // default "-" because template properties cant have "-" chars (variableName format validation)
+    searchEntitiesBatchMaxLimit: env.get('SEARCH_ENTITIES_BATCH_MAX_LIMIT').default(10000).asIntPositive(),
 };
 
 export default config;
