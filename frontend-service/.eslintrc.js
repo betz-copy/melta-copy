@@ -2,9 +2,9 @@ module.exports = {
     env: {
         browser: true,
     },
-    extends: ['airbnb', 'prettier', 'plugin:prettier/recommended', 'plugin:jest/recommended', 'plugin:react-hooks/recommended'],
+    extends: ['airbnb', 'prettier', 'plugin:prettier/recommended', 'plugin:react-hooks/recommended'],
     parser: '@typescript-eslint/parser',
-    plugins: ['@typescript-eslint', 'prettier', 'jest'],
+    plugins: ['@typescript-eslint', 'prettier'],
     parserOptions: {
         ecmaVersion: 2020,
         sourceType: 'module',
