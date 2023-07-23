@@ -203,7 +203,13 @@ const Table: React.FC<{
             suppressExcelExport
             suppressContextMenu
             onFirstDataRendered={(params) => {
-                params.columnApi.autoSizeColumns(['actions', 'permissionsManagementId', 'templatesManagementId', 'rulesManagementId', 'processesManagmentId']);
+                params.columnApi.autoSizeColumns([
+                    'actions',
+                    'permissionsManagementId',
+                    'templatesManagementId',
+                    'rulesManagementId',
+                    'processesManagmentId',
+                ]);
             }}
             quickFilterText={quickFilterText}
             localeText={i18next.t('agGridLocaleText', { returnObjects: true })}

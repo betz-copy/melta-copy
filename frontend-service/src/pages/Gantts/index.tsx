@@ -1,10 +1,10 @@
 import React, { useEffect } from 'react';
 import { Box } from '@mui/material';
 import i18next from 'i18next';
+import { toast } from 'react-toastify';
 import { ViewingBox } from '../SystemManagement/components/ViewingBox';
 import { InfiniteScroll } from '../../common/InfiniteScroll';
 import { GanttsCard } from './GanttCard';
-import { toast } from 'react-toastify';
 import { searchGantts } from '../../services/ganttsService';
 import { IGantt } from '../../interfaces/gantts';
 import { environment } from '../../globals';
@@ -35,7 +35,7 @@ const GanttsPage: React.FC<IGanttsPageProps> = ({ setTitle }) => {
                     {(gantt) => <GanttsCard gantt={gantt} />}
                 </InfiniteScroll>
             </ViewingBox>
-        </Box >
+        </Box>
     );
 };
 

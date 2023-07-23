@@ -1,13 +1,13 @@
 import { Box, Divider, Grid } from '@mui/material';
 import React from 'react';
 import i18next from 'i18next';
+import { FormikProps } from 'formik';
 import ProcessStatus from './ProcessStatus';
 import StepsStatuses from './StepsStatuses';
 import { IMongoProcessInstancePopulated, Status } from '../../../../interfaces/processes/processInstance';
 import { IMongoProcessTemplatePopulated } from '../../../../interfaces/processes/processTemplate';
 import { BlueTitle } from '../../../BlueTitle';
 import SummaryProperties from './SummaryProperties';
-import { FormikProps } from 'formik';
 
 export interface SummaryDetailsValues {
     summaryDetails: object;
@@ -35,8 +35,8 @@ const ProcessSummary: React.FC<ProcessSummaryProp> = ({ processInstance, process
         >
             <BlueTitle
                 title={i18next.t('wizard.processInstance.summary.title')}
-                component={'h5'}
-                variant={'h5'}
+                component="h5"
+                variant="h5"
                 style={{ marginBottom: '1.5%', fontWeight: 800, opacity: 0.9, padding: '10px' }}
             />
             <Divider variant="fullWidth" style={{ marginTop: '-20px', marginBottom: '30px' }} />
@@ -50,7 +50,7 @@ const ProcessSummary: React.FC<ProcessSummaryProp> = ({ processInstance, process
                 <Grid item xs={3}>
                     <SummaryProperties isEditMode={isEditMode} formik={summaryFormikData} template={processTemplate} />
                 </Grid>
-                <Grid item container xs={1}> 
+                <Grid item container xs={1}>
                     <Divider style={{ width: '100%' }} orientation="vertical" flexItem />
                 </Grid>
                 <Grid item xs={3}>

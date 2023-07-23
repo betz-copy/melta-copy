@@ -26,14 +26,14 @@ export const PureInfiniteScroll = <T extends any>({
 }: PureInfiniteScrollProps<T>) => {
     const showMoreRef = useRef<HTMLDivElement>(null);
 
-    const { data, fetchNextPage, isFetchingNextPage, hasNextPage, isLoading, isRefetching, } = useInfiniteQuery(queryKey, queryFunction, {
+    const { data, fetchNextPage, isFetchingNextPage, hasNextPage, isLoading, isRefetching } = useInfiniteQuery(queryKey, queryFunction, {
         getNextPageParam,
         onError: onQueryError,
     });
 
     useEffect(() => {
         const currentShowMoreRef = showMoreRef.current;
-        if (!currentShowMoreRef) return () => { };
+        if (!currentShowMoreRef) return () => {};
 
         const observer = new IntersectionObserver(
             ([entry]) => {
@@ -54,11 +54,11 @@ export const PureInfiniteScroll = <T extends any>({
     return (
         <>
             {data?.pages.map((page) =>
-                page.map((item) =>
+                page.map((item) => (
                     <Grid item key={getItemId(item)}>
                         {children(item)}
                     </Grid>
-                ),
+                )),
             )}
 
             <ShowMore
@@ -69,5 +69,5 @@ export const PureInfiniteScroll = <T extends any>({
                 endText={endText}
             />
         </>
-    )
+    );
 };

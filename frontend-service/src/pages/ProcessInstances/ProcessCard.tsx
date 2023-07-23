@@ -2,6 +2,7 @@ import React, { CSSProperties, useState } from 'react';
 import { Box, Card, CardContent, Grid, Tooltip, Typography } from '@mui/material';
 import { ScatterPlotOutlined as HiveIcon, FiberManualRecordOutlined as StatusIcon } from '@mui/icons-material';
 import { useQueryClient } from 'react-query';
+import { useSelector } from 'react-redux';
 import { CustomIcon } from '../../common/CustomIcon';
 
 import { IMongoStepTemplatePopulated } from '../../interfaces/processes/stepTemplate';
@@ -9,7 +10,6 @@ import { IMongoProcessInstancePopulated, Status } from '../../interfaces/process
 import { IMongoStepInstancePopulated } from '../../interfaces/processes/stepInstance';
 import { IProcessTemplateMap } from '../../interfaces/processes/processTemplate';
 import ProcessInstanceWizard from '../../common/wizards/processInstance';
-import { useSelector } from 'react-redux';
 import { RootState } from '../../store';
 
 export enum StatusColors {

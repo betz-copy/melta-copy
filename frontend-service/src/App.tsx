@@ -75,7 +75,7 @@ const App: React.FC = () => {
                 console.log('failed loading my permissions:', error);
                 toast.error(i18next.t('permissions.failedToLoadMyPermissions'));
             },
-        }, 
+        },
     );
 
     const dispatch = useDispatch();

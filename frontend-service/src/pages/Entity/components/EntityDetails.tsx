@@ -143,7 +143,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                     <Grid item container justifyContent="space-between" alignItems="stretch" padding="1rem">
                         <Grid item xs={11}>
                             <Box padding="0.2rem">
-                                <EntityPropertiesInternal entityTemplate={entityTemplate} properties={entity['properties']} darkMode={darkMode} />
+                                <EntityPropertiesInternal entityTemplate={entityTemplate} properties={entity.properties} darkMode={darkMode} />
                             </Box>
                         </Grid>
                         <Grid item>

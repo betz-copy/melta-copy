@@ -26,7 +26,6 @@ export const NotificationCount: React.FC<NotificationCountProps> = ({ notificati
             sx={{ userSelect: 'none', direction: 'rtl', ...style }}
         >
             {notificationCount}
-        </Typography >
-
+        </Typography>
     );
 };

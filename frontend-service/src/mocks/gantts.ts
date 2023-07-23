@@ -1,4 +1,5 @@
 import { Chance } from 'chance';
+import MockAdapter from 'axios-mock-adapter/types';
 import { generateMongoId } from './permissions';
 import { IGantt, IGanttItem } from '../interfaces/gantts';
 import { entityTemplates } from './templates/entityTemplates';
@@ -6,7 +7,6 @@ import { pickOneIf, pickRandomSet, pickSetIf, popRandom } from './utils';
 import { relationshipTemplates } from './templates/relationshipTemplates';
 import { allEntities } from './entities/allEntities';
 import { IMongoRelationshipTemplate } from '../interfaces/relationshipTemplates';
-import MockAdapter from 'axios-mock-adapter/types';
 import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 
 const chance = new Chance();
@@ -32,7 +32,7 @@ const generateGanttItemEntityTemplate = (optionalEntityTemplates: IMongoEntityTe
         };
     }
 
-    return; // ts warning: not all code paths return a value
+    // ts warning: not all code paths return a value
 };
 
 const generateGanttItemConnectedEntityTemplate = (entityTemplateId: string): IGanttItem['connectedEntityTemplate'] | undefined => {

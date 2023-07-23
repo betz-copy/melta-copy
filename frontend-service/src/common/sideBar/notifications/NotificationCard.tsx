@@ -5,7 +5,15 @@ import { useMutation } from 'react-query';
 import { LoadingButton } from '@mui/lab';
 import { toast } from 'react-toastify';
 import { useSelector } from 'react-redux';
-import { INotificationPopulated, isNewProcessNotification, isProcessReviewerUpdateNotification, isProcessStatusUpdateNotification, isRuleBreachAlertNotification, isRuleBreachRequestNotification, isRuleBreachResponseNotification } from '../../../interfaces/notifications';
+import {
+    INotificationPopulated,
+    isNewProcessNotification,
+    isProcessReviewerUpdateNotification,
+    isProcessStatusUpdateNotification,
+    isRuleBreachAlertNotification,
+    isRuleBreachRequestNotification,
+    isRuleBreachResponseNotification,
+} from '../../../interfaces/notifications';
 import { getShortDate } from '../../../utils/date';
 import { notificationSeenRequest } from '../../../services/notificationService';
 import { RuleBreachAlertNotification } from './ruleBreachNotification/RuleBreachAlertNotification';

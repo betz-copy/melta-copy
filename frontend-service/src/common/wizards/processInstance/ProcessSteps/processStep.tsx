@@ -3,16 +3,16 @@ import { Formik, Form } from 'formik';
 import i18next from 'i18next';
 import pickBy from 'lodash.pickby';
 import React, { FC } from 'react';
+import { Done as DoneIcon, Clear as ClearIcon, Edit as EditIcon } from '@mui/icons-material';
+import { AxiosError } from 'axios';
+import { useMutation, useQueryClient } from 'react-query';
+import { toast } from 'react-toastify';
 import { IMongoStepInstancePopulated } from '../../../../interfaces/processes/stepInstance';
 import { filterAttachmentsProcessPropertiesFromSchema } from '../../../../utils/filterAttachmentsFromSchema';
-import { Done as DoneIcon, Clear as ClearIcon, Edit as EditIcon } from '@mui/icons-material';
 import { DownloadButton } from '../../../DownloadButton';
 import { InstanceFileInput } from '../../../inputs/InstanceFilesInput/InstanceFileInput';
 import { ajvValidate, JSONSchemaFormik } from '../../../inputs/JSONSchemaFormik';
 import { getStepValuesFromStepInstance } from './stepsFormik';
-import { AxiosError } from 'axios';
-import { useMutation, useQueryClient } from 'react-query';
-import { toast } from 'react-toastify';
 import { updateStepRequest } from '../../../../services/processesService';
 import { ErrorToast } from '../../../ErrorToast';
 import ProcessStatus from '../ProcessSummaryStep/ProcessStatus';
@@ -87,7 +87,7 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                     <Form>
                         <Grid container direction="column" sx={{ overflowY: 'auto', padding: '10px' }}>
                             {canEditStep && (
-                                <Grid item container spacing={1} marginBottom={'25px'}>
+                                <Grid item container spacing={1} marginBottom="25px">
                                     {isStepEditMode ? (
                                         <>
                                             <Grid item>
@@ -151,7 +151,7 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                             })}
                                             values={{ ...values, properties: values.properties }}
                                             setValues={(propertiesValues) => {
-                                                setFieldValue(`properties`, propertiesValues);
+                                                setFieldValue('properties', propertiesValues);
                                             }}
                                             errors={errors.properties ?? {}}
                                             touched={touched.properties ?? {}}

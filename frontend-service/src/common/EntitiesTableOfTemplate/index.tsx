@@ -173,13 +173,13 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             };
         });
         const columnDefs: ColDef[] = getColumnDefs({
-            template: template,
-            getEntityPropertiesData: getEntityPropertiesData,
+            template,
+            getEntityPropertiesData,
             onNavigateToRow: !showNavigateToRowButton ? undefined : (data) => navigate(`/entity/${getEntityPropertiesData(data)._id}`),
-            disabledEntity: disabledEntity,
-            deleteRowButtonProps: deleteRowButtonProps,
-            hideNonPreview: hideNonPreview,
-            editRowButtonProps: editRowButtonProps,
+            disabledEntity,
+            deleteRowButtonProps,
+            hideNonPreview,
+            editRowButtonProps,
         });
 
         const datasourceOnFail = (err: unknown) => {

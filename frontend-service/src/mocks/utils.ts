@@ -9,7 +9,7 @@ export const popRandom = <T>(array: T[]): T | undefined => {
 
 export const pickSetIf = <T>(array: T[], count: number, condition: (item: T) => boolean): T[] | undefined => {
     const arrayCopy = [...array];
-    let set: T[] = [];
+    const set: T[] = [];
 
     while (set.length < count && arrayCopy.length) {
         const currItem = popRandom(arrayCopy);

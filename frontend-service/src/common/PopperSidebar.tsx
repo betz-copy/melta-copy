@@ -40,18 +40,13 @@ const PopperSidebar: React.FC<{
                                             <CloseSharp />
                                         </IconButton>
 
-                                        <Typography
-                                            color='#225AA7'
-                                            fontFamily='Rubik'
-                                            component="h5"
-                                            variant="h5"
-                                            marginX="auto"
-                                            fontWeight="bold"
-                                        >
+                                        <Typography color="#225AA7" fontFamily="Rubik" component="h5" variant="h5" marginX="auto" fontWeight="bold">
                                             {title}
                                         </Typography>
 
-                                        <Box position="absolute" right={10}>{topButtons}</Box>
+                                        <Box position="absolute" right={10}>
+                                            {topButtons}
+                                        </Box>
                                     </Grid>
                                     <Divider sx={{ marginX: '10px' }} />
                                 </Grid>

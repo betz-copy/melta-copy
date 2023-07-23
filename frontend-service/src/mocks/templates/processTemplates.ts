@@ -7,10 +7,9 @@ const removeDuplicates = (arr: IMongoProcessTemplatePopulated[]) => {
     return arr.filter((obj) => {
         if (uniqueDisplayNames.has(obj.displayName)) {
             return false;
-        } else {
-            uniqueDisplayNames.add(obj.displayName);
-            return true;
         }
+        uniqueDisplayNames.add(obj.displayName);
+        return true;
     });
 };
 const generatedTemplates: ReadonlyArray<IMongoProcessTemplatePopulated> = removeDuplicates(
@@ -20,20 +19,13 @@ const processTemplates = generatedTemplates;
 
 const mockProcessTemplates = (mock: MockAdapter) => {
     // Create
-    mock.onPost('/api/templates/processes').reply(() => [
-        200,
-        generateProcessTemplatePopulated(),
-    ]);
+    mock.onPost('/api/templates/processes').reply(() => [200, generateProcessTemplatePopulated()]);
 
     // Update
-    mock.onPut(/\/api\/templates\/processes\/[0-9a-fA-F]{24}/).reply(() => [
-        200,
-        generateProcessTemplatePopulated(),
-    ]);
+    mock.onPut(/\/api\/templates\/processes\/[0-9a-fA-F]{24}/).reply(() => [200, generateProcessTemplatePopulated()]);
 
     // Delete
     mock.onDelete(/\/api\/templates\/processes\/[0-9a-fA-F]{24}/).reply(() => [200, {}]);
 };
 
 export { mockProcessTemplates, processTemplates };
-

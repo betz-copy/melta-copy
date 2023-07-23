@@ -37,7 +37,16 @@ const DeletableEntityViewerCard: React.FC<{ entity: IEntity; onDelete: () => voi
             />
             <CardContent>
                 {/* if no entityTemplate, didnt find template of entity in react-query state */}
-                {!entityTemplate ? entity.properties._id : <EntityPropertiesInternal properties={entity['properties']} entityTemplate={entityTemplate} darkMode={darkMode} showPreviewPropertiesOnly />}
+                {!entityTemplate ? (
+                    entity.properties._id
+                ) : (
+                    <EntityPropertiesInternal
+                        properties={entity.properties}
+                        entityTemplate={entityTemplate}
+                        darkMode={darkMode}
+                        showPreviewPropertiesOnly
+                    />
+                )}
             </CardContent>
         </Card>
     );

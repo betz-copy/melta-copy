@@ -1,4 +1,3 @@
-
 import React from 'react';
 import styled from '@emotion/styled';
 import { StepConnector, stepConnectorClasses, StepIconProps } from '@mui/material';
@@ -45,7 +44,6 @@ export const StyleStepperConnector: React.FC = styled(StepConnector)(() => ({
         backgroundColor: '#bfbfbf',
         margin: '-70px 0 0 -8px',
         position: 'absolute',
-       
     },
 }));
 

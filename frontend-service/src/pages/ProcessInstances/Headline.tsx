@@ -2,15 +2,15 @@ import React, { Dispatch, SetStateAction } from 'react';
 import { Grid, IconButton, Typography } from '@mui/material';
 import { Add as AddIcon } from '@mui/icons-material';
 import i18next from 'i18next';
+import { useQueryClient } from 'react-query';
+import FilterAltOffIcon from '@mui/icons-material/FilterAltOff';
 import { TopBarGrid } from '../../common/TopBar';
 import { BlueTitle } from '../../common/BlueTitle';
 import { GlobalSearchBar } from '../../common/EntitiesPage/Headline';
 import ProcessTemplatesSelectCheckbox from './ProcessTemplatesCheckbox';
 import { AddProcessButton } from './AddProcessButton';
 import { IMongoProcessTemplatePopulated } from '../../interfaces/processes/processTemplate';
-import { useQueryClient } from 'react-query';
 import { IPermissionsOfUser } from '../../services/permissionsService';
-import FilterAltOffIcon from '@mui/icons-material/FilterAltOff';
 import './ProcessesList.css';
 import DateRange from '../../common/inputs/DateRange';
 

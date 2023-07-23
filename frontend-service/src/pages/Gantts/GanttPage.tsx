@@ -1,25 +1,37 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import { useParams } from 'react-router-dom';
-import { getGanttById } from '../../services/ganttsService';
 import { Box, CircularProgress, Grid } from '@mui/material';
-import { Day, Inject, Month, ResourceDirective, ResourcesDirective, ScheduleComponent, TimelineMonth, TimelineViews, ViewDirective, ViewsDirective, Week } from '@syncfusion/ej2-react-schedule';
+import {
+    Day,
+    Inject,
+    Month,
+    ResourceDirective,
+    ResourcesDirective,
+    ScheduleComponent,
+    TimelineMonth,
+    TimelineViews,
+    ViewDirective,
+    ViewsDirective,
+    Week,
+} from '@syncfusion/ej2-react-schedule';
 import { L10n, loadCldr } from '@syncfusion/ej2-base';
+import i18next from 'i18next';
+import { useSelector } from 'react-redux';
+import { getGanttById } from '../../services/ganttsService';
 import { TopBar } from '../../common/TopBar';
 import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
-import i18next from 'i18next';
 import { GanttSideBar } from './GanttSideBar';
 import { getEntitiesWithDirectConnections } from '../../services/entitiesService';
 import { getEntitiesSearchBody, getScheduleComponentData, getScheduleComponentResourceData } from '../../utils/gantts';
 import { GanttEvent } from './GanttEvent';
 import { GanttQuickInfo } from './GanttQuickInfo';
 import hebrew from '../../i18n/hebrew';
-import numberingSystems from '../../CLDR/hebrew/numberingSystems.json'
-import timeZoneNames from '../../CLDR/hebrew/timeZoneNames.json'
-import numbers from '../../CLDR/hebrew/numbers.json'
-import caHebrew from '../../CLDR/hebrew/ca-hebrew.json'
+import numberingSystems from '../../CLDR/hebrew/numberingSystems.json';
+import timeZoneNames from '../../CLDR/hebrew/timeZoneNames.json';
+import numbers from '../../CLDR/hebrew/numbers.json';
+import caHebrew from '../../CLDR/hebrew/ca-hebrew.json';
 import { useDynamicStyleSheet } from '../../utils/useDynamicStyleSheet';
-import { useSelector } from 'react-redux';
 import { RootState } from '../../store';
 import { useLocalStorage } from '../../utils/useLocalStorage';
 import { environment } from '../../globals';
@@ -28,7 +40,7 @@ import darkTheme from '../../css/syncfusion/dark.css?inline';
 import '../../css/syncfusion/schedule.css';
 
 loadCldr(numberingSystems, caHebrew, timeZoneNames, numbers);
-L10n.load({ 'he-IL': hebrew.schedule })
+L10n.load({ 'he-IL': hebrew.schedule });
 
 const { ganttSettings } = environment;
 
@@ -67,7 +79,7 @@ const GanttPage: React.FC<IGanttPageProps> = ({ setTitle }) => {
         return getScheduleComponentData(entities, gantt.items, entityTemplates);
     });
 
-    if (!gantt) return <CircularProgress />
+    if (!gantt) return <CircularProgress />;
 
     return (
         <>
@@ -75,36 +87,41 @@ const GanttPage: React.FC<IGanttPageProps> = ({ setTitle }) => {
                 <TopBar title={gantt?.name} boxStyle={{ marginBottom: 0 }} />
             </Box>
 
-            <Grid container wrap='nowrap' position='relative' alignItems="stretch" height="94vh">
+            <Grid container wrap="nowrap" position="relative" alignItems="stretch" height="94vh">
                 <Grid item>
                     <ScheduleComponent
                         ref={scheduleRef}
-                        width='100%'
-                        height='100%'
-                        timezone='Asia/Jerusalem'
-                        timeFormat='HH:mm'
-                        dateFormat='dd/MM/yyyy'
+                        width="100%"
+                        height="100%"
+                        timezone="Asia/Jerusalem"
+                        timeFormat="HH:mm"
+                        dateFormat="dd/MM/yyyy"
                         workDays={[0, 1, 2, 3, 4, 5]}
-                        locale='he-IL'
-                        currentView='Day'
+                        locale="he-IL"
+                        currentView="Day"
                         eventSettings={{ dataSource: data }}
                         actionComplete={() => {
                             const newRenderedDates = scheduleRef.current?.activeView?.renderDates;
                             if (newRenderedDates) setRenderedDates(newRenderedDates);
                         }}
-                        quickInfoTemplates={{ header: GanttQuickInfo as any }} // 'header' type is should be string | Function 
-                        enableRtl={true}
+                        quickInfoTemplates={{ header: GanttQuickInfo as any }} // 'header' type is should be string | Function
+                        enableRtl
                         readonly
                     >
                         <ViewsDirective>
-                            <ViewDirective option='Day' eventTemplate={GanttEvent} />
-                            <ViewDirective option='Week' eventTemplate={GanttEvent} />
-                            <ViewDirective option='Month' eventTemplate={GanttEvent} />
-                            <ViewDirective option='TimelineMonth' eventTemplate={GanttEvent} />
+                            <ViewDirective option="Day" eventTemplate={GanttEvent} />
+                            <ViewDirective option="Week" eventTemplate={GanttEvent} />
+                            <ViewDirective option="Month" eventTemplate={GanttEvent} />
+                            <ViewDirective option="TimelineMonth" eventTemplate={GanttEvent} />
                         </ViewsDirective>
 
                         <ResourcesDirective>
-                            <ResourceDirective field='entityTemplateId' title={i18next.t('entityTemplate')} name='entityTemplate' dataSource={resources} />
+                            <ResourceDirective
+                                field="entityTemplateId"
+                                title={i18next.t('entityTemplate')}
+                                name="entityTemplate"
+                                dataSource={resources}
+                            />
                         </ResourcesDirective>
 
                         <Inject services={[TimelineViews, TimelineMonth, Day, Week, Month]} />
@@ -114,7 +131,7 @@ const GanttPage: React.FC<IGanttPageProps> = ({ setTitle }) => {
                 <Grid item>
                     <GanttSideBar toggle={() => setSideBarOpen(!sideBarOpen)} open={sideBarOpen} gantt={gantt} />
                 </Grid>
-            </Grid >
+            </Grid>
         </>
     );
 };

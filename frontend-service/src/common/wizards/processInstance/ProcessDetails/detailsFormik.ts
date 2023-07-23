@@ -1,12 +1,12 @@
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
+import i18next from 'i18next';
+import { useMemo } from 'react';
 import { IProcessTemplateMap } from '../../../../interfaces/processes/processTemplate';
 import { IMongoProcessInstancePopulated } from '../../../../interfaces/processes/processInstance';
-import i18next from 'i18next';
 import { ProcessDetailsValues } from '.';
 import { getStepsObjectPopulated } from '../../../../utils/processWizard/steps';
 import { splitFilesProperties } from '../../../../utils/processWizard/formik';
-import { useMemo } from 'react';
 
 const validationSchema = Yup.object().shape({
     name: Yup.string().nullable().required(i18next.t('validation.required')),
@@ -55,12 +55,12 @@ export const useProcessDetailsFormik = (
 ) => {
     const initialValues = useMemo(() => getInitialDetailsValues(processInstance, processTemplatesMap), [processInstance, processTemplatesMap]);
     const formik = useFormik<ProcessDetailsValues>({
-        initialValues: initialValues,
+        initialValues,
         onSubmit: async (values: ProcessDetailsValues, { resetForm }) => {
             const result = await mutateAsync(values);
             if (processInstance) resetForm({ values: getInitialDetailsValues(result, processTemplatesMap) }); // in order to clean dirty + reset file keys to be downloaded
         },
-        validationSchema: validationSchema,
+        validationSchema,
         validateOnMount: true,
     });
 

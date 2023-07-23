@@ -1,7 +1,7 @@
-import { IMongoProcessInstancePopulated, StepsObjectPopulated } from "../../interfaces/processes/processInstance";
-import { IMongoProcessTemplatePopulated } from "../../interfaces/processes/processTemplate";
-import { IMongoStepInstancePopulated } from "../../interfaces/processes/stepInstance";
-import { IMongoStepTemplatePopulated } from "../../interfaces/processes/stepTemplate";
+import { IMongoProcessInstancePopulated, StepsObjectPopulated } from '../../interfaces/processes/processInstance';
+import { IMongoProcessTemplatePopulated } from '../../interfaces/processes/processTemplate';
+import { IMongoStepInstancePopulated } from '../../interfaces/processes/stepInstance';
+import { IMongoStepTemplatePopulated } from '../../interfaces/processes/stepTemplate';
 
 export const setInitialStepsObject = (steps: IMongoStepTemplatePopulated[]): Record<string, []> => {
     return steps.reduce((acc, obj) => {
@@ -22,7 +22,9 @@ export const getStepsObjectPopulated = (steps: IMongoStepInstancePopulated[]): S
     }, {});
 };
 
-export const getStepTemplateByStepInstance = (stepInstance: IMongoStepInstancePopulated, processTemplate: IMongoProcessTemplatePopulated): IMongoStepTemplatePopulated => {
-    return processTemplate.steps.find((step) => stepInstance.templateId === step._id)!
-
-}
+export const getStepTemplateByStepInstance = (
+    stepInstance: IMongoStepInstancePopulated,
+    processTemplate: IMongoProcessTemplatePopulated,
+): IMongoStepTemplatePopulated => {
+    return processTemplate.steps.find((step) => stepInstance.templateId === step._id)!;
+};

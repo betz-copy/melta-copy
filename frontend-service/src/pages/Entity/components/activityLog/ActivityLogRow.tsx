@@ -2,13 +2,13 @@ import React from 'react';
 import { Typography, Grid, Avatar, Skeleton } from '@mui/material';
 import { useQuery } from 'react-query';
 import randomColor from 'randomcolor';
+import { useSelector } from 'react-redux';
 import { IActivityLog } from '../../../../services/activityLogService';
 import { getUserByIdRequest } from '../../../../services/kartoffelService';
 
 import ActionText from './ActionText';
 import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { getShortDate } from '../../../../utils/date';
-import { useSelector } from 'react-redux';
 import { RootState } from '../../../../store';
 
 const ActivityLogRow: React.FC<{ log: IActivityLog; entityTemplate: IMongoEntityTemplatePopulated }> = ({ log, entityTemplate }) => {
@@ -61,7 +61,7 @@ const ActivityLogRow: React.FC<{ log: IActivityLog; entityTemplate: IMongoEntity
                     {isLoading ? <Skeleton width="15vw" /> : <ActionText log={log} entityTemplate={entityTemplate} />}
                 </Grid>
             </Grid>
-        </Grid >
+        </Grid>
     );
 };
 

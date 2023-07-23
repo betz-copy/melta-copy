@@ -52,18 +52,19 @@ const doesUserHaveNoPermissions = (permissions: IFormPermissionsOfUser) => {
     );
 };
 
-const isPermissionsChanged = (currentPermissions: IFormPermissionsOfUser, newPermissions: IFormPermissionsOfUser) => isEqualWith(currentPermissions, newPermissions, (firstValue, secondValue) => {
-    if (Array.isArray(firstValue) && Array.isArray(secondValue)) {
-        const firstInstancesPermissions = firstValue as IFormPermissionsOfUser['instancesPermissions'];
-        const secondInstancesPermissions = secondValue as IFormPermissionsOfUser['instancesPermissions'];
+const isPermissionsChanged = (currentPermissions: IFormPermissionsOfUser, newPermissions: IFormPermissionsOfUser) =>
+    isEqualWith(currentPermissions, newPermissions, (firstValue, secondValue) => {
+        if (Array.isArray(firstValue) && Array.isArray(secondValue)) {
+            const firstInstancesPermissions = firstValue as IFormPermissionsOfUser['instancesPermissions'];
+            const secondInstancesPermissions = secondValue as IFormPermissionsOfUser['instancesPermissions'];
 
-        const firstInstancesPermissionsSorted = firstInstancesPermissions.sort((a, b) => a.category.localeCompare(b.category));
-        const secondInstancesPermissionsSorted = secondInstancesPermissions.sort((a, b) => a.category.localeCompare(b.category));
-        return isEqualWith(firstInstancesPermissionsSorted, secondInstancesPermissionsSorted);
-    }
+            const firstInstancesPermissionsSorted = firstInstancesPermissions.sort((a, b) => a.category.localeCompare(b.category));
+            const secondInstancesPermissionsSorted = secondInstancesPermissions.sort((a, b) => a.category.localeCompare(b.category));
+            return isEqualWith(firstInstancesPermissionsSorted, secondInstancesPermissionsSorted);
+        }
 
-    return undefined;
-});
+        return undefined;
+    });
 
 const permissionsToFormPermissions = ({
     user,
@@ -315,47 +316,47 @@ const PermissionsOfUserDialog: React.FC<{
                                 !formikProps.values.doesHaveProcessesManagement &&
                                 !formikProps.values.doesHaveRulesManagement
                             ) && (
-                                    <Box margin={1}>
-                                        <ManagementPermissionsCard
-                                            permissionsManagement={{
-                                                checked: formikProps.values.doesHavePermissionsManagement,
-                                                onChange:
-                                                    mode === 'read'
-                                                        ? () => { }
-                                                        : (_e, checked) => formikProps.setFieldValue('doesHavePermissionsManagement', checked),
-                                                disabled: formikProps.isSubmitting,
-                                                readOnly: mode === 'read',
-                                            }}
-                                            templatesManagement={{
-                                                checked: formikProps.values.doesHaveTemplatesManagement,
-                                                onChange:
-                                                    mode === 'read'
-                                                        ? () => { }
-                                                        : (_e, checked) => formikProps.setFieldValue('doesHaveTemplatesManagement', checked),
-                                                disabled: formikProps.isSubmitting,
-                                                readOnly: mode === 'read',
-                                            }}
-                                            rulesManagement={{
-                                                checked: formikProps.values.doesHaveRulesManagement,
-                                                onChange:
-                                                    mode === 'read'
-                                                        ? () => { }
-                                                        : (_e, checked) => formikProps.setFieldValue('doesHaveRulesManagement', checked),
-                                                disabled: formikProps.isSubmitting,
-                                                readOnly: mode === 'read',
-                                            }}
-                                            processesManagement={{
-                                                checked: formikProps.values.doesHaveProcessesManagement,
-                                                onChange:
-                                                    mode === 'read'
-                                                        ? () => { }
-                                                        : (_e, checked) => formikProps.setFieldValue('doesHaveProcessesManagement', checked),
-                                                disabled: formikProps.isSubmitting,
-                                                readOnly: mode === 'read',
-                                            }}
-                                        />
-                                    </Box>
-                                )}
+                                <Box margin={1}>
+                                    <ManagementPermissionsCard
+                                        permissionsManagement={{
+                                            checked: formikProps.values.doesHavePermissionsManagement,
+                                            onChange:
+                                                mode === 'read'
+                                                    ? () => {}
+                                                    : (_e, checked) => formikProps.setFieldValue('doesHavePermissionsManagement', checked),
+                                            disabled: formikProps.isSubmitting,
+                                            readOnly: mode === 'read',
+                                        }}
+                                        templatesManagement={{
+                                            checked: formikProps.values.doesHaveTemplatesManagement,
+                                            onChange:
+                                                mode === 'read'
+                                                    ? () => {}
+                                                    : (_e, checked) => formikProps.setFieldValue('doesHaveTemplatesManagement', checked),
+                                            disabled: formikProps.isSubmitting,
+                                            readOnly: mode === 'read',
+                                        }}
+                                        rulesManagement={{
+                                            checked: formikProps.values.doesHaveRulesManagement,
+                                            onChange:
+                                                mode === 'read'
+                                                    ? () => {}
+                                                    : (_e, checked) => formikProps.setFieldValue('doesHaveRulesManagement', checked),
+                                            disabled: formikProps.isSubmitting,
+                                            readOnly: mode === 'read',
+                                        }}
+                                        processesManagement={{
+                                            checked: formikProps.values.doesHaveProcessesManagement,
+                                            onChange:
+                                                mode === 'read'
+                                                    ? () => {}
+                                                    : (_e, checked) => formikProps.setFieldValue('doesHaveProcessesManagement', checked),
+                                            disabled: formikProps.isSubmitting,
+                                            readOnly: mode === 'read',
+                                        }}
+                                    />
+                                </Box>
+                            )}
                             <Box margin={1}>
                                 <InstancesPermissionsCard
                                     categoriesCheckboxProps={Array.from(categories.values(), ({ _id, displayName }) => ({
@@ -366,42 +367,42 @@ const PermissionsOfUserDialog: React.FC<{
                                         checked: formikProps.values.instancesPermissions.some(({ category }) => category === _id),
                                         onChange:
                                             mode === 'read'
-                                                ? () => { }
+                                                ? () => {}
                                                 : (_e, checked) => {
-                                                    if (checked) {
-                                                        const newInstancesPermissions: Pick<IPermission, 'category'>[] = [
-                                                            ...formikProps.values.instancesPermissions,
-                                                            { category: _id },
-                                                        ];
-                                                        formikProps.setFieldValue('instancesPermissions', newInstancesPermissions);
-                                                        return;
-                                                    }
+                                                      if (checked) {
+                                                          const newInstancesPermissions: Pick<IPermission, 'category'>[] = [
+                                                              ...formikProps.values.instancesPermissions,
+                                                              { category: _id },
+                                                          ];
+                                                          formikProps.setFieldValue('instancesPermissions', newInstancesPermissions);
+                                                          return;
+                                                      }
 
-                                                    const newInstancesPermissions = formikProps.values.instancesPermissions.filter(
-                                                        ({ category }) => category !== _id,
-                                                    );
-                                                    formikProps.setFieldValue('instancesPermissions', newInstancesPermissions);
-                                                },
+                                                      const newInstancesPermissions = formikProps.values.instancesPermissions.filter(
+                                                          ({ category }) => category !== _id,
+                                                      );
+                                                      formikProps.setFieldValue('instancesPermissions', newInstancesPermissions);
+                                                  },
                                     }))}
                                     checkboxAllProps={
                                         mode === 'read'
                                             ? undefined
                                             : {
-                                                checked: formikProps.values.instancesPermissions.length === categories.size,
-                                                indeterminate:
-                                                    formikProps.values.instancesPermissions.length > 0 &&
-                                                    formikProps.values.instancesPermissions.length < categories.size,
-                                                onChange: (_e, checked) => {
-                                                    if (!checked) {
-                                                        formikProps.setFieldValue('instancesPermissions', []);
-                                                        return;
-                                                    }
-                                                    formikProps.setFieldValue(
-                                                        'instancesPermissions',
-                                                        Array.from(categories.keys(), (id) => ({ category: id })),
-                                                    );
-                                                },
-                                            }
+                                                  checked: formikProps.values.instancesPermissions.length === categories.size,
+                                                  indeterminate:
+                                                      formikProps.values.instancesPermissions.length > 0 &&
+                                                      formikProps.values.instancesPermissions.length < categories.size,
+                                                  onChange: (_e, checked) => {
+                                                      if (!checked) {
+                                                          formikProps.setFieldValue('instancesPermissions', []);
+                                                          return;
+                                                      }
+                                                      formikProps.setFieldValue(
+                                                          'instancesPermissions',
+                                                          Array.from(categories.keys(), (id) => ({ category: id })),
+                                                      );
+                                                  },
+                                              }
                                     }
                                 />
                             </Box>

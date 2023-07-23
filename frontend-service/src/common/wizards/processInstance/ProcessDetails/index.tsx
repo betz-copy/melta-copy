@@ -1,11 +1,11 @@
 import React from 'react';
 import { Box, StepLabel, Stepper, Step, Grid } from '@mui/material';
 import i18next from 'i18next';
+import { FormikProps } from 'formik/dist/types';
 import GeneralDetails from './GeneralDetails';
 import StepsReviewers from './StepsReviewers';
 import { IMongoProcessTemplatePopulated } from '../../../../interfaces/processes/processTemplate';
 import { IMongoProcessInstancePopulated, StepsObjectPopulated } from '../../../../interfaces/processes/processInstance';
-import { FormikProps } from 'formik/dist/types';
 import { getAllFieldsTouched } from '../../../../utils/processWizard/formik';
 
 export interface ProcessDetailsValues {

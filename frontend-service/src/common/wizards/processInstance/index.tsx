@@ -1,26 +1,27 @@
 import React, { useState } from 'react';
 import { Button, Dialog, DialogTitle, DialogContent, DialogActions, Grid, CircularProgress } from '@mui/material';
-import { ProcessSideStepper } from './ProcessSideStepper';
-import { BlueTitle } from '../../../common/BlueTitle';
 import { Done as DoneIcon, Clear as ClearIcon } from '@mui/icons-material';
 import i18next from 'i18next';
 import { makeStyles } from '@mui/styles';
+import { useMutation, useQueryClient } from 'react-query';
+import { toast } from 'react-toastify';
+import { AxiosError } from 'axios';
+import EditIcon from '@mui/icons-material/Edit';
+import _ from 'lodash';
+import { ProcessSideStepper } from './ProcessSideStepper';
+import { BlueTitle } from '../../BlueTitle';
 import ProcessDetails, { ProcessDetailsValues } from './ProcessDetails';
 import { IMongoProcessInstancePopulated, Status } from '../../../interfaces/processes/processInstance';
 import { IProcessTemplateMap } from '../../../interfaces/processes/processTemplate';
-import { useMutation, useQueryClient } from 'react-query';
 import { getInitialDetailsValues, useProcessDetailsFormik } from './ProcessDetails/detailsFormik';
 import { updateProcessRequest } from '../../../services/processesService';
-import { toast } from 'react-toastify';
-import { AxiosError } from 'axios';
 import { ErrorToast } from '../../ErrorToast';
-import EditIcon from '@mui/icons-material/Edit';
 import ProcessSummary, { SummaryDetailsValues } from './ProcessSummaryStep/index';
 import { getInitialSummaryValues, useProcessSummaryFormik } from './ProcessSummaryStep/summaryFormik';
-import _ from 'lodash';
 import ProcessStepsStep from './ProcessSteps/index';
 import { IPermissionsOfUser } from '../../../services/permissionsService';
 import { IMongoStepTemplatePopulated } from '../../../interfaces/processes/stepTemplate';
+
 interface IProcessInstanceWizard {
     open: boolean;
     onClose: (wasProcessChanged: boolean) => void;
@@ -136,7 +137,7 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({ open, onClose
 
     return (
         <Dialog keepMounted={false} open={open} fullWidth maxWidth="xl" PaperProps={{ style: { height: '85vh' } }}>
-            <DialogTitle height={'8vh'} margin={0} display="flex" justifyContent="space-between" alignItems="center">
+            <DialogTitle height="8vh" margin={0} display="flex" justifyContent="space-between" alignItems="center">
                 <BlueTitle title={detailsFormikData.values.name} variant="h4" component="p" />
                 <Grid>
                     {isEditMode && activeStep !== 1 && (
@@ -181,14 +182,14 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({ open, onClose
                 </Grid>
             </DialogTitle>
             <DialogContent dividers className={classes.container}>
-                <Grid className={`${classes.stepper}`}>
+                <Grid className={classes.stepper}>
                     <ProcessSideStepper
                         steps={steps.map((step) => step.label)}
                         activeStep={activeStep}
                         title={isEditMode ? i18next.t('wizard.processInstance.editProcess') : i18next.t('wizard.processInstance.showProcess')}
                     />
                 </Grid>
-                <Grid className={`${classes.content}`} style={{ padding: '1%' }}>
+                <Grid className={classes.content} style={{ padding: '1%' }}>
                     {steps[activeStep].component}
                 </Grid>
             </DialogContent>

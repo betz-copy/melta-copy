@@ -1,9 +1,9 @@
 import React, { useMemo } from 'react';
-import { IGanttItem } from '../../../interfaces/gantts';
 import { Grid, Tooltip } from '@mui/material';
+import { useQueryClient } from 'react-query';
+import { IGanttItem } from '../../../interfaces/gantts';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
-import { useQueryClient } from 'react-query';
 import { getEntityTemplateColor } from '../../../utils/colors';
 import { getConnectedEntityDetails } from '../../../utils/gantts';
 import { EntityTemplateDisplay } from './EntityTemplateDisplay';
@@ -22,14 +22,19 @@ export const GanttItemDisplay: React.FC<IGanttItemDisplayProps> = ({ item, expan
     const relationshipTemplates = queryClient.getQueryData<IRelationshipTemplateMap>('getRelationshipTemplates')!;
 
     const entityTemplate = entityTemplates.get(item.entityTemplate.id)!;
-    const entityTemplateColor = useMemo(() => entityTemplate ? getEntityTemplateColor(entityTemplate) : '', [entityTemplate])
+    const entityTemplateColor = useMemo(() => (entityTemplate ? getEntityTemplateColor(entityTemplate) : ''), [entityTemplate]);
 
-    const { connectedEntityTemplate, relationship, connectedEntityTemplateColor } = useMemo(() => getConnectedEntityDetails(item, entityTemplates, relationshipTemplates), []);
+    const { connectedEntityTemplate, relationship, connectedEntityTemplateColor } = useMemo(
+        () => getConnectedEntityDetails(item, entityTemplates, relationshipTemplates),
+        [],
+    );
 
     return (
         <Tooltip
-            title={`${entityTemplate.displayName}${connectedEntityTemplate ? `${ganttSettings.templateSeparator} ${connectedEntityTemplate.displayName}` : ''}`}
-            placement='right'
+            title={`${entityTemplate.displayName}${
+                connectedEntityTemplate ? `${ganttSettings.templateSeparator} ${connectedEntityTemplate.displayName}` : ''
+            }`}
+            placement="right"
             disableHoverListener={expanded}
             arrow
         >
@@ -37,17 +42,19 @@ export const GanttItemDisplay: React.FC<IGanttItemDisplayProps> = ({ item, expan
                 <EntityTemplateDisplay
                     entityTemplate={entityTemplate}
                     fieldsToShow={item.entityTemplate.fieldsToShow}
-                    color={entityTemplateColor} expanded={expanded}
+                    color={entityTemplateColor}
+                    expanded={expanded}
                     main
                 />
 
-                {connectedEntityTemplate && expanded &&
+                {connectedEntityTemplate && expanded && (
                     <EntityTemplateDisplay
                         entityTemplate={connectedEntityTemplate}
                         fieldsToShow={item.connectedEntityTemplate!.fieldsToShow}
                         color={connectedEntityTemplateColor}
                         relationshipName={relationship?.displayName}
-                    />}
+                    />
+                )}
             </Grid>
         </Tooltip>
     );

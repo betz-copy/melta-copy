@@ -3,20 +3,18 @@ import { Grid, Typography } from '@mui/material';
 import React, { useState } from 'react';
 import i18next from 'i18next';
 import { toast } from 'react-toastify';
+import { FiberManualRecordOutlined as StatusIcon, FiberManualRecord as StatusIconFilled } from '@mui/icons-material';
+import IconButton from '@mui/material/IconButton';
+import { useQueryClient } from 'react-query';
 import { ViewingBox } from '../SystemManagement/components/ViewingBox';
 import ProcessCard, { StatusColors } from './ProcessCard';
 import { searchProcessesRequest } from '../../services/processesService';
-import { FiberManualRecordOutlined as StatusIcon } from '@mui/icons-material';
-import { FiberManualRecord as StatusIconFilled } from '@mui/icons-material';
 import { environment } from '../../globals';
-import IconButton from '@mui/material/IconButton';
-import { Status } from '../../interfaces/processes/processInstance';
+import { Status, IMongoProcessInstancePopulated } from '../../interfaces/processes/processInstance';
 import './ProcessesList.css';
 
 import { IMongoProcessTemplatePopulated } from '../../interfaces/processes/processTemplate';
 import { InfiniteScroll } from '../../common/InfiniteScroll';
-import { IMongoProcessInstancePopulated } from '../../interfaces/processes/processInstance';
-import { useQueryClient } from 'react-query';
 
 const { infiniteScrollPageCount } = environment.processInstances;
 

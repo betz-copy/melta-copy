@@ -12,9 +12,6 @@ export const filterAttachmentsPropertiesFromSchema = (
     };
 };
 
-export const filterAttachmentsProcessPropertiesFromSchema = (
-    schema: IProcessDetails,
-): IMongoEntityTemplatePopulated['properties'] => {
-    return filterAttachmentsPropertiesFromSchema({ ...schema.properties, hide: [], required: [] })
-
+export const filterAttachmentsProcessPropertiesFromSchema = (schema: IProcessDetails): IMongoEntityTemplatePopulated['properties'] => {
+    return filterAttachmentsPropertiesFromSchema({ ...schema.properties, hide: [], required: [] });
 };

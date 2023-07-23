@@ -1,6 +1,6 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import React from 'react';
-import { Form as JSONSchemaForm, } from '@rjsf/mui';
+import { Form as JSONSchemaForm } from '@rjsf/mui';
 import Ajv, { ErrorObject } from 'ajv';
 import addFormats from 'ajv-formats';
 import i18next from 'i18next';
@@ -61,7 +61,7 @@ interface JSONSchemaFormFormikProps {
     readonly?: boolean;
 }
 
-export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({ readonly, schema, values, setValues, errors, touched, setFieldTouched}) => {
+export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({ readonly, schema, values, setValues, errors, touched, setFieldTouched }) => {
     const rjsfExtraErrors = formikErrorsToRjsfExtraErrors(errors as Record<string, string>);
     const ajvExtraErrorsOnlyTouched: ErrorSchema<{}> = pickBy(rjsfExtraErrors, (_value, key) => touched[key]);
     return (

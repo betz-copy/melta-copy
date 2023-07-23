@@ -6,7 +6,6 @@ const MenuButton: React.FC<{
     text: string;
     disabled?: boolean;
     icon: ReactNode;
-
 }> = ({ icon, onClick, text, disabled = false }) => {
     return (
         <MenuItem disabled={disabled} onClick={onClick}>

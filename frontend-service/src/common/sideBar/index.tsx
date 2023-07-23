@@ -11,7 +11,7 @@ import {
     Add as PlusIcon,
     Air as FluidSimulationIcon,
     Gavel as GavelIcon,
-    CalendarMonth as CalendarIcon
+    CalendarMonth as CalendarIcon,
 } from '@mui/icons-material';
 
 import i18next from 'i18next';

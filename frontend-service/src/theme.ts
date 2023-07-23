@@ -55,7 +55,7 @@ export const darkTheme = createTheme({
                 },
 
                 '.ag-row': {
-                    'backgroundColor': '#212121 !important',
+                    backgroundColor: '#212121 !important',
                 },
             },
         },

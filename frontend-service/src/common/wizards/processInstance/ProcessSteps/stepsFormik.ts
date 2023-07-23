@@ -1,9 +1,9 @@
+import pickBy from 'lodash.pickby';
+import mapValues from 'lodash.mapvalues';
 import { InstanceProperties } from '../../../../interfaces/processes/processInstance';
 import { ProcessStepValues } from './index';
 import { IMongoStepInstancePopulated } from '../../../../interfaces/processes/stepInstance';
 import { IMongoStepTemplatePopulated } from '../../../../interfaces/processes/stepTemplate';
-import pickBy from 'lodash.pickby';
-import mapValues from 'lodash.mapvalues';
 
 const splitStepProperties = (stepInstance: IMongoStepInstancePopulated, stepTemplate: IMongoStepTemplatePopulated) => {
     const templateFilesProperties = pickBy(stepTemplate.properties.properties, (value) => value.format === 'fileId');

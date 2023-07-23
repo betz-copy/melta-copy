@@ -7,12 +7,8 @@ interface InfiniteScrollProps<T> extends PureInfiniteScrollProps<T> {
     style?: CSSProperties;
 }
 
-export const InfiniteScroll = <T extends any>({
-    useContainer = true,
-    style = {},
-    ...innerInfiniteScrollProps
-}: InfiniteScrollProps<T>) => {
-    if (!useContainer) return <PureInfiniteScroll {...innerInfiniteScrollProps} />
+export const InfiniteScroll = <T extends any>({ useContainer = true, style = {}, ...innerInfiniteScrollProps }: InfiniteScrollProps<T>) => {
+    if (!useContainer) return <PureInfiniteScroll {...innerInfiniteScrollProps} />;
 
     return (
         <Grid

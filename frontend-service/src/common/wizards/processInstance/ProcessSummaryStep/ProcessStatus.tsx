@@ -1,17 +1,17 @@
 import React from 'react';
 import i18next from 'i18next';
-import { BlueTitle } from '../../../BlueTitle';
 import { Grid, IconButton, SvgIconProps, Typography } from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import CancelIcon from '@mui/icons-material/Cancel';
 import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
 import AccessTimeFilledIcon from '@mui/icons-material/AccessTimeFilled';
+import { FormikProps } from 'formik';
+import { useSelector } from 'react-redux';
 import { IMongoProcessInstancePopulated, Status } from '../../../../interfaces/processes/processInstance';
 import { getLongDate } from '../../../../utils/date';
-import { FormikProps } from 'formik';
 import { SummaryDetailsValues } from '.';
-import { useSelector } from 'react-redux';
+import { BlueTitle } from '../../../BlueTitle';
 import { RootState } from '../../../../store';
 import { IMongoStepInstancePopulated } from '../../../../interfaces/processes/stepInstance';
 import { ProcessStepValues } from '../ProcessSteps/index';
@@ -79,7 +79,7 @@ const ProcessStatus: React.FC<ProcessStatusProps> = ({ title, values, instance, 
     return (
         <Grid container flexDirection="column" alignItems="stretch" spacing={2}>
             <Grid item container justifyContent="center">
-                <BlueTitle title={title} component={'h5'} variant={'h5'} style={{ fontWeight: 600, opacity: 0.9, marginBottom: 7 }} />
+                <BlueTitle title={title} component="h5" variant="h5" style={{ fontWeight: 600, opacity: 0.9, marginBottom: 7 }} />
             </Grid>
             <Grid item container alignItems="center" justifyContent="center" spacing={3}>
                 {isEditMode ? (

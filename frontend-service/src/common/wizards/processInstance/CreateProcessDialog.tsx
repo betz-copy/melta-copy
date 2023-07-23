@@ -1,15 +1,15 @@
 import React from 'react';
 import { Dialog, DialogTitle, DialogContent, IconButton } from '@mui/material';
-import ProcessDetails, { ProcessDetailsValues } from './ProcessDetails';
-import { IProcessTemplateMap } from '../../../interfaces/processes/processTemplate';
 import { useMutation, useQueryClient } from 'react-query';
-import { useProcessDetailsFormik } from './ProcessDetails/detailsFormik';
-import { createProcessRequest } from '../../../services/processesService';
 import { toast } from 'react-toastify';
 import { AxiosError } from 'axios';
-import { BlueTitle } from '../../BlueTitle';
 import CloseIcon from '@mui/icons-material/Close';
 import i18next from 'i18next';
+import ProcessDetails, { ProcessDetailsValues } from './ProcessDetails';
+import { IProcessTemplateMap } from '../../../interfaces/processes/processTemplate';
+import { useProcessDetailsFormik } from './ProcessDetails/detailsFormik';
+import { createProcessRequest } from '../../../services/processesService';
+import { BlueTitle } from '../../BlueTitle';
 import { ErrorToast } from '../../ErrorToast';
 
 interface ISimpleDialogProps {
@@ -38,7 +38,7 @@ const CreateProcess: React.FC<ISimpleDialogProps> = ({ open, onClose }) => {
     return (
         <Dialog open={open} fullWidth maxWidth="xl" PaperProps={{ style: { height: '80vh' } }}>
             <DialogTitle margin={1}>
-                <BlueTitle title={i18next.t('processInstancesPage.addNewProcess')} variant="h4" component={'symbol'} />
+                <BlueTitle title={i18next.t('processInstancesPage.addNewProcess')} variant="h4" component="symbol" />
                 <IconButton
                     aria-label="close"
                     onClick={() => {

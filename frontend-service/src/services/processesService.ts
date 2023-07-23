@@ -1,10 +1,10 @@
-import { IMongoStepInstancePopulated } from './../interfaces/processes/stepInstance';
 import partition from 'lodash.partition';
+import mapValues from 'lodash.mapvalues';
+import { IMongoStepInstancePopulated } from '../interfaces/processes/stepInstance';
 import axios from '../axios';
 import { ProcessDetailsValues } from '../common/wizards/processInstance/ProcessDetails';
 import { environment } from '../globals';
 import { IMongoProcessInstancePopulated, ISearchProcessInstancesBody } from '../interfaces/processes/processInstance';
-import mapValues from 'lodash.mapvalues';
 import { SummaryDetailsValues } from '../common/wizards/processInstance/ProcessSummaryStep';
 import { isProcessDetailsValues } from '../utils/processWizard/checkFormikValuesType';
 import { ProcessStepValues } from '../common/wizards/processInstance/ProcessSteps';

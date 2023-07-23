@@ -1,8 +1,8 @@
 import React from 'react';
-import { IUser } from '../../../../services/kartoffelService';
 import { Chip, Grid } from '@mui/material';
-import UserAutocomplete from '../../../inputs/UserAutocomplete';
 import i18next from 'i18next';
+import { IUser } from '../../../../services/kartoffelService';
+import UserAutocomplete from '../../../inputs/UserAutocomplete';
 
 interface ReviewerSelectorProps {
     forcedReviewers?: IUser[];
@@ -20,7 +20,7 @@ export const ReviewerSelector: React.FC<ReviewerSelectorProps> = ({ forcedReview
     return (
         <Grid container direction="column" paddingBottom={2} paddingLeft={2} spacing={2}>
             {!isViewMode && (
-                <Grid item paddingBottom={'1rem'}>
+                <Grid item paddingBottom="1rem">
                     <UserAutocomplete
                         value={null}
                         displayValue={displayValue}

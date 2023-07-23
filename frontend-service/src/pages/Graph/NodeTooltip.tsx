@@ -1,8 +1,8 @@
 import React from 'react';
 import i18next from 'i18next';
 import { Divider, Grid } from '@mui/material';
-import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { NodeObject } from 'react-force-graph-2d';
+import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { LocalStorage } from '../../utils/localStorage';
 import { EntityPropertiesInternal } from '../../common/EntityProperties';
 import { NodeLabelIconsDescription } from './NodeLabelIconsDescription';
@@ -28,12 +28,7 @@ export const NodeTooltip: React.FC<NodeTooltipProps> = ({ node, entityTemplate, 
         >
             <Grid item>
                 {entityTemplate.propertiesPreview.length ? (
-                    <EntityPropertiesInternal
-                        properties={node.data}
-                        showPreviewPropertiesOnly
-                        entityTemplate={entityTemplate}
-                        darkMode={darkMode}
-                    />
+                    <EntityPropertiesInternal properties={node.data} showPreviewPropertiesOnly entityTemplate={entityTemplate} darkMode={darkMode} />
                 ) : (
                     i18next.t('graph.noPreviewProperties')
                 )}

@@ -200,7 +200,8 @@ export const generateRuleBreach = (options?: { nullable?: boolean; actionType?: 
     return ruleBreach;
 };
 
-export const generateRuleBreachAlert = (options?: { nullable?: boolean; actionType?: ActionTypes | undefined }): IRuleBreachAlertPopulated => generateRuleBreach(options);
+export const generateRuleBreachAlert = (options?: { nullable?: boolean; actionType?: ActionTypes | undefined }): IRuleBreachAlertPopulated =>
+    generateRuleBreach(options);
 
 export const generateRuleBreachRequest = (options?: {
     isReviewed?: true;
@@ -255,4 +256,3 @@ export const mockRuleBreaches = (mock: MockAdapter) => {
 
     mock.onPost(/\/api\/rule-breaches\/requests\/.*\/cancel/).reply(() => [200, generateRuleBreachRequest({})]);
 };
-

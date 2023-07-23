@@ -1,5 +1,4 @@
-import { IMongoProcessInstancePopulated } from './processes/processInstance';
-import { Status } from './processes/processInstance';
+import { IMongoProcessInstancePopulated, Status } from './processes/processInstance';
 import { IMongoStepInstancePopulated } from './processes/stepInstance';
 import { IRuleBreachAlertPopulated } from './ruleBreaches/ruleBreachAlert';
 import { IRuleBreachRequestPopulated } from './ruleBreaches/ruleBreachRequest';

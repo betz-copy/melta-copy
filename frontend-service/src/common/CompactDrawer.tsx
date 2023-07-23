@@ -1,8 +1,8 @@
-import React, { CSSProperties } from "react";
-import { Divider, Grid, IconButton } from "@mui/material";
+import React, { CSSProperties } from 'react';
+import { Divider, Grid, IconButton } from '@mui/material';
 import { ChevronRight as ArrowRightIcon, ChevronLeft as ArrowLeftIcon } from '@mui/icons-material';
-import { useSelector } from "react-redux";
-import { RootState } from "../store";
+import { useSelector } from 'react-redux';
+import { RootState } from '../store';
 
 interface CompactDrawerProps {
     toggleMinimized: () => void;

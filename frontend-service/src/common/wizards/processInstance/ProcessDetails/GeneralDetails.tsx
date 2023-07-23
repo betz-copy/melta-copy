@@ -1,22 +1,21 @@
 import { Autocomplete, Box, Fab, Grid, TextField, Typography } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import i18next from 'i18next';
-import { IMongoProcessTemplatePopulated, IProcessTemplateMap } from '../../../../interfaces/processes/processTemplate';
 import { useQueryClient } from 'react-query';
 import { FormikProvider } from 'formik';
+import { pickBy } from 'lodash';
+import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { IMongoProcessTemplatePopulated, IProcessTemplateMap, IProcessSingleProperty } from '../../../../interfaces/processes/processTemplate';
 import { IDetailsStepProp } from '.';
 import { JSONSchemaFormik } from '../../../inputs/JSONSchemaFormik';
 import { BlueTitle } from '../../../BlueTitle';
-import { pickBy } from 'lodash';
-import { IProcessSingleProperty } from '../../../../interfaces/processes/processTemplate';
-import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
 import { filterAttachmentsProcessPropertiesFromSchema } from '../../../../utils/filterAttachmentsFromSchema';
 import { InstanceFileInput } from '../../../inputs/InstanceFilesInput/InstanceFileInput';
 import { DownloadButton } from '../../../DownloadButton';
 import { setInitialStepsObject } from '../../../../utils/processWizard/steps';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { LocalizationProvider } from '@mui/x-date-pickers';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 
 export const SchemaForm = ({ viewMode, values, errors, touched, setFieldValue, setFieldTouched }) => (
     <Box paddingTop={0.5} paddingLeft={1}>
@@ -118,7 +117,7 @@ const GeneralDetails: React.FC<IDetailsStepProp> = ({ detailsFormikData, onNext,
     }, [values.template?._id]);
 
     return (
-        <Grid container height={'55vh'} direction={'column'} spacing={1} paddingLeft={4} justifyContent={'space-between'}>
+        <Grid container height="55vh" direction="column" spacing={1} paddingLeft={4} justifyContent="space-between">
             <Grid item>
                 <FormikProvider value={detailsFormikData}>
                     <Grid item container justifyContent="flex-start">
@@ -129,7 +128,7 @@ const GeneralDetails: React.FC<IDetailsStepProp> = ({ detailsFormikData, onNext,
                                 variant="h6"
                                 style={{ marginBottom: '30px' }}
                             />
-                            <Grid container direction={'column'} spacing={3}>
+                            <Grid container direction="column" spacing={3}>
                                 <Grid item>
                                     <Autocomplete
                                         id="template"
@@ -187,7 +186,7 @@ const GeneralDetails: React.FC<IDetailsStepProp> = ({ detailsFormikData, onNext,
                                 <Grid item>
                                     <LocalizationProvider dateAdapter={AdapterDateFns}>
                                         <DatePicker
-                                            inputFormat={'dd/MM/yyyy'}
+                                            inputFormat="dd/MM/yyyy"
                                             maxDate={values.endDate}
                                             label={i18next.t('wizard.processInstance.processInstanceStartDate')}
                                             value={values.startDate}
@@ -214,7 +213,7 @@ const GeneralDetails: React.FC<IDetailsStepProp> = ({ detailsFormikData, onNext,
                                 <Grid item>
                                     <LocalizationProvider dateAdapter={AdapterDateFns}>
                                         <DatePicker
-                                            inputFormat={'dd/MM/yyyy'}
+                                            inputFormat="dd/MM/yyyy"
                                             minDate={values.startDate}
                                             label={i18next.t('wizard.processInstance.processInstanceEndDate')}
                                             value={values.endDate}
@@ -241,7 +240,7 @@ const GeneralDetails: React.FC<IDetailsStepProp> = ({ detailsFormikData, onNext,
                             </Grid>
                         </Grid>
                         {values.template && (
-                            <Grid item sx={{ overflowY: 'auto', paddingRight: '15px', marginLeft: '50px' }} xs={6} maxHeight={'50vh'}>
+                            <Grid item sx={{ overflowY: 'auto', paddingRight: '15px', marginLeft: '50px' }} xs={6} maxHeight="50vh">
                                 <SchemaForm {...{ viewMode, values, errors, touched, setFieldValue, setFieldTouched }} />
                                 <FileAttachments {...{ viewMode, templateFileProperties, values, errors, setFieldValue }} />
                             </Grid>

@@ -6,7 +6,6 @@ const RelationshipTitle: React.FC<{
     sourceEntityTemplateDisplayName: string;
     relationshipTemplateDisplayName: string;
     destinationEntityTemplateDisplayName: string;
-
 }> = ({ sourceEntityTemplateDisplayName, relationshipTemplateDisplayName, destinationEntityTemplateDisplayName }) => {
     return (
         <Grid container justifyContent="space-between" alignItems="center">

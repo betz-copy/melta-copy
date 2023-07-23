@@ -32,7 +32,7 @@ const DateRange: React.FC<{
             <Grid item className="processList-dateContainer">
                 <LocalizationProvider dateAdapter={AdapterDateFns}>
                     <DatePicker
-                        inputFormat={'dd/MM/yyyy'}
+                        inputFormat="dd/MM/yyyy"
                         maxDate={endDateInput}
                         label={i18next.t('processInstancesPage.startDate')}
                         value={startDateInput}
@@ -45,7 +45,7 @@ const DateRange: React.FC<{
             <Grid item className="processList-dateContainer">
                 <LocalizationProvider dateAdapter={AdapterDateFns}>
                     <DatePicker
-                        inputFormat={'dd/MM/yyyy'}
+                        inputFormat="dd/MM/yyyy"
                         className="react-datepicker-wrapper"
                         minDate={startDateInput}
                         label={i18next.t('processInstancesPage.endDate')}

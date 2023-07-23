@@ -106,21 +106,23 @@ const RelationshipTemplatesRow: React.FC = () => {
             <ViewingBox>
                 {Array.from(relationshipTemplates.values())
                     .map((relationshipTemplate) => populateRelationshipTemplate(relationshipTemplate, entityTemplates))
-                    .filter((relationshipTemplate) => (
-                        sourceEntityTemplatesToShow.some(
-                            (sourceEntityTemplateToShow) => sourceEntityTemplateToShow._id === relationshipTemplate.sourceEntity._id,
-                        ) &&
-                        destinationEntityTemplatesToShow.some(
-                            (destinationEntityTemplateToShow) =>
-                                destinationEntityTemplateToShow._id === relationshipTemplate.destinationEntity._id,
-                        )
-                    ))
-                    .filter((relationshipTemplate) => (
-                        searchText === '' ||
-                        relationshipTemplate.displayName.includes(searchText) ||
-                        relationshipTemplate.sourceEntity.displayName.includes(searchText) ||
-                        relationshipTemplate.destinationEntity.displayName.includes(searchText)
-                    ))
+                    .filter(
+                        (relationshipTemplate) =>
+                            sourceEntityTemplatesToShow.some(
+                                (sourceEntityTemplateToShow) => sourceEntityTemplateToShow._id === relationshipTemplate.sourceEntity._id,
+                            ) &&
+                            destinationEntityTemplatesToShow.some(
+                                (destinationEntityTemplateToShow) =>
+                                    destinationEntityTemplateToShow._id === relationshipTemplate.destinationEntity._id,
+                            ),
+                    )
+                    .filter(
+                        (relationshipTemplate) =>
+                            searchText === '' ||
+                            relationshipTemplate.displayName.includes(searchText) ||
+                            relationshipTemplate.sourceEntity.displayName.includes(searchText) ||
+                            relationshipTemplate.destinationEntity.displayName.includes(searchText),
+                    )
                     .map((relationshipTemplate) => (
                         <ViewingCard
                             minWidth={350}

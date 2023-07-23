@@ -109,7 +109,6 @@ const Wizard = <T extends object>({
                             actions.setSubmitting(false);
                         }
                     }}
-
                 >
                     {(formikProps: FormikProps<T>) => (
                         <Form>

@@ -19,12 +19,7 @@ export const EntityLink: React.FC<EntityLinkProps> = ({ entity, entityTemplate }
     const darkMode = useSelector((state: RootState) => state.darkMode);
     const tooltip =
         entity && entityTemplate ? (
-            <EntityPropertiesInternal
-                properties={entity['properties']}
-                entityTemplate={entityTemplate}
-                darkMode={darkMode}
-                showPreviewPropertiesOnly
-            />
+            <EntityPropertiesInternal properties={entity.properties} entityTemplate={entityTemplate} darkMode={darkMode} showPreviewPropertiesOnly />
         ) : (
             ''
         );

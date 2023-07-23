@@ -15,7 +15,9 @@ export const NodeLabelIconsDescription: React.FC<NodeLabelIconsDescriptionProps>
                     <Typography display="inline" color={labelIcon.color}>
                         {labelIcon.icon}
                     </Typography>
-                    <Typography display="inline">{` - ${i18next.t('graph.labelIconDescriptions', { returnObjects: true })[labelIcon.icon]}`}</Typography>
+                    <Typography display="inline">{` - ${
+                        i18next.t('graph.labelIconDescriptions', { returnObjects: true })[labelIcon.icon]
+                    }`}</Typography>
                 </Grid>
             ))}
         </Grid>

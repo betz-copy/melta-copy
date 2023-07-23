@@ -2,7 +2,7 @@ import React from 'react';
 import { Stepper, Step, StepLabel, Grid } from '@mui/material';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../../store';
-import { BlueTitle } from '../../../../common/BlueTitle';
+import { BlueTitle } from '../../../BlueTitle';
 import { StyleStepIcon, StyleStepperConnector } from './StepperStyle';
 
 interface IProcessSideStepperProps {
@@ -17,7 +17,7 @@ export const ProcessSideStepper: React.FC<IProcessSideStepperProps> = ({ activeS
     return (
         <Grid container direction="column" alignItems="center" padding={3} style={{ backgroundColor: darkMode ? '#343536' : '#f8fbfd' }}>
             <Grid item>
-                <BlueTitle title={title} component={'h5'} variant={'h5'} style={{ fontWeight: 700, opacity: 0.9 }} />
+                <BlueTitle title={title} component="h5" variant="h5" style={{ fontWeight: 700, opacity: 0.9 }} />
             </Grid>
             <Grid item marginTop="-30px">
                 <Stepper activeStep={activeStep} orientation="vertical" connector={<StyleStepperConnector />}>

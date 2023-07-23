@@ -105,7 +105,7 @@ const RjfsSelectWidget = ({
             }}
             options={sortBy(enumOptions!, (o) => o.value)}
             getOptionDisabled={(option) => Boolean(enumDisabled?.includes(option.value))}
-        ></Autocomplete>
+        />
     );
 };
 

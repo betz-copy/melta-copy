@@ -17,6 +17,6 @@ export interface IMongoStepInstance extends IStepInstance {
 }
 
 export interface IMongoStepInstancePopulated extends Omit<IMongoStepInstance, 'reviewerId' | 'reviewers'> {
-    reviewers: IUser[] // TODO check if need to be IKartoffelUser or IUser
+    reviewers: IUser[]; // TODO check if need to be IKartoffelUser or IUser
     reviewer?: IUser;
 }

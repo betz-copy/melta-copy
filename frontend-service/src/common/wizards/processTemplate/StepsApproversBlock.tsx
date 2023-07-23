@@ -5,15 +5,15 @@ import { FieldArray, FormikErrors } from 'formik';
 import { ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
 import _debounce from 'lodash.debounce';
 import { useSelector } from 'react-redux';
+import i18next from 'i18next';
 import { RootState } from '../../../store';
 import UserAutocomplete from '../../inputs/UserAutocomplete';
 import CreateUserCard from './ApproverCard';
 import { StepsGenericBlockProps } from './StepsBlocksInterface';
 import { FieldBlockAccordion } from '../entityTemplate/FieldBlock';
 import { ProcessTemplateWizardValues } from '.';
-import i18next from 'i18next';
 
-const StepsApproversBlock: React.FC<StepsGenericBlockProps> = ({ title, values, propIndex, errors , touched}) => {
+const StepsApproversBlock: React.FC<StepsGenericBlockProps> = ({ title, values, propIndex, errors, touched }) => {
     const errorsOfStep = errors.steps?.[propIndex] as FormikErrors<ProcessTemplateWizardValues['steps'][number]> | undefined;
 
     const darkMode = useSelector((state: RootState) => state.darkMode);
@@ -21,7 +21,7 @@ const StepsApproversBlock: React.FC<StepsGenericBlockProps> = ({ title, values, 
 
     return (
         <Grid>
-            <FieldBlockAccordion  style={{border: (errorsOfStep?.reviewers && touched) && '1px solid red'}}>
+            <FieldBlockAccordion style={{ border: errorsOfStep?.reviewers && touched && '1px solid red' }}>
                 <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                     <Typography>{title}</Typography>
                 </AccordionSummary>
@@ -41,14 +41,11 @@ const StepsApproversBlock: React.FC<StepsGenericBlockProps> = ({ title, values, 
                                         displayValue={userInputValue}
                                         onDisplayValueChange={(_, newDisplayValue) => setUserInputValue(newDisplayValue)}
                                     />
-
                                 </Grid>
                                 <Grid container spacing={1}>
-                                    {
-                                        values.steps[propIndex].reviewers.map((user, index) => (
-                                            <CreateUserCard key={user.id} userName={user.displayName} userIndex={index} remove={() => remove(index)} />
-                                        ))
-                                    }
+                                    {values.steps[propIndex].reviewers.map((user, index) => (
+                                        <CreateUserCard key={user.id} userName={user.displayName} userIndex={index} remove={() => remove(index)} />
+                                    ))}
                                 </Grid>
                                 {errorsOfStep?.reviewers === i18next.t('validation.oneField') && (
                                     <div style={{ color: '#d32f2f', alignItems: 'center', justifyContent: 'center' }}>
@@ -56,10 +53,11 @@ const StepsApproversBlock: React.FC<StepsGenericBlockProps> = ({ title, values, 
                                     </div>
                                 )}
                             </Box>
-                        )}</FieldArray>
+                        )}
+                    </FieldArray>
                 </AccordionDetails>
             </FieldBlockAccordion>
-        </Grid >
+        </Grid>
     );
 };
 export default StepsApproversBlock;

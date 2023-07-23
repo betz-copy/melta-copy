@@ -48,8 +48,7 @@ const StepperActions = <T extends object>({
                     )}
                 </Button>
             </Grid>
-        </Grid >
-
+        </Grid>
     );
 };
 

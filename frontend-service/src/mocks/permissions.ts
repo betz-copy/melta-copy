@@ -33,16 +33,16 @@ const generateUser = () => {
 };
 
 const generatePermissionsOfUser = () => ({
-        user: generateUser(),
-        permissionsManagementId: chance.pickone([generateMongoId(), null]),
-        templatesManagementId: generateMongoId(),
-        processesManagementId: chance.pickone([generateMongoId(), null]),
-        rulesManagementId: chance.pickone([generateMongoId(), null]),
-        instancesPermissions: chance.pickset(
-            categories.map(({ _id: category }) => ({ _id: generateMongoId(), category })),
-            chance.integer({ min: 0, max: categories.length }),
-        ),
-    });
+    user: generateUser(),
+    permissionsManagementId: chance.pickone([generateMongoId(), null]),
+    templatesManagementId: generateMongoId(),
+    processesManagementId: chance.pickone([generateMongoId(), null]),
+    rulesManagementId: chance.pickone([generateMongoId(), null]),
+    instancesPermissions: chance.pickset(
+        categories.map(({ _id: category }) => ({ _id: generateMongoId(), category })),
+        chance.integer({ min: 0, max: categories.length }),
+    ),
+});
 
 const mockPermissions = (mock: MockAdapter) => {
     mock.onGet(/\/api\/users\/search.*/).reply(() => [200, Array.from({ length: 10 }).map(generateUser)]);
@@ -57,8 +57,8 @@ const mockPermissions = (mock: MockAdapter) => {
         return [200, createdPermissions];
     });
 
-    mock.onDelete(/\/api\/permissions.*/).reply(() => 
-         [200, {}] // backend should return deleted permission, but not used anyway in UI
+    mock.onDelete(/\/api\/permissions.*/).reply(
+        () => [200, {}], // backend should return deleted permission, but not used anyway in UI
     );
 
     mock.onGet('/api/permissions').reply(() => [200, Array.from({ length: 200 }).map(() => generatePermissionsOfUser())]);

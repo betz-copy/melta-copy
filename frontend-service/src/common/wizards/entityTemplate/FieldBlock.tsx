@@ -135,8 +135,8 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
     const onChangeWrapper = (index: number) => (event: React.ChangeEvent<HTMLInputElement>) => onChange(index, event);
     const setFieldDisplayValueWrapper = (index: number) => (field: keyof Values, value: any) => setFieldDisplayValue(index, field, value);
     const setDisplayValueWrapper = (index: number) => (value: SetStateAction<CommonFormInputProperties>) => setDisplayValue(index, value);
-    
-    const isFieldBlockError = touched?.[propertiesType] && errors?.hasOwnProperty(propertiesType)
+
+    const isFieldBlockError = touched?.[propertiesType] && errors?.hasOwnProperty(propertiesType);
 
     return (
         <FieldBlockAccordion style={{ border: isFieldBlockError ? '1px solid red' : '' }}>
@@ -210,8 +210,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
                     )}
                 </FieldArray>
             </AccordionDetails>
-        </FieldBlockAccordion >
-
+        </FieldBlockAccordion>
     );
 };
 

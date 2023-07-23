@@ -14,10 +14,7 @@ import { TourWrapper } from './TourWrapper';
 import { darkTheme, lightTheme } from './theme';
 
 if (import.meta.hot) {
-    import.meta.hot.on(
-        "vite:beforeUpdate",
-        () => console.clear()
-    );
+    import.meta.hot.on('vite:beforeUpdate', () => console.clear());
 }
 
 const queryClient = new QueryClient({

@@ -2,9 +2,7 @@ import { CircularProgress, Grid, Menu, MenuItem, ToggleButton, ToggleButtonGroup
 import i18next from 'i18next';
 import React, { CSSProperties, useState } from 'react';
 import { toast } from 'react-toastify';
-import {
-    InfoOutlined as InfoIcon,
-} from '@mui/icons-material';
+import { InfoOutlined as InfoIcon } from '@mui/icons-material';
 import { useMutation } from 'react-query';
 import { environment } from '../../../globals';
 import { INotificationGroupCountDetails, INotificationPopulated } from '../../../interfaces/notifications';
@@ -47,7 +45,7 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
             }
         },
         onError: (error, groupName) => {
-            const translatedGroupName = i18next.t(`notifications.groups.${groupName}`)
+            const translatedGroupName = i18next.t(`notifications.groups.${groupName}`);
 
             // eslint-disable-next-line no-console
             console.log(`failed to set all notifications of group "${translatedGroupName}" as seen. error:`, error);
@@ -92,12 +90,11 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                             setRightClickedGroup(groupName);
                             setTabOptionsAnchor(event.currentTarget);
                             event.preventDefault();
-                        }}>
+                        }}
+                    >
                         <Grid container wrap="nowrap" alignItems="center" justifyContent="space-between">
                             <Grid item>
-                                <Typography fontWeight="bold">
-                                    {i18next.t(`notifications.groups.${groupName}`)}
-                                </Typography>
+                                <Typography fontWeight="bold">{i18next.t(`notifications.groups.${groupName}`)}</Typography>
                             </Grid>
 
                             <Grid item>
@@ -108,23 +105,27 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                 ))}
             </ToggleButtonGroup>
 
-            {isLoading ? <CircularProgress sx={{ marginX: 'auto', marginTop: '1rem' }} /> : <InfiniteScroll<INotificationPopulated>
-                queryKey={['getMyNotifications', selectedGroup]}
-                queryFunction={({ pageParam }) =>
-                    getMyNotificationsRequest({
-                        limit: infiniteScrollPageCount,
-                        step: pageParam,
-                        types: groups[selectedGroup],
-                    })
-                }
-                onQueryError={(error) => {
-                    console.log('failed to get notifications. error:', error); // eslint-disable-line no-console
-                    toast.error(i18next.t('notifications.failedToGetNotifications'));
-                }}
-                endText={i18next.t('notifications.noNotificationsLeft')}
-            >
-                {(notification) => <NotificationCard notification={notification} onSeen={updateNotificationCountDetails} />}
-            </InfiniteScroll>}
+            {isLoading ? (
+                <CircularProgress sx={{ marginX: 'auto', marginTop: '1rem' }} />
+            ) : (
+                <InfiniteScroll<INotificationPopulated>
+                    queryKey={['getMyNotifications', selectedGroup]}
+                    queryFunction={({ pageParam }) =>
+                        getMyNotificationsRequest({
+                            limit: infiniteScrollPageCount,
+                            step: pageParam,
+                            types: groups[selectedGroup],
+                        })
+                    }
+                    onQueryError={(error) => {
+                        console.log('failed to get notifications. error:', error); // eslint-disable-line no-console
+                        toast.error(i18next.t('notifications.failedToGetNotifications'));
+                    }}
+                    endText={i18next.t('notifications.noNotificationsLeft')}
+                >
+                    {(notification) => <NotificationCard notification={notification} onSeen={updateNotificationCountDetails} />}
+                </InfiniteScroll>
+            )}
 
             {rightClickedGroup && tabOptionsAnchor && (
                 <Menu open={Boolean(rightClickedGroup)} onClose={onCloseTabOptions} anchorEl={tabOptionsAnchor}>
@@ -140,6 +141,6 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                     </MenuItem>
                 </Menu>
             )}
-        </PopperSidebar >
+        </PopperSidebar>
     );
 };

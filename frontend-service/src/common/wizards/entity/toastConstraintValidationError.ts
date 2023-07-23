@@ -4,10 +4,10 @@ import { IConstraint, IRequiredConstraint, IUniqueConstraint } from '../../../in
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 
 export const toastConstraintValidationError = (
-    errorMetadata: { errorCode: string; constraint: Omit<IConstraint, 'constraintName'> }, entityTemplate: IMongoEntityTemplatePopulated,
+    errorMetadata: { errorCode: string; constraint: Omit<IConstraint, 'constraintName'> },
+    entityTemplate: IMongoEntityTemplatePopulated,
 ) => {
     const { constraint } = errorMetadata;
-
 
     if (constraint.type === 'REQUIRED') {
         // shouldnt enter here. UI should block submit w/o required fields

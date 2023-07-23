@@ -3,6 +3,7 @@ import mapValues from 'lodash.mapvalues';
 import pickBy from 'lodash.pickby';
 import { IMongoProcessTemplatePopulated } from '../../interfaces/processes/processTemplate';
 import { IMongoProcessInstancePopulated, InstanceProperties } from '../../interfaces/processes/processInstance';
+
 export const getAllFieldsTouched = (values: any) => {
     const touched = {};
     Object.keys(values).forEach((field) => {

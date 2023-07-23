@@ -36,7 +36,6 @@ const CreateCategoryName: React.FC<StepComponentProps<CategoryWizardValues>> = (
                 />
             </Grid>
         </Grid>
-
     );
 };
 

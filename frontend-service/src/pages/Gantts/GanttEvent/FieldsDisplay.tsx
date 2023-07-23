@@ -23,20 +23,16 @@ export const FieldsDisplay: React.FC<IFieldsDisplayProps> = ({ fields, entity, e
 
                 return (
                     <>
-                        {!expanded &&
+                        {!expanded && (
                             <Grid item key={`${entity.properties._id}-${field}-spacer`}>
-                                <Typography fontSize={14} fontWeight="bold" color='white'>
+                                <Typography fontSize={14} fontWeight="bold" color="white">
                                     {Boolean(index) && ganttSettings.fieldSeparator}
                                 </Typography>
-                            </Grid>}
+                            </Grid>
+                        )}
 
                         <Grid item key={`${entity.properties._id}-${field}`}>
-                            <Tooltip
-                                title={`${fieldName} (${entityTemplate.displayName})`}
-                                placement='top'
-                                disableHoverListener={expanded}
-                                arrow
-                            >
+                            <Tooltip title={`${fieldName} (${entityTemplate.displayName})`} placement="top" disableHoverListener={expanded} arrow>
                                 <Typography
                                     fontSize={14}
                                     fontWeight="bold"
@@ -46,15 +42,15 @@ export const FieldsDisplay: React.FC<IFieldsDisplayProps> = ({ fields, entity, e
                                             textDecoration: 'underline',
                                             textDecorationColor: underlineColor,
                                             textDecorationThickness: '2px',
-                                        }}
+                                        }
+                                    }
                                 >
                                     {`${expanded ? `${fieldName}:` : ''} ${formatToString(entity.properties[field], type, format)}`}
                                 </Typography>
                             </Tooltip>
-                        </Grid >
+                        </Grid>
                     </>
-
-                )
+                );
             })}
         </>
     );

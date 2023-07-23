@@ -81,18 +81,20 @@ export const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
                                     </Grid>
                                     <Grid container justifyContent="space-between">
                                         <Box>
-                                            {value.required !== undefined && <FormControlLabel
-                                                control={
-                                                    <Switch
-                                                        id={required}
-                                                        name={required}
-                                                        onChange={onChange}
-                                                        checked={value.required}
-                                                        disabled={isEditMode && areThereAnyInstances}
-                                                    />
-                                                }
-                                                label={i18next.t('validation.required')}
-                                            />}
+                                            {value.required !== undefined && (
+                                                <FormControlLabel
+                                                    control={
+                                                        <Switch
+                                                            id={required}
+                                                            name={required}
+                                                            onChange={onChange}
+                                                            checked={value.required}
+                                                            disabled={isEditMode && areThereAnyInstances}
+                                                        />
+                                                    }
+                                                    label={i18next.t('validation.required')}
+                                                />
+                                            )}
                                         </Box>
 
                                         <IconButton disabled={isDisabled} onClick={() => remove(index)}>

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { ImagePicker } from '../../inputs/ImagePicker';
 import fileDetails from '../../../interfaces/fileDetails';

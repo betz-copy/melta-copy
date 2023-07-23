@@ -11,4 +11,3 @@ export const ChooseIcon: React.FC<StepComponentProps<EntityTemplateWizardValues>
         defaultInputType={values.icon?.file ? 'chooseFile' : 'chooseFromOptions'}
     />
 );
-

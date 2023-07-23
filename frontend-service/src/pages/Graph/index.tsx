@@ -175,9 +175,7 @@ const Graph: React.FC = () => {
 
     const renderTooltip = (node: NodeObject) => {
         const entityTemplate = entityTemplates.get(node.templateId)!;
-        return ReactDOMServer.renderToString(
-            <NodeTooltip node={node} entityTemplate={entityTemplate} darkMode={darkMode} />
-        );
+        return ReactDOMServer.renderToString(<NodeTooltip node={node} entityTemplate={entityTemplate} darkMode={darkMode} />);
     };
 
     // manage forces in graph
@@ -304,7 +302,7 @@ const Graph: React.FC = () => {
                     reload();
                 }}
                 set3DView={(is3DView) => {
-                    setIs3DGraph(is3DView)
+                    setIs3DGraph(is3DView);
                     setShouldZoomToFit(true);
                 }}
                 is3DView={is3DGraph}

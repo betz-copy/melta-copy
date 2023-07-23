@@ -1,9 +1,9 @@
 import React from 'react';
+import { Box, Divider, Grid } from '@mui/material';
+import { useSelector } from 'react-redux';
 import { IGantt } from '../../interfaces/gantts';
 import { GanttItemDisplay } from './GanttItemDisplay';
-import { Box, Divider, Grid } from '@mui/material';
 import { CompactDrawer } from '../../common/CompactDrawer';
-import { useSelector } from 'react-redux';
 import { RootState } from '../../store';
 
 interface IGanttSideBarProps {
@@ -17,12 +17,12 @@ export const GanttSideBar: React.FC<IGanttSideBarProps> = ({ toggle, open, gantt
 
     return (
         <CompactDrawer open={open} toggleMinimized={toggle} styleOpen={{ minWidth: '12rem' }}>
-            <Box bgcolor={darkMode ? '#252525' : '#f7f7f7'} height="2.75rem" boxShadow={`inset 0 0 4px 0 rgba(0, 0, 0, 0.2)`} />
+            <Box bgcolor={darkMode ? '#252525' : '#f7f7f7'} height="2.75rem" boxShadow="inset 0 0 4px 0 rgba(0, 0, 0, 0.2)" />
 
             <Grid
                 container
                 direction="column"
-                wrap='nowrap'
+                wrap="nowrap"
                 height="95%"
                 sx={{
                     overflowY: 'overlay',
@@ -30,12 +30,12 @@ export const GanttSideBar: React.FC<IGanttSideBarProps> = ({ toggle, open, gantt
                 }}
             >
                 {gantt.items.map((item, index) => (
-                    <Grid item key={item.entityTemplate.id} container direction="column" alignItems="center" wrap='nowrap'>
+                    <Grid item key={item.entityTemplate.id} container direction="column" alignItems="center" wrap="nowrap">
                         {Boolean(index) && <Divider sx={{ width: '85%' }} />}
                         <GanttItemDisplay item={item} expanded={open} />
                     </Grid>
                 ))}
             </Grid>
-        </CompactDrawer >
+        </CompactDrawer>
     );
 };

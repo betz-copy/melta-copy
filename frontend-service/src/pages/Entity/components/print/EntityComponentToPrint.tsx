@@ -1,11 +1,11 @@
 import React from 'react';
 import { Box } from '@mui/material';
+import { useSelector } from 'react-redux';
 import { EntityPropertiesInternal } from '../../../../common/EntityProperties';
 import { IEntity } from '../../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { EntityDisableCheckbox } from '../EntityDisableCheckbox';
 import { EntityDates } from '../EntityDates';
-import { useSelector } from 'react-redux';
 import { RootState } from '../../../../store';
 
 const EntityComponentToPrint: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; entity: IEntity; options?: { showDates?: boolean } }> = ({
@@ -18,7 +18,7 @@ const EntityComponentToPrint: React.FC<{ entityTemplate: IMongoEntityTemplatePop
         <Box border="2px solid #225AA7" borderRadius="20px" padding="1rem" style={{ pageBreakInside: 'avoid' }}>
             <Box padding="0.2rem">
                 <EntityPropertiesInternal
-                    properties={entity['properties']}
+                    properties={entity.properties}
                     entityTemplate={entityTemplate}
                     darkMode={darkMode}
                     showPreviewPropertiesOnly

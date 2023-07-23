@@ -1,10 +1,10 @@
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
+import { useMemo } from 'react';
 import { IProcessTemplateMap } from '../../../../interfaces/processes/processTemplate';
 import { IMongoProcessInstancePopulated } from '../../../../interfaces/processes/processInstance';
 import { SummaryDetailsValues } from '.';
 import { splitFilesProperties } from '../../../../utils/processWizard/formik';
-import { useMemo } from 'react';
 
 const validationSchema = Yup.object().shape({}); // TODO
 
@@ -40,7 +40,7 @@ export const useProcessSummaryFormik = (
                 resetForm({ values: getInitialSummaryValues(result, processTemplatesMap) });
             });
         },
-        validationSchema: validationSchema,
+        validationSchema,
         validateOnMount: true,
     });
 
