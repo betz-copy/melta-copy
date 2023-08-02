@@ -40,3 +40,6 @@
 [submodule "process-service"]
 	path = process-service
 	url = git@gitlab.com:yesodot/rnd/terminal-rabaz/jaws/microservices/process-service.git
+[submodule "gantts-service"]
+	path = gantts-service
+	url = git@gitlab.com:yesodot/rnd/terminal-rabaz/jaws/microservices/gantts-service.git

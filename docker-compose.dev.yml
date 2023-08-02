@@ -68,6 +68,7 @@ services:
       PERMISSIONS_API_URI: ${PERMISSION_API_URL}
       PROCESS_SERVICE_URI: ${PROCESS_SERVICE_URI}
       STORAGE_SERVICE_URI: ${STORAGE_SERVICE_URI}
+      GANTTS_SERVICE_URI: ${GANTTS_SERVICE_URI}
       KARTOFFEL_IDS: 5e5688324203fc40043591aa,61d37cb5e4de0300121e31ef
     depends_on:
       - neo4j
@@ -131,3 +132,7 @@ services:
       - 8008:8000
     restart: always
   
+  gantts-service:
+    ports:
+      - 8009:8000
+    restart: always
