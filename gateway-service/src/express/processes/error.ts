@@ -13,6 +13,12 @@ export class StepNotEditable extends ServiceError {
     }
 }
 
+export class EntityNotExist extends ServiceError {
+    constructor(entityId: string) {
+        super(400, `entity with id '${entityId}' not exist`);
+    }
+}
+
 export class NotFoundError extends ServiceError {
     constructor(type: 'process template' | 'process' | 'step', id: string) {
         const msg = `${type} with the id ${id} not found`;

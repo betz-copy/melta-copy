@@ -1,4 +1,6 @@
 import { IUser } from '../../../express/users/interface';
+import { IMongoEntityTemplatePopulated } from '../../entityTemplateManager';
+import { IEntity } from '../../instanceManager';
 import { IBaseSearchProperties } from './processTemplate';
 import { IMongoStepInstance, IMongoStepInstancePopulated } from './stepInstance';
 
@@ -46,4 +48,10 @@ export interface ISearchProcessInstancesBody extends IBaseSearchProperties {
     status?: Status;
     startDate?: Date;
     endDate?: Date;
+}
+
+export interface IReferencedEntityForProcess {
+    entity: IEntity;
+    userHavePermission: boolean;
+    entityTemplate: IMongoEntityTemplatePopulated;
 }

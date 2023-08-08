@@ -31,7 +31,7 @@ import ProcessesInstancesManager from '../processes/processInstances/manager';
 export class NotificationsManager {
     static async getMyNotifications(user: ShragaUser, query: object): Promise<INotificationPopulated[]> {
         const notifications = await NotificationService.getNotifications({ ...query, viewerId: user.id });
-        return this.populateNotifications(notifications);
+        return this.populateNotifications(notifications, user.id);
     }
 
     static async getMyNotificationCount(user: ShragaUser, query: any): Promise<number> {
@@ -44,12 +44,12 @@ export class NotificationsManager {
 
     static async notificationsSeen(notificationId: string, user: ShragaUser): Promise<INotificationPopulated> {
         const notification = await NotificationService.notificationSeen(notificationId, user.id);
-        return this.populateNotification(notification);
+        return this.populateNotification(notification, user.id);
     }
 
     static async manyNotificationsSeen(user: ShragaUser, query: any): Promise<INotificationPopulated[]> {
         const notifications = await NotificationService.manyNotificationsSeen({ ...query, viewerId: user.id });
-        return this.populateNotifications(notifications);
+        return this.populateNotifications(notifications, user.id);
     }
 
     private static async populateRuleBreachAlertNotificationMetadata(
@@ -66,9 +66,10 @@ export class NotificationsManager {
 
     private static async populateStatusUpdateNotificationMetadata(
         metadata: IProcessStatusUpdateNotificationMetadata,
+        userId: string,
     ): Promise<IProcessStatusUpdateNotificationMetadataPopulated> {
         const { processId, status, stepId } = metadata;
-        const process = await ProcessesInstancesManager.getProcessInstance(processId);
+        const process = await ProcessesInstancesManager.getProcessInstance(processId, userId);
 
         const populatedMetadata: IProcessStatusUpdateNotificationMetadataPopulated = { process, status };
 
@@ -81,15 +82,17 @@ export class NotificationsManager {
 
     private static async populateNewProcessNotificationMetadata(
         metadata: INewProcessNotificationMetadata,
+        userId: string,
     ): Promise<INewProcessNotificationMetadataPopulated> {
-        return { process: await ProcessesInstancesManager.getProcessInstance(metadata.processId) };
+        return { process: await ProcessesInstancesManager.getProcessInstance(metadata.processId, userId) };
     }
 
     private static async populateProcessReviewerUpdateNotificationMetadata(
         metadata: IProcessReviewerUpdateNotificationMetadata,
+        userId: string,
     ): Promise<IProcessReviewerUpdateNotificationMetadataPopulated> {
         const { processId, addedStepIds, deletedStepIds, unchangedStepIds } = metadata;
-        const process = await ProcessesInstancesManager.getProcessInstance(processId);
+        const process = await ProcessesInstancesManager.getProcessInstance(processId, userId);
 
         const steps: Omit<IProcessReviewerUpdateNotificationMetadataPopulated, 'process'> = {
             addedSteps: [],
@@ -113,7 +116,7 @@ export class NotificationsManager {
         };
     }
 
-    static async populateNotification(notification: INotification): Promise<INotificationPopulated> {
+    static async populateNotification(notification: INotification, userId: string): Promise<INotificationPopulated> {
         const { viewers, ...restOfNotification } = notification;
 
         let populatedMetadata: INotificationMetadataPopulated;
@@ -123,11 +126,11 @@ export class NotificationsManager {
         } else if (isRuleBreachRequestNotification(notification) || isRuleBreachResponseNotification(notification)) {
             populatedMetadata = await this.populateRuleBreachRequestOrResponseNotificationMetadata(notification.metadata);
         } else if (isProcessStatusUpdateNotification(notification)) {
-            populatedMetadata = await this.populateStatusUpdateNotificationMetadata(notification.metadata);
+            populatedMetadata = await this.populateStatusUpdateNotificationMetadata(notification.metadata, userId);
         } else if (isNewProcessNotification(notification)) {
-            populatedMetadata = await this.populateNewProcessNotificationMetadata(notification.metadata);
+            populatedMetadata = await this.populateNewProcessNotificationMetadata(notification.metadata, userId);
         } else if (isProcessReviewerUpdateNotification(notification)) {
-            populatedMetadata = await this.populateProcessReviewerUpdateNotificationMetadata(notification.metadata);
+            populatedMetadata = await this.populateProcessReviewerUpdateNotificationMetadata(notification.metadata, userId);
         }
 
         return {
@@ -136,8 +139,8 @@ export class NotificationsManager {
         };
     }
 
-    static async populateNotifications(notifications: INotification[]): Promise<INotificationPopulated[]> {
-        return Promise.all(notifications.map((notification) => this.populateNotification(notification)));
+    static async populateNotifications(notifications: INotification[], userId: string): Promise<INotificationPopulated[]> {
+        return Promise.all(notifications.map((notification) => this.populateNotification(notification, userId)));
     }
 }
 

@@ -1,9 +1,17 @@
 import { IMongoStepTemplate, IMongoStepTemplatePopulated } from './stepTemplate';
 
+export enum PropertyFormats {
+    Date = 'date',
+    DateTime = 'date-time',
+    Email = 'email',
+    FileId = 'fileId',
+    EntityReference = 'entityReference',
+}
+
 export interface IProcessSingleProperty {
     title: string;
     type: 'string' | 'number' | 'boolean';
-    format?: 'date' | 'date-time' | 'email' | 'fileId' | 'entityId';
+    format?: PropertyFormats;
     enum?: string[];
     pattern?: string;
     patternCustomErrorMessage?: string;
