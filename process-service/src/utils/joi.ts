@@ -7,11 +7,11 @@ import config from '../config';
 
 const ajv = new Ajv();
 ajv.addFormat('fileId', /.*/);
-ajv.addFormat('entityId', /.*/);
+ajv.addFormat('entityReference', /.*/);
 addFormats(ajv);
 ajv.addVocabulary(['patternCustomErrorMessage']);
 
-const stringFormats = ['date', 'date-time', 'email', 'fileId', 'entityId'];
+const stringFormats = ['date', 'date-time', 'email', 'fileId', 'entityReference'];
 const allowedJSONSchemaTypes = ['string', 'number', 'boolean'];
 
 const defaultValidationOptions: Joi.ValidationOptions = {

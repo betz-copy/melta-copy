@@ -37,6 +37,7 @@ const ProcessInstanceSchema = new mongoose.Schema<IProcessInstance>(
     {
         timestamps: true,
         versionKey: false,
+        minimize: false,
     },
 );
 
