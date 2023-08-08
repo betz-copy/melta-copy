@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 import { IProcessTemplateMap } from '../../../../interfaces/processes/processTemplate';
 import { IMongoProcessInstancePopulated } from '../../../../interfaces/processes/processInstance';
 import { SummaryDetailsValues } from '.';
-import { splitFilesProperties } from '../../../../utils/processWizard/formik';
+import { splitSpacialProperties } from '../../../../utils/processWizard/formik';
 
 const validationSchema = Yup.object().shape({}); // TODO
 
@@ -12,18 +12,16 @@ export const getInitialSummaryValues = (
     processInstance: IMongoProcessInstancePopulated,
     processTemplatesMap: IProcessTemplateMap,
 ): SummaryDetailsValues => {
+    const { fieldProperties, entityProperties, fileProperties } = splitSpacialProperties(
+        processTemplatesMap.get(processInstance.templateId)!,
+        processInstance,
+        'summaryDetails.properties.properties',
+    );
     return {
-        summaryDetails: splitFilesProperties(
-            processTemplatesMap.get(processInstance.templateId)!,
-            processInstance,
-            'summaryDetails.properties.properties',
-        ).fieldProperties,
-        summaryAttachments: splitFilesProperties(
-            processTemplatesMap.get(processInstance.templateId)!,
-            processInstance,
-            'summaryDetails.properties.properties',
-        ).fileProperties,
+        summaryDetails: fieldProperties,
+        summaryAttachments: fileProperties,
         status: processInstance.status,
+        entityReferences: entityProperties,
     };
 };
 

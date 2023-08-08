@@ -34,6 +34,7 @@ const wizardContentStyles = makeStyles(() => ({
         display: 'flex',
         flexDirection: 'row',
         padding: 0,
+        overflow: 'hidden',
     },
     content: {
         margin: 0,
@@ -189,9 +190,7 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({ open, onClose
                         title={isEditMode ? i18next.t('wizard.processInstance.editProcess') : i18next.t('wizard.processInstance.showProcess')}
                     />
                 </Grid>
-                <Grid className={classes.content} style={{ padding: '1%' }}>
-                    {steps[activeStep].component}
-                </Grid>
+                <Grid className={classes.content}>{steps[activeStep].component}</Grid>
             </DialogContent>
             <DialogActions>
                 {activeStep > 0 && (

@@ -1,21 +1,24 @@
 import React from 'react';
 import _debounce from 'lodash.debounce';
-import { Card, Grid, CardHeader, CardContent, Typography, Fab } from '@mui/material';
+import { IMongoStepTemplatePopulated } from '../../../../interfaces/processes/stepTemplate';
+import { IDetailsStepProp } from '.';
+import { ReviewerSelector } from './ReviewerSelector';
+import { Card, Grid, CardHeader, CardContent, Typography, Fab, Tooltip } from '@mui/material';
 import { ScatterPlotOutlined as HiveIcon } from '@mui/icons-material';
 import i18next from 'i18next';
 import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
-import { IMongoStepTemplatePopulated } from '../../../../interfaces/processes/stepTemplate';
-import { IDetailsStepProp } from '.';
-import { ReviewerSelector } from './ReviewerSelector';
 import { CustomIcon } from '../../../CustomIcon';
 import { IUser } from '../../../../services/kartoffelService';
 import { getStepInstanceByStepTemplateId } from '../../../../utils/processWizard/steps';
+import { useSelector } from 'react-redux';
+import { RootState } from '../../../../store';
 
 const ReviewCard = ({ stepTemplate, index, values, setFieldValue, isEditMode, processInstance }) => {
+    const darkMode = useSelector((state: RootState) => state.darkMode);
     return (
-        <Grid item xs={2} key={index} minWidth="300px">
-            <Card sx={{ height: '250px' }}>
+        <Grid item xs={10} key={index} marginBottom={1}>
+            <Card sx={{ height: isEditMode || !processInstance ? '30vh' : '25vh', minHeight: '150px', backgroundColor: darkMode ? '#303030' : 'white' }}>
                 <CardHeader
                     avatar={
                         stepTemplate.iconFileId ? (
@@ -24,7 +27,21 @@ const ReviewCard = ({ stepTemplate, index, values, setFieldValue, isEditMode, pr
                             <HiveIcon fontSize="large" />
                         )
                     }
-                    title={<Typography variant="h5">{stepTemplate.displayName}</Typography>}
+                    title={
+                        <Tooltip title={stepTemplate.displayName} arrow>
+                            <Typography
+                                variant="h5"
+                                style={{
+                                    whiteSpace: 'nowrap',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                    maxWidth: '50%',
+                                }}
+                            >
+                                {stepTemplate.displayName}
+                            </Typography>
+                        </Tooltip>
+                    }
                 />
                 <CardContent onClick={(e) => e.stopPropagation()}>
                     <ReviewerSelector
@@ -67,11 +84,19 @@ const StepsReviewers: React.FC<IDetailsStepProp> = ({ detailsFormikData, isEditM
     const { values, setFieldValue, submitForm } = detailsFormikData;
 
     return (
-        <Grid container direction="column" spacing={1} paddingLeft={4} justifyContent="space-between">
-            <Grid item maxHeight="415px" sx={{ overflowY: 'auto' }} marginBottom="30px">
+        <Card sx={{ border: 'none', boxShadow: 'none', background: 'transparent' }}>
+            <CardContent
+                sx={{
+                    height: '56vh',
+                    overflowY: 'auto',
+                    '&::-webkit-scrollbar': {
+                        width: '5px',
+                    },
+                }}
+            >
                 <Grid container rowSpacing={3}>
                     {values.template?.steps.map((stepTemplate: IMongoStepTemplatePopulated, index: number) => (
-                        <Grid item xs={4}>
+                        <Grid item xs={12} sm={6} md={4}>
                             <ReviewCard
                                 key={index}
                                 stepTemplate={stepTemplate}
@@ -84,32 +109,30 @@ const StepsReviewers: React.FC<IDetailsStepProp> = ({ detailsFormikData, isEditM
                         </Grid>
                     ))}
                 </Grid>
-            </Grid>
-            <Grid item>
-                <Grid container sx={{ justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            </CardContent>
+            <Grid item container sx={{ justifyContent: 'space-between', alignItems: 'flex-start', padding: 1 }}>
+                <Grid item>
+                    <Fab onClick={onBack} color="primary" variant="extended">
+                        <NavigateNextIcon />
+                        {i18next.t('wizard.processInstance.backTo')}
+                    </Fab>
+                </Grid>
+                {!Boolean(processInstance) && (
                     <Grid item>
-                        <Fab onClick={onBack} color="primary" variant="extended">
-                            <NavigateNextIcon />
-                            {i18next.t('wizard.processInstance.backTo')}
+                        <Fab
+                            onClick={() => {
+                                submitForm();
+                            }}
+                            variant="extended"
+                            color="primary"
+                        >
+                            {i18next.t('wizard.processInstance.createProcess')}
+                            <NavigateBeforeIcon />
                         </Fab>
                     </Grid>
-                    {!processInstance && (
-                        <Grid item>
-                            <Fab
-                                onClick={() => {
-                                    submitForm();
-                                }}
-                                variant="extended"
-                                color="primary"
-                            >
-                                {i18next.t('wizard.processInstance.createProcess')}
-                                <NavigateBeforeIcon />
-                            </Fab>
-                        </Grid>
-                    )}
-                </Grid>
+                )}
             </Grid>
-        </Grid>
+        </Card>
     );
 };
 

@@ -154,7 +154,7 @@ const ProcessCard: React.FC<{ processInstance: IMongoProcessInstancePopulated; o
                     border: !darkMode ? '1px solid #DBDBDB' : undefined,
                     borderRadius: '8px',
                     opacity: '1',
-                    ':hover': { transform: 'scale(1.05)' },
+                    ':hover': { transform: 'scale(1.01)' },
                     cursor: 'pointer',
                 }}
                 onClick={() => setOpen({ isOpen: true })}

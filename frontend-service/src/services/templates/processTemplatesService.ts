@@ -13,7 +13,7 @@ import {
 
 const { processTemplates } = environment.api;
 export const basePropertyTypes = ['string', 'number', 'boolean'];
-export const stringFormats = ['date', 'date-time', 'email'];
+export const stringFormats = ['date', 'date-time', 'email', 'entityReference' ];
 
 const processTemplateObjectToProcessTemplateForm = (
     processTemplate: IMongoProcessTemplatePopulated | null,

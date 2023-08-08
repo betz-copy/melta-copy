@@ -8,6 +8,7 @@ import EntityCard from '../../pages/GlobalSearch/components/entityCard';
 import { InfiniteScroll } from '../InfiniteScroll';
 import { IEntity } from '../../interfaces/entities';
 import { getEntitiesByTemplateRequest } from '../../services/entitiesService';
+import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
 
 const { infiniteScrollPageCount } = environment.entitiesCardsView;
 
@@ -75,11 +76,15 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
                     endText={i18next.t('entitiesCardView.noSearchLeft')}
                     style={{ overflowY: 'hidden' }}
                 >
-                    {(entity) => (
-                        <Box sx={{ marginBottom: '0.5rem' }}>
-                            <EntityCard entity={entity} />
-                        </Box>
-                    )}
+                    {(entity) => {
+                        const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates');
+                        const entityTemplate = entityTemplates?.get(entity.templateId)!;
+                        return (
+                            <Box sx={{ marginBottom: '0.5rem' }}>
+                                <EntityCard entity={entity} entityTemplate={entityTemplate} />
+                            </Box>
+                        );
+                    }}
                 </InfiniteScroll>
             </Grid>
         </Grid>

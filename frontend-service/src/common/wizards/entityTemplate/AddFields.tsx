@@ -13,7 +13,8 @@ import { basePropertyTypes, stringFormats } from '../../../services/templates/en
 import FieldBlock from './FieldBlock';
 import { ErrorToast } from '../../ErrorToast';
 
-const validPropertyTypes = [...basePropertyTypes, ...stringFormats, 'pattern', 'enum'];
+const processStringFormats = [...stringFormats, 'entityReference']
+const validPropertyTypes = [...basePropertyTypes, ...processStringFormats, 'pattern', 'enum'];
 export const propertiesBaseSchema = Yup.object({
     name: Yup.string()
         .notOneOf(['createdAt', 'updatedAt', 'disable'], i18next.t('validation.fieldExist'))

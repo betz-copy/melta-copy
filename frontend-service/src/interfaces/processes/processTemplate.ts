@@ -3,7 +3,7 @@ import { IMongoStepTemplate, IMongoStepTemplatePopulated, IStepTemplate } from '
 export interface IProcessSingleProperty {
     title: string;
     type: 'string' | 'number' | 'boolean';
-    format?: 'date' | 'date-time' | 'email' | 'fileId' | 'entityId';
+    format?: 'date' | 'date-time' | 'email' | 'fileId' | 'entityReference';
     enum?: string[];
     pattern?: string;
     patternCustomErrorMessage?: string;

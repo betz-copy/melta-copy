@@ -7,9 +7,10 @@ import { BlueTitle } from '../../../BlueTitle';
 import { IMongoProcessTemplatePopulated } from '../../../../interfaces/processes/processTemplate';
 import { SummaryDetailsValues } from '.';
 import { JSONSchemaFormik } from '../../../inputs/JSONSchemaFormik';
-import { filterAttachmentsProcessPropertiesFromSchema } from '../../../../utils/filterAttachmentsFromSchema';
+import { pickProcessFieldsPropertiesSchema } from '../../../../utils/pickFieldsPropertiesSchema';
 import { InstanceFileInput } from '../../../inputs/InstanceFilesInput/InstanceFileInput';
 import { DownloadButton } from '../../../DownloadButton';
+import { EntityReference } from '../EntityReference';
 
 interface SummaryPropertiesProps {
     formik: FormikProps<SummaryDetailsValues>;
@@ -17,10 +18,11 @@ interface SummaryPropertiesProps {
     isEditMode?: boolean;
 }
 const SummaryProperties: React.FC<SummaryPropertiesProps> = ({ formik, template, isEditMode = false }) => {
-    const { values, errors, touched, setFieldValue, setFieldTouched } = formik;
+    const { values, errors, touched, setFieldValue, setFieldTouched, handleBlur } = formik;
     const { properties } = template.summaryDetails;
     const fileProperties = pickBy(properties.properties, (value) => value.format === 'fileId');
     const templateFileProperties = Object.keys(fileProperties).length ? fileProperties : null;
+    const templateEntityReferenceProperties = pickBy(template.summaryDetails.properties.properties, (value) => value.format === 'entityReference');
     return (
         <FormikProvider value={formik}>
             <BlueTitle
@@ -29,11 +31,22 @@ const SummaryProperties: React.FC<SummaryPropertiesProps> = ({ formik, template,
                 variant="h5"
                 style={{ fontWeight: 600, opacity: 0.9 }}
             />
-            <Grid item sx={{ maxHeight: '500px', paddingRight: '15px', overflowY: 'auto' }}>
-                <Box paddingTop={0.5} paddingLeft={1}>
+            <Grid
+                item
+                height={0.95}
+                sx={{
+                    paddingRight: '30px',
+                    maxHeight: { md: 650 },
+                    overflowY: 'auto',
+                    '&::-webkit-scrollbar': {
+                        width: '3px',
+                    },
+                }}
+            >
+                <Box paddingTop={1}>
                     <BlueTitle title={i18next.t('wizard.entityTemplate.properties')} component="h6" variant="h6" />
                     <JSONSchemaFormik
-                        schema={filterAttachmentsProcessPropertiesFromSchema(template.summaryDetails)}
+                        schema={pickProcessFieldsPropertiesSchema(template.summaryDetails)}
                         values={{ ...values, properties: values.summaryDetails }}
                         setValues={(propertiesValues) => setFieldValue('summaryDetails', propertiesValues)}
                         errors={errors.summaryDetails ?? {}}
@@ -90,6 +103,30 @@ const SummaryProperties: React.FC<SummaryPropertiesProps> = ({ formik, template,
                             )}
                         </>
                     </Box>
+                )}
+                {Object.keys(templateEntityReferenceProperties!).length !== 0 && (
+                    <Grid padding={1}>
+                        {
+                            <BlueTitle
+                                title={i18next.t('wizard.processInstance.refEntities')}
+                                component="h6"
+                                variant="h6"
+                                style={{ marginBottom: '22px' }}
+                            />
+                        }
+                        {Object.entries(templateEntityReferenceProperties!).map(([fieldName, { title }]) => (
+                            <EntityReference
+                                field={fieldName}
+                                values={values}
+                                errors={errors}
+                                touched={touched}
+                                setFieldValue={setFieldValue}
+                                handleBlur={handleBlur}
+                                isViewMode={!isEditMode}
+                                title={title}
+                            />
+                        ))}
+                    </Grid>
                 )}
             </Grid>
         </FormikProvider>

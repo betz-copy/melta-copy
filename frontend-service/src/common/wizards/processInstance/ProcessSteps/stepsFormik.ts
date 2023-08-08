@@ -9,19 +9,27 @@ const splitStepProperties = (stepInstance: IMongoStepInstancePopulated, stepTemp
     const templateFilesProperties = pickBy(stepTemplate.properties.properties, (value) => value.format === 'fileId');
     const templateFileKeys = Object.keys(templateFilesProperties);
 
-    const properties = pickBy(stepInstance.properties, (_value, key) => !templateFileKeys.includes(key)) as InstanceProperties;
+    const templateEntityProperties = pickBy(stepTemplate.properties.properties, (value) => value.format === 'entityReference');
+    const templateEntityKeys = new Set(Object.keys(templateEntityProperties));
+
+    const entitiesData = pickBy(stepInstance.properties, (_value, key) => templateEntityKeys.has(key));
+    const properties = pickBy(
+        stepInstance.properties,
+        (_value, key) => !templateFileKeys.includes(key) && !Object.keys(templateEntityProperties).includes(key),
+    ) as InstanceProperties;
     const fileIdsProperties = pickBy(stepInstance.properties, (_value, key) => templateFileKeys.includes(key));
     const attachmentsProperties = mapValues(fileIdsProperties, (value) => ({ name: value })) as Record<string, File>;
-    return { properties, attachmentsProperties };
+    return { properties, attachmentsProperties, entitiesData };
 };
 
 export const getStepValuesFromStepInstance = (
     stepInstance: IMongoStepInstancePopulated,
     stepTemplate: IMongoStepTemplatePopulated,
 ): ProcessStepValues => {
-    const { properties, attachmentsProperties } = splitStepProperties(stepInstance, stepTemplate);
+    const { properties, attachmentsProperties, entitiesData } = splitStepProperties(stepInstance, stepTemplate);
     return {
         properties,
+        entityReferences: entitiesData,
         attachmentsProperties,
         status: stepInstance.status,
     };

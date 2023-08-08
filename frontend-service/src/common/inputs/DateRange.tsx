@@ -6,6 +6,8 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import Divider from '@mui/material/Divider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import i18next from 'i18next';
+import { useSelector } from 'react-redux';
+import { RootState } from '../../store';
 
 const DateRange: React.FC<{
     onStartDateChange: (newStartDateInput: Date | null) => void;
@@ -13,23 +15,10 @@ const DateRange: React.FC<{
     startDateInput: Date | null;
     endDateInput: Date | null;
 }> = ({ onStartDateChange, onEndDateChange, startDateInput, endDateInput }) => {
+    const darkMode = useSelector((state: RootState) => state.darkMode);
     return (
-        <Grid
-            container
-            className="processList-datesRangeContainer"
-            justifyContent="center"
-            alignItems="center"
-            wrap="nowrap"
-            sx={{
-                background: '#FFFFFF 0% 0% no-repeat padding-box',
-                border: '1px solid #DBDBDB',
-                borderRadius: '25px',
-                opacity: '1',
-                width: '32rem',
-                height: '2.5em',
-            }}
-        >
-            <Grid item className="processList-dateContainer">
+        <Grid container justifyContent="center" alignItems="center" wrap="nowrap" >
+            <Grid item>
                 <LocalizationProvider dateAdapter={AdapterDateFns}>
                     <DatePicker
                         inputFormat="dd/MM/yyyy"
@@ -37,11 +26,13 @@ const DateRange: React.FC<{
                         label={i18next.t('processInstancesPage.startDate')}
                         value={startDateInput}
                         onChange={(newStartDate) => onStartDateChange(newStartDate)}
-                        renderInput={(params) => <TextField {...params} />}
+                        renderInput={(params) => <TextField {...params} size="small" />}
+                        InputProps={{
+                            style: { backgroundColor: darkMode ? '#242424' : 'white', borderRadius: '0px 7px 7px 0px' },
+                        }}
                     />
                 </LocalizationProvider>
             </Grid>
-            <Divider orientation="vertical" flexItem />
             <Grid item className="processList-dateContainer">
                 <LocalizationProvider dateAdapter={AdapterDateFns}>
                     <DatePicker
@@ -51,7 +42,10 @@ const DateRange: React.FC<{
                         label={i18next.t('processInstancesPage.endDate')}
                         value={endDateInput}
                         onChange={(newEndDate) => onEndDateChange(newEndDate)}
-                        renderInput={(params) => <TextField {...params} />}
+                        renderInput={(params) => <TextField {...params} size="small" />}
+                        InputProps={{
+                            style: { backgroundColor: darkMode ? '#242424' : 'white', borderRadius: '7px 0px 0px 7px' },
+                        }}
                     />
                 </LocalizationProvider>
             </Grid>

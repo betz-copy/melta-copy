@@ -12,7 +12,7 @@ const generateRandomString = (length: number) => {
     return result;
 };
 
-const hebrewWords = ['העברת כספים', 'למידה', 'יצירת ישות', 'חדשנות', 'אמצעיי לחימה', 'פיתוח', 'פרויקט', 'אינטרנט'];
+const hebrewWords = ['העברת כספים', 'למידה בזום, למידה עצמאית כן למידה שם ארוך ארוך', 'יצירת ישות', 'חדשנות', 'אמצעיי לחימה', 'פיתוח', 'פרויקט', 'אינטרנט'];
 
 const getRandomHebrewWord = () => {
     const randomIndex = Math.floor(Math.random() * hebrewWords.length);
@@ -20,7 +20,7 @@ const getRandomHebrewWord = () => {
 };
 
 const randomNum2To5 = () => {
-    return Math.floor(Math.random() * 4) + 2;
+    return Math.floor(Math.random() * 4) + 10;
 };
 const generateProperties = (): { properties: Record<string, IProcessSingleProperty>; propertiesOrder: string[] } => {
     const propertiesCount = randomNum2To5();

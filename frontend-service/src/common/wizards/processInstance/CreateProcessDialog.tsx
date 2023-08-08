@@ -36,7 +36,7 @@ const CreateProcess: React.FC<ISimpleDialogProps> = ({ open, onClose }) => {
     const detailsFormikData = useProcessDetailsFormik(undefined, processTemplatesMap, mutateAsync);
 
     return (
-        <Dialog open={open} fullWidth maxWidth="xl" PaperProps={{ style: { height: '80vh' } }}>
+        <Dialog open={open} fullWidth maxWidth="xl" PaperProps={{ style: { height: '85vh'} }}>
             <DialogTitle margin={1}>
                 <BlueTitle title={i18next.t('processInstancesPage.addNewProcess')} variant="h4" component="symbol" />
                 <IconButton

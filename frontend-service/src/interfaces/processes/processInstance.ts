@@ -1,4 +1,6 @@
 import { IUser } from '../../services/kartoffelService';
+import { IEntity } from '../entities';
+import { IMongoEntityTemplatePopulated } from '../entityTemplates';
 import { IBaseSearchProperties } from './processTemplate';
 import { IMongoStepInstance, IMongoStepInstancePopulated } from './stepInstance';
 
@@ -67,3 +69,9 @@ export type ICreateProcessInstanceBody = CommonProcessInstanceFields & {
 export type IUpdateProcessInstanceBody = Partial<
     Omit<IProcessInstance, 'templateId' | 'reviewerId' | 'reviewedAt' | 'steps'> & { steps: StepsObject }
 >;
+
+export interface IReferencedEntityForProcess {
+    entity: IEntity;
+    entityTemplate: IMongoEntityTemplatePopulated;
+    userHavePermission: boolean;
+}

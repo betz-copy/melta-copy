@@ -14,6 +14,7 @@ const StepStatus: React.FC<{ stepInstance: IMongoStepInstancePopulated; processT
     stepInstance,
     processTemplate,
 }) => {
+
     return (
         <Grid item container xs={3} direction="column" alignItems="center">
             <Grid item>
@@ -36,7 +37,7 @@ const StepsStatuses: React.FC<{ processInstance: IMongoProcessInstancePopulated;
     processTemplate,
 }) => {
     return (
-        <Grid container direction="column">
+        <>
             <BlueTitle
                 title={i18next.t('wizard.processInstance.summary.subProcessStatus')}
                 component="h5"
@@ -48,7 +49,7 @@ const StepsStatuses: React.FC<{ processInstance: IMongoProcessInstancePopulated;
                     <StepStatus key={index} processTemplate={processTemplate} stepInstance={stepInstance} />
                 ))}
             </Grid>
-        </Grid>
+        </>
     );
 };
 

@@ -1,4 +1,4 @@
-import { Autocomplete, Box, Fab, Grid, TextField, Typography } from '@mui/material';
+import { Autocomplete, Box, Card, CardActions, CardContent, Fab, Grid, TextField, Typography } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import i18next from 'i18next';
 import { useQueryClient } from 'react-query';
@@ -12,25 +12,28 @@ import { IMongoProcessTemplatePopulated, IProcessTemplateMap, IProcessSingleProp
 import { IDetailsStepProp } from '.';
 import { JSONSchemaFormik } from '../../../inputs/JSONSchemaFormik';
 import { BlueTitle } from '../../../BlueTitle';
-import { filterAttachmentsProcessPropertiesFromSchema } from '../../../../utils/filterAttachmentsFromSchema';
+import { pickProcessFieldsPropertiesSchema } from '../../../../utils/pickFieldsPropertiesSchema';
 import { InstanceFileInput } from '../../../inputs/InstanceFilesInput/InstanceFileInput';
 import { DownloadButton } from '../../../DownloadButton';
 import { setInitialStepsObject } from '../../../../utils/processWizard/steps';
+import { EntityReference } from '../EntityReference';
 
-export const SchemaForm = ({ viewMode, values, errors, touched, setFieldValue, setFieldTouched }) => (
-    <Box paddingTop={0.5} paddingLeft={1}>
-        <BlueTitle title={i18next.t('wizard.entityTemplate.properties')} component="h6" variant="h6" />
-        <JSONSchemaFormik
-            schema={filterAttachmentsProcessPropertiesFromSchema(values.template.details)}
-            values={{ ...values, properties: values.details }}
-            setValues={(propertiesValues) => setFieldValue('details', propertiesValues)}
-            errors={errors.details ?? {}}
-            touched={touched.details ?? {}}
-            setFieldTouched={(field) => setFieldTouched(`details.${field}`)}
-            readonly={viewMode}
-        />
-    </Box>
-);
+export const SchemaForm = ({ viewMode, values, errors, touched, setFieldValue, setFieldTouched }) => {
+    return (
+        <Box paddingTop={0.5} paddingLeft={1}>
+            <BlueTitle title={i18next.t('wizard.entityTemplate.properties')} component="h6" variant="h6" />
+            <JSONSchemaFormik
+                schema={pickProcessFieldsPropertiesSchema(values.template.details)}
+                values={{ ...values, properties: values.details }}
+                setValues={(propertiesValues) => setFieldValue('details', propertiesValues)}
+                errors={errors.details ?? {}}
+                touched={touched.details ?? {}}
+                setFieldTouched={(field) => setFieldTouched(`details.${field}`)}
+                readonly={viewMode}
+            />
+        </Box>
+    );
+};
 
 type FileAttachmentsProps = {
     templateFileProperties: Record<string, IProcessSingleProperty>;
@@ -79,7 +82,6 @@ const FileAttachmentsView: React.FC<FileAttachmentsProps> = ({ templateFilePrope
 );
 
 const FileAttachments = ({ viewMode, templateFileProperties, values, errors, setFieldValue }) => {
-    if (Object.keys(templateFileProperties).length === 0) return null;
     return (
         <Box>
             <BlueTitle title={i18next.t('wizard.entityTemplate.attachments')} component="h6" variant="h6" style={{ marginBottom: '22px' }} />
@@ -99,9 +101,12 @@ const GeneralDetails: React.FC<IDetailsStepProp> = ({ detailsFormikData, onNext,
     const [previousTemplate, setPreviousTemplate] = useState<IMongoProcessTemplatePopulated>();
     const viewMode = Boolean(processInstance && !isEditMode);
     const variant = viewMode ? 'standard' : 'outlined';
-
     const templateFileProperties = values.template
         ? pickBy(values.template.details.properties.properties, (value) => value.format === 'fileId')
+        : undefined;
+
+    const templateEntityReferenceProperties = values.template
+        ? pickBy(values.template.details.properties.properties, (value) => value.format === 'entityReference')
         : undefined;
 
     useEffect(() => {
@@ -117,150 +122,191 @@ const GeneralDetails: React.FC<IDetailsStepProp> = ({ detailsFormikData, onNext,
     }, [values.template?._id]);
 
     return (
-        <Grid container height="55vh" direction="column" spacing={1} paddingLeft={4} justifyContent="space-between">
-            <Grid item>
-                <FormikProvider value={detailsFormikData}>
-                    <Grid item container justifyContent="flex-start">
-                        <Grid item xs={4}>
-                            <BlueTitle
-                                title={i18next.t('wizard.processInstance.generalDetails')}
-                                component="h6"
-                                variant="h6"
-                                style={{ marginBottom: '30px' }}
-                            />
-                            <Grid container direction="column" spacing={3}>
-                                <Grid item>
-                                    <Autocomplete
-                                        id="template"
-                                        options={Array.from(processTemplatesMap.values())}
-                                        onChange={(_e, newValue) => {
-                                            setFieldValue('template', newValue);
-                                        }}
-                                        value={values.template ?? null}
-                                        disabled={Boolean(isEditMode && processInstance)}
-                                        readOnly={viewMode}
-                                        getOptionLabel={(option) => option.displayName}
-                                        renderInput={(params) => (
+        <Card sx={{ border: 'none', boxShadow: 'none', background: 'transparent' }}>
+            <CardContent sx={{ height: '56vh', overflowY: 'auto' }}>
+                <Grid container direction={'column'} paddingLeft={4} justifyContent={'space-around'}>
+                    <Grid item>
+                        <FormikProvider value={detailsFormikData}>
+                            <Grid item container justifyContent="flex-start">
+                                <Grid item xs={4}>
+                                    <BlueTitle
+                                        title={i18next.t('wizard.processInstance.generalDetails')}
+                                        component="h6"
+                                        variant="h6"
+                                        style={{ marginBottom: '30px' }}
+                                    />
+                                    <Grid container direction={'column'} spacing={3}>
+                                        <Grid item>
+                                            <Autocomplete
+                                                id="template"
+                                                options={Array.from(processTemplatesMap.values())}
+                                                onChange={(_e, newValue) => {
+                                                    setFieldValue('template', newValue);
+                                                }}
+                                                value={values.template ?? null}
+                                                disabled={Boolean(isEditMode && processInstance)}
+                                                readOnly={viewMode}
+                                                getOptionLabel={(option) => option.displayName}
+                                                renderInput={(params) => (
+                                                    <TextField
+                                                        {...params}
+                                                        fullWidth
+                                                        name="template"
+                                                        variant={variant}
+                                                        InputLabelProps={{
+                                                            shrink: viewMode || undefined,
+                                                        }}
+                                                        label={i18next.t(
+                                                            processInstance
+                                                                ? 'wizard.processInstance.processTemplate'
+                                                                : 'processInstancesPage.chooseProcessTemplate',
+                                                        )}
+                                                        helperText={touched.template ? errors.template : ''}
+                                                        error={touched.template && Boolean(errors.template)}
+                                                        onBlur={handleBlur}
+                                                    />
+                                                )}
+                                            />
+                                        </Grid>
+                                        <Grid item>
                                             <TextField
-                                                {...params}
+                                                id="name"
+                                                name="name"
                                                 fullWidth
-                                                name="template"
+                                                label={i18next.t('wizard.processInstance.processInstanceName')}
+                                                value={values.name}
                                                 variant={variant}
                                                 InputLabelProps={{
                                                     shrink: viewMode || undefined,
                                                 }}
-                                                label={i18next.t(
-                                                    processInstance
-                                                        ? 'wizard.processInstance.processTemplate'
-                                                        : 'processInstancesPage.chooseProcessTemplate',
-                                                )}
-                                                helperText={touched.template ? errors.template : ''}
-                                                error={touched.template && Boolean(errors.template)}
+                                                onChange={(e) => {
+                                                    setFieldValue('name', e.target.value);
+                                                }}
+                                                helperText={touched.name ? errors.name : ''}
+                                                error={touched.name && Boolean(errors.name)}
                                                 onBlur={handleBlur}
+                                                InputProps={{
+                                                    readOnly: viewMode,
+                                                }}
                                             />
+                                        </Grid>
+                                        <Grid item>
+                                            <LocalizationProvider dateAdapter={AdapterDateFns}>
+                                                <DatePicker
+                                                    maxDate={values.endDate}
+                                                    label={i18next.t('wizard.processInstance.processInstanceStartDate')}
+                                                    value={values.startDate}
+                                                    onChange={(newStartDate) => {
+                                                        setFieldValue('startDate', newStartDate);
+                                                    }}
+                                                    renderInput={(params) => (
+                                                        <TextField
+                                                            fullWidth
+                                                            variant={variant}
+                                                            InputLabelProps={{
+                                                                shrink: viewMode || undefined,
+                                                            }}
+                                                            {...params}
+                                                            error={touched.startDate && Boolean(errors.startDate)}
+                                                            helperText={touched.startDate ? errors.startDate : ''}
+                                                            onBlur={() => setFieldTouched('startDate')}
+                                                        />
+                                                    )}
+                                                    readOnly={viewMode}
+                                                />
+                                            </LocalizationProvider>
+                                        </Grid>
+                                        <Grid item>
+                                            <LocalizationProvider dateAdapter={AdapterDateFns}>
+                                                <DatePicker
+                                                    minDate={values.startDate}
+                                                    label={i18next.t('wizard.processInstance.processInstanceEndDate')}
+                                                    value={values.endDate}
+                                                    onChange={(newEndDate) => {
+                                                        setFieldValue('endDate', newEndDate);
+                                                    }}
+                                                    renderInput={(params) => (
+                                                        <TextField
+                                                            variant={variant}
+                                                            fullWidth
+                                                            InputLabelProps={{
+                                                                shrink: viewMode || undefined,
+                                                            }}
+                                                            {...params}
+                                                            error={touched.endDate && Boolean(errors.endDate)}
+                                                            helperText={touched.endDate ? errors.endDate : ''}
+                                                            onBlur={() => setFieldTouched('endDate')}
+                                                        />
+                                                    )}
+                                                    readOnly={viewMode}
+                                                />
+                                            </LocalizationProvider>
+                                        </Grid>
+                                    </Grid>
+                                </Grid>
+                                {values.template && (
+                                    <Grid
+                                        item
+                                        sx={{
+                                            overflowY: 'auto',
+                                            paddingLeft: 3,
+                                        }}
+                                        xs={7}
+                                    >
+                                        {Object.keys(pickProcessFieldsPropertiesSchema(values.template.details).properties).length !== 0 && (
+                                            <SchemaForm {...{ viewMode, values, errors, touched, setFieldValue, setFieldTouched }} />
                                         )}
-                                    />
-                                </Grid>
-                                <Grid item>
-                                    <TextField
-                                        id="name"
-                                        name="name"
-                                        fullWidth
-                                        label={i18next.t('wizard.processInstance.processInstanceName')}
-                                        value={values.name}
-                                        variant={variant}
-                                        InputLabelProps={{
-                                            shrink: viewMode || undefined,
-                                        }}
-                                        onChange={(e) => {
-                                            setFieldValue('name', e.target.value);
-                                        }}
-                                        helperText={touched.name ? errors.name : ''}
-                                        error={touched.name && Boolean(errors.name)}
-                                        onBlur={handleBlur}
-                                        InputProps={{
-                                            readOnly: viewMode,
-                                        }}
-                                    />
-                                </Grid>
-                                <Grid item>
-                                    <LocalizationProvider dateAdapter={AdapterDateFns}>
-                                        <DatePicker
-                                            inputFormat="dd/MM/yyyy"
-                                            maxDate={values.endDate}
-                                            label={i18next.t('wizard.processInstance.processInstanceStartDate')}
-                                            value={values.startDate}
-                                            onChange={(newStartDate) => {
-                                                setFieldValue('startDate', newStartDate);
-                                            }}
-                                            renderInput={(params) => (
-                                                <TextField
-                                                    fullWidth
-                                                    variant={variant}
-                                                    InputLabelProps={{
-                                                        shrink: viewMode || undefined,
-                                                    }}
-                                                    {...params}
-                                                    error={touched.startDate && Boolean(errors.startDate)}
-                                                    helperText={touched.startDate ? errors.startDate : ''}
-                                                    onBlur={() => setFieldTouched('startDate')}
-                                                />
-                                            )}
-                                            readOnly={viewMode}
-                                        />
-                                    </LocalizationProvider>
-                                </Grid>
-                                <Grid item>
-                                    <LocalizationProvider dateAdapter={AdapterDateFns}>
-                                        <DatePicker
-                                            inputFormat="dd/MM/yyyy"
-                                            minDate={values.startDate}
-                                            label={i18next.t('wizard.processInstance.processInstanceEndDate')}
-                                            value={values.endDate}
-                                            onChange={(newEndDate) => {
-                                                setFieldValue('endDate', newEndDate);
-                                            }}
-                                            renderInput={(params) => (
-                                                <TextField
-                                                    variant={variant}
-                                                    fullWidth
-                                                    InputLabelProps={{
-                                                        shrink: viewMode || undefined,
-                                                    }}
-                                                    {...params}
-                                                    error={touched.endDate && Boolean(errors.endDate)}
-                                                    helperText={touched.endDate ? errors.endDate : ''}
-                                                    onBlur={() => setFieldTouched('endDate')}
-                                                />
-                                            )}
-                                            readOnly={viewMode}
-                                        />
-                                    </LocalizationProvider>
-                                </Grid>
+                                        {Object.keys(templateFileProperties!).length !== 0 && (
+                                            <FileAttachments {...{ viewMode, templateFileProperties, values, errors, setFieldValue }} />
+                                        )}
+                                        {Object.keys(templateEntityReferenceProperties!).length !== 0 && (
+                                            <Grid padding={1}>
+                                                {
+                                                    <BlueTitle
+                                                        title={i18next.t('wizard.processInstance.refEntities')}
+                                                        component="h6"
+                                                        variant="h6"
+                                                        style={{ marginBottom: '22px' }}
+                                                    />
+                                                }
+                                                {Object.entries(templateEntityReferenceProperties!).map(([fieldName, { title }]) => (
+                                                    <EntityReference
+                                                        field={fieldName}
+                                                        values={values}
+                                                        errors={errors}
+                                                        touched={touched}
+                                                        setFieldValue={setFieldValue}
+                                                        handleBlur={handleBlur}
+                                                        isViewMode={viewMode}
+                                                        title={title}
+                                                    />
+                                                ))}
+                                            </Grid>
+                                        )}
+                                    </Grid>
+                                )}
                             </Grid>
-                        </Grid>
-                        {values.template && (
-                            <Grid item sx={{ overflowY: 'auto', paddingRight: '15px', marginLeft: '50px' }} xs={6} maxHeight="50vh">
-                                <SchemaForm {...{ viewMode, values, errors, touched, setFieldValue, setFieldTouched }} />
-                                <FileAttachments {...{ viewMode, templateFileProperties, values, errors, setFieldValue }} />
-                            </Grid>
-                        )}
+                        </FormikProvider>
                     </Grid>
-                </FormikProvider>
-            </Grid>
-            <Grid item alignSelf="flex-end">
-                <Fab
-                    onClick={() => {
-                        onNext();
-                    }}
-                    variant="extended"
-                    color="primary"
-                >
-                    {i18next.t(viewMode ? 'wizard.processInstance.showStepsReviewers' : 'wizard.processInstance.moveToStepsReviewers')}
-                    <NavigateBeforeIcon />
-                </Fab>
-            </Grid>
-        </Grid>
+                </Grid>
+            </CardContent>
+            <CardActions dir="ltr">
+                <Grid item>
+                    {values.template && (
+                        <Fab
+                            onClick={() => {
+                                onNext();
+                            }}
+                            variant="extended"
+                            color="primary"
+                        >
+                            <NavigateBeforeIcon />
+                            {i18next.t(viewMode ? 'wizard.processInstance.showStepsReviewers' : 'wizard.processInstance.moveToStepsReviewers')}
+                        </Fab>
+                    )}
+                </Grid>
+            </CardActions>
+        </Card>
     );
 };
 

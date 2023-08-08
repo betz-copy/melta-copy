@@ -5,11 +5,12 @@ import { IMongoProcessTemplatePopulated } from '../../../../interfaces/processes
 import { IMongoStepTemplatePopulated } from '../../../../interfaces/processes/stepTemplate';
 import { IMongoStepInstancePopulated } from '../../../../interfaces/processes/stepInstance';
 import { ProcessStep } from './processStep';
-import { IMongoProcessInstancePopulated, Status } from '../../../../interfaces/processes/processInstance';
+import { IMongoProcessInstancePopulated, IReferencedEntityForProcess, Status } from '../../../../interfaces/processes/processInstance';
 
 export interface ProcessStepValues {
     properties: object;
     attachmentsProperties: object;
+    entityReferences: Record<string, IReferencedEntityForProcess>;
     status: Status;
 }
 
@@ -38,7 +39,6 @@ const Steps: React.FC<IStepsProp> = ({
     defaultStepTemplate,
 }) => {
     const [tabValue, setTabValue] = React.useState(defaultStepTemplate ? defaultStepTemplate._id : processTemplate.steps[0]._id);
-
     return (
         <Box
             sx={{
@@ -46,13 +46,12 @@ const Steps: React.FC<IStepsProp> = ({
                 height: '100%',
                 paddingRight: '60px',
                 paddingLeft: '30px',
-                overflow: 'auto',
             }}
         >
             <TabContext value={tabValue}>
                 <Grid container direction="column">
                     <Grid item container sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                        <TabList onChange={(_event, newValue) => setTabValue(newValue)}>
+                        <TabList onChange={(_event, newValue) => setTabValue(newValue)} scrollButtons="auto" variant="scrollable">
                             {processTemplate.steps?.map(({ _id, displayName }) => (
                                 <Tab key={_id} label={displayName} value={_id} disabled={tabValue !== _id && isStepEditMode} />
                             ))}
@@ -63,7 +62,7 @@ const Steps: React.FC<IStepsProp> = ({
                             const stepTemplate = getStepTemplateByStepInstance(stepInstance, processTemplate);
 
                             return (
-                                <TabPanel key={stepInstance._id} value={stepTemplate._id}>
+                                <TabPanel key={stepInstance._id} value={stepTemplate._id} >
                                     <ProcessStep
                                         onStepUpdateSuccess={onStepUpdateSuccess}
                                         processInstance={processInstance}

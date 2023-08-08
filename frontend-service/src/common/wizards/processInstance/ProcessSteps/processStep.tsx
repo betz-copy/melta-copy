@@ -8,7 +8,7 @@ import { AxiosError } from 'axios';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { IMongoStepInstancePopulated } from '../../../../interfaces/processes/stepInstance';
-import { filterAttachmentsProcessPropertiesFromSchema } from '../../../../utils/filterAttachmentsFromSchema';
+import { pickProcessFieldsPropertiesSchema } from '../../../../utils/pickFieldsPropertiesSchema';
 import { DownloadButton } from '../../../DownloadButton';
 import { InstanceFileInput } from '../../../inputs/InstanceFilesInput/InstanceFileInput';
 import { ajvValidate, JSONSchemaFormik } from '../../../inputs/JSONSchemaFormik';
@@ -20,6 +20,8 @@ import { IMongoStepTemplatePopulated } from '../../../../interfaces/processes/st
 import { ProcessStepValues } from '.';
 import { IPermissionsOfUser } from '../../../../services/permissionsService';
 import { IMongoProcessInstancePopulated, Status } from '../../../../interfaces/processes/processInstance';
+import { EntityReference } from '../EntityReference';
+import { BlueTitle } from '../../../BlueTitle';
 
 interface ProcessStepProps {
     stepInstance: IMongoStepInstancePopulated;
@@ -47,7 +49,7 @@ export const ProcessStep: FC<ProcessStepProps> = ({
     const canEditStep = hasPermissionsToEditStep && processInstance.status === Status.Pending;
 
     const templateFileProperties = pickBy(stepTemplate.properties.properties, (value) => value.format === 'fileId');
-
+    const templateEntityReferenceProperties = pickBy(stepTemplate.properties.properties, (value) => value.format === 'entityReference');
     const { isLoading: editStepIsLoading, mutateAsync: editStepMutateAsync } = useMutation(
         (stepData: ProcessStepValues) => updateStepRequest(stepInstance._id, stepData, processInstance._id, stepInstance),
         {
@@ -71,7 +73,7 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                 resetForm({ values: getStepValuesFromStepInstance(result, stepTemplate) });
             }}
             validate={(values) => {
-                const nonAttachmentsSchema = filterAttachmentsProcessPropertiesFromSchema({
+                const nonAttachmentsSchema = pickProcessFieldsPropertiesSchema({
                     properties: stepTemplate.properties,
                     propertiesOrder: stepTemplate.propertiesOrder,
                 });
@@ -82,12 +84,12 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                 return { properties: propertiesErrors };
             }}
         >
-            {({ setFieldValue, values, errors, touched, setFieldTouched, dirty }) => {
+            {({ setFieldValue, values, errors, touched, setFieldTouched, dirty, handleBlur, resetForm }) => {
                 return (
                     <Form>
-                        <Grid container direction="column" sx={{ overflowY: 'auto', padding: '10px' }}>
+                        <Grid container direction="column" >
                             {canEditStep && (
-                                <Grid item container spacing={1} marginBottom="25px">
+                                <Grid item container spacing={1} >
                                     {isStepEditMode ? (
                                         <>
                                             <Grid item>
@@ -98,6 +100,7 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                                     }
                                                     onClick={() => {
                                                         setIsStepEditMode(false);
+                                                        resetForm();
                                                     }}
                                                 >
                                                     {i18next.t('wizard.processInstance.cancelBth')}
@@ -133,19 +136,17 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                 </Grid>
                             )}
 
-                            <Grid item container spacing={4} justifyContent="space-between">
+                            <Grid item container spacing={2} marginTop={1} justifyContent="space-between" maxHeight={550} overflow={'auto'}>
                                 <Grid item xs={6}>
                                     <Grid
                                         item
                                         sx={{
-                                            marginTop: '-10px',
                                             paddingRight: '15px',
-                                            maxHeight: '500px',
                                             overflowY: 'auto',
                                         }}
                                     >
                                         <JSONSchemaFormik
-                                            schema={filterAttachmentsProcessPropertiesFromSchema({
+                                            schema={pickProcessFieldsPropertiesSchema({
                                                 properties: stepTemplate.properties,
                                                 propertiesOrder: stepTemplate.propertiesOrder,
                                             })}
@@ -203,6 +204,30 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                                 ))}
                                             </>
                                         )
+                                    )}
+                                    {Object.keys(templateEntityReferenceProperties!).length !== 0 && (
+                                        <Grid padding={1}>
+                                            {
+                                                <BlueTitle
+                                                    title={i18next.t('wizard.processInstance.refEntities')}
+                                                    component="h6"
+                                                    variant="h6"
+                                                    style={{ marginBottom: '22px' }}
+                                                />
+                                            }
+                                            {Object.entries(templateEntityReferenceProperties!).map(([fieldName, { title }]) => (
+                                                <EntityReference
+                                                    field={fieldName}
+                                                    values={values}
+                                                    errors={errors}
+                                                    touched={touched}
+                                                    setFieldValue={setFieldValue}
+                                                    handleBlur={handleBlur}
+                                                    isViewMode={!isStepEditMode}
+                                                    title={title}
+                                                />
+                                            ))}
+                                        </Grid>
                                     )}
                                 </Grid>
                                 <Grid item xs={3}>

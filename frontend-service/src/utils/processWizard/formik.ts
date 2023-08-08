@@ -12,14 +12,24 @@ export const getAllFieldsTouched = (values: any) => {
     return touched;
 };
 
-export const splitFilesProperties = (template: IMongoProcessTemplatePopulated, process: IMongoProcessInstancePopulated, pathToProperties: string) => {
+export const splitSpacialProperties = (
+    template: IMongoProcessTemplatePopulated,
+    process: IMongoProcessInstancePopulated,
+    pathToProperties: string,
+) => {
     const templateProperties = get(template, pathToProperties);
+    const templateEntityProperties = pickBy(templateProperties, (value) => value.format === 'entityReference');
     const templateFilesProperties = pickBy(templateProperties, (value) => value.format === 'fileId');
-    const templateFileKeys = Object.keys(templateFilesProperties);
+    const templateFileKeys = new Set(Object.keys(templateFilesProperties));
+    const templateEntityKeys = new Set(Object.keys(templateEntityProperties));
     const processProperties = get(process, pathToProperties.split('.')[0]);
-    const fieldProperties = pickBy(processProperties, (_value, key) => !templateFileKeys.includes(key)) as InstanceProperties;
-    const fileIdsProperties = pickBy(processProperties, (_value, key) => templateFileKeys.includes(key));
+    const fieldProperties = pickBy(
+        processProperties,
+        (_value, key) => !templateFileKeys.has(key) && !templateEntityKeys.has(key),
+    ) as InstanceProperties;
+    const fileIdsProperties = pickBy(processProperties, (_value, key) => templateFileKeys.has(key));
+    const entityProperties = pickBy(processProperties, (_value, key) => templateEntityKeys.has(key));
     const fileProperties = mapValues(fileIdsProperties, (value) => ({ name: value })) as Record<string, File>;
 
-    return { fieldProperties, fileProperties };
+    return { fieldProperties, fileProperties, entityProperties };
 };

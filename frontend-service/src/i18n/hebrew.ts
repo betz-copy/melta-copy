@@ -213,6 +213,7 @@ export default {
         succeededToDeleteUser: 'נמחק הרשאות של משתמש בהצלחה',
         failedToLoadAllPermissions: 'נכשל לטעון את כל ההרשאות',
         dontHavePermissionsToCategory: 'אין הרשאות לקטגוריה',
+        dontHavePermissionToEntityPage: 'אין לך הרשאות לגשת לעמוד פרט של ישות זו',
         permissionsOfUserDialog: {
             readTitle: 'ההרשאות שלי',
             createTitle: 'הוסף משתמש',
@@ -409,6 +410,10 @@ export default {
             failedToCreate: 'נכשל ליצור תהליך',
             nextToSteps: 'מעבר לשלביי התהליך',
             nextToSummaryDetails: 'מעבר לסיכום התהליך',
+            chooseRefEntity: 'בחר יישות לשיוך',
+            refEntities: 'ישויות משוייכות',
+            chooseEntityTemplate: 'בחר תבנית ישות',
+            changeEntity: 'בחר יישות חדשה',
             summary: {
                 title: 'סיכום וסטטוס התהליך',
                 subProcessStatus: 'סטטוס תתי תהליכים',
@@ -468,6 +473,8 @@ export default {
         email: 'כתובת מייל',
         pattern: 'תבנית (regex)',
         enum: 'רשימה',
+        dateNotification: 'התראה לפני סיום',
+        entityReference: 'שיוך לישות'
     },
     input: {
         imagePicker: {

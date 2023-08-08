@@ -6,7 +6,7 @@ import { IProcessTemplateMap } from '../../../../interfaces/processes/processTem
 import { IMongoProcessInstancePopulated } from '../../../../interfaces/processes/processInstance';
 import { ProcessDetailsValues } from '.';
 import { getStepsObjectPopulated } from '../../../../utils/processWizard/steps';
-import { splitFilesProperties } from '../../../../utils/processWizard/formik';
+import { splitSpacialProperties } from '../../../../utils/processWizard/formik';
 
 const validationSchema = Yup.object().shape({
     name: Yup.string().nullable().required(i18next.t('validation.required')),
@@ -21,7 +21,7 @@ export const getInitialDetailsValues = (
     processTemplatesMap: IProcessTemplateMap,
 ): ProcessDetailsValues => {
     if (processInstance) {
-        const { fieldProperties, fileProperties } = splitFilesProperties(
+        const { fieldProperties, fileProperties, entityProperties } = splitSpacialProperties(
             processTemplatesMap.get(processInstance.templateId)!,
             processInstance,
             'details.properties.properties',
@@ -34,6 +34,7 @@ export const getInitialDetailsValues = (
             details: fieldProperties,
             detailsAttachments: fileProperties,
             steps: getStepsObjectPopulated(processInstance.steps),
+            entityReferences: entityProperties,
         };
     }
 
@@ -45,6 +46,7 @@ export const getInitialDetailsValues = (
         details: {},
         detailsAttachments: {},
         steps: {},
+        entityReferences: {},
     };
 };
 

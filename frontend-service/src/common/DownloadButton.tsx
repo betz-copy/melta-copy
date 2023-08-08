@@ -14,7 +14,10 @@ const DownloadButton: React.FC<{ fileId: string }> = ({ fileId }) => {
 
     return (
         <IconButton
-            onClick={() => new Downloader({ url: `/api${environment.api.storage}/${fileId}`, filename: fileName, withCredentials: true })}
+            onClick={(event) => {
+                event.stopPropagation();
+                new Downloader({ url: `/api${environment.api.storage}/${fileId}`, filename: fileName, withCredentials: true });
+            }}
             sx={{ borderRadius: 10 }}
         >
             <FileDownloadIcon />

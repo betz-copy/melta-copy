@@ -20,7 +20,7 @@ const SearchInput: React.FC<{
     endAdornmentChildren = <SearchIcon />,
     placeholder = i18next.t('searchLabel'),
     size = 'small',
-    borderRadius = '7px 7px 7px 7px',
+    borderRadius = '0px 7px 7px 0px',
 }) => {
     const darkMode = useSelector((state: RootState) => state.darkMode);
 

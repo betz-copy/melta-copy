@@ -16,15 +16,16 @@ const TemplateTableSelect: React.FC<{
     error?: boolean;
     helperText?: string;
     hideNonPreview?: boolean;
-}> = ({ entityTemplate, value, onChange, onBlur, label, error, helperText, hideNonPreview }) => {
-    const [isSelectBoxEntityClicked, setIsSelectBoxEntityClicked] = useState(false);
+    autoLoad?: boolean;
+}> = ({ entityTemplate, value, onChange, onBlur, label, error, helperText, hideNonPreview, autoLoad = false }) => {
+    const [isSelectBoxEntityClicked, setIsSelectBoxEntityClicked] = useState(autoLoad);
 
     useEffect(() => {
         // if no entityTemplate, return to DashedSelectBox with disabled message
         if (!entityTemplate) {
             setIsSelectBoxEntityClicked(false);
-        }
-    }, [entityTemplate]);
+        } else if (autoLoad) setIsSelectBoxEntityClicked(true);
+    }, [entityTemplate?._id]);
 
     const shouldShowDashedSelectBox = !value && (!isSelectBoxEntityClicked || !entityTemplate);
 

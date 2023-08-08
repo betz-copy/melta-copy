@@ -15,6 +15,7 @@ export interface ProcessDetailsValues {
     endDate: Date | null;
     details: object;
     detailsAttachments: object;
+    entityReferences: object;
     steps: StepsObjectPopulated;
 }
 
@@ -73,15 +74,15 @@ const ProcessDetails: React.FC<ProcessDetailsProps> = ({ detailsFormikData, isEd
     return (
         <Box
             sx={{
-                width: '100%',
-                height: '100%',
-                overflow: 'auto',
-                paddingRight: '30px',
+                paddingRight: 3,
+                paddingLeft: 3,
+                width: 1,
+                height: 1,
             }}
         >
             <Grid container direction="column">
                 <Grid item>
-                    <Box sx={{ width: '100%', margin: '20px, 0, 0, 30px', paddingBottom: 5, paddingTop: 1 }}>
+                    <Box sx={{ width: '100%', paddingBottom: 5, paddingTop: 1 }}>
                         <Stepper nonLinear activeStep={activeProcessDetailsStep}>
                             {steps.map(({ label }) => (
                                 <Step key={label}>

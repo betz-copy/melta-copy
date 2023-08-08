@@ -15,6 +15,7 @@ import { BlueTitle } from '../../../BlueTitle';
 import { RootState } from '../../../../store';
 import { IMongoStepInstancePopulated } from '../../../../interfaces/processes/stepInstance';
 import { ProcessStepValues } from '../ProcessSteps/index';
+import { IUser } from '../../../../services/kartoffelService';
 
 interface StatusDisplayProps {
     status: Status;
@@ -70,14 +71,14 @@ interface ProcessStatusProps {
 }
 
 const ProcessStatus: React.FC<ProcessStatusProps> = ({ title, values, instance, setFieldValue, isEditMode }) => {
-    const currentUser = useSelector((state: RootState) => state.user);
+    const currentUser = useSelector((state: RootState) => state.user) as IUser;
     const handleSetStatus = (newStatus: Status) => {
         const newStatusToSet = newStatus !== values.status ? newStatus : Status.Pending;
         setFieldValue('status', newStatusToSet);
     };
 
     return (
-        <Grid container flexDirection="column" alignItems="stretch" spacing={2}>
+        <Grid container flexDirection="column" alignItems="stretch" spacing={2} height='400px'>
             <Grid item container justifyContent="center">
                 <BlueTitle title={title} component="h5" variant="h5" style={{ fontWeight: 600, opacity: 0.9, marginBottom: 7 }} />
             </Grid>
