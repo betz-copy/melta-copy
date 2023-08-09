@@ -8,7 +8,6 @@ import { IMongoProcessInstancePopulated, IReferencedEntityForProcess, ISearchPro
 import { SummaryDetailsValues } from '../common/wizards/processInstance/ProcessSummaryStep';
 import { isProcessDetailsValues } from '../utils/processWizard/checkFormikValuesType';
 import { ProcessStepValues } from '../common/wizards/processInstance/ProcessSteps';
-import { IEntity } from '../interfaces/entities';
 
 const { processes } = environment.api;
 const getProcessByIdRequest = async (processId: string) => {
@@ -20,10 +19,10 @@ const createProcessRequest = async (process: ProcessDetailsValues) => {
     const formData = new FormData();
     Object.entries(process.detailsAttachments).forEach(([key, value]) => formData.append(`details.${key}`, value as Blob));
     const entityReferences = Object.entries(process.entityReferences)
-        .filter(([_key, entity]: [string, IEntity | undefined]) => entity && entity.properties)
-        .reduce((acc: { [key: string]: string }, [key, entity]: [string, IEntity]) => {
-            acc[key] = entity.properties._id;
-            return acc;
+        .filter(([_key, value]: [string, IReferencedEntityForProcess | undefined]) => value?.entity && value.entity.properties)
+        .reduce((entityIdsObject: { [key: string]: string }, [key, value]: [string, IReferencedEntityForProcess]) => {
+            entityIdsObject[key] = value.entity.properties._id;
+            return entityIdsObject;
         }, {});
     formData.append('name', process.name);
     formData.append('details', JSON.stringify({ ...process.details, ...entityReferences }));
