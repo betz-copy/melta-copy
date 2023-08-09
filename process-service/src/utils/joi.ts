@@ -1,17 +1,11 @@
-import Ajv from 'ajv';
 import { Request } from 'express';
 import * as Joi from 'joi';
-import addFormats from 'ajv-formats';
 import { wrapValidator } from './express';
 import config from '../config';
+import { ProcessPropertyFormats } from '../express/templates/processes/interface';
+import ajv from './ajv';
 
-const ajv = new Ajv();
-ajv.addFormat('fileId', /.*/);
-ajv.addFormat('entityReference', /.*/);
-addFormats(ajv);
-ajv.addVocabulary(['patternCustomErrorMessage']);
-
-const stringFormats = ['date', 'date-time', 'email', 'fileId', 'entityReference'];
+const stringFormats = Object.values(ProcessPropertyFormats);
 const allowedJSONSchemaTypes = ['string', 'number', 'boolean'];
 
 const defaultValidationOptions: Joi.ValidationOptions = {

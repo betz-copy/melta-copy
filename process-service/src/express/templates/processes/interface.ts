@@ -1,10 +1,18 @@
 import { Document } from 'mongoose';
 import { IMongoStepTemplate } from '../steps/interface';
 
+export enum ProcessPropertyFormats {
+    Date = 'date',
+    DateTime = 'date-time',
+    Email = 'email',
+    FileId = 'fileId',
+    EntityReference = 'entityReference',
+}
+
 export interface IProcessSingleProperty {
     title: string;
     type: 'string' | 'number' | 'boolean';
-    format?: 'date' | 'date-time' | 'email' | 'fileId' | 'entityId';
+    format?: ProcessPropertyFormats;
     enum?: string[];
     pattern?: string;
     patternCustomErrorMessage?: string;
