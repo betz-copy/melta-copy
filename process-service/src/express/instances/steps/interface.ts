@@ -4,6 +4,7 @@ import { InstanceProperties, Status } from '../processes/interface';
 export interface IStepInstance {
     templateId: string;
     properties?: Record<string, any>;
+    comments?: string;
     status: Status;
     reviewers: string[];
     reviewerId?: string;
@@ -18,9 +19,11 @@ export interface IMongoStepInstance extends IStepInstance {
 
 export interface UpdateStepReqBody {
     properties?: InstanceProperties;
+    comments?: string;
     statusReview?: {
         status: Status;
         reviewerId: string;
+        processId: string;
     };
 }
 

@@ -19,6 +19,11 @@ const ProcessInstanceSchema = new mongoose.Schema<IProcessInstance>(
         },
         startDate: { type: Date, required: true },
         endDate: { type: Date, required: true },
+        status: {
+            type: String,
+            default: Status.Pending,
+        },
+        reviewedAt: { type: Date },
         steps: [
             {
                 type: String,
@@ -26,13 +31,6 @@ const ProcessInstanceSchema = new mongoose.Schema<IProcessInstance>(
                 required: true,
             },
         ],
-        status: {
-            type: String,
-            default: Status.Pending,
-        },
-        reviewerId: { type: String },
-        reviewedAt: { type: Date },
-        summaryDetails: { type: Object },
     },
     {
         timestamps: true,

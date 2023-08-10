@@ -1,13 +1,7 @@
 import { Router } from 'express';
 import { wrapController, wrapMiddleware } from '../../../utils/express';
 import ValidateRequest from '../../../utils/joi';
-import {
-    getStepByIdRequestSchema,
-    getTemplateByInstanceIdRequestSchema,
-    updateStepPropertiesSchema,
-    updateStepSchema,
-    updateStepStatusSchema,
-} from './validator.schema';
+import { getStepByIdRequestSchema, getTemplateByInstanceIdRequestSchema, updateStepSchema } from './validator.schema';
 import StepInstanceController from './controller';
 import validateStepInstance from './validator.template';
 
@@ -21,19 +15,10 @@ StepInstanceRouter.get(
 );
 
 StepInstanceRouter.patch(
-    '/:id/properties',
-    ValidateRequest(updateStepPropertiesSchema),
-    wrapMiddleware(validateStepInstance),
-    wrapController(StepInstanceController.updateStepProperties),
-);
-
-StepInstanceRouter.patch(
     '/:id',
     ValidateRequest(updateStepSchema),
     wrapMiddleware(validateStepInstance),
     wrapController(StepInstanceController.updateStep),
 );
-
-StepInstanceRouter.patch('/:id/status', ValidateRequest(updateStepStatusSchema), wrapController(StepInstanceController.updateStepStatus));
 
 export default StepInstanceRouter;

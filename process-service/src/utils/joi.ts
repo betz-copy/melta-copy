@@ -156,10 +156,6 @@ const processTemplateBaseSchema = {
         propertiesOrder: orderPropertiesSchema,
     }),
     steps: Joi.array().items(baseStepSchema).min(1),
-    summaryDetails: Joi.object({
-        properties: innerPropertiesSchema,
-        propertiesOrder: orderPropertiesSchema,
-    }),
 };
 
 const topLevelRequiredFields = Object.values(config.processFields);

@@ -15,6 +15,7 @@ const StepInstanceSchema = new mongoose.Schema<IStepInstance>(
             default: Status.Pending,
         },
         properties: { type: Object },
+        comments: { type: String },
         reviewers: { type: [String] },
         reviewerId: { type: String },
         reviewedAt: { type: Date },

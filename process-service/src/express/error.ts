@@ -56,8 +56,8 @@ export class TemplateNotFoundError extends NotFoundError {
 }
 
 export class InstancePropertiesValidationError extends ValidationError {
-    constructor(type: 'Details' | 'Summary' | 'Step', errorMsg: string) {
-        const msg = `${type} does not match template ${type} schema: ${errorMsg}`;
+    constructor(errorMsg: string) {
+        const msg = `properties does not match template schema: ${errorMsg}`;
         super(msg);
     }
 }
@@ -74,6 +74,13 @@ export class StepsNotMatchedValidationError extends ValidationError {
             reqMethod === 'POST'
                 ? `The next step template Ids do not match the steps from the process Template: ${unmatchedStepsIds}`
                 : `The next step Ids are not part of this process: ${unmatchedStepsIds}`;
+        super(msg);
+    }
+}
+
+export class StepNotPartOfProcessError extends ValidationError {
+    constructor(stepId: string, processId: string) {
+        const msg = `${stepId} is not part of the process with the id: ${processId}`;
         super(msg);
     }
 }

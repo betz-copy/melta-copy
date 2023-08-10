@@ -14,16 +14,13 @@ export const validateStepIds = (validStepIds: string[], stepIdsToCheck: string[]
     const unmatchedStepTemplateIds = stepIdsToCheck.filter((item) => !validStepIds.includes(item));
     if (unmatchedStepTemplateIds.length) throw new ValidationError('unmatched step ids');
 };
-const validateInstanceProperties = (
-    instanceProperties: InstanceProperties,
-    templateProperties: IProcessDetails['properties'],
-    checkFor: 'Details' | 'Summary',
-) => {
+
+const validateInstanceProperties = (instanceProperties: InstanceProperties, templateProperties: IProcessDetails['properties']) => {
     const validate = ajv.compile(templateProperties);
     const isValid = validate(instanceProperties);
 
     if (!isValid) {
-        throw new InstancePropertiesValidationError(checkFor, JSON.stringify(validate.errors));
+        throw new InstancePropertiesValidationError(JSON.stringify(validate.errors));
     }
 };
 
@@ -46,17 +43,13 @@ export const validateCreateProcessInstance = async (req: Request) => {
     const stepTemplates = await StepTemplateManager.getStepTemplates(template.steps);
 
     validateReviewersNotInTemplate(steps, stepTemplates);
-    validateInstanceProperties(details, template.details.properties, 'Details');
+    validateInstanceProperties(details, template.details.properties);
 };
 
 export const validateUpdateProcessInstance = async (req: Request) => {
-    const { steps, details, summaryDetails }: UpdateProcessReqBody = req.body;
+    const { steps, details }: UpdateProcessReqBody = req.body;
 
     const template = await ProcessInstanceManager.getProcessTemplateByProcessId(req.params.id);
-
-    if (summaryDetails) {
-        validateInstanceProperties(summaryDetails, template.summaryDetails.properties, 'Summary');
-    }
 
     if (steps) {
         const [stepTemplates, stepInstances] = await Promise.all([
@@ -74,6 +67,6 @@ export const validateUpdateProcessInstance = async (req: Request) => {
     }
 
     if (details) {
-        validateInstanceProperties(details, template.details.properties, 'Details');
+        validateInstanceProperties(details, template.details.properties);
     }
 };

@@ -72,10 +72,9 @@ class ProcessTemplateManager {
             return;
         }
 
-        const { details: updatedDetails, summaryDetails: updatedSummary, name: updatedName, steps: updatedSteps } = updatedTemplate;
+        const { details: updatedDetails, name: updatedName, steps: updatedSteps } = updatedTemplate;
         if (updatedName !== currTemplate.name) throw new ServiceError(400, 'can not change step template name');
         this.validateProperties(updatedDetails.properties.properties, currTemplate.details.properties.properties);
-        this.validateProperties(updatedSummary.properties.properties, currTemplate.summaryDetails.properties.properties);
         if (updatedSteps.length !== currTemplate.steps.length) throw new ServiceError(400, 'can not delete or add steps');
         updatedSteps.forEach((step, index) => {
             const currStep = currTemplate.steps[index];

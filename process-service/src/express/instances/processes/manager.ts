@@ -1,15 +1,15 @@
-import { FilterQuery, Document, Types } from 'mongoose';
+import { FilterQuery, Document, Types, ClientSession } from 'mongoose';
 import ProcessInstanceModel from './model';
 import {
-    IProcessInstance,
     CreateProcessReqBody,
     IMongoProcessInstance,
     IMongoProcessInstancePopulated,
     IProcessInstanceSearchProperties,
     UpdateProcessReqBody,
     ProcessInstanceDocument,
+    Status,
 } from './interface';
-import { NotFoundError } from '../../error';
+import { NotFoundError, ServiceError } from '../../error';
 import StepInstanceManager from '../steps/manager';
 import { transaction, getTemplateAggregation, searchAllowedProcessInstanceForReviewerAggregation } from '../../../utils/mongoose';
 import ProcessTemplateManager from '../../templates/processes/manager';
@@ -19,7 +19,6 @@ import { escapeRegExp } from '../../../utils';
 import { IMongoProcessTemplate } from '../../templates/processes/interface';
 
 type ProcessInstanceType<T extends boolean> = T extends true ? IMongoProcessInstancePopulated & Document : IMongoProcessInstance & Document;
-
 class ProcessInstanceManager {
     static async getProcessById<T extends boolean = true>(id: string, shouldPopulate: T = true as T): Promise<ProcessInstanceType<T>> {
         const query = ProcessInstanceModel.findById(id).orFail(new NotFoundError('process', id)).lean();
@@ -70,10 +69,7 @@ class ProcessInstanceManager {
     static async updateProcess(id: string, updatedData: UpdateProcessReqBody) {
         const currProcess = await this.getProcessById(id, false);
         if (!updatedData.steps) {
-            const newData = (updatedData.status ? { ...updatedData, reviewedAt: new Date() } : updatedData) as Partial<
-                Omit<IProcessInstance, 'templateId'>
-            >;
-            return ProcessInstanceModel.findByIdAndUpdate(id, newData, {
+            return ProcessInstanceModel.findByIdAndUpdate(id, updatedData as Omit<UpdateProcessReqBody, 'steps'>, {
                 new: true,
             })
                 .populate(config.processFields.steps)
@@ -92,14 +88,10 @@ class ProcessInstanceManager {
             await StepInstanceManager.updateStepsReviewers(stepsReviewers, session);
 
             const { steps, ...updatedProcess } = updatedData;
-            return ProcessInstanceModel.findByIdAndUpdate(
-                id,
-                updatedProcess.status ? { ...updatedProcess, reviewedAt: new Date() } : updatedProcess,
-                {
-                    new: true,
-                    session,
-                },
-            )
+            return ProcessInstanceModel.findByIdAndUpdate(id, updatedProcess, {
+                new: true,
+                session,
+            })
                 .populate(config.processFields.steps)
                 .orFail(new NotFoundError('process', id))
                 .lean();
@@ -132,6 +124,12 @@ class ProcessInstanceManager {
             .populate(config.processFields.steps)
             .lean()
             .exec();
+    }
+
+    static async updateStatus(id: string, status: Status, session?: ClientSession) {
+        const { status: currStatus } = await this.getProcessById(id);
+        if (currStatus === status) throw new ServiceError(500, `status of process has not changed, get the same status: ${status}`);
+        return ProcessInstanceModel.findByIdAndUpdate(id, { status, reviewedAt: new Date() }, { session });
     }
 }
 

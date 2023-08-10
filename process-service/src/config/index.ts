@@ -17,7 +17,6 @@ const config = {
         displayName: env.get('PROCESS_FIELDS_DISPLAY_NAME').default('displayName').asString(),
         details: env.get('PROCESS_FIELDS_DETAILS').default('details').asString(),
         steps: env.get('PROCESS_FIELDS_STEPS').default('steps').asString(),
-        summaryDetails: env.get('PROCESS_FIELDS_SUMMARY_DETAILS').default('summaryDetails').asString(),
     },
     stepFields: {
         templateId: env.get('STEP_FIELDS_TEMPLATE_ID').default('templateId').asString(),

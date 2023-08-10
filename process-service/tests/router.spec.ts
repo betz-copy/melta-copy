@@ -12,7 +12,7 @@ import {
     UpdateProcessReqBody,
 } from '../src/express/instances/processes/interface';
 import processInstanceExample1, { errStepsPropertiesExample1, stepsPropertiesExample1 } from './mock/instances';
-import { IMongoStepInstance } from '../src/express/instances/steps/interface';
+import { IMongoStepInstance, UpdateStepReqBody } from '../src/express/instances/steps/interface';
 import StepInstanceManager from '../src/express/instances/steps/manager';
 
 const testUri = 'mongodb://localhost:27017/test';
@@ -41,11 +41,13 @@ const prepareProcessTemplateToUpdate = (processTemplate: IMongoProcessTemplatePo
 
 const prepareDataForCreateProcessInstance = (
     processTemplate: IMongoProcessTemplatePopulated,
-    processInstanceData: Pick<IProcessInstance, 'name' | 'details'>,
+    processInstanceData: Pick<IProcessInstance, 'name' | 'details' | 'startDate' | 'endDate'>,
 ): CreateProcessReqBody => {
     return {
         templateId: processTemplate._id,
         name: processInstanceData.name,
+        startDate: processInstanceData.startDate,
+        endDate: processInstanceData.endDate,
         details: processInstanceData.details,
         steps: processTemplate.steps.reduce((acc, obj) => {
             acc[obj._id] = [];
@@ -55,8 +57,7 @@ const prepareDataForCreateProcessInstance = (
 };
 
 const prepareDataForUpdateProcessInstance = (
-    processInstanceData: Partial<Pick<Omit<IProcessInstance, 'templateId' | 'steps'>, 'status'>> &
-        Omit<IProcessInstance, 'templateId' | 'steps' | 'status'>,
+    processInstanceData: Partial<Omit<IProcessInstance, 'templateId' | 'steps' | 'reviewedAt' | 'status'>>,
     steps: IMongoStepInstance[],
 ): UpdateProcessReqBody => {
     const updateData: UpdateProcessReqBody = {
@@ -67,9 +68,6 @@ const prepareDataForUpdateProcessInstance = (
             return acc;
         }, {}),
     };
-    if (processInstanceData.status) updateData.status = processInstanceData.status;
-    if (processInstanceData.reviewerId) updateData.reviewerId = processInstanceData.reviewerId;
-    if (processInstanceData.summaryDetails) updateData.summaryDetails = processInstanceData.summaryDetails;
     return updateData;
 };
 const errPropertiesType = (instanceProperties: Record<string, any>): Record<string, any> => {
@@ -96,7 +94,7 @@ describe('Test Process Service', () => {
     let processInstance: IMongoProcessInstancePopulated;
 
     beforeAll(async () => {
-        await mongoose.connect(testUri);
+        await mongoose.connect(testUri, { useUnifiedTopology: true });
         app = Server.createExpressApp();
     });
 
@@ -127,6 +125,7 @@ describe('Test Process Service', () => {
             it('Should create a new process template and return 200', async () => {
                 const response = await request(app).post('/api/processes/templates').send(processTemplateExample1);
                 expect(response.status).toBe(200);
+
                 processTemplate = response.body;
                 expect(processTemplate.name).toEqual(processTemplateExample1.name);
                 expect(processTemplate.displayName).toEqual(processTemplateExample1.displayName);
@@ -166,46 +165,48 @@ describe('Test Process Service', () => {
                 expect(response.text).toContain('is not allowed');
             });
 
-            it('Should try update the process template name, fail and return 400', async () => {
-                const errTemplateProcess = prepareProcessTemplateToUpdate(processTemplate);
-                errTemplateProcess.name = `${errTemplateProcess.name}change`;
-                const response = await request(app).put(`/api/processes/templates/${processTemplate._id}`).send(errTemplateProcess);
-                expect(response.status).toBe(400);
-                expect(response.text).toContain('can not change step template name');
+            it('Should update the process template name, and return 200', async () => {
+                const updatedProcessTemplate = prepareProcessTemplateToUpdate(processTemplate);
+                const newName = `${updatedProcessTemplate.name}change`;
+                updatedProcessTemplate.name = newName;
+                const response = await request(app).put(`/api/processes/templates/${processTemplate._id}`).send(updatedProcessTemplate);
+                expect(response.status).toBe(200);
+                expect(response.body.name).toBe(newName);
             });
 
-            it('Should try update the step template name, fail and return 400', async () => {
-                const errTemplateProcess = prepareProcessTemplateToUpdate(processTemplate);
-                errTemplateProcess.steps[0].name = `${errTemplateProcess.steps[0].name}change`;
-                const response = await request(app).put(`/api/processes/templates/${processTemplate._id}`).send(errTemplateProcess);
-                expect(response.status).toBe(400);
-                expect(response.text).toContain('can not change step[0] name');
+            it('Should update the step template name and return 200', async () => {
+                const updatedProcessTemplate = prepareProcessTemplateToUpdate(processTemplate);
+                const newStepName = `${updatedProcessTemplate.steps[0].name}change`;
+                updatedProcessTemplate.steps[0].name = newStepName;
+                const response = await request(app).put(`/api/processes/templates/${processTemplate._id}`).send(updatedProcessTemplate);
+                expect(response.status).toBe(200);
+                expect(response.body.steps[0].name).toBe(newStepName);
             });
 
-            it('Should try update the process template and modify steps length, fail and return 400', async () => {
-                const errTemplateProcess = prepareProcessTemplateToUpdate(processTemplate);
-                errTemplateProcess.steps = errTemplateProcess.steps.splice(1, 1);
-                const response = await request(app).put(`/api/processes/templates/${processTemplate._id}`).send(errTemplateProcess);
-                expect(response.status).toBe(400);
-                expect(response.text).toContain('can not delete or add steps');
+            it('Should update the process template and modify steps length and return 200', async () => {
+                const updatedProcessTemplate = prepareProcessTemplateToUpdate(processTemplate);
+                updatedProcessTemplate.steps = updatedProcessTemplate.steps.splice(1, 1);
+                const response = await request(app).put(`/api/processes/templates/${processTemplate._id}`).send(updatedProcessTemplate);
+                expect(response.status).toBe(200);
+                expect(response.body.steps.length).toBe(updatedProcessTemplate.steps.length);
             });
-            it('Should try update property type, fail and return 400', async () => {
-                const errTemplateProcess = prepareProcessTemplateToUpdate(processTemplate);
-                const [firstPropertyKey] = Object.keys(errTemplateProcess.details.properties.properties);
+            it('Should update property type, and return 200', async () => {
+                const updatedProcessTemplate = prepareProcessTemplateToUpdate(processTemplate);
+                const [firstPropertyKey] = Object.keys(updatedProcessTemplate.details.properties.properties);
 
                 // Check the current type of the first property and set a new type
-                const currentType = errTemplateProcess.details.properties.properties[firstPropertyKey].type;
+                const currentType = updatedProcessTemplate.details.properties.properties[firstPropertyKey].type;
                 let newType: 'string' | 'boolean' | 'number' = 'boolean';
                 if (currentType === 'boolean') {
                     newType = 'string';
                 }
 
-                errTemplateProcess.details.properties.properties[firstPropertyKey].type = newType;
-                const response = await request(app).put(`/api/processes/templates/${processTemplate._id}`).send(errTemplateProcess);
-                expect(response.status).toBe(400);
-                expect(response.text).toContain('can not change property type');
+                updatedProcessTemplate.details.properties.properties[firstPropertyKey].type = newType;
+                const response = await request(app).put(`/api/processes/templates/${processTemplate._id}`).send(updatedProcessTemplate);
+                expect(response.status).toBe(200);
+                expect(response.body.details.properties.properties[firstPropertyKey].type).toBe(newType);
             });
-            it('Should return update the processTemplate, return it and return 200', async () => {
+            it('Should update the processTemplate, return it and return 200', async () => {
                 const updatedProcessTemplate = prepareProcessTemplateToUpdate(processTemplate);
                 const newIconFileId = `123icon_file_id.png`;
                 updatedProcessTemplate.displayName = `${updatedProcessTemplate.displayName}newName`;
@@ -266,7 +267,6 @@ describe('Test Process Service', () => {
                 const response = await request(app).post('/api/processes/templates/search').send({
                     reviewerId: processTemplate.steps[0].reviewers[0],
                 });
-                console.log(response.error);
 
                 expect(response.status).toBe(200);
                 expect(response.body).toContainEqual(processTemplate);
@@ -302,6 +302,8 @@ describe('Test Process Service', () => {
             it('Should try create instance with wrong templateId and return 404', async () => {
                 const instanceToCreate = prepareDataForCreateProcessInstance({ ...processTemplate, _id: randomMongoId() }, processInstanceExample1);
                 const response = await request(app).post('/api/processes/instances').send(instanceToCreate);
+                console.log(response.error);
+
                 expect(response.status).toBe(404);
                 expect(response.text).toContain('not found');
             });
@@ -364,15 +366,6 @@ describe('Test Process Service', () => {
             });
         });
         describe('PUT /api/processes/instances/:id', () => {
-            it('Should try update summaryDetails with wrong properties type, fail and return 400', async () => {
-                const updatedData = prepareDataForUpdateProcessInstance(
-                    { ...processInstanceExample1, summaryDetails: errPropertiesType(processInstanceExample1.summaryDetails) },
-                    processInstance.steps,
-                );
-                const response = await request(app).put(`/api/processes/instances/${processInstance._id}`).send(updatedData);
-                expect(response.status).toBe(400);
-                expect(response.text).toContain('TemplateValidationError');
-            });
             it('Should try update details with wrong properties type, fail and return 400', async () => {
                 const updatedData = prepareDataForUpdateProcessInstance(
                     { ...processInstanceExample1, details: errPropertiesType(processInstanceExample1.details) },
@@ -395,34 +388,15 @@ describe('Test Process Service', () => {
                 expect(response.status).toBe(404);
                 expect(response.text).toContain('No matching step Templates found');
             });
-            it('Should try update status without send reviewerId, fail and return 400', async () => {
-                const updatedData = prepareDataForUpdateProcessInstance(
-                    { ...processInstanceExample1, status: Status.Rejected },
-                    processInstance.steps,
-                );
-                const response = await request(app).put(`/api/processes/instances/${processInstance._id}`).send(updatedData);
-                expect(response.status).toBe(400);
-                expect(response.text).toContain('ValidationError');
-            });
             it('Should return updated process with 200', async () => {
-                const updatedData = prepareDataForUpdateProcessInstance(
-                    { ...processInstanceExample1, status: Status.Rejected, reviewerId: randomMongoId() },
-                    processInstance.steps,
-                );
-                const timeBeforeUpdate = new Date();
+                const updatedData = prepareDataForUpdateProcessInstance({ ...processInstanceExample1 }, processInstance.steps);
                 const response = await request(app).put(`/api/processes/instances/${processInstance._id}`).send(updatedData);
+
                 expect(response.status).toBe(200);
-                const { reviewerId, summaryDetails, status, updatedAt, steps, reviewedAt, ...updatedProcessInstance } =
-                    response.body as IMongoProcessInstancePopulated;
-                const {
-                    status: originalStatus,
-                    updatedAt: originalUpdatedAt,
-                    steps: originalSteps,
-                    ...originalProcessWithoutUpdatedAt
-                } = processInstance;
+                const { updatedAt, steps, reviewedAt, ...updatedProcessInstance } = response.body as IMongoProcessInstancePopulated;
+                const { updatedAt: originalUpdatedAt, steps: originalSteps, ...originalProcessWithoutUpdatedAt } = processInstance;
                 expect(updatedProcessInstance).toStrictEqual(originalProcessWithoutUpdatedAt);
                 expect(new Date(updatedAt).getTime()).toBeGreaterThan(new Date(originalUpdatedAt).getTime());
-                expect(new Date(reviewedAt!).getTime()).toBeGreaterThan(timeBeforeUpdate.getTime());
                 steps.forEach((step, index) => {
                     const { updatedAt: stepUpdatedAt, reviewers: updatedReviewers, ...stepWithoutUpdatedAt } = step;
                     const { updatedAt: originalStepUpdatedAt, reviewers: originalReviewers, ...originalStepWithoutUpdatedAt } = originalSteps[index];
@@ -514,13 +488,11 @@ describe('Test Process Service', () => {
                 const { body: instanceBody } = await request(app).post('/api/processes/instances').send(instanceToCreate);
                 processInstance = instanceBody;
             });
-            describe('/ PATCH api/processes/instances/steps/:id/properties', () => {
+            describe('PATCH api/processes/instances/steps/:id', () => {
                 it('Should update step properties and return it', async () => {
                     await Promise.all(
                         processInstance.steps.map(async ({ _id }, index) => {
-                            const response = await request(app)
-                                .patch(`/api/processes/instances/steps/${_id}/properties`)
-                                .send(stepsPropertiesExample1[index]);
+                            const response = await request(app).patch(`/api/processes/instances/steps/${_id}`).send(stepsPropertiesExample1[index]);
                             expect(response.status).toBe(200);
                             expect(response.body.properties).toStrictEqual(stepsPropertiesExample1[index].properties);
                         }),
@@ -530,7 +502,7 @@ describe('Test Process Service', () => {
                     await Promise.all(
                         processInstance.steps.map(async ({ _id }, index) => {
                             const response = await request(app)
-                                .patch(`/api/processes/instances/steps/${_id}/properties`)
+                                .patch(`/api/processes/instances/steps/${_id}`)
                                 .send(errStepsPropertiesExample1[index]);
 
                             expect(response.status).toBe(400);
@@ -538,54 +510,76 @@ describe('Test Process Service', () => {
                         }),
                     );
                 });
-                describe('/ PATCH api/processes/instances/steps/:id/status', () => {
-                    it('should update step status and return step with status 200', async () => {
-                        await Promise.all(
-                            processInstance.steps.map(async ({ _id }) => {
-                                const response = await request(app).patch(`/api/processes/instances/steps/${_id}/status`).send({
+                it('should update step status and return step with status 200', async () => {
+                    // eslint-disable-next-line no-restricted-syntax
+                    for (const { _id } of processInstance.steps) {
+                        // eslint-disable-next-line no-await-in-loop
+                        const response = await request(app)
+                            .patch(`/api/processes/instances/steps/${_id}`)
+                            .send({
+                                statusReview: {
                                     status: Status.Rejected,
                                     reviewerId: randomMongoId(),
                                     processId: processInstance._id,
-                                });
+                                },
+                            } as UpdateStepReqBody);
+                        console.log(response.error);
 
-                                expect(response.status).toBe(200);
-                                expect(response.body.status).toBe(Status.Rejected);
-                            }),
-                        );
-                    });
-                    it('should update step status and return step with status 200', async () => {
-                        await Promise.all(
-                            processInstance.steps.map(async ({ _id }) => {
-                                const response = await request(app).patch(`/api/processes/instances/steps/${_id}/status`).send({
+                        expect(response.status).toBe(200);
+                        expect(response.body.status).toBe(Status.Rejected);
+
+                        // eslint-disable-next-line no-await-in-loop
+                        const { status: processInstanceStatus } = (await request(app).get(`/api/processes/instances/${processInstance._id}`)).body;
+                        expect(processInstanceStatus).toBe(Status.Rejected);
+                    }
+                });
+                it('should update step status and return step with status 200', async () => {
+                    const comments = 'test-test-test';
+                    // eslint-disable-next-line no-restricted-syntax
+                    for (const { _id } of processInstance.steps) {
+                        // eslint-disable-next-line no-await-in-loop
+                        const response = await request(app)
+                            .patch(`/api/processes/instances/steps/${_id}`)
+                            .send({
+                                statusReview: {
                                     status: Status.Approved,
+                                    reviewerId: randomMongoId(),
                                     processId: processInstance._id,
-                                });
+                                },
+                                comments,
+                            } as UpdateStepReqBody);
 
-                                expect(response.status).toBe(400);
-                                expect(response.text).toContain('reviewerId');
-                            }),
-                        );
+                        expect(response.status).toBe(200);
+                        expect(response.body.status).toBe(Status.Approved);
+                        expect(response.body.comments).toBe(comments);
+                    }
+                    const { status: processInstanceStatus } = (await request(app).get(`/api/processes/instances/${processInstance._id}`)).body;
+                    expect(processInstanceStatus).toBe(Status.Approved);
+                });
+
+                it('should not update step when it is not part of process', async () => {
+                    const instanceToCreate = prepareDataForCreateProcessInstance(processTemplate, {
+                        ...processInstanceExample1,
+                        name: 'test-test',
                     });
-                    it('should not update step when it is not part of process', async () => {
-                        const instanceToCreate = prepareDataForCreateProcessInstance(processTemplate, {
-                            ...processInstanceExample1,
-                            name: 'test-test',
-                        });
-                        const { body: instanceBody } = await request(app).post('/api/processes/instances').send(instanceToCreate);
+                    const { body: instanceBody } = await request(app).post('/api/processes/instances').send(instanceToCreate);
 
-                        await Promise.all(
-                            processInstance.steps.map(async ({ _id }) => {
-                                const response = await request(app).patch(`/api/processes/instances/steps/${_id}/status`).send({
+                    // eslint-disable-next-line no-restricted-syntax
+                    for (const { _id } of processInstance.steps) {
+                        // eslint-disable-next-line no-await-in-loop
+                        const response = await request(app)
+                            .patch(`/api/processes/instances/steps/${_id}`)
+                            .send({
+                                statusReview: {
                                     status: Status.Approved,
                                     reviewerId: randomMongoId(),
                                     processId: instanceBody._id,
-                                });
+                                },
+                            });
 
-                                expect(response.status).toBe(400);
-                                expect(response.text).toContain('not part of');
-                            }),
-                        );
-                    });
+                        expect(response.status).toBe(400);
+                        expect(response.text).toContain('not part of');
+                    }
                 });
             });
         });

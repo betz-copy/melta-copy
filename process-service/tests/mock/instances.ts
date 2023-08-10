@@ -5,10 +5,8 @@ export const processInstanceExample1 = {
         age: 5,
         email: 'nadav@gmail.com',
     },
-    summaryDetails: {
-        name: 'summary',
-        email: 'nadav@gmail.com',
-    },
+    startDate: new Date('1995-12-17T03:24:00'),
+    endDate: new Date('1997-12-17T03:24:00'),
 };
 
 export const stepsPropertiesExample1 = [

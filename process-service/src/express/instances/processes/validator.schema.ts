@@ -1,5 +1,5 @@
 import * as Joi from 'joi';
-import { updateAndCreateStepsSchema, MongoIdSchema, updateStatusPropertiesSchema } from '../../../utils/joi';
+import { updateAndCreateStepsSchema, MongoIdSchema } from '../../../utils/joi';
 import { Status } from './interface';
 
 // GET /api/processes/instances/:processId
@@ -33,9 +33,6 @@ export const updateInstanceByIdRequestSchema = Joi.object({
         endDate: Joi.date(),
         name: Joi.string(),
         steps: updateAndCreateStepsSchema,
-        status: Joi.string().valid(...Object.values(Status)),
-        reviewerId: updateStatusPropertiesSchema,
-        summaryDetails: Joi.object(),
     },
     query: {},
     params: {

@@ -71,24 +71,6 @@ const processTemplateExample1 = {
             },
         },
     ],
-    summaryDetails: {
-        propertiesOrder: ['name', 'email'],
-        properties: {
-            type: 'object',
-            properties: {
-                name: {
-                    title: 'שם מלא',
-                    type: 'string',
-                },
-                email: {
-                    title: 'כתובת דואר אלקטרוני',
-                    type: 'string',
-                    format: 'email',
-                },
-            },
-            required: ['name', 'email'],
-        },
-    },
 };
 
 export const errUpdateTemplateExample1 = {
@@ -165,23 +147,5 @@ export const errUpdateTemplateExample1 = {
             },
         },
     ],
-    summaryDetails: {
-        propertiesOrder: ['name', 'email'],
-        properties: {
-            type: 'object',
-            properties: {
-                name: {
-                    title: 'שם מלא',
-                    type: 'string',
-                },
-                email: {
-                    title: 'כתובת דואר אלקטרוני',
-                    type: 'number',
-                    format: 'email',
-                },
-            },
-            required: ['name', 'email'],
-        },
-    },
 };
 export default processTemplateExample1;

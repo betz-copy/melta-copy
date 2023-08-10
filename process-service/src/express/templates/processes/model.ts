@@ -23,10 +23,6 @@ const ProcessTemplateSchema = new mongoose.Schema<IProcessTemplate>(
                 required: true,
             },
         ],
-        summaryDetails: {
-            type: Object,
-            required: true,
-        },
     },
     {
         timestamps: true,
