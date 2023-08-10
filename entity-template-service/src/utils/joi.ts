@@ -9,7 +9,10 @@ const ajv = new Ajv();
 ajv.addFormat('fileId', /.*/);
 addFormats(ajv);
 ajv.addVocabulary(['patternCustomErrorMessage', 'hide']);
-
+ajv.addKeyword({
+    keyword: 'dateNotification',
+    type: 'string',
+});
 const stringFormats = ['date', 'date-time', 'email', 'fileId'];
 const allowedJSONSchemaTypes = ['string', 'number', 'boolean'];
 
@@ -28,6 +31,10 @@ const propertiesArraySchema = Joi.array()
             enum: Joi.array().items(Joi.string()).when('type', { not: 'string', then: Joi.forbidden() }),
             pattern: Joi.string().when('type', { not: 'string', then: Joi.forbidden() }),
             patternCustomErrorMessage: Joi.string().when('pattern', { is: Joi.exist(), then: Joi.required(), otherwise: Joi.forbidden() }),
+            dateNotification: Joi.string()
+                .valid('day', 'week', 'twoWeeks')
+                .when('format', { not: Joi.valid('date', 'date-time'), then: Joi.forbidden() })
+                .when('type', { not: 'string', then: Joi.forbidden() }),
         }).nand('pattern', 'enum'),
     )
     .unique((a, b) => a.title === b.title);
