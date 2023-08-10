@@ -21,6 +21,10 @@ const ajv = new Ajv();
 ajv.addFormat('fileId', /.*/);
 addFormats(ajv);
 ajv.addVocabulary(['patternCustomErrorMessage', 'hide']);
+ajv.addKeyword({
+    keyword: 'dateNotification',
+    type: 'string',
+});
 
 const getEntityTemplateByIdOrThrowValidationError = async (templateId: string) => {
     const { result: entityTemplate, err: getEntityTemplateByIdErr } = await trycatch(() =>
