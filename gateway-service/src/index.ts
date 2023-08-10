@@ -2,6 +2,7 @@
 import menash from 'menashmq';
 import Server from './express/server';
 import config from './config';
+import { checkForDateNotifications } from './dateNotificationsCheck';
 
 const { service, rabbit } = config;
 
@@ -19,6 +20,8 @@ const initializeRabbit = async () => {
 
 const main = async () => {
     await initializeRabbit();
+
+    await checkForDateNotifications();
 
     const server = new Server(service.port);
 

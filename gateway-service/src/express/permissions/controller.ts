@@ -12,7 +12,6 @@ class PermissionsController {
     }
 
     static async createPermissionsBulk(req: Request, res: Response) {
-        console.log("ffffffff")
         res.json(await PermissionsManager.createPermissionsBulk(req.body));
     }
 

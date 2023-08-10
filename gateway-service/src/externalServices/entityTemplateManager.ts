@@ -25,6 +25,7 @@ interface IEntitySingleProperty {
     enum?: string[];
     pattern?: string;
     patternCustomErrorMessage?: string;
+    dateNotification?: string;
 }
 
 export interface IEntityTemplate {

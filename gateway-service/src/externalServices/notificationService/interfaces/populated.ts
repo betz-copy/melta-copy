@@ -1,8 +1,8 @@
 import { INotification, IProcessStatusUpdateNotificationMetadata } from '.';
+import { IEntity } from '../../instanceManager';
 import { IMongoProcessInstancePopulated } from '../../processService/interfaces/processInstance';
 import { IMongoStepInstancePopulated } from '../../processService/interfaces/stepInstance';
 import { IRuleBreachAlertPopulated, IRuleBreachRequestPopulated } from '../../ruleBreachService/interfaces/populated';
-
 export interface IRuleBreachAlertNotificationMetadataPopulated {
     alert: IRuleBreachAlertPopulated;
 }
@@ -26,6 +26,11 @@ export interface IProcessStatusUpdateNotificationMetadataPopulated extends Pick<
 export interface INewProcessNotificationMetadataPopulated {
     process: IMongoProcessInstancePopulated;
 }
+export interface IDateAboutToExpireMetadataPopulated {
+    entity: IEntity | null;
+    propertyName: string;
+    datePropertyValue: Date;
+}
 
 export type INotificationMetadataPopulated =
     | IRuleBreachAlertNotificationMetadataPopulated
@@ -33,6 +38,7 @@ export type INotificationMetadataPopulated =
     | IRuleBreachResponseNotificationMetadataPopulated
     | IProcessReviewerUpdateNotificationMetadataPopulated
     | IProcessStatusUpdateNotificationMetadataPopulated
-    | INewProcessNotificationMetadataPopulated;
+    | INewProcessNotificationMetadataPopulated
+    | IDateAboutToExpireMetadataPopulated;
 
 export interface INotificationPopulated<T = INotificationMetadataPopulated> extends Omit<INotification<T>, 'viewers'> {}

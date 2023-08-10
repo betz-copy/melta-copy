@@ -1,4 +1,5 @@
 import {
+    IDateAboutToExpireNotificationMetadata,
     INewProcessNotificationMetadata,
     INotification,
     IProcessReviewerUpdateNotificationMetadata,
@@ -6,6 +7,7 @@ import {
     IRuleBreachAlertNotificationMetadata,
     IRuleBreachRequestNotificationMetadata,
     IRuleBreachResponseNotificationMetadata,
+    isDateAboutToExpireNotification,
     isNewProcessNotification,
     isProcessReviewerUpdateNotification,
     isProcessStatusUpdateNotification,
@@ -14,6 +16,7 @@ import {
     isRuleBreachResponseNotification,
 } from '../../externalServices/notificationService/interfaces';
 import {
+    IDateAboutToExpireMetadataPopulated,
     INewProcessNotificationMetadataPopulated,
     INotificationMetadataPopulated,
     INotificationPopulated,
@@ -27,6 +30,7 @@ import { NotificationService } from '../../externalServices/notificationService'
 import { ShragaUser } from '../../utils/express/passport';
 import RuleBreachesManager from '../ruleBreaches/manager';
 import ProcessesInstancesManager from '../processes/processInstances/manager';
+import { InstanceManagerService } from '../../externalServices/instanceManager';
 
 export class NotificationsManager {
     static async getMyNotifications(user: ShragaUser, query: object): Promise<INotificationPopulated[]> {
@@ -116,6 +120,18 @@ export class NotificationsManager {
         };
     }
 
+    private static async populateDateAboutToExpireNotificationMetadata(
+        metadata: IDateAboutToExpireNotificationMetadata,
+    ): Promise<IDateAboutToExpireMetadataPopulated> {
+        const { entityId, propertyName, datePropertyValue } = metadata;
+        const entity = await InstanceManagerService.getEntityInstanceById(entityId).catch(() => null);
+        return {
+            entity,
+            propertyName,
+            datePropertyValue,
+        };
+    }
+
     static async populateNotification(notification: INotification, userId: string): Promise<INotificationPopulated> {
         const { viewers, ...restOfNotification } = notification;
 
@@ -131,6 +147,8 @@ export class NotificationsManager {
             populatedMetadata = await this.populateNewProcessNotificationMetadata(notification.metadata, userId);
         } else if (isProcessReviewerUpdateNotification(notification)) {
             populatedMetadata = await this.populateProcessReviewerUpdateNotificationMetadata(notification.metadata, userId);
+        } else if (isDateAboutToExpireNotification(notification)) {
+            populatedMetadata = await this.populateDateAboutToExpireNotificationMetadata(notification.metadata);
         }
 
         return {

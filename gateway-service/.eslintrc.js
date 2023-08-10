@@ -38,6 +38,7 @@ module.exports = {
         'no-unused-vars': 'off', // Checked by typescript
         'import/prefer-default-export': 'off',
         'no-shadow': 'off',
+        'no-restricted-syntax': 'off',
         '@typescript-eslint/no-shadow': 'error',
     },
 };
