@@ -20,6 +20,7 @@ export interface IEntitySingleProperty {
     enum?: string[];
     pattern?: string;
     patternCustomErrorMessage?: string;
+    dateNotification?: 'day' | 'week' | 'twoWeeks';
 }
 
 export interface IEntityTemplate {
