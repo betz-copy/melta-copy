@@ -40,7 +40,6 @@ export interface IProcessTemplateWithSteps {
     displayName: string;
     details: IProcessDetails;
     steps: IStepTemplate[];
-    summaryDetails: IProcessDetails;
 }
 
 export interface IMongoProcessTemplatePopulated extends Omit<IProcessTemplateWithSteps, 'steps'> {

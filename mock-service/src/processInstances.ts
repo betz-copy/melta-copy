@@ -45,7 +45,6 @@ export interface IProcessInstance {
     status: Status;
     reviewerId?: string;
     reviewedAt?: Date;
-    summaryDetails?: Record<string, any>;
 }
 export interface IProcessInstancePopulated extends Omit<IProcessInstance, 'steps'> {
     steps: IMongoStepInstance[];
@@ -88,11 +87,6 @@ const generateUniqueName = (generatedNames: Set<string>): string => {
     generatedNames.add(name);
     return name;
 };
-
-export type CreateAndUpdateProcessReqBody = Pick<IProcessInstance, 'details' | 'name' | 'summaryDetails'> &
-    Partial<Pick<IProcessInstance, 'templateId' | 'status' | 'reviewerId'>> & {
-        steps: Record<string, string[]>;
-    };
 
 const createProcessInstance = (processTemplate: IMongoProcessTemplatePopulated, generatedNames: Set<string>, chance: Chance.Chance) => {
     const randomStartDate = new Date(chance.date()).toLocaleDateString();
