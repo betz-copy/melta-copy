@@ -1,5 +1,5 @@
-import Joi from 'joi';
-import { ExtendedJoi, MongoIdSchema, processFileSchema } from '../../../utils/joi';
+import * as Joi from 'joi';
+import { ExtendedJoi, MongoIdSchema, fileSchema } from '../../../utils/joi';
 import { Status } from '../../../externalServices/processService/interfaces/processInstance';
 
 // GET /api/processes/instances/:id
@@ -23,7 +23,7 @@ export const createProcessInstanceSchema = Joi.object({
     }),
     query: {},
     params: {},
-    files: Joi.array().items(processFileSchema),
+    files: Joi.array().items(fileSchema),
 });
 
 // PUT /api/processes/instances:id
@@ -34,13 +34,10 @@ export const updateProcessInstanceSchema = Joi.object({
         steps: ExtendedJoi.stringToObject(),
         startDate: Joi.date(),
         endDate: Joi.date(),
-        status: Joi.string(),
-        reviewerId: Joi.string(),
-        summaryDetails: ExtendedJoi.stringToObject(),
     }),
     query: {},
     params: { id: Joi.string().required() },
-    files: Joi.array().items(processFileSchema),
+    files: Joi.array().items(fileSchema),
 });
 
 // DELETE /api/processes/instances/:id

@@ -52,10 +52,6 @@ export const iconFileSchema = fileSchema.keys({
         .required(),
 });
 
-export const processFileSchema = fileSchema.keys({
-    fieldname: Joi.string().regex(/^(details|summaryDetails)\.[^.]*$/),
-});
-
 const defaultValidationOptions: Joi.ValidationOptions = {
     abortEarly: false,
     allowUnknown: false,

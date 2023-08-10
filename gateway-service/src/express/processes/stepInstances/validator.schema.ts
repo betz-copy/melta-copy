@@ -6,7 +6,8 @@ export const updateStepSchema = Joi.object({
     body: Joi.object({
         properties: ExtendedJoi.stringToObject(),
         status: Joi.string(),
-    }).or('properties', 'status'),
+        comments: Joi.string(),
+    }).or('properties', 'status', 'comments'),
     query: {},
     params: {
         processId: MongoIdSchema.required(),

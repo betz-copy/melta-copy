@@ -1,6 +1,5 @@
-import { isProcessManager } from '../../../externalServices/permissionsApi';
 import { ProcessManagerService } from '../../../externalServices/processService';
-import { IMongoProcessInstanceWithSteps, Status } from '../../../externalServices/processService/interfaces/processInstance';
+import { IMongoProcessInstanceWithSteps } from '../../../externalServices/processService/interfaces/processInstance';
 import {
     IMongoStepInstance,
     IMongoStepInstancePopulated,
@@ -11,10 +10,22 @@ import { deleteFiles } from '../../../externalServices/storageService';
 import { removeTmpFile } from '../../../utils/fs';
 import { InstancesManager } from '../../instances/manager';
 import UsersManager from '../../users/manager';
-import { StepNotEditable, StepNotPartOfProcess } from '../error';
 import ProcessesInstancesManager from '../processInstances/manager';
 
 export default class StepsInstancesManager {
+        private static async handleNotificationsOnUpdateStepInstance(
+        process: IMongoProcessInstanceWithSteps,
+        previousProcess: IMongoProcessInstanceWithSteps,
+        updatedStep: IMongoStepInstance,
+    ) {
+        await Promise.allSettled([
+            ProcessesInstancesManager.sendProcessStatusUpdateNotification(process, updatedStep.status, updatedStep._id),
+            process.status !== previousProcess.status
+                ? ProcessesInstancesManager.sendProcessStatusUpdateNotification(process, process.status)
+                : undefined,
+        ]);
+    }
+
     static async getStepInstanceWithEntitesAndReviewers(step: IMongoStepInstance, userId: string): Promise<IMongoStepInstancePopulated> {
         const stepTemplate = await ProcessManagerService.getStepTemplateByStepInstanceId(step._id);
         const reviewerPromise = step.reviewerId ? UsersManager.getUserById(step.reviewerId) : Promise.resolve(undefined);
@@ -35,21 +46,23 @@ export default class StepsInstancesManager {
     static async updateStep(
         processId: string,
         stepId: string,
-        updatedData: Partial<Pick<IStepInstance, 'properties' | 'status'>>,
+        updatedData: Partial<Pick<IStepInstance, 'properties' | 'status' | 'comments'>>,
         files: Express.Multer.File[],
         userId: string,
     ) {
-        const { properties, status } = updatedData;
-        const processServiceUpdateData: UpdateStepReqBody = status ? { properties, statusReview: { status, reviewerId: userId } } : { properties };
+        const { properties, status: updatedStepStatus, comments } = updatedData;
+        const processServiceUpdateData: UpdateStepReqBody = updatedStepStatus
+            ? { properties, statusReview: { status: updatedStepStatus, reviewerId: userId, processId }, comments }
+            : { properties, comments };
+
         const process = await ProcessManagerService.getProcessInstanceById(processId, userId);
-        await this.validateIsStepEditable(stepId, process, userId);
         const stepTemplate = await ProcessManagerService.getStepTemplateByStepInstanceId(stepId);
-
-        if (properties) await ProcessesInstancesManager.checkEntityReferenceFields(properties, stepTemplate.properties, userId);
-
+        if (properties) await ProcessesInstancesManager.checkEntityReferenceFields(properties, stepTemplate.properties);
         if (!files.length) {
-            const step = await ProcessManagerService.updateStepInstance(stepId, processServiceUpdateData);
-            return this.getStepInstanceWithEntitesAndReviewers(step, userId);
+            const updatedStep = await ProcessManagerService.updateStepInstance(stepId, processServiceUpdateData);
+            const updatedProcess = await ProcessManagerService.getProcessInstanceById(processId);
+            if (updatedStepStatus) this.handleNotificationsOnUpdateStepInstance(updatedProcess, process, updatedStep);
+            return this.getStepInstanceWithEntitesAndReviewers(updatedStep, userId);
         }
         const filesProperties = await InstancesManager.uploadInstanceFiles(files);
         const regularProperties = processServiceUpdateData.properties;
@@ -57,7 +70,7 @@ export default class StepsInstancesManager {
         const newProperties = { ...regularProperties, ...filesProperties };
         const { properties: oldProperties } = await ProcessManagerService.getStepInstanceById(stepId);
 
-        const step = await ProcessManagerService.updateStepInstance(stepId, { ...processServiceUpdateData, properties: newProperties }).catch(
+        const updatedStep = await ProcessManagerService.updateStepInstance(stepId, { ...processServiceUpdateData, properties: newProperties }).catch(
             (processServiceError) => {
                 deleteFiles(Object.values(filesProperties)).catch((deleteFilesError) => {
                     // eslint-disable-next-line no-console
@@ -75,22 +88,9 @@ export default class StepsInstancesManager {
             }),
         );
         if (updatedData.status) {
-            ProcessesInstancesManager.sendProcessStatusUpdateNotification(process, step.status, step._id);
+            const updatedProcess = await ProcessManagerService.getProcessInstanceById(processId);
+            this.handleNotificationsOnUpdateStepInstance(updatedProcess, process, updatedStep);
         }
-        return this.getStepInstanceWithEntitesAndReviewers(step, userId);
-    }
-
-    private static async validateIsStepEditable(stepId: string, process: IMongoProcessInstanceWithSteps, userId: string) {
-        const step = process.steps.find((currStep) => currStep._id === stepId);
-
-        if (!step) throw new StepNotPartOfProcess(stepId, process.name);
-        if (process.status !== Status.Pending) throw new StepNotEditable(stepId);
-
-        if ((await isProcessManager(userId)) || step.reviewers.includes(userId)) return;
-
-        const processTemplate = await ProcessManagerService.getProcessTemplateById(process.templateId, userId);
-
-        if (!processTemplate.steps.some((stepTemplate) => stepTemplate._id === step.templateId && stepTemplate.reviewers.includes(userId)))
-            throw new StepNotEditable(stepId);
+        return this.getStepInstanceWithEntitesAndReviewers(updatedStep, userId);
     }
 }

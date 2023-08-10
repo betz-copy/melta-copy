@@ -1,4 +1,3 @@
-import { IUser } from '../../../express/users/interface';
 import { IMongoEntityTemplatePopulated } from '../../entityTemplateManager';
 import { IEntity } from '../../instanceManager';
 import { IBaseSearchProperties } from './processTemplate';
@@ -19,9 +18,7 @@ export interface IProcessInstance {
     endDate: Date;
     steps: string[];
     status: Status;
-    reviewerId?: string;
-    reviewedAt?: String;
-    summaryDetails?: InstanceProperties;
+    reviewedAt?: Date;
 }
 export interface IProcessInstanceWithSteps extends Omit<IProcessInstance, 'steps'> {
     steps: IMongoStepInstance[];
@@ -37,9 +34,8 @@ export interface IMongoProcessInstanceWithSteps extends IProcessInstanceWithStep
     updatedAt: string;
 }
 
-export interface IMongoProcessInstancePopulated extends Omit<IMongoProcessInstance, 'steps' | 'reviewerId'> {
+export interface IMongoProcessInstancePopulated extends Omit<IMongoProcessInstance, 'steps'> {
     steps: IMongoStepInstancePopulated[];
-    reviewer?: IUser;
 }
 
 export interface ISearchProcessInstancesBody extends IBaseSearchProperties {

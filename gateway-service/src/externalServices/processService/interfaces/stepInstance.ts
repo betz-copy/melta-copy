@@ -4,10 +4,11 @@ import { InstanceProperties, Status } from './processInstance';
 export interface IStepInstance {
     templateId: string;
     properties?: InstanceProperties;
+    comments?: string;
     status: Status;
     reviewers: string[];
     reviewerId?: string;
-    reviewedAt?: string;
+    reviewedAt?: Date;
 }
 
 export interface IMongoStepInstance extends IStepInstance {
@@ -23,8 +24,10 @@ export interface IMongoStepInstancePopulated extends Omit<IMongoStepInstance, 'r
 
 export interface UpdateStepReqBody {
     properties?: InstanceProperties;
+    comments?: string;
     statusReview?: {
         status: Status;
         reviewerId: string;
+        processId: string;
     };
 }
