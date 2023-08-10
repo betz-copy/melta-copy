@@ -60,7 +60,6 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                 const propertyValue = properties[propertyKey];
                 const hideField = entityTemplate.properties.hide.includes(propertyKey);
                 const isLTR = propertySchema.type === 'number' || Boolean(propertySchema.pattern);
-
                 return (
                     <Grid key={propertyKey} item>
                         <Grid container spacing={1}>

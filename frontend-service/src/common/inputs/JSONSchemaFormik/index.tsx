@@ -37,6 +37,10 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
     ajv.addFormat('fileId', /.*/);
     addFormats(ajv);
     ajv.addVocabulary(['patternCustomErrorMessage', 'hide']);
+    ajv.addKeyword({
+        keyword: 'dateNotification',
+        type: 'string',
+    });
 
     const validateFunction = ajv.compile(schema);
     validateFunction(data);

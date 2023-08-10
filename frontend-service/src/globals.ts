@@ -80,6 +80,7 @@ export const environment = {
                 NotificationType.processReviewerUpdate,
                 NotificationType.processStatusUpdate,
                 NotificationType.newProcess,
+                NotificationType.dateAboutToExpire,
             ],
         },
     },

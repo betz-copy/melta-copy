@@ -13,6 +13,7 @@ import {
     isRuleBreachAlertNotification,
     isRuleBreachRequestNotification,
     isRuleBreachResponseNotification,
+    isDateAboutToExpireNotification,
 } from '../../../interfaces/notifications';
 import { getShortDate } from '../../../utils/date';
 import { notificationSeenRequest } from '../../../services/notificationService';
@@ -23,6 +24,7 @@ import { RootState } from '../../../store';
 import { NewProcessNotification } from './processNotifications/NewProcessNotification';
 import { ProcessStatusUpdateNotification } from './processNotifications/ProcessStatusUpdateNotification';
 import { ProcessReviewerUpdateNotification } from './processNotifications/ProcessReviewerUpdateNotification';
+import { DateAboutToExpireNotification } from './generalNotifications/DateAboutToExpireNotification';
 
 interface NotificationCardProps {
     notification: INotificationPopulated;
@@ -65,6 +67,7 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({ notification
                         {isNewProcessNotification(notification) && <NewProcessNotification {...notification.metadata} />}
                         {isProcessStatusUpdateNotification(notification) && <ProcessStatusUpdateNotification {...notification.metadata} />}
                         {isProcessReviewerUpdateNotification(notification) && <ProcessReviewerUpdateNotification {...notification.metadata} />}
+                        {isDateAboutToExpireNotification(notification) && <DateAboutToExpireNotification {...notification.metadata} />}
                     </Grid>
 
                     <Grid item container justifyContent="flex-end" wrap="nowrap">

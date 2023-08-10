@@ -2,6 +2,7 @@ import { IMongoProcessInstancePopulated, Status } from './processes/processInsta
 import { IMongoStepInstancePopulated } from './processes/stepInstance';
 import { IRuleBreachAlertPopulated } from './ruleBreaches/ruleBreachAlert';
 import { IRuleBreachRequestPopulated } from './ruleBreaches/ruleBreachRequest';
+import { IEntity } from './entities';
 
 export enum NotificationType {
     ruleBreachAlert = 'ruleBreachAlert',
@@ -11,6 +12,8 @@ export enum NotificationType {
     processReviewerUpdate = 'processReviewerUpdate',
     processStatusUpdate = 'processStatusUpdate',
     newProcess = 'newProcess',
+
+    dateAboutToExpire = 'dateAboutToExpire',
 }
 
 export interface IRuleBreachAlertNotificationMetadataPopulated {
@@ -38,13 +41,19 @@ export interface INewProcessNotificationMetadataPopulated {
     process: IMongoProcessInstancePopulated;
 }
 
+export interface IDateAboutToExpireMetadataPopulated {
+    entity: IEntity | null;
+    propertyName: string;
+    datePropertyValue: Date;
+}
 export type INotificationMetadataPopulated =
     | IRuleBreachAlertNotificationMetadataPopulated
     | IRuleBreachRequestNotificationMetadataPopulated
     | IRuleBreachResponseNotificationMetadataPopulated
     | IProcessReviewerUpdateNotificationMetadataPopulated
     | IProcessStatusUpdateNotificationMetadataPopulated
-    | INewProcessNotificationMetadataPopulated;
+    | INewProcessNotificationMetadataPopulated
+    | IDateAboutToExpireMetadataPopulated;
 
 export interface INotificationPopulated<T = INotificationMetadataPopulated> {
     type: NotificationType;
@@ -80,6 +89,10 @@ export const isProcessStatusUpdateNotification = (
 export const isNewProcessNotification = (
     notification: Partial<INotificationPopulated>,
 ): notification is INotificationPopulated<INewProcessNotificationMetadataPopulated> => notification.type === NotificationType.newProcess;
+
+export const isDateAboutToExpireNotification = (
+    notification: Partial<INotificationPopulated>,
+): notification is INotificationPopulated<IDateAboutToExpireMetadataPopulated> => notification.type === NotificationType.dateAboutToExpire;
 
 export type INotificationCountGroups = Record<string, NotificationType[]>;
 export interface INotificationGroupCountDetails {

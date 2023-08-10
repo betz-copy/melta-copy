@@ -297,6 +297,8 @@ export default {
             properties: 'שדות',
             parameters: 'פרמטרים',
             attachments: 'קבצים',
+            dateNotificationTypes: { day: 'יום לפני', week: 'שבוע לפני', twoWeeks: 'שבועיים לפני' },
+            dateNotification: 'התראה לפני סיום',
         },
         relationshipTemplate: {
             title: 'יצירת תבנית קשר',
@@ -447,6 +449,7 @@ export default {
         uniqueTooltipTitle:
             '* שדות יחודיים צריכים להיות גם חובה.\n* סימון מספר שדות כיחודיים, הופך אותם לייחודים ביחד. לדוגמא, סימון "שם פרטי" ו"שם משפחה" כיחודיים, אומר שתהיה חסימת שכפולים רק עבור שני השדות ביחד כלומר אסור פעמיים "נעם כהן", אבל מותר "נעם כהן" וגם "נעם לוי", למרות שיש פעמיים אותו שם פרטי',
         invalidPropertyType: 'סוג שדה לא תקין',
+        mustBeOneOfList: 'בחר באחת מתוך האפשרויות הנתונות',
         hebrew: 'עברית',
         oneField: 'לפחות שדה חובה אחד',
         oneStep: 'לפחות שלב אחד',
@@ -556,6 +559,12 @@ export default {
     newProcessNotification: {
         newProcess: 'נוצר תהליך חדש',
         processName: 'תהליך חדש בשם',
+    },
+    dateAboutToExpireNotification: {
+        dateAboutToExpireHeadline: 'שים לב\n',
+        propertyValue: 'התאריך',
+        entityTemplateName: 'בישות',
+        aboutToExpire: 'מתקרב',
     },
     processStatusUpdateNotification: {
         statusUpdate: 'עדכון סטטוס',

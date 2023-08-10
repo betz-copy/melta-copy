@@ -6,6 +6,7 @@ export interface CommonFormInputProperties {
     options: string[];
     pattern: string;
     patternCustomErrorMessage: string;
+    dateNotification?: string | null;
     required?: boolean;
     preview?: boolean;
     hide?: boolean;

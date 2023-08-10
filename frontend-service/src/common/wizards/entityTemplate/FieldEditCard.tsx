@@ -15,11 +15,17 @@ import {
     Tooltip,
     Typography,
 } from '@mui/material';
-import { Delete as DeleteIcon, DragHandle as DragHandleIcon } from '@mui/icons-material';
+import {
+    Delete as DeleteIcon,
+    DragHandle as DragHandleIcon,
+    NotificationsActive as NotificationsActiveIcon,
+    NotificationsOff as NotificationsOffIcon,
+} from '@mui/icons-material';
 import { Draggable } from 'react-beautiful-dnd';
 import i18next from 'i18next';
 import isEqual from 'lodash.isequal';
-import { validPropertyTypes } from './AddFields';
+import { dateNotificationTypes, validPropertyTypes } from './AddFields';
+
 import { CommonFormInputProperties } from './commonInterfaces';
 
 const UniqueCheckboxTooltipTitle = (
@@ -78,6 +84,10 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     const options = `properties[${index}].options`;
     const touchedOptions = touched?.options;
     const errorOptions = errors?.options;
+
+    const dateNotification = `properties[${index}].dateNotification`;
+    const touchedDateNotification = touched?.dateNotification;
+    const errorDateNotification = errors?.dateNotification;
 
     const required = `properties[${index}].required`;
     const preview = `properties[${index}].preview`;
@@ -218,6 +228,39 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                 />
                                             </>
                                         )}
+                                        {(value.type === 'date' || value.type === 'date-time') &&
+                                            (value.dateNotification !== undefined ? (
+                                                <Grid container direction="row">
+                                                    <IconButton
+                                                        onClick={() => setFieldValue('dateNotification', undefined)}
+                                                        sx={{ borderRadius: 10 }}
+                                                    >
+                                                        <NotificationsActiveIcon />
+                                                    </IconButton>
+                                                    <TextField
+                                                        select
+                                                        label={i18next.t('wizard.entityTemplate.dateNotification')}
+                                                        id={dateNotification}
+                                                        name={dateNotification}
+                                                        value={value.dateNotification ?? ''}
+                                                        onChange={onChange}
+                                                        error={touchedDateNotification && Boolean(errorDateNotification)}
+                                                        helperText={touchedDateNotification && errorDateNotification}
+                                                        sx={{ marginRight: '5px' }}
+                                                        fullWidth
+                                                    >
+                                                        {dateNotificationTypes.map((notificationType) => (
+                                                            <MenuItem key={notificationType} value={notificationType}>
+                                                                {i18next.t(`wizard.entityTemplate.dateNotificationTypes.${notificationType}`)}
+                                                            </MenuItem>
+                                                        ))}
+                                                    </TextField>
+                                                </Grid>
+                                            ) : (
+                                                <IconButton onClick={() => setFieldValue('dateNotification', null)} sx={{ borderRadius: 10 }}>
+                                                    <NotificationsOffIcon />
+                                                </IconButton>
+                                            ))}
                                     </Grid>
                                     <Grid item container justifyContent="space-between">
                                         <Box>

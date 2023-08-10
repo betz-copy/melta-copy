@@ -13,8 +13,9 @@ import { basePropertyTypes, stringFormats } from '../../../services/templates/en
 import FieldBlock from './FieldBlock';
 import { ErrorToast } from '../../ErrorToast';
 
-const processStringFormats = [...stringFormats, 'entityReference']
+const processStringFormats = [...stringFormats, 'entityReference'];
 const validPropertyTypes = [...basePropertyTypes, ...processStringFormats, 'pattern', 'enum'];
+const dateNotificationTypes: string[] = ['day', 'week', 'twoWeeks'];
 export const propertiesBaseSchema = Yup.object({
     name: Yup.string()
         .notOneOf(['createdAt', 'updatedAt', 'disable'], i18next.t('validation.fieldExist'))
@@ -33,7 +34,9 @@ export const propertiesBaseSchema = Yup.object({
         is: 'pattern',
         then: (schema) => schema.required(i18next.t('validation.required')),
     }),
+    dateNotification: Yup.string().nullable().oneOf(dateNotificationTypes, i18next.t('validation.mustBeOneOfList')),
 });
+
 export const attachmentPropertiesBaseSchema = Yup.object({
     name: Yup.string().matches(variableNameValidation, i18next.t('validation.variableName')).required(i18next.t('validation.required')),
     title: Yup.string().required(i18next.t('validation.required')),
@@ -124,4 +127,4 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
     );
 };
 
-export { AddFields, addFieldsSchema, validPropertyTypes };
+export { AddFields, addFieldsSchema, validPropertyTypes, dateNotificationTypes };
