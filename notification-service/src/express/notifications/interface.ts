@@ -9,6 +9,8 @@ export enum NotificationType {
     processReviewerUpdate = 'processReviewerUpdate',
     processStatusUpdate = 'processStatusUpdate',
     newProcess = 'newProcess',
+
+    dateAboutToExpire = 'dateAboutToExpire',
 }
 
 interface IRuleBreachAlertMetadata {
@@ -36,13 +38,20 @@ interface INewProcessMetadata {
     processId: string;
 }
 
+interface IDateAboutToExpireMetadata {
+    entityId: string;
+    propertyName: string;
+    datePropertyValue: Date;
+}
+
 type INotificationMetadata =
     | IRuleBreachAlertMetadata
     | IRuleBreachRequestMetadata
     | IRuleBreachResponseMetadata
     | IProcessReviewerUpdateMetadata
     | IProcessStatusUpdateMetadata
-    | INewProcessMetadata;
+    | INewProcessMetadata
+    | IDateAboutToExpireMetadata;
 
 export interface INotification {
     viewers: string[];

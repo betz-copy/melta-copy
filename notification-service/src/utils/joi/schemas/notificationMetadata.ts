@@ -31,6 +31,12 @@ export const newProcessMetadataSchema = joi.object({
     processId: mongoIdSchema.required(),
 });
 
+export const dateAboutToExpireMetadataSchema = joi.object({
+    entityId: joi.string().required(),
+    propertyName: joi.string().required(),
+    datePropertyValue: joi.date().required(),
+});
+
 export const validateNotificationMetadataSchema = joi.custom((value, helpers) => {
     const parent: Omit<INotification, 'createdAt'> = helpers.state.ancestors[0];
     let schema: joi.ObjectSchema;
@@ -54,6 +60,9 @@ export const validateNotificationMetadataSchema = joi.custom((value, helpers) =>
             break;
         case NotificationType.newProcess:
             schema = newProcessMetadataSchema;
+            break;
+        case NotificationType.dateAboutToExpire:
+            schema = dateAboutToExpireMetadataSchema;
             break;
 
         default:
