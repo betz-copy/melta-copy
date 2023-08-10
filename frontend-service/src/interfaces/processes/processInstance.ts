@@ -19,9 +19,7 @@ export interface IProcessInstance {
     details: InstanceProperties;
     steps: string[];
     status: Status;
-    reviewerId?: string;
     reviewedAt?: Date;
-    summaryDetails?: InstanceProperties;
 }
 export interface IProcessInstanceWithSteps extends Omit<IProcessInstance, 'steps'> {
     steps: IMongoStepInstance[];
@@ -50,25 +48,7 @@ export interface ISearchProcessInstancesBody extends IBaseSearchProperties {
     status?: Status;
 }
 
-// Define the common fields for creating and updating a process instance
-type CommonProcessInstanceFields = Pick<IProcessInstance, 'details' | 'name'> & { detailsAttachments: Object };
-
-// The steps need to be key value object
-// ** When Create ** --> The keys are the step TemplateIds the values are arrays .
-// ** When update ** --> The keys = step InstanceIds the values are arrays of all reviewerIds (old and new)
-export type StepsObject = Record<string, string[]>;
-
 export type StepsObjectPopulated = Record<string, IUser[]>;
-
-export type ICreateProcessInstanceBody = CommonProcessInstanceFields & {
-    templateId: IProcessInstance['templateId'];
-    steps: StepsObject;
-};
-
-// Define the optional fields for updating a process instance
-export type IUpdateProcessInstanceBody = Partial<
-    Omit<IProcessInstance, 'templateId' | 'reviewerId' | 'reviewedAt' | 'steps'> & { steps: StepsObject }
->;
 
 export interface IReferencedEntityForProcess {
     entity: IEntity;

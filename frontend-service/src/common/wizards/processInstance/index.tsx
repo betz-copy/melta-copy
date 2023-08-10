@@ -4,20 +4,19 @@ import { Done as DoneIcon, Clear as ClearIcon } from '@mui/icons-material';
 import i18next from 'i18next';
 import { makeStyles } from '@mui/styles';
 import { useMutation, useQueryClient } from 'react-query';
-import { toast } from 'react-toastify';
-import { AxiosError } from 'axios';
-import EditIcon from '@mui/icons-material/Edit';
-import _ from 'lodash';
 import { ProcessSideStepper } from './ProcessSideStepper';
 import { BlueTitle } from '../../BlueTitle';
 import ProcessDetails, { ProcessDetailsValues } from './ProcessDetails';
 import { IMongoProcessInstancePopulated, Status } from '../../../interfaces/processes/processInstance';
 import { IProcessTemplateMap } from '../../../interfaces/processes/processTemplate';
 import { getInitialDetailsValues, useProcessDetailsFormik } from './ProcessDetails/detailsFormik';
-import { updateProcessRequest } from '../../../services/processesService';
+import ProcessSummary from './ProcessSummaryStep/index';
+import { getProcessByIdRequest, updateProcessRequest } from '../../../services/processesService';
+import { toast } from 'react-toastify';
+import { AxiosError } from 'axios';
 import { ErrorToast } from '../../ErrorToast';
-import ProcessSummary, { SummaryDetailsValues } from './ProcessSummaryStep/index';
-import { getInitialSummaryValues, useProcessSummaryFormik } from './ProcessSummaryStep/summaryFormik';
+import EditIcon from '@mui/icons-material/Edit';
+import _ from 'lodash';
 import ProcessStepsStep from './ProcessSteps/index';
 import { IPermissionsOfUser } from '../../../services/permissionsService';
 import { IMongoStepTemplatePopulated } from '../../../interfaces/processes/stepTemplate';
@@ -61,7 +60,7 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({ open, onClose
 
     const [isProcessChanged, setIsProcessChanged] = useState<boolean>(false);
     const { isLoading, mutateAsync } = useMutation(
-        (processData: ProcessDetailsValues | SummaryDetailsValues) => updateProcessRequest(processInstance._id, processData),
+        (processData: ProcessDetailsValues ) => updateProcessRequest(processInstance._id, processData),
         {
             onSuccess: (processNewData) => {
                 toast.success(i18next.t('wizard.processInstance.editedSuccessfully'));
@@ -76,7 +75,6 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({ open, onClose
         },
     );
     const detailsFormikData = useProcessDetailsFormik(processInstance, processTemplatesMap, mutateAsync);
-    const summaryFormikData = useProcessSummaryFormik(processInstance, processTemplatesMap, mutateAsync);
 
     const [activeStep, setActiveStep] = React.useState(stepTemplate ? 1 : 0);
 
@@ -94,13 +92,16 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({ open, onClose
                 <ProcessStepsStep
                     processTemplate={processTemplatesMap.get(processInstance!.templateId)!}
                     processInstance={currProcessInstance}
-                    onStepUpdateSuccess={(stepInstance) => {
+                    onStepUpdateSuccess={async (stepInstance) => {
                         setCurrProcessInstance((prev) => {
                             const newSteps = prev.steps;
                             const updatedStepIndex = newSteps.findIndex((step) => step._id === stepInstance._id);
                             newSteps[updatedStepIndex] = stepInstance;
                             return { ...prev, steps: newSteps };
                         });
+
+                        const newProcess = await getProcessByIdRequest(processInstance._id);
+                        setCurrProcessInstance(newProcess);
                         setIsProcessChanged(true);
                     }}
                     isStepEditMode={isStepEditMode}
@@ -113,12 +114,7 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({ open, onClose
         {
             label: i18next.t('wizard.processInstance.processSummary'),
             component: (
-                <ProcessSummary
-                    summaryFormikData={summaryFormikData}
-                    processInstance={currProcessInstance}
-                    processTemplate={processTemplatesMap.get(currProcessInstance.templateId)!}
-                    isEditMode={isEditMode}
-                />
+                <ProcessSummary processInstance={currProcessInstance} processTemplate={processTemplatesMap.get(currProcessInstance.templateId)!} />
             ),
         },
     ];
@@ -133,7 +129,6 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({ open, onClose
 
     const handleSubmit = () => {
         if (activeStep === 0) detailsFormikData.submitForm();
-        else if (activeStep === 2) summaryFormikData.submitForm();
     };
 
     return (
@@ -151,8 +146,6 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({ open, onClose
                                     onClick={() => {
                                         if (activeStep === 0)
                                             detailsFormikData.setValues(getInitialDetailsValues(currProcessInstance, processTemplatesMap));
-                                        if (activeStep === 2)
-                                            summaryFormikData.setValues(getInitialSummaryValues(currProcessInstance, processTemplatesMap));
                                         setIsEditMode(false);
                                     }}
                                 >
@@ -164,7 +157,7 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({ open, onClose
                                     size="large"
                                     variant="contained"
                                     onClick={() => handleSubmit()}
-                                    disabled={!(detailsFormikData.dirty || summaryFormikData.dirty) || isLoading}
+                                    disabled={!detailsFormikData.dirty || isLoading}
                                     startIcon={isLoading ? <CircularProgress sx={{ color: 'white' }} size={20} /> : <DoneIcon />}
                                 >
                                     {i18next.t('wizard.processInstance.saveBth')}
@@ -173,13 +166,11 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({ open, onClose
                         </Grid>
                     )}
 
-                    {!isEditMode &&
-                        hasPermissionsToEditDetailsAndSummary &&
-                        ((activeStep === 0 && processInstance.status === Status.Pending) || activeStep === 2) && (
-                            <Button variant="contained" size="large" startIcon={<EditIcon />} onClick={() => setIsEditMode(true)}>
-                                {i18next.t('wizard.processInstance.editProcessBth')}
-                            </Button>
-                        )}
+                    {!isEditMode && hasPermissionsToEditDetailsAndSummary && activeStep === 0 && processInstance.status === Status.Pending && (
+                        <Button variant="contained" size="large" startIcon={<EditIcon />} onClick={() => setIsEditMode(true)}>
+                            {i18next.t('wizard.processInstance.editProcessBth')}
+                        </Button>
+                    )}
                 </Grid>
             </DialogTitle>
             <DialogContent dividers className={classes.container}>

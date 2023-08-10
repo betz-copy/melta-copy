@@ -41,7 +41,6 @@ function generateProcessInstanceOfTemplate(template: IMongoProcessTemplatePopula
         status: Status.Pending,
         reviewer: undefined,
         reviewedAt: undefined,
-        summaryDetails: JSONSchemaFaker.generate(template.summaryDetails.properties) as Record<string, any>,
     };
 }
 

@@ -19,12 +19,10 @@ const processTemplateObjectToProcessTemplateForm = (
     processTemplate: IMongoProcessTemplatePopulated | null,
 ): ProcessTemplateWizardValues | undefined => {
     if (!processTemplate) return undefined;
-    const { details, steps, summaryDetails, ...restOfProcessTemplate } = processTemplate;
+    const { details, steps, ...restOfProcessTemplate } = processTemplate;
     const detailsPropertiesArray: ProcessTemplateFormInputProperties[] = [];
     const detailsAttachmentProperties: ProcessTemplateFormInputProperties[] = [];
     const stepsForm: ProcessTemplateWizardValues['steps'] = [];
-    const summaryDetailsPropertiesArray: ProcessTemplateFormInputProperties[] = [];
-    const summaryDetailsAttachmentProperties: ProcessTemplateFormInputProperties[] = [];
 
     details.propertiesOrder.forEach((key) => {
         const value = details.properties.properties[key];
@@ -97,41 +95,12 @@ const processTemplateObjectToProcessTemplateForm = (
             reviewers: step.reviewers,
         });
     });
-    summaryDetails.propertiesOrder.forEach((key) => {
-        const value = summaryDetails.properties.properties[key];
-
-        let type: string = value.format || value.type;
-        if (value.enum) {
-            type = 'enum';
-        }
-        if (value.pattern) {
-            type = 'pattern';
-        }
-
-        const property: ProcessTemplateFormInputProperties = {
-            id: uuid(),
-            name: key,
-            title: value.title,
-            type,
-            options: value.enum || [],
-            pattern: value.pattern || '',
-            patternCustomErrorMessage: value.patternCustomErrorMessage || '',
-        };
-
-        if (value.format === 'fileId') {
-            summaryDetailsAttachmentProperties.push(property);
-        } else {
-            summaryDetailsPropertiesArray.push(property);
-        }
-    });
 
     return {
         ...restOfProcessTemplate,
         detailsProperties: detailsPropertiesArray,
         detailsAttachmentProperties,
         steps: stepsForm,
-        summaryDetailsProperties: summaryDetailsPropertiesArray,
-        summaryDetailsAttachmentProperties,
     };
 };
 const formToJSONSchema = (values: ProcessTemplateWizardValues): ICreateProcessTemplateBody | IUpdateProcessTemplateBody => {
@@ -139,20 +108,13 @@ const formToJSONSchema = (values: ProcessTemplateWizardValues): ICreateProcessTe
         detailsProperties,
         detailsAttachmentProperties,
         steps,
-        summaryDetailsProperties,
-        summaryDetailsAttachmentProperties,
         ...restOfProperties
     } = values;
 
     const detailsPropertiesOrder: string[] = [];
-    const summaryDetailsPropertiesOrder: string[] = [];
     const stepTemplates: ICreateProcessTemplateBody['steps'] | IUpdateProcessTemplateBody['steps'] = [];
 
     const detailsSchema: IProcessDetails['properties'] = {
-        type: 'object',
-        properties: {},
-    };
-    const summaryDetailsSchema: IProcessDetails['properties'] = {
         type: 'object',
         properties: {},
     };
@@ -219,36 +181,11 @@ const formToJSONSchema = (values: ProcessTemplateWizardValues): ICreateProcessTe
             reviewers: reviewersIds,
         });
     });
-    summaryDetailsProperties.forEach(({ name, title, type, options, pattern, patternCustomErrorMessage }) => {
-        summaryDetailsSchema.properties[name] = {
-            title,
-            type: basePropertyTypes.includes(type) ? (type as IProcessSingleProperty['type']) : 'string',
-            format: stringFormats.includes(type) ? (type as IProcessSingleProperty['format']) : undefined,
-            enum: type === 'enum' ? options : undefined,
-            pattern: type === 'pattern' ? pattern : undefined,
-            patternCustomErrorMessage: type === 'pattern' ? patternCustomErrorMessage : undefined,
-        };
 
-        summaryDetailsPropertiesOrder.push(name);
-    });
-
-    summaryDetailsAttachmentProperties.forEach(({ name, title }) => {
-        summaryDetailsSchema.properties[name] = {
-            title,
-            type: 'string',
-            format: 'fileId',
-        };
-
-        summaryDetailsPropertiesOrder.push(name);
-    });
     return {
         ...restOfProperties,
         details: { properties: detailsSchema, propertiesOrder: detailsPropertiesOrder },
         steps: stepTemplates,
-        summaryDetails: {
-            properties: summaryDetailsSchema,
-            propertiesOrder: summaryDetailsPropertiesOrder,
-        },
     };
 };
 const createProcessTemplateRequest = async (newProcessTemplate: ProcessTemplateWizardValues) => {
@@ -259,7 +196,6 @@ const createProcessTemplateRequest = async (newProcessTemplate: ProcessTemplateW
     formData.append('name', processTemplate.name);
     formData.append('details', JSON.stringify(processTemplate.details));
     formData.append('steps', JSON.stringify(processTemplate.steps));
-    formData.append('summaryDetails', JSON.stringify(processTemplate.summaryDetails));
 
     const { data } = await axios.post<IMongoProcessTemplatePopulated>(processTemplates, formData);
     return data;
@@ -275,7 +211,6 @@ const updateProcessTemplateRequest = async (processTemplateId: string, updatedPr
     formData.append('displayName', processTemplate.displayName);
     formData.append('details', JSON.stringify(processTemplate.details));
     formData.append('steps', JSON.stringify(processTemplate.steps));
-    formData.append('summaryDetails', JSON.stringify(processTemplate.summaryDetails));
     const { data } = await axios.put<IMongoProcessTemplatePopulated>(`${processTemplates}/${processTemplateId}`, formData);
     return data;
 };

@@ -32,5 +32,6 @@ export const getStepValuesFromStepInstance = (
         entityReferences: entitiesData,
         attachmentsProperties,
         status: stepInstance.status,
+        comments: stepInstance.comments?? '',
     };
 };

@@ -62,7 +62,6 @@ const generateStepTemplatePopulated = (): IMongoStepTemplatePopulated => {
 export const generateProcessTemplatePopulated = (): IMongoProcessTemplatePopulated => {
     const processName = generateRandomString(6);
     const { properties: detailsProperties, propertiesOrder: detailsPropertiesOrder } = generateProperties();
-    const { properties: summaryProperties, propertiesOrder: summaryPropertiesOrder } = generateProperties();
 
     return {
         _id: generateMongoId(),
@@ -78,12 +77,5 @@ export const generateProcessTemplatePopulated = (): IMongoProcessTemplatePopulat
             propertiesOrder: detailsPropertiesOrder,
         },
         steps: Array.from({ length: randomNum2To5() }, () => generateStepTemplatePopulated()),
-        summaryDetails: {
-            properties: {
-                type: 'object',
-                properties: summaryProperties,
-            },
-            propertiesOrder: summaryPropertiesOrder,
-        },
     };
 };

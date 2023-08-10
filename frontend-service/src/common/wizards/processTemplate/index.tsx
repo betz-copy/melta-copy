@@ -6,7 +6,7 @@ import { AxiosError } from 'axios';
 import { v4 as uuid } from 'uuid';
 import { StepsType, Wizard, WizardBaseType } from '../index';
 import { ErrorToast } from '../../ErrorToast';
-import { addDetailsFieldsSchema, AddGenericFields, addSummaryDetailsFieldsSchema } from './AddGenericFields';
+import { addDetailsFieldsSchema, AddDetailsFields } from './AddDetailsFields';
 import { CreateTemplateName, createTemplateNameSchema } from '../entityTemplate/CreateTemplateName';
 import { updateProcessTemplateRequest, createProcessTemplateRequest } from '../../../services/templates/processTemplatesService';
 import { AddStepsFields, addStepsFieldsSchema } from './AddStepsFields';
@@ -23,8 +23,7 @@ export interface ProcessTemplateFormInputProperties {
     pattern: string;
     patternCustomErrorMessage: string;
 }
-export interface ProcessTemplateWizardValues
-    extends Omit<IMongoProcessTemplatePopulated, 'details' | 'steps' | 'summaryDetails' | 'createdAt' | 'updatedAt'> {
+export interface ProcessTemplateWizardValues extends Omit<IMongoProcessTemplatePopulated, 'details' | 'steps' | 'createdAt' | 'updatedAt'> {
     detailsProperties: ProcessTemplateFormInputProperties[];
     detailsAttachmentProperties: ProcessTemplateFormInputProperties[];
     steps: Array<{
@@ -36,8 +35,6 @@ export interface ProcessTemplateWizardValues
         reviewers: IUser[];
         icon?: fileDetails;
     }>;
-    summaryDetailsProperties: ProcessTemplateFormInputProperties[];
-    summaryDetailsAttachmentProperties: ProcessTemplateFormInputProperties[];
 }
 
 const stepsComponents: StepsType<ProcessTemplateWizardValues> = [
@@ -49,12 +46,10 @@ const stepsComponents: StepsType<ProcessTemplateWizardValues> = [
     {
         label: i18next.t('wizard.processTemplate.otherDetails'),
         component: (props, { isEditMode, setBlock }) => (
-            <AddGenericFields
+            <AddDetailsFields
                 {...props}
                 isEditMode={isEditMode}
                 setBlock={setBlock}
-                propertiesType="detailsProperties"
-                attachmentPropertiesType="detailsAttachmentProperties"
             />
         ),
         validationSchema: addDetailsFieldsSchema,
@@ -63,19 +58,6 @@ const stepsComponents: StepsType<ProcessTemplateWizardValues> = [
         label: i18next.t('wizard.processTemplate.levels'),
         component: (props, { isEditMode, setBlock }) => <AddStepsFields {...props} isEditMode={isEditMode} setBlock={setBlock} />,
         validationSchema: addStepsFieldsSchema,
-    },
-    {
-        label: i18next.t('wizard.processTemplate.summaryDetails'),
-        component: (props, { isEditMode, setBlock }) => (
-            <AddGenericFields
-                {...props}
-                isEditMode={isEditMode}
-                setBlock={setBlock}
-                propertiesType="summaryDetailsProperties"
-                attachmentPropertiesType="summaryDetailsAttachmentProperties"
-            />
-        ),
-        validationSchema: addSummaryDetailsFieldsSchema,
     },
 ];
 const ProcessTemplateWizard: React.FC<WizardBaseType<ProcessTemplateWizardValues>> = ({
@@ -101,18 +83,6 @@ const ProcessTemplateWizard: React.FC<WizardBaseType<ProcessTemplateWizardValues
                 icon: undefined,
             },
         ],
-        summaryDetailsProperties: [
-            {
-                name: 'comments',
-                title: 'הערות',
-                type: 'string',
-                id: uuid(),
-                options: [],
-                pattern: '',
-                patternCustomErrorMessage: '',
-            },
-        ],
-        summaryDetailsAttachmentProperties: [],
     },
     isEditMode = false,
 }) => {

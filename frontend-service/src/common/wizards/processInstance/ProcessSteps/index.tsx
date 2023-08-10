@@ -12,6 +12,7 @@ export interface ProcessStepValues {
     attachmentsProperties: object;
     entityReferences: Record<string, IReferencedEntityForProcess>;
     status: Status;
+    comments: string;
 }
 
 export interface IStepsProp {
@@ -19,7 +20,7 @@ export interface IStepsProp {
     processInstance: IMongoProcessInstancePopulated;
     isStepEditMode: boolean;
     setIsStepEditMode: React.Dispatch<React.SetStateAction<boolean>>;
-    onStepUpdateSuccess: (updatedStepInstance: IMongoStepInstancePopulated) => void;
+    onStepUpdateSuccess: (stepInstance: IMongoStepInstancePopulated) => void;
     defaultStepTemplate?: IMongoStepTemplatePopulated;
 }
 
@@ -44,7 +45,7 @@ const Steps: React.FC<IStepsProp> = ({
             sx={{
                 width: '100%',
                 height: '100%',
-                paddingRight: '60px',
+                paddingRight: '30px',
                 paddingLeft: '30px',
             }}
         >
@@ -60,7 +61,6 @@ const Steps: React.FC<IStepsProp> = ({
                     <Grid item>
                         {processInstance.steps.map((stepInstance) => {
                             const stepTemplate = getStepTemplateByStepInstance(stepInstance, processTemplate);
-
                             return (
                                 <TabPanel key={stepInstance._id} value={stepTemplate._id} >
                                     <ProcessStep

@@ -21,7 +21,6 @@ export interface IProcessTemplate {
     displayName: string;
     details: IProcessDetails;
     steps: string[];
-    summaryDetails: IProcessDetails;
 }
 export interface IProcessTemplateWithSteps extends Omit<IProcessTemplate, 'steps'> {
     steps: IMongoStepTemplate[];

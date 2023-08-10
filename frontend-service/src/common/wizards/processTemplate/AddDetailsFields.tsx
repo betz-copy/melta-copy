@@ -3,7 +3,6 @@ import { Grid } from '@mui/material';
 import * as Yup from 'yup';
 import i18next from 'i18next';
 import { useQuery } from 'react-query';
-import { FormikTouched, FormikErrors } from 'formik';
 import { AxiosError } from 'axios';
 import { toast } from 'react-toastify';
 import { ProcessTemplateWizardValues } from './index';
@@ -11,16 +10,13 @@ import { searchProcessesRequest } from '../../../services/processesService';
 import { attachmentPropertiesBaseSchema, propertiesBaseSchema } from '../entityTemplate/AddFields';
 import FieldBlock from '../entityTemplate/FieldBlock';
 import { ErrorToast } from '../../ErrorToast';
-import { processTemplateUniquePropertiesDetails, processTemplateUniquePropertiesSummaryDetails } from '../../../utils/validation';
+import { processTemplateUniquePropertiesDetails } from '../../../utils/validation';
+import { StepComponentProps } from '..';
 
 const addDetailsFieldsSchema = Yup.object({
     detailsProperties: Yup.array().of(propertiesBaseSchema),
     detailsAttachmentProperties: Yup.array().of(attachmentPropertiesBaseSchema),
 }).test('uniqueProperties', processTemplateUniquePropertiesDetails);
-const addSummaryDetailsFieldsSchema = Yup.object({
-    summaryDetailsProperties: Yup.array().of(propertiesBaseSchema),
-    summaryDetailsAttachmentProperties: Yup.array().of(attachmentPropertiesBaseSchema),
-}).test('uniqueProperties', processTemplateUniquePropertiesSummaryDetails);
 
 export const useAreThereProcessInstancesByTemplateId = (templateId: string, enabled: boolean) => {
     const { data: areThereInstancesByTemplateIdResponse } = useQuery(
@@ -50,26 +46,9 @@ export const initialFieldCardDataOnAdd = {
     patternCustomErrorMessage: '',
 };
 
-interface GenericFieldsProperties {
-    isEditMode: boolean;
-    setBlock: React.Dispatch<React.SetStateAction<boolean>>;
-    propertiesType: 'detailsProperties' | 'summaryDetailsProperties';
-    attachmentPropertiesType: 'detailsAttachmentProperties' | 'summaryDetailsAttachmentProperties';
-    values: ProcessTemplateWizardValues;
-    touched: FormikTouched<ProcessTemplateWizardValues>;
-    errors: FormikErrors<ProcessTemplateWizardValues>;
-    setFieldValue: (field: string, value: any, shouldValidate?: boolean | undefined) => void;
-    initialValues: ProcessTemplateWizardValues;
-    handleChange: {
-        (e: React.ChangeEvent<any>): void;
-        <T = string | React.ChangeEvent<any>>(field: T): T extends React.ChangeEvent<any> ? void : (e: string | React.ChangeEvent<any>) => void;
-    };
-}
-const AddGenericFields: React.FC<GenericFieldsProperties> = ({
+const AddDetailsFields: React.FC<StepComponentProps<ProcessTemplateWizardValues, 'isEditMode' | 'setBlock'>> = ({
     isEditMode,
     setBlock,
-    propertiesType,
-    attachmentPropertiesType,
     values,
     touched,
     errors,
@@ -85,7 +64,7 @@ const AddGenericFields: React.FC<GenericFieldsProperties> = ({
         <Grid container direction="column" alignItems="stretch" spacing={1}>
             <Grid item>
                 <FieldBlock
-                    propertiesType={propertiesType}
+                    propertiesType="detailsProperties"
                     values={values}
                     initialValues={initialValues}
                     setFieldValue={setFieldValue}
@@ -102,7 +81,7 @@ const AddGenericFields: React.FC<GenericFieldsProperties> = ({
 
             <Grid item>
                 <FieldBlock
-                    propertiesType={attachmentPropertiesType}
+                    propertiesType="detailsAttachmentProperties"
                     values={values}
                     initialValues={initialValues}
                     setFieldValue={setFieldValue}
@@ -120,4 +99,4 @@ const AddGenericFields: React.FC<GenericFieldsProperties> = ({
     );
 };
 
-export { AddGenericFields, addDetailsFieldsSchema, addSummaryDetailsFieldsSchema };
+export { AddDetailsFields, addDetailsFieldsSchema };

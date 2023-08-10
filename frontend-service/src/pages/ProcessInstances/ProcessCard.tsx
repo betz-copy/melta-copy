@@ -1,8 +1,7 @@
 import React, { CSSProperties, useState } from 'react';
-import { Box, Card, CardContent, Grid, Tooltip, Typography } from '@mui/material';
+import { Box, Card, CardContent, Grid, Tooltip, Typography, styled } from '@mui/material';
 import { ScatterPlotOutlined as HiveIcon, FiberManualRecordOutlined as StatusIcon } from '@mui/icons-material';
 import { useQueryClient } from 'react-query';
-import { useSelector } from 'react-redux';
 import { CustomIcon } from '../../common/CustomIcon';
 
 import { IMongoStepTemplatePopulated } from '../../interfaces/processes/stepTemplate';
@@ -10,7 +9,6 @@ import { IMongoProcessInstancePopulated, Status } from '../../interfaces/process
 import { IMongoStepInstancePopulated } from '../../interfaces/processes/stepInstance';
 import { IProcessTemplateMap } from '../../interfaces/processes/processTemplate';
 import ProcessInstanceWizard from '../../common/wizards/processInstance';
-import { RootState } from '../../store';
 
 export enum StatusColors {
     Pending = '#0288d1',
@@ -22,7 +20,15 @@ export enum StatusColorsNames {
     Approved = 'success',
     Rejected = 'error',
 }
-
+export const StyledCard = styled(Card)(({ theme }) => ({
+    background: theme.palette.mode === 'light' ? '#FFFFFF 0% 0% no-repeat padding-box' : undefined,
+    boxShadow: '0px 3px 6px #00000029',
+    border: theme.palette.mode === 'light' ? '1px solid #DBDBDB' : undefined,
+    borderRadius: '8px',
+    opacity: '1',
+    ':hover': { transform: 'scale(1.02)' },
+    cursor: 'pointer',
+}));
 const getStatusColor = (status: Status): StatusColors => {
     switch (status) {
         case Status.Approved: {
@@ -134,8 +140,6 @@ const ProcessCard: React.FC<{ processInstance: IMongoProcessInstancePopulated; o
     const processTemplatesMap = queryClient.getQueryData<IProcessTemplateMap>('getProcessTemplates')!;
     const processTemplate = processTemplatesMap.get(processInstance.templateId)!;
 
-    const darkMode = useSelector((state: RootState) => state.darkMode);
-
     const [open, setOpen] = useState<{
         isOpen: boolean;
         defaultStepTemplate?: IMongoStepTemplatePopulated;
@@ -145,20 +149,10 @@ const ProcessCard: React.FC<{ processInstance: IMongoProcessInstancePopulated; o
         setOpen({ isOpen: false });
         if (isProcessChanged) onChangedProcessDialogClose();
     };
+
     return (
         <div>
-            <Card
-                sx={{
-                    background: !darkMode ? '#FFFFFF 0% 0% no-repeat padding-box' : undefined,
-                    boxShadow: '0px 3px 6px #00000029',
-                    border: !darkMode ? '1px solid #DBDBDB' : undefined,
-                    borderRadius: '8px',
-                    opacity: '1',
-                    ':hover': { transform: 'scale(1.01)' },
-                    cursor: 'pointer',
-                }}
-                onClick={() => setOpen({ isOpen: true })}
-            >
+            <StyledCard onClick={() => setOpen({ isOpen: true })}>
                 <CardContent>
                     <Grid container direction="column" alignItems="center" justifyContent="center" spacing={2}>
                         <Grid item container direction="row" justifyContent="center" alignItems="center" spacing={1}>
@@ -183,7 +177,7 @@ const ProcessCard: React.FC<{ processInstance: IMongoProcessInstancePopulated; o
                         </Grid>
                     </Grid>
                 </CardContent>
-            </Card>
+            </StyledCard>
             {open.isOpen && (
                 <ProcessInstanceWizard
                     open={open.isOpen}

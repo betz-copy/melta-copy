@@ -5,8 +5,6 @@ import axios from '../axios';
 import { ProcessDetailsValues } from '../common/wizards/processInstance/ProcessDetails';
 import { environment } from '../globals';
 import { IMongoProcessInstancePopulated, IReferencedEntityForProcess, ISearchProcessInstancesBody } from '../interfaces/processes/processInstance';
-import { SummaryDetailsValues } from '../common/wizards/processInstance/ProcessSummaryStep';
-import { isProcessDetailsValues } from '../utils/processWizard/checkFormikValuesType';
 import { ProcessStepValues } from '../common/wizards/processInstance/ProcessSteps';
 
 const { processes } = environment.api;
@@ -41,57 +39,43 @@ const deleteProcessRequest = async (processId: string) => {
     return data;
 };
 
-const processAttachments = (attachments: object, prefix: string, formData: FormData) => {
+const handleAttachmentProperties = (attachments: object) => {
+    const formData = new FormData();
     const [filesToUpload, unchangedFiles] = partition(Object.entries(attachments), ([_key, value]) => value instanceof File);
 
-    filesToUpload.forEach(([key, value]) => formData.append(`${prefix}.${key}`, value as Blob));
+    filesToUpload.forEach(([key, value]) => formData.append(key, value as Blob));
 
-    const fileProperties = {};
+    const fileProperties: { [key: string]: string } = {};
     unchangedFiles.forEach(([key, value]) => {
         if (value) {
-            fileProperties[key] = value.name;
+            fileProperties[key] = (value as { name: string }).name;
         }
     });
 
-    return fileProperties;
+    return { formData, fileProperties };
 };
 
-const updateProcessRequest = async (processId: string, updatedData: ProcessDetailsValues | SummaryDetailsValues) => {
-    const formData = new FormData();
+const updateProcessRequest = async (processId: string, updatedData: ProcessDetailsValues) => {
     const entityReferences = Object.entries(updatedData.entityReferences)
         .filter(([_key, value]: [string, IReferencedEntityForProcess | undefined]) => value?.entity && value.entity.properties)
         .reduce((entityIdsObject: { [key: string]: string }, [key, value]: [string, IReferencedEntityForProcess]) => {
             entityIdsObject[key] = value.entity.properties._id;
             return entityIdsObject;
         }, {});
-    if (isProcessDetailsValues(updatedData)) {
-        const detailsFileProperties = processAttachments(updatedData.detailsAttachments, 'details', formData);
-        const transformedStepsObj = mapValues(updatedData.steps, (reviewers) => reviewers.map(({ id }) => id));
-        formData.append(
-            'details',
-            JSON.stringify({
-                ...updatedData.details,
-                ...detailsFileProperties,
-                ...entityReferences,
-            }),
-        );
-        formData.append('name', updatedData.name);
-        formData.append('startDate', updatedData.startDate!.toISOString());
-        formData.append('endDate', updatedData.endDate!.toISOString());
-        formData.append('steps', JSON.stringify(transformedStepsObj));
-    } else {
-        const summaryFileProperties = processAttachments(updatedData.summaryAttachments, 'summaryDetails', formData);
-        formData.append(
-            'summaryDetails',
-            JSON.stringify({
-                ...updatedData.summaryDetails,
-                ...summaryFileProperties,
-                ...entityReferences,
-            }),
-        );
-        formData.append('status', updatedData.status);
-    }
-
+    const { formData, fileProperties } = handleAttachmentProperties(updatedData.detailsAttachments);
+    const transformedStepsObj = mapValues(updatedData.steps, (reviewers) => reviewers.map(({ id }) => id));
+    formData.append(
+        'details',
+        JSON.stringify({
+            ...updatedData.details,
+            ...fileProperties,
+            ...entityReferences,
+        }),
+    );
+    formData.append('name', updatedData.name);
+    formData.append('startDate', updatedData.startDate!.toISOString());
+    formData.append('endDate', updatedData.endDate!.toISOString());
+    formData.append('steps', JSON.stringify(transformedStepsObj));
     const { data } = await axios.put<IMongoProcessInstancePopulated>(`${processes}/${processId}`, formData);
     return data;
 };
@@ -104,18 +88,7 @@ const searchProcessesRequest = async (searchBody: ISearchProcessInstancesBody) =
 };
 
 const updateStepRequest = async (stepId: string, values: ProcessStepValues, processId: string, currStep: IMongoStepInstancePopulated) => {
-    const formData = new FormData();
-
-    const [filesToUpload, unchangedFiles] = partition(Object.entries(values.attachmentsProperties), ([_key, value]) => value instanceof File);
-
-    filesToUpload.forEach(([key, value]) => formData.append(key, value as Blob));
-
-    const fileProperties = {};
-    unchangedFiles.forEach(([key, value]) => {
-        if (value) {
-            fileProperties[key] = value.name;
-        }
-    });
+    const { formData, fileProperties } = handleAttachmentProperties(values.attachmentsProperties);
 
     const entityReferences = Object.entries(values.entityReferences)
         .filter(([_key, value]: [string, IReferencedEntityForProcess | undefined]) => value?.entity && value.entity.properties)
@@ -133,6 +106,8 @@ const updateStepRequest = async (stepId: string, values: ProcessStepValues, proc
         }),
     );
     if (currStep.status !== values.status) formData.append('status', values.status);
+    if (values.comments !== '') formData.append('comments', values.comments);
+
     const { data } = await axios.patch<IMongoStepInstancePopulated>(`${processes}/${processId}/steps/${stepId}`, formData);
     return data;
 };

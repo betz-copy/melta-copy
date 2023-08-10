@@ -8,6 +8,7 @@ export interface IStepInstance {
     reviewers: string[];
     reviewerId?: string;
     reviewedAt?: Date;
+    comments?: string;
 }
 
 export interface IMongoStepInstance extends IStepInstance {

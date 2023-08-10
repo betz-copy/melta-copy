@@ -173,8 +173,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
 
                                             if (
                                                 propertiesType === 'properties' ||
-                                                propertiesType === 'detailsProperties' ||
-                                                propertiesType === 'summaryDetailsProperties'
+                                                propertiesType === 'detailsProperties' 
                                             ) {
                                                 return (
                                                     <MemoFieldEditCard
@@ -191,7 +190,6 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
                                         })}
 
                                         {droppableProvided.placeholder}
-
                                         <Button
                                             type="button"
                                             variant="contained"

@@ -19,17 +19,17 @@ import ProcessStatus from '../ProcessSummaryStep/ProcessStatus';
 import { IMongoStepTemplatePopulated } from '../../../../interfaces/processes/stepTemplate';
 import { ProcessStepValues } from '.';
 import { IPermissionsOfUser } from '../../../../services/permissionsService';
-import { IMongoProcessInstancePopulated, Status } from '../../../../interfaces/processes/processInstance';
+import { IMongoProcessInstancePopulated } from '../../../../interfaces/processes/processInstance';
 import { EntityReference } from '../EntityReference';
 import { BlueTitle } from '../../../BlueTitle';
-
+import TextField from '@mui/material/TextField';
 interface ProcessStepProps {
     stepInstance: IMongoStepInstancePopulated;
     stepTemplate: IMongoStepTemplatePopulated;
     processInstance: IMongoProcessInstancePopulated;
     isStepEditMode: boolean;
     setIsStepEditMode: React.Dispatch<React.SetStateAction<boolean>>;
-    onStepUpdateSuccess: (updatedStepInstance: IMongoStepInstancePopulated) => void;
+    onStepUpdateSuccess: (stepInstance: IMongoStepInstancePopulated) => void;
 }
 export const ProcessStep: FC<ProcessStepProps> = ({
     stepInstance,
@@ -46,15 +46,16 @@ export const ProcessStep: FC<ProcessStepProps> = ({
         Boolean(myPermissions!.processesManagementId) ||
         stepTemplate.reviewers.some((reviewer) => reviewer.id === myPermissions.user.id) ||
         stepInstance.reviewers.some((reviewer) => reviewer.id === myPermissions.user.id);
-    const canEditStep = hasPermissionsToEditStep && processInstance.status === Status.Pending;
+    const canEditStep = hasPermissionsToEditStep;
 
     const templateFileProperties = pickBy(stepTemplate.properties.properties, (value) => value.format === 'fileId');
     const templateEntityReferenceProperties = pickBy(stepTemplate.properties.properties, (value) => value.format === 'entityReference');
     const { isLoading: editStepIsLoading, mutateAsync: editStepMutateAsync } = useMutation(
         (stepData: ProcessStepValues) => updateStepRequest(stepInstance._id, stepData, processInstance._id, stepInstance),
         {
-            onSuccess: () => {
+            onSuccess: (stepInstance) => {
                 toast.success(i18next.t('wizard.processInstance.step.editedSuccessfully'));
+                onStepUpdateSuccess(stepInstance);
             },
             onError: (error: AxiosError) => {
                 toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.processInstance.step.failedToEdit')} />);
@@ -69,7 +70,6 @@ export const ProcessStep: FC<ProcessStepProps> = ({
             onSubmit={async (values, { resetForm }) => {
                 const result = await editStepMutateAsync(values);
                 setIsStepEditMode(false);
-                onStepUpdateSuccess(result);
                 resetForm({ values: getStepValuesFromStepInstance(result, stepTemplate) });
             }}
             validate={(values) => {
@@ -87,7 +87,7 @@ export const ProcessStep: FC<ProcessStepProps> = ({
             {({ setFieldValue, values, errors, touched, setFieldTouched, dirty, handleBlur, resetForm }) => {
                 return (
                     <Form>
-                        <Grid container direction="column" >
+                        <Grid container direction="column" sx={{ overflowY: 'auto' }}>
                             {canEditStep && (
                                 <Grid item container spacing={1} >
                                     {isStepEditMode ? (
@@ -230,14 +230,45 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                         </Grid>
                                     )}
                                 </Grid>
-                                <Grid item xs={3}>
-                                    <ProcessStatus
-                                        title={i18next.t('wizard.processInstance.step.stepStatus')}
-                                        instance={stepInstance}
-                                        setFieldValue={setFieldValue}
-                                        values={values}
-                                        isEditMode={isStepEditMode}
-                                    />
+
+                                <Grid item container xs={3} direction={'column'} spacing={2}>
+                                    <Grid item>
+                                        <ProcessStatus
+                                            title={i18next.t('wizard.processInstance.step.stepStatus')}
+                                            instance={stepInstance}
+                                            editStatus={{ setFieldValue, isEditMode: isStepEditMode, values }}
+                                        />
+                                    </Grid>
+                                    <Grid item >
+                                        {isStepEditMode ? (
+                                            <TextField
+                                                label={i18next.t('wizard.processInstance.step.comment')}
+                                                multiline
+                                                rows={6}
+                                                value={values.comments}
+                                                onChange={(e) => {
+                                                    setFieldValue(`comments`, e.target.value);
+                                                }}
+                                            />
+                                        ) : (
+                                            values.comments && (
+                                                <>
+                                                    <BlueTitle
+                                                        title={i18next.t('wizard.processInstance.step.comment')}
+                                                        component="h6"
+                                                        variant="body1"
+                                                    />
+                                                    <Typography
+                                                        overflow={'auto'}
+                                                        height={'18vh'}
+                                                        style={{ wordBreak: 'break-word', fontSize: '15px' }}
+                                                    >
+                                                        {values.comments}
+                                                    </Typography>
+                                                </>
+                                            )
+                                        )}
+                                    </Grid>
                                 </Grid>
                             </Grid>
                         </Grid>
