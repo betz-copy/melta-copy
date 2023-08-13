@@ -1,5 +1,5 @@
 import React, { CSSProperties, useState } from 'react';
-import { Box, Card, CardContent, Grid, Tooltip, Typography, styled } from '@mui/material';
+import { Box, Card, CardContent, Grid, Skeleton, Tooltip, Typography, styled } from '@mui/material';
 import { ScatterPlotOutlined as HiveIcon, FiberManualRecordOutlined as StatusIcon } from '@mui/icons-material';
 import { useQueryClient } from 'react-query';
 import { CustomIcon } from '../../common/CustomIcon';
@@ -132,10 +132,11 @@ const StepIcon: React.FC<{
     );
 };
 
-const ProcessCard: React.FC<{ processInstance: IMongoProcessInstancePopulated; onChangedProcessDialogClose: () => void }> = ({
-    processInstance,
-    onChangedProcessDialogClose,
-}) => {
+const ProcessCard: React.FC<{
+    processInstance: IMongoProcessInstancePopulated;
+    onChangedProcessDialogClose: (processId: string) => void;
+    isLoading?: boolean;
+}> = ({ processInstance, onChangedProcessDialogClose, isLoading = false }) => {
     const queryClient = useQueryClient();
     const processTemplatesMap = queryClient.getQueryData<IProcessTemplateMap>('getProcessTemplates')!;
     const processTemplate = processTemplatesMap.get(processInstance.templateId)!;
@@ -147,37 +148,72 @@ const ProcessCard: React.FC<{ processInstance: IMongoProcessInstancePopulated; o
 
     const handleClose = (isProcessChanged: boolean) => {
         setOpen({ isOpen: false });
-        if (isProcessChanged) onChangedProcessDialogClose();
+        if (isProcessChanged) onChangedProcessDialogClose(processInstance._id);
     };
 
     return (
         <div>
             <StyledCard onClick={() => setOpen({ isOpen: true })}>
-                <CardContent>
-                    <Grid container direction="column" alignItems="center" justifyContent="center" spacing={2}>
-                        <Grid item container direction="row" justifyContent="center" alignItems="center" spacing={1}>
-                            <Grid item>
-                                <StatusIcon fontSize="medium" color={statusColorName(processInstance.status)} />
+                {!isLoading ? (
+                    <CardContent>
+                        <Grid container direction="column" alignItems="center" justifyContent="center" spacing={2}>
+                            <Grid item container direction="row" justifyContent="center" alignItems="center" spacing={1}>
+                                <Grid item>
+                                    <StatusIcon fontSize="medium" color={statusColorName(processInstance.status)} />
+                                </Grid>
+                                <Grid item>
+                                    <Typography component="h6" variant="h6" noWrap>
+                                        {processInstance.name}
+                                    </Typography>
+                                </Grid>
                             </Grid>
-                            <Grid item>
-                                <Typography component="h6" variant="h6" noWrap>
-                                    {processInstance.name}
-                                </Typography>
+                            <Grid item container justifyContent="center" spacing={4}>
+                                {processInstance.steps.map((step, index) => {
+                                    const stepTemplate = processTemplate.steps[index];
+                                    return (
+                                        <Grid item key={stepTemplate.name}>
+                                            <StepIcon
+                                                step={step}
+                                                stepTemplate={stepTemplate}
+                                                iconColor={getStatusColor(step.status)}
+                                                setOpen={setOpen}
+                                            />
+                                        </Grid>
+                                    );
+                                })}
                             </Grid>
                         </Grid>
-                        <Grid item container justifyContent="center" spacing={4}>
-                            {processInstance.steps.map((step, index) => {
-                                const stepTemplate = processTemplate.steps[index];
-                                return (
-                                    <Grid item key={stepTemplate.name}>
-                                        <StepIcon step={step} stepTemplate={stepTemplate} iconColor={getStatusColor(step.status)} setOpen={setOpen} />
+                    </CardContent>
+                ) : (
+                    <CardContent>
+                        <Grid container direction="column" alignItems="center" justifyContent="center" spacing={2}>
+                            {/* Status & Process Name */}
+                            <Grid item container direction="row" justifyContent="center" alignItems="center" spacing={1}>
+                                <Grid item>
+                                    <Skeleton variant="circular" width={15} height={15} />
+                                </Grid>
+                                <Grid item>
+                                    <Skeleton variant="rectangular" width="10vh" height={20} />
+                                </Grid>
+                            </Grid>
+
+                            <Grid item container flexWrap="nowrap" justifyContent="center" spacing={4} paddingTop={1} paddingBottom={1}>
+                                {processInstance.steps.map(({ _id }) => (
+                                    <Grid container item key={_id} alignItems="center" direction="column" spacing={1}>
+                                        <Grid item>
+                                            <Skeleton variant="circular" width={60} height={60} />
+                                        </Grid>
+                                        <Grid item>
+                                            <Skeleton variant="text" width={30} height={15} />
+                                        </Grid>
                                     </Grid>
-                                );
-                            })}
+                                ))}
+                            </Grid>
                         </Grid>
-                    </Grid>
-                </CardContent>
+                    </CardContent>
+                )}
             </StyledCard>
+
             {open.isOpen && (
                 <ProcessInstanceWizard
                     open={open.isOpen}

@@ -28,6 +28,8 @@ const ProcessesList: React.FC<{
 }> = ({ templatesToShowCheckbox, search, startDateInput, endDateInput }) => {
     const [statusFilter, setStatusFilter] = useState<'all' | Status>('all');
     const queryClient = useQueryClient();
+    const [loadingProcesses, setLoadingProcesses] = useState<Record<string, boolean>>({});
+
     return (
         <Grid container direction="column" spacing={2}>
             <Grid item container id="processesFilter" alignItems="center" spacing={3}>
@@ -109,9 +111,13 @@ const ProcessesList: React.FC<{
                         {(process) => (
                             <ProcessCard
                                 processInstance={process}
-                                onChangedProcessDialogClose={() => {
-                                    queryClient.resetQueries({ queryKey: ['searchProcesses'] });
+                                onChangedProcessDialogClose={(processId) => {
+                                    setLoadingProcesses((prev) => ({ ...prev, [processId]: true }));
+                                    queryClient
+                                        .invalidateQueries(['searchProcesses'])
+                                        .finally(() => setLoadingProcesses((prev) => ({ ...prev, [processId]: false })));
                                 }}
+                                isLoading={loadingProcesses[process._id] || false}
                             />
                         )}
                     </InfiniteScroll>
