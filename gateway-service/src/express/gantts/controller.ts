@@ -22,7 +22,7 @@ class GanttController {
     }
 
     static async deleteGantt(req: Request, res: Response) {
-        res.json(await GanttManager.deleteGantt(req.body));
+        res.json(await GanttManager.deleteGantt(req.params.ganttId));
     }
 
     static async updateGantt(req: Request, res: Response) {
