@@ -4,9 +4,10 @@ import { CloseOutlined as DeleteIcon } from '@mui/icons-material';
 import i18next from 'i18next';
 import _debounce from 'lodash.debounce';
 import { useSelector } from 'react-redux';
-import * as muiIcons from '../../utils/icons';
+
 import { RootState } from '../../store';
 import '../../css/index.css';
+import { allIcons } from '../../utils/icons';
 
 interface IconPickerProps {
     width: CSSProperties['width'];
@@ -18,7 +19,7 @@ interface IconPickerProps {
     onDelete: () => void;
 }
 
-const iconsEntries = Object.entries(muiIcons);
+const iconsEntries = Object.entries(allIcons);
 
 const IconPicker: React.FC<IconPickerProps> = ({ width, height, iconsPerPage, selectedIconName, color, onPick, onDelete }) => {
     const [searchStr, setSearchStr] = useState('');
@@ -73,7 +74,6 @@ const IconPicker: React.FC<IconPickerProps> = ({ width, height, iconsPerPage, se
                     placeholder={i18next.t('input.imagePicker.iconSearch')}
                     value={searchStr}
                     onChange={handleTextChange}
-                    color={darkMode ? 'primary' : 'secondary'}
                     sx={{ flexGrow: 1 }}
                 />
 
@@ -96,7 +96,7 @@ const IconPicker: React.FC<IconPickerProps> = ({ width, height, iconsPerPage, se
                                 <DeleteIcon sx={{ fontSize: 15 }} />
                             </IconButton>
 
-                            {React.createElement(muiIcons[selectedIconName], { fontSize: 'large', sx: { color } })}
+                            {React.createElement(allIcons[selectedIconName], { style: { fontSize: '2rem', color } })}
                         </>
                     )}
                 </Grid>
@@ -117,7 +117,7 @@ const IconPicker: React.FC<IconPickerProps> = ({ width, height, iconsPerPage, se
                 <Grid item container justifyContent="center">
                     {displayedIcons.slice(displayIndex, displayIndex + iconsPerPage).map(([name, icon]) => (
                         <IconButton key={name} value={name} onClick={handleIconClick}>
-                            {React.createElement(icon, { sx: { color: color || darkMode ? 'white' : 'black' } })}
+                            {React.createElement(icon, { style: { color: color || darkMode ? 'white' : 'black', fontSize: '1.55rem' } })}
                         </IconButton>
                     ))}
                 </Grid>
