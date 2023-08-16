@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import i18next from 'i18next';
 import { useQueryClient } from 'react-query';
 import { FormikProvider } from 'formik';
-import { pickBy } from 'lodash';
+import pickBy from 'lodash.pickby';
 import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers';
@@ -124,7 +124,7 @@ const GeneralDetails: React.FC<IDetailsStepProp> = ({ detailsFormikData, onNext,
     return (
         <Card sx={{ border: 'none', boxShadow: 'none', background: 'transparent' }}>
             <CardContent sx={{ height: '56vh', overflowY: 'auto' }}>
-                <Grid container direction={'column'} paddingLeft={4} justifyContent={'space-around'}>
+                <Grid container direction="column" paddingLeft={4} justifyContent="space-around">
                     <Grid item>
                         <FormikProvider value={detailsFormikData}>
                             <Grid item container justifyContent="flex-start">
@@ -135,7 +135,7 @@ const GeneralDetails: React.FC<IDetailsStepProp> = ({ detailsFormikData, onNext,
                                         variant="h6"
                                         style={{ marginBottom: '30px' }}
                                     />
-                                    <Grid container direction={'column'} spacing={3}>
+                                    <Grid container direction="column" spacing={3}>
                                         <Grid item>
                                             <Autocomplete
                                                 id="template"
@@ -261,16 +261,15 @@ const GeneralDetails: React.FC<IDetailsStepProp> = ({ detailsFormikData, onNext,
                                         )}
                                         {Object.keys(templateEntityReferenceProperties!).length !== 0 && (
                                             <Grid padding={1}>
-                                                {
-                                                    <BlueTitle
-                                                        title={i18next.t('wizard.processInstance.refEntities')}
-                                                        component="h6"
-                                                        variant="h6"
-                                                        style={{ marginBottom: '22px' }}
-                                                    />
-                                                }
+                                                <BlueTitle
+                                                    title={i18next.t('wizard.processInstance.refEntities')}
+                                                    component="h6"
+                                                    variant="h6"
+                                                    style={{ marginBottom: '22px' }}
+                                                />
                                                 {Object.entries(templateEntityReferenceProperties!).map(([fieldName, { title }]) => (
                                                     <EntityReference
+                                                        key={fieldName}
                                                         field={fieldName}
                                                         values={values}
                                                         errors={errors}

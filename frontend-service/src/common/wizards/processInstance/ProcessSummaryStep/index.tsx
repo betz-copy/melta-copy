@@ -18,14 +18,10 @@ const ProcessSummary: React.FC<ProcessSummaryProp> = ({ processInstance, process
                 width: '100%',
                 paddingRight: '60px',
                 paddingLeft: '30px',
-                overflowY: 'auto'
+                overflowY: 'auto',
             }}
         >
-            <Grid
-                container
-                justifyContent="space-around"
-                direction="column"
-            >
+            <Grid container justifyContent="space-around" direction="column">
                 <Grid item xs={3}>
                     <ProcessStatus title={i18next.t('wizard.processInstance.summary.processStatus')} instance={processInstance} />
                 </Grid>

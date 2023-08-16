@@ -1,4 +1,4 @@
-import { Grid, Button, CircularProgress, Box, Typography } from '@mui/material';
+import { Grid, Button, CircularProgress, Box, Typography, TextField } from '@mui/material';
 import { Formik, Form } from 'formik';
 import i18next from 'i18next';
 import pickBy from 'lodash.pickby';
@@ -22,7 +22,7 @@ import { IPermissionsOfUser } from '../../../../services/permissionsService';
 import { IMongoProcessInstancePopulated } from '../../../../interfaces/processes/processInstance';
 import { EntityReference } from '../EntityReference';
 import { BlueTitle } from '../../../BlueTitle';
-import TextField from '@mui/material/TextField';
+
 interface ProcessStepProps {
     stepInstance: IMongoStepInstancePopulated;
     stepTemplate: IMongoStepTemplatePopulated;
@@ -53,9 +53,9 @@ export const ProcessStep: FC<ProcessStepProps> = ({
     const { isLoading: editStepIsLoading, mutateAsync: editStepMutateAsync } = useMutation(
         (stepData: ProcessStepValues) => updateStepRequest(stepInstance._id, stepData, processInstance._id, stepInstance),
         {
-            onSuccess: (stepInstance) => {
+            onSuccess: (updatedStepInstance) => {
                 toast.success(i18next.t('wizard.processInstance.step.editedSuccessfully'));
-                onStepUpdateSuccess(stepInstance);
+                onStepUpdateSuccess(updatedStepInstance);
             },
             onError: (error: AxiosError) => {
                 toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.processInstance.step.failedToEdit')} />);
@@ -87,9 +87,9 @@ export const ProcessStep: FC<ProcessStepProps> = ({
             {({ setFieldValue, values, errors, touched, setFieldTouched, dirty, handleBlur, resetForm }) => {
                 return (
                     <Form>
-                        <Grid container direction="column" sx={{ overflowY: 'auto' }}>
+                        <Grid container direction="column">
                             {canEditStep && (
-                                <Grid item container spacing={1} >
+                                <Grid container spacing={1}>
                                     {isStepEditMode ? (
                                         <>
                                             <Grid item>
@@ -136,32 +136,32 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                 </Grid>
                             )}
 
-                            <Grid item container spacing={2} marginTop={1} justifyContent="space-between" maxHeight={550} overflow={'auto'}>
-                                <Grid item xs={6}>
-                                    <Grid
-                                        item
-                                        sx={{
-                                            paddingRight: '15px',
-                                            overflowY: 'auto',
+                            <Grid container spacing={2} marginTop={1} justifyContent="space-between">
+                                <Grid
+                                    item
+                                    xs={7}
+                                    maxHeight={550}
+                                    sx={{
+                                        overflowY: 'auto',
+                                        paddingRight: '15px',
+                                    }}
+                                >
+                                    <JSONSchemaFormik
+                                        schema={pickProcessFieldsPropertiesSchema({
+                                            properties: stepTemplate.properties,
+                                            propertiesOrder: stepTemplate.propertiesOrder,
+                                        })}
+                                        values={{ ...values, properties: values.properties }}
+                                        setValues={(propertiesValues) => {
+                                            setFieldValue('properties', propertiesValues);
                                         }}
-                                    >
-                                        <JSONSchemaFormik
-                                            schema={pickProcessFieldsPropertiesSchema({
-                                                properties: stepTemplate.properties,
-                                                propertiesOrder: stepTemplate.propertiesOrder,
-                                            })}
-                                            values={{ ...values, properties: values.properties }}
-                                            setValues={(propertiesValues) => {
-                                                setFieldValue('properties', propertiesValues);
-                                            }}
-                                            errors={errors.properties ?? {}}
-                                            touched={touched.properties ?? {}}
-                                            setFieldTouched={(field) => {
-                                                setFieldTouched(`properties.${field}`);
-                                            }}
-                                            readonly={!isStepEditMode}
-                                        />
-                                    </Grid>
+                                        errors={errors.properties ?? {}}
+                                        touched={touched.properties ?? {}}
+                                        setFieldTouched={(field) => {
+                                            setFieldTouched(`properties.${field}`);
+                                        }}
+                                        readonly={!isStepEditMode}
+                                    />
 
                                     {templateFileProperties && isStepEditMode ? (
                                         <Box>
@@ -207,16 +207,15 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                     )}
                                     {Object.keys(templateEntityReferenceProperties!).length !== 0 && (
                                         <Grid padding={1}>
-                                            {
-                                                <BlueTitle
-                                                    title={i18next.t('wizard.processInstance.refEntities')}
-                                                    component="h6"
-                                                    variant="h6"
-                                                    style={{ marginBottom: '22px' }}
-                                                />
-                                            }
+                                            <BlueTitle
+                                                title={i18next.t('wizard.processInstance.refEntities')}
+                                                component="h6"
+                                                variant="h6"
+                                                style={{ marginBottom: '22px' }}
+                                            />
                                             {Object.entries(templateEntityReferenceProperties!).map(([fieldName, { title }]) => (
                                                 <EntityReference
+                                                    key={fieldName}
                                                     field={fieldName}
                                                     values={values}
                                                     errors={errors}
@@ -231,7 +230,7 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                     )}
                                 </Grid>
 
-                                <Grid item container xs={3} direction={'column'} spacing={2}>
+                                <Grid item container direction="column" xs={4.5} spacing={2} alignItems="center">
                                     <Grid item>
                                         <ProcessStatus
                                             title={i18next.t('wizard.processInstance.step.stepStatus')}
@@ -239,33 +238,31 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                             editStatus={{ setFieldValue, isEditMode: isStepEditMode, values }}
                                         />
                                     </Grid>
-                                    <Grid item >
+
+                                    <Grid item width={250}>
                                         {isStepEditMode ? (
                                             <TextField
                                                 label={i18next.t('wizard.processInstance.step.comment')}
                                                 multiline
-                                                rows={6}
+                                                rows={8}
                                                 value={values.comments}
                                                 onChange={(e) => {
-                                                    setFieldValue(`comments`, e.target.value);
+                                                    setFieldValue('comments', e.target.value);
                                                 }}
+                                                style={{ width: '100%' }}
                                             />
                                         ) : (
                                             values.comments && (
-                                                <>
+                                                <div style={{ textAlign: 'center' }}>
                                                     <BlueTitle
                                                         title={i18next.t('wizard.processInstance.step.comment')}
                                                         component="h6"
                                                         variant="body1"
                                                     />
-                                                    <Typography
-                                                        overflow={'auto'}
-                                                        height={'18vh'}
-                                                        style={{ wordBreak: 'break-word', fontSize: '15px' }}
-                                                    >
+                                                    <Typography height="18vh" style={{ wordBreak: 'break-word', fontSize: '15px' }}>
                                                         {values.comments}
                                                     </Typography>
-                                                </>
+                                                </div>
                                             )
                                         )}
                                     </Grid>

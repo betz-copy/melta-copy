@@ -29,7 +29,7 @@ export const StyledCard = styled(Card)(({ theme }) => ({
     ':hover': { transform: 'scale(1.02)' },
     cursor: 'pointer',
 }));
-const getStatusColor = (status: Status): StatusColors => {
+export const getStatusColor = (status: Status): StatusColors => {
     switch (status) {
         case Status.Approved: {
             return StatusColors.Approved;

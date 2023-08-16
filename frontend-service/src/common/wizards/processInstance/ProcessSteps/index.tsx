@@ -1,11 +1,15 @@
 import { Box, Grid, Tab } from '@mui/material';
 import React from 'react';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
+import { ScatterPlotOutlined as HiveIcon } from '@mui/icons-material';
+import { useSelector } from 'react-redux';
 import { IMongoProcessTemplatePopulated } from '../../../../interfaces/processes/processTemplate';
 import { IMongoStepTemplatePopulated } from '../../../../interfaces/processes/stepTemplate';
 import { IMongoStepInstancePopulated } from '../../../../interfaces/processes/stepInstance';
 import { ProcessStep } from './processStep';
 import { IMongoProcessInstancePopulated, IReferencedEntityForProcess, Status } from '../../../../interfaces/processes/processInstance';
+import { CustomIcon } from '../../../CustomIcon';
+import { RootState } from '../../../../store';
 
 export interface ProcessStepValues {
     properties: object;
@@ -40,6 +44,8 @@ const Steps: React.FC<IStepsProp> = ({
     defaultStepTemplate,
 }) => {
     const [tabValue, setTabValue] = React.useState(defaultStepTemplate ? defaultStepTemplate._id : processTemplate.steps[0]._id);
+    const darkMode = useSelector((state: RootState) => state.darkMode);
+    const defaultTabColor = darkMode ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)';
     return (
         <Box
             sx={{
@@ -53,8 +59,28 @@ const Steps: React.FC<IStepsProp> = ({
                 <Grid container direction="column">
                     <Grid item container sx={{ borderBottom: 1, borderColor: 'divider' }}>
                         <TabList onChange={(_event, newValue) => setTabValue(newValue)} scrollButtons="auto" variant="scrollable">
-                            {processTemplate.steps?.map(({ _id, displayName }) => (
-                                <Tab key={_id} label={displayName} value={_id} disabled={tabValue !== _id && isStepEditMode} />
+                            {processTemplate.steps?.map(({ _id, displayName, iconFileId }) => (
+                                <Tab
+                                    icon={
+                                        iconFileId ? (
+                                            <CustomIcon
+                                                color={_id === tabValue ? '#1565c0' : defaultTabColor}
+                                                iconUrl={iconFileId}
+                                                width="25px"
+                                                height="25px"
+                                                style={{ marginLeft: 5 }}
+                                            />
+                                        ) : (
+                                            <HiveIcon />
+                                        )
+                                    }
+                                    iconPosition="start"
+                                    key={_id}
+                                    label={displayName}
+                                    value={_id}
+                                    disabled={tabValue !== _id && isStepEditMode}
+                                    wrapped
+                                />
                             ))}
                         </TabList>
                     </Grid>
@@ -62,7 +88,7 @@ const Steps: React.FC<IStepsProp> = ({
                         {processInstance.steps.map((stepInstance) => {
                             const stepTemplate = getStepTemplateByStepInstance(stepInstance, processTemplate);
                             return (
-                                <TabPanel key={stepInstance._id} value={stepTemplate._id} >
+                                <TabPanel key={stepInstance._id} value={stepTemplate._id}>
                                     <ProcessStep
                                         onStepUpdateSuccess={onStepUpdateSuccess}
                                         processInstance={processInstance}

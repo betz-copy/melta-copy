@@ -20,7 +20,7 @@ export const ReviewerSelector: React.FC<ReviewerSelectorProps> = ({ forcedReview
     return (
         <Grid container direction="column" paddingBottom={2} paddingLeft={2} spacing={2}>
             {!isViewMode && (
-                <Grid item paddingBottom={'1rem'} paddingRight={2}>
+                <Grid item paddingBottom="1rem" paddingRight={2}>
                     <UserAutocomplete
                         value={null}
                         displayValue={displayValue}
@@ -37,35 +37,35 @@ export const ReviewerSelector: React.FC<ReviewerSelectorProps> = ({ forcedReview
                     />
                 </Grid>
             )}
-                <Grid
-                    item
-                    container
-                    direction="column"
-                    spacing={1}
-                    flexWrap="nowrap"
-                    sx={{
-                        overflowY: 'auto',
-                        maxHeight: !isViewMode ? '140px' : '160px',
-                        '&::-webkit-scrollbar': {
-                            width: '3px',
-                        },
-                    }}
-                >
-                    {forcedReviewers?.map((reviewer) => (
-                        <Grid item>
-                            <Chip label={reviewer.fullName} variant="outlined" disabled />
-                        </Grid>
-                    ))}
-                    {reviewers?.map((reviewer) => (
-                        <Grid item>
-                            {isViewMode ? (
-                                <Chip label={reviewer.fullName} variant="outlined" />
-                            ) : (
-                                <Chip label={reviewer.fullName} variant="outlined" onDelete={() => onRemove(reviewer, reviewers)} />
-                            )}
-                        </Grid>
-                    ))}
-                </Grid>
+            <Grid
+                item
+                container
+                direction="column"
+                spacing={1}
+                flexWrap="nowrap"
+                sx={{
+                    overflowY: 'auto',
+                    maxHeight: !isViewMode ? '140px' : '160px',
+                    '&::-webkit-scrollbar': {
+                        width: '3px',
+                    },
+                }}
+            >
+                {forcedReviewers?.map((reviewer) => (
+                    <Grid item key={reviewer.id}>
+                        <Chip label={reviewer.fullName} variant="outlined" disabled />
+                    </Grid>
+                ))}
+                {reviewers?.map((reviewer) => (
+                    <Grid item key={reviewer.id}>
+                        {isViewMode ? (
+                            <Chip label={reviewer.fullName} variant="outlined" />
+                        ) : (
+                            <Chip label={reviewer.fullName} variant="outlined" onDelete={() => onRemove(reviewer, reviewers)} />
+                        )}
+                    </Grid>
+                ))}
+            </Grid>
         </Grid>
     );
 };

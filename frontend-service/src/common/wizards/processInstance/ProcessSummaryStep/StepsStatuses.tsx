@@ -4,15 +4,15 @@ import { Box, Button, CardContent, Grid, Tooltip, Typography } from '@mui/materi
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
 import AccessTimeFilledIcon from '@mui/icons-material/AccessTimeFilled';
+import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
+import CardHeader from '@mui/material/CardHeader';
 import { IMongoProcessInstancePopulated, Status } from '../../../../interfaces/processes/processInstance';
 import { IMongoStepInstancePopulated } from '../../../../interfaces/processes/stepInstance';
 import { BlueTitle } from '../../../BlueTitle';
 import { getStepTemplateByStepInstance } from '../../../../utils/processWizard/steps';
 import { IMongoProcessTemplatePopulated } from '../../../../interfaces/processes/processTemplate';
 import { getLongDate } from '../../../../utils/date';
-import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
-import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
-import CardHeader from '@mui/material/CardHeader';
 import { StyledCard } from '../../../../pages/ProcessInstances/ProcessCard';
 
 const StepStatus: React.FC<{
@@ -26,14 +26,14 @@ const StepStatus: React.FC<{
             <StyledCard
                 style={{
                     minHeight: 270,
-                    minWidth: 240,
+                    minWidth: 235,
                 }}
             >
                 <CardHeader
                     title={getStepTemplateByStepInstance(stepInstance, processTemplate).displayName}
                     titleTypographyProps={{ textAlign: 'center', fontWeight: 'bold', variant: 'h6' }}
                 />
-                <Grid container direction={'column'}>
+                <Grid container direction="column">
                     <Grid item>
                         <CardContent>
                             <Tooltip
@@ -46,8 +46,9 @@ const StepStatus: React.FC<{
                                     {stepInstance.status === Status.Approved && <CheckCircleIcon color="success" sx={{ fontSize: 35 }} />}
                                 </div>
                             </Tooltip>
-                            {stepInstance.reviewedAt ? (
-                                <>
+
+                            <>
+                                {stepInstance.reviewedAt ? (
                                     <div style={{ paddingBottom: 30 }}>
                                         <Typography textAlign="center" fontSize="14px">
                                             {i18next.t('wizard.processInstance.summary.statusChangedBy')}
@@ -59,40 +60,42 @@ const StepStatus: React.FC<{
                                             'wizard.processInstance.summary.by',
                                         )}: ${stepInstance.reviewer?.fullName}`}</Typography>
                                     </div>
-                                    <Grid item>
-                                        {stepInstance.comments && (
-                                            <>
-                                                <div
-                                                    style={{
-                                                        transition: 'all 0.7s ease-in-out',
-                                                        maxHeight: open ? '350px' : '0',
-                                                        maxWidth: open ? `350px` : '0',
-                                                        overflowX: 'hidden',
-                                                        overflowY: 'auto',
-                                                    }}
-                                                >
-                                                    {i18next.t('wizard.processInstance.step.comment')}:
-                                                    <Typography gutterBottom component="div" style={{ wordBreak: 'break-word', width: 350 }}>
-                                                        {stepInstance.comments}
-                                                    </Typography>
-                                                </div>
-                                                <Button
-                                                    size="small"
-                                                    color="inherit"
-                                                    onClick={handleClick}
-                                                    startIcon={open ? <KeyboardArrowUpIcon /> : <KeyboardArrowLeftIcon />}
-                                                >
-                                                    {!open && i18next.t('wizard.processInstance.step.comment')}
-                                                </Button>
-                                            </>
-                                        )}
-                                    </Grid>
-                                </>
-                            ) : (
-                                <Typography textAlign="center" fontWeight="bold">
-                                    {i18next.t('wizard.processInstance.summary.StepStatusNotYetBeeUpdated')}
-                                </Typography>
-                            )}
+                                ) : (
+                                    <div style={{ paddingBottom: 70 }}>
+                                        <Typography textAlign="center" fontWeight="bold">
+                                            {i18next.t('wizard.processInstance.summary.StepStatusNotYetBeeUpdated')}
+                                        </Typography>
+                                    </div>
+                                )}
+                                <Grid item>
+                                    {stepInstance.comments && (
+                                        <>
+                                            <div
+                                                style={{
+                                                    transition: 'all 0.7s ease-in-out',
+                                                    maxHeight: open ? '350px' : '0',
+                                                    maxWidth: open ? '350px' : '0',
+                                                    overflowX: 'hidden',
+                                                    overflowY: 'auto',
+                                                }}
+                                            >
+                                                {i18next.t('wizard.processInstance.step.comment')}:
+                                                <Typography gutterBottom component="div" style={{ wordBreak: 'break-word', width: 350 }}>
+                                                    {stepInstance.comments}
+                                                </Typography>
+                                            </div>
+                                            <Button
+                                                size="small"
+                                                color="inherit"
+                                                onClick={handleClick}
+                                                startIcon={open ? <KeyboardArrowUpIcon /> : <KeyboardArrowLeftIcon />}
+                                            >
+                                                {!open && i18next.t('wizard.processInstance.step.comment')}
+                                            </Button>
+                                        </>
+                                    )}
+                                </Grid>
+                            </>
                         </CardContent>
                     </Grid>
                 </Grid>
@@ -116,8 +119,8 @@ const StepsStatuses: React.FC<{ processInstance: IMongoProcessInstancePopulated;
         <>
             <BlueTitle
                 title={i18next.t('wizard.processInstance.summary.subProcessStatus')}
-                component={'h5'}
-                variant={'h5'}
+                component="h5"
+                variant="h5"
                 style={{ fontSize: '30px', fontWeight: 600, opacity: 0.9, display: 'flex', justifyContent: 'center', padding: '10px' }}
             />
             <Box display="flex" justifyContent="center" paddingBottom={2}>
@@ -134,9 +137,8 @@ const StepsStatuses: React.FC<{ processInstance: IMongoProcessInstancePopulated;
             <Box>
                 <Grid item container justifyContent="center" flexWrap="wrap" spacing={5} paddingBottom={3}>
                     {processInstance.steps.map((stepInstance, index) => (
-                        <Grid item>
+                        <Grid item key={stepInstance._id}>
                             <StepStatus
-                                key={index}
                                 processTemplate={processTemplate}
                                 stepInstance={stepInstance}
                                 open={openStep === index}

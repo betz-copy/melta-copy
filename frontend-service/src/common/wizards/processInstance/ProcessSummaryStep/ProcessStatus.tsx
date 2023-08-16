@@ -1,20 +1,21 @@
 import React from 'react';
 import i18next from 'i18next';
-import { BlueTitle } from '../../../BlueTitle';
 import { Grid, IconButton, SvgIconProps, Typography } from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import CancelIcon from '@mui/icons-material/Cancel';
 import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
 import AccessTimeFilledIcon from '@mui/icons-material/AccessTimeFilled';
-import { IMongoProcessInstancePopulated, Status } from '../../../../interfaces/processes/processInstance';
-import { getLongDate } from '../../../../utils/date';
 import { FormikProps } from 'formik';
 import { useSelector } from 'react-redux';
+import { IMongoProcessInstancePopulated, Status } from '../../../../interfaces/processes/processInstance';
+import { getLongDate } from '../../../../utils/date';
+import { BlueTitle } from '../../../BlueTitle';
 import { RootState } from '../../../../store';
 import { IMongoStepInstancePopulated } from '../../../../interfaces/processes/stepInstance';
 import { ProcessStepValues } from '../ProcessSteps/index';
 import { IUser } from '../../../../services/kartoffelService';
+
 interface StatusDisplayProps {
     status: Status;
     Icon: React.ComponentType<SvgIconProps>;
@@ -22,13 +23,23 @@ interface StatusDisplayProps {
     fontSize?: number;
 }
 
+const getColor = (status: Status) => {
+    switch (status) {
+        case Status.Approved:
+            return 'success';
+        case Status.Rejected:
+            return 'error';
+        default:
+            return 'primary';
+    }
+};
 interface StatusButtonProps extends StatusDisplayProps {
     currentStatus: Status;
     handleClick: () => void;
     IconOutlined: React.ComponentType<SvgIconProps>;
 }
 const StatusButton: React.FC<StatusButtonProps> = ({ status, currentStatus, handleClick, Icon, IconOutlined, text }) => {
-    const color = status === Status.Approved ? 'success' : status === Status.Rejected ? 'error' : 'primary';
+    const color = getColor(status);
     return (
         <Grid item>
             <Grid container direction="column" alignItems="center">
@@ -44,12 +55,12 @@ const StatusButton: React.FC<StatusButtonProps> = ({ status, currentStatus, hand
 };
 
 const StatusDisplay: React.FC<StatusDisplayProps> = ({ status, Icon, text, fontSize = 40 }) => {
-    const color = status === Status.Approved ? 'success' : status === Status.Rejected ? 'error' : 'primary';
+    const color = getColor(status);
     return (
         <Grid item>
             <Grid container direction="column" alignItems="center">
                 <Grid item>
-                    <Icon color={color} sx={{ fontSize: fontSize }} />
+                    <Icon color={color} sx={{ fontSize }} />
                 </Grid>
                 <Grid item>
                     <Typography width="60px" style={{ textAlign: 'center' }}>
@@ -82,7 +93,7 @@ const ProcessStatus: React.FC<ProcessStatusProps> = ({ title, instance, editStat
             <Grid item container justifyContent="center">
                 <BlueTitle
                     title={title}
-                    component={'h4'}
+                    component="h4"
                     variant={editStatus ? 'h5' : 'h4'}
                     style={{ fontWeight: 600, opacity: 0.9, marginBottom: 7 }}
                 />
@@ -137,22 +148,24 @@ const ProcessStatus: React.FC<ProcessStatusProps> = ({ title, instance, editStat
                 )}
             </Grid>
             {instance.reviewedAt && (
-                <Grid item container justifyContent={'center'}>
+                <Grid item container justifyContent="center">
                     <Grid item>
                         <span>{i18next.t('wizard.processInstance.summary.statusChangedBy')}</span>
                         <span style={{ margin: '0px' }}>{` ${i18next.t('wizard.processInstance.summary.onDate')}: ${getLongDate(
                             instance.reviewedAt,
                         )} `}</span>
-                        {instance.reviewer && (
-                            <p style={{ margin: '0px' }}>
-                                <span style={{ fontWeight: 'bold' }}>{` ${
+                    </Grid>
+                    {instance.reviewer && (
+                        <Grid item container justifyContent="center" alignItems="center" style={{ margin: '0px' }}>
+                            <span style={{ fontWeight: 'bold' }}>
+                                {` ${
                                     currentUser.id === instance.reviewer?.id
                                         ? i18next.t('wizard.processInstance.summary.byYou')
                                         : `${i18next.t('wizard.processInstance.summary.by')} ${instance.reviewer?.fullName}`
-                                }`}</span>
-                            </p>
-                        )}
-                    </Grid>
+                                }`}
+                            </span>
+                        </Grid>
+                    )}
                 </Grid>
             )}
         </Grid>
