@@ -20,6 +20,7 @@ const generateGanttItemEntityTemplate = (optionalEntityTemplates: IMongoEntityTe
             2,
             ([_, value]) => value.format === 'date' || value.format === 'date-time',
         );
+        // eslint-disable-next-line no-continue
         if (!startAndEndDateFields) continue;
 
         const [[startDateField], [endDateField]] = startAndEndDateFields;
@@ -32,7 +33,7 @@ const generateGanttItemEntityTemplate = (optionalEntityTemplates: IMongoEntityTe
         };
     }
 
-    // ts warning: not all code paths return a value
+    return undefined;
 };
 
 const generateGanttItemConnectedEntityTemplate = (entityTemplateId: string): IGanttItem['connectedEntityTemplate'] | undefined => {

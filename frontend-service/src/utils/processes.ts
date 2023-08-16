@@ -8,5 +8,5 @@ export const getStepName = (stepTemplateId: string, processTemplatesMap: IProces
             return stepTemplate.displayName;
         }
     }
-    // ts warning: not all code paths return a value
+    return undefined;
 };

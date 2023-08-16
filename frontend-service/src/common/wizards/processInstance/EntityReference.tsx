@@ -1,5 +1,4 @@
 import React, { useMemo, useState } from 'react';
-import TemplateTableSelect from '../../inputs/TemplateTableSelect';
 import i18next from 'i18next';
 import {
     Autocomplete,
@@ -17,20 +16,20 @@ import {
     Typography,
 } from '@mui/material';
 import { useQueryClient } from 'react-query';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { IPermissionsOfUser } from '../../../services/permissionsService';
 import RemoveIcon from '@mui/icons-material/Close';
-import EntityCard  from '../../../pages/GlobalSearch/components/entityCard';
 import AddIcon from '@mui/icons-material/Add';
-import { ProcessDetailsValues } from './ProcessDetails';
-import { SummaryDetailsValues } from './ProcessSummaryStep';
-import { ProcessStepValues } from './ProcessSteps';
 import { FormikProps } from 'formik';
 import { useSelector } from 'react-redux';
+import TemplateTableSelect from '../../inputs/TemplateTableSelect';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { IPermissionsOfUser } from '../../../services/permissionsService';
+import EntityCard from '../../../pages/GlobalSearch/components/entityCard';
+import { ProcessDetailsValues } from './ProcessDetails';
+import { ProcessStepValues } from './ProcessSteps';
 import { RootState } from '../../../store';
 import { IReferencedEntityForProcess } from '../../../interfaces/processes/processInstance';
 
-type ProcessFormikProps = ProcessStepValues | ProcessDetailsValues | SummaryDetailsValues;
+type ProcessFormikProps = ProcessStepValues | ProcessDetailsValues;
 interface ChooseEntityReferenceProps {
     field: string;
     values: FormikProps<ProcessFormikProps>['values'];
@@ -66,6 +65,8 @@ export const EntityReference: React.FC<ChooseEntityReferenceProps> = ({
 
     const [isAnimatingOut, setIsAnimatingOut] = useState(false);
 
+    const [chooseEntityOpen, setChooseEntityOpen] = useState<boolean>(false);
+
     const handleRemoveEntity = () => {
         setIsAnimatingOut(true);
         setTimeout(() => {
@@ -74,8 +75,6 @@ export const EntityReference: React.FC<ChooseEntityReferenceProps> = ({
             setChooseEntityOpen(false);
         }, 500);
     };
-
-    const [chooseEntityOpen, setChooseEntityOpen] = useState<boolean>(false);
 
     return (
         <Grid paddingBottom={2}>
@@ -151,7 +150,7 @@ export const EntityReference: React.FC<ChooseEntityReferenceProps> = ({
 
             {referencedEntityData?.entity && (
                 <Slide direction="left" in={!isAnimatingOut} timeout={1000} mountOnEnter unmountOnExit>
-                    <Box marginTop={'-20px'} paddingBottom={1}>
+                    <Box marginTop="-20px" paddingBottom={1}>
                         <Typography
                             sx={{
                                 top: '8px',
@@ -187,7 +186,6 @@ export const EntityReference: React.FC<ChooseEntityReferenceProps> = ({
                             customCardStyle={{
                                 background: 'transparent',
                             }}
-
                         />
                     </Box>
                 </Slide>
