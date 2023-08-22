@@ -9,6 +9,7 @@ const config = {
         maxFileSize: env.get('MAX_FILE_SIZE').default(50000000).asInt(),
         numOfRowsEachReq: env.get('NUM_OF_ROWS_EACH_REQ').default(50).asIntPositive(),
         excelFilePath: env.get('EXCEL_FILE_PATH').default('/usr/src/app').asString(),
+        dateAlertTime: env.get('DATE_ALERT_TIME').default('0 0 * * *').asString(),
     },
     authentication: {
         tokenSecret: env.get('TOKEN_SECRET').required().asString(),

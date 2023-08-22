@@ -35,7 +35,7 @@ const getAllInstances = async (entityTemplateId: string) => {
 };
 
 export const checkForDateNotifications = async () => {
-    schedule.scheduleJob('0 0 * * *', async () => {
+    schedule.scheduleJob(config.service.dateAlertTime, async () => {
         console.log('Checking for Date Notifications...');
         const allEntityTemplates = await EntityTemplateManagerService.searchEntityTemplates();
 
