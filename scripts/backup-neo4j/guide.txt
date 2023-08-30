@@ -1,0 +1,10 @@
+1. Copy the files to some directory in your Neo4j's VM (cronjob-backup.sh, ...logs-daily/weekly/monthy.txt, ...)
+
+2. Create empty directories with names "daily", "weekly", "monthy"
+
+3. Add the following to crontab (by running crontab -e):
+
+    NEO4J_BACKUPS_DIR=/data/neo4j-melta/neo4j-enterprise-4.4.18/dumps
+    0 0 * * * ($NEO4J_BACKUPS_DIR/cronjob-backup.sh $NEO4J_BACKUPS_DIR/daily 7 >> $NEO4J_BACKUPS_DIR/cronjob-backups-logs-daily.txt 2>&1) 
+    2 0 * * 0 ($NEO4J_BACKUPS_DIR/cronjob-backup.sh $NEO4J_BACKUPS_DIR/weekly 31 >> $NEO4J_BACKUPS_DIR/cronjob-backups-logs-weekly.txt 2>&1)
+    4 0 1 * * ($NEO4J_BACKUPS_DIR/cronjob-backup.sh $NEO4J_BACKUPS_DIR/monthy 120 >> $NEO4J_BACKUPS_DIR/cronjob-backups-logs-monthy.txt 2>&1)
