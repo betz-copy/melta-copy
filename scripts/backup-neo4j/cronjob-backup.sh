@@ -12,6 +12,6 @@ echo "Creating backup of $NEW_BACKUP_DIR"
 mkdir $NEW_BACKUP_DIR
 
 # (&& to ensure deleting old backups only if successfuly created new)
-# /data/neo4j-melta/neo4j-enterprise-4.4.18/bin/neo4j-admin backup --backup-dir $NEW_BACKUP_DIR &&
-mkdir $NEW_BACKUP_DIR/neo4j
+/data/neo4j-melta/neo4j-enterprise-4.4.18/bin/neo4j-admin backup --backup-dir $NEW_BACKUP_DIR &&
+# mkdir $NEW_BACKUP_DIR/neo4j &&  # fake backup, for debugging
 find "$BACKUPS_DIR" -name "backup-*" -type d -mtime +$DAYS_TO_DELETE -exec rm -r {} +
