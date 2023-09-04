@@ -5,7 +5,7 @@ import config from '../config/index';
 export const getPermissionsToCreate = (categories: IMongoCategory[]) => {
     const permissions: IPermission[] = [];
 
-    config.permissionsApi.kartoffelIds.forEach((kartoffelId) => {
+    config.permissionsApi.managersKrtoffelIds.forEach((kartoffelId) => {
         const permissionsResourcePermission: IPermission = {
             userId: kartoffelId,
             resourceType: 'Permissions',
@@ -34,7 +34,20 @@ export const getPermissionsToCreate = (categories: IMongoCategory[]) => {
             scopes: ['Read', 'Write'],
         }));
 
-        permissions.push(permissionsResourcePermission, templatesResourcePermission, rulesResourcePermission, ...instancesResourcePermissions);
+        const processResourcePermission: IPermission = {
+            userId: kartoffelId,
+            resourceType: 'Processes',
+            category: 'All',
+            scopes: ['Read', 'Write'],
+        };
+
+        permissions.push(
+            permissionsResourcePermission,
+            processResourcePermission,
+            templatesResourcePermission,
+            rulesResourcePermission,
+            ...instancesResourcePermissions,
+        );
     });
 
     return permissions;

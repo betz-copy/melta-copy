@@ -4,11 +4,11 @@ import { trycatch } from './utils';
 
 const { uri, baseRoute, isAliveRoute } = config.permissionsApi;
 
-export const resourceTypeOptions = ['Templates', 'Instances', 'Permissions', 'Rules'] as const;
-export type ResourceType = typeof resourceTypeOptions[number];
+export const resourceTypeOptions = ['Templates', 'Instances', 'Permissions', 'Rules', 'Processes'] as const;
+export type ResourceType = (typeof resourceTypeOptions)[number];
 
 export const scopeOptions = ['Read', 'Write'] as const;
-export type Scope = typeof scopeOptions[number];
+export type Scope = (typeof scopeOptions)[number];
 
 export interface IPermission {
     userId: string;

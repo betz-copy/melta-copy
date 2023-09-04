@@ -9,7 +9,7 @@ import { IMongoProcessTemplatePopulated } from './processTemplate';
 
 const limit = pLimit(config.requestLimit);
 
-const { uri, processInstanceRoute, kartoffelIds, minNumberOfProcesses, maxNumberOfProcesses, nameMinLength, nameMaxLength, characters } =
+const { uri, processInstanceRoute, reviewersKartoffelIds, minNumberOfProcesses, maxNumberOfProcesses, nameMinLength, nameMaxLength, characters } =
     config.processService;
 
 // eslint-disable-next-line no-shadow
@@ -100,7 +100,7 @@ const createProcessInstance = (processTemplate: IMongoProcessTemplatePopulated, 
         startDate: randomStartDate,
         endDate: randomEndDate,
         steps: processTemplate.steps.reduce((acc, step) => {
-            const allowedReviewers = kartoffelIds.filter((kartoffelId) => !step.reviewers.includes(kartoffelId));
+            const allowedReviewers = reviewersKartoffelIds.filter((kartoffelId) => !step.reviewers.includes(kartoffelId));
             if (!allowedReviewers.length) {
                 throw new Error(
                     `There are not enough kartoffelIds to add unique reviewers to step '${step.name}' of template '${processTemplate.name}'`,

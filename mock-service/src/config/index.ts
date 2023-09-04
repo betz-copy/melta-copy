@@ -7,7 +7,7 @@ const config = {
         uri: env.get('PERMISSIONS_API_URI').required().asString(),
         baseRoute: env.get('PERMISSIONS_API_BASE_ROUTE').default('/api/permissions').asString(),
         isAliveRoute: env.get('PERMISSIONS_API_ALIVE_ROUTE').default('/isAlive').asString(),
-        kartoffelIds: env.get('KARTOFFEL_IDS').required().asArray(),
+        managersKrtoffelIds: env.get('PERMISSIONS_API_MANAGERS_KARTOFFEL_IDS').required().asArray(),
     },
     entityTemplateManager: {
         uri: env.get('ENTITY_TEMPLATE_MANAGER_URI').required().asString(),
@@ -18,7 +18,7 @@ const config = {
     processService: {
         uri: env.get('PROCESS_SERVICE_URI').required().asString(),
         isAliveRoute: env.get('PROCESS_SERVICE_IS_ALIVE_ROUTE').default('/isAlive').asString(),
-        kartoffelIds: env.get('KARTOFFEL_IDS').required().asArray(),
+        reviewersKartoffelIds: env.get('REVIEWERS_KARTOFFEL_IDS').required().asArray(),
         createProcessTemplateRoute: env.get('CREATE_PROCESS_TEMPLATE_ROUTE').default('/api/processes/templates').asString(),
         processInstanceRoute: env.get('PROCESS_INSTANCE_ROUTE').default('/api/processes/instances').asString(),
         maxNumberOfProcesses: env.get('MAX_NUMBER_OF_PROCESSES').default(50).asInt(),

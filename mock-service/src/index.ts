@@ -13,7 +13,7 @@ import { createPermissionsBulk, isPermissionsApiAlive } from './permissionsApi';
 import { getPermissionsToCreate } from './mocks/permissionsApi';
 import { createRules } from './rules';
 import { createProcessTemplates, isProcessServiceAlive } from './processTemplate';
-import { processTemplates } from './mocks/processTemplates';
+import { getProcessTemplateToCreate } from './mocks/processTemplates';
 import { createProcessInstances } from './processInstances';
 import { isStorageServiceAlive, uploadFile } from './storageService';
 
@@ -103,7 +103,7 @@ const main = async () => {
 
     console.log('Creating process templates');
 
-    const createdProcessTemplates = await createProcessTemplates(processTemplates);
+    const createdProcessTemplates = await createProcessTemplates(getProcessTemplateToCreate(chance));
 
     console.log('Creating process Instances');
 

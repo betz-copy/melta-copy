@@ -1,673 +1,678 @@
 import { IProcessTemplateWithSteps } from '../processTemplate';
+import config from '../config';
 
-export const processTemplates: IProcessTemplateWithSteps[] = [
-    {
-        name: 'createNewWeapon',
-        displayName: 'יצירת נשק חדש',
-        details: {
-            properties: {
-                type: 'object',
-                properties: {
-                    weapon: {
-                        title: 'אמצעיי לחימה',
-                        type: 'string',
-                    },
-                    payment: {
-                        title: 'תשלום',
-                        type: 'string',
-                    },
-                    weaponsFile: {
-                        title: 'קובץ הנשק',
-                        type: 'string',
-                        format: 'fileId',
-                    },
-                },
-            },
-            propertiesOrder: ['weapon', 'payment', 'weaponsFile'],
-        },
-        steps: [
-            {
-                name: 'weaponModel',
-                displayName: 'מודל הנשק',
-                reviewers: ['61d37cb5e4de0300121e31ef'],
-                iconFileId: null,
+const { reviewersKartoffelIds } = config.processService;
+export const getProcessTemplateToCreate = (chance: Chance.Chance) => {
+    const processTemplates: IProcessTemplateWithSteps[] = [
+        {
+            name: 'createNewWeapon',
+            displayName: 'יצירת נשק חדש',
+            details: {
                 properties: {
                     type: 'object',
                     properties: {
-                        weaponName: {
-                            title: 'שם הנשק',
+                        weapon: {
+                            title: 'אמצעיי לחימה',
                             type: 'string',
                         },
-                        weight: {
-                            title: 'משקל',
-                            type: 'number',
+                        payment: {
+                            title: 'תשלום',
+                            type: 'string',
                         },
-                        length: {
-                            title: 'אורך',
-                            type: 'number',
-                        },
-                        sketch: {
-                            title: 'סקיצה',
+                        weaponsFile: {
+                            title: 'קובץ הנשק',
                             type: 'string',
                             format: 'fileId',
                         },
                     },
                 },
-                propertiesOrder: ['weaponName', 'weight', 'length', 'sketch'],
+                propertiesOrder: ['weapon', 'payment', 'weaponsFile'],
             },
-            {
-                name: 'payment',
-                displayName: 'תשלום',
-                reviewers: ['61d37cb5e4de0300121e31ef'],
-                iconFileId: null,
-                properties: {
-                    type: 'object',
+            steps: [
+                {
+                    name: 'weaponModel',
+                    displayName: 'מודל הנשק',
+                    reviewers: [chance.pickone(reviewersKartoffelIds)],
+                    iconFileId: null,
                     properties: {
-                        amount: {
-                            title: 'סכום',
-                            type: 'number',
-                        },
-                        paymentMethod: {
-                            enum: ['אשראי', 'מזומן', `צ'ק`],
-                            title: 'סוג תשלום',
-                            type: 'string',
-                        },
-                        numberOfPayments: {
-                            title: 'מספר תשלומים',
-                            type: 'number',
+                        type: 'object',
+                        properties: {
+                            weaponName: {
+                                title: 'שם הנשק',
+                                type: 'string',
+                            },
+                            weight: {
+                                title: 'משקל',
+                                type: 'number',
+                            },
+                            length: {
+                                title: 'אורך',
+                                type: 'number',
+                            },
+                            sketch: {
+                                title: 'סקיצה',
+                                type: 'string',
+                                format: 'fileId',
+                            },
                         },
                     },
+                    propertiesOrder: ['weaponName', 'weight', 'length', 'sketch'],
                 },
-                propertiesOrder: ['amount', 'paymentMethod', 'numberOfPayments'],
-            },
-            {
-                name: 'use',
-                displayName: 'שימוש',
-                reviewers: ['61d37cb5e4de0300121e31ef'],
-                iconFileId: null,
-                properties: {
-                    type: 'object',
+                {
+                    name: 'payment',
+                    displayName: 'תשלום',
+                    reviewers: [chance.pickone(reviewersKartoffelIds)],
+                    iconFileId: null,
                     properties: {
-                        frequency: {
-                            title: 'תדירות שימוש (מספר ימים בשבוע)',
-                            type: 'number',
-                        },
-                        typeOfUse: {
-                            enum: ['מבצעי', 'אימונים', `מלחמה`],
-                            title: 'סוג שימוש',
-                            type: 'string',
-                        },
-                        typeOfBullets: {
-                            title: 'סוג כדורים',
-                            type: 'string',
+                        type: 'object',
+                        properties: {
+                            amount: {
+                                title: 'סכום',
+                                type: 'number',
+                            },
+                            paymentMethod: {
+                                enum: ['אשראי', 'מזומן', `צ'ק`],
+                                title: 'סוג תשלום',
+                                type: 'string',
+                            },
+                            numberOfPayments: {
+                                title: 'מספר תשלומים',
+                                type: 'number',
+                            },
                         },
                     },
+                    propertiesOrder: ['amount', 'paymentMethod', 'numberOfPayments'],
                 },
-                propertiesOrder: ['frequency', 'typeOfUse', 'typeOfBullets'],
-            },
-        ],
-    },
-    {
-        name: 'bookFlight',
-        displayName: 'הזמנת טיסה',
-        details: {
-            properties: {
-                type: 'object',
-                properties: {
-                    destination: {
-                        title: 'יעד',
-                        type: 'string',
+                {
+                    name: 'use',
+                    displayName: 'שימוש',
+                    reviewers: [chance.pickone(reviewersKartoffelIds)],
+                    iconFileId: null,
+                    properties: {
+                        type: 'object',
+                        properties: {
+                            frequency: {
+                                title: 'תדירות שימוש (מספר ימים בשבוע)',
+                                type: 'number',
+                            },
+                            typeOfUse: {
+                                enum: ['מבצעי', 'אימונים', `מלחמה`],
+                                title: 'סוג שימוש',
+                                type: 'string',
+                            },
+                            typeOfBullets: {
+                                title: 'סוג כדורים',
+                                type: 'string',
+                            },
+                        },
                     },
-                    travelDocument: {
-                        title: 'מסמך נסיעה',
-                        type: 'string',
-                        format: 'fileId',
-                    },
+                    propertiesOrder: ['frequency', 'typeOfUse', 'typeOfBullets'],
                 },
-            },
-            propertiesOrder: ['destination', 'travelDocument'],
+            ],
         },
-        steps: [
-            {
-                name: 'flightSelection',
-                displayName: 'בחירת טיסה',
-                reviewers: ['61d37cb5e4de0300121e31ef'],
-                iconFileId: null,
+        {
+            name: 'bookFlight',
+            displayName: 'הזמנת טיסה',
+            details: {
                 properties: {
                     type: 'object',
                     properties: {
-                        airline: {
-                            title: 'חברת תעופה',
+                        destination: {
+                            title: 'יעד',
                             type: 'string',
                         },
-                        departureTime: {
-                            title: 'שעת יציאה',
-                            type: 'string',
-                            format: 'date-time',
-                        },
-                        arrivalTime: {
-                            title: 'שעת נחיתה',
-                            type: 'string',
-                            format: 'date-time',
-                        },
-                        flightNumber: {
-                            title: 'מספר טיסה',
-                            type: 'string',
-                        },
-                    },
-                },
-                propertiesOrder: ['airline', 'departureTime', 'arrivalTime', 'flightNumber'],
-            },
-            {
-                name: 'flightPayment',
-                displayName: 'טיסה תשלום',
-                reviewers: ['61d37cb5e4de0300121e31ef'],
-                iconFileId: null,
-                properties: {
-                    type: 'object',
-                    properties: {
-                        amount: {
-                            title: 'סכום',
-                            type: 'number',
-                        },
-                        paymentMethod: {
-                            enum: ['אשראי', 'מזומן', `צ'ק`],
-                            title: 'סוג תשלום',
-                            type: 'string',
-                        },
-                        numberOfPayments: {
-                            title: 'מספר תשלומים',
-                            type: 'number',
-                        },
-                    },
-                },
-                propertiesOrder: ['amount', 'paymentMethod', 'numberOfPayments'],
-            },
-            {
-                name: 'travelInsurance',
-                displayName: 'ביטוח נסיעה',
-                reviewers: ['61d37cb5e4de0300121e31ef'],
-                iconFileId: null,
-                properties: {
-                    type: 'object',
-                    properties: {
-                        insuranceProvider: {
-                            title: 'ספק ביטוח',
-                            type: 'string',
-                        },
-                        coverageAmount: {
-                            title: 'סכום כיסוי',
-                            type: 'number',
-                        },
-                        insurancePolicy: {
-                            title: 'מדיניות ביטוח',
+                        travelDocument: {
+                            title: 'מסמך נסיעה',
                             type: 'string',
                             format: 'fileId',
                         },
                     },
                 },
-                propertiesOrder: ['insuranceProvider', 'coverageAmount', 'insurancePolicy'],
+                propertiesOrder: ['destination', 'travelDocument'],
             },
-        ],
-    },
-    {
-        name: 'makePizza',
-        displayName: 'הכנת פיצה',
-        details: {
-            properties: {
-                type: 'object',
-                properties: {
-                    pizzaSize: {
-                        title: 'גודל הפיצה',
-                        type: 'string',
+            steps: [
+                {
+                    name: 'flightSelection',
+                    displayName: 'בחירת טיסה',
+                    reviewers: [chance.pickone(reviewersKartoffelIds)],
+                    iconFileId: null,
+                    properties: {
+                        type: 'object',
+                        properties: {
+                            airline: {
+                                title: 'חברת תעופה',
+                                type: 'string',
+                            },
+                            departureTime: {
+                                title: 'שעת יציאה',
+                                type: 'string',
+                                format: 'date-time',
+                            },
+                            arrivalTime: {
+                                title: 'שעת נחיתה',
+                                type: 'string',
+                                format: 'date-time',
+                            },
+                            flightNumber: {
+                                title: 'מספר טיסה',
+                                type: 'string',
+                            },
+                        },
                     },
-                    crustType: {
-                        title: 'סוג בצק',
-                        type: 'string',
-                    },
-                    orderID: {
-                        title: 'מספר הזמנה',
-                        type: 'string',
-                    },
+                    propertiesOrder: ['airline', 'departureTime', 'arrivalTime', 'flightNumber'],
                 },
-            },
-            propertiesOrder: ['pizzaSize', 'crustType', 'orderID'],
+                {
+                    name: 'flightPayment',
+                    displayName: 'טיסה תשלום',
+                    reviewers: [chance.pickone(reviewersKartoffelIds)],
+                    iconFileId: null,
+                    properties: {
+                        type: 'object',
+                        properties: {
+                            amount: {
+                                title: 'סכום',
+                                type: 'number',
+                            },
+                            paymentMethod: {
+                                enum: ['אשראי', 'מזומן', `צ'ק`],
+                                title: 'סוג תשלום',
+                                type: 'string',
+                            },
+                            numberOfPayments: {
+                                title: 'מספר תשלומים',
+                                type: 'number',
+                            },
+                        },
+                    },
+                    propertiesOrder: ['amount', 'paymentMethod', 'numberOfPayments'],
+                },
+                {
+                    name: 'travelInsurance',
+                    displayName: 'ביטוח נסיעה',
+                    reviewers: [chance.pickone(reviewersKartoffelIds)],
+                    iconFileId: null,
+                    properties: {
+                        type: 'object',
+                        properties: {
+                            insuranceProvider: {
+                                title: 'ספק ביטוח',
+                                type: 'string',
+                            },
+                            coverageAmount: {
+                                title: 'סכום כיסוי',
+                                type: 'number',
+                            },
+                            insurancePolicy: {
+                                title: 'מדיניות ביטוח',
+                                type: 'string',
+                                format: 'fileId',
+                            },
+                        },
+                    },
+                    propertiesOrder: ['insuranceProvider', 'coverageAmount', 'insurancePolicy'],
+                },
+            ],
         },
-        steps: [
-            {
-                name: 'prepareCrust',
-                displayName: 'הכנת הבצק',
-                reviewers: ['61d37cb5e4de0300121e31ef'],
-                iconFileId: null,
+        {
+            name: 'makePizza',
+            displayName: 'הכנת פיצה',
+            details: {
                 properties: {
                     type: 'object',
                     properties: {
-                        flourType: {
-                            title: 'סוג קמח',
+                        pizzaSize: {
+                            title: 'גודל הפיצה',
                             type: 'string',
                         },
-                        waterAmount: {
-                            title: 'כמות מים',
-                            type: 'number',
+                        crustType: {
+                            title: 'סוג בצק',
+                            type: 'string',
                         },
-                        crustThickness: {
-                            title: 'עובי הבצק',
-                            type: 'number',
+                        orderID: {
+                            title: 'מספר הזמנה',
+                            type: 'string',
                         },
                     },
                 },
-                propertiesOrder: ['flourType', 'waterAmount', 'crustThickness'],
+                propertiesOrder: ['pizzaSize', 'crustType', 'orderID'],
             },
-            {
-                name: 'addToppings',
-                displayName: 'הוספת תוספות',
-                reviewers: ['61d37cb5e4de0300121e31ef'],
-                iconFileId: null,
-                properties: {
-                    type: 'object',
+            steps: [
+                {
+                    name: 'prepareCrust',
+                    displayName: 'הכנת הבצק',
+                    reviewers: [chance.pickone(reviewersKartoffelIds)],
+                    iconFileId: null,
                     properties: {
-                        sauceType: {
-                            title: 'סוג רוטב',
-                            type: 'string',
-                        },
-                        cheeseType: {
-                            title: 'סוג גבינה',
-                            type: 'string',
-                        },
-                        toppings: {
-                            title: 'תוספות',
-                            type: 'string',
-                            enum: ['זיתים, פטריות, טונה, תירס, אקסטרה גבינה'],
+                        type: 'object',
+                        properties: {
+                            flourType: {
+                                title: 'סוג קמח',
+                                type: 'string',
+                            },
+                            waterAmount: {
+                                title: 'כמות מים',
+                                type: 'number',
+                            },
+                            crustThickness: {
+                                title: 'עובי הבצק',
+                                type: 'number',
+                            },
                         },
                     },
+                    propertiesOrder: ['flourType', 'waterAmount', 'crustThickness'],
                 },
-                propertiesOrder: ['sauceType', 'cheeseType', 'toppings'],
-            },
-            {
-                name: 'bakePizza',
-                displayName: 'אפית הפיצה',
-                reviewers: ['61d37cb5e4de0300121e31ef'],
-                iconFileId: null,
-                properties: {
-                    type: 'object',
+                {
+                    name: 'addToppings',
+                    displayName: 'הוספת תוספות',
+                    reviewers: [chance.pickone(reviewersKartoffelIds)],
+                    iconFileId: null,
                     properties: {
-                        ovenTemperature: {
-                            title: 'טמפרטורת התנור',
-                            type: 'number',
+                        type: 'object',
+                        properties: {
+                            sauceType: {
+                                title: 'סוג רוטב',
+                                type: 'string',
+                            },
+                            cheeseType: {
+                                title: 'סוג גבינה',
+                                type: 'string',
+                            },
+                            toppings: {
+                                title: 'תוספות',
+                                type: 'string',
+                                enum: ['זיתים, פטריות, טונה, תירס, אקסטרה גבינה'],
+                            },
                         },
-                        bakingTime: {
-                            title: 'זמן אפיה',
-                            type: 'number',
+                    },
+                    propertiesOrder: ['sauceType', 'cheeseType', 'toppings'],
+                },
+                {
+                    name: 'bakePizza',
+                    displayName: 'אפית הפיצה',
+                    reviewers: [chance.pickone(reviewersKartoffelIds)],
+                    iconFileId: null,
+                    properties: {
+                        type: 'object',
+                        properties: {
+                            ovenTemperature: {
+                                title: 'טמפרטורת התנור',
+                                type: 'number',
+                            },
+                            bakingTime: {
+                                title: 'זמן אפיה',
+                                type: 'number',
+                            },
                         },
                     },
+                    propertiesOrder: ['ovenTemperature', 'bakingTime'],
                 },
-                propertiesOrder: ['ovenTemperature', 'bakingTime'],
-            },
-        ],
-    },
-    {
-        name: 'transferMoney',
-        displayName: 'העברת כסף',
-        details: {
-            properties: {
-                type: 'object',
-                properties: {
-                    senderAccount: {
-                        title: 'חשבון השולח',
-                        type: 'string',
-                    },
-                    recipientAccount: {
-                        title: 'חשבון המקבל',
-                        type: 'string',
-                    },
-                    transferAmount: {
-                        title: 'סכום ההעברה',
-                        type: 'number',
-                    },
-                },
-            },
-            propertiesOrder: ['senderAccount', 'recipientAccount', 'transferAmount'],
+            ],
         },
-        steps: [
-            {
-                name: 'verifySender',
-                displayName: 'אימות השולח',
-                reviewers: ['61d37cb5e4de0300121e31ef'],
-                iconFileId: null,
+        {
+            name: 'transferMoney',
+            displayName: 'העברת כסף',
+            details: {
                 properties: {
                     type: 'object',
                     properties: {
-                        senderBank: {
-                            title: 'בנק השולח',
+                        senderAccount: {
+                            title: 'חשבון השולח',
                             type: 'string',
                         },
-                        senderCountry: {
-                            title: 'ארץ השולח',
+                        recipientAccount: {
+                            title: 'חשבון המקבל',
                             type: 'string',
                         },
-                        senderID: {
-                            title: 'מספר זיהוי השולח',
-                            type: 'string',
+                        transferAmount: {
+                            title: 'סכום ההעברה',
+                            type: 'number',
                         },
                     },
                 },
-                propertiesOrder: ['senderBank', 'senderCountry', 'senderID'],
+                propertiesOrder: ['senderAccount', 'recipientAccount', 'transferAmount'],
             },
-            {
-                name: 'verifyRecipient',
-                displayName: 'אימות המקבל',
-                reviewers: ['61d37cb5e4de0300121e31ef'],
-                iconFileId: null,
-                properties: {
-                    type: 'object',
+            steps: [
+                {
+                    name: 'verifySender',
+                    displayName: 'אימות השולח',
+                    reviewers: [chance.pickone(reviewersKartoffelIds)],
+                    iconFileId: null,
                     properties: {
-                        recipientBank: {
-                            title: 'בנק המקבל',
-                            type: 'string',
-                        },
-                        recipientCountry: {
-                            title: 'ארץ המקבל',
-                            type: 'string',
-                        },
-                        recipientID: {
-                            title: 'מספר זיהוי המקבל',
-                            type: 'string',
+                        type: 'object',
+                        properties: {
+                            senderBank: {
+                                title: 'בנק השולח',
+                                type: 'string',
+                            },
+                            senderCountry: {
+                                title: 'ארץ השולח',
+                                type: 'string',
+                            },
+                            senderID: {
+                                title: 'מספר זיהוי השולח',
+                                type: 'string',
+                            },
                         },
                     },
+                    propertiesOrder: ['senderBank', 'senderCountry', 'senderID'],
                 },
-                propertiesOrder: ['recipientBank', 'recipientCountry', 'recipientID'],
-            },
-            {
-                name: 'processTransfer',
-                displayName: 'ביצוע ההעברה',
-                reviewers: ['61d37cb5e4de0300121e31ef'],
-                iconFileId: null,
-                properties: {
-                    type: 'object',
+                {
+                    name: 'verifyRecipient',
+                    displayName: 'אימות המקבל',
+                    reviewers: [chance.pickone(reviewersKartoffelIds)],
+                    iconFileId: null,
                     properties: {
-                        transferFee: {
-                            title: 'עמלת העברה',
-                            type: 'number',
-                        },
-                        exchangeRate: {
-                            title: 'שער חליפין',
-                            type: 'number',
-                        },
-                        transferTime: {
-                            title: 'זמן העברה',
-                            type: 'number',
+                        type: 'object',
+                        properties: {
+                            recipientBank: {
+                                title: 'בנק המקבל',
+                                type: 'string',
+                            },
+                            recipientCountry: {
+                                title: 'ארץ המקבל',
+                                type: 'string',
+                            },
+                            recipientID: {
+                                title: 'מספר זיהוי המקבל',
+                                type: 'string',
+                            },
                         },
                     },
+                    propertiesOrder: ['recipientBank', 'recipientCountry', 'recipientID'],
                 },
-                propertiesOrder: ['transferFee', 'exchangeRate', 'transferTime'],
-            },
-            {
-                name: 'moreStep',
-                displayName: 'עוד שלב',
-                reviewers: ['61d37cb5e4de0300121e31ef'],
-                iconFileId: null,
-                properties: {
-                    type: 'object',
+                {
+                    name: 'processTransfer',
+                    displayName: 'ביצוע ההעברה',
+                    reviewers: [chance.pickone(reviewersKartoffelIds)],
+                    iconFileId: null,
                     properties: {
-                        someNumber: {
-                            title: 'מספר כלשהו',
-                            type: 'number',
-                        },
-                        anotherSomeNumber: {
-                            title: 'עוד מספר כלשהו',
-                            type: 'number',
-                        },
-                        thirdNumber: {
-                            title: 'מספר כלשהו שלישי',
-                            type: 'number',
+                        type: 'object',
+                        properties: {
+                            transferFee: {
+                                title: 'עמלת העברה',
+                                type: 'number',
+                            },
+                            exchangeRate: {
+                                title: 'שער חליפין',
+                                type: 'number',
+                            },
+                            transferTime: {
+                                title: 'זמן העברה',
+                                type: 'number',
+                            },
                         },
                     },
+                    propertiesOrder: ['transferFee', 'exchangeRate', 'transferTime'],
                 },
-                propertiesOrder: ['someNumber', 'anotherSomeNumber', 'thirdNumber'],
-            },
-        ],
-    },
-    {
-        name: 'publishNewBook',
-        displayName: 'פרסום ספר חדש',
-        details: {
-            properties: {
-                type: 'object',
-                properties: {
-                    bookTitle: {
-                        title: 'שם הספר',
-                        type: 'string',
+                {
+                    name: 'moreStep',
+                    displayName: 'עוד שלב',
+                    reviewers: [chance.pickone(reviewersKartoffelIds)],
+                    iconFileId: null,
+                    properties: {
+                        type: 'object',
+                        properties: {
+                            someNumber: {
+                                title: 'מספר כלשהו',
+                                type: 'number',
+                            },
+                            anotherSomeNumber: {
+                                title: 'עוד מספר כלשהו',
+                                type: 'number',
+                            },
+                            thirdNumber: {
+                                title: 'מספר כלשהו שלישי',
+                                type: 'number',
+                            },
+                        },
                     },
-                    author: {
-                        title: 'המחבר',
-                        type: 'string',
-                    },
-                    manuscriptFile: {
-                        title: 'קובץ התסריט',
-                        type: 'string',
-                        format: 'fileId',
-                    },
+                    propertiesOrder: ['someNumber', 'anotherSomeNumber', 'thirdNumber'],
                 },
-            },
-            propertiesOrder: ['bookTitle', 'author', 'manuscriptFile'],
+            ],
         },
-        steps: [
-            // Existing steps are modified to fit the new process.
-            {
-                name: 'manuscriptReview',
-                displayName: 'ביקורת תסריט',
-                reviewers: ['61d37cb5e4de0300121e31ef'],
-                iconFileId: null,
+        {
+            name: 'publishNewBook',
+            displayName: 'פרסום ספר חדש',
+            details: {
                 properties: {
                     type: 'object',
                     properties: {
-                        reviewerComments: {
-                            title: 'הערות המבקר',
+                        bookTitle: {
+                            title: 'שם הספר',
                             type: 'string',
                         },
-                        isApproved: {
-                            title: 'אישור לפרסום',
-                            type: 'boolean',
-                        },
-                    },
-                },
-                propertiesOrder: ['reviewerComments', 'isApproved'],
-            },
-            // New steps for the book publication process.
-            {
-                name: 'copyEditing',
-                displayName: 'עריכת עותק',
-                reviewers: ['61d37cb5e4de0300121e31ef'],
-                iconFileId: null,
-                properties: {
-                    type: 'object',
-                    properties: {
-                        editorName: {
-                            title: 'שם העורך',
+                        author: {
+                            title: 'המחבר',
                             type: 'string',
                         },
-                        editingComplete: {
-                            title: 'האם העריכה הסתיימה',
-                            type: 'boolean',
-                        },
-                    },
-                },
-                propertiesOrder: ['editorName', 'editingComplete'],
-            },
-            {
-                name: 'coverDesign',
-                displayName: 'עיצוב כריכה',
-                reviewers: ['61d37cb5e4de0300121e31ef'],
-                iconFileId: null,
-                properties: {
-                    type: 'object',
-                    properties: {
-                        designerName: {
-                            title: 'שם המעצב',
+                        manuscriptFile: {
+                            title: 'קובץ התסריט',
                             type: 'string',
-                        },
-                        designApproved: {
-                            title: 'אישור העיצוב',
-                            type: 'boolean',
+                            format: 'fileId',
                         },
                     },
                 },
-                propertiesOrder: ['designerName', 'designApproved'],
+                propertiesOrder: ['bookTitle', 'author', 'manuscriptFile'],
             },
-            {
-                name: 'print',
-                displayName: 'הדפסה',
-                reviewers: ['61d37cb5e4de0300121e31ef'],
-                iconFileId: null,
-                properties: {
-                    type: 'object',
+            steps: [
+                // Existing steps are modified to fit the new process.
+                {
+                    name: 'manuscriptReview',
+                    displayName: 'ביקורת תסריט',
+                    reviewers: [chance.pickone(reviewersKartoffelIds)],
+                    iconFileId: null,
                     properties: {
-                        numberOfCopies: {
-                            title: 'מספר העותקים',
-                            type: 'number',
+                        type: 'object',
+                        properties: {
+                            reviewerComments: {
+                                title: 'הערות המבקר',
+                                type: 'string',
+                            },
+                            isApproved: {
+                                title: 'אישור לפרסום',
+                                type: 'boolean',
+                            },
                         },
                     },
+                    propertiesOrder: ['reviewerComments', 'isApproved'],
                 },
-                propertiesOrder: ['numberOfCopies'],
-            },
-            {
-                name: 'distribution',
-                displayName: 'הפצה',
-                reviewers: ['61d37cb5e4de0300121e31ef'],
-                iconFileId: null,
-                properties: {
-                    type: 'object',
+                // New steps for the book publication process.
+                {
+                    name: 'copyEditing',
+                    displayName: 'עריכת עותק',
+                    reviewers: [chance.pickone(reviewersKartoffelIds)],
+                    iconFileId: null,
                     properties: {
-                        numberOfLocations: {
-                            title: 'מספר מקומות הפצה',
-                            type: 'number',
+                        type: 'object',
+                        properties: {
+                            editorName: {
+                                title: 'שם העורך',
+                                type: 'string',
+                            },
+                            editingComplete: {
+                                title: 'האם העריכה הסתיימה',
+                                type: 'boolean',
+                            },
                         },
                     },
+                    propertiesOrder: ['editorName', 'editingComplete'],
                 },
-                propertiesOrder: ['numberOfLocations'],
-            },
-        ],
-    },
-    {
-        name: 'launchSpaceMission',
-        displayName: 'השקת משימה לחלל',
-        details: {
-            properties: {
-                type: 'object',
-                properties: {
-                    missionName: {
-                        title: 'שם המשימה',
-                        type: 'string',
+                {
+                    name: 'coverDesign',
+                    displayName: 'עיצוב כריכה',
+                    reviewers: [chance.pickone(reviewersKartoffelIds)],
+                    iconFileId: null,
+                    properties: {
+                        type: 'object',
+                        properties: {
+                            designerName: {
+                                title: 'שם המעצב',
+                                type: 'string',
+                            },
+                            designApproved: {
+                                title: 'אישור העיצוב',
+                                type: 'boolean',
+                            },
+                        },
                     },
-                    missionObjective: {
-                        title: 'מטרת המשימה',
-                        type: 'string',
-                    },
-                    missionDuration: {
-                        title: 'משך המשימה (בימים)',
-                        type: 'number',
-                    },
+                    propertiesOrder: ['designerName', 'designApproved'],
                 },
-            },
-            propertiesOrder: ['missionName', 'missionObjective', 'missionDuration'],
+                {
+                    name: 'print',
+                    displayName: 'הדפסה',
+                    reviewers: [chance.pickone(reviewersKartoffelIds)],
+                    iconFileId: null,
+                    properties: {
+                        type: 'object',
+                        properties: {
+                            numberOfCopies: {
+                                title: 'מספר העותקים',
+                                type: 'number',
+                            },
+                        },
+                    },
+                    propertiesOrder: ['numberOfCopies'],
+                },
+                {
+                    name: 'distribution',
+                    displayName: 'הפצה',
+                    reviewers: [chance.pickone(reviewersKartoffelIds)],
+                    iconFileId: null,
+                    properties: {
+                        type: 'object',
+                        properties: {
+                            numberOfLocations: {
+                                title: 'מספר מקומות הפצה',
+                                type: 'number',
+                            },
+                        },
+                    },
+                    propertiesOrder: ['numberOfLocations'],
+                },
+            ],
         },
-        steps: [
-            {
-                name: 'missionPlan',
-                displayName: 'תכנון משימה',
-                reviewers: ['61d37cb5e4de0300121e31ef'],
-                iconFileId: null,
+        {
+            name: 'launchSpaceMission',
+            displayName: 'השקת משימה לחלל',
+            details: {
                 properties: {
                     type: 'object',
                     properties: {
-                        planDetails: {
-                            title: 'פרטי התוכנית',
+                        missionName: {
+                            title: 'שם המשימה',
                             type: 'string',
+                        },
+                        missionObjective: {
+                            title: 'מטרת המשימה',
+                            type: 'string',
+                        },
+                        missionDuration: {
+                            title: 'משך המשימה (בימים)',
+                            type: 'number',
                         },
                     },
                 },
-                propertiesOrder: ['planDetails'],
+                propertiesOrder: ['missionName', 'missionObjective', 'missionDuration'],
             },
-            {
-                name: 'spacecraftDesign',
-                displayName: 'עיצוב החללית',
-                reviewers: ['61d37cb5e4de0300121e31ef'],
-                iconFileId: null,
-                properties: {
-                    type: 'object',
+            steps: [
+                {
+                    name: 'missionPlan',
+                    displayName: 'תכנון משימה',
+                    reviewers: [chance.pickone(reviewersKartoffelIds)],
+                    iconFileId: null,
                     properties: {
-                        designDetails: {
-                            title: 'פרטי העיצוב',
-                            type: 'string',
+                        type: 'object',
+                        properties: {
+                            planDetails: {
+                                title: 'פרטי התוכנית',
+                                type: 'string',
+                            },
                         },
                     },
+                    propertiesOrder: ['planDetails'],
                 },
-                propertiesOrder: ['designDetails'],
-            },
-            {
-                name: 'crewSelection',
-                displayName: 'בחירת הצוות',
-                reviewers: ['61d37cb5e4de0300121e31ef'],
-                iconFileId: null,
-                properties: {
-                    type: 'object',
+                {
+                    name: 'spacecraftDesign',
+                    displayName: 'עיצוב החללית',
+                    reviewers: [chance.pickone(reviewersKartoffelIds)],
+                    iconFileId: null,
                     properties: {
-                        crewMembers: {
-                            title: 'חברי הצוות',
-                            type: 'string',
+                        type: 'object',
+                        properties: {
+                            designDetails: {
+                                title: 'פרטי העיצוב',
+                                type: 'string',
+                            },
                         },
                     },
+                    propertiesOrder: ['designDetails'],
                 },
-                propertiesOrder: ['crewMembers'],
-            },
-            {
-                name: 'launchPreparation',
-                displayName: 'הכנה להשקה',
-                reviewers: ['61d37cb5e4de0300121e31ef'],
-                iconFileId: null,
-                properties: {
-                    type: 'object',
+                {
+                    name: 'crewSelection',
+                    displayName: 'בחירת הצוות',
+                    reviewers: [chance.pickone(reviewersKartoffelIds)],
+                    iconFileId: null,
                     properties: {
-                        preparationDetails: {
-                            title: 'פרטי ההכנה',
-                            type: 'string',
+                        type: 'object',
+                        properties: {
+                            crewMembers: {
+                                title: 'חברי הצוות',
+                                type: 'string',
+                            },
                         },
                     },
+                    propertiesOrder: ['crewMembers'],
                 },
-                propertiesOrder: ['preparationDetails'],
-            },
-            {
-                name: 'launch',
-                displayName: 'השקה',
-                reviewers: ['61d37cb5e4de0300121e31ef'],
-                iconFileId: null,
-                properties: {
-                    type: 'object',
+                {
+                    name: 'launchPreparation',
+                    displayName: 'הכנה להשקה',
+                    reviewers: [chance.pickone(reviewersKartoffelIds)],
+                    iconFileId: null,
                     properties: {
-                        launchTime: {
-                            title: 'שעת ההשקה',
-                            type: 'string',
+                        type: 'object',
+                        properties: {
+                            preparationDetails: {
+                                title: 'פרטי ההכנה',
+                                type: 'string',
+                            },
                         },
                     },
+                    propertiesOrder: ['preparationDetails'],
                 },
-                propertiesOrder: ['launchTime'],
-            },
-            {
-                name: 'missionOperation',
-                displayName: 'הפעלת משימה',
-                reviewers: ['61d37cb5e4de0300121e31ef'],
-                iconFileId: null,
-                properties: {
-                    type: 'object',
+                {
+                    name: 'launch',
+                    displayName: 'השקה',
+                    reviewers: [chance.pickone(reviewersKartoffelIds)],
+                    iconFileId: null,
                     properties: {
-                        operationDetails: {
-                            title: 'פרטי ההפעלה',
-                            type: 'string',
+                        type: 'object',
+                        properties: {
+                            launchTime: {
+                                title: 'שעת ההשקה',
+                                type: 'string',
+                            },
                         },
                     },
+                    propertiesOrder: ['launchTime'],
                 },
-                propertiesOrder: ['operationDetails'],
-            },
-        ],
-    },
-];
+                {
+                    name: 'missionOperation',
+                    displayName: 'הפעלת משימה',
+                    reviewers: [chance.pickone(reviewersKartoffelIds)],
+                    iconFileId: null,
+                    properties: {
+                        type: 'object',
+                        properties: {
+                            operationDetails: {
+                                title: 'פרטי ההפעלה',
+                                type: 'string',
+                            },
+                        },
+                    },
+                    propertiesOrder: ['operationDetails'],
+                },
+            ],
+        },
+    ];
+    return processTemplates;
+};
