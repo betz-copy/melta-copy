@@ -69,7 +69,8 @@ services:
       PROCESS_SERVICE_URI: ${PROCESS_SERVICE_URI}
       STORAGE_SERVICE_URI: ${STORAGE_SERVICE_URI}
       GANTTS_SERVICE_URI: ${GANTTS_SERVICE_URI}
-      KARTOFFEL_IDS: 5e5688324203fc40043591aa,61d37cb5e4de0300121e31ef
+      PERMISSIONS_API_MANAGERS_KARTOFFEL_IDS: 5e5688324203fc40043591aa,61d37cb5e4de0300121e31ef
+      PROCESS_SERVICE_REVIEWERS_KARTOFFEL_IDS: 5e5688d54203fc40043591ac,626e4e5be8e4d7001101b794,5ebbd53f64fe6f2b1c5777ae
     depends_on:
       - neo4j
       - entity-template-manager
@@ -78,6 +79,7 @@ services:
       - instance-manager
       - permission-api
       - process-service
+      - gantts-service
     restart: on-failure
 
   #-------------------------------------------#
