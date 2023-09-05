@@ -22,7 +22,11 @@ config:
           value: http://permission-api:8000
         - name: PROCESS_SERVICE_URI
           value: http://process-service:8000
-        - name: KARTOFFEL_IDS
-          value: 61d37cb5e4de0300121e31ef,5e5688d54203fc40043591ac,5e5688324203fc40043591aa
+        - name: GANTTS_SERVICE_URI
+          value: http://gantts-service:8000
+        - name: PERMISSIONS_API_MANAGERS_KARTOFFEL_IDS
+          value: 61d37cb5e4de0300121e31ef,5e5688324203fc40043591aa
+        - name: PROCESS_SERVICE_REVIEWERS_KARTOFFEL_IDS
+          value: 5e5688d54203fc40043591ac,626e4e5be8e4d7001101b794,5ebbd53f64fe6f2b1c5777ae
         - name: STORAGE_SERVICE_URI
           value: http://storage-service:8000
