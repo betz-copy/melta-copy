@@ -50,6 +50,11 @@ const config = {
         fileName: env.get('EXAMPLE_FILE_NAME').default('mock-file.txt').asString(),
         fileData: env.get('EXAMPLE_FILE_DATA').default('bla bla bla bla bla').asString(),
     },
+    ganttsService: {
+        uri: env.get('GANTTS_SERVICE_URI').required().asString(),
+        baseRoute: env.get('GANTTS_SERVICE_BASE_ROUTE').default('/api/gantts').asString(),
+        isAliveRoute: env.get('GANTTS_SERVICE_ALIVE_ROUTE').default('/isAlive').asString(),
+    },
     requestLimit: env.get('REQUEST_LIMIT').default(10).asInt(),
 };
 

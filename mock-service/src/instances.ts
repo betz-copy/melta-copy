@@ -1,4 +1,3 @@
-/* eslint-disable no-underscore-dangle */
 import axios from 'axios';
 // @ts-ignore
 import { generate, format, JSONSchemaFaker } from 'json-schema-faker';

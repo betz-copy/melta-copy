@@ -16,6 +16,7 @@ import { createProcessTemplates, isProcessServiceAlive } from './processTemplate
 import { getProcessTemplateToCreate } from './mocks/processTemplates';
 import { createProcessInstances } from './processInstances';
 import { isStorageServiceAlive, uploadFile } from './storageService';
+import { createGantts } from './gantts';
 
 const main = async () => {
     console.log(`Mock started ${JSON.stringify(config, null, 4)}`);
@@ -108,6 +109,10 @@ const main = async () => {
     console.log('Creating process Instances');
 
     await createProcessInstances(createdProcessTemplates, chance, exampleFileId);
+
+    console.log('Creating gantts');
+
+    await createGantts(createdEntityTemplates, createdRelationshipTemplates);
 
     console.log('Finished');
 };
