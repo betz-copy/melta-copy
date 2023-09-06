@@ -9,7 +9,7 @@ appRouter.use('/api/processes/templates', ProcessTemplateRouter);
 appRouter.use('/api/processes/instances/steps', StepInstanceRouter);
 appRouter.use('/api/processes/instances', ProcessInstanceRouter);
 
-appRouter.use('/isAlive', (_req, res) => {
+appRouter.use(['/isAlive', '/isalive', '/health'], (_req, res) => {
     res.status(200).send('alive');
 });
 
