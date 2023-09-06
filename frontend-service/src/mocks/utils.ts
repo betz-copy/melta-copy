@@ -1,9 +1,10 @@
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { Chance } from 'chance';
 
 const chance = new Chance();
 
 export const popRandom = <T>(array: T[]): T | undefined => {
-    if (!array.length) return;
+    if (!array.length) return undefined;
     return array.splice(chance.integer({ min: 0, max: array.length - 1 }), 1)[0];
 };
 
@@ -13,12 +14,13 @@ export const pickSetIf = <T>(array: T[], count: number, condition: (item: T) => 
 
     while (set.length < count && arrayCopy.length) {
         const currItem = popRandom(arrayCopy);
+        // eslint-disable-next-line no-continue
         if (!currItem || !condition(currItem)) continue;
 
         set.push(currItem);
     }
 
-    if (set.length < count) return;
+    if (set.length < count) return undefined;
 
     return set;
 };

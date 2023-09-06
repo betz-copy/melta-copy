@@ -1,12 +1,12 @@
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { Chance } from 'chance';
-import MockAdapter from 'axios-mock-adapter/types';
+import MockAdapter from 'axios-mock-adapter';
 import { generateMongoId } from './permissions';
 import { IGantt, IGanttItem } from '../interfaces/gantts';
 import { entityTemplates } from './templates/entityTemplates';
 import { pickOneIf, pickRandomSet, pickSetIf, popRandom } from './utils';
 import { relationshipTemplates } from './templates/relationshipTemplates';
 import { allEntities } from './entities/allEntities';
-import { IMongoRelationshipTemplate } from '../interfaces/relationshipTemplates';
 import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 
 const chance = new Chance();
@@ -37,14 +37,13 @@ const generateGanttItemEntityTemplate = (optionalEntityTemplates: IMongoEntityTe
 };
 
 const generateGanttItemConnectedEntityTemplate = (entityTemplateId: string): IGanttItem['connectedEntityTemplate'] | undefined => {
+    if (chance.bool()) return undefined; // 50% chance of not having a connected entity
+
     let connectedEntityTemplateId: string | undefined;
-    let relationshipTemplate: IMongoRelationshipTemplate | undefined;
 
-    if (chance.bool()) return; // 50% chance of not having a connected entity
-
-    relationshipTemplate = pickOneIf(relationshipTemplates, (relationshipTemplate) => {
-        const sourceEntity = allEntities.find((entity) => entity.templateId === relationshipTemplate.sourceEntityId);
-        const destinationEntity = allEntities.find((entity) => entity.templateId === relationshipTemplate.destinationEntityId);
+    const relationshipTemplate = pickOneIf(relationshipTemplates, (currRelationshipTemplate) => {
+        const sourceEntity = allEntities.find((entity) => entity.templateId === currRelationshipTemplate.sourceEntityId);
+        const destinationEntity = allEntities.find((entity) => entity.templateId === currRelationshipTemplate.destinationEntityId);
 
         if (!sourceEntity || !destinationEntity) return false;
 
@@ -63,7 +62,7 @@ const generateGanttItemConnectedEntityTemplate = (entityTemplateId: string): IGa
 
     const connectedEntityTemplate = entityTemplates.find((entityTemplate) => entityTemplate._id === connectedEntityTemplateId);
 
-    if (!relationshipTemplate || !connectedEntityTemplate) return;
+    if (!relationshipTemplate || !connectedEntityTemplate) return undefined;
 
     return {
         relationshipTemplateId: relationshipTemplate._id,
@@ -73,7 +72,7 @@ const generateGanttItemConnectedEntityTemplate = (entityTemplateId: string): IGa
 
 const generateGanttItem = (optionalEntityTemplates: IMongoEntityTemplatePopulated[]): IGanttItem | undefined => {
     const entityTemplate = generateGanttItemEntityTemplate(optionalEntityTemplates);
-    if (!entityTemplate) return;
+    if (!entityTemplate) return undefined;
 
     return {
         _id: generateMongoId(),
@@ -93,7 +92,7 @@ const generateGantt = (): IGantt | undefined => {
         items.push(ganttItem);
     }
 
-    if (!items.length) return;
+    if (!items.length) return undefined;
 
     return {
         _id: generateMongoId(),
@@ -114,7 +113,7 @@ for (let i = 0; i < chance.integer({ min: 1, max: 40 }); i++) {
 export const mockGantts = (mock: MockAdapter) => {
     mock.onGet(/\/api\/gantts\/.*/).reply((data) => {
         const id = data.url?.split('gantts/')[1];
-        const gantt = gantts.find((gantt) => gantt._id === id);
+        const gantt = gantts.find((currGantt) => currGantt._id === id);
 
         if (!gantt) return [404];
         return [200, gantt];
