@@ -138,7 +138,6 @@ services:
       NODE_TLS_REJECT_UNAUTHORIZED: 0
       RABBIT_URI: ${RABBIT_URI}
       STORAGE_SERVICE_FILE_HYPER_LINK: ${STORAGE_SERVICE_FILE_HYPER_LINK}
-      DATE_ALERT_TIME: ${DATE_ALERT_TIME}
 
   frontend:
     image: jawsproject.azurecr.io/frontend
