@@ -229,6 +229,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                             </>
                                         )}
                                         {(value.type === 'date' || value.type === 'date-time') &&
+                                            'dateNotification' in value &&
                                             (value.dateNotification !== undefined ? (
                                                 <Grid container direction="row">
                                                     <IconButton

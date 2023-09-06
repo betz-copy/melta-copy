@@ -137,7 +137,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
     const setFieldDisplayValueWrapper = (index: number) => (field: keyof Values, value: any) => setFieldDisplayValue(index, field, value);
     const setDisplayValueWrapper = (index: number) => (value: SetStateAction<CommonFormInputProperties>) => setDisplayValue(index, value);
 
-    const isFieldBlockError = touched?.[propertiesType] && errors?.hasOwnProperty(propertiesType);
+    const isFieldBlockError = touched?.[propertiesType] && Object.prototype.hasOwnProperty.call(errors, propertiesType);
 
     return (
         <FieldBlockAccordion style={{ border: isFieldBlockError ? '1px solid red' : '' }}>
@@ -171,10 +171,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
                                                 onChange: onChangeWrapper(index),
                                             };
 
-                                            if (
-                                                propertiesType === 'properties' ||
-                                                propertiesType === 'detailsProperties' 
-                                            ) {
+                                            if (propertiesType === 'properties' || propertiesType === 'detailsProperties') {
                                                 return (
                                                     <MemoFieldEditCard
                                                         {...props}
