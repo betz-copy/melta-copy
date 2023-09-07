@@ -15,7 +15,7 @@ const getProcessByIdRequest = async (processId: string) => {
 
 const createProcessRequest = async (process: ProcessDetailsValues) => {
     const formData = new FormData();
-    Object.entries(process.detailsAttachments).forEach(([key, value]) => formData.append(`details.${key}`, value as Blob));
+    Object.entries(process.detailsAttachments).forEach(([key, value]) => formData.append(key, value as Blob));
     const entityReferences = Object.entries(process.entityReferences)
         .filter(([_key, value]: [string, IReferencedEntityForProcess | undefined]) => value?.entity && value.entity.properties)
         .reduce((entityIdsObject: { [key: string]: string }, [key, value]: [string, IReferencedEntityForProcess]) => {
