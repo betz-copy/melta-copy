@@ -3,12 +3,12 @@ replicaCount: 1
 
 images:
   PullSecrets: [jawsreg]
-  repository: jawsproject.azurecr.io/gantts-service
+  repository: jawsproject.azurecr.io/gantt-service
   tag: latest
 
 service:
   ports:
-  - name: http-port
+  - name: http
     port: "8000"
 
 livenessProbe:
