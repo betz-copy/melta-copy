@@ -137,7 +137,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
     const setFieldDisplayValueWrapper = (index: number) => (field: keyof Values, value: any) => setFieldDisplayValue(index, field, value);
     const setDisplayValueWrapper = (index: number) => (value: SetStateAction<CommonFormInputProperties>) => setDisplayValue(index, value);
 
-    const isFieldBlockError = touched?.[propertiesType] && Object.prototype.hasOwnProperty.call(errors, propertiesType);
+    const isFieldBlockError = Boolean(touched?.[propertiesType]) && Boolean(errors?.[propertiesType]);
 
     return (
         <FieldBlockAccordion style={{ border: isFieldBlockError ? '1px solid red' : '' }}>
