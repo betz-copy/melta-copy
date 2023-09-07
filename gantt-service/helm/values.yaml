@@ -8,7 +8,7 @@ images:
 
 service:
   ports:
-  - name: http
+  - name: http-port
     port: "8000"
 
 livenessProbe:
