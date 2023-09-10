@@ -1,5 +1,7 @@
+import { IEntityTemplateMock } from '../entityTemplates';
+
 // TODO: create entityTemplates with backend service in order to add required+unique constraints
-export const entityTemplates = [
+export const entityTemplates: IEntityTemplateMock[] = [
     {
         name: 'trip',
         displayName: 'טיול',
@@ -37,6 +39,7 @@ export const entityTemplates = [
         },
         propertiesOrder: ['name', 'destination', 'startDate', 'endDate', 'firstFile'],
         propertiesPreview: ['name', 'destination', 'startDate', 'endDate'],
+        disabled: false,
     },
     {
         name: 'tourist',
@@ -68,6 +71,7 @@ export const entityTemplates = [
         },
         propertiesOrder: ['firstName', 'lastName', 'age', 'gender'],
         propertiesPreview: ['firstName', 'age'],
+        disabled: false,
     },
     {
         name: 'travelAgent',
@@ -103,6 +107,7 @@ export const entityTemplates = [
         },
         propertiesOrder: ['firstName', 'lastName', 'age', 'gender', 'agentId'],
         propertiesPreview: ['firstName', 'age'],
+        disabled: false,
     },
     {
         name: 'flight',
@@ -149,6 +154,7 @@ export const entityTemplates = [
         },
         propertiesOrder: ['flightNumber', 'departureDate', 'landingDate', 'from', 'to', 'planeType', 'seatType'],
         propertiesPreview: ['flightNumber', 'from', 'to'],
+        disabled: false,
     },
     {
         name: 'airport',
@@ -176,6 +182,7 @@ export const entityTemplates = [
         },
         propertiesOrder: ['airportName', 'airportId', 'country'],
         propertiesPreview: ['airportName', 'country'],
+        disabled: false,
     },
     {
         name: 'hotel',
@@ -213,6 +220,7 @@ export const entityTemplates = [
         },
         propertiesOrder: ['hotelName', 'hotelChain', 'checkInDate', 'checkOutDate', 'country'],
         propertiesPreview: ['hotelName', 'checkInDate', 'checkOutDate'],
+        disabled: false,
     },
     {
         name: 'airbnb',
@@ -246,6 +254,7 @@ export const entityTemplates = [
         },
         propertiesOrder: ['name', 'checkInDate', 'checkOutDate', 'country'],
         propertiesPreview: ['name', 'checkInDate', 'checkOutDate'],
+        disabled: false,
     },
     {
         name: 'creditCard',
@@ -278,6 +287,7 @@ export const entityTemplates = [
         },
         propertiesOrder: ['name', 'company', 'expirtaionDate', 'monthlyAmount'],
         propertiesPreview: ['name', 'expirtaionDate'],
+        disabled: false,
     },
     {
         name: 'check',
@@ -302,6 +312,7 @@ export const entityTemplates = [
         },
         propertiesOrder: ['name', 'amount'],
         propertiesPreview: ['name', 'amount'],
+        disabled: false,
     },
     {
         name: 'phone',
@@ -329,6 +340,7 @@ export const entityTemplates = [
         },
         propertiesOrder: ['model', 'color', 'serialNumber'],
         propertiesPreview: ['model', 'serialNumber'],
+        disabled: false,
     },
     {
         name: 'sim',
@@ -352,6 +364,7 @@ export const entityTemplates = [
         },
         propertiesOrder: ['company', 'number'],
         propertiesPreview: ['company', 'number'],
+        disabled: false,
     },
     {
         name: 'suitcase',
@@ -379,5 +392,6 @@ export const entityTemplates = [
         },
         propertiesOrder: ['company', 'color', 'weight'],
         propertiesPreview: ['company', 'weight'],
+        disabled: false,
     },
 ];

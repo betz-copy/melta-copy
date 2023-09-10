@@ -1,7 +1,8 @@
 import axios from 'axios';
 import config from './config';
 import { IMongoEntityTemplate } from './entityTemplates';
-import { getHardcodedRealGantts, getRandomGantts } from './mocks/gantts';
+import { getHardcodedRealGantts } from './mocks/gantts/hardcoded';
+import { getRandomGantts } from './mocks/gantts/generate';
 import { IMongoRelationshipTemplate } from './relationshipTemplates';
 import { trycatch } from './utils';
 
@@ -37,13 +38,13 @@ export interface ISearchGanttsBody {
     step: number;
 }
 
-export const createGantts = (entityTemplates: IMongoEntityTemplate[], relationshipTemplates: IMongoRelationshipTemplate[]) => {
+export const createGantts = (chance: Chance.Chance, entityTemplates: IMongoEntityTemplate[], relationshipTemplates: IMongoRelationshipTemplate[]) => {
     const fliesOnId = relationshipTemplates.find(({ name }) => name === 'fliesOn')!._id;
     const flightId = entityTemplates.find(({ name }) => name === 'flight')!._id;
     const tripId = entityTemplates.find(({ name }) => name === 'trip')!._id;
 
     const hardcodedRealGantts = getHardcodedRealGantts(fliesOnId, flightId, tripId);
-    const randomGantts = getRandomGantts();
+    const randomGantts = getRandomGantts(chance, entityTemplates, relationshipTemplates);
 
     const gantts = [...hardcodedRealGantts, ...randomGantts];
 

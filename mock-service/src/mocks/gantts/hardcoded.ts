@@ -1,4 +1,4 @@
-import { IGantt } from '../gantts';
+import { IGantt } from '../../gantts';
 
 export const getHardcodedRealGantts = (fliesOnId: string, flightId: string, tripId: string): IGantt[] => {
     return [
@@ -29,5 +29,3 @@ export const getHardcodedRealGantts = (fliesOnId: string, flightId: string, trip
         },
     ];
 };
-
-export const getRandomGantts = (): IGantt[] => [];

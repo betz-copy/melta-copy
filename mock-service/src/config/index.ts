@@ -54,6 +54,8 @@ const config = {
         uri: env.get('GANTTS_SERVICE_URI').required().asString(),
         baseRoute: env.get('GANTTS_SERVICE_BASE_ROUTE').default('/api/gantts').asString(),
         isAliveRoute: env.get('GANTTS_SERVICE_ALIVE_ROUTE').default('/isAlive').asString(),
+        minNumberOfGantts: env.get('MIN_NUMBER_OF_GANTTS').default(5).asInt(),
+        maxNumberOfGantts: env.get('MAX_NUMBER_OF_GANTTS').default(40).asInt(),
     },
     requestLimit: env.get('REQUEST_LIMIT').default(10).asInt(),
 };

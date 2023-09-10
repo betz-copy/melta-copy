@@ -112,7 +112,7 @@ const main = async () => {
 
     console.log('Creating gantts');
 
-    await createGantts(createdEntityTemplates, createdRelationshipTemplates);
+    await createGantts(chance, createdEntityTemplates, createdRelationshipTemplates);
 
     console.log('Finished');
 };

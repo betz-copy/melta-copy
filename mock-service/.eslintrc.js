@@ -37,5 +37,6 @@ module.exports = {
         'no-unused-vars': 'off', // Checked by typescript
         'no-undef': 'off', // Checked by typescript
         'import/prefer-default-export': 'off',
+        'no-plusplus': 'off',
     },
 };
