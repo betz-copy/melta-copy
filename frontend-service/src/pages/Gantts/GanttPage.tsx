@@ -1,46 +1,22 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { useQuery, useQueryClient } from 'react-query';
-import { useParams } from 'react-router-dom';
-import { Box, CircularProgress, Grid } from '@mui/material';
-import {
-    Day,
-    Inject,
-    Month,
-    ResourceDirective,
-    ResourcesDirective,
-    ScheduleComponent,
-    TimelineMonth,
-    TimelineViews,
-    ViewDirective,
-    ViewsDirective,
-    Week,
-} from '@syncfusion/ej2-react-schedule';
-import { L10n, loadCldr } from '@syncfusion/ej2-base';
-import i18next from 'i18next';
-import { useSelector } from 'react-redux';
-import { getGanttById } from '../../services/ganttsService';
-import { TopBar } from '../../common/TopBar';
+import React, { useEffect, useMemo, useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from 'react-query';
+import { useNavigate, useParams } from 'react-router-dom';
+import { deleteGantt, getGanttById, updateGantt } from '../../services/ganttsService';
+import { CircularProgress, Grid } from '@mui/material';
 import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
-import { GanttSideBar } from './GanttSideBar';
-import { getEntitiesWithDirectConnections } from '../../services/entitiesService';
-import { getEntitiesSearchBody, getScheduleComponentData, getScheduleComponentResourceData } from '../../utils/gantts';
-import { GanttEvent } from './GanttEvent';
-import { GanttQuickInfo } from './GanttQuickInfo';
-import hebrew from '../../i18n/hebrew';
-import numberingSystems from '../../CLDR/hebrew/numberingSystems.json';
-import timeZoneNames from '../../CLDR/hebrew/timeZoneNames.json';
-import numbers from '../../CLDR/hebrew/numbers.json';
-import caHebrew from '../../CLDR/hebrew/ca-hebrew.json';
-import { useDynamicStyleSheet } from '../../utils/useDynamicStyleSheet';
-import { RootState } from '../../store';
+import { GanttSideBar } from './SideBar';
+import { ganttValidationSchema, getScheduleComponentResourceData } from '../../utils/gantts';
 import { useLocalStorage } from '../../utils/useLocalStorage';
 import { environment } from '../../globals';
-import lightTheme from '../../css/syncfusion/light.css?inline';
-import darkTheme from '../../css/syncfusion/dark.css?inline';
-import '../../css/syncfusion/schedule.css';
-
-loadCldr(numberingSystems, caHebrew, timeZoneNames, numbers);
-L10n.load({ 'he-IL': hebrew.schedule });
+import { Gantt } from './Gantt';
+import { GanttsTopBar } from './TopBar';
+import { IBasicGantt } from '../../interfaces/gantts';
+import { toast } from 'react-toastify';
+import i18next from 'i18next';
+import { AxiosError } from 'axios';
+import { ErrorToast } from '../../common/ErrorToast';
+import cloneDeep from 'lodash.clonedeep';
+import { Form, Formik } from 'formik';
 
 const { ganttSettings } = environment;
 
@@ -49,90 +25,93 @@ interface IGanttPageProps {
 }
 
 const GanttPage: React.FC<IGanttPageProps> = ({ setTitle }) => {
-    const topBarRef = useRef<HTMLDivElement>(null);
-    const scheduleRef = useRef<ScheduleComponent>(null);
-
     const { ganttId } = useParams();
+
+    const navigate = useNavigate();
 
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
 
-    const [renderedDates, setRenderedDates] = useState<Date[]>([new Date()]);
-
     const [sideBarOpen, setSideBarOpen] = useLocalStorage(ganttSettings.isSidebarOpenLocalStorageKey, true);
 
-    const darkMode = useSelector((state: RootState) => state.darkMode);
-    useDynamicStyleSheet(darkMode ? darkTheme : lightTheme);
+    const [edit, setEdit] = useState<boolean>(false);
 
-    const { data: gantt } = useQuery(['getGantt', ganttId], () => getGanttById(ganttId!));
+    const queryKey = ['getGantt', ganttId];
+    const { data: gantt } = useQuery(queryKey, () => getGanttById(ganttId!));
 
     useEffect(() => setTitle(gantt?.name || ''), [gantt, setTitle]);
 
     const resources = useMemo(() => gantt && getScheduleComponentResourceData(gantt.items, entityTemplates), [gantt, entityTemplates]);
 
-    const { data } = useQuery(['getGanttEntities', gantt, renderedDates, entityTemplates], async () => {
-        if (!gantt || !renderedDates.length) return [];
+    const { mutateAsync: updateGanttMutateAsync, isLoading: isUpdateGanttLoading } = useMutation(
+        (params: Parameters<typeof updateGantt>) => updateGantt(...params),
+        {
+            onSuccess: (updatedGantt) => {
+                queryClient.setQueryData(queryKey, updatedGantt)
+                setEdit(false);
+                toast.success(i18next.t('gantts.actions.updatedSuccessfully'));
+            },
+            onError: (error: AxiosError) => {
+                toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('gantts.actions.failedToUpdate')} />);
+            },
+        },
+    );
+    const { mutateAsync: deleteGanttMutateAsync, isLoading: isDeleteGanttLoading } = useMutation(
+        (id: string) => deleteGantt(id),
+        {
+            onSuccess: () => {
+                navigate('/gantts')
+                toast.success(i18next.t('gantts.actions.deletedSuccessfully'));
+            },
+            onError: (error: AxiosError) => {
+                toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('gantts.actions.failedToDelete')} />);
+            },
+        },
+    );
 
-        const searchBody = getEntitiesSearchBody(gantt.items, renderedDates[0], renderedDates[renderedDates.length - 1], 1000, 0, entityTemplates);
-        const { entities } = await getEntitiesWithDirectConnections(searchBody);
-
-        return getScheduleComponentData(entities, gantt.items, entityTemplates);
-    });
-
-    if (!gantt) return <CircularProgress />;
+    if (!gantt || !resources) return <CircularProgress />
 
     return (
-        <>
-            <Box ref={topBarRef}>
-                <TopBar title={gantt?.name} boxStyle={{ marginBottom: 0 }} />
-            </Box>
+        <Formik<IBasicGantt>
+            initialValues={{ name: gantt.name, items: cloneDeep(gantt.items) }}
+            onSubmit={async (updatedGantt, formikHelpers) => {
+                updateGanttMutateAsync([gantt._id, updatedGantt]);
+                formikHelpers.setSubmitting(false);
+            }}
+            onReset={() => setEdit(false)}
+            validationSchema={ganttValidationSchema}
+            enableReinitialize
+        >
+            {(formik) => (
+                <Form>
+                    <GanttsTopBar
+                        title={gantt.name}
+                        formik={formik}
+                        onDelete={() => deleteGanttMutateAsync(gantt._id)}
+                        onEdit={() => setEdit(true)}
+                        edit={edit}
+                        isLoading={isUpdateGanttLoading || isDeleteGanttLoading}
+                    />
 
-            <Grid container wrap="nowrap" position="relative" alignItems="stretch" height="94vh">
-                <Grid item>
-                    <ScheduleComponent
-                        ref={scheduleRef}
-                        width="100%"
-                        height="100%"
-                        timezone="Asia/Jerusalem"
-                        timeFormat="HH:mm"
-                        dateFormat="dd/MM/yyyy"
-                        workDays={[0, 1, 2, 3, 4, 5]}
-                        locale="he-IL"
-                        currentView="Day"
-                        eventSettings={{ dataSource: data }}
-                        actionComplete={() => {
-                            const newRenderedDates = scheduleRef.current?.activeView?.renderDates;
-                            if (newRenderedDates) setRenderedDates(newRenderedDates);
-                        }}
-                        quickInfoTemplates={{ header: GanttQuickInfo as any }} // 'header' type is should be string | Function
-                        enableRtl
-                        readonly
-                    >
-                        <ViewsDirective>
-                            <ViewDirective option="Day" eventTemplate={GanttEvent} />
-                            <ViewDirective option="Week" eventTemplate={GanttEvent} />
-                            <ViewDirective option="Month" eventTemplate={GanttEvent} />
-                            <ViewDirective option="TimelineMonth" eventTemplate={GanttEvent} />
-                        </ViewsDirective>
+                    <Grid container wrap='nowrap' position='relative' alignItems="stretch" height="94vh">
+                        <Grid item>
+                            <Gantt gantt={gantt} resources={resources} />
+                        </Grid>
 
-                        <ResourcesDirective>
-                            <ResourceDirective
-                                field="entityTemplateId"
-                                title={i18next.t('entityTemplate')}
-                                name="entityTemplate"
-                                dataSource={resources}
+                        <Grid item>
+                            <GanttSideBar
+                                gantt={gantt}
+                                open={sideBarOpen}
+                                toggle={() => setSideBarOpen(!sideBarOpen)}
+                                formik={formik}
+                                edit={edit}
+                                isLoading={isUpdateGanttLoading || isDeleteGanttLoading}
                             />
-                        </ResourcesDirective>
-
-                        <Inject services={[TimelineViews, TimelineMonth, Day, Week, Month]} />
-                    </ScheduleComponent>
-                </Grid>
-
-                <Grid item>
-                    <GanttSideBar toggle={() => setSideBarOpen(!sideBarOpen)} open={sideBarOpen} gantt={gantt} />
-                </Grid>
-            </Grid>
-        </>
+                        </Grid>
+                    </Grid >
+                </Form>
+            )}
+        </Formik >
     );
 };
 

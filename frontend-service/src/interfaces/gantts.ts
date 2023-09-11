@@ -1,5 +1,4 @@
 export interface IGanttItem {
-    _id: string;
     entityTemplate: {
         id: string;
         startDateField: string;
@@ -12,10 +11,15 @@ export interface IGanttItem {
     };
 }
 
-export interface IGantt {
-    _id: string;
+export interface IBasicGantt {
     name: string;
     items: IGanttItem[];
+}
+
+export interface IGantt extends IBasicGantt {
+    _id: string;
+    createdAt: Date;
+    updatedAt: Date;
 }
 
 export interface ISearchGanttsBody {

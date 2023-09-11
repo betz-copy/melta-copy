@@ -1,10 +1,13 @@
+import i18next from 'i18next';
 import { IEntityWithDirectConnections, ISearchBatchBody } from '../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { IGanttItem } from '../interfaces/gantts';
 import { IMongoRelationshipTemplate, IRelationshipTemplateMap } from '../interfaces/relationshipTemplates';
 import { IScheduleComponentData, IScheduleComponentResourceData } from '../interfaces/syncfusion';
 import { getEntityTemplateColor } from './colors';
+import { getDayEnd, getDayStart } from './date';
 import { filteredMap } from './filteredMap';
+import * as Yup from 'yup';
 
 const getFormattedDateAccordingToField = (date: Date, dateField: string, entityTemplate: IMongoEntityTemplatePopulated) => {
     switch (entityTemplate.properties.properties[dateField].format) {
@@ -27,11 +30,8 @@ export const getEntitiesSearchBody = (
     skip: number,
     entityTemplatesMap: IEntityTemplateMap,
 ): ISearchBatchBody => {
-    const paddedStartDate = new Date(startDate);
-    const paddedEndDate = new Date(endDate);
-
-    paddedStartDate.setDate(paddedStartDate.getDate() - 1);
-    paddedEndDate.setDate(paddedEndDate.getDate() + 1);
+    const paddedStartDate = getDayStart(startDate);
+    const paddedEndDate = getDayEnd(endDate);
 
     const templates = ganttItems.reduce<ISearchBatchBody['templates']>((currTemplates, item) => {
         const entityTemplate = entityTemplatesMap.get(item.entityTemplate.id);
@@ -132,3 +132,20 @@ export const getConnectedEntityDetails = (
 
     return { connectedEntityTemplate, relationship, connectedEntityTemplateColor: getEntityTemplateColor(connectedEntityTemplate) };
 };
+
+export const ganttItemValidationSchema = Yup.object({
+    entityTemplate: Yup.object({
+        id: Yup.string().required(i18next.t('validation.required')),
+        startDateField: Yup.string().required(i18next.t('validation.required')),
+        endDateField: Yup.string().required(i18next.t('validation.required')),
+        fieldsToShow: Yup.array(Yup.string()).min(1, i18next.t('validation.required')),
+    }).required(i18next.t('validation.required')),
+    connectedEntityTemplate: Yup.object({
+        relationshipTemplateId: Yup.string().required(i18next.t('validation.required')),
+        fieldsToShow: Yup.array(Yup.string()).min(1, i18next.t('validation.required')),
+    }).default(undefined),
+});
+export const ganttValidationSchema = Yup.object({
+    name: Yup.string().required(i18next.t('validation.required')),
+    items: Yup.array(ganttItemValidationSchema).required(i18next.t('validation.required')),
+});

@@ -1,9 +1,8 @@
 import React from 'react';
 import { Box, Grid, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
 import { useQueryClient, useQuery } from 'react-query';
-import { RestartAltOutlined as ResetIcon, LinkOutlined as CopyUrlIcon } from '@mui/icons-material';
+import { RestartAltOutlined as ResetIcon } from '@mui/icons-material';
 import i18next from 'i18next';
-import { toast } from 'react-toastify';
 import { useSelector } from 'react-redux';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { getExpandedEntityByIdRequest } from '../../services/entitiesService';
@@ -11,6 +10,7 @@ import IconButtonWithPopover from '../../common/IconButtonWithPopover';
 import TemplatesSelectCheckbox from '../../common/templatesSelectCheckbox';
 import { ICategoryMap } from '../../interfaces/categories';
 import { RootState } from '../../store';
+import { CopyUrlButton } from '../../common/CopyUrlButton';
 
 interface GraphTopBarProps {
     onReset: React.MouseEventHandler<HTMLButtonElement>;
@@ -37,10 +37,6 @@ const GraphTopBar: React.FC<GraphTopBarProps> = ({ onReset, set3DView, is3DView,
 
     const entityTemplate = entityTemplates.get(expandedEntity?.entity.templateId || '');
 
-    const handleCopy = () => {
-        navigator.clipboard.writeText(window.location.href);
-        toast.success(i18next.t('graph.copiedSuccessfully'));
-    };
     return (
         <Grid
             container
@@ -100,14 +96,7 @@ const GraphTopBar: React.FC<GraphTopBarProps> = ({ onReset, set3DView, is3DView,
                     </Grid>
 
                     <Grid item>
-                        <IconButtonWithPopover
-                            popoverText={i18next.t('graph.copy')}
-                            iconButtonProps={{
-                                onClick: handleCopy,
-                            }}
-                        >
-                            <CopyUrlIcon color="primary" />
-                        </IconButtonWithPopover>
+                        <CopyUrlButton style={{ color: '#225AA7' }} />
                     </Grid>
 
                     <Grid item>

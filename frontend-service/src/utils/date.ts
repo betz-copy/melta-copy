@@ -9,3 +9,14 @@ export const getLongDate = (date: Date) => {
 export const getDateWithoutTime = (date: Date) => {
     return format(new Date(date), 'dd/MM/yyyy');
 };
+
+export const getDayStart = (date: Date) => {
+    const dateCopy = new Date(date);
+    dateCopy.setHours(0, 0, 0, 0);
+    return dateCopy;
+};
+export const getDayEnd = (date: Date) => {
+    const dateCopy = new Date(date);
+    dateCopy.setHours(23, 59, 59, 999);
+    return dateCopy;
+};

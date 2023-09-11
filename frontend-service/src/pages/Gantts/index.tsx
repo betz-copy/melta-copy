@@ -1,13 +1,18 @@
-import React, { useEffect } from 'react';
-import { Box } from '@mui/material';
+import React, { useEffect, useState } from 'react';
+import { Box, Grid, IconButton } from '@mui/material';
 import i18next from 'i18next';
 import { toast } from 'react-toastify';
 import { ViewingBox } from '../SystemManagement/components/ViewingBox';
 import { InfiniteScroll } from '../../common/InfiniteScroll';
-import { GanttsCard } from './GanttCard';
+import { GanttsCard } from './Card';
 import { searchGantts } from '../../services/ganttsService';
 import { IGantt } from '../../interfaces/gantts';
 import { environment } from '../../globals';
+import { GlobalSearchBar } from '../../common/EntitiesPage/Headline';
+import { AddCircle as AddCircleIcon } from '@mui/icons-material';
+import { CreateGanttDialog } from './CreateGanttDialog';
+import { useQueryClient } from 'react-query';
+import { IPermissionsOfUser } from '../../services/permissionsService';
 
 const { infiniteScrollPageCount } = environment.gantts;
 
@@ -16,26 +21,54 @@ interface IGanttsPageProps {
 }
 
 const GanttsPage: React.FC<IGanttsPageProps> = ({ setTitle }) => {
+    const queryClient = useQueryClient();
+    const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
+
+    const [search, setSearch] = useState<string>();
+    const [ganttDialogOpen, setGanttDialogOpen] = useState<boolean>(false);
+
     useEffect(() => setTitle(i18next.t('pages.gantts')), [setTitle]);
 
+    const queryKey = ['searchGantts', search];
+
     return (
-        <Box padding="0 4rem">
-            <ViewingBox minHeight="89vh">
-                <InfiniteScroll<IGantt>
-                    queryKey={['searchGantts']}
-                    queryFunction={async ({ pageParam }) => searchGantts({ limit: infiniteScrollPageCount, step: pageParam })}
-                    onQueryError={(error) => {
-                        // eslint-disable-next-line no-console
-                        console.log('failed loading gantts: ', error);
-                        toast.error(i18next.t('gantts.searchFailed'));
-                    }}
-                    emptyText={i18next.t('gantts.noGanttsFound')}
-                    useContainer={false}
-                >
-                    {(gantt) => <GanttsCard gantt={gantt} />}
-                </InfiniteScroll>
-            </ViewingBox>
-        </Box>
+        <>
+            <Grid container direction="column" padding="0 4rem">
+                <Grid container item justifyContent='space-between' padding='0.5rem'>
+                    <Box>
+                        <GlobalSearchBar onSearch={(searchValue) => setSearch(searchValue ? searchValue : undefined)} />
+                    </Box>
+                    {myPermissions.templatesManagementId &&
+                        <IconButton onClick={() => setGanttDialogOpen(true)}>
+                            <AddCircleIcon color="primary" fontSize="large" />
+                        </IconButton>}
+                </Grid>
+
+                <ViewingBox minHeight="82vh">
+                    <InfiniteScroll<IGantt>
+                        queryKey={queryKey}
+                        queryFunction={async ({ pageParam }) => searchGantts({ limit: infiniteScrollPageCount, step: pageParam, search })}
+                        onQueryError={(error) => {
+                            // eslint-disable-next-line no-console
+                            console.log('failed loading gantts: ', error);
+                            toast.error(i18next.t('gantts.searchFailed'));
+                        }}
+                        emptyText={i18next.t('gantts.noGanttsFound')}
+                        useContainer={false}
+                    >
+                        {(gantt) => <GanttsCard gantt={gantt} />}
+                    </InfiniteScroll>
+                </ViewingBox>
+            </Grid >
+
+            <CreateGanttDialog
+                open={ganttDialogOpen}
+                onClose={() => {
+                    setGanttDialogOpen(false)
+                    queryClient.invalidateQueries(queryKey);
+                }}
+            />
+        </>
     );
 };
 

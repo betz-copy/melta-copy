@@ -51,7 +51,7 @@ const PrintOptionsDialog: React.FC<{
                                 sourceEntity: { displayName: sourceEntityDisplayName },
                                 destinationEntity: { displayName: destinationEntityDisplayName },
                             }) => {
-                                return `${displayName} (${sourceEntityDisplayName} -> ${destinationEntityDisplayName})`;
+                                return `${displayName} (${sourceEntityDisplayName} > ${destinationEntityDisplayName})`;
                             }}
                             groupsProps={{
                                 useGroups: true,

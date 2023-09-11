@@ -13,9 +13,27 @@
 } 
 
 .e-appointment {
-    border-radius: 6px !important;
+    border-radius: 10px !important;
 }
 
 .e-schedule-toolbar-container > .e-header-popup {
     left: auto !important;
+}
+
+.e-more-popup-wrapper {
+    width: auto !important;
+}
+
+.e-appointment-details > div {
+    width: 100%;
+}
+
+div.e-indicator.e-icons {
+    width: fit-content !important;
+}
+
+.e-schedule .e-appointment.e-appointment-border,
+.e-schedule .e-appointment:focus {
+    box-shadow: none !important;
+    filter: brightness(1.1);
 }

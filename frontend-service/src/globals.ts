@@ -63,8 +63,12 @@ export const environment = {
     },
     ganttSettings: {
         isSidebarOpenLocalStorageKey: 'isGanttSidebarOpen',
-        fieldSeparator: ' × ',
-        templateSeparator: ' & ',
+        ganttEntitiesChunkSize: 1000,
+        separators: {
+            field: ' × ',
+            template: ' & ',
+            entity: ' ⬤ ',
+        },
     },
     entitiesCardsView: {
         infiniteScrollPageCount: 10,
