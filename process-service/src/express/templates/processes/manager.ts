@@ -87,10 +87,7 @@ class ProcessTemplateManager {
         const currProcessTemplate = await this.getProcessTemplateById(id);
         this.throwIfCantUpdateProcessTemplate(updatedData, currProcessTemplate);
         return transaction(async (session) => {
-            await StepTemplateManager.updateStepsTemplates(updatedData.steps, session);
-            const stepsIds = updatedData.steps.map((step) => {
-                return step._id;
-            });
+            const stepsIds = await StepTemplateManager.updateStepsTemplates(updatedData.steps, session);
             return ProcessTemplateModel.findByIdAndUpdate(id, { ...updatedData, steps: stepsIds }, { new: true, session })
                 .populate(config.processFields.steps)
                 .orFail(new TemplateNotFoundError('process', id))

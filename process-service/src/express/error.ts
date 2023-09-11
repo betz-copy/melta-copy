@@ -84,3 +84,9 @@ export class StepNotPartOfProcessError extends ValidationError {
         super(msg);
     }
 }
+
+export class NoMatchingStepsError extends ServiceError {
+    constructor() {
+        super(404, 'No matching step Templates found');
+    }
+}

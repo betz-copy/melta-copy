@@ -1,7 +1,7 @@
 import { ClientSession } from 'mongoose';
 import StepTemplateModel from './model';
 import { IMongoStepTemplate, IStepTemplate, StepTemplateDocument } from './interface';
-import { ServiceError, TemplateNotFoundError, ValidationError } from '../../error';
+import { NoMatchingStepsError, ServiceError, TemplateNotFoundError, ValidationError } from '../../error';
 
 export default class StepTemplateManager {
     static async getStepTemplate(id: string): Promise<IMongoStepTemplate> {
@@ -10,7 +10,7 @@ export default class StepTemplateManager {
 
     static async getStepTemplates(ids: string[]): Promise<IMongoStepTemplate[]> {
         return StepTemplateModel.find({ _id: { $in: ids } })
-            .orFail(new ServiceError(404, 'No matching step Templates found'))
+            .orFail(new NoMatchingStepsError())
             .lean();
     }
 
@@ -31,13 +31,30 @@ export default class StepTemplateManager {
 
     static async updateStepsTemplates(steps: IMongoStepTemplate[], session?: ClientSession) {
         this.throwIfDuplicateStepName(steps);
-        const bulkWriteOperations = steps.map((step) => ({
+
+        const stepsToUpdate = steps.filter((step) => step._id);
+        const stepsToCreate = steps.filter((step) => !step._id);
+
+        const bulkWriteOperations = stepsToUpdate.map((step) => ({
             updateOne: {
                 filter: { _id: step._id },
                 update: { $set: step },
             },
         }));
-        await StepTemplateModel.bulkWrite(bulkWriteOperations, { session });
+
+        const result = await StepTemplateModel.bulkWrite(bulkWriteOperations, { session });
+
+        if ((result?.matchedCount ?? 0) < stepsToUpdate.length) {
+            throw new ServiceError(404, `One or more of the steps to update doesn't exist`);
+        }
+
+        let newStepsIds: string[] = [];
+        if (stepsToCreate.length) {
+            const createdSteps = await this.createStepsTemplates(stepsToCreate, session);
+            newStepsIds = createdSteps.map((step) => step._id.toString());
+        }
+        const originalIds = stepsToUpdate.map((step) => step._id!.toString());
+        return [...originalIds, ...newStepsIds];
     }
 
     static async deleteStepsByIds(ids: string[], session?: ClientSession) {
