@@ -13,7 +13,7 @@ import {
 
 const { processTemplates } = environment.api;
 export const basePropertyTypes = ['string', 'number', 'boolean'];
-export const stringFormats = ['date', 'date-time', 'email', 'entityReference' ];
+export const stringFormats = ['date', 'date-time', 'email', 'entityReference'];
 
 const processTemplateObjectToProcessTemplateForm = (
     processTemplate: IMongoProcessTemplatePopulated | null,
@@ -104,12 +104,7 @@ const processTemplateObjectToProcessTemplateForm = (
     };
 };
 const formToJSONSchema = (values: ProcessTemplateWizardValues): ICreateProcessTemplateBody | IUpdateProcessTemplateBody => {
-    const {
-        detailsProperties,
-        detailsAttachmentProperties,
-        steps,
-        ...restOfProperties
-    } = values;
+    const { detailsProperties, detailsAttachmentProperties, steps, ...restOfProperties } = values;
 
     const detailsPropertiesOrder: string[] = [];
     const stepTemplates: ICreateProcessTemplateBody['steps'] | IUpdateProcessTemplateBody['steps'] = [];
@@ -203,9 +198,12 @@ const createProcessTemplateRequest = async (newProcessTemplate: ProcessTemplateW
 
 const updateProcessTemplateRequest = async (processTemplateId: string, updatedProcessTemplate: ProcessTemplateWizardValues) => {
     const formData = new FormData();
-    updatedProcessTemplate.steps
-        .filter((step) => step.icon!.file instanceof File)
-        .forEach((step, index) => formData.append(String(index), step.icon!.file as File));
+    updatedProcessTemplate.steps.forEach((step, index) => {
+        if (step.icon!.file instanceof File) {
+            formData.append(String(index), step.icon!.file as File);
+        }
+    });
+
     const processTemplate = formToJSONSchema(updatedProcessTemplate);
     formData.append('name', processTemplate.name);
     formData.append('displayName', processTemplate.displayName);
