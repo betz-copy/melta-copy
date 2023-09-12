@@ -16,39 +16,39 @@ import {
     View,
     NavigatingEventArgs,
 } from '@syncfusion/ej2-react-schedule';
-import { L10n, loadCldr } from '@syncfusion/ej2-base';
-import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
+import { L10n, loadCldr } from '@syncfusion/ej2-base'; // eslint-disable-line import/no-extraneous-dependencies
 import i18next from 'i18next';
+import { useSelector } from 'react-redux';
+import { toast } from 'react-toastify';
+import flatten from 'lodash.flatten';
+import { CircularProgress, Grid } from '@mui/material';
+import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
 import { getEntitiesWithDirectConnections } from '../../services/entitiesService';
 import { getEntitiesSearchBody, getScheduleComponentData } from '../../utils/gantts';
 import { GanttEvent } from './GanttEvent';
 import { GanttQuickInfo } from './GanttQuickInfo';
 import hebrew from '../../i18n/hebrew';
-import numberingSystems from '../../CLDR/hebrew/numberingSystems.json'
-import timeZoneNames from '../../CLDR/hebrew/timeZoneNames.json'
-import numbers from '../../CLDR/hebrew/numbers.json'
-import caHebrew from '../../CLDR/hebrew/ca-hebrew.json'
+import numberingSystems from '../../CLDR/hebrew/numberingSystems.json';
+import timeZoneNames from '../../CLDR/hebrew/timeZoneNames.json';
+import numbers from '../../CLDR/hebrew/numbers.json';
+import caHebrew from '../../CLDR/hebrew/ca-hebrew.json';
 import { useDynamicStyleSheet } from '../../utils/useDynamicStyleSheet';
-import { useSelector } from 'react-redux';
 import { RootState } from '../../store';
-import lightTheme from '../../css/syncfusion/light.css?inline';
-import darkTheme from '../../css/syncfusion/dark.css?inline';
+import lightTheme from '../../css/syncfusion/light.css?inline'; // eslint-disable-line import/no-unresolved
+import darkTheme from '../../css/syncfusion/dark.css?inline'; // eslint-disable-line import/no-unresolved
 import { IScheduleComponentResourceData } from '../../interfaces/syncfusion';
 import { IGantt } from '../../interfaces/gantts';
 import '../../css/syncfusion/schedule.css';
 import { environment } from '../../globals';
-import { toast } from 'react-toastify';
-import flatten from 'lodash.flatten';
-import { CircularProgress, Grid } from '@mui/material';
 
 loadCldr(numberingSystems, caHebrew, timeZoneNames, numbers);
-L10n.load({ 'he-IL': hebrew.schedule })
+L10n.load({ 'he-IL': hebrew.schedule });
 
 const { ganttSettings } = environment;
 
 interface IGanttProps {
     gantt: IGantt;
-    resources: IScheduleComponentResourceData[]
+    resources: IScheduleComponentResourceData[];
 }
 
 export const Gantt: React.FC<IGanttProps> = ({ gantt, resources }) => {
@@ -66,17 +66,23 @@ export const Gantt: React.FC<IGanttProps> = ({ gantt, resources }) => {
     const darkMode = useSelector((state: RootState) => state.darkMode);
     useDynamicStyleSheet(darkMode ? darkTheme : lightTheme);
 
-    const { data: pagedData, fetchNextPage, hasNextPage, isLoading } = useInfiniteQuery(
+    const {
+        data: pagedData,
+        fetchNextPage,
+        hasNextPage,
+        isLoading,
+    } = useInfiniteQuery(
         ['getGanttEntities', gantt, renderedDates, entityTemplates],
         async ({ pageParam }) => {
             if (!renderedDates.length) return [];
 
             const searchBody = getEntitiesSearchBody(
-                gantt.items, renderedDates[0],
+                gantt.items,
+                renderedDates[0],
                 renderedDates[renderedDates.length - 1],
                 ganttSettings.ganttEntitiesChunkSize,
                 pageParam,
-                entityTemplates
+                entityTemplates,
             );
             const { entities } = await getEntitiesWithDirectConnections(searchBody);
 
@@ -91,69 +97,72 @@ export const Gantt: React.FC<IGanttProps> = ({ gantt, resources }) => {
                 // eslint-disable-next-line no-console
                 console.log('failed to get entities. error:', error);
                 toast.error(i18next.t('gantts.failedToGetEntities'));
-            }
-        }
+            },
+        },
     );
 
     const data = useMemo(() => {
         if (hasNextPage) fetchNextPage();
 
-        if (pagedData) return flatten(pagedData.pages)
+        if (pagedData) return flatten(pagedData.pages);
         return [];
-    }, [pagedData])
+    }, [pagedData]); // eslint-disable-line react-hooks/exhaustive-deps
 
-    return (<>
-        {isLoading || hasNextPage &&
-            <Grid
-                container
-                alignItems="center"
-                justifyContent="space-around"
-                position="absolute"
-                bgcolor="rgba(0,0,0,0.2)"
+    return (
+        <>
+            {(isLoading || hasNextPage) && (
+                <Grid
+                    container
+                    alignItems="center"
+                    justifyContent="space-around"
+                    position="absolute"
+                    bgcolor="rgba(0,0,0,0.2)"
+                    width="100%"
+                    height="100%"
+                    zIndex={100}
+                >
+                    <CircularProgress />
+                </Grid>
+            )}
+
+            <ScheduleComponent
+                ref={scheduleRef}
                 width="100%"
                 height="100%"
-                zIndex={100}
+                timezone="Asia/Jerusalem"
+                timeFormat="HH:mm"
+                dateFormat="dd/MM/yyyy"
+                workDays={[0, 1, 2, 3, 4, 5]}
+                locale="he-IL"
+                selectedDate={new Date(selectedDate)}
+                currentView={selectedView}
+                eventSettings={{ dataSource: data }}
+                navigating={(event: NavigatingEventArgs) => {
+                    const { currentView, currentDate } = event;
+                    setSearchParams({ selectedView: currentView || selectedView, selectedDate: currentDate?.toISOString() || selectedDate });
+                }}
+                dataBinding={() => {
+                    if (!scheduleRef.current) return;
+                    setRenderedDates(scheduleRef.current.activeView.renderDates);
+                }}
+                quickInfoTemplates={{ header: GanttQuickInfo as any }} // 'header' type should be `string | Function`
+                enableAdaptiveUI={false}
+                enableRtl
+                readonly
             >
-                <CircularProgress />
-            </Grid>}
+                <ViewsDirective>
+                    <ViewDirective option="Day" eventTemplate={GanttEvent} />
+                    <ViewDirective option="Week" eventTemplate={GanttEvent} />
+                    <ViewDirective option="Month" eventTemplate={GanttEvent} />
+                    <ViewDirective option="TimelineMonth" eventTemplate={GanttEvent} />
+                </ViewsDirective>
 
-        <ScheduleComponent
-            ref={scheduleRef}
-            width='100%'
-            height='100%'
-            timezone='Asia/Jerusalem'
-            timeFormat='HH:mm'
-            dateFormat='dd/MM/yyyy'
-            workDays={[0, 1, 2, 3, 4, 5]}
-            locale='he-IL'
-            selectedDate={new Date(selectedDate)}
-            currentView={selectedView}
-            eventSettings={{ dataSource: data }}
-            navigating={(event: NavigatingEventArgs) => {
-                const { currentView, currentDate } = event;
-                setSearchParams({ selectedView: currentView || selectedView, selectedDate: currentDate?.toISOString() || selectedDate })
-            }}
-            dataBinding={() => {
-                if (!scheduleRef.current) return;
-                setRenderedDates(scheduleRef.current.activeView.renderDates)
-            }}
-            quickInfoTemplates={{ header: GanttQuickInfo as any }} // 'header' type should be `string | Function`
-            enableAdaptiveUI={false}
-            enableRtl
-            readonly
-        >
-            <ViewsDirective>
-                <ViewDirective option='Day' eventTemplate={GanttEvent} />
-                <ViewDirective option='Week' eventTemplate={GanttEvent} />
-                <ViewDirective option='Month' eventTemplate={GanttEvent} />
-                <ViewDirective option='TimelineMonth' eventTemplate={GanttEvent} />
-            </ViewsDirective>
+                <ResourcesDirective>
+                    <ResourceDirective field="entityTemplateId" title={i18next.t('entityTemplate')} name="entityTemplate" dataSource={resources} />
+                </ResourcesDirective>
 
-            <ResourcesDirective>
-                <ResourceDirective field='entityTemplateId' title={i18next.t('entityTemplate')} name='entityTemplate' dataSource={resources} />
-            </ResourcesDirective>
-
-            <Inject services={[TimelineViews, TimelineMonth, Day, Week, Month]} />
-        </ScheduleComponent>
-    </>);
+                <Inject services={[TimelineViews, TimelineMonth, Day, Week, Month]} />
+            </ScheduleComponent>
+        </>
+    );
 };

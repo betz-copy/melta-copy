@@ -12,16 +12,19 @@ export const Swap: React.FC<ISwapProps> = ({ condition, isTrue = <div />, isFals
     const [show, setShow] = useState(condition);
 
     useEffect(() => {
-        setTimeout(() => setShow(condition), animationTime)
-    }, [condition])
+        setTimeout(() => setShow(condition), animationTime);
+    }, [condition]); // eslint-disable-line react-hooks/exhaustive-deps
 
-    if (show) return (
-        <Fade in={condition} timeout={animationTime} appear={false}>
-            {isTrue}
-        </Fade>)
+    if (show)
+        return (
+            <Fade in={condition} timeout={animationTime} appear={false}>
+                {isTrue}
+            </Fade>
+        );
 
     return (
         <Fade in={!condition} timeout={animationTime} appear={false}>
             {isFalse}
-        </Fade>)
+        </Fade>
+    );
 };

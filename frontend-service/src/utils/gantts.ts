@@ -1,4 +1,6 @@
+/* eslint-disable consistent-return */
 import i18next from 'i18next';
+import * as Yup from 'yup';
 import { IEntityWithDirectConnections, ISearchBatchBody } from '../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { IGanttItem } from '../interfaces/gantts';
@@ -7,7 +9,6 @@ import { IScheduleComponentData, IScheduleComponentResourceData } from '../inter
 import { getEntityTemplateColor } from './colors';
 import { getDayEnd, getDayStart } from './date';
 import { filteredMap } from './filteredMap';
-import * as Yup from 'yup';
 
 const getFormattedDateAccordingToField = (date: Date, dateField: string, entityTemplate: IMongoEntityTemplatePopulated) => {
     switch (entityTemplate.properties.properties[dateField].format) {
@@ -37,6 +38,7 @@ export const getEntitiesSearchBody = (
         const entityTemplate = entityTemplatesMap.get(item.entityTemplate.id);
         if (!entityTemplate) throw new Error(`Entity template ${item.entityTemplate.id} not found`);
 
+        // eslint-disable-next-line no-param-reassign
         currTemplates[item.entityTemplate.id] = {
             filter: {
                 $and: {
@@ -131,6 +133,22 @@ export const getConnectedEntityDetails = (
     if (!connectedEntityTemplate) return { relationship };
 
     return { connectedEntityTemplate, relationship, connectedEntityTemplateColor: getEntityTemplateColor(connectedEntityTemplate) };
+};
+
+export const getGanttItemEditDetails = (relationshipTemplates: IRelationshipTemplateMap, entityTemplate?: IMongoEntityTemplatePopulated) => {
+    if (!entityTemplate) return {};
+
+    const entityTemplateDateFields = filteredMap(Object.entries(entityTemplate.properties.properties), ([property, value]) => ({
+        include: (value.type === 'string' && value.format === 'date') || value.format === 'date-time',
+        value: property,
+    }));
+
+    const relevantRelationshipIds = filteredMap(Array.from(relationshipTemplates.values()), (relationShip) => ({
+        include: relationShip.sourceEntityId === entityTemplate._id || relationShip.destinationEntityId === entityTemplate._id,
+        value: relationShip._id,
+    }));
+
+    return { entityTemplateDateFields, relevantRelationshipIds };
 };
 
 export const ganttItemValidationSchema = Yup.object({

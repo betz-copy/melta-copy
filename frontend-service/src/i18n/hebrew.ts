@@ -430,7 +430,7 @@ export default {
                 choseProcessRejected: 'דחה',
                 byYou: 'על ידך',
                 by: 'ע"י',
-                lastChangeMade:'סטטוס תהליך שונה',
+                lastChangeMade: 'סטטוס תהליך שונה',
                 inLevel: 'בשלב',
                 StepStatusNotYetBeeUpdated: 'טרם עודכן סטטוס של שלב זה',
             },
@@ -439,7 +439,7 @@ export default {
                 editStepBth: 'ערוך שלב',
                 editedSuccessfully: 'שלב עודכן בהצלחה',
                 failedToEdit: 'נכשל לערוך שלב',
-                comment:'הערות',
+                comment: 'הערות',
                 rejectedSteps: 'שלבים דחויים',
                 approvedSteps: 'שלבים מאושרים',
                 pendingSteps: 'שלבים בתהליך',
@@ -483,7 +483,7 @@ export default {
         pattern: 'תבנית (regex)',
         enum: 'רשימה',
         dateNotification: 'התראה לפני סיום',
-        entityReference: 'שיוך לישות'
+        entityReference: 'שיוך לישות',
     },
     input: {
         imagePicker: {

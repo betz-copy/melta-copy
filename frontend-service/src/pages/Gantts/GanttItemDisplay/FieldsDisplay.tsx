@@ -15,9 +15,7 @@ interface IFieldsDisplayProps {
 export const FieldsDisplay: React.FC<IFieldsDisplayProps> = ({ entityTemplate, fieldsToShow, color, fontSize = 12 }) => {
     return (
         <Typography color={color} fontSize={fontSize}>
-            {fieldsToShow.map((field, index) => (
-                (index ? ganttSettings.separators.field : '') + entityTemplate.properties.properties[field].title
-            ))}
+            {fieldsToShow.map((field, index) => (index ? ganttSettings.separators.field : '') + entityTemplate.properties.properties[field].title)}
         </Typography>
     );
 };

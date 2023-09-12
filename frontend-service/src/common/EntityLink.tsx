@@ -18,17 +18,13 @@ export const EntityLink: React.FC<EntityLinkProps> = ({ entity, entityTemplate }
     const link = `/entity/${entity ? entity.properties._id : 'unknownEntity'}`;
     const darkMode = useSelector((state: RootState) => state.darkMode);
     const tooltip =
+        // eslint-disable-next-line no-nested-ternary
         !entityTemplate || !entity ? (
             ''
         ) : !entityTemplate.propertiesPreview.length ? (
             i18next.t('graph.noPreviewProperties')
         ) : (
-            <EntityPropertiesInternal
-                properties={entity['properties']}
-                entityTemplate={entityTemplate}
-                darkMode={darkMode}
-                showPreviewPropertiesOnly
-            />
+            <EntityPropertiesInternal properties={entity.properties} entityTemplate={entityTemplate} darkMode={darkMode} showPreviewPropertiesOnly />
         );
 
     return (

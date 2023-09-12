@@ -4,6 +4,10 @@ import { Done as DoneIcon, Clear as ClearIcon } from '@mui/icons-material';
 import i18next from 'i18next';
 import { makeStyles } from '@mui/styles';
 import { useMutation, useQueryClient } from 'react-query';
+import { toast } from 'react-toastify';
+import { AxiosError } from 'axios';
+import EditIcon from '@mui/icons-material/Edit';
+import _ from 'lodash';
 import { ProcessSideStepper } from './ProcessSideStepper';
 import { BlueTitle } from '../../BlueTitle';
 import ProcessDetails, { ProcessDetailsValues } from './ProcessDetails';
@@ -12,11 +16,7 @@ import { IProcessTemplateMap } from '../../../interfaces/processes/processTempla
 import { getInitialDetailsValues, useProcessDetailsFormik } from './ProcessDetails/detailsFormik';
 import ProcessSummary from './ProcessSummaryStep/index';
 import { getProcessByIdRequest, updateProcessRequest } from '../../../services/processesService';
-import { toast } from 'react-toastify';
-import { AxiosError } from 'axios';
 import { ErrorToast } from '../../ErrorToast';
-import EditIcon from '@mui/icons-material/Edit';
-import _ from 'lodash';
 import ProcessStepsStep from './ProcessSteps/index';
 import { IPermissionsOfUser } from '../../../services/permissionsService';
 import { IMongoStepTemplatePopulated } from '../../../interfaces/processes/stepTemplate';
@@ -59,21 +59,18 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({ open, onClose
     const [isStepEditMode, setIsStepEditMode] = useState(false);
 
     const [isProcessChanged, setIsProcessChanged] = useState<boolean>(false);
-    const { isLoading, mutateAsync } = useMutation(
-        (processData: ProcessDetailsValues ) => updateProcessRequest(processInstance._id, processData),
-        {
-            onSuccess: (processNewData) => {
-                toast.success(i18next.t('wizard.processInstance.editedSuccessfully'));
-                setIsProcessChanged(true);
-                setIsEditMode(false);
-                setCurrProcessInstance(processNewData);
-            },
-            onError: (error: AxiosError) => {
-                toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.processInstance.failedToEdit')} />);
-                console.log('failed to update process instance. error', error);
-            },
+    const { isLoading, mutateAsync } = useMutation((processData: ProcessDetailsValues) => updateProcessRequest(processInstance._id, processData), {
+        onSuccess: (processNewData) => {
+            toast.success(i18next.t('wizard.processInstance.editedSuccessfully'));
+            setIsProcessChanged(true);
+            setIsEditMode(false);
+            setCurrProcessInstance(processNewData);
         },
-    );
+        onError: (error: AxiosError) => {
+            toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.processInstance.failedToEdit')} />);
+            console.log('failed to update process instance. error', error);
+        },
+    });
     const detailsFormikData = useProcessDetailsFormik(processInstance, processTemplatesMap, mutateAsync);
 
     const [activeStep, setActiveStep] = React.useState(stepTemplate ? 1 : 0);

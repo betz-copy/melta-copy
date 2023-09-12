@@ -2,10 +2,10 @@ import React from 'react';
 import { CSSProperties } from '@material-ui/core/styles/withStyles';
 import { Grid, Typography } from '@mui/material';
 import { AppRegistration as DefaultEntityTemplateIcon } from '@mui/icons-material';
+import { useSelector } from 'react-redux';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { CustomIcon } from '../../../common/CustomIcon';
 import { FieldsDisplay } from './FieldsDisplay';
-import { useSelector } from 'react-redux';
 import { RootState } from '../../../store';
 
 interface IEntityTemplateDisplayProps {
@@ -17,7 +17,14 @@ interface IEntityTemplateDisplayProps {
     main?: boolean;
 }
 
-export const EntityTemplateDisplay: React.FC<IEntityTemplateDisplayProps> = ({ entityTemplate, fieldsToShow, color, expanded, relationshipName, main }) => {
+export const EntityTemplateDisplay: React.FC<IEntityTemplateDisplayProps> = ({
+    entityTemplate,
+    fieldsToShow,
+    color,
+    expanded,
+    relationshipName,
+    main,
+}) => {
     const darkMode = useSelector((state: RootState) => state.darkMode);
     const iconSize = main ? '35px' : '29px';
 
@@ -30,16 +37,20 @@ export const EntityTemplateDisplay: React.FC<IEntityTemplateDisplayProps> = ({ e
                     <DefaultEntityTemplateIcon sx={{ color, height: iconSize, width: iconSize }} />
                 )}
 
-                {expanded && <>
-                    <Typography fontWeight={'bold'} fontSize={main ? 20 : 16} color={color} display="inline" marginX="0.3rem" noWrap>
-                        {entityTemplate.displayName}
-                    </Typography>
+                {expanded && (
+                    <>
+                        <Typography fontWeight="bold" fontSize={main ? 20 : 16} color={color} display="inline" marginX="0.3rem" noWrap>
+                            {entityTemplate.displayName}
+                        </Typography>
 
-                    {relationshipName && <Typography fontSize={10} color={darkMode ? 'lightgrey' : 'grey'} noWrap>
-                        {`(${relationshipName})`}
-                    </Typography>}
-                </>}
-            </Grid >
+                        {relationshipName && (
+                            <Typography fontSize={10} color={darkMode ? 'lightgrey' : 'grey'} noWrap>
+                                {`(${relationshipName})`}
+                            </Typography>
+                        )}
+                    </>
+                )}
+            </Grid>
 
             {expanded && (
                 <Grid item>

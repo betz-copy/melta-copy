@@ -25,19 +25,14 @@ export const PureFieldsDisplay: React.FC<IPureFieldsDisplayProps> = ({ fields, e
                     <Fragment key={field}>
                         {!expanded && Boolean(index) && (
                             <Grid item>
-                                <Typography fontSize={14} fontWeight="bold" color='white'>
+                                <Typography fontSize={14} fontWeight="bold" color="white">
                                     {ganttSettings.separators.field}
                                 </Typography>
                             </Grid>
                         )}
 
                         <Grid item>
-                            <Tooltip
-                                title={`${fieldName} (${entityTemplate.displayName})`}
-                                placement='top'
-                                disableHoverListener={expanded}
-                                arrow
-                            >
+                            <Tooltip title={`${fieldName} (${entityTemplate.displayName})`} placement="top" disableHoverListener={expanded} arrow>
                                 <Typography
                                     fontSize={14}
                                     fontWeight="bold"
@@ -53,9 +48,9 @@ export const PureFieldsDisplay: React.FC<IPureFieldsDisplayProps> = ({ fields, e
                                     {`${expanded ? `${fieldName}:` : ''} ${formatToString(entity.properties[field], type, format)}`}
                                 </Typography>
                             </Tooltip>
-                        </Grid >
+                        </Grid>
                     </Fragment>
-                )
+                );
             })}
         </>
     );

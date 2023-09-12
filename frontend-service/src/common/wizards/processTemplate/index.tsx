@@ -45,13 +45,7 @@ const stepsComponents: StepsType<ProcessTemplateWizardValues> = [
     },
     {
         label: i18next.t('wizard.processTemplate.otherDetails'),
-        component: (props, { isEditMode, setBlock }) => (
-            <AddDetailsFields
-                {...props}
-                isEditMode={isEditMode}
-                setBlock={setBlock}
-            />
-        ),
+        component: (props, { isEditMode, setBlock }) => <AddDetailsFields {...props} isEditMode={isEditMode} setBlock={setBlock} />,
         validationSchema: addDetailsFieldsSchema,
     },
     {

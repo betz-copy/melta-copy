@@ -1,8 +1,8 @@
-import React, { CSSProperties } from "react";
-import IconButtonWithPopover from "./IconButtonWithPopover";
-import i18next from "i18next";
-import { toast } from "react-toastify";
+import React, { CSSProperties } from 'react';
+import i18next from 'i18next';
+import { toast } from 'react-toastify';
 import { LinkOutlined as CopyUrlIcon } from '@mui/icons-material';
+import IconButtonWithPopover from './IconButtonWithPopover';
 
 interface ICopyUrlButtonProps {
     style?: CSSProperties;

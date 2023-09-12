@@ -7,6 +7,9 @@ import {
     VisibilityOff as VisibilityOffIcon,
 } from '@mui/icons-material';
 import { NavLink } from 'react-router-dom';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
+import i18next from 'i18next';
 import { CustomIcon } from '../../../common/CustomIcon';
 import { IEntity } from '../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
@@ -15,9 +18,6 @@ import { EntityDisableCheckbox } from '../../Entity/components/EntityDisableChec
 import { EntityDates } from '../../Entity/components/EntityDates';
 import { BlueTitle } from '../../../common/BlueTitle';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
-import i18next from 'i18next';
 
 interface EntityCardProps {
     entity: IEntity;

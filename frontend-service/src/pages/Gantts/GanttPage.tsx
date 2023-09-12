@@ -1,8 +1,13 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { useNavigate, useParams } from 'react-router-dom';
-import { deleteGantt, getGanttById, updateGantt } from '../../services/ganttsService';
 import { CircularProgress, Grid } from '@mui/material';
+import { toast } from 'react-toastify';
+import i18next from 'i18next';
+import { AxiosError } from 'axios';
+import cloneDeep from 'lodash.clonedeep';
+import { Form, Formik } from 'formik';
+import { deleteGantt, getGanttById, updateGantt } from '../../services/ganttsService';
 import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
 import { GanttSideBar } from './SideBar';
 import { ganttValidationSchema, getScheduleComponentResourceData } from '../../utils/gantts';
@@ -11,12 +16,7 @@ import { environment } from '../../globals';
 import { Gantt } from './Gantt';
 import { GanttsTopBar } from './TopBar';
 import { IBasicGantt } from '../../interfaces/gantts';
-import { toast } from 'react-toastify';
-import i18next from 'i18next';
-import { AxiosError } from 'axios';
 import { ErrorToast } from '../../common/ErrorToast';
-import cloneDeep from 'lodash.clonedeep';
-import { Form, Formik } from 'formik';
 
 const { ganttSettings } = environment;
 
@@ -47,7 +47,7 @@ const GanttPage: React.FC<IGanttPageProps> = ({ setTitle }) => {
         (params: Parameters<typeof updateGantt>) => updateGantt(...params),
         {
             onSuccess: (updatedGantt) => {
-                queryClient.setQueryData(queryKey, updatedGantt)
+                queryClient.setQueryData(queryKey, updatedGantt);
                 setEdit(false);
                 toast.success(i18next.t('gantts.actions.updatedSuccessfully'));
             },
@@ -56,20 +56,17 @@ const GanttPage: React.FC<IGanttPageProps> = ({ setTitle }) => {
             },
         },
     );
-    const { mutateAsync: deleteGanttMutateAsync, isLoading: isDeleteGanttLoading } = useMutation(
-        (id: string) => deleteGantt(id),
-        {
-            onSuccess: () => {
-                navigate('/gantts')
-                toast.success(i18next.t('gantts.actions.deletedSuccessfully'));
-            },
-            onError: (error: AxiosError) => {
-                toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('gantts.actions.failedToDelete')} />);
-            },
+    const { mutateAsync: deleteGanttMutateAsync, isLoading: isDeleteGanttLoading } = useMutation((id: string) => deleteGantt(id), {
+        onSuccess: () => {
+            navigate('/gantts');
+            toast.success(i18next.t('gantts.actions.deletedSuccessfully'));
         },
-    );
+        onError: (error: AxiosError) => {
+            toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('gantts.actions.failedToDelete')} />);
+        },
+    });
 
-    if (!gantt || !resources) return <CircularProgress />
+    if (!gantt || !resources) return <CircularProgress />;
 
     return (
         <Formik<IBasicGantt>
@@ -93,7 +90,7 @@ const GanttPage: React.FC<IGanttPageProps> = ({ setTitle }) => {
                         isLoading={isUpdateGanttLoading || isDeleteGanttLoading}
                     />
 
-                    <Grid container wrap='nowrap' position='relative' alignItems="stretch" height="94vh">
+                    <Grid container wrap="nowrap" position="relative" alignItems="stretch" height="94vh">
                         <Grid item>
                             <Gantt gantt={gantt} resources={resources} />
                         </Grid>
@@ -108,10 +105,10 @@ const GanttPage: React.FC<IGanttPageProps> = ({ setTitle }) => {
                                 isLoading={isUpdateGanttLoading || isDeleteGanttLoading}
                             />
                         </Grid>
-                    </Grid >
+                    </Grid>
                 </Form>
             )}
-        </Formik >
+        </Formik>
     );
 };
 

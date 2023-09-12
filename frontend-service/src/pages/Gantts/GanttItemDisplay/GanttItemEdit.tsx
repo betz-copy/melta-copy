@@ -1,14 +1,14 @@
 import React, { useMemo } from 'react';
 import { Button, Grid } from '@mui/material';
 import { FieldArray, FormikProps } from 'formik';
-import { IBasicGantt, IGanttItem } from '../../../interfaces/gantts';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { useQueryClient } from 'react-query';
 import i18next from 'i18next';
+import { IBasicGantt, IGanttItem } from '../../../interfaces/gantts';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { FormikAutoComplete } from '../../../common/inputs/FormikAutoComplete';
-import { filteredMap } from '../../../utils/filteredMap';
 import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
 import { ConnectionIcon } from './ConnectionIcon.styled';
+import { getGanttItemEditDetails } from '../../../utils/gantts';
 
 interface IGanttItemEditProps {
     ganttItem: IGanttItem;
@@ -18,7 +18,7 @@ interface IGanttItemEditProps {
 }
 
 export const GanttItemEdit: React.FC<IGanttItemEditProps> = ({ ganttItem, index, formik, connectedEntityTemplate }) => {
-    const { values, setFieldValue } = formik
+    const { values, setFieldValue } = formik;
 
     const queryClient = useQueryClient();
 
@@ -27,27 +27,10 @@ export const GanttItemEdit: React.FC<IGanttItemEditProps> = ({ ganttItem, index,
 
     const entityTemplate = entityTemplates.get(ganttItem.entityTemplate.id);
 
-    const { entityTemplateDateFields, relevantRelationshipIds } = useMemo(() => {
-        if (!entityTemplate) return {};
-
-        const entityTemplateDateFields = filteredMap(
-            Object.entries(entityTemplate.properties.properties),
-            ([property, value]) => ({
-                include: value.type === 'string' && value.format === 'date' || value.format === 'date-time',
-                value: property
-            })
-        )
-
-        const relevantRelationshipIds = filteredMap(
-            Array.from(relationshipTemplates.values()),
-            (relationShip) => ({
-                include: relationShip.sourceEntityId === entityTemplate._id || relationShip.destinationEntityId === entityTemplate._id,
-                value: relationShip._id
-            })
-        )
-
-        return { entityTemplateDateFields, relevantRelationshipIds }
-    }, [entityTemplate]);
+    const { entityTemplateDateFields, relevantRelationshipIds } = useMemo(
+        () => getGanttItemEditDetails(relationshipTemplates, entityTemplate),
+        [entityTemplate, relationshipTemplates],
+    );
 
     const itemKey = `items[${index}]`;
     const itemEntityTEmplateKey = `${itemKey}.entityTemplate`;
@@ -65,11 +48,11 @@ export const GanttItemEdit: React.FC<IGanttItemEditProps> = ({ ganttItem, index,
                     options={Array.from(entityTemplates.keys())}
                     label={i18next.t('entityTemplate')}
                     getOptionLabel={(option) => entityTemplates.get(option)?.displayName || ''}
-                    getOptionDisabled={(option) => values.items.some(item => item.entityTemplate.id === option)}
+                    getOptionDisabled={(option) => values.items.some((item) => item.entityTemplate.id === option)}
                     onChange={(value) => {
                         setFieldValue(itemKey, {
                             entityTemplate: { id: value, startDateField: '', endDateField: '', fieldsToShow: [] },
-                        } as IGanttItem)
+                        } as IGanttItem);
                     }}
                 />
             </Grid>
@@ -111,74 +94,81 @@ export const GanttItemEdit: React.FC<IGanttItemEditProps> = ({ ganttItem, index,
             </Grid>
 
             <Grid item container direction="column" alignItems="stretch" spacing={1} padding="rem" width="100%">
-                {ganttItem.connectedEntityTemplate ? (<>
-                    <Grid item alignSelf='center'>
-                        <ConnectionIcon />
-                    </Grid>
+                {ganttItem.connectedEntityTemplate ? (
+                    <>
+                        <Grid item alignSelf="center">
+                            <ConnectionIcon />
+                        </Grid>
 
-                    <Grid item>
-                        <FormikAutoComplete
-                            formik={formik}
-                            formikField={`${itemConnectedEntityTemplateKey}.relationshipTemplateId`}
-                            options={relevantRelationshipIds || []}
-                            label={i18next.t('relationshipTemplate')}
-                            getOptionLabel={(option) => {
-                                const relationShip = relationshipTemplates.get(option)
-                                if (!relationShip) return ''
+                        <Grid item>
+                            <FormikAutoComplete
+                                formik={formik}
+                                formikField={`${itemConnectedEntityTemplateKey}.relationshipTemplateId`}
+                                options={relevantRelationshipIds || []}
+                                label={i18next.t('relationshipTemplate')}
+                                getOptionLabel={(option) => {
+                                    const relationShip = relationshipTemplates.get(option);
+                                    if (!relationShip) return '';
 
-                                const sourceEntityTemplate = entityTemplates.get(relationShip.sourceEntityId);
-                                if (!sourceEntityTemplate) return ''
+                                    const sourceEntityTemplate = entityTemplates.get(relationShip.sourceEntityId);
+                                    if (!sourceEntityTemplate) return '';
 
-                                const destinationEntityTemplate = entityTemplates.get(relationShip.destinationEntityId);
-                                if (!destinationEntityTemplate) return ''
+                                    const destinationEntityTemplate = entityTemplates.get(relationShip.destinationEntityId);
+                                    if (!destinationEntityTemplate) return '';
 
-                                return `${relationShip.displayName} (${sourceEntityTemplate.displayName} > ${destinationEntityTemplate.displayName})`
-                            }}
-                            disabled={!entityTemplate}
-                            onChange={(value) => {
+                                    return `${relationShip.displayName} (${sourceEntityTemplate.displayName} > ${destinationEntityTemplate.displayName})`;
+                                }}
+                                disabled={!entityTemplate}
+                                onChange={(value) => {
+                                    setFieldValue(itemConnectedEntityTemplateKey, {
+                                        relationshipTemplateId: value,
+                                        fieldsToShow: [],
+                                    } as IGanttItem['connectedEntityTemplate']);
+                                }}
+                            />
+                        </Grid>
+                        <Grid item>
+                            <FormikAutoComplete
+                                multiple
+                                hideSelectedOptions
+                                formik={formik}
+                                formikField={`${itemConnectedEntityTemplateKey}.fieldsToShow`}
+                                options={connectedEntityTemplateFields || []}
+                                label={i18next.t('gantts.fieldsToShow')}
+                                getOptionLabel={(option) => connectedEntityTemplate?.properties.properties[option]?.title || ''}
+                                disabled={!connectedEntityTemplate}
+                            />
+                        </Grid>
+
+                        <Grid item alignSelf="center">
+                            <Button onClick={() => setFieldValue(itemConnectedEntityTemplateKey, undefined)}>
+                                {i18next.t('gantts.actions.deleteConnectedEntityTemplate')}
+                            </Button>
+                        </Grid>
+                    </>
+                ) : (
+                    <Grid item alignSelf="center">
+                        <Button
+                            onClick={() =>
                                 setFieldValue(itemConnectedEntityTemplateKey, {
-                                    relationshipTemplateId: value,
-                                    fieldsToShow: []
+                                    relationshipTemplateId: '',
+                                    fieldsToShow: [],
                                 } as IGanttItem['connectedEntityTemplate'])
-                            }}
-                        />
-                    </Grid>
-                    <Grid item>
-                        <FormikAutoComplete
-                            multiple
-                            hideSelectedOptions
-                            formik={formik}
-                            formikField={`${itemConnectedEntityTemplateKey}.fieldsToShow`}
-                            options={connectedEntityTemplateFields || []}
-                            label={i18next.t('gantts.fieldsToShow')}
-                            getOptionLabel={(option) => connectedEntityTemplate?.properties.properties[option]?.title || ''}
-                            disabled={!connectedEntityTemplate}
-                        />
-                    </Grid>
-
-                    <Grid item alignSelf="center">
-                        <Button onClick={() => setFieldValue(itemConnectedEntityTemplateKey, undefined)}>
-                            {i18next.t('gantts.actions.deleteConnectedEntityTemplate')}
-                        </Button>
-                    </Grid>
-                </>) : (
-                    <Grid item alignSelf="center">
-                        <Button onClick={() => setFieldValue(itemConnectedEntityTemplateKey, { relationshipTemplateId: '', fieldsToShow: [] } as IGanttItem['connectedEntityTemplate'])}>
+                            }
+                        >
                             {i18next.t('gantts.actions.addConnectedEntityTemplate')}
                         </Button>
                     </Grid>
                 )}
 
-                <FieldArray name='items' validateOnChange={false}>
+                <FieldArray name="items" validateOnChange={false}>
                     {({ remove }) => (
                         <Grid item alignSelf="center">
-                            <Button onClick={() => remove(index)}>
-                                {i18next.t('gantts.actions.deleteItem')}
-                            </Button>
+                            <Button onClick={() => remove(index)}>{i18next.t('gantts.actions.deleteItem')}</Button>
                         </Grid>
                     )}
                 </FieldArray>
             </Grid>
-        </Grid >
-    )
+        </Grid>
+    );
 };

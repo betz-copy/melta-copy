@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Box, Grid, IconButton } from '@mui/material';
 import i18next from 'i18next';
 import { toast } from 'react-toastify';
+import { AddCircle as AddCircleIcon } from '@mui/icons-material';
+import { useQueryClient } from 'react-query';
 import { ViewingBox } from '../SystemManagement/components/ViewingBox';
 import { InfiniteScroll } from '../../common/InfiniteScroll';
 import { GanttsCard } from './Card';
@@ -9,9 +11,7 @@ import { searchGantts } from '../../services/ganttsService';
 import { IGantt } from '../../interfaces/gantts';
 import { environment } from '../../globals';
 import { GlobalSearchBar } from '../../common/EntitiesPage/Headline';
-import { AddCircle as AddCircleIcon } from '@mui/icons-material';
 import { CreateGanttDialog } from './CreateGanttDialog';
-import { useQueryClient } from 'react-query';
 import { IPermissionsOfUser } from '../../services/permissionsService';
 
 const { infiniteScrollPageCount } = environment.gantts;
@@ -34,14 +34,15 @@ const GanttsPage: React.FC<IGanttsPageProps> = ({ setTitle }) => {
     return (
         <>
             <Grid container direction="column" padding="0 4rem">
-                <Grid container item justifyContent='space-between' padding='0.5rem'>
+                <Grid container item justifyContent="space-between" padding="0.5rem">
                     <Box>
-                        <GlobalSearchBar onSearch={(searchValue) => setSearch(searchValue ? searchValue : undefined)} />
+                        <GlobalSearchBar onSearch={(searchValue) => setSearch(searchValue || undefined)} />
                     </Box>
-                    {myPermissions.templatesManagementId &&
+                    {myPermissions.templatesManagementId && (
                         <IconButton onClick={() => setGanttDialogOpen(true)}>
                             <AddCircleIcon color="primary" fontSize="large" />
-                        </IconButton>}
+                        </IconButton>
+                    )}
                 </Grid>
 
                 <ViewingBox minHeight="82vh">
@@ -59,12 +60,12 @@ const GanttsPage: React.FC<IGanttsPageProps> = ({ setTitle }) => {
                         {(gantt) => <GanttsCard gantt={gantt} />}
                     </InfiniteScroll>
                 </ViewingBox>
-            </Grid >
+            </Grid>
 
             <CreateGanttDialog
                 open={ganttDialogOpen}
                 onClose={() => {
-                    setGanttDialogOpen(false)
+                    setGanttDialogOpen(false);
                     queryClient.invalidateQueries(queryKey);
                 }}
             />

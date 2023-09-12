@@ -27,7 +27,7 @@ export const FormikAutoComplete = <T,>({
     getOptionLabel,
     getOptionDisabled,
     onChange,
-    style
+    style,
 }: IFormikAutoCompleteProps<T>) => {
     const error = getIn(touched, formikField) && getIn(errors, formikField);
 
@@ -36,30 +36,19 @@ export const FormikAutoComplete = <T,>({
             fullWidth
             options={options}
             value={getIn(values, formikField)}
-            onChange={(_, newValue) => onChange ? onChange(newValue) : setFieldValue(formikField, newValue)}
+            onChange={(_, newValue) => (onChange ? onChange(newValue) : setFieldValue(formikField, newValue))}
             getOptionLabel={getOptionLabel}
             getOptionDisabled={getOptionDisabled}
             disabled={disabled}
             multiple={multiple}
             filterSelectedOptions={hideSelectedOptions}
             renderInput={(params) => (
-                <TextField
-                    {...params}
-                    id={formikField}
-                    name={formikField}
-                    error={Boolean(error)}
-                    helperText={error}
-                    label={label}
-                    sx={style}
-                />
+                <TextField {...params} id={formikField} name={formikField} error={Boolean(error)} helperText={error} label={label} sx={style} />
             )}
             renderTags={(tags, getTagProps) =>
                 tags.map((option, index) => (
-                    <Chip
-                        {...getTagProps({ index })}
-                        variant="outlined"
-                        label={getOptionLabel ? getOptionLabel(option) : option}
-                    />
+                    // eslint-disable-next-line react/jsx-key
+                    <Chip {...getTagProps({ index })} variant="outlined" label={getOptionLabel ? getOptionLabel(option) : option} />
                 ))
             }
         />

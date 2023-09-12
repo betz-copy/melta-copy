@@ -150,4 +150,3 @@ export const processTemplateUniquePropertiesSteps = (value, context: Yup.TestCon
 
     return true;
 };
-
