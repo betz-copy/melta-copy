@@ -196,7 +196,7 @@ const RuleBreachTable = forwardRef<
                 columnDefs={columnDefs}
                 rowModelType="serverSide"
                 serverSideDatasource={rowDataSource}
-                cacheBlockSize={50}
+                cacheBlockSize={10}
                 maxBlocksInCache={1000}
                 pagination
                 paginationPageSize={pageRowCount}
