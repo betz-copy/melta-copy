@@ -5,6 +5,14 @@
 3. Add the following to crontab (by running crontab -e):
 
     NEO4J_BACKUPS_DIR=/data/neo4j-melta/neo4j-enterprise-4.4.18/dumps
-    0 0 * * * ($NEO4J_BACKUPS_DIR/cronjob-backup.sh $NEO4J_BACKUPS_DIR/daily 7 >> $NEO4J_BACKUPS_DIR/cronjob-backups-logs-daily.txt 2>&1) 
-    2 0 * * 0 ($NEO4J_BACKUPS_DIR/cronjob-backup.sh $NEO4J_BACKUPS_DIR/weekly 31 >> $NEO4J_BACKUPS_DIR/cronjob-backups-logs-weekly.txt 2>&1)
-    4 0 1 * * ($NEO4J_BACKUPS_DIR/cronjob-backup.sh $NEO4J_BACKUPS_DIR/monthy 120 >> $NEO4J_BACKUPS_DIR/cronjob-backups-logs-monthy.txt 2>&1)
+
+    # 6 days + 1 hour [mins]. to keep only 6 backups backwards (1 hour to make sure to not delete the backup which was created exactly 6 days ago). overall 7 daily backups
+    daily_duration_mins_to_delete=$(expr 6 \* 24 \* 60 + 60)
+    # 3*7 days + 1 hour [mins]. to keep only 3 backups backwards (1 hour to make sure to not delete the backup which was created exactly 3 weeks ago). overall 4 weekly backups
+    weekly_duration_mins_to_delete=$(expr 3 \* 7 \* 24 \* 60 + 60)
+    # 3 * 3monthly + 1 hour [mins]. to keep only 3 backups backwards (1 hour to make sure to not delete the backup which was created exactly 3 months ago). overall 4 monthly backups
+    monthly_duration_mins_to_delete=$(expr 3 \* 28 \* 24 \* 60 + 60)
+
+    0 0 * * * ($NEO4J_BACKUPS_DIR/cronjob-backup.sh $NEO4J_BACKUPS_DIR/daily $daily_duration_mins_to_delete >> $NEO4J_BACKUPS_DIR/cronjob-backups-logs-daily.txt 2>&1) 
+    2 0 * * 0 ($NEO4J_BACKUPS_DIR/cronjob-backup.sh $NEO4J_BACKUPS_DIR/weekly $weekly_duration_mins_to_delete >> $NEO4J_BACKUPS_DIR/cronjob-backups-logs-weekly.txt 2>&1)
+    4 0 1 * * ($NEO4J_BACKUPS_DIR/cronjob-backup.sh $NEO4J_BACKUPS_DIR/monthy $monthly_duration_mins_to_delete >> $NEO4J_BACKUPS_DIR/cronjob-backups-logs-monthy.txt 2>&1)
