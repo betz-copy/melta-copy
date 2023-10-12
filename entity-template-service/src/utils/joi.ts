@@ -15,6 +15,14 @@ ajv.addKeyword({
 });
 const stringFormats = ['date', 'date-time', 'email', 'fileId'];
 const allowedJSONSchemaTypes = ['string', 'number', 'boolean'];
+ajv.addKeyword({
+    keyword: 'serialStarter',
+    type: 'number',
+});
+ajv.addKeyword({
+    keyword: 'serialCurrent',
+    type: 'number',
+});
 
 const propertiesArraySchema = Joi.array()
     .items(
@@ -35,6 +43,8 @@ const propertiesArraySchema = Joi.array()
                 .valid('day', 'week', 'twoWeeks')
                 .when('format', { not: Joi.valid('date', 'date-time'), then: Joi.forbidden() })
                 .when('type', { not: 'string', then: Joi.forbidden() }),
+            serialStarter: Joi.number().when('type', { not: 'number', then: Joi.forbidden() }),
+            serialCurrent: Joi.number().when('type', { not: 'number', then: Joi.forbidden() }),
         }).nand('pattern', 'enum'),
     )
     .unique((a, b) => a.title === b.title);
@@ -79,8 +89,8 @@ export const innerPropertiesSchema = Joi.object()
         type: Joi.string().valid('object').required(),
         properties: Joi.object()
             .custom((value) => {
-                const { error: propertiesError } = propertiesArraySchema.validate(Object.values(value)); // titles are unique
-                const { error: keyError } = propertiesKeysArraySchema.validate(Object.keys(value));
+                const { error: propertiesError } = propertiesArraySchema.validate(Object.values(value), { convert: false }); // titles are unique
+                const { error: keyError } = propertiesKeysArraySchema.validate(Object.keys(value), { convert: false });
 
                 if (propertiesError) {
                     throw propertiesError;

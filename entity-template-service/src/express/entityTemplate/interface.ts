@@ -6,6 +6,8 @@ export interface IEntitySingleProperty {
     pattern?: string;
     patternCustomErrorMessage?: string;
     dateNotification?: 'day' | 'week' | 'twoWeeks';
+    serialStarter?: number;
+    serialCurrent?: number;
 }
 
 export interface IProperties {
