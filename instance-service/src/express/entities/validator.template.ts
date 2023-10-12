@@ -26,6 +26,15 @@ ajv.addKeyword({
     type: 'string',
 });
 
+ajv.addKeyword({
+    keyword: 'serialStarter',
+    type: 'number',
+});
+ajv.addKeyword({
+    keyword: 'serialCurrent',
+    type: 'number',
+});
+
 const getEntityTemplateByIdOrThrowValidationError = async (templateId: string) => {
     const { result: entityTemplate, err: getEntityTemplateByIdErr } = await trycatch(() =>
         EntityTemplateManagerService.getEntityTemplateById(templateId),
@@ -76,7 +85,6 @@ export const addStringFieldsAndNormalizeDateValues = (
 
         const propertyValue = entityProperties[key];
         const { type, format } = value;
-
         // For Neo4j fulltext search (supports only string properties)
         if (type !== 'string') {
             normalizedEntity[`${key}${neo4j.stringPropertySuffix}`] = String(propertyValue);
