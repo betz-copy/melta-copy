@@ -26,6 +26,8 @@ interface IEntitySingleProperty {
     pattern?: string;
     patternCustomErrorMessage?: string;
     dateNotification?: string;
+    serialStarter?: number;
+    serialCurrent?: number;
 }
 
 export interface IEntityTemplate {

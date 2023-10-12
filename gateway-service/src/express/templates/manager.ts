@@ -380,10 +380,15 @@ export class TemplatesManager {
                 const newValue = updatedTemplateData.properties.properties[key];
                 if (!newValue) throw new ServiceError(400, 'can not remove property');
 
+                if (value.serialCurrent !== undefined) {
+                    // eslint-disable-next-line no-param-reassign
+                    updatedTemplateData.properties.properties[key].serialCurrent = value.serialCurrent;
+                }
                 if (value.type !== newValue.type) throw new ServiceError(400, 'can not change property type');
                 if (value.format !== newValue.format) throw new ServiceError(400, 'can not change property format');
                 if (value.enum && !value.enum?.every((val) => newValue.enum?.includes(val)))
                     throw new ServiceError(400, 'can not remove options from enum');
+                if (value.serialStarter !== newValue.serialStarter) throw new ServiceError(400, 'can not change property serial starter');
             });
         }
 

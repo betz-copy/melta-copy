@@ -101,10 +101,33 @@ export class InstancesManager {
 
     static async createEntityInstance(instanceData: IEntity, files: Express.Multer.File[], user: Express.User) {
         const fileProperties = await InstancesManager.uploadInstanceFiles(files);
-        const entity = await InstanceManagerService.createEntityInstance({
-            templateId: instanceData.templateId,
-            properties: { ...fileProperties, ...instanceData.properties },
+        const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(instanceData.templateId);
+        let templateUpdated = false;
+
+        const updatedProperties = {
+            ...entityTemplate.properties.properties,
+        };
+        const newInstanceData: IEntity = { templateId: instanceData.templateId, properties: { ...fileProperties, ...instanceData.properties } };
+
+        Object.keys(entityTemplate.properties.properties).forEach((key) => {
+            if (entityTemplate.properties.properties[key].serialCurrent !== undefined) {
+                newInstanceData.properties[key] = Number(entityTemplate.properties.properties[key].serialCurrent);
+
+                const serialNum: number = Number(entityTemplate.properties.properties[key].serialCurrent) + 1;
+                const newSerialNumberObj = { ...entityTemplate.properties.properties[key], serialCurrent: serialNum };
+                updatedProperties[key] = newSerialNumberObj;
+                templateUpdated = true;
+            }
         });
+        if (templateUpdated)
+            await EntityTemplateManagerService.updateEntityTemplate(instanceData.templateId, {
+                properties: {
+                    ...entityTemplate.properties,
+                    properties: updatedProperties,
+                },
+            });
+
+        const entity = await InstanceManagerService.createEntityInstance(newInstanceData);
 
         await ActivityLogManagerService.createActivityLog({
             action: 'CREATE_ENTITY',
@@ -166,14 +189,10 @@ export class InstancesManager {
     }
 
     static async duplicateEntityInstance(id: string, instanceData: IEntity, files: Express.Multer.File[], user: Express.User) {
-        const uploadedFilesProperties = await InstancesManager.uploadInstanceFiles(files);
-
         const currentEntity = await InstanceManagerService.getEntityInstanceById(id);
         const currentEntityTemplate = await EntityTemplateManagerService.getEntityTemplateById(currentEntity.templateId);
-
         const filePropertiesKeys = InstancesManager.getFilePropertiesKeysByTemplate(currentEntityTemplate);
         const filesEntries = InstancesManager.getCurrentEntityFilesEntries(currentEntity.properties, filePropertiesKeys);
-
         const filesEntriesToDuplicate = filesEntries.filter(([_key, value]) => Object.values(instanceData.properties).includes(value));
 
         const duplicatedFiles = await duplicateFiles(filesEntriesToDuplicate.map(([_key, value]) => value));
@@ -182,25 +201,17 @@ export class InstancesManager {
 
         const duplicatedFilesEntriesProperties = Object.fromEntries(duplicatedFilesEntries);
 
-        const entity = await InstanceManagerService.createEntityInstance({
+        const duplicatedInstanceData: IEntity = {
             templateId: instanceData.templateId,
-            properties: { ...uploadedFilesProperties, ...instanceData.properties, ...duplicatedFilesEntriesProperties },
-        });
+            properties: { ...instanceData.properties, ...duplicatedFilesEntriesProperties },
+        };
 
-        await ActivityLogManagerService.createActivityLog({
-            action: 'CREATE_ENTITY',
-            entityId: entity.properties._id,
-            metadata: {},
-            timestamp: new Date(),
-            userId: user.id,
-        });
-
-        return entity;
+        return this.createEntityInstance(duplicatedInstanceData, files, user);
     }
 
     static async updateEntityInstance(
         id: string,
-        instanceData: IEntity,
+        updatedInstanceData: IEntity,
         files: Express.Multer.File[],
         ignoredRules: IBrokenRule[],
         userId: string,
@@ -209,20 +220,28 @@ export class InstancesManager {
         const uploadedFilesProperties = await InstancesManager.uploadInstanceFiles(files);
         const currentEntity = await InstanceManagerService.getEntityInstanceById(id);
 
+        const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(currentEntity.templateId);
+
+        Object.keys(entityTemplate.properties.properties).forEach((key) => {
+            if (entityTemplate.properties.properties[key].serialCurrent !== undefined) {
+                if (updatedInstanceData.properties[key] !== currentEntity.properties[key]) {
+                    throw new ServiceError(400, "can't change serial properties");
+                }
+            }
+        });
+
         const updatedInstance = await InstanceManagerService.updateEntityInstance(
             id,
             {
-                templateId: instanceData.templateId,
-                properties: { ...uploadedFilesProperties, ...instanceData.properties },
+                templateId: updatedInstanceData.templateId,
+                properties: { ...uploadedFilesProperties, ...updatedInstanceData.properties },
             },
             ignoredRules,
         ).catch(InstancesManager.handleBrokenRulesError);
 
-        await InstancesManager.deleteUnusedFiles(currentEntity, instanceData, files).catch(() =>
+        await InstancesManager.deleteUnusedFiles(currentEntity, updatedInstanceData, files).catch(() =>
             console.log(`failed to delete files of instanceId ${id}`),
         );
-
-        const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(currentEntity.templateId);
 
         const updatedFields: Record<string, any> = {};
         const activityLogUpdatedFields: IUpdatedFields[] = [];
@@ -267,7 +286,7 @@ export class InstancesManager {
         await ActivityLogManagerService.createActivityLog({
             action: 'UPDATE_ENTITY',
             metadata: { updatedFields: activityLogUpdatedFields },
-            entityId: instanceData.properties._id,
+            entityId: updatedInstanceData.properties._id,
             timestamp: new Date(),
             userId,
         });
