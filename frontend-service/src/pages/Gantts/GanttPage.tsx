@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { CircularProgress, Grid } from '@mui/material';
@@ -20,11 +20,7 @@ import { ErrorToast } from '../../common/ErrorToast';
 
 const { ganttSettings } = environment;
 
-interface IGanttPageProps {
-    setTitle: React.Dispatch<React.SetStateAction<string>>;
-}
-
-const GanttPage: React.FC<IGanttPageProps> = ({ setTitle }) => {
+const GanttPage: React.FC = () => {
     const { ganttId } = useParams();
 
     const navigate = useNavigate();
@@ -38,8 +34,6 @@ const GanttPage: React.FC<IGanttPageProps> = ({ setTitle }) => {
 
     const queryKey = ['getGantt', ganttId];
     const { data: gantt } = useQuery(queryKey, () => getGanttById(ganttId!));
-
-    useEffect(() => setTitle(gantt?.name || ''), [gantt, setTitle]);
 
     const resources = useMemo(() => gantt && getScheduleComponentResourceData(gantt.items, entityTemplates), [gantt, entityTemplates]);
 

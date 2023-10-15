@@ -33,7 +33,7 @@ export const GanttItemEdit: React.FC<IGanttItemEditProps> = ({ ganttItem, index,
     );
 
     const itemKey = `items[${index}]`;
-    const itemEntityTEmplateKey = `${itemKey}.entityTemplate`;
+    const itemEntityTemplateKey = `${itemKey}.entityTemplate`;
     const itemConnectedEntityTemplateKey = `${itemKey}.connectedEntityTemplate`;
 
     const entityTemplateFields = entityTemplate && Object.keys(entityTemplate.properties.properties);
@@ -44,7 +44,7 @@ export const GanttItemEdit: React.FC<IGanttItemEditProps> = ({ ganttItem, index,
             <Grid item>
                 <FormikAutoComplete
                     formik={formik}
-                    formikField={`${itemEntityTEmplateKey}.id`}
+                    formikField={`${itemEntityTemplateKey}.id`}
                     options={Array.from(entityTemplates.keys())}
                     label={i18next.t('entityTemplate')}
                     getOptionLabel={(option) => entityTemplates.get(option)?.displayName || ''}
@@ -60,7 +60,7 @@ export const GanttItemEdit: React.FC<IGanttItemEditProps> = ({ ganttItem, index,
             <Grid item>
                 <FormikAutoComplete
                     formik={formik}
-                    formikField={`${itemEntityTEmplateKey}.startDateField`}
+                    formikField={`${itemEntityTemplateKey}.startDateField`}
                     options={entityTemplateDateFields || []}
                     label={i18next.t('gantts.startDateField')}
                     getOptionLabel={(option) => entityTemplate?.properties.properties[option]?.title || ''}
@@ -71,7 +71,7 @@ export const GanttItemEdit: React.FC<IGanttItemEditProps> = ({ ganttItem, index,
             <Grid item>
                 <FormikAutoComplete
                     formik={formik}
-                    formikField={`${itemEntityTEmplateKey}.endDateField`}
+                    formikField={`${itemEntityTemplateKey}.endDateField`}
                     options={entityTemplateDateFields || []}
                     label={i18next.t('gantts.endDateField')}
                     getOptionLabel={(option) => entityTemplate?.properties.properties[option]?.title || ''}
@@ -85,7 +85,7 @@ export const GanttItemEdit: React.FC<IGanttItemEditProps> = ({ ganttItem, index,
                     multiple
                     hideSelectedOptions
                     formik={formik}
-                    formikField={`${itemEntityTEmplateKey}.fieldsToShow`}
+                    formikField={`${itemEntityTemplateKey}.fieldsToShow`}
                     options={entityTemplateFields || []}
                     label={i18next.t('gantts.fieldsToShow')}
                     getOptionLabel={(option) => entityTemplate?.properties.properties[option]?.title || ''}

@@ -149,7 +149,7 @@ const Main = () => {
                                         </>
                                     }
                                 />
-                                <Route path="/gantts/:ganttId" element={<GanttPage setTitle={setTitle} />} />
+                                <Route path="/gantts/:ganttId" element={<GanttPage />} />
                                 <Route path="/processes" element={<ProcessInstancesPage />} />
                                 <Route path="/unavailable" element={<Unavailable setTitle={setTitle} />} />
                                 <Route

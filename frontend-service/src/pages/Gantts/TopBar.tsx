@@ -39,7 +39,7 @@ export const GanttsTopBar: React.FC<IGanttTopBar> = ({ title, formik, onEdit, on
                 condition={edit}
                 isFalse={
                     <Box>
-                        <BlueTitle title={title} component="h4" variant="h4" />
+                        <BlueTitle title={title} component="h4" variant="h4" style={{ whiteSpace: 'nowrap' }} />
                     </Box>
                 }
                 isTrue={

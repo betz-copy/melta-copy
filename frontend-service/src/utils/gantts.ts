@@ -143,9 +143,9 @@ export const getGanttItemEditDetails = (relationshipTemplates: IRelationshipTemp
         value: property,
     }));
 
-    const relevantRelationshipIds = filteredMap(Array.from(relationshipTemplates.values()), (relationShip) => ({
-        include: relationShip.sourceEntityId === entityTemplate._id || relationShip.destinationEntityId === entityTemplate._id,
-        value: relationShip._id,
+    const relevantRelationshipIds = filteredMap(Array.from(relationshipTemplates.values()), (relationship) => ({
+        include: relationship.sourceEntityId === entityTemplate._id || relationship.destinationEntityId === entityTemplate._id,
+        value: relationship._id,
     }));
 
     return { entityTemplateDateFields, relevantRelationshipIds };
@@ -153,13 +153,13 @@ export const getGanttItemEditDetails = (relationshipTemplates: IRelationshipTemp
 
 export const ganttItemValidationSchema = Yup.object({
     entityTemplate: Yup.object({
-        id: Yup.string().required(i18next.t('validation.required')),
-        startDateField: Yup.string().required(i18next.t('validation.required')),
-        endDateField: Yup.string().required(i18next.t('validation.required')),
+        id: Yup.string().nullable().required(i18next.t('validation.required')),
+        startDateField: Yup.string().nullable().required(i18next.t('validation.required')),
+        endDateField: Yup.string().nullable().required(i18next.t('validation.required')),
         fieldsToShow: Yup.array(Yup.string()).min(1, i18next.t('validation.required')),
     }).required(i18next.t('validation.required')),
     connectedEntityTemplate: Yup.object({
-        relationshipTemplateId: Yup.string().required(i18next.t('validation.required')),
+        relationshipTemplateId: Yup.string().nullable().required(i18next.t('validation.required')),
         fieldsToShow: Yup.array(Yup.string()).min(1, i18next.t('validation.required')),
     }).default(undefined),
 });
