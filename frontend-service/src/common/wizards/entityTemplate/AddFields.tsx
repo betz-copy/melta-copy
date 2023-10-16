@@ -14,7 +14,7 @@ import FieldBlock from './FieldBlock';
 import { ErrorToast } from '../../ErrorToast';
 
 const processStringFormats = [...stringFormats, 'entityReference'];
-const validPropertyTypes = [...basePropertyTypes, ...processStringFormats, 'pattern', 'enum'];
+const validPropertyTypes = [...basePropertyTypes, ...processStringFormats, 'pattern', 'enum', 'serialNumber'];
 const dateNotificationTypes: string[] = ['day', 'week', 'twoWeeks'];
 export const propertiesBaseSchema = Yup.object({
     name: Yup.string()
@@ -35,6 +35,12 @@ export const propertiesBaseSchema = Yup.object({
         then: (schema) => schema.required(i18next.t('validation.required')),
     }),
     dateNotification: Yup.string().nullable().oneOf(dateNotificationTypes, i18next.t('validation.mustBeOneOfList')),
+    serialStarter: Yup.number()
+        .typeError(i18next.t('validation.invalidNumberField'))
+        .when('type', {
+            is: 'serialNumber',
+            then: (schema) => schema.min(0, i18next.t('validation.invalidSerialStarter')).required(i18next.t('validation.required')),
+        }),
 });
 
 export const attachmentPropertiesBaseSchema = Yup.object({

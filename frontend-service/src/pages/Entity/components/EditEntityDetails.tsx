@@ -105,6 +105,7 @@ const EditEntityDetails: React.FC<{
                                                         errors={errors.properties ?? {}}
                                                         touched={touched.properties ?? {}}
                                                         setFieldTouched={(field) => setFieldTouched(`properties.${field}`)}
+                                                        isEditMode={true}
                                                     />
                                                 </Box>
                                                 {templateFileKeys.length > 0 && (

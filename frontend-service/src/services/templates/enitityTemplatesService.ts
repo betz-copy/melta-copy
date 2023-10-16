@@ -18,15 +18,16 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
 
     propertiesOrder.forEach((key) => {
         const value = properties.properties[key];
-
         let type = value.format || value.type;
+        if (value.serialStarter !== undefined) {
+            type = 'serialNumber';
+        }
         if (value.enum) {
             type = 'enum';
         }
         if (value.pattern) {
             type = 'pattern';
         }
-
         const property: EntityTemplateFormInputProperties = {
             id: uuid(),
             name: key,
@@ -34,12 +35,13 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
             required: properties.required.includes(key),
             preview: propertiesPreview.includes(key),
             hide: properties.hide.includes(key),
-            unique: uniqueConstraints[0]?.includes(key) ?? false, // UI supports only single unique constraint
+            unique: type !== 'serialNumber' && uniqueConstraints.filter((constraints) => constraints.includes(key)).length > 0, // serials cant be marked unique
             type,
             options: value.enum || [],
             pattern: value.pattern || '',
             patternCustomErrorMessage: value.patternCustomErrorMessage || '',
             dateNotification: value.dateNotification,
+            serialStarter: value.serialStarter,
         };
 
         if (value.format === 'fileId') {
@@ -59,6 +61,7 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
 
 export const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTemplate => {
     const { properties, attachmentProperties, ...restOfProperties } = values;
+    const serialsUniqueConstraints: string[][] = [];
 
     const propertiesOrder: string[] = [];
     const propertiesPreview: string[] = [];
@@ -70,24 +73,31 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTem
         hide: [],
     };
 
-    properties.forEach(({ name, title, type, required, preview, options, pattern, patternCustomErrorMessage, dateNotification, hide, unique }) => {
-        schema.properties[name] = {
-            title,
-            type: basePropertyTypes.includes(type) ? (type as IEntitySingleProperty['type']) : 'string',
-            format: stringFormats.includes(type) ? type : undefined,
-            enum: type === 'enum' ? options : undefined,
-            pattern: type === 'pattern' ? pattern : undefined,
-            patternCustomErrorMessage: type === 'pattern' ? patternCustomErrorMessage : undefined,
-            dateNotification: dateNotification as string | undefined,
-        };
+    properties.forEach(
+        ({ name, title, type, required, preview, options, pattern, patternCustomErrorMessage, dateNotification, serialStarter, hide, unique }) => {
+            schema.properties[name] = {
+                title,
+                type: basePropertyTypes.includes(type) ? (type as IEntitySingleProperty['type']) : type === 'serialNumber' ? 'number' : 'string',
+                format: stringFormats.includes(type) ? type : undefined,
+                enum: type === 'enum' ? options : undefined,
+                pattern: type === 'pattern' ? pattern : undefined,
+                patternCustomErrorMessage: type === 'pattern' ? patternCustomErrorMessage : undefined,
+                dateNotification: dateNotification as string | undefined,
+                serialStarter: type === 'serialNumber' ? serialStarter : undefined,
+                serialCurrent: type === 'serialNumber' ? serialStarter : undefined,
+            };
 
-        propertiesOrder.push(name);
+            propertiesOrder.push(name);
 
-        if (required) schema.required.push(name);
-        if (hide) schema.hide.push(name);
-        if (unique) uniqueConstraint.push(name);
-        if (preview) propertiesPreview.push(name);
-    });
+            if (required) schema.required.push(name);
+            if (hide) schema.hide.push(name);
+            if (unique) uniqueConstraint.push(name);
+            if (preview) propertiesPreview.push(name);
+            if (type === 'serialNumber') {
+                serialsUniqueConstraints.push([name]);
+            }
+        },
+    );
 
     attachmentProperties.forEach(({ name, title, required }) => {
         schema.properties[name] = {
@@ -101,7 +111,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTem
         if (required) schema.required.push(name);
     });
 
-    const uniqueConstraints = uniqueConstraint.length > 0 ? [uniqueConstraint] : [];
+    const uniqueConstraints = uniqueConstraint.length > 0 ? [uniqueConstraint, ...serialsUniqueConstraints] : serialsUniqueConstraints;
 
     return { ...restOfProperties, properties: schema, category: values.category._id, propertiesOrder, propertiesPreview, uniqueConstraints };
 };

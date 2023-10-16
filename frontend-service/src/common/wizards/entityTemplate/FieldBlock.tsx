@@ -56,6 +56,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
         pattern: '',
         patternCustomErrorMessage: '',
         dateNotification: undefined,
+        serialStarter: 0,
     },
 }: React.PropsWithChildren<FieldBlockProps<PropertiesType, Values>>) => {
     // copy of values of formik in order to show changes on inputs fast (formik rerenders are slow)

@@ -30,6 +30,7 @@ export interface EntityTemplateFormInputProperties {
     pattern: string;
     patternCustomErrorMessage: string;
     dateNotification: string | null | undefined;
+    serialStarter: number | undefined;
 }
 export interface EntityTemplateWizardValues
     extends Omit<IEntityTemplatePopulated, 'properties' | 'iconFileId' | 'propertiesOrder' | 'propertiesPreview' | 'uniqueConstraints'> {

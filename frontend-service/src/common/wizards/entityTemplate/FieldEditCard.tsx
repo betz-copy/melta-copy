@@ -77,6 +77,10 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     const touchedPattern = touched?.pattern;
     const errorPattern = errors?.pattern;
 
+    const serialStarter = `properties[${index}].serialStarter`;
+    const touchedSerialStarter = touched?.serialStarter;
+    const errorSerialStarter = errors?.serialStarter;
+
     const patternCustomErrorMessage = `properties[${index}].patternCustomErrorMessage`;
     const touchedPatternCustomErrorMessage = touched?.patternCustomErrorMessage;
     const errorPatternCustomErrorMessage = errors?.patternCustomErrorMessage;
@@ -141,7 +145,15 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                             id={type}
                                             name={type}
                                             value={value.type}
-                                            onChange={onChange}
+                                            onChange={(e) => {
+                                                setValues?.((prevValue) => ({
+                                                    ...prevValue,
+                                                    type: e.target.value,
+                                                    required: e.target.value === 'serialNumber',
+
+                                                    // required is always set when serial in checked
+                                                }));
+                                            }}
                                             error={touchedType && Boolean(errorType)}
                                             helperText={touchedType && errorType}
                                             disabled={isDisabled}
@@ -228,6 +240,26 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                 />
                                             </>
                                         )}
+                                        {value.type === 'serialNumber' && (
+                                            <>
+                                                <TextField
+                                                    label={i18next.t('wizard.entityTemplate.serialStarter')}
+                                                    id={serialStarter}
+                                                    name={serialStarter}
+                                                    value={value.serialStarter}
+                                                    onChange={(e) => {
+                                                        setFieldValue('serialStarter', Number(e.target.value));
+                                                    }}
+                                                    type="number"
+                                                    error={touchedSerialStarter && Boolean(errorSerialStarter)}
+                                                    helperText={touchedSerialStarter && errorSerialStarter}
+                                                    disabled={isDisabled}
+                                                    dir="ltr"
+                                                    sx={{ marginRight: '5px' }}
+                                                    fullWidth
+                                                />
+                                            </>
+                                        )}
                                         {(value.type === 'date' || value.type === 'date-time') &&
                                             'dateNotification' in value &&
                                             (value.dateNotification !== undefined ? (
@@ -279,6 +311,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                     unique: !checked ? false : prevValue.unique,
                                                                 }));
                                                             }}
+                                                            disabled={value.type === 'serialNumber'}
                                                             checked={value.required}
                                                         />
                                                     }
@@ -313,7 +346,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                     label={i18next.t('validation.hide')}
                                                 />
                                             )}
-                                            {value.unique !== undefined && setValues && (
+                                            {value.type !== 'serialNumber' && value.unique !== undefined && setValues && (
                                                 <Tooltip title={UniqueCheckboxTooltipTitle}>
                                                     <FormControlLabel
                                                         control={

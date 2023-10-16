@@ -37,7 +37,7 @@ const RjsfTextWidget = ({
     const displayLabel = getDisplayLabel(validator, schema, uiSchema, rootSchema);
     const inputType = (type || schema.type) === 'string' ? 'text' : `${type || schema.type}`;
 
-    const isLTR = schema.type === 'number' || Boolean(schema.pattern);
+    const isLTR = schema.serialCurrent === undefined ? schema.type === 'number' || Boolean(schema.pattern) : false;
 
     return (
         <TextField
@@ -56,8 +56,8 @@ const RjsfTextWidget = ({
             InputLabelProps={{
                 shrink: readonly || undefined,
             }}
-            type={inputType as string}
-            value={value || value === 0 ? value : ''}
+            type={(options.inputType ?? inputType) as string}
+            value={options.hardCodedValue ?? value ?? ''}
             error={rawErrors.length > 0}
             onChange={_onChange}
             onBlur={_onBlur}
