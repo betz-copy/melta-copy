@@ -8,7 +8,7 @@ repositories:
     password: {{ requiredEnv "HARBOR_PASSWORD" }}
 
 releases:
-  - name: gantts-service
+  - name: gantt-service
     namespace: jaws
     chart: yesodot/common
     version: {{ env "COMMON_VERSION" | default "0.8.0" }}
