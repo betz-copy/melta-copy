@@ -107,7 +107,7 @@ services:
       MONGO_STEP_INSTANCE_COLLECTION_NAME: ${MONGO_STEP_INSTANCE_COLLECTION_NAME}
 
   gantts-service:
-    # image: jawsproject.azurecr.io/gantts-service
+    # image: jawsproject.azurecr.io/gantt-service
     build: ./gantts-service
     environment:
       PORT: 8000
