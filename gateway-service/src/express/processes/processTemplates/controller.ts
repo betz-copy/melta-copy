@@ -1,6 +1,5 @@
 import { Request, Response } from 'express';
 import ProcessTemplateManager from './manager';
-import { ShragaUser } from '../../../utils/express/passport';
 
 export default class ProcessTemplatesController {
     static async createProcessTemplate(req: Request, res: Response) {
@@ -8,9 +7,7 @@ export default class ProcessTemplatesController {
     }
 
     static async getTemplateById(req: Request, res: Response) {
-        const { id } = req.user as ShragaUser;
-
-        res.json(await ProcessTemplateManager.getProcessTemplate(req.params.id, id));
+        res.json(await ProcessTemplateManager.getProcessTemplate(req.params.id, req.user!.id));
     }
 
     static async updateProcessTemplate(req: Request, res: Response) {
@@ -22,8 +19,6 @@ export default class ProcessTemplatesController {
     }
 
     static async searchProcessTemplates(req: Request, res: Response) {
-        const { id } = req.user as ShragaUser;
-
-        res.json(await ProcessTemplateManager.searchProcessTemplates(req.body, id));
+        res.json(await ProcessTemplateManager.searchProcessTemplates(req.body, req.user!.id));
     }
 }

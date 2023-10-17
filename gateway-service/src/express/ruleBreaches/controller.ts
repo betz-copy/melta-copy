@@ -1,5 +1,4 @@
 import { Request, Response } from 'express';
-import { ShragaUser } from '../../utils/express/passport';
 import RuleBreachesManager from './manager';
 
 class RuleBreachesController {
@@ -10,39 +9,39 @@ class RuleBreachesController {
     static async approveRuleBreachRequest(req: Request, res: Response) {
         const { ruleBreachRequestId } = req.params;
 
-        res.json(await RuleBreachesManager.approveRuleBreachRequest(ruleBreachRequestId, req.user as ShragaUser));
+        res.json(await RuleBreachesManager.approveRuleBreachRequest(ruleBreachRequestId, req.user!));
     }
 
     static async denyRuleBreachRequest(req: Request, res: Response) {
         const { ruleBreachRequestId } = req.params;
 
-        res.json(await RuleBreachesManager.denyRuleBreachRequest(ruleBreachRequestId, req.user as ShragaUser));
+        res.json(await RuleBreachesManager.denyRuleBreachRequest(ruleBreachRequestId, req.user!));
     }
 
     static async cancelRuleBreachRequest(req: Request, res: Response) {
         const { ruleBreachRequestId } = req.params;
 
-        res.json(await RuleBreachesManager.cancelRuleBreachRequest(ruleBreachRequestId, req.user as ShragaUser));
+        res.json(await RuleBreachesManager.cancelRuleBreachRequest(ruleBreachRequestId, req.user!));
     }
 
     static async searchRuleBreachRequests(req: Request, res: Response) {
-        res.json(await RuleBreachesManager.searchRuleBreachRequests(req.body, req.user as ShragaUser));
+        res.json(await RuleBreachesManager.searchRuleBreachRequests(req.body, req.user!));
     }
 
     static async searchRuleBreachAlerts(req: Request, res: Response) {
-        res.json(await RuleBreachesManager.searchRuleBreachAlerts(req.body, req.user as ShragaUser));
+        res.json(await RuleBreachesManager.searchRuleBreachAlerts(req.body, req.user!));
     }
 
     static async getRuleBreachRequestsById(req: Request, res: Response) {
         const { ruleBreachRequestId } = req.params;
 
-        res.json(await RuleBreachesManager.getRuleBreachRequestById(ruleBreachRequestId, req.user as ShragaUser));
+        res.json(await RuleBreachesManager.getRuleBreachRequestById(ruleBreachRequestId, req.user!));
     }
 
     static async getRuleBreachAlertsById(req: Request, res: Response) {
         const { ruleBreachAlertId } = req.params;
 
-        res.json(await RuleBreachesManager.getRuleBreachAlertsById(ruleBreachAlertId, req.user as ShragaUser));
+        res.json(await RuleBreachesManager.getRuleBreachAlertsById(ruleBreachAlertId, req.user!));
     }
 }
 

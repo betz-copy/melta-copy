@@ -5,10 +5,10 @@ import { wrapController } from '../../utils/express';
 
 const authenticationRouter: Router = Router();
 
-authenticationRouter.get('/login', passport.authenticate('shraga', { failureRedirect: '/unauthorized' }));
+authenticationRouter.get('/login', passport.authenticate('shraga', { session: false, failureRedirect: '/unauthorized' }));
 authenticationRouter.post(
     '/callback',
-    passport.authenticate('shraga', { failureRedirect: '/unauthorized' }),
+    passport.authenticate('shraga', { session: false, failureRedirect: '/unauthorized' }),
     wrapController(AuthenticationController.createTokenAndRedirect),
 );
 

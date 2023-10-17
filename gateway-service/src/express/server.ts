@@ -1,11 +1,10 @@
 import http from 'http';
+import { once } from 'events';
 import express from 'express';
 import helmet from 'helmet';
 import logger from 'morgan';
-import session from 'express-session';
 import passport from 'passport';
 import cookieParser from 'cookie-parser';
-import { once } from 'events';
 
 import { initPassport } from '../utils/express/passport';
 import { errorMiddleware } from './error';
@@ -32,21 +31,20 @@ class Server {
         app.use(express.urlencoded({ extended: true, limit: config.service.maxFileSize }));
         app.use(cookieParser());
 
+        app.use(['/isAlive', '/isalive', '/health'], (_req, res) => {
+            res.status(200).send('alive');
+        });
+
         app.use(logger('dev'));
 
-        app.use(
-            session({
-                secret: config.authentication.sessionSecret,
-                resave: false,
-                saveUninitialized: true,
-            }),
-        );
-
         app.use(passport.initialize());
-        app.use(passport.session());
         initPassport();
 
         app.use(appRouter);
+
+        app.use('*', (_req, res) => {
+            res.status(404).send('Invalid Route');
+        });
 
         app.use(errorMiddleware);
 

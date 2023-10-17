@@ -4,7 +4,6 @@ import { EntityTemplateManagerService } from '../../externalServices/entityTempl
 import { InstanceManagerService, IRelationship } from '../../externalServices/instanceManager';
 import { getPermissions, isRuleManager } from '../../externalServices/permissionsApi';
 import { RelationshipsTemplateManagerService } from '../../externalServices/relationshipsTemplateManager';
-import { ShragaUser } from '../../utils/express/passport';
 import { ServiceError } from '../error';
 import { IPermissionsOfUser } from '../permissions/interfaces';
 import PermissionsManager from '../permissions/manager';
@@ -33,7 +32,7 @@ export const getAllowedEntityTemplatesForInstances = (userPermissions: Omit<IPer
     return EntityTemplateManagerService.searchEntityTemplates({ categoryIds: allowedCategories });
 };
 
-export const validateHasPermissionsToEntitiesInTemplates = async (user: ShragaUser, templateIds: string[]) => {
+export const validateHasPermissionsToEntitiesInTemplates = async (user: Express.User, templateIds: string[]) => {
     const userPermissions = await PermissionsManager.getPermissionsOfUser(user.id);
 
     const allowedEntityTemplates = await getAllowedEntityTemplatesForInstances(userPermissions);

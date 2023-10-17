@@ -5,7 +5,6 @@ import { IEntity, InstanceManagerService, IRelationshipConnections } from '../..
 import { getPermissions, isRuleManager } from '../../externalServices/permissionsApi';
 import { deleteFiles } from '../../externalServices/storageService';
 import { filteredMap, trycatch } from '../../utils';
-import { ShragaUser } from '../../utils/express/passport';
 import { ServiceError } from '../error';
 import { InstancesManager } from '../instances/manager';
 
@@ -108,7 +107,7 @@ export class RuleBreachesManager {
         }
     }
 
-    static async approveRuleBreachRequest(ruleBreachRequestId: string, user: ShragaUser): Promise<IRuleBreachRequestPopulated> {
+    static async approveRuleBreachRequest(ruleBreachRequestId: string, user: Express.User): Promise<IRuleBreachRequestPopulated> {
         const ruleBreachRequest = await RuleBreachService.getRuleBreachRequestById(ruleBreachRequestId);
 
         RuleBreachesManager.checkIfRuleBreachRequestIsReviewable(ruleBreachRequest);
@@ -208,7 +207,7 @@ export class RuleBreachesManager {
 
     static async discardRuleBreachRequest(
         ruleBreachRequest: IRuleBreachRequest,
-        user: ShragaUser,
+        user: Express.User,
         type: RuleBreachRequestStatus,
     ): Promise<IRuleBreachRequestPopulated> {
         RuleBreachesManager.checkIfRuleBreachRequestIsReviewable(ruleBreachRequest);
@@ -238,12 +237,12 @@ export class RuleBreachesManager {
         return RuleBreachesManager.populateRuleBreachRequest({ ...updatedRuleBreachRequest, actionMetadata: updatedMetadata });
     }
 
-    static async denyRuleBreachRequest(ruleBreachRequestId: string, user: ShragaUser): Promise<IRuleBreachRequestPopulated> {
+    static async denyRuleBreachRequest(ruleBreachRequestId: string, user: Express.User): Promise<IRuleBreachRequestPopulated> {
         const ruleBreachRequest = await RuleBreachService.getRuleBreachRequestById(ruleBreachRequestId);
         return RuleBreachesManager.discardRuleBreachRequest(ruleBreachRequest, user, RuleBreachRequestStatus.Denied);
     }
 
-    static async cancelRuleBreachRequest(ruleBreachRequestId: string, user: ShragaUser): Promise<IRuleBreachRequestPopulated> {
+    static async cancelRuleBreachRequest(ruleBreachRequestId: string, user: Express.User): Promise<IRuleBreachRequestPopulated> {
         const ruleBreachRequest = await RuleBreachService.getRuleBreachRequestById(ruleBreachRequestId);
 
         if (ruleBreachRequest.originUserId !== user.id) {
@@ -281,7 +280,7 @@ export class RuleBreachesManager {
         await deleteFiles(filesToDelete);
     }
 
-    static async searchRuleBreachRequests(agGridRequest: IAgGridRequest, user: ShragaUser): Promise<IAgGridResult<IRuleBreachRequestPopulated>> {
+    static async searchRuleBreachRequests(agGridRequest: IAgGridRequest, user: Express.User): Promise<IAgGridResult<IRuleBreachRequestPopulated>> {
         const updatedAgGridRequest = await RuleBreachesManager.agGridSearchRuleBreachesOfUser(agGridRequest, user);
 
         const result = await RuleBreachService.searchRuleBreachRequests(updatedAgGridRequest);
@@ -292,7 +291,7 @@ export class RuleBreachesManager {
         };
     }
 
-    static async searchRuleBreachAlerts(agGridRequest: IAgGridRequest, user: ShragaUser): Promise<IAgGridResult<IRuleBreachAlertPopulated>> {
+    static async searchRuleBreachAlerts(agGridRequest: IAgGridRequest, user: Express.User): Promise<IAgGridResult<IRuleBreachAlertPopulated>> {
         const updatedAgGridRequest = await RuleBreachesManager.agGridSearchRuleBreachesOfUser(agGridRequest, user);
 
         const result = await RuleBreachService.searchRuleBreachAlerts(updatedAgGridRequest);
@@ -303,7 +302,7 @@ export class RuleBreachesManager {
         };
     }
 
-    static async getRuleBreachRequestById(ruleBreachRequestId: string, user?: ShragaUser): Promise<IRuleBreachRequestPopulated> {
+    static async getRuleBreachRequestById(ruleBreachRequestId: string, user?: Express.User): Promise<IRuleBreachRequestPopulated> {
         const ruleBreachRequest = await RuleBreachService.getRuleBreachRequestById(ruleBreachRequestId);
 
         if (user && ruleBreachRequest.originUserId !== user.id && !(await isRuleManager(user.id))) {
@@ -313,7 +312,7 @@ export class RuleBreachesManager {
         return RuleBreachesManager.populateRuleBreachRequest(ruleBreachRequest);
     }
 
-    static async getRuleBreachAlertsById(ruleBreachAlertId: string, user?: ShragaUser): Promise<IRuleBreachAlertPopulated> {
+    static async getRuleBreachAlertsById(ruleBreachAlertId: string, user?: Express.User): Promise<IRuleBreachAlertPopulated> {
         const ruleBreachAlert = await RuleBreachService.getRuleBreachAlertById(ruleBreachAlertId);
 
         if (user && ruleBreachAlert.originUserId !== user.id && !(await isRuleManager(user.id))) {
@@ -323,7 +322,7 @@ export class RuleBreachesManager {
         return RuleBreachesManager.populateRuleBreachAlert(ruleBreachAlert);
     }
 
-    private static async agGridSearchRuleBreachesOfUser(agGridRequest: IAgGridRequest, user: ShragaUser): Promise<IAgGridRequest> {
+    private static async agGridSearchRuleBreachesOfUser(agGridRequest: IAgGridRequest, user: Express.User): Promise<IAgGridRequest> {
         if (await isRuleManager(user.id)) return agGridRequest;
 
         const updatedAgGridRequest: IAgGridRequest = { ...agGridRequest };

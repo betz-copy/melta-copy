@@ -12,16 +12,21 @@ const config = {
         dateAlertTime: env.get('DATE_ALERT_TIME').default('0 0 * * *').asString(),
     },
     authentication: {
-        tokenSecret: env.get('TOKEN_SECRET').required().asString(),
         isRequired: env.get('IS_AUTHENTICATION_REQUIRED').default('true').asBool(),
         mockAuthenticatedUserId: env.get('MOCK_AUTHENTICATED_USER_ID').default('5e5688324203fc40043591aa').asString(), // niky adidas
-        callbackURL: env.get('CALLBACK_URL').required().asString(),
-        shragaURL: env.get('SHRAGA_URL').required().asString(),
-        useEnrichId: env.get('USE_ENRICH_ID').default('true').asBool(),
-        sessionSecret: env.get('SESSION_SECRET').default('secret').asString(),
-        shragaTokenSecret: env.get('SHRAGA_TOKEN_SECRET').default('secret').asString(),
-        accessTokenName: env.get('ACCESS_TOKEN_NAME').required().asString(),
-        accessTokenExpirationTime: env.get('ACCESS_TOKEN_EXPIRATION_TIME').default('1d').asString(),
+        shragaAuthentication: {
+            tokenSecret: env.get('TOKEN_SECRET').required().asString(),
+            callbackURL: env.get('CALLBACK_URL').required().asString(),
+            shragaURL: env.get('SHRAGA_URL').required().asString(),
+            useEnrichId: env.get('USE_ENRICH_ID').default('true').asBool(),
+            accessTokenName: env.get('ACCESS_TOKEN_NAME').required().asString(),
+            accessTokenExpirationTime: env.get('ACCESS_TOKEN_EXPIRATION_TIME').default('1d').asString(),
+        },
+        basicAuthentication: {
+            // userId must be users of kartoffel with permissions in our permissions-api DB
+            // for example: [{"userId": "5e5688324203fc40043591aa", "password": "noamisgod"}, {"userId": "5e5689514203fc40043591ae", "password":"iamtapuz"}]
+            users: env.get('BASIC_AUTHENTICATION_USERS').required().asJsonArray() as Array<{ userId: string; password: string }>,
+        },
     },
     entityTemplateManager: {
         uri: env.get('ENTITY_TEMPLATE_MANAGER_URI').required().asString(),

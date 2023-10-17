@@ -1,26 +1,25 @@
 import { Request, Response } from 'express';
 import { NotificationsManager } from './manager';
-import { ShragaUser } from '../../utils/express/passport';
 
 class NotificationsController {
     static async getMyNotifications(req: Request, res: Response) {
-        res.json(await NotificationsManager.getMyNotifications(req.user as ShragaUser, req.query));
+        res.json(await NotificationsManager.getMyNotifications(req.user!, req.query));
     }
 
     static async getMyNotificationCount(req: Request, res: Response) {
-        res.json(await NotificationsManager.getMyNotificationCount(req.user as ShragaUser, req.query));
+        res.json(await NotificationsManager.getMyNotificationCount(req.user!, req.query));
     }
 
     static async getMyNotificationGroupCount(req: Request, res: Response) {
-        res.json(await NotificationsManager.getMyNotificationGroupCount(req.user as ShragaUser, req.body));
+        res.json(await NotificationsManager.getMyNotificationGroupCount(req.user!, req.body));
     }
 
     static async notificationsSeen(req: Request, res: Response) {
-        res.json(await NotificationsManager.notificationsSeen(req.params.notificationId, req.user as ShragaUser));
+        res.json(await NotificationsManager.notificationsSeen(req.params.notificationId, req.user!));
     }
 
     static async manyNotificationsSeen(req: Request, res: Response) {
-        res.json(await NotificationsManager.manyNotificationsSeen(req.user as ShragaUser, req.body));
+        res.json(await NotificationsManager.manyNotificationsSeen(req.user!, req.body));
     }
 }
 

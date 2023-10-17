@@ -27,31 +27,30 @@ import {
     IRuleBreachResponseNotificationMetadataPopulated,
 } from '../../externalServices/notificationService/interfaces/populated';
 import { NotificationService } from '../../externalServices/notificationService';
-import { ShragaUser } from '../../utils/express/passport';
 import RuleBreachesManager from '../ruleBreaches/manager';
 import ProcessesInstancesManager from '../processes/processInstances/manager';
 import { InstanceManagerService } from '../../externalServices/instanceManager';
 
 export class NotificationsManager {
-    static async getMyNotifications(user: ShragaUser, query: object): Promise<INotificationPopulated[]> {
+    static async getMyNotifications(user: Express.User, query: object): Promise<INotificationPopulated[]> {
         const notifications = await NotificationService.getNotifications({ ...query, viewerId: user.id });
         return this.populateNotifications(notifications, user.id);
     }
 
-    static async getMyNotificationCount(user: ShragaUser, query: any): Promise<number> {
+    static async getMyNotificationCount(user: Express.User, query: any): Promise<number> {
         return NotificationService.getNotificationCount({ ...query, viewerId: user.id });
     }
 
-    static async getMyNotificationGroupCount(user: ShragaUser, query: any) {
+    static async getMyNotificationGroupCount(user: Express.User, query: any) {
         return NotificationService.getNotificationGroupCount({ ...query, viewerId: user.id });
     }
 
-    static async notificationsSeen(notificationId: string, user: ShragaUser): Promise<INotificationPopulated> {
+    static async notificationsSeen(notificationId: string, user: Express.User): Promise<INotificationPopulated> {
         const notification = await NotificationService.notificationSeen(notificationId, user.id);
         return this.populateNotification(notification, user.id);
     }
 
-    static async manyNotificationsSeen(user: ShragaUser, query: any): Promise<INotificationPopulated[]> {
+    static async manyNotificationsSeen(user: Express.User, query: any): Promise<INotificationPopulated[]> {
         const notifications = await NotificationService.manyNotificationsSeen({ ...query, viewerId: user.id });
         return this.populateNotifications(notifications, user.id);
     }
