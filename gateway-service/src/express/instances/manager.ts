@@ -21,11 +21,10 @@ import RuleBreachesManager from '../ruleBreaches/manager';
 import config from '../../config';
 import { ServiceError } from '../error';
 import { cerateWorksheet, createWorkbook, fixFileProperties, styleAWorksheet } from '../../utils/excel/excelFunctions';
-import { excelConfig } from '../../utils/excel/excelConfig';
 
 const { errorCodes } = config;
 
-export type TemplatesWithFilterDataObj = Record<string, Pick<IEntityFilterParams, 'filterModel' | 'sortModel' | 'quickFilter'> | null>;
+export type TemplatesWithFilterDataObj = Record<string, Pick<IEntityFilterParams, 'filterModel' | 'sortModel' | 'quickFilter'>>;
 export class InstancesManager {
     static async uploadInstanceFiles(files: Express.Multer.File[]): Promise<Record<string, string>> {
         if (files.length === 0) {
@@ -58,7 +57,7 @@ export class InstancesManager {
     ): Promise<void> {
         const tasks = Object.entries(templatesIdsWithFilterData).map(async ([templateId, filterParams]) => {
             const template = await EntityTemplateManagerService.getEntityTemplateById(templateId);
-            await this.createWorksheet(workbook, template, templateId, filterParams ?? excelConfig.defaultFilterParams);
+            await this.createWorksheet(workbook, template, templateId, filterParams);
         });
 
         await Promise.all(tasks);

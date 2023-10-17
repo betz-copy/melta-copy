@@ -1,8 +1,4 @@
 export const excelConfig = {
-    defaultFilterParams: {
-        filterModel: {},
-        sortModel: [],
-    },
     excelDefaultColumns: [
         { key: 'disabled', header: '?מושבת', width: 20 },
         { key: 'createdAt', header: 'תאריך יצירה', width: 20 },

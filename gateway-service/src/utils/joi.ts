@@ -98,6 +98,6 @@ const entityFilterParamsSchema = Joi.object({
 });
 
 // TemplatesWithFilterDataObj schema
-export const templatesWithFilterDataObjSchema = Joi.object().pattern(MongoIdSchema, entityFilterParamsSchema.allow(null)).required();
+export const templatesWithFilterDataObjSchema = Joi.object().pattern(MongoIdSchema, entityFilterParamsSchema).required();
 
 export default ValidateRequest;
