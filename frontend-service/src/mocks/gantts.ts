@@ -75,7 +75,6 @@ const generateGanttItem = (optionalEntityTemplates: IMongoEntityTemplatePopulate
     if (!entityTemplate) return undefined;
 
     return {
-        _id: generateMongoId(),
         entityTemplate,
         connectedEntityTemplate: generateGanttItemConnectedEntityTemplate(entityTemplate.id),
     };
@@ -93,11 +92,13 @@ const generateGantt = (): IGantt | undefined => {
     }
 
     if (!items.length) return undefined;
-
+    const now = new Date();
     return {
         _id: generateMongoId(),
         name: chance.name(),
         items,
+        createdAt: now,
+        updatedAt: now,
     };
 };
 
