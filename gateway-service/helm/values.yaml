@@ -34,6 +34,8 @@ config:
       value: http://notification-service:8000
     - name: PROCESS_SERVICE_URI
       value: http://process-service:8000
+    - name: GANTTS_SERVICE_URI
+      value: http://gantts-service:8000
     - name: KARTOFFEL_BASE_URL
       value: https://kartoffel.branch-yesodot.org
     - name: CALLBACK_URL
