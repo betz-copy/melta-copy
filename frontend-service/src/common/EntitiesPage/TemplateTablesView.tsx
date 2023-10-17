@@ -8,7 +8,7 @@ import i18next from 'i18next';
 import { toast } from 'react-toastify';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { TemplateTable, TemplateTableRef } from './TemplateTable';
-import { TemplatesWithFilterDataObj, getEntitiesByTemplateRequest } from '../../services/entitiesService';
+import { getEntitiesByTemplateRequest } from '../../services/entitiesService';
 import { templatesCompareFunc } from '../../utils/templates';
 
 type TemplateTablesViewResultsRef = {

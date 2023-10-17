@@ -13,7 +13,7 @@ import { BlueTitle } from '../BlueTitle';
 import { ResetFilterButton } from './ResetFilterButton';
 import IconButtonWithPopover from '../IconButtonWithPopover';
 import { CustomIcon } from '../CustomIcon';
-import { FilterData, exportEntitesTablesToExcelRequest } from '../../services/entitiesService';
+import { exportEntitesTablesToExcelRequest } from '../../services/entitiesService';
 import { EditEntityDetails } from '../../pages/Entity/components/EditEntityDetails';
 import { IEntity } from '../../interfaces/entities';
 import { environment } from '../../globals';
