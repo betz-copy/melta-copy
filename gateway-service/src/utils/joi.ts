@@ -84,4 +84,20 @@ const ValidateRequest = (schema: Joi.ObjectSchema<any>, options: Joi.ValidationO
     return wrapValidator(validator);
 };
 
+// Individual sort model item schema
+const sortModelItemSchema = Joi.object({
+    colId: Joi.string().required(),
+    sort: Joi.string().valid('asc', 'desc').required(),
+});
+
+// Entity filter params schema
+const entityFilterParamsSchema = Joi.object({
+    sortModel: Joi.array().items(sortModelItemSchema).optional(),
+    filterModel: Joi.any().optional(),
+    quickFilter: Joi.string().optional(),
+});
+
+// TemplatesWithFilterDataObj schema
+export const templatesWithFilterDataObjSchema = Joi.object().pattern(MongoIdSchema, entityFilterParamsSchema.allow(null)).required();
+
 export default ValidateRequest;

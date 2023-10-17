@@ -1,9 +1,9 @@
 /* eslint-disable no-continue */
 /* eslint-disable no-plusplus */
 /* eslint-disable no-await-in-loop */
+import { promises as fsp } from 'fs';
 import axios from 'axios';
 import { stream } from 'exceljs';
-import { promises as fsp } from 'fs';
 import { deleteFiles, duplicateFiles, uploadFiles } from '../../externalServices/storageService';
 import { IEntity, IEntityFilterParams, InstanceManagerService, IRelationship } from '../../externalServices/instanceManager';
 import { EntityTemplateManagerService, IEntityTemplatePopulated } from '../../externalServices/entityTemplateManager';
@@ -25,6 +25,7 @@ import { excelConfig } from '../../utils/excel/excelConfig';
 
 const { errorCodes } = config;
 
+export type TemplatesWithFilterDataObj = Record<string, Pick<IEntityFilterParams, 'filterModel' | 'sortModel' | 'quickFilter'> | null>;
 export class InstancesManager {
     static async uploadInstanceFiles(files: Express.Multer.File[]): Promise<Record<string, string>> {
         if (files.length === 0) {
@@ -39,10 +40,10 @@ export class InstancesManager {
         return Object.fromEntries(filePropertiesEntries);
     }
 
-    static async exportEntities(templateIds: string[], fileName: string) {
+    static async exportEntities(templatesIdsWithFilterData: TemplatesWithFilterDataObj, fileName: string) {
         const { workbook, filePath } = await createWorkbook(fileName);
         try {
-            await this.addWorksheetsToWB(templateIds, workbook);
+            await this.addWorksheetsToWB(templatesIdsWithFilterData, workbook);
             await workbook.commit();
         } catch (err) {
             await fsp.unlink(filePath);
@@ -51,24 +52,29 @@ export class InstancesManager {
         return filePath;
     }
 
-    private static async addWorksheetsToWB(templateIds: string[], workbook: stream.xlsx.WorkbookWriter) {
-        for (let indexId = 0; indexId < templateIds.length; indexId += 1) {
-            const template = await EntityTemplateManagerService.getEntityTemplateById(templateIds[indexId]);
-            await this.createWorksheet(workbook, template, templateIds[indexId]);
-        }
+    private static async addWorksheetsToWB(
+        templatesIdsWithFilterData: TemplatesWithFilterDataObj,
+        workbook: stream.xlsx.WorkbookWriter,
+    ): Promise<void> {
+        const tasks = Object.entries(templatesIdsWithFilterData).map(async ([templateId, filterParams]) => {
+            const template = await EntityTemplateManagerService.getEntityTemplateById(templateId);
+            await this.createWorksheet(workbook, template, templateId, filterParams ?? excelConfig.defaultFilterParams);
+        });
+
+        await Promise.all(tasks);
     }
 
-    private static async createWorksheet(workbook: stream.xlsx.WorkbookWriter, template: IEntityTemplatePopulated, templateId: string) {
+    private static async createWorksheet(
+        workbook: stream.xlsx.WorkbookWriter,
+        template: IEntityTemplatePopulated,
+        templateId: string,
+        filterParams: Pick<IEntityFilterParams, 'filterModel' | 'sortModel' | 'quickFilter'>,
+    ) {
         const worksheet = await cerateWorksheet(workbook, template);
         const rowsEachReq = config.service.numOfRowsEachReq;
-        const { lastRowIndex: numberOfRows } = await this.getEntitiesChunk(templateId, excelConfig.defaultFilterParams, 0, 0);
+        const { lastRowIndex: numberOfRows } = await this.getEntitiesChunk(templateId, filterParams, 0, 0);
         for (let firstRow = 0; numberOfRows - firstRow > 0; firstRow += rowsEachReq + 1) {
-            const { rows: chunk } = await InstancesManager.getEntitiesChunk(
-                templateId,
-                excelConfig.defaultFilterParams,
-                firstRow,
-                firstRow + rowsEachReq,
-            );
+            const { rows: chunk } = await InstancesManager.getEntitiesChunk(templateId, filterParams, firstRow, firstRow + rowsEachReq);
             const rows = fixFileProperties(
                 chunk.map((row) => row.properties),
                 template,

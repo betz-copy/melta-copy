@@ -55,9 +55,9 @@ export const validateUserCanSearchEntityInstances = async (req: Request) => {
 };
 
 export const validateUserCanExportEntityInstances = async (req: Request) => {
-    const { templateIds } = req.body;
+    const { templatesIdsWithFilterData } = req.body;
 
-    await validateHasPermissionsToEntitiesInTemplates(req.user!, templateIds);
+    await validateHasPermissionsToEntitiesInTemplates(req.user!, Object.keys(templatesIdsWithFilterData));
 };
 
 export type RequestWithPermissionsOfUserId = Request & { permissionsOfUserId: Omit<IPermissionsOfUser, 'user'> };

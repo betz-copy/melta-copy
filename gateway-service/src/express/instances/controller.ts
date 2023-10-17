@@ -1,6 +1,6 @@
-import { Request, Response } from 'express';
 import { promises as fsp } from 'fs';
 import { promisify } from 'util';
+import { Request, Response } from 'express';
 import { InstancesManager } from './manager';
 
 class InstancesController {
@@ -9,7 +9,7 @@ class InstancesController {
     }
 
     static async exportEntities(req: Request, res: Response) {
-        const filePath = await InstancesManager.exportEntities(req.body.templateIds as Array<string>, req.body.fileName);
+        const filePath = await InstancesManager.exportEntities(req.body.templatesIdsWithFilterData, req.body.fileName);
         try {
             await promisify(res.sendFile.bind(res))(filePath);
         } finally {
