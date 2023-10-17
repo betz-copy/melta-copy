@@ -12,6 +12,7 @@ export const getHardcodedRealGantts = (fliesOnId: string, flightId: string, trip
                         endDateField: 'endDate',
                         fieldsToShow: ['name'],
                     },
+                    connectedEntityTemplates: [],
                 },
                 {
                     entityTemplate: {
@@ -20,10 +21,12 @@ export const getHardcodedRealGantts = (fliesOnId: string, flightId: string, trip
                         endDateField: 'landingDate',
                         fieldsToShow: ['from', 'to'],
                     },
-                    connectedEntityTemplate: {
-                        relationshipTemplateId: fliesOnId,
-                        fieldsToShow: ['firstName', 'lastName'],
-                    },
+                    connectedEntityTemplates: [
+                        {
+                            relationshipTemplateId: fliesOnId,
+                            fieldsToShow: ['firstName', 'lastName'],
+                        },
+                    ],
                 },
             ],
         },
