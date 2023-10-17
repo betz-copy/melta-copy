@@ -8,6 +8,9 @@ import { IRuleBreach } from '../interfaces/ruleBreaches/ruleBreach';
 
 const { entities, relationships } = environment.api;
 
+export type FilterData = Pick<IServerSideGetRowsRequest, 'filterModel' | 'sortModel'> & { quickFilter?: string };
+export type TemplatesWithFilterDataObj = Record<string, FilterData>;
+
 export const getEntitiesByTemplateRequest = async (
     templateIds: string[],
     agGridRequest: Pick<IServerSideGetRowsRequest, 'startRow' | 'endRow' | 'sortModel' | 'filterModel'> & { quickFilter?: string },
@@ -21,8 +24,8 @@ export const getEntitiesByTemplateRequest = async (
     return data;
 };
 
-export const exportTemplatesToExcelRequest = async (templateIds: string[], fileName: string) => {
-    const { data } = await axios.post(`${entities}/export`, { templateIds, fileName }, { responseType: 'blob', timeout: 60000 });
+export const exportEntitesTablesToExcelRequest = async (templatesIdsWithFilterData: TemplatesWithFilterDataObj, fileName: string) => {
+    const { data } = await axios.post(`${entities}/export`, { templatesIdsWithFilterData, fileName }, { responseType: 'blob', timeout: 60000 });
     return data;
 };
 

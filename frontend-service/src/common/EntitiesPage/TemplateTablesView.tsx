@@ -1,4 +1,4 @@
-import React, { useState, forwardRef, useImperativeHandle } from 'react';
+import React, { useState, forwardRef, useImperativeHandle, useRef } from 'react';
 import _isEqual from 'lodash.isequal';
 import { CircularProgress, Divider, Grid, Pagination, Typography } from '@mui/material';
 import { useQuery } from 'react-query';
@@ -7,27 +7,50 @@ import { useTour } from '@reactour/tour';
 import i18next from 'i18next';
 import { toast } from 'react-toastify';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
-import { TemplateTable } from './TemplateTable';
-import { getEntitiesByTemplateRequest } from '../../services/entitiesService';
+import { TemplateTable, TemplateTableRef } from './TemplateTable';
+import { TemplatesWithFilterDataObj, getEntitiesByTemplateRequest } from '../../services/entitiesService';
 import { templatesCompareFunc } from '../../utils/templates';
 
-const TemplateTablesViewResults: React.FC<{
-    templates: IMongoEntityTemplatePopulated[];
-    searchInput: string;
-    pageSize?: number;
-    pageType: string;
-}> = ({ templates, searchInput, pageSize = 10, pageType }) => {
+type TemplateTablesViewResultsRef = {
+    templateTablesRefs: Record<string, TemplateTableRef>;
+};
+
+const TemplateTablesViewResults = forwardRef<
+    TemplateTablesViewResultsRef,
+    {
+        templates: IMongoEntityTemplatePopulated[];
+        searchInput: string;
+        pageSize?: number;
+        pageType: string;
+    }
+>(({ templates, searchInput, pageSize = 10, pageType }, ref) => {
     const [currPage, setCurrPage] = useState(1);
     const countOfPages = Math.ceil(templates.length / pageSize);
 
     const startOfPageIndex = (currPage - 1) * pageSize;
     const templatesOfPage = templates.slice(startOfPageIndex, startOfPageIndex + pageSize);
 
+    const templateTablesRefs = useRef<Record<string, TemplateTableRef>>({});
+
+    useImperativeHandle(ref, () => ({
+        templateTablesRefs: templateTablesRefs.current,
+    }));
     return (
         <Grid container direction="column" spacing={1}>
             {templatesOfPage.map((template) => (
                 <Grid item key={template._id}>
-                    <TemplateTable template={template} quickFilterText={searchInput} page={pageType} />
+                    <TemplateTable
+                        ref={(el) => {
+                            if (el) {
+                                templateTablesRefs.current[template._id] = el;
+                                return;
+                            }
+                            delete templateTablesRefs.current[template._id];
+                        }}
+                        template={template}
+                        quickFilterText={searchInput}
+                        page={pageType}
+                    />
                 </Grid>
             ))}
             <Grid item>
@@ -45,13 +68,13 @@ const TemplateTablesViewResults: React.FC<{
             </Grid>
         </Grid>
     );
-};
+});
 
 const getTemplateCount = async (templateId: string, searchInput: string) => {
     const { lastRowIndex } = await getEntitiesByTemplateRequest([templateId], {
         startRow: 0,
         endRow: 0,
-        quickFilter: searchInput !== '' ? searchInput : undefined,
+        quickFilter: searchInput || undefined,
         sortModel: [],
         filterModel: {},
     });
@@ -76,6 +99,7 @@ export interface TemplateTablesViewProps {
 
 export interface TemplateTablesViewRef {
     refetch: () => void;
+    templateTablesRefs: Record<string, TemplateTableRef>;
 }
 
 const TemplateTablesView = forwardRef<TemplateTablesViewRef, TemplateTablesViewProps>(({ templates, searchInput, pageType }, ref) => {
@@ -102,8 +126,11 @@ const TemplateTablesView = forwardRef<TemplateTablesViewRef, TemplateTablesViewP
         },
     );
 
+    const templateTablesRefs = useRef<Record<string, TemplateTableRef>>({});
+
     useImperativeHandle(ref, () => ({
         refetch: refetchTemplatesFilteredByCount,
+        templateTablesRefs: templateTablesRefs.current,
     }));
 
     const templatesFilteredByCountSorted = templatesFilteredByCount?.sort(templatesCompareFunc);
@@ -119,7 +146,14 @@ const TemplateTablesView = forwardRef<TemplateTablesViewRef, TemplateTablesViewP
                 <Typography>{i18next.t('noSearchResults')}</Typography>
             )}
             {!isLoadingTemplatesFilteredByCount && templatesFilteredByCountSorted && (
-                <TemplateTablesViewResults templates={templatesFilteredByCountSorted} searchInput={searchInput} pageType={pageType} />
+                <TemplateTablesViewResults
+                    ref={(el) => {
+                        if (el) templateTablesRefs.current = el.templateTablesRefs;
+                    }}
+                    templates={templatesFilteredByCountSorted}
+                    searchInput={searchInput}
+                    pageType={pageType}
+                />
             )}
         </Grid>
     );

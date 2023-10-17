@@ -2,7 +2,8 @@ import React, { useRef, useState } from 'react';
 import i18next from 'i18next';
 import { Box, Grid } from '@mui/material';
 import _debounce from 'lodash.debounce';
-import { useQuery } from 'react-query';
+import mapValues from 'lodash.mapvalues';
+import { useMutation } from 'react-query';
 import fileDownload from 'js-file-download';
 import { toast } from 'react-toastify';
 import { useSearchParams } from 'react-router-dom';
@@ -10,19 +11,40 @@ import { IMongoCategory } from '../../interfaces/categories';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { EntitiesPageHeadline } from './Headline';
 import TemplateTablesView, { TemplateTablesViewRef } from './TemplateTablesView';
-import { exportTemplatesToExcelRequest } from '../../services/entitiesService';
+import { TemplatesWithFilterDataObj, exportEntitesTablesToExcelRequest } from '../../services/entitiesService';
 import CardsView, { CardsViewRef } from './CardsView';
 
-const useExportTemplatesToExcel = (templates: IMongoEntityTemplatePopulated[], excelExportAllTablesFileName: string) => {
-    const { refetch: exportTemplatesToExcel, isFetching: isLoadingExcelExport } = useQuery(
-        ['exportTemplatesToExcel', templates.map((template) => template._id), excelExportAllTablesFileName],
-        () =>
-            exportTemplatesToExcelRequest(
-                templates.map((template) => template._id),
-                excelExportAllTablesFileName,
-            ),
+const EntitiesPage: React.FC<{
+    templates: IMongoEntityTemplatePopulated[];
+    categories?: IMongoCategory[];
+    excelExportAllTablesFileName: string;
+    pageType: string;
+    pageTitle: string;
+}> = ({ templates, categories, excelExportAllTablesFileName, pageType, pageTitle }) => {
+    const templateTablesViewRef = useRef<TemplateTablesViewRef>(null);
+    const cardsViewRef = useRef<CardsViewRef>(null);
+
+    const [templatesToShowCheckbox, setTemplatesToShowCheckbox] = useState<IMongoEntityTemplatePopulated[]>(templates);
+
+    const [urlSearchParams, setUrlSearchParams] = useSearchParams({
+        search: '',
+        viewMode: 'templates-tables-view',
+    });
+
+    const [searchInput, setSearchInput] = useState(urlSearchParams.get('search')!);
+    const { mutateAsync: exportTemplatesToExcel, isLoading: isLoadingExcelExport } = useMutation(
+        async () => {
+            const templatesToExport: TemplatesWithFilterDataObj = mapValues(
+                templateTablesViewRef.current!.templateTablesRefs,
+                (templateTableRef) => ({
+                    filterModel: templateTableRef.getFilterModel()!,
+                    sortModel: templateTableRef.getSortModel()!,
+                    quickFilter: searchInput || undefined,
+                }),
+            );
+            return exportEntitesTablesToExcelRequest(templatesToExport, excelExportAllTablesFileName);
+        },
         {
-            enabled: false,
             onError(error) {
                 console.log('Failed to export tables', error);
                 toast.error(i18next.t('failedToExportTables'));
@@ -32,30 +54,6 @@ const useExportTemplatesToExcel = (templates: IMongoEntityTemplatePopulated[], e
             },
         },
     );
-
-    return { exportTemplatesToExcel, isLoadingExcelExport };
-};
-
-const EntitiesPage: React.FC<{
-    templates: IMongoEntityTemplatePopulated[];
-    categories?: IMongoCategory[];
-    excelExportAllTablesFileName: string;
-    pageType: string;
-    pageTitle: string;
-}> = ({ templates, categories, excelExportAllTablesFileName, pageType, pageTitle }) => {
-    const [templatesToShowCheckbox, setTemplatesToShowCheckbox] = useState<IMongoEntityTemplatePopulated[]>(templates);
-
-    const [urlSearchParams, setUrlSearchParams] = useSearchParams({
-        search: '',
-        viewMode: 'templates-tables-view',
-    });
-
-    const [searchInput, setSearchInput] = useState(urlSearchParams.get('search')!);
-
-    const { exportTemplatesToExcel, isLoadingExcelExport } = useExportTemplatesToExcel(templates, excelExportAllTablesFileName);
-
-    const templateTablesViewRef = useRef<TemplateTablesViewRef>(null);
-    const cardsViewRef = useRef<CardsViewRef>(null);
 
     const onSearch = (newSearchInput: string) => {
         if (urlSearchParams.get('search') === newSearchInput) {
@@ -84,7 +82,10 @@ const EntitiesPage: React.FC<{
                             templates,
                         }}
                         excelExportProps={{
-                            onExcelExport: exportTemplatesToExcel,
+                            onExcelExport: () => {
+                                if (!templateTablesViewRef.current) return;
+                                exportTemplatesToExcel();
+                            },
                             isLoadingExcel: isLoadingExcelExport,
                         }}
                         viewModeProps={{

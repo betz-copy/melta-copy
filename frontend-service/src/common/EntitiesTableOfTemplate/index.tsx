@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Box } from '@mui/material';
 import pickBy from 'lodash.pickby';
 import isEqual from 'lodash.isequal';
-import { ColDef, IServerSideDatasource, IServerSideGetRowsParams } from '@ag-grid-community/core';
+import { ColDef, GridApi, IServerSideDatasource, IServerSideGetRowsParams, IServerSideGetRowsRequest } from '@ag-grid-community/core';
 import { AgGridReact } from '@ag-grid-community/react';
 import '@noam7700/ag-grid-enterprise-core';
 import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
@@ -29,7 +29,7 @@ import { environment } from '../../globals';
 
 const { rowCount } = environment.agGrid;
 
-const defaultFilterModel = {
+export const defaultFilterModel = {
     disabled: {
         filterType: 'set',
         values: ['false'],
@@ -50,7 +50,7 @@ export const getDatasource = <Data extends any = IEntity>(
                     startRow,
                     endRow,
                     filterModel,
-                    quickFilter: quickFilterText !== '' ? quickFilterText : undefined,
+                    quickFilter: quickFilterText || undefined,
                 }),
             );
             if (err || !data) {
@@ -117,6 +117,8 @@ export type EntitiesTableOfTemplateRef<Data> = {
     refreshServerSide: () => void;
     updateRowDataClientSide: (data: Data) => void;
     isFiltered: () => boolean;
+    getFilterModel: () => ReturnType<GridApi<Data>['getFilterModel']>;
+    getSortModel: () => IServerSideGetRowsRequest['sortModel'];
 };
 
 const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, EntitiesTableOfTemplateProps<unknown>>(
@@ -169,6 +171,13 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                 isFiltered() {
                     const filters = gridRef.current?.api.getFilterModel();
                     return !filters || !isEqual(filters, defaultFilterModel);
+                },
+                getFilterModel() {
+                    return gridRef.current!.api.getFilterModel();
+                },
+                getSortModel() {
+                    const colState = gridRef.current!.columnApi.getColumnState();
+                    return colState.filter((s) => Boolean(s.sort)).map((s) => ({ colId: s.colId, sort: s.sort! }))!;
                 },
             };
         });

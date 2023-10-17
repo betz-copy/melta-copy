@@ -139,7 +139,11 @@ const EntitiesPageHeadline: React.FC<{
                     </Grid>
                     {excelExportProps && (
                         <Grid item>
-                            <IconButton style={{ background: '#225AA7', borderRadius: '5px' }} onClick={excelExportProps.onExcelExport}>
+                            <IconButton
+                                style={{ background: '#225AA7', borderRadius: '5px' }}
+                                onClick={excelExportProps.onExcelExport}
+                                disabled={excelExportProps.isLoadingExcel}
+                            >
                                 {excelExportProps.isLoadingExcel ? (
                                     <CircularProgress sx={{ color: 'white' }} size="24px" />
                                 ) : (

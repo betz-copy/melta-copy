@@ -1,10 +1,11 @@
-import React, { useRef, useState } from 'react';
+import React, { forwardRef, useImperativeHandle, useRef, useState } from 'react';
 import { Grid, Box, CircularProgress, Dialog } from '@mui/material';
 import { ExpandLess, ExpandMore, AddCircle, VerticalAlignBottomOutlined as DownloadIcon } from '@mui/icons-material';
 import i18next from 'i18next';
 import { useQuery } from 'react-query';
 import { toast } from 'react-toastify';
 import fileDownload from 'js-file-download';
+import { GridApi, IServerSideGetRowsRequest } from '@ag-grid-community/core';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { AddEntityButton } from './AddEntityButton';
 import EntitiesTableOfTemplate, { EntitiesTableOfTemplateRef } from '../EntitiesTableOfTemplate';
@@ -12,18 +13,49 @@ import { BlueTitle } from '../BlueTitle';
 import { ResetFilterButton } from './ResetFilterButton';
 import IconButtonWithPopover from '../IconButtonWithPopover';
 import { CustomIcon } from '../CustomIcon';
-import { exportTemplatesToExcelRequest } from '../../services/entitiesService';
+import { FilterData, exportEntitesTablesToExcelRequest } from '../../services/entitiesService';
 import { EditEntityDetails } from '../../pages/Entity/components/EditEntityDetails';
 import { IEntity } from '../../interfaces/entities';
 import { environment } from '../../globals';
 
 const { expandedRowCount } = environment.agGrid;
 
-const TemplateTable = ({ template, quickFilterText, page }: { template: IMongoEntityTemplatePopulated; quickFilterText: string; page: string }) => {
+export type TemplateTableRef = {
+    getFilterModel: () => ReturnType<GridApi<IEntity>['getFilterModel']> | undefined;
+    getSortModel: () => IServerSideGetRowsRequest['sortModel'] | undefined;
+};
+
+const TemplateTable = forwardRef<
+    TemplateTableRef,
+    {
+        template: IMongoEntityTemplatePopulated;
+        quickFilterText: string;
+        page: string;
+    }
+>(({ template, quickFilterText, page }, ref) => {
     const entitiesTableRef = useRef<EntitiesTableOfTemplateRef<IEntity>>(null);
+    const getFilterDataFromRef = () => {
+        const filterModel = entitiesTableRef.current?.getFilterModel() || {};
+        const sortModel = entitiesTableRef.current?.getSortModel() || [];
+
+        return {
+            filterModel,
+            sortModel,
+            quickFilter: quickFilterText || undefined,
+        };
+    };
+
+    useImperativeHandle(ref, () => ({
+        getFilterModel: () => entitiesTableRef.current?.getFilterModel(),
+        getSortModel: () => entitiesTableRef.current?.getSortModel(),
+    }));
+
     const { isFetching: isExportingTableToExcelFile, refetch: exportTemplateToExcel } = useQuery(
-        ['exportTemplateToExcel', [template._id], `${template.displayName}.xlsx`],
-        () => exportTemplatesToExcelRequest([template._id], `${template.displayName}.xlsx`),
+        ['exportTemplateToExcel', getFilterDataFromRef(), `${template.displayName}.xlsx`],
+        () => {
+            const filterRowsData = getFilterDataFromRef();
+            return exportEntitesTablesToExcelRequest({ [template._id]: filterRowsData }, `${template.displayName}.xlsx`);
+        },
         {
             enabled: false,
             onError(error) {
@@ -35,6 +67,7 @@ const TemplateTable = ({ template, quickFilterText, page }: { template: IMongoEn
             },
         },
     );
+
     const [isFiltered, setIsFiltered] = useState(false);
 
     const [editDialog, setEditDialog] = useState<{
@@ -106,7 +139,9 @@ const TemplateTable = ({ template, quickFilterText, page }: { template: IMongoEn
                             });
                         },
                     }}
-                    onFilter={() => setIsFiltered(entitiesTableRef.current?.isFiltered() ?? false)}
+                    onFilter={() => {
+                        setIsFiltered(entitiesTableRef.current?.isFiltered() ?? false);
+                    }}
                 />
             </Box>
             <Dialog open={editDialog.isOpen}>
@@ -122,6 +157,6 @@ const TemplateTable = ({ template, quickFilterText, page }: { template: IMongoEn
             </Dialog>
         </Grid>
     );
-};
+});
 
 export { TemplateTable };
