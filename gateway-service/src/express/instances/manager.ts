@@ -124,13 +124,16 @@ export class InstancesManager {
                 templateUpdated = true;
             }
         });
-        if (templateUpdated)
+        if (templateUpdated) {
+            const { category, _id, createdAt, updatedAt, disabled, ...restOfEntityTemplate } = entityTemplate;
             await EntityTemplateManagerService.updateEntityTemplate(instanceData.templateId, {
+                ...restOfEntityTemplate,
                 properties: {
                     ...entityTemplate.properties,
                     properties: updatedProperties,
                 },
             });
+        }
 
         const entity = await InstanceManagerService.createEntityInstance(newInstanceData);
 
