@@ -124,7 +124,7 @@ const TemplateTable = forwardRef<
                     showNavigateToRowButton
                     getRowId={(currentEntity) => currentEntity.properties._id}
                     getEntityPropertiesData={(currentEntity) => currentEntity.properties}
-                    rowModelType="serverSide"
+                    rowModelType={isExpand ? 'infinite' : 'serverSide'}
                     quickFilterText={quickFilterText}
                     rowHeight={50}
                     pageRowCount={isExpand ? expandedRowCount : undefined}

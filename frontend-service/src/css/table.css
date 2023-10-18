@@ -14,11 +14,13 @@
     color: #225aa7;
 }
 
-.ag-body-viewport,
+
+/* Removed in order to manipulate scroll-bar
+/* .ag-body-viewport,
 .ag-layout-normal,
 .ag-row-no-animation {
     overflow: hidden !important;
-}
+} */
 
 .ag-theme-material .ag-checkbox-input-wrapper.ag-checked::after {
     color: #225aa7;

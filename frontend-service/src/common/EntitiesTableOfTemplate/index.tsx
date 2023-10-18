@@ -65,21 +65,36 @@ export const getDatasource = <Data extends any = IEntity>(
 };
 
 const getRowModelProps = <Data extends any = IEntity>(
-    rowModelType: 'serverSide' | 'clientSide',
+    rowModelType: 'serverSide' | 'clientSide' | 'infinite',
     templateId: IMongoEntityTemplatePopulated['_id'],
     rowData: Data[] | undefined,
+    paginationPageSize: number,
     datasource: IServerSideDatasource | undefined,
     quickFilterText: string | undefined,
     datasourceOnFail: ((err: unknown) => void) | undefined,
 ): React.ComponentProps<typeof AgGridReact<Data>> => {
     if (rowModelType === 'clientSide') {
-        return { rowModelType, rowData };
+        return { rowModelType, rowData, pagination: true, paginationPageSize };
     }
+
+    if (rowModelType === 'serverSide') {
+        return {
+            rowModelType,
+            serverSideDatasource: datasource ?? getDatasource(templateId, quickFilterText, datasourceOnFail),
+            cacheBlockSize: 50,
+            maxBlocksInCache: 10,
+            pagination: true,
+            paginationPageSize,
+        };
+    }
+
     return {
         rowModelType,
-        serverSideDatasource: datasource ?? getDatasource(templateId, quickFilterText, datasourceOnFail),
+        pagination: false,
         cacheBlockSize: 50,
-        maxBlocksInCache: 1000,
+        maxBlocksInCache: 10,
+        maxConcurrentDatasourceRequests: 1,
+        infiniteInitialRowCount: 50,
     };
 };
 
@@ -98,7 +113,7 @@ export type EntitiesTableOfTemplateProps<Data> = {
     disabledEntity?: boolean;
     getRowId: (data: Data) => string;
     getEntityPropertiesData: (data: Data) => IEntity['properties'];
-    rowModelType: 'serverSide' | 'clientSide';
+    rowModelType: 'serverSide' | 'clientSide' | 'infinite';
     rowData?: Data[];
     datasource?: IServerSideDatasource;
     quickFilterText?: string;
@@ -201,8 +216,8 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
         // because we recreate datasource object on every irrelevant render, we recreate only on dependencies
         // usually only quickFilterText changes on deps
         const rowModelProps = useMemo(
-            () => getRowModelProps(rowModelType, template._id, rowData, datasource, quickFilterText, datasourceOnFail),
-            [rowModelType, template._id, rowData, datasource, quickFilterText],
+            () => getRowModelProps(rowModelType, template._id, rowData, pageRowCount, datasource, quickFilterText, datasourceOnFail),
+            [rowModelType, template._id, rowData, pageRowCount, datasource, quickFilterText],
         );
 
         const getStyles = () => ({
@@ -221,17 +236,16 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                     className="ag-theme-material"
                     containerStyle={{
                         width: '100%',
+                        height: rowModelType === 'infinite' ? `${rowHeight * pageRowCount}px` : undefined,
                         fontFamily: 'Rubik',
                         fontSize,
                         fontWeight: 300,
                     }}
                     modules={[ServerSideRowModelModule, ColumnsToolPanelModule, MenuModule, SetFilterModule, ClientSideRowModelModule]}
-                    domLayout="autoHeight"
+                    domLayout={rowModelType !== 'infinite' ? 'autoHeight' : undefined}
                     getRowId={({ data }) => getRowId(data)}
                     columnDefs={columnDefs}
                     {...rowModelProps}
-                    pagination
-                    paginationPageSize={pageRowCount}
                     rowHeight={rowHeight}
                     components={{
                         agDateInput: DateFilterComponent,
