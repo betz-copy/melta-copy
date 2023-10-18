@@ -32,7 +32,10 @@ export class GanttManager {
     }
 
     static async updateGantt(ganttId: string, gantt: IGantt) {
-        return FolderModel.findByIdAndUpdate(ganttId, gantt, { new: true }).orFail(new ServiceError(404, 'Gantt not found')).lean().exec();
+        return FolderModel.findByIdAndUpdate(ganttId, gantt, { new: true, overwrite: true })
+            .orFail(new ServiceError(404, 'Gantt not found'))
+            .lean()
+            .exec();
     }
 }
 

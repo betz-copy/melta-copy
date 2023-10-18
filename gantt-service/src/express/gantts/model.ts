@@ -4,6 +4,20 @@ import { IGanttDocument } from './interface';
 import config from '../../config';
 import { ServiceError } from '../error';
 
+const GroupBySchema = new mongoose.Schema(
+    {
+        entityTemplateId: {
+            type: String,
+            required: true,
+        },
+        groupNameField: {
+            type: String,
+            required: true,
+        },
+    },
+    { _id: false },
+);
+
 const EntityTemplateSchema = new mongoose.Schema(
     {
         id: {
@@ -46,8 +60,12 @@ const GanttItem = new mongoose.Schema(
             type: EntityTemplateSchema,
             required: true,
         },
-        connectedEntityTemplate: {
-            type: ConnectedEntityTemplateSchema,
+        connectedEntityTemplates: {
+            type: [ConnectedEntityTemplateSchema],
+            required: true,
+        },
+        groupByRelationshipId: {
+            type: String,
             required: false,
         },
     },
@@ -64,6 +82,10 @@ const GanttSchema = new mongoose.Schema(
         items: {
             type: [GanttItem],
             required: true,
+        },
+        groupBy: {
+            type: GroupBySchema,
+            required: false,
         },
     },
     { timestamps: true, versionKey: false },
