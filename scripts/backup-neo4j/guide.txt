@@ -1,18 +1,21 @@
-1. Copy the files to some directory in your Neo4j's VM (cronjob-backup.sh, ...logs-daily/weekly/monthy.txt, ...)
+1. Copy the files to some directory in your Neo4j's VM (cronjob-backup.sh, ...logs-daily/middaily/weekly/monthly.txt, ...)
 
-2. Create empty directories with names "daily", "weekly", "monthy"
+2. Create empty directories with names "middaily", "daily", "weekly", "monthly"
 
 3. Add the following to crontab (by running crontab -e):
 
     NEO4J_BACKUPS_DIR=/data/neo4j-melta/neo4j-enterprise-4.4.18/dumps
 
-    # 6 days + 1 hour [mins]. to keep only 6 backups backwards (1 hour to make sure to not delete the backup which was created exactly 6 days ago). overall 7 daily backups
-    daily_duration_mins_to_delete=$(expr 6 \* 24 \* 60 + 60)
-    # 3*7 days + 1 hour [mins]. to keep only 3 backups backwards (1 hour to make sure to not delete the backup which was created exactly 3 weeks ago). overall 4 weekly backups
-    weekly_duration_mins_to_delete=$(expr 3 \* 7 \* 24 \* 60 + 60)
-    # 3 * 3monthly + 1 hour [mins]. to keep only 3 backups backwards (1 hour to make sure to not delete the backup which was created exactly 3 months ago). overall 4 monthly backups
-    monthly_duration_mins_to_delete=$(expr 3 \* 28 \* 24 \* 60 + 60)
+    # 1 days + 1 hour [1500 mins]. to keep only 1 backup backwards (1 hour to make sure to not delete the backup which was created exactly 1 days ago). overall 2 midday backups
+    middaily_duration_mins_to_delete=1500
+    # 6 days + 1 hour [8700 mins]. to keep only 6 backups backwards (1 hour to make sure to not delete the backup which was created exactly 6 days ago). overall 7 daily backups
+    daily_duration_mins_to_delete=8700
+    # 3*7 days + 1 hour [30300 mins]. to keep only 3 backups backwards (1 hour to make sure to not delete the backup which was created exactly 3 weeks ago). overall 4 weekly backups
+    weekly_duration_mins_to_delete=30300
+    # 3 * 3monthly + 1 hour [121020 mins]. to keep only 3 backups backwards (1 hour to make sure to not delete the backup which was created exactly 3 months ago). overall 4 monthly backups
+    monthly_duration_mins_to_delete=121020
 
+    0 12 * * * ($NEO4J_BACKUPS_DIR/cronjob-backup.sh $NEO4J_BACKUPS_DIR/middaily $middaily_duration_mins_to_delete >> $NEO4J_BACKUPS_DIR/cronjob-backups-logs-middaily.txt 2>&1) 
     0 0 * * * ($NEO4J_BACKUPS_DIR/cronjob-backup.sh $NEO4J_BACKUPS_DIR/daily $daily_duration_mins_to_delete >> $NEO4J_BACKUPS_DIR/cronjob-backups-logs-daily.txt 2>&1) 
     2 0 * * 0 ($NEO4J_BACKUPS_DIR/cronjob-backup.sh $NEO4J_BACKUPS_DIR/weekly $weekly_duration_mins_to_delete >> $NEO4J_BACKUPS_DIR/cronjob-backups-logs-weekly.txt 2>&1)
-    4 0 1 * * ($NEO4J_BACKUPS_DIR/cronjob-backup.sh $NEO4J_BACKUPS_DIR/monthy $monthly_duration_mins_to_delete >> $NEO4J_BACKUPS_DIR/cronjob-backups-logs-monthy.txt 2>&1)
+    4 0 1 * * ($NEO4J_BACKUPS_DIR/cronjob-backup.sh $NEO4J_BACKUPS_DIR/monthly $monthly_duration_mins_to_delete >> $NEO4J_BACKUPS_DIR/cronjob-backups-logs-monthly.txt 2>&1)
