@@ -60,7 +60,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
     );
     const notificationCountDetails = notificationCountDetailsResponse || { total: 0, groups: {} };
 
-    const { user: currentUser, meltaPlus, darkMode } = useSelector((state: RootState) => state);
+    const { meltaPlus, darkMode } = useSelector((state: RootState) => state);
     const dispatch = useDispatch();
 
     return (
@@ -85,7 +85,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                     </Box>
 
                     <ProfileButton
-                        currentUser={currentUser}
+                        currentUser={myPermissions.user}
                         text={i18next.t('permissions.permissionsOfUserDialog.readTitle')}
                         isDrawerOpen={isDrawerOpen}
                         onClick={() => setIsMyPermissionsDialogOpen(!isMyPermissionsDialogOpen)}

@@ -1,38 +1,27 @@
 import React from 'react';
-import { Typography, Grid, Avatar, Skeleton } from '@mui/material';
+import { Typography, Grid, Skeleton } from '@mui/material';
 import { useQuery } from 'react-query';
 import randomColor from 'randomcolor';
 import { useSelector } from 'react-redux';
 import { IActivityLog } from '../../../../services/activityLogService';
 import { getUserByIdRequest } from '../../../../services/kartoffelService';
-
 import ActionText from './ActionText';
 import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { getShortDate } from '../../../../utils/date';
 import { RootState } from '../../../../store';
+import UserAvatar from '../../../../common/UserAvatar';
 
 const ActivityLogRow: React.FC<{ log: IActivityLog; entityTemplate: IMongoEntityTemplatePopulated }> = ({ log, entityTemplate }) => {
     const { data: user, isLoading } = useQuery(['getUserById', log.userId], () => getUserByIdRequest(log.userId));
 
     const darkMode = useSelector((state: RootState) => state.darkMode);
-
     return (
         <Grid container>
-            <Grid item paddingLeft="10px" paddingRight="10px">
+            <Grid item padding="10px">
                 {isLoading ? (
                     <Skeleton variant="circular" width={40} height={40} />
                 ) : (
-                    <Avatar
-                        sx={{
-                            font: '20px Rubik',
-                            backgroundColor: randomColor({ luminosity: 'dark', seed: user!.firstName + user!.id }),
-                            fontWeight: 500,
-                            marginTop: '10px',
-                        }}
-                    >
-                        {user!.firstName.charAt(0)}
-                        {user!.lastName.charAt(0)}
-                    </Avatar>
+                    <UserAvatar user={user!} size={40} bgColor={randomColor({ luminosity: 'dark', seed: user!.id })} />
                 )}
             </Grid>
             <Grid item container xs={9}>
