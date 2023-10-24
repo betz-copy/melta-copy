@@ -67,6 +67,19 @@ const getRjfsDateOrDateTimeWidget =
             return onChange(dateString);
         };
 
+        const handleOpenDatePicker = () => {
+            if(currDate) return;
+
+            const currentDate= new Date();
+            setCurrDate(currentDate);
+
+            if (dateOrDateTime === 'dateTime') {
+                return onChange(currentDate.toISOString());
+            } 
+                
+            return onChange(format(currentDate, 'yyyy-MM-dd'));
+        };
+
         const onFormChangeFunction = dateOrDateTime === 'date' ? onChangeDateWidget : onChangeDateTimeWidget;
         const variant = readonly ? 'standard' : 'outlined';
         return (
@@ -108,6 +121,7 @@ const getRjfsDateOrDateTimeWidget =
                     autoFocus={autofocus}
                     toolbarFormat="dd/MM"
                     ampm={false}
+                    onOpen={handleOpenDatePicker}
                     ToolbarComponent={CustomDateTimePickerToolbar}
                 />
             </LocalizationProvider>
