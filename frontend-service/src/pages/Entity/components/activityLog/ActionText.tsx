@@ -1,5 +1,5 @@
 import React from 'react';
-import { Grid, Typography, styled } from '@mui/material';
+import { Grid, Tooltip, Typography, styled } from '@mui/material';
 import { useQueryClient } from 'react-query';
 import i18next from 'i18next';
 import { useNavigate } from 'react-router-dom';
@@ -82,6 +82,24 @@ const UpdateEntityMetadataActionText: React.FC<{
     actionMetadata: { updatedFields: [{ fieldName: string; oldValue: any; newValue: any }] };
     entityTemplate: IMongoEntityTemplatePopulated;
 }> = ({ actionMetadata, entityTemplate }) => {
+    const ellipsisStyle: React.CSSProperties = {
+        marginLeft: '10px',
+        overflow: 'hidden',
+        whiteSpace: 'nowrap',
+        textOverflow: 'ellipsis',
+        maxWidth: '300px',
+    };
+
+    const popperProps = {
+        modifiers: [
+            {
+                name: 'offset',
+                options: {
+                    offset: [0, -10],
+                },
+            },
+        ],
+    };
     return (
         <Grid item minWidth="190px">
             <StyledTypography variant="body2" marginBottom="5px">
@@ -92,42 +110,30 @@ const UpdateEntityMetadataActionText: React.FC<{
 
             {actionMetadata.updatedFields.map((field) => {
                 return (
-                    <Grid key={field.fieldName}>
-                        <StyledTypography
-                            variant="body2"
-                            style={{
-                                overflow: 'hidden',
-                                whiteSpace: 'nowrap',
-                                textOverflow: 'ellipsis',
-                                maxWidth: '160px',
-                                color: '#225AA7',
-                                marginLeft: '10px',
-                            }}
-                            component="span"
-                            display="inline-block"
-                        >
-                            {entityTemplate.properties.properties[field.fieldName].title}{' '}
+                    <Grid key={field.fieldName} style={{ marginBottom: '10px' }}>
+                        <StyledTypography variant="body2" style={{ ...ellipsisStyle, color: '#225AA7' }}>
+                            {entityTemplate.properties.properties[field.fieldName].title}
                         </StyledTypography>
-
-                        <StyledTypography
-                            component="span"
-                            variant="body2"
-                            display="inline-block"
-                            style={{ overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis', maxWidth: '160px', marginLeft: '10px' }}
+                        <Tooltip
+                            PopperProps={popperProps}
+                            title={field.oldValue ? field.oldValue : i18next.t('entityPage.activityLog.emptyField')}
+                            placement="top-start"
                         >
-                            {i18next.t('entityPage.activityLog.from')}{' '}
-                            {field.oldValue ? `"${field.oldValue}"` : i18next.t('entityPage.activityLog.emptyField')}{' '}
-                        </StyledTypography>
-
-                        <StyledTypography
-                            component="span"
-                            variant="body2"
-                            display="inline-block"
-                            style={{ overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis', maxWidth: '160px' }}
+                            <StyledTypography variant="body2" style={ellipsisStyle}>
+                                {i18next.t('entityPage.activityLog.from')}{' '}
+                                {field.oldValue ? `"${field.oldValue}"` : i18next.t('entityPage.activityLog.emptyField')}
+                            </StyledTypography>
+                        </Tooltip>
+                        <Tooltip
+                            placement="bottom-start"
+                            PopperProps={popperProps}
+                            title={field.newValue ? field.newValue : i18next.t('entityPage.activityLog.emptyField')}
                         >
-                            {i18next.t('entityPage.activityLog.to')}{' '}
-                            {field.newValue ? `"${field.newValue}"` : i18next.t('entityPage.activityLog.emptyField')}{' '}
-                        </StyledTypography>
+                            <StyledTypography variant="body2" style={ellipsisStyle}>
+                                {i18next.t('entityPage.activityLog.to')}{' '}
+                                {field.newValue ? `"${field.newValue}"` : i18next.t('entityPage.activityLog.emptyField')}
+                            </StyledTypography>
+                        </Tooltip>
                     </Grid>
                 );
             })}
