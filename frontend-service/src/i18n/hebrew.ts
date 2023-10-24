@@ -297,6 +297,7 @@ export default {
             properties: 'שדות',
             parameters: 'פרמטרים',
             attachments: 'קבצים',
+            dragAndDropFile: 'לחץ או גרור להעלאת קובץ',
             dateNotificationTypes: { day: 'יום לפני', week: 'שבוע לפני', twoWeeks: 'שבועיים לפני' },
             dateNotification: 'התראה לפני סיום',
             serialStarter: 'מספר סידורי התחלתי',

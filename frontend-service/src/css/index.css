@@ -26,13 +26,3 @@
     font-family: 'OpenSans';
     src: local('OpenSans'), url(../assets/OpenSans/OpenSans-VariableFont_wdth,wght.ttf) format('woff');
 }
-
-.inputStyle {
-    border: 1px solid rgb(196 196 196);
-    border-radius: 5px;
-    width: 230px;
-    height: 56px;
-    display: flex;
-    padding: 16px 10px;
-    color: #666666;
-}

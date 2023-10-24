@@ -84,7 +84,7 @@ const ImagePicker: React.FC<ImagePickerProps> = ({ image, onPick, onDelete, defa
                         }}
                         fileName={image?.name}
                         inputText={i18next.t('wizard.file')}
-                        acceptedFilesTypes="image/png"
+                        acceptedFilesTypes={{ 'image/png': ['.svg', '.png'] }}
                     />
                 </Grid>
             )}

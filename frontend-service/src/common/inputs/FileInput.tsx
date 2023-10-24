@@ -1,27 +1,52 @@
 import React, { MouseEventHandler } from 'react';
 import { IconButton, Grid } from '@mui/material';
 import { CloseOutlined as DeleteIcon, FilePresent as FileIcon } from '@mui/icons-material';
-import '../../css/index.css';
+import { Accept, useDropzone } from 'react-dropzone';
 
-const FileInput: React.FC<{
+interface FileInputProps {
     fileName: string | undefined;
     onDeleteFile: MouseEventHandler;
     onDropFile: (acceptedFile: File) => void;
     inputText: string;
-    acceptedFilesTypes?: string;
+    acceptedFilesTypes?: Accept;
     name: string;
     errorText?: string;
-}> = ({ fileName, acceptedFilesTypes, inputText, name, onDeleteFile, onDropFile, errorText }) => {
+}
+
+const FileInput: React.FC<FileInputProps> = ({ fileName, onDeleteFile, onDropFile, inputText, acceptedFilesTypes, errorText }) => {
     const errorStyle = {
         color: 'rgb(211, 47, 47)',
         margin: 0,
         padding: 0,
     };
 
-    if (fileName) {
-        return (
-            <>
-                <div className="inputStyle">
+    const onDrop = (acceptedFiles: File[]) => {
+        const file = acceptedFiles[0];
+        if (file.type) {
+            onDropFile(file);
+        }
+    };
+    const { getRootProps, getInputProps, isDragActive } = useDropzone({
+        onDrop,
+        accept: acceptedFilesTypes,
+    });
+
+    const inputStyle = {
+        border: isDragActive ? '2px dashed #225AA7' : '1px solid rgb(196, 196, 196)',
+        borderRadius: '5px',
+        width: '230px',
+        height: '56px',
+        display: 'flex',
+        padding: '16px 10px',
+        color: '#666666',
+        cursor: 'pointer',
+    };
+
+    return (
+        <>
+            {fileName ? (
+                <div style={inputStyle} {...getRootProps()}>
+                    <input {...getInputProps()} />
                     <FileIcon fontSize="medium" style={{ marginRight: '10px', marginLeft: '5px' }} />
                     <Grid item style={{ overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis', width: '145px' }}>
                         {fileName}
@@ -29,6 +54,7 @@ const FileInput: React.FC<{
                     <IconButton
                         onClick={(e) => {
                             e.preventDefault();
+                            e.stopPropagation();
                             onDeleteFile(e);
                         }}
                         size="small"
@@ -36,32 +62,12 @@ const FileInput: React.FC<{
                         <DeleteIcon fontSize="small" />
                     </IconButton>
                 </div>
-                {errorText && (
-                    <p id="error" style={errorStyle}>
-                        {errorText}
-                    </p>
-                )}
-            </>
-        );
-    }
-
-    return (
-        <>
-            <label htmlFor={name} className="inputStyle">
-                <input
-                    id={name}
-                    name={name}
-                    type="file"
-                    accept={acceptedFilesTypes}
-                    style={{ display: 'none' }}
-                    onChange={(e) => {
-                        if (e.target.files) {
-                            onDropFile(e.target.files[0]);
-                        }
-                    }}
-                />
-                {inputText}
-            </label>
+            ) : (
+                <div style={inputStyle} {...getRootProps()}>
+                    <input {...getInputProps()} />
+                    {inputText}
+                </div>
+            )}
             {errorText && (
                 <p id="error" style={errorStyle}>
                     {errorText}

@@ -113,6 +113,9 @@ const DuplicateEntity: React.FC<{}> = () => {
                                                                     variant="h6"
                                                                     style={{ marginBottom: '22px' }}
                                                                 />
+                                                                <div style={{ color: '#666666', fontSize: '0.9rem', padding: '2%' }}>
+                                                                    {i18next.t('wizard.entityTemplate.dragAndDropFile')}
+                                                                </div>
                                                                 <>
                                                                     {Object.entries(templateFilesProperties).map(([key, value]) => (
                                                                         <InstanceFileInput
