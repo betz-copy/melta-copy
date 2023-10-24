@@ -56,10 +56,10 @@ export class EntityTemplateManager {
         return entityTemplate;
     }
 
-    static async updateEntityTemplate(id: string, updatedTemplate: Partial<Omit<IEntityTemplate, 'disabled'>>) {
+    static async updateEntityTemplate(id: string, updatedTemplate: Omit<IEntityTemplate, 'disabled'>) {
         const currentEntityTemplate = await EntityTemplateManager.getTemplateById(id);
 
-        const newEntityTemplate = await EntityTemplateModel.findByIdAndUpdate(id, updatedTemplate, { new: true })
+        const newEntityTemplate = await EntityTemplateModel.findByIdAndUpdate(id, updatedTemplate, { new: true, overwrite: true })
             .populate('category')
             .orFail(new ServiceError(404, 'Entity Template not found'))
             .lean()

@@ -1,5 +1,12 @@
 import * as Joi from 'joi';
-import { MongoIdSchema, innerPropertiesSchema, orderPropertiesSchema, previewPropertiesSchema, variableNameValidation } from '../../utils/joi';
+import {
+    MongoIdSchema,
+    enumPropertiesColorsSchema,
+    innerPropertiesSchema,
+    orderPropertiesSchema,
+    previewPropertiesSchema,
+    variableNameValidation,
+} from '../../utils/joi';
 
 // POST /api/entities/templates/search
 export const searchEntityTemplatesSchema = Joi.object({
@@ -39,6 +46,7 @@ export const createEntityTemplateSchema = Joi.object({
         iconFileId: Joi.string().allow(null), // todo: iconFileId is optional and nullable, should be only one of them
         propertiesOrder: orderPropertiesSchema.required(),
         propertiesPreview: previewPropertiesSchema.required(),
+        enumPropertiesColors: enumPropertiesColorsSchema,
     },
     query: {},
     params: {},
@@ -47,13 +55,14 @@ export const createEntityTemplateSchema = Joi.object({
 // PUT /api/entities/templates/:templateId
 export const updateEntityTemplateSchema = Joi.object({
     body: Joi.object({
-        name: variableNameValidation,
-        displayName: Joi.string(),
-        category: Joi.string(),
-        properties: innerPropertiesSchema,
+        name: variableNameValidation.required(),
+        displayName: Joi.string().required(),
+        category: Joi.string().required(),
+        properties: innerPropertiesSchema.required(),
         iconFileId: Joi.string().allow(null),
-        propertiesOrder: orderPropertiesSchema,
-        propertiesPreview: previewPropertiesSchema,
+        propertiesOrder: orderPropertiesSchema.required(),
+        propertiesPreview: previewPropertiesSchema.required(),
+        enumPropertiesColors: enumPropertiesColorsSchema,
     }).min(1),
     query: {},
     params: {

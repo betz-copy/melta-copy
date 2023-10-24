@@ -3,7 +3,7 @@ import * as Joi from 'joi';
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 import { wrapValidator } from './express';
-import { IProperties } from '../express/entityTemplate/interface';
+import { IEntityTemplate, IEnumPropertiesColors, IProperties } from '../express/entityTemplate/interface';
 
 const ajv = new Ajv();
 ajv.addFormat('fileId', /.*/);
@@ -128,6 +128,25 @@ const customPreviewPropertiesValidation: Joi.CustomValidator = (propertiesPrevie
     return validatePropertiesArrayInProperties(propertiesPreview, helpers.state.ancestors[0].properties.properties);
 };
 export const previewPropertiesSchema = Joi.array().unique().items(Joi.string()).custom(customPreviewPropertiesValidation);
+
+const customEnumPropertiesColorsSchemaValidation: Joi.CustomValidator = (enumPropertiesColors: IEnumPropertiesColors, helpers) => {
+    const { properties }: IEntityTemplate['properties'] = helpers.state.ancestors[0].properties;
+
+    Object.entries(enumPropertiesColors).forEach(([key, value]) => {
+        const property = properties[key];
+        if (!property) throw new Error(`field ${key} does not exist`);
+        if (!property.enum) throw new Error(`field ${key} is not an enum`);
+
+        Object.keys(value).forEach((enumOption) => {
+            if (!property.enum?.includes(enumOption)) throw new Error(`enum option ${enumOption} does not exist in field ${key}`);
+        });
+    });
+
+    return enumPropertiesColors;
+};
+export const enumPropertiesColorsSchema = Joi.object()
+    .pattern(Joi.string(), Joi.object().pattern(Joi.string(), ColorSchema))
+    .custom(customEnumPropertiesColorsSchemaValidation);
 
 const defaultValidationOptions: Joi.ValidationOptions = {
     abortEarly: false,

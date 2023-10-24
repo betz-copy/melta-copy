@@ -33,6 +33,9 @@ const EntityTemplateSchema = new mongoose.Schema(
             type: [String],
             required: true,
         },
+        enumPropertiesColors: {
+            type: Object,
+        },
         disabled: {
             type: Boolean,
             required: true,

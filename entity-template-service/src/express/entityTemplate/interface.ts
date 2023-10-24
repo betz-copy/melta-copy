@@ -16,6 +16,8 @@ export interface IProperties {
     hide: string[];
 }
 
+export type IEnumPropertiesColors = Record<string, Record<string, string>>; // { [fieldName]: { [enumOption1]: [color1], [enumOption2]: [color2] } }
+
 export interface IEntityTemplate {
     name: string;
     displayName: string;
@@ -23,6 +25,7 @@ export interface IEntityTemplate {
     properties: IProperties;
     propertiesOrder: string[];
     propertiesPreview: string[];
+    enumPropertiesColors?: IEnumPropertiesColors;
     disabled: boolean;
     iconFileId: string | null;
 }
