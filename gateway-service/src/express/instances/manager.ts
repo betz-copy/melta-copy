@@ -128,6 +128,7 @@ export class InstancesManager {
             const { category, _id, createdAt, updatedAt, disabled, ...restOfEntityTemplate } = entityTemplate;
             await EntityTemplateManagerService.updateEntityTemplate(instanceData.templateId, {
                 ...restOfEntityTemplate,
+                category: category._id,
                 properties: {
                     ...entityTemplate.properties,
                     properties: updatedProperties,

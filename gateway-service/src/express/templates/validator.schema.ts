@@ -47,6 +47,7 @@ export const createEntityTemplateSchema = Joi.object({
         properties: ExtendedJoi.stringToObject().required(),
         propertiesOrder: ExtendedJoi.stringToArray().required(),
         propertiesPreview: ExtendedJoi.stringToArray().required(),
+        enumPropertiesColors: ExtendedJoi.stringToObject(),
         uniqueConstraints: ExtendedJoi.stringToArray().required(),
     },
     query: {},
@@ -64,6 +65,7 @@ export const updateEntityTemplateSchema = Joi.object({
         iconFileId: Joi.string().allow(null), // todo: iconFileId is optional and nullable, should be only one of them
         propertiesOrder: ExtendedJoi.stringToArray().required(),
         propertiesPreview: ExtendedJoi.stringToArray().required(),
+        enumPropertiesColors: ExtendedJoi.stringToObject(),
         uniqueConstraints: ExtendedJoi.stringToArray().required(),
     },
     query: {},

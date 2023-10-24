@@ -41,6 +41,7 @@ export interface IEntityTemplate {
     };
     propertiesOrder: string[];
     propertiesPreview: string[];
+    enumPropertiesColors?: Record<string, Record<string, string>>; // { [fieldName]: { [enumOption1]: [color1], [enumOption2]: [color2] } }
     disabled: boolean;
     iconFileId: string | null;
 }
@@ -122,7 +123,7 @@ export class EntityTemplateManagerService {
         return data;
     }
 
-    static async updateEntityTemplate(entityTemplateId: string, updatedEntityTemplate: Partial<Omit<IEntityTemplate, 'disabled'>>) {
+    static async updateEntityTemplate(entityTemplateId: string, updatedEntityTemplate: Omit<IEntityTemplate, 'disabled'>) {
         const { data } = await this.EntityTemplateManagerApi.put<IMongoEntityTemplatePopulated>(
             `${baseEntitiesRoute}/${entityTemplateId}`,
             updatedEntityTemplate,
