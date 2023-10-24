@@ -27,13 +27,17 @@ export interface EntityTemplateFormInputProperties {
     unique: boolean;
     id: string;
     options: string[];
+    optionColors: Record<string, string>;
     pattern: string;
     patternCustomErrorMessage: string;
     dateNotification: string | null | undefined;
     serialStarter: number | undefined;
 }
 export interface EntityTemplateWizardValues
-    extends Omit<IEntityTemplatePopulated, 'properties' | 'iconFileId' | 'propertiesOrder' | 'propertiesPreview' | 'uniqueConstraints'> {
+    extends Omit<
+        IEntityTemplatePopulated,
+        'properties' | 'iconFileId' | 'propertiesOrder' | 'propertiesPreview' | 'enumPropertiesColors' | 'uniqueConstraints'
+    > {
     properties: EntityTemplateFormInputProperties[];
     attachmentProperties: EntityTemplateFormInputProperties[];
     icon?: fileDetails;
@@ -126,6 +130,7 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
                     toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.entityTemplate.failedToCreate')} />);
                 }
 
+                // eslint-disable-next-line no-console
                 console.log('failed to create/update entity template. error', error);
             },
         },

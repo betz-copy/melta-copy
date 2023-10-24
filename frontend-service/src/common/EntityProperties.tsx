@@ -6,32 +6,23 @@ import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { IEntity } from '../interfaces/entities';
 import { DownloadButton } from './DownloadButton';
 import { RootState } from '../store';
+import { ColoredEnumChip } from './ColoredEnumChip';
 
-export const formatToString = (value: any, valueType: 'string' | 'number' | 'boolean', format?: string) => {
-    if (value === null || value === undefined) {
-        return '-';
-    }
+export const formatToString = (value: any, valueType: 'string' | 'number' | 'boolean', format?: string, enumColor?: string) => {
+    if (value === null || value === undefined) return '-';
 
-    if (valueType === 'boolean') {
-        return value ? i18next.t('booleanOptions.yes') : i18next.t('booleanOptions.no');
+    if (valueType === 'boolean') return value ? i18next.t('booleanOptions.yes') : i18next.t('booleanOptions.no');
+    if (valueType === 'string') {
+        if (format === 'date') return new Date(value).toLocaleDateString('en-uk');
+        if (format === 'date-time') return new Date(value).toLocaleString('en-uk');
+        if (format === 'fileId') return <DownloadButton fileId={value} />;
     }
-
-    if (valueType === 'string' && format === 'date') {
-        return new Date(value).toLocaleDateString('en-uk');
-    }
-
-    if (valueType === 'string' && format === 'date-time') {
-        return new Date(value).toLocaleString('en-uk');
-    }
-
-    if (valueType === 'string' && format === 'fileId') {
-        return <DownloadButton fileId={value} />;
-    }
+    if (enumColor) return <ColoredEnumChip label={value} color={enumColor} />;
 
     return value;
 };
 
-type Template = Pick<IMongoEntityTemplatePopulated, 'properties' | 'propertiesOrder'> &
+type Template = Pick<IMongoEntityTemplatePopulated, 'properties' | 'propertiesOrder' | 'enumPropertiesColors'> &
     Partial<Pick<IMongoEntityTemplatePopulated, 'propertiesPreview'>>;
 interface IEntityPropertiesProps {
     entityTemplate: Template;
@@ -73,7 +64,12 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                                     {hideFields && hideField ? (
                                         <>••••••••</>
                                     ) : (
-                                        formatToString(propertyValue, propertySchema.type, propertySchema.format)
+                                        formatToString(
+                                            propertyValue,
+                                            propertySchema.type,
+                                            propertySchema.format,
+                                            propertySchema.enum && entityTemplate.enumPropertiesColors?.[propertyKey][propertyValue],
+                                        )
                                     )}
                                 </Typography>
                             </Grid>

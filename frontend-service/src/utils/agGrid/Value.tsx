@@ -1,26 +1,43 @@
 /* eslint-disable react/jsx-no-useless-fragment */
 import React from 'react';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
-import { IconButton, Typography, Grid } from '@mui/material';
+import { IconButton, Grid } from '@mui/material';
+import { ColoredEnumChip } from '../../common/ColoredEnumChip';
 
-const Value: React.FC<{ hideValue: boolean; value: string }> = ({ hideValue, value }) => {
+const Value: React.FC<{ hideValue: boolean; value: string; color?: string }> = ({ hideValue, value, color }) => {
     const [hideField, setHideField] = React.useState(true);
     const handleClick = () => {
         setHideField((curr) => !curr);
     };
-    if (!hideValue) return <>{value} </>;
+
+    let innerContent = <></>;
+
+    if (hideValue && hideField) innerContent = <>••••••••</>;
+    else if (color) innerContent = <ColoredEnumChip label={value} color={color} />;
+    else innerContent = <>{value}</>;
 
     return (
         <Grid container justifyContent="space-between" alignItems="center" direction="row">
-            <Typography
-                fontFamily="Rubik"
-                fontSize="16px"
-                fontWeight="200"
-                style={{ overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis', width: '70%' }}
+            <Grid
+                item
+                sx={{
+                    fontFamily: 'Rubik',
+                    fontSize: '16px',
+                    fontWeight: '200',
+                    overflow: 'hidden',
+                    whiteSpace: 'nowrap',
+                    textOverflow: 'ellipsis',
+                    width: '70%',
+                }}
             >
-                {hideField ? <>••••••••</> : value}
-            </Typography>
-            <IconButton onClick={handleClick}>{hideField ? <VisibilityOff /> : <Visibility />}</IconButton>
+                {innerContent}
+            </Grid>
+
+            {hideValue && (
+                <Grid item>
+                    <IconButton onClick={handleClick}>{hideField ? <VisibilityOff /> : <Visibility />}</IconButton>
+                </Grid>
+            )}
         </Grid>
     );
 };

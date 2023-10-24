@@ -114,6 +114,7 @@ export const enumColDef = <Data extends any = IEntity>(
     valueGetter: ValueGetterFunc<Data>,
     value: { title: string },
     values: Array<string>,
+    enumColorOptions?: Record<string, string>,
     hideColumn = false,
     hideValue = false,
 ): ColDef<Data> => {
@@ -126,7 +127,9 @@ export const enumColDef = <Data extends any = IEntity>(
         field,
         headerName: value.title,
         valueGetter,
-        cellRenderer: (props: ICellRendererParams<Data, string | undefined>) => <Value hideValue={hideValue} value={props.value ?? ''} />,
+        cellRenderer: (props: ICellRendererParams<Data, string | undefined>) => {
+            return <Value hideValue={hideValue} value={props.value ?? ''} color={props.value && enumColorOptions?.[props.value]} />;
+        },
         filter: 'agSetColumnFilter',
         filterParams,
         hide: hideColumn,

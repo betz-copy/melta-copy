@@ -4,6 +4,7 @@ export interface CommonFormInputProperties {
     type: string;
     id: string;
     options: string[];
+    optionColors?: Record<string, string | undefined>;
     pattern: string;
     patternCustomErrorMessage: string;
     dateNotification?: string | null;

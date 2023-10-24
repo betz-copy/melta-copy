@@ -1,52 +1,35 @@
-import React, { CSSProperties, useState } from 'react';
-import { Button, Typography } from '@mui/material';
-import { TwitterPicker } from 'react-color';
+import React, { CSSProperties, useEffect } from 'react';
+import { Grid, IconButton } from '@mui/material';
+import { SliderPicker } from 'react-color';
+import { CloseOutlined as DeleteIcon } from '@mui/icons-material';
 
-const ColorPicker: React.FC<{
-    colors: string[];
-    color: string;
-    setColor: React.Dispatch<React.SetStateAction<string>>;
-    text: string;
+export interface IColorPickerProps {
+    color?: string;
+    onColorChange: (color?: string) => void;
     width: CSSProperties['width'];
-    height: CSSProperties['height'];
-}> = ({ colors, color, setColor, text, width, height }) => {
-    const [open, setOpen] = useState(false);
+    initialColor?: boolean;
+    allowDelete?: boolean;
+    style?: CSSProperties;
+}
+
+export const ColorPicker: React.FC<IColorPickerProps> = ({ color, onColorChange, width, initialColor = true, allowDelete = true, style }) => {
+    useEffect(() => {
+        if (initialColor && !color) {
+            onColorChange('#40bfbc');
+        }
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
     return (
-        <>
-            <Button
-                onClick={(_ev) =>
-                    setOpen((curr) => {
-                        return !curr;
-                    })
-                }
-                style={{ backgroundColor: color, height, width, border: '1px solid rgb(196, 196, 196)' }}
-            >
-                <Typography style={{ color: 'black' }}>{text}</Typography>
-            </Button>
-            {open && (
-                <TwitterPicker
-                    colors={colors}
-                    color={color}
-                    onChange={(col) => {
-                        setColor(col.hex);
-                        setOpen(false);
-                    }}
-                    triangle="top-right"
-                    styles={{
-                        default: {
-                            hash: {
-                                display: 'none',
-                            },
-                            input: {
-                                display: 'none',
-                            },
-                            card: { marginTop: '3px', width },
-                        },
-                    }}
-                />
+        <Grid container direction="column" alignItems="center" sx={style}>
+            <SliderPicker color={color} onChange={({ hex }) => onColorChange(hex)} styles={{ default: { hue: { width } } }} />
+
+            {allowDelete && (
+                <Grid item marginTop="0.8rem">
+                    <IconButton onClick={() => onColorChange()} sx={{ padding: '0.4rem' }}>
+                        <DeleteIcon />
+                    </IconButton>
+                </Grid>
             )}
-        </>
+        </Grid>
     );
 };
-
-export default ColorPicker;

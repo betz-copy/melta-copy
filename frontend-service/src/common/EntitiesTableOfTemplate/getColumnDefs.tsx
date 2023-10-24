@@ -46,7 +46,7 @@ export const getColumnDefs = <Data extends any = IEntity>({
         if (type === 'boolean') return booleanColDef(key, valueGetter, value, hideColumn, hideField);
         if (format === 'date' || format === 'date-time') return dateColDef(key, valueGetter, value, hideColumn, hideField);
         if (format === 'fileId') return fileColDef(key, valueGetter, value, hideColumn);
-        if (value.enum) return enumColDef(key, valueGetter, value, value.enum, hideColumn, hideField);
+        if (value.enum) return enumColDef(key, valueGetter, value, value.enum, template.enumPropertiesColors?.[key], hideColumn, hideField);
         if (value.pattern) return regexColDef(key, valueGetter, value, hideColumn, hideField);
         return stringColDef(key, valueGetter, value, hideColumn, hideField);
     });

@@ -27,6 +27,7 @@ import isEqual from 'lodash.isequal';
 import { dateNotificationTypes, validPropertyTypes } from './AddFields';
 
 import { CommonFormInputProperties } from './commonInterfaces';
+import { MinimizedColorPicker } from '../../inputs/MinimizedColorPicker';
 
 const UniqueCheckboxTooltipTitle = (
     <Box sx={{ whiteSpace: 'pre-wrap' }}>
@@ -185,15 +186,35 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                     }
                                                 }}
                                                 renderTags={(tagValue, getTagProps) =>
-                                                    tagValue.map((option: string, tagIndex: number) => (
-                                                        // eslint-disable-next-line react/jsx-key
-                                                        <Chip
-                                                            variant="outlined"
-                                                            label={option}
-                                                            {...getTagProps({ index: tagIndex })}
-                                                            disabled={isDisabled && initialEnumOptions.includes(option)}
-                                                        />
-                                                    ))
+                                                    tagValue.map((option: string, tagIndex: number) => {
+                                                        const chipDisabled = isDisabled && initialEnumOptions.includes(option);
+
+                                                        return (
+                                                            <Box position="relative" key={option}>
+                                                                <Chip
+                                                                    variant="outlined"
+                                                                    label={option}
+                                                                    {...getTagProps({ index: tagIndex })}
+                                                                    disabled={chipDisabled}
+                                                                    icon={value.optionColors && <Box width="1.3rem" />}
+                                                                />
+                                                                {value.optionColors && (
+                                                                    <MinimizedColorPicker
+                                                                        color={value.optionColors[option]}
+                                                                        onColorChange={(color) => {
+                                                                            setFieldValue('optionColors', {
+                                                                                ...value.optionColors,
+                                                                                [option]: color,
+                                                                            });
+                                                                        }}
+                                                                        circleSize="1.6rem"
+                                                                        width="30rem"
+                                                                        style={{ position: 'absolute', top: 4.5, left: 4.2, zIndex: 2000 }}
+                                                                    />
+                                                                )}
+                                                            </Box>
+                                                        );
+                                                    })
                                                 }
                                                 filterSelectedOptions
                                                 renderInput={(params) => (
@@ -241,24 +262,22 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                             </>
                                         )}
                                         {value.type === 'serialNumber' && (
-                                            <>
-                                                <TextField
-                                                    label={i18next.t('wizard.entityTemplate.serialStarter')}
-                                                    id={serialStarter}
-                                                    name={serialStarter}
-                                                    value={value.serialStarter}
-                                                    onChange={(e) => {
-                                                        setFieldValue('serialStarter', Number(e.target.value));
-                                                    }}
-                                                    type="number"
-                                                    error={touchedSerialStarter && Boolean(errorSerialStarter)}
-                                                    helperText={touchedSerialStarter && errorSerialStarter}
-                                                    disabled={isDisabled}
-                                                    dir="ltr"
-                                                    sx={{ marginRight: '5px' }}
-                                                    fullWidth
-                                                />
-                                            </>
+                                            <TextField
+                                                label={i18next.t('wizard.entityTemplate.serialStarter')}
+                                                id={serialStarter}
+                                                name={serialStarter}
+                                                value={value.serialStarter}
+                                                onChange={(e) => {
+                                                    setFieldValue('serialStarter', Number(e.target.value));
+                                                }}
+                                                type="number"
+                                                error={touchedSerialStarter && Boolean(errorSerialStarter)}
+                                                helperText={touchedSerialStarter && errorSerialStarter}
+                                                disabled={isDisabled}
+                                                dir="ltr"
+                                                sx={{ marginRight: '5px' }}
+                                                fullWidth
+                                            />
                                         )}
                                         {(value.type === 'date' || value.type === 'date-time') &&
                                             'dateNotification' in value &&

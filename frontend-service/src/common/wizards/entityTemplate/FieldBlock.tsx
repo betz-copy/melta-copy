@@ -53,6 +53,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
         hide: false,
         unique: false,
         options: [],
+        optionColors: {},
         pattern: '',
         patternCustomErrorMessage: '',
         dateNotification: undefined,

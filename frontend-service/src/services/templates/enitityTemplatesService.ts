@@ -11,13 +11,15 @@ export const stringFormats = ['date', 'date-time', 'email'];
 
 const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTemplatePopulated | null): EntityTemplateWizardValues | undefined => {
     if (!entityTemplate) return undefined;
-    const { iconFileId, properties, propertiesOrder, propertiesPreview, uniqueConstraints, ...restOfEntityTemplate } = entityTemplate;
+    const { iconFileId, properties, propertiesOrder, propertiesPreview, enumPropertiesColors, uniqueConstraints, ...restOfEntityTemplate } =
+        entityTemplate;
 
     const propertiesArray: EntityTemplateFormInputProperties[] = [];
     const attachmentProperties: EntityTemplateFormInputProperties[] = [];
 
     propertiesOrder.forEach((key) => {
         const value = properties.properties[key];
+
         let type = value.format || value.type;
         if (value.serialStarter !== undefined) {
             type = 'serialNumber';
@@ -28,6 +30,7 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
         if (value.pattern) {
             type = 'pattern';
         }
+
         const property: EntityTemplateFormInputProperties = {
             id: uuid(),
             name: key,
@@ -38,6 +41,7 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
             unique: type !== 'serialNumber' && uniqueConstraints.filter((constraints) => constraints.includes(key)).length > 0, // serials cant be marked unique
             type,
             options: value.enum || [],
+            optionColors: enumPropertiesColors ? enumPropertiesColors[key] : {},
             pattern: value.pattern || '',
             patternCustomErrorMessage: value.patternCustomErrorMessage || '',
             dateNotification: value.dateNotification,
@@ -73,11 +77,41 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTem
         hide: [],
     };
 
+    let enumPropertiesColors: IEntityTemplate['enumPropertiesColors'];
+
     properties.forEach(
-        ({ name, title, type, required, preview, options, pattern, patternCustomErrorMessage, dateNotification, serialStarter, hide, unique }) => {
+        ({
+            name,
+            title,
+            type,
+            required,
+            preview,
+            options,
+            optionColors,
+            pattern,
+            patternCustomErrorMessage,
+            dateNotification,
+            serialStarter,
+            hide,
+            unique,
+        }) => {
+            let propertyType: IEntitySingleProperty['type'];
+            switch (type) {
+                case 'string':
+                case 'number':
+                case 'boolean':
+                    propertyType = type;
+                    break;
+                case 'serialNumber':
+                    propertyType = 'number';
+                    break;
+                default:
+                    propertyType = 'string';
+            }
+
             schema.properties[name] = {
                 title,
-                type: basePropertyTypes.includes(type) ? (type as IEntitySingleProperty['type']) : type === 'serialNumber' ? 'number' : 'string',
+                type: propertyType,
                 format: stringFormats.includes(type) ? type : undefined,
                 enum: type === 'enum' ? options : undefined,
                 pattern: type === 'pattern' ? pattern : undefined,
@@ -93,8 +127,17 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTem
             if (hide) schema.hide.push(name);
             if (unique) uniqueConstraint.push(name);
             if (preview) propertiesPreview.push(name);
-            if (type === 'serialNumber') {
-                serialsUniqueConstraints.push([name]);
+            if (type === 'serialNumber') serialsUniqueConstraints.push([name]);
+
+            if (type === 'enum') {
+                Object.entries(optionColors).forEach(([option, color]) => {
+                    if (!color) return;
+
+                    if (!enumPropertiesColors) enumPropertiesColors = {};
+                    if (!enumPropertiesColors[name]) enumPropertiesColors[name] = {};
+
+                    enumPropertiesColors[name][option] = color;
+                });
             }
         },
     );
@@ -113,7 +156,15 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTem
 
     const uniqueConstraints = uniqueConstraint.length > 0 ? [uniqueConstraint, ...serialsUniqueConstraints] : serialsUniqueConstraints;
 
-    return { ...restOfProperties, properties: schema, category: values.category._id, propertiesOrder, propertiesPreview, uniqueConstraints };
+    return {
+        ...restOfProperties,
+        properties: schema,
+        category: values.category._id,
+        propertiesOrder,
+        propertiesPreview,
+        enumPropertiesColors,
+        uniqueConstraints,
+    };
 };
 
 const createEntityTemplateRequest = async (newEntityTemplate: EntityTemplateWizardValues) => {
@@ -123,6 +174,9 @@ const createEntityTemplateRequest = async (newEntityTemplate: EntityTemplateWiza
 
     if (newEntityTemplate.icon) {
         formData.append('file', newEntityTemplate.icon.file as File);
+    }
+    if (entityTemplate.enumPropertiesColors) {
+        formData.append('enumPropertiesColors', JSON.stringify(entityTemplate.enumPropertiesColors));
     }
 
     formData.append('displayName', entityTemplate.displayName);
@@ -156,6 +210,9 @@ const updateEntityTemplateRequest = async (entityTemplateId: string, updatedEnti
         } else {
             formData.append('iconFileId', updatedEntityTemplate.icon.file.name!);
         }
+    }
+    if (entityTemplate.enumPropertiesColors) {
+        formData.append('enumPropertiesColors', JSON.stringify(entityTemplate.enumPropertiesColors));
     }
 
     formData.append('displayName', entityTemplate.displayName);
