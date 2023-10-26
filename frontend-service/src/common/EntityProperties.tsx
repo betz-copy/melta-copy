@@ -68,7 +68,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                                             propertyValue,
                                             propertySchema.type,
                                             propertySchema.format,
-                                            propertySchema.enum && entityTemplate.enumPropertiesColors?.[propertyKey][propertyValue],
+                                            propertySchema.enum && entityTemplate.enumPropertiesColors?.[propertyKey]?.[propertyValue],
                                         )
                                     )}
                                 </Typography>

@@ -41,7 +41,7 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
             unique: type !== 'serialNumber' && uniqueConstraints.filter((constraints) => constraints.includes(key)).length > 0, // serials cant be marked unique
             type,
             options: value.enum || [],
-            optionColors: enumPropertiesColors ? enumPropertiesColors[key] : {},
+            optionColors: enumPropertiesColors?.[key] ? enumPropertiesColors[key] : {},
             pattern: value.pattern || '',
             patternCustomErrorMessage: value.patternCustomErrorMessage || '',
             dateNotification: value.dateNotification,
