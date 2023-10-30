@@ -36,5 +36,8 @@ module.exports = {
         'no-underscore-dangle': 'off',
         'no-unused-vars': 'off', // Checked by typescript,
         'no-console': 'off',
+        'import/prefer-default-export': 'off', // rule sucks
+        'no-shadow': 'off',
+        '@typescript-eslint/no-shadow': 'error',
     },
 };

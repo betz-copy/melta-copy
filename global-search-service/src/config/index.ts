@@ -13,7 +13,8 @@ const config = {
     },
     templateManager: {
         url: env.get('TEMPLATE_MANAGER_URL').required().asString(),
-        getTemplatesRoute: env.get('TEMPLATE_MANAGER_SEARCH_TEMPLATES_ROUTE').default('/api/templates/entities/search').asString(),
+        baseRoute: env.get('TEMPLATE_MANAGER_BASE_ROUTE').default('/api/templates/entities').asString(),
+        searchTemplatesRoute: env.get('TEMPLATE_MANAGER_SEARCH_TEMPLATES_ROUTE').default('/search').asString(),
         timeout: env.get('TEMPLATE_MANAGER_TIMEOUT').default(5000).asIntPositive(),
     },
     neo4j: {
@@ -26,11 +27,13 @@ const config = {
         connectionRetries: env.get('NEO4J_CONNECTION_RETRIES').default(5).asIntPositive(),
         connectionRetryDelay: env.get('NEO4J_CONNECTION_RETRY_DELAY').default(3000).asIntPositive(),
         globalSearchIndexes: env.get('NEO4J_GLOBAL_SEARCH_INDEXES').default('primaryGlobalSearch,secondaryGlobalSearch').asArray(),
+        templateSearchIndexPrefixes: env.get('NEO4J_TEMPLATE_SEARCH_INDEX_PREFIXES').default('primaryGlobalSearch_,secondaryGlobalSearch_').asArray(),
         stringPropertySuffix: env.get('STRING_PROPERTY_SUFFIX').default('_tostring').asString(),
     },
     redis: {
         url: env.get('REDIS_HOST').default('redis://redis:6379').asString(),
-        globalSearchKeyName: env.get('GLOBAL_SEARCH_KEY_NAME').default('latestIndex').asString(),
+        globalSearchKeyName: env.get('REDIS_GLOBAL_SEARCH_KEY_NAME').default('latestIndex').asString(),
+        templateSearchKeyNamePrefix: env.get('REDIS_TEMPLATE_SEARCH_KEY_NAME_PREFIX').default('latestIndex_').asString(),
     },
 };
 

@@ -1,25 +1,11 @@
-import menash, { ConsumerMessage } from 'menashmq';
+import menash from 'menashmq';
 
-import { trycatch } from './utils';
-import fetchTemplatesAndCreateIndex from './search';
 import Neo4jClient from './utils/neo4j';
 import RedisClient from './utils/redis';
 import config from './config';
+import { updateIndexConsumeFunction } from './rabbit/consumer';
 
 const { rabbit, neo4j, redis } = config;
-
-const searchConsumeFunction = async (msg: ConsumerMessage) => {
-    const { err } = await trycatch(() => fetchTemplatesAndCreateIndex());
-
-    if (err) {
-        msg.nack(false);
-
-        throw new Error(`Failed to create new search index: ${err}`);
-    }
-
-    console.log(`Successfully created new search index!`);
-    msg.ack();
-};
 
 const initializeRabbit = async () => {
     console.log('Connecting to Rabbit...');
@@ -30,7 +16,7 @@ const initializeRabbit = async () => {
 
     await menash.declareTopology({
         queues: [{ name: rabbit.queueName, options: { durable: true, prefetch: 1 } }],
-        consumers: [{ queueName: rabbit.queueName, onMessage: searchConsumeFunction }],
+        consumers: [{ queueName: rabbit.queueName, onMessage: updateIndexConsumeFunction }],
     });
 
     console.log('Rabbit initialized');
@@ -50,17 +36,4 @@ const main = async () => {
     await initializeRabbit();
 };
 
-main().catch((err) => {
-    console.error(err);
-    process.exit(1);
-});
-
-process
-    .on('unhandledRejection', (reason, p) => {
-        console.error(reason, 'Unhandled Rejection at Promise', p);
-        process.exit(1);
-    })
-    .on('uncaughtException', (err) => {
-        console.error(err, 'Uncaught Exception thrown');
-        process.exit(1);
-    });
+main();
