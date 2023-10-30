@@ -14,14 +14,16 @@ import { ServerSideRowModelModule } from '@noam7700/ag-grid-enterprise-server-si
 import i18next from 'i18next';
 import { toast } from 'react-toastify';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IAGGridRequest } from '../../utils/agGrid/interfaces';
 
 import '@ag-grid-community/styles/ag-grid.css';
 import '@ag-grid-community/styles/ag-theme-material.css';
 import '../../css/table.css';
 
 import { DateFilterComponent } from '../../utils/agGrid/DateFilterComponent';
+import { agGridToSearchEntitiesOfTemplateRequest } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
 import { IEntity } from '../../interfaces/entities';
-import { getEntitiesByTemplateRequest } from '../../services/entitiesService';
+import { searchEntitiesOfTemplateRequest } from '../../services/entitiesService';
 import { getColumnDefs } from './getColumnDefs';
 import { trycatch } from '../../utils/trycatch';
 import { LocalStorage } from '../../utils/localStorage';
@@ -37,21 +39,18 @@ export const defaultFilterModel = {
 };
 
 export const getDatasource = <Data extends any = IEntity>(
-    templateId: IMongoEntityTemplatePopulated['_id'],
+    template: IMongoEntityTemplatePopulated,
     quickFilterText: string | undefined,
     onFail: ((err: unknown) => void) | undefined,
 ): IServerSideDatasource => {
     return {
         async getRows(params: IServerSideGetRowsParams<Data>) {
-            const { sortModel, startRow, endRow, filterModel } = params.request;
+            const agGridRequest = params.request;
             const { result: data, err } = await trycatch(() =>
-                getEntitiesByTemplateRequest([templateId], {
-                    sortModel,
-                    startRow,
-                    endRow,
-                    filterModel,
-                    quickFilter: quickFilterText || undefined,
-                }),
+                searchEntitiesOfTemplateRequest(
+                    template._id,
+                    agGridToSearchEntitiesOfTemplateRequest({ ...agGridRequest, quickFilter: quickFilterText } as IAGGridRequest, template),
+                ),
             );
             if (err || !data) {
                 onFail?.(err);
@@ -59,14 +58,14 @@ export const getDatasource = <Data extends any = IEntity>(
                 return;
             }
 
-            params.success({ rowData: data.rows, rowCount: data.lastRowIndex });
+            params.success({ rowData: data.entities.map(({ entity }) => entity), rowCount: data.count });
         },
     };
 };
 
 const getRowModelProps = <Data extends any = IEntity>(
     rowModelType: 'serverSide' | 'clientSide' | 'infinite',
-    templateId: IMongoEntityTemplatePopulated['_id'],
+    template: IMongoEntityTemplatePopulated,
     rowData: Data[] | undefined,
     paginationPageSize: number,
     datasource: IServerSideDatasource | undefined,
@@ -80,7 +79,7 @@ const getRowModelProps = <Data extends any = IEntity>(
     if (rowModelType === 'serverSide') {
         return {
             rowModelType,
-            serverSideDatasource: datasource ?? getDatasource(templateId, quickFilterText, datasourceOnFail),
+            serverSideDatasource: datasource ?? getDatasource(template, quickFilterText, datasourceOnFail),
             cacheBlockSize: 50,
             maxBlocksInCache: 10,
             pagination: true,
@@ -91,6 +90,7 @@ const getRowModelProps = <Data extends any = IEntity>(
     return {
         rowModelType,
         pagination: false,
+        serverSideDatasource: datasource ?? getDatasource(template, quickFilterText, datasourceOnFail),
         cacheBlockSize: 50,
         maxBlocksInCache: 10,
         maxConcurrentDatasourceRequests: 1,
@@ -216,8 +216,8 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
         // because we recreate datasource object on every irrelevant render, we recreate only on dependencies
         // usually only quickFilterText changes on deps
         const rowModelProps = useMemo(
-            () => getRowModelProps(rowModelType, template._id, rowData, pageRowCount, datasource, quickFilterText, datasourceOnFail),
-            [rowModelType, template._id, rowData, pageRowCount, datasource, quickFilterText],
+            () => getRowModelProps(rowModelType, template, rowData, pageRowCount, datasource, quickFilterText, datasourceOnFail),
+            [rowModelType, template, rowData, pageRowCount, datasource, quickFilterText],
         );
 
         const getStyles = () => ({

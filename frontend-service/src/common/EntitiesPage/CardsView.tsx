@@ -7,7 +7,7 @@ import { environment } from '../../globals';
 import EntityCard from '../../pages/GlobalSearch/components/entityCard';
 import { InfiniteScroll } from '../InfiniteScroll';
 import { IEntity } from '../../interfaces/entities';
-import { getEntitiesByTemplateRequest } from '../../services/entitiesService';
+import { getEntitiesWithDirectConnections } from '../../services/entitiesService';
 import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
 
 const { infiniteScrollPageCount } = environment.entitiesCardsView;
@@ -50,17 +50,17 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
                             // if loading startRow, entities count not known yet
                             setEntitiesCount(null);
                         }
-                        const searchEntitiesResult = await getEntitiesByTemplateRequest(templateIds, {
-                            startRow,
-                            endRow: startRow + infiniteScrollPageCount - 1,
-                            quickFilter: searchInput,
-                            sortModel: [], // todo: pass score, and not by default
-                            filterModel: {},
+
+                        const searchEntitiesResult = await getEntitiesWithDirectConnections({
+                            skip: startRow,
+                            limit: infiniteScrollPageCount,
+                            textSearch: searchInput,
+                            templates: Object.fromEntries(templateIds.map((templateId) => [templateId, { showRelationships: false }])),
                         });
 
-                        setEntitiesCount(searchEntitiesResult.lastRowIndex);
+                        setEntitiesCount(searchEntitiesResult.count);
 
-                        return searchEntitiesResult.rows;
+                        return searchEntitiesResult.entities.map(({ entity }) => entity);
                     }}
                     onQueryError={(error) => {
                         console.log('failed to search entities error:', error);

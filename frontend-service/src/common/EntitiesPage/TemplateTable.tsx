@@ -2,7 +2,7 @@ import React, { forwardRef, useImperativeHandle, useRef, useState } from 'react'
 import { Grid, Box, CircularProgress, Dialog } from '@mui/material';
 import { ExpandLess, ExpandMore, AddCircle, VerticalAlignBottomOutlined as DownloadIcon } from '@mui/icons-material';
 import i18next from 'i18next';
-import { useQuery } from 'react-query';
+import { useMutation } from 'react-query';
 import { toast } from 'react-toastify';
 import fileDownload from 'js-file-download';
 import { GridApi, IServerSideGetRowsRequest } from '@ag-grid-community/core';
@@ -13,10 +13,11 @@ import { BlueTitle } from '../BlueTitle';
 import { ResetFilterButton } from './ResetFilterButton';
 import IconButtonWithPopover from '../IconButtonWithPopover';
 import { CustomIcon } from '../CustomIcon';
-import { exportEntitesTablesToExcelRequest } from '../../services/entitiesService';
+import { exportEntitiesRequest } from '../../services/entitiesService';
 import { EditEntityDetails } from '../../pages/Entity/components/EditEntityDetails';
 import { IEntity } from '../../interfaces/entities';
 import { environment } from '../../globals';
+import { filterModelToFilterOfTemplate, sortModelToSortOfSearchRequest } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
 
 const { expandedRowCount } = environment.agGrid;
 
@@ -34,30 +35,26 @@ const TemplateTable = forwardRef<
     }
 >(({ template, quickFilterText, page }, ref) => {
     const entitiesTableRef = useRef<EntitiesTableOfTemplateRef<IEntity>>(null);
-    const getFilterDataFromRef = () => {
-        const filterModel = entitiesTableRef.current?.getFilterModel() || {};
-        const sortModel = entitiesTableRef.current?.getSortModel() || [];
-
-        return {
-            filterModel,
-            sortModel,
-            quickFilter: quickFilterText || undefined,
-        };
-    };
 
     useImperativeHandle(ref, () => ({
         getFilterModel: () => entitiesTableRef.current?.getFilterModel(),
         getSortModel: () => entitiesTableRef.current?.getSortModel(),
     }));
 
-    const { isFetching: isExportingTableToExcelFile, refetch: exportTemplateToExcel } = useQuery(
-        ['exportTemplateToExcel', getFilterDataFromRef(), `${template.displayName}.xlsx`],
-        () => {
-            const filterRowsData = getFilterDataFromRef();
-            return exportEntitesTablesToExcelRequest({ [template._id]: filterRowsData }, `${template.displayName}.xlsx`);
+    const { isLoading: isExportingTableToExcelFile, mutateAsync: exportTemplateToExcel } = useMutation(
+        async () => {
+            return exportEntitiesRequest({
+                fileName: `${template.displayName}.xlsx`,
+                textSearch: quickFilterText,
+                templates: {
+                    [template._id]: {
+                        filter: filterModelToFilterOfTemplate(entitiesTableRef.current?.getFilterModel() ?? {}, template),
+                        sort: sortModelToSortOfSearchRequest(entitiesTableRef.current?.getSortModel() ?? []),
+                    },
+                },
+            });
         },
         {
-            enabled: false,
             onError(error) {
                 console.log('Failed to export table', error);
                 toast.error(i18next.t('failedToExportTable'));

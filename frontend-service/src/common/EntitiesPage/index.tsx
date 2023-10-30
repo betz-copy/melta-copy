@@ -11,8 +11,10 @@ import { IMongoCategory } from '../../interfaces/categories';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { EntitiesPageHeadline } from './Headline';
 import TemplateTablesView, { TemplateTablesViewRef } from './TemplateTablesView';
-import { TemplatesWithFilterDataObj, exportEntitesTablesToExcelRequest } from '../../services/entitiesService';
+import { exportEntitiesRequest } from '../../services/entitiesService';
 import CardsView, { CardsViewRef } from './CardsView';
+import { IExportEntitiesBody } from '../../interfaces/entities';
+import { filterModelToFilterOfTemplate, sortModelToSortOfSearchRequest } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
 
 const EntitiesPage: React.FC<{
     templates: IMongoEntityTemplatePopulated[];
@@ -34,15 +36,17 @@ const EntitiesPage: React.FC<{
     const [searchInput, setSearchInput] = useState(urlSearchParams.get('search')!);
     const { mutateAsync: exportTemplatesToExcel, isLoading: isLoadingExcelExport } = useMutation(
         async () => {
-            const templatesToExport: TemplatesWithFilterDataObj = mapValues(
+            const templatesToExport: IExportEntitiesBody['templates'] = mapValues(
                 templateTablesViewRef.current!.templateTablesRefs,
-                (templateTableRef) => ({
-                    filterModel: templateTableRef.getFilterModel()!,
-                    sortModel: templateTableRef.getSortModel()!,
-                    quickFilter: searchInput || undefined,
-                }),
+                (templateTableRef, templateId) => {
+                    const template = templates.find(({ _id }) => _id === templateId)!;
+                    return {
+                        filter: filterModelToFilterOfTemplate(templateTableRef.getFilterModel()!, template),
+                        sort: sortModelToSortOfSearchRequest(templateTableRef.getSortModel()!),
+                    };
+                },
             );
-            return exportEntitesTablesToExcelRequest(templatesToExport, excelExportAllTablesFileName);
+            return exportEntitiesRequest({ fileName: excelExportAllTablesFileName, textSearch: searchInput, templates: templatesToExport });
         },
         {
             onError(error) {

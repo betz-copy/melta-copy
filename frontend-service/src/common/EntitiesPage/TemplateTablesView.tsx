@@ -8,7 +8,7 @@ import i18next from 'i18next';
 import { toast } from 'react-toastify';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { TemplateTable, TemplateTableRef } from './TemplateTable';
-import { getEntitiesByTemplateRequest } from '../../services/entitiesService';
+import { searchEntitiesOfTemplateRequest } from '../../services/entitiesService';
 import { templatesCompareFunc } from '../../utils/templates';
 
 type TemplateTablesViewResultsRef = {
@@ -71,14 +71,12 @@ const TemplateTablesViewResults = forwardRef<
 });
 
 const getTemplateCount = async (templateId: string, searchInput: string) => {
-    const { lastRowIndex } = await getEntitiesByTemplateRequest([templateId], {
-        startRow: 0,
-        endRow: 0,
-        quickFilter: searchInput || undefined,
-        sortModel: [],
-        filterModel: {},
+    const { count } = await searchEntitiesOfTemplateRequest(templateId, {
+        skip: 0,
+        limit: 1,
+        textSearch: searchInput,
     });
-    return lastRowIndex;
+    return count;
 };
 
 const filterEmptyTemplateTablesOnGlobalSearchRequest = async (templates: IMongoEntityTemplatePopulated[], searchInput: string) => {

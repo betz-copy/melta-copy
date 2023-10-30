@@ -1,0 +1,194 @@
+import { IFilterOfTemplate, ISearchEntitiesOfTemplateBody } from '../../interfaces/entities';
+import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { getDayStart, getDayEnd } from '../date';
+import {
+    IAGGidNumberFilter,
+    IAGGridDateFilter,
+    IAGGridFilterModel,
+    IAGGridRequest,
+    IAGGridSetFilter,
+    IAGGridSort,
+    IAGGridTextFilter,
+} from './interfaces';
+
+export const setFilterToFilterOfTemplate = (field: string, { values }: IAGGridSetFilter): IFilterOfTemplate => {
+    return { [field]: { $in: values } };
+};
+export const textFilterToFilterOfTemplate = (field: string, { type, filter }: IAGGridTextFilter): IFilterOfTemplate => {
+    const escapeRegExp = (string: string) => {
+        return string.replace(/[.*+\-?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
+    };
+
+    switch (type) {
+        case 'equals':
+            return { [field]: { $eq: filter } };
+        case 'notEqual':
+            return { [field]: { $ne: filter } };
+        case 'contains':
+            return { [field]: { $rgx: `.*${escapeRegExp(filter!)}.*` } };
+        case 'notContains':
+            return { [field]: { $not: { $rgx: `${escapeRegExp(filter!)}` } } };
+        case 'startsWith':
+            return { [field]: { $rgx: `${escapeRegExp(filter!)}.*` } };
+        case 'endsWith':
+            return { [field]: { $rgx: `.*${escapeRegExp(filter!)}` } };
+        case 'blank':
+            return { [field]: { $eq: null } };
+        case 'notBlank':
+            return { [field]: { $ne: null } };
+        default:
+            throw new Error('Invalid supported ag-grid filter type method');
+    }
+};
+export const numberFilterToFilterOfTemplate = (field: string, { type, filter, filterTo }: IAGGidNumberFilter): IFilterOfTemplate => {
+    switch (type) {
+        case 'equals':
+            return { [field]: { $eq: filter } };
+        case 'notEqual':
+            return { [field]: { $ne: filter } };
+        case 'lessThan':
+            return { [field]: { $lt: filter } };
+        case 'lessThanOrEqual':
+            return { [field]: { $lte: filter } };
+        case 'greaterThan':
+            return { [field]: { $gt: filter } };
+        case 'greaterThanOrEqual':
+            return { [field]: { $gte: filter } };
+        case 'inRange': {
+            return { [field]: { $gte: filter, $lte: filterTo } };
+        }
+        case 'blank':
+            return { [field]: { $eq: null } };
+        case 'notBlank':
+            return { [field]: { $ne: null } };
+        default:
+            throw new Error('Invalid supported ag-grid filter type method');
+    }
+};
+
+export const dateFilterToFilterOfTemplate = (
+    field: string,
+    { type, dateFrom: dateFromString, dateTo: dateToString }: IAGGridDateFilter,
+): IFilterOfTemplate => {
+    if (!dateFromString) {
+        switch (type) {
+            case 'blank':
+                return { [field]: { $eq: null } };
+            case 'notBlank':
+                return { [field]: { $ne: null } };
+            default:
+                throw new Error('Invalid supported ag-grid filter type method');
+        }
+    }
+
+    const dateFrom = new Date(dateFromString).toISOString().split('T')[0];
+
+    switch (type) {
+        case 'equals':
+            return { [field]: { $eq: dateFrom } };
+        case 'notEqual':
+            return { [field]: { $ne: dateFrom } };
+        case 'lessThan':
+            return { [field]: { $lt: dateFrom } };
+        case 'lessThanOrEqual':
+            return { [field]: { $lte: dateFrom } };
+        case 'greaterThan':
+            return { [field]: { $gt: dateFrom } };
+        case 'greaterThanOrEqual':
+            return { [field]: { $gte: dateFrom } };
+        case 'inRange':
+            // eslint-disable-next-line no-case-declarations
+            const dateTo = new Date(dateToString!).toISOString().split('T')[0];
+            return { [field]: { $gte: dateFrom, $lte: dateTo } };
+        default:
+            throw new Error('Invalid supported ag-grid filter type method');
+    }
+};
+
+export const dateTimeFilterToFilterOfTemplate = (
+    field: string,
+    { type, dateFrom: dateFromString, dateTo: dateToString }: IAGGridDateFilter,
+): IFilterOfTemplate => {
+    if (!dateFromString) {
+        switch (type) {
+            case 'blank':
+                return { [field]: { $eq: null } };
+            case 'notBlank':
+                return { [field]: { $ne: null } };
+            default:
+                throw new Error('Invalid supported ag-grid filter type method');
+        }
+    }
+
+    const dateFrom = new Date(dateFromString);
+
+    switch (type) {
+        case 'equals':
+            return { [field]: { $gte: getDayStart(dateFrom).toISOString(), $lte: getDayEnd(dateFrom).toISOString() } };
+        case 'notEqual':
+            return { [field]: { $not: { $gte: getDayStart(dateFrom).toISOString(), $lte: getDayEnd(dateFrom).toISOString() } } };
+        case 'lessThan':
+            return { [field]: { $lt: getDayStart(dateFrom).toISOString() } }; // dont include this day
+        case 'lessThanOrEqual':
+            return { [field]: { $lte: getDayEnd(dateFrom).toISOString() } }; // include this day
+        case 'greaterThan':
+            return { [field]: { $gt: getDayEnd(dateFrom).toISOString() } }; // dont include this day
+        case 'greaterThanOrEqual':
+            return { [field]: { $gte: getDayStart(dateFrom).toISOString() } }; // include this day
+        case 'inRange':
+            // eslint-disable-next-line no-case-declarations
+            const dateTo = new Date(dateToString!);
+            return { [field]: { $gte: getDayStart(dateFrom).toISOString(), $lte: getDayEnd(dateTo).toISOString() } };
+        default:
+            throw new Error('Invalid supported ag-grid filter type method');
+    }
+};
+
+export const filterModelToFilterOfTemplate = (
+    filterModel: IAGGridFilterModel,
+    entityTemplate: IMongoEntityTemplatePopulated,
+): ISearchEntitiesOfTemplateBody['filter'] => {
+    const queries = Object.keys(filterModel).map((field) => {
+        const fieldFilter = filterModel[field];
+
+        const fieldTemplate = entityTemplate.properties.properties[field];
+
+        switch (fieldFilter.filterType) {
+            case 'text':
+                return textFilterToFilterOfTemplate(field, fieldFilter);
+            case 'number':
+                return numberFilterToFilterOfTemplate(field, fieldFilter);
+            case 'date':
+                if (fieldTemplate.format === 'date') {
+                    return dateFilterToFilterOfTemplate(field, fieldFilter);
+                }
+                return dateTimeFilterToFilterOfTemplate(field, fieldFilter);
+
+            case 'set':
+                return setFilterToFilterOfTemplate(field, fieldFilter);
+            default:
+                throw new Error('Invalid supported ag-grid filter type');
+        }
+    });
+
+    return queries.length > 0 ? { $and: queries } : undefined;
+};
+
+export const sortModelToSortOfSearchRequest = (sortModel: IAGGridSort[]): ISearchEntitiesOfTemplateBody['sort'] => {
+    return sortModel.map(({ colId, sort }) => ({ field: colId, sort }));
+};
+
+export const agGridToSearchEntitiesOfTemplateRequest = (
+    agGridRequest: IAGGridRequest,
+    entityTemplate: IMongoEntityTemplatePopulated,
+): ISearchEntitiesOfTemplateBody => {
+    const { startRow, endRow, filterModel, quickFilter, sortModel } = agGridRequest;
+    return {
+        skip: startRow,
+        limit: endRow - startRow + 1,
+        textSearch: quickFilter,
+        filter: filterModelToFilterOfTemplate(filterModel, entityTemplate),
+        showRelationships: false,
+        sort: sortModelToSortOfSearchRequest(sortModel),
+    };
+};

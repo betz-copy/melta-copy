@@ -54,21 +54,37 @@ export interface IFilterOfField {
     $eq?: boolean | string | number | null;
     $ne?: boolean | string | number | null;
     $eqi?: string; // case insensitive $eq
+    $rgx?: string; // Java Regular Expression (not javascript)
     $gt?: boolean | string | number;
     $gte?: boolean | string | number;
     $lt?: boolean | string | number;
     $lte?: boolean | string | number;
     $in?: Array<boolean | string | number | null>;
+    $not?: IFilterOfField;
 }
 
 export type IFilterOfTemplate<T extends Record<string, any> = Record<string, any>> = {
     [field in keyof T]?: IFilterOfField;
 };
 
-export type ISearchBatchFilter<T extends Record<string, any> = Record<string, any>> = {
+export type ISearchFilter<T extends Record<string, any> = Record<string, any>> = {
     $and?: IFilterOfTemplate<T> | IFilterOfTemplate<T>[];
     $or?: IFilterOfTemplate<T>[];
 };
+
+export type ISearchSort<T extends Record<string, any> = Record<string, any>> = Array<{
+    field: keyof T;
+    sort: 'asc' | 'desc';
+}>;
+
+export interface ISearchEntitiesOfTemplateBody {
+    skip?: number;
+    limit: number;
+    textSearch?: string;
+    filter?: ISearchFilter;
+    showRelationships?: boolean | Array<IMongoRelationshipTemplate['_id']>;
+    sort?: ISearchSort;
+}
 
 export interface ISearchBatchBody {
     skip?: number;
@@ -76,17 +92,25 @@ export interface ISearchBatchBody {
     textSearch?: string;
     templates: {
         [templateId: string]: {
-            filter?: ISearchBatchFilter;
+            filter?: ISearchFilter;
             showRelationships?: boolean | Array<IMongoRelationshipTemplate['_id']>;
         };
     };
-    sort?: Array<{
-        field: string;
-        sort: 'asc' | 'desc';
-    }>;
+    sort?: ISearchSort;
 }
 
-export interface ISearchBatchResult {
+export interface ISearchResult {
     count: number;
     entities: IEntityWithDirectConnections[];
+}
+
+export interface IExportEntitiesBody {
+    fileName: string;
+    textSearch?: string;
+    templates: {
+        [templateId: string]: {
+            filter?: ISearchFilter;
+            sort?: ISearchSort;
+        };
+    };
 }

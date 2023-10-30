@@ -8,7 +8,7 @@ import { toast } from 'react-toastify';
 import { entityTemplateUniqueProperties, regexSchema, variableNameValidation } from '../../../utils/validation';
 import { EntityTemplateWizardValues } from './index';
 import { StepComponentProps } from '../index';
-import { getEntitiesByTemplateRequest } from '../../../services/entitiesService';
+import { searchEntitiesOfTemplateRequest } from '../../../services/entitiesService';
 import { basePropertyTypes, stringFormats } from '../../../services/templates/enitityTemplatesService';
 import FieldBlock from './FieldBlock';
 import { ErrorToast } from '../../ErrorToast';
@@ -76,15 +76,13 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
     const { data: areThereInstancesByTemplateIdResponse } = useQuery(
         ['areThereInstancesByTemplateId', (values as EntityTemplateWizardValues & { _id: string })._id],
         () =>
-            getEntitiesByTemplateRequest([(values as EntityTemplateWizardValues & { _id: string })._id], {
-                startRow: 0,
-                endRow: 0,
-                filterModel: {},
-                sortModel: [],
+            searchEntitiesOfTemplateRequest((values as EntityTemplateWizardValues & { _id: string })._id, {
+                skip: 0,
+                limit: 1,
             }),
         {
             enabled: isEditMode,
-            initialData: { lastRowIndex: 1, rows: [] },
+            initialData: { count: 1, entities: [] },
             onError: (error: AxiosError) => {
                 // eslint-disable-next-line no-console
                 console.log('failed to check areThereInstancesByTemplateId. error:', error);
@@ -94,7 +92,7 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
         },
     );
 
-    const areThereAnyInstances = areThereInstancesByTemplateIdResponse!.lastRowIndex > 0;
+    const areThereAnyInstances = areThereInstancesByTemplateIdResponse!.count > 0;
 
     return (
         <Grid container direction="column" alignItems="stretch" spacing={1}>

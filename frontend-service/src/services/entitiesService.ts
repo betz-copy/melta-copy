@@ -1,31 +1,21 @@
-import { IServerSideGetRowsRequest } from '@ag-grid-community/core';
 import partition from 'lodash.partition';
 import axios from '../axios';
 import { environment } from '../globals';
-import { IEntity, IEntityExpanded, ISearchBatchBody, ISearchBatchResult } from '../interfaces/entities';
+import {
+    IEntity,
+    IEntityExpanded,
+    ISearchBatchBody,
+    ISearchResult,
+    ISearchEntitiesOfTemplateBody,
+    IExportEntitiesBody,
+} from '../interfaces/entities';
 import { EntityWizardValues } from '../common/wizards/entity';
 import { IRuleBreach } from '../interfaces/ruleBreaches/ruleBreach';
 
 const { entities, relationships } = environment.api;
 
-export type FilterData = Pick<IServerSideGetRowsRequest, 'filterModel' | 'sortModel'> & { quickFilter?: string };
-export type TemplatesWithFilterDataObj = Record<string, FilterData>;
-
-export const getEntitiesByTemplateRequest = async (
-    templateIds: string[],
-    agGridRequest: Pick<IServerSideGetRowsRequest, 'startRow' | 'endRow' | 'sortModel' | 'filterModel'> & { quickFilter?: string },
-) => {
-    if (templateIds.length === 0) {
-        // backend assumes at least 1 templateId, if not, obvious answer
-        return { rows: [], lastRowIndex: 0 };
-    }
-
-    const { data } = await axios.post<{ rows: IEntity[]; lastRowIndex: number }>(`${entities}/search`, agGridRequest, { params: { templateIds } });
-    return data;
-};
-
-export const exportEntitesTablesToExcelRequest = async (templatesIdsWithFilterData: TemplatesWithFilterDataObj, fileName: string) => {
-    const { data } = await axios.post(`${entities}/export`, { templatesIdsWithFilterData, fileName }, { responseType: 'blob', timeout: 60000 });
+export const exportEntitiesRequest = async (body: IExportEntitiesBody) => {
+    const { data } = await axios.post(`${entities}/export`, body, { responseType: 'blob', timeout: 60000 });
     return data;
 };
 
@@ -104,7 +94,12 @@ export const deleteEntityRequest = async (entityId: string) => {
     return data;
 };
 
+export const searchEntitiesOfTemplateRequest = async (templateId: string, searchBody: ISearchEntitiesOfTemplateBody) => {
+    const { data } = await axios.post<ISearchResult>(`${entities}/search/template/${templateId}`, searchBody);
+    return data;
+};
+
 export const getEntitiesWithDirectConnections = async (searchBody: ISearchBatchBody) => {
-    const { data } = await axios.post<ISearchBatchResult>(`${entities}/search/batch`, searchBody);
+    const { data } = await axios.post<ISearchResult>(`${entities}/search/batch`, searchBody);
     return data;
 };
