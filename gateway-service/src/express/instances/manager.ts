@@ -5,8 +5,11 @@ import { promises as fsp } from 'fs';
 import axios from 'axios';
 import { stream } from 'exceljs';
 import { deleteFiles, duplicateFiles, uploadFiles } from '../../externalServices/storageService';
-import { IEntity, IEntityFilterParams, InstanceManagerService, IRelationship } from '../../externalServices/instanceManager';
-import { EntityTemplateManagerService, IEntityTemplatePopulated } from '../../externalServices/entityTemplateManager';
+import { IEntity, ISearchFilter, ISearchSort } from '../../externalServices/instanceManager/interfaces/entities';
+import { IRelationship } from '../../externalServices/instanceManager/interfaces/relationships';
+import { IExportEntitiesBody } from './interfaces';
+import { InstanceManagerService } from '../../externalServices/instanceManager';
+import { EntityTemplateManagerService, IEntityTemplatePopulated, IMongoEntityTemplatePopulated } from '../../externalServices/entityTemplateManager';
 import { ActivityLogManagerService, IUpdatedFields } from '../../externalServices/activityLogManager';
 import { trycatch } from '../../utils';
 import {
@@ -24,7 +27,6 @@ import { cerateWorksheet, createWorkbook, fixFileProperties, styleAWorksheet } f
 
 const { errorCodes } = config;
 
-export type TemplatesWithFilterDataObj = Record<string, Pick<IEntityFilterParams, 'filterModel' | 'sortModel' | 'quickFilter'>>;
 export class InstancesManager {
     static async uploadInstanceFiles(files: Express.Multer.File[]): Promise<Record<string, string>> {
         if (files.length === 0) {
@@ -39,10 +41,10 @@ export class InstancesManager {
         return Object.fromEntries(filePropertiesEntries);
     }
 
-    static async exportEntities(templatesIdsWithFilterData: TemplatesWithFilterDataObj, fileName: string) {
-        const { workbook, filePath } = await createWorkbook(fileName);
+    static async exportEntities(exportEntitiesBody: IExportEntitiesBody) {
+        const { workbook, filePath } = await createWorkbook(exportEntitiesBody.fileName);
         try {
-            await this.addWorksheetsToWB(templatesIdsWithFilterData, workbook);
+            await this.addWorksheetsToWB(exportEntitiesBody, workbook);
             await workbook.commit();
         } catch (err) {
             await fsp.unlink(filePath);
@@ -51,13 +53,10 @@ export class InstancesManager {
         return filePath;
     }
 
-    private static async addWorksheetsToWB(
-        templatesIdsWithFilterData: TemplatesWithFilterDataObj,
-        workbook: stream.xlsx.WorkbookWriter,
-    ): Promise<void> {
-        const tasks = Object.entries(templatesIdsWithFilterData).map(async ([templateId, filterParams]) => {
+    private static async addWorksheetsToWB({ templates, textSearch }: IExportEntitiesBody, workbook: stream.xlsx.WorkbookWriter): Promise<void> {
+        const tasks = Object.entries(templates).map(async ([templateId, { filter, sort }]) => {
             const template = await EntityTemplateManagerService.getEntityTemplateById(templateId);
-            await this.createWorksheet(workbook, template, templateId, filterParams);
+            await this.createWorksheet(workbook, template, filter, sort, textSearch);
         });
 
         await Promise.all(tasks);
@@ -65,34 +64,37 @@ export class InstancesManager {
 
     private static async createWorksheet(
         workbook: stream.xlsx.WorkbookWriter,
-        template: IEntityTemplatePopulated,
-        templateId: string,
-        filterParams: Pick<IEntityFilterParams, 'filterModel' | 'sortModel' | 'quickFilter'>,
+        template: IMongoEntityTemplatePopulated,
+        filter: ISearchFilter | undefined,
+        sort: ISearchSort | undefined,
+        textSearch: string | undefined,
     ) {
         const worksheet = await cerateWorksheet(workbook, template);
-        const rowsEachReq = config.service.numOfRowsEachReq;
-        const { lastRowIndex: numberOfRows } = await this.getEntitiesChunk(templateId, filterParams, 0, 0);
-        for (let firstRow = 0; numberOfRows - firstRow > 0; firstRow += rowsEachReq + 1) {
-            const { rows: chunk } = await InstancesManager.getEntitiesChunk(templateId, filterParams, firstRow, firstRow + rowsEachReq);
+        const { searchEntitiesChunkSize } = config.service;
+        const { count } = await InstanceManagerService.searchEntitiesOfTemplateRequest(template._id, {
+            limit: 1,
+            filter,
+            sort,
+        });
+        for (let skip = 0; count - skip > 0; skip += searchEntitiesChunkSize + 1) {
+            const { entities: chunk } = await InstanceManagerService.searchEntitiesOfTemplateRequest(template._id, {
+                skip,
+                limit: searchEntitiesChunkSize,
+                textSearch,
+                filter,
+                sort,
+            });
             const rows = fixFileProperties(
-                chunk.map((row) => row.properties),
+                chunk.map((row) => row.entity.properties),
                 template,
             );
-            // eslint-disable-next-line no-loop-func
+
             rows.forEach((row) => {
                 const excelRow = worksheet.addRow(row);
                 styleAWorksheet(worksheet);
                 excelRow.commit();
             });
         }
-    }
-
-    private static async getEntitiesChunk(id: string, filterParams: IEntityFilterParams, currentFirstRow: number, currentEndRow: number) {
-        return InstanceManagerService.getInstancesByTemplateIds([id], {
-            ...filterParams,
-            startRow: currentFirstRow,
-            endRow: currentEndRow,
-        });
     }
 
     static getFilePropertiesKeysByTemplate(template: IEntityTemplatePopulated) {

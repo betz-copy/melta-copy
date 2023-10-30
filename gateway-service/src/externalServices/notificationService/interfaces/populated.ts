@@ -1,8 +1,9 @@
 import { INotification, IProcessStatusUpdateNotificationMetadata } from '.';
-import { IEntity } from '../../instanceManager';
+import { IEntity } from '../../instanceManager/interfaces/entities';
 import { IMongoProcessInstancePopulated } from '../../processService/interfaces/processInstance';
 import { IMongoStepInstancePopulated } from '../../processService/interfaces/stepInstance';
 import { IRuleBreachAlertPopulated, IRuleBreachRequestPopulated } from '../../ruleBreachService/interfaces/populated';
+
 export interface IRuleBreachAlertNotificationMetadataPopulated {
     alert: IRuleBreachAlertPopulated;
 }

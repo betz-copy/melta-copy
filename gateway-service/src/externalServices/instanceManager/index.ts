@@ -1,71 +1,13 @@
 import axios from 'axios';
-import config from '../config';
-import { IAgGridResult } from '../utils/agGrid/interface';
-import { IBrokenRule } from './ruleBreachService/interfaces';
+import config from '../../config';
+import { IBrokenRule } from '../ruleBreachService/interfaces';
+import { IConstraintsOfTemplate, IEntity, ISearchEntitiesOfTemplateBody, ISearchResult } from './interfaces/entities';
+import { IRelationship } from './interfaces/relationships';
+import { IConnection } from './interfaces/rules';
 
 const {
-    instanceManager: { uri, baseEntitiesRoute, baseRelationshipsRoute, baseConstraintsRoute, requestTimeout, searchRoute },
+    instanceManager: { uri, baseEntitiesRoute, baseRelationshipsRoute, baseConstraintsRoute, requestTimeout, searchOfTemplateRoute },
 } = config;
-
-export interface IEntity {
-    templateId: string;
-    properties: {
-        _id: string;
-        createdAt: string;
-        updatedAt: string;
-        disabled: boolean;
-    } & Record<string, any>;
-}
-
-export interface IEntityFilterParams {
-    startRow?: number;
-    endRow?: number;
-    sortModel?: Array<{
-        colId: string;
-        sort: 'asc' | 'desc';
-    }>;
-    filterModel?: any;
-    quickFilter?: string;
-}
-export interface IRelationship {
-    templateId: string;
-    properties: { _id: string } & Record<string, any>;
-    sourceEntityId: string;
-    destinationEntityId: string;
-}
-
-export interface IRelationshipPopulated extends Omit<IRelationship, 'sourceEntityId' | 'destinationEntityId'> {
-    sourceEntity: IEntity;
-    destinationEntity: IEntity;
-}
-
-export interface IRelationshipConnections {
-    relationship: IRelationship;
-    sourceEntity: IEntity;
-    destinationEntity: IEntity;
-}
-
-export interface IUniqueConstraint {
-    type: 'UNIQUE';
-    constraintName: string;
-    templateId: string;
-    properties: string[];
-}
-
-export interface IRequiredConstraint {
-    type: 'REQUIRED';
-    constraintName: string;
-    templateId: string;
-    property: string;
-}
-
-export type IConstraint = IRequiredConstraint | IUniqueConstraint;
-
-export interface IConstraintsOfTemplate {
-    templateId: string;
-    requiredConstraints: string[];
-    uniqueConstraints: string[][];
-}
 
 export class InstanceManagerService {
     private static InstanceManagerApi = axios.create({ baseURL: uri, timeout: requestTimeout });
@@ -100,10 +42,8 @@ export class InstanceManagerService {
         return data;
     }
 
-    static async getInstancesByTemplateIds(templateIds: string[], agGridRequest: IEntityFilterParams) {
-        const { data } = await this.InstanceManagerApi.post<IAgGridResult<IEntity>>(`${baseEntitiesRoute}/${searchRoute}`, agGridRequest, {
-            params: { templateIds },
-        });
+    static async searchEntitiesOfTemplateRequest(templateId: string, searchBody: ISearchEntitiesOfTemplateBody) {
+        const { data } = await this.InstanceManagerApi.post<ISearchResult>(`${baseEntitiesRoute}${searchOfTemplateRoute}/${templateId}`, searchBody);
 
         return data;
     }
@@ -137,7 +77,7 @@ export class InstanceManagerService {
     }
 
     static async getRelationshipsConnectionsByIds(relationshipIds: string[]) {
-        const { data } = await this.InstanceManagerApi.post<IRelationshipConnections[]>(`${baseRelationshipsRoute}/connections`, {
+        const { data } = await this.InstanceManagerApi.post<IConnection[]>(`${baseRelationshipsRoute}/connections`, {
             ids: relationshipIds,
         });
 

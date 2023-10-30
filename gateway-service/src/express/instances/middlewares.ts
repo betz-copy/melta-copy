@@ -1,7 +1,8 @@
 import { Request } from 'express';
 import lodashUniqby from 'lodash.uniqby';
 import { EntityTemplateManagerService } from '../../externalServices/entityTemplateManager';
-import { InstanceManagerService, IRelationship } from '../../externalServices/instanceManager';
+import { IRelationship } from '../../externalServices/instanceManager/interfaces/relationships';
+import { InstanceManagerService } from '../../externalServices/instanceManager';
 import { getPermissions, isRuleManager } from '../../externalServices/permissionsApi';
 import { RelationshipsTemplateManagerService } from '../../externalServices/relationshipsTemplateManager';
 import { ServiceError } from '../error';
@@ -44,20 +45,20 @@ export const validateHasPermissionsToEntitiesInTemplates = async (user: Express.
     }
 };
 
-export const validateUserCanSearchBatchEntityInstances = async (req: Request) => {
+export const validateUserCanSearchEntitiesBatch = async (req: Request) => {
     await validateHasPermissionsToEntitiesInTemplates(req.user!, Object.keys(req.body.templates));
 };
 
-export const validateUserCanSearchEntityInstances = async (req: Request) => {
-    const { templateIds } = req.query as { templateIds: string[] };
+export const validateUserCanSearchEntitiesOfTemplate = async (req: Request) => {
+    const { templateId } = req.params;
 
-    await validateHasPermissionsToEntitiesInTemplates(req.user!, templateIds);
+    await validateHasPermissionsToEntitiesInTemplates(req.user!, [templateId]);
 };
 
-export const validateUserCanExportEntityInstances = async (req: Request) => {
-    const { templatesIdsWithFilterData } = req.body;
+export const validateUserCanExportEntities = async (req: Request) => {
+    const { templates } = req.body;
 
-    await validateHasPermissionsToEntitiesInTemplates(req.user!, Object.keys(templatesIdsWithFilterData));
+    await validateHasPermissionsToEntitiesInTemplates(req.user!, Object.keys(templates));
 };
 
 export type RequestWithPermissionsOfUserId = Request & { permissionsOfUserId: Omit<IPermissionsOfUser, 'user'> };

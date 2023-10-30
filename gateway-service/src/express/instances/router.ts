@@ -6,11 +6,11 @@ import { wrapController, wrapMiddleware } from '../../utils/express';
 import {
     validateUserCanCreateEntityInstance,
     validateUserCanCreateRelationshipInstance,
-    validateUserCanExportEntityInstances,
+    validateUserCanExportEntities,
     validateUserCanGetExpandedEntity,
     validateUserCanIgnoreRules,
-    validateUserCanSearchBatchEntityInstances,
-    validateUserCanSearchEntityInstances,
+    validateUserCanSearchEntitiesBatch,
+    validateUserCanSearchEntitiesOfTemplate,
     validateUserCanUpdateGetOrDeleteEntityInstance,
     validateUserCanUpdateOrDeleteRelationshipInstance,
 } from './middlewares';
@@ -41,13 +41,13 @@ const InstancesRouter: Router = Router();
 InstancesRouter.post(
     '/entities/search/batch',
     ValidateRequest(searchEntitiesBatchRequestSchema),
-    wrapMiddleware(validateUserCanSearchBatchEntityInstances),
+    wrapMiddleware(validateUserCanSearchEntitiesBatch),
     InstanceManagerProxy,
 );
-InstancesRouter.post('/entities/search', wrapMiddleware(validateUserCanSearchEntityInstances), InstanceManagerProxy);
+InstancesRouter.post('/entities/search/template/:templateId', wrapMiddleware(validateUserCanSearchEntitiesOfTemplate), InstanceManagerProxy);
 InstancesRouter.post(
     '/entities/export',
-    wrapMiddleware(validateUserCanExportEntityInstances),
+    wrapMiddleware(validateUserCanExportEntities),
     ValidateRequest(exportEntitiesSchema),
     wrapController(InstancesController.exportEntities),
 );

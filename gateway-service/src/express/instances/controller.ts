@@ -9,7 +9,7 @@ class InstancesController {
     }
 
     static async exportEntities(req: Request, res: Response) {
-        const filePath = await InstancesManager.exportEntities(req.body.templatesIdsWithFilterData, req.body.fileName);
+        const filePath = await InstancesManager.exportEntities(req.body);
         try {
             await promisify(res.sendFile.bind(res))(filePath);
         } finally {

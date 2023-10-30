@@ -8,7 +8,8 @@ import {
     RuleBreachRequestStatus,
 } from '.';
 import { IUser } from '../../../express/users/interface';
-import { IEntity, IRelationshipPopulated } from '../../instanceManager';
+import { IEntity } from '../../instanceManager/interfaces/entities';
+import { IRelationshipPopulated } from '../../../express/instances/interfaces';
 
 export interface ICreateRelationshipMetadataPopulated extends Omit<ICreateRelationshipMetadata, 'sourceEntityId' | 'destinationEntityId'> {
     sourceEntity: IEntity | null;

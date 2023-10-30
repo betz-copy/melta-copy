@@ -7,7 +7,7 @@ const config = {
         systemUnavailableURL: env.get('SYSTEM_UNAVAILABLE_URL').required().asString(),
         uploadsFolderPath: env.get('UPLOADS_FOLDER_PATH').default('public/uploads/').asString(),
         maxFileSize: env.get('MAX_FILE_SIZE').default(50000000).asInt(),
-        numOfRowsEachReq: env.get('NUM_OF_ROWS_EACH_REQ').default(50).asIntPositive(),
+        searchEntitiesChunkSize: env.get('SEARCH_ENTITIES_CHUNK_SIZE').default(50).asIntPositive(),
         excelFilePath: env.get('EXCEL_FILE_PATH').default('/usr/src/app').asString(),
         dateAlertTime: env.get('DATE_ALERT_TIME').default('0 0 * * *').asString(),
     },
@@ -57,8 +57,8 @@ const config = {
         baseEntitiesRoute: env.get('INSTANCE_MANAGER_BASE_ENTITIES_ROUTE').default('/api/instances/entities').asString(),
         baseRelationshipsRoute: env.get('INSTANCE_MANAGER_BASE_RELATIONSHIPS_ROUTE').default('/api/instances/relationships').asString(),
         baseConstraintsRoute: env.get('INSTANCE_MANAGER_BASE_CONSTRAINTS_ROUTE').default('/api/instances/entities/constraints').asString(),
+        searchOfTemplateRoute: env.get('INSTANCE_MANAGER_SEARCH_OF_TEMPLATE_ROUTE').default('/search/template').asString(),
         requestTimeout: env.get('INSTANCE_MANAGER_REQUEST_TIMEOUT').default(10000).asIntPositive(),
-        searchRoute: env.get('INSTANCE_MANAGER_SEARCH_ROUTE').default('search').asString(),
     },
     permissionApi: {
         baseUrl: env.get('PERMISSION_API_BASE_URL').required().asString(),

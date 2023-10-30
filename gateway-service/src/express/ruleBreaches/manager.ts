@@ -1,7 +1,9 @@
 /* eslint-disable no-plusplus */
 import pickBy from 'lodash.pickby';
 import { EntityTemplateManagerService } from '../../externalServices/entityTemplateManager';
-import { IEntity, InstanceManagerService, IRelationshipConnections } from '../../externalServices/instanceManager';
+import { IEntity } from '../../externalServices/instanceManager/interfaces/entities';
+import { IConnection } from '../../externalServices/instanceManager/interfaces/rules';
+import { InstanceManagerService } from '../../externalServices/instanceManager';
 import { getPermissions, isRuleManager } from '../../externalServices/permissionsApi';
 import { deleteFiles } from '../../externalServices/storageService';
 import { filteredMap, trycatch } from '../../utils';
@@ -339,9 +341,7 @@ export class RuleBreachesManager {
     private static async populateBrokenRule(brokenRule: IBrokenRule): Promise<IBrokenRulePopulated> {
         const includesCreatedRelationshipId = brokenRule.relationshipIds.includes('created-relationship-id');
 
-        const relationshipConnections: IRelationshipConnections[] = await InstanceManagerService.getRelationshipsConnectionsByIds(
-            brokenRule.relationshipIds,
-        );
+        const relationshipConnections: IConnection[] = await InstanceManagerService.getRelationshipsConnectionsByIds(brokenRule.relationshipIds);
 
         const relationships: IBrokenRulePopulated['relationships'] = relationshipConnections.map(
             ({ sourceEntity, destinationEntity, relationship: { sourceEntityId, destinationEntityId, ...restOfRelationship } }) => ({

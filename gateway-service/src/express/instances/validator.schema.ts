@@ -1,5 +1,5 @@
 import Joi from 'joi';
-import { ExtendedJoi, fileSchema, MongoIdSchema, templatesWithFilterDataObjSchema } from '../../utils/joi';
+import { ExtendedJoi, fileSchema, MongoIdSchema } from '../../utils/joi';
 import { brokenRuleSchema } from '../ruleBreaches/validator.schema';
 
 // POST /api/instances/entities
@@ -45,8 +45,12 @@ export const deleteEntityInstanceSchema = Joi.object({
 // POST /api/instances/entities/export
 export const exportEntitiesSchema = Joi.object({
     body: {
-        templatesIdsWithFilterData: templatesWithFilterDataObjSchema,
         fileName: Joi.string().required(),
+        textSearch: Joi.any(), // will be checked by instance-manager
+        templates: Joi.object().pattern(Joi.string(), {
+            filter: Joi.any(), // will be checked by instance-manager
+            sort: Joi.any(), // will be checked by instance-manager
+        }),
     },
     query: {},
     params: {},
