@@ -6,6 +6,3 @@ dist/
 
 # Dot Env Configuration
 .env
-
-# Package lock
-package-lock.json
