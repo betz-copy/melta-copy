@@ -21,7 +21,7 @@ const initializeRabbit = async () => {
 
     console.log('Rabbit connected');
 
-    await menash.declareQueue(rabbit.queueName);
+    await menash.declareQueue(rabbit.updateSearchIndexQueueName);
 
     console.log('Rabbit initialized');
 };

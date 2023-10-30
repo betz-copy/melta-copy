@@ -1,12 +1,10 @@
 import { FilterQuery, Document } from 'mongoose';
-import menash from 'menashmq';
 import EntityTemplateModel from './model';
 import { IEntitySingleProperty, IEntityTemplate } from './interface';
 import { ServiceError } from '../error';
 import { escapeRegExp } from '../../utils';
-import config from '../../config';
+import { sendUpdateIndexesOnUpdateTemplate, sendUpdateIndexesOnDeleteTemplate } from '../../externalServices/globalSearchIndexCreator';
 
-const { rabbit } = config;
 export class EntityTemplateManager {
     static getTemplates(searchQuery: { search?: string; ids?: string[]; categoryIds?: string[]; limit: number; skip: number }) {
         const { search: displayName, ids, categoryIds, limit, skip } = searchQuery;
@@ -38,7 +36,7 @@ export class EntityTemplateManager {
     static async createTemplate(templateData: Omit<IEntityTemplate, 'iconFileId'>) {
         const entityTemplate = await EntityTemplateModel.create(templateData);
 
-        await menash.send(rabbit.queueName, 'New Template Created.');
+        await sendUpdateIndexesOnUpdateTemplate(entityTemplate._id);
 
         const entityTemplatePopulated = await entityTemplate.populate('category').execPopulate();
 
@@ -51,7 +49,7 @@ export class EntityTemplateManager {
             .lean()
             .exec();
 
-        await menash.send(rabbit.queueName, 'Template Deleted.');
+        await sendUpdateIndexesOnDeleteTemplate(id);
 
         return entityTemplate;
     }
@@ -81,12 +79,16 @@ export class EntityTemplateManager {
             return isCurrentPropertyWithToString !== isNewPropertyWithToString;
         });
 
-        if (isPropertyTypeChanged) await menash.send(rabbit.queueName, 'Template Updated.');
+        if (isPropertyTypeChanged) {
+            await sendUpdateIndexesOnUpdateTemplate(id);
+        }
 
         const isNewPropertyAdded =
             Object.keys(currentEntityTemplate.properties.properties).length !== Object.keys(newEntityTemplate.properties.properties).length;
 
-        if (isNewPropertyAdded) await menash.send(rabbit.queueName, 'Template Updated.');
+        if (isNewPropertyAdded) {
+            await sendUpdateIndexesOnUpdateTemplate(id);
+        }
 
         return newEntityTemplate;
     }
