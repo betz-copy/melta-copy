@@ -2,20 +2,20 @@ import { Router } from 'express';
 import EntityController from './controller';
 import { wrapController, wrapMiddleware } from '../../utils/express';
 import ValidateRequest from '../../utils/joi';
-import { validateEntity, validateConstraintsOfTemplate, validateSearchBody } from './validator.template';
+import { validateEntity, validateConstraintsOfTemplate, validateSearchBatchBody, validateSearchEntitiesOfTemplateBody } from './validator.template';
 import {
     deleteEntityByIdRequestSchema,
     deleteEntitiesByTemplateIdRequestSchema,
     createEntityRequestSchema,
     getEntityByIdRequestSchema,
     updateEntityByIdRequestSchema,
-    getEntitiesRequestSchema,
     getConstraintsOfTemplateRequestSchema,
     getAllConstraintsRequestSchema,
     updateEntityStatusByIdRequestSchema,
     updateConstraintsOfTemplateRequestSchema,
     getExpandedEntityByIdRequestSchema,
     searchEntitiesBatchRequestSchema,
+    searchEntitiesOfTemplateRequestSchema,
 } from './validator.schema';
 
 const entityRouter: Router = Router();
@@ -33,13 +33,19 @@ entityRouter.put(
     wrapController(EntityController.updateConstraintsOfTemplate),
 );
 
-entityRouter.post('/search', ValidateRequest(getEntitiesRequestSchema), wrapController(EntityController.searchEntities));
+entityRouter.post(
+    '/search/template/:templateId',
+    ValidateRequest(searchEntitiesOfTemplateRequestSchema),
+    wrapMiddleware(validateSearchEntitiesOfTemplateBody),
+    wrapController(EntityController.searchEntitiesOfTemplate),
+);
 entityRouter.post(
     '/search/batch',
     ValidateRequest(searchEntitiesBatchRequestSchema),
-    wrapMiddleware(validateSearchBody),
+    wrapMiddleware(validateSearchBatchBody),
     wrapController(EntityController.searchEntitiesBatch),
 );
+
 entityRouter.post('/expanded/:id', ValidateRequest(getExpandedEntityByIdRequestSchema), wrapController(EntityController.getExpandedEntityById));
 entityRouter.post('/', ValidateRequest(createEntityRequestSchema), wrapMiddleware(validateEntity), wrapController(EntityController.createEntity));
 entityRouter.get('/:id', ValidateRequest(getEntityByIdRequestSchema), wrapController(EntityController.getEntityById));

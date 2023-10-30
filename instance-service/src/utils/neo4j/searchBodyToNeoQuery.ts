@@ -1,9 +1,23 @@
 import mapValues from 'lodash.mapvalues';
 import { Date as Neo4jDate, DateTime as Neo4jDateTime } from 'neo4j-driver';
 import { IMongoEntityTemplate, IEntitySingleProperty } from '../../externalServices/entityTemplateManager';
-import { escapeNeo4jQuerySpecialChars } from '../../utils/agGrid/agGridFilterModelToNeoQuery';
-import { getNeo4jDate, getNeo4jDateTime } from '../../utils/neo4j/lib';
-import { ISearchBatchBody, IFilterOfField, ISearchBatchFilter, IFilterOfTemplate } from './interface';
+import { getNeo4jDate, getNeo4jDateTime } from './lib';
+import { ISearchBatchBody, IFilterOfField, ISearchFilter, IFilterOfTemplate } from '../../express/entities/interface';
+import config from '../../config';
+
+const {
+    neo4j: { specialCharsToEscapeNeo4jQuery },
+} = config;
+
+export const escapeRegExp = (text: string) => {
+    return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+};
+
+export const escapeNeo4jQuerySpecialChars = (quickFilter: string) => {
+    const escapeNeo4jQueryRegexStr = specialCharsToEscapeNeo4jQuery.map((char) => `(${escapeRegExp(char)})`).join('|');
+
+    return quickFilter.replace(new RegExp(escapeNeo4jQueryRegexStr, 'g'), '\\$&');
+};
 
 type CypherQueryWithParameters = { cypherQuery: string; parameters: Record<string, any> };
 
@@ -99,6 +113,25 @@ const caseInsensitiveEqualFilterOfField = (field: string, rhs: NonNullable<IFilt
     return { cypherQuery: `toLower(node.${field}) = toLower($${rhsParamPath})`, parameters: { [rhsParamName]: rhs } };
 };
 
+const regexFilterOfField = (field: string, rhs: NonNullable<IFilterOfField['$eqi']>, parametersParentVariableName: string) => {
+    const rhsParamName = 'rhs';
+    const rhsParamPath = `${parametersParentVariableName}.${rhsParamName}`;
+
+    return { cypherQuery: `node.${field} =~ $${rhsParamPath}`, parameters: { [rhsParamName]: rhs } };
+};
+
+const notFilterOfField = (
+    field: string,
+    innerFilterOfField: IFilterOfField,
+    parametersParentVariableName: string,
+    fieldTemplate: IEntitySingleProperty,
+): CypherQueryWithParameters => {
+    // eslint-disable-next-line no-use-before-define -- recursive use
+    const filterOfFieldQuery = filterOfFieldToNeoQuery(field, innerFilterOfField, parametersParentVariableName, fieldTemplate);
+
+    return { cypherQuery: `NOT (${filterOfFieldQuery.cypherQuery})`, parameters: filterOfFieldQuery.parameters };
+};
+
 const filterOfFieldToNeoQuery = (
     field: string,
     filterOfField: IFilterOfField,
@@ -129,8 +162,16 @@ const filterOfFieldToNeoQuery = (
                 partFilterOfFieldQuery = caseInsensitiveEqualFilterOfField(field, filterRhs, `${parametersParentVariableName}.\`$eqi\``);
                 break;
 
+            case '$rgx':
+                partFilterOfFieldQuery = regexFilterOfField(field, filterRhs, `${parametersParentVariableName}.\`$rgx\``);
+                break;
+
             case '$in':
                 partFilterOfFieldQuery = inFilterOfField(field, filterRhs, `${parametersParentVariableName}.\`$in\``, fieldTemplate);
+                break;
+
+            case '$not':
+                partFilterOfFieldQuery = notFilterOfField(field, filterRhs, `${parametersParentVariableName}.\`$not\``, fieldTemplate);
                 break;
 
             default:
@@ -176,7 +217,7 @@ const filterOfTemplateToNeoQuery = (
 };
 
 const filterToNeoQuery = (
-    filter: ISearchBatchFilter,
+    filter: ISearchFilter,
     parametersParentVariableName: string,
     entityTemplate: IMongoEntityTemplate,
 ): CypherQueryWithParameters => {

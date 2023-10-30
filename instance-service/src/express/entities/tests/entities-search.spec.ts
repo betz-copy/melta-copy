@@ -664,6 +664,32 @@ describe('e2e search entities batch tests', () => {
                     ]),
                 );
             });
+            it('$not with $eq', async () => {
+                const searchBody: ISearchBatchBody = {
+                    skip: 0,
+                    limit: 3,
+                    templates: {
+                        [defaultTemplateId]: { filter: { $and: { [field]: { $not: { $eq: value1 } } } }, showRelationships: false },
+                    },
+                    sort: [{ field, sort: 'asc' }],
+                };
+                const res = await request(app).post('/api/instances/entities/search/batch').send(searchBody);
+
+                expect(res.statusCode).toBe(200);
+                expect(res.body.count).toBe(2);
+                expect(res.body.entities).toHaveLength(2);
+
+                expect(res.body.entities.map(({ entity }) => entity.properties)).toEqual(
+                    expect.arrayContaining([
+                        expect.objectContaining({
+                            [field]: value2,
+                        }),
+                        expect.objectContaining({
+                            [field]: value3,
+                        }),
+                    ]),
+                );
+            });
         });
 
         describe('check filter string field', () => {
@@ -708,6 +734,28 @@ describe('e2e search entities batch tests', () => {
                     limit: 3,
                     templates: {
                         [defaultTemplateId]: { filter: { $and: { name: { $eqi: 'AnOtHeRnaMe' } } }, showRelationships: false },
+                    },
+                    sort: [],
+                };
+                const res = await request(app).post('/api/instances/entities/search/batch').send(searchBody);
+
+                expect(res.statusCode).toBe(200);
+                expect(res.body.count).toBe(1);
+                expect(res.body.entities).toHaveLength(1);
+
+                expect(res.body.entities[0].entity.templateId).toBe(defaultTemplateId);
+                expect(res.body.entities[0].entity.properties).toEqual(
+                    expect.objectContaining({
+                        name: entityWithAnotherName.properties.name,
+                    }),
+                );
+            });
+            it('$rgx', async () => {
+                const searchBody: ISearchBatchBody = {
+                    skip: 0,
+                    limit: 3,
+                    templates: {
+                        [defaultTemplateId]: { filter: { $and: { name: { $rgx: '(?i).*AnOtHeRn.*' } } }, showRelationships: false },
                     },
                     sort: [],
                 };
@@ -1034,7 +1082,9 @@ describe('e2e search entities batch tests', () => {
 
                 expect(res.statusCode).toBe(400);
                 expect(res.body.type).toEqual('TemplateValidationError');
-                expect(res.body.message).toBe(`filter on field templates.${entityTemplate._id}.$and.name.${filterType} should be of type string`);
+                expect(res.body.message).toBe(
+                    `filter on field templates.${entityTemplate._id}.filter.$and.name.${filterType} should be of type string`,
+                );
             });
 
             it('filter of $in rhs should have same type of field', async () => {
@@ -1057,7 +1107,7 @@ describe('e2e search entities batch tests', () => {
 
                 expect(res.statusCode).toBe(400);
                 expect(res.body.type).toEqual('TemplateValidationError');
-                expect(res.body.message).toBe(`filter on field templates.${entityTemplate._id}.$and.name.$in.0 should be of type string`);
+                expect(res.body.message).toBe(`filter on field templates.${entityTemplate._id}.filter.$and.name.$in.0 should be of type string`);
             });
 
             it('$eqi filter only on string field', async () => {
@@ -1081,7 +1131,7 @@ describe('e2e search entities batch tests', () => {
                 expect(res.statusCode).toBe(400);
                 expect(res.body.type).toEqual('TemplateValidationError');
                 expect(res.body.message).toBe(
-                    `filter of $eqi on field templates.${entityTemplate._id}.$and.bDate is invalid. must be on field of type string`,
+                    `filter on field templates.${entityTemplate._id}.filter.$and.bDate.$eqi is invalid. must be on field of type strict string (not date format)`,
                 );
             });
         });

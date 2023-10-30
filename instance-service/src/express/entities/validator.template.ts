@@ -10,8 +10,8 @@ import { addPropertyToRequest } from '../../utils/express';
 import config from '../../config';
 import { EntityTemplateManagerService, IEntitySingleProperty, IMongoEntityTemplate } from '../../externalServices/entityTemplateManager';
 import { trycatch } from '../../utils/lib';
-import { IFilterOfField, IFilterOfTemplate, ISearchBatchFilter, ISearchBatchBody } from './interface';
-import { RelationshipsTemplateManagerService } from '../../externalServices/relationshipTemplateManager';
+import { IFilterOfField, IFilterOfTemplate, ISearchFilter, ISearchBatchBody, ISearchEntitiesOfTemplateBody } from './interface';
+import { IMongoRelationshipTemplate, RelationshipsTemplateManagerService } from '../../externalServices/relationshipTemplateManager';
 import { addDefaultFieldsToTemplate } from '../../utils/addDefaultsFieldsToEntityTemplate';
 
 const { neo4j } = config;
@@ -165,21 +165,30 @@ const validateSimplePartFilterOfField = (rhs: boolean | string | number | null, 
     if (typeof rhs !== templateOfField.type) throw new ValidationError(`filter on field ${path} should be of type ${templateOfField.type}`);
 };
 
+const validateStrictStringFilterOfField = (rhs: string, templateOfField: IEntitySingleProperty, path: string) => {
+    validateSimplePartFilterOfField(rhs, templateOfField, path);
+    if (typeof templateOfField.type !== 'string' || templateOfField.format === 'date' || templateOfField.format === 'date-time') {
+        throw new ValidationError(`filter on field ${path} is invalid. must be on field of type strict string (not date format)`);
+    }
+};
+
 const validateFilterOfField = (filterOfField: IFilterOfField, templateOfField: IEntitySingleProperty, path: string) => {
     if (filterOfField.$eq) validateSimplePartFilterOfField(filterOfField.$eq, templateOfField, `${path}.$eq`);
     if (filterOfField.$ne) validateSimplePartFilterOfField(filterOfField.$ne, templateOfField, `${path}.$ne`);
-    if (filterOfField.$eqi) {
-        validateSimplePartFilterOfField(filterOfField.$eqi, templateOfField, `${path}.$eqi`);
-        if (typeof templateOfField.type !== 'string' || templateOfField.format === 'date' || templateOfField.format === 'date-time') {
-            throw new ValidationError(`filter of $eqi on field ${path} is invalid. must be on field of type string`);
-        }
-    }
     if (filterOfField.$gt) validateSimplePartFilterOfField(filterOfField.$gt, templateOfField, `${path}.$gt`);
     if (filterOfField.$gte) validateSimplePartFilterOfField(filterOfField.$gte, templateOfField, `${path}.$gte`);
     if (filterOfField.$lt) validateSimplePartFilterOfField(filterOfField.$lt, templateOfField, `${path}.$lt`);
     if (filterOfField.$lte) validateSimplePartFilterOfField(filterOfField.$lte, templateOfField, `${path}.$lte`);
+
+    if (filterOfField.$eqi) validateStrictStringFilterOfField(filterOfField.$eqi, templateOfField, `${path}.$eqi`);
+    if (filterOfField.$rgx) validateStrictStringFilterOfField(filterOfField.$rgx, templateOfField, `${path}.$rgx`);
+
     if (filterOfField.$in) {
         filterOfField.$in.forEach((inItem, index) => validateSimplePartFilterOfField(inItem, templateOfField, `${path}.$in.${index}`));
+    }
+
+    if (filterOfField.$not) {
+        validateFilterOfField(filterOfField.$not, templateOfField, `${path}.$not`);
     }
 };
 
@@ -192,22 +201,26 @@ const validateFilterOfTemplate = (filterOfTemplate: IFilterOfTemplate, template:
     });
 };
 
-const validateFilter = (filter: ISearchBatchFilter, template: IMongoEntityTemplate, path: string) => {
+const validateFilter = (
+    filter: ISearchFilter,
+    template: IMongoEntityTemplate,
+    pathOfFilterField: string, // to show origin of error if throwing
+) => {
     const { $or, $and } = filter;
     if ($or) {
-        $or.forEach((orPart, index) => validateFilterOfTemplate(orPart, template, `${path}.${template._id}.$or.${index}`));
+        $or.forEach((orPart, index) => validateFilterOfTemplate(orPart, template, `${pathOfFilterField}.$or.${index}`));
     }
 
     if (!$and) return;
 
     if (Array.isArray($and)) {
-        $and.forEach((andPart, index) => validateFilterOfTemplate(andPart, template, `${path}.${template._id}.$and.${index}`));
+        $and.forEach((andPart, index) => validateFilterOfTemplate(andPart, template, `${pathOfFilterField}.$and.${index}`));
     } else {
-        validateFilterOfTemplate($and, template, `${path}.${template._id}.$and`);
+        validateFilterOfTemplate($and, template, `${pathOfFilterField}.$and`);
     }
 };
 
-const validateSort = (searchBody: ISearchBatchBody, entityTemplatesMap: Map<string, IMongoEntityTemplate>) => {
+const validateSortOfSearchBatch = (searchBody: ISearchBatchBody, entityTemplatesMap: Map<string, IMongoEntityTemplate>) => {
     const templateIds = Object.keys(searchBody.templates);
 
     searchBody.sort.forEach(({ field }, sortIndex) => {
@@ -240,7 +253,61 @@ const validateSort = (searchBody: ISearchBatchBody, entityTemplatesMap: Map<stri
     });
 };
 
-export const validateSearchBody = async (req: Request) => {
+export const getRelationshipTemplatesRelatedToEntityTemplates = async (entityTemplateIds: string[]) => {
+    const [relationshipTemplatesAsSource, relationshipTemplatesAsDestination] = await Promise.all([
+        RelationshipsTemplateManagerService.searchRelationshipTemplates({ sourceEntityIds: entityTemplateIds }),
+        RelationshipsTemplateManagerService.searchRelationshipTemplates({ destinationEntityIds: entityTemplateIds }),
+    ]);
+    const relationshipTemplates = [...relationshipTemplatesAsSource, ...relationshipTemplatesAsDestination];
+    const relationshipTemplatesMap = new Map(relationshipTemplates.map((relationshipTemplate) => [relationshipTemplate._id, relationshipTemplate]));
+
+    return relationshipTemplatesMap;
+};
+
+const validateShowRelationships = (
+    showRelationships: boolean | string[],
+    entityTemplateId: string,
+    relationshipTemplatesMap: Map<string, IMongoRelationshipTemplate>,
+    pathOfShowRelationshipsField: string, // to show origin of error if throwing
+) => {
+    if (typeof showRelationships === 'boolean') return;
+
+    showRelationships.forEach((relationshipTemplateId, i) => {
+        const relationshipTemplate = relationshipTemplatesMap.get(relationshipTemplateId);
+
+        const relationshipHasEntityAsSourceOrDest = [relationshipTemplate?.sourceEntityId, relationshipTemplate?.destinationEntityId].includes(
+            entityTemplateId,
+        );
+        if (!relationshipTemplate || !relationshipHasEntityAsSourceOrDest) {
+            throw new ValidationError(`relationship template id "${relationshipTemplateId}" doesnt exist in ${pathOfShowRelationshipsField}.${i}`);
+        }
+    });
+};
+
+export const validateSearchEntitiesOfTemplateBody = async (req: Request) => {
+    const { filter, showRelationships, sort }: ISearchEntitiesOfTemplateBody = req.body;
+    const { templateId } = req.params;
+
+    const entityTemplate = await getEntityTemplateByIdOrThrowValidationError(templateId);
+    const entityTemplateForValidation = addDefaultFieldsToTemplate(entityTemplate);
+
+    const relationshipTemplatesMap = await getRelationshipTemplatesRelatedToEntityTemplates([templateId]);
+
+    if (filter) validateFilter(filter, entityTemplateForValidation, 'filter');
+
+    validateShowRelationships(showRelationships, templateId, relationshipTemplatesMap, 'showRelationships');
+
+    sort.forEach(({ field }, sortIndex) => {
+        const fieldTemplate = entityTemplateForValidation.properties.properties[field];
+        if (!fieldTemplate) {
+            throw new ValidationError(`sort.${sortIndex}.field "${field}" must exist in template of search`);
+        }
+    });
+
+    addPropertyToRequest(req, 'entityTemplate', entityTemplate);
+};
+
+export const validateSearchBatchBody = async (req: Request) => {
     const searchBody: ISearchBatchBody = req.body;
     const templateIds = Object.keys(searchBody.templates);
     const entityTemplates = await EntityTemplateManagerService.searchEntityTemplates({ ids: templateIds });
@@ -252,34 +319,15 @@ export const validateSearchBody = async (req: Request) => {
         entityTemplates.map((entityTemplate) => [entityTemplate._id, addDefaultFieldsToTemplate(entityTemplate)]),
     );
 
-    const [relationshipTemplatesAsSource, relationshipTemplatesAsDestination] = await Promise.all([
-        RelationshipsTemplateManagerService.searchRelationshipTemplates({ sourceEntityIds: templateIds }),
-        RelationshipsTemplateManagerService.searchRelationshipTemplates({ destinationEntityIds: templateIds }),
-    ]);
-    const relationshipTemplates = [...relationshipTemplatesAsSource, ...relationshipTemplatesAsDestination];
-    const relationshipTemplatesMap = new Map(relationshipTemplates.map((relationshipTemplate) => [relationshipTemplate._id, relationshipTemplate]));
+    const relationshipTemplatesMap = await getRelationshipTemplatesRelatedToEntityTemplates(templateIds);
 
     Object.entries(searchBody.templates).forEach(([templateId, { filter, showRelationships }]) => {
-        if (filter) validateFilter(filter, entityTemplatesForValidationMap.get(templateId)!, 'templates');
+        if (filter) validateFilter(filter, entityTemplatesForValidationMap.get(templateId)!, `templates.${templateId}.filter`);
 
-        if (typeof showRelationships !== 'boolean') {
-            showRelationships.forEach((relationshipTemplateId, i) => {
-                const relationshipTemplate = relationshipTemplatesMap.get(relationshipTemplateId);
-
-                const relationshipHasEntityAsSourceOrDest = [
-                    relationshipTemplate?.sourceEntityId,
-                    relationshipTemplate?.destinationEntityId,
-                ].includes(templateId);
-                if (!relationshipTemplate || !relationshipHasEntityAsSourceOrDest) {
-                    throw new ValidationError(
-                        `relationship template id "${relationshipTemplateId}" doesnt exist in templates.${templateId}.showRelationships.${i}`,
-                    );
-                }
-            });
-        }
+        validateShowRelationships(showRelationships, templateId, relationshipTemplatesMap, `templates.${templateId}.showRelationships`);
     });
 
-    validateSort(searchBody, entityTemplatesForValidationMap);
+    validateSortOfSearchBatch(searchBody, entityTemplatesForValidationMap);
 
     addPropertyToRequest(req, 'entityTemplatesMap', entityTemplatesMap);
 };

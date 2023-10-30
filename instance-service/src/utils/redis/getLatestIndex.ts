@@ -3,10 +3,14 @@ import config from '../../config';
 
 const { redis } = config;
 
-const getLatestIndex = async () => {
+export const getLatestGlobalSearchIndex = async () => {
     const redisClient = RedisClient.getClient();
 
     return redisClient.get(redis.globalSearchKeyName);
 };
 
-export default getLatestIndex;
+export const getLatestTemplateSearchIndex = async (templateId: string) => {
+    const redisClient = RedisClient.getClient();
+
+    return redisClient.get(`${redis.templateSearchKeyNamePrefix}${templateId}`);
+};

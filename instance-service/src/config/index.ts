@@ -41,6 +41,7 @@ const config = {
     redis: {
         url: env.get('REDIS_HOST').default('redis://redis:6379').asString(),
         globalSearchKeyName: env.get('GLOBAL_SEARCH_KEY_NAME').default('latestIndex').asString(),
+        templateSearchKeyNamePrefix: env.get('TEMPLATE_SEARCH_KEY_NAME_PREFIX').default('latestIndex_').asString(),
     },
     errorCodes: {
         entityHasRelationships: 'ENTITY_HAS_RELATIONSHIPS',
@@ -53,7 +54,7 @@ const config = {
     uniqueConstraintsPrefixName: env.get('UNIQUE_CONSTRAINTS_PREFIX_NAME').default('uniqueConstraint').asString(),
     requiredConstraintsPrefixName: env.get('REQUIRED_CONSTRAINTS_PREFIX_NAME').default('requiredConstraint').asString(),
     constraintsNameDelimiter: env.get('CONSTRAINTS_NAME_DELIMITER').default('-').asString(), // default "-" because template properties cant have "-" chars (variableName format validation)
-    searchEntitiesBatchMaxLimit: env.get('SEARCH_ENTITIES_BATCH_MAX_LIMIT').default(10000).asIntPositive(),
+    searchEntitiesMaxLimit: env.get('SEARCH_ENTITIES_MAX_LIMIT').default(10000).asIntPositive(),
 };
 
 export default config;
