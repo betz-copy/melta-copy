@@ -105,6 +105,7 @@ export const getColumnDefs = <Data extends any = IEntity>({
             lockPosition: true,
             suppressColumnsToolPanel: true,
             cellRenderer: memo<{ data: Data }>(({ data }) => {
+                const { disabled: disabledRow } = getEntityPropertiesData(data);
                 return (
                     <div>
                         {onNavigateToRow && (
@@ -146,11 +147,12 @@ export const getColumnDefs = <Data extends any = IEntity>({
                         )}
                         {editRowButtonProps && (
                             <IconButtonWithPopover
-                                popoverText={i18next.t('entitiesTableOfTemplate.editEntity')}
+                                popoverText={i18next.t(disabledRow ? 'entityPage.disabledEntity' : 'entitiesTableOfTemplate.editEntity')}
                                 iconButtonProps={{
                                     disabled: disabledEntity,
                                     onClick: () => editRowButtonProps.onClick(data),
                                 }}
+                                disabled={disabledRow}
                             >
                                 <EditIcon />
                             </IconButtonWithPopover>

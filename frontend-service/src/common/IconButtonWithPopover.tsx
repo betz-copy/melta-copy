@@ -7,7 +7,7 @@ const IconButtonWithPopover: React.FC<{
     disabledToolTip?: boolean;
     style?: CSSProperties;
     disabled?: boolean;
-}> = ({ children, iconButtonProps, popoverText, disabledToolTip = false, disabled = false, style }) => {
+}> = ({ children, iconButtonProps, popoverText, disabledToolTip = false, disabled, style }) => {
     return (
         <Tooltip title={popoverText} disableHoverListener={disabledToolTip} arrow>
             <span>
