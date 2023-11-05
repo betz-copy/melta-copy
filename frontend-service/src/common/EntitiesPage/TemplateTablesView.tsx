@@ -9,7 +9,6 @@ import { toast } from 'react-toastify';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { TemplateTable, TemplateTableRef } from './TemplateTable';
 import { searchEntitiesOfTemplateRequest } from '../../services/entitiesService';
-import { templatesCompareFunc } from '../../utils/templates';
 
 type TemplateTablesViewResultsRef = {
     templateTablesRefs: Record<string, TemplateTableRef>;
@@ -131,8 +130,6 @@ const TemplateTablesView = forwardRef<TemplateTablesViewRef, TemplateTablesViewP
         templateTablesRefs: templateTablesRefs.current,
     }));
 
-    const templatesFilteredByCountSorted = templatesFilteredByCount?.sort(templatesCompareFunc);
-
     return (
         <Grid container>
             {isLoadingTemplatesFilteredByCount && (
@@ -140,15 +137,13 @@ const TemplateTablesView = forwardRef<TemplateTablesViewRef, TemplateTablesViewP
                     <CircularProgress />
                 </Grid>
             )}
-            {!isLoadingTemplatesFilteredByCount && templatesFilteredByCountSorted?.length === 0 && (
-                <Typography>{i18next.t('noSearchResults')}</Typography>
-            )}
-            {!isLoadingTemplatesFilteredByCount && templatesFilteredByCountSorted && (
+            {!isLoadingTemplatesFilteredByCount && templatesFilteredByCount?.length === 0 && <Typography>{i18next.t('noSearchResults')}</Typography>}
+            {!isLoadingTemplatesFilteredByCount && templatesFilteredByCount && (
                 <TemplateTablesViewResults
                     ref={(el) => {
                         if (el) templateTablesRefs.current = el.templateTablesRefs;
                     }}
-                    templates={templatesFilteredByCountSorted}
+                    templates={templatesFilteredByCount}
                     searchInput={searchInput}
                     pageType={pageType}
                 />

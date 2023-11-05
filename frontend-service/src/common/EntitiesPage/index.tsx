@@ -18,15 +18,27 @@ import { filterModelToFilterOfTemplate, sortModelToSortOfSearchRequest } from '.
 
 const EntitiesPage: React.FC<{
     templates: IMongoEntityTemplatePopulated[];
+    setTemplates?: React.Dispatch<React.SetStateAction<IMongoEntityTemplatePopulated[]>>;
+    templatesToShowCheckbox: IMongoEntityTemplatePopulated[];
+    setTemplatesToShowCheckbox: React.Dispatch<React.SetStateAction<IMongoEntityTemplatePopulated[]>>;
+    isTemplatesCheckboxDraggable?: boolean;
     categories?: IMongoCategory[];
     excelExportAllTablesFileName: string;
     pageType: string;
     pageTitle: string;
-}> = ({ templates, categories, excelExportAllTablesFileName, pageType, pageTitle }) => {
+}> = ({
+    templates,
+    setTemplates,
+    categories,
+    excelExportAllTablesFileName,
+    pageType,
+    pageTitle,
+    templatesToShowCheckbox,
+    setTemplatesToShowCheckbox,
+    isTemplatesCheckboxDraggable,
+}) => {
     const templateTablesViewRef = useRef<TemplateTablesViewRef>(null);
     const cardsViewRef = useRef<CardsViewRef>(null);
-
-    const [templatesToShowCheckbox, setTemplatesToShowCheckbox] = useState<IMongoEntityTemplatePopulated[]>(templates);
 
     const [urlSearchParams, setUrlSearchParams] = useSearchParams({
         search: '',
@@ -84,6 +96,8 @@ const EntitiesPage: React.FC<{
                             templatesToShow: templatesToShowCheckbox,
                             setTemplatesToShow: setTemplatesToShowCheckbox,
                             templates,
+                            setTemplates,
+                            isDraggableDisabled: isTemplatesCheckboxDraggable,
                         }}
                         excelExportProps={{
                             onExcelExport: () => {

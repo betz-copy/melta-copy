@@ -18,6 +18,7 @@ const ProcessTemplatesSelectCheckbox: React.FC<{
             getOptionLabel={({ displayName }) => displayName}
             size="small"
             toTopBar
+            isDraggableDisabled
         />
     );
 };

@@ -219,7 +219,6 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             () => getRowModelProps(rowModelType, template, rowData, pageRowCount, datasource, quickFilterText, datasourceOnFail),
             [rowModelType, template, rowData, pageRowCount, datasource, quickFilterText],
         );
-
         const getStyles = () => ({
             '.ag-column-select-virtual-list-viewport': { height: `${rowHeight * pageRowCount}px !important` },
             '.ag-center-cols-clipper': { minHeight: `${rowHeight * pageRowCount}px !important` },

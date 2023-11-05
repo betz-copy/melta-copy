@@ -4,9 +4,15 @@ import lodashGroupBy from 'lodash.groupby';
 import lodashUniqby from 'lodash.uniqby';
 import { FormControl, Grid, Typography, ListItemText, MenuItem, Select, Checkbox, SxProps, Theme, TextField, Divider } from '@mui/material';
 import { useSelector } from 'react-redux';
+import { DragDropContext, Draggable, Droppable, DropResult } from 'react-beautiful-dnd';
+import { DragHandle as DragHandleIcon } from '@mui/icons-material';
 import { RootState } from '../store';
 
-const MenuItemContent: React.FC<{ checked: boolean; indeterminate?: boolean; label: string }> = ({ checked, indeterminate, label }) => {
+const MenuItemContent: React.FC<{ checked: boolean; indeterminate?: boolean; label: string; order: number }> = ({
+    checked,
+    indeterminate,
+    label,
+}) => {
     return (
         <>
             <Checkbox checked={checked} indeterminate={indeterminate} sx={{ padding: '0px' }} />
@@ -27,9 +33,11 @@ export type SelectCheckboxProps<Option extends any, Group extends any = any> = P
     options: Option[];
     selectedOptions: Option[];
     setSelectedOptions: Dispatch<SetStateAction<Option[]>>;
-    getOptionId: (option: Option) => Key;
+    getOptionId: (option: Option) => string;
     getOptionLabel: (option: Option) => string;
     groupsProps?: { useGroups: false } | ({ useGroups: true } & SelectCheckboxGroupProps<Option, Group>);
+    isDraggableDisabled?: boolean;
+    setOptions?: Dispatch<SetStateAction<Option[]>>;
     size?: 'small' | 'medium';
     toTopBar?: boolean;
 }>;
@@ -43,10 +51,12 @@ const groupByWithInitial = <T extends any>(collection: T[], keys: PropertyKey[],
 
 const SelectOptionsMenuItems = <Option extends any, Group extends any>({
     options,
+    setOptions,
     selectedOptions,
     setSelectedOptions,
     getOptionId,
     getOptionLabel,
+    isDraggableDisabled,
     menuItemSx = { padding: '6px 16px 6px 16px' },
 }: {
     options: SelectCheckboxProps<Option, Group>['options'];
@@ -54,36 +64,68 @@ const SelectOptionsMenuItems = <Option extends any, Group extends any>({
     setSelectedOptions: SelectCheckboxProps<Option, Group>['setSelectedOptions'];
     getOptionId: SelectCheckboxProps<Option, Group>['getOptionId'];
     getOptionLabel: SelectCheckboxProps<Option, Group>['getOptionLabel'];
+    isDraggableDisabled: boolean;
+    setOptions?: Dispatch<SetStateAction<Option[]>>;
     menuItemSx?: SxProps<Theme>;
 }) => {
+    const isOptionChecked = (option: Option) => selectedOptions.some((selectedOption) => getOptionId(selectedOption) === getOptionId(option));
+
+    const onDragEnd = (result: DropResult) => {
+        const { destination, source } = result;
+        if (!destination) return;
+
+        const newOptionsOrder = Array.from(options);
+        const [movedOption] = newOptionsOrder.splice(source.index, 1);
+        newOptionsOrder.splice(destination.index, 0, movedOption);
+
+        if (setOptions) {
+            setOptions(newOptionsOrder);
+        }
+
+        // sync order to selectedOptions too
+        setSelectedOptions((prevSelectOptions) => {
+            return newOptionsOrder.filter((option) =>
+                prevSelectOptions.some((selectedOption) => getOptionId(selectedOption) === getOptionId(option)),
+            );
+        });
+    };
+
     return (
-        <>
-            {options.map((option) => {
-                const optionId = getOptionId(option);
-                return (
-                    <MenuItem
-                        key={optionId}
-                        onClick={() => {
-                            setSelectedOptions((prevSelectedOptions) => {
-                                const prevCheckedIndex = prevSelectedOptions.findIndex((selectedOption) => getOptionId(selectedOption) === optionId);
-                                if (prevCheckedIndex === -1) {
-                                    return [...prevSelectedOptions, option];
-                                }
-                                const newSelectedOptions = [...prevSelectedOptions];
-                                newSelectedOptions.splice(prevCheckedIndex, 1);
-                                return newSelectedOptions;
-                            });
-                        }}
-                        sx={menuItemSx}
-                    >
-                        <MenuItemContent
-                            checked={selectedOptions.some((selectedOption) => getOptionId(selectedOption) === optionId)}
-                            label={getOptionLabel(option)}
-                        />
-                    </MenuItem>
-                );
-            })}
-        </>
+        <DragDropContext onDragEnd={onDragEnd}>
+            <Droppable droppableId="selectCheckboxDroppable">
+                {(provided) => (
+                    <Grid ref={provided.innerRef} {...provided.droppableProps}>
+                        {options.map((option, index) => (
+                            <Draggable draggableId={getOptionId(option)} index={index} key={getOptionId(option)} isDragDisabled={isDraggableDisabled}>
+                                {(draggableProvided) => (
+                                    <MenuItem
+                                        ref={draggableProvided.innerRef}
+                                        {...draggableProvided.draggableProps}
+                                        {...draggableProvided.dragHandleProps}
+                                        onClick={() => {
+                                            setSelectedOptions((prevSelectedOptions) => {
+                                                const isChecked = isOptionChecked(option);
+                                                if (isChecked) {
+                                                    return prevSelectedOptions.filter(
+                                                        (selectedOption) => getOptionId(selectedOption) !== getOptionId(option),
+                                                    );
+                                                }
+                                                return [...prevSelectedOptions, option];
+                                            });
+                                        }}
+                                        sx={menuItemSx}
+                                    >
+                                        <MenuItemContent checked={isOptionChecked(option)} label={getOptionLabel(option)} order={index + 1} />
+                                        {!isDraggableDisabled && <DragHandleIcon fontSize="small" sx={{ zIndex: 1000 }} />}
+                                    </MenuItem>
+                                )}
+                            </Draggable>
+                        ))}
+                        {provided.placeholder}
+                    </Grid>
+                )}
+            </Droppable>
+        </DragDropContext>
     );
 };
 
@@ -93,6 +135,8 @@ const SelectOptionsMenuItemsGrouped = <Option extends any, Group extends any>({
     setSelectedOptions,
     getOptionId,
     getOptionLabel,
+    isDraggableDisabled,
+    setOptions,
     groupsProps: { groups, getGroupOfOption, getGroupId, getGroupLabel },
 }: {
     options: SelectCheckboxProps<Option, Group>['options'];
@@ -101,6 +145,8 @@ const SelectOptionsMenuItemsGrouped = <Option extends any, Group extends any>({
     getOptionId: SelectCheckboxProps<Option, Group>['getOptionId'];
     getOptionLabel: SelectCheckboxProps<Option, Group>['getOptionLabel'];
     groupsProps: SelectCheckboxGroupProps<Option, Group>;
+    isDraggableDisabled: boolean;
+    setOptions?: Dispatch<SetStateAction<Option[]>>;
 }) => {
     const optionsByGroups = groupByWithInitial(options, groups.map(getGroupId), (option) => getGroupId(getGroupOfOption(option, groups)));
     const selectedOptionsByGroups = groupByWithInitial(selectedOptions, groups.map(getGroupId), (option) =>
@@ -112,7 +158,6 @@ const SelectOptionsMenuItemsGrouped = <Option extends any, Group extends any>({
             {groups.map((group, index) => {
                 const optionsOfGroup = optionsByGroups[getGroupId(group)];
                 const selectedOptionsOfGroup = selectedOptionsByGroups[getGroupId(group)];
-
                 return (
                     <Fragment key={getGroupId(group)}>
                         <MenuItem
@@ -142,6 +187,7 @@ const SelectOptionsMenuItemsGrouped = <Option extends any, Group extends any>({
                                 checked={selectedOptionsOfGroup.length === optionsOfGroup.length}
                                 indeterminate={selectedOptionsOfGroup.length > 0 && selectedOptionsOfGroup.length < optionsOfGroup.length}
                                 label={getGroupLabel(group)}
+                                order={index}
                             />
                         </MenuItem>
                         <SelectOptionsMenuItems
@@ -150,6 +196,8 @@ const SelectOptionsMenuItemsGrouped = <Option extends any, Group extends any>({
                             setSelectedOptions={setSelectedOptions}
                             getOptionId={getOptionId}
                             getOptionLabel={getOptionLabel}
+                            isDraggableDisabled={isDraggableDisabled}
+                            setOptions={setOptions}
                             menuItemSx={{ padding: '8px 16px 8px 36px' }}
                         />
                         {/* divider between groups */}
@@ -256,6 +304,7 @@ const ChooseAllMenuItem = <Option extends any, Group extends any>({
                 checked={selectedOptionsFiltered.length === optionsFiltered.length}
                 indeterminate={selectedOptionsFiltered.length < optionsFiltered.length && selectedOptionsFiltered.length > 0}
                 label={i18next.t('selectChooseAll')}
+                order={0}
             />
         </MenuItem>
     );
@@ -269,6 +318,8 @@ const SelectCheckbox = <Option extends any, Group extends any>({
     getOptionId,
     getOptionLabel,
     groupsProps = { useGroups: false },
+    isDraggableDisabled = false,
+    setOptions,
     size = 'medium',
     toTopBar,
 }: SelectCheckboxProps<Option, Group>) => {
@@ -314,6 +365,8 @@ const SelectCheckbox = <Option extends any, Group extends any>({
                         getOptionId={getOptionId}
                         getOptionLabel={getOptionLabel}
                         groupsProps={{ ...groupsProps, groups: groupsFiltered! }}
+                        isDraggableDisabled={isDraggableDisabled}
+                        setOptions={setOptions}
                     />
                 ) : (
                     <SelectOptionsMenuItems
@@ -322,6 +375,8 @@ const SelectCheckbox = <Option extends any, Group extends any>({
                         setSelectedOptions={setSelectedOptions}
                         getOptionId={getOptionId}
                         getOptionLabel={getOptionLabel}
+                        isDraggableDisabled={isDraggableDisabled}
+                        setOptions={setOptions}
                     />
                 )}
             </Select>

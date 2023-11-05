@@ -43,6 +43,7 @@ const PrintOptionsDialog: React.FC<{
                         <SelectCheckbox
                             title={i18next.t('entityPage.print.chooseRelationship')}
                             options={relevantRelationshipTemplates}
+                            isDraggableDisabled
                             selectedOptions={selected}
                             setSelectedOptions={setSelected}
                             getOptionId={({ _id }) => _id}

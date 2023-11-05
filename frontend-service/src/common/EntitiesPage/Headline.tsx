@@ -56,8 +56,10 @@ const EntitiesPageHeadline: React.FC<{
     entityTemplateSelectCheckboxProps: {
         categories?: IMongoCategory[];
         templates: IMongoEntityTemplatePopulated[];
+        setTemplates?: Dispatch<SetStateAction<IMongoEntityTemplatePopulated[]>>;
         templatesToShow: IMongoEntityTemplatePopulated[];
         setTemplatesToShow: Dispatch<SetStateAction<IMongoEntityTemplatePopulated[]>>;
+        isDraggableDisabled?: boolean;
     };
     excelExportProps?: {
         onExcelExport: () => void;
@@ -95,6 +97,8 @@ const EntitiesPageHeadline: React.FC<{
                                     selectedTemplates={entityTemplateSelectCheckboxProps.templatesToShow}
                                     setSelectedTemplates={entityTemplateSelectCheckboxProps.setTemplatesToShow}
                                     categories={entityTemplateSelectCheckboxProps.categories}
+                                    isDraggableDisabled={entityTemplateSelectCheckboxProps.isDraggableDisabled}
+                                    setTemplates={entityTemplateSelectCheckboxProps.setTemplates}
                                     size="small"
                                     toTopBar
                                 />

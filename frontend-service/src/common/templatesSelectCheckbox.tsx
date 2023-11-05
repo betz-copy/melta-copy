@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Dispatch } from 'react';
 import { IMongoCategory } from '../interfaces/categories';
 import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { SelectCheckbox, SelectCheckboxProps } from './SelectCheckbox';
@@ -27,20 +27,26 @@ const TemplatesSelectCheckbox: React.FC<{
     selectedTemplates: IMongoEntityTemplatePopulated[];
     setSelectedTemplates: React.Dispatch<React.SetStateAction<IMongoEntityTemplatePopulated[]>>;
     categories?: any[];
+    isDraggableDisabled?: boolean;
+    setTemplates?: Dispatch<React.SetStateAction<IMongoEntityTemplatePopulated[]>>;
     size?: 'small' | 'medium';
     toTopBar?: boolean;
-}> = ({ title, templates, selectedTemplates, setSelectedTemplates, categories, size, toTopBar }) => (
-    <SelectCheckbox
-        title={title}
-        options={templates}
-        selectedOptions={selectedTemplates}
-        setSelectedOptions={setSelectedTemplates}
-        getOptionId={({ _id }) => _id}
-        getOptionLabel={({ displayName }) => displayName}
-        groupsProps={getCategoriesSelectCheckboxGroupProps(categories)}
-        size={size}
-        toTopBar={toTopBar}
-    />
-);
+}> = ({ title, templates, selectedTemplates, setSelectedTemplates, categories, isDraggableDisabled, setTemplates, size, toTopBar }) => {
+    return (
+        <SelectCheckbox
+            title={title}
+            options={templates}
+            selectedOptions={selectedTemplates}
+            setSelectedOptions={setSelectedTemplates}
+            getOptionId={({ _id }) => _id}
+            getOptionLabel={({ displayName }) => displayName}
+            groupsProps={getCategoriesSelectCheckboxGroupProps(categories)}
+            isDraggableDisabled={isDraggableDisabled}
+            setOptions={setTemplates}
+            size={size}
+            toTopBar={toTopBar}
+        />
+    );
+};
 
 export default TemplatesSelectCheckbox;
