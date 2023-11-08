@@ -43,10 +43,10 @@ export const ProcessStep: FC<ProcessStepProps> = ({
     const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
 
     const hasPermissionsToEditStep =
-        Boolean(myPermissions!.processesManagementId) ||
-        stepTemplate.reviewers.some((reviewer) => reviewer.id === myPermissions.user.id) ||
-        stepInstance.reviewers.some((reviewer) => reviewer.id === myPermissions.user.id);
-    const canEditStep = hasPermissionsToEditStep;
+        (Boolean(myPermissions!.processesManagementId) ||
+            stepTemplate.reviewers.some((reviewer) => reviewer.id === myPermissions.user.id) ||
+            stepInstance.reviewers.some((reviewer) => reviewer.id === myPermissions.user.id)) &&
+        !processInstance.archived;
 
     const templateFileProperties = pickBy(stepTemplate.properties.properties, (value) => value.format === 'fileId');
     const templateEntityReferenceProperties = pickBy(stepTemplate.properties.properties, (value) => value.format === 'entityReference');
@@ -88,7 +88,7 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                 return (
                     <Form>
                         <Grid container direction="column">
-                            {canEditStep && (
+                            {hasPermissionsToEditStep && (
                                 <Grid container spacing={1}>
                                     {isStepEditMode ? (
                                         <>
@@ -236,6 +236,7 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                             title={i18next.t('wizard.processInstance.step.stepStatus')}
                                             instance={stepInstance}
                                             editStatus={{ setFieldValue, isEditMode: isStepEditMode, values }}
+                                            type={'stepInstance'}
                                         />
                                     </Grid>
 

@@ -14,6 +14,8 @@ import {
     isRuleBreachRequestNotification,
     isRuleBreachResponseNotification,
     isDateAboutToExpireNotification,
+    isDeleteProcessNotification,
+    isArchiveProcessNotification,
 } from '../../../interfaces/notifications';
 import { getShortDate } from '../../../utils/date';
 import { notificationSeenRequest } from '../../../services/notificationService';
@@ -24,7 +26,9 @@ import { RootState } from '../../../store';
 import { NewProcessNotification } from './processNotifications/NewProcessNotification';
 import { ProcessStatusUpdateNotification } from './processNotifications/ProcessStatusUpdateNotification';
 import { ProcessReviewerUpdateNotification } from './processNotifications/ProcessReviewerUpdateNotification';
+import { DeleteProcessNotification } from './processNotifications/DeleteProcessNotification';
 import { DateAboutToExpireNotification } from './generalNotifications/DateAboutToExpireNotification';
+import { ArchiveProcessNotification } from './processNotifications/ArchiveProcessNotification';
 
 interface NotificationCardProps {
     notification: INotificationPopulated;
@@ -68,6 +72,8 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({ notification
                         {isProcessStatusUpdateNotification(notification) && <ProcessStatusUpdateNotification {...notification.metadata} />}
                         {isProcessReviewerUpdateNotification(notification) && <ProcessReviewerUpdateNotification {...notification.metadata} />}
                         {isDateAboutToExpireNotification(notification) && <DateAboutToExpireNotification {...notification.metadata} />}
+                        {isDeleteProcessNotification(notification) && <DeleteProcessNotification {...notification.metadata} />}
+                        {isArchiveProcessNotification(notification) && <ArchiveProcessNotification {...notification.metadata} />}
                     </Grid>
 
                     <Grid item container justifyContent="flex-end" wrap="nowrap">

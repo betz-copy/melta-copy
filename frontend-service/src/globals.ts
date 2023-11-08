@@ -85,6 +85,8 @@ export const environment = {
                 NotificationType.processStatusUpdate,
                 NotificationType.newProcess,
                 NotificationType.dateAboutToExpire,
+                NotificationType.deleteProcess,
+                NotificationType.archivedProcess,
             ],
         },
     },

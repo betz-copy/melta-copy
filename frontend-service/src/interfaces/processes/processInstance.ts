@@ -20,6 +20,7 @@ export interface IProcessInstance {
     steps: string[];
     status: Status;
     reviewedAt?: Date;
+    archived: boolean;
 }
 export interface IProcessInstanceWithSteps extends Omit<IProcessInstance, 'steps'> {
     steps: IMongoStepInstance[];
@@ -35,9 +36,8 @@ export interface IMongoProcessInstanceWithSteps extends IProcessInstanceWithStep
     updatedAt: Date;
 }
 
-export interface IMongoProcessInstancePopulated extends Omit<IMongoProcessInstance, 'steps' | 'reviewerId'> {
+export interface IMongoProcessInstancePopulated extends Omit<IMongoProcessInstance, 'steps'> {
     steps: IMongoStepInstancePopulated[];
-    reviewer?: IUser;
 }
 
 export interface ISearchProcessInstancesBody extends IBaseSearchProperties {
@@ -45,7 +45,8 @@ export interface ISearchProcessInstancesBody extends IBaseSearchProperties {
     templateIds?: string[];
     startDate?: Date;
     endDate?: Date;
-    status?: Status;
+    status?: Status[];
+    archived?: boolean;
 }
 
 export type StepsObjectPopulated = Record<string, IUser[]>;

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button, Dialog, DialogTitle, DialogContent, DialogActions, Grid, CircularProgress } from '@mui/material';
+import { Button, Dialog, DialogTitle, DialogContent, DialogActions, Grid, CircularProgress, IconButton, Tooltip } from '@mui/material';
 import { Done as DoneIcon, Clear as ClearIcon } from '@mui/icons-material';
 import i18next from 'i18next';
 import { makeStyles } from '@mui/styles';
@@ -7,19 +7,24 @@ import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { AxiosError } from 'axios';
 import EditIcon from '@mui/icons-material/Edit';
+// eslint-disable-next-line import/no-extraneous-dependencies
 import _ from 'lodash';
+import DeleteIcon from '@material-ui/icons/Delete';
+import UnarchiveIcon from '@mui/icons-material/Unarchive';
+import ArchiveIcon from '@mui/icons-material/Archive';
 import { ProcessSideStepper } from './ProcessSideStepper';
 import { BlueTitle } from '../../BlueTitle';
 import ProcessDetails, { ProcessDetailsValues } from './ProcessDetails';
 import { IMongoProcessInstancePopulated, Status } from '../../../interfaces/processes/processInstance';
 import { IProcessTemplateMap } from '../../../interfaces/processes/processTemplate';
 import { getInitialDetailsValues, useProcessDetailsFormik } from './ProcessDetails/detailsFormik';
-import ProcessSummary from './ProcessSummaryStep/index';
-import { getProcessByIdRequest, updateProcessRequest } from '../../../services/processesService';
+import { getProcessByIdRequest, updateProcessRequest, deleteProcessRequest, archiveProcessRequest } from '../../../services/processesService';
 import { ErrorToast } from '../../ErrorToast';
+import ProcessSummary from './ProcessSummaryStep/index';
 import ProcessStepsStep from './ProcessSteps/index';
 import { IPermissionsOfUser } from '../../../services/permissionsService';
 import { IMongoStepTemplatePopulated } from '../../../interfaces/processes/stepTemplate';
+import { AreYouSureDialog } from '../../dialogs/AreYouSureDialog';
 
 interface IProcessInstanceWizard {
     open: boolean;
@@ -53,7 +58,7 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({ open, onClose
     const [currProcessInstance, setCurrProcessInstance] = useState<IMongoProcessInstancePopulated>(processInstance);
 
     const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
-    const hasPermissionsToEditDetailsAndSummary = Boolean(myPermissions.processesManagementId);
+    const hasPermissionsToEditDetails = Boolean(myPermissions.processesManagementId);
 
     const [isEditMode, setIsEditMode] = useState<boolean>(false);
     const [isStepEditMode, setIsStepEditMode] = useState(false);
@@ -128,46 +133,122 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({ open, onClose
         if (activeStep === 0) detailsFormikData.submitForm();
     };
 
+    const [deleteDialogState, setDeleteDialogState] = useState<boolean>(false);
+
+    const { mutateAsync: deleteProcessMutate, isLoading: isDeleteProcessLoading } = useMutation(
+        (processId: string) => {
+            return deleteProcessRequest(processId);
+        },
+        {
+            onError: (error: AxiosError) => {
+                console.log('failed to delete process. error:', error);
+                toast.error(i18next.t('processInstancesPage.failedToDeleteProcess'));
+            },
+            onSuccess: () => {
+                toast.success(i18next.t('processInstancesPage.processDeletedSuccessfully'));
+            },
+        },
+    );
+
+    const { mutateAsync: archiveProcessMutate, isLoading: isLodingArchiveProcess } = useMutation(
+        (process: IMongoProcessInstancePopulated) => {
+            return archiveProcessRequest(process._id, !process.archived);
+        },
+        {
+            onError: (error: AxiosError, process: IMongoProcessInstancePopulated) => {
+                if (process.archived) {
+                    console.log('failed to send process to archive. error:', error);
+                    toast.success(i18next.t('processInstancesPage.failedToRemoveProcessFromArchive'));
+                } else {
+                    console.log('failed to remove process from archive. error:', error);
+                    toast.success(i18next.t('processInstancesPage.failedToSendProcessToArchive'));
+                }
+            },
+            onSuccess: (process: IMongoProcessInstancePopulated) => {
+                if (process.archived) toast.success(i18next.t('processInstancesPage.processSendToArchiveSuccessfully'));
+                else toast.success(i18next.t('processInstancesPage.processRemoveFromArchiveSuccessfully'));
+            },
+        },
+    );
     return (
         <Dialog keepMounted={false} open={open} fullWidth maxWidth="xl" PaperProps={{ style: { height: '85vh' } }}>
             <DialogTitle height="8vh" margin={0} display="flex" justifyContent="space-between" alignItems="center">
                 <BlueTitle title={detailsFormikData.values.name} variant="h4" component="p" />
                 <Grid>
-                    {isEditMode && activeStep !== 1 && (
-                        <Grid container spacing={1}>
-                            <Grid item>
-                                <Button
-                                    size="large"
-                                    variant="outlined"
-                                    startIcon={isLoading ? <CircularProgress sx={{ color: 'white' }} size={20} /> : <ClearIcon />}
-                                    onClick={() => {
-                                        if (activeStep === 0)
-                                            detailsFormikData.setValues(getInitialDetailsValues(currProcessInstance, processTemplatesMap));
-                                        setIsEditMode(false);
-                                    }}
-                                >
-                                    {i18next.t('wizard.processInstance.cancelBth')}
-                                </Button>
+                    <Grid container>
+                        {isEditMode && activeStep !== 1 && (
+                            <Grid container spacing={1}>
+                                <Grid item>
+                                    <Button
+                                        size="large"
+                                        variant="outlined"
+                                        startIcon={isLoading ? <CircularProgress sx={{ color: 'white' }} size={20} /> : <ClearIcon />}
+                                        onClick={() => {
+                                            if (activeStep === 0)
+                                                detailsFormikData.setValues(getInitialDetailsValues(currProcessInstance, processTemplatesMap));
+                                            setIsEditMode(false);
+                                        }}
+                                    >
+                                        {i18next.t('wizard.processInstance.cancelBth')}
+                                    </Button>
+                                </Grid>
+                                <Grid item>
+                                    <Button
+                                        size="large"
+                                        variant="contained"
+                                        onClick={() => handleSubmit()}
+                                        disabled={!detailsFormikData.dirty || isLoading}
+                                        startIcon={isLoading ? <CircularProgress sx={{ color: 'white' }} size={20} /> : <DoneIcon />}
+                                    >
+                                        {i18next.t('wizard.processInstance.saveBth')}
+                                    </Button>
+                                </Grid>
                             </Grid>
-                            <Grid item>
-                                <Button
-                                    size="large"
-                                    variant="contained"
-                                    onClick={() => handleSubmit()}
-                                    disabled={!detailsFormikData.dirty || isLoading}
-                                    startIcon={isLoading ? <CircularProgress sx={{ color: 'white' }} size={20} /> : <DoneIcon />}
-                                >
-                                    {i18next.t('wizard.processInstance.saveBth')}
-                                </Button>
-                            </Grid>
+                        )}
+                        <Grid>
+                            {!isEditMode && hasPermissionsToEditDetails && (
+                                <>
+                                    {processInstance.archived ? (
+                                        <Tooltip title={i18next.t('actions.unArchived')}>
+                                            <IconButton
+                                                onClick={async () => {
+                                                    await archiveProcessMutate(processInstance);
+                                                    onClose(true);
+                                                }}
+                                            >
+                                                {isLodingArchiveProcess ? <CircularProgress size={20} /> : <UnarchiveIcon color="primary" />}
+                                            </IconButton>
+                                        </Tooltip>
+                                    ) : (
+                                        <Tooltip title={i18next.t('actions.archived')}>
+                                            <IconButton
+                                                onClick={async () => {
+                                                    await archiveProcessMutate(processInstance);
+                                                    onClose(true);
+                                                }}
+                                            >
+                                                {isLodingArchiveProcess ? <CircularProgress size={20} /> : <ArchiveIcon color="primary" />}
+                                            </IconButton>
+                                        </Tooltip>
+                                    )}
+                                    <Tooltip title={i18next.t('actions.delete')}>
+                                        <IconButton onClick={() => setDeleteDialogState(true)}>
+                                            {isDeleteProcessLoading ? <CircularProgress size={20} /> : <DeleteIcon color="primary" />}
+                                        </IconButton>
+                                    </Tooltip>
+                                </>
+                            )}
                         </Grid>
-                    )}
-
-                    {!isEditMode && hasPermissionsToEditDetailsAndSummary && activeStep === 0 && processInstance.status === Status.Pending && (
-                        <Button variant="contained" size="large" startIcon={<EditIcon />} onClick={() => setIsEditMode(true)}>
-                            {i18next.t('wizard.processInstance.editProcessBth')}
-                        </Button>
-                    )}
+                        <Grid>
+                            {!isEditMode && hasPermissionsToEditDetails && activeStep === 0 && processInstance.status === Status.Pending && (
+                                <Grid>
+                                    <Button variant="contained" size="large" startIcon={<EditIcon />} onClick={() => setIsEditMode(true)}>
+                                        {i18next.t('wizard.processInstance.editProcessBth')}
+                                    </Button>
+                                </Grid>
+                            )}
+                        </Grid>
+                    </Grid>
                 </Grid>
             </DialogTitle>
             <DialogContent dividers className={classes.container}>
@@ -195,6 +276,16 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({ open, onClose
                     </Button>
                 )}
             </DialogActions>
+
+            <AreYouSureDialog
+                open={deleteDialogState}
+                handleClose={() => setDeleteDialogState(false)}
+                onYes={async () => {
+                    await deleteProcessMutate(processInstance._id);
+                    setDeleteDialogState(false);
+                    onClose(true);
+                }}
+            />
         </Dialog>
     );
 };

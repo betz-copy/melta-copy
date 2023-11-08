@@ -1,6 +1,5 @@
-import { Grid, Typography } from '@mui/material';
-
 import React, { useState } from 'react';
+import { Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
 import { toast } from 'react-toastify';
 import { FiberManualRecordOutlined as StatusIcon, FiberManualRecord as StatusIconFilled } from '@mui/icons-material';
@@ -11,10 +10,10 @@ import ProcessCard, { StatusColors } from './ProcessCard';
 import { searchProcessesRequest } from '../../services/processesService';
 import { environment } from '../../globals';
 import { Status, IMongoProcessInstancePopulated } from '../../interfaces/processes/processInstance';
-import './ProcessesList.css';
-
 import { IMongoProcessTemplatePopulated } from '../../interfaces/processes/processTemplate';
 import { InfiniteScroll } from '../../common/InfiniteScroll';
+import { IPermissionsOfUser } from '../../services/permissionsService';
+import './ProcessesList.css';
 
 const { infiniteScrollPageCount } = environment.processInstances;
 
@@ -26,8 +25,16 @@ const ProcessesList: React.FC<{
     endDateInput: Date | null;
     templatesToShowCheckbox: IMongoProcessTemplatePopulated[]; // todo: support in backend
 }> = ({ templatesToShowCheckbox, search, startDateInput, endDateInput }) => {
-    const [statusFilter, setStatusFilter] = useState<'all' | Status>('all');
+    const [statusFilter, setStatusFilter] = useState<'all' | Status | undefined>('all');
     const queryClient = useQueryClient();
+    const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
+    const hasPermissionsToEditDetails = Boolean(myPermissions.processesManagementId);
+    const getStatusFilter = (status: Status | 'all' | undefined) => {
+        if (status === 'all') return [Status.Approved, Status.Pending, Status.Rejected];
+        if (status !== undefined) return [status];
+        return undefined;
+    };
+
     const [loadingProcesses, setLoadingProcesses] = useState<Record<string, boolean>>({});
 
     return (
@@ -39,9 +46,9 @@ const ProcessesList: React.FC<{
                 <Grid item>
                     <IconButton sx={{ flexDirection: 'column', width: '60px' }} onClick={() => setStatusFilter('all')}>
                         {statusFilter === 'all' ? (
-                            <StatusIconFilled fontSize="medium" sx={{ color: 'grey' }} />
+                            <StatusIconFilled fontSize="medium" sx={{ color: `${StatusColors.All}` }} />
                         ) : (
-                            <StatusIcon fontSize="medium" sx={{ color: 'grey' }} />
+                            <StatusIcon fontSize="medium" sx={{ color: `${StatusColors.All}` }} />
                         )}
 
                         <Typography variant="subtitle2" fontSize="10px">
@@ -79,6 +86,17 @@ const ProcessesList: React.FC<{
                             {i18next.t('processInstancesPage.rejectedProcesses')}
                         </Typography>
                     </IconButton>
+                    <IconButton sx={{ flexDirection: 'column', width: '60px' }} onClick={() => setStatusFilter(undefined)}>
+                        {!statusFilter ? (
+                            <StatusIconFilled fontSize="medium" sx={{ color: `${StatusColors.Archived}` }} />
+                        ) : (
+                            <StatusIcon fontSize="medium" sx={{ color: `${StatusColors.Archived}` }} />
+                        )}
+
+                        <Typography variant="subtitle2" fontSize="10px">
+                            {i18next.t('processInstancesPage.archivedProcesses')}
+                        </Typography>
+                    </IconButton>
                 </Grid>
             </Grid>
             <Grid item>
@@ -91,9 +109,10 @@ const ProcessesList: React.FC<{
                                 templateIds: templatesToShowCheckbox.map((template) => template._id),
                                 startDate: startDateInput ?? undefined,
                                 endDate: endDateInput ?? undefined,
-                                status: statusFilter !== 'all' ? statusFilter : undefined,
+                                status: getStatusFilter(statusFilter),
                                 skip: pageParam,
                                 limit: infiniteScrollPageCount,
+                                archived: statusFilter === undefined,
                             });
                         }}
                         onQueryError={(error) => {
@@ -111,13 +130,16 @@ const ProcessesList: React.FC<{
                         {(process) => (
                             <ProcessCard
                                 processInstance={process}
-                                onChangedProcessDialogClose={(processId) => {
-                                    setLoadingProcesses((prev) => ({ ...prev, [processId]: true }));
-                                    queryClient
-                                        .invalidateQueries(['searchProcesses'])
-                                        .finally(() => setLoadingProcesses((prev) => ({ ...prev, [processId]: false })));
+                                onChangedProcessDialogClose={(processId: string | null) => {
+                                    if (processId) {
+                                        setLoadingProcesses((prev) => ({ ...prev, [processId]: true }));
+                                        queryClient
+                                            .invalidateQueries(['searchProcesses'])
+                                            .finally(() => setLoadingProcesses((prev) => ({ ...prev, [processId]: false })));
+                                    } else queryClient.resetQueries({ queryKey: ['searchProcesses'] });
                                 }}
                                 isLoading={loadingProcesses[process._id] || false}
+                                isEditMode={hasPermissionsToEditDetails}
                             />
                         )}
                     </InfiniteScroll>

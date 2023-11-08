@@ -12,6 +12,8 @@ export enum NotificationType {
     processReviewerUpdate = 'processReviewerUpdate',
     processStatusUpdate = 'processStatusUpdate',
     newProcess = 'newProcess',
+    deleteProcess = 'deleteProcess',
+    archivedProcess = 'archivedProcess',
 
     dateAboutToExpire = 'dateAboutToExpire',
 }
@@ -27,20 +29,26 @@ export interface IRuleBreachResponseNotificationMetadataPopulated {
 }
 
 export interface IProcessReviewerUpdateNotificationMetadataPopulated {
-    process: IMongoProcessInstancePopulated;
-    addedSteps: IMongoStepInstancePopulated[];
-    deletedSteps: IMongoStepInstancePopulated[];
-    unchangedSteps: IMongoStepInstancePopulated[];
+    process: IMongoProcessInstancePopulated | null;
+    addedSteps: (IMongoStepInstancePopulated | null)[];
+    deletedSteps: (IMongoStepInstancePopulated | null)[];
+    unchangedSteps: (IMongoStepInstancePopulated | null)[];
 }
 export interface IProcessStatusUpdateNotificationMetadataPopulated {
-    process: IMongoProcessInstancePopulated;
-    step?: IMongoStepInstancePopulated;
+    process: IMongoProcessInstancePopulated | null;
+    step?: IMongoStepInstancePopulated | null;
     status: Status;
 }
 export interface INewProcessNotificationMetadataPopulated {
-    process: IMongoProcessInstancePopulated;
+    process: IMongoProcessInstancePopulated | null;
 }
-
+export interface IDeleteProcessNotificationMetadataPopulated {
+    processName: string;
+}
+export interface IArchiveProcessNotificationMetadataPopulated {
+    process: IMongoProcessInstancePopulated | null;
+    isArchived?: boolean;
+}
 export interface IDateAboutToExpireMetadataPopulated {
     entity: IEntity | null;
     propertyName: string;
@@ -53,7 +61,9 @@ export type INotificationMetadataPopulated =
     | IProcessReviewerUpdateNotificationMetadataPopulated
     | IProcessStatusUpdateNotificationMetadataPopulated
     | INewProcessNotificationMetadataPopulated
-    | IDateAboutToExpireMetadataPopulated;
+    | IDateAboutToExpireMetadataPopulated
+    | IDeleteProcessNotificationMetadataPopulated
+    | IArchiveProcessNotificationMetadataPopulated;
 
 export interface INotificationPopulated<T = INotificationMetadataPopulated> {
     type: NotificationType;
@@ -62,11 +72,22 @@ export interface INotificationPopulated<T = INotificationMetadataPopulated> {
     _id: string;
 }
 
+export const isDeleteProcessNotification = (
+    notification: Partial<INotificationPopulated>,
+): notification is INotificationPopulated<IDeleteProcessNotificationMetadataPopulated> => {
+    return notification.type === NotificationType.deleteProcess;
+};
+export const isArchiveProcessNotification = (
+    notification: Partial<INotificationPopulated>,
+): notification is INotificationPopulated<IArchiveProcessNotificationMetadataPopulated> => {
+    return notification.type === NotificationType.archivedProcess;
+};
 export const isRuleBreachAlertNotification = (
     notification: Partial<INotificationPopulated>,
 ): notification is INotificationPopulated<IRuleBreachAlertNotificationMetadataPopulated> => {
     return notification.type === NotificationType.ruleBreachAlert;
 };
+
 export const isRuleBreachRequestNotification = (
     notification: Partial<INotificationPopulated>,
 ): notification is INotificationPopulated<IRuleBreachRequestNotificationMetadataPopulated> => {

@@ -39,8 +39,9 @@ function generateProcessInstanceOfTemplate(template: IMongoProcessTemplatePopula
         endDate: new Date(),
         steps,
         status: Status.Pending,
-        reviewer: undefined,
+        // reviewer: undefined,
         reviewedAt: undefined,
+        archived: false,
     };
 }
 

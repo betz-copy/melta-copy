@@ -1,24 +1,36 @@
 import React, { CSSProperties, useState } from 'react';
-import { Box, Card, CardContent, Grid, Skeleton, Tooltip, Typography, styled } from '@mui/material';
-import { ScatterPlotOutlined as HiveIcon, FiberManualRecordOutlined as StatusIcon } from '@mui/icons-material';
-import { useQueryClient } from 'react-query';
+import { Box, Card, CardContent, Grid, Tooltip, Typography, styled, IconButton, Menu, Skeleton } from '@mui/material';
+import { ScatterPlotOutlined as HiveIcon, FiberManualRecordOutlined as StatusIcon, Unarchive } from '@mui/icons-material';
+import { useMutation, useQueryClient } from 'react-query';
+import DeleteIcon from '@mui/icons-material/Delete';
+import MoreVertSharpIcon from '@mui/icons-material/MoreVertSharp';
+import i18next from 'i18next';
+import ArchiveIcon from '@mui/icons-material/Archive';
+import CircularProgress from '@mui/material/CircularProgress';
+import { AxiosError } from 'axios';
+import { toast } from 'react-toastify';
 import { CustomIcon } from '../../common/CustomIcon';
-
 import { IMongoStepTemplatePopulated } from '../../interfaces/processes/stepTemplate';
 import { IMongoProcessInstancePopulated, Status } from '../../interfaces/processes/processInstance';
 import { IMongoStepInstancePopulated } from '../../interfaces/processes/stepInstance';
 import { IProcessTemplateMap } from '../../interfaces/processes/processTemplate';
 import ProcessInstanceWizard from '../../common/wizards/processInstance';
+import { archiveProcessRequest, deleteProcessRequest } from '../../services/processesService';
+import { MenuButton } from '../../common/MenuButton';
+import { AreYouSureDialog } from '../../common/dialogs/AreYouSureDialog';
 
 export enum StatusColors {
-    Pending = '#0288d1',
+    Pending = '#ff8f00',
     Approved = '#2e7d32',
     Rejected = '#d32f2f',
+    Archived = '#B0B0B0',
+    All = '#0288d1',
 }
 export enum StatusColorsNames {
-    Pending = 'info',
+    Pending = 'warning',
     Approved = 'success',
     Rejected = 'error',
+    Archived = 'disabled',
 }
 export const StyledCard = styled(Card)(({ theme }) => ({
     background: theme.palette.mode === 'light' ? '#FFFFFF 0% 0% no-repeat padding-box' : undefined,
@@ -37,13 +49,18 @@ export const getStatusColor = (status: Status): StatusColors => {
         case Status.Rejected: {
             return StatusColors.Rejected;
         }
-        default: {
+        case Status.Pending: {
             return StatusColors.Pending;
+        }
+        default: {
+            return StatusColors.Archived;
         }
     }
 };
 
-const statusColorName = (status: Status): StatusColorsNames => {
+const statusColorName = (status: Status, isArchived?: boolean): StatusColorsNames => {
+    if (isArchived) return StatusColorsNames.Archived;
+
     switch (status) {
         case Status.Approved: {
             return StatusColorsNames.Approved;
@@ -51,9 +68,8 @@ const statusColorName = (status: Status): StatusColorsNames => {
         case Status.Rejected: {
             return StatusColorsNames.Rejected;
         }
-        default: {
+        default:
             return StatusColorsNames.Pending;
-        }
     }
 };
 
@@ -134,9 +150,10 @@ const StepIcon: React.FC<{
 
 const ProcessCard: React.FC<{
     processInstance: IMongoProcessInstancePopulated;
-    onChangedProcessDialogClose: (processId: string) => void;
+    onChangedProcessDialogClose: (string) => void;
+    isEditMode: boolean;
     isLoading?: boolean;
-}> = ({ processInstance, onChangedProcessDialogClose, isLoading = false }) => {
+}> = ({ processInstance, onChangedProcessDialogClose, isLoading = false, isEditMode }) => {
     const queryClient = useQueryClient();
     const processTemplatesMap = queryClient.getQueryData<IProcessTemplateMap>('getProcessTemplates')!;
     const processTemplate = processTemplatesMap.get(processInstance.templateId)!;
@@ -150,7 +167,52 @@ const ProcessCard: React.FC<{
         setOpen({ isOpen: false });
         if (isProcessChanged) onChangedProcessDialogClose(processInstance._id);
     };
+    const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+    const [deleteDialogState, setDeleteDialogState] = useState<boolean>(false);
 
+    const handleCloseMenu = (e: React.MouseEvent<HTMLLIElement, MouseEvent>) => {
+        e.stopPropagation();
+        setAnchorEl(null);
+    };
+    const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+        event.stopPropagation();
+        setAnchorEl(event.currentTarget);
+    };
+    const { mutateAsync: deleteProcessMutate, isLoading: isDeleteProcessLoading } = useMutation(
+        (processId: string) => {
+            return deleteProcessRequest(processId);
+        },
+        {
+            onError: (error: AxiosError) => {
+                console.log('failed to delete process. error:', error);
+                toast.error(i18next.t('processInstancesPage.failedToDeleteProcess'));
+            },
+            onSuccess: () => {
+                toast.success(i18next.t('processInstancesPage.processDeletedSuccessfully'));
+            },
+        },
+    );
+
+    const { mutateAsync: archiveProcessMutate, isLoading: isLodingArchiveProcess } = useMutation(
+        (process: IMongoProcessInstancePopulated) => {
+            return archiveProcessRequest(process._id, !process.archived);
+        },
+        {
+            onError: (error: AxiosError, process: IMongoProcessInstancePopulated) => {
+                if (process.archived) {
+                    console.log('failed to send process to archive. error:', error);
+                    toast.success(i18next.t('processInstancesPage.failedToSendProcessToArchive'));
+                } else {
+                    console.log('failed to remove process from archive. error:', error);
+                    toast.success(i18next.t('processInstancesPage.failedToRemoveProcessFromArchive'));
+                }
+            },
+            onSuccess: (process: IMongoProcessInstancePopulated) => {
+                if (process.archived) toast.success(i18next.t('processInstancesPage.processSendToArchiveSuccessfully'));
+                else toast.success(i18next.t('processInstancesPage.processRemoveFromArchiveSuccessfully'));
+            },
+        },
+    );
     return (
         <div>
             <StyledCard onClick={() => setOpen({ isOpen: true })}>
@@ -159,12 +221,51 @@ const ProcessCard: React.FC<{
                         <Grid container direction="column" alignItems="center" justifyContent="center" spacing={2}>
                             <Grid item container direction="row" justifyContent="center" alignItems="center" spacing={1}>
                                 <Grid item>
-                                    <StatusIcon fontSize="medium" color={statusColorName(processInstance.status)} />
+                                    <StatusIcon fontSize="medium" color={statusColorName(processInstance.status, processInstance.archived)} />
                                 </Grid>
                                 <Grid item>
                                     <Typography component="h6" variant="h6" noWrap>
                                         {processInstance.name}
                                     </Typography>
+                                </Grid>
+                                <Grid>
+                                    {isEditMode && (
+                                        <>
+                                            <IconButton onClick={handleClick}>
+                                                <MoreVertSharpIcon />
+                                            </IconButton>
+
+                                            <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleCloseMenu}>
+                                                <MenuButton
+                                                    onClick={async (e: React.MouseEvent<HTMLLIElement, MouseEvent>) => {
+                                                        e.stopPropagation();
+                                                        setDeleteDialogState(true);
+                                                    }}
+                                                    text={i18next.t('actions.delete')}
+                                                    icon={isDeleteProcessLoading ? <CircularProgress size={20} /> : <DeleteIcon color="action" />}
+                                                />
+                                                <MenuButton
+                                                    onClick={async (e: React.MouseEvent<HTMLLIElement, MouseEvent>) => {
+                                                        e.stopPropagation();
+                                                        await archiveProcessMutate(processInstance);
+                                                        onChangedProcessDialogClose(processInstance._id);
+                                                        handleCloseMenu(e);
+                                                    }}
+                                                    text={processInstance.archived ? i18next.t('actions.unArchived') : i18next.t('actions.archived')}
+                                                    icon={
+                                                        // eslint-disable-next-line no-nested-ternary
+                                                        isLodingArchiveProcess ? (
+                                                            <CircularProgress size={20} />
+                                                        ) : processInstance.archived ? (
+                                                            <Unarchive color="action" />
+                                                        ) : (
+                                                            <ArchiveIcon color="action" />
+                                                        )
+                                                    }
+                                                />
+                                            </Menu>
+                                        </>
+                                    )}
                                 </Grid>
                             </Grid>
                             <Grid item container justifyContent="center" spacing={4}>
@@ -214,6 +315,15 @@ const ProcessCard: React.FC<{
                 )}
             </StyledCard>
 
+            <AreYouSureDialog
+                open={deleteDialogState}
+                handleClose={() => setDeleteDialogState(false)}
+                onYes={async () => {
+                    await deleteProcessMutate(processInstance._id);
+                    onChangedProcessDialogClose(null);
+                    setDeleteDialogState(false);
+                }}
+            />
             {open.isOpen && (
                 <ProcessInstanceWizard
                     open={open.isOpen}

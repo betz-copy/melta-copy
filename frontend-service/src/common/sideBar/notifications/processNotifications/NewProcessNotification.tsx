@@ -2,6 +2,7 @@ import React from 'react';
 import { Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
 import { INewProcessNotificationMetadataPopulated } from '../../../../interfaces/notifications';
+import { ProcessName } from './ProcessName';
 
 export const NewProcessNotification: React.FC<INewProcessNotificationMetadataPopulated> = ({ process }) => {
     return (
@@ -11,9 +12,7 @@ export const NewProcessNotification: React.FC<INewProcessNotificationMetadataPop
             </Grid>
             <Grid item>
                 <Typography display="inline">{`${i18next.t('newProcessNotification.processName')} `}</Typography>
-                <Typography display="inline" fontWeight="bold">
-                    {process.name}
-                </Typography>
+                <ProcessName process={process} />
             </Grid>
         </Grid>
     );

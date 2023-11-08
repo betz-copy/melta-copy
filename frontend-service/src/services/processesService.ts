@@ -8,12 +8,12 @@ import { IMongoProcessInstancePopulated, IReferencedEntityForProcess, ISearchPro
 import { ProcessStepValues } from '../common/wizards/processInstance/ProcessSteps';
 
 const { processes } = environment.api;
-const getProcessByIdRequest = async (processId: string) => {
+export const getProcessByIdRequest = async (processId: string) => {
     const { data } = await axios.get<IMongoProcessInstancePopulated>(`${processes}/${processId}`);
     return data;
 };
 
-const createProcessRequest = async (process: ProcessDetailsValues) => {
+export const createProcessRequest = async (process: ProcessDetailsValues) => {
     const formData = new FormData();
     Object.entries(process.detailsAttachments).forEach(([key, value]) => formData.append(key, value as Blob));
     const entityReferences = Object.entries(process.entityReferences)
@@ -34,8 +34,9 @@ const createProcessRequest = async (process: ProcessDetailsValues) => {
     return data;
 };
 
-const deleteProcessRequest = async (processId: string) => {
+export const deleteProcessRequest = async (processId: string) => {
     const { data } = await axios.delete<IMongoProcessInstancePopulated>(`${processes}/${processId}`);
+
     return data;
 };
 
@@ -55,7 +56,7 @@ const handleAttachmentProperties = (attachments: object) => {
     return { formData, fileProperties };
 };
 
-const updateProcessRequest = async (processId: string, updatedData: ProcessDetailsValues) => {
+export const updateProcessRequest = async (processId: string, updatedData: ProcessDetailsValues) => {
     const entityReferences = Object.entries(updatedData.entityReferences)
         .filter(([_key, value]: [string, IReferencedEntityForProcess | undefined]) => value?.entity && value.entity.properties)
         .reduce((entityIdsObject: { [key: string]: string }, [key, value]: [string, IReferencedEntityForProcess]) => {
@@ -79,15 +80,19 @@ const updateProcessRequest = async (processId: string, updatedData: ProcessDetai
     const { data } = await axios.put<IMongoProcessInstancePopulated>(`${processes}/${processId}`, formData);
     return data;
 };
-
-const searchProcessesRequest = async (searchBody: ISearchProcessInstancesBody) => {
+export const archiveProcessRequest = async (processId: string, archived: Boolean) => {
+    const { data } = await axios.patch<IMongoProcessInstancePopulated>(`${processes}/archive/${processId}`, {
+        archived,
+    });
+    return data;
+};
+export const searchProcessesRequest = async (searchBody: ISearchProcessInstancesBody) => {
     const updatedSearchBody = { ...searchBody, name: searchBody.name !== '' ? searchBody.name : undefined };
-
     const { data } = await axios.post<IMongoProcessInstancePopulated[]>(`${processes}/search`, updatedSearchBody);
     return data;
 };
 
-const updateStepRequest = async (stepId: string, values: ProcessStepValues, processId: string, currStep: IMongoStepInstancePopulated) => {
+export const updateStepRequest = async (stepId: string, values: ProcessStepValues, processId: string, currStep: IMongoStepInstancePopulated) => {
     const { formData, fileProperties } = handleAttachmentProperties(values.attachmentsProperties);
 
     const entityReferences = Object.entries(values.entityReferences)
@@ -111,5 +116,3 @@ const updateStepRequest = async (stepId: string, values: ProcessStepValues, proc
     const { data } = await axios.patch<IMongoStepInstancePopulated>(`${processes}/${processId}/steps/${stepId}`, formData);
     return data;
 };
-
-export { getProcessByIdRequest, createProcessRequest, deleteProcessRequest, updateProcessRequest, searchProcessesRequest, updateStepRequest };
