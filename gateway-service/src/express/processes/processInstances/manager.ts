@@ -43,7 +43,7 @@ export default class ProcessesInstancesManager {
 
         if (entityProperties.length === 0) return properties;
 
-        const userPermissionPromise = PermissionsManager.getPermissionsOfUser(userId);
+        const userPermissionPromise = PermissionsManager.getPermissionsOfUserId(userId);
 
         const promises = entityProperties.map(([key]) => {
             const entityPromise = InstanceManagerService.getEntityInstanceById(properties[key]);

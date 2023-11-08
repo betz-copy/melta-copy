@@ -34,7 +34,7 @@ export const getAllowedEntityTemplatesForInstances = (userPermissions: Omit<IPer
 };
 
 export const validateHasPermissionsToEntitiesInTemplates = async (user: Express.User, templateIds: string[]) => {
-    const userPermissions = await PermissionsManager.getPermissionsOfUser(user.id);
+    const userPermissions = await PermissionsManager.getPermissionsOfUserId(user.id);
 
     const allowedEntityTemplates = await getAllowedEntityTemplatesForInstances(userPermissions);
     const allowedEntityTemplateIds = allowedEntityTemplates.map((entityTemplate) => entityTemplate._id);

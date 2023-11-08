@@ -17,7 +17,7 @@ const validateHasPermissionsToGanttItems = async (gantt: IGantt, allowedEntityTe
 };
 
 export const validateUserHasPermissionsToGantt = async (userId: string, newGantt: IGantt | undefined, existingGanttId: string | undefined) => {
-    const userPermissions = await PermissionsManager.getPermissionsOfUser(userId);
+    const userPermissions = await PermissionsManager.getPermissionsOfUserId(userId);
 
     if (!userPermissions.templatesManagementId) {
         throw new ServiceError(403, 'user not authorized', { metadata: `user is not templates manager to create/update/delete gantts` });
