@@ -1,3 +1,4 @@
+import { environment } from '../../globals';
 import { IFilterOfTemplate, ISearchEntitiesOfTemplateBody } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { getDayStart, getDayEnd } from '../date';
@@ -49,17 +50,17 @@ export const textFilterOfFileToFilterTemplate = (field: string, { type, filter }
 
     switch (type) {
         case 'equals':
-            return { [field]: { $rgx: `.{32}${escapeRegExp(filter!)}` } };
+            return { [field]: { $rgx: `.{${environment.fileIdLength}}${escapeRegExp(filter!)}` } };
         case 'notEqual':
-            return { [field]: { $not: { $rgx: `.{32}${escapeRegExp(filter!)}` } } };
+            return { [field]: { $not: { $rgx: `.{${environment.fileIdLength}}${escapeRegExp(filter!)}` } } };
         case 'contains':
-            return { [field]: { $rgx: `.{32}.*${escapeRegExp(filter!)}.*` } };
+            return { [field]: { $rgx: `.{${environment.fileIdLength}}.*${escapeRegExp(filter!)}.*` } };
         case 'notContains':
-            return { [field]: { $not: { $rgx: `.{32}.*${escapeRegExp(filter!)}.*` } } };
+            return { [field]: { $not: { $rgx: `.{${environment.fileIdLength}}.*${escapeRegExp(filter!)}.*` } } };
         case 'startsWith':
-            return { [field]: { $rgx: `^.{32}${escapeRegExp(filter!)}.*` } };
+            return { [field]: { $rgx: `^.{${environment.fileIdLength}}${escapeRegExp(filter!)}.*` } };
         case 'endsWith':
-            return { [field]: { $rgx: `.{32}.*${escapeRegExp(filter!)}` } };
+            return { [field]: { $rgx: `.{${environment.fileIdLength}}.*${escapeRegExp(filter!)}` } };
         case 'blank':
             return { [field]: { $eq: null } };
         case 'notBlank':
