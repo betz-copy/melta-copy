@@ -70,8 +70,8 @@ export const fileColDef = <Data extends any = IEntity>(
         field,
         headerName: value.title,
         valueGetter,
-        menuTabs: [],
         cellRenderer: (props: ICellRendererParams<Data, string | undefined>) => (props.value ? <DownloadButton fileId={props.value} /> : null),
+        filter: 'agTextColumnFilter',
         hide: hideColumn,
     };
 };
@@ -98,7 +98,6 @@ export const booleanColDef = <Data extends any = IEntity>(
         suppressMiniFilter: true,
         values: [true, false, undefined],
     };
-
     return {
         field,
         headerName: value.title,

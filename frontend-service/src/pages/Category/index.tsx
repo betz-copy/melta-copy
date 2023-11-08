@@ -47,10 +47,6 @@ const Category: React.FC = () => {
         });
     }, [entityTemplates.size, category._id]);
 
-    useEffect(() => {
-        setTemplatesToShowCheckbox(categoryTemplates);
-    }, [categoryTemplatesId]);
-
     return (
         <Grid container marginLeft="0" marginRight="0">
             <EntitiesPage

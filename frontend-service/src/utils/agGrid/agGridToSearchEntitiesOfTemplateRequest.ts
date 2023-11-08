@@ -14,6 +14,7 @@ import {
 export const setFilterToFilterOfTemplate = (field: string, { values }: IAGGridSetFilter): IFilterOfTemplate => {
     return { [field]: { $in: values } };
 };
+
 export const textFilterToFilterOfTemplate = (field: string, { type, filter }: IAGGridTextFilter): IFilterOfTemplate => {
     const escapeRegExp = (string: string) => {
         return string.replace(/[.*+\-?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
@@ -40,6 +41,34 @@ export const textFilterToFilterOfTemplate = (field: string, { type, filter }: IA
             throw new Error('Invalid supported ag-grid filter type method');
     }
 };
+
+export const textFilterOfFileToFilterTemplate = (field: string, { type, filter }: IAGGridTextFilter): IFilterOfTemplate => {
+    const escapeRegExp = (string: string) => {
+        return string.replace(/[.*+\-?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
+    };
+
+    switch (type) {
+        case 'equals':
+            return { [field]: { $rgx: `.{32}${escapeRegExp(filter!)}` } };
+        case 'notEqual':
+            return { [field]: { $not: { $rgx: `.{32}${escapeRegExp(filter!)}` } } };
+        case 'contains':
+            return { [field]: { $rgx: `.{32}.*${escapeRegExp(filter!)}.*` } };
+        case 'notContains':
+            return { [field]: { $not: { $rgx: `.{32}.*${escapeRegExp(filter!)}.*` } } };
+        case 'startsWith':
+            return { [field]: { $rgx: `^.{32}${escapeRegExp(filter!)}.*` } };
+        case 'endsWith':
+            return { [field]: { $rgx: `.{32}.*${escapeRegExp(filter!)}` } };
+        case 'blank':
+            return { [field]: { $eq: null } };
+        case 'notBlank':
+            return { [field]: { $ne: null } };
+        default:
+            throw new Error('Invalid supported ag-grid filter type method');
+    }
+};
+
 export const numberFilterToFilterOfTemplate = (field: string, { type, filter, filterTo }: IAGGidNumberFilter): IFilterOfTemplate => {
     switch (type) {
         case 'equals':
@@ -155,6 +184,7 @@ export const filterModelToFilterOfTemplate = (
 
         switch (fieldFilter.filterType) {
             case 'text':
+                if (fieldTemplate.format === 'fileId') return textFilterOfFileToFilterTemplate(field, fieldFilter);
                 return textFilterToFilterOfTemplate(field, fieldFilter);
             case 'number':
                 return numberFilterToFilterOfTemplate(field, fieldFilter);
@@ -163,7 +193,6 @@ export const filterModelToFilterOfTemplate = (
                     return dateFilterToFilterOfTemplate(field, fieldFilter);
                 }
                 return dateTimeFilterToFilterOfTemplate(field, fieldFilter);
-
             case 'set':
                 return setFilterToFilterOfTemplate(field, fieldFilter);
             default:
