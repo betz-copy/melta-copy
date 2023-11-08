@@ -9,7 +9,7 @@ import { AxiosError } from 'axios';
 import EditIcon from '@mui/icons-material/Edit';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import _ from 'lodash';
-import DeleteIcon from '@material-ui/icons/Delete';
+import DeleteIcon from '@mui/icons-material/Delete';
 import UnarchiveIcon from '@mui/icons-material/Unarchive';
 import ArchiveIcon from '@mui/icons-material/Archive';
 import { ProcessSideStepper } from './ProcessSideStepper';
@@ -170,6 +170,10 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({ open, onClose
             },
         },
     );
+
+    const processIsEditable =
+        hasPermissionsToEditDetails && activeStep === 0 && processInstance.status === Status.Pending && !processInstance.archived;
+
     return (
         <Dialog keepMounted={false} open={open} fullWidth maxWidth="xl" PaperProps={{ style: { height: '85vh' } }}>
             <DialogTitle height="8vh" margin={0} display="flex" justifyContent="space-between" alignItems="center">
@@ -240,12 +244,12 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({ open, onClose
                             )}
                         </Grid>
                         <Grid>
-                            {!isEditMode && hasPermissionsToEditDetails && activeStep === 0 && processInstance.status === Status.Pending && (
-                                <Grid>
-                                    <Button variant="contained" size="large" startIcon={<EditIcon />} onClick={() => setIsEditMode(true)}>
-                                        {i18next.t('wizard.processInstance.editProcessBth')}
-                                    </Button>
-                                </Grid>
+                            {!isEditMode && processIsEditable && (
+                                <Tooltip title={i18next.t('wizard.processInstance.editProcessBth')}>
+                                    <IconButton onClick={() => setIsEditMode(true)}>
+                                        <EditIcon color="primary" />
+                                    </IconButton>
+                                </Tooltip>
                             )}
                         </Grid>
                     </Grid>

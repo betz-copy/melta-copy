@@ -1,8 +1,8 @@
 import React from 'react';
-import { CSSProperties } from '@material-ui/core/styles/withStyles';
 import { Grid, Typography } from '@mui/material';
 import { AppRegistration as DefaultEntityTemplateIcon } from '@mui/icons-material';
 import { useSelector } from 'react-redux';
+import { CSSProperties } from '@mui/styles';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { CustomIcon } from '../../../common/CustomIcon';
 import { FieldsDisplay } from './FieldsDisplay';

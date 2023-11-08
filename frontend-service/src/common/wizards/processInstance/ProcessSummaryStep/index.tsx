@@ -23,7 +23,7 @@ const ProcessSummary: React.FC<ProcessSummaryProp> = ({ processInstance, process
         >
             <Grid container justifyContent="space-around" direction="column">
                 <Grid item xs={3}>
-                    <ProcessStatus title={i18next.t('wizard.processInstance.summary.processStatus')} instance={processInstance} type={'processInstance'} />
+                    <ProcessStatus title={i18next.t('wizard.processInstance.summary.processStatus')} instance={processInstance} />
                 </Grid>
 
                 <Grid item xs={3}>

@@ -1,3 +1,4 @@
+/* eslint-disable no-param-reassign */
 import partition from 'lodash.partition';
 import mapValues from 'lodash.mapvalues';
 import { IMongoStepInstancePopulated } from '../interfaces/processes/stepInstance';

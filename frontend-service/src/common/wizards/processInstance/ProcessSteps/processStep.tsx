@@ -236,7 +236,6 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                             title={i18next.t('wizard.processInstance.step.stepStatus')}
                                             instance={stepInstance}
                                             editStatus={{ setFieldValue, isEditMode: isStepEditMode, values }}
-                                            type={'stepInstance'}
                                         />
                                     </Grid>
 

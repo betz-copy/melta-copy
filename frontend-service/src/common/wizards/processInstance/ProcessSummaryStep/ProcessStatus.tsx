@@ -20,6 +20,7 @@ interface StatusDisplayProps {
     status: Status;
     Icon: React.ComponentType<SvgIconProps>;
     text: string;
+    fontSize?: number;
 }
 
 const getColor = (status: Status) => {
@@ -28,10 +29,8 @@ const getColor = (status: Status) => {
             return 'success';
         case Status.Rejected:
             return 'error';
-        case Status.Pending:
-            return 'primary';
         default:
-            return 'disabled';
+            return 'primary';
     }
 };
 interface StatusButtonProps extends StatusDisplayProps {
@@ -46,9 +45,9 @@ const StatusButton: React.FC<StatusButtonProps> = ({ status, currentStatus, hand
             <Grid container direction="column" alignItems="center">
                 <IconButton onClick={handleClick}>
                     {currentStatus === status ? (
-                        <Icon color={color} sx={{ fontSize: '35px' }} />
+                        <Icon color={color} style={{ fontSize: 40 }} />
                     ) : (
-                        <IconOutlined color={color} sx={{ fontSize: '35px' }} />
+                        <IconOutlined color={color} sx={{ fontSize: 40 }} />
                     )}
                 </IconButton>
                 <Typography width="50px" style={{ textAlign: 'center' }}>
@@ -59,13 +58,13 @@ const StatusButton: React.FC<StatusButtonProps> = ({ status, currentStatus, hand
     );
 };
 
-const StatusDisplay: React.FC<StatusDisplayProps> = ({ status, Icon, text }) => {
+const StatusDisplay: React.FC<StatusDisplayProps> = ({ status, Icon, text, fontSize = 40 }) => {
     const color = getColor(status);
     return (
         <Grid item>
             <Grid container direction="column" alignItems="center">
                 <Grid item>
-                    <Icon color={color} sx={{ fontSize: '55px' }} />
+                    <Icon color={color} style={{ fontSize }} />
                 </Grid>
                 <Grid item>
                     <Typography width="60px" style={{ textAlign: 'center' }}>
@@ -80,7 +79,6 @@ const StatusDisplay: React.FC<StatusDisplayProps> = ({ status, Icon, text }) => 
 interface ProcessStatusProps {
     title: string;
     instance: IMongoProcessInstancePopulated | IMongoStepInstancePopulated;
-    type: 'stepInstance' | 'processInstance';
     editStatus?: {
         setFieldValue: FormikProps<ProcessStepValues>['setFieldValue'];
         isEditMode: boolean;
@@ -88,13 +86,12 @@ interface ProcessStatusProps {
     };
 }
 
-const ProcessStatus: React.FC<ProcessStatusProps> = ({ title, instance, editStatus, type }) => {
+const ProcessStatus: React.FC<ProcessStatusProps> = ({ title, instance, editStatus }) => {
     const currentUser = useSelector((state: RootState) => state.user) as IUser;
     const handleSetStatus = (newStatus: Status) => {
         const newStatusToSet = newStatus !== editStatus!.values.status ? newStatus : Status.Pending;
         editStatus!.setFieldValue('status', newStatusToSet);
     };
-
     return (
         <Grid container flexDirection="column" alignItems="stretch" spacing={2}>
             <Grid item container justifyContent="center">
@@ -132,6 +129,7 @@ const ProcessStatus: React.FC<ProcessStatusProps> = ({ title, instance, editStat
                                 Icon={CheckCircleIcon}
                                 text={i18next.t('wizard.processInstance.summary.processCompleted')}
                                 status={instance.status}
+                                fontSize={!editStatus ? 55 : undefined}
                             />
                         )}
                         {instance.status === Status.Rejected && (
@@ -139,6 +137,7 @@ const ProcessStatus: React.FC<ProcessStatusProps> = ({ title, instance, editStat
                                 Icon={CancelIcon}
                                 text={i18next.t('wizard.processInstance.summary.processRejected')}
                                 status={instance.status}
+                                fontSize={!editStatus ? 55 : undefined}
                             />
                         )}
                         {instance.status === Status.Pending && (
@@ -146,6 +145,7 @@ const ProcessStatus: React.FC<ProcessStatusProps> = ({ title, instance, editStat
                                 Icon={AccessTimeFilledIcon}
                                 text={i18next.t('wizard.processInstance.summary.processPending')}
                                 status={instance.status}
+                                fontSize={!editStatus ? 55 : undefined}
                             />
                         )}
                     </>
@@ -158,23 +158,24 @@ const ProcessStatus: React.FC<ProcessStatusProps> = ({ title, instance, editStat
                         <span style={{ margin: '0px' }}>{` ${i18next.t('wizard.processInstance.summary.onDate')}: ${getLongDate(
                             instance.reviewedAt,
                         )} `}</span>
-                        {type === 'stepInstance' && (
-                            <Grid item style={{ margin: '0px' }}>
-                                <span style={{ fontWeight: 'bold', justifyContent: 'center', display: 'flex', fontSize: '18px' }}>
-                                    {` ${
-                                        currentUser.id === (instance as IMongoStepInstancePopulated).reviewer?.id
-                                            ? i18next.t('wizard.processInstance.summary.byYou')
-                                            : `${i18next.t('wizard.processInstance.summary.by')} ${
-                                                  (instance as IMongoStepInstancePopulated).reviewer?.fullName
-                                              }`
-                                    }`}
-                                </span>
-                            </Grid>
-                        )}
                     </Grid>
+                    {(instance as IMongoStepInstancePopulated).reviewer && (
+                        <Grid item container justifyContent="center" alignItems="center" style={{ margin: '0px' }}>
+                            <span style={{ fontWeight: 'bold' }}>
+                                {` ${
+                                    currentUser.id === (instance as IMongoStepInstancePopulated).reviewer!.id
+                                        ? i18next.t('wizard.processInstance.summary.byYou')
+                                        : `${i18next.t('wizard.processInstance.summary.by')} ${
+                                              (instance as IMongoStepInstancePopulated).reviewer!.fullName
+                                          }`
+                                }`}
+                            </span>
+                        </Grid>
+                    )}
                 </Grid>
             )}
         </Grid>
     );
 };
+
 export default ProcessStatus;
