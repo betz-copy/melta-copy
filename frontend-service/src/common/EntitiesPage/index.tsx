@@ -21,7 +21,7 @@ const EntitiesPage: React.FC<{
     setTemplates?: React.Dispatch<React.SetStateAction<IMongoEntityTemplatePopulated[]>>;
     templatesToShowCheckbox: IMongoEntityTemplatePopulated[];
     setTemplatesToShowCheckbox: React.Dispatch<React.SetStateAction<IMongoEntityTemplatePopulated[]>>;
-    isTemplatesCheckboxDraggable?: boolean;
+    isTemplatesCheckboxDraggableDisabled?: boolean;
     categories?: IMongoCategory[];
     excelExportAllTablesFileName: string;
     pageType: string;
@@ -35,7 +35,7 @@ const EntitiesPage: React.FC<{
     pageTitle,
     templatesToShowCheckbox,
     setTemplatesToShowCheckbox,
-    isTemplatesCheckboxDraggable,
+    isTemplatesCheckboxDraggableDisabled,
 }) => {
     const templateTablesViewRef = useRef<TemplateTablesViewRef>(null);
     const cardsViewRef = useRef<CardsViewRef>(null);
@@ -97,7 +97,7 @@ const EntitiesPage: React.FC<{
                             setTemplatesToShow: setTemplatesToShowCheckbox,
                             templates,
                             setTemplates,
-                            isDraggableDisabled: isTemplatesCheckboxDraggable,
+                            isDraggableDisabled: isTemplatesCheckboxDraggableDisabled,
                         }}
                         excelExportProps={{
                             onExcelExport: () => {

@@ -3,11 +3,11 @@ import { useQueryClient } from 'react-query';
 import { useSearchParams } from 'react-router-dom';
 import i18next from 'i18next';
 import { ICategoryMap } from '../../interfaces/categories';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+
+import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
 import { IPermissionsOfUser } from '../../services/permissionsService';
 import StartPageSearch from './components/StartPageSearch';
 import EntitiesPage from '../../common/EntitiesPage';
-import { useLocalStorage } from '../../utils/useLocalStorage';
 
 const GlobalSearch: React.FC<{}> = () => {
     const queryClient = useQueryClient();
@@ -24,10 +24,9 @@ const GlobalSearch: React.FC<{}> = () => {
     const allowedTemplates = Array.from(entityTemplates.values()).filter((entityTemplate) =>
         allowedCategories.find((category) => category._id === entityTemplate.category._id),
     );
-    const [urlSearchParams, setUrlSearchParams] = useSearchParams({});
 
-    const [templatesToShowCheckbox, setTemplatesToShowCheckbox] = useLocalStorage('globalSearch', allowedTemplates);
-    const [templates, setTemplates] = useState<IMongoEntityTemplatePopulated[]>([]);
+    const [templatesToShowCheckbox, setTemplatesToShowCheckbox] = useState(allowedTemplates);
+    const [urlSearchParams, setUrlSearchParams] = useSearchParams({});
 
     return urlSearchParams.get('search') === null ? (
         <StartPageSearch onSearch={(searchValue) => setUrlSearchParams({ search: searchValue })} />
@@ -40,8 +39,7 @@ const GlobalSearch: React.FC<{}> = () => {
             pageTitle={i18next.t('pages.globalSearch')}
             templatesToShowCheckbox={templatesToShowCheckbox}
             setTemplatesToShowCheckbox={setTemplatesToShowCheckbox}
-            setTemplates={setTemplates}
-            isTemplatesCheckboxDraggable
+            isTemplatesCheckboxDraggableDisabled
         />
     );
 };
