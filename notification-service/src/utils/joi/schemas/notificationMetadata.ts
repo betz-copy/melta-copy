@@ -30,7 +30,13 @@ export const processStatusUpdateMetadataSchema = joi.object({
 export const newProcessMetadataSchema = joi.object({
     processId: mongoIdSchema.required(),
 });
-
+export const deleteProcessMetadataSchema = joi.object({
+    processName: joi.string().required(),
+});
+export const archiveProcessMetadataSchema = joi.object({
+    processId: joi.string().required(),
+    isArchived: joi.boolean(),
+});
 export const dateAboutToExpireMetadataSchema = joi.object({
     entityId: joi.string().required(),
     propertyName: joi.string().required(),
@@ -64,7 +70,12 @@ export const validateNotificationMetadataSchema = joi.custom((value, helpers) =>
         case NotificationType.dateAboutToExpire:
             schema = dateAboutToExpireMetadataSchema;
             break;
-
+        case NotificationType.deleteProcess:
+            schema = deleteProcessMetadataSchema;
+            break;
+        case NotificationType.archivedProcess:
+            schema = archiveProcessMetadataSchema;
+            break;
         default:
             throw new Error('incorrect notification type');
     }

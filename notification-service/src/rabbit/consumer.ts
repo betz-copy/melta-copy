@@ -9,7 +9,7 @@ class NotificationsConsumer {
         try {
             const msgContent = msg.getContent();
             const value = basicValidateRequest(notificationSchema, msgContent);
-
+        
             await NotificationsManager.createNotification(value);
 
             msg.ack();

@@ -9,6 +9,8 @@ export enum NotificationType {
     processReviewerUpdate = 'processReviewerUpdate',
     processStatusUpdate = 'processStatusUpdate',
     newProcess = 'newProcess',
+    deleteProcess = 'deleteProcess',
+    archivedProcess = 'archivedProcess',
 
     dateAboutToExpire = 'dateAboutToExpire',
 }
@@ -37,7 +39,13 @@ interface IProcessStatusUpdateMetadata {
 interface INewProcessMetadata {
     processId: string;
 }
-
+interface IDeleteProcessMetadata {
+    processName: string;
+}
+interface IArchiveProcessMetadata {
+    processId: string;
+    isArchived?: boolean;
+}
 interface IDateAboutToExpireMetadata {
     entityId: string;
     propertyName: string;
@@ -51,7 +59,9 @@ type INotificationMetadata =
     | IProcessReviewerUpdateMetadata
     | IProcessStatusUpdateMetadata
     | INewProcessMetadata
-    | IDateAboutToExpireMetadata;
+    | IDateAboutToExpireMetadata
+    | IDeleteProcessMetadata
+    | IArchiveProcessMetadata;
 
 export interface INotification {
     viewers: string[];
