@@ -23,11 +23,11 @@ export interface IMongoStepInstancePopulated extends Omit<IMongoStepInstance, 'r
 }
 
 export interface UpdateStepReqBody {
+    processId?: string;
     properties?: InstanceProperties;
     comments?: string;
     statusReview?: {
         status: Status;
         reviewerId: string;
-        processId: string;
     };
 }

@@ -2,6 +2,7 @@ import * as Joi from 'joi';
 import { ExtendedJoi, MongoIdSchema, fileSchema } from '../../../utils/joi';
 import { Status } from '../../../externalServices/processService/interfaces/processInstance';
 
+const StatusValues = Object.values(Status);
 // GET /api/processes/instances/:id
 export const getProcessInstanceSchema = Joi.object({
     body: {},
@@ -40,6 +41,15 @@ export const updateProcessInstanceSchema = Joi.object({
     files: Joi.array().items(fileSchema),
 });
 
+// PATCH /api/processes/instances/status/:id
+export const archivedProcessStatusSchema = Joi.object({
+    body: Joi.object({
+        archived: Joi.boolean(),
+    }),
+    query: {},
+    params: { id: Joi.string().required() },
+});
+
 // DELETE /api/processes/instances/:id
 export const deleteProcessInstanceSchema = Joi.object({
     body: {},
@@ -58,9 +68,10 @@ export const searchProcessInstancesSchema = Joi.object({
         ids: Joi.array().items(MongoIdSchema),
         startDate: Joi.date(),
         endDate: Joi.date(),
-        status: Joi.string().valid(...Object.values(Status)),
+        status: Joi.array().items(...StatusValues),
         limit: Joi.number().integer().min(0).default(10),
         skip: Joi.number().integer().min(0).default(0),
+        archived: Joi.boolean().default(false),
     },
     params: {},
 });

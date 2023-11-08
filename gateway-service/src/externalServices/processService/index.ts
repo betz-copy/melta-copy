@@ -64,10 +64,9 @@ export class ProcessManagerService {
     // Process Instance
     static async getProcessInstanceById(id: string, userId?: string): Promise<IMongoProcessInstanceWithSteps> {
         const query: ISearchProcessInstancesBody = { limit: 1, skip: 0, ids: [id] };
-
         if (userId && !(await isProcessManager(userId))) query.reviewerId = userId;
-
         const [process] = await ProcessManagerService.searchProcessInstances(query);
+
         if (!process) throw new NotFoundError('process', id);
 
         return process;
@@ -86,6 +85,15 @@ export class ProcessManagerService {
             `${instancesBaseRoute}/${id}`,
             processData,
         );
+        return data;
+    }
+
+    static async archivedProcess(id: string, archived: Boolean) {
+        const { data } = await ProcessManagerService.processServiceManagerApi.patch<IMongoProcessInstanceWithSteps>(
+            `${instancesBaseRoute}/archive/${id}`,
+            { archived },
+        );
+
         return data;
     }
 

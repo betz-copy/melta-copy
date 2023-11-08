@@ -8,7 +8,8 @@ export enum NotificationType {
     processReviewerUpdate = 'processReviewerUpdate',
     processStatusUpdate = 'processStatusUpdate',
     newProcess = 'newProcess',
-
+    deleteProcess = 'deleteProcess',
+    archivedProcess = 'archivedProcess',
     dateAboutToExpire = 'dateAboutToExpire',
 }
 
@@ -36,7 +37,13 @@ export interface IProcessStatusUpdateNotificationMetadata {
 export interface INewProcessNotificationMetadata {
     processId: string;
 }
-
+export interface IDeleteProcessNotificationMetadata {
+    processName: string;
+}
+export interface IArchiveProcessNotificationMetadata {
+    processId: string;
+    isArchived?: boolean;
+}
 export interface IDateAboutToExpireNotificationMetadata {
     entityId: string;
     propertyName: string;
@@ -50,7 +57,9 @@ type INotificationMetadata =
     | IProcessReviewerUpdateNotificationMetadata
     | IProcessStatusUpdateNotificationMetadata
     | INewProcessNotificationMetadata
-    | IDateAboutToExpireNotificationMetadata;
+    | IDateAboutToExpireNotificationMetadata
+    | IDeleteProcessNotificationMetadata
+    | IArchiveProcessNotificationMetadata;
 
 export interface INotification<T = INotificationMetadata> {
     viewers: string[];
@@ -74,8 +83,14 @@ export const isProcessReviewerUpdateNotification = (
 export const isProcessStatusUpdateNotification = (
     notification: Partial<INotification>,
 ): notification is INotification<IProcessStatusUpdateNotificationMetadata> => notification.type === NotificationType.processStatusUpdate;
+export const isDeleteProcessNotification = (
+    notification: Partial<INotification>,
+): notification is INotification<IDeleteProcessNotificationMetadata> => notification.type === NotificationType.deleteProcess;
 export const isNewProcessNotification = (notification: Partial<INotification>): notification is INotification<INewProcessNotificationMetadata> =>
     notification.type === NotificationType.newProcess;
+export const isArchiveProcessNotification = (
+    notification: Partial<INotification>,
+): notification is INotification<IArchiveProcessNotificationMetadata> => notification.type === NotificationType.archivedProcess;
 export const isDateAboutToExpireNotification = (
     notification: Partial<INotification>,
 ): notification is INotification<IDateAboutToExpireNotificationMetadata> => notification.type === NotificationType.dateAboutToExpire;

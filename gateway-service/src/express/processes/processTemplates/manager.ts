@@ -143,7 +143,7 @@ export class ProcessTemplatesManager {
         processTemplate: IMongoProcessTemplateWithSteps,
         previousProcessTemplate: IMongoProcessTemplateWithSteps,
     ) {
-        const processes = await this.getInstancesOfTemplate(processTemplate._id, { status: Status.Pending });
+        const processes = await this.getInstancesOfTemplate(processTemplate._id, { status: [Status.Pending] });
 
         ProcessesInstancesManager.sendProcessReviewerUpdateNotifications(
             processes.map((process) => process._id),

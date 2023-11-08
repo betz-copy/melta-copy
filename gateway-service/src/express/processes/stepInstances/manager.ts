@@ -13,7 +13,7 @@ import UsersManager from '../../users/manager';
 import ProcessesInstancesManager from '../processInstances/manager';
 
 export default class StepsInstancesManager {
-        private static async handleNotificationsOnUpdateStepInstance(
+    private static async handleNotificationsOnUpdateStepInstance(
         process: IMongoProcessInstanceWithSteps,
         previousProcess: IMongoProcessInstanceWithSteps,
         updatedStep: IMongoStepInstance,
@@ -52,7 +52,7 @@ export default class StepsInstancesManager {
     ) {
         const { properties, status: updatedStepStatus, comments } = updatedData;
         const processServiceUpdateData: UpdateStepReqBody = updatedStepStatus
-            ? { properties, statusReview: { status: updatedStepStatus, reviewerId: userId, processId }, comments }
+            ? { properties, statusReview: { status: updatedStepStatus, reviewerId: userId }, comments, processId }
             : { properties, comments };
 
         const process = await ProcessManagerService.getProcessInstanceById(processId, userId);

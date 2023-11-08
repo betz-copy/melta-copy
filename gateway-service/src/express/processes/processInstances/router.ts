@@ -10,6 +10,7 @@ import {
     searchProcessInstancesSchema,
     updateProcessInstanceSchema,
     getProcessInstanceSchema,
+    archivedProcessStatusSchema,
 } from './validator.schema';
 import ValidateRequest from '../../../utils/joi';
 import { validateUserIsProcessesManager } from '../../permissions/validateAuthorizationMiddleware';
@@ -37,6 +38,12 @@ InstancesRouter.delete(
     ValidateRequest(deleteProcessInstanceSchema),
     wrapMiddleware(validateUserIsProcessesManager),
     wrapController(InstancesController.deleteProcessInstance),
+);
+InstancesRouter.patch(
+    '/archive/:id',
+    ValidateRequest(archivedProcessStatusSchema),
+    wrapMiddleware(validateUserIsProcessesManager),
+    wrapController(InstancesController.archiveProcess),
 );
 
 export default InstancesRouter;

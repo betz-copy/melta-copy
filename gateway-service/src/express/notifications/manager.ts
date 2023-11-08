@@ -14,9 +14,15 @@ import {
     isRuleBreachAlertNotification,
     isRuleBreachRequestNotification,
     isRuleBreachResponseNotification,
+    isDeleteProcessNotification,
+    IDeleteProcessNotificationMetadata,
+    IArchiveProcessNotificationMetadata,
+    isArchiveProcessNotification,
 } from '../../externalServices/notificationService/interfaces';
 import {
+    IArchiveProcessNotificationMetadataPopulated,
     IDateAboutToExpireMetadataPopulated,
+    IDeleteProcessNotificationMetadataPopulated,
     INewProcessNotificationMetadataPopulated,
     INotificationMetadataPopulated,
     INotificationPopulated,
@@ -34,6 +40,7 @@ import { InstanceManagerService } from '../../externalServices/instanceManager';
 export class NotificationsManager {
     static async getMyNotifications(user: Express.User, query: object): Promise<INotificationPopulated[]> {
         const notifications = await NotificationService.getNotifications({ ...query, viewerId: user.id });
+
         return this.populateNotifications(notifications, user.id);
     }
 
@@ -72,12 +79,13 @@ export class NotificationsManager {
         userId: string,
     ): Promise<IProcessStatusUpdateNotificationMetadataPopulated> {
         const { processId, status, stepId } = metadata;
-        const process = await ProcessesInstancesManager.getProcessInstance(processId, userId);
+
+        const process = await ProcessesInstancesManager.getProcessInstanceOrNull(processId, userId);
 
         const populatedMetadata: IProcessStatusUpdateNotificationMetadataPopulated = { process, status };
 
         if (stepId) {
-            populatedMetadata.step = process.steps.find((currStep) => currStep._id === stepId);
+            populatedMetadata.step = process ? process.steps.find((currStep) => currStep._id === stepId) : null;
         }
 
         return populatedMetadata;
@@ -86,32 +94,58 @@ export class NotificationsManager {
     private static async populateNewProcessNotificationMetadata(
         metadata: INewProcessNotificationMetadata,
         userId: string,
-    ): Promise<INewProcessNotificationMetadataPopulated> {
-        return { process: await ProcessesInstancesManager.getProcessInstance(metadata.processId, userId) };
+    ): Promise<INewProcessNotificationMetadataPopulated | null> {
+        const process = await ProcessesInstancesManager.getProcessInstanceOrNull(metadata.processId, userId);
+        return { process };
+    }
+
+    private static async populateDeleteProcessNotificationMetadata(
+        metadata: IDeleteProcessNotificationMetadata,
+    ): Promise<IDeleteProcessNotificationMetadataPopulated> {
+        return { ...metadata };
+    }
+
+    private static async populateArchiveProcessNotificationMetadata(
+        metadata: IArchiveProcessNotificationMetadata,
+        userId: string,
+    ): Promise<IArchiveProcessNotificationMetadataPopulated | null> {
+        const { isArchived } = metadata;
+        const process = await ProcessesInstancesManager.getProcessInstanceOrNull(metadata.processId, userId);
+        return { process, isArchived };
     }
 
     private static async populateProcessReviewerUpdateNotificationMetadata(
         metadata: IProcessReviewerUpdateNotificationMetadata,
         userId: string,
-    ): Promise<IProcessReviewerUpdateNotificationMetadataPopulated> {
+    ): Promise<IProcessReviewerUpdateNotificationMetadataPopulated | null> {
         const { processId, addedStepIds, deletedStepIds, unchangedStepIds } = metadata;
-        const process = await ProcessesInstancesManager.getProcessInstance(processId, userId);
+        const process = await ProcessesInstancesManager.getProcessInstanceOrNull(processId, userId);
+
+        if (!process) {
+            return {
+                process,
+                addedSteps: addedStepIds.map(() => null),
+                deletedSteps: deletedStepIds.map(() => null),
+                unchangedSteps: unchangedStepIds.map(() => null),
+            };
+        }
 
         const steps: Omit<IProcessReviewerUpdateNotificationMetadataPopulated, 'process'> = {
             addedSteps: [],
             deletedSteps: [],
             unchangedSteps: [],
         };
-
-        process.steps.forEach((step) => {
-            if (addedStepIds.includes(step._id)) {
-                steps.addedSteps.push(step);
-            } else if (deletedStepIds.includes(step._id)) {
-                steps.deletedSteps.push(step);
-            } else if (unchangedStepIds.includes(step._id)) {
-                steps.unchangedSteps.push(step);
-            }
-        });
+        if (process) {
+            process.steps.forEach((step) => {
+                if (addedStepIds.includes(step._id)) {
+                    steps.addedSteps.push(step);
+                } else if (deletedStepIds.includes(step._id)) {
+                    steps.deletedSteps.push(step);
+                } else if (unchangedStepIds.includes(step._id)) {
+                    steps.unchangedSteps.push(step);
+                }
+            });
+        }
 
         return {
             process,
@@ -134,7 +168,7 @@ export class NotificationsManager {
     static async populateNotification(notification: INotification, userId: string): Promise<INotificationPopulated> {
         const { viewers, ...restOfNotification } = notification;
 
-        let populatedMetadata: INotificationMetadataPopulated;
+        let populatedMetadata: INotificationMetadataPopulated | null;
 
         if (isRuleBreachAlertNotification(notification)) {
             populatedMetadata = await this.populateRuleBreachAlertNotificationMetadata(notification.metadata);
@@ -148,8 +182,11 @@ export class NotificationsManager {
             populatedMetadata = await this.populateProcessReviewerUpdateNotificationMetadata(notification.metadata, userId);
         } else if (isDateAboutToExpireNotification(notification)) {
             populatedMetadata = await this.populateDateAboutToExpireNotificationMetadata(notification.metadata);
+        } else if (isDeleteProcessNotification(notification)) {
+            populatedMetadata = await this.populateDeleteProcessNotificationMetadata(notification.metadata);
+        } else if (isArchiveProcessNotification(notification)) {
+            populatedMetadata = await this.populateArchiveProcessNotificationMetadata(notification.metadata, userId);
         }
-
         return {
             ...restOfNotification,
             metadata: populatedMetadata!,

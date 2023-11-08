@@ -10,6 +10,7 @@ export enum Status {
 }
 
 export type InstanceProperties = Record<string, any>;
+
 export interface IProcessInstance {
     templateId: string;
     name: string;
@@ -19,7 +20,12 @@ export interface IProcessInstance {
     steps: string[];
     status: Status;
     reviewedAt?: Date;
+    archived: boolean;
 }
+export interface IUpdatedProcessStatus {
+    status: Status;
+}
+
 export interface IProcessInstanceWithSteps extends Omit<IProcessInstance, 'steps'> {
     steps: IMongoStepInstance[];
 }
@@ -41,9 +47,10 @@ export interface IMongoProcessInstancePopulated extends Omit<IMongoProcessInstan
 export interface ISearchProcessInstancesBody extends IBaseSearchProperties {
     name?: string;
     templateIds?: string[];
-    status?: Status;
+    status?: Status[];
     startDate?: Date;
     endDate?: Date;
+    archived?: boolean;
 }
 
 export interface IReferencedEntityForProcess {

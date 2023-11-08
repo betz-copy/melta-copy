@@ -1,5 +1,5 @@
-import { INotification, IProcessStatusUpdateNotificationMetadata } from '.';
 import { IEntity } from '../../instanceManager/interfaces/entities';
+import { IDeleteProcessNotificationMetadata, INotification, IProcessStatusUpdateNotificationMetadata } from '.';
 import { IMongoProcessInstancePopulated } from '../../processService/interfaces/processInstance';
 import { IMongoStepInstancePopulated } from '../../processService/interfaces/stepInstance';
 import { IRuleBreachAlertPopulated, IRuleBreachRequestPopulated } from '../../ruleBreachService/interfaces/populated';
@@ -15,17 +15,22 @@ export interface IRuleBreachResponseNotificationMetadataPopulated {
 }
 
 export interface IProcessReviewerUpdateNotificationMetadataPopulated {
-    process: IMongoProcessInstancePopulated;
-    addedSteps: IMongoStepInstancePopulated[];
-    deletedSteps: IMongoStepInstancePopulated[];
-    unchangedSteps: IMongoStepInstancePopulated[];
+    process: IMongoProcessInstancePopulated | null;
+    addedSteps: (IMongoStepInstancePopulated | null)[];
+    deletedSteps: (IMongoStepInstancePopulated | null)[];
+    unchangedSteps: (IMongoStepInstancePopulated | null)[];
 }
 export interface IProcessStatusUpdateNotificationMetadataPopulated extends Pick<IProcessStatusUpdateNotificationMetadata, 'status'> {
-    process: IMongoProcessInstancePopulated;
-    step?: IMongoStepInstancePopulated;
+    process: IMongoProcessInstancePopulated | null;
+    step?: IMongoStepInstancePopulated | null;
 }
 export interface INewProcessNotificationMetadataPopulated {
-    process: IMongoProcessInstancePopulated;
+    process: IMongoProcessInstancePopulated | null;
+}
+export interface IDeleteProcessNotificationMetadataPopulated extends IDeleteProcessNotificationMetadata {}
+export interface IArchiveProcessNotificationMetadataPopulated {
+    process: IMongoProcessInstancePopulated | null;
+    isArchived?: boolean;
 }
 export interface IDateAboutToExpireMetadataPopulated {
     entity: IEntity | null;
@@ -40,6 +45,8 @@ export type INotificationMetadataPopulated =
     | IProcessReviewerUpdateNotificationMetadataPopulated
     | IProcessStatusUpdateNotificationMetadataPopulated
     | INewProcessNotificationMetadataPopulated
-    | IDateAboutToExpireMetadataPopulated;
+    | IDateAboutToExpireMetadataPopulated
+    | IDeleteProcessNotificationMetadataPopulated
+    | IArchiveProcessNotificationMetadataPopulated;
 
 export interface INotificationPopulated<T = INotificationMetadataPopulated> extends Omit<INotification<T>, 'viewers'> {}

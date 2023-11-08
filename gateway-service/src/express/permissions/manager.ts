@@ -86,19 +86,15 @@ export class PermissionsManager {
 
     static async getPermissionsOfUsers() {
         const permissions = await getPermissions();
-
         const permissionsOfUsersIdsObj = PermissionsManager.buildPermissionsOfUsersByUserId(permissions);
         const permissionsOfUsersObj = await PermissionsManager.populateUsersToPermissionsOfUsers(permissionsOfUsersIdsObj);
-
         return Object.values(permissionsOfUsersObj);
     }
 
     static async getPermissionsOfUser(userId: string) {
         const user = await UsersManager.getUserById(userId);
-
         const permissions = await getPermissions({ userId: user.id });
         const permissionsOfUserId = PermissionsManager.buildPermissionsOfUserId(permissions);
-
         return { user, ...permissionsOfUserId } as IPermissionsOfUser;
     }
 
