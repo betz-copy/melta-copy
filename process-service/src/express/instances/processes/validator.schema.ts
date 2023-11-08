@@ -2,6 +2,8 @@ import * as Joi from 'joi';
 import { updateAndCreateStepsSchema, MongoIdSchema } from '../../../utils/joi';
 import { Status } from './interface';
 
+const StatusValues = Object.values(Status);
+
 // GET /api/processes/instances/:processId
 export const getInstanceByIdRequestSchema = Joi.object({
     query: {},
@@ -40,6 +42,16 @@ export const updateInstanceByIdRequestSchema = Joi.object({
     },
 });
 
+// PUT /api/processes/instances:processId
+export const archivedProcessRequestSchema = Joi.object({
+    body: {
+        archived: Joi.boolean(),
+    },
+    query: {},
+    params: {
+        id: MongoIdSchema.required(),
+    },
+});
 // DELETE /api/processes/instances/:processId
 export const deleteInstanceByIdRequestSchema = Joi.object({
     body: {},
@@ -58,10 +70,11 @@ export const searchInstanceRequestSchema = Joi.object({
         ids: Joi.array().items(MongoIdSchema),
         startDate: Joi.date(),
         endDate: Joi.date(),
-        status: Joi.string().valid(...Object.values(Status)),
+        status: Joi.array().items(...StatusValues),
         reviewerId: MongoIdSchema,
         limit: Joi.number().integer().min(0).default(0),
         skip: Joi.number().integer().min(0).default(0),
+        archived: Joi.boolean(),
     },
     params: {},
 });

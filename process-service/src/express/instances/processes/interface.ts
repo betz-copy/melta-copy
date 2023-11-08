@@ -18,6 +18,8 @@ export interface IProcessInstance {
     steps: string[];
     status: Status;
     reviewedAt: Date;
+    reviewerId: string;
+    archived: Boolean;
 }
 export interface IProcessInstancePopulated extends Omit<IProcessInstance, 'steps'> {
     steps: IMongoStepInstance[];
@@ -36,14 +38,15 @@ export interface IMongoProcessInstancePopulated extends IProcessInstancePopulate
 export type CreateProcessReqBody = Pick<IProcessInstance, 'templateId' | 'name' | 'details' | 'startDate' | 'endDate'> & {
     steps: Record<string, string[]>;
 };
-export type UpdateProcessReqBody = Partial<Omit<IProcessInstance, 'templateId' | 'steps'| 'status'> & { steps: Record<string, string[]> }>;
+export type UpdateProcessReqBody = Partial<Omit<IProcessInstance, 'templateId' | 'steps' | 'status'> & { steps: Record<string, string[]> }>;
 
 export interface IProcessInstanceSearchProperties extends IBaseSearchProperties {
     name?: string;
     templateIds?: string[];
     startDate?: Date;
     endDate?: Date;
-    status?: Status;
+    status?: Status[];
+    archived?: boolean;
 }
 
 export type ProcessInstanceDocument = IProcessInstance & Document;

@@ -23,7 +23,12 @@ const ProcessInstanceSchema = new mongoose.Schema<IProcessInstance>(
             type: String,
             default: Status.Pending,
         },
+        archived: {
+            type: Boolean,
+            default: false,
+        },
         reviewedAt: { type: Date },
+        reviewerId: { type: String },
         steps: [
             {
                 type: String,

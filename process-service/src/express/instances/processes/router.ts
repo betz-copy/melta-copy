@@ -8,6 +8,7 @@ import {
     deleteInstanceByIdRequestSchema,
     createInstanceRequestSchema,
     searchInstanceRequestSchema,
+    archivedProcessRequestSchema,
 } from './validator.schema';
 
 import { validateCreateProcessInstance, validateUpdateProcessInstance } from './validator.template';
@@ -29,5 +30,7 @@ processInstanceRouter.put(
     wrapMiddleware(validateUpdateProcessInstance),
     wrapController(ProcessInstance.updateProcess),
 );
+
+processInstanceRouter.patch('/archive/:id', ValidateRequest(archivedProcessRequestSchema), wrapController(ProcessInstance.archiveProcess));
 
 export default processInstanceRouter;

@@ -18,6 +18,10 @@ class ProcessInstanceController {
         res.json(await ProcessInstanceManager.updateProcess(req.params.id, req.body));
     }
 
+    static async archiveProcess(req: Request, res: Response) {
+        res.json(await ProcessInstanceManager.archiveProcess(req.params.id, req.body));
+    }
+
     static async searchProcesses(req: Request, res: Response) {
         res.json(await ProcessInstanceManager.searchProcesses(req.body));
     }

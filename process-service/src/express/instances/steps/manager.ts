@@ -6,7 +6,6 @@ import config from '../../../config';
 import { IMongoStepTemplate } from '../../templates/steps/interface';
 import { getTemplateAggregation, transaction } from '../../../utils/mongoose';
 import ProcessInstanceManager from '../processes/manager';
-import { IMongoProcessInstancePopulated, Status } from '../processes/interface';
 
 export default class StepInstanceManager {
     static async getStepById(id: string): Promise<IMongoStepInstance> {
@@ -42,16 +41,13 @@ export default class StepInstanceManager {
         await StepInstanceModel.bulkWrite(bulkWriteOperations, { session });
     }
 
-    static getProcessStatus(stepWithNewStatus: IMongoStepInstance, process: IMongoProcessInstancePopulated) {
-        const updatedSteps = process.steps.map((step) => (String(step._id) === String(stepWithNewStatus._id) ? stepWithNewStatus : step));
+    static async updateStep(id: string, { processId, properties, comments, statusReview }: UpdateStepReqBody) {
+        const currProcess = await ProcessInstanceManager.getProcessById(processId, true);
 
-        if (updatedSteps.some((step) => step.status === Status.Rejected)) return Status.Rejected;
-        return updatedSteps.some((step) => step.status === Status.Pending) ? Status.Pending : Status.Approved;
-    }
+        if (!currProcess.steps.find((step) => String(step._id) === id)) throw new StepNotPartOfProcessError(id, processId);
+        if (currProcess.archived) throw new ServiceError(500, "Can`t edit an archived process's step");
 
-    static async updateStep(id: string, data: UpdateStepReqBody) {
-        const { statusReview, properties, comments } = data;
-        if (!statusReview)
+        if (!statusReview) {
             return StepInstanceModel.findByIdAndUpdate(
                 id,
                 { properties, comments },
@@ -59,19 +55,19 @@ export default class StepInstanceManager {
                     new: true,
                 },
             );
-        const { processId, ...statusData } = statusReview;
-        const currProcess = await ProcessInstanceManager.getProcessById(processId, true);
-        if (!currProcess.steps.find((step) => String(step._id) === String(id))) throw new StepNotPartOfProcessError(id, processId);
+        }
+
         const currStep = await StepInstanceManager.getStepById(id);
-        const updatedStatus = this.getProcessStatus({ ...currStep, status: statusData.status }, currProcess);
-        if (currProcess.status === updatedStatus)
-            return StepInstanceModel.findByIdAndUpdate(id, { properties, comments, ...statusData, reviewedAt: new Date() }, { new: true })
+        const updatedProcessStatus = ProcessInstanceManager.getProcessStatus(currProcess, { ...currStep, status: statusReview.status });
+
+        if (currProcess.status === updatedProcessStatus)
+            return StepInstanceModel.findByIdAndUpdate(id, { properties, comments, ...statusReview, reviewedAt: new Date() }, { new: true })
                 .orFail(new NotFoundError('step', id))
                 .lean();
 
         return transaction(async (session) => {
-            await ProcessInstanceManager.updateStatus(processId, updatedStatus, session);
-            return StepInstanceModel.findByIdAndUpdate(id, { properties, comments, ...statusData, reviewedAt: new Date() }, { new: true, session })
+            await ProcessInstanceManager.updateStatus(processId, updatedProcessStatus, session);
+            return StepInstanceModel.findByIdAndUpdate(id, { properties, comments, ...statusReview, reviewedAt: new Date() }, { new: true, session })
                 .orFail(new NotFoundError('step', id))
                 .lean();
         });

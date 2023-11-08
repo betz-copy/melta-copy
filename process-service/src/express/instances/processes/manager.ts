@@ -17,6 +17,7 @@ import config from '../../../config';
 import { validateStepIds } from './validator.template';
 import { escapeRegExp } from '../../../utils';
 import { IMongoProcessTemplate } from '../../templates/processes/interface';
+import { IMongoStepInstance } from '../steps/interface';
 
 type ProcessInstanceType<T extends boolean> = T extends true ? IMongoProcessInstancePopulated & Document : IMongoProcessInstance & Document;
 class ProcessInstanceManager {
@@ -68,6 +69,8 @@ class ProcessInstanceManager {
 
     static async updateProcess(id: string, updatedData: UpdateProcessReqBody) {
         const currProcess = await this.getProcessById(id, false);
+        if (currProcess.archived) throw new ServiceError(500, 'Can`t edit an archived process');
+
         if (!updatedData.steps) {
             return ProcessInstanceModel.findByIdAndUpdate(id, updatedData as Omit<UpdateProcessReqBody, 'steps'>, {
                 new: true,
@@ -98,6 +101,19 @@ class ProcessInstanceManager {
         });
     }
 
+    static getProcessStatus(process: IMongoProcessInstancePopulated, updatedStep?: IMongoStepInstance) {
+        const steps = updatedStep ? process.steps.map((step) => (String(step._id) === String(updatedStep!._id) ? updatedStep : step)) : process.steps;
+        if (steps.some((step) => step.status === Status.Rejected)) return Status.Rejected;
+        return steps.some((step) => step.status === Status.Pending) ? Status.Pending : Status.Approved;
+    }
+
+    static async archiveProcess(id: string, { archived }) {
+        return ProcessInstanceModel.findByIdAndUpdate(id, { archived }, { new: true })
+            .populate(config.processFields.steps)
+            .orFail(new NotFoundError('process', id))
+            .lean();
+    }
+
     static async searchProcesses({
         name,
         reviewerId,
@@ -107,19 +123,23 @@ class ProcessInstanceManager {
         templateIds,
         startDate,
         endDate,
+        status,
+        archived,
         ...restOfQuery
     }: IProcessInstanceSearchProperties) {
         const query: FilterQuery<ProcessInstanceDocument> = { ...restOfQuery };
 
+        if (archived !== undefined) query.archived = archived;
         if (templateIds) query.templateId = { $in: templateIds };
         if (startDate) query.startDate = { $gte: startDate };
         if (endDate) query.endDate = { $lte: endDate };
         if (name) query.name = { $regex: escapeRegExp(name) };
         if (ids) query._id = { $in: ids.map((id) => Types.ObjectId(id)) };
-
+        if (status) query.status = { $in: status };
         if (reviewerId) {
             return searchAllowedProcessInstanceForReviewerAggregation(query, reviewerId, limit, skip);
         }
+
         return ProcessInstanceModel.find(query, {}, { limit, skip, sort: { createdAt: -1 } })
             .populate(config.processFields.steps)
             .lean()

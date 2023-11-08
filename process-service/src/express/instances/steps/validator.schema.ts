@@ -23,6 +23,7 @@ export const getTemplateByInstanceIdRequestSchema = Joi.object({
 // PATCH api/processes/instances/steps/:id
 export const updateStepSchema = Joi.object({
     body: Joi.object({
+        processId: MongoIdSchema.required(),
         comments: Joi.string(),
         properties: Joi.object(),
         statusReview: Joi.object({
@@ -30,7 +31,6 @@ export const updateStepSchema = Joi.object({
                 .valid(...Object.values(Status))
                 .required(),
             reviewerId: Joi.string().required(),
-            processId: MongoIdSchema.required(),
         }),
     }).or('statusReview', 'properties', 'comments'),
     query: {},
