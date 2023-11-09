@@ -1,11 +1,11 @@
 import React from 'react';
 import { Box, StepLabel, Stepper, Step, Grid } from '@mui/material';
 import i18next from 'i18next';
-import { FormikProps } from 'formik/dist/types';
+import { FormikProps } from 'formik';
 import GeneralDetails from './GeneralDetails';
 import StepsReviewers from './StepsReviewers';
 import { IMongoProcessTemplatePopulated } from '../../../../interfaces/processes/processTemplate';
-import { IMongoProcessInstancePopulated, StepsObjectPopulated } from '../../../../interfaces/processes/processInstance';
+import { IMongoProcessInstancePopulated, IReferencedEntityForProcess, StepsObjectPopulated } from '../../../../interfaces/processes/processInstance';
 import { getAllFieldsTouched } from '../../../../utils/processWizard/formik';
 
 export interface ProcessDetailsValues {
@@ -15,7 +15,7 @@ export interface ProcessDetailsValues {
     endDate: Date | null;
     details: object;
     detailsAttachments: object;
-    entityReferences: object;
+    entityReferences: Record<string, IReferencedEntityForProcess | string>;
     steps: StepsObjectPopulated;
 }
 

@@ -7,6 +7,7 @@ import {
     Card,
     CardContent,
     CardHeader,
+    Chip,
     Collapse,
     Grid,
     IconButton,
@@ -14,11 +15,12 @@ import {
     Slide,
     TextField,
     Typography,
+    styled,
 } from '@mui/material';
 import { useQueryClient } from 'react-query';
 import RemoveIcon from '@mui/icons-material/Close';
 import AddIcon from '@mui/icons-material/Add';
-import { FormikProps } from 'formik';
+import { Field, FormikProps } from 'formik';
 import { useSelector } from 'react-redux';
 import TemplateTableSelect from '../../inputs/TemplateTableSelect';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
@@ -28,6 +30,8 @@ import { ProcessDetailsValues } from './ProcessDetails';
 import { ProcessStepValues } from './ProcessSteps';
 import { RootState } from '../../../store';
 import { IReferencedEntityForProcess } from '../../../interfaces/processes/processInstance';
+import { EntityLink } from '../../EntityLink';
+import UnknownEntityCard from './UnknownEntityCard';
 
 type ProcessFormikProps = ProcessStepValues | ProcessDetailsValues;
 interface ChooseEntityReferenceProps {
@@ -41,6 +45,21 @@ interface ChooseEntityReferenceProps {
     title: string;
 }
 
+const CardFieldName = styled(Typography)(({ theme }) => ({
+    top: '8px',
+    left: '20px',
+    hight: '3px',
+    position: 'relative',
+    width: 'fit-content',
+    fontSize: '11px',
+    letterSpacing: '1px',
+    background: theme.palette.mode === 'light' ? 'white' : '#383838',
+    paddingRight: 1,
+    paddingLeft: 1,
+    color: theme.palette.mode === 'light' ? 'gray' : 'whitesmoke',
+    borderRadius: 10,
+}));
+
 export const EntityReference: React.FC<ChooseEntityReferenceProps> = ({
     field,
     values,
@@ -52,7 +71,6 @@ export const EntityReference: React.FC<ChooseEntityReferenceProps> = ({
     title,
 }) => {
     const darkMode = useSelector((state: RootState) => state.darkMode);
-    const referencedEntityData = (values.entityReferences[field] as IReferencedEntityForProcess) ?? null;
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
@@ -75,6 +93,30 @@ export const EntityReference: React.FC<ChooseEntityReferenceProps> = ({
             setChooseEntityOpen(false);
         }, 500);
     };
+
+    if (typeof values.entityReferences[field] === 'string') {
+        return (
+            <>
+                <CardFieldName>{title}</CardFieldName>
+                <UnknownEntityCard
+                    customActionButton={
+                        isViewMode
+                            ? undefined
+                            : {
+                                  onClick: handleRemoveEntity,
+                                  icon: <RemoveIcon />,
+                                  popoverText: i18next.t('wizard.processInstance.changeEntity'),
+                              }
+                    }
+                    customCardStyle={{
+                        background: 'transparent',
+                    }}
+                />
+            </>
+        );
+    }
+
+    const referencedEntityData = (values.entityReferences[field] as IReferencedEntityForProcess) ?? null;
 
     return (
         <Grid paddingBottom={2}>
@@ -131,7 +173,7 @@ export const EntityReference: React.FC<ChooseEntityReferenceProps> = ({
                     <CardContent>
                         <TemplateTableSelect
                             entityTemplate={referencedEntityData?.entityTemplate}
-                            value={values.entityReferences[field]?.entity}
+                            value={referencedEntityData?.entity}
                             onChange={(value) => {
                                 setFieldValue(`entityReferences.${field}.entity`, value);
                             }}
@@ -151,24 +193,7 @@ export const EntityReference: React.FC<ChooseEntityReferenceProps> = ({
             {referencedEntityData?.entity && (
                 <Slide direction="left" in={!isAnimatingOut} timeout={1000} mountOnEnter unmountOnExit>
                     <Box marginTop="-20px" paddingBottom={1}>
-                        <Typography
-                            sx={{
-                                top: '8px',
-                                left: '20px',
-                                hight: '3px',
-                                position: 'relative',
-                                width: 'fit-content',
-                                fontSize: '11px',
-                                letterSpacing: '1px',
-                                background: darkMode ? '#383838' : 'white',
-                                paddingRight: 1,
-                                paddingLeft: 1,
-                                color: darkMode ? 'whitesmoke' : 'gray',
-                                borderRadius: 10,
-                            }}
-                        >
-                            {title}
-                        </Typography>
+                        <CardFieldName>{title}</CardFieldName>
                         <EntityCard
                             entity={referencedEntityData.entity}
                             entityTemplate={referencedEntityData.entityTemplate}

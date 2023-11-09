@@ -424,6 +424,7 @@ export default {
             refEntities: 'ישויות משוייכות',
             chooseEntityTemplate: 'בחר תבנית ישות',
             changeEntity: 'בחר יישות חדשה',
+            unknownReferencedEntity: 'ישות מקושרת לא ידוע/נמחקה',
             summary: {
                 title: 'סיכום וסטטוס התהליך',
                 subProcessStatus: 'סטטוס תתי תהליכים',

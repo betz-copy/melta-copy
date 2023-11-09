@@ -14,15 +14,18 @@ export const getProcessByIdRequest = async (processId: string) => {
     return data;
 };
 
+const referencedEntityToEntityId = (entityReferences: Record<string, IReferencedEntityForProcess | string | undefined>) => {
+    return Object.entries(entityReferences)
+        .filter(([_key, value]) => value)
+        .reduce((entityIdsObject, [key, value]) => {
+            entityIdsObject[key] = typeof value === 'string' ? value : value!.entity.properties._id;
+            return entityIdsObject;
+        }, {});
+};
 export const createProcessRequest = async (process: ProcessDetailsValues) => {
     const formData = new FormData();
     Object.entries(process.detailsAttachments).forEach(([key, value]) => formData.append(key, value as Blob));
-    const entityReferences = Object.entries(process.entityReferences)
-        .filter(([_key, value]: [string, IReferencedEntityForProcess | undefined]) => value?.entity && value.entity.properties)
-        .reduce((entityIdsObject: { [key: string]: string }, [key, value]: [string, IReferencedEntityForProcess]) => {
-            entityIdsObject[key] = value.entity.properties._id;
-            return entityIdsObject;
-        }, {});
+    const entityReferences = referencedEntityToEntityId(process.entityReferences);
     formData.append('name', process.name);
     formData.append('details', JSON.stringify({ ...process.details, ...entityReferences }));
     formData.append('templateId', process.template!._id);
@@ -58,12 +61,7 @@ const handleAttachmentProperties = (attachments: object) => {
 };
 
 export const updateProcessRequest = async (processId: string, updatedData: ProcessDetailsValues) => {
-    const entityReferences = Object.entries(updatedData.entityReferences)
-        .filter(([_key, value]: [string, IReferencedEntityForProcess | undefined]) => value?.entity && value.entity.properties)
-        .reduce((entityIdsObject: { [key: string]: string }, [key, value]: [string, IReferencedEntityForProcess]) => {
-            entityIdsObject[key] = value.entity.properties._id;
-            return entityIdsObject;
-        }, {});
+    const entityReferences = referencedEntityToEntityId(updatedData.entityReferences);
     const { formData, fileProperties } = handleAttachmentProperties(updatedData.detailsAttachments);
     const transformedStepsObj = mapValues(updatedData.steps, (reviewers) => reviewers.map(({ id }) => id));
     formData.append(
@@ -96,12 +94,7 @@ export const searchProcessesRequest = async (searchBody: ISearchProcessInstances
 export const updateStepRequest = async (stepId: string, values: ProcessStepValues, processId: string, currStep: IMongoStepInstancePopulated) => {
     const { formData, fileProperties } = handleAttachmentProperties(values.attachmentsProperties);
 
-    const entityReferences = Object.entries(values.entityReferences)
-        .filter(([_key, value]: [string, IReferencedEntityForProcess | undefined]) => value?.entity && value.entity.properties)
-        .reduce((entityIdsObject: { [key: string]: string }, [key, value]: [string, IReferencedEntityForProcess]) => {
-            entityIdsObject[key] = value.entity.properties._id;
-            return entityIdsObject;
-        }, {});
+    const entityReferences = referencedEntityToEntityId(values.entityReferences);
 
     formData.append(
         'properties',
