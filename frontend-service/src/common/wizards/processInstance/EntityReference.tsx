@@ -7,7 +7,6 @@ import {
     Card,
     CardContent,
     CardHeader,
-    Chip,
     Collapse,
     Grid,
     IconButton,
@@ -20,17 +19,14 @@ import {
 import { useQueryClient } from 'react-query';
 import RemoveIcon from '@mui/icons-material/Close';
 import AddIcon from '@mui/icons-material/Add';
-import { Field, FormikProps } from 'formik';
-import { useSelector } from 'react-redux';
+import { FormikProps } from 'formik';
 import TemplateTableSelect from '../../inputs/TemplateTableSelect';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IPermissionsOfUser } from '../../../services/permissionsService';
 import EntityCard from '../../../pages/GlobalSearch/components/entityCard';
 import { ProcessDetailsValues } from './ProcessDetails';
 import { ProcessStepValues } from './ProcessSteps';
-import { RootState } from '../../../store';
 import { IReferencedEntityForProcess } from '../../../interfaces/processes/processInstance';
-import { EntityLink } from '../../EntityLink';
 import UnknownEntityCard from './UnknownEntityCard';
 
 type ProcessFormikProps = ProcessStepValues | ProcessDetailsValues;
@@ -70,7 +66,6 @@ export const EntityReference: React.FC<ChooseEntityReferenceProps> = ({
     isViewMode,
     title,
 }) => {
-    const darkMode = useSelector((state: RootState) => state.darkMode);
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;

@@ -15,6 +15,7 @@ import { RootState } from '../../../../store';
 import { IMongoStepInstancePopulated } from '../../../../interfaces/processes/stepInstance';
 import { ProcessStepValues } from '../ProcessSteps/index';
 import { IUser } from '../../../../services/kartoffelService';
+import { StatusColorsNames } from '../../../../pages/ProcessInstances/ProcessCard';
 
 interface StatusDisplayProps {
     status: Status;
@@ -26,11 +27,11 @@ interface StatusDisplayProps {
 const getColor = (status: Status) => {
     switch (status) {
         case Status.Approved:
-            return 'success';
+            return StatusColorsNames.Approved;
         case Status.Rejected:
-            return 'error';
+            return StatusColorsNames.Rejected;
         default:
-            return 'primary';
+            return StatusColorsNames.Pending;
     }
 };
 interface StatusButtonProps extends StatusDisplayProps {

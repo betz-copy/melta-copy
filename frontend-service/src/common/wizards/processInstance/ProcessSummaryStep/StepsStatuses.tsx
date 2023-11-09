@@ -13,7 +13,7 @@ import { BlueTitle } from '../../../BlueTitle';
 import { getStepTemplateByStepInstance } from '../../../../utils/processWizard/steps';
 import { IMongoProcessTemplatePopulated } from '../../../../interfaces/processes/processTemplate';
 import { getLongDate } from '../../../../utils/date';
-import { StyledCard } from '../../../../pages/ProcessInstances/ProcessCard';
+import { StatusColorsNames, StyledCard } from '../../../../pages/ProcessInstances/ProcessCard';
 
 const StepStatus: React.FC<{
     stepInstance: IMongoStepInstancePopulated;
@@ -41,9 +41,15 @@ const StepStatus: React.FC<{
                                 style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', paddingBottom: 5 }}
                             >
                                 <div>
-                                    {stepInstance.status === Status.Pending && <AccessTimeFilledIcon color="primary" sx={{ fontSize: 35 }} />}
-                                    {stepInstance.status === Status.Rejected && <CancelIcon color="error" sx={{ fontSize: 35 }} />}
-                                    {stepInstance.status === Status.Approved && <CheckCircleIcon color="success" sx={{ fontSize: 35 }} />}
+                                    {stepInstance.status === Status.Pending && (
+                                        <AccessTimeFilledIcon color={StatusColorsNames.Pending} sx={{ fontSize: 35 }} />
+                                    )}
+                                    {stepInstance.status === Status.Rejected && (
+                                        <CancelIcon color={StatusColorsNames.Rejected} sx={{ fontSize: 35 }} />
+                                    )}
+                                    {stepInstance.status === Status.Approved && (
+                                        <CheckCircleIcon color={StatusColorsNames.Approved} sx={{ fontSize: 35 }} />
+                                    )}
                                 </div>
                             </Tooltip>
 

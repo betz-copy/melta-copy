@@ -1,6 +1,7 @@
 import React from 'react';
 import { Card, CardHeader, Grid, IconButton } from '@mui/material';
 import { AppRegistration as AppRegistrationIcon } from '@mui/icons-material';
+import i18next from 'i18next';
 import { BlueTitle } from '../../BlueTitle';
 import IconButtonWithPopover from '../../IconButtonWithPopover';
 
@@ -51,8 +52,8 @@ const UnknownEntityCard: React.FC<EntityCardProps> = ({ customActionButton, cust
                             ))}
                     </Grid>
                 }
-                title={<BlueTitle title="לא ידוע" component="h5" variant="h5" />}
-                subheader="ישות זו נמחקה"
+                title={<BlueTitle title={i18next.t('wizard.processInstance.unknownEntity')} component="h5" variant="h5" />}
+                subheader={i18next.t('wizard.processInstance.entityWasDeleted')}
                 sx={{ '& .MuiCardHeader-action': { marginRight: '0px' } }} // default is -8px
             />
         </Card>
