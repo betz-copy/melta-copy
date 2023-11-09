@@ -25,8 +25,8 @@ export const ViewingCard: React.FC<{
         setAnchorEl(event.currentTarget);
     };
 
-    const handleClose = (event) => {
-        setAnchorEl(event.currentTarget);
+    const handleClose = () => {
+        setAnchorEl(null);
     };
 
     return (
@@ -61,7 +61,7 @@ export const ViewingCard: React.FC<{
                                         <MenuButton
                                             onClick={(e) => {
                                                 onEditClick(e);
-                                                handleClose(e);
+                                                handleClose();
                                             }}
                                             text={i18next.t('actions.edit')}
                                             disabled={disabledProps?.canEdit}
@@ -74,7 +74,7 @@ export const ViewingCard: React.FC<{
                                     <MenuButton
                                         onClick={(e) => {
                                             onDeleteClick(e);
-                                            handleClose(e);
+                                            handleClose();
                                         }}
                                         text={i18next.t('actions.delete')}
                                         icon={<DeleteIcon color="action" />}
@@ -85,7 +85,7 @@ export const ViewingCard: React.FC<{
                                     <MenuButton
                                         onClick={(e) => {
                                             onDisableClick(e);
-                                            handleClose(e);
+                                            handleClose();
                                         }}
                                         text={disabledProps?.isDisabled ? i18next.t('actions.activate') : i18next.t('actions.disable')}
                                         icon={<DisabledIcon color="action" />}
