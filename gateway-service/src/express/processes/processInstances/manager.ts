@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { deleteFiles } from '../../../externalServices/storageService';
 import { ProcessManagerService } from '../../../externalServices/processService';
 import {
@@ -45,19 +46,24 @@ export default class ProcessesInstancesManager {
 
         const userPermissionPromise = PermissionsManager.getPermissionsOfUserId(userId);
 
-        const promises = entityProperties.map(([key]) => {
-            const entityPromise = InstanceManagerService.getEntityInstanceById(properties[key]);
-            const entityTemplatePromise = entityPromise.then((entity) => EntityTemplateManagerService.getEntityTemplateById(entity.templateId));
-
-            return Promise.all([entityPromise, entityTemplatePromise, userPermissionPromise]).then(([entity, entityTemplate, userPermission]) => {
-                updatedProperties[key] = {
-                    entity,
-                    userHavePermission: Boolean(
-                        userPermission.instancesPermissions.find((instance) => instance.category === entityTemplate.category._id),
-                    ),
-                    entityTemplate,
-                } as IReferencedEntityForProcess;
+        const promises = entityProperties.map(async ([key]) => {
+            const entity = await InstanceManagerService.getEntityInstanceById(properties[key]).catch((error) => {
+                if (axios.isAxiosError(error) && error.response?.status === 404) return properties[key];
+                throw error;
             });
+
+            if (typeof entity === 'string') return;
+
+            const entityTemplatePromise = EntityTemplateManagerService.getEntityTemplateById(entity.templateId);
+            const [entityTemplate, userPermission] = await Promise.all([entityTemplatePromise, userPermissionPromise]);
+
+            updatedProperties[key] = {
+                entity,
+                userHavePermission: Boolean(
+                    userPermission.instancesPermissions.find((instance) => instance.category === entityTemplate!.category._id),
+                ),
+                entityTemplate,
+            } as IReferencedEntityForProcess;
         });
 
         await Promise.all(promises);
