@@ -24,6 +24,7 @@ import {
 import { Draggable } from 'react-beautiful-dnd';
 import i18next from 'i18next';
 import isEqual from 'lodash.isequal';
+import pickBy from 'lodash.pickby';
 import { dateNotificationTypes, validPropertyTypes } from './AddFields';
 
 import { CommonFormInputProperties } from './commonInterfaces';
@@ -182,7 +183,12 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
 
                                                         setFieldValue('options', [...initialEnumOptions, ...newValues]);
                                                     } else {
-                                                        setFieldValue('options', currValue);
+                                                        setValues?.((prev) => ({
+                                                            ...prev,
+                                                            options: currValue,
+                                                            // remove optionColors of deleted enum options
+                                                            optionColors: pickBy(prev.optionColors, (_colors, option) => currValue.includes(option)),
+                                                        }));
                                                     }
                                                 }}
                                                 renderTags={(tagValue, getTagProps) =>
