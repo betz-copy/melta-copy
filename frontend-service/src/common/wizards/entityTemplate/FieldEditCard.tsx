@@ -333,7 +333,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                     ...prevValue,
                                                                     required: checked,
                                                                     // unique is allowed only if required=true, automatic uncheck 'unique' too
-                                                                    unique: !checked ? false : prevValue.unique,
+                                                                    unique: !checked && prevValue.unique ? false : prevValue.unique,
                                                                 }));
                                                             }}
                                                             disabled={value.type === 'serialNumber'}

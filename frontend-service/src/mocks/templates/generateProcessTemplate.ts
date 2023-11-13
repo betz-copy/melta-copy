@@ -63,6 +63,7 @@ const generateStepTemplatePopulated = (): IMongoStepTemplatePopulated => {
         properties: {
             type: 'object',
             properties,
+            required: [],
         },
         propertiesOrder,
     };
@@ -82,6 +83,7 @@ export const generateProcessTemplatePopulated = (): IMongoProcessTemplatePopulat
             properties: {
                 type: 'object',
                 properties: detailsProperties,
+                required: [],
             },
             propertiesOrder: detailsPropertiesOrder,
         },

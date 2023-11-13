@@ -42,6 +42,7 @@ const processTemplateObjectToProcessTemplateForm = (
             type,
             options: value.enum || [],
             pattern: value.pattern || '',
+            required: details.properties.required.includes(key),
             patternCustomErrorMessage: value.patternCustomErrorMessage || '',
         };
 
@@ -72,6 +73,7 @@ const processTemplateObjectToProcessTemplateForm = (
                 type,
                 options: value.enum || [],
                 pattern: value.pattern || '',
+                required: step.properties.required.includes(key),
                 patternCustomErrorMessage: value.patternCustomErrorMessage || '',
             };
 
@@ -112,9 +114,10 @@ const formToJSONSchema = (values: ProcessTemplateWizardValues): ICreateProcessTe
     const detailsSchema: IProcessDetails['properties'] = {
         type: 'object',
         properties: {},
+        required: [],
     };
 
-    detailsProperties.forEach(({ name, title, type, options, pattern, patternCustomErrorMessage }) => {
+    detailsProperties.forEach(({ name, title, type, required, options, pattern, patternCustomErrorMessage }) => {
         detailsSchema.properties[name] = {
             title,
             type: basePropertyTypes.includes(type) ? (type as IProcessSingleProperty['type']) : 'string',
@@ -125,6 +128,8 @@ const formToJSONSchema = (values: ProcessTemplateWizardValues): ICreateProcessTe
         };
 
         detailsPropertiesOrder.push(name);
+
+        if (required) detailsSchema.required.push(name);
     });
 
     detailsAttachmentProperties.forEach(({ name, title }) => {
@@ -142,8 +147,9 @@ const formToJSONSchema = (values: ProcessTemplateWizardValues): ICreateProcessTe
         const stepSchema: IProcessDetails['properties'] = {
             type: 'object',
             properties: {},
+            required: [],
         };
-        step.properties.forEach(({ name, title, type, options, pattern, patternCustomErrorMessage }) => {
+        step.properties.forEach(({ name, title, type, required, options, pattern, patternCustomErrorMessage }) => {
             stepSchema.properties[name] = {
                 title,
                 type: basePropertyTypes.includes(type) ? (type as IProcessSingleProperty['type']) : 'string',
@@ -154,6 +160,8 @@ const formToJSONSchema = (values: ProcessTemplateWizardValues): ICreateProcessTe
             };
 
             stepPropertiesOrder.push(name);
+
+            if (required) stepSchema.required.push(name);
         });
 
         step.attachmentProperties.forEach(({ name, title }) => {

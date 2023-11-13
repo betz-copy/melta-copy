@@ -44,6 +44,7 @@ export const initialFieldCardDataOnAdd = {
     options: [],
     pattern: '',
     patternCustomErrorMessage: '',
+    required: false,
 };
 
 const AddDetailsFields: React.FC<StepComponentProps<ProcessTemplateWizardValues, 'isEditMode' | 'setBlock'>> = ({
