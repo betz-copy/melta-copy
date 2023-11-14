@@ -83,22 +83,8 @@ const validatePropertiesArray = (value, propertiesKeys) => {
     return value;
 };
 
-const validatePropertiesPreviewArray = (value, propertiesKeys) => {
-    const isRequiredValid = value.every((item) => !propertiesKeys.includes(item));
-
-    if (!isRequiredValid) {
-        throw new Error('item in hide array cannot be in preview array');
-    }
-
-    return value;
-};
-
 const customRequiredValidation = (value, helpers) => {
     return validatePropertiesArray(value, Object.keys(helpers.state.ancestors[0].properties));
-};
-
-const customHideValidation = (value, helpers) => {
-    return validatePropertiesPreviewArray(value, helpers.state.ancestors[1].propertiesPreview);
 };
 
 export const innerPropertiesSchema = Joi.object()
@@ -120,8 +106,7 @@ export const innerPropertiesSchema = Joi.object()
             })
             .unknown(true)
             .required(),
-        required: Joi.array().unique().items(Joi.string()).custom(customRequiredValidation),
-        hide: Joi.array().unique().items(Joi.string()).custom(customRequiredValidation).custom(customHideValidation),
+        required: Joi.array().unique().items(Joi.string()).custom(customRequiredValidation).required(),
     })
     .custom((value) => {
         ajv.compile(value); // throws an error if JSONSchema is invalid
