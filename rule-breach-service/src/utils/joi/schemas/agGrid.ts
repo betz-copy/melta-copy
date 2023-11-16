@@ -1,9 +1,18 @@
 import * as joi from 'joi';
-import { basicFilterOperationTypes, numberFilterOperationTypes, textFilterOperationTypes } from '../../interfaces/agGrid';
+import { basicFilterOperationTypes, numberFilterOperationTypes, textFilterOperationTypes,fileFilter } from '../../interfaces/agGrid';
 
 export const agGridSetFilterSchema = joi.object({
     filterType: joi.valid('set').required(),
     values: joi.array().items(joi.string().allow(null)),
+});
+
+export const agGridFileFilterSchema = joi.object({
+    filterType: joi.valid('fileId').required(), // assuming 'fileId' is the correct value
+    type: joi.valid(...Object.values(fileFilter)).required(), // removed duplicate spread
+    filter: joi.string().when('type', { 
+        is: joi.valid(fileFilter.containFile, fileFilter.dontContainFile), 
+        then: joi.required() 
+    }),
 });
 
 export const agGridNumberFilterSchema = joi.object({
@@ -31,7 +40,7 @@ export const agGridRequestSchema = joi.object({
     endRow: joi.number().required(),
     filterModel: joi
         .object()
-        .pattern(/^/, joi.alternatives(agGridTextFilterSchema, agGridDateFilterSchema, agGridNumberFilterSchema, agGridSetFilterSchema))
+        .pattern(/^/, joi.alternatives(agGridTextFilterSchema, agGridDateFilterSchema, agGridNumberFilterSchema, agGridSetFilterSchema, agGridFileFilterSchema))
         .required(),
     sortModel: joi
         .array()

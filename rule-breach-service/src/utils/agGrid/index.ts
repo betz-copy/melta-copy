@@ -7,10 +7,11 @@ import {
     IAgGridSort,
     numberFilterOperationTypes,
     textFilterOperationTypes,
+    fileFilter,
 } from '../interfaces/agGrid';
 
 const translateAgGridFilter = (
-    type: basicFilterOperationTypes | numberFilterOperationTypes | textFilterOperationTypes,
+    type: basicFilterOperationTypes | numberFilterOperationTypes | textFilterOperationTypes | fileFilter,
     filterValue: any,
     other?: any,
 ) => {
@@ -23,7 +24,10 @@ const translateAgGridFilter = (
             return { $exists: false };
         case basicFilterOperationTypes.notBlank:
             return { $exists: true };
-
+        case fileFilter.containFile:
+            return { $exists: true };
+        case fileFilter.dontContainFile:
+            return { $exists: false };    
         case numberFilterOperationTypes.lessThan:
             return { $lt: filterValue };
         case numberFilterOperationTypes.lessThanOrEqual:
@@ -34,7 +38,6 @@ const translateAgGridFilter = (
             return { $gte: filterValue };
         case numberFilterOperationTypes.inRange:
             return { $gte: filterValue, $lte: other };
-
         case textFilterOperationTypes.contains:
             return { $regex: new RegExp(filterValue, 'i') };
         case textFilterOperationTypes.notContains:
