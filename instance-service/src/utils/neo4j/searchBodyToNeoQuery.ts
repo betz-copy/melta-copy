@@ -4,6 +4,7 @@ import { IMongoEntityTemplate, IEntitySingleProperty } from '../../externalServi
 import { getNeo4jDate, getNeo4jDateTime } from './lib';
 import { ISearchBatchBody, IFilterOfField, ISearchFilter, IFilterOfTemplate } from '../../express/entities/interface';
 import config from '../../config';
+import { addDefaultFieldsToTemplate } from '../addDefaultsFieldsToEntityTemplate';
 
 const {
     neo4j: { specialCharsToEscapeNeo4jQuery },
@@ -275,7 +276,11 @@ const templatesFilterToNeoQuery = (
             return { cypherQuery: `node:\`${templateId}\``, parameters: {} };
         }
 
-        const filterOfTemplateQuery = filterToNeoQuery(filter, `${filterParamsVariableName}["${templateId}"]`, entityTemplatesMap.get(templateId)!);
+        const filterOfTemplateQuery = filterToNeoQuery(
+            filter,
+            `${filterParamsVariableName}["${templateId}"]`,
+            addDefaultFieldsToTemplate(entityTemplatesMap.get(templateId)!),
+        );
 
         return {
             cypherQuery: `node:\`${templateId}\` AND (${filterOfTemplateQuery.cypherQuery})`,
