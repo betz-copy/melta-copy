@@ -25,22 +25,11 @@ export enum filterTypes {
     set = 'set',
 }
 
-export enum fileFilter {
-    containFile = 'containFile',
-    dontContainFile = 'dontContainFile',
-}  
-
 export interface IAgGridTextFilter {
     filterType: 'text';
     type: basicFilterOperationTypes | textFilterOperationTypes;
     filter?: string;
 }
-
-// export interface IAgGridFileFilter {
-//     filterType: 'fileId';
-//     type: fileFilter;
-//     filter?: string | null;
-// }
 
 export interface IAgGidNumberFilter {
     filterType: 'number';
