@@ -2,6 +2,7 @@ import { environment } from '../../globals';
 import { IFilterOfTemplate, ISearchEntitiesOfTemplateBody } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { getDayStart, getDayEnd } from '../date';
+import { addDefaultFieldsToTemplate } from '../templates';
 import {
     IAGGidNumberFilter,
     IAGGridDateFilter,
@@ -178,10 +179,12 @@ export const filterModelToFilterOfTemplate = (
     filterModel: IAGGridFilterModel,
     entityTemplate: IMongoEntityTemplatePopulated,
 ): ISearchEntitiesOfTemplateBody['filter'] => {
+    const entityTemplateWithDefaultFields = addDefaultFieldsToTemplate(entityTemplate);
+
     const queries = Object.keys(filterModel).map((field) => {
         const fieldFilter = filterModel[field];
 
-        const fieldTemplate = entityTemplate.properties.properties[field];
+        const fieldTemplate = entityTemplateWithDefaultFields.properties.properties[field];
 
         switch (fieldFilter.filterType) {
             case 'text':

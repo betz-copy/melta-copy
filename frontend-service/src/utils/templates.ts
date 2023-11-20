@@ -45,3 +45,19 @@ export const mapTemplates = <T extends Record<string, any> & { _id: string }>(te
 
     return map;
 };
+
+export const addDefaultFieldsToTemplate = (entityTemplate: IMongoEntityTemplatePopulated): IMongoEntityTemplatePopulated => {
+    return {
+        ...entityTemplate,
+        properties: {
+            ...entityTemplate.properties,
+            properties: {
+                ...entityTemplate.properties.properties,
+                _id: { title: '_id', type: 'string' },
+                disabled: { title: 'disabled', type: 'boolean' },
+                createdAt: { title: 'createdAt', type: 'string', format: 'date-time' },
+                updatedAt: { title: 'updatedAt', type: 'string', format: 'date-time' },
+            },
+        },
+    };
+};
