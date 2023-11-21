@@ -9,7 +9,7 @@ import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { IMongoStepInstancePopulated } from '../../../../interfaces/processes/stepInstance';
 import { pickProcessFieldsPropertiesSchema } from '../../../../utils/pickFieldsPropertiesSchema';
-import { DownloadButton } from '../../../DownloadButton';
+import { OpenPreviewButton } from '../../../OpenPreviewButton';
 import { InstanceFileInput } from '../../../inputs/InstanceFilesInput/InstanceFileInput';
 import { ajvValidate, JSONSchemaFormik } from '../../../inputs/JSONSchemaFormik';
 import { getStepValuesFromStepInstance } from './stepsFormik';
@@ -193,7 +193,7 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                                         </Grid>
                                                         <Grid item>
                                                             {values.attachmentsProperties[fieldName] ? (
-                                                                <DownloadButton fileId={values.attachmentsProperties[fieldName].name} />
+                                                                <OpenPreviewButton fileId={values.attachmentsProperties[fieldName].name} />
                                                             ) : (
                                                                 <Typography display="inline" variant="h6">
                                                                     -

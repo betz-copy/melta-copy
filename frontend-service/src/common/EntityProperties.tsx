@@ -2,11 +2,14 @@ import React, { CSSProperties } from 'react';
 import { Box, Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
 import { useSelector } from 'react-redux';
+import { pdfjs } from 'react-pdf';
 import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { IEntity } from '../interfaces/entities';
-import { DownloadButton } from './DownloadButton';
+import { OpenPreviewButton } from './OpenPreviewButton';
 import { RootState } from '../store';
 import { ColoredEnumChip } from './ColoredEnumChip';
+
+pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.js';
 
 export const formatToString = (value: any, valueType: 'string' | 'number' | 'boolean', format?: string, enumColor?: string) => {
     if (value === null || value === undefined) return '-';
@@ -15,7 +18,7 @@ export const formatToString = (value: any, valueType: 'string' | 'number' | 'boo
     if (valueType === 'string') {
         if (format === 'date') return new Date(value).toLocaleDateString('en-uk');
         if (format === 'date-time') return new Date(value).toLocaleString('en-uk');
-        if (format === 'fileId') return <DownloadButton fileId={value} />;
+        if (format === 'fileId') return <OpenPreviewButton fileId={value} />;
     }
     if (enumColor) return <ColoredEnumChip label={value} color={enumColor} />;
 

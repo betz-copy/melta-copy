@@ -14,7 +14,7 @@ import { JSONSchemaFormik } from '../../../inputs/JSONSchemaFormik';
 import { BlueTitle } from '../../../BlueTitle';
 import { pickProcessFieldsPropertiesSchema } from '../../../../utils/pickFieldsPropertiesSchema';
 import { InstanceFileInput } from '../../../inputs/InstanceFilesInput/InstanceFileInput';
-import { DownloadButton } from '../../../DownloadButton';
+import { OpenPreviewButton } from '../../../OpenPreviewButton';
 import { setInitialStepsObject } from '../../../../utils/processWizard/steps';
 import { EntityReference } from '../EntityReference';
 
@@ -69,7 +69,7 @@ const FileAttachmentsView: React.FC<FileAttachmentsProps> = ({ templateFilePrope
                 </Grid>
                 <Grid item>
                     {values.detailsAttachments[fieldName] ? (
-                        <DownloadButton fileId={values.detailsAttachments[fieldName].name} />
+                        <OpenPreviewButton fileId={values.detailsAttachments[fieldName].name} />
                     ) : (
                         <Typography display="inline" variant="h6">
                             -

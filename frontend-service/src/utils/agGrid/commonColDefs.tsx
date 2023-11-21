@@ -1,7 +1,7 @@
 import React from 'react';
 import { ColDef, ICellRendererParams, IDateFilterParams, ISetFilterParams, ValueFormatterParams, ValueGetterFunc } from '@ag-grid-community/core';
 import i18next from 'i18next';
-import { DownloadButton } from '../../common/DownloadButton';
+import { OpenPreviewButton } from '../../common/OpenPreviewButton';
 import { Value } from './Value';
 import { getDateWithoutTime, getLongDate } from '../date';
 import { IEntity } from '../../interfaces/entities';
@@ -70,7 +70,7 @@ export const fileColDef = <Data extends any = IEntity>(
         field,
         headerName: value.title,
         valueGetter,
-        cellRenderer: (props: ICellRendererParams<Data, string | undefined>) => (props.value ? <DownloadButton fileId={props.value} /> : null),
+        cellRenderer: (props: ICellRendererParams<Data, string | undefined>) => (props.value ? <OpenPreviewButton fileId={props.value} /> : null),
         filter: 'agTextColumnFilter',
         hide: hideColumn,
     };
