@@ -17,6 +17,7 @@ export interface IProcessDetails {
     properties: {
         type: 'object';
         properties: Record<string, IProcessSingleProperty>;
+        required: string[];
     };
     propertiesOrder: string[];
 }
