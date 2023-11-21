@@ -93,6 +93,11 @@ const config = {
         baseRoute: env.get('GANTTS_SERVICE_BASE_ROUTE').default('/api/gantts').asString(),
         requestTimeout: env.get('GANTTS_SERVICE_REQUEST_TIMEOUT').default(10000).asIntPositive(),
     },
+    previewService: {
+        uri: env.get('PREVIEW_SERVICE_URI').required().asString(),
+        baseRoute: env.get('PREVIEW_SERVICE_BASE_ROUTE').default('/api/preview').asString(),
+        requestTimeout: env.get('PREVIEW_SERVICE_REQUEST_TIMEOUT').default(10000).asIntPositive(),
+    },
     getUsersLimitForPermissionsOfUsers: env.get('GET_USERS_LIMIT_FOR_PERMISSIONS_OF_USERS').default(20).asIntPositive(),
     kartoffel: {
         baseUrl: env.get('KARTOFFEL_BASE_URL').required().asString(),

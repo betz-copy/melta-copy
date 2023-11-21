@@ -31,6 +31,12 @@ apiRouter.use(
     createProxyMiddleware({ target: config.storageService.uri, onProxyReq: fixRequestBody }),
 );
 
+apiRouter.use(
+    '/preview',
+    wrapMiddleware(validateUserHasAtLeastSomePermissions),
+    createProxyMiddleware({ target: config.previewService.uri, onProxyReq: fixRequestBody }),
+);
+
 apiRouter.use('/processes', processesRouter);
 
 apiRouter.use('/users', usersRouter);

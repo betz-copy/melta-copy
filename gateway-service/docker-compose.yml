@@ -22,3 +22,4 @@ services:
       ACCESS_TOKEN_NAME: rabaz-access-token
       SYSTEM_UNAVAILABLE_URL: /unavailable
       STORAGE_SERVICE_FILE_HYPER_LINK: http://jaws.branch-yesodot.org/api/files
+      PREVIEW_SERVICE_URI: http://preview-service:8000
