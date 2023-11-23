@@ -138,3 +138,8 @@ services:
     ports:
       - 8009:8000
     restart: always
+
+  preview-service:
+    ports:
+      - 8011:8000
+    restart: always  

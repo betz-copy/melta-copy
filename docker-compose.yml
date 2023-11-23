@@ -114,6 +114,16 @@ services:
       MONGO_URI: ${GANTTS_SERVICE_MONGO_URI}
       MONGO_GANTTS_COLLECTION_NAME: ${GANTTS_SERVICE_MONGO_GANTTS_COLLECTION_NAME}
 
+  preview-service:
+    # image: 
+    build: ./preview-service
+    environment: 
+      PORT: 8000
+      MINIO_ENDPOINT: ${MINIO_ENDPOINT}
+      MINIO_BUCKET_NAME: ${MINIO_BUCKET_NAME}
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
+
   backend:
     # image: jawsproject.azurecr.io/backend
     build: ./backend
@@ -137,8 +147,10 @@ services:
       ACTIVITY_LOG_URI: ${ACTIVITY_LOG_URI}
       NODE_TLS_REJECT_UNAUTHORIZED: 0
       RABBIT_URI: ${RABBIT_URI}
+      PREVIEW_SERVICE_URI: ${PREVIEW_SERVICE_URI}
       STORAGE_SERVICE_FILE_HYPER_LINK: ${STORAGE_SERVICE_FILE_HYPER_LINK}
       BASIC_AUTHENTICATION_USERS: ${BASIC_AUTHENTICATION_USERS}
+      
 
   frontend:
     image: jawsproject.azurecr.io/frontend

@@ -1,5 +1,6 @@
 {
     "peacock.color": "#cfcfc4",
+    "tabWidth":2,
     "workbench.colorCustomizations": {
         "statusBar.background": "#cfcfc4",
         "statusBar.foreground": "#15202b",

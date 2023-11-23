@@ -43,3 +43,6 @@
 [submodule "gantts-service"]
 	path = gantts-service
 	url = git@gitlab.com:yesodot/rnd/terminal-rabaz/jaws/microservices/gantts-service.git
+[submodule "preview-service"]
+	path = preview-service
+	url = git@gitlab.com:yesodot/rnd/terminal-rabaz/jaws/microservices/preview-service.git
