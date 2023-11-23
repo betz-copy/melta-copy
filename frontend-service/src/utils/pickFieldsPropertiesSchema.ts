@@ -13,13 +13,18 @@ export const filterAttachmentsFromPropertiesSchema = (
 };
 
 export const pickProcessFieldsPropertiesSchema = (schema: IProcessDetails): IMongoEntityTemplatePopulated['properties'] => {
-    const filteredProperties = filterAttachmentsFromPropertiesSchema({
-        ...schema.properties,
-        hide: [],
-        required: [],
+    const schemaProperties = schema.properties;
+
+    Object.keys(schemaProperties.properties).forEach((property) => {
+        if (schemaProperties.properties[property].format && schemaProperties.properties[property].format === 'entityReference') {
+            delete schemaProperties.properties[property].format;
+        }
     });
-    return {
-        ...filteredProperties,
-        properties: pickBy(filteredProperties.properties, (value) => value.format !== 'entityReference'),
-    };
+
+    const filteredProperties = filterAttachmentsFromPropertiesSchema({
+        ...schemaProperties,
+        hide: [],
+        required: schemaProperties.required,
+    });
+    return filteredProperties;
 };

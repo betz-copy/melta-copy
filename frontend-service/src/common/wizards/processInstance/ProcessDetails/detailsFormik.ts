@@ -1,12 +1,15 @@
-import { useFormik } from 'formik';
+import { useFormik, yupToFormErrors } from 'formik';
 import * as Yup from 'yup';
 import i18next from 'i18next';
 import { useMemo } from 'react';
-import { IProcessTemplateMap } from '../../../../interfaces/processes/processTemplate';
+import { IProcessDetails, IProcessTemplateMap } from '../../../../interfaces/processes/processTemplate';
 import { IMongoProcessInstancePopulated } from '../../../../interfaces/processes/processInstance';
 import { ProcessDetailsValues } from '.';
 import { getStepsObjectPopulated } from '../../../../utils/processWizard/steps';
 import { splitSpacialProperties } from '../../../../utils/processWizard/formik';
+import { pickProcessFieldsPropertiesSchema } from '../../../../utils/pickFieldsPropertiesSchema';
+import { ajvValidate } from '../../../inputs/JSONSchemaFormik';
+import { trycatch } from '../../../../utils/trycatch';
 
 const validationSchema = Yup.object().shape({
     name: Yup.string().nullable().required(i18next.t('validation.required')),
@@ -62,7 +65,21 @@ export const useProcessDetailsFormik = (
             const result = await mutateAsync(values);
             if (processInstance) resetForm({ values: getInitialDetailsValues(result, processTemplatesMap) }); // in order to clean dirty + reset file keys to be downloaded
         },
-        validationSchema,
+        validate: async (values) => {
+            const { err: validationSchemaErr } = await trycatch(() => validationSchema.validate(values, { abortEarly: false }));
+            const validationSchemaErrors = !validationSchemaErr ? {} : yupToFormErrors<IProcessDetails>(validationSchemaErr);
+
+            if (!values?.template?.details) {
+                return validationSchemaErrors;
+            }
+
+            const schema = pickProcessFieldsPropertiesSchema(values.template.details);
+            const ajvErrors = ajvValidate(schema, values.details);
+
+            if (Object.keys(ajvErrors).length === 0) return validationSchemaErrors;
+
+            return { details: ajvErrors, ...validationSchemaErrors };
+        },
         validateOnMount: true,
     });
 

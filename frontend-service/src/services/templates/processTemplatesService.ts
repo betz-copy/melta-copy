@@ -42,7 +42,7 @@ const processTemplateObjectToProcessTemplateForm = (
             type,
             options: value.enum || [],
             pattern: value.pattern || '',
-            required: details.properties.required.includes(key),
+            required: details.properties.required ? details.properties.required.includes(key) : false,
             patternCustomErrorMessage: value.patternCustomErrorMessage || '',
         };
 
@@ -73,7 +73,7 @@ const processTemplateObjectToProcessTemplateForm = (
                 type,
                 options: value.enum || [],
                 pattern: value.pattern || '',
-                required: step.properties.required.includes(key),
+                required: step.properties.required ? step.properties.required.includes(key) : false,
                 patternCustomErrorMessage: value.patternCustomErrorMessage || '',
             };
 
