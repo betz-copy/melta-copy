@@ -16,7 +16,8 @@ export const pickProcessFieldsPropertiesSchema = (schema: IProcessDetails): IMon
     const schemaProperties = schema.properties;
 
     Object.keys(schemaProperties.properties).forEach((property) => {
-        if (schemaProperties.properties[property].format && schemaProperties.properties[property].format === 'entityReference') {
+        const propertyFormat = schemaProperties.properties[property].format;
+        if (propertyFormat && propertyFormat === 'entityReference') {
             delete schemaProperties.properties[property].format;
         }
     });

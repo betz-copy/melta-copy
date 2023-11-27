@@ -53,6 +53,22 @@ export const getInitialDetailsValues = (
     };
 };
 
+const getValidationErrors = async (values) => {
+    const { err: validationSchemaErr } = await trycatch(() => validationSchema.validate(values, { abortEarly: false }));
+    const validationSchemaErrors = !validationSchemaErr ? {} : yupToFormErrors<IProcessDetails>(validationSchemaErr);
+
+    if (!values?.template?.details) {
+        return validationSchemaErrors;
+    }
+
+    const schema = pickProcessFieldsPropertiesSchema(values.template.details);
+    const ajvErrors = ajvValidate(schema, values.details);
+
+    if (Object.keys(ajvErrors).length === 0) return validationSchemaErrors;
+
+    return { details: ajvErrors, ...validationSchemaErrors };
+};
+
 export const useProcessDetailsFormik = (
     processInstance: IMongoProcessInstancePopulated | undefined,
     processTemplatesMap: IProcessTemplateMap,
@@ -65,21 +81,7 @@ export const useProcessDetailsFormik = (
             const result = await mutateAsync(values);
             if (processInstance) resetForm({ values: getInitialDetailsValues(result, processTemplatesMap) }); // in order to clean dirty + reset file keys to be downloaded
         },
-        validate: async (values) => {
-            const { err: validationSchemaErr } = await trycatch(() => validationSchema.validate(values, { abortEarly: false }));
-            const validationSchemaErrors = !validationSchemaErr ? {} : yupToFormErrors<IProcessDetails>(validationSchemaErr);
-
-            if (!values?.template?.details) {
-                return validationSchemaErrors;
-            }
-
-            const schema = pickProcessFieldsPropertiesSchema(values.template.details);
-            const ajvErrors = ajvValidate(schema, values.details);
-
-            if (Object.keys(ajvErrors).length === 0) return validationSchemaErrors;
-
-            return { details: ajvErrors, ...validationSchemaErrors };
-        },
+        validate: getValidationErrors,
         validateOnMount: true,
     });
 
