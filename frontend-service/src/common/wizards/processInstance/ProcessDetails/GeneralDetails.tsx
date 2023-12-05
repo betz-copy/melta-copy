@@ -2,7 +2,7 @@ import { Autocomplete, Box, Card, CardActions, CardContent, Fab, Grid, TextField
 import React, { useEffect, useState } from 'react';
 import i18next from 'i18next';
 import { useQueryClient } from 'react-query';
-import { FormikProvider } from 'formik';
+import { Field, FormikProvider } from 'formik';
 import pickBy from 'lodash.pickby';
 import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -40,9 +40,10 @@ type FileAttachmentsProps = {
     values: any;
     errors?: any;
     setFieldValue?: (field: string, value: File | undefined) => void;
+    required?: string[];
 };
 
-const FileAttachmentsEdit: React.FC<FileAttachmentsProps> = ({ templateFileProperties, values, errors, setFieldValue = () => {} }) => (
+const FileAttachmentsEdit: React.FC<FileAttachmentsProps> = ({ templateFileProperties, values, errors, setFieldValue = () => {}, required = [] }) => (
     <>
         {Object.entries(templateFileProperties).map(([key, value]) => (
             <InstanceFileInput
@@ -50,7 +51,7 @@ const FileAttachmentsEdit: React.FC<FileAttachmentsProps> = ({ templateFilePrope
                 fileFieldName={`detailsAttachments.${key}`}
                 fieldTemplateTitle={value.title}
                 setFieldValue={setFieldValue}
-                required={false}
+                required={required.includes(key)} // file error
                 value={values.detailsAttachments[key]}
                 error={errors.detailsAttachments?.[key] ? JSON.stringify(errors.detailsAttachments?.[key]) : undefined}
             />
@@ -81,12 +82,18 @@ const FileAttachmentsView: React.FC<FileAttachmentsProps> = ({ templateFilePrope
     </>
 );
 
-const FileAttachments = ({ viewMode, templateFileProperties, values, errors, setFieldValue }) => {
+const FileAttachments = ({ viewMode, templateFileProperties, values, errors, setFieldValue, required }) => {
     return (
         <Box>
             <BlueTitle title={i18next.t('wizard.entityTemplate.attachments')} component="h6" variant="h6" style={{ marginBottom: '22px' }} />
             {!viewMode ? (
-                <FileAttachmentsEdit templateFileProperties={templateFileProperties} values={values} errors={errors} setFieldValue={setFieldValue} />
+                <FileAttachmentsEdit
+                    templateFileProperties={templateFileProperties}
+                    values={values}
+                    errors={errors}
+                    setFieldValue={setFieldValue}
+                    required={required}
+                />
             ) : (
                 <FileAttachmentsView templateFileProperties={templateFileProperties} values={values} />
             )}
@@ -257,7 +264,16 @@ const GeneralDetails: React.FC<IDetailsStepProp> = ({ detailsFormikData, onNext,
                                             <SchemaForm {...{ viewMode, values, errors, touched, setFieldValue, setFieldTouched }} />
                                         )}
                                         {Object.keys(templateFileProperties!).length !== 0 && (
-                                            <FileAttachments {...{ viewMode, templateFileProperties, values, errors, setFieldValue }} />
+                                            <FileAttachments
+                                                {...{
+                                                    viewMode,
+                                                    templateFileProperties,
+                                                    values,
+                                                    errors,
+                                                    setFieldValue,
+                                                    required: values.template.details.properties.required || [],
+                                                }}
+                                            />
                                         )}
                                         {Object.keys(templateEntityReferenceProperties!).length !== 0 && (
                                             <Grid padding={1}>
@@ -268,9 +284,23 @@ const GeneralDetails: React.FC<IDetailsStepProp> = ({ detailsFormikData, onNext,
                                                     style={{ marginBottom: '22px' }}
                                                 />
                                                 {Object.entries(templateEntityReferenceProperties!).map(([fieldName, { title }]) => (
-                                                    <EntityReference
+                                                    <Field
                                                         key={fieldName}
-                                                        field={fieldName}
+                                                        validate={(changedValue) => {
+                                                            return (
+                                                                values.template?.details.properties.required.includes(fieldName) &&
+                                                                !changedValue &&
+                                                                i18next.t('validation.requiredEntity')
+                                                            );
+                                                        }}
+                                                        name={`entityReferences.${fieldName}`}
+                                                        component={EntityReference}
+                                                        errorText={
+                                                            errors.entityReferences?.[fieldName]
+                                                                ? JSON.stringify(errors.entityReferences?.[fieldName])
+                                                                : undefined
+                                                        }
+                                                        field={fieldName || ''}
                                                         values={values}
                                                         errors={errors}
                                                         touched={touched}

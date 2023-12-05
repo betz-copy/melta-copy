@@ -132,12 +132,14 @@ const formToJSONSchema = (values: ProcessTemplateWizardValues): ICreateProcessTe
         if (required) detailsSchema.required.push(name);
     });
 
-    detailsAttachmentProperties.forEach(({ name, title }) => {
+    detailsAttachmentProperties.forEach(({ name, title, required }) => {
         detailsSchema.properties[name] = {
             title,
             type: 'string',
             format: 'fileId',
         };
+
+        if (required) detailsSchema.required.push(name);
 
         detailsPropertiesOrder.push(name);
     });
@@ -164,12 +166,14 @@ const formToJSONSchema = (values: ProcessTemplateWizardValues): ICreateProcessTe
             if (required) stepSchema.required.push(name);
         });
 
-        step.attachmentProperties.forEach(({ name, title }) => {
+        step.attachmentProperties.forEach(({ name, title, required }) => {
             stepSchema.properties[name] = {
                 title,
                 type: 'string',
                 format: 'fileId',
             };
+
+            if (required) stepSchema.required.push(name);
 
             stepPropertiesOrder.push(name);
         });

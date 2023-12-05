@@ -39,6 +39,7 @@ interface ChooseEntityReferenceProps {
     handleBlur: FormikProps<ProcessFormikProps>['handleBlur'];
     isViewMode: boolean;
     title: string;
+    errorText: string | null;
 }
 
 const CardFieldName = styled(Typography)(({ theme }) => ({
@@ -65,6 +66,7 @@ export const EntityReference: React.FC<ChooseEntityReferenceProps> = ({
     handleBlur,
     isViewMode,
     title,
+    errorText,
 }) => {
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
@@ -223,6 +225,11 @@ export const EntityReference: React.FC<ChooseEntityReferenceProps> = ({
                         </Typography>
                     </Grid>
                 </Grid>
+            )}
+            {errorText && (
+                <p id="error" style={{ color: 'rgb(211, 47, 47)' }}>
+                    {errorText}
+                </p>
             )}
         </Grid>
     );

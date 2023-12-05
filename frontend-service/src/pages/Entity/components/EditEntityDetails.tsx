@@ -14,7 +14,7 @@ import { updateEntityRequest } from '../../../services/entitiesService';
 import { EntityWizardValues } from '../../../common/wizards/entity';
 import { JSONSchemaFormik, ajvValidate } from '../../../common/inputs/JSONSchemaFormik';
 import { BlueTitle } from '../../../common/BlueTitle';
-import { filterAttachmentsFromPropertiesSchema } from '../../../utils/pickFieldsPropertiesSchema';
+import { filterAttachmentsAndEntitiesRefFromPropertiesSchema } from '../../../utils/pickFieldsPropertiesSchema';
 import { IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
 import UpdateEntityWithRuleBreachDialog from './UpdateEntityWithRuleBreachDialog';
 import { environment } from '../../../globals';
@@ -79,7 +79,7 @@ const EditEntityDetails: React.FC<{
                 updateMutation({ newEntityData: { ...values, template: entityTemplate } });
             }}
             validate={(values) => {
-                const nonAttachmentsSchema = filterAttachmentsFromPropertiesSchema(entityTemplate.properties);
+                const nonAttachmentsSchema = filterAttachmentsAndEntitiesRefFromPropertiesSchema(entityTemplate.properties);
                 const propertiesErrors = ajvValidate(nonAttachmentsSchema, values.properties);
                 if (Object.keys(propertiesErrors).length === 0) {
                     return {};
@@ -99,7 +99,7 @@ const EditEntityDetails: React.FC<{
                                                 <Box>
                                                     <BlueTitle title={i18next.t('wizard.entityTemplate.properties')} component="h6" variant="h6" />
                                                     <JSONSchemaFormik
-                                                        schema={filterAttachmentsFromPropertiesSchema(entityTemplate.properties)}
+                                                        schema={filterAttachmentsAndEntitiesRefFromPropertiesSchema(entityTemplate.properties)}
                                                         values={values}
                                                         setValues={(propertiesValues) => setFieldValue('properties', propertiesValues)}
                                                         errors={errors.properties ?? {}}

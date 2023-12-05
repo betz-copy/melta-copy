@@ -2,10 +2,10 @@ import React, { useEffect } from 'react';
 import { EntityWizardValues } from './index';
 import { StepComponentProps, StepsType } from '../index';
 import { JSONSchemaFormik, ajvValidate } from '../../inputs/JSONSchemaFormik';
-import { filterAttachmentsFromPropertiesSchema } from '../../../utils/pickFieldsPropertiesSchema';
+import { filterAttachmentsAndEntitiesRefFromPropertiesSchema } from '../../../utils/pickFieldsPropertiesSchema';
 
 const fillFieldsValidate: StepsType<EntityWizardValues>[number]['validate'] = (values) => {
-    const schema = filterAttachmentsFromPropertiesSchema(values.template.properties);
+    const schema = filterAttachmentsAndEntitiesRefFromPropertiesSchema(values.template.properties);
     const propertiesErrors = ajvValidate(schema, values.properties);
 
     if (Object.keys(propertiesErrors).length === 0) {
@@ -15,7 +15,7 @@ const fillFieldsValidate: StepsType<EntityWizardValues>[number]['validate'] = (v
 };
 
 const FillFields: React.FC<StepComponentProps<EntityWizardValues>> = ({ values, setFieldValue, touched, setFieldTouched, errors }) => {
-    const schema = filterAttachmentsFromPropertiesSchema(values.template.properties);
+    const schema = filterAttachmentsAndEntitiesRefFromPropertiesSchema(values.template.properties);
     useEffect(() => {
         Object.entries<object>(schema.properties).forEach(([propertyName, propertyValues]) => {
             if (propertyValues.hasOwnProperty('serialCurrent')) {

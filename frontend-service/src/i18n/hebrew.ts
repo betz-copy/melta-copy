@@ -476,6 +476,7 @@ export default {
         oneStep: 'לפחות שלב אחד',
         oneStepApprover: 'לפחות מאשר שלב אחד',
         requiredFile: 'קובץ חובה',
+        requiredEntity: 'ישות חובה',
         iconRequired: 'אייקון חובה',
         requiredFiles: 'קבצים חובה',
         variableName: 'פורמט שם משתנה',
