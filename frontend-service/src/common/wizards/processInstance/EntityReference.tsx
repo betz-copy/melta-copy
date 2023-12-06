@@ -80,14 +80,15 @@ export const EntityReference: React.FC<ChooseEntityReferenceProps> = ({
 
     const [isAnimatingOut, setIsAnimatingOut] = useState(false);
 
-    const [chooseEntityOpen, setChooseEntityOpen] = useState<boolean>(false);
+    const [chooseEntityAnchorEl, setChooseEntityAnchorEl] = React.useState<HTMLButtonElement | null>(null);
 
-    const handleRemoveEntity = () => {
+    const handleRemoveEntity = (event) => {
         setIsAnimatingOut(true);
         setTimeout(() => {
             setIsAnimatingOut(false);
             setFieldValue(`entityReferences.${field}`, null);
-            setChooseEntityOpen(false);
+            handleBlur(`entityReferences.${field}`)(event);
+            setChooseEntityAnchorEl(null);
         }, 500);
     };
 
@@ -118,13 +119,13 @@ export const EntityReference: React.FC<ChooseEntityReferenceProps> = ({
     return (
         <Grid paddingBottom={2}>
             <Collapse
-                in={!referencedEntityData && !isViewMode}
+                in={(!referencedEntityData || !referencedEntityData.entity) && !isViewMode}
                 {...(referencedEntityData?.entity ? { timeout: 250 } : {})}
                 mountOnEnter
                 unmountOnExit
             >
                 <Button
-                    onClick={() => setChooseEntityOpen(true)}
+                    onClick={(event) => setChooseEntityAnchorEl(event.currentTarget)}
                     variant="outlined"
                     startIcon={<AddIcon style={{ fontSize: '27px' }} />}
                     size="large"
@@ -133,7 +134,8 @@ export const EntityReference: React.FC<ChooseEntityReferenceProps> = ({
                 </Button>
             </Collapse>
             <Popover
-                open={chooseEntityOpen && Boolean(!referencedEntityData?.entity) && !isViewMode}
+                anchorEl={chooseEntityAnchorEl}
+                open={Boolean(chooseEntityAnchorEl) && Boolean(!referencedEntityData?.entity)}
                 anchorOrigin={{
                     vertical: 'center',
                     horizontal: 'center',
@@ -161,7 +163,12 @@ export const EntityReference: React.FC<ChooseEntityReferenceProps> = ({
                             />
                         }
                         action={
-                            <IconButton onClick={() => setChooseEntityOpen(false)}>
+                            <IconButton
+                                onClick={(event) => {
+                                    setChooseEntityAnchorEl(null);
+                                    handleBlur(`entityReferences.${field}`)(event);
+                                }}
+                            >
                                 <RemoveIcon />
                             </IconButton>
                         }
@@ -173,9 +180,10 @@ export const EntityReference: React.FC<ChooseEntityReferenceProps> = ({
                             value={referencedEntityData?.entity}
                             onChange={(value) => {
                                 setFieldValue(`entityReferences.${field}.entity`, value);
+                                setChooseEntityAnchorEl(null);
                             }}
                             onBlur={(event) => {
-                                handleBlur(field)(event);
+                                handleBlur(`entityReferences.${field}`)(event);
                             }}
                             error={Boolean(touched[`entityReferences.${field}`] && errors[`entityReferences.${field}`])}
                             helperText={touched[`entityReferences.${field}`] ? errors[`entityReferences.${field}`] : ''}
@@ -227,7 +235,7 @@ export const EntityReference: React.FC<ChooseEntityReferenceProps> = ({
                 </Grid>
             )}
             {errorText && (
-                <p id="error" style={{ color: 'rgb(211, 47, 47)' }}>
+                <p id="error" style={{ color: 'rgb(211, 47, 47)', margin: 0 }}>
                     {errorText}
                 </p>
             )}

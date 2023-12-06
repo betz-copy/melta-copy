@@ -2,14 +2,14 @@ import { Autocomplete, Box, Card, CardActions, CardContent, Fab, Grid, TextField
 import React, { useEffect, useState } from 'react';
 import i18next from 'i18next';
 import { useQueryClient } from 'react-query';
-import { Field, FormikProvider } from 'formik';
+import { Field, FormikProps, FormikProvider } from 'formik';
 import pickBy from 'lodash.pickby';
 import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { IMongoProcessTemplatePopulated, IProcessTemplateMap, IProcessSingleProperty } from '../../../../interfaces/processes/processTemplate';
-import { IDetailsStepProp } from '.';
+import { IDetailsStepProp, ProcessDetailsValues } from '.';
 import { JSONSchemaFormik } from '../../../inputs/JSONSchemaFormik';
 import { BlueTitle } from '../../../BlueTitle';
 import { pickProcessFieldsPropertiesSchema } from '../../../../utils/pickFieldsPropertiesSchema';
@@ -17,6 +17,7 @@ import { InstanceFileInput } from '../../../inputs/InstanceFilesInput/InstanceFi
 import { OpenPreviewButton } from '../../../OpenPreviewButton';
 import { setInitialStepsObject } from '../../../../utils/processWizard/steps';
 import { EntityReference } from '../EntityReference';
+import { ProcessStepValues } from '../ProcessSteps';
 
 export const SchemaForm = ({ viewMode, values, errors, touched, setFieldValue, setFieldTouched }) => {
     return (
@@ -35,15 +36,27 @@ export const SchemaForm = ({ viewMode, values, errors, touched, setFieldValue, s
     );
 };
 
+type ProcessFormikProps = ProcessStepValues | ProcessDetailsValues;
+
 type FileAttachmentsProps = {
     templateFileProperties: Record<string, IProcessSingleProperty>;
     values: any;
     errors?: any;
-    setFieldValue?: (field: string, value: File | undefined) => void;
+    setFieldValue?: (field: string, value: File | null) => void;
     required?: string[];
+    touched: FormikProps<ProcessDetailsValues>['touched'];
+    setFieldTouched: FormikProps<ProcessFormikProps>['setFieldTouched'];
 };
 
-const FileAttachmentsEdit: React.FC<FileAttachmentsProps> = ({ templateFileProperties, values, errors, setFieldValue = () => {}, required = [] }) => (
+const FileAttachmentsEdit: React.FC<FileAttachmentsProps> = ({
+    templateFileProperties,
+    values,
+    errors,
+    touched,
+    setFieldTouched,
+    setFieldValue = () => {},
+    required = [],
+}) => (
     <>
         {Object.entries(templateFileProperties).map(([key, value]) => (
             <InstanceFileInput
@@ -53,7 +66,12 @@ const FileAttachmentsEdit: React.FC<FileAttachmentsProps> = ({ templateFilePrope
                 setFieldValue={setFieldValue}
                 required={required.includes(key)} // file error
                 value={values.detailsAttachments[key]}
-                error={errors.detailsAttachments?.[key] ? JSON.stringify(errors.detailsAttachments?.[key]) : undefined}
+                error={
+                    errors.detailsAttachments?.[key] && touched.detailsAttachments?.[key]
+                        ? JSON.stringify(errors.detailsAttachments?.[key])
+                        : undefined
+                }
+                setFieldTouched={setFieldTouched}
             />
         ))}
     </>
@@ -82,7 +100,7 @@ const FileAttachmentsView: React.FC<FileAttachmentsProps> = ({ templateFilePrope
     </>
 );
 
-const FileAttachments = ({ viewMode, templateFileProperties, values, errors, setFieldValue, required }) => {
+const FileAttachments = ({ viewMode, templateFileProperties, values, errors, touched, setFieldValue, required, setFieldTouched }) => {
     return (
         <Box>
             <BlueTitle title={i18next.t('wizard.entityTemplate.attachments')} component="h6" variant="h6" style={{ marginBottom: '22px' }} />
@@ -91,11 +109,18 @@ const FileAttachments = ({ viewMode, templateFileProperties, values, errors, set
                     templateFileProperties={templateFileProperties}
                     values={values}
                     errors={errors}
+                    touched={touched}
                     setFieldValue={setFieldValue}
                     required={required}
+                    setFieldTouched={setFieldTouched}
                 />
             ) : (
-                <FileAttachmentsView templateFileProperties={templateFileProperties} values={values} />
+                <FileAttachmentsView
+                    templateFileProperties={templateFileProperties}
+                    values={values}
+                    touched={touched}
+                    setFieldTouched={setFieldTouched}
+                />
             )}
         </Box>
     );
@@ -272,6 +297,9 @@ const GeneralDetails: React.FC<IDetailsStepProp> = ({ detailsFormikData, onNext,
                                                     errors,
                                                     setFieldValue,
                                                     required: values.template.details.properties.required || [],
+                                                    touched,
+                                                    handleBlur,
+                                                    setFieldTouched,
                                                 }}
                                             />
                                         )}
@@ -289,14 +317,14 @@ const GeneralDetails: React.FC<IDetailsStepProp> = ({ detailsFormikData, onNext,
                                                         validate={(changedValue) => {
                                                             return (
                                                                 values.template?.details.properties.required.includes(fieldName) &&
-                                                                !changedValue &&
+                                                                !changedValue?.entity &&
                                                                 i18next.t('validation.requiredEntity')
                                                             );
                                                         }}
                                                         name={`entityReferences.${fieldName}`}
                                                         component={EntityReference}
                                                         errorText={
-                                                            errors.entityReferences?.[fieldName]
+                                                            errors.entityReferences?.[fieldName] && touched.entityReferences?.[fieldName]
                                                                 ? JSON.stringify(errors.entityReferences?.[fieldName])
                                                                 : undefined
                                                         }

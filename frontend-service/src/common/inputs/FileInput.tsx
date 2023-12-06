@@ -9,7 +9,7 @@ interface FileInputProps {
     onDropFile: (acceptedFile: File) => void;
     inputText: string;
     acceptedFilesTypes?: Accept;
-    name: string;
+    fileFieldName?: string;
     errorText?: string;
 }
 

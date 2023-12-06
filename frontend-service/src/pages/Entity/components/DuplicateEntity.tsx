@@ -132,6 +132,7 @@ const DuplicateEntity: React.FC<{}> = () => {
                                                                                     ? JSON.stringify(errors.attachmentsProperties?.[key])
                                                                                     : undefined
                                                                             }
+                                                                            setFieldTouched={setFieldTouched}
                                                                         />
                                                                     ))}
                                                                 </>

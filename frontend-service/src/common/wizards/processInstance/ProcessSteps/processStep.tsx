@@ -1,5 +1,5 @@
 import { Grid, Button, CircularProgress, Box, Typography, TextField } from '@mui/material';
-import { Formik, Form } from 'formik';
+import { Formik, Form, Field } from 'formik';
 import i18next from 'i18next';
 import pickBy from 'lodash.pickby';
 import React, { FC } from 'react';
@@ -85,6 +85,7 @@ export const ProcessStep: FC<ProcessStepProps> = ({
             }}
         >
             {({ setFieldValue, values, errors, touched, setFieldTouched, dirty, handleBlur, resetForm }) => {
+                const required = stepTemplate.properties?.required || [];
                 return (
                     <Form>
                         <Grid container direction="column">
@@ -171,13 +172,14 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                                     fileFieldName={`attachmentsProperties.${key}`}
                                                     fieldTemplateTitle={value.title}
                                                     setFieldValue={setFieldValue}
-                                                    required={false}
+                                                    required={required.includes(key)}
                                                     value={values.attachmentsProperties?.[key]}
                                                     error={
-                                                        errors.attachmentsProperties?.[key]
+                                                        errors.attachmentsProperties?.[key] && touched.attachmentsProperties?.[key]
                                                             ? JSON.stringify(errors.attachmentsProperties?.[key])
                                                             : undefined
                                                     }
+                                                    setFieldTouched={setFieldTouched}
                                                 />
                                             ))}
                                         </Box>
@@ -214,7 +216,16 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                                 style={{ marginBottom: '22px' }}
                                             />
                                             {Object.entries(templateEntityReferenceProperties!).map(([fieldName, { title }]) => (
-                                                <EntityReference
+                                                <Field
+                                                    name={`entityReferences.${fieldName}`}
+                                                    component={EntityReference}
+                                                    validate={(changedValue) => {
+                                                        return (
+                                                            required.includes(fieldName) &&
+                                                            !changedValue?.entity &&
+                                                            i18next.t('validation.requiredEntity')
+                                                        );
+                                                    }}
                                                     key={fieldName}
                                                     field={fieldName}
                                                     values={values}
@@ -224,6 +235,11 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                                     handleBlur={handleBlur}
                                                     isViewMode={!isStepEditMode}
                                                     title={title}
+                                                    errorText={
+                                                        errors.entityReferences?.[fieldName] && touched.entityReferences?.[fieldName]
+                                                            ? JSON.stringify(errors.entityReferences?.[fieldName])
+                                                            : null
+                                                    }
                                                 />
                                             ))}
                                         </Grid>

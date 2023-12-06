@@ -2,6 +2,7 @@ import React from 'react';
 import { Box, StepLabel, Stepper, Step, Grid } from '@mui/material';
 import i18next from 'i18next';
 import { FormikProps } from 'formik';
+import { pickBy } from 'lodash';
 import GeneralDetails from './GeneralDetails';
 import StepsReviewers from './StepsReviewers';
 import { IMongoProcessTemplatePopulated } from '../../../../interfaces/processes/processTemplate';
@@ -63,7 +64,30 @@ const ProcessDetails: React.FC<ProcessDetailsProps> = ({ detailsFormikData, isEd
     const [activeProcessDetailsStep, setActiveProcessDetailsStep] = React.useState(0);
 
     const handleNext = () => {
-        detailsFormikData.setTouched(getAllFieldsTouched(detailsFormikData.values));
+        const currentTouched: any = getAllFieldsTouched(detailsFormikData.values);
+
+        const templateFileProperties = detailsFormikData.values.template
+            ? pickBy(detailsFormikData.values.template.details.properties.properties, (value) => value.format === 'fileId')
+            : undefined;
+
+        const templateEntityReferenceProperties = detailsFormikData.values.template
+            ? pickBy(detailsFormikData.values.template.details.properties.properties, (value) => value.format === 'entityReference')
+            : undefined;
+
+        const detailsAttachments = {};
+        Object.keys(templateFileProperties!).forEach((fileField) => {
+            detailsAttachments[fileField] = true;
+        });
+        currentTouched.detailsAttachments = detailsAttachments;
+
+        const entityReferences = {};
+        Object.keys(templateEntityReferenceProperties!).forEach((entityField) => {
+            entityReferences[entityField] = true;
+        });
+        currentTouched.entityReferences = entityReferences;
+
+        detailsFormikData.setTouched(currentTouched);
+
         if (detailsFormikData.isValid) setActiveProcessDetailsStep((prevActiveStep) => prevActiveStep + 1);
     };
 

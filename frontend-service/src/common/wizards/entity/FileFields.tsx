@@ -9,7 +9,7 @@ import { InstanceFileInput } from '../../inputs/InstanceFilesInput/InstanceFileI
 const fileFieldsSchema = {
     attachmentsProperties: Yup.object().required(i18next.t('validation.required')),
 };
-const FileFields: React.FC<StepComponentProps<EntityWizardValues>> = ({ values, setFieldValue, errors }) => {
+const FileFields: React.FC<StepComponentProps<EntityWizardValues>> = ({ values, setFieldValue, errors, setFieldTouched }) => {
     const filesProperties = pickBy(values.template.properties.properties, (value) => value.format === 'fileId');
     const requiredFilesNames = values.template.properties.required.filter((name) => Object.keys(filesProperties).includes(name));
     return (
@@ -23,6 +23,7 @@ const FileFields: React.FC<StepComponentProps<EntityWizardValues>> = ({ values, 
                     required={requiredFilesNames.includes(key)}
                     value={values.attachmentsProperties[key]}
                     error={errors.attachmentsProperties?.[key]}
+                    setFieldTouched={setFieldTouched}
                 />
             ))}
         </>

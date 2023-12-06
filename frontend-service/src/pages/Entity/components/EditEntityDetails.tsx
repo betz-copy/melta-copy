@@ -129,6 +129,7 @@ const EditEntityDetails: React.FC<{
                                                                     required={requiredFilesNames.includes(key)}
                                                                     value={values.attachmentsProperties[key]}
                                                                     error={errors.attachmentsProperties?.[key] as string}
+                                                                    setFieldTouched={setFieldTouched}
                                                                 />
                                                             ))}
                                                         </>

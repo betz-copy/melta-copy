@@ -8,7 +8,7 @@ import IconButtonWithPopover from '../../IconButtonWithPopover';
 interface EntityCardProps {
     customActionButton?: {
         icon: React.ReactNode;
-        onClick: () => void;
+        onClick: (event) => void;
         popoverText?: string;
     };
     customCardStyle?: React.CSSProperties;
@@ -33,7 +33,7 @@ const UnknownEntityCard: React.FC<EntityCardProps> = ({ customActionButton, cust
                                         size: 'large',
                                         onClick: (event) => {
                                             event.stopPropagation();
-                                            customActionButton.onClick();
+                                            customActionButton.onClick(event);
                                         },
                                     }}
                                 >
@@ -43,7 +43,7 @@ const UnknownEntityCard: React.FC<EntityCardProps> = ({ customActionButton, cust
                                 <IconButton
                                     onClick={(event) => {
                                         event.stopPropagation();
-                                        customActionButton.onClick();
+                                        customActionButton.onClick(event);
                                     }}
                                     size="large"
                                 >

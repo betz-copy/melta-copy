@@ -25,7 +25,7 @@ interface EntityCardProps {
     openCard?: boolean;
     customActionButton?: {
         icon: React.ReactNode;
-        onClick: () => void;
+        onClick: (event) => void;
         popoverText?: string;
     };
     userHavePermission?: boolean;
@@ -113,7 +113,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
                                         size: 'large',
                                         onClick: (event) => {
                                             event.stopPropagation();
-                                            customActionButton.onClick();
+                                            customActionButton.onClick(event);
                                         },
                                     }}
                                 >
@@ -123,7 +123,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
                                 <IconButton
                                     onClick={(event) => {
                                         event.stopPropagation();
-                                        customActionButton.onClick();
+                                        customActionButton.onClick(event);
                                     }}
                                     size="large"
                                 >
