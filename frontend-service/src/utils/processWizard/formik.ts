@@ -6,8 +6,9 @@ import { IMongoProcessInstancePopulated, InstanceProperties } from '../../interf
 
 export const getAllFieldsTouched = (values: any) => {
     const touched = {};
-    Object.keys(values).forEach((field) => {
-        touched[field] = true;
+    Object.entries(values).forEach(([field, value]) => {
+        if (value && typeof value === 'object') touched[field] = getAllFieldsTouched(value);
+        else touched[field] = true;
     });
     return touched;
 };

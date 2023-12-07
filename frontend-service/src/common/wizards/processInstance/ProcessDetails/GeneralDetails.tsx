@@ -18,6 +18,7 @@ import { OpenPreviewButton } from '../../../OpenPreviewButton';
 import { setInitialStepsObject } from '../../../../utils/processWizard/steps';
 import { EntityReference } from '../EntityReference';
 import { ProcessStepValues } from '../ProcessSteps';
+import { initDetailsValues } from './detailsFormik';
 
 export const SchemaForm = ({ viewMode, values, errors, touched, setFieldValue, setFieldTouched }) => {
     return (
@@ -143,11 +144,22 @@ const GeneralDetails: React.FC<IDetailsStepProp> = ({ detailsFormikData, onNext,
 
     useEffect(() => {
         if (values.template) {
-            if (values.template.name !== previousTemplate?.name && previousTemplate !== undefined) {
-                setPreviousTemplate(values.template);
-                resetForm();
-            }
+            setPreviousTemplate(values.template);
             if (!processInstance) {
+                if (values.template.name !== previousTemplate?.name) {
+                    resetForm({
+                        values: {
+                            template: values.template,
+                            details: initDetailsValues(values.template),
+                            detailsAttachments: {},
+                            endDate: null,
+                            entityReferences: {},
+                            name: '',
+                            startDate: null,
+                            steps: {},
+                        },
+                    });
+                }
                 setFieldValue('steps', setInitialStepsObject(values.template.steps));
             }
         }

@@ -2,7 +2,7 @@ import { useFormik, yupToFormErrors } from 'formik';
 import * as Yup from 'yup';
 import i18next from 'i18next';
 import { useMemo } from 'react';
-import { IProcessDetails, IProcessTemplateMap } from '../../../../interfaces/processes/processTemplate';
+import { IMongoProcessTemplatePopulated, IProcessDetails, IProcessTemplateMap } from '../../../../interfaces/processes/processTemplate';
 import { IMongoProcessInstancePopulated } from '../../../../interfaces/processes/processInstance';
 import { ProcessDetailsValues } from '.';
 import { getStepsObjectPopulated } from '../../../../utils/processWizard/steps';
@@ -19,6 +19,14 @@ const validationSchema = Yup.object().shape({
     steps: Yup.object().nullable().required('This field is required'),
 });
 
+export const initDetailsValues = (template: IMongoProcessTemplatePopulated): Object => {
+    const details = {};
+    Object.keys(template.details.properties.properties).forEach((field) => {
+        details[field] = undefined;
+    });
+    return details;
+};
+
 export const getInitialDetailsValues = (
     processInstance: IMongoProcessInstancePopulated | undefined,
     processTemplatesMap: IProcessTemplateMap,
@@ -34,7 +42,7 @@ export const getInitialDetailsValues = (
             name: processInstance.name,
             startDate: new Date(processInstance.startDate),
             endDate: new Date(processInstance.endDate),
-            details: fieldProperties,
+            details: fieldProperties || initDetailsValues(processTemplatesMap.get(processInstance.templateId)!),
             detailsAttachments: fileProperties,
             steps: getStepsObjectPopulated(processInstance.steps),
             entityReferences: entityProperties,
