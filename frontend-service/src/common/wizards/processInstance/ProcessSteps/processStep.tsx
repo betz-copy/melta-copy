@@ -86,6 +86,12 @@ export const ProcessStep: FC<ProcessStepProps> = ({
         >
             {({ setFieldValue, values, errors, touched, setFieldTouched, dirty, handleBlur, resetForm }) => {
                 const required = stepTemplate.properties?.required || [];
+
+                const propertiesSchema = pickProcessFieldsPropertiesSchema({
+                    properties: stepTemplate.properties,
+                    propertiesOrder: stepTemplate.propertiesOrder,
+                });
+
                 return (
                     <Form>
                         <Grid container direction="column">
@@ -144,68 +150,80 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                     maxHeight={550}
                                     sx={{
                                         overflowY: 'auto',
-                                        paddingRight: '15px',
                                     }}
                                 >
-                                    <JSONSchemaFormik
-                                        schema={pickProcessFieldsPropertiesSchema({
-                                            properties: stepTemplate.properties,
-                                            propertiesOrder: stepTemplate.propertiesOrder,
-                                        })}
-                                        values={{ ...values, properties: values.properties }}
-                                        setValues={(propertiesValues) => {
-                                            setFieldValue('properties', propertiesValues);
-                                        }}
-                                        errors={errors.properties ?? {}}
-                                        touched={touched.properties ?? {}}
-                                        setFieldTouched={(field) => {
-                                            setFieldTouched(`properties.${field}`);
-                                        }}
-                                        readonly={!isStepEditMode}
-                                    />
+                                    {Object.keys(propertiesSchema.properties).length !== 0 && (
+                                        <Grid>
+                                            <BlueTitle title={i18next.t('wizard.entityTemplate.properties')} component="h6" variant="h6" />
+                                            <JSONSchemaFormik
+                                                schema={propertiesSchema}
+                                                values={{ ...values, properties: values.properties }}
+                                                setValues={(propertiesValues) => {
+                                                    setFieldValue('properties', propertiesValues);
+                                                }}
+                                                errors={errors.properties ?? {}}
+                                                touched={touched.properties ?? {}}
+                                                setFieldTouched={(field) => {
+                                                    setFieldTouched(`properties.${field}`);
+                                                }}
+                                                readonly={!isStepEditMode}
+                                            />
+                                        </Grid>
+                                    )}
 
-                                    {templateFileProperties && isStepEditMode ? (
-                                        <Box>
-                                            {Object.entries(templateFileProperties).map(([key, value]) => (
-                                                <InstanceFileInput
-                                                    key={key}
-                                                    fileFieldName={`attachmentsProperties.${key}`}
-                                                    fieldTemplateTitle={value.title}
-                                                    setFieldValue={setFieldValue}
-                                                    required={required.includes(key)}
-                                                    value={values.attachmentsProperties?.[key]}
-                                                    error={
-                                                        errors.attachmentsProperties?.[key] && touched.attachmentsProperties?.[key]
-                                                            ? JSON.stringify(errors.attachmentsProperties?.[key])
-                                                            : undefined
-                                                    }
-                                                    setFieldTouched={setFieldTouched}
-                                                />
-                                            ))}
-                                        </Box>
-                                    ) : (
-                                        templateFileProperties && (
-                                            <>
-                                                {Object.entries(templateFileProperties).map(([fieldName, { title }]) => (
-                                                    <Grid container spacing={1} alignItems="center" key={fieldName}>
-                                                        <Grid item>
-                                                            <Typography display="inline" variant="body1">
-                                                                {title}:
-                                                            </Typography>
-                                                        </Grid>
-                                                        <Grid item>
-                                                            {values.attachmentsProperties[fieldName] ? (
-                                                                <OpenPreviewButton fileId={values.attachmentsProperties[fieldName].name} />
-                                                            ) : (
-                                                                <Typography display="inline" variant="h6">
-                                                                    -
-                                                                </Typography>
-                                                            )}
-                                                        </Grid>
-                                                    </Grid>
-                                                ))}
-                                            </>
-                                        )
+                                    {templateFileProperties && Object.keys(templateFileProperties!).length !== 0 && (
+                                        <Grid>
+                                            <BlueTitle
+                                                title={i18next.t('wizard.processTemplate.attachments')}
+                                                component="h6"
+                                                variant="h6"
+                                                style={{ marginBottom: '22px' }}
+                                            />
+
+                                            {templateFileProperties && isStepEditMode ? (
+                                                <Box>
+                                                    {Object.entries(templateFileProperties).map(([key, value]) => (
+                                                        <InstanceFileInput
+                                                            key={key}
+                                                            fileFieldName={`attachmentsProperties.${key}`}
+                                                            fieldTemplateTitle={value.title}
+                                                            setFieldValue={setFieldValue}
+                                                            required={required.includes(key)}
+                                                            value={values.attachmentsProperties?.[key]}
+                                                            error={
+                                                                errors.attachmentsProperties?.[key] && touched.attachmentsProperties?.[key]
+                                                                    ? JSON.stringify(errors.attachmentsProperties?.[key])
+                                                                    : undefined
+                                                            }
+                                                            setFieldTouched={setFieldTouched}
+                                                        />
+                                                    ))}
+                                                </Box>
+                                            ) : (
+                                                templateFileProperties && (
+                                                    <>
+                                                        {Object.entries(templateFileProperties).map(([fieldName, { title }]) => (
+                                                            <Grid container spacing={1} alignItems="center" key={fieldName}>
+                                                                <Grid item>
+                                                                    <Typography display="inline" variant="body1">
+                                                                        {title}:
+                                                                    </Typography>
+                                                                </Grid>
+                                                                <Grid item>
+                                                                    {values.attachmentsProperties[fieldName] ? (
+                                                                        <OpenPreviewButton fileId={values.attachmentsProperties[fieldName].name} />
+                                                                    ) : (
+                                                                        <Typography display="inline" variant="h6">
+                                                                            -
+                                                                        </Typography>
+                                                                    )}
+                                                                </Grid>
+                                                            </Grid>
+                                                        ))}
+                                                    </>
+                                                )
+                                            )}
+                                        </Grid>
                                     )}
                                     {Object.keys(templateEntityReferenceProperties!).length !== 0 && (
                                         <Grid padding={1}>

@@ -109,6 +109,7 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
                     addPropertyButtonLabel={i18next.t('wizard.entityTemplate.addProperty')}
                     touched={touched}
                     errors={errors}
+                    templateType="Entity"
                 />
             </Grid>
 
@@ -125,6 +126,7 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
                     addPropertyButtonLabel={i18next.t('wizard.entityTemplate.addAttachment')}
                     touched={touched}
                     errors={errors}
+                    templateType="Entity"
                 />
             </Grid>
         </Grid>

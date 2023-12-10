@@ -48,6 +48,7 @@ export interface FieldEditCardProps {
     setFieldValue: (field: keyof CommonFormInputProperties, value: any) => void;
     onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
     remove: (index: number) => any;
+    templateType: 'Process' | 'Entity';
 }
 
 export const FieldEditCard: React.FC<FieldEditCardProps> = ({
@@ -62,6 +63,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     setValues,
     onChange,
     remove,
+    templateType,
 }) => {
     const name = `properties[${index}].name`;
     const touchedName = touched?.name;
@@ -336,7 +338,14 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                     unique: !checked && prevValue.unique ? false : prevValue.unique,
                                                                 }));
                                                             }}
-                                                            disabled={value.type === 'serialNumber'}
+                                                            disabled={
+                                                                templateType === 'Entity'
+                                                                    ? value.type === 'serialNumber' || value.type === 'boolean'
+                                                                    : (isDisabled && !initialValue?.required) ||
+                                                                      (isEditMode && isNewProperty) ||
+                                                                      value.type === 'serialNumber' ||
+                                                                      value.type === 'boolean'
+                                                            }
                                                             checked={value.required}
                                                         />
                                                     }

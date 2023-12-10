@@ -30,6 +30,7 @@ interface FieldBlockProps<PropertiesType extends string, Values extends Record<P
     touched: FormikTouched<Values> | undefined;
     errors: FormikErrors<Values> | undefined;
     initialFieldCardDataOnAdd?: Omit<CommonFormInputProperties, 'id'>;
+    templateType: 'Process' | 'Entity';
 }
 
 const FieldBlock = <PropertiesType extends string, Values extends Record<PropertiesType, CommonFormInputProperties[]>>({
@@ -59,6 +60,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
         dateNotification: undefined,
         serialStarter: 0,
     },
+    templateType,
 }: React.PropsWithChildren<FieldBlockProps<PropertiesType, Values>>) => {
     // copy of values of formik in order to show changes on inputs fast (formik rerenders are slow)
     const [displayValues, setDisplayValues] = React.useState(values[propertiesType]);
@@ -171,6 +173,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
                                                 errors: errors?.[propertiesType]?.[index] as FormikErrors<CommonFormInputProperties> | undefined,
                                                 remove,
                                                 onChange: onChangeWrapper(index),
+                                                templateType,
                                             };
 
                                             if (propertiesType === 'properties' || propertiesType === 'detailsProperties') {

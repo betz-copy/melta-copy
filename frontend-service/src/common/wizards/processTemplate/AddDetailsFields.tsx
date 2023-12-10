@@ -77,6 +77,7 @@ const AddDetailsFields: React.FC<StepComponentProps<ProcessTemplateWizardValues,
                     touched={touched}
                     errors={errors}
                     initialFieldCardDataOnAdd={initialFieldCardDataOnAdd}
+                    templateType="Process"
                 />
             </Grid>
 
@@ -94,6 +95,7 @@ const AddDetailsFields: React.FC<StepComponentProps<ProcessTemplateWizardValues,
                     touched={touched}
                     errors={errors}
                     initialFieldCardDataOnAdd={initialFieldCardDataOnAdd}
+                    templateType="Process"
                 />
             </Grid>
         </Grid>

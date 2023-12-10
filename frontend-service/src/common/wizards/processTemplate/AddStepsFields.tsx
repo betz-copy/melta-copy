@@ -172,6 +172,7 @@ const AddStepsFields: React.FC<StepComponentProps<ProcessTemplateWizardValues, '
                                                                   | undefined)
                                                     }
                                                     initialFieldCardDataOnAdd={initialFieldCardDataOnAdd}
+                                                    templateType="Process"
                                                 />
                                             </Grid>
 
@@ -195,6 +196,7 @@ const AddStepsFields: React.FC<StepComponentProps<ProcessTemplateWizardValues, '
                                                                   | undefined)
                                                     }
                                                     initialFieldCardDataOnAdd={initialFieldCardDataOnAdd}
+                                                    templateType="Process"
                                                 />
                                             </Grid>
                                             <Grid item>
