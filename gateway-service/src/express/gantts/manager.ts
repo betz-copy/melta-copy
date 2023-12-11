@@ -1,5 +1,7 @@
+import lodashIsEqual from 'lodash.isequal';
 import { EntityTemplateManagerService, IMongoEntityTemplatePopulated } from '../../externalServices/entityTemplateManager';
 import { IGantt, ISearchGanttsBody, GanttsService, IMongoGantt, IGanttItem } from '../../externalServices/ganttsService';
+import { InstanceManagerService } from '../../externalServices/instanceManager';
 import { IRelationshipTemplate, RelationshipsTemplateManagerService } from '../../externalServices/relationshipsTemplateManager';
 import { ServiceError } from '../error';
 import { getAllowedEntityTemplatesForInstances } from '../instances/middlewares';
@@ -32,6 +34,56 @@ export class GanttManager {
         return this.filterGanttWithPermissions(gantt, allowedEntityTemplates);
     }
 
+    private static doesRelationshipContainsEntityTemplate(
+        relationshipTemplateId: string,
+        relationshipTemplatesMap: Map<string, IRelationshipTemplate>,
+        entityTemplateId: string,
+    ) {
+        const relationshipTemplate = relationshipTemplatesMap.get(relationshipTemplateId);
+        if (!relationshipTemplate) {
+            throw new ServiceError(400, `gantt contains unknown relationship template id "${relationshipTemplateId}"`);
+        }
+
+        const doesEntityTemplateInRelationshipTemplate =
+            relationshipTemplate.sourceEntityId === entityTemplateId || relationshipTemplate.destinationEntityId === entityTemplateId;
+
+        if (!doesEntityTemplateInRelationshipTemplate) {
+            throw new ServiceError(
+                400,
+                `gantt contains relationship template id "${relationshipTemplateId}" which doesnt contain entity template "${entityTemplateId}" as source/destination`,
+            );
+        }
+    }
+
+    private static async validateGanttGroupBy(gantt: IGantt, relationshipTemplatesMap: Map<string, IRelationshipTemplate>) {
+        if (!gantt.groupBy) {
+            if (gantt.items.some(({ groupByRelationshipId }) => groupByRelationshipId)) {
+                throw new ServiceError(400, 'gantt contains items with "groupByRelationshipId" without having "groupBy"');
+            }
+            return;
+        }
+
+        const groupByEntityTemplateConstraints = await InstanceManagerService.getConstraintsOfTemplate(gantt.groupBy.entityTemplateId);
+        if (
+            !groupByEntityTemplateConstraints.uniqueConstraints.find((uniqueConstraint) =>
+                lodashIsEqual(uniqueConstraint, [gantt.groupBy!.groupNameField]),
+            )
+        ) {
+            throw new ServiceError(
+                400,
+                `gantt contains groupBy with groupNameField "${gantt.groupBy.groupNameField}" which is not unique under entity template id "${gantt.groupBy.entityTemplateId}"`,
+            );
+        }
+
+        gantt.items.forEach(({ groupByRelationshipId }) => {
+            if (!groupByRelationshipId) {
+                throw new ServiceError(400, 'gantt contains items without "groupByRelationshipId" while having "groupBy"');
+            }
+
+            GanttManager.doesRelationshipContainsEntityTemplate(groupByRelationshipId, relationshipTemplatesMap, gantt.groupBy!.entityTemplateId);
+        });
+    }
+
     private static validateEntityTemplateOfGanttItem(ganttItem: IGanttItem, entityTemplatesMap: Map<string, IMongoEntityTemplatePopulated>) {
         const {
             entityTemplate: { id: entityTemplateId, startDateField, endDateField, fieldsToShow },
@@ -55,27 +107,12 @@ export class GanttManager {
     private static validateRelationshipOfGanttItem(ganttItem: IGanttItem, relationshipTemplatesMap: Map<string, IRelationshipTemplate>) {
         const {
             entityTemplate: { id: entityTemplateId },
-            connectedEntityTemplate,
+            connectedEntityTemplates,
         } = ganttItem;
 
-        if (!connectedEntityTemplate) return;
-
-        const { relationshipTemplateId } = connectedEntityTemplate;
-
-        const relationshipTemplate = relationshipTemplatesMap.get(relationshipTemplateId);
-        if (!relationshipTemplate) {
-            throw new ServiceError(400, `gantt contains unknown relationship template id "${relationshipTemplateId}"`);
-        }
-
-        const doesEntityTemplateInRelationshipTemplate =
-            relationshipTemplate.sourceEntityId === entityTemplateId || relationshipTemplate.destinationEntityId === entityTemplateId;
-
-        if (!doesEntityTemplateInRelationshipTemplate) {
-            throw new ServiceError(
-                400,
-                `gantt contains relationship template id "${relationshipTemplateId}" which doesnt contain entity template "${entityTemplateId}" as source/destination`,
-            );
-        }
+        connectedEntityTemplates.forEach(({ relationshipTemplateId }) => {
+            GanttManager.doesRelationshipContainsEntityTemplate(relationshipTemplateId, relationshipTemplatesMap, entityTemplateId);
+        });
     }
 
     private static validateConnectedEntityOfGanttItem(
@@ -85,29 +122,36 @@ export class GanttManager {
     ) {
         const {
             entityTemplate: { id: entityTemplateId },
-            connectedEntityTemplate,
+            connectedEntityTemplates,
         } = ganttItem;
 
-        if (!connectedEntityTemplate) return;
-        const { relationshipTemplateId, fieldsToShow } = connectedEntityTemplate;
-        const relationshipTemplate = relationshipTemplatesMap.get(relationshipTemplateId)!;
-
-        const otherEntityTemplateId =
-            relationshipTemplate.sourceEntityId === entityTemplateId ? relationshipTemplate.destinationEntityId : relationshipTemplate.sourceEntityId;
-        const otherEntityTemplate = allEntityTemplates.get(otherEntityTemplateId)!;
-
-        fieldsToShow.forEach((field) => {
-            if (!otherEntityTemplate.propertiesOrder.includes(field)) {
-                throw new ServiceError(
-                    400,
-                    `gantt contains unknown field "${field}" under entity template id "${otherEntityTemplateId}" which is connectedEntity of gantt item of entity template id "${entityTemplateId}"`,
-                );
+        connectedEntityTemplates.forEach(({ relationshipTemplateId, fieldsToShow }) => {
+            const relationshipTemplate = relationshipTemplatesMap.get(relationshipTemplateId);
+            if (!relationshipTemplate) {
+                throw new ServiceError(400, `gantt contains unknown relationship template id "${relationshipTemplateId}"`);
             }
+
+            const otherEntityTemplateId =
+                relationshipTemplate.sourceEntityId === entityTemplateId
+                    ? relationshipTemplate.destinationEntityId
+                    : relationshipTemplate.sourceEntityId;
+            const otherEntityTemplate = allEntityTemplates.get(otherEntityTemplateId)!;
+
+            fieldsToShow.forEach((field) => {
+                if (!otherEntityTemplate.propertiesOrder.includes(field)) {
+                    throw new ServiceError(
+                        400,
+                        `gantt contains unknown field "${field}" under entity template id "${otherEntityTemplateId}" which is connectedEntity of gantt item of entity template id "${entityTemplateId}"`,
+                    );
+                }
+            });
         });
     }
 
     private static async validateTemplatesDataOfGantt(gantt: IGantt) {
         const entityTemplateIdsOfItems = gantt.items.map(({ entityTemplate: { id } }) => id);
+        if (gantt.groupBy) entityTemplateIdsOfItems.push(gantt.groupBy.entityTemplateId);
+
         const entityTemplateIds = [...new Set(entityTemplateIdsOfItems)];
         const entityTemplates = await EntityTemplateManagerService.searchEntityTemplates({ ids: entityTemplateIds });
         const entityTemplatesMap = new Map(entityTemplates.map((entityTemplate) => [entityTemplate._id, entityTemplate]));
@@ -116,9 +160,18 @@ export class GanttManager {
             GanttManager.validateEntityTemplateOfGanttItem(ganttItem, entityTemplatesMap);
         });
 
-        const relationshipTemplateIdsOfItems = gantt.items
-            .filter(({ connectedEntityTemplate }) => Boolean(connectedEntityTemplate))
-            .map(({ connectedEntityTemplate }) => connectedEntityTemplate!.relationshipTemplateId);
+        const relationshipTemplateIdsOfItems = gantt.items.reduce<string[]>(
+            (relationshipIds, { connectedEntityTemplates, groupByRelationshipId }) => {
+                connectedEntityTemplates.forEach(({ relationshipTemplateId }) => {
+                    relationshipIds.push(relationshipTemplateId);
+                });
+
+                if (groupByRelationshipId) relationshipIds.push(groupByRelationshipId);
+
+                return relationshipIds;
+            },
+            [],
+        );
 
         const relationshipTemplateIds = [...new Set(relationshipTemplateIdsOfItems)];
         const relationshipTemplates = await RelationshipsTemplateManagerService.searchRelationshipTemplates({ ids: relationshipTemplateIds });
@@ -129,21 +182,23 @@ export class GanttManager {
         gantt.items.forEach((ganttItem) => {
             GanttManager.validateRelationshipOfGanttItem(ganttItem, relationshipTemplatesMap);
         });
+        await GanttManager.validateGanttGroupBy(gantt, relationshipTemplatesMap);
 
         const additionalEntityTemplateIdsFromRelationshipsOfItems: string[] = [];
-        gantt.items.forEach(({ entityTemplate: { id: entityTemplateId }, connectedEntityTemplate }) => {
-            if (!connectedEntityTemplate) return;
-            const relationshipTemplate = relationshipTemplatesMap.get(connectedEntityTemplate.relationshipTemplateId)!;
+        gantt.items.forEach(({ entityTemplate: { id: entityTemplateId }, connectedEntityTemplates }) => {
+            connectedEntityTemplates.forEach(({ relationshipTemplateId }) => {
+                const relationshipTemplate = relationshipTemplatesMap.get(relationshipTemplateId)!;
 
-            const otherEntityTemplateId =
-                relationshipTemplate.sourceEntityId === entityTemplateId
-                    ? relationshipTemplate.destinationEntityId
-                    : relationshipTemplate.sourceEntityId;
+                const otherEntityTemplateId =
+                    relationshipTemplate.sourceEntityId === entityTemplateId
+                        ? relationshipTemplate.destinationEntityId
+                        : relationshipTemplate.sourceEntityId;
 
-            // it might already exists because of another item
-            if (!entityTemplatesMap.has(otherEntityTemplateId)) {
-                additionalEntityTemplateIdsFromRelationshipsOfItems.push(otherEntityTemplateId);
-            }
+                // it might already exists because of another item
+                if (!entityTemplatesMap.has(otherEntityTemplateId)) {
+                    additionalEntityTemplateIdsFromRelationshipsOfItems.push(otherEntityTemplateId);
+                }
+            });
         });
         const additionalEntityTemplateIds = [...new Set(additionalEntityTemplateIdsFromRelationshipsOfItems)];
 

@@ -8,15 +8,24 @@ const ganttItemSchema = Joi.object({
         endDateField: Joi.string().required(),
         fieldsToShow: Joi.array().items(Joi.string()).required(),
     }).required(),
-    connectedEntityTemplate: Joi.object({
-        relationshipTemplateId: Joi.string().required(),
-        fieldsToShow: Joi.array().items(Joi.string()).required(),
-    }),
+    connectedEntityTemplates: Joi.array()
+        .items(
+            Joi.object({
+                relationshipTemplateId: Joi.string().required(),
+                fieldsToShow: Joi.array().items(Joi.string()).required(),
+            }),
+        )
+        .required(),
+    groupByRelationshipId: Joi.string(),
 });
 
 const ganttSchema = Joi.object({
     name: Joi.string().required(),
     items: Joi.array().items(ganttItemSchema).required(),
+    groupBy: Joi.object({
+        entityTemplateId: Joi.string().required(),
+        groupNameField: Joi.string().required(),
+    }),
 });
 
 // GET /api/gantts/:ganttId
