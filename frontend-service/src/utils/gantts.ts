@@ -1,14 +1,19 @@
 /* eslint-disable consistent-return */
 import i18next from 'i18next';
 import * as Yup from 'yup';
-import { IEntityWithDirectConnections, ISearchBatchBody } from '../interfaces/entities';
+import cloneDeep from 'lodash.clonedeep';
+import { IEntityWithDirectConnections, IFilterOfTemplate, ISearchBatchBody } from '../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
-import { IGanttItem } from '../interfaces/gantts';
-import { IMongoRelationshipTemplate, IRelationshipTemplateMap } from '../interfaces/relationshipTemplates';
+import { IBasicGantt, IConnectedEntityTemplateDetails, IGantt, IGanttGroupBy, IGanttHeatmapBox, IGanttItem } from '../interfaces/gantts';
+import { IRelationshipTemplateMap } from '../interfaces/relationshipTemplates';
 import { IScheduleComponentData, IScheduleComponentResourceData } from '../interfaces/syncfusion';
 import { getEntityTemplateColor } from './colors';
-import { getDayEnd, getDayStart } from './date';
+import { dateBetween, getDayEnd, getDayStart } from './date';
 import { filteredMap } from './filteredMap';
+import { getEntitiesWithDirectConnections } from '../services/entitiesService';
+import { environment } from '../globals';
+
+const { groupByEntitiesChunkSize } = environment.ganttSettings;
 
 const getFormattedDateAccordingToField = (date: Date, dateField: string, entityTemplate: IMongoEntityTemplatePopulated) => {
     switch (entityTemplate.properties.properties[dateField].format) {
@@ -30,6 +35,7 @@ export const getEntitiesSearchBody = (
     limit: number,
     skip: number,
     entityTemplatesMap: IEntityTemplateMap,
+    showEntitiesWithoutEndDate?: boolean,
 ): ISearchBatchBody => {
     const paddedStartDate = getDayStart(startDate);
     const paddedEndDate = getDayEnd(endDate);
@@ -38,19 +44,37 @@ export const getEntitiesSearchBody = (
         const entityTemplate = entityTemplatesMap.get(item.entityTemplate.id);
         if (!entityTemplate) throw new Error(`Entity template ${item.entityTemplate.id} not found`);
 
+        const showRelationships = item.connectedEntityTemplates.map((connectedEntityTemplate) => connectedEntityTemplate.relationshipTemplateId);
+        if (item.groupByRelationshipId) showRelationships.push(item.groupByRelationshipId);
+
+        const basicFilter: IFilterOfTemplate = {
+            [item.entityTemplate.startDateField]: {
+                $lte: getFormattedDateAccordingToField(paddedEndDate, item.entityTemplate.startDateField, entityTemplate),
+            },
+            [item.entityTemplate.endDateField]: {
+                $gte: getFormattedDateAccordingToField(paddedStartDate, item.entityTemplate.endDateField, entityTemplate),
+            },
+            disabled: { $eq: false },
+        };
+
         // eslint-disable-next-line no-param-reassign
         currTemplates[item.entityTemplate.id] = {
-            filter: {
-                $and: {
-                    [item.entityTemplate.startDateField]: {
-                        $lte: getFormattedDateAccordingToField(paddedEndDate, item.entityTemplate.startDateField, entityTemplate),
-                    },
-                    [item.entityTemplate.endDateField]: {
-                        $gte: getFormattedDateAccordingToField(paddedStartDate, item.entityTemplate.endDateField, entityTemplate),
-                    },
-                },
-            },
-            showRelationships: item.connectedEntityTemplate && [item.connectedEntityTemplate.relationshipTemplateId],
+            filter: showEntitiesWithoutEndDate
+                ? {
+                      $or: [
+                          basicFilter,
+                          {
+                              ...basicFilter,
+                              [item.entityTemplate.endDateField]: {
+                                  $eq: null,
+                              },
+                          },
+                      ],
+                  }
+                : {
+                      $and: basicFilter,
+                  },
+            showRelationships,
         };
 
         return currTemplates;
@@ -76,7 +100,7 @@ export const getScheduleComponentData = (
     entityTemplatesMap: IEntityTemplateMap,
 ): IScheduleComponentData[] => {
     return filteredMap(entities, (entityWithConnections) => {
-        const { entity } = entityWithConnections;
+        const { entity, relationships } = entityWithConnections;
 
         const entityTemplate = entityTemplatesMap.get(entity.templateId);
         if (!entityTemplate) return;
@@ -84,22 +108,37 @@ export const getScheduleComponentData = (
         const ganttItem = ganttItems.find((item) => item.entityTemplate.id === entity.templateId);
         if (!ganttItem) return;
 
+        const groupedByEntityIds =
+            relationships && ganttItem.groupByRelationshipId
+                ? filteredMap(relationships, ({ relationship, otherEntity }) => ({
+                      include: relationship.templateId === ganttItem.groupByRelationshipId,
+                      value: otherEntity.properties._id,
+                  }))
+                : undefined;
+
+        const startTime = entity.properties[ganttItem.entityTemplate.startDateField];
+        if (startTime === undefined) return;
+
+        let endTime = entity.properties[ganttItem.entityTemplate.endDateField];
+        if (endTime === undefined) endTime = environment.maxDateTimestamp;
+
         return {
             include: true,
             value: {
                 entityTemplateId: entity.templateId,
-                Id: entity.properties._id,
-                StartTime: new Date(entity.properties[ganttItem.entityTemplate.startDateField]),
-                EndTime: new Date(entity.properties[ganttItem.entityTemplate.endDateField]),
-                IsAllDay: isAllDay(entityTemplate, ganttItem),
+                groupedByEntityIds,
                 entityWithConnections,
                 ganttItem,
+                Id: entity.properties._id,
+                StartTime: new Date(startTime),
+                EndTime: new Date(endTime),
+                IsAllDay: isAllDay(entityTemplate, ganttItem),
             },
         };
     });
 };
 
-export const getScheduleComponentResourceData = (
+export const getScheduleComponentEntityTemplateResourceData = (
     ganttItems: IGanttItem[],
     entityTemplatesMap: IEntityTemplateMap,
 ): IScheduleComponentResourceData[] => {
@@ -117,25 +156,62 @@ export const getScheduleComponentResourceData = (
         };
     });
 };
+export const getScheduleComponentGroupByEntityResourceData = async (groupBy: IGanttGroupBy): Promise<IScheduleComponentResourceData[]> => {
+    const { entities } = await getEntitiesWithDirectConnections({
+        limit: groupByEntitiesChunkSize,
+        templates: {
+            [groupBy.entityTemplateId]: {
+                filter: { $and: { disabled: { $eq: false } } },
+            },
+        },
+    });
 
-export const getConnectedEntityDetails = (
+    return filteredMap(entities, ({ entity }) => {
+        const groupName = entity.properties[groupBy.groupNameField];
+        if (!groupName) return;
+
+        return {
+            include: true,
+            value: {
+                Id: entity.properties._id,
+                Text: groupName,
+            },
+        };
+    }).sort((a, b) => a.Text.localeCompare(b.Text));
+};
+
+export const getConnectedEntityTemplatesDetails = (
     ganttItem: IGanttItem,
     entityTemplatesMap: IEntityTemplateMap,
     relationshipTemplatesMap: IRelationshipTemplateMap,
-): { connectedEntityTemplate?: IMongoEntityTemplatePopulated; relationship?: IMongoRelationshipTemplate; connectedEntityTemplateColor?: string } => {
-    const relationship = ganttItem.connectedEntityTemplate && relationshipTemplatesMap.get(ganttItem.connectedEntityTemplate.relationshipTemplateId);
-    if (!relationship) return {};
+): IConnectedEntityTemplateDetails[] => {
+    return filteredMap(ganttItem.connectedEntityTemplates, (ganttItemConnectedEntityTemplate) => {
+        const relationship = relationshipTemplatesMap.get(ganttItemConnectedEntityTemplate.relationshipTemplateId);
+        if (!relationship) return;
 
-    const connectedEntityTemplateId =
-        relationship.sourceEntityId === ganttItem.entityTemplate.id ? relationship.destinationEntityId : relationship.sourceEntityId;
+        const connectedEntityTemplateId =
+            relationship.sourceEntityId === ganttItem.entityTemplate.id ? relationship.destinationEntityId : relationship.sourceEntityId;
 
-    const connectedEntityTemplate = entityTemplatesMap.get(connectedEntityTemplateId);
-    if (!connectedEntityTemplate) return { relationship };
+        const connectedEntityTemplate = entityTemplatesMap.get(connectedEntityTemplateId);
+        if (!connectedEntityTemplate) return;
 
-    return { connectedEntityTemplate, relationship, connectedEntityTemplateColor: getEntityTemplateColor(connectedEntityTemplate) };
+        return {
+            include: true,
+            value: {
+                connectedEntityTemplate,
+                relationship,
+                fieldsToShow: ganttItemConnectedEntityTemplate.fieldsToShow,
+                connectedEntityTemplateColor: getEntityTemplateColor(connectedEntityTemplate),
+            },
+        };
+    });
 };
 
-export const getGanttItemEditDetails = (relationshipTemplates: IRelationshipTemplateMap, entityTemplate?: IMongoEntityTemplatePopulated) => {
+export const getGanttItemEditDetails = (
+    relationshipTemplates: IRelationshipTemplateMap,
+    entityTemplate?: IMongoEntityTemplatePopulated,
+    groupBy?: IGanttGroupBy,
+) => {
     if (!entityTemplate) return {};
 
     const entityTemplateDateFields = filteredMap(Object.entries(entityTemplate.properties.properties), ([property, value]) => ({
@@ -143,12 +219,60 @@ export const getGanttItemEditDetails = (relationshipTemplates: IRelationshipTemp
         value: property,
     }));
 
-    const relevantRelationshipIds = filteredMap(Array.from(relationshipTemplates.values()), (relationship) => ({
-        include: relationship.sourceEntityId === entityTemplate._id || relationship.destinationEntityId === entityTemplate._id,
-        value: relationship._id,
-    }));
+    const relevantRelationshipIds: string[] = [];
+    const groupByRelevantRelationshipIds: string[] = [];
 
-    return { entityTemplateDateFields, relevantRelationshipIds };
+    Array.from(relationshipTemplates.values()).forEach((relationshipTemplate) => {
+        if (relationshipTemplate.sourceEntityId === entityTemplate._id || relationshipTemplate.destinationEntityId === entityTemplate._id) {
+            relevantRelationshipIds.push(relationshipTemplate._id);
+            if (
+                groupBy &&
+                (relationshipTemplate.sourceEntityId === groupBy.entityTemplateId ||
+                    relationshipTemplate.destinationEntityId === groupBy.entityTemplateId)
+            ) {
+                groupByRelevantRelationshipIds.push(relationshipTemplate._id);
+            }
+        }
+    });
+
+    return { entityTemplateDateFields, relevantRelationshipIds, groupByRelevantRelationshipIds };
+};
+
+export const getRelationshipString = (
+    relationshipId: string,
+    entityTemplates: IEntityTemplateMap,
+    relationshipTemplates: IRelationshipTemplateMap,
+) => {
+    const relationShip = relationshipTemplates.get(relationshipId);
+    if (!relationShip) return '';
+
+    const sourceEntityTemplate = entityTemplates.get(relationShip.sourceEntityId);
+    if (!sourceEntityTemplate) return '';
+
+    const destinationEntityTemplate = entityTemplates.get(relationShip.destinationEntityId);
+    if (!destinationEntityTemplate) return '';
+
+    return `${relationShip.displayName} (${sourceEntityTemplate.displayName} > ${destinationEntityTemplate.displayName})`;
+};
+
+export const formikInitialGanttData = (gantt: IGantt): IBasicGantt => {
+    const items = gantt.items.map<IBasicGantt['items'][number]>((item) => ({ ...cloneDeep(item) }));
+
+    return { name: gantt.name, items, groupBy: gantt.groupBy };
+};
+
+export const getGanttHeatmapData = (ganttEvents: IScheduleComponentData[], groupByEntityResources: IScheduleComponentResourceData[]) => {
+    return groupByEntityResources.reduce<IGanttHeatmapBox[]>((heatmapData, { Id, Text }) => {
+        heatmapData.push({
+            id: Id,
+            title: Text,
+            ganttEvents: ganttEvents.filter(
+                (ganttEvent) => ganttEvent.groupedByEntityIds?.includes(Id) && dateBetween(new Date(), ganttEvent.StartTime, ganttEvent.EndTime),
+            ),
+        });
+
+        return heatmapData;
+    }, []);
 };
 
 export const ganttItemValidationSchema = Yup.object({
@@ -158,12 +282,27 @@ export const ganttItemValidationSchema = Yup.object({
         endDateField: Yup.string().nullable().required(i18next.t('validation.required')),
         fieldsToShow: Yup.array(Yup.string()).min(1, i18next.t('validation.required')),
     }).required(i18next.t('validation.required')),
-    connectedEntityTemplate: Yup.object({
-        relationshipTemplateId: Yup.string().nullable().required(i18next.t('validation.required')),
-        fieldsToShow: Yup.array(Yup.string()).min(1, i18next.t('validation.required')),
-    }).default(undefined),
+    connectedEntityTemplates: Yup.array(
+        Yup.object({
+            relationshipTemplateId: Yup.string().nullable().required(i18next.t('validation.required')),
+            fieldsToShow: Yup.array(Yup.string()).min(1, i18next.t('validation.required')),
+        }),
+    ),
+    groupByRelationshipId: Yup.string()
+        .nullable()
+        // the original type of 'ctx' is missing the 'from' property
+        .test('testGroupByRelationshipId', i18next.t('gantts.requiredGroupByRelationship'), (value, ctx: any) => {
+            const root = ctx.from[ctx.from.length - 1].value;
+
+            if (!root.groupBy) return true;
+            return Boolean(value);
+        }),
 });
 export const ganttValidationSchema = Yup.object({
     name: Yup.string().required(i18next.t('validation.required')),
     items: Yup.array(ganttItemValidationSchema).required(i18next.t('validation.required')),
+    groupBy: Yup.object({
+        entityTemplateId: Yup.string().nullable().required(i18next.t('validation.required')),
+        groupNameField: Yup.string().nullable().required(i18next.t('validation.required')),
+    }).default(undefined),
 });

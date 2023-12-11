@@ -1,4 +1,4 @@
-import React, { CSSProperties } from 'react';
+import React, { CSSProperties, ComponentProps } from 'react';
 import { Grid, Card, CardContent } from '@mui/material';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../store';
@@ -7,9 +7,10 @@ interface ViewingBoxProps {
     children: React.ReactNode;
     minHeight?: CSSProperties['height'];
     maxHeight?: CSSProperties['height'];
+    gridProps?: ComponentProps<typeof Grid>;
 }
 
-export const ViewingBox: React.FC<ViewingBoxProps> = ({ children, minHeight = 'auto', maxHeight = '21rem' }) => {
+export const ViewingBox: React.FC<ViewingBoxProps> = ({ children, minHeight = 'auto', maxHeight = '21rem', gridProps }) => {
     const darkMode = useSelector((state: RootState) => state.darkMode);
 
     if (Array.isArray(children) && !children.length) return null;
@@ -29,7 +30,7 @@ export const ViewingBox: React.FC<ViewingBoxProps> = ({ children, minHeight = 'a
             }}
         >
             <CardContent sx={{ '&:last-child': { padding: 0 } }}>
-                <Grid container spacing={4}>
+                <Grid container spacing={4} {...gridProps}>
                     {children}
                 </Grid>
             </CardContent>

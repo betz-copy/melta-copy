@@ -1,6 +1,7 @@
-import React, { useMemo, useRef, useState } from 'react';
-import { useInfiniteQuery, useQueryClient } from 'react-query';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useInfiniteQuery, useQuery, useQueryClient } from 'react-query';
 import { useSearchParams } from 'react-router-dom';
+import { render } from 'react-dom';
 import {
     Day,
     Inject,
@@ -15,6 +16,7 @@ import {
     Week,
     View,
     NavigatingEventArgs,
+    EventRenderedArgs,
 } from '@syncfusion/ej2-react-schedule';
 import { L10n, loadCldr } from '@syncfusion/ej2-base'; // eslint-disable-line import/no-extraneous-dependencies
 import i18next from 'i18next';
@@ -24,7 +26,12 @@ import flatten from 'lodash.flatten';
 import { CircularProgress, Grid } from '@mui/material';
 import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
 import { getEntitiesWithDirectConnections } from '../../services/entitiesService';
-import { getEntitiesSearchBody, getScheduleComponentData } from '../../utils/gantts';
+import {
+    getEntitiesSearchBody,
+    getScheduleComponentData,
+    getScheduleComponentEntityTemplateResourceData,
+    getScheduleComponentGroupByEntityResourceData,
+} from '../../utils/gantts';
 import { GanttEvent } from './GanttEvent';
 import { GanttQuickInfo } from './GanttQuickInfo';
 import hebrew from '../../i18n/hebrew';
@@ -36,35 +43,51 @@ import { useDynamicStyleSheet } from '../../utils/useDynamicStyleSheet';
 import { RootState } from '../../store';
 import lightTheme from '../../css/syncfusion/light.css?inline'; // eslint-disable-line import/no-unresolved
 import darkTheme from '../../css/syncfusion/dark.css?inline'; // eslint-disable-line import/no-unresolved
-import { IScheduleComponentResourceData } from '../../interfaces/syncfusion';
 import { IGantt } from '../../interfaces/gantts';
 import '../../css/syncfusion/schedule.css';
 import { environment } from '../../globals';
+import { Heatmap } from './Heatmap';
+import { ScheduleToolbar } from './ScheduleToolbar';
 
 loadCldr(numberingSystems, caHebrew, timeZoneNames, numbers);
 L10n.load({ 'he-IL': hebrew.schedule });
 
-const { ganttSettings } = environment;
+const {
+    refetchInterval,
+    ganttEntitiesChunkSize,
+    searchParams: { selectedViewKey, selectedDateKey, heatmapModeKey },
+} = environment.ganttSettings;
 
 interface IGanttProps {
     gantt: IGantt;
-    resources: IScheduleComponentResourceData[];
 }
 
-export const Gantt: React.FC<IGanttProps> = ({ gantt, resources }) => {
+export const Gantt: React.FC<IGanttProps> = ({ gantt }) => {
+    const darkMode = useSelector((state: RootState) => state.darkMode);
+    useDynamicStyleSheet(darkMode ? darkTheme : lightTheme);
+
     const scheduleRef = useRef<ScheduleComponent>(null);
 
-    const [searchParams, setSearchParams] = useSearchParams({ selectedView: 'Month', selectedDate: new Date().toISOString() });
-    const selectedView = searchParams.get('selectedView')! as View;
-    const selectedDate = searchParams.get('selectedDate')!;
+    const [searchParams, setSearchParams] = useSearchParams();
+    const selectedView = (searchParams.get(selectedViewKey) as View) || 'Month';
+    const selectedDate = searchParams.get(selectedDateKey) || new Date().toISOString();
+    const heatmapMode = Boolean(searchParams.get(heatmapModeKey));
 
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
 
     const [renderedDates, setRenderedDates] = useState<Date[]>([]);
 
-    const darkMode = useSelector((state: RootState) => state.darkMode);
-    useDynamicStyleSheet(darkMode ? darkTheme : lightTheme);
+    const entityTemplateResources = useMemo(
+        () => getScheduleComponentEntityTemplateResourceData(gantt.items, entityTemplates),
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        [gantt, entityTemplates],
+    );
+    const { data: groupByEntityResources } = useQuery(
+        ['groupByEntities', gantt.groupBy],
+        async () => gantt.groupBy && getScheduleComponentGroupByEntityResourceData(gantt.groupBy),
+        { refetchInterval },
+    );
 
     const {
         data: pagedData,
@@ -74,15 +97,16 @@ export const Gantt: React.FC<IGanttProps> = ({ gantt, resources }) => {
     } = useInfiniteQuery(
         ['getGanttEntities', gantt, renderedDates, entityTemplates],
         async ({ pageParam }) => {
-            if (!renderedDates.length) return [];
+            if (!renderedDates.length || !gantt.items.length) return [];
 
             const searchBody = getEntitiesSearchBody(
                 gantt.items,
                 renderedDates[0],
                 renderedDates[renderedDates.length - 1],
-                ganttSettings.ganttEntitiesChunkSize,
+                ganttEntitiesChunkSize,
                 pageParam,
                 entityTemplates,
+                heatmapMode,
             );
             const { entities } = await getEntitiesWithDirectConnections(searchBody);
 
@@ -90,7 +114,7 @@ export const Gantt: React.FC<IGanttProps> = ({ gantt, resources }) => {
         },
         {
             getNextPageParam: (lastPage, allPages) => {
-                const nextPage = allPages.length * ganttSettings.ganttEntitiesChunkSize;
+                const nextPage = allPages.length * ganttEntitiesChunkSize;
                 return lastPage.length ? nextPage : undefined;
             },
             onError: (error) => {
@@ -98,6 +122,7 @@ export const Gantt: React.FC<IGanttProps> = ({ gantt, resources }) => {
                 console.log('failed to get entities. error:', error);
                 toast.error(i18next.t('gantts.failedToGetEntities'));
             },
+            refetchInterval,
         },
     );
 
@@ -107,6 +132,22 @@ export const Gantt: React.FC<IGanttProps> = ({ gantt, resources }) => {
         if (pagedData) return flatten(pagedData.pages);
         return [];
     }, [pagedData]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    const injectToolbar = () => {
+        document.getElementById('scheduleToolbar')?.remove();
+
+        const toolbar = document.createElement('div');
+        toolbar.id = 'scheduleToolbar';
+
+        const [toolbarContainer] = document.getElementsByClassName('e-schedule-toolbar-container');
+        if (!toolbarContainer?.parentNode) return;
+        toolbarContainer.parentNode.insertBefore(toolbar, toolbarContainer.parentNode.firstChild);
+
+        render(<ScheduleToolbar scheduleRef={scheduleRef} darkMode={darkMode} />, toolbar);
+    };
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    useEffect(() => injectToolbar(), [darkMode]);
 
     return (
         <>
@@ -125,44 +166,76 @@ export const Gantt: React.FC<IGanttProps> = ({ gantt, resources }) => {
                 </Grid>
             )}
 
-            <ScheduleComponent
-                ref={scheduleRef}
-                width="100%"
-                height="100%"
-                timezone="Asia/Jerusalem"
-                timeFormat="HH:mm"
-                dateFormat="dd/MM/yyyy"
-                workDays={[0, 1, 2, 3, 4, 5]}
-                locale="he-IL"
-                selectedDate={new Date(selectedDate)}
-                currentView={selectedView}
-                eventSettings={{ dataSource: data }}
-                navigating={(event: NavigatingEventArgs) => {
-                    const { currentView, currentDate } = event;
-                    setSearchParams({ selectedView: currentView || selectedView, selectedDate: currentDate?.toISOString() || selectedDate });
-                }}
-                dataBinding={() => {
-                    if (!scheduleRef.current) return;
-                    setRenderedDates(scheduleRef.current.activeView.renderDates);
-                }}
-                quickInfoTemplates={{ header: GanttQuickInfo as any }} // 'header' type should be `string | Function`
-                enableAdaptiveUI={false}
-                enableRtl
-                readonly
-            >
-                <ViewsDirective>
-                    <ViewDirective option="Day" eventTemplate={GanttEvent} />
-                    <ViewDirective option="Week" eventTemplate={GanttEvent} />
-                    <ViewDirective option="Month" eventTemplate={GanttEvent} />
-                    <ViewDirective option="TimelineMonth" eventTemplate={GanttEvent} />
-                </ViewsDirective>
+            {heatmapMode ? (
+                <Heatmap ganttEvents={data} groupByEntityResources={groupByEntityResources} onInit={() => setRenderedDates([new Date()])} />
+            ) : (
+                <ScheduleComponent
+                    ref={scheduleRef}
+                    width="100%"
+                    height="100%"
+                    timezone="Asia/Jerusalem"
+                    timeFormat="HH:mm"
+                    dateFormat="dd/MM/yyyy"
+                    workDays={[0, 1, 2, 3, 4, 5]}
+                    locale="he-IL"
+                    selectedDate={new Date(selectedDate)}
+                    currentView={selectedView}
+                    eventSettings={{ dataSource: data }}
+                    navigating={(event: NavigatingEventArgs) => {
+                        const { currentView, currentDate } = event;
+                        setSearchParams({
+                            [selectedViewKey]: currentView || selectedView,
+                            [selectedDateKey]: currentDate?.toISOString() || selectedDate,
+                        });
+                    }}
+                    dataBinding={() => {
+                        if (!scheduleRef.current) return;
+                        setRenderedDates(scheduleRef.current.activeView.renderDates);
 
-                <ResourcesDirective>
-                    <ResourceDirective field="entityTemplateId" title={i18next.t('entityTemplate')} name="entityTemplate" dataSource={resources} />
-                </ResourcesDirective>
+                        injectToolbar();
+                    }}
+                    eventRendered={(event: EventRenderedArgs) => {
+                        // when grouping by a resource the schedule component will try to color the events only by the resource's colors even if there are none
+                        // so when grouping by the 'groupByEntity' we override the color to be according to the entityTemplate resource
+                        if (!gantt.groupBy) return;
+                        const entityTemplateResource = entityTemplateResources.find((resource) => resource.Id === event.data.entityTemplateId);
+                        if (entityTemplateResource?.Color) event.element.style.backgroundColor = entityTemplateResource.Color; // eslint-disable-line no-param-reassign
+                    }}
+                    quickInfoTemplates={{ header: GanttQuickInfo as any }} // 'header' type should be `string | Function`
+                    group={{ resources: gantt.groupBy ? ['groupByEntity'] : [] }}
+                    enableAdaptiveUI
+                    rowAutoHeight
+                    enableRtl
+                    readonly
+                >
+                    <ViewsDirective>
+                        <ViewDirective option="Day" eventTemplate={GanttEvent} />
+                        <ViewDirective option="Week" eventTemplate={GanttEvent} />
+                        <ViewDirective option="Month" eventTemplate={GanttEvent} />
+                        <ViewDirective option="TimelineMonth" eventTemplate={GanttEvent} />
+                    </ViewsDirective>
 
-                <Inject services={[TimelineViews, TimelineMonth, Day, Week, Month]} />
-            </ScheduleComponent>
+                    <ResourcesDirective>
+                        <ResourceDirective
+                            field="entityTemplateId"
+                            title={i18next.t('entityTemplate')}
+                            name="entityTemplate"
+                            dataSource={entityTemplateResources}
+                        />
+                        {gantt.groupBy && (
+                            <ResourceDirective
+                                field="groupedByEntityIds"
+                                title={i18next.t('gantts.groupByEntities')}
+                                name="groupByEntity"
+                                dataSource={groupByEntityResources}
+                                allowMultiple
+                            />
+                        )}
+                    </ResourcesDirective>
+
+                    <Inject services={[TimelineViews, TimelineMonth, Day, Week, Month]} />
+                </ScheduleComponent>
+            )}
         </>
     );
 };

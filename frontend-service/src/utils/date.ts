@@ -10,6 +10,10 @@ export const getDateWithoutTime = (date: Date) => {
     return format(new Date(date), 'dd/MM/yyyy');
 };
 
+export const dateBetween = (date: Date, startDate: Date, endDate: Date) => {
+    return startDate.getTime() <= date.getTime() && date.getTime() <= endDate.getTime();
+};
+
 export const getDayStart = (date: Date) => {
     const dateCopy = new Date(date);
     dateCopy.setHours(0, 0, 0, 0);

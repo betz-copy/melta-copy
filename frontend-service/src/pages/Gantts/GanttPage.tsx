@@ -1,16 +1,14 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { CircularProgress, Grid } from '@mui/material';
 import { toast } from 'react-toastify';
 import i18next from 'i18next';
 import { AxiosError } from 'axios';
-import cloneDeep from 'lodash.clonedeep';
 import { Form, Formik } from 'formik';
 import { deleteGantt, getGanttById, updateGantt } from '../../services/ganttsService';
-import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
 import { GanttSideBar } from './SideBar';
-import { ganttValidationSchema, getScheduleComponentResourceData } from '../../utils/gantts';
+import { formikInitialGanttData, ganttValidationSchema } from '../../utils/gantts';
 import { useLocalStorage } from '../../utils/useLocalStorage';
 import { environment } from '../../globals';
 import { Gantt } from './Gantt';
@@ -22,11 +20,9 @@ const { ganttSettings } = environment;
 
 const GanttPage: React.FC = () => {
     const { ganttId } = useParams();
+    const queryClient = useQueryClient();
 
     const navigate = useNavigate();
-
-    const queryClient = useQueryClient();
-    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
 
     const [sideBarOpen, setSideBarOpen] = useLocalStorage(ganttSettings.isSidebarOpenLocalStorageKey, true);
 
@@ -34,8 +30,6 @@ const GanttPage: React.FC = () => {
 
     const queryKey = ['getGantt', ganttId];
     const { data: gantt } = useQuery(queryKey, () => getGanttById(ganttId!));
-
-    const resources = useMemo(() => gantt && getScheduleComponentResourceData(gantt.items, entityTemplates), [gantt, entityTemplates]);
 
     const { mutateAsync: updateGanttMutateAsync, isLoading: isUpdateGanttLoading } = useMutation(
         (params: Parameters<typeof updateGantt>) => updateGantt(...params),
@@ -60,11 +54,11 @@ const GanttPage: React.FC = () => {
         },
     });
 
-    if (!gantt || !resources) return <CircularProgress />;
+    if (!gantt) return <CircularProgress />;
 
     return (
         <Formik<IBasicGantt>
-            initialValues={{ name: gantt.name, items: cloneDeep(gantt.items) }}
+            initialValues={formikInitialGanttData(gantt)}
             onSubmit={async (updatedGantt, formikHelpers) => {
                 updateGanttMutateAsync([gantt._id, updatedGantt]);
                 formikHelpers.setSubmitting(false);
@@ -80,13 +74,21 @@ const GanttPage: React.FC = () => {
                         formik={formik}
                         onDelete={() => deleteGanttMutateAsync(gantt._id)}
                         onEdit={() => setEdit(true)}
+                        onAddGroupBy={() => {
+                            formik.setValues((prev) => ({
+                                ...prev,
+                                groupBy: { entityTemplateId: '', groupNameField: '' },
+                                items: prev.items.map((item) => ({ ...item, groupByRelationshipId: '' })),
+                            }));
+                        }}
                         edit={edit}
+                        isGroupBy={Boolean(formik.values.groupBy)}
                         isLoading={isUpdateGanttLoading || isDeleteGanttLoading}
                     />
 
                     <Grid container wrap="nowrap" position="relative" alignItems="stretch" height="94vh">
-                        <Grid item>
-                            <Gantt gantt={gantt} resources={resources} />
+                        <Grid item container>
+                            <Gantt gantt={gantt} />
                         </Grid>
 
                         <Grid item>

@@ -8,7 +8,7 @@ import { Swap } from '../../../common/Swap';
 import { RootState } from '../../../store';
 import { CompactDrawer } from '../../../common/CompactDrawer';
 import { IBasicGantt, IGanttItem } from '../../../interfaces/gantts';
-import { IGanttItemsDisplay } from './GanttItemsDisplay';
+import { GanttItemsDisplay } from './GanttItemsDisplay';
 
 interface IGanttSideBarProps {
     gantt: IBasicGantt;
@@ -33,7 +33,12 @@ export const GanttSideBar: React.FC<IGanttSideBarProps> = ({ toggle, open, gantt
     }, [scrollBottom]);
 
     return (
-        <CompactDrawer open={open || edit} toggleMinimized={toggle} locked={edit} styleOpen={{ minWidth: '12rem' }}>
+        <CompactDrawer
+            open={open || edit}
+            toggleMinimized={toggle}
+            locked={edit}
+            styleOpen={{ minWidth: edit ? '35rem' : '12rem', maxWidth: '24rem' }}
+        >
             <Box bgcolor={darkMode ? '#252525' : '#f7f7f7'} height="2.75rem" boxShadow="inset 0 0 4px 0 rgba(0, 0, 0, 0.2)">
                 <FieldArray name="items" validateOnChange={false}>
                     {({ push }) => (
@@ -48,6 +53,7 @@ export const GanttSideBar: React.FC<IGanttSideBarProps> = ({ toggle, open, gantt
                                         onClick={() => {
                                             push({
                                                 entityTemplate: { id: '', startDateField: '', endDateField: '', fieldsToShow: [] },
+                                                connectedEntityTemplates: [],
                                             } as IGanttItem);
                                             setScrollBottom(true);
                                         }}
@@ -65,12 +71,12 @@ export const GanttSideBar: React.FC<IGanttSideBarProps> = ({ toggle, open, gantt
                 condition={edit}
                 isFalse={
                     <Box height="100%">
-                        <IGanttItemsDisplay gantt={gantt} open={open} formik={formik} />
+                        <GanttItemsDisplay gantt={gantt} open={open} formik={formik} />
                     </Box>
                 }
                 isTrue={
                     <Box height="100%">
-                        <IGanttItemsDisplay containerRef={ganttItemsDisplayRef} gantt={formik.values} open={open} formik={formik} edit />
+                        <GanttItemsDisplay containerRef={ganttItemsDisplayRef} gantt={formik.values} open={open} formik={formik} edit />
                     </Box>
                 }
             />

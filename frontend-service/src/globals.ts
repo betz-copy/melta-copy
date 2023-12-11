@@ -63,12 +63,26 @@ export const environment = {
         widthPaddingMultiplier: 0.6,
     },
     ganttSettings: {
+        infiniteScrollPageCount: 10,
         isSidebarOpenLocalStorageKey: 'isGanttSidebarOpen',
         ganttEntitiesChunkSize: 1000,
+        groupByEntitiesChunkSize: 1000,
         separators: {
+            startEnd: ' 🡠 ',
             field: ' × ',
-            template: ' & ',
             entity: ' ⬤ ',
+            template: ' & ',
+            related: ' ⇄ ',
+        },
+        heatmapColors: {
+            now: '#ff4b3b',
+            idle: '#8bb8ec',
+        },
+        refetchInterval: 5000,
+        searchParams: {
+            selectedViewKey: 'selectedView',
+            selectedDateKey: 'selectedDate',
+            heatmapModeKey: 'heatmapMode',
         },
     },
     entitiesCardsView: {
@@ -101,13 +115,11 @@ export const environment = {
     processInstances: {
         infiniteScrollPageCount: 10,
     },
-    gantts: {
-        infiniteScrollPageCount: 10,
-    },
     createdRelationshipIdInBrokenRules: 'created-relationship-id',
     accessTokenName: 'rabaz-access-token',
     minimumSupportedChromeVersion: 80,
     fileIdLength: 32,
+    maxDateTimestamp: 8640000000000000,
     errorCodes: {
         ruleBlock: 'RULE_BLOCK',
         failedToCreateConstraints: 'FAILED_TO_CREATE_CONSTRAINTS',

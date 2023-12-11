@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Grid, Typography } from '@mui/material';
 import { AppRegistration as DefaultEntityTemplateIcon } from '@mui/icons-material';
 import { useSelector } from 'react-redux';
@@ -7,12 +7,15 @@ import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplat
 import { CustomIcon } from '../../../common/CustomIcon';
 import { FieldsDisplay } from './FieldsDisplay';
 import { RootState } from '../../../store';
+import { getEntityTemplateColor } from '../../../utils/colors';
 
 interface IEntityTemplateDisplayProps {
     entityTemplate: IMongoEntityTemplatePopulated;
     fieldsToShow: string[];
-    color: CSSProperties['color'];
-    relationshipName?: string;
+    color?: CSSProperties['color'];
+    subTitle?: string;
+    topNote?: string;
+    sideNote?: string;
     expanded?: boolean;
     main?: boolean;
 }
@@ -22,30 +25,43 @@ export const EntityTemplateDisplay: React.FC<IEntityTemplateDisplayProps> = ({
     fieldsToShow,
     color,
     expanded,
-    relationshipName,
+    subTitle,
+    topNote,
+    sideNote,
     main,
 }) => {
     const darkMode = useSelector((state: RootState) => state.darkMode);
     const iconSize = main ? '35px' : '29px';
 
+    const noteColor = darkMode ? 'lightgrey' : 'grey';
+    const noteFontSize = main ? 12 : 10;
+
+    const displayColor = useMemo(() => color || getEntityTemplateColor(entityTemplate), [entityTemplate, color]);
+
     return (
         <Grid item container direction="column" alignItems="center" spacing={0.2}>
-            <Grid item container alignItems="center" flexWrap="nowrap">
+            {expanded && topNote && (
+                <Typography fontSize={noteFontSize} fontWeight="bold" color={noteColor} noWrap>
+                    {topNote}
+                </Typography>
+            )}
+
+            <Grid item container alignItems="center" justifyContent="center" flexWrap="nowrap">
                 {entityTemplate.iconFileId ? (
-                    <CustomIcon iconUrl={entityTemplate.iconFileId} height={iconSize} width={iconSize} color={color} />
+                    <CustomIcon iconUrl={entityTemplate.iconFileId} height={iconSize} width={iconSize} color={displayColor} />
                 ) : (
-                    <DefaultEntityTemplateIcon sx={{ color, height: iconSize, width: iconSize }} />
+                    <DefaultEntityTemplateIcon sx={{ color: displayColor, height: iconSize, width: iconSize }} />
                 )}
 
                 {expanded && (
                     <>
-                        <Typography fontWeight="bold" fontSize={main ? 20 : 16} color={color} display="inline" marginX="0.3rem" noWrap>
+                        <Typography fontWeight="bold" fontSize={main ? 20 : 16} color={displayColor} display="inline" marginX="0.3rem" noWrap>
                             {entityTemplate.displayName}
                         </Typography>
 
-                        {relationshipName && (
-                            <Typography fontSize={10} color={darkMode ? 'lightgrey' : 'grey'} noWrap>
-                                {`(${relationshipName})`}
+                        {sideNote && (
+                            <Typography fontSize={noteFontSize} color={noteColor} noWrap>
+                                {sideNote}
                             </Typography>
                         )}
                     </>
@@ -53,9 +69,19 @@ export const EntityTemplateDisplay: React.FC<IEntityTemplateDisplayProps> = ({
             </Grid>
 
             {expanded && (
-                <Grid item>
-                    <FieldsDisplay entityTemplate={entityTemplate} fieldsToShow={fieldsToShow} color={color} fontSize={main ? 14 : 12} />
-                </Grid>
+                <>
+                    {subTitle && (
+                        <Grid item>
+                            <Typography fontSize={14} fontWeight={650} color={displayColor} noWrap>
+                                {subTitle}
+                            </Typography>
+                        </Grid>
+                    )}
+
+                    <Grid item>
+                        <FieldsDisplay entityTemplate={entityTemplate} fieldsToShow={fieldsToShow} color={displayColor} fontSize={main ? 14 : 12} />
+                    </Grid>
+                </>
             )}
         </Grid>
     );

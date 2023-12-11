@@ -1,3 +1,12 @@
+import { IMongoEntityTemplatePopulated } from './entityTemplates';
+import { IMongoRelationshipTemplate } from './relationshipTemplates';
+import { IScheduleComponentData } from './syncfusion';
+
+export interface IGanttGroupBy {
+    entityTemplateId: string;
+    groupNameField: string; // must be unique
+}
+
 export interface IGanttItem {
     entityTemplate: {
         id: string;
@@ -5,15 +14,17 @@ export interface IGanttItem {
         endDateField: string;
         fieldsToShow: string[];
     };
-    connectedEntityTemplate?: {
+    connectedEntityTemplates: {
         relationshipTemplateId: string;
         fieldsToShow: string[];
-    };
+    }[];
+    groupByRelationshipId?: string; // must exist if gantt has groupBy
 }
 
 export interface IBasicGantt {
     name: string;
     items: IGanttItem[];
+    groupBy?: IGanttGroupBy;
 }
 
 export interface IGantt extends IBasicGantt {
@@ -26,4 +37,17 @@ export interface ISearchGanttsBody {
     search?: string;
     limit: number;
     step: number;
+}
+
+export interface IConnectedEntityTemplateDetails {
+    connectedEntityTemplate: IMongoEntityTemplatePopulated;
+    relationship: IMongoRelationshipTemplate;
+    fieldsToShow: string[];
+    connectedEntityTemplateColor: string;
+}
+
+export interface IGanttHeatmapBox {
+    id: string;
+    title: string;
+    ganttEvents: IScheduleComponentData[];
 }

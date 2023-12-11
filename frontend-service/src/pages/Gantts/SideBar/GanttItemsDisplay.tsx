@@ -3,6 +3,7 @@ import { Divider, Grid } from '@mui/material';
 import { FormikProps } from 'formik';
 import { IBasicGantt } from '../../../interfaces/gantts';
 import { GanttItemDisplay } from '../GanttItemDisplay';
+import { GroupByDisplay } from './GroupByDisplay';
 
 interface IGanttItemsDisplayProps {
     gantt: IBasicGantt;
@@ -12,12 +13,13 @@ interface IGanttItemsDisplayProps {
     containerRef?: React.RefObject<HTMLDivElement>;
 }
 
-export const IGanttItemsDisplay: React.FC<IGanttItemsDisplayProps> = ({ open, gantt, formik, edit, containerRef }) => {
+export const GanttItemsDisplay: React.FC<IGanttItemsDisplayProps> = ({ open, gantt, formik, edit, containerRef }) => {
     return (
         <Grid
             ref={containerRef}
             container
             direction="column"
+            alignItems="center"
             wrap="nowrap"
             height="94.7%"
             sx={{
@@ -25,8 +27,17 @@ export const IGanttItemsDisplay: React.FC<IGanttItemsDisplayProps> = ({ open, ga
                 '::-webkit-scrollbar': { width: 4 },
             }}
         >
+            {Boolean(gantt.groupBy) && (
+                <>
+                    <GroupByDisplay groupBy={gantt.groupBy!} formik={formik} expanded={open} edit={edit} />
+                    <Divider sx={{ width: '100%', borderWidth: '2px' }} />
+                </>
+            )}
+
             {gantt.items.map((item, index) => (
-                <Grid item key={item.entityTemplate.id} container direction="column" alignItems="center" wrap="nowrap">
+                // can't use item.entityTemplate.id because it doesn't necessary exist in edit mode
+                // eslint-disable-next-line react/no-array-index-key
+                <Grid item key={index} container direction="column" alignItems="center" wrap="nowrap">
                     {Boolean(index) && <Divider sx={{ width: '85%' }} />}
 
                     <GanttItemDisplay item={item} index={index} formik={formik} expanded={open} edit={edit} />

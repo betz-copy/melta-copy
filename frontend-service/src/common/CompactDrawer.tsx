@@ -24,7 +24,7 @@ export const CompactDrawer: React.FC<CompactDrawerProps> = ({ toggleMinimized, o
             height="100%"
             wrap="nowrap"
             bgcolor={darkMode ? '#161616' : 'white'}
-            sx={{ ...style, ...(open ? styleOpen : styleClosed) }}
+            sx={{ transition: 'all 0.8s ease-in-out', ...style, ...(open ? styleOpen : styleClosed) }}
         >
             <Grid item height="94%" width="100%">
                 {children}

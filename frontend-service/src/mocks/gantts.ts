@@ -36,38 +36,44 @@ const generateGanttItemEntityTemplate = (optionalEntityTemplates: IMongoEntityTe
     return undefined;
 };
 
-const generateGanttItemConnectedEntityTemplate = (entityTemplateId: string): IGanttItem['connectedEntityTemplate'] | undefined => {
-    if (chance.bool()) return undefined; // 50% chance of not having a connected entity
+const generateGanttItemConnectedEntityTemplates = (entityTemplateId: string): IGanttItem['connectedEntityTemplates'] => {
+    if (chance.bool()) return []; // 50% chance of not having connected entities
 
-    let connectedEntityTemplateId: string | undefined;
+    const connectedEntityTemplates: IGanttItem['connectedEntityTemplates'] = [];
 
-    const relationshipTemplate = pickOneIf(relationshipTemplates, (currRelationshipTemplate) => {
-        const sourceEntity = allEntities.find((entity) => entity.templateId === currRelationshipTemplate.sourceEntityId);
-        const destinationEntity = allEntities.find((entity) => entity.templateId === currRelationshipTemplate.destinationEntityId);
+    for (let i = 0; i < chance.integer({ min: 1, max: 5 }); i++) {
+        let connectedEntityTemplateId: string | undefined;
 
-        if (!sourceEntity || !destinationEntity) return false;
+        const relationshipTemplate = pickOneIf(relationshipTemplates, (currRelationshipTemplate) => {
+            const sourceEntity = allEntities.find((entity) => entity.templateId === currRelationshipTemplate.sourceEntityId);
+            const destinationEntity = allEntities.find((entity) => entity.templateId === currRelationshipTemplate.destinationEntityId);
 
-        if (sourceEntity.templateId === entityTemplateId) {
-            connectedEntityTemplateId = destinationEntity.templateId;
-            return true;
-        }
+            if (!sourceEntity || !destinationEntity) return false;
 
-        if (destinationEntity.templateId === entityTemplateId) {
-            connectedEntityTemplateId = sourceEntity.templateId;
-            return true;
-        }
+            if (sourceEntity.templateId === entityTemplateId) {
+                connectedEntityTemplateId = destinationEntity.templateId;
+                return true;
+            }
 
-        return false;
-    });
+            if (destinationEntity.templateId === entityTemplateId) {
+                connectedEntityTemplateId = sourceEntity.templateId;
+                return true;
+            }
 
-    const connectedEntityTemplate = entityTemplates.find((entityTemplate) => entityTemplate._id === connectedEntityTemplateId);
+            return false;
+        });
 
-    if (!relationshipTemplate || !connectedEntityTemplate) return undefined;
+        const connectedEntityTemplate = entityTemplates.find((entityTemplate) => entityTemplate._id === connectedEntityTemplateId);
 
-    return {
-        relationshipTemplateId: relationshipTemplate._id,
-        fieldsToShow: pickRandomSet(Object.keys(connectedEntityTemplate.properties.properties)),
-    };
+        if (!relationshipTemplate || !connectedEntityTemplate) break;
+
+        connectedEntityTemplates.push({
+            relationshipTemplateId: relationshipTemplate._id,
+            fieldsToShow: pickRandomSet(Object.keys(connectedEntityTemplate.properties.properties)),
+        });
+    }
+
+    return connectedEntityTemplates;
 };
 
 const generateGanttItem = (optionalEntityTemplates: IMongoEntityTemplatePopulated[]): IGanttItem | undefined => {
@@ -76,7 +82,7 @@ const generateGanttItem = (optionalEntityTemplates: IMongoEntityTemplatePopulate
 
     return {
         entityTemplate,
-        connectedEntityTemplate: generateGanttItemConnectedEntityTemplate(entityTemplate.id),
+        connectedEntityTemplates: generateGanttItemConnectedEntityTemplates(entityTemplate.id),
     };
 };
 

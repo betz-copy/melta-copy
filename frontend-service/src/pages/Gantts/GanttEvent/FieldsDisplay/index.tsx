@@ -1,19 +1,17 @@
 /* eslint-disable react/destructuring-assignment */
-import { Button, Grid } from '@mui/material';
+import { Grid } from '@mui/material';
 import React from 'react';
-import { NavLink } from 'react-router-dom';
 import { IPureFieldsDisplayProps, PureFieldsDisplay } from './PureFieldsDisplay';
+import { NavButton } from '../../../../common/NavButton';
 
 export const FieldsDisplay: React.FC<IPureFieldsDisplayProps> = (props) => {
     if (props.expanded)
         return (
-            <NavLink to={`/entity/${props.entity.properties._id}`}>
-                <Button sx={{ ':hover': { backdropFilter: 'brightness(1.1)' } }}>
-                    <Grid container alignItems="center" direction="column">
-                        <PureFieldsDisplay {...props} />
-                    </Grid>
-                </Button>
-            </NavLink>
+            <NavButton to={`/entity/${props.entity.properties._id}`}>
+                <Grid container alignItems="center" direction="column">
+                    <PureFieldsDisplay {...props} />
+                </Grid>
+            </NavButton>
         );
 
     return <PureFieldsDisplay {...props} />;

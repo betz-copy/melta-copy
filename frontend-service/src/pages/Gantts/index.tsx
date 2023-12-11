@@ -14,7 +14,7 @@ import { GlobalSearchBar } from '../../common/EntitiesPage/Headline';
 import { CreateGanttDialog } from './CreateGanttDialog';
 import { IPermissionsOfUser } from '../../services/permissionsService';
 
-const { infiniteScrollPageCount } = environment.gantts;
+const { infiniteScrollPageCount } = environment.ganttSettings;
 
 interface IGanttsPageProps {
     setTitle: React.Dispatch<React.SetStateAction<string>>;

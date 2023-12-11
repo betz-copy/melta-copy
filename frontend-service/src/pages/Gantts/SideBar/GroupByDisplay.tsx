@@ -1,0 +1,104 @@
+import React, { useMemo } from 'react';
+import { Grid, Tooltip, Typography } from '@mui/material';
+import { FormikProps } from 'formik';
+import { useQueryClient } from 'react-query';
+import i18next from 'i18next';
+import lodashIsEqual from 'lodash.isequal';
+import { IBasicGantt, IGanttGroupBy } from '../../../interfaces/gantts';
+import { FormikAutoComplete } from '../../../common/inputs/FormikAutoComplete';
+import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
+import { RemoveFromArrayButton } from '../GanttItemDisplay/GanttItemEdit/RemoveFromArrayButton';
+import { filteredMap } from '../../../utils/filteredMap';
+import { EntityTemplateDisplay } from '../GanttItemDisplay/EntityTemplateDisplay';
+
+interface GroupByDisplayProps {
+    groupBy: IGanttGroupBy;
+    formik: FormikProps<IBasicGantt>;
+    expanded?: boolean;
+    edit?: boolean;
+}
+
+export const GroupByDisplay: React.FC<GroupByDisplayProps> = ({ groupBy, formik, expanded, edit }) => {
+    const queryClient = useQueryClient();
+    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+
+    const groupByEntityTemplate = entityTemplates.get(groupBy.entityTemplateId);
+
+    const uniqueGroupByEntityTemplateProperties = useMemo(
+        () =>
+            edit &&
+            groupByEntityTemplate &&
+            filteredMap(Object.keys(groupByEntityTemplate.properties.properties), (property) => ({
+                include: Boolean(groupByEntityTemplate.uniqueConstraints.find((uniqueConstraint) => lodashIsEqual(uniqueConstraint, [property]))),
+                value: property,
+            })),
+        [groupByEntityTemplate, edit],
+    );
+
+    if (edit)
+        return (
+            <Grid item container direction="column" padding="2rem" paddingTop="2rem" marginTop="0" position="relative" spacing={1.5} width="100%">
+                <Typography display="inline">{i18next.t('gantts.groupByEntities')}</Typography>
+
+                <RemoveFromArrayButton
+                    tooltip={i18next.t('gantts.actions.deleteGroupBy')}
+                    onRemove={() => {
+                        formik.setValues((prev) => ({
+                            ...prev,
+                            groupBy: undefined,
+                            items: prev.items.map((item) => ({ ...item, groupByRelationshipId: undefined })),
+                        }));
+                    }}
+                />
+
+                <Grid item>
+                    <FormikAutoComplete
+                        formik={formik}
+                        formikField="groupBy.entityTemplateId"
+                        options={Array.from(entityTemplates.keys())}
+                        label={i18next.t('entityTemplate')}
+                        getOptionLabel={(option) => entityTemplates.get(option)?.displayName || ''}
+                        onChange={(value) => {
+                            formik.setFieldValue('groupBy', {
+                                entityTemplateId: value,
+                                groupNameField: '',
+                            } as IGanttGroupBy);
+                        }}
+                    />
+                </Grid>
+
+                <Grid item>
+                    <FormikAutoComplete
+                        formik={formik}
+                        formikField="groupBy.groupNameField"
+                        options={uniqueGroupByEntityTemplateProperties || []}
+                        label={i18next.t('gantts.groupNameField')}
+                        getOptionLabel={(option) => groupByEntityTemplate?.properties.properties[option]?.title || ''}
+                        disabled={Boolean(!groupByEntityTemplate)}
+                    />
+                </Grid>
+            </Grid>
+        );
+
+    if (!groupByEntityTemplate) return null;
+
+    return (
+        <Tooltip
+            title={`${i18next.t('gantts.groupByEntities')} ${groupByEntityTemplate.displayName}`}
+            placement="right"
+            disableHoverListener={expanded}
+            arrow
+        >
+            <Grid container direction="column" alignItems="center" paddingX="1rem" paddingY="0.8rem" spacing={1}>
+                <EntityTemplateDisplay
+                    entityTemplate={groupByEntityTemplate}
+                    fieldsToShow={[]}
+                    subTitle={groupByEntityTemplate.properties.properties[groupBy.groupNameField].title}
+                    topNote={i18next.t('gantts.groupByEntities')}
+                    expanded={expanded}
+                    main
+                />
+            </Grid>
+        </Tooltip>
+    );
+};

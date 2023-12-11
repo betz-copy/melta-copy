@@ -11,11 +11,12 @@ export interface IPureFieldsDisplayProps {
     fields: string[];
     entity: IEntity;
     entityTemplate: IMongoEntityTemplatePopulated;
+    textStyle: CSSProperties;
     underlineColor?: CSSProperties['color'];
     expanded?: boolean;
 }
 
-export const PureFieldsDisplay: React.FC<IPureFieldsDisplayProps> = ({ fields, entity, entityTemplate, underlineColor, expanded }) => {
+export const PureFieldsDisplay: React.FC<IPureFieldsDisplayProps> = ({ fields, entity, entityTemplate, textStyle, underlineColor, expanded }) => {
     return (
         <>
             {fields.map((field, index) => {
@@ -25,7 +26,7 @@ export const PureFieldsDisplay: React.FC<IPureFieldsDisplayProps> = ({ fields, e
                     <Fragment key={field}>
                         {!expanded && Boolean(index) && (
                             <Grid item>
-                                <Typography fontSize={14} fontWeight="bold" color="white">
+                                <Typography fontSize={14} sx={{ ...textStyle }}>
                                     {ganttSettings.separators.field}
                                 </Typography>
                             </Grid>
@@ -35,15 +36,12 @@ export const PureFieldsDisplay: React.FC<IPureFieldsDisplayProps> = ({ fields, e
                             <Tooltip title={`${fieldName} (${entityTemplate.displayName})`} placement="top" disableHoverListener={expanded} arrow>
                                 <Typography
                                     fontSize={14}
-                                    fontWeight="bold"
-                                    color="white"
-                                    sx={
-                                        underlineColor && {
-                                            textDecoration: 'underline',
-                                            textDecorationColor: underlineColor,
-                                            textDecorationThickness: '2px',
-                                        }
-                                    }
+                                    sx={{
+                                        textDecoration: underlineColor && 'underline',
+                                        textDecorationColor: underlineColor,
+                                        textDecorationThickness: '2px',
+                                        ...textStyle,
+                                    }}
                                 >
                                     {`${expanded ? `${fieldName}:` : ''} ${formatToString(entity.properties[field], type, format)}`}
                                 </Typography>
