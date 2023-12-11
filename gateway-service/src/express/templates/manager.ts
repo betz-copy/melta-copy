@@ -376,6 +376,12 @@ export class TemplatesManager {
         if (count > 0) {
             if (updatedTemplateData.name !== currTemplate.name) throw new ServiceError(400, 'can not change template name');
 
+            Object.keys(updatedTemplateData.properties.properties).forEach((key) => {
+                if (!currTemplate.properties.properties[key]) {
+                    throw new ServiceError(400, 'can not add serialField');
+                }
+            });
+
             Object.entries(currTemplate.properties.properties).forEach(([key, value]) => {
                 const newValue = updatedTemplateData.properties.properties[key];
                 if (!newValue) throw new ServiceError(400, 'can not remove property');
