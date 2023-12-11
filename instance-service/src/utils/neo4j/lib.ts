@@ -1,5 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import neo4j, { QueryResult, Node, Relationship, Transaction } from 'neo4j-driver';
+import { utcToZonedTime, zonedTimeToUtc } from 'date-fns-tz';
 import { IEntity, IEntityExpanded, IEntityWithDirectRelationships } from '../../express/entities/interface';
 import { IRelationship } from '../../express/relationships/interface';
 import config from '../../config';
@@ -22,8 +23,8 @@ const normalizeFields = (properties: Record<string, any>): Record<string, any> =
             return;
         }
 
-        if (value instanceof neo4j.types.DateTime) {
-            props[key] = new Date(value.toString()).toISOString();
+        if (value instanceof neo4j.types.LocalDateTime) {
+            props[key] = zonedTimeToUtc(new Date(value.toString()), 'Asia/Jerusalem');
 
             return;
         }
@@ -240,7 +241,14 @@ export const runInTransactionAndNormalize = async <T>(
     return normalizeFunction(result);
 };
 
-export const getNeo4jDateTime = (date = new Date()) => neo4j.types.DateTime.fromStandardDate(date);
+export const getNeo4jDateTime = (date = new Date()) => {
+    /*
+    keep date in DB in israel timezone. it's needed in rules formula "toDate" function to get date of datetime field, but in israel.
+    for example, if event happened at 01:00, UTC will save it the day before, so "toDate" will bring the wrong date.
+    */
+    const adjustedDate = utcToZonedTime(date, 'Asia/Jerusalem');
+    return neo4j.types.LocalDateTime.fromStandardDate(adjustedDate);
+};
 export const getNeo4jDate = (date = new Date()) => neo4j.types.Date.fromStandardDate(date);
 
 export const generateDefaultProperties = () => {
