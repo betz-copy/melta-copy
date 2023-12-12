@@ -64,7 +64,7 @@ const ProcessDetails: React.FC<ProcessDetailsProps> = ({ detailsFormikData, isEd
     const [activeProcessDetailsStep, setActiveProcessDetailsStep] = React.useState(0);
 
     const handleNext = () => {
-        const currentTouched: any = getAllFieldsTouched(detailsFormikData.values);
+        const currentTouched: Record<string, any> = getAllFieldsTouched(detailsFormikData.values);
 
         const templateFileProperties = detailsFormikData.values.template
             ? pickBy(detailsFormikData.values.template.details.properties.properties, (value) => value.format === 'fileId')

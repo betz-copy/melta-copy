@@ -234,11 +234,7 @@ export const EntityReference: React.FC<ChooseEntityReferenceProps> = ({
                     </Grid>
                 </Grid>
             )}
-            {errorText && (
-                <p id="error" style={{ color: 'rgb(211, 47, 47)', margin: 0 }}>
-                    {errorText}
-                </p>
-            )}
+            {errorText && <Typography color="error">{errorText}</Typography>}
         </Grid>
     );
 };
