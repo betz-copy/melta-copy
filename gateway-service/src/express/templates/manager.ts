@@ -376,8 +376,8 @@ export class TemplatesManager {
         if (count > 0) {
             if (updatedTemplateData.name !== currTemplate.name) throw new ServiceError(400, 'can not change template name');
 
-            Object.keys(updatedTemplateData.properties.properties).forEach((key) => {
-                if (!currTemplate.properties.properties[key]) {
+            Object.entries(updatedTemplateData.properties.properties).forEach(([key, value]) => {
+                if (value.serialCurrent !== undefined && !currTemplate.properties.properties[key]) {
                     throw new ServiceError(400, 'can not add serialField');
                 }
             });
