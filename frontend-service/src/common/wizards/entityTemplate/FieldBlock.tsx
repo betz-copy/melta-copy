@@ -30,7 +30,8 @@ interface FieldBlockProps<PropertiesType extends string, Values extends Record<P
     touched: FormikTouched<Values> | undefined;
     errors: FormikErrors<Values> | undefined;
     initialFieldCardDataOnAdd?: Omit<CommonFormInputProperties, 'id'>;
-    templateType: 'Process' | 'Entity';
+    supportSerialNumberType: boolean;
+    supportEntityReferenceType: boolean;
 }
 
 const FieldBlock = <PropertiesType extends string, Values extends Record<PropertiesType, CommonFormInputProperties[]>>({
@@ -45,6 +46,8 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
     addPropertyButtonLabel,
     touched,
     errors,
+    supportSerialNumberType,
+    supportEntityReferenceType,
     initialFieldCardDataOnAdd = {
         name: '',
         title: '',
@@ -173,7 +176,8 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
                                                 errors: errors?.[propertiesType]?.[index] as FormikErrors<CommonFormInputProperties> | undefined,
                                                 remove,
                                                 onChange: onChangeWrapper(index),
-                                                templateType,
+                                                supportSerialNumberType,
+                                                supportEntityReferenceType,
                                             };
 
                                             if (propertiesType === 'properties' || propertiesType === 'detailsProperties') {

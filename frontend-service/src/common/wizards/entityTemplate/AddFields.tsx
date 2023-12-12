@@ -24,7 +24,7 @@ export const propertiesBaseSchema = Yup.object({
     title: Yup.string()
         .notOneOf(['תאריך יצירה', 'תאריך עדכון', 'מושבת'], i18next.t('validation.fieldExist'))
         .required(i18next.t('validation.required')),
-    type: Yup.string().oneOf(validPropertyTypes, i18next.t('validation.invalidPropertyType')).required(i18next.t('validation.required')),
+    type: Yup.string().required(i18next.t('validation.required')),
     options: Yup.array(Yup.string()).when('type', {
         is: 'enum',
         then: (schema) => schema.min(1, i18next.t('validation.required')),
@@ -34,13 +34,6 @@ export const propertiesBaseSchema = Yup.object({
         is: 'pattern',
         then: (schema) => schema.required(i18next.t('validation.required')),
     }),
-    dateNotification: Yup.string().nullable().oneOf(dateNotificationTypes, i18next.t('validation.mustBeOneOfList')),
-    serialStarter: Yup.number()
-        .typeError(i18next.t('validation.invalidNumberField'))
-        .when('type', {
-            is: 'serialNumber',
-            then: (schema) => schema.min(0, i18next.t('validation.invalidSerialStarter')).required(i18next.t('validation.required')),
-        }),
 });
 
 export const attachmentPropertiesBaseSchema = Yup.object({
@@ -54,6 +47,13 @@ const addFieldsSchema = Yup.object({
             propertiesBaseSchema.shape({
                 required: Yup.boolean().required(i18next.t('validation.required')),
                 preview: Yup.boolean().required(i18next.t('validation.required')),
+                dateNotification: Yup.string().nullable().oneOf(dateNotificationTypes, i18next.t('validation.mustBeOneOfList')),
+                serialStarter: Yup.number()
+                    .typeError(i18next.t('validation.invalidNumberField'))
+                    .when('type', {
+                        is: 'serialNumber',
+                        then: (schema) => schema.min(0, i18next.t('validation.invalidSerialStarter')).required(i18next.t('validation.required')),
+                    }),
             }),
         )
         .min(1, i18next.t('validation.oneField')),
@@ -92,7 +92,7 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
         },
     );
 
-    const areThereAnyInstances = areThereInstancesByTemplateIdResponse!.count > 0;
+    const areThereAnyInstances = isEditMode && areThereInstancesByTemplateIdResponse!.count > 0;
 
     return (
         <Grid container direction="column" alignItems="stretch" spacing={1}>
@@ -109,7 +109,8 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
                     addPropertyButtonLabel={i18next.t('wizard.entityTemplate.addProperty')}
                     touched={touched}
                     errors={errors}
-                    templateType="Entity"
+                    supportSerialNumberType
+                    supportEntityReferenceType={false}
                 />
             </Grid>
 
@@ -126,7 +127,8 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
                     addPropertyButtonLabel={i18next.t('wizard.entityTemplate.addAttachment')}
                     touched={touched}
                     errors={errors}
-                    templateType="Entity"
+                    supportSerialNumberType
+                    supportEntityReferenceType={false}
                 />
             </Grid>
         </Grid>

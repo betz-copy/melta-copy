@@ -172,7 +172,8 @@ const AddStepsFields: React.FC<StepComponentProps<ProcessTemplateWizardValues, '
                                                                   | undefined)
                                                     }
                                                     initialFieldCardDataOnAdd={initialFieldCardDataOnAdd}
-                                                    templateType="Process"
+                                                    supportSerialNumberType={false}
+                                                    supportEntityReferenceType
                                                 />
                                             </Grid>
 
@@ -196,7 +197,8 @@ const AddStepsFields: React.FC<StepComponentProps<ProcessTemplateWizardValues, '
                                                                   | undefined)
                                                     }
                                                     initialFieldCardDataOnAdd={initialFieldCardDataOnAdd}
-                                                    templateType="Process"
+                                                    supportSerialNumberType={false}
+                                                    supportEntityReferenceType
                                                 />
                                             </Grid>
                                             <Grid item>

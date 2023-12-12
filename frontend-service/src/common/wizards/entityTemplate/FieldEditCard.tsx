@@ -48,7 +48,8 @@ export interface FieldEditCardProps {
     setFieldValue: (field: keyof CommonFormInputProperties, value: any) => void;
     onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
     remove: (index: number) => any;
-    templateType: 'Process' | 'Entity';
+    supportSerialNumberType: boolean;
+    supportEntityReferenceType: boolean;
 }
 
 export const FieldEditCard: React.FC<FieldEditCardProps> = ({
@@ -63,7 +64,8 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     setValues,
     onChange,
     remove,
-    templateType,
+    supportSerialNumberType,
+    supportEntityReferenceType,
 }) => {
     const name = `properties[${index}].name`;
     const touchedName = touched?.name;
@@ -164,11 +166,21 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                             sx={{ marginRight: '5px' }}
                                             fullWidth
                                         >
-                                            {validPropertyTypes.map((validType) => (
-                                                <MenuItem key={validType} value={validType}>
-                                                    {i18next.t(`propertyTypes.${validType}`)}
-                                                </MenuItem>
-                                            ))}
+                                            {validPropertyTypes
+                                                .filter((validPropertyType) => {
+                                                    if (validPropertyType === 'entityReference') return supportEntityReferenceType;
+                                                    if (validPropertyType === 'serialNumber') {
+                                                        if (!supportSerialNumberType) return false;
+
+                                                        return !areThereAnyInstances;
+                                                    }
+                                                    return true;
+                                                })
+                                                .map((validType) => (
+                                                    <MenuItem key={validType} value={validType}>
+                                                        {i18next.t(`propertyTypes.${validType}`)}
+                                                    </MenuItem>
+                                                ))}
                                         </TextField>
                                     </Grid>
                                     <Grid item container justifyContent="space-between" flexWrap="nowrap">
