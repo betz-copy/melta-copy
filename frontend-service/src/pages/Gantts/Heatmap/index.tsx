@@ -55,7 +55,7 @@ export const Heatmap: React.FC<IHeatmapProps> = ({ ganttEvents, groupByEntityRes
 
             <Grid item>
                 <ViewingBox minHeight="82vh">
-                    <Grid item>
+                    <Grid item container>
                         <Masonry columns={5} spacing={2}>
                             {heatmapData.map((heatmapBox) => (
                                 <Grid item key={heatmapBox.id}>

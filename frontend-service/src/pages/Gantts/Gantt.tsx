@@ -71,6 +71,7 @@ export const Gantt: React.FC<IGanttProps> = ({ gantt }) => {
     const [searchParams, setSearchParams] = useSearchParams();
     const selectedView = (searchParams.get(selectedViewKey) as View) || 'Month';
     const selectedDate = searchParams.get(selectedDateKey) || new Date().toISOString();
+
     const heatmapMode = Boolean(searchParams.get(heatmapModeKey));
 
     const queryClient = useQueryClient();
