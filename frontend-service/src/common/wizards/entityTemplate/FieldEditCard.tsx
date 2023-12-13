@@ -50,6 +50,7 @@ export interface FieldEditCardProps {
     remove: (index: number) => any;
     supportSerialNumberType: boolean;
     supportEntityReferenceType: boolean;
+    supportChangeToRequiredWithInstances: boolean;
 }
 
 export const FieldEditCard: React.FC<FieldEditCardProps> = ({
@@ -66,6 +67,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     remove,
     supportSerialNumberType,
     supportEntityReferenceType,
+    supportChangeToRequiredWithInstances,
 }) => {
     const name = `properties[${index}].name`;
     const touchedName = touched?.name;
@@ -351,12 +353,13 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                 }));
                                                             }}
                                                             disabled={
-                                                                templateType === 'Entity'
-                                                                    ? value.type === 'serialNumber' || value.type === 'boolean'
-                                                                    : (isDisabled && !initialValue?.required) ||
-                                                                      (isEditMode && isNewProperty) ||
-                                                                      value.type === 'serialNumber' ||
-                                                                      value.type === 'boolean'
+                                                                value.type === 'serialNumber' ||
+                                                                value.type === 'boolean' ||
+                                                                (supportChangeToRequiredWithInstances
+                                                                    ? false
+                                                                    : isEditMode &&
+                                                                      areThereAnyInstances &&
+                                                                      (isNewProperty || (!isNewProperty && !initialValue?.required)))
                                                             }
                                                             checked={value.required}
                                                         />

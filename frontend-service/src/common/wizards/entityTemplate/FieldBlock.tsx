@@ -32,6 +32,7 @@ interface FieldBlockProps<PropertiesType extends string, Values extends Record<P
     initialFieldCardDataOnAdd?: Omit<CommonFormInputProperties, 'id'>;
     supportSerialNumberType: boolean;
     supportEntityReferenceType: boolean;
+    supportChangeToRequiredWithInstances: boolean;
 }
 
 const FieldBlock = <PropertiesType extends string, Values extends Record<PropertiesType, CommonFormInputProperties[]>>({
@@ -48,6 +49,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
     errors,
     supportSerialNumberType,
     supportEntityReferenceType,
+    supportChangeToRequiredWithInstances,
     initialFieldCardDataOnAdd = {
         name: '',
         title: '',
@@ -63,7 +65,6 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
         dateNotification: undefined,
         serialStarter: 0,
     },
-    templateType,
 }: React.PropsWithChildren<FieldBlockProps<PropertiesType, Values>>) => {
     // copy of values of formik in order to show changes on inputs fast (formik rerenders are slow)
     const [displayValues, setDisplayValues] = React.useState(values[propertiesType]);
@@ -178,6 +179,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
                                                 onChange: onChangeWrapper(index),
                                                 supportSerialNumberType,
                                                 supportEntityReferenceType,
+                                                supportChangeToRequiredWithInstances,
                                             };
 
                                             if (propertiesType === 'properties' || propertiesType === 'detailsProperties') {
