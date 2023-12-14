@@ -76,7 +76,7 @@ export class InstancesManager {
             filter,
             sort,
         });
-        for (let skip = 0; count - skip > 0; skip += searchEntitiesChunkSize + 1) {
+        for (let skip = 0; count - skip > 0; skip += searchEntitiesChunkSize) {
             const { entities: chunk } = await InstanceManagerService.searchEntitiesOfTemplateRequest(template._id, {
                 skip,
                 limit: searchEntitiesChunkSize,
