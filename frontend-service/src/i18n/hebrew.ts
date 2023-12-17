@@ -106,7 +106,7 @@ export default {
         noPermissions: 'אין לך הרשאות לגשת לעמוד זה',
         disabledEntity: 'לא פעיל',
         activeEntity: ' פעיל',
-        unsupported: 'תצוגה מקדימה אינה זמינה: סוג הקובץ לא נתמך',
+        preview: 'תצוגה מקדימה אינה זמינה',
     },
     addRelationshipDialog: {
         title: 'הוסף קשר',

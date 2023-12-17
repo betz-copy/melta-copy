@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Close as CloseIcon } from '@mui/icons-material';
-import { CircularProgress, Dialog, DialogContent, Grid, IconButton, TextField, Typography } from '@mui/material';
+import { Button, Card, CircularProgress, Dialog, DialogContent, Grid, IconButton, TextField, Typography } from '@mui/material';
 import { useSelector } from 'react-redux';
 import { Document, Page, pdfjs } from 'react-pdf';
 import ReactPlayer from 'react-player';
@@ -20,6 +20,7 @@ type PreviewProps = {
     data: string | undefined;
     setOpen: (value: boolean) => void;
     loading: boolean;
+    error: boolean;
     fileName: string;
 };
 
@@ -28,7 +29,7 @@ const isVideoOrAudio = (type: string) => ['video', 'audio'].includes(type);
 const isUnsupported = (type: string) => type === 'unsupported';
 const isSpecial = (type: string) => !(isImage(type) || isVideoOrAudio(type) || isUnsupported(type));
 
-const Preview: React.FC<PreviewProps> = ({ open, fileId, data, setOpen, loading, fileName }) => {
+const Preview: React.FC<PreviewProps> = ({ open, fileId, data, setOpen, loading, fileName, error }) => {
     const darkMode = useSelector((state: RootState) => state.darkMode);
     const [numOfPages, setNumOfPages] = useState(1);
     const [currentPage, setCurrentPage] = useState(1);
@@ -95,11 +96,25 @@ const Preview: React.FC<PreviewProps> = ({ open, fileId, data, setOpen, loading,
         previewContent = <img src={data} style={{ maxHeight: '50%', marginTop: '65px' }} />;
     } else if (isVideoOrAudio(contentType)) {
         previewContent = <ReactPlayer style={{ marginTop: '65px' }} url={data} controls playing />;
-    } else if (isUnsupported(contentType)) {
+    } else if (isUnsupported(contentType) || error) {
         previewContent = (
-            <Typography variant="body1" style={{ color: 'white', marginTop: '10px' }}>
-                {i18next.t('errorPage.unsupported')}
-            </Typography>
+            <Card
+                sx={{
+                    borderRadius: 2,
+                    bgcolor: '#4c494c',
+                    display: 'grid',
+                    height: 150,
+                    padding: 3,
+                }}
+                elevation={10}
+            >
+                <Typography variant="body1" style={{ color: 'white', marginTop: '10px', fontSize: '20px' }}>
+                    {i18next.t('errorPage.preview')}
+                </Typography>
+                <Button>
+                    <DownloadButton fileId={fileId} />
+                </Button>
+            </Card>
         );
     } else if (loading || !data) {
         previewContent = <CircularProgress />;
@@ -180,11 +195,12 @@ const Preview: React.FC<PreviewProps> = ({ open, fileId, data, setOpen, loading,
                     style={{
                         height: '95%',
                         overflowY: isImage(contentType) || isVideoOrAudio(contentType) ? 'hidden' : 'scroll',
-                        display: 'flex',
-                        justifyContent: 'center',
                     }}
+                    container
+                    justifyContent="center"
+                    alignItems="center"
                 >
-                    {previewContent}
+                    <Grid item>{previewContent}</Grid>
                 </Grid>
             </DialogContent>
         </Dialog>

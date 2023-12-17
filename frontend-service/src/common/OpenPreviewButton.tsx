@@ -10,7 +10,7 @@ const OpenPreviewButton: React.FC<{ fileId: string }> = ({ fileId }) => {
     const fileName = getFileName(fileId);
     const [open, setOpen] = useState(false);
     const contentType = getPreviewContentType(fileName);
-    const { data, refetch, isLoading } = useFilePreview(fileId, contentType);
+    const { data, refetch, isLoading, isError } = useFilePreview(fileId, contentType);
 
     return (
         <>
@@ -26,7 +26,7 @@ const OpenPreviewButton: React.FC<{ fileId: string }> = ({ fileId }) => {
                 <FileDownloadIcon />
                 <Typography style={{ marginRight: '5px' }}>{fileName}</Typography>
             </IconButton>
-            <Preview data={data} fileId={fileId} setOpen={setOpen} open={open} loading={isLoading} fileName={fileName} />
+            <Preview data={data} fileId={fileId} setOpen={setOpen} open={open} loading={isLoading} fileName={fileName} error={isError} />
         </>
     );
 };
