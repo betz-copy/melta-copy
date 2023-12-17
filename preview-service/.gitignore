@@ -7,5 +7,5 @@ dist/
 # Dot Env Configuration
 .env
 
-# Ignore JavaScript files
-*.js
+# Transpiled files
+dist/

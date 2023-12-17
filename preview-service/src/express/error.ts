@@ -24,7 +24,16 @@ export const errorMiddleware = (error: Error, req: express.Request, res: express
         });
     }
 
-    console.error('error for handling new request', req.method, req.url, req.body, 'response(status, message):', res.statusCode, res.statusMessage, error);
+    console.error(
+        'error for handling new request',
+        req.method,
+        req.url,
+        req.body,
+        'response(status, message):',
+        res.statusCode,
+        res.statusMessage,
+        error,
+    );
 
     next();
 };

@@ -1,8 +1,8 @@
-FROM node:13.12-alpine
+FROM node:18-alpine
 
 WORKDIR /usr/src/app
 
-RUN apk add libreoffice 
+RUN apk add libreoffice ffmpeg
 RUN apk add msttcorefonts-installer && update-ms-fonts && fc-cache -f
 RUN apk add --update openjdk11
 

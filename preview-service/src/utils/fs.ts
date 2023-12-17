@@ -1,6 +1,4 @@
-
 import { Stream } from 'stream';
-
 
 export const streamToBuffer = (stream: Stream) => {
     return new Promise<Buffer>((resolve, reject) => {
