@@ -62,6 +62,9 @@ const RjsfTextWidget = ({
             onChange={_onChange}
             onBlur={_onBlur}
             onFocus={_onFocus}
+            onWheel={(e) => {
+                if (inputType === 'number') (e.target as HTMLElement).blur(); // disable number input scroll to change value when focused, but blurring it
+            }}
             dir={isLTR ? 'ltr' : 'rtl'}
         />
     );
