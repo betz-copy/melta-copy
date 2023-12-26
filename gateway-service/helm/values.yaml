@@ -1,0 +1,81 @@
+name: "backend"
+replicaCount: 1
+
+images:
+  PullSecrets: [jawsreg]
+  repository: jawsproject.azurecr.io/backend
+  tag: latest
+
+service:
+  ports:
+  - name: http
+    port: "8000"
+
+config:
+  configmaps: []
+  env:
+    - name: PORT
+      value: 8000
+    - name: TOKEN_SECRET
+      value: secret
+    - name: ENTITY_TEMPLATE_MANAGER_URI
+      value: http://entity-template-manager:8000
+    - name: RELATIONSHIP_TEMPLATE_MANAGER_URI
+      value: http://relationship-template-manager:8000
+    - name: INSTANCE_MANAGER_URI
+      value: http://instance-manager:8000
+    - name: PERMISSION_API_BASE_URL
+      value: http://permission-api:8000
+    - name: STORAGE_SERVICE_URI
+      value: http://storage-service:8000
+    - name: ACTIVITY_LOG_URI
+      value: http://activity-log:8000    
+    - name: NOTIFICATION_SERVICE_URI
+      value: http://notification-service:8000
+    - name: PROCESS_SERVICE_URI
+      value: http://process-service:8000
+    - name: GANTTS_SERVICE_URI
+      value: http://gantts-service:8000
+    - name: KARTOFFEL_BASE_URL
+      value: https://kartoffel.branch-yesodot.org
+    - name: CALLBACK_URL
+      value: http://jaws.branch-yesodot.org/api/auth/callback
+    - name: SHRAGA_URL
+      value: https://shraga.shraga.branch-yesodot.org
+    - name: ACCESS_TOKEN_NAME
+      value: rabaz-access-token
+    - name: SYSTEM_UNAVAILABLE_URL
+      value: /unavailable
+    - name: NODE_TLS_REJECT_UNAUTHORIZED
+      value: '0'
+    - name: NOTIFICATION_SERVICE_URI
+      value: http://notification-service:8000 
+    - name: RULE_BREACH_SERVICE_URI
+      value: http://rule-breach-service:8000  
+    - name: RABBIT_URI
+      value: amqp://jaws:jawsAreTheBest@20.105.9.117:5672/jaws
+    - name:  STORAGE_SERVICE_FILE_HYPER_LINK
+      value: http://jaws.branch-yesodot.org/api/files
+    - name: DATE_ALERT_TIME
+      value: '0 0 * * *'
+    - name: BASIC_AUTHENTICATION_USERS
+      value: []
+
+livenessProbe:
+  httpGet:
+    path: /health
+    port: 8000
+
+readinessProbe:
+  httpGet:
+    path: /health
+    port: 8000
+
+ingress:
+  enabled: true
+  hosts:
+    - host: jaws.branch-yesodot.org
+      paths:
+        - path: /api
+          service: backend
+          port: '8000'

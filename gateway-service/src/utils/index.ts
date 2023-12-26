@@ -1,0 +1,30 @@
+/* eslint-disable no-plusplus */
+import { pipeline } from 'stream';
+import { promisify } from 'util';
+
+// eslint-disable-next-line import/prefer-default-export
+export const promisePipe = promisify(pipeline);
+
+export type Awaited<T> = T extends PromiseLike<infer U> ? U : T;
+
+export const trycatch = async <Func extends (...args: any[]) => any>(func: Func, ...args: Parameters<Func>) => {
+    try {
+        return { result: (await func(...args)) as Awaited<ReturnType<Func>> };
+    } catch (err) {
+        return { err };
+    }
+};
+
+export const filteredMap = <T, V>(arr: T[], func: (value: T) => { include: true; value: V } | { include: false; value?: V }) => {
+    const newArr: V[] = [];
+
+    for (let i = 0; i < arr.length; i++) {
+        const { include, value } = func(arr[i]);
+
+        if (include) {
+            newArr.push(value);
+        }
+    }
+
+    return newArr;
+};
