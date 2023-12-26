@@ -1,0 +1,35 @@
+interface IEntitySingleProperty {
+    type: 'string' | 'number' | 'boolean';
+    title: string;
+    format?: string;
+    enum?: string[];
+    pattern?: string;
+    patternCustomErrorMessage?: string;
+    dateNotification?: string;
+}
+
+interface IJSONSchema {
+    properties: Record<string, IEntitySingleProperty>;
+    type: 'object';
+    required: string[];
+}
+
+export interface IEntityTemplate {
+    _id: string;
+    name: string;
+    displayName: string;
+    iconFileId: string | null;
+    properties: IJSONSchema;
+    category: string;
+    propertiesOrder: string[];
+    propertiesPreview: string[];
+    disabled: boolean;
+}
+
+export interface ISearchEntityTemplatesBody {
+    search?: string;
+    ids?: string[];
+    categoryIds?: string[];
+    limit?: number;
+    skip?: number;
+}
