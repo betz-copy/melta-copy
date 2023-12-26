@@ -1,0 +1,38 @@
+name: "process-service"
+replicaCount: 1
+
+images:
+  PullSecrets: [jawsreg]
+  repository: jawsproject.azurecr.io/process-service
+  tag: latest
+
+service:
+  ports:
+  - name: http
+    port: "8000"
+
+livenessProbe:
+  httpGet:
+    path: /health
+    port: 8000
+
+readinessProbe:
+  httpGet:
+    path: /health
+    port: 8000
+
+config:
+  configmaps: []
+  env:
+    - name: PORT
+      value: 8000
+    - name: MONGO_URI
+      value: mongodb+srv://jaws:jcfVBJQW73BobDvr@cluster0.t8onr.mongodb.net/process-service?retryWrites=true&w=majority
+    - name: MONGO_PROCESS_TEMPLATE_COLLECTION_NAME
+      value: process-templates
+    - name: MONGO_PROCESS_INSTANCE_COLLECTION_NAME
+      value: process-instances
+    - name: MONGO_STEP_TEMPLATE_COLLECTION_NAME
+      value: step-templates
+    - name: MONGO_STEP_INSTANCE_COLLECTION_NAME
+      value: step-instances
