@@ -1,0 +1,34 @@
+name: "notification-service"
+replicaCount: 1
+
+images:
+  PullSecrets: [jawsreg]
+  repository: jawsproject.azurecr.io/notification-service
+  tag: latest
+
+service:
+  ports:
+  - name: http
+    port: "8000"
+
+livenessProbe:
+  httpGet:
+    path: /isAlive
+    port: 8000
+
+readinessProbe:
+  httpGet:
+    path: /isAlive
+    port: 8000
+
+config:
+  configmaps: []
+  env:
+    - name: PORT
+      value: 8000
+    - name: MONGO_URI
+      value: mongodb+srv://jaws:jcfVBJQW73BobDvr@cluster0.t8onr.mongodb.net/notifications?retryWrites=true&w=majority
+    - name: RABBIT_URI
+      value: amqp://jaws:jawsAreTheBest@20.105.9.117:5672/jaws
+    - name: MONGO_NOTIFICATION_COLLECTION_NAME
+      value: notifications
