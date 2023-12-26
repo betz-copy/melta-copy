@@ -1,0 +1,8 @@
+version: '3.4'
+
+services:
+  mock:
+    build: .
+    environment:
+      ENTITY_TEMPLATE_MANAGER_URI: http://entity-template-manager:8000/
+      INSTANCE_MANAGER_URI: http://instance-manager:8000/

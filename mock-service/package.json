@@ -1,0 +1,46 @@
+{
+  "name": "jaws-mock",
+  "version": "1.0.0",
+  "description": "",
+  "main": "",
+  "scripts": {
+    "start": "node --async-stack-traces ./dist/index.js",
+    "dev": "npm run build && npm start",
+    "test": "jest --coverage",
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "lint": "eslint . --ext .ts",
+    "lint:fix": "eslint . --ext .ts --fix",
+    "prettier": "prettier --config .prettierrc.js 'src/**/*.ts' --check",
+    "prettier:fix": "prettier --config .prettierrc.js 'src/**/*.ts' --write",
+    "clean": "rimraf dist"
+  },
+  "author": "Itay Marder",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.26.1",
+    "chance": "^1.1.9",
+    "dotenv": "^8.2.0",
+    "env-var": "^7.0.0",
+    "form-data": "^4.0.0",
+    "json-schema-faker": "^0.5.0-rcv.42",
+    "p-limit": "^3.1.0"
+  },
+  "devDependencies": {
+    "@types/chance": "^1.1.3",
+    "@types/jest": "^26.0.14",
+    "@types/node": "^17.0.23",
+    "@typescript-eslint/eslint-plugin": "^4.2.0",
+    "@typescript-eslint/parser": "^4.2.0",
+    "eslint": "^7.9.0",
+    "eslint-config-airbnb-base": "^14.2.0",
+    "eslint-config-prettier": "^8.2.0",
+    "eslint-plugin-import": "^2.22.0",
+    "eslint-plugin-prettier": "^3.1.4",
+    "jest": "^26.4.2",
+    "prettier": "^2.1.2",
+    "rimraf": "^3.0.2",
+    "ts-jest": "^26.4.0",
+    "typescript": "^4.0.3"
+  }
+}
