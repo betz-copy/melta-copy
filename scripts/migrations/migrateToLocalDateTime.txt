@@ -1,0 +1,14 @@
+match (n)
+
+unwind keys(n) as key
+
+with n, key, n[key] as value
+
+where apoc.meta.type(value) = "ZonedDateTime"
+
+with *, duration({seconds: datetime({ datetime: value, timezone: 'Asia/Jerusalem' }).offsetSeconds}) as timezoneOffsetDuration
+with *, localdatetime(value + timezoneOffsetDuration) as newValue
+
+call apoc.create.setProperty(n,key,newValue) yield node as newNode
+
+return key,value, newValue, newNode

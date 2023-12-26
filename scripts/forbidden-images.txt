@@ -1,0 +1,7 @@
+mongo
+rabbit
+elastic
+redis
+neo4j
+minio
+nginx

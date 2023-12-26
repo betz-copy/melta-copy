@@ -1,0 +1,162 @@
+version: '3.4'
+
+services:
+  entity-template-manager:
+    # image: jawsproject.azurecr.io/entity-template-manager
+    build: ./entity-template-manager
+    environment:
+      PORT: 8000
+      MONGO_URI: ${ENTITY_TEMPLATE_MANAGER_MONGO_URI}
+      MONGO_ENTITY_TEMPLATE_COLLECTION_NAME: ${MONGO_ENTITY_TEMPLATE_COLLECTION_NAME}
+      MONGO_CATEGORY_COLLECTION_NAME: ${MONGO_CATEGORY_COLLECTION_NAME}
+      RELATIONSHIP_TEMPLATE_MANAGER_URI: ${RELATIONSHIP_TEMPLATE_MANAGER_URI}
+      STORAGE_SERVICE_URI: ${STORAGE_SERVICE_URI}
+      STORAGE_SERVICE_UPLOAD_FILE_ROUTE: ${STORAGE_SERVICE_UPLOAD_FILE_ROUTE}
+      STORAGE_SERVICE_DOWNLOAD_FILE_ROUTE: ${STORAGE_SERVICE_DOWNLOAD_FILE_ROUTE}
+      STORAGE_SERVICE_DELETE_FILE_ROUTE: ${STORAGE_SERVICE_DELETE_FILE_ROUTE}
+      RABBIT_URI: ${RABBIT_URI}
+
+  permission-api:
+    # image: jawsproject.azurecr.io/permission-api # TODO: fix permissions vs permission
+    build: ./permissions-api
+    environment:
+      PORT: 8000
+      MONGO_URI: ${PERMISSION_API_MONGO_URI}
+      MONGO_PERMISSIONS_COLLECTION_NAME: permissions
+
+  storage-service:
+    # image: jawsproject.azurecr.io/storage-service
+    build: ./storage-service
+    environment: 
+      MINIO_ENDPOINT: ${MINIO_ENDPOINT}
+      MINIO_BUCKET_NAME: ${MINIO_BUCKET_NAME}
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
+
+  relationship-template-manager:
+    # image: jawsproject.azurecr.io/relationship-template-manager
+    build: ./relationship-template-manager
+    environment:
+      PORT: 8000
+      MONGO_URI: ${RELATIONSHIP_TEMPLATE_MANAGER_MONGO_URI}
+      MONGO_RELATIONSHIP_TEMPLATE_COLLECTION_NAME: ${MONGO_RELATIONSHIP_TEMPLATE_COLLECTION_NAME}
+      MONGO_RULE_COLLECTION_NAME: ${MONGO_RULE_COLLECTION_NAME}
+      ENTITY_TEMPLATE_MANAGER_URI: ${ENTITY_TEMPLATE_MANAGER_URI}
+
+  instance-manager:
+    # image: jawsproject.azurecr.io/instance-manager
+    build: ./instance-manager
+    environment:
+      PORT: 8000
+      NEO4J_URL: ${NEO4J_URL}
+      NEO4J_USERNAME: ${NEO4J_USERNAME}
+      NEO4J_PASSWORD: ${NEO4J_PASSWORD}
+      NEO4J_DATABASE: ${NEO4J_DATABASE}
+      ENTITY_TEMPLATE_MANAGER_URL: ${ENTITY_TEMPLATE_MANAGER_URI}
+      RELATIONSHIP_TEMPLATE_MANAGER_URL: ${RELATIONSHIP_TEMPLATE_MANAGER_URI}
+      REDIS_HOST: ${REDIS_HOST}
+
+  global-search-index-creator:
+    # image: jawsproject.azurecr.io/global-search-index-creator 
+    build: ./global-search-index-creator
+    environment:
+      NEO4J_URL: ${NEO4J_URL}
+      NEO4J_USERNAME: ${NEO4J_USERNAME}
+      NEO4J_PASSWORD: ${NEO4J_PASSWORD}
+      NEO4J_DATABASE: ${NEO4J_DATABASE}
+      TEMPLATE_MANAGER_URL: ${ENTITY_TEMPLATE_MANAGER_URI}
+      REDIS_HOST: ${REDIS_HOST}
+      RABBIT_URI: ${RABBIT_URI}
+
+  activity-log:
+    # image: jawsproject.azurecr.io/activity-log
+    build: ./activity-log
+    environment:
+      PORT: 8000
+      MONGO_URI: ${ACTIVITY_LOG_MONGO_URI}
+      MONGO_ACTIVITY_LOG_COLLECTION_NAME: ${ACTIVITY_LOG_COLLECTION_NAME}
+      RABBIT_URI: ${RABBIT_URI}
+
+  notification-service:
+    # image: jawsproject.azurecr.io/notification-service
+    build: ./notification-service
+    environment:
+      PORT: 8000
+      MONGO_URI: ${NOTIFICATION_SERVICE_MONGO_URI}
+      MONGO_NOTIFICATION_COLLECTION_NAME: ${NOTIFICATION_SERVICE_COLLECTION_NAME}
+      RABBIT_URI: ${RABBIT_URI}
+
+  rule-breach-service:
+    # image: jawsproject.azurecr.io/rule-breach-service
+    build: ./rule-breach-service
+    environment:
+      PORT: 8000
+      MONGO_URI: ${RULE_BREACH_SERVICE_MONGO_URI}
+      MONGO_RULE_BREACH_ALERTS_COLLECTION_NAME: ${MONGO_RULE_BREACH_ALERTS_COLLECTION_NAME}
+      MONGO_RULE_BREACH_REQUESTS_COLLECTION_NAME: ${MONGO_RULE_BREACH_REQUESTS_COLLECTION_NAME}
+
+  process-service:
+    # image: jawsproject.azurecr.io/process-service
+    build: ./process-service
+    environment:
+      PORT: 8000
+      MONGO_URI: ${PROCESS_SERVICE_MONGO_URI}
+      MONGO_PROCESS_TEMPLATE_COLLECTION_NAME: ${MONGO_PROCESS_TEMPLATE_COLLECTION_NAME}
+      MONGO_PROCESS_INSTANCE_COLLECTION_NAME: ${MONGO_PROCESS_INSTANCE_COLLECTION_NAME}
+      MONGO_STEP_TEMPLATE_COLLECTION_NAME: ${MONGO_STEP_TEMPLATE_COLLECTION_NAME}
+      MONGO_STEP_INSTANCE_COLLECTION_NAME: ${MONGO_STEP_INSTANCE_COLLECTION_NAME}
+
+  gantts-service:
+    # image: jawsproject.azurecr.io/gantt-service
+    build: ./gantts-service
+    environment:
+      PORT: 8000
+      MONGO_URI: ${GANTTS_SERVICE_MONGO_URI}
+      MONGO_GANTTS_COLLECTION_NAME: ${GANTTS_SERVICE_MONGO_GANTTS_COLLECTION_NAME}
+
+  preview-service:
+    # image: 
+    build: ./preview-service
+    environment: 
+      PORT: 8000
+      MINIO_ENDPOINT: ${MINIO_ENDPOINT}
+      MINIO_BUCKET_NAME: ${MINIO_BUCKET_NAME}
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
+
+  backend:
+    # image: jawsproject.azurecr.io/backend
+    build: ./backend
+    environment:
+      PORT: 8000
+      TOKEN_SECRET: ${TOKEN_SECRET}
+      ENTITY_TEMPLATE_MANAGER_URI: ${ENTITY_TEMPLATE_MANAGER_URI}
+      RELATIONSHIP_TEMPLATE_MANAGER_URI: ${RELATIONSHIP_TEMPLATE_MANAGER_URI}
+      INSTANCE_MANAGER_URI: ${INSTANCE_MANAGER_URI}
+      PERMISSION_API_BASE_URL: ${PERMISSION_API_URL}
+      STORAGE_SERVICE_URI: ${STORAGE_SERVICE_URI}
+      NOTIFICATION_SERVICE_URI: ${NOTIFICATION_SERVICE_URI}
+      RULE_BREACH_SERVICE_URI: ${RULE_BREACH_SERVICE_URI}
+      PROCESS_SERVICE_URI: ${PROCESS_SERVICE_URI}
+      GANTTS_SERVICE_URI: ${GANTTS_SERVICE_URI}
+      KARTOFFEL_BASE_URL: ${KARTOFFEL_BASE_URL}
+      CALLBACK_URL: ${CALLBACK_URL}
+      SHRAGA_URL: ${SHRAGA_URL}
+      ACCESS_TOKEN_NAME: ${ACCESS_TOKEN_NAME}
+      SYSTEM_UNAVAILABLE_URL: ${SYSTEM_UNAVAILABLE_URL}
+      ACTIVITY_LOG_URI: ${ACTIVITY_LOG_URI}
+      NODE_TLS_REJECT_UNAUTHORIZED: 0
+      RABBIT_URI: ${RABBIT_URI}
+      PREVIEW_SERVICE_URI: ${PREVIEW_SERVICE_URI}
+      STORAGE_SERVICE_FILE_HYPER_LINK: ${STORAGE_SERVICE_FILE_HYPER_LINK}
+      BASIC_AUTHENTICATION_USERS: ${BASIC_AUTHENTICATION_USERS}
+      
+
+  frontend:
+    image: jawsproject.azurecr.io/frontend
+    # build: ./frontend
+  
+  gateway:
+    image: nginx:alpine
+    volumes:
+      - ./nginx:/etc/nginx/conf.d

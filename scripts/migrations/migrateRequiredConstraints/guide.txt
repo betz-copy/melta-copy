@@ -1,0 +1,11 @@
+1. run the following on MongoDB and write output to file templates.json
+    var mydb = db.getSiblingDB("entity-manager");
+    var result = mydb["entity-templates"].find({});
+    print(JSON.stringify(result.toArray(), null, 4));
+
+2. run createNeo4jRequiredsCommands.js and copy all output (which is Neo4J commands)
+
+3. run the commands on Neo4J
+
+4. remove required and add `unique: []` to all templates by running:
+    db['entity-templates'].updateMany({},{$unset:{'properties.required': ""}})

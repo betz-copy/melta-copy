@@ -1,0 +1,145 @@
+version: "3.4"
+
+services:
+  #-------------------------------------------#
+  #*   Service infrastructure dependencies:   #
+  #-------------------------------------------#
+  mongo:
+    image: mongo:5.0.11
+    restart: always
+    entrypoint: ['/usr/bin/mongod', '--bind_ip_all', '--replSet', 'rs0']
+    ports:
+      - 27017:27017
+
+  mongosetup:
+    image: mongo:5.0.11
+    depends_on:
+      - mongo
+    volumes:
+      - ./scripts:/scripts
+    restart: "no"
+    entrypoint: [ "bash", "/scripts/setup_mongo.sh"]
+
+  rabbit:
+    image: rabbitmq:3-management
+    ports:
+      - 5672:5672
+      - 15672:15672
+    restart: always
+  
+  redis: 
+    image: redis:latest
+    ports:
+       - 6379:6379
+    restart: always
+
+  minio:
+    image: minio/minio
+    ports: 
+      - "9000:9000"
+      - "9001:9001"
+      - "4000:4000"
+    environment: 
+      MINIO_ROOT_USER: "minioadmin"
+      MINIO_ROOT_PASSWORD: "minioadmin"
+    command: "minio server --console-address :4000 /data"
+    restart: always
+
+  neo4j:
+    build:
+      context: ./instance-manager
+      dockerfile: Dockerfile-neo4j
+    environment:
+      - NEO4J_AUTH=neo4j/test
+      - NEO4J_dbms_security_procedures_unrestricted=apoc.*
+      - NEO4J_ACCEPT_LICENSE_AGREEMENT=yes
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    restart: always
+
+  mock:
+    # image: jawsproject.azurecr.io/mock
+    build: ./mock
+    environment:
+      ENTITY_TEMPLATE_MANAGER_URI: ${ENTITY_TEMPLATE_MANAGER_URI}
+      RELATIONSHIP_TEMPLATE_MANAGER_URI: ${RELATIONSHIP_TEMPLATE_MANAGER_URI}
+      INSTANCE_MANAGER_URI: ${INSTANCE_MANAGER_URI}
+      PERMISSIONS_API_URI: ${PERMISSION_API_URL}
+      PROCESS_SERVICE_URI: ${PROCESS_SERVICE_URI}
+      STORAGE_SERVICE_URI: ${STORAGE_SERVICE_URI}
+      GANTTS_SERVICE_URI: ${GANTTS_SERVICE_URI}
+      PERMISSIONS_API_MANAGERS_KARTOFFEL_IDS: 5e5688324203fc40043591aa,61d37cb5e4de0300121e31ef
+      PROCESS_SERVICE_REVIEWERS_KARTOFFEL_IDS: 5e5688d54203fc40043591ac,626e4e5be8e4d7001101b794,5ebbd53f64fe6f2b1c5777ae
+    depends_on:
+      - neo4j
+      - entity-template-manager
+      - relationship-template-manager
+      - storage-service
+      - instance-manager
+      - permission-api
+      - process-service
+      - gantts-service
+    restart: on-failure
+
+  #-------------------------------------------#
+  #        microservices:                     #
+  #-------------------------------------------#
+  entity-template-manager:
+    ports:
+      - 8001:8000
+    restart: always
+
+  relationship-template-manager:
+    ports:
+      - 8002:8000
+    restart: always
+
+  backend:
+    ports:
+      - 8003:8000
+    restart: always
+
+  permission-api:
+    ports:
+      - 8005:8000
+    restart: always
+  
+  storage-service:
+    ports:
+      - 8006:8000
+    restart: always
+
+  instance-manager:
+    ports:
+      - 8007:8000
+    restart: always
+  
+  gateway:
+    ports:
+      - 80:80
+    restart: always
+
+  global-search-index-creator:
+    restart: always
+
+  notification-service:
+    restart: always
+
+  rule-breach-service:
+    restart: always
+  
+  process-service:
+    ports:
+      - 8008:8000
+    restart: always
+  
+  gantts-service:
+    ports:
+      - 8009:8000
+    restart: always
+
+  preview-service:
+    ports:
+      - 8011:8000
+    restart: always  
