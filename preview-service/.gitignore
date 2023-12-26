@@ -1,0 +1,11 @@
+# Dependencies
+node_modules/
+
+# Transpiled files
+dist/
+
+# Dot Env Configuration
+.env
+
+# Transpiled files
+dist/
