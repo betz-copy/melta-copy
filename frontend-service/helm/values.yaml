@@ -1,0 +1,34 @@
+name: 'frontend'
+replicaCount: 1
+
+images:
+  PullSecrets: [jawsreg]
+  repository: jawsproject.azurecr.io/frontend
+  tag: latest
+
+service:
+  ports:
+    - name: http
+      port: '8000'
+
+ingress:
+  enabled: true
+  hosts:
+    - host: jaws.branch-yesodot.org
+      paths:
+        - path: /
+          service: frontend
+          port: '8000'
+
+livenessProbe:
+  httpGet:
+    path: /health
+    port: 8000
+
+readinessProbe:
+  httpGet:
+    path: /health
+    port: 8000
+
+config:
+  configmaps: []

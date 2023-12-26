@@ -1,0 +1,73 @@
+import React, { useRef, useEffect, Key } from 'react';
+import { Grid } from '@mui/material';
+import { GetNextPageParamFunction, QueryFunction, QueryKey, useInfiniteQuery } from 'react-query';
+import { ShowMore } from './ShowMore';
+
+export interface PureInfiniteScrollProps<T> {
+    children: (item: T) => JSX.Element;
+    getItemId?: (item: T) => Key;
+    queryKey: QueryKey;
+    queryFunction: QueryFunction<T[]>;
+    onQueryError: (err: any) => void;
+    getNextPageParam?: GetNextPageParamFunction<T[]>;
+    emptyText?: string;
+    endText?: string;
+}
+
+export const PureInfiniteScroll = <T extends any>({
+    children,
+    queryKey,
+    queryFunction,
+    onQueryError,
+    getItemId = (item) => (item as { _id: string })._id,
+    getNextPageParam = (lastPage, allPages) => (lastPage.length ? allPages.length : undefined),
+    emptyText,
+    endText,
+}: PureInfiniteScrollProps<T>) => {
+    const showMoreRef = useRef<HTMLDivElement>(null);
+
+    const { data, fetchNextPage, isFetchingNextPage, hasNextPage, isLoading, isRefetching } = useInfiniteQuery(queryKey, queryFunction, {
+        getNextPageParam,
+        onError: onQueryError,
+    });
+
+    useEffect(() => {
+        const currentShowMoreRef = showMoreRef.current;
+        if (!currentShowMoreRef) return () => {};
+
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                if (entry.isIntersecting && !isFetchingNextPage && hasNextPage) {
+                    fetchNextPage();
+                }
+            },
+            {
+                rootMargin: '0px',
+                threshold: 0,
+            },
+        );
+
+        observer.observe(currentShowMoreRef);
+        return () => observer.unobserve(currentShowMoreRef);
+    }, [showMoreRef, isFetchingNextPage, hasNextPage]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    return (
+        <>
+            {data?.pages.map((page) =>
+                page.map((item) => (
+                    <Grid item key={getItemId(item)}>
+                        {children(item)}
+                    </Grid>
+                )),
+            )}
+
+            <ShowMore
+                ref={showMoreRef}
+                isLoading={isLoading || isFetchingNextPage || hasNextPage || isRefetching}
+                isEmpty={Boolean(data && data.pages.length && !data.pages[0].length)}
+                emptyText={emptyText}
+                endText={endText}
+            />
+        </>
+    );
+};

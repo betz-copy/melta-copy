@@ -1,0 +1,97 @@
+import React, { useState } from 'react';
+import { Grid, IconButton } from '@mui/material';
+import { Hive as HiveIcon, AddCircle as AddIcon } from '@mui/icons-material';
+import { useMutation, useQueryClient } from 'react-query';
+import { toast } from 'react-toastify';
+
+import i18next from 'i18next';
+import { AxiosError } from 'axios';
+import { ICategoryMap, IMongoCategory } from '../../../interfaces/categories';
+import { ViewingCard } from './ViewingCard';
+import { CustomIcon } from '../../../common/CustomIcon';
+import { Header } from '../../../common/Header';
+import { CategoryWizard } from '../../../common/wizards/category';
+import { categoryObjectToCategoryForm, deleteCategoryRequest } from '../../../services/templates/categoriesService';
+import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
+import { ErrorToast } from '../../../common/ErrorToast';
+import { ViewingBox } from './ViewingBox';
+
+const CategoriesRow: React.FC = () => {
+    const queryClient = useQueryClient();
+
+    const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
+
+    const [deleteCategoryDialogState, setDeleteCategoryDialogState] = useState<{
+        isDialogOpen: boolean;
+        categoryId: string | null;
+    }>({
+        isDialogOpen: false,
+        categoryId: null,
+    });
+
+    const [categoryWizardDialogState, setCategoryWizardDialogState] = useState<{
+        isWizardOpen: boolean;
+        category: IMongoCategory | null;
+    }>({
+        isWizardOpen: false,
+        category: null,
+    });
+
+    const { isLoading, mutateAsync } = useMutation((id: string) => deleteCategoryRequest(id), {
+        onSuccess: (_data, id) => {
+            queryClient.setQueryData<ICategoryMap>('getCategories', (data) => {
+                data!.delete(id);
+                return data!;
+            });
+
+            setDeleteCategoryDialogState({ isDialogOpen: false, categoryId: null });
+            toast.success(i18next.t('wizard.category.deletedSuccessfully'));
+        },
+        onError: (err: AxiosError) => {
+            toast.error(<ErrorToast axiosError={err} defaultErrorMessage={i18next.t('wizard.category.failedToDelete')} />);
+        },
+    });
+
+    return (
+        <Grid item container>
+            <Header title={i18next.t('categories')}>
+                <IconButton onClick={() => setCategoryWizardDialogState({ isWizardOpen: true, category: null })}>
+                    <AddIcon color="primary" fontSize="large" />
+                </IconButton>
+            </Header>
+            <ViewingBox>
+                {Array.from(categories.values(), (category) => (
+                    <ViewingCard
+                        minWidth={250}
+                        key={category._id}
+                        title={category.displayName}
+                        color={category.color}
+                        icon={
+                            category.iconFileId ? (
+                                <CustomIcon iconUrl={category.iconFileId} height="40px" width="40px" />
+                            ) : (
+                                <HiveIcon fontSize="large" />
+                            )
+                        }
+                        onEditClick={() => setCategoryWizardDialogState({ isWizardOpen: true, category })}
+                        onDeleteClick={() => setDeleteCategoryDialogState({ isDialogOpen: true, categoryId: category._id })}
+                    />
+                ))}
+            </ViewingBox>
+            <CategoryWizard
+                open={categoryWizardDialogState.isWizardOpen}
+                handleClose={() => setCategoryWizardDialogState({ isWizardOpen: false, category: null })}
+                initialValues={categoryObjectToCategoryForm(categoryWizardDialogState.category)}
+                isEditMode={Boolean(categoryWizardDialogState.category)}
+            />
+            <AreYouSureDialog
+                open={deleteCategoryDialogState.isDialogOpen}
+                handleClose={() => setDeleteCategoryDialogState({ isDialogOpen: false, categoryId: null })}
+                onYes={() => mutateAsync(deleteCategoryDialogState.categoryId!)}
+                isLoading={isLoading}
+            />
+        </Grid>
+    );
+};
+
+export { CategoriesRow };

@@ -1,0 +1,210 @@
+import React, { Fragment, useState } from 'react';
+import { Box, Button, CircularProgress, Grid, IconButton, TextField, ToggleButton, ToggleButtonGroup, Tooltip, Typography } from '@mui/material';
+import {
+    Delete as DeleteIcon,
+    Edit as EditIcon,
+    Check as SaveIcon,
+    Close as CancelIcon,
+    InfoOutlined as InfoIcon,
+    Category as AddGroupByIcon,
+    CalendarMonth as CalendarModeIcon,
+    GridView as HeatmapModeIcon,
+} from '@mui/icons-material';
+import i18next from 'i18next';
+import { useSelector } from 'react-redux';
+import { useQueryClient } from 'react-query';
+import { FormikProps } from 'formik';
+import { useSearchParams } from 'react-router-dom';
+import { RootState } from '../../store';
+import { IPermissionsOfUser } from '../../services/permissionsService';
+import { Swap } from '../../common/Swap';
+import { BlueTitle } from '../../common/BlueTitle';
+import { TopBarGrid } from '../../common/TopBar';
+import { IBasicGantt } from '../../interfaces/gantts';
+import { CopyUrlButton } from '../../common/CopyUrlButton';
+import { environment } from '../../globals';
+import { AreYouSureDialog } from '../../common/dialogs/AreYouSureDialog';
+
+const {
+    separators,
+    searchParams: { heatmapModeKey },
+} = environment.ganttSettings;
+
+interface IGanttTopBar {
+    title: string;
+    formik: FormikProps<IBasicGantt>;
+    onEdit: () => void;
+    onDelete: () => void;
+    onAddGroupBy: () => void;
+    edit: boolean;
+    isGroupBy?: boolean;
+    isLoading?: boolean;
+}
+
+export const GanttsTopBar: React.FC<IGanttTopBar> = ({ title, formik, onEdit, onDelete, onAddGroupBy, edit, isGroupBy, isLoading }) => {
+    const darkMode = useSelector((state: RootState) => state.darkMode);
+
+    const [searchParams, setSearchParams] = useSearchParams();
+    const heatmapMode = Boolean(searchParams.get(heatmapModeKey));
+
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+
+    const queryClient = useQueryClient();
+    const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
+
+    const titleError = formik.touched.name && formik.errors.name;
+
+    return (
+        <>
+            <TopBarGrid container alignItems="center" wrap="nowrap" sx={{ marginBottom: 0, paddingRight: '1.6rem' }}>
+                <Swap
+                    condition={edit}
+                    isFalse={
+                        <Box>
+                            <BlueTitle title={title} component="h4" variant="h4" style={{ whiteSpace: 'nowrap' }} />
+                        </Box>
+                    }
+                    isTrue={
+                        <TextField
+                            id="name"
+                            name="name"
+                            value={formik.values.name}
+                            onChange={formik.handleChange}
+                            error={Boolean(titleError)}
+                            label={titleError}
+                            placeholder={i18next.t('gantts.actions.name')}
+                            size="small"
+                            disabled={isLoading}
+                            sx={{ width: '30rem' }}
+                        />
+                    }
+                />
+
+                {myPermissions.templatesManagementId && (
+                    <Grid item container wrap="nowrap" flexDirection="row-reverse" marginLeft="auto">
+                        <Swap
+                            condition={edit}
+                            isFalse={
+                                <Grid container width="fit-content" wrap="nowrap">
+                                    {isGroupBy && (
+                                        <Grid item>
+                                            <ToggleButtonGroup
+                                                value={heatmapMode}
+                                                exclusive
+                                                color="primary"
+                                                size="small"
+                                                sx={{ paddingX: '0.4rem', height: '2.5rem', marginX: '0.8rem' }}
+                                            >
+                                                <ToggleButton value onClick={() => setSearchParams({ [heatmapModeKey]: 'true' })}>
+                                                    <Tooltip title={i18next.t('gantts.heatmapMode')!}>
+                                                        <HeatmapModeIcon />
+                                                    </Tooltip>
+                                                </ToggleButton>
+                                                <ToggleButton value={false} onClick={() => setSearchParams({})}>
+                                                    <Tooltip title={i18next.t('gantts.calendarMode')!}>
+                                                        <CalendarModeIcon />
+                                                    </Tooltip>
+                                                </ToggleButton>
+                                            </ToggleButtonGroup>
+                                        </Grid>
+                                    )}
+
+                                    <Tooltip
+                                        title={
+                                            <>
+                                                {Object.values(separators).map((separator) => (
+                                                    <Fragment key={separator}>
+                                                        <Typography display="inline" fontWeight="bold">
+                                                            {separator}
+                                                        </Typography>
+                                                        <Typography display="inline">{`- ${i18next.t(`gantts.separators.${separator}`)}`}</Typography>
+                                                        <br />
+                                                    </Fragment>
+                                                ))}
+                                            </>
+                                        }
+                                    >
+                                        <IconButton disableRipple>
+                                            <InfoIcon />
+                                        </IconButton>
+                                    </Tooltip>
+
+                                    <CopyUrlButton />
+
+                                    <Tooltip title={i18next.t('gantts.actions.edit')}>
+                                        <IconButton onClick={onEdit}>
+                                            <EditIcon />
+                                        </IconButton>
+                                    </Tooltip>
+                                </Grid>
+                            }
+                            isTrue={
+                                <Grid container justifyContent="space-between" alignItems="center" width="fit-content" wrap="nowrap">
+                                    <Grid item>
+                                        <Button
+                                            onClick={onAddGroupBy}
+                                            variant="outlined"
+                                            disabled={isGroupBy}
+                                            sx={{ paddingX: '0.4rem', height: '2.5rem', marginX: '1rem' }}
+                                        >
+                                            {i18next.t('gantts.actions.addGroupBy')}
+                                            <AddGroupByIcon />
+                                        </Button>
+                                    </Grid>
+
+                                    <Grid
+                                        container
+                                        justifyContent="space-between"
+                                        width="fit-content"
+                                        wrap="nowrap"
+                                        bgcolor={`rgb(220, 220, 220, ${darkMode ? 0.15 : 0.5})`}
+                                        borderRadius="10px"
+                                        padding="0.1rem"
+                                    >
+                                        {isLoading ? (
+                                            <Grid item container alignItems="center" justifyContent="space-around" width="8rem">
+                                                <CircularProgress size={30} />
+                                            </Grid>
+                                        ) : (
+                                            <>
+                                                <Grid item container wrap="nowrap">
+                                                    <Tooltip title={i18next.t('gantts.actions.delete')}>
+                                                        <IconButton onClick={() => setDeleteDialogOpen(true)}>
+                                                            <DeleteIcon />
+                                                        </IconButton>
+                                                    </Tooltip>
+                                                </Grid>
+
+                                                <Grid
+                                                    item
+                                                    container
+                                                    wrap="nowrap"
+                                                    bgcolor={`rgb(220, 220, 220, ${darkMode ? 0.12 : 0.7})`}
+                                                    borderRadius="10px"
+                                                    margin="0.2rem"
+                                                >
+                                                    <Tooltip title={i18next.t('gantts.actions.cancel')}>
+                                                        <IconButton type="reset">
+                                                            <CancelIcon />
+                                                        </IconButton>
+                                                    </Tooltip>
+                                                    <Tooltip title={i18next.t('gantts.actions.save')}>
+                                                        <IconButton type="submit">
+                                                            <SaveIcon />
+                                                        </IconButton>
+                                                    </Tooltip>
+                                                </Grid>
+                                            </>
+                                        )}
+                                    </Grid>
+                                </Grid>
+                            }
+                        />
+                    </Grid>
+                )}
+            </TopBarGrid>
+
+            <AreYouSureDialog open={deleteDialogOpen} handleClose={() => setDeleteDialogOpen(false)} onYes={() => onDelete()} />
+        </>
+    );
+};

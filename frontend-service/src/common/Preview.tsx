@@ -1,0 +1,210 @@
+import React, { useState, useRef, useEffect } from 'react';
+import { Close as CloseIcon } from '@mui/icons-material';
+import { Button, Card, CircularProgress, Dialog, DialogContent, Grid, IconButton, TextField, Typography } from '@mui/material';
+import { useSelector } from 'react-redux';
+import { Document, Page, pdfjs } from 'react-pdf';
+import ReactPlayer from 'react-player';
+import i18next from 'i18next';
+import { RootState } from '../store';
+import FlexBox from './FlexBox';
+import { getFileExtension, getPreviewContentType } from '../utils/getFileType';
+import 'react-pdf/dist/esm/Page/TextLayer.css';
+import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
+import { DownloadButton } from './DownloadButton';
+
+pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.js';
+
+type PreviewProps = {
+    open: boolean;
+    fileId: string;
+    data: string | undefined;
+    setOpen: (value: boolean) => void;
+    loading: boolean;
+    error: boolean;
+    fileName: string;
+};
+
+const isImage = (type: string) => type === 'image';
+const isVideoOrAudio = (type: string) => ['video', 'audio'].includes(type);
+const isUnsupported = (type: string) => type === 'unsupported';
+const isSpecial = (type: string) => !(isImage(type) || isVideoOrAudio(type) || isUnsupported(type));
+
+const Preview: React.FC<PreviewProps> = ({ open, fileId, data, setOpen, loading, fileName, error }) => {
+    const darkMode = useSelector((state: RootState) => state.darkMode);
+    const [numOfPages, setNumOfPages] = useState(1);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [jumpToPage, setJumpToPage] = useState('1');
+    const containerRef = useRef<HTMLDivElement>(null);
+    const currentPageRef = useRef(currentPage);
+    const contentType = getPreviewContentType(fileName);
+    const extension = getFileExtension(fileName);
+    const onLoadSuccess = ({ numPages }: { numPages: number }) => {
+        setNumOfPages(numPages);
+    };
+
+    if (!fileId) return null;
+
+    useEffect(() => {
+        const handleScroll = async () => {
+            if (containerRef.current) {
+                const pageHeight = containerRef.current.scrollHeight / numOfPages;
+                const scrolledPage = Math.floor(containerRef.current.scrollTop / pageHeight) + 1;
+                currentPageRef.current = scrolledPage;
+                setJumpToPage(scrolledPage.toString());
+            }
+        };
+
+        const container = containerRef.current;
+        container?.addEventListener('scroll', handleScroll);
+        return () => container?.removeEventListener('scroll', handleScroll);
+    }, [numOfPages]);
+
+    useEffect(() => {
+        if (open) {
+            setCurrentPage(1);
+            setJumpToPage('1');
+            currentPageRef.current = 1;
+        }
+        setNumOfPages(0);
+    }, [open]);
+
+    useEffect(() => {
+        currentPageRef.current = currentPage;
+    }, [currentPage]);
+
+    const handleJumpToPage = async () => {
+        const pageNumber = parseInt(jumpToPage, 10);
+        if (pageNumber >= 1 && pageNumber <= numOfPages) {
+            const container = containerRef.current;
+            if (container) {
+                const pageHeight = container.scrollHeight / numOfPages;
+                container.scrollTop = (pageNumber - 1) * pageHeight;
+            }
+            currentPageRef.current = pageNumber;
+            setCurrentPage(pageNumber);
+        }
+    };
+
+    const handleEnterKeyPress = (e) => {
+        if (e.key === 'Enter') {
+            handleJumpToPage();
+        }
+    };
+
+    let previewContent;
+    if (isImage(contentType)) {
+        previewContent = <img src={data} style={{ maxHeight: '50%', marginTop: '65px' }} />;
+    } else if (isVideoOrAudio(contentType)) {
+        previewContent = <ReactPlayer style={{ marginTop: '65px' }} url={data} controls playing />;
+    } else if (isUnsupported(contentType) || error) {
+        previewContent = (
+            <Card
+                sx={{
+                    borderRadius: 2,
+                    bgcolor: '#4c494c',
+                    display: 'grid',
+                    height: 150,
+                    padding: 3,
+                }}
+                elevation={10}
+            >
+                <Typography variant="body1" style={{ color: 'white', marginTop: '10px', fontSize: '20px' }}>
+                    {i18next.t('errorPage.preview')}
+                </Typography>
+                <Button>
+                    <DownloadButton fileId={fileId} />
+                </Button>
+            </Card>
+        );
+    } else if (loading || !data) {
+        previewContent = <CircularProgress />;
+    } else {
+        previewContent = (
+            <Document
+                loading={<CircularProgress style={{ position: 'absolute', left: '50%', transform: 'translate(-50%, -50%)' }} />}
+                file={data}
+                onLoadSuccess={onLoadSuccess}
+                onLoadError={() => null}
+            >
+                <FlexBox direction="column" gap={5}>
+                    {Array.from({ length: numOfPages }, (_, i) => (
+                        <div key={`page-${i + 1}`} style={{ marginBottom: '20px', background: 'white', position: 'relative' }}>
+                            <Page width={950} pageNumber={i + 1} renderTextLayer={false} />
+                        </div>
+                    ))}
+                </FlexBox>
+            </Document>
+        );
+    }
+
+    return (
+        <Dialog
+            open={open}
+            maxWidth="lg"
+            fullScreen
+            PaperProps={{ sx: { bgcolor: darkMode ? 'rgba(20,20,20,0.7)' : 'rgba(49,49,49,0.7)' } }}
+            disableEnforceFocus
+        >
+            <DialogContent sx={{ height: '100vh', position: 'relative', overflow: 'hidden' }}>
+                <FlexBox
+                    direction="row"
+                    style={{ paddingBottom: '10px', justifyContent: 'space-between', position: 'sticky', top: 5, left: 10, zIndex: 1, gap: '10px' }}
+                >
+                    <FlexBox direction="row">
+                        <IconButton
+                            aria-label="close"
+                            onClick={() => {
+                                setOpen(false);
+                            }}
+                            sx={{ color: 'white' }}
+                        >
+                            <CloseIcon />
+                        </IconButton>
+                        <DownloadButton fileId={fileId} />
+                    </FlexBox>
+                    {isSpecial(contentType) && extension !== 'pptx' && (
+                        <FlexBox direction="row" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <TextField
+                                type="number"
+                                value={jumpToPage}
+                                onChange={(e) => setJumpToPage(e.target.value)}
+                                inputProps={{
+                                    min: 1,
+                                    max: numOfPages,
+                                    style: {
+                                        width: '40px',
+                                        fontSize: '16px',
+                                        outline: 'none',
+                                        padding: '6px 10px',
+                                        color: 'white',
+                                        border: '2px solid white',
+                                    },
+                                }}
+                                onKeyDown={handleEnterKeyPress}
+                            />
+
+                            <div style={{ color: 'white' }}>
+                                {numOfPages} / {currentPageRef.current}{' '}
+                            </div>
+                        </FlexBox>
+                    )}
+                </FlexBox>
+
+                <Grid
+                    ref={containerRef}
+                    style={{
+                        height: '95%',
+                        overflowY: isImage(contentType) || isVideoOrAudio(contentType) ? 'hidden' : 'scroll',
+                    }}
+                    container
+                    justifyContent="center"
+                    alignItems="center"
+                >
+                    <Grid item>{previewContent}</Grid>
+                </Grid>
+            </DialogContent>
+        </Dialog>
+    );
+};
+
+export { Preview };

@@ -1,0 +1,52 @@
+.ag-theme-material .ag-rtl {
+    border-radius: 7px;
+}
+
+.ag-theme-material .ag-side-buttons {
+    padding-top: 0;
+}
+
+.ag-theme-material .ag-header-row {
+    font-size: 16px;
+}
+
+.ag-theme-material .ag-checkbox-input-wrapper.ag-checked::after {
+    color: #225aa7;
+}
+
+
+/* Removed in order to manipulate scroll-bar
+/* .ag-body-viewport,
+.ag-layout-normal,
+.ag-row-no-animation {
+    overflow: hidden !important;
+} */
+
+.ag-theme-material .ag-checkbox-input-wrapper.ag-checked::after {
+    color: #225aa7;
+}
+
+.ag-column-select-virtual-list-viewport::-webkit-scrollbar-track,
+.ag-body-horizontal-scroll-viewport::-webkit-scrollbar-track {
+    border-radius: 10px;
+}
+
+.ag-column-select-virtual-list-viewport::-webkit-scrollbar-thumb,
+.ag-body-horizontal-scroll-viewport::-webkit-scrollbar-thumb {
+    background: #225aa7;
+    border-radius: 7px;
+}
+
+.ag-column-select-virtual-list-viewport::-webkit-scrollbar-thumb:hover,
+.ag-body-horizontal-scroll-viewport::-webkit-scrollbar-thumb:hover {
+    background: #105aa3;
+}
+
+.ag-horizontal-left-spacer {
+    visibility: hidden;
+}
+
+.ag-column-select-virtual-list-viewport {
+    overflow: auto;
+    padding: 0;
+}

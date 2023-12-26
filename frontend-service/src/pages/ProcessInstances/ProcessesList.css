@@ -1,0 +1,7 @@
+
+#processesFilter {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-items: center;
+    align-items: center;
+}
