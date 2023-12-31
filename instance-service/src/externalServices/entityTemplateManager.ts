@@ -2,7 +2,7 @@ import axios from 'axios';
 import config from '../config';
 
 const {
-    entityTemplateManager: { url, getByIdRoute, searchRoute, timeout },
+    entityTemplateService: { url, getByIdRoute, searchRoute, timeout },
 } = config;
 export interface IEntitySingleProperty {
     type: 'string' | 'number' | 'boolean';

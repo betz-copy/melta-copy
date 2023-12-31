@@ -8,7 +8,7 @@ import { IMongoProcessTemplatePopulated } from './processTemplate';
 
 const limit = pLimit(config.requestLimit);
 
-const { uri, processInstanceRoute, reviewersKartoffelIds, minNumberOfProcesses, maxNumberOfProcesses, nameMinLength, nameMaxLength, characters } =
+const { url, processInstanceRoute, reviewersKartoffelIds, minNumberOfProcesses, maxNumberOfProcesses, nameMinLength, nameMaxLength, characters } =
     config.processService;
 
 // eslint-disable-next-line no-shadow
@@ -113,7 +113,7 @@ const createProcessInstance = (processTemplate: IMongoProcessTemplatePopulated, 
 
     return limit(() =>
         axios
-            .post(uri + processInstanceRoute, requestBody)
+            .post(url + processInstanceRoute, requestBody)
             .then((response) => response.data)
             .catch((error) => {
                 // eslint-disable-next-line no-console

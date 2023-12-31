@@ -6,14 +6,14 @@ const config = {
         port: env.get('PORT').required().asPortNumber(),
     },
     mongo: {
-        uri: env.get('MONGO_URI').required().asString(),
-        relationshipTemplateCollectionName: env.get('MONGO_RELATIONSHIP_TEMPLATE_COLLECTION_NAME').required().asString(),
-        ruleCollectionName: env.get('MONGO_RULE_COLLECTION_NAME').required().asString(),
+        url: env.get('MONGO_URL').required().asString(),
+        relationshipTemplatesCollectionName: env.get('MONGO_RELATIONSHIP_TEMPLATES_COLLECTION_NAME').required().asString(),
+        ruleCollectionName: env.get('MONGO_RULES_COLLECTION_NAME').required().asString(),
     },
-    entityTemplateManager: {
-        uri: env.get('ENTITY_TEMPLATE_MANAGER_URI').required().asString(),
-        baseEntitiesRoute: env.get('ENTITY_TEMPLATE_MANAGER_ENTITIES_BASE_ROUTE').default('/api/templates/entities').asString(),
-        requestTimeout: env.get('ENTITY_TEMPLATE_MANAGER_REQUEST_TIMEOUT').default(10000).asIntPositive(),
+    entityTemplateService: {
+        url: env.get('ENTITY_TEMPLATE_SERVICE_URL').required().asString(),
+        baseEntitiesRoute: env.get('ENTITY_TEMPLATE_SERVICE_ENTITIES_BASE_ROUTE').default('/api/templates/entities').asString(),
+        requestTimeout: env.get('ENTITY_TEMPLATE_SERVICE_REQUEST_TIMEOUT').default(10000).asIntPositive(),
     },
 };
 

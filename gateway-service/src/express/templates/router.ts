@@ -33,19 +33,19 @@ import {
 } from './validator.schema';
 
 const {
-    entityTemplateManager,
-    relationshipTemplateManager,
+    entityTemplateService: entityTemplateManager,
+    relationshipTemplateService: relationshipTemplateManager,
     service: { uploadsFolderPath },
 } = config;
 
 const EntityTemplatesManagerProxy = createProxyMiddleware({
-    target: entityTemplateManager.uri,
+    target: entityTemplateManager.url,
     onProxyReq: fixRequestBody,
     proxyTimeout: entityTemplateManager.requestTimeout,
 });
 
 const RelationshipTemplatesManagerProxy = createProxyMiddleware({
-    target: relationshipTemplateManager.uri,
+    target: relationshipTemplateManager.url,
     onProxyReq: fixRequestBody,
     proxyTimeout: relationshipTemplateManager.requestTimeout,
 });

@@ -7,7 +7,7 @@ export const config = {
         maxFileSize: env.get('MAX_FILE_SIZE').default(50000000).asInt(),
     },
     minio: {
-        uri: env.get('MINIO_ENDPOINT').default('localhost').asString(),
+        url: env.get('MINIO_ENDPOINT').default('localhost').asString(),
         port: env.get('MINIO_PORT').default(9000).asPortNumber(),
         accessKey: env.get('MINIO_ACCESS_KEY').default('minioadmin').asString(),
         secretKey: env.get('MINIO_SECRET_KEY').default('minioadmin').asString(),

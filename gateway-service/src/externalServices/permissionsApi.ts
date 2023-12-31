@@ -1,7 +1,7 @@
 import axios from 'axios';
 import config from '../config';
 
-const { permissionApi } = config;
+const { permissionService: permissionApi } = config;
 
 export const resourceTypeOptions = ['Templates', 'Instances', 'Permissions', 'Rules', 'Processes'] as const;
 export type ResourceType = (typeof resourceTypeOptions)[number];

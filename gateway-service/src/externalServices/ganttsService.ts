@@ -2,7 +2,7 @@ import axios from 'axios';
 import config from '../config';
 
 const {
-    ganttsService: { uri, baseRoute, requestTimeout },
+    ganttService: { url, baseRoute, requestTimeout },
 } = config;
 
 export interface IGanttItem {
@@ -41,7 +41,7 @@ export interface ISearchGanttsBody {
 }
 
 export class GanttsService {
-    private static ganttsServiceApi = axios.create({ baseURL: uri, timeout: requestTimeout });
+    private static ganttsServiceApi = axios.create({ baseURL: url, timeout: requestTimeout });
 
     static async searchGantts(searchBody: ISearchGanttsBody) {
         const { data } = await this.ganttsServiceApi.post<IMongoGantt[]>(`${baseRoute}/search`, searchBody);

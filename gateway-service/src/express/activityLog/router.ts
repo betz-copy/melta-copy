@@ -2,10 +2,10 @@ import { Router } from 'express';
 import { createProxyMiddleware, fixRequestBody } from 'http-proxy-middleware';
 import config from '../../config';
 
-const { activityLog } = config;
+const { activityLogService: activityLog } = config;
 
 const ActivityLogProxy = createProxyMiddleware({
-    target: activityLog.uri,
+    target: activityLog.url,
     onProxyReq: fixRequestBody,
     proxyTimeout: activityLog.requestTimeout,
 });

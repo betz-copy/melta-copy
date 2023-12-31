@@ -4,14 +4,14 @@ import fsCreateReadStream from '../utils/fs';
 
 import config from '../config';
 
-const { uri, uploadFileRoute, uploadFilesRoute, deleteFileRoute, deleteFilesRoute, duplicateFilesRoute } = config.storageService;
+const { url, uploadFileRoute, uploadFilesRoute, deleteFileRoute, deleteFilesRoute, duplicateFilesRoute } = config.storageService;
 
 export const uploadFile = async (file: Express.Multer.File) => {
     const formData = new FormData();
     const fileStream = await fsCreateReadStream(file.path);
     formData.append('file', fileStream, file.originalname);
 
-    const { data } = await axios.post<{ path: string }>(`${uri}/${uploadFileRoute}`, formData, {
+    const { data } = await axios.post<{ path: string }>(`${url}/${uploadFileRoute}`, formData, {
         headers: formData.getHeaders(),
     });
 
@@ -28,7 +28,7 @@ export const uploadFiles = async (files: Express.Multer.File[]) => {
         formData.append('files', fileStream, files[index].originalname);
     });
 
-    const { data } = await axios.post<{ path: string }[]>(`${uri}/${uploadFilesRoute}`, formData, {
+    const { data } = await axios.post<{ path: string }[]>(`${url}/${uploadFilesRoute}`, formData, {
         headers: formData.getHeaders(),
     });
 
@@ -36,14 +36,14 @@ export const uploadFiles = async (files: Express.Multer.File[]) => {
 };
 
 export const deleteFile = (fileId: string) => {
-    return axios.delete(`${uri}/${deleteFileRoute}/${encodeURIComponent(fileId)}`);
+    return axios.delete(`${url}/${deleteFileRoute}/${encodeURIComponent(fileId)}`);
 };
 
 export const deleteFiles = (paths: string[]) => {
-    return axios.post(`${uri}/${deleteFilesRoute}`, { paths });
+    return axios.post(`${url}/${deleteFilesRoute}`, { paths });
 };
 
 export const duplicateFiles = async (paths: string[]) => {
-    const { data } = await axios.post(`${uri}/${duplicateFilesRoute}`, { paths });
+    const { data } = await axios.post(`${url}/${duplicateFilesRoute}`, { paths });
     return data;
 };

@@ -5,7 +5,7 @@ import { IMongoRule } from '../../express/rules/interfaces';
 import config from '../../config';
 import { IMongoRelationshipTemplate, ISearchRelationshipTemplatesBody } from '../relationshipTemplateManager';
 
-const { relationshipManager, entityTemplateManager } = config;
+const { relationshipTemplateService: relationshipManager, entityTemplateService: entityTemplateManager } = config;
 
 const generateMongoId = () => uuidv4(); // not really ObjectId of mongo, but good enough
 export const generateTemplates = () => {

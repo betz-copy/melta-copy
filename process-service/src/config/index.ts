@@ -6,11 +6,11 @@ const config = {
         port: env.get('PORT').required().asPortNumber(),
     },
     mongo: {
-        uri: env.get('MONGO_URI').required().asString(),
-        processTemplateCollectionName: env.get('MONGO_PROCESS_TEMPLATE_COLLECTION_NAME').required().asString(),
-        processInstanceCollectionName: env.get('MONGO_PROCESS_INSTANCE_COLLECTION_NAME').required().asString(),
-        stepTemplateCollectionName: env.get('MONGO_STEP_TEMPLATE_COLLECTION_NAME').required().asString(),
-        stepInstanceCollectionName: env.get('MONGO_STEP_INSTANCE_COLLECTION_NAME').required().asString(),
+        url: env.get('MONGO_URL').required().asString(),
+        processTemplatesCollectionName: env.get('MONGO_PROCESS_TEMPLATES_COLLECTION_NAME').required().asString(),
+        processInstancesCollectionName: env.get('MONGO_PROCESS_INSTANCES_COLLECTION_NAME').required().asString(),
+        stepTemplatesCollectionName: env.get('MONGO_STEP_TEMPLATES_COLLECTION_NAME').required().asString(),
+        stepInstancesCollectionName: env.get('MONGO_STEP_INSTANCES_COLLECTION_NAME').required().asString(),
     },
     processFields: {
         name: env.get('PROCESS_FIELDS_NAME').default('name').asString(),

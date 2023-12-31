@@ -28,13 +28,13 @@ apiRouter.use('/instances', instancesRouter);
 apiRouter.use(
     '/files',
     wrapMiddleware(validateUserHasAtLeastSomePermissions),
-    createProxyMiddleware({ target: config.storageService.uri, onProxyReq: fixRequestBody }),
+    createProxyMiddleware({ target: config.storageService.url, onProxyReq: fixRequestBody }),
 );
 
 apiRouter.use(
     '/preview',
     wrapMiddleware(validateUserHasAtLeastSomePermissions),
-    createProxyMiddleware({ target: config.previewService.uri, onProxyReq: fixRequestBody }),
+    createProxyMiddleware({ target: config.previewService.url, onProxyReq: fixRequestBody }),
 );
 
 apiRouter.use('/processes', processesRouter);

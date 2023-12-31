@@ -2,7 +2,7 @@ import axios from 'axios';
 import config from '../config';
 
 const {
-    entityTemplateManager: { uri, baseEntitiesRoute, baseCategoriesRoute, requestTimeout },
+    entityTemplateService: { url, baseEntitiesRoute, baseCategoriesRoute, requestTimeout },
 } = config;
 
 export interface ICategory {
@@ -71,7 +71,7 @@ export interface ISearchEntityTemplatesBody {
 }
 
 export class EntityTemplateManagerService {
-    private static EntityTemplateManagerApi = axios.create({ baseURL: uri, timeout: requestTimeout });
+    private static EntityTemplateManagerApi = axios.create({ baseURL: url, timeout: requestTimeout });
 
     // categories
     static async getAllCategories() {

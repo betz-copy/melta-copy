@@ -3,11 +3,11 @@ import config from '../../config';
 import { IAgGridRequest, IAgGridResult } from '../../utils/agGrid/interface';
 import { ActionTypes, IActionMetadata, IBrokenRule, IRuleBreachAlert, IRuleBreachRequest, RuleBreachRequestStatus } from './interfaces';
 
-const { uri, baseRoute, requestTimeout } = config.ruleBreachService;
+const { url, baseRoute, requestTimeout } = config.ruleBreachService;
 
 export class RuleBreachService {
     private static ruleBreachService = axios.create({
-        baseURL: `${uri}${baseRoute}`,
+        baseURL: `${url}${baseRoute}`,
         timeout: requestTimeout,
     });
 

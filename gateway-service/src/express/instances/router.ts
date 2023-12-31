@@ -28,9 +28,9 @@ import {
 } from './validator.schema';
 import ValidateRequest from '../../utils/joi';
 
-const { instanceManager } = config;
+const { instanceService: instanceManager } = config;
 const InstanceManagerProxy = createProxyMiddleware({
-    target: instanceManager.uri,
+    target: instanceManager.url,
     onProxyReq: fixRequestBody,
     proxyTimeout: instanceManager.requestTimeout,
 });

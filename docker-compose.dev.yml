@@ -47,60 +47,59 @@ services:
 
   neo4j:
     build:
-      context: ./instance-manager
+      context: ./instance-service
       dockerfile: Dockerfile-neo4j
     environment:
       - NEO4J_AUTH=neo4j/test
-      - NEO4J_dbms_security_procedures_unrestricted=apoc.*
+      - NEO4J_dbms_secURLty_procedures_unrestricted=apoc.*
       - NEO4J_ACCEPT_LICENSE_AGREEMENT=yes
     ports:
       - "7474:7474"
       - "7687:7687"
     restart: always
 
-  mock:
-    # image: jawsproject.azurecr.io/mock
-    build: ./mock
+  mock-service:
+    build: ./mock-service
     environment:
-      ENTITY_TEMPLATE_MANAGER_URI: ${ENTITY_TEMPLATE_MANAGER_URI}
-      RELATIONSHIP_TEMPLATE_MANAGER_URI: ${RELATIONSHIP_TEMPLATE_MANAGER_URI}
-      INSTANCE_MANAGER_URI: ${INSTANCE_MANAGER_URI}
-      PERMISSIONS_API_URI: ${PERMISSION_API_URL}
-      PROCESS_SERVICE_URI: ${PROCESS_SERVICE_URI}
-      STORAGE_SERVICE_URI: ${STORAGE_SERVICE_URI}
-      GANTTS_SERVICE_URI: ${GANTTS_SERVICE_URI}
-      PERMISSIONS_API_MANAGERS_KARTOFFEL_IDS: 5e5688324203fc40043591aa,61d37cb5e4de0300121e31ef
+      ENTITY_TEMPLATE_SERVICE_URL: ${ENTITY_TEMPLATE_SERVICE_URL}
+      RELATIONSHIP_TEMPLATE_SERVICE_URL: ${RELATIONSHIP_TEMPLATE_SERVICE_URL}
+      INSTANCE_SERVICE_URL: ${INSTANCE_SERVICE_URL}
+      PERMISSION_SERVICE_URL: ${PERMISSION_SERVICE_URL}
+      PROCESS_SERVICE_URL: ${PROCESS_SERVICE_URL}
+      STORAGE_SERVICE_URL: ${STORAGE_SERVICE_URL}
+      GANTT_SERVICE_URL: ${GANTT_SERVICE_URL}
+      PERMISSION_SERVICE_MANAGERS_KARTOFFEL_IDS: 5e5688324203fc40043591aa,61d37cb5e4de0300121e31ef
       PROCESS_SERVICE_REVIEWERS_KARTOFFEL_IDS: 5e5688d54203fc40043591ac,626e4e5be8e4d7001101b794,5ebbd53f64fe6f2b1c5777ae
     depends_on:
       - neo4j
-      - entity-template-manager
-      - relationship-template-manager
+      - entity-template-service
+      - relationship-template-service
       - storage-service
-      - instance-manager
-      - permission-api
+      - instance-service
+      - permission-service
       - process-service
-      - gantts-service
+      - gantt-service
     restart: on-failure
 
   #-------------------------------------------#
   #        microservices:                     #
   #-------------------------------------------#
-  entity-template-manager:
+  entity-template-service:
     ports:
       - 8001:8000
     restart: always
 
-  relationship-template-manager:
+  relationship-template-service:
     ports:
       - 8002:8000
     restart: always
 
-  backend:
+  gateway-service:
     ports:
       - 8003:8000
     restart: always
 
-  permission-api:
+  permission-service:
     ports:
       - 8005:8000
     restart: always
@@ -110,17 +109,17 @@ services:
       - 8006:8000
     restart: always
 
-  instance-manager:
+  instance-service:
     ports:
       - 8007:8000
     restart: always
   
-  gateway:
+  nginx:
     ports:
       - 80:80
     restart: always
 
-  global-search-index-creator:
+  global-search-service:
     restart: always
 
   notification-service:
@@ -134,7 +133,7 @@ services:
       - 8008:8000
     restart: always
   
-  gantts-service:
+  gantt-service:
     ports:
       - 8009:8000
     restart: always

@@ -3,7 +3,7 @@ import { config } from './config';
 import { minioClient } from './utils/minio/minioClient';
 
 const main = async () => {
-    const { uri: endPoint, port, accessKey, secretKey, bucketName, useSSL } = config.minio;
+    const { url: endPoint, port, accessKey, secretKey, bucketName, useSSL } = config.minio;
     await minioClient.initialize(endPoint, port, accessKey, secretKey, bucketName, useSSL);
 
     console.log(`Preview connection established!`);

@@ -8,11 +8,11 @@ import { isProcessManager } from '../permissionsApi';
 import { NotFoundError } from '../../express/processes/error';
 
 const {
-    processService: { uri, templatesBaseRoute, instancesBaseRoute, requestTimeout },
+    processService: { url, templatesBaseRoute, instancesBaseRoute, requestTimeout },
 } = config;
 
 export class ProcessManagerService {
-    private static processServiceManagerApi = axios.create({ baseURL: uri, timeout: requestTimeout });
+    private static processServiceManagerApi = axios.create({ baseURL: url, timeout: requestTimeout });
 
     // processes templates
     static async searchProcessTemplates(body: ISearchProcessTemplatesBody) {

@@ -15,7 +15,7 @@ import * as relationshipTemplateManager from '../src/relationshipTemplateManager
 jest.mock('../src/relationshipTemplateManager');
 const relationshipTemplateManagerMocked = jest.mocked(relationshipTemplateManager, true);
 
-const testUri = 'mongodb://localhost:27017/test';
+const testUrl = 'mongodb://localhost:27017/test';
 
 const deleteAllCollections = async () => {
     await categoryModel.deleteMany({});
@@ -40,7 +40,7 @@ describe('Router Tests', () => {
     let app: Express;
 
     beforeAll(async () => {
-        await mongoose.connect(testUri);
+        await mongoose.connect(testUrl);
         await deleteAllCollections();
     });
 

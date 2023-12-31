@@ -30,7 +30,7 @@ describe('e2e notifications api testing', () => {
     let app: Express;
 
     beforeAll(async () => {
-        await mongoose.connect(mongo.uri);
+        await mongoose.connect(mongo.url);
         app = Server.createExpressApp();
     });
 

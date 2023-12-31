@@ -1,9 +1,9 @@
-name: 'mock'
+name: 'mock-service'
 replicaCount: 1
 
 images:
     PullSecrets: [jawsreg]
-    repository: jawsproject.azurecr.io/mock
+    repository: jawsproject.azurecr.io/mock-service
     tag: latest
 
 service:
@@ -12,21 +12,21 @@ service:
 config:
     configmaps: []
     env:
-        - name: ENTITY_TEMPLATE_MANAGER_URI
-          value: http://entity-template-manager:8000
-        - name: RELATIONSHIP_TEMPLATE_MANAGER_URI
-          value: http://relationship-template-manager:8000
-        - name: INSTANCE_MANAGER_URI
-          value: http://instance-manager:8000
-        - name: PERMISSIONS_API_URI
-          value: http://permission-api:8000
-        - name: PROCESS_SERVICE_URI
+        - name: ENTITY_TEMPLATE_SERVICE_URL
+          value: http://entity-template-service:8000
+        - name: RELATIONSHIP_TEMPLATE_SERVICE_URL
+          value: http://relationship-template-service:8000
+        - name: INSTANCE_SERVICE_URL
+          value: http://instance-service:8000
+        - name: PERMISSION_SERVICE_URL
+          value: http://permission-service:8000
+        - name: PROCESS_SERVICE_URL
           value: http://process-service:8000
-        - name: GANTTS_SERVICE_URI
-          value: http://gantts-service:8000
-        - name: PERMISSIONS_API_MANAGERS_KARTOFFEL_IDS
+        - name: GANTT_SERVICE_URL
+          value: http://gantt-service:8000
+        - name: PERMISSION_SERVICE_MANAGERS_KARTOFFEL_IDS
           value: 61d37cb5e4de0300121e31ef,5e5688324203fc40043591aa
         - name: PROCESS_SERVICE_REVIEWERS_KARTOFFEL_IDS
           value: 5e5688d54203fc40043591ac,626e4e5be8e4d7001101b794,5ebbd53f64fe6f2b1c5777ae
-        - name: STORAGE_SERVICE_URI
+        - name: STORAGE_SERVICE_URL
           value: http://storage-service:8000

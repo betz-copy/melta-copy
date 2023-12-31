@@ -6,19 +6,19 @@ services:
     ports:
       - 27017:27017
 
-  entity-template-manager:
+  entity-template-service:
     build: .
     environment:
       PORT: 8000
-      MONGO_URI: mongodb://mongo:27017/entityTemplateManager
-      MONGO_ENTITY_TEMPLATE_COLLECTION_NAME: entityTemplate
-      MONGO_CATEGORY_COLLECTION_NAME : category
-      STORAGE_SERVICE_URI : http://localhost:8001
+      MONGO_URL: mongodb://mongo:27017/entity-template-service
+      MONGO_ENTITY_TEMPLATES_COLLECTION_NAME: entityTemplates
+      MONGO_CATEGORIES_COLLECTION_NAME : categories
+      STORAGE_SERVICE_URL : http://localhost:8001
       STORAGE_SERVICE_UPLOAD_FILE_ROUTE : /api/files
       STORAGE_SERVICE_DOWNLOAD_FILE_ROUTE : /api/files
       STORAGE_SERVICE_DELETE_FILE_ROUTE : /api/files
-      RELATIONSHIP_TEMPLATE_MANAGER_URI : http://relationship-template-manager:8000
-      RABBIT_URI : amqp://rabbit
+      RELATIONSHIP_TEMPLATE_SERVICE_URL : http://relationship-template-service:8000
+      RABBIT_URL : amqp://rabbit
 
   rabbit:
     image: rabbitmq:3-management

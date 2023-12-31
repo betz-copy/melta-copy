@@ -10,7 +10,7 @@ import { trycatch } from './utils';
 const limit = pLimit(config.requestLimit);
 
 const {
-    uri,
+    url,
     createEntityRoute,
     maxNumberOfEntities,
     minNumberOfEntities,
@@ -18,7 +18,7 @@ const {
     maxNumberOfRelationships,
     minNumberOfRelationships,
     isAliveRoute,
-} = config.instanceManager;
+} = config.instanceService;
 
 export const createInstances = async (entityTemplates: IMongoEntityTemplate[], chance: Chance.Chance, fileId: string) => {
     format('fileId', (_value) => fileId);
@@ -26,7 +26,7 @@ export const createInstances = async (entityTemplates: IMongoEntityTemplate[], c
         .map((entityTemplate) => {
             return Array.from({ length: chance.integer({ min: minNumberOfEntities, max: maxNumberOfEntities }) }, () =>
                 limit(() =>
-                    axios.post(uri + createEntityRoute, {
+                    axios.post(url + createEntityRoute, {
                         properties: generate(entityTemplate.properties),
                         templateId: entityTemplate._id,
                     }),
@@ -57,7 +57,7 @@ export const createRelationshipInstances = async (
 
                 return limit(async () => {
                     const { result } = await trycatch(() =>
-                        axios.post(uri + createRelationshipRoute, {
+                        axios.post(url + createRelationshipRoute, {
                             relationshipInstance: {
                                 sourceEntityId,
                                 destinationEntityId,
@@ -76,8 +76,8 @@ export const createRelationshipInstances = async (
     return results.map((result) => result?.data);
 };
 
-export const isInstanceManagerAlive = async () => {
-    const { result, err } = await trycatch(() => axios.get(uri + isAliveRoute));
+export const isInstanceServiceAlive = async () => {
+    const { result, err } = await trycatch(() => axios.get(url + isAliveRoute));
 
     return { result, err };
 };

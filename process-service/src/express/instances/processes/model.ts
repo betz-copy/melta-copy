@@ -7,7 +7,7 @@ const ProcessInstanceSchema = new mongoose.Schema<IProcessInstance>(
         templateId: {
             type: String,
             required: true,
-            ref: config.mongo.processTemplateCollectionName,
+            ref: config.mongo.processTemplatesCollectionName,
         },
         name: {
             type: String,
@@ -32,7 +32,7 @@ const ProcessInstanceSchema = new mongoose.Schema<IProcessInstance>(
         steps: [
             {
                 type: String,
-                ref: config.mongo.stepInstanceCollectionName,
+                ref: config.mongo.stepInstancesCollectionName,
                 required: true,
             },
         ],
@@ -45,6 +45,6 @@ const ProcessInstanceSchema = new mongoose.Schema<IProcessInstance>(
 );
 
 ProcessInstanceSchema.index({ name: 1 }, { unique: true });
-const ProcessInstanceModel = mongoose.model<ProcessInstanceDocument>(config.mongo.processInstanceCollectionName, ProcessInstanceSchema);
+const ProcessInstanceModel = mongoose.model<ProcessInstanceDocument>(config.mongo.processInstancesCollectionName, ProcessInstanceSchema);
 
 export default ProcessInstanceModel;
