@@ -6,11 +6,11 @@ services:
     ports:
       - 27017:27017
 
-  permission-api:
+  permission-service:
     build: .
     environment:
       PORT: 8000
-      MONGO_URI: mongodb://mongo
+      MONGO_URL: mongodb://mongo
       MONGO_PERMISSIONS_COLLECTION_NAME: permissions
     ports:
       - 8000:8000

@@ -21,7 +21,7 @@ const fakeObjectId2 = '507f1f77bcf86cd795443901';
 const { mongo } = config;
 
 const initializeMongo = async () => {
-    await mongoose.connect(mongo.uri, { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false, useCreateIndex: true });
+    await mongoose.connect(mongo.url, { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false, useCreateIndex: true });
 };
 
 const removeAllCollections = async () => {

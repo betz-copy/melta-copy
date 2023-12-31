@@ -1,9 +1,9 @@
-name: "instance-manager"
+name: "instance-service"
 replicaCount: 1
 
 images:
   PullSecrets: [jawsreg]
-  repository: jawsproject.azurecr.io/instance-manager
+  repository: jawsproject.azurecr.io/instance-service
   tag: latest
 
 service:
@@ -34,9 +34,9 @@ config:
       value: neo4j
     - name: NEO4J_URL
       value: neo4j://neo4j
-    - name: ENTITY_TEMPLATE_MANAGER_URL
-      value: http://entity-template-manager:8000
-    - name: RELATIONSHIP_TEMPLATE_MANAGER_URL
-      value: http://relationship-template-manager:8000      
+    - name: ENTITY_TEMPLATE_SERVICE_URL
+      value: http://entity-template-service:8000
+    - name: RELATIONSHIP_TEMPLATE_SERVICE_URL
+      value: http://relationship-template-service:8000      
     - name: REDIS_HOST
       value: redis://:ZjtUJvwPOY@redis:6379

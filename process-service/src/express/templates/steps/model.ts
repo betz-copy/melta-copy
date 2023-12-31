@@ -35,6 +35,6 @@ const StepTemplateSchema = new mongoose.Schema<IStepTemplate>(
     },
 );
 
-const StepTemplateModel = mongoose.model<StepTemplateDocument>(config.mongo.stepTemplateCollectionName, StepTemplateSchema);
+const StepTemplateModel = mongoose.model<StepTemplateDocument>(config.mongo.stepTemplatesCollectionName, StepTemplateSchema);
 
 export default StepTemplateModel;

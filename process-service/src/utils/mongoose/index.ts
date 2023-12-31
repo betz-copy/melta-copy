@@ -64,7 +64,7 @@ export const getProcessTemplatesByReviewerIdAggregation = async (
         { $match: query },
         {
             $lookup: {
-                from: config.mongo.stepInstanceCollectionName,
+                from: config.mongo.stepInstancesCollectionName,
                 let: { steps: '$steps' },
                 pipeline: [
                     {
@@ -80,7 +80,7 @@ export const getProcessTemplatesByReviewerIdAggregation = async (
         },
         {
             $lookup: {
-                from: config.mongo.stepTemplateCollectionName,
+                from: config.mongo.stepTemplatesCollectionName,
                 let: { steps: '$steps' },
                 pipeline: [
                     {
@@ -131,7 +131,7 @@ export const searchAllowedProcessInstanceForReviewerAggregation = (
         { $match: query },
         {
             $lookup: {
-                from: config.mongo.stepInstanceCollectionName,
+                from: config.mongo.stepInstancesCollectionName,
                 let: { steps: '$steps' },
                 pipeline: [
                     {
@@ -147,7 +147,7 @@ export const searchAllowedProcessInstanceForReviewerAggregation = (
         },
         {
             $lookup: {
-                from: config.mongo.stepTemplateCollectionName,
+                from: config.mongo.stepTemplatesCollectionName,
                 let: { steps: '$steps' },
                 pipeline: [
                     {

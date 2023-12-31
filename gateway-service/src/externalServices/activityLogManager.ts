@@ -2,7 +2,7 @@ import axios from 'axios';
 import config from '../config';
 
 const {
-    activityLog: { uri, baseRoute, requestTimeout },
+    activityLogService: { url, baseRoute, requestTimeout },
 } = config;
 
 export interface IUpdatedFields {
@@ -36,7 +36,7 @@ interface IUpdateEntityMetadata extends IBaseActivityLog {
 export type IActivityLog = IEmptyMetadata | IRelationshipMetadata | IUpdateEntityMetadata;
 
 export class ActivityLogManagerService {
-    private static ActivityLogManagerApi = axios.create({ baseURL: uri, timeout: requestTimeout });
+    private static ActivityLogManagerApi = axios.create({ baseURL: url, timeout: requestTimeout });
 
     static async createActivityLog(activityLog: Omit<IActivityLog, '_id'>) {
         const { data } = await this.ActivityLogManagerApi.post(baseRoute, activityLog);

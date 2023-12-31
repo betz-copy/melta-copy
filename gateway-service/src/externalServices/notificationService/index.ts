@@ -5,12 +5,12 @@ import { INotification, NotificationType } from './interfaces';
 
 const {
     rabbit,
-    notificationService: { uri, baseRoute, requestTimeout },
+    notificationService: { url, baseRoute, requestTimeout },
 } = config;
 
 export class NotificationService {
     private static notificationService = axios.create({
-        baseURL: `${uri}${baseRoute}`,
+        baseURL: `${url}${baseRoute}`,
         timeout: requestTimeout,
     });
 

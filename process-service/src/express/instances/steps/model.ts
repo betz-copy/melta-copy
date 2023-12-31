@@ -8,7 +8,7 @@ const StepInstanceSchema = new mongoose.Schema<IStepInstance>(
         templateId: {
             type: String,
             required: true,
-            ref: config.mongo.stepTemplateCollectionName,
+            ref: config.mongo.stepTemplatesCollectionName,
         },
         status: {
             type: String,
@@ -26,6 +26,6 @@ const StepInstanceSchema = new mongoose.Schema<IStepInstance>(
     },
 );
 
-const StepInstanceModel = mongoose.model<StepInstanceDocument>(config.mongo.stepInstanceCollectionName, StepInstanceSchema);
+const StepInstanceModel = mongoose.model<StepInstanceDocument>(config.mongo.stepInstancesCollectionName, StepInstanceSchema);
 
 export default StepInstanceModel;

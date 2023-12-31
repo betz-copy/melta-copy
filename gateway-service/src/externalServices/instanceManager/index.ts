@@ -6,11 +6,11 @@ import { IRelationship } from './interfaces/relationships';
 import { IConnection } from './interfaces/rules';
 
 const {
-    instanceManager: { uri, baseEntitiesRoute, baseRelationshipsRoute, baseConstraintsRoute, requestTimeout, searchOfTemplateRoute },
+    instanceService: { url, baseEntitiesRoute, baseRelationshipsRoute, baseConstraintsRoute, requestTimeout, searchOfTemplateRoute },
 } = config;
 
 export class InstanceManagerService {
-    private static InstanceManagerApi = axios.create({ baseURL: uri, timeout: requestTimeout });
+    private static InstanceManagerApi = axios.create({ baseURL: url, timeout: requestTimeout });
 
     // entity instances
     static async getEntityInstanceById(id: string) {

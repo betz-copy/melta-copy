@@ -5,7 +5,7 @@ import config from '../config/index';
 export const getPermissionsToCreate = (categories: IMongoCategory[]) => {
     const permissions: IPermission[] = [];
 
-    config.permissionsApi.managersKrtoffelIds.forEach((kartoffelId) => {
+    config.permissionsService.managersKrtoffelIds.forEach((kartoffelId) => {
         const permissionsResourcePermission: IPermission = {
             userId: kartoffelId,
             resourceType: 'Permissions',

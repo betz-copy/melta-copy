@@ -3,13 +3,13 @@ import { Chance } from 'chance';
 import { JSONSchemaFaker } from 'json-schema-faker';
 import config from './config';
 import { createCategories, getCategories } from './categories';
-import { createEntityTemplates, isEntityTemplateManagerAlive } from './entityTemplates';
+import { createEntityTemplates, isEntityTemplateServiceAlive } from './entityTemplates';
 import { categories } from './mocks/categories';
 import { entityTemplates } from './mocks/entityTemplates';
-import { createInstances, createRelationshipInstances, isInstanceManagerAlive } from './instances';
-import { createRelationshipTemplates, isRelationshipTemplateManagerAlive } from './relationshipTemplates';
+import { createInstances, createRelationshipInstances, isInstanceServiceAlive } from './instances';
+import { createRelationshipTemplates, isRelationshipTemplateServiceAlive } from './relationshipTemplates';
 import { relationshipTemplates } from './mocks/relationshipTemplates';
-import { createPermissionsBulk, isPermissionsApiAlive } from './permissionsApi';
+import { createPermissionsBulk, isPermissionServiceAlive } from './permissionsApi';
 import { getPermissionsToCreate } from './mocks/permissionsApi';
 import { createRules } from './rules';
 import { createProcessTemplates, isProcessServiceAlive } from './processTemplate';
@@ -21,10 +21,10 @@ import { createGantts } from './gantts';
 const main = async () => {
     console.log(`Mock started ${JSON.stringify(config, null, 4)}`);
 
-    const { err: entityTemplateManagerAliveErr } = await isEntityTemplateManagerAlive();
-    if (entityTemplateManagerAliveErr) {
-        console.log('Entity Template Manager is not alive');
-        throw entityTemplateManagerAliveErr;
+    const { err: entityTemplateServiceAliveErr } = await isEntityTemplateServiceAlive();
+    if (entityTemplateServiceAliveErr) {
+        console.log('Entity Template Service is not alive');
+        throw entityTemplateServiceAliveErr;
     }
 
     const { err: processServiceAliveErr } = await isProcessServiceAlive();
@@ -33,22 +33,22 @@ const main = async () => {
         throw processServiceAliveErr;
     }
 
-    const { err: relationshipTemplateManagerAliveErr } = await isRelationshipTemplateManagerAlive();
-    if (relationshipTemplateManagerAliveErr) {
-        console.log('Relationship Template Manager is not alive');
-        throw relationshipTemplateManagerAliveErr;
+    const { err: relationshipTemplateServiceAliveErr } = await isRelationshipTemplateServiceAlive();
+    if (relationshipTemplateServiceAliveErr) {
+        console.log('Relationship Template Service is not alive');
+        throw relationshipTemplateServiceAliveErr;
     }
 
-    const { err: permissionsApiAliveErr } = await isPermissionsApiAlive();
-    if (permissionsApiAliveErr) {
-        console.log('Permissions API is not alive');
-        throw permissionsApiAliveErr;
+    const { err: permissionServiceAliveErr } = await isPermissionServiceAlive();
+    if (permissionServiceAliveErr) {
+        console.log('Permission Service is not alive');
+        throw permissionServiceAliveErr;
     }
 
-    const { err: instanceManagerAliveErr } = await isInstanceManagerAlive();
-    if (instanceManagerAliveErr) {
-        console.log('Instance Manager is not alive');
-        throw instanceManagerAliveErr;
+    const { err: instanceServiceAliveErr } = await isInstanceServiceAlive();
+    if (instanceServiceAliveErr) {
+        console.log('Instance Service is not alive');
+        throw instanceServiceAliveErr;
     }
 
     const { err: storageServiceAliveErr } = await isStorageServiceAlive();

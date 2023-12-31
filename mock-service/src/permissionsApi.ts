@@ -2,7 +2,7 @@ import axios from 'axios';
 import config from './config';
 import { trycatch } from './utils';
 
-const { uri, baseRoute, isAliveRoute } = config.permissionsApi;
+const { url, baseRoute, isAliveRoute } = config.permissionsService;
 
 export const resourceTypeOptions = ['Templates', 'Instances', 'Permissions', 'Rules', 'Processes'] as const;
 export type ResourceType = (typeof resourceTypeOptions)[number];
@@ -22,7 +22,7 @@ export interface IMongoPermission {
 }
 
 const permissionsAxios = axios.create({
-    baseURL: uri,
+    baseURL: url,
 });
 
 export const createPermission = async (permission: IPermission) => {
@@ -36,8 +36,8 @@ export const createPermissionsBulk = async (permissions: IPermission[]) => {
     return Promise.all(createdPermissionsPromises);
 };
 
-export const isPermissionsApiAlive = async () => {
-    const { result, err } = await trycatch(() => axios.get(uri + isAliveRoute));
+export const isPermissionServiceAlive = async () => {
+    const { result, err } = await trycatch(() => axios.get(url + isAliveRoute));
 
     return { result, err };
 };

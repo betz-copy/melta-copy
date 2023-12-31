@@ -19,7 +19,7 @@ export default class StepInstanceManager {
     }
 
     static async getStepTemplateByStepInstanceId(id: string): Promise<IMongoStepTemplate> {
-        const [result] = await getTemplateAggregation(StepInstanceModel, config.mongo.stepTemplateCollectionName, id);
+        const [result] = await getTemplateAggregation(StepInstanceModel, config.mongo.stepTemplatesCollectionName, id);
         if (!result) throw new NotFoundError('step', id);
         return result;
     }

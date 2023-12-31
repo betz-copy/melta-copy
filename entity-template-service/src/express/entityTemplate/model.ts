@@ -17,7 +17,7 @@ const EntityTemplateSchema = new mongoose.Schema(
         },
         category: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: config.mongo.categoryCollectionName,
+            ref: config.mongo.categoriesCollectionName,
             required: true,
             index: true,
         },
@@ -54,6 +54,6 @@ const EntityTemplateSchema = new mongoose.Schema(
 
 EntityTemplateSchema.index({ displayName: 'text' });
 
-const EntityTemplateModel = mongoose.model<IEntityTemplate & mongoose.Document>(config.mongo.entityTemplateCollectionName, EntityTemplateSchema);
+const EntityTemplateModel = mongoose.model<IEntityTemplate & mongoose.Document>(config.mongo.entityTemplatesCollectionName, EntityTemplateSchema);
 
 export default EntityTemplateModel;

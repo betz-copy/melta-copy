@@ -1,9 +1,9 @@
-name: "global-search-index-creator"
+name: "global-search-service"
 replicaCount: 1
 
 images:
   PullSecrets: [jawsreg]
-  repository: jawsproject.azurecr.io/global-search-index-creator
+  repository: jawsproject.azurecr.io/global-search-service
   tag: latest
 
 service:
@@ -22,11 +22,11 @@ config:
       value: neo4j
     - name: NEO4J_URL
       value: neo4j://neo4j
-    - name: TEMPLATE_MANAGER_URL
-      value: http://entity-template-manager:8000
-    - name: RELATIONSHIP_MANAGER_URL
-      value: http://relationship-template-manager:8000      
+    - name: ENTITY_TEMPLATE_SERVICE_URL
+      value: http://entity-template-service:8000
+    - name: RELATIONSHIP_TEMPLATE_SERVICE_URL
+      value: http://relationship-template-service:8000      
     - name: REDIS_HOST
       value: redis://:ZjtUJvwPOY@redis:6379  
-    - name: RABBIT_URI
+    - name: RABBIT_URL
       value: amqp://jaws:jawsAreTheBest@20.105.9.117:5672/jaws

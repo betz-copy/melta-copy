@@ -3,7 +3,7 @@ import config from '../config';
 import { IRule } from '../express/templates/rules/interfaces';
 
 const {
-    relationshipTemplateManager: { uri, baseRelationshipsRoute, baseRulesRoute, updateRuleStatusByIdRouteSuffix, requestTimeout },
+    relationshipTemplateService: { url, baseRelationshipsRoute, baseRulesRoute, updateRuleStatusByIdRouteSuffix, requestTimeout },
 } = config;
 
 export interface IRelationshipTemplate {
@@ -33,7 +33,7 @@ export interface ISearchRulesBody {
 }
 
 export class RelationshipsTemplateManagerService {
-    private static RelationshipsTemplateManagerApi = axios.create({ baseURL: uri, timeout: requestTimeout });
+    private static RelationshipsTemplateManagerApi = axios.create({ baseURL: url, timeout: requestTimeout });
 
     static async searchRelationshipTemplates(searchBody: ISearchRelationshipTemplatesBody = {}) {
         const { data } = await this.RelationshipsTemplateManagerApi.post<IRelationshipTemplate[]>(`${baseRelationshipsRoute}/search`, searchBody);

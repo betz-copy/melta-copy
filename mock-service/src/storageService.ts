@@ -5,7 +5,7 @@ import FormData = require('form-data');
 import config from './config';
 import { trycatch } from './utils';
 
-const { uri, uploadFileRoute, fileData, fileName, isAliveRoute } = config.storageService;
+const { url, uploadFileRoute, fileData, fileName, isAliveRoute } = config.storageService;
 export const uploadFile = async () => {
     const filePath = path.join(__dirname, fileName);
 
@@ -15,7 +15,7 @@ export const uploadFile = async () => {
         const formData = new FormData();
         formData.append('file', fs.createReadStream(filePath));
 
-        const { data } = await axios.post(uri + uploadFileRoute, formData, {
+        const { data } = await axios.post(url + uploadFileRoute, formData, {
             headers: formData.getHeaders(),
         });
 
@@ -29,7 +29,7 @@ export const uploadFile = async () => {
 };
 
 export const isStorageServiceAlive = async () => {
-    const { result, err } = await trycatch(() => axios.get(uri + isAliveRoute));
+    const { result, err } = await trycatch(() => axios.get(url + isAliveRoute));
 
     return { result, err };
 };

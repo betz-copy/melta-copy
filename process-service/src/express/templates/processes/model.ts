@@ -19,7 +19,7 @@ const ProcessTemplateSchema = new mongoose.Schema<IProcessTemplate>(
         steps: [
             {
                 type: String,
-                ref: config.mongo.stepTemplateCollectionName,
+                ref: config.mongo.stepTemplatesCollectionName,
                 required: true,
             },
         ],
@@ -33,6 +33,6 @@ const ProcessTemplateSchema = new mongoose.Schema<IProcessTemplate>(
 ProcessTemplateSchema.index({ name: 1 }, { unique: true });
 ProcessTemplateSchema.index({ displayName: 1 }, { unique: true });
 
-const ProcessTemplateModel = mongoose.model<ProcessTemplateDocument>(config.mongo.processTemplateCollectionName, ProcessTemplateSchema);
+const ProcessTemplateModel = mongoose.model<ProcessTemplateDocument>(config.mongo.processTemplatesCollectionName, ProcessTemplateSchema);
 
 export default ProcessTemplateModel;

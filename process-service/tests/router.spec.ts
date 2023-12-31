@@ -15,7 +15,7 @@ import processInstanceExample1, { errStepsPropertiesExample1, stepsPropertiesExa
 import { IMongoStepInstance, UpdateStepReqBody } from '../src/express/instances/steps/interface';
 import StepInstanceManager from '../src/express/instances/steps/manager';
 
-const testUri = 'mongodb://localhost:27017/test';
+const testUrl = 'mongodb://localhost:27017/test';
 const randomMongoId = () => {
     return String(new mongoose.Types.ObjectId());
 };
@@ -94,7 +94,7 @@ describe('Test Process Service', () => {
     let processInstance: IMongoProcessInstancePopulated;
 
     beforeAll(async () => {
-        await mongoose.connect(testUri, { useUnifiedTopology: true });
+        await mongoose.connect(testUrl, { useUnifiedTopology: true });
         app = Server.createExpressApp();
     });
 

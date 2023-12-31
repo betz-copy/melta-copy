@@ -6,8 +6,8 @@ const config = {
         port: env.get('PORT').required().asPortNumber(),
     },
     mongo: {
-        uri: env.get('MONGO_URI').required().asString(),
-        activityLogCollectionName: env.get('MONGO_ACTIVITY_LOG_COLLECTION_NAME').required().asString(),
+        url: env.get('MONGO_URL').required().asString(),
+        activitiesCollectionName: env.get('MONGO_ACTIVITIES_COLLECTION_NAME').required().asString(),
     },
 };
 

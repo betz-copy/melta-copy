@@ -20,7 +20,7 @@
       "not op_mini all"
     ]
   },
-  "name": "frontend",
+  "name": "frontend-service",
   "version": "1.0.0",
   "description": "",
   "main": "",

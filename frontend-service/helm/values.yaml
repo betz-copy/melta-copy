@@ -1,9 +1,9 @@
-name: 'frontend'
+name: 'frontend-service'
 replicaCount: 1
 
 images:
   PullSecrets: [jawsreg]
-  repository: jawsproject.azurecr.io/frontend
+  repository: jawsproject.azurecr.io/frontend-service
   tag: latest
 
 service:
@@ -17,7 +17,7 @@ ingress:
     - host: jaws.branch-yesodot.org
       paths:
         - path: /
-          service: frontend
+          service: frontend-service
           port: '8000'
 
 livenessProbe:

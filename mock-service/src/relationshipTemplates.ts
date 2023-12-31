@@ -3,7 +3,7 @@ import config from './config';
 import { IMongoEntityTemplate } from './entityTemplates';
 import { trycatch } from './utils';
 
-const { uri, createRelationshipTemplateRoute, isAliveRoute } = config.relationshipTemplateManager;
+const { url, createRelationshipTemplateRoute, isAliveRoute } = config.relationshipTemplateService;
 
 export interface IRelationshipTemplate {
     name: string;
@@ -20,7 +20,7 @@ export interface IMongoRelationshipTemplate extends Omit<IRelationshipTemplate, 
 
 export const createRelationshipTemplates = async (relationshipTemplates: IRelationshipTemplate[], entityTemplates: IMongoEntityTemplate[]) => {
     const promises = relationshipTemplates.map((relationshipTemplate) => {
-        return axios.post<IMongoRelationshipTemplate>(uri + createRelationshipTemplateRoute, {
+        return axios.post<IMongoRelationshipTemplate>(url + createRelationshipTemplateRoute, {
             ...relationshipTemplate,
             sourceEntityId: entityTemplates.find((entityTemplate) => relationshipTemplate.sourceEntityId.name === entityTemplate.name)?._id,
             destinationEntityId: entityTemplates.find((entityTemplate) => relationshipTemplate.destinationEntityId.name === entityTemplate.name)?._id,
@@ -32,8 +32,8 @@ export const createRelationshipTemplates = async (relationshipTemplates: IRelati
     return results.map((result) => result.data);
 };
 
-export const isRelationshipTemplateManagerAlive = async () => {
-    const { result, err } = await trycatch(() => axios.get(uri + isAliveRoute));
+export const isRelationshipTemplateServiceAlive = async () => {
+    const { result, err } = await trycatch(() => axios.get(url + isAliveRoute));
 
     return { result, err };
 };

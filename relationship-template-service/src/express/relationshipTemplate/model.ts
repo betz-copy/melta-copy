@@ -39,7 +39,7 @@ RelationshipTemplateSchema.index({ sourceEntityId: 1 });
 RelationshipTemplateSchema.index({ destinationEntityId: 1 });
 
 const RelationshipTemplateModel = mongoose.model<IRelationshipTemplate & mongoose.Document>(
-    config.mongo.relationshipTemplateCollectionName,
+    config.mongo.relationshipTemplatesCollectionName,
     RelationshipTemplateSchema,
 );
 

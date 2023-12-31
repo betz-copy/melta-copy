@@ -1,9 +1,9 @@
-name: "backend"
+name: "gateway-service"
 replicaCount: 1
 
 images:
   PullSecrets: [jawsreg]
-  repository: jawsproject.azurecr.io/backend
+  repository: jawsproject.azurecr.io/gateway-service
   tag: latest
 
 service:
@@ -18,24 +18,24 @@ config:
       value: 8000
     - name: TOKEN_SECRET
       value: secret
-    - name: ENTITY_TEMPLATE_MANAGER_URI
-      value: http://entity-template-manager:8000
-    - name: RELATIONSHIP_TEMPLATE_MANAGER_URI
-      value: http://relationship-template-manager:8000
-    - name: INSTANCE_MANAGER_URI
-      value: http://instance-manager:8000
-    - name: PERMISSION_API_BASE_URL
-      value: http://permission-api:8000
-    - name: STORAGE_SERVICE_URI
+    - name: ENTITY_TEMPLATE_SERVICE_URL
+      value: http://entity-template-service:8000
+    - name: RELATIONSHIP_TEMPLATE_SERVICE_URL
+      value: http://relationship-template-service:8000
+    - name: INSTANCE_SERVICE_URL
+      value: http://instance-service:8000
+    - name: PERMISSION_SERVICE_BASE_URL
+      value: http://permission-service:8000
+    - name: STORAGE_SERVICE_URL
       value: http://storage-service:8000
-    - name: ACTIVITY_LOG_URI
-      value: http://activity-log:8000    
-    - name: NOTIFICATION_SERVICE_URI
+    - name: ACTIVITY_LOG_SERVICE_URL
+      value: http://activity-log-service:8000    
+    - name: NOTIFICATION_SERVICE_URL
       value: http://notification-service:8000
-    - name: PROCESS_SERVICE_URI
+    - name: PROCESS_SERVICE_URL
       value: http://process-service:8000
-    - name: GANTTS_SERVICE_URI
-      value: http://gantts-service:8000
+    - name: GANTT_SERVICE_URL
+      value: http://gantt-service:8000
     - name: KARTOFFEL_BASE_URL
       value: https://kartoffel.branch-yesodot.org
     - name: CALLBACK_URL
@@ -48,11 +48,11 @@ config:
       value: /unavailable
     - name: NODE_TLS_REJECT_UNAUTHORIZED
       value: '0'
-    - name: NOTIFICATION_SERVICE_URI
+    - name: NOTIFICATION_SERVICE_URL
       value: http://notification-service:8000 
-    - name: RULE_BREACH_SERVICE_URI
+    - name: RULE_BREACH_SERVICE_URL
       value: http://rule-breach-service:8000  
-    - name: RABBIT_URI
+    - name: RABBIT_URL
       value: amqp://jaws:jawsAreTheBest@20.105.9.117:5672/jaws
     - name:  STORAGE_SERVICE_FILE_HYPER_LINK
       value: http://jaws.branch-yesodot.org/api/files
@@ -77,5 +77,5 @@ ingress:
     - host: jaws.branch-yesodot.org
       paths:
         - path: /api
-          service: backend
+          service: gateway-service
           port: '8000'

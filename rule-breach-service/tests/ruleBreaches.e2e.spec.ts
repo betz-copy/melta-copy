@@ -31,7 +31,7 @@ describe('e2e rule breaches api testing', () => {
     let app: Express;
 
     beforeAll(async () => {
-        await mongoose.connect(mongo.uri);
+        await mongoose.connect(mongo.url);
         app = Server.createExpressApp();
     });
 

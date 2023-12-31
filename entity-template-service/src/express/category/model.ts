@@ -29,6 +29,6 @@ const CategorySchema = new mongoose.Schema(
 
 CategorySchema.index({ displayName: 'text' });
 
-const CategoryModel = mongoose.model<ICategory & mongoose.Document>(config.mongo.categoryCollectionName, CategorySchema);
+const CategoryModel = mongoose.model<ICategory & mongoose.Document>(config.mongo.categoriesCollectionName, CategorySchema);
 
 export default CategoryModel;

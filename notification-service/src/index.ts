@@ -10,7 +10,7 @@ const { mongo, rabbit, service } = config;
 const initializeMongo = async () => {
     console.log('Connecting to Mongo...');
 
-    await mongoose.connect(mongo.uri);
+    await mongoose.connect(mongo.url);
 
     console.log('Mongo connection established');
 };
@@ -18,7 +18,7 @@ const initializeMongo = async () => {
 const initializeRabbit = async () => {
     console.log('Connecting to Rabbit...');
 
-    await menash.connect(rabbit.uri, rabbit.retryOptions);
+    await menash.connect(rabbit.url, rabbit.retryOptions);
 
     console.log('Rabbit connected');
 

@@ -22,11 +22,11 @@ services:
       - 5672:5672
       - 15672:15672
 
-  notifications:
+  notification-service:
     build: .
     ports:
       - 8000:8000
     environment:
       PORT: 8000
-      MONGO_URI: mongodb://mongo
-      RABBIT_URI: amqp://rabbit
+      MONGO_URL: mongodb://mongo
+      RABBIT_URL: amqp://rabbit

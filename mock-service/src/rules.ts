@@ -4,7 +4,7 @@ import { IMongoEntityTemplate } from './entityTemplates';
 import { rulesCreator } from './mocks/rules';
 import { IMongoRelationshipTemplate } from './relationshipTemplates';
 
-const { uri, createRuleRoute } = config.relationshipTemplateManager;
+const { url, createRuleRoute } = config.relationshipTemplateService;
 
 export const createRules = async (entityTemplates: IMongoEntityTemplate[], relationshipTemplates: IMongoRelationshipTemplate[]) => {
     const fliesOnId = relationshipTemplates.find(({ name }) => name === 'fliesOn')!._id;
@@ -16,7 +16,7 @@ export const createRules = async (entityTemplates: IMongoEntityTemplate[], relat
     const rules = rulesCreator(fliesOnId, flightInTripId, flightId, touristId, tripId);
 
     const promises = rules.map((rule) => {
-        return axios.post<IMongoRelationshipTemplate>(uri + createRuleRoute, rule);
+        return axios.post<IMongoRelationshipTemplate>(url + createRuleRoute, rule);
     });
 
     const results = await Promise.all(promises);

@@ -9,7 +9,7 @@ const { mongo, service, rabbit } = config;
 const initializeMongo = async () => {
     console.log('Connecting to Mongo...');
 
-    await mongoose.connect(mongo.uri, { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false, useCreateIndex: true });
+    await mongoose.connect(mongo.url, { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false, useCreateIndex: true });
 
     console.log('Mongo connection established');
 };
@@ -17,7 +17,7 @@ const initializeMongo = async () => {
 const initializeRabbit = async () => {
     console.log('Connecting to Rabbit...');
 
-    await menash.connect(rabbit.uri, rabbit.retryOptions);
+    await menash.connect(rabbit.url, rabbit.retryOptions);
 
     console.log('Rabbit connected');
 

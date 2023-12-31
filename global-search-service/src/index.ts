@@ -10,7 +10,7 @@ const { rabbit, neo4j, redis } = config;
 const initializeRabbit = async () => {
     console.log('Connecting to Rabbit...');
 
-    await menash.connect(rabbit.uri, rabbit.retryOptions);
+    await menash.connect(rabbit.url, rabbit.retryOptions);
 
     console.log('Rabbit connected');
 

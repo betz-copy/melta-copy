@@ -19,24 +19,24 @@ const config = {
         // https://lucene.apache.org/core/8_2_0/queryparser/org/apache/lucene/queryparser/classic/package-summary.html#Escaping_Special_Characters
         specialCharsToEscapeNeo4jQuery: env.get('SPECIAL_CHARS_TO_ESCAPE_NEO4J_QUERY').default('+,-,&&,||,!,(,),{,},[,],^,",~,*,?,:,\\,/').asArray(),
     },
-    entityTemplateManager: {
-        url: env.get('ENTITY_TEMPLATE_MANAGER_URL').required().asString(),
-        getByIdRoute: env.get('ENTITY_TEMPLATE_MANAGER_GET_BY_ID_ROUTE').default('/api/templates/entities').asString(),
-        searchRoute: env.get('ENTITY_TEMPLATE_MANAGER_SEARCH_ROUTE').default('/api/templates/entities/search').asString(),
-        timeout: env.get('ENTITY_TEMPLATE_MANAGER_TIMEOUT').default(5000).asIntPositive(),
+    entityTemplateService: {
+        url: env.get('ENTITY_TEMPLATE_SERVICE_URL').required().asString(),
+        getByIdRoute: env.get('ENTITY_TEMPLATE_SERVICE_GET_BY_ID_ROUTE').default('/api/templates/entities').asString(),
+        searchRoute: env.get('ENTITY_TEMPLATE_SERVICE_SEARCH_ROUTE').default('/api/templates/entities/search').asString(),
+        timeout: env.get('ENTITY_TEMPLATE_SERVICE_TIMEOUT').default(5000).asIntPositive(),
     },
-    relationshipManager: {
-        url: env.get('RELATIONSHIP_TEMPLATE_MANAGER_URL').required().asString(),
+    relationshipTemplateService: {
+        url: env.get('RELATIONSHIP_TEMPLATE_SERVICE_URL').required().asString(),
         getRelationshipByIdRoute: env
-            .get('RELATIONSHIP_TEMPLATE_MANAGER_GET_RELATIONSHIP_BY_ID_ROUTE')
+            .get('RELATIONSHIP_TEMPLATE_SERVICE_GET_RELATIONSHIP_BY_ID_ROUTE')
             .default('/api/templates/relationships')
             .asString(),
-        searchRulesRoute: env.get('RELATIONSHIP_TEMPLATE_MANAGER_SEARCH_RULES_ROUTE').default('/api/templates/rules/search').asString(),
+        searchRulesRoute: env.get('RELATIONSHIP_TEMPLATE_SERVICE_SEARCH_RULES_ROUTE').default('/api/templates/rules/search').asString(),
         searchTemplatesRoute: env
-            .get('RELATIONSHIP_TEMPLATE_MANAGER_SEARCH_TEMPLATES_ROUTE')
+            .get('RELATIONSHIP_TEMPLATE_SERVICE_SEARCH_TEMPLATES_ROUTE')
             .default('/api/templates/relationships/search')
             .asString(),
-        timeout: env.get('RELATIONSHIP_TEMPLATE_MANAGER_TIMEOUT').default(5000).asIntPositive(),
+        timeout: env.get('RELATIONSHIP_TEMPLATE_SERVICE_TIMEOUT').default(5000).asIntPositive(),
     },
     redis: {
         url: env.get('REDIS_HOST').default('redis://redis:6379').asString(),

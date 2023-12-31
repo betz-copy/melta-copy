@@ -3,7 +3,7 @@ import './dotenv';
 
 const config = {
     rabbit: {
-        uri: env.get('RABBIT_URI').required().asString(),
+        url: env.get('RABBIT_URL').required().asString(),
         retryOptions: {
             minTimeout: env.get('RABBIT_RETRY_MIN_TIMEOUT').default(1000).asIntPositive(),
             retries: env.get('RABBIT_RETRY_RETRIES').default(10).asIntPositive(),
@@ -11,11 +11,11 @@ const config = {
         },
         queueName: env.get('RABBIT_QUEUE_NAME').default('search-queue').asString(),
     },
-    templateManager: {
-        url: env.get('TEMPLATE_MANAGER_URL').required().asString(),
-        baseRoute: env.get('TEMPLATE_MANAGER_BASE_ROUTE').default('/api/templates/entities').asString(),
-        searchTemplatesRoute: env.get('TEMPLATE_MANAGER_SEARCH_TEMPLATES_ROUTE').default('/search').asString(),
-        timeout: env.get('TEMPLATE_MANAGER_TIMEOUT').default(5000).asIntPositive(),
+    entityTemplateService: {
+        url: env.get('ENTITY_TEMPLATE_SERVICE_URL').required().asString(),
+        baseRoute: env.get('ENTITY_TEMPLATE_SERVICE_BASE_ROUTE').default('/api/templates/entities').asString(),
+        searchTemplatesRoute: env.get('ENTITY_TEMPLATE_SERVICE_SEARCH_ROUTE').default('/search').asString(),
+        timeout: env.get('ENTITY_TEMPLATE_SERVICE_TIMEOUT').default(5000).asIntPositive(),
     },
     neo4j: {
         url: env.get('NEO4J_URL').default('neo4j://localhost').asString(),

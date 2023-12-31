@@ -3,7 +3,7 @@ import axios from 'axios';
 import config from '../../config';
 import { IEntityTemplate, ISearchEntityTemplatesBody } from './interfaces';
 
-const { templateManager } = config;
+const { entityTemplateService: templateManager } = config;
 const { url, baseRoute, searchTemplatesRoute, timeout } = templateManager;
 
 export class EntityTemplateManagerService {

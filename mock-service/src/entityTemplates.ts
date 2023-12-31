@@ -3,7 +3,7 @@ import { IMongoCategory } from './categories';
 import config from './config';
 import { trycatch } from './utils';
 
-const { uri, createEntityTemplateRoute, isAliveRoute } = config.entityTemplateManager;
+const { url, createEntityTemplateRoute, isAliveRoute } = config.entityTemplateService;
 
 export interface IEntitySingleProperty {
     title: string;
@@ -42,7 +42,7 @@ export interface IMongoEntityTemplate extends IEntityTemplate {
 
 export const createEntityTemplates = async (entityTemplatesToCreate: IEntityTemplateMock[], categories: IMongoCategory[]) => {
     const promises = entityTemplatesToCreate.map((entityTemplate) => {
-        return axios.post<IMongoEntityTemplate>(uri + createEntityTemplateRoute, {
+        return axios.post<IMongoEntityTemplate>(url + createEntityTemplateRoute, {
             ...entityTemplate,
             category: categories.find((category) => category.name === entityTemplate.category.name)?._id,
         });
@@ -53,8 +53,8 @@ export const createEntityTemplates = async (entityTemplatesToCreate: IEntityTemp
     return results.map((result) => result.data);
 };
 
-export const isEntityTemplateManagerAlive = async () => {
-    const { result, err } = await trycatch(() => axios.get(uri + isAliveRoute));
+export const isEntityTemplateServiceAlive = async () => {
+    const { result, err } = await trycatch(() => axios.get(url + isAliveRoute));
 
     return { result, err };
 };

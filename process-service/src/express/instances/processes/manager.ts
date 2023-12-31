@@ -31,7 +31,7 @@ class ProcessInstanceManager {
     }
 
     static async getProcessTemplateByProcessId(id: string): Promise<IMongoProcessTemplate> {
-        const [result] = await getTemplateAggregation(ProcessInstanceModel, config.mongo.processTemplateCollectionName, id);
+        const [result] = await getTemplateAggregation(ProcessInstanceModel, config.mongo.processTemplatesCollectionName, id);
         if (!result) throw new NotFoundError('process', id);
         return result;
     }

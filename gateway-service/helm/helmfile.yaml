@@ -8,7 +8,7 @@ repositories:
   password: {{ requiredEnv "HARBOR_PASSWORD" }}
   
 releases:
-- name: backend
+- name: gateway-service
   namespace: jaws
   chart: yesodot/common
   version: {{ env "COMMON_VERSION" | default "0.8.0" }}

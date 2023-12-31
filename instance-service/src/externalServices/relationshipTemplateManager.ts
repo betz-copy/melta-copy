@@ -3,7 +3,7 @@ import axios from 'axios';
 import config from '../config';
 import { IMongoRule } from '../express/rules/interfaces';
 
-const { relationshipManager } = config;
+const { relationshipTemplateService: relationshipManager } = config;
 const { url, getRelationshipByIdRoute, searchTemplatesRoute, searchRulesRoute, timeout } = relationshipManager;
 
 export interface IRelationshipTemplate {
