@@ -1,4 +1,4 @@
-FROM node:16.12-alpine as build
+FROM node:18.14-alpine as build
 WORKDIR /usr/src/app
 COPY ["package.json", "package-lock.json", ".npmrc", "./"]
 RUN npm install
