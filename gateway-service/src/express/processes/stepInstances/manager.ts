@@ -53,7 +53,7 @@ export default class StepsInstancesManager {
         const { properties, status: updatedStepStatus, comments } = updatedData;
         const processServiceUpdateData: UpdateStepReqBody = updatedStepStatus
             ? { properties, statusReview: { status: updatedStepStatus, reviewerId: userId }, comments, processId }
-            : { properties, comments };
+            : { properties, comments, processId };
 
         const process = await ProcessManagerService.getProcessInstanceById(processId, userId);
         const stepTemplate = await ProcessManagerService.getStepTemplateByStepInstanceId(stepId);
