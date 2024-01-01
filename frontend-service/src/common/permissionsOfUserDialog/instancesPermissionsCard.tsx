@@ -1,58 +1,59 @@
 import React from 'react';
-import { Card, CardContent, Checkbox, CheckboxProps, FormControlLabel, FormGroup, Grid, Typography } from '@mui/material';
-import i18next from 'i18next';
+import { Card, CardContent, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
 import { useSelector } from 'react-redux';
-import CheckboxReadOnly from './CheckboxReadOnly';
+import i18next from 'i18next';
+import { CheckboxProps } from '@mui/material/Checkbox';
 import { RootState } from '../../store';
+import { PermissionCheckboxes } from './PermissionCheckboxes'; // Assuming PermissionCheckboxes is a separate component
 
 const InstancesPermissionsCard: React.FC<{
     categoriesCheckboxProps: {
         categoryId: string;
         categoryDisplayName: string;
         disabled: boolean;
-        readOnly: boolean;
-        checked: boolean;
-        onChange: CheckboxProps['onChange'];
+        checkedRead: boolean;
+        checkedWrite: boolean;
+        onChangeRead: CheckboxProps['onChange'];
+        onChangeWrite: CheckboxProps['onChange'];
     }[];
-    checkboxAllProps?: {
-        checked: boolean;
-        indeterminate: boolean;
-        onChange: CheckboxProps['onChange'];
-    };
-}> = ({ categoriesCheckboxProps, checkboxAllProps }) => {
+}> = ({ categoriesCheckboxProps }) => {
     const darkMode = useSelector((state: RootState) => state.darkMode);
 
     return (
         <Card variant="outlined" sx={{ bgcolor: darkMode ? '#242424' : 'white' }}>
             <CardContent>
-                <Grid container direction="column" spacing={3}>
-                    <Grid item container justifyContent="space-between" alignItems="center">
-                        <Typography style={{ fontWeight: 'bold', cursor: 'default' }}>
-                            {i18next.t('permissions.permissionsOfUserDialog.instancesPermissions')}
-                        </Typography>
-
-                        <FormGroup row>
-                            {categoriesCheckboxProps.map(({ categoryId, categoryDisplayName, disabled, readOnly, checked, onChange }) => (
-                                <FormControlLabel
-                                    key={categoryId}
-                                    label={categoryDisplayName}
-                                    labelPlacement="bottom"
-                                    disabled={disabled}
-                                    control={readOnly ? <CheckboxReadOnly checked={checked} /> : <Checkbox checked={checked} onChange={onChange} />}
-                                />
-                            ))}
-                        </FormGroup>
-                    </Grid>
-
-                    <Grid item container justifyContent="space-between">
-                        {checkboxAllProps && (
-                            <FormControlLabel
-                                label={i18next.t('permissions.permissionsOfUserDialog.chooseAll') as string}
-                                control={<Checkbox checked={checkboxAllProps.checked} onChange={checkboxAllProps.onChange} size="medium" />}
-                            />
-                        )}
-                    </Grid>
-                </Grid>
+                <Typography style={{ fontWeight: 'bold', cursor: 'default', marginBottom: '16px' }}>
+                    {i18next.t('permissions.permissionsOfUserDialog.instancesPermissions')}
+                </Typography>
+                <TableContainer>
+                    <Table>
+                        <TableHead>
+                            <TableRow>
+                                <TableCell>{i18next.t('Category')}</TableCell>
+                                <TableCell>{i18next.t('Read')}</TableCell>
+                                <TableCell>{i18next.t('Write')}</TableCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {categoriesCheckboxProps.map(
+                                ({ categoryId, categoryDisplayName, disabled, checkedRead, checkedWrite, onChangeRead, onChangeWrite }) => (
+                                    <TableRow key={categoryId}>
+                                        <TableCell>{categoryDisplayName}</TableCell>
+                                        <TableCell>
+                                            <PermissionCheckboxes
+                                                checkedRead={checkedRead}
+                                                checkedWrite={checkedWrite}
+                                                disabled={disabled}
+                                                onChangeRead={onChangeRead}
+                                                onChangeWrite={onChangeWrite}
+                                            />
+                                        </TableCell>
+                                    </TableRow>
+                                ),
+                            )}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
             </CardContent>
         </Card>
     );

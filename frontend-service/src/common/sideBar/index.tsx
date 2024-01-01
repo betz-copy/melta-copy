@@ -209,7 +209,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
 
             <PermissionsOfUserDialog
                 isOpen={isMyPermissionsDialogOpen}
-                mode="read"
+                mode="view"
                 handleClose={() => setIsMyPermissionsDialogOpen(false)}
                 existingPermissionsOfUser={myPermissions}
             />

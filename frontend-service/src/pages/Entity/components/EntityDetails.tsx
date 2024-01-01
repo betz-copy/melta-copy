@@ -30,6 +30,7 @@ import { EntityDates } from './EntityDates';
 import { RootState } from '../../../store';
 import { IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
 import UpdateStatusWithRuleBreachDialog from './UpdateStatusWithRuleBreachDialog';
+import { getUserCanWriteInstanceOfCategory } from '../../../utils/permissions/instancePermissions';
 
 const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; expandedEntity: IEntityExpanded }> = ({
     entityTemplate,
@@ -133,7 +134,8 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
         );
     }
 
-    const hasPermissionToCategory = Boolean(myPermissions.instancesPermissions.find((instance) => instance.category === entityTemplate.category._id));
+    const canWriteInstance = getUserCanWriteInstanceOfCategory(myPermissions.instancesPermissions, entityTemplate.category);
+    // const hasPermissionToCategory = Boolean(myPermissions.instancesPermissions.find((instance) => instance.category === entityTemplate.category._id));
     const isEntityDisabled = expandedEntity.entity.properties.disabled;
 
     return (
@@ -167,47 +169,55 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                                             icon={<GraphIcon color="action" />}
                                         />
                                     </Grid>
+
                                     <Tooltip
                                         arrow
+                                        title={!canWriteInstance ? i18next.t('permissions.dontHaveWritePermissionsToCategory') : ''}
+                                        disableHoverListener={canWriteInstance}
                                         placement="right"
-                                        title={
-                                            isEntityDisabled
-                                                ? (i18next.t('entityPage.disabledEntity') as string)
-                                                : (i18next.t('permissions.dontHavePermissionsToCategory') as string)
-                                        }
-                                        disableHoverListener={!isEntityDisabled && hasPermissionToCategory}
                                     >
-                                        <Grid>
+                                        <span>
                                             <MenuButton
                                                 onClick={(e) => {
-                                                    if (isEntityDisabled) e.preventDefault();
+                                                    if (!canWriteInstance) e.preventDefault();
                                                     else {
                                                         setIsEditMode(true);
                                                         handleClose();
                                                     }
                                                 }}
+                                                disabled={!canWriteInstance}
                                                 text={i18next.t('actions.edit')}
-                                                icon={<EditIcon color="action" />}
+                                                icon={<EditIcon color={!canWriteInstance ? 'disabled' : 'action'} />}
                                             />
-                                        </Grid>
+                                        </span>
                                     </Tooltip>
 
-                                    <Grid>
-                                        <MenuButton
-                                            onClick={() => {
-                                                navigate(`/entity/${entity.properties._id}/duplicate`, {
-                                                    state: { entityTemplate, expandedEntity, currentEntityTemplate },
-                                                });
-                                                handleClose();
-                                            }}
-                                            text={i18next.t('actions.duplicate')}
-                                            icon={<DuplicateIcon color="action" />}
-                                        />
-                                    </Grid>
                                     <Tooltip
                                         arrow
-                                        title={i18next.t('permissions.dontHavePermissionsToCategory') as string}
-                                        disableHoverListener={hasPermissionToCategory}
+                                        title={!canWriteInstance ? i18next.t('permissions.dontHaveWritePermissionsToCategory') : ''}
+                                        disableHoverListener={canWriteInstance}
+                                        placement="right"
+                                    >
+                                        <span>
+                                            <MenuButton
+                                                onClick={() => {
+                                                    if (canWriteInstance) {
+                                                        navigate(`/entity/${entity.properties._id}/duplicate`, {
+                                                            state: { entityTemplate, expandedEntity, currentEntityTemplate },
+                                                        });
+                                                    }
+                                                    handleClose();
+                                                }}
+                                                disabled={!canWriteInstance}
+                                                text={i18next.t('actions.duplicate')}
+                                                icon={<DuplicateIcon color={!canWriteInstance ? 'disabled' : 'action'} />}
+                                            />
+                                        </span>
+                                    </Tooltip>
+                                    <Tooltip
+                                        arrow
+                                        title={i18next.t('permissions.dontHaveWritePermissionsToCategory')}
+                                        disableHoverListener={canWriteInstance}
                                         placement="right"
                                     >
                                         <Grid>
@@ -216,22 +226,33 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                                                     setOpenDeleteDialog(true);
                                                     handleClose();
                                                 }}
-                                                disabled={!hasPermissionToCategory}
+                                                disabled={!canWriteInstance}
                                                 text={i18next.t('actions.delete')}
                                                 icon={<DeleteIcon color="action" />}
                                             />
                                         </Grid>
                                     </Tooltip>
 
-                                    <MenuButton
-                                        onClick={() => {
-                                            updateEntityStatus({ currEntity: entity, disabled: !entity.properties.disabled });
-                                            handleClose();
-                                        }}
-                                        disabled={!hasPermissionToCategory}
-                                        text={isEntityDisabled ? i18next.t('actions.activate') : i18next.t('actions.disable')}
-                                        icon={<DoDisturbAlt color="action" />}
-                                    />
+                                    <Tooltip
+                                        arrow
+                                        title={!canWriteInstance ? i18next.t('permissions.dontHaveWritePermissionsToCategory') : ''}
+                                        disableHoverListener={canWriteInstance}
+                                        placement="right"
+                                    >
+                                        <span>
+                                            <MenuButton
+                                                onClick={() => {
+                                                    if (canWriteInstance) {
+                                                        updateEntityStatus({ currEntity: entity, disabled: !entity.properties.disabled });
+                                                    }
+                                                    handleClose();
+                                                }}
+                                                disabled={!canWriteInstance}
+                                                text={isEntityDisabled ? i18next.t('actions.activate') : i18next.t('actions.disable')}
+                                                icon={<DoDisturbAlt color={!canWriteInstance ? 'disabled' : 'action'} />}
+                                            />
+                                        </span>
+                                    </Tooltip>
                                 </Menu>
                             </Grid>
                         </Grid>

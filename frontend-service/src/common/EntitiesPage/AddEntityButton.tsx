@@ -9,7 +9,8 @@ const AddEntityButton: React.FC<{
     initialStep?: number;
     initialValues?: EntityWizardValues;
     disabledToolTip?: boolean;
-}> = ({ style, children, disabled, initialStep, initialValues, disabledToolTip = false }) => {
+    popoverText?: string;
+}> = ({ style, children, disabled, initialStep, initialValues, popoverText, disabledToolTip = false }) => {
     const [addEntityWizardState, setAddEntityWizardState] = useState<{ isOpen: boolean; initialStep?: number; initialValues?: EntityWizardValues }>({
         isOpen: false,
     });
@@ -17,16 +18,16 @@ const AddEntityButton: React.FC<{
     return (
         <>
             <IconButtonWithPopover
-                popoverText={disabled ? i18next.t('categoryPage.disabledTemplate') : i18next.t('entitiesTableOfTemplate.addEntity')}
+                popoverText={popoverText || i18next.t('entitiesTableOfTemplate.addEntity')}
                 disabledToolTip={disabledToolTip}
                 iconButtonProps={{
                     onClick: () => {
-                        if (!disabled) setAddEntityWizardState({ isOpen: true, initialStep, initialValues });
+                        setAddEntityWizardState({ isOpen: true, initialStep, initialValues });
                     },
                     style,
-                    disableRipple: disabled,
                 }}
                 style={style}
+                disabled={disabled}
             >
                 {children}
             </IconButtonWithPopover>

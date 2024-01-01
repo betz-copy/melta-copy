@@ -38,6 +38,11 @@ export const defaultFilterModel = {
     },
 };
 
+export interface IButtonProps<Data> {
+    onClick: (entity: Data) => void;
+    popoverText: string;
+    disabledButton: boolean;
+}
 export const getDatasource = <Data extends any = IEntity>(
     template: IMongoEntityTemplatePopulated,
     quickFilterText: string | undefined,
@@ -102,15 +107,9 @@ export type EntitiesTableOfTemplateProps<Data> = {
     template: IMongoEntityTemplatePopulated;
     onRowSelected?: (data: Data) => void;
     showNavigateToRowButton: boolean;
-    deleteRowButtonProps?: {
-        onClick: (data: Data) => void;
-        popoverText: string;
-        disabled: boolean;
-    };
-    editRowButtonProps?: {
-        onClick: (data: Data) => void;
-    };
-    disabledEntity?: boolean;
+    deleteRowButtonProps?: IButtonProps<Data>;
+    editRowButtonProps?: IButtonProps<Data>;
+    hasPermissionToCategory?: boolean;
     getRowId: (data: Data) => string;
     getEntityPropertiesData: (data: Data) => IEntity['properties'];
     rowModelType: 'serverSide' | 'clientSide' | 'infinite';
@@ -142,7 +141,6 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             template,
             onRowSelected,
             showNavigateToRowButton,
-            disabledEntity,
             getRowId,
             getEntityPropertiesData,
             rowModelType,
@@ -158,6 +156,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             hideNonPreview,
             filterStorageProps,
             onFilter,
+            hasPermissionToCategory,
         }: EntitiesTableOfTemplateProps<Data>,
         ref: ForwardedRef<EntitiesTableOfTemplateRef<Data>>,
     ) => {
@@ -196,14 +195,15 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                 },
             };
         });
+
         const columnDefs: ColDef[] = getColumnDefs({
             template,
             getEntityPropertiesData,
             onNavigateToRow: !showNavigateToRowButton ? undefined : (data) => navigate(`/entity/${getEntityPropertiesData(data)._id}`),
-            disabledEntity,
             deleteRowButtonProps,
             hideNonPreview,
             editRowButtonProps,
+            hasPermissionToCategory,
         });
 
         const datasourceOnFail = (err: unknown) => {
@@ -223,7 +223,6 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             '.ag-column-select-virtual-list-viewport': { height: `${rowHeight * pageRowCount}px !important` },
             '.ag-center-cols-clipper': { minHeight: `${rowHeight * pageRowCount}px !important` },
         });
-
         return (
             <Box sx={getStyles()}>
                 <AgGridReact<Data>
