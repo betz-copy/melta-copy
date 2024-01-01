@@ -5,6 +5,8 @@ import { MongoIdSchema } from '../../utils/joi';
 export const getMyNotificationsRequestSchema = joi.object({
     query: {
         types: joi.array().items(joi.string()),
+        startDate: joi.date(),
+        endDate: joi.date(),
         limit: joi.number().integer().min(1).required(),
         step: joi.number().integer().min(0),
     },

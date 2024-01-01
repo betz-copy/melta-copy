@@ -18,4 +18,6 @@ export const basicNotificationSearchSchema = joi.object({
         .items(joi.string().valid(...Object.values(NotificationType)))
         .min(1),
     viewerId: mongoIdSchema,
+    startDate: joi.date(),
+    endDate: joi.date().greater(joi.ref('startDate')),
 });
