@@ -69,12 +69,14 @@ export class NotificationsManager {
         });
     }
 
-    private static handleQuery({ viewerId, types, ...rest }: IBasicNotificationQuery) {
+    private static handleQuery({ viewerId, types, startDate, endDate, ...rest }: IBasicNotificationQuery) {
         const query: FilterQuery<INotificationDocument> = { ...rest };
 
         if (types) query.type = { $in: types };
         if (viewerId) query.viewers = viewerId;
-
+        if (startDate && endDate) {
+            query.createdAt = { $gte: startDate, $lte: endDate };
+        }
         return query;
     }
 }
