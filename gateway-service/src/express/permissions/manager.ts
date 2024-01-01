@@ -46,7 +46,11 @@ export class PermissionsManager {
 
         const instancesPermissions: IPermissionsOfUser['instancesPermissions'] = [
             ...permissionsOfUser.instancesPermissions,
-            { _id: permission._id, category: permission.category },
+            {
+                _id: permission._id,
+                category: permission.category,
+                scopes: permission.scopes,
+            },
         ];
         return { ...permissionsOfUser, instancesPermissions };
     }
@@ -105,20 +109,13 @@ export class PermissionsManager {
         return { user, ...permissionsOfUserId } as IPermissionsOfUser;
     }
 
-    private static getPermissionPopulatedFromPermission(permission: IPermission): IPermissionPopulated {
-        const { scopes, ...restOfPermission } = permission;
-        return restOfPermission;
-    }
-
     static async createPermissionsBulk(permissions: Omit<IPermissionPopulated, '_id'>[]) {
         const createdPermissionsPromises = permissions.map((permission) => createPermission({ ...permission, scopes: ['Read', 'Write'] }));
-        const createdPermissions = await Promise.all(createdPermissionsPromises);
-        return createdPermissions.map((createdPermission) => PermissionsManager.getPermissionPopulatedFromPermission(createdPermission));
+        return Promise.all(createdPermissionsPromises);
     }
 
     static async deletePermissions(ids: string[]) {
-        const deletedPermissions = await Promise.all(ids.map((id) => deletePermission(id)));
-        return deletedPermissions.map((deletedPermission) => PermissionsManager.getPermissionPopulatedFromPermission(deletedPermission));
+        return Promise.all(ids.map((id) => deletePermission(id)));
     }
 
     static deletePermissionsOfCategory(categoryId: string) {

@@ -3,25 +3,29 @@ import { checkUserAuthorization, getPermissions, ResourceType } from '../../exte
 import { ServiceError } from '../error';
 import { RequestWithPermissionsOfUserId } from '../instances/middlewares';
 import PermissionsManager from './manager';
+import { Scope } from './interfaces';
 
-export const validateAuthorization = async (req: Request, resourceType: ResourceType, relatedCategories: string[]) => {
+export const validateAuthorization = async (
+    req: Request,
+    resourceType: ResourceType,
+    relatedCategories: string[],
+    permissionType: Scope = 'Write', // for now only instance support read/write permission type - so by default is write
+) => {
     const { user } = req;
 
     if (!user) {
         throw new Error('req.user expected to be defined for validateAuthorization');
     }
 
-    // scopes are not used. permissions always have read & write scopes
-    const authorizationResult = await checkUserAuthorization(user.id, resourceType, relatedCategories, 'Read');
+    const authorizationResult = await checkUserAuthorization(user.id, resourceType, relatedCategories, permissionType);
     const { authorized, metadata } = authorizationResult;
-
     if (!authorized) {
-        throw new ServiceError(403, 'user not authorized', metadata);
+        throw new ServiceError(403, `User not authorized for ${permissionType} access`, metadata);
     }
 };
 
-export const getValidateAuthorizationMiddleware = (resourceType: ResourceType, relatedCategories: string[] = []) => {
-    return (req: Request) => validateAuthorization(req, resourceType, relatedCategories);
+export const getValidateAuthorizationMiddleware = (resourceType: ResourceType, relatedCategories: string[] = [], permissionType: Scope = 'Read') => {
+    return (req: Request) => validateAuthorization(req, resourceType, relatedCategories, permissionType);
 };
 
 export const validateUserHasAtLeastSomePermissions = async (req: Request) => {

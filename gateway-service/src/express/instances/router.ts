@@ -11,7 +11,8 @@ import {
     validateUserCanIgnoreRules,
     validateUserCanSearchEntitiesBatch,
     validateUserCanSearchEntitiesOfTemplate,
-    validateUserCanUpdateGetOrDeleteEntityInstance,
+    validateUserCanWriteEntityInstance,
+    validateUserCanReadEntityInstance,
     validateUserCanUpdateOrDeleteRelationshipInstance,
 } from './middlewares';
 import { validateUserIsTemplatesManager } from '../permissions/validateAuthorizationMiddleware';
@@ -28,11 +29,11 @@ import {
 } from './validator.schema';
 import ValidateRequest from '../../utils/joi';
 
-const { instanceService: instanceManager } = config;
+const { instanceService } = config;
 const InstanceManagerProxy = createProxyMiddleware({
-    target: instanceManager.url,
+    target: instanceService.url,
     onProxyReq: fixRequestBody,
-    proxyTimeout: instanceManager.requestTimeout,
+    proxyTimeout: instanceService.requestTimeout,
 });
 
 const InstancesRouter: Router = Router();
@@ -51,10 +52,10 @@ InstancesRouter.post(
     ValidateRequest(exportEntitiesSchema),
     wrapController(InstancesController.exportEntities),
 );
-InstancesRouter.get('/entities/:id', wrapMiddleware(validateUserCanUpdateGetOrDeleteEntityInstance), InstanceManagerProxy);
+InstancesRouter.get('/entities/:id', wrapMiddleware(validateUserCanReadEntityInstance), InstanceManagerProxy);
 InstancesRouter.post(
     '/entities/expanded/:id',
-    wrapMiddleware(validateUserCanUpdateGetOrDeleteEntityInstance),
+    wrapMiddleware(validateUserCanReadEntityInstance),
     wrapMiddleware(validateUserCanGetExpandedEntity),
     InstanceManagerProxy,
 );
@@ -69,7 +70,7 @@ InstancesRouter.put(
     '/entities/:id',
     multer({ dest: config.service.uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).any(),
     ValidateRequest(updateEntityInstanceSchema),
-    wrapMiddleware(validateUserCanUpdateGetOrDeleteEntityInstance),
+    wrapMiddleware(validateUserCanWriteEntityInstance),
     wrapMiddleware(validateUserCanIgnoreRules),
     wrapController(InstancesController.updateEntityInstance),
 );
@@ -77,19 +78,19 @@ InstancesRouter.post(
     '/entities/:id/duplicate',
     multer({ dest: config.service.uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).any(),
     ValidateRequest(updateEntityInstanceSchema),
-    wrapMiddleware(validateUserCanUpdateGetOrDeleteEntityInstance),
+    wrapMiddleware(validateUserCanWriteEntityInstance),
     wrapController(InstancesController.duplicateEntityInstance),
 );
 InstancesRouter.delete(
     '/entities/:id',
     ValidateRequest(deleteEntityInstanceSchema),
-    wrapMiddleware(validateUserCanUpdateGetOrDeleteEntityInstance),
+    wrapMiddleware(validateUserCanWriteEntityInstance),
     wrapController(InstancesController.deleteEntityInstance),
 );
 InstancesRouter.patch(
     '/entities/:id/status',
     ValidateRequest(updateEntityStatusSchema),
-    wrapMiddleware(validateUserCanUpdateGetOrDeleteEntityInstance),
+    wrapMiddleware(validateUserCanWriteEntityInstance),
     wrapController(InstancesController.updateEntityStatus),
 );
 
