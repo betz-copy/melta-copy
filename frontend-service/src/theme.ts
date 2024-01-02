@@ -11,14 +11,34 @@ export const lightTheme = createTheme({
     ...basicTheme,
     palette: {
         mode: 'light',
-        primary: { main: '#225AA7' },
+        primary: { main: '#1E2775' },
     },
     components: {
+        MuiInputBase: {
+            styleOverrides: {
+                input: {
+                    backgroundColor: '#EBEFFA',
+                },
+                root: {
+                    backgroundColor: '#EBEFFA',
+                },
+            },
+        },
         MuiCssBaseline: {
             styleOverrides: {
                 '::-webkit-scrollbar': { background: 'transparent', width: 6, height: 6 },
                 '::-webkit-scrollbar-thumb': { background: 'gray', borderRadius: 20 },
                 '::-webkit-scrollbar-track': { background: 'lightgray', borderRadius: 20 },
+
+                '.ag-theme-material': {
+                    '--ag-background-color': '#FFF !important',
+                    '--ag-row-hover-color': '#EBEFFA !important',
+                    '--ag-foreground-color': '#53566E !important',
+
+                    '--ag-header-foreground-color': '#101440 !important',
+                    '--ag-header-cell-hover-background-color': '#EBEFFA !important',
+                    '--ag-header-cell-moving-background-color': '#EBEFFA !important',
+                },
             },
         },
     },
@@ -28,7 +48,7 @@ export const darkTheme = createTheme({
     ...basicTheme,
     palette: {
         mode: 'dark',
-        primary: { main: '#225AA7' },
+        primary: { main: '#1E2775' },
     },
     components: {
         MuiCssBaseline: {

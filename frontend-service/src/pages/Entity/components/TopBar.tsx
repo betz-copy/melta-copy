@@ -8,6 +8,7 @@ import { ActivityLog } from './activityLog';
 import { Print } from './print';
 import { IMongoCategory } from '../../../interfaces/categories';
 import { RootState } from '../../../store';
+import { lightTheme } from '../../../theme';
 
 const EntityTopBar: React.FC<{
     entityTemplate: IMongoEntityTemplatePopulated;
@@ -35,7 +36,7 @@ const EntityTopBar: React.FC<{
             style={{ top: 0, right: 0, zIndex: 1 }}
         >
             <Box display="flex" alignItems="center">
-                <Typography color="#225AA7" fontWeight="800" component="h4" variant="h4">
+                <Typography color={lightTheme.palette.primary.main} fontWeight="800" component="h4" variant="h4">
                     {entityTemplate.category.displayName}
                 </Typography>
 
@@ -43,7 +44,7 @@ const EntityTopBar: React.FC<{
                     /
                 </Typography>
 
-                <Typography paddingBottom="2px" variant="h4" fontSize="28px" color="#225AA7">
+                <Typography paddingBottom="2px" variant="h4" fontSize="28px" color={lightTheme.palette.primary.main}>
                     {entityTemplate.displayName}
                 </Typography>
             </Box>

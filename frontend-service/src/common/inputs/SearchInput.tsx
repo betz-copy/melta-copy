@@ -22,8 +22,6 @@ const SearchInput: React.FC<{
     size = 'small',
     borderRadius = '0px 7px 7px 0px',
 }) => {
-    const darkMode = useSelector((state: RootState) => state.darkMode);
-
     return (
         <TextField
             value={value}
@@ -37,7 +35,6 @@ const SearchInput: React.FC<{
             InputProps={{
                 endAdornment: <InputAdornment position="end">{endAdornmentChildren}</InputAdornment>,
                 sx: {
-                    backgroundColor: darkMode ? '#242424' : 'white',
                     borderRadius,
                 },
             }}

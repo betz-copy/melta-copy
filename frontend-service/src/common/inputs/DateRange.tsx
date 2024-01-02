@@ -27,7 +27,7 @@ const DateRange: React.FC<{
                         onChange={(newStartDate) => onStartDateChange(newStartDate)}
                         renderInput={(params) => <TextField {...params} size="small" />}
                         InputProps={{
-                            style: { backgroundColor: darkMode ? '#242424' : 'white', borderRadius: '0px 7px 7px 0px' },
+                            style: { borderRadius: '0px 7px 7px 0px' },
                         }}
                     />
                 </LocalizationProvider>
@@ -43,7 +43,7 @@ const DateRange: React.FC<{
                         onChange={(newEndDate) => onEndDateChange(newEndDate)}
                         renderInput={(params) => <TextField {...params} size="small" />}
                         InputProps={{
-                            style: { backgroundColor: darkMode ? '#242424' : 'white', borderRadius: '7px 0px 0px 7px' },
+                            style: { borderRadius: '7px 0px 0px 7px' },
                         }}
                     />
                 </LocalizationProvider>

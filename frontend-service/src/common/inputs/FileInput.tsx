@@ -2,6 +2,7 @@ import React, { MouseEventHandler } from 'react';
 import { IconButton, Grid } from '@mui/material';
 import { CloseOutlined as DeleteIcon, FilePresent as FileIcon } from '@mui/icons-material';
 import { Accept, useDropzone } from 'react-dropzone';
+import { lightTheme } from '../../theme';
 
 interface FileInputProps {
     fileName: string | undefined;
@@ -32,7 +33,7 @@ const FileInput: React.FC<FileInputProps> = ({ fileName, onDeleteFile, onDropFil
     });
 
     const inputStyle = {
-        border: isDragActive ? '2px dashed #225AA7' : '1px solid rgb(196, 196, 196)',
+        border: isDragActive ? `2px dashed ${lightTheme.palette.primary.main}` : '1px solid rgb(196, 196, 196)',
         borderRadius: '5px',
         width: '230px',
         height: '56px',

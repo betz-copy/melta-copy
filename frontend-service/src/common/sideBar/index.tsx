@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { Divider, IconButton, Grid, Box, Slide, Fade } from '@mui/material';
+import { Divider, IconButton, Grid, Box, Slide, Fade, Tooltip, tooltipClasses } from '@mui/material';
 import { useQuery, useQueryClient } from 'react-query';
 import {
     ChevronRight as ChevronRightIcon,
@@ -28,9 +28,10 @@ import { toggleMeltaPlus } from '../../store/reducers/meltaPlus';
 import { NotificationsButton } from './notifications/NotificationsButton';
 import { environment } from '../../globals';
 import { NotificationsScreen } from './notifications/NotificationsScreen';
-import { toggleDarkMode } from '../../store/reducers/darkMode';
-import { SwitchThemeButton } from './SwitchThemeButton';
 import { getMyNotificationGroupCountRequest } from '../../services/notificationService';
+import { lightTheme } from '../../theme';
+import SearchInput from '../inputs/SearchInput';
+import { StyledLink } from './NavBar.styled';
 
 type SideBarProps = {
     toggleDrawer: () => any;
@@ -64,8 +65,23 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
     const dispatch = useDispatch();
 
     return (
-        <Drawer ref={drawerRef} variant="permanent" open={isDrawerOpen} PaperProps={{ sx: { backgroundColor: '#225AA7' } }} data-tour="side-bar">
-            <Grid container direction="column" wrap="nowrap" height="100%" bgcolor="#225AA7">
+        <Drawer
+            ref={drawerRef}
+            variant="permanent"
+            open={isDrawerOpen}
+            PaperProps={{ sx: { backgroundColor: '#1E2775' } }}
+            data-tour="side-bar"
+            style={{ zIndex: '1' }}
+            sx={{ zIndex: '1' }}
+        >
+            <Grid
+                container
+                direction="column"
+                wrap="nowrap"
+                height="100%"
+                bgcolor={lightTheme.palette.primary.main}
+                style={{ backgroundImage: 'url(/icons/sideNav-bg.png)', backgroundRepeat: 'no-repeat' }}
+            >
                 <Grid item container direction="column" alignItems="center" marginTop="15px" marginBottom="10px">
                     <Box
                         position="relative"
@@ -100,12 +116,50 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                         }}
                     />
 
-                    <SwitchThemeButton
+                    <div
+                        style={{
+                            width: isDrawerOpen ? '80%' : '',
+                            borderRadius: '15px',
+                            display: 'flex',
+                            alignContent: 'center',
+                            alignItems: 'center',
+                        }}
+                    >
+                        {isDrawerOpen ? (
+                            <SearchInput
+                            // onChange={(a) => {
+                            //     console.log({ a });
+                            // }}
+                            /> // TODO
+                            // <GlobalSearchBar onSearch={onSearch} placeholder={i18next.t('globalSearch.searchLabel')} size="medium" borderRadius="30px" />
+                        ) : (
+                            <StyledLink
+                                to="/"
+                                onClick={(e) => {
+                                    if (isDrawerOpen) e.preventDefault();
+                                }}
+                            >
+                                <Tooltip
+                                    arrow
+                                    placement="left"
+                                    disableHoverListener={isDrawerOpen} // when drawer is opened text is already shown, so no need for tooltip
+                                    PopperProps={{
+                                        sx: { [`& .${tooltipClasses.tooltip}`]: { fontSize: '1rem' } },
+                                    }}
+                                    title={isDrawerOpen ? '' : i18next.t('pages.globalSearch')}
+                                >
+                                    <img src="/icons/search-icon.svg" style={{ alignSelf: 'center' }} />
+                                </Tooltip>
+                            </StyledLink>
+                        )}
+                    </div>
+
+                    {/* <SwitchThemeButton
                         text={i18next.t('sideBar.changeTheme')}
                         isDrawerOpen={isDrawerOpen}
                         darkMode={darkMode}
                         onClick={() => dispatch(toggleDarkMode())}
-                    />
+                    /> */}
                 </Grid>
 
                 <Divider />
@@ -142,7 +196,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                 </Grid>
 
                 <Grid item container direction="column" alignItems="stretch" marginTop="auto">
-                    <Divider />
+                    <Divider style={{ backgroundColor: 'white', width: '85%', alignSelf: 'center' }} />
 
                     {meltaPlus && (
                         <Fade in={meltaPlus}>
@@ -153,10 +207,6 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                             </Box>
                         </Fade>
                     )}
-
-                    <NavButton to="/" text={i18next.t('pages.globalSearch')} isDrawerOpen={isDrawerOpen}>
-                        <PublicIcon fontSize="large" sx={{ color: 'white' }} />
-                    </NavButton>
 
                     <NavButton to="/rule-management" text={i18next.t('pages.ruleManagement')} isDrawerOpen={isDrawerOpen}>
                         <GavelIcon fontSize="large" sx={{ color: 'white' }} />
@@ -188,22 +238,56 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
 
                     <Divider />
 
-                    <Grid item container alignItems="center" justifyContent="space-around" flexWrap="nowrap" height="4rem">
-                        {isDrawerOpen && (
-                            <Grid item container alignItems="center" width="fit-content" spacing={1}>
-                                <Grid item>
-                                    <img src="/icons/sapir.svg" height="40px" />
-                                </Grid>
-                                <Grid item>
-                                    <img src="/icons/yesodot.svg" height="35px" />
-                                </Grid>
+                    {/* <Grid item container justifyContent="space-around" alignItems="center" flexWrap="nowrap" height="4rem"> */}
+                    <div style={{ display: 'flex' }}>
+                        <Grid item container alignItems="center" justifyContent="center" flexWrap="nowrap" spacing={isDrawerOpen ? 5 : 0}>
+                            <Grid item>
+                                <img src="/icons/sapir.svg" height="40px" />
                             </Grid>
+                            <Grid item>
+                                <img src="/icons/yesodot.svg" height="35px" />
+                            </Grid>
+                        </Grid>
+                        {isDrawerOpen ? (
+                            <div
+                                style={{
+                                    backgroundColor: '#F5F5F5',
+                                    height: '50px',
+                                    borderRadius: '30px',
+                                    width: '30px',
+                                    position: 'fixed',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    marginRight: '221px',
+                                    marginTop: '-11px',
+                                    justifyContent: 'center',
+                                }}
+                            >
+                                <IconButton onClick={toggleDrawer} size="large">
+                                    <ChevronRightIcon style={{ color: lightTheme.palette.primary.main }} />
+                                </IconButton>
+                            </div>
+                        ) : (
+                            <div
+                                style={{
+                                    backgroundColor: lightTheme.palette.primary.main,
+                                    height: '50px',
+                                    borderRadius: '30px',
+                                    width: '30px',
+                                    position: 'fixed',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    marginRight: '100px',
+                                    marginTop: '-11px',
+                                    justifyContent: 'center',
+                                }}
+                            >
+                                <IconButton onClick={toggleDrawer} size="large" sx={{ color: 'white' }}>
+                                    <ChevronLeftIcon />
+                                </IconButton>
+                            </div>
                         )}
-
-                        <IconButton onClick={toggleDrawer} size="large" sx={{ color: 'white' }}>
-                            {isDrawerOpen ? <ChevronRightIcon /> : <ChevronLeftIcon />}
-                        </IconButton>
-                    </Grid>
+                    </div>
                 </Grid>
             </Grid>
 

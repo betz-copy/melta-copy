@@ -7,6 +7,7 @@ import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemp
 import { EntityDisableCheckbox } from '../EntityDisableCheckbox';
 import { EntityDates } from '../EntityDates';
 import { RootState } from '../../../../store';
+import { lightTheme } from '../../../../theme';
 
 const EntityComponentToPrint: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; entity: IEntity; options?: { showDates?: boolean } }> = ({
     entityTemplate,
@@ -15,7 +16,7 @@ const EntityComponentToPrint: React.FC<{ entityTemplate: IMongoEntityTemplatePop
 }) => {
     const darkMode = useSelector((state: RootState) => state.darkMode);
     return (
-        <Box border="2px solid #225AA7" borderRadius="20px" padding="1rem" style={{ pageBreakInside: 'avoid' }}>
+        <Box border={`2px solid ${lightTheme.palette.primary.main}`} borderRadius="20px" padding="1rem" style={{ pageBreakInside: 'avoid' }}>
             <Box padding="0.2rem">
                 <EntityPropertiesInternal
                     properties={entity.properties}

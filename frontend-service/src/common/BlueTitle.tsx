@@ -1,5 +1,6 @@
 import React, { CSSProperties, ElementType } from 'react';
 import { Typography, TypographyTypeMap } from '@mui/material';
+import { lightTheme } from '../theme';
 
 interface BlueTitleProps {
     title: string;
@@ -12,7 +13,7 @@ const BlueTitle: React.FC<BlueTitleProps> = ({ title, component, variant, style 
     return (
         <Typography
             style={{
-                color: '#225AA7',
+                color: lightTheme.palette.primary.main,
                 fontWeight: '800',
                 ...style,
             }}

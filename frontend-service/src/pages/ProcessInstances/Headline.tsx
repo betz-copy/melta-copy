@@ -13,6 +13,7 @@ import { IMongoProcessTemplatePopulated } from '../../interfaces/processes/proce
 import { IPermissionsOfUser } from '../../services/permissionsService';
 import './ProcessesList.css';
 import DateRange from '../../common/inputs/DateRange';
+import { lightTheme } from '../../theme';
 
 const ProcessInstancesHeadline: React.FC<{
     onSearch: (value: string) => void;
@@ -74,7 +75,7 @@ const ProcessInstancesHeadline: React.FC<{
 
             <Grid item>
                 {myPermissions.processesManagementId && (
-                    <AddProcessButton style={{ background: '#225AA7', borderRadius: '5px' }}>
+                    <AddProcessButton style={{ background: lightTheme.palette.primary.main, borderRadius: '5px' }}>
                         <AddIcon htmlColor="white" />
                         <Typography fontSize={14} style={{ fontWeight: '500', padding: '0 10px', color: 'white' }}>
                             {i18next.t('processInstancesPage.addProcess')}

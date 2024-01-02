@@ -18,6 +18,7 @@ import { EditEntityDetails } from '../../pages/Entity/components/EditEntityDetai
 import { IEntity } from '../../interfaces/entities';
 import { environment } from '../../globals';
 import { filterModelToFilterOfTemplate, sortModelToSortOfSearchRequest } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
+import { lightTheme } from '../../theme';
 
 const { expandedRowCount } = environment.agGrid;
 
@@ -79,7 +80,11 @@ const TemplateTable = forwardRef<
         <Grid container>
             <Grid container paddingLeft={3} justifyContent="space-between" width="100%">
                 <Grid item container xs={5}>
-                    <Grid item>{template.iconFileId && <CustomIcon iconUrl={template.iconFileId} height="30px" width="30px" color="#225AA7" />}</Grid>
+                    <Grid item>
+                        {template.iconFileId && (
+                            <CustomIcon iconUrl={template.iconFileId} height="30px" width="30px" color={lightTheme.palette.primary.main} />
+                        )}
+                    </Grid>
                     <Grid item paddingLeft="10px">
                         <BlueTitle title={template.displayName} component="h5" variant="h5" />
                     </Grid>
