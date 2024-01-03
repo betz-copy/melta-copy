@@ -4,6 +4,7 @@ import { Grid, IconButton, Tooltip, Typography, tooltipClasses } from '@mui/mate
 import { AppRegistration as AppRegistrationIcon, AddCircle as AddIcon } from '@mui/icons-material';
 import { UseMutateAsyncFunction, useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
+import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 
 import i18next from 'i18next';
 import { AxiosError } from 'axios';
@@ -11,11 +12,12 @@ import { ICategoryMap, IMongoCategory } from '../../../interfaces/categories';
 import { ViewingCard } from './Card';
 import { CustomIcon } from '../../../common/CustomIcon';
 import { SelectCheckbox } from '../../../common/SelectCheckbox';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { IEntityTemplate, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { EntityTemplateWizard } from '../../../common/wizards/entityTemplate';
 import {
     deleteEntityTemplateRequest,
     entityTemplateObjectToEntityTemplateForm,
+    updateEntityTemplateRequest,
     updateEntityTemplateStatusRequest,
 } from '../../../services/templates/enitityTemplatesService';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
@@ -288,77 +290,88 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
     );
 
     return (
-        <Box
-            key={entityTemplatesWithCategory.category._id}
-            header={
-                <Grid item container justifyContent="space-between" alignItems="center" height="40px" width="284px">
-                    <div
-                        ref={containerWrapperRef}
-                        contentEditable={isEditableCategory}
-                        style={{
-                            fontSize: '14px',
-                            fontWeight: '400',
-                            color: isEditableCategory ? 'black' : '#9398C2',
-                            outline: isEditableCategory ? '1px solid black' : '',
-                            textOverflow: isEditableCategory ? undefined : 'ellipsis',
-                            whiteSpace: isEditableCategory ? undefined : 'nowrap',
-                            overflow: isEditableCategory ? 'auto' : 'hidden',
-                            width: '240px',
-                            maxHeight: '40px',
-                        }}
-                        onKeyDown={(e) => {
-                            if (e.keyCode === 13) {
-                                mutateAsync(containerWrapperRef.current?.textContent || '');
-                                e.preventDefault();
-                                setIsEditableCategory(false);
-                            }
-                        }}
-                        onBlur={() => {
-                            mutateAsync(containerWrapperRef.current?.textContent || '');
-                            setIsEditableCategory(false);
-                        }}
+        <Droppable droppableId={entityTemplatesWithCategory.category._id}>
+            {(provided) => (
+                <div ref={provided.innerRef} {...provided.droppableProps}>
+                    <Box
+                        key={entityTemplatesWithCategory.category._id}
+                        header={
+                            <Grid item container justifyContent="space-between" alignItems="center" height="40px" width="284px">
+                                <div
+                                    ref={containerWrapperRef}
+                                    contentEditable={isEditableCategory}
+                                    style={{
+                                        fontSize: '14px',
+                                        fontWeight: '400',
+                                        color: isEditableCategory ? 'black' : '#9398C2',
+                                        outline: isEditableCategory ? '1px solid black' : '',
+                                        textOverflow: isEditableCategory ? undefined : 'ellipsis',
+                                        whiteSpace: isEditableCategory ? undefined : 'nowrap',
+                                        overflow: isEditableCategory ? 'auto' : 'hidden',
+                                        width: '240px',
+                                        maxHeight: '40px',
+                                    }}
+                                    onKeyDown={(e) => {
+                                        if (e.keyCode === 13) {
+                                            mutateAsync(containerWrapperRef.current?.textContent || '');
+                                            e.preventDefault();
+                                            setIsEditableCategory(false);
+                                        }
+                                    }}
+                                    onBlur={() => {
+                                        mutateAsync(containerWrapperRef.current?.textContent || '');
+                                        setIsEditableCategory(false);
+                                    }}
+                                >
+                                    {entityTemplatesWithCategory.category.displayName}
+                                </div>
+                                {isHoverOnBox && (
+                                    <IconButton
+                                        onClick={() => {
+                                            setIsEditableCategory(true);
+                                            containerWrapperRef.current?.focus();
+                                        }}
+                                        className="edit-btn"
+                                    >
+                                        <img src="\icons\edit-icon.svg" />
+                                    </IconButton>
+                                )}
+                            </Grid>
+                        }
+                        addingIcon={
+                            <IconButton
+                                style={{ borderRadius: '5px', width: 'fit-content' }}
+                                onClick={() =>
+                                    setEntityTemplateWizardDialogState({
+                                        isWizardOpen: true,
+                                        entityTemplate: { ...defaultEntityTemplatePopulated, category: entityTemplatesWithCategory.category },
+                                    })
+                                }
+                            >
+                                <img src="/icons/add-new-entity-template.svg" />
+                            </IconButton>
+                        }
+                        onHover={(isHover: boolean) => setIsHoverOnBox(isHover)}
                     >
-                        {entityTemplatesWithCategory.category.displayName}
-                    </div>
-                    {isHoverOnBox && (
-                        <IconButton
-                            onClick={() => {
-                                setIsEditableCategory(true);
-                                containerWrapperRef.current?.focus();
-                            }}
-                            className="edit-btn"
-                        >
-                            <img src="\icons\edit-icon.svg" />
-                        </IconButton>
-                    )}
-                </Grid>
-            }
-            addingIcon={
-                <IconButton
-                    style={{ borderRadius: '5px', width: 'fit-content' }}
-                    onClick={() =>
-                        setEntityTemplateWizardDialogState({
-                            isWizardOpen: true,
-                            entityTemplate: { ...defaultEntityTemplatePopulated, category: entityTemplatesWithCategory.category },
-                        })
-                    }
-                >
-                    <img src="/icons/add-new-entity-template.svg" />
-                </IconButton>
-            }
-            onHover={(isHover: boolean) => setIsHoverOnBox(isHover)}
-        >
-            {!!entityTemplatesWithCategory.entityTemplates.length &&
-                entityTemplatesWithCategory.entityTemplates.map((entityTemplate) => (
-                    <EntityTemplateCard
-                        key={entityTemplate._id}
-                        entityTemplate={entityTemplate}
-                        setDeleteEntityTemplateDialogState={setDeleteEntityTemplateDialogState}
-                        setEntityTemplateWizardDialogState={setEntityTemplateWizardDialogState}
-                        updateEntityTemplateStatusAsync={updateEntityTemplateStatusAsync}
-                    />
-                ))}
-        </Box>
+                        {!!entityTemplatesWithCategory.entityTemplates.length &&
+                            entityTemplatesWithCategory.entityTemplates.map((entityTemplate, index) => (
+                                <Draggable draggableId={entityTemplate._id} key={entityTemplate._id} index={index}>
+                                    {(provided2) => (
+                                        <div ref={provided2.innerRef} {...provided2.draggableProps} {...provided2.dragHandleProps}>
+                                            <EntityTemplateCard
+                                                entityTemplate={entityTemplate}
+                                                setDeleteEntityTemplateDialogState={setDeleteEntityTemplateDialogState}
+                                                setEntityTemplateWizardDialogState={setEntityTemplateWizardDialogState}
+                                                updateEntityTemplateStatusAsync={updateEntityTemplateStatusAsync}
+                                            />
+                                        </div>
+                                    )}
+                                </Draggable>
+                            ))}
+                    </Box>
+                </div>
+            )}
+        </Droppable>
     );
 };
 
@@ -436,6 +449,33 @@ const EntityTemplatesRow: React.FC = () => {
         },
     );
 
+    const { mutateAsync } = useMutation(
+        ({ entityTemplateId, entityTemplate, category }: { entityTemplateId: string; entityTemplate: IEntityTemplate; category: IMongoCategory }) =>
+            updateEntityTemplateRequest(entityTemplateId, {
+                ...entityTemplate,
+                category: category._id,
+            }),
+        {},
+    );
+
+    const onDragEnd = (result) => {
+        if (!result.destination) {
+            return;
+        }
+
+        if (result.source.droppableId === result.destination.droppableId) {
+            return;
+        }
+
+        const { category, ...restEntityTemp } = entityTemplates.get(result.draggableId)!;
+
+        mutateAsync({
+            entityTemplateId: result.draggableId,
+            entityTemplate: { ...restEntityTemp, category: category._id },
+            category: categories.get(result.destination.droppableId)!,
+        });
+    };
+
     return (
         <Grid item container>
             <Grid container spacing={1} alignItems="center">
@@ -459,30 +499,33 @@ const EntityTemplatesRow: React.FC = () => {
                     </IconButton>
                 </Grid>
             </Grid>
-            <Grid container gap="30px" marginTop="30px">
-                {getEntityTemplatesToShowGroupedByCategories(
-                    Array.from(entityTemplates.values())
-                        .filter(
-                            (entityTemplate) =>
-                                categoriesToShow.some((categoryToShow) => categoryToShow._id === entityTemplate.category._id) &&
-                                (searchText === '' || entityTemplate.displayName.includes(searchText)),
-                        )
-                        .sort((a, b) => {
-                            const res = templatesCompareFunc(a, b);
-                            if (res === 0) return Number(a.disabled) - Number(b.disabled);
-                            return res;
-                        }),
-                ).map((entityTemplatesWithCategory) => (
-                    <Grid item key={entityTemplatesWithCategory.category._id}>
-                        <CategoryEntitiesBox
-                            entityTemplatesWithCategory={entityTemplatesWithCategory}
-                            setEntityTemplateWizardDialogState={setEntityTemplateWizardDialogState}
-                            setDeleteEntityTemplateDialogState={setDeleteEntityTemplateDialogState}
-                            updateEntityTemplateStatusAsync={updateEntityTemplateStatusAsync}
-                        />
-                    </Grid>
-                ))}
-            </Grid>
+
+            <DragDropContext onDragEnd={onDragEnd}>
+                <Grid container gap="30px" marginTop="30px">
+                    {getEntityTemplatesToShowGroupedByCategories(
+                        Array.from(entityTemplates.values())
+                            .filter(
+                                (entityTemplate) =>
+                                    categoriesToShow.some((categoryToShow) => categoryToShow._id === entityTemplate.category._id) &&
+                                    (searchText === '' || entityTemplate.displayName.includes(searchText)),
+                            )
+                            .sort((a, b) => {
+                                const res = templatesCompareFunc(a, b);
+                                if (res === 0) return Number(a.disabled) - Number(b.disabled);
+                                return res;
+                            }),
+                    ).map((entityTemplatesWithCategory) => (
+                        <Grid item key={entityTemplatesWithCategory.category._id}>
+                            <CategoryEntitiesBox
+                                entityTemplatesWithCategory={entityTemplatesWithCategory}
+                                setEntityTemplateWizardDialogState={setEntityTemplateWizardDialogState}
+                                setDeleteEntityTemplateDialogState={setDeleteEntityTemplateDialogState}
+                                updateEntityTemplateStatusAsync={updateEntityTemplateStatusAsync}
+                            />
+                        </Grid>
+                    ))}
+                </Grid>
+            </DragDropContext>
             <EntityTemplateWizard
                 open={entityTemplateWizardDialogState.isWizardOpen}
                 handleClose={() => setEntityTemplateWizardDialogState({ isWizardOpen: false, entityTemplate: null })}
