@@ -23,7 +23,11 @@ import { ICategoryMap } from '../../interfaces/categories';
 import ManagementPermissionsCard from './managementPermissionsCard';
 import InstancesPermissionsCard from './instancesPermissionsCard';
 import { RootState } from '../../store';
-import { getUserPermissionTypeToCategory } from '../../utils/permissions/instancePermissions';
+import {
+    getUserCanReadInstanceOfCategory,
+    getUserCanWriteInstanceOfCategory,
+    getUserPermissionTypeToCategory,
+} from '../../utils/permissions/instancePermissions';
 
 const defaultEmptyPermissionsOfUser = {
     user: null,
@@ -391,52 +395,76 @@ const PermissionsOfUserDialog: React.FC<{
                             )}
                             <Box margin={1}>
                                 <InstancesPermissionsCard
-                                    categoriesCheckboxProps={Array.from(categories.values(), ({ _id, displayName }) => ({
-                                        categoryId: _id,
-                                        categoryDisplayName: displayName,
+                                    categoriesCheckboxProps={Array.from(categories.values(), (category) => ({
+                                        categoryId: category._id,
+                                        categoryDisplayName: category.displayName,
                                         disabled: formikProps.isSubmitting,
                                         viewMode: mode === 'view',
-                                        checked: formikProps.values.instancesPermissions.some(({ category }) => category === _id),
-                                        scope: getUserPermissionTypeToCategory(formikProps.values.instancesPermissions, _id),
-                                        onChange:
+                                        checkedRead: getUserCanReadInstanceOfCategory(
+                                            formikProps.values.instancesPermissions as IPermissionsOfUser['instancesPermissions'],
+                                            category,
+                                        ),
+                                        checkedWrite: getUserCanWriteInstanceOfCategory(
+                                            formikProps.values.instancesPermissions as IPermissionsOfUser['instancesPermissions'],
+                                            category,
+                                        ),
+                                        onChangeRead:
                                             mode === 'view'
                                                 ? () => {}
                                                 : (_e, checked) => {
                                                       if (checked) {
-                                                          const newInstancesPermissions: Pick<IPermission, 'category'>[] = [
+                                                          const newInstancesPermissions: Pick<IPermission, 'category' | 'scopes'>[] = [
                                                               ...formikProps.values.instancesPermissions,
-                                                              { category: _id },
+                                                              { category: category._id, scopes: ['Read'] },
                                                           ];
                                                           formikProps.setFieldValue('instancesPermissions', newInstancesPermissions);
                                                           return;
                                                       }
 
                                                       const newInstancesPermissions = formikProps.values.instancesPermissions.filter(
-                                                          ({ category }) => category !== _id,
+                                                          ({ category: currCategory }) => currCategory !== category._id,
+                                                      );
+                                                      formikProps.setFieldValue('instancesPermissions', newInstancesPermissions);
+                                                  },
+                                        onChangeWrite:
+                                            mode === 'view'
+                                                ? () => {}
+                                                : (_e, checked) => {
+                                                      if (checked) {
+                                                          const newInstancesPermissions: Pick<IPermission, 'category' | 'scopes'>[] = [
+                                                              ...formikProps.values.instancesPermissions,
+                                                              { category: category._id, scopes: ['Write', 'Read'] },
+                                                          ];
+                                                          formikProps.setFieldValue('instancesPermissions', newInstancesPermissions);
+                                                          return;
+                                                      }
+
+                                                      const newInstancesPermissions = formikProps.values.instancesPermissions.filter(
+                                                          ({ category: currCategory }) => currCategory !== category._id,
                                                       );
                                                       formikProps.setFieldValue('instancesPermissions', newInstancesPermissions);
                                                   },
                                     }))}
-                                    checkboxAllProps={
-                                        mode === 'view'
-                                            ? undefined
-                                            : {
-                                                  checked: formikProps.values.instancesPermissions.length === categories.size,
-                                                  indeterminate:
-                                                      formikProps.values.instancesPermissions.length > 0 &&
-                                                      formikProps.values.instancesPermissions.length < categories.size,
-                                                  onChange: (_e, checked) => {
-                                                      if (!checked) {
-                                                          formikProps.setFieldValue('instancesPermissions', []);
-                                                          return;
-                                                      }
-                                                      formikProps.setFieldValue(
-                                                          'instancesPermissions',
-                                                          Array.from(categories.keys(), (id) => ({ category: id })),
-                                                      );
-                                                  },
-                                              }
-                                    }
+                                    // checkboxAllProps={
+                                    //     mode === 'view'
+                                    //         ? undefined
+                                    //         : {
+                                    //               checked: formikProps.values.instancesPermissions.length === categories.size,
+                                    //               indeterminate:
+                                    //                   formikProps.values.instancesPermissions.length > 0 &&
+                                    //                   formikProps.values.instancesPermissions.length < categories.size,
+                                    //               onChange: (_e, checked) => {
+                                    //                   if (!checked) {
+                                    //                       formikProps.setFieldValue('instancesPermissions', []);
+                                    //                       return;
+                                    //                   }
+                                    //                   formikProps.setFieldValue(
+                                    //                       'instancesPermissions',
+                                    //                       Array.from(categories.keys(), (id) => ({ category: id })),
+                                    //                   );
+                                    //               },
+                                    //           }
+                                    // }
                                 />
                             </Box>
                         </DialogContent>

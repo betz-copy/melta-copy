@@ -243,6 +243,8 @@ export default {
             instancesPermissions: 'הרשאות על קטגוריות',
             allCategories: 'הכל',
             chooseAll: 'סמן הכל',
+            read: 'קריאה',
+            write: 'עריכה',
         },
     },
     entitiesCardView: {
