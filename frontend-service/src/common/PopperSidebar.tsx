@@ -4,6 +4,7 @@ import { CloseSharp } from '@mui/icons-material';
 import Slide from '@mui/material/Slide';
 import { useSelector } from 'react-redux';
 import { RootState } from '../store';
+import { lightTheme } from '../theme';
 
 const PopperSidebar: React.FC<{
     open: boolean;
@@ -40,7 +41,14 @@ const PopperSidebar: React.FC<{
                                             <CloseSharp />
                                         </IconButton>
 
-                                        <Typography color="#225AA7" fontFamily="Rubik" component="h5" variant="h5" marginX="auto" fontWeight="bold">
+                                        <Typography
+                                            color={lightTheme.palette.primary.main}
+                                            fontFamily="Rubik"
+                                            component="h5"
+                                            variant="h5"
+                                            marginX="auto"
+                                            fontWeight="bold"
+                                        >
                                             {title}
                                         </Typography>
 

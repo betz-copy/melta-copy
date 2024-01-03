@@ -1,15 +1,11 @@
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, Collapse, Grid, IconButton } from '@mui/material';
-import {
-    AppRegistration as AppRegistrationIcon,
-    ReadMore as ReadMoreIcon,
-    Visibility as VisibilityIcon,
-    VisibilityOff as VisibilityOffIcon,
-} from '@mui/icons-material';
-import { NavLink } from 'react-router-dom';
+import { Card, CardContent, CardHeader, Collapse, Dialog, Grid, IconButton, Tooltip, Typography, tooltipClasses } from '@mui/material';
+import { AppRegistration as AppRegistrationIcon, ReadMore as ReadMoreIcon } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import i18next from 'i18next';
+import pickBy from 'lodash.pickby';
 import { CustomIcon } from '../../../common/CustomIcon';
 import { IEntity } from '../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
@@ -18,6 +14,8 @@ import { EntityDisableCheckbox } from '../../Entity/components/EntityDisableChec
 import { EntityDates } from '../../Entity/components/EntityDates';
 import { BlueTitle } from '../../../common/BlueTitle';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
+import { getEntityTemplateColor } from '../../../utils/colors';
+import { EditEntityDetails } from '../../Entity/components/EditEntityDetails';
 
 interface EntityCardProps {
     entity: IEntity;
@@ -34,7 +32,7 @@ interface EntityCardProps {
 }
 const EntityCard: React.FC<EntityCardProps> = ({
     entity,
-    openCard = true,
+    openCard = false,
     customActionButton,
     entityTemplate,
     userHavePermission = true,
@@ -45,65 +43,109 @@ const EntityCard: React.FC<EntityCardProps> = ({
 
     const [hideFields, setHideFields] = React.useState(true);
 
+    const [editDialog, setEditDialog] = useState<{
+        isOpen: boolean;
+        entity?: IEntity;
+    }>({
+        isOpen: false,
+    });
+
+    const navigate = useNavigate();
+
+    const entityTemplateColor = getEntityTemplateColor(entityTemplate);
+
+    const first5PropsKeys: string[] = [
+        ...entityTemplate.propertiesPreview.slice(0, 5),
+        ...entityTemplate.propertiesOrder
+            .filter((property2) => !entityTemplate.propertiesPreview.includes(property2))
+            .slice(0, 5 - entityTemplate.propertiesPreview.length),
+    ];
+
+    const first5Props: IEntity['properties'] = pickBy(
+        entity.properties as IEntity['properties'],
+        (_value, key) => first5PropsKeys.includes(key) || key === '_id' || key === 'createdAt' || key === 'updatedAt' || key === 'disabled',
+    ) as IEntity['properties'];
+
     return (
-        // todo: move card to common (used by "Entity Page" too)
         <Card raised variant={variant} sx={{ overflowX: 'auto', borderRadius: '15px', ...customCardStyle }}>
             <CardHeader
-                avatar={
-                    <Grid>
-                        {entityTemplate.iconFileId ? (
-                            <CustomIcon iconUrl={entityTemplate.iconFileId} height="40px" width="40px" />
-                        ) : (
-                            <AppRegistrationIcon sx={{ fontSize: '40px' }} />
-                        )}
+                style={{ height: '36px', padding: '0px 27px 0px 0px' }}
+                title={
+                    <Grid container alignItems="center" flexDirection="row" gap="20px">
+                        <Grid
+                            container
+                            alignItems="center"
+                            justifyContent="center"
+                            width="42px"
+                            height="42px"
+                            marginTop="27px"
+                            style={{ backgroundColor: entityTemplateColor, borderRadius: '100%' }}
+                        >
+                            {entityTemplate.iconFileId ? (
+                                <CustomIcon color="white" iconUrl={entityTemplate.iconFileId} height="24px" width="24px" />
+                            ) : (
+                                <AppRegistrationIcon sx={{ fontSize: '24px', color: 'white' }} />
+                            )}
+                        </Grid>
+                        <BlueTitle style={{ width: 'fit-content' }} title={entityTemplate.displayName} component="h6" variant="h6" />
                     </Grid>
                 }
                 action={
-                    <Grid container>
-                        {entityTemplate.properties.hide.length > 0 && open && (
+                    <Grid container alignContent="center" alignItems="center">
+                        <Grid>
                             <IconButton
-                                onClick={(event) => {
-                                    event.stopPropagation();
-                                    setHideFields((curr) => !curr);
+                                onClick={(e) => {
+                                    if (!userHavePermission) e.preventDefault();
+                                    navigate(`/entity/${entity.properties._id}`);
                                 }}
-                                size="large"
                             >
-                                {hideFields ? <VisibilityOffIcon /> : <VisibilityIcon />}
-                            </IconButton>
-                        )}
-                        {open ? (
-                            <>
-                                <NavLink
-                                    onClick={(e) => {
-                                        if (!userHavePermission) e.preventDefault();
+                                <Tooltip
+                                    placement="bottom"
+                                    PopperProps={{
+                                        sx: { [`& .${tooltipClasses.tooltip}`]: { fontSize: '1rem', backgroundColor: '#101440' } },
                                     }}
-                                    to={`/entity/${entity.properties._id}`}
+                                    title={i18next.t('wizard.entity.readMore')}
                                 >
-                                    <IconButtonWithPopover
-                                        popoverText={i18next.t('permissions.dontHavePermissionToEntityPage')}
-                                        iconButtonProps={{
-                                            size: 'large',
-                                            disabled: !userHavePermission,
-                                        }}
-                                        disabledToolTip={userHavePermission}
-                                        disabled={!userHavePermission}
-                                    >
-                                        <ReadMoreIcon
-                                            style={{
-                                                transform: 'scaleX(-1)',
-                                            }}
-                                        />
-                                    </IconButtonWithPopover>
-                                </NavLink>
-                                <IconButton size="large" onClick={() => setOpen(!open)}>
-                                    <KeyboardArrowUpIcon />
-                                </IconButton>
-                            </>
-                        ) : (
-                            <IconButton size="large" onClick={() => setOpen(!open)}>
-                                <KeyboardArrowDownIcon />
+                                    <img src="/icons/read-more-icon.svg" />
+                                </Tooltip>
                             </IconButton>
-                        )}
+                            <IconButton
+                                onClick={() => {
+                                    setEditDialog({
+                                        isOpen: true,
+                                        entity,
+                                    });
+                                }}
+                            >
+                                <Tooltip
+                                    placement="bottom"
+                                    PopperProps={{
+                                        sx: { [`& .${tooltipClasses.tooltip}`]: { fontSize: '1rem', backgroundColor: '#101440' } },
+                                    }}
+                                    title={i18next.t('actions.edit')}
+                                >
+                                    <img src="/icons/edit-icon.svg" />
+                                </Tooltip>
+                            </IconButton>
+                            <IconButton
+                                onClick={() => {
+                                    navigate(`/entity/${entity.properties._id}/graph`);
+                                }}
+                            >
+                                <Tooltip
+                                    placement="bottom"
+                                    PopperProps={{
+                                        sx: { [`& .${tooltipClasses.tooltip}`]: { fontSize: '1rem', backgroundColor: '#101440' } },
+                                    }}
+                                    title={i18next.t('actions.graph')}
+                                >
+                                    <img src="/icons/graph-icon.svg" />
+                                </Tooltip>
+                            </IconButton>
+                            <IconButton size="large" onClick={() => setOpen(!open)}>
+                                {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
+                            </IconButton>
+                        </Grid>
 
                         {customActionButton &&
                             (customActionButton.popoverText ? (
@@ -132,21 +174,62 @@ const EntityCard: React.FC<EntityCardProps> = ({
                             ))}
                     </Grid>
                 }
-                title={<BlueTitle title={entityTemplate.displayName} component="h5" variant="h5" />}
-                subheader={entityTemplate.category.displayName}
-                // subheaderTypographyProps={{ variant: 'h6' }}
-                sx={{ '& .MuiCardHeader-action': { marginRight: '0px' } }} // default is -8px
+                sx={{ '& .MuiCardHeader-action': { marginRight: '0px' }, backgroundColor: '#CCCFE580' }} // default is -8px
             />
 
+            {!open && (
+                <Grid container paddingLeft="90px" height="fit-content" minHeight="37px" alignItems="center">
+                    <EntityProperties
+                        entityTemplate={{ ...entityTemplate, propertiesOrder: first5PropsKeys }}
+                        properties={first5Props}
+                        hideFields={hideFields}
+                        style={{
+                            display: 'flex',
+                            flexDirection: 'row',
+                            flexWrap: 'wrap',
+                            justifyContent: 'space-between',
+                            columnGap: '50px',
+                            alignItems: 'center',
+                        }}
+                    />
+                </Grid>
+            )}
+
             <Collapse in={open} style={{ transformOrigin: '0 0 0' }} {...(entity ? { timeout: 500 } : {})} mountOnEnter unmountOnExit>
-                <CardContent>
-                    <EntityProperties entityTemplate={entityTemplate} properties={entity.properties} hideFields={hideFields} />
+                <CardContent
+                    style={{
+                        padding: '40px 90px 20px 50px',
+                    }}
+                >
+                    <EntityProperties
+                        entityTemplate={entityTemplate}
+                        properties={entity.properties}
+                        hideFields={hideFields}
+                        style={{
+                            display: 'flex',
+                            flexDirection: 'row',
+                            flexWrap: 'wrap',
+                            rowGap: '20px',
+                            alignItems: 'center',
+                        }}
+                        innerStyle={{ flexBasis: '33.33%' }}
+                    />
                     <Grid container>
                         <EntityDisableCheckbox isEntityDisabled={entity.properties.disabled} />
                     </Grid>
                     <EntityDates createdAt={entity.properties.createdAt} updatedAt={entity.properties.updatedAt} />
                 </CardContent>
             </Collapse>
+            <Dialog open={editDialog.isOpen}>
+                <EditEntityDetails
+                    entityTemplate={entityTemplate}
+                    entity={entity}
+                    onSuccessUpdate={(entityObj) => {
+                        setEditDialog((prev) => ({ ...prev, isOpen: false }));
+                    }}
+                    onCancelUpdate={() => setEditDialog((prev) => ({ ...prev, isOpen: false }))}
+                />
+            </Dialog>
         </Card>
     );
 };

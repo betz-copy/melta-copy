@@ -14,6 +14,7 @@ import { IMongoCategory } from '../../interfaces/categories';
 import TemplatesSelectCheckbox from '../templatesSelectCheckbox';
 import { BlueTitle } from '../BlueTitle';
 import { RootState } from '../../store';
+import { lightTheme } from '../../theme';
 
 export const GlobalSearchBar: React.FC<{
     inputValue?: string;
@@ -38,7 +39,7 @@ export const GlobalSearchBar: React.FC<{
                 }
             }}
             endAdornmentChildren={
-                <IconButton onClick={() => onSearch(valueForSearchButtonRef.current)} sx={{ padding: 0 }} disableRipple>
+                <IconButton style={{ color: '#1E2775' }} onClick={() => onSearch(valueForSearchButtonRef.current)} sx={{ padding: 0 }} disableRipple>
                     <SearchIcon />
                 </IconButton>
             }
@@ -76,7 +77,7 @@ const EntitiesPageHeadline: React.FC<{
     return (
         <Grid
             container
-            bgcolor={darkMode ? '#131313' : '#fcfeff'}
+            bgcolor={darkMode ? '#131313' : '#fff'}
             boxShadow="0px 4px 4px #0000000D"
             padding="0.5rem 2.5rem"
             height="3.6rem"
@@ -144,7 +145,7 @@ const EntitiesPageHeadline: React.FC<{
                     {excelExportProps && (
                         <Grid item>
                             <IconButton
-                                style={{ background: '#225AA7', borderRadius: '5px' }}
+                                style={{ background: lightTheme.palette.primary.main, borderRadius: '5px' }}
                                 onClick={excelExportProps.onExcelExport}
                                 disabled={excelExportProps.isLoadingExcel}
                             >
@@ -160,7 +161,7 @@ const EntitiesPageHeadline: React.FC<{
                         </Grid>
                     )}
                     <Grid item>
-                        <AddEntityButton disabledToolTip style={{ background: '#225AA7', borderRadius: '5px' }}>
+                        <AddEntityButton disabledToolTip style={{ background: lightTheme.palette.primary.main, borderRadius: '5px' }}>
                             <AddIcon htmlColor="white" />
                             <Typography fontSize={14} style={{ fontWeight: '500', padding: '0 10px', color: 'white' }}>
                                 {i18next.t('addEntity')}

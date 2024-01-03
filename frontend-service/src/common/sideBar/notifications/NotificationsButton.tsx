@@ -15,17 +15,16 @@ export const NotificationsButton: React.FC<NotificationsButtonProps> = ({ notifi
     <Grid container direction="column" alignItems="center">
         <Tooltip
             title={text}
-            arrow
             placement="left"
-            disableHoverListener={isDrawerOpen}
+            disableHoverListener={isDrawerOpen} // when drawer is opened text is already shown, so no need for tooltip
             PopperProps={{
-                sx: { [`& .${tooltipClasses.tooltip}`]: { fontSize: '1rem' } },
+                sx: { [`& .${tooltipClasses.tooltip}`]: { fontSize: '1rem', backgroundColor: '#101440' } },
             }}
         >
             <IconButton onClick={onClick} sx={{ borderRadius: 10, margin: '0.2rem', paddingBottom: '0', paddingX: '0.5rem' }}>
                 <Grid container alignItems="center" justifyContent="space-between" spacing={1}>
                     <Grid item position="relative">
-                        <NotificationsIcon sx={{ color: 'white', fontSize: 38 }} />
+                        <NotificationsIcon sx={{ color: 'white', fontSize: 38, width: '36px', height: '34px' }} />
                         <NotificationCount
                             notificationCount={notificationCountDetails.total}
                             style={{
@@ -34,14 +33,10 @@ export const NotificationsButton: React.FC<NotificationsButtonProps> = ({ notifi
                                 left: '30%',
                                 transform: 'translate(-50%, -50%)',
                                 userSelect: 'none',
+                                backgroundColor: '#FF006B',
                             }}
                         />
                     </Grid>
-                    {isDrawerOpen && (
-                        <Grid item>
-                            <Typography color="white">{text}</Typography>
-                        </Grid>
-                    )}
                 </Grid>
             </IconButton>
         </Tooltip>

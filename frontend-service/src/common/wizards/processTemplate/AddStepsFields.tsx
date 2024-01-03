@@ -15,6 +15,7 @@ import { StepsNameBlock } from './StepsNameBlock';
 import FieldBlock, { FieldBlockAccordion } from '../entityTemplate/FieldBlock';
 import { attachmentPropertiesBaseSchema, propertiesBaseSchema } from '../entityTemplate/AddFields';
 import { initialFieldCardDataOnAdd, useAreThereProcessInstancesByTemplateId } from './AddDetailsFields';
+import { lightTheme } from '../../../theme';
 
 const stepTemplateUniqueNames = (value, context: Yup.TestContext) => {
     if (!value) return true;
@@ -105,7 +106,7 @@ const AddStepsFields: React.FC<StepComponentProps<ProcessTemplateWizardValues, '
                             >
                                 <span>
                                     <IconButton
-                                        style={{ justifyContent: 'center', color: '#1B7BB9' }}
+                                        style={{ justifyContent: 'center', color: lightTheme.palette.primary.main }}
                                         disabled={isEditMode && areThereAnyInstances}
                                         onClick={() =>
                                             push({

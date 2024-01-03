@@ -42,7 +42,10 @@ const RjsfTextWidget = ({
     return (
         <TextField
             {...textFieldProps}
-            color={color as TextFieldProps['color']}
+            color="primary"
+            style={{
+                maxWidth: '250px',
+            }}
             variant={variant}
             id={id}
             placeholder={placeholder}

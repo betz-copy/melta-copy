@@ -4,6 +4,7 @@ import { Box, Typography } from '@mui/material';
 import { EntityWizardValues } from './index';
 import { StepComponentProps } from '../index';
 import { formatToString } from '../../EntityProperties';
+import { lightTheme } from '../../../theme';
 
 const summaryTitleStyle: CSSProperties = {
     fontSize: '28px',
@@ -13,7 +14,7 @@ const summaryTitleStyle: CSSProperties = {
 
 const titleStyle: CSSProperties = {
     fontSize: '18px',
-    color: '#1B7BB9',
+    color: lightTheme.palette.primary.main,
     lineHeight: '40px',
 };
 
@@ -42,7 +43,7 @@ const Summary: React.FC<StepComponentProps<EntityWizardValues>> = ({ values }) =
     return (
         <Box
             sx={{
-                border: '1px solid #1B7BB9',
+                border: `1px solid ${lightTheme.palette.primary.main}`,
                 width: 400,
                 margin: 'auto',
                 borderRadius: '8px',
@@ -53,7 +54,7 @@ const Summary: React.FC<StepComponentProps<EntityWizardValues>> = ({ values }) =
                     <div style={{ position: 'relative' }}>
                         <div
                             style={{
-                                backgroundColor: '#1B7BB9',
+                                backgroundColor: lightTheme.palette.primary.main,
                                 height: '7px',
                                 width: '7px',
                                 borderRadius: '50%',

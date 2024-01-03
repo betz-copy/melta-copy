@@ -15,8 +15,9 @@ const ResetFilterButton: React.FC<{
             iconButtonProps={{ onClick: () => entitiesTableRef.current?.resetFilter() }}
             popoverText={i18next.t('entitiesTableOfTemplate.resetFilters')}
             disabled={disableButton}
+            style={{ borderRadius: '5px' }}
         >
-            <FilterListOffOutlined color={buttonColor} fontSize="medium" />
+            {disableButton ? <img src="/icons/delete-filters.svg" /> : <img src="/icons/delete-filters-enable.svg" />}
         </IconButtonWithPopover>
     );
 };

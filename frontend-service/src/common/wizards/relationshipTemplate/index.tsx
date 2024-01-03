@@ -24,6 +24,48 @@ export interface RelationshipTemplateWizardValues {
     destinationEntity: IMongoEntityTemplatePopulated;
 }
 
+// export interface RegularRelationshipTemplateWizardValues {
+//     _id?: string;
+//     createdAt?: string;
+//     updatedAt?: string;
+//     name: string;
+//     displayName: string;open
+//     sourceEntity: IMongoEntityTemplatePopulated;
+//     destinationEntity: IMongoEntityTemplatePopulated;
+// }
+
+export const defaultInitialValues: RelationshipTemplateWizardValues = {
+    name: '',
+    displayName: '',
+    sourceEntity: {
+        _id: '',
+        displayName: '',
+        name: '',
+        properties: {
+            type: 'object',
+            properties: {},
+            required: [],
+            hide: [],
+        },
+        category: { _id: '', displayName: '', name: '', color: '' },
+        propertiesOrder: [],
+        propertiesPreview: [],
+        uniqueConstraints: [],
+        disabled: false,
+    },
+    destinationEntity: {
+        _id: '',
+        displayName: '',
+        name: '',
+        properties: { type: 'object', properties: {}, required: [], hide: [] },
+        category: { _id: '', displayName: '', name: '', color: '' },
+        propertiesOrder: [],
+        propertiesPreview: [],
+        uniqueConstraints: [],
+        disabled: false,
+    },
+};
+
 const steps: StepsType<RelationshipTemplateWizardValues> = [
     {
         label: i18next.t('wizard.relationshipTemplate.title'),
@@ -36,37 +78,7 @@ const RelationshipTemplateWizard: React.FC<WizardBaseType<RelationshipTemplateWi
     open,
     handleClose,
     initalStep = 0,
-    initialValues = {
-        name: '',
-        displayName: '',
-        sourceEntity: {
-            _id: '',
-            displayName: '',
-            name: '',
-            properties: {
-                type: 'object',
-                properties: {},
-                required: [],
-                hide: [],
-            },
-            category: { _id: '', displayName: '', name: '', color: '' },
-            propertiesOrder: [],
-            propertiesPreview: [],
-            uniqueConstraints: [],
-            disabled: false,
-        },
-        destinationEntity: {
-            _id: '',
-            displayName: '',
-            name: '',
-            properties: { type: 'object', properties: {}, required: [], hide: [] },
-            category: { _id: '', displayName: '', name: '', color: '' },
-            propertiesOrder: [],
-            propertiesPreview: [],
-            uniqueConstraints: [],
-            disabled: false,
-        },
-    },
+    initialValues = { ...defaultInitialValues },
     isEditMode = false,
 }) => {
     const queryClient = useQueryClient();

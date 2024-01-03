@@ -1,19 +1,287 @@
 import React, { useState } from 'react';
-import { Grid, IconButton } from '@mui/material';
+import { Button, Divider, Grid, IconButton, Tooltip, Typography, tooltipClasses } from '@mui/material';
 import { AddCircle as AddIcon, Search as SearchIcon } from '@mui/icons-material';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import i18next from 'i18next';
 import { AxiosError } from 'axios';
-import { Header } from '../../../common/Header';
 import { ProcessTemplateWizard } from '../../../common/wizards/processTemplate';
 import { deleteProcessTemplateRequest, processTemplateObjectToProcessTemplateForm } from '../../../services/templates/processTemplatesService';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
 import { ErrorToast } from '../../../common/ErrorToast';
-import { ViewingBox } from './ViewingBox';
-import { ViewingCard } from './ViewingCard';
+import { ViewingCard } from './Card';
 import SearchInput from '../../../common/inputs/SearchInput';
-import { IMongoProcessTemplatePopulated, IProcessTemplateMap } from '../../../interfaces/processes/processTemplate';
+import { IMongoProcessTemplatePopulated, IProcessSingleProperty, IProcessTemplateMap } from '../../../interfaces/processes/processTemplate';
+import { CardMenu } from './CardMenu';
+import { CustomIcon } from '../../../common/CustomIcon';
+import { IUser } from '../../../services/kartoffelService';
+import { IMongoStepTemplatePopulated } from '../../../interfaces/processes/stepTemplate';
+
+interface StepReviewersProps {
+    reviewers: IUser[];
+}
+
+const StepReviewers: React.FC<StepReviewersProps> = ({ reviewers }) => {
+    const [isOpen, setIsOpen] = useState(false);
+
+    return (
+        <Grid container>
+            <Grid item>
+                <Button
+                    onClick={(event) => {
+                        event.preventDefault();
+                        setIsOpen(!isOpen);
+                        event.stopPropagation();
+                    }}
+                >
+                    <Typography color="#9398C2">{`${isOpen ? '-  ' : '>  '}${i18next.t('wizard.processTemplate.approvers')}`}</Typography>
+                </Button>
+            </Grid>
+            {isOpen &&
+                reviewers.map((reviewer) => (
+                    <Grid item key={reviewer.id}>
+                        <Typography
+                            style={{
+                                fontSize: '14px',
+                                color: '#53566E',
+                                fontWeight: '400',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap',
+                                overflow: 'hidden',
+                                width: '270px',
+                            }}
+                        >
+                            {reviewer.displayName}
+                        </Typography>
+                    </Grid>
+                ))}
+        </Grid>
+    );
+};
+interface ProcessPropertiesProps {
+    properties: Record<string, IProcessSingleProperty>;
+}
+
+const ProcessProperties: React.FC<ProcessPropertiesProps> = ({ properties }) => {
+    const [isOpen, setIsOpen] = useState(false);
+
+    return (
+        <Grid>
+            <Grid item>
+                <Button
+                    onClick={(event) => {
+                        event.preventDefault();
+                        setIsOpen(!isOpen);
+                        event.stopPropagation();
+                    }}
+                >
+                    <Typography color="#9398C2">{`${isOpen ? '-  ' : '>  '}${i18next.t('wizard.processTemplate.properties')}`}</Typography>
+                </Button>
+            </Grid>
+            {isOpen && (
+                <Grid item container direction="column" marginLeft="10px">
+                    {Object.entries(properties).map(([key, value]) => (
+                        <Grid item container key={key} direction="row" wrap="nowrap" alignItems="center">
+                            <Typography
+                                style={{
+                                    fontSize: '14px',
+                                    color: '#53566E',
+                                    fontWeight: '400',
+                                    textOverflow: 'ellipsis',
+                                    whiteSpace: 'nowrap',
+                                    overflow: 'hidden',
+                                    width: '170px',
+                                }}
+                            >
+                                {value.title}
+                            </Typography>
+                            <Typography
+                                style={{
+                                    fontSize: '14px',
+                                    color: '#53566E',
+                                    fontWeight: '400',
+                                    textOverflow: 'ellipsis',
+                                    whiteSpace: 'nowrap',
+                                    overflow: 'hidden',
+                                    width: '70px',
+                                }}
+                            >
+                                {i18next.t(`propertyTypes.${value.type}`)}
+                            </Typography>
+                        </Grid>
+                    ))}
+                </Grid>
+            )}
+        </Grid>
+    );
+};
+
+interface StepProps {
+    step: IMongoStepTemplatePopulated;
+}
+
+const Step: React.FC<StepProps> = ({ step }) => {
+    const [isOpen, setIsOpen] = useState(false);
+
+    return (
+        <Grid item container direction="row" marginLeft="10px">
+            <Grid item container direction="row" alignItems="center" gap="10px">
+                <Button
+                    onClick={(event) => {
+                        event.preventDefault();
+                        setIsOpen(!isOpen);
+                        event.stopPropagation();
+                    }}
+                >
+                    <Typography color="#9398C2">{isOpen ? '-  ' : '>  '}</Typography>
+                    {step.iconFileId && <CustomIcon iconUrl={step.iconFileId} height="24px" width="24px" color="#1E2775" />}
+                    <Tooltip
+                        PopperProps={{
+                            sx: { [`& .${tooltipClasses.tooltip}`]: { fontSize: '1rem', backgroundColor: '#101440' } },
+                        }}
+                        title={step.displayName}
+                    >
+                        <Typography
+                            style={{
+                                fontSize: '12px',
+                                color: '#9398C2',
+                                fontWeight: '400',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap',
+                                overflow: 'hidden',
+                                width: '250px',
+                                textAlign: 'right',
+                            }}
+                        >
+                            {step.displayName}
+                        </Typography>
+                    </Tooltip>
+                </Button>
+            </Grid>
+            {isOpen && (
+                <Grid item container direction="column" marginLeft="10px">
+                    <ProcessProperties properties={step.properties.properties} />
+                    <StepReviewers reviewers={step.reviewers} />
+                </Grid>
+            )}
+        </Grid>
+    );
+};
+
+interface ProcessTemplateCardProps {
+    processTemplate: IMongoProcessTemplatePopulated;
+    setProcessTemplateWizardDialogState: (
+        value: React.SetStateAction<{
+            isWizardOpen: boolean;
+            processTemplate: IMongoProcessTemplatePopulated | null;
+        }>,
+    ) => void;
+    setDeleteProcessTemplateDialogState: (
+        value: React.SetStateAction<{
+            isDialogOpen: boolean;
+            processTemplateId: string | null;
+        }>,
+    ) => void;
+}
+
+const ProcessTemplateCard: React.FC<ProcessTemplateCardProps> = ({
+    processTemplate,
+    setProcessTemplateWizardDialogState,
+    setDeleteProcessTemplateDialogState,
+}) => {
+    const [isHoverOnCard, setIsHoverOnCard] = useState(false);
+
+    return (
+        <ViewingCard
+            width={320}
+            title={
+                <Grid direction="column" container gap="10px">
+                    <Grid
+                        item
+                        container
+                        direction="row"
+                        justifyContent="space-between"
+                        minWidth="300px"
+                        alignItems="center"
+                        paddingLeft="20px"
+                        flexWrap="nowrap"
+                    >
+                        <Grid item container alignItems="center" gap="10px" flexBasis="90%">
+                            <Tooltip
+                                PopperProps={{
+                                    sx: { [`& .${tooltipClasses.tooltip}`]: { fontSize: '1rem', backgroundColor: '#101440' } },
+                                }}
+                                title={processTemplate.displayName}
+                            >
+                                <Typography
+                                    style={{
+                                        fontSize: '14px',
+                                        color: '#1E2775',
+                                        fontWeight: '400',
+                                        textOverflow: 'ellipsis',
+                                        whiteSpace: 'nowrap',
+                                        overflow: 'hidden',
+                                        width: '250px',
+                                    }}
+                                >
+                                    {processTemplate.displayName}
+                                </Typography>
+                            </Tooltip>
+                        </Grid>
+                        <Grid item container flexBasis="10%">
+                            {isHoverOnCard && (
+                                <CardMenu
+                                    onEditClick={() => setProcessTemplateWizardDialogState({ isWizardOpen: true, processTemplate })}
+                                    onDeleteClick={() =>
+                                        setDeleteProcessTemplateDialogState({ isDialogOpen: true, processTemplateId: processTemplate._id })
+                                    }
+                                />
+                            )}
+                        </Grid>
+                    </Grid>
+                    <Grid item container flexDirection="row" gap="20px">
+                        {processTemplate.steps.map((step) => (
+                            <Grid key={step._id} item container alignItems="center" gap="10px" width="fit-content">
+                                {step.iconFileId && <CustomIcon iconUrl={step.iconFileId} height="24px" width="24px" color="#1E2775" />}
+                                <Tooltip
+                                    PopperProps={{
+                                        sx: { [`& .${tooltipClasses.tooltip}`]: { fontSize: '1rem', backgroundColor: '#101440' } },
+                                    }}
+                                    title={step.displayName}
+                                >
+                                    <Typography
+                                        style={{
+                                            fontSize: '12px',
+                                            color: '#9398C2',
+                                            fontWeight: '400',
+                                            textOverflow: 'ellipsis',
+                                            whiteSpace: 'nowrap',
+                                            overflow: 'hidden',
+                                            width: '50px',
+                                        }}
+                                    >
+                                        {step.displayName}
+                                    </Typography>
+                                </Tooltip>
+                            </Grid>
+                        ))}
+                    </Grid>
+                </Grid>
+            }
+            expendedCard={
+                <Grid container direction="column">
+                    <Divider style={{ width: '100%' }} />
+                    <ProcessProperties properties={processTemplate.details.properties.properties} />
+                    <Typography color="#9398C2">{i18next.t('wizard.processTemplate.levels')}</Typography>
+                    {processTemplate.steps.map((step) => {
+                        return <Step key={step._id} step={step} />;
+                    })}
+                </Grid>
+            }
+            onHover={(isHover: boolean) => setIsHoverOnCard(isHover)}
+        />
+    );
+};
 
 const ProcessTemplatesRow: React.FC = () => {
     const queryClient = useQueryClient();
@@ -54,32 +322,27 @@ const ProcessTemplatesRow: React.FC = () => {
     );
 
     return (
-        <Grid item container marginBottom="30px">
-            <Header title={i18next.t('processTemplates')}>
-                <Grid container spacing={1} alignItems="center">
-                    <Grid item>
-                        <SearchInput onChange={setSearchText} endAdornmentChildren={<SearchIcon />} />
-                    </Grid>
-                    <Grid item>
-                        <IconButton onClick={() => setProcessTemplateWizardDialogState({ isWizardOpen: true, processTemplate: null })}>
-                            <AddIcon color="primary" fontSize="large" />
-                        </IconButton>
-                    </Grid>
+        <Grid item container marginBottom="30px" gap="30px">
+            <Grid container spacing={1} alignItems="center">
+                <Grid item>
+                    <SearchInput onChange={setSearchText} endAdornmentChildren={<SearchIcon />} />
                 </Grid>
-            </Header>
-            <ViewingBox>
-                {Array.from(processTemplates.values())
-                    .filter((processTemplate) => searchText === '' || processTemplate.displayName.includes(searchText))
-                    .map((processTemplate) => (
-                        <ViewingCard
-                            minWidth={250}
-                            key={processTemplate._id}
-                            title={processTemplate.displayName}
-                            onEditClick={() => setProcessTemplateWizardDialogState({ isWizardOpen: true, processTemplate })}
-                            onDeleteClick={() => setDeleteProcessTemplateDialogState({ isDialogOpen: true, processTemplateId: processTemplate._id })}
-                        />
-                    ))}
-            </ViewingBox>
+                <Grid item>
+                    <IconButton onClick={() => setProcessTemplateWizardDialogState({ isWizardOpen: true, processTemplate: null })}>
+                        <AddIcon color="primary" fontSize="large" />
+                    </IconButton>
+                </Grid>
+            </Grid>
+            {Array.from(processTemplates.values())
+                .filter((processTemplate) => searchText === '' || processTemplate.displayName.includes(searchText))
+                .map((processTemplate) => (
+                    <ProcessTemplateCard
+                        key={processTemplate._id}
+                        processTemplate={processTemplate}
+                        setDeleteProcessTemplateDialogState={setDeleteProcessTemplateDialogState}
+                        setProcessTemplateWizardDialogState={setProcessTemplateWizardDialogState}
+                    />
+                ))}
             <ProcessTemplateWizard
                 open={processTemplateWizardDialogState.isWizardOpen}
                 handleClose={() => setProcessTemplateWizardDialogState({ isWizardOpen: false, processTemplate: null })}

@@ -1,20 +1,108 @@
 import React, { useState } from 'react';
-import { Grid, IconButton } from '@mui/material';
-import { Hive as HiveIcon, AddCircle as AddIcon } from '@mui/icons-material';
+import { Grid, IconButton, Tooltip, Typography, tooltipClasses } from '@mui/material';
+import { Hive as HiveIcon } from '@mui/icons-material';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 
 import i18next from 'i18next';
 import { AxiosError } from 'axios';
 import { ICategoryMap, IMongoCategory } from '../../../interfaces/categories';
-import { ViewingCard } from './ViewingCard';
+import { ViewingCard } from './Card';
 import { CustomIcon } from '../../../common/CustomIcon';
-import { Header } from '../../../common/Header';
 import { CategoryWizard } from '../../../common/wizards/category';
 import { categoryObjectToCategoryForm, deleteCategoryRequest } from '../../../services/templates/categoriesService';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
 import { ErrorToast } from '../../../common/ErrorToast';
-import { ViewingBox } from './ViewingBox';
+import { Box } from './Box';
+import { CardMenu } from './CardMenu';
+
+interface CategoryCardProps {
+    category: IMongoCategory;
+    setDeleteCategoryDialogState: React.Dispatch<
+        React.SetStateAction<{
+            isDialogOpen: boolean;
+            categoryId: string | null;
+        }>
+    >;
+    setCategoryWizardDialogState: React.Dispatch<
+        React.SetStateAction<{
+            isWizardOpen: boolean;
+            category: IMongoCategory | null;
+        }>
+    >;
+}
+
+const CategoryCard: React.FC<CategoryCardProps> = ({ category, setDeleteCategoryDialogState, setCategoryWizardDialogState }) => {
+    const [isHoverOnCard, setIsHoverOnCard] = useState(false);
+
+    return (
+        <ViewingCard
+            title={
+                <Grid
+                    container
+                    direction="row"
+                    justifyContent="space-between"
+                    minWidth="232px"
+                    alignItems="center"
+                    paddingLeft="20px"
+                    flexWrap="nowrap"
+                >
+                    <Grid item container alignItems="center" gap="10px" flexBasis="90%">
+                        <Grid item>
+                            <div
+                                style={{
+                                    height: '30px',
+                                    width: '7px',
+                                    backgroundColor: category.color,
+                                    borderRadius: '20px',
+                                }}
+                            />
+                        </Grid>
+
+                        <Grid item>
+                            {category.iconFileId ? (
+                                <CustomIcon iconUrl={category.iconFileId} height="24px" width="24px" />
+                            ) : (
+                                <HiveIcon fontSize="small" />
+                            )}
+                        </Grid>
+                        <Grid item>
+                            <Tooltip
+                                PopperProps={{
+                                    sx: { [`& .${tooltipClasses.tooltip}`]: { fontSize: '1rem', backgroundColor: '#101440' } },
+                                }}
+                                title={category.displayName}
+                            >
+                                <Typography
+                                    style={{
+                                        fontSize: '14px',
+                                        color: '#1E2775',
+                                        fontWeight: '400',
+                                        textOverflow: 'ellipsis',
+                                        whiteSpace: 'nowrap',
+                                        overflow: 'hidden',
+                                        width: '130px',
+                                    }}
+                                >
+                                    {category.displayName}
+                                </Typography>
+                            </Tooltip>
+                        </Grid>
+                    </Grid>
+                    <Grid item container flexBasis="10%">
+                        {isHoverOnCard && (
+                            <CardMenu
+                                onEditClick={() => setCategoryWizardDialogState({ isWizardOpen: true, category })}
+                                onDeleteClick={() => setDeleteCategoryDialogState({ isDialogOpen: true, categoryId: category._id })}
+                            />
+                        )}
+                    </Grid>
+                </Grid>
+            }
+            onHover={(isHover: boolean) => setIsHoverOnCard(isHover)}
+        />
+    );
+};
 
 const CategoriesRow: React.FC = () => {
     const queryClient = useQueryClient();
@@ -52,32 +140,40 @@ const CategoriesRow: React.FC = () => {
         },
     });
 
+    const [isHoverOnBox, setIsHoverOnBox] = useState(false);
+
     return (
         <Grid item container>
-            <Header title={i18next.t('categories')}>
-                <IconButton onClick={() => setCategoryWizardDialogState({ isWizardOpen: true, category: null })}>
-                    <AddIcon color="primary" fontSize="large" />
-                </IconButton>
-            </Header>
-            <ViewingBox>
+            <Box
+                header={
+                    <Grid item container justifyContent="space-between" alignItems="center" height="40px">
+                        <Typography style={{ fontSize: '14px', fontWeight: '400', color: '#9398C2' }}>general</Typography>
+                        {isHoverOnBox && (
+                            <IconButton onClick={() => {}}>
+                                <img src="\icons\edit-icon.svg" />
+                            </IconButton>
+                        )}
+                    </Grid>
+                }
+                addingIcon={
+                    <IconButton
+                        style={{ borderRadius: '5px', width: 'fit-content' }}
+                        onClick={() => setCategoryWizardDialogState({ isWizardOpen: true, category: null })}
+                    >
+                        <img src="/icons/add-new-category.svg" />
+                    </IconButton>
+                }
+                onHover={(isHover: boolean) => setIsHoverOnBox(isHover)}
+            >
                 {Array.from(categories.values(), (category) => (
-                    <ViewingCard
-                        minWidth={250}
+                    <CategoryCard
                         key={category._id}
-                        title={category.displayName}
-                        color={category.color}
-                        icon={
-                            category.iconFileId ? (
-                                <CustomIcon iconUrl={category.iconFileId} height="40px" width="40px" />
-                            ) : (
-                                <HiveIcon fontSize="large" />
-                            )
-                        }
-                        onEditClick={() => setCategoryWizardDialogState({ isWizardOpen: true, category })}
-                        onDeleteClick={() => setDeleteCategoryDialogState({ isDialogOpen: true, categoryId: category._id })}
+                        category={category}
+                        setCategoryWizardDialogState={setCategoryWizardDialogState}
+                        setDeleteCategoryDialogState={setDeleteCategoryDialogState}
                     />
                 ))}
-            </ViewingBox>
+            </Box>
             <CategoryWizard
                 open={categoryWizardDialogState.isWizardOpen}
                 handleClose={() => setCategoryWizardDialogState({ isWizardOpen: false, category: null })}

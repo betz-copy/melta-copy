@@ -10,12 +10,12 @@ const EntityDates: React.FC<{ createdAt: string; updatedAt: string }> = ({ creat
 
     return (
         <Grid item container justifyContent="space-around">
-            <Typography color={darkMode ? '#cecece' : 'gray'}>{`${i18next.t('entityPage.createdAt')}: ${getLongDate(
-                new Date(createdAt),
-            )}`}</Typography>
-            <Typography color={darkMode ? '#cecece' : 'gray'}>{`${i18next.t('entityPage.updatedAt')}: ${getLongDate(
-                new Date(updatedAt),
-            )}`}</Typography>
+            <Typography color={darkMode ? '#cecece' : '#787C9E'} fontSize="12px" fontWeight="400">{`${i18next.t(
+                'entityPage.createdAt',
+            )}: ${getLongDate(new Date(createdAt))}`}</Typography>
+            <Typography color={darkMode ? '#cecece' : '#787C9E'} fontSize="12px" fontWeight="400">{`${i18next.t(
+                'entityPage.updatedAt',
+            )}: ${getLongDate(new Date(updatedAt))}`}</Typography>
         </Grid>
     );
 };

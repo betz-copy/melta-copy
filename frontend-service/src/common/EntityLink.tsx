@@ -7,6 +7,7 @@ import { IEntity } from '../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { RootState } from '../store';
 import { EntityPropertiesInternal } from './EntityProperties';
+import { lightTheme } from '../theme';
 
 interface EntityLinkProps {
     entity: IEntity | null;
@@ -29,7 +30,7 @@ export const EntityLink: React.FC<EntityLinkProps> = ({ entity, entityTemplate }
 
     return (
         <Tooltip title={tooltip}>
-            <NavLink to={link} style={{ color: '#225AA7', textDecoration: 'inherit', fontWeight: 'bold' }}>
+            <NavLink to={link} style={{ color: lightTheme.palette.primary.main, textDecoration: 'inherit', fontWeight: 'bold' }}>
                 {linkText}
             </NavLink>
         </Tooltip>

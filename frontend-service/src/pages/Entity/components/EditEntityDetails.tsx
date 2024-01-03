@@ -97,7 +97,11 @@ const EditEntityDetails: React.FC<{
                                         <Grid item xs={12}>
                                             <Grid container flexDirection="row">
                                                 <Box>
-                                                    <BlueTitle title={i18next.t('wizard.entityTemplate.properties')} component="h6" variant="h6" />
+                                                    <BlueTitle
+                                                        title={`${i18next.t('actions.editment')} ${entityTemplate.displayName}`}
+                                                        component="h6"
+                                                        variant="h6"
+                                                    />
                                                     <JSONSchemaFormik
                                                         schema={filterAttachmentsAndEntitiesRefFromPropertiesSchema(entityTemplate.properties)}
                                                         values={values}
@@ -110,38 +114,47 @@ const EditEntityDetails: React.FC<{
                                                 </Box>
                                                 {templateFileKeys.length > 0 && (
                                                     <Box>
-                                                        <BlueTitle
-                                                            title={i18next.t('wizard.entityTemplate.attachments')}
-                                                            component="h6"
-                                                            variant="h6"
-                                                            style={{ marginBottom: '22px' }}
-                                                        />
-                                                        <div style={{ color: '#666666', fontSize: '0.9rem', padding: '2%' }}>
-                                                            {i18next.t('wizard.entityTemplate.dragAndDropFile')}
-                                                        </div>
-                                                        <>
-                                                            {Object.entries(templateFilesProperties).map(([key, value]) => (
-                                                                <InstanceFileInput
-                                                                    key={key}
-                                                                    fileFieldName={`attachmentsProperties.${key}`}
-                                                                    fieldTemplateTitle={value.title}
-                                                                    setFieldValue={setFieldValue}
-                                                                    required={requiredFilesNames.includes(key)}
-                                                                    value={values.attachmentsProperties[key]}
-                                                                    error={errors.attachmentsProperties?.[key] as string}
-                                                                    setFieldTouched={setFieldTouched}
+                                                        <Grid item container>
+                                                            <Grid alignSelf="stretch">
+                                                                <Divider orientation="vertical" style={{ alignSelf: 'stretch' }} />
+                                                            </Grid>
+                                                            <Grid paddingLeft="20px">
+                                                                <BlueTitle
+                                                                    title={i18next.t('wizard.entityTemplate.attachments')}
+                                                                    component="h6"
+                                                                    variant="h6"
+                                                                    style={{ marginBottom: '22px', fontSize: '16px', fontWeight: '600' }}
                                                                 />
-                                                            ))}
-                                                        </>
+                                                                <div style={{ color: '#666666', fontSize: '0.9rem', padding: '2%' }}>
+                                                                    {i18next.t('wizard.entityTemplate.dragAndDropFile')}
+                                                                </div>
+                                                                <>
+                                                                    {Object.entries(templateFilesProperties).map(([key, value]) => (
+                                                                        <InstanceFileInput
+                                                                            key={key}
+                                                                            fileFieldName={`attachmentsProperties.${key}`}
+                                                                            fieldTemplateTitle={value.title}
+                                                                            setFieldValue={setFieldValue}
+                                                                            required={requiredFilesNames.includes(key)}
+                                                                            value={values.attachmentsProperties[key]}
+                                                                            error={errors.attachmentsProperties?.[key] as string}
+                                                                            setFieldTouched={setFieldTouched}
+                                                                        />
+                                                                    ))}
+                                                                </>
+                                                            </Grid>
+                                                        </Grid>
                                                     </Box>
                                                 )}
                                             </Grid>
                                         </Grid>
-                                        <Grid item xs={12}>
-                                            <Divider />
-                                        </Grid>
-                                        <Grid item marginTop="20px">
+                                        <Grid item marginTop="20px" marginLeft="80%" width="20%">
                                             <Grid container spacing={4}>
+                                                <Grid item>
+                                                    <Button variant="outlined" startIcon={<ClearIcon />} onClick={() => onCancelUpdate()}>
+                                                        {i18next.t('entityPage.cancel')}
+                                                    </Button>
+                                                </Grid>
                                                 <Grid item>
                                                     <Button
                                                         type="submit"
@@ -152,11 +165,6 @@ const EditEntityDetails: React.FC<{
                                                         disabled={!dirty || isUpdateLoading}
                                                     >
                                                         {i18next.t('entityPage.save')}
-                                                    </Button>
-                                                </Grid>
-                                                <Grid item>
-                                                    <Button variant="outlined" startIcon={<ClearIcon />} onClick={() => onCancelUpdate()}>
-                                                        {i18next.t('entityPage.cancel')}
                                                     </Button>
                                                 </Grid>
                                             </Grid>

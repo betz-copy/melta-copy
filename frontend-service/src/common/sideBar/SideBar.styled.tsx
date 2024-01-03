@@ -17,10 +17,10 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
     },
     ...(!open && {
         ...{
-            width: `calc(${theme.spacing(14)} + 1px)`,
+            width: `calc(${theme.spacing(10)} + 1px)`,
         },
         '& .MuiDrawer-paper': {
-            width: `calc(${theme.spacing(14)} + 1px)`,
+            width: `calc(${theme.spacing(10)} + 1px)`,
         },
     }),
 }));

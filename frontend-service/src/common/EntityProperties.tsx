@@ -1,8 +1,9 @@
 import React, { CSSProperties } from 'react';
-import { Box, Grid, Typography } from '@mui/material';
+import { Box, Grid, IconButton, Tooltip, Typography, tooltipClasses } from '@mui/material';
 import i18next from 'i18next';
 import { useSelector } from 'react-redux';
 import { pdfjs } from 'react-pdf';
+import { Visibility as VisibilityIcon, VisibilityOff as VisibilityOffIcon } from '@mui/icons-material';
 import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { IEntity } from '../interfaces/entities';
 import { OpenPreviewButton } from './OpenPreviewButton';
@@ -33,6 +34,7 @@ interface IEntityPropertiesProps {
     hideFields?: boolean;
     showPreviewPropertiesOnly?: boolean;
     style?: CSSProperties;
+    innerStyle?: CSSProperties;
 }
 
 export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkMode?: boolean }> = ({
@@ -41,11 +43,14 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
     hideFields = false,
     showPreviewPropertiesOnly = false,
     style,
+    innerStyle,
     darkMode,
 }) => {
     const propertiesOrderedToShow = showPreviewPropertiesOnly
         ? entityTemplate.propertiesOrder.filter((propertyKey) => entityTemplate.propertiesPreview!.includes(propertyKey))
         : entityTemplate.propertiesOrder;
+
+    const [hideFieldsToDisplay, setHideFieldsToDisplay] = React.useState(entityTemplate.properties.hide);
 
     return (
         <Box style={style}>
@@ -54,27 +59,72 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                 const propertyValue = properties[propertyKey];
                 const hideField = entityTemplate.properties.hide.includes(propertyKey);
                 const isLTR = propertySchema.type === 'number' || Boolean(propertySchema.pattern);
+                const stringFormatValue = formatToString(
+                    propertyValue,
+                    propertySchema.type,
+                    propertySchema.format,
+                    propertySchema.enum && entityTemplate.enumPropertiesColors?.[propertyKey]?.[propertyValue],
+                );
                 return (
-                    <Grid key={propertyKey} item>
-                        <Grid container spacing={1}>
-                            <Grid item>
-                                <Typography display="inline" variant="h6" color={darkMode ? '#cecece' : '#B1B1B1'}>
+                    <Grid key={propertyKey} item width="250px" flexDirection="row" style={innerStyle} alignItems="center">
+                        <Grid container alignItems="center">
+                            <Grid
+                                item
+                                width="100px"
+                                style={{ textOverflow: 'ellipsis', whiteSpace: 'nowrap', overflow: 'hidden', textAlign: 'right' }}
+                            >
+                                <Typography display="inline" fontSize="14px" color={darkMode ? '#cecece' : '#9398C2'}>
                                     {propertySchema.title}:
                                 </Typography>
                             </Grid>
-                            <Grid item style={{ direction: isLTR ? 'ltr' : 'rtl' }}>
-                                <Typography display="inline" variant="h6">
-                                    {hideFields && hideField ? (
-                                        <>••••••••</>
-                                    ) : (
-                                        formatToString(
-                                            propertyValue,
-                                            propertySchema.type,
-                                            propertySchema.format,
-                                            propertySchema.enum && entityTemplate.enumPropertiesColors?.[propertyKey]?.[propertyValue],
-                                        )
-                                    )}
-                                </Typography>
+                            <Grid
+                                item
+                                container
+                                width="100px"
+                                flexDirection="row"
+                                alignItems="center"
+                                flexWrap="nowrap"
+                                justifyContent="space-between"
+                                style={{
+                                    direction: isLTR ? 'ltr' : 'rtl',
+                                    textAlign: 'right',
+                                }}
+                            >
+                                <Tooltip
+                                    placement="bottom"
+                                    PopperProps={{
+                                        sx: { [`& .${tooltipClasses.tooltip}`]: { fontSize: '1rem', backgroundColor: '#101440' } },
+                                    }}
+                                    title={hideFieldsToDisplay.includes(propertyKey) ? '' : stringFormatValue}
+                                >
+                                    <Typography
+                                        display="inline"
+                                        fontSize="14px"
+                                        color="#53566E"
+                                        style={{
+                                            textOverflow: 'ellipsis',
+                                            whiteSpace: 'nowrap',
+                                            overflow: 'hidden',
+                                        }}
+                                    >
+                                        {hideFieldsToDisplay.includes(propertyKey) ? <>••••••••</> : stringFormatValue}
+                                    </Typography>
+                                </Tooltip>
+                                {hideField && (
+                                    <IconButton
+                                        onClick={(event) => {
+                                            event.stopPropagation();
+                                            setHideFieldsToDisplay(() => {
+                                                if (hideFieldsToDisplay.includes(propertyKey))
+                                                    return hideFieldsToDisplay.filter((hiddenProperty) => hiddenProperty !== propertyKey);
+                                                return [...hideFieldsToDisplay, propertyKey];
+                                            });
+                                        }}
+                                        size="small"
+                                    >
+                                        {hideFieldsToDisplay.includes(propertyKey) ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                                    </IconButton>
+                                )}
                             </Grid>
                         </Grid>
                     </Grid>

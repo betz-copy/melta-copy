@@ -11,6 +11,7 @@ import TemplatesSelectCheckbox from '../../common/templatesSelectCheckbox';
 import { ICategoryMap } from '../../interfaces/categories';
 import { RootState } from '../../store';
 import { CopyUrlButton } from '../../common/CopyUrlButton';
+import { lightTheme } from '../../theme';
 
 interface GraphTopBarProps {
     onReset: React.MouseEventHandler<HTMLButtonElement>;
@@ -52,7 +53,7 @@ const GraphTopBar: React.FC<GraphTopBarProps> = ({ onReset, set3DView, is3DView,
             <Grid item sx={{ display: 'flex', alignItems: 'center' }}>
                 <Typography
                     style={{
-                        color: '#225AA7',
+                        color: lightTheme.palette.primary.main,
                         fontWeight: '800',
                     }}
                     component="h4"
@@ -63,7 +64,7 @@ const GraphTopBar: React.FC<GraphTopBarProps> = ({ onReset, set3DView, is3DView,
                 <Typography variant="h4" fontSize="30px" color="#d3d8df" marginLeft="5px" marginRight="5px">
                     /
                 </Typography>
-                <Typography style={{ paddingBottom: '2px' }} variant="h4" fontSize="28px" color="#225AA7">
+                <Typography style={{ paddingBottom: '2px' }} variant="h4" fontSize="28px" color={lightTheme.palette.primary.main}>
                     {entityTemplate?.displayName}
                 </Typography>
                 <Box marginLeft="3rem">
@@ -96,7 +97,7 @@ const GraphTopBar: React.FC<GraphTopBarProps> = ({ onReset, set3DView, is3DView,
                     </Grid>
 
                     <Grid item>
-                        <CopyUrlButton style={{ color: '#225AA7' }} />
+                        <CopyUrlButton style={{ color: lightTheme.palette.primary.main }} />
                     </Grid>
 
                     <Grid item>

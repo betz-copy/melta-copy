@@ -2,8 +2,6 @@ import React, { ReactNode } from 'react';
 import { BaseTextFieldProps, InputAdornment, TextField } from '@mui/material';
 import { Search as SearchIcon } from '@mui/icons-material';
 import i18next from 'i18next';
-import { useSelector } from 'react-redux';
-import { RootState } from '../../store';
 
 const SearchInput: React.FC<{
     value?: string;
@@ -20,10 +18,8 @@ const SearchInput: React.FC<{
     endAdornmentChildren = <SearchIcon />,
     placeholder = i18next.t('searchLabel'),
     size = 'small',
-    borderRadius = '0px 7px 7px 0px',
+    borderRadius = '30px',
 }) => {
-    const darkMode = useSelector((state: RootState) => state.darkMode);
-
     return (
         <TextField
             value={value}
@@ -33,12 +29,14 @@ const SearchInput: React.FC<{
             variant="outlined"
             fullWidth
             size={size}
-            sx={{ marginRight: '2rem' }}
+            style={{ borderRadius }}
+            sx={{ borderRadius, backgroundColor: 'white' }}
             InputProps={{
                 endAdornment: <InputAdornment position="end">{endAdornmentChildren}</InputAdornment>,
-                sx: {
-                    backgroundColor: darkMode ? '#242424' : 'white',
+                startAdornment: <InputAdornment position="start" />,
+                style: {
                     borderRadius,
+                    color: '#1E2775',
                 },
             }}
         />

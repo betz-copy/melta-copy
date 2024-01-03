@@ -1,15 +1,6 @@
 import React, { useState } from 'react';
-import { Grid, Card, CardContent, IconButton, Menu, Tooltip, Box } from '@mui/material';
-import {
-    Delete as DeleteIcon,
-    Edit as EditIcon,
-    ContentCopy as DuplicateIcon,
-    AccountTreeOutlined as GraphIcon,
-    MoreVertOutlined,
-    DoDisturbAlt,
-    VisibilityOff,
-    Visibility,
-} from '@mui/icons-material';
+import { Grid, Card, CardContent, IconButton, Menu, Tooltip, Box, tooltipClasses } from '@mui/material';
+import { Delete as DeleteIcon, ContentCopy as DuplicateIcon, MoreVertOutlined, DoDisturbAlt } from '@mui/icons-material';
 import { useMutation, useQueryClient } from 'react-query';
 import i18next from 'i18next';
 import { toast } from 'react-toastify';
@@ -41,7 +32,6 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
     const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
     const queryClient = useQueryClient();
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-    const [hideField, setHideField] = React.useState(true);
 
     const darkMode = useSelector((state: RootState) => state.darkMode);
 
@@ -138,60 +128,79 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
 
     return (
         <>
-            <Card style={{ background: darkMode ? '#171717' : 'white', opacity: isEntityDisabled ? '0.666' : '1' }}>
+            <Card
+                style={{
+                    background: darkMode ? '#171717' : 'white',
+                    opacity: isEntityDisabled ? '0.666' : '1',
+                    borderRadius: '10px',
+                    boxShadow: '-2px 2px 6px 0px rgba(30, 39, 117, 0.30)',
+                }}
+            >
                 <CardContent sx={{ '&:last-child': { padding: 0 } }}>
-                    <Grid item container justifyContent="space-between" alignItems="stretch" padding="1rem">
-                        <Grid item xs={11}>
-                            <Box padding="0.2rem">
-                                <EntityPropertiesInternal entityTemplate={entityTemplate} properties={entity.properties} darkMode={darkMode} />
-                            </Box>
-                        </Grid>
-                        <Grid item>
+                    <Grid item container flexDirection="row" flexWrap="nowrap" padding="20px">
+                        <Grid item container justifyContent="space-between" alignItems="stretch" padding="1rem">
+                            <Grid item xs={11}>
+                                <Box padding="0.2rem">
+                                    <EntityPropertiesInternal
+                                        entityTemplate={entityTemplate}
+                                        properties={entity.properties}
+                                        darkMode={darkMode}
+                                        style={{
+                                            display: 'flex',
+                                            flexDirection: 'row',
+                                            flexWrap: 'wrap',
+                                            rowGap: '20px',
+                                            alignItems: 'center',
+                                        }}
+                                        innerStyle={{ flexBasis: '33.33%' }}
+                                    />
+                                </Box>
+                            </Grid>
                             <Grid container>
-                                {entityTemplate.properties.hide.length > 0 && (
-                                    <IconButton onClick={() => setHideField((cur) => !cur)}>
-                                        {hideField ? <VisibilityOff /> : <Visibility />}
-                                    </IconButton>
-                                )}
+                                <EntityDisableCheckbox isEntityDisabled={isEntityDisabled}> </EntityDisableCheckbox>
+                            </Grid>
+                            <EntityDates
+                                createdAt={expandedEntity.entity.properties.createdAt}
+                                updatedAt={expandedEntity.entity.properties.updatedAt}
+                            />
+                        </Grid>
+
+                        <Grid item>
+                            <Grid container flexDirection="row" flexWrap="nowrap">
+                                <IconButton
+                                    onClick={() => {
+                                        setIsEditMode(true);
+                                    }}
+                                >
+                                    <Tooltip
+                                        placement="bottom"
+                                        PopperProps={{
+                                            sx: { [`& .${tooltipClasses.tooltip}`]: { fontSize: '1rem', backgroundColor: '#101440' } },
+                                        }}
+                                        title={i18next.t('actions.edit')}
+                                    >
+                                        <img src="/icons/edit-icon.svg" />
+                                    </Tooltip>
+                                </IconButton>
+                                <IconButton
+                                    onClick={() => {
+                                        navigate(`/entity/${entity.properties._id}/graph`);
+                                    }}
+                                >
+                                    <Tooltip
+                                        placement="bottom"
+                                        PopperProps={{
+                                            sx: { [`& .${tooltipClasses.tooltip}`]: { fontSize: '1rem', backgroundColor: '#101440' } },
+                                        }}
+                                        title={i18next.t('actions.graph')}
+                                    >
+                                        <img src="/icons/graph-icon.svg" />
+                                    </Tooltip>
+                                </IconButton>
                                 <IconButton onClick={handleClick}>
                                     <MoreVertOutlined />
                                 </IconButton>
                                 <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
-                                    <Grid>
-                                        <MenuButton
-                                            onClick={() => {
-                                                navigate(`/entity/${entity.properties._id}/graph`);
-                                                handleClose();
-                                            }}
-                                            text={i18next.t('actions.graph')}
-                                            icon={<GraphIcon color="action" />}
-                                        />
-                                    </Grid>
-                                    <Tooltip
-                                        arrow
-                                        placement="right"
-                                        title={
-                                            isEntityDisabled
-                                                ? (i18next.t('entityPage.disabledEntity') as string)
-                                                : (i18next.t('permissions.dontHavePermissionsToCategory') as string)
-                                        }
-                                        disableHoverListener={!isEntityDisabled && hasPermissionToCategory}
-                                    >
-                                        <Grid>
-                                            <MenuButton
-                                                onClick={(e) => {
-                                                    if (isEntityDisabled) e.preventDefault();
-                                                    else {
-                                                        setIsEditMode(true);
-                                                        handleClose();
-                                                    }
-                                                }}
-                                                text={i18next.t('actions.edit')}
-                                                icon={<EditIcon color="action" />}
-                                            />
-                                        </Grid>
-                                    </Tooltip>
-
                                     <Grid>
                                         <MenuButton
                                             onClick={() => {
@@ -235,11 +244,6 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                                 </Menu>
                             </Grid>
                         </Grid>
-
-                        <Grid container>
-                            <EntityDisableCheckbox isEntityDisabled={isEntityDisabled}> </EntityDisableCheckbox>
-                        </Grid>
-                        <EntityDates createdAt={expandedEntity.entity.properties.createdAt} updatedAt={expandedEntity.entity.properties.updatedAt} />
                     </Grid>
                 </CardContent>
 

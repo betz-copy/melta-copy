@@ -1,4 +1,5 @@
 import { styled, Typography } from '@mui/material';
+import { lightTheme } from '../../../theme';
 
 const StepNumberTypography = styled(Typography)<{ type: 'currentStep' | 'finishedStep' | 'futureStep' }>(({ type, theme }) => ({
     height: '40px',
@@ -10,13 +11,13 @@ const StepNumberTypography = styled(Typography)<{ type: 'currentStep' | 'finishe
     justifyContent: 'center',
     marginRight: '1.5rem',
     ...(type === 'currentStep' && {
-        backgroundColor: '#1B7BB9',
+        backgroundColor: lightTheme.palette.primary.main,
         color: 'white',
         boxShadow: '0px 1px 2px #00000029',
     }),
     ...(type === 'finishedStep' && {
-        border: '2px solid  #009ef7',
-        color: '#009ef7',
+        border: `2px solid ${lightTheme.palette.primary.main}`,
+        color: lightTheme.palette.primary.main,
         boxShadow: '0px 1px 2px #00000029',
     }),
     ...(type === 'futureStep' &&

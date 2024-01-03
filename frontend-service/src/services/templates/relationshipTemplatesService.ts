@@ -1,7 +1,7 @@
 import axios from '../../axios';
-import { RelationshipTemplateWizardValues } from '../../common/wizards/relationshipTemplate';
+import { RelationshipTemplateWizardValues, defaultInitialValues } from '../../common/wizards/relationshipTemplate';
 import { environment } from '../../globals';
-import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IMongoRelationshipTemplate, IRelationshipTemplate } from '../../interfaces/relationshipTemplates';
 
 const { relationshipTemplates } = environment.api;
@@ -14,8 +14,12 @@ const relationshipTemplateObjectToRelationshipTemplateForm = (
     const { sourceEntityId, destinationEntityId, ...restOfEntityTemplate } = relationshipTemplate;
 
     return {
-        sourceEntity: entityTemplates.get(sourceEntityId)!,
-        destinationEntity: entityTemplates.get(destinationEntityId)!,
+        sourceEntity: entityTemplates.get(sourceEntityId)
+            ? (entityTemplates.get(sourceEntityId) as IMongoEntityTemplatePopulated)
+            : (defaultInitialValues.sourceEntity as IMongoEntityTemplatePopulated),
+        destinationEntity: entityTemplates.get(destinationEntityId)
+            ? (entityTemplates.get(destinationEntityId) as IMongoEntityTemplatePopulated)
+            : (defaultInitialValues.destinationEntity as IMongoEntityTemplatePopulated),
         ...restOfEntityTemplate,
     };
 };

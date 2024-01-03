@@ -26,11 +26,10 @@ const ProfileButton: React.FC<ProfileButtonProps> = ({ currentUser, text, isDraw
         <Grid container direction="column" alignItems="center">
             <Tooltip
                 title={text}
-                arrow
                 placement="left"
-                disableHoverListener={isDrawerOpen}
+                disableHoverListener={isDrawerOpen} // when drawer is opened text is already shown, so no need for tooltip
                 PopperProps={{
-                    sx: { [`& .${tooltipClasses.tooltip}`]: { fontSize: '1rem' } },
+                    sx: { [`& .${tooltipClasses.tooltip}`]: { fontSize: '1rem', backgroundColor: '#101440' } },
                 }}
             >
                 <IconButton onClick={onClick} sx={{ borderRadius: 10 }}>
@@ -38,11 +37,6 @@ const ProfileButton: React.FC<ProfileButtonProps> = ({ currentUser, text, isDraw
                         <Grid item data-tour="my-permissions">
                             <UserAvatar user={currentUser} />
                         </Grid>
-                        {isDrawerOpen && (
-                            <Grid item>
-                                <Typography color="white">{text}</Typography>
-                            </Grid>
-                        )}
                     </Grid>
                 </IconButton>
             </Tooltip>

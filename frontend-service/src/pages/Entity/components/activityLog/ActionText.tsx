@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { IActivityLog } from '../../../../services/activityLogService';
 import { IRelationshipTemplateMap } from '../../../../interfaces/relationshipTemplates';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
+import { lightTheme } from '../../../../theme';
 
 const StyledTypography = styled(Typography)(({ theme }) => ({
     fontFamily: 'Rubik',
@@ -52,7 +53,7 @@ const RelationshipMetadataActionText: React.FC<{
                 {action === 'CREATE_RELATIONSHIP'
                     ? i18next.t('entityPage.activityLog.createRelationship')
                     : i18next.t('entityPage.activityLog.deleteRelationship')}
-                <StyledTypography component="span" display="inline" variant="body2" style={{ color: '#225AA7' }}>
+                <StyledTypography component="span" display="inline" variant="body2" style={{ color: lightTheme.palette.primary.main }}>
                     {' '}
                     &quot;{relationshipTemplate ? relationshipTemplate.displayName : i18next.t('entityPage.activityLog.undefined')}&quot;{' '}
                 </StyledTypography>
@@ -64,7 +65,7 @@ const RelationshipMetadataActionText: React.FC<{
                             display="inline"
                             variant="body2"
                             onClick={() => navigate(`/entity/${actionMetadata?.entityId}`)}
-                            style={{ color: '#225AA7', cursor: 'pointer' }}
+                            style={{ color: lightTheme.palette.primary.main, cursor: 'pointer' }}
                             borderBottom="1px solid"
                         >
                             {sourceAndDestinationTemplate[0]._id === entityTemplate._id
@@ -111,7 +112,7 @@ const UpdateEntityMetadataActionText: React.FC<{
             {actionMetadata.updatedFields.map((field) => {
                 return (
                     <Grid key={field.fieldName} style={{ marginBottom: '10px' }}>
-                        <StyledTypography variant="body2" style={{ ...ellipsisStyle, color: '#225AA7' }}>
+                        <StyledTypography variant="body2" style={{ ...ellipsisStyle, color: lightTheme.palette.primary.main }}>
                             {entityTemplate.properties.properties[field.fieldName].title}
                         </StyledTypography>
                         <Tooltip
