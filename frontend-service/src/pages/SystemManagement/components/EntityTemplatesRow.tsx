@@ -305,6 +305,8 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
                                         fontWeight: '400',
                                         color: isEditableCategory ? 'black' : '#9398C2',
                                         outline: isEditableCategory ? '1px solid black' : '',
+                                        borderRadius: '5px',
+                                        padding: '5px',
                                         textOverflow: isEditableCategory ? undefined : 'ellipsis',
                                         whiteSpace: isEditableCategory ? undefined : 'nowrap',
                                         overflow: isEditableCategory ? 'auto' : 'hidden',
