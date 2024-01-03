@@ -1,10 +1,10 @@
 import React from 'react';
-import { Card, CardContent, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
+import { Card, CardContent, Typography, Grid } from '@mui/material';
 import { useSelector } from 'react-redux';
 import i18next from 'i18next';
 import { CheckboxProps } from '@mui/material/Checkbox';
 import { RootState } from '../../store';
-import { PermissionCheckboxes } from './PermissionCheckboxes'; // Assuming PermissionCheckboxes is a separate component
+import { PermissionCheckboxes } from './PermissionCheckboxes';
 
 const InstancesPermissionsCard: React.FC<{
     categoriesCheckboxProps: {
@@ -25,35 +25,37 @@ const InstancesPermissionsCard: React.FC<{
                 <Typography style={{ fontWeight: 'bold', cursor: 'default', marginBottom: '16px' }}>
                     {i18next.t('permissions.permissionsOfUserDialog.instancesPermissions')}
                 </Typography>
-                <TableContainer>
-                    <Table>
-                        <TableHead>
-                            <TableRow>
-                                <TableCell>{i18next.t('Category')}</TableCell>
-                                <TableCell>{i18next.t('Read')}</TableCell>
-                                <TableCell>{i18next.t('Write')}</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {categoriesCheckboxProps.map(
-                                ({ categoryId, categoryDisplayName, disabled, checkedRead, checkedWrite, onChangeRead, onChangeWrite }) => (
-                                    <TableRow key={categoryId}>
-                                        <TableCell>{categoryDisplayName}</TableCell>
-                                        <TableCell>
-                                            <PermissionCheckboxes
-                                                checkedRead={checkedRead}
-                                                checkedWrite={checkedWrite}
-                                                disabled={disabled}
-                                                onChangeRead={onChangeRead}
-                                                onChangeWrite={onChangeWrite}
-                                            />
-                                        </TableCell>
-                                    </TableRow>
-                                ),
-                            )}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
+                <Grid container spacing={2}>
+                    <Grid container item spacing={2}>
+                        <Grid item xs={4}>
+                            <strong>{i18next.t('Category')}</strong>
+                        </Grid>
+                        <Grid item xs={4}>
+                            <strong>{i18next.t('Read')}</strong>
+                        </Grid>
+                        <Grid item xs={4}>
+                            <strong>{i18next.t('Write')}</strong>
+                        </Grid>
+                    </Grid>
+                    {categoriesCheckboxProps.map(
+                        ({ categoryId, categoryDisplayName, disabled, checkedRead, checkedWrite, onChangeRead, onChangeWrite }) => (
+                            <Grid container item key={categoryId} spacing={2}>
+                                <Grid item xs={4}>
+                                    {categoryDisplayName}
+                                </Grid>
+                                <Grid item xs={4}>
+                                    <PermissionCheckboxes
+                                        checkedRead={checkedRead}
+                                        checkedWrite={checkedWrite}
+                                        disabled={disabled}
+                                        onChangeRead={onChangeRead}
+                                        onChangeWrite={onChangeWrite}
+                                    />
+                                </Grid>
+                            </Grid>
+                        ),
+                    )}
+                </Grid>
             </CardContent>
         </Card>
     );
