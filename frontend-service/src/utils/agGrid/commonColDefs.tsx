@@ -84,19 +84,18 @@ export const booleanColDef = <Data extends any = IEntity>(
     hideValue = false,
 ): ColDef<Data> => {
     const formatValue = (propertyValue: boolean | undefined) => {
+        if (!propertyValue) return i18next.t('booleanOptions.no');
         if (propertyValue === true) return i18next.t('booleanOptions.yes');
         if (propertyValue === false) return i18next.t('booleanOptions.no');
         return '';
     };
 
     const filterParams: ISetFilterParams<Data, boolean | undefined> = {
-        valueFormatter: (params: ValueFormatterParams<Data, boolean | undefined>) => {
-            if (params.value === null) return agGridLocaleText.blanks;
-
+        valueFormatter: (params: ValueFormatterParams<Data, boolean>) => {
             return formatValue(params.value);
         },
         suppressMiniFilter: true,
-        values: [true, false, undefined],
+        values: [true, false],
     };
     return {
         field,
