@@ -39,7 +39,7 @@ const generatePermissionsOfUser = () => ({
     processesManagementId: chance.pickone([generateMongoId(), null]),
     rulesManagementId: chance.pickone([generateMongoId(), null]),
     instancesPermissions: chance.pickset(
-        categories.map(({ _id: category }) => ({ _id: generateMongoId(), category })),
+        categories.map(({ _id: category }) => ({ _id: generateMongoId(), category, scope: ['Read', 'Write'] })),
         chance.integer({ min: 0, max: categories.length }),
     ),
 });

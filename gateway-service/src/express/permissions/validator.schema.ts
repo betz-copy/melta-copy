@@ -1,7 +1,9 @@
 import Joi from 'joi';
-import { resourceTypeOptions } from '../../externalServices/permissionsApi';
+import { resourceTypeOptions, scopeOptions } from '../../externalServices/permissionsApi';
 
 const MongoIdSchema = Joi.string().regex(/^[0-9a-fA-F]{24}$/, 'valid MongoId');
+
+const ScopeSchema = Joi.string().valid(...scopeOptions);
 
 // GET /api/permissions
 export const getPermissionsOfUsersRequestSchema = Joi.object({
@@ -46,6 +48,7 @@ export const createPermissionsBulkRequestSchema = Joi.object({
                 .valid(...resourceTypeOptions)
                 .required(),
             category: Joi.alternatives().match('one').try(MongoIdSchema, Joi.valid('All')).error(formatAlternativesErrorReport),
+            scopes: Joi.array().items(ScopeSchema).min(1).required(),
         })
         .required(),
     query: {},

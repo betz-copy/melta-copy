@@ -110,7 +110,7 @@ export class PermissionsManager {
     }
 
     static async createPermissionsBulk(permissions: Omit<IPermissionPopulated, '_id'>[]) {
-        const createdPermissionsPromises = permissions.map((permission) => createPermission({ ...permission, scopes: ['Read', 'Write'] }));
+        const createdPermissionsPromises = permissions.map((permission) => createPermission(permission));
         return Promise.all(createdPermissionsPromises);
     }
 

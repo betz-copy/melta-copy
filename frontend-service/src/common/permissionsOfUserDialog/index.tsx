@@ -395,11 +395,15 @@ const PermissionsOfUserDialog: React.FC<{
                             )}
                             <Box margin={1}>
                                 <InstancesPermissionsCard
+                                    viewMode={mode === 'view'}
                                     categoriesCheckboxProps={Array.from(categories.values(), (category) => ({
                                         categoryId: category._id,
                                         categoryDisplayName: category.displayName,
                                         disabled: formikProps.isSubmitting,
-                                        viewMode: mode === 'view',
+                                        scope: getUserPermissionTypeToCategory(
+                                            formikProps.values.instancesPermissions as IPermissionsOfUser['instancesPermissions'],
+                                            category._id,
+                                        ),
                                         checkedRead: getUserCanReadInstanceOfCategory(
                                             formikProps.values.instancesPermissions as IPermissionsOfUser['instancesPermissions'],
                                             category,
@@ -439,9 +443,13 @@ const PermissionsOfUserDialog: React.FC<{
                                                           return;
                                                       }
 
-                                                      const newInstancesPermissions = formikProps.values.instancesPermissions.filter(
-                                                          ({ category: currCategory }) => currCategory !== category._id,
-                                                      );
+                                                      const newInstancesPermissions = formikProps.values.instancesPermissions.map((currCategory) => {
+                                                          if (currCategory.category === category._id) {
+                                                              return { ...currCategory, scopes: ['Read'] };
+                                                          }
+                                                          return currCategory;
+                                                      });
+
                                                       formikProps.setFieldValue('instancesPermissions', newInstancesPermissions);
                                                   },
                                     }))}
