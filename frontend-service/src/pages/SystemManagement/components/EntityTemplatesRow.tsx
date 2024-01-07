@@ -99,6 +99,7 @@ const EntityTemplatesRow: React.FC = () => {
                             getOptionId={(category) => category._id}
                             getOptionLabel={(category) => category.displayName}
                             size="small"
+                            isDraggableDisabled
                         />
                     </Grid>
                     <Grid item>

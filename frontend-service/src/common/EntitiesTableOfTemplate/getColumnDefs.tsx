@@ -22,6 +22,10 @@ interface IGetColumnDefsOptions<Data extends any> {
     editRowButtonProps?: {
         onClick: (data: Data) => void;
     };
+    visibleColumnStates?: { [key: string]: boolean };
+    movedColumnsState?: { [key: string]: { order: number } };
+    columnWidthsState?: { [key: string]: number };
+    sortColumnState?: { [key: string]: { sort: 'asc' | 'desc' } };
 }
 
 export const getColumnDefs = <Data extends any = IEntity>({
@@ -32,6 +36,10 @@ export const getColumnDefs = <Data extends any = IEntity>({
     deleteRowButtonProps,
     hideNonPreview = false,
     editRowButtonProps,
+    visibleColumnStates = {},
+    movedColumnsState = {},
+    columnWidthsState = {},
+    sortColumnState = {},
 }: IGetColumnDefsOptions<Data>): ColDef[] => {
     const columnDefs = Object.entries(template.properties.properties).map(([key, value]) => {
         const { type, format } = value;
@@ -40,7 +48,8 @@ export const getColumnDefs = <Data extends any = IEntity>({
 
         const valueGetter: ValueGetterFunc = ({ data }) => (data ? getEntityPropertiesData(data)[key] : undefined);
 
-        const hideColumn = hideNonPreview && !template.propertiesPreview.includes(key);
+        const hideColumn =
+            visibleColumnStates[key] !== undefined ? !visibleColumnStates[key] : hideNonPreview && !template.propertiesPreview.includes(key);
 
         if (type === 'number') return numberColDef(key, valueGetter, value, hideColumn, hideField);
         if (type === 'boolean') return booleanColDef(key, valueGetter, value, hideColumn, hideField);
@@ -51,6 +60,7 @@ export const getColumnDefs = <Data extends any = IEntity>({
         return stringColDef(key, valueGetter, value, hideColumn, hideField);
     });
 
+    //3 columns to be added on every template creation:
     columnDefs.push(
         booleanColDef(
             'disabled',
@@ -58,7 +68,7 @@ export const getColumnDefs = <Data extends any = IEntity>({
             {
                 title: i18next.t('entitiesTableOfTemplate.disabledHeaderName'),
             },
-            true,
+            visibleColumnStates['disabled'] !== undefined ? !visibleColumnStates['disabled'] : true,
         ),
     );
 
@@ -70,9 +80,10 @@ export const getColumnDefs = <Data extends any = IEntity>({
                 title: i18next.t('entityPage.createdAt'),
                 format: 'date-time',
             },
-            true,
+            visibleColumnStates['createdAt'] !== undefined ? !visibleColumnStates['createdAt'] : true,
         ),
     );
+
     columnDefs.push(
         dateColDef(
             'updatedAt',
@@ -81,9 +92,29 @@ export const getColumnDefs = <Data extends any = IEntity>({
                 title: i18next.t('entityPage.updatedAt'),
                 format: 'date-time',
             },
-            true,
+            visibleColumnStates['updatedAt'] !== undefined ? !visibleColumnStates['updatedAt'] : true,
         ),
     );
+
+    //functions on columns
+    columnDefs.sort((a, b) => {
+        if (!a.field || !b.field) return 0;
+
+        const orderA = movedColumnsState[a.field]?.order;
+        const orderB = movedColumnsState[b.field]?.order;
+
+        //If the result is less than 0, a is sorted before b.
+        //If the result is 0, the order of a and b remains unchanged.
+        //If the result is greater than 0, b is sorted before a.
+        return orderA - orderB;
+    });
+
+    columnDefs.forEach((colDef) => {
+        if (colDef.field) {
+            colDef.width = columnWidthsState[colDef.field] || colDef.width;
+            colDef.sort = sortColumnState[colDef.field]?.sort || colDef.sort;
+        }
+    });
 
     if (onNavigateToRow || deleteRowButtonProps || editRowButtonProps) {
         const numberOfButtons = Number(Boolean(onNavigateToRow)) + Number(Boolean(deleteRowButtonProps)) + Number(Boolean(editRowButtonProps));
@@ -103,6 +134,7 @@ export const getColumnDefs = <Data extends any = IEntity>({
             flex: 0,
             resizable: false,
             lockPosition: true,
+            lockPinned: true,
             suppressColumnsToolPanel: true,
             cellRenderer: memo<{ data: Data }>(({ data }) => {
                 const { disabled: disabledRow } = getEntityPropertiesData(data);

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useQueryClient } from 'react-query';
 import { useParams } from 'react-router-dom';
 import _debounce from 'lodash.debounce';
@@ -29,7 +29,24 @@ const Category: React.FC = () => {
         .map((id) => entityTemplates.get(id))
         .filter((template): template is IMongoEntityTemplatePopulated => !!template);
 
-    const [templatesToShowCheckbox, setTemplatesToShowCheckbox] = useState<IMongoEntityTemplatePopulated[]>(categoryTemplates);
+    const [templatesToShowCheckboxId, setTemplatesToShowCheckboxId] = useLocalStorage<string[]>(
+        `templatesToShow-${categoryId}`,
+        categoryTemplates.map((template) => template._id),
+    );
+
+    const templatesToShowCheckbox = templatesToShowCheckboxId
+        .map((id) => entityTemplates.get(id))
+        .filter((template): template is IMongoEntityTemplatePopulated => !!template);
+
+    const setTemplatesToShowCheckbox = (newTemplates: React.SetStateAction<IMongoEntityTemplatePopulated[]>) => {
+        setTemplatesToShowCheckboxId((prevTemplatesToShowCheckboxId) => {
+            const prevTemplates = prevTemplatesToShowCheckboxId
+                .map((id) => entityTemplates.get(id))
+                .filter((template): template is IMongoEntityTemplatePopulated => !!template);
+            const updatedTemplates = typeof newTemplates === 'function' ? newTemplates(prevTemplates) : newTemplates;
+            return updatedTemplates.map((template) => template._id);
+        });
+    };
 
     useEffect(() => {
         setCategoryTemplatesId((prevCategoryTemplatesId) => {

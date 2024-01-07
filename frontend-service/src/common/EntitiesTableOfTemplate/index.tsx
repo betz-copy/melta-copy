@@ -1,4 +1,4 @@
-import React, { forwardRef, ForwardedRef, useImperativeHandle, useRef, useMemo } from 'react';
+import React, { forwardRef, ForwardedRef, useImperativeHandle, useRef, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Box } from '@mui/material';
 import pickBy from 'lodash.pickby';
@@ -15,11 +15,9 @@ import i18next from 'i18next';
 import { toast } from 'react-toastify';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IAGGridRequest } from '../../utils/agGrid/interfaces';
-
 import '@ag-grid-community/styles/ag-grid.css';
 import '@ag-grid-community/styles/ag-theme-material.css';
 import '../../css/table.css';
-
 import { DateFilterComponent } from '../../utils/agGrid/DateFilterComponent';
 import { agGridToSearchEntitiesOfTemplateRequest } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
 import { IEntity } from '../../interfaces/entities';
@@ -154,13 +152,33 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             rowHeight,
             pageRowCount = rowCount,
             fontSize,
-            minColumnWidth,
             hideNonPreview,
             filterStorageProps,
             onFilter,
         }: EntitiesTableOfTemplateProps<Data>,
         ref: ForwardedRef<EntitiesTableOfTemplateRef<Data>>,
     ) => {
+        const savedColumns = localStorage.getItem(`visibleColumns-${template._id}`);
+        const defaultVisibleColumns = savedColumns ? JSON.parse(savedColumns) : {};
+
+        const movedColumns = localStorage.getItem(`movedColumns-${template._id}`);
+        const savedColumnsOrder = movedColumns ? JSON.parse(movedColumns) : {};
+
+        const columnWidths = localStorage.getItem(`columnWidths-${template._id}`);
+        const defaultColumnsWidth = columnWidths ? JSON.parse(columnWidths) : {};
+
+        const savedSortState = localStorage.getItem(`sortModel-${template._id}`);
+        let sortColumn = {};
+
+        if (savedSortState !== null) {
+            try {
+                sortColumn = JSON.parse(savedSortState);
+            } catch (e) {
+                console.error('Error parsing sort model from localStorage:', e);
+                localStorage.removeItem(`sortModel-${template._id}`);
+            }
+        }
+
         const navigate = useNavigate();
 
         const gridRef = useRef<AgGridReact<Data>>(null);
@@ -204,7 +222,40 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             deleteRowButtonProps,
             hideNonPreview,
             editRowButtonProps,
+            visibleColumnStates: defaultVisibleColumns,
+            movedColumnsState: savedColumnsOrder,
+            columnWidthsState: defaultColumnsWidth,
+            sortColumnState: sortColumn,
         });
+
+        const updateColumnFlexAndResize = () => {
+            if (gridRef.current) {
+                const allColumns = gridRef.current.columnApi.getColumns();
+                const visibleColumns = gridRef.current.columnApi.getAllDisplayedColumns();
+
+                const visibleColumnIds = new Set(visibleColumns.map((col) => col.getId()));
+
+                if (allColumns != null) {
+                    const updatedColumnDefs = allColumns.map((column) => {
+                        const colDef = column.getColDef();
+                        const isVisible = visibleColumnIds.has(column.getId());
+                        if (isVisible) {
+                            if (visibleColumns.length - 2 === visibleColumns.indexOf(column)) {
+                                return { ...colDef, flex: 1, minWidth: 150, hide: false };
+                            } else {
+                                const width = column.getActualWidth();
+                                return { ...colDef, flex: 0, width: width, hide: false };
+                            }
+                        }
+
+                        return { ...colDef, hide: true };
+                    });
+
+                    gridRef.current.api.setColumnDefs(updatedColumnDefs);
+                    gridRef.current.api.refreshCells({ force: true });
+                }
+            }
+        };
 
         const datasourceOnFail = (err: unknown) => {
             toast.error(i18next.t('entitiesTableOfTemplate.failedToLoadData'));
@@ -223,6 +274,55 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             '.ag-column-select-virtual-list-viewport': { height: `${rowHeight * pageRowCount}px !important` },
             '.ag-center-cols-clipper': { minHeight: `${rowHeight * pageRowCount}px !important` },
         });
+
+        //function save to localStorage:
+
+        //Visibility of columns
+        const onColumnVisible = (params) => {
+            const columnState = params.columnApi.getColumnState();
+            const updatedVisibleColumns = columnState.reduce((acc, col) => {
+                acc[col.colId] = col.hide === false;
+                return acc;
+            }, {});
+            localStorage.setItem(`visibleColumns-${template._id}`, JSON.stringify(updatedVisibleColumns));
+            updateColumnFlexAndResize();
+        };
+
+        //Order of columns
+        const onColumnMoved = (params) => {
+            const columnState = params.columnApi.getColumnState();
+            const newMovedColumns = columnState.reduce((acc, column) => {
+                acc[column.colId] = { order: column.order != null ? column.order : columnState.indexOf(column) };
+                return acc;
+            }, {});
+            localStorage.setItem(`movedColumns-${template._id}`, JSON.stringify(newMovedColumns));
+        };
+
+        //Width of columns
+        const onColumnResized = (params) => {
+            if (params.finished) {
+                const updatedWidths = {};
+                params.columnApi.getAllDisplayedColumns().forEach((column) => {
+                    const colId = column.getColId();
+                    updatedWidths[colId] = column.getActualWidth();
+                });
+                localStorage.setItem(`columnWidths-${template._id}`, JSON.stringify(updatedWidths));
+            }
+        };
+
+        //Sorting Column
+        const onSortChanged = (params) => {
+            const sortModel = params.columnApi.getColumnState().find((s) => s.sort != null);
+            localStorage.setItem(`sortModel-${template._id}`, JSON.stringify(sortModel));
+        };
+
+        //Page in table - sessionStorage
+        const onPaginationChanged = (params) => {
+            if (params.api && params.newPage) {
+                const currentPage = params.api.paginationGetCurrentPage();
+                sessionStorage.setItem(`currentPage-${template._id}`, JSON.stringify(currentPage));
+            }
+        };
 
         return (
             <Box sx={getStyles()}>
@@ -251,8 +351,14 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                     components={{
                         agDateInput: DateFilterComponent,
                     }}
+                    onColumnVisible={onColumnVisible}
+                    onColumnMoved={onColumnMoved}
+                    onColumnResized={onColumnResized}
+                    onPaginationChanged={onPaginationChanged}
+                    onSortChanged={onSortChanged}
                     enableRtl
                     enableCellTextSelection
+                    maintainColumnOrder
                     rowSelection={onRowSelected ? 'single' : undefined}
                     onRowSelected={!onRowSelected ? undefined : ({ data }) => onRowSelected(data!)}
                     rowStyle={onRowSelected ? { cursor: 'pointer' } : undefined}
@@ -274,10 +380,27 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                     suppressCsvExport
                     suppressContextMenu
                     onGridReady={(params) => {
+                        updateColumnFlexAndResize();
                         params.api.setFilterModel({
                             ...defaultFilterModel,
                             ...LocalStorage.get(`tableFilter-${filterStorageProps.pageType}-${template._id}`),
                         });
+                        const savedSortModel = localStorage.getItem(`sortModel-${template._id}`);
+                        if (savedSortModel) {
+                            const sortModel = JSON.parse(savedSortModel);
+                            params.columnApi.applyColumnState({
+                                state: [{ colId: sortModel.colId, sort: sortModel.sort }],
+                                defaultState: { sort: null },
+                            });
+                        }
+                    }}
+                    onFirstDataRendered={(params) => {
+                        updateColumnFlexAndResize();
+                        const savedPage = sessionStorage.getItem(`currentPage-${template._id}`);
+                        if (savedPage !== null) {
+                            const pageToNavigate = JSON.parse(savedPage);
+                            params.api.paginationGoToPage(pageToNavigate);
+                        }
                     }}
                     defaultColDef={{
                         filterParams: {
@@ -286,9 +409,10 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                         },
                         sortable: true,
                         menuTabs: ['filterMenuTab'],
-                        minWidth: minColumnWidth,
+                        minWidth: 120,
                         resizable: true,
-                        flex: 1,
+                        lockPinned: true,
+                        initialWidth: 250,
                     }}
                     sideBar={{
                         toolPanels: [
