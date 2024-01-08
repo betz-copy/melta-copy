@@ -6,6 +6,7 @@ import {
     createPermission,
     deletePermission,
     deletePermissionsUnderCategory,
+    updatePermission,
 } from '../../externalServices/permissionsApi';
 import { IPermissionsOfUser, IPermission as IPermissionPopulated } from './interfaces';
 import UsersManager from '../users/manager';
@@ -112,6 +113,13 @@ export class PermissionsManager {
     static async createPermissionsBulk(permissions: Omit<IPermissionPopulated, '_id'>[]) {
         const createdPermissionsPromises = permissions.map((permission) => createPermission(permission));
         return Promise.all(createdPermissionsPromises);
+    }
+
+    static async updatePermissionsBulk(permissions: IPermissionPopulated[]) {
+        const updatedPermissionsPromises = permissions.map(({ _id: permissionId, resourceType, scopes }) =>
+            updatePermission(permissionId, { resourceType, scopes }),
+        );
+        return Promise.all(updatedPermissionsPromises);
     }
 
     static async deletePermissions(ids: string[]) {
