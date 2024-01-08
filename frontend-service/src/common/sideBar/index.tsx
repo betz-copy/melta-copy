@@ -105,11 +105,18 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                             <PlusIcon sx={{ position: 'absolute', left: '-15%', top: '10%', fontSize: 40, color: 'white' }} />
                         </Slide>
 
-                        <img
-                            src={isDrawerOpen ? '/icons/Melta_Logo.svg' : '/icons/Melta_Short_Logo.svg'}
-                            style={{ margin: '0.6rem' }}
-                            height="30px"
-                        />
+                        <Button
+                            onClick={() => {
+                                navigate('');
+                            }}
+                            style={{ width: '50px' }}
+                        >
+                            <img
+                                src={isDrawerOpen ? '/icons/Melta_Logo.svg' : '/icons/Melta_Short_Logo.svg'}
+                                style={{ margin: '0.6rem' }}
+                                height="30px"
+                            />
+                        </Button>
                     </Box>
 
                     <Grid item container direction={isDrawerOpen ? 'row' : 'column'} wrap="nowrap" alignItems="center">
@@ -122,11 +129,11 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
 
                         {isDrawerOpen && (
                             <div>
-                                <p style={{ color: 'white', fontWeight: 'bold', margin: 0 }}>{`${i18next.t('sideBar.hello')} ${
-                                    myPermissions.user.firstName
-                                }, `}</p>
+                                <p style={{ color: 'white', fontWeight: '600', margin: 0, fontSize: '14px', fontFamily: 'Rubik' }}>{`${i18next.t(
+                                    'sideBar.hello',
+                                )} ${myPermissions.user.firstName}, `}</p>
                                 <Button
-                                    style={{ color: 'white', padding: 0 }}
+                                    style={{ color: 'white', padding: 0, fontWeight: '400', fontSize: '14px', fontFamily: 'Rubik' }}
                                     onClick={() => setIsMyPermissionsDialogOpen(!isMyPermissionsDialogOpen)}
                                 >
                                     {i18next.t('permissions.permissionsOfUserDialog.readTitle')}
@@ -151,7 +158,6 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                             display: 'flex',
                             alignContent: 'center',
                             alignItems: 'center',
-                            marginTop: isDrawerOpen ? '30px' : '',
                         }}
                     >
                         {isDrawerOpen ? (
@@ -179,7 +185,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                                     }}
                                     title={isDrawerOpen ? '' : i18next.t('pages.globalSearch')}
                                 >
-                                    <img src="/icons/search-icon.svg" style={{ alignSelf: 'center' }} />
+                                    <img src="/icons/search-icon.svg" style={{ alignSelf: 'center', height: '25px' }} />
                                 </Tooltip>
                             </Button>
                         )}
@@ -318,16 +324,18 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                             item
                             container
                             alignItems="center"
-                            justifyContent="center"
+                            justifyContent={isDrawerOpen ? 'flex-start' : 'center'}
                             flexWrap="nowrap"
                             spacing={isDrawerOpen ? 5 : 1}
+                            paddingLeft={isDrawerOpen ? '30px' : ''}
+                            paddingTop="20px"
                             paddingBottom="25px"
                         >
                             <Grid item>
-                                <img src="/icons/sapir.svg" height="30px" />
+                                <img src="/icons/sapir.svg" height="21px" />
                             </Grid>
                             <Grid item>
-                                <img src="/icons/yesodot.svg" height="30px" />
+                                <img src="/icons/yesodot.svg" height="21px" />
                             </Grid>
                         </Grid>
                         {isDrawerOpen ? (
@@ -340,6 +348,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                                     position: 'fixed',
                                     marginRight: '219px',
                                     marginTop: '-25px',
+                                    backgroundColor: 'transparent',
                                 }}
                             >
                                 <img src="/icons/close-menu.svg" />
@@ -353,6 +362,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                                     position: 'fixed',
                                     marginRight: '73px',
                                     marginTop: '-25px',
+                                    backgroundColor: 'transparent',
                                 }}
                             >
                                 <img src="/icons/open-menu.svg" />

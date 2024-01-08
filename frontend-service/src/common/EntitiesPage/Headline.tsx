@@ -1,8 +1,7 @@
 import React, { Dispatch, SetStateAction, useRef } from 'react';
 import i18next from 'i18next';
-import { BaseTextFieldProps, CircularProgress, Grid, IconButton, ToggleButton, ToggleButtonGroup, Tooltip, Typography } from '@mui/material';
+import { BaseTextFieldProps, CircularProgress, Grid, Icon, IconButton, ToggleButton, ToggleButtonGroup, Tooltip, Typography } from '@mui/material';
 import CardsViewIcon from '@mui/icons-material/RecentActors';
-import TablesViewIcon from '@mui/icons-material/CalendarViewMonth';
 import AddIcon from '@mui/icons-material/Add';
 import SearchIcon from '@mui/icons-material/Search';
 import DownloadIcon from '@mui/icons-material/VerticalAlignBottomOutlined';
@@ -87,8 +86,8 @@ const EntitiesPageHeadline: React.FC<{
             wrap="nowrap"
         >
             <Grid item>
-                <Grid container direction="row" display="flex" wrap="nowrap">
-                    <BlueTitle title={pageTitle} component="h4" variant="h4" />
+                <Grid container direction="row" display="flex" wrap="nowrap" alignItems="center">
+                    <BlueTitle title={pageTitle} component="h4" variant="h4" style={{ fontSize: '24px' }} />
                     <Grid item paddingLeft="3rem" paddingTop="5px">
                         <Grid item container wrap="nowrap">
                             <Grid item data-tour="template-filter">
@@ -137,7 +136,9 @@ const EntitiesPageHeadline: React.FC<{
                             </ToggleButton>
                             <ToggleButton value="templates-tables-view">
                                 <Tooltip title={i18next.t('templateTablesView')!}>
-                                    <TablesViewIcon />
+                                    <Icon>
+                                        <img src="/icons/Tables-View.svg" height="15px" style={{ marginBottom: '10px' }} />
+                                    </Icon>
                                 </Tooltip>
                             </ToggleButton>
                         </ToggleButtonGroup>

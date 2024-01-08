@@ -214,10 +214,12 @@ const EntityCard: React.FC<EntityCardProps> = ({
                         }}
                         innerStyle={{ flexBasis: '33.33%' }}
                     />
-                    <Grid container>
+                    <Grid container marginTop="20px">
                         <EntityDisableCheckbox isEntityDisabled={entity.properties.disabled} />
                     </Grid>
-                    <EntityDates createdAt={entity.properties.createdAt} updatedAt={entity.properties.updatedAt} />
+                    <Grid marginTop="20px">
+                        <EntityDates createdAt={entity.properties.createdAt} updatedAt={entity.properties.updatedAt} />
+                    </Grid>
                 </CardContent>
             </Collapse>
             <Dialog open={editDialog.isOpen}>

@@ -41,11 +41,11 @@ export const RuleCard: React.FC<{
 
     return (
         <ViewingCard
-            width={500}
+            width={485}
             title={
                 <Grid item container gap="10px" paddingLeft="5px" direction="column">
                     <Grid item container alignItems="center" justifyContent="space-between" direction="row" flexWrap="nowrap">
-                        <Grid item flexBasis="90%">
+                        <Grid item flexBasis="90%" height="30px">
                             <Typography style={{ fontSize: '14px', color: '#1E2775', fontWeight: '400' }}>{rule.name}</Typography>
                         </Grid>
                         <Grid item flexBasis="10%">
@@ -68,36 +68,39 @@ export const RuleCard: React.FC<{
                             )}
                         </Grid>
                     </Grid>
-                    <Grid item container alignItems="center" gap="20px" direction="row" flexWrap="nowrap">
+                    <Grid item container alignItems="center" gap="10px" direction="row" flexWrap="nowrap">
                         <RelationshipTitle style={{ width: 'fit-content' }} relationshipTemplate={populatedRelationshipTemplate} />
-                        {rule.actionOnFail === 'WARNING' ? <img src="/icons/warning-rule.svg" /> : <img src="/icons/force-rule.svg" />}
+                        {isHoverOnCard &&
+                            (rule.actionOnFail === 'WARNING' ? <img src="/icons/warning-rule.svg" /> : <img src="/icons/force-rule.svg" />)}
                     </Grid>
                 </Grid>
             }
             expendedCard={
-                <Grid item container gap="10px" minWidth="232px" paddingLeft="5px" direction="column">
+                <Grid item container gap="10px" minWidth="232px" paddingLeft="5px" direction="column" marginTop="20px">
                     <Grid item container justifyContent="space-between">
                         <Grid item flexBasis="27%" color="#9398C2">
                             <Typography>{i18next.t('wizard.rule.description')}</Typography>
                         </Grid>
                         <Grid item flexBasis="70%" color="#53566E" fontWeight="400">
-                            {rule.description}
+                            <Typography>{rule.description}</Typography>
                         </Grid>
                     </Grid>
                     <Grid item container justifyContent="space-between">
                         <Grid item flexBasis="27%" color="#9398C2">
-                            {i18next.t('wizard.rule.actionOnFail')}
+                            <Typography>{i18next.t('wizard.rule.actionOnFail')}</Typography>
                         </Grid>
                         <Grid item flexBasis="70%" color="#53566E" fontWeight="400">
-                            {i18next.t(`wizard.rule.actions.${rule.actionOnFail.toLocaleLowerCase()}`)}
+                            <Typography>{i18next.t(`wizard.rule.actions.${rule.actionOnFail.toLocaleLowerCase()}`)}</Typography>
                         </Grid>
                     </Grid>
                     <Grid item container justifyContent="space-between">
                         <Grid item flexBasis="27%" color="#9398C2">
-                            {i18next.t('wizard.rule.pinnedEntityTemplate')}
+                            <Typography>{i18next.t('wizard.rule.pinnedEntityTemplate')}</Typography>
                         </Grid>
                         <Grid item flexBasis="70%" color="#53566E" fontWeight="400">
-                            {entityTemplates.get(rule.pinnedEntityTemplateId)?.displayName}
+                            <Typography style={{ textOverflow: 'ellipsis', whiteSpace: 'nowrap', overflow: 'hidden' }}>
+                                {entityTemplates.get(rule.pinnedEntityTemplateId)?.displayName}
+                            </Typography>
                         </Grid>
                     </Grid>
                     {/* <Grid item container justifyContent="space-between">
@@ -167,11 +170,11 @@ const RulesRow: React.FC = () => {
         <Grid item container>
             <Grid container spacing={1} alignItems="center">
                 <Grid item>
-                    <SearchInput onChange={setSearchText} />
+                    <SearchInput borderRadius="7px" onChange={setSearchText} placeholder={i18next.t('globalSearch.searchRules')} />
                 </Grid>
                 <Grid item>
-                    <IconButton onClick={() => setRuleWizardDialogState({ isWizardOpen: true, rule: null })}>
-                        <AddIcon color="primary" fontSize="large" />
+                    <IconButton style={{ borderRadius: '5px' }} onClick={() => setRuleWizardDialogState({ isWizardOpen: true, rule: null })}>
+                        <img src="/icons/Add-New-Rule.svg" />
                     </IconButton>
                 </Grid>
             </Grid>
@@ -194,64 +197,7 @@ const RulesRow: React.FC = () => {
                                 setRuleWizardDialogState={setRuleWizardDialogState}
                                 updateDisabledMutateAsync={updateDisabledMutateAsync}
                             />
-                            // <ViewingCard
-                            //     key={rule._id}
-                            //     title={
-                            //         <Grid item container gap="10px" minWidth="232px" paddingLeft="5px" direction="column">
-                            //             <Typography style={{ fontSize: '14px', color: '#1E2775', fontWeight: '400' }}>{rule.name}</Typography>
-                            //             <Grid item container alignItems="center" gap="20px">
-                            //                 <RelationshipTitle
-                            //                     style={{ width: 'fit-content' }}
-                            //                     relationshipTemplate={populatedRelationshipTemplate}
-                            //                 />
-                            //                 {rule.actionOnFail === 'WARNING' ? (
-                            //                     <img src="/icons/warning-rule.svg" />
-                            //                 ) : (
-                            //                     <img src="/icons/force-rule.svg" />
-                            //                 )}
-                            //             </Grid>
-                            //         </Grid>
-                            //     }
-                            //     expendedCard={
-                            //         <Grid item container gap="10px" minWidth="232px" paddingLeft="5px" direction="column">
-                            //             <Grid item container justifyContent="space-between">
-                            //                 <Grid item flexBasis="27%" color="#9398C2">
-                            //                     <Typography>{i18next.t('wizard.rule.description')}</Typography>
-                            //                 </Grid>
-                            //                 <Grid item flexBasis="70%" color="#53566E" fontWeight="400">
-                            //                     {rule.description}
-                            //                 </Grid>
-                            //             </Grid>
-                            //             <Grid item container justifyContent="space-between">
-                            //                 <Grid item flexBasis="27%" color="#9398C2">
-                            //                     {i18next.t('wizard.rule.actionOnFail')}
-                            //                 </Grid>
-                            //                 <Grid item flexBasis="70%" color="#53566E" fontWeight="400">
-                            //                     {i18next.t(`wizard.rule.actions.${rule.actionOnFail.toLocaleLowerCase()}`)}
-                            //                 </Grid>
-                            //             </Grid>
-                            //             <Grid item container justifyContent="space-between">
-                            //                 <Grid item flexBasis="27%" color="#9398C2">
-                            //                     {i18next.t('wizard.rule.pinnedEntityTemplate')}
-                            //                 </Grid>
-                            //                 <Grid item flexBasis="70%" color="#53566E" fontWeight="400">
-                            //                     {entityTemplates.get(rule.pinnedEntityTemplateId)?.displayName}
-                            //                 </Grid>
-                            //             </Grid>
-                            //             {/* <Grid item container justifyContent="space-between">
-                            //         <Grid item flexBasis="25%" color="#9398C2">
-                            //             {i18next.t('wizard.rule.formula')}
-                            //         </Grid>
-                            //         <Grid item flexBasis="70%" color="#53566E" fontWeight="400">
-                            //             {rule.formula}
-                            //         </Grid>
-                            //     </Grid> */}
-                            //         </Grid>
-                            //     }
-                            // />
                         );
-
-                        // <RuleCard rule={rule} key={rule._id} entityTemplates={entityTemplates} relationshipTemplates={relationshipTemplates} />
                     })}
             </Grid>
             <RuleWizard

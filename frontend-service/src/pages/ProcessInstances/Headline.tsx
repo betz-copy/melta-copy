@@ -33,9 +33,9 @@ const ProcessInstancesHeadline: React.FC<{
     return (
         <TopBarGrid sx={{ height: '3.6rem' }} container justifyContent="space-between" alignItems="center" wrap="nowrap">
             <Grid item>
-                <Grid container spacing={5} wrap="nowrap">
+                <Grid container spacing={5} wrap="nowrap" alignItems="center">
                     <Grid item>
-                        <BlueTitle title={i18next.t('pages.processInstances')} component="h4" variant="h4" />
+                        <BlueTitle title={i18next.t('pages.processInstances')} component="h4" variant="h4" style={{ fontSize: '24px' }} />
                     </Grid>
                     <Grid item>
                         <Grid container wrap="nowrap">

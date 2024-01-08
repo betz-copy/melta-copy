@@ -67,10 +67,10 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                 );
                 return (
                     <Grid key={propertyKey} item width="250px" flexDirection="row" style={innerStyle} alignItems="center">
-                        <Grid container alignItems="center">
+                        <Grid container alignItems="center" flexWrap="nowrap">
                             <Grid
                                 item
-                                width="100px"
+                                width="120px"
                                 style={{ textOverflow: 'ellipsis', whiteSpace: 'nowrap', overflow: 'hidden', textAlign: 'right' }}
                             >
                                 <Typography display="inline" fontSize="14px" color={darkMode ? '#cecece' : '#9398C2'}>
@@ -80,7 +80,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                             <Grid
                                 item
                                 container
-                                width="100px"
+                                width="200px"
                                 flexDirection="row"
                                 alignItems="center"
                                 flexWrap="nowrap"

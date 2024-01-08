@@ -87,7 +87,7 @@ const TemplateTable = forwardRef<
                         <div
                             style={{
                                 height: '30px',
-                                width: '7px',
+                                width: '3px',
                                 backgroundColor: entityTemplateColor,
                                 borderRadius: '20px',
                             }}
@@ -100,7 +100,7 @@ const TemplateTable = forwardRef<
                     </Grid>
                     <Grid item paddingLeft="10px" minWidth="fit-content" style={{ whiteSpace: 'nowrap', overflow: 'hidden' }}>
                         <BlueTitle
-                            style={{ minWidth: 'fit-content', whiteSpace: 'nowrap', overflow: 'hidden' }}
+                            style={{ minWidth: 'fit-content', whiteSpace: 'nowrap', overflow: 'hidden', fontWeight: 'semi-bold', fontSize: '20px' }}
                             title={template.displayName}
                             component="h5"
                             variant="h5"

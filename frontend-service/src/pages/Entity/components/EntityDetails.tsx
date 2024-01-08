@@ -156,13 +156,15 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                                     />
                                 </Box>
                             </Grid>
-                            <Grid container>
+                            <Grid container marginTop="20px">
                                 <EntityDisableCheckbox isEntityDisabled={isEntityDisabled}> </EntityDisableCheckbox>
                             </Grid>
-                            <EntityDates
-                                createdAt={expandedEntity.entity.properties.createdAt}
-                                updatedAt={expandedEntity.entity.properties.updatedAt}
-                            />
+                            <Grid marginTop="20px">
+                                <EntityDates
+                                    createdAt={expandedEntity.entity.properties.createdAt}
+                                    updatedAt={expandedEntity.entity.properties.updatedAt}
+                                />
+                            </Grid>
                         </Grid>
 
                         <Grid item>

@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Grid, IconButton, Typography } from '@mui/material';
-import { AddCircle as AddIcon } from '@mui/icons-material';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
+import { AppRegistration as AppRegistrationIcon } from '@mui/icons-material';
 
 import i18next from 'i18next';
 import { AxiosError } from 'axios';
@@ -174,38 +174,68 @@ const RelationshipTemplatesRow: React.FC = () => {
 
     return (
         <Grid item container marginBottom="30px">
-            <Grid container spacing={1} alignItems="center">
-                <Grid item>
-                    <SearchInput onChange={setSearchText} />
-                </Grid>
-                <Grid item>
-                    <TemplatesSelectCheckbox
-                        title={i18next.t('systemManagement.sourceTemplates')}
-                        templates={entityTemplatesArray}
-                        selectedTemplates={sourceEntityTemplatesToShow}
-                        setSelectedTemplates={setSourceEntityTemplatesToShow}
-                        categories={categoriesArray}
-                        size="small"
-                    />
-                </Grid>
-                <Grid item>
-                    <TemplatesSelectCheckbox
-                        title={i18next.t('systemManagement.destinationTemplates')}
-                        templates={entityTemplatesArray}
-                        selectedTemplates={destinationEntityTemplatesToShow}
-                        setSelectedTemplates={setDestinationEntityTemplatesToShow}
-                        categories={categoriesArray}
-                        size="small"
-                    />
-                </Grid>
-                <Grid item>
-                    <IconButton onClick={() => setRelationshipTemplateWizardDialogState({ isWizardOpen: true, relationshipTemplate: null })}>
-                        <AddIcon color="primary" fontSize="large" />
-                    </IconButton>
+            <Grid container alignItems="center" flexWrap="nowrap" flexDirection="row" justifyContent="space-between">
+                <Grid item container spacing={1} alignItems="center">
+                    <Grid item>
+                        <SearchInput
+                            value={searchText}
+                            onChange={setSearchText}
+                            borderRadius="7px"
+                            placeholder={i18next.t('globalSearch.searchRelations')}
+                        />
+                    </Grid>
+                    <Grid item>
+                        <TemplatesSelectCheckbox
+                            title={i18next.t('systemManagement.sourceTemplates')}
+                            templates={entityTemplatesArray}
+                            selectedTemplates={sourceEntityTemplatesToShow}
+                            setSelectedTemplates={setSourceEntityTemplatesToShow}
+                            categories={categoriesArray}
+                            size="small"
+                        />
+                    </Grid>
+                    <Grid item>
+                        <TemplatesSelectCheckbox
+                            title={i18next.t('systemManagement.destinationTemplates')}
+                            templates={entityTemplatesArray}
+                            selectedTemplates={destinationEntityTemplatesToShow}
+                            setSelectedTemplates={setDestinationEntityTemplatesToShow}
+                            categories={categoriesArray}
+                            size="small"
+                        />
+                    </Grid>
+                    <Grid item>
+                        {sourceEntityTemplatesToShow.length < entityTemplatesArray.length ||
+                        destinationEntityTemplatesToShow.length < entityTemplatesArray.length ||
+                        searchText.length ? (
+                            <IconButton
+                                style={{ borderRadius: '5px' }}
+                                onClick={() => {
+                                    setSearchText('');
+                                    setSourceEntityTemplatesToShow(entityTemplatesArray);
+                                    setDestinationEntityTemplatesToShow(entityTemplatesArray);
+                                }}
+                            >
+                                <img src="/icons/delete-filters-enable.svg" />
+                            </IconButton>
+                        ) : (
+                            <IconButton style={{ borderRadius: '5px', cursor: 'default' }}>
+                                <img src="/icons/delete-filters.svg" />
+                            </IconButton>
+                        )}
+                    </Grid>
+                    <Grid item>
+                        <IconButton
+                            style={{ borderRadius: '5px' }}
+                            onClick={() => setRelationshipTemplateWizardDialogState({ isWizardOpen: true, relationshipTemplate: null })}
+                        >
+                            <img src="/icons/add-new-relation-template.svg" />
+                        </IconButton>
+                    </Grid>
                 </Grid>
                 <Grid item>
                     {isSrcRelationChecked ? (
-                        <Grid>
+                        <Grid item container flexWrap="nowrap">
                             <IconButton style={{ borderRadius: '5px' }}>
                                 <img src="/icons/checked-src-relation.svg" />
                             </IconButton>
@@ -214,7 +244,7 @@ const RelationshipTemplatesRow: React.FC = () => {
                             </IconButton>
                         </Grid>
                     ) : (
-                        <Grid>
+                        <Grid item container flexWrap="nowrap">
                             <IconButton style={{ borderRadius: '5px' }} onClick={() => setIsSrcRelationChecked(true)}>
                                 <img src="/icons/unchecked-src-relation.svg" />
                             </IconButton>
@@ -259,13 +289,15 @@ const RelationshipTemplatesRow: React.FC = () => {
                                 gap="10px"
                                 padding="0px 15px"
                             >
-                                {relationshipTemplateWithEntity.entityTemplate.iconFileId && (
+                                {relationshipTemplateWithEntity.entityTemplate.iconFileId ? (
                                     <CustomIcon
                                         iconUrl={relationshipTemplateWithEntity.entityTemplate.iconFileId}
                                         height="24px"
                                         width="24px"
                                         color="#9398C2"
                                     />
+                                ) : (
+                                    <AppRegistrationIcon style={{ color: '#9398C2', height: '24px', width: '24px' }} fontSize="small" />
                                 )}
                                 <Typography style={{ fontSize: '14px', fontWeight: '400', color: '#9398C2' }}>
                                     {relationshipTemplateWithEntity.entityTemplate.displayName}
@@ -301,21 +333,6 @@ const RelationshipTemplatesRow: React.FC = () => {
                         }
                     >
                         {relationshipTemplateWithEntity.relationships.map((relationshipTemplate) => (
-                            // <ViewingCard
-                            //     key={relationshipTemplate._id}
-                            //     title={<RelationshipTitle relationshipTemplate={relationshipTemplate} />}
-                            //     // onEditClick={() => {
-                            //     //     const { sourceEntity, destinationEntity, ...restOfRelationshipTemplate } = relationshipTemplate;
-                            //     //     setRelationshipTemplateWizardDialogState({
-                            //     //         isWizardOpen: true,
-                            //     //         relationshipTemplate: {
-                            //     //             sourceEntityId: sourceEntity._id,
-                            //     //             destinationEntityId: destinationEntity._id,
-                            //     //             ...restOfRelationshipTemplate,
-                            //     //         },
-                            //     //     });
-                            //     // }}
-                            // />
                             <RelationshipTemplateCard
                                 key={relationshipTemplate._id}
                                 relationshipTemplate={relationshipTemplate}

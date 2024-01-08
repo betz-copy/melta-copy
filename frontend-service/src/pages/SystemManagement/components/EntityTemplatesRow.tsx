@@ -94,8 +94,8 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                         <Grid item>
                             <div
                                 style={{
-                                    height: '30px',
-                                    width: '7px',
+                                    height: '18px',
+                                    width: '3px',
                                     backgroundColor: getEntityTemplateColor(entityTemplate),
                                     borderRadius: '20px',
                                 }}
@@ -106,7 +106,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                             {entityTemplate.iconFileId ? (
                                 <CustomIcon iconUrl={entityTemplate.iconFileId} height="24px" width="24px" />
                             ) : (
-                                <AppRegistrationIcon fontSize="small" />
+                                <AppRegistrationIcon style={{ height: '24px', width: '24px' }} fontSize="small" />
                             )}
                         </Grid>
                         <Grid item>
@@ -170,7 +170,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                         .map(([key, value]) => (
                             <Grid key={key} item container gap="5px" flexWrap="nowrap">
                                 <Grid item flexBasis="4%" color="#9398C2">
-                                    <Typography>{'>'}</Typography>
+                                    <Typography>-</Typography>
                                 </Grid>
                                 <Grid item color="#53566E">
                                     <Tooltip
@@ -207,7 +207,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                         .map(([key, value]) => (
                             <Grid key={key} item container gap="5px">
                                 <Grid item flexBasis="4%" color="#9398C2">
-                                    <Typography>{'>'}</Typography>
+                                    <Typography>-</Typography>
                                 </Grid>
                                 <Grid item color="#53566E">
                                     <Tooltip
@@ -482,7 +482,7 @@ const EntityTemplatesRow: React.FC = () => {
         <Grid item container>
             <Grid container spacing={1} alignItems="center">
                 <Grid item>
-                    <SearchInput onChange={setSearchText} />
+                    <SearchInput placeholder={i18next.t('globalSearch.searchLabel')} borderRadius="7px" onChange={setSearchText} value={searchText} />
                 </Grid>
                 <Grid item>
                     <SelectCheckbox
@@ -496,9 +496,21 @@ const EntityTemplatesRow: React.FC = () => {
                     />
                 </Grid>
                 <Grid item>
-                    <IconButton onClick={() => setEntityTemplateWizardDialogState({ isWizardOpen: true, entityTemplate: null })}>
-                        <AddIcon color="primary" fontSize="large" />
-                    </IconButton>
+                    {categoriesToShow.length < categoriesArray.length || searchText.length ? (
+                        <IconButton
+                            style={{ borderRadius: '5px' }}
+                            onClick={() => {
+                                setSearchText('');
+                                setCategoriesToShow(categoriesArray);
+                            }}
+                        >
+                            <img src="/icons/delete-filters-enable.svg" />
+                        </IconButton>
+                    ) : (
+                        <IconButton style={{ borderRadius: '5px', cursor: 'default' }}>
+                            <img src="/icons/delete-filters.svg" />
+                        </IconButton>
+                    )}
                 </Grid>
             </Grid>
 

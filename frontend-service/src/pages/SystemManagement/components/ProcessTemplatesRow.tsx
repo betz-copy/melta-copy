@@ -34,7 +34,12 @@ const StepReviewers: React.FC<StepReviewersProps> = ({ reviewers }) => {
                         event.stopPropagation();
                     }}
                 >
-                    <Typography color="#9398C2">{`${isOpen ? '-  ' : '>  '}${i18next.t('wizard.processTemplate.approvers')}`}</Typography>
+                    {isOpen ? (
+                        <img style={{ marginLeft: '10px' }} src="/icons/Close-Arrow.svg" />
+                    ) : (
+                        <img style={{ marginLeft: '10px' }} src="/icons/Open-Arrow.svg" />
+                    )}
+                    <Typography color="#9398C2">{i18next.t('wizard.processTemplate.approvers')}</Typography>
                 </Button>
             </Grid>
             {isOpen &&
@@ -75,11 +80,16 @@ const ProcessProperties: React.FC<ProcessPropertiesProps> = ({ properties }) => 
                         event.stopPropagation();
                     }}
                 >
-                    <Typography color="#9398C2">{`${isOpen ? '-  ' : '>  '}${i18next.t('wizard.processTemplate.properties')}`}</Typography>
+                    {isOpen ? (
+                        <img style={{ marginLeft: '10px' }} src="/icons/Close-Arrow.svg" />
+                    ) : (
+                        <img style={{ marginLeft: '10px' }} src="/icons/Open-Arrow.svg" />
+                    )}
+                    <Typography color="#9398C2">{i18next.t('wizard.processTemplate.properties')}</Typography>
                 </Button>
             </Grid>
             {isOpen && (
-                <Grid item container direction="column" marginLeft="10px">
+                <Grid item container direction="column" marginLeft="20px">
                     {Object.entries(properties).map(([key, value]) => (
                         <Grid item container key={key} direction="row" wrap="nowrap" alignItems="center">
                             <Typography
@@ -124,16 +134,21 @@ const Step: React.FC<StepProps> = ({ step }) => {
     const [isOpen, setIsOpen] = useState(false);
 
     return (
-        <Grid item container direction="row" marginLeft="10px">
+        <Grid item container direction="row" marginLeft="20px">
             <Grid item container direction="row" alignItems="center" gap="10px">
                 <Button
+                    style={{ maxWidth: '250px' }}
                     onClick={(event) => {
                         event.preventDefault();
                         setIsOpen(!isOpen);
                         event.stopPropagation();
                     }}
                 >
-                    <Typography color="#9398C2">{isOpen ? '-  ' : '>  '}</Typography>
+                    {isOpen ? (
+                        <img style={{ marginLeft: '10px' }} src="/icons/Close-Arrow.svg" />
+                    ) : (
+                        <img style={{ marginLeft: '10px' }} src="/icons/Open-Arrow.svg" />
+                    )}
                     {step.iconFileId && <CustomIcon iconUrl={step.iconFileId} height="24px" width="24px" color="#1E2775" />}
                     <Tooltip
                         PopperProps={{
@@ -143,14 +158,14 @@ const Step: React.FC<StepProps> = ({ step }) => {
                     >
                         <Typography
                             style={{
-                                fontSize: '12px',
                                 color: '#9398C2',
                                 fontWeight: '400',
                                 textOverflow: 'ellipsis',
                                 whiteSpace: 'nowrap',
                                 overflow: 'hidden',
-                                width: '250px',
+                                maxWidth: '250px',
                                 textAlign: 'right',
+                                marginRight: '5px',
                             }}
                         >
                             {step.displayName}
@@ -159,7 +174,7 @@ const Step: React.FC<StepProps> = ({ step }) => {
                 </Button>
             </Grid>
             {isOpen && (
-                <Grid item container direction="column" marginLeft="10px">
+                <Grid item container direction="column" marginLeft="20px">
                     <ProcessProperties properties={step.properties.properties} />
                     <StepReviewers reviewers={step.reviewers} />
                 </Grid>
@@ -193,7 +208,7 @@ const ProcessTemplateCard: React.FC<ProcessTemplateCardProps> = ({
 
     return (
         <ViewingCard
-            width={320}
+            width={400}
             title={
                 <Grid direction="column" container gap="10px">
                     <Grid
@@ -205,6 +220,7 @@ const ProcessTemplateCard: React.FC<ProcessTemplateCardProps> = ({
                         alignItems="center"
                         paddingLeft="20px"
                         flexWrap="nowrap"
+                        height="20px"
                     >
                         <Grid item container alignItems="center" gap="10px" flexBasis="90%">
                             <Tooltip
@@ -221,7 +237,7 @@ const ProcessTemplateCard: React.FC<ProcessTemplateCardProps> = ({
                                         textOverflow: 'ellipsis',
                                         whiteSpace: 'nowrap',
                                         overflow: 'hidden',
-                                        width: '250px',
+                                        maxWidth: '250px',
                                     }}
                                 >
                                     {processTemplate.displayName}
@@ -257,7 +273,7 @@ const ProcessTemplateCard: React.FC<ProcessTemplateCardProps> = ({
                                             textOverflow: 'ellipsis',
                                             whiteSpace: 'nowrap',
                                             overflow: 'hidden',
-                                            width: '50px',
+                                            width: '75px',
                                         }}
                                     >
                                         {step.displayName}
@@ -325,11 +341,19 @@ const ProcessTemplatesRow: React.FC = () => {
         <Grid item container marginBottom="30px" gap="30px">
             <Grid container spacing={1} alignItems="center">
                 <Grid item>
-                    <SearchInput onChange={setSearchText} endAdornmentChildren={<SearchIcon />} />
+                    <SearchInput
+                        onChange={setSearchText}
+                        borderRadius="7px"
+                        placeholder={i18next.t('globalSearch.searchProcesses')}
+                        endAdornmentChildren={<SearchIcon />}
+                    />
                 </Grid>
                 <Grid item>
-                    <IconButton onClick={() => setProcessTemplateWizardDialogState({ isWizardOpen: true, processTemplate: null })}>
-                        <AddIcon color="primary" fontSize="large" />
+                    <IconButton
+                        style={{ borderRadius: '5px' }}
+                        onClick={() => setProcessTemplateWizardDialogState({ isWizardOpen: true, processTemplate: null })}
+                    >
+                        <img src="icons/Add-New-Process.svg" />
                     </IconButton>
                 </Grid>
             </Grid>

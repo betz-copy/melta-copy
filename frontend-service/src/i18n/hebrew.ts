@@ -255,6 +255,9 @@ export default {
     },
     globalSearch: {
         searchLabel: 'חיפוש ישויות...',
+        searchRules: 'חיפוש חוקים...',
+        searchRelations: 'חיפוש קשרים...',
+        searchProcesses: 'חיפוש תהליכים...',
     },
     wizard: {
         next: 'הבא',

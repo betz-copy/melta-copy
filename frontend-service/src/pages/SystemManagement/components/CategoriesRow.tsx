@@ -51,8 +51,8 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, setDeleteCategory
                         <Grid item>
                             <div
                                 style={{
-                                    height: '30px',
-                                    width: '7px',
+                                    height: '18px',
+                                    width: '3px',
                                     backgroundColor: category.color,
                                     borderRadius: '20px',
                                 }}
@@ -61,9 +61,9 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, setDeleteCategory
 
                         <Grid item>
                             {category.iconFileId ? (
-                                <CustomIcon iconUrl={category.iconFileId} height="24px" width="24px" />
+                                <CustomIcon color="#1E2775" iconUrl={category.iconFileId} height="24px" width="24px" />
                             ) : (
-                                <HiveIcon fontSize="small" />
+                                <HiveIcon style={{ color: '#1E2775' }} fontSize="small" />
                             )}
                         </Grid>
                         <Grid item>
@@ -143,7 +143,7 @@ const CategoriesRow: React.FC = () => {
     const [isHoverOnBox, setIsHoverOnBox] = useState(false);
 
     return (
-        <Grid item container>
+        <Grid item container gap="10px">
             <Box
                 header={
                     <Grid item container justifyContent="space-between" alignItems="center" height="40px">
@@ -174,6 +174,9 @@ const CategoriesRow: React.FC = () => {
                     />
                 ))}
             </Box>
+            <IconButton style={{ height: '40px', borderRadius: '5px' }}>
+                <img src="/icons/Add-Category-Group.svg" />
+            </IconButton>
             <CategoryWizard
                 open={categoryWizardDialogState.isWizardOpen}
                 handleClose={() => setCategoryWizardDialogState({ isWizardOpen: false, category: null })}

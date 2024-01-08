@@ -157,6 +157,30 @@ export const getColumnDefs = <Data extends any = IEntity>({
                                 <EditIcon />
                             </IconButtonWithPopover>
                         )}
+                        <NavLink
+                            to={`/entity/${getEntityPropertiesData(data)._id}`}
+                            onClick={(e) => {
+                                if (disabledEntity) e.preventDefault();
+                            }}
+                            data-tour="entity-page"
+                        >
+                            <IconButtonWithPopover
+                                iconButtonProps={{
+                                    disabled: disabledEntity,
+                                }}
+                                popoverText={
+                                    disabledEntity
+                                        ? i18next.t('permissions.dontHavePermissionsToCategory')
+                                        : i18next.t('entitiesTableOfTemplate.navigateToEntityPage')
+                                }
+                            >
+                                <ReadMoreIcon
+                                    style={{
+                                        transform: 'scaleX(-1)',
+                                    }}
+                                />
+                            </IconButtonWithPopover>
+                        </NavLink>
                     </div>
                 );
             }),

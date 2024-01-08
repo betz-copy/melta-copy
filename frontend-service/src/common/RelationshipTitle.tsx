@@ -23,8 +23,8 @@ const RelationshipTitle: React.FC<{
                 <Grid item>
                     <div
                         style={{
-                            height: '30px',
-                            width: '7px',
+                            height: '18px',
+                            width: '3px',
                             backgroundColor: srcEntityTemplateColor,
                             borderRadius: '20px',
                         }}
@@ -83,8 +83,8 @@ const RelationshipTitle: React.FC<{
                 <Grid item>
                     <div
                         style={{
-                            height: '30px',
-                            width: '7px',
+                            height: '18px',
+                            width: '3px',
                             backgroundColor: destEntityTemplateColor,
                             borderRadius: '20px',
                         }}

@@ -9,7 +9,7 @@ const EntityDates: React.FC<{ createdAt: string; updatedAt: string }> = ({ creat
     const darkMode = useSelector((state: RootState) => state.darkMode);
 
     return (
-        <Grid item container justifyContent="space-around">
+        <Grid item container justifyContent="space-between">
             <Typography color={darkMode ? '#cecece' : '#787C9E'} fontSize="12px" fontWeight="400">{`${i18next.t(
                 'entityPage.createdAt',
             )}: ${getLongDate(new Date(createdAt))}`}</Typography>
