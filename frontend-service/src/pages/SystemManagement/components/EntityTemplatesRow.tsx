@@ -457,7 +457,11 @@ const EntityTemplatesRow: React.FC = () => {
                 ...entityTemplate,
                 category: category._id,
             }),
-        {},
+        {
+            onSuccess(data) {
+                queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) => entityTemplateMap!.set(data._id, data));
+            },
+        },
     );
 
     const onDragEnd = (result) => {
