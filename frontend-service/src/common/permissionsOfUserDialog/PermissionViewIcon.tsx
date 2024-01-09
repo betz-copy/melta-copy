@@ -1,5 +1,5 @@
 import React from 'react';
-import { Checkbox, Tooltip } from '@mui/material';
+import { Checkbox } from '@mui/material';
 import CheckIcon from '@mui/icons-material/Check';
 import ClearIcon from '@mui/icons-material/Clear';
 
