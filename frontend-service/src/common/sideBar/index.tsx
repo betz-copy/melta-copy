@@ -131,8 +131,8 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                             //     console.log({ a });
                             // }}
                             /> // TODO
-                            // <GlobalSearchBar onSearch={onSearch} placeholder={i18next.t('globalSearch.searchLabel')} size="medium" borderRadius="30px" />
                         ) : (
+                            // <GlobalSearchBar onSearch={onSearch} placeholder={i18next.t('globalSearch.searchLabel')} size="medium" borderRadius="30px" />
                             <StyledLink
                                 to="/"
                                 onClick={(e) => {

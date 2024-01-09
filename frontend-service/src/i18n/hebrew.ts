@@ -195,6 +195,7 @@ export default {
         failedToGetNotifications: 'נכשל לטעון התראות',
         noNotificationsLeft: 'אין עוד התראות',
         setAsSeen: 'סמן כנקרא',
+        setAllSeen: 'סמן הכל כנקרא',
         failedSetAsSeen: 'נכשל לסמן כנקרא',
         setAllAsSeen: 'סמן את כל ההתראות ב"{{group}}" כנקרא',
         allSeen: 'כל ההתראות סומנו כנקרא בהצלחה',

@@ -104,6 +104,7 @@ export const environment = {
                 NotificationType.archivedProcess,
             ],
         },
+        // colors
     },
     agGrid: {
         rowCount: 5,

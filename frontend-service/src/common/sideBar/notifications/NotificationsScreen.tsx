@@ -1,4 +1,4 @@
-import { CircularProgress, Grid, Menu, MenuItem, ToggleButton, ToggleButtonGroup, Tooltip, Typography } from '@mui/material';
+import { Autocomplete, CircularProgress, Grid, Menu, MenuItem, TextField, ToggleButton, ToggleButtonGroup, Tooltip, Typography } from '@mui/material';
 import i18next from 'i18next';
 import React, { CSSProperties, useState } from 'react';
 import { toast } from 'react-toastify';
@@ -11,6 +11,8 @@ import { InfiniteScroll } from '../../InfiniteScroll';
 import PopperSidebar from '../../PopperSidebar';
 import { NotificationCard } from './NotificationCard';
 import { NotificationCount } from './NotificationCount';
+// import { SelectCheckbox } from '../../SelectCheckbox';
+import { LoadingButton } from '@mui/lab';
 
 const { infiniteScrollPageCount, groups } = environment.notifications;
 
@@ -33,8 +35,7 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
 
     const [selectedGroup, setSelectedGroup] = useState<keyof typeof groups>('general');
 
-    const [rightClickedGroup, setRightClickedGroup] = useState<keyof typeof groups>();
-    const [tabOptionsAnchor, setTabOptionsAnchor] = useState<HTMLElement>();
+    // const [tabOptionsAnchor, setTabOptionsAnchor] = useState<HTMLElement>();
 
     const { mutate, isLoading } = useMutation((groupName: keyof typeof groups) => manyNotificationSeenRequest(groups[groupName]), {
         onSuccess: (seenNotifications, groupName) => {
@@ -53,10 +54,10 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
         },
     });
 
-    const onCloseTabOptions = () => {
-        setRightClickedGroup(undefined);
-        setTabOptionsAnchor(undefined);
-    };
+    // const onCloseTabOptions = () => {
+    //     // setCurrGroup(undefined);
+    //     setTabOptionsAnchor(undefined);
+    // };
 
     return (
         <PopperSidebar
@@ -85,10 +86,10 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                     <ToggleButton
                         key={groupName}
                         value={groupName}
-                        sx={{ padding: '0.5rem' }}
-                        onContextMenu={(event) => {
-                            setRightClickedGroup(groupName);
-                            setTabOptionsAnchor(event.currentTarget);
+                        sx={{ padding: '0.5rem', borderBlockColor: 'none' }}
+                        onClick={(event) => {
+                            setSelectedGroup(groupName);
+                            // setTabOptionsAnchor(event.currentTarget);
                             event.preventDefault();
                         }}
                     >
@@ -104,6 +105,20 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                     </ToggleButton>
                 ))}
             </ToggleButtonGroup>
+            {/* 
+            <SelectCheckbox
+                title="gjgjgj"
+                options={['dd']}
+                selectedOptions={noti}
+                setSelectedOptions={setSelectedTemplates}
+                getOptionId={({ _id }) => _id}
+                getOptionLabel={({ displayName }) => displayName}
+                groupsProps={getCategoriesSelectCheckboxGroupProps(categories)}
+                isDraggableDisabled={isDraggableDisabled}
+                setOptions={setTemplates}
+                size={size}
+                toTopBar={toTopBar}
+            /> */}
 
             {isLoading ? (
                 <CircularProgress sx={{ marginX: 'auto', marginTop: '1rem' }} />
@@ -123,24 +138,38 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                     }}
                     endText={i18next.t('notifications.noNotificationsLeft')}
                 >
-                    {(notification) => <NotificationCard notification={notification} onSeen={updateNotificationCountDetails} />}
+                    {(notification) => (
+                        <Grid item style={{ padding: '8px' }}>
+                            <NotificationCard notification={notification} onSeen={updateNotificationCountDetails} />
+                        </Grid>
+                    )}
                 </InfiniteScroll>
             )}
+            {/*            
+                // <Menu open={Boolean(rightClickedGroup)} onClose={onCloseTabOptions} anchorEl={tabOptionsAnchor}>
+                //     <MenuItem
+                //         onClick={() => {
+                //             onCloseTabOptions();
 
-            {rightClickedGroup && tabOptionsAnchor && (
-                <Menu open={Boolean(rightClickedGroup)} onClose={onCloseTabOptions} anchorEl={tabOptionsAnchor}>
-                    <MenuItem
-                        onClick={() => {
-                            onCloseTabOptions();
-
-                            if (!notificationCountDetails.groups[rightClickedGroup]) return;
-                            mutate(rightClickedGroup);
-                        }}
-                    >
-                        {i18next.t('notifications.setAllAsSeen', { group: i18next.t(`notifications.groups.${rightClickedGroup}`) })}
-                    </MenuItem>
-                </Menu>
-            )}
+                //             if (!notificationCountDetails.groups[rightClickedGroup]) return;
+                //             mutate(rightClickedGroup);
+                //         }}
+                //     >
+                //         {i18next.t('notifications.setAllAsSeen', { group: i18next.t(`notifications.groups.${rightClickedGroup}`) })}
+                //     </MenuItem>
+                // </Menu> */}
+            <Grid item container justifyContent="flex-end" sx={{ position: 'absolute', bottom: 0, padding: '10px' }}>
+                <LoadingButton
+                    onClick={() => {
+                        // onCloseTabOptions();
+                        if (!notificationCountDetails.groups[selectedGroup]) return;
+                        mutate(selectedGroup);
+                    }}
+                    loading={isLoading}
+                >
+                    {i18next.t('notifications.setAllSeen')}
+                </LoadingButton>
+            </Grid>
         </PopperSidebar>
     );
 };

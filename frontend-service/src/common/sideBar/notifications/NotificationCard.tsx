@@ -16,6 +16,7 @@ import {
     isDateAboutToExpireNotification,
     isDeleteProcessNotification,
     isArchiveProcessNotification,
+    NotificationType,
 } from '../../../interfaces/notifications';
 import { getShortDate } from '../../../utils/date';
 import { notificationSeenRequest } from '../../../services/notificationService';
@@ -50,21 +51,22 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({ notification
     return (
         <Card
             sx={{
-                bgcolor: darkMode ? '#161616' : 'white',
+                // eslint-disable-next-line no-nested-ternary
+                bgcolor: notification.type === NotificationType.dateAboutToExpire ? '#F8E0E0' : darkMode ? '#161616' : '#FFFFFF',
                 marginTop: '0.5rem',
                 marginX: '1rem',
-                padding: '0.5rem',
                 pointerEvents: isSuccess ? 'none' : 'initial',
                 opacity: isSuccess ? '0.20' : '1',
+                borderRadius: '20px',
             }}
         >
-            <CardContent sx={{ '&:last-child': { padding: 0 } }}>
+            <CardContent sx={{ '&:last-child': { padding: '15px' } }}>
                 <Grid container direction="column">
                     <Grid item container justifyContent="flex-end" wrap="nowrap">
                         <Typography fontSize={14}>{getShortDate(notification.createdAt)}</Typography>
                     </Grid>
 
-                    <Grid item>
+                    <Grid item sx={{ padding: '10px' }}>
                         {isRuleBreachAlertNotification(notification) && <RuleBreachAlertNotification {...notification.metadata} />}
                         {isRuleBreachRequestNotification(notification) && <RuleBreachRequestNotification {...notification.metadata} />}
                         {isRuleBreachResponseNotification(notification) && <RuleBreachResponseNotification {...notification.metadata} />}
