@@ -4,6 +4,8 @@ import { useSelector } from 'react-redux';
 import i18next from 'i18next';
 import { RootState } from '../../store';
 import { Scope } from '../../services/permissionsService';
+import PermissionViewIcon from './PermissionViewIcon';
+
 // import PermissionViewIcon from './PermissionViewIcon';
 
 type checkboxControlProps = {
@@ -49,30 +51,34 @@ const InstancesPermissionsCard: React.FC<{
                         </Grid>
                         <Grid item xs={3}>
                             <Typography fontWeight="bold">{i18next.t('permissions.permissionsOfUserDialog.read')}</Typography>
-                            <FormControlLabel
-                                label={i18next.t('permissions.permissionsOfUserDialog.chooseAll') as string}
-                                control={
-                                    <Checkbox
-                                        checked={checkboxAllProps?.permissionType.read.checked || checkboxAllProps?.permissionType.write.checked}
-                                        disabled={checkboxAllProps?.permissionType.write.checked}
-                                        onChange={checkboxAllProps?.permissionType.read.onChange}
-                                        size="small"
-                                    />
-                                }
-                            />
+                            {!viewMode && (
+                                <FormControlLabel
+                                    label={i18next.t('permissions.permissionsOfUserDialog.chooseAll') as string}
+                                    control={
+                                        <Checkbox
+                                            checked={checkboxAllProps?.permissionType.read.checked || checkboxAllProps?.permissionType.write.checked}
+                                            disabled={checkboxAllProps?.permissionType.write.checked}
+                                            onChange={checkboxAllProps?.permissionType.read.onChange}
+                                            size="small"
+                                        />
+                                    }
+                                />
+                            )}
                         </Grid>
                         <Grid item xs={3}>
                             <Typography fontWeight="bold">{i18next.t('permissions.permissionsOfUserDialog.write')}</Typography>
-                            <FormControlLabel
-                                label={i18next.t('permissions.permissionsOfUserDialog.chooseAll') as string}
-                                control={
-                                    <Checkbox
-                                        checked={checkboxAllProps?.permissionType.write.checked}
-                                        onChange={checkboxAllProps?.permissionType.write.onChange}
-                                        size="small"
-                                    />
-                                }
-                            />
+                            {!viewMode && (
+                                <FormControlLabel
+                                    label={i18next.t('permissions.permissionsOfUserDialog.chooseAll') as string}
+                                    control={
+                                        <Checkbox
+                                            checked={checkboxAllProps?.permissionType.write.checked}
+                                            onChange={checkboxAllProps?.permissionType.write.onChange}
+                                            size="small"
+                                        />
+                                    }
+                                />
+                            )}
                         </Grid>
                         <Grid item xs={12}>
                             <Divider />
@@ -84,20 +90,28 @@ const InstancesPermissionsCard: React.FC<{
                                 <Typography>{categoryDisplayName}</Typography>
                             </Grid>
                             <Grid item xs={3}>
-                                <Checkbox
-                                    size="small"
-                                    checked={permissionType.read.checked}
-                                    onChange={permissionType.read.onChange}
-                                    disabled={disabled}
-                                />
+                                {viewMode ? (
+                                    <PermissionViewIcon checked={permissionType.read.checked} />
+                                ) : (
+                                    <Checkbox
+                                        size="small"
+                                        checked={permissionType.read.checked}
+                                        onChange={permissionType.read.onChange}
+                                        disabled={disabled}
+                                    />
+                                )}
                             </Grid>
                             <Grid item xs={3}>
-                                <Checkbox
-                                    size="small"
-                                    checked={permissionType.write.checked}
-                                    onChange={permissionType.write.onChange}
-                                    disabled={disabled}
-                                />
+                                {viewMode ? (
+                                    <PermissionViewIcon checked={permissionType.write.checked} />
+                                ) : (
+                                    <Checkbox
+                                        size="small"
+                                        checked={permissionType.write.checked}
+                                        onChange={permissionType.write.onChange}
+                                        disabled={disabled}
+                                    />
+                                )}
                             </Grid>
                         </React.Fragment>
                     ))}
