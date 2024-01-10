@@ -9,13 +9,13 @@ import { StepComponentProps } from '../index';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IPermissionsOfUser } from '../../../services/permissionsService';
 
-const chooseTemplateSchema = {
+const chooseTemplateSchema = Yup.object({
     template: Yup.object({
         _id: Yup.string().required(i18next.t('validation.required')),
         displayName: Yup.string().required(i18next.t('validation.required')),
         properties: Yup.object().required(i18next.t('validation.required')),
     }).required(i18next.t('validation.required')),
-};
+});
 
 const ChooseTemplate: React.FC<StepComponentProps<EntityWizardValues>> = ({ values, touched, errors, setFieldValue }) => {
     const param = useParams();
@@ -46,9 +46,22 @@ const ChooseTemplate: React.FC<StepComponentProps<EntityWizardValues>> = ({ valu
             renderInput={(params) => (
                 <TextField
                     {...params}
+                    size="small"
                     error={Boolean(touched.template && errors.template)}
                     fullWidth
-                    sx={{ width: 300 }}
+                    sx={{
+                        '& .MuiInputBase-root': {
+                            borderRadius: '10px',
+                            width: 300,
+                        },
+                        '& fieldset': {
+                            borderColor: '#CCCFE5',
+                            color: '#CCCFE5',
+                        },
+                        '& label': {
+                            color: '#9398C2',
+                        },
+                    }}
                     helperText={(touched.template && errors.template?._id) || errors.template?.displayName || errors.template?.properties}
                     name="template"
                     variant="outlined"

@@ -11,6 +11,7 @@ const SearchInput: React.FC<{
     placeholder?: string;
     size?: BaseTextFieldProps['size'];
     borderRadius?: string;
+    toTopBar?: boolean;
 }> = ({
     value,
     onChange,
@@ -19,6 +20,7 @@ const SearchInput: React.FC<{
     placeholder = i18next.t('searchLabel'),
     size = 'small',
     borderRadius = '30px',
+    toTopBar = false,
 }) => {
     return (
         <TextField
@@ -29,7 +31,7 @@ const SearchInput: React.FC<{
             variant="outlined"
             fullWidth
             size={size}
-            style={{ borderRadius }}
+            style={{ borderRadius, backgroundColor: toTopBar ? '#EBEFFA' : '' }}
             sx={{ borderRadius, backgroundColor: 'white' }}
             InputProps={{
                 endAdornment: (

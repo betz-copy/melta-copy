@@ -159,7 +159,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                             <Grid container marginTop="20px">
                                 <EntityDisableCheckbox isEntityDisabled={isEntityDisabled}> </EntityDisableCheckbox>
                             </Grid>
-                            <Grid marginTop="20px">
+                            <Grid marginTop="20px" container item justifyContent="space-between">
                                 <EntityDates
                                     createdAt={expandedEntity.entity.properties.createdAt}
                                     updatedAt={expandedEntity.entity.properties.updatedAt}

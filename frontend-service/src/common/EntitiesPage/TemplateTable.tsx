@@ -100,7 +100,7 @@ const TemplateTable = forwardRef<
                     </Grid>
                     <Grid item paddingLeft="10px" minWidth="fit-content" style={{ whiteSpace: 'nowrap', overflow: 'hidden' }}>
                         <BlueTitle
-                            style={{ minWidth: 'fit-content', whiteSpace: 'nowrap', overflow: 'hidden', fontWeight: 'semi-bold', fontSize: '20px' }}
+                            style={{ minWidth: 'fit-content', whiteSpace: 'nowrap', overflow: 'hidden', fontWeight: '500', fontSize: '20px' }}
                             title={template.displayName}
                             component="h5"
                             variant="h5"
@@ -203,8 +203,9 @@ const TemplateTable = forwardRef<
                     }}
                 />
             </Box>
-            <Dialog open={editDialog.isOpen}>
+            <Dialog open={editDialog.isOpen} maxWidth="md">
                 <EditEntityDetails
+                    wasOpenFromTable
                     entityTemplate={template}
                     entity={editDialog.entity!}
                     onSuccessUpdate={(entity) => {

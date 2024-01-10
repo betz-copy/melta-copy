@@ -22,7 +22,8 @@ export const GlobalSearchBar: React.FC<{
     borderRadius?: string;
     placeholder?: string;
     size?: BaseTextFieldProps['size'];
-}> = ({ inputValue, setInputValue, onSearch, borderRadius, placeholder, size }) => {
+    toTopBar?: boolean;
+}> = ({ inputValue, setInputValue, onSearch, borderRadius, placeholder, size, toTopBar = false }) => {
     const valueForSearchButtonRef = useRef(inputValue ?? '');
 
     return (
@@ -45,6 +46,7 @@ export const GlobalSearchBar: React.FC<{
             placeholder={placeholder}
             size={size}
             borderRadius={borderRadius}
+            toTopBar={toTopBar}
         />
     );
 };
@@ -89,7 +91,7 @@ const EntitiesPageHeadline: React.FC<{
                 <Grid container direction="row" display="flex" wrap="nowrap" alignItems="center">
                     <BlueTitle title={pageTitle} component="h4" variant="h4" style={{ fontSize: '24px' }} />
                     <Grid item paddingLeft="3rem" paddingTop="5px">
-                        <Grid item container wrap="nowrap">
+                        <Grid item container wrap="nowrap" gap="15px">
                             <Grid item data-tour="template-filter">
                                 <TemplatesSelectCheckbox
                                     title={i18next.t('entityTemplatesCheckboxLabel')}
@@ -108,7 +110,9 @@ const EntitiesPageHeadline: React.FC<{
                                     inputValue={searchInput}
                                     setInputValue={setSearchInput}
                                     onSearch={onSearch}
-                                    borderRadius="0 7px 7px 0"
+                                    borderRadius="7px"
+                                    placeholder={i18next.t('globalSearch.searchInPage')}
+                                    toTopBar
                                 />
                             </Grid>
                         </Grid>
@@ -146,7 +150,7 @@ const EntitiesPageHeadline: React.FC<{
                     {excelExportProps && (
                         <Grid item>
                             <IconButton
-                                style={{ background: lightTheme.palette.primary.main, borderRadius: '5px' }}
+                                style={{ background: lightTheme.palette.primary.main, borderRadius: '7px' }}
                                 onClick={excelExportProps.onExcelExport}
                                 disabled={excelExportProps.isLoadingExcel}
                             >
@@ -162,7 +166,7 @@ const EntitiesPageHeadline: React.FC<{
                         </Grid>
                     )}
                     <Grid item>
-                        <AddEntityButton disabledToolTip style={{ background: lightTheme.palette.primary.main, borderRadius: '5px' }}>
+                        <AddEntityButton disabledToolTip style={{ background: lightTheme.palette.primary.main, borderRadius: '7px' }}>
                             <AddIcon htmlColor="white" />
                             <Typography fontSize={14} style={{ fontWeight: '500', padding: '0 10px', color: 'white' }}>
                                 {i18next.t('addEntity')}

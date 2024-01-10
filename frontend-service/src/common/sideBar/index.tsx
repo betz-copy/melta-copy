@@ -166,7 +166,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                                     handleChangeActiveButton(true, 'search');
                                     navigate(`/?search=${searchValue}`, { replace: true });
                                 }}
-                                placeholder={i18next.t('globalSearch.searchLabel')}
+                                placeholder={i18next.t('pages.globalSearch')}
                                 size="small"
                                 borderRadius="30px"
                             />

@@ -55,7 +55,14 @@ const SystemManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateAction
                                     label={i18next.t(tabName)}
                                     value={tabName}
                                     wrapped
-                                    style={{ fontWeight: tabValue === tabName ? '600' : '400', fontSize: '16px' }}
+                                    style={{
+                                        fontWeight: tabValue === tabName ? '600' : '400',
+                                        fontSize: '16px',
+                                        fontFamily: 'Rubik',
+                                    }}
+                                    sx={{
+                                        borderBottom: tabValue === tabName ? '2px solid #1E2775' : '',
+                                    }}
                                 />
                             ))}
                         </TabList>

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Box, CircularProgress, Grid, Tab } from '@mui/material';
+import { Box, CircularProgress, Grid, Tab, Typography } from '@mui/material';
 import { useQuery, useQueryClient } from 'react-query';
 import { useParams } from 'react-router-dom';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
@@ -136,12 +136,12 @@ const Entity: React.FC = () => {
             />
             <Grid className="pageMargin">
                 <Grid item marginTop="20px" data-tour="entity-details">
-                    <Grid item container xs={5} alignItems="center">
+                    <Grid item container xs={5} alignItems="center" flexDirection="row" flexWrap="nowrap">
                         <Grid item>
                             <div
                                 style={{
                                     height: '30px',
-                                    width: '7px',
+                                    width: '3px',
                                     backgroundColor: entityTemplateColor,
                                     borderRadius: '20px',
                                 }}
@@ -162,7 +162,7 @@ const Entity: React.FC = () => {
                                 title={currentEntityTemplate.displayName}
                                 component="h5"
                                 variant="h5"
-                                style={{ fontSize: '20px', fontWeight: '600' }}
+                                style={{ fontSize: '20px', fontWeight: '500' }}
                             />
                         </Grid>
                     </Grid>
@@ -181,7 +181,7 @@ const Entity: React.FC = () => {
                                 title={i18next.t('entityPage.relationshipTitle')}
                                 component="h5"
                                 variant="h5"
-                                style={{ fontSize: '20px', fontWeight: '600' }}
+                                style={{ fontSize: '20px', fontWeight: 'semi-bold' }}
                             />
                         </Grid>
                     </Grid>
@@ -193,13 +193,32 @@ const Entity: React.FC = () => {
                                         <Tab
                                             style={{ display: 'flex', flexDirection: 'row', gap: '15px', height: '20px', alignItems: 'center' }}
                                             key={_id}
-                                            label={`${displayName} ${
-                                                expandedEntity.connections.filter((connection) => {
-                                                    if (expandedEntity.entity.properties._id === connection.destinationEntity.properties._id)
-                                                        return entityTemplates.get(connection.sourceEntity.templateId)!.category._id === _id;
-                                                    return entityTemplates.get(connection.destinationEntity.templateId)!.category._id === _id;
-                                                }).length
-                                            }`}
+                                            label={
+                                                <Grid container flexDirection="row" alignItems="center" flexWrap="nowrap" gap="10px">
+                                                    <Typography
+                                                        color={value === String(index) ? lightTheme.palette.primary.main : '#787C9E'}
+                                                        style={{ fontWeight: '500', fontSize: '16px' }}
+                                                    >
+                                                        {displayName}
+                                                    </Typography>
+                                                    <Typography color="#787C9E">
+                                                        {
+                                                            expandedEntity.connections.filter((connection) => {
+                                                                if (
+                                                                    expandedEntity.entity.properties._id ===
+                                                                    connection.destinationEntity.properties._id
+                                                                )
+                                                                    return (
+                                                                        entityTemplates.get(connection.sourceEntity.templateId)!.category._id === _id
+                                                                    );
+                                                                return (
+                                                                    entityTemplates.get(connection.destinationEntity.templateId)!.category._id === _id
+                                                                );
+                                                            }).length
+                                                        }
+                                                    </Typography>
+                                                </Grid>
+                                            }
                                             value={String(index)}
                                             icon={
                                                 iconFileId ? (
@@ -207,10 +226,15 @@ const Entity: React.FC = () => {
                                                         iconUrl={iconFileId}
                                                         height="24px"
                                                         width="24px"
-                                                        color={lightTheme.palette.primary.main}
+                                                        color={value === String(index) ? lightTheme.palette.primary.main : '#787C9E'}
                                                     />
                                                 ) : (
-                                                    <HiveIcon fontSize="medium" sx={{ color: lightTheme.palette.primary.main }} />
+                                                    <HiveIcon
+                                                        fontSize="medium"
+                                                        sx={{
+                                                            color: value === String(index) ? lightTheme.palette.primary.main : '#787C9E',
+                                                        }}
+                                                    />
                                                 )
                                             }
                                         />

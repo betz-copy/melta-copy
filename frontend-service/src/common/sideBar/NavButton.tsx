@@ -42,6 +42,7 @@ const NavButton: React.FC<{ to: string; isDrawerOpen: boolean; text: string; dis
                                     direction: 'rtl',
                                     backgroundColor: isActive ? 'rgba(255, 255, 255, 0.80)' : 'transparent',
                                     borderRadius: '20px',
+                                    height: '32px',
                                 }}
                                 className="child"
                             >

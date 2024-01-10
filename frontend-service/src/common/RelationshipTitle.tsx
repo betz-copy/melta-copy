@@ -46,6 +46,7 @@ const RelationshipTitle: React.FC<{
                             whiteSpace: 'nowrap',
                             overflow: 'hidden',
                             width: '80px',
+                            fontWeight: '400',
                         }}
                     >
                         {relationshipTemplate.sourceEntity.displayName}
@@ -71,6 +72,7 @@ const RelationshipTitle: React.FC<{
                             margin: '0px 10px',
                             width: '100px',
                             textAlign: 'center',
+                            fontWeight: '500',
                         }}
                     >
                         {relationshipTemplate.displayName}
@@ -106,6 +108,7 @@ const RelationshipTitle: React.FC<{
                             whiteSpace: 'nowrap',
                             overflow: 'hidden',
                             width: '80px',
+                            fontWeight: '400',
                         }}
                     >
                         {relationshipTemplate.destinationEntity.displayName}

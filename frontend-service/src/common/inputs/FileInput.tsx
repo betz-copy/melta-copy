@@ -34,12 +34,14 @@ const FileInput: React.FC<FileInputProps> = ({ fileName, onDeleteFile, onDropFil
 
     const inputStyle = {
         border: isDragActive ? `2px dashed ${lightTheme.palette.primary.main}` : '1px solid rgb(196, 196, 196)',
-        borderRadius: '5px',
-        width: '230px',
-        height: '56px',
+        borderRadius: '10px',
+        borderColor: '#CCCFE5',
+        color: '#9398C2',
+        width: '100%',
+        height: '40px',
         display: 'flex',
-        padding: '16px 10px',
-        color: '#666666',
+        padding: '0px 10px',
+        alignItems: 'center',
         cursor: 'pointer',
     };
 

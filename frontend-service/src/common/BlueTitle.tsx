@@ -14,7 +14,7 @@ const BlueTitle: React.FC<BlueTitleProps> = ({ title, component, variant, style 
         <Typography
             style={{
                 color: lightTheme.palette.primary.main,
-                fontWeight: '800',
+                fontWeight: '700',
                 ...style,
             }}
             component={component}

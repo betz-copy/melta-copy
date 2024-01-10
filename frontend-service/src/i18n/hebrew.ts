@@ -258,6 +258,7 @@ export default {
         searchRules: 'חיפוש חוקים...',
         searchRelations: 'חיפוש קשרים...',
         searchProcesses: 'חיפוש תהליכים...',
+        searchInPage: 'חיפוש בעמוד',
     },
     wizard: {
         next: 'הבא',

@@ -24,10 +24,20 @@ const Stepper = <T extends object>({
 
     return (
         <Grid container minWidth="80vh">
-            <Grid container marginBottom="5%">
-                <StepperSideBar steps={steps} activeStep={activeStep} />
-            </Grid>
-            <Grid container direction="column" justifyContent="space-between" alignItems="center" height="100%" marginBottom="0.5rem">
+            {steps.length > 1 && (
+                <Grid container marginBottom="5%">
+                    <StepperSideBar steps={steps} activeStep={activeStep} />
+                </Grid>
+            )}
+            <Grid
+                container
+                direction="column"
+                justifyContent="space-between"
+                alignItems="center"
+                height="100%"
+                marginBottom="0.5rem"
+                marginTop="1rem"
+            >
                 {steps[activeStep].component(formikProps, { isEditMode, setBlock })}
             </Grid>
             <StepperActions

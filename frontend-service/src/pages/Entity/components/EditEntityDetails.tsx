@@ -24,11 +24,12 @@ import { InstanceFileInput } from '../../../common/inputs/InstanceFilesInput/Ins
 const { errorCodes } = environment;
 
 const EditEntityDetails: React.FC<{
+    wasOpenFromTable?: boolean;
     entityTemplate: IMongoEntityTemplatePopulated;
     entity: IEntity;
     onSuccessUpdate: (data: IEntity) => void;
     onCancelUpdate: () => void;
-}> = ({ entityTemplate, entity, onSuccessUpdate, onCancelUpdate }) => {
+}> = ({ wasOpenFromTable = false, entityTemplate, entity, onSuccessUpdate, onCancelUpdate }) => {
     const [updateWithRuleBreachDialogState, setUpdateWithRuleBreachDialogState] = useState<{
         isOpen: boolean;
         brokenRules?: IRuleBreachPopulated['brokenRules'];
@@ -95,13 +96,16 @@ const EditEntityDetails: React.FC<{
                                 <CardContent>
                                     <Grid container justifyContent="center">
                                         <Grid item xs={12}>
-                                            <Grid container flexDirection="row">
-                                                <Box>
-                                                    <BlueTitle
-                                                        title={`${i18next.t('actions.editment')} ${entityTemplate.displayName}`}
-                                                        component="h6"
-                                                        variant="h6"
-                                                    />
+                                            <Grid container flexDirection={wasOpenFromTable ? 'column' : 'row'}>
+                                                <Box width="75%">
+                                                    {wasOpenFromTable && (
+                                                        <BlueTitle
+                                                            title={`${i18next.t('actions.editment')} ${entityTemplate.displayName}`}
+                                                            component="h6"
+                                                            variant="h6"
+                                                            style={{ fontWeight: '600', fontSize: '20px' }}
+                                                        />
+                                                    )}
                                                     <JSONSchemaFormik
                                                         schema={filterAttachmentsAndEntitiesRefFromPropertiesSchema(entityTemplate.properties)}
                                                         values={values}
@@ -113,17 +117,20 @@ const EditEntityDetails: React.FC<{
                                                     />
                                                 </Box>
                                                 {templateFileKeys.length > 0 && (
-                                                    <Box>
-                                                        <Grid item container>
-                                                            <Grid alignSelf="stretch">
-                                                                <Divider orientation="vertical" style={{ alignSelf: 'stretch' }} />
+                                                    <Box width={wasOpenFromTable ? '95%' : '25%'}>
+                                                        <Grid item container flexDirection={wasOpenFromTable ? 'column' : 'row'}>
+                                                            <Grid marginTop={wasOpenFromTable ? '20px' : ''} alignSelf="stretch">
+                                                                <Divider
+                                                                    orientation={wasOpenFromTable ? 'horizontal' : 'vertical'}
+                                                                    style={{ alignSelf: 'stretch', width: wasOpenFromTable ? '100%' : '5px' }}
+                                                                />
                                                             </Grid>
-                                                            <Grid paddingLeft="20px">
+                                                            <Grid paddingLeft="20px" marginTop="20px" marginBottom="20px">
                                                                 <BlueTitle
                                                                     title={i18next.t('wizard.entityTemplate.attachments')}
                                                                     component="h6"
                                                                     variant="h6"
-                                                                    style={{ marginBottom: '22px', fontSize: '16px', fontWeight: '600' }}
+                                                                    style={{ marginBottom: '12px', fontSize: '16px', fontWeight: '600' }}
                                                                 />
                                                                 <div style={{ color: '#666666', fontSize: '0.9rem', padding: '2%' }}>
                                                                     {i18next.t('wizard.entityTemplate.dragAndDropFile')}
@@ -148,25 +155,35 @@ const EditEntityDetails: React.FC<{
                                                 )}
                                             </Grid>
                                         </Grid>
-                                        <Grid item marginTop="20px" marginLeft="80%" width="20%">
-                                            <Grid container spacing={4}>
-                                                <Grid item>
-                                                    <Button variant="outlined" startIcon={<ClearIcon />} onClick={() => onCancelUpdate()}>
-                                                        {i18next.t('entityPage.cancel')}
-                                                    </Button>
-                                                </Grid>
-                                                <Grid item>
-                                                    <Button
-                                                        type="submit"
-                                                        variant="contained"
-                                                        startIcon={
-                                                            isUpdateLoading ? <CircularProgress sx={{ color: 'white' }} size={20} /> : <DoneIcon />
-                                                        }
-                                                        disabled={!dirty || isUpdateLoading}
-                                                    >
-                                                        {i18next.t('entityPage.save')}
-                                                    </Button>
-                                                </Grid>
+                                        <Grid
+                                            container
+                                            flexDirection="row"
+                                            flexWrap="nowrap"
+                                            justifyContent="space-between"
+                                            padding="25px 15px 0px 15px"
+                                        >
+                                            <Grid item>
+                                                <Button
+                                                    style={{ borderRadius: '7px' }}
+                                                    variant="outlined"
+                                                    startIcon={<ClearIcon />}
+                                                    onClick={() => onCancelUpdate()}
+                                                >
+                                                    {i18next.t('entityPage.cancel')}
+                                                </Button>
+                                            </Grid>
+                                            <Grid item>
+                                                <Button
+                                                    style={{ borderRadius: '7px' }}
+                                                    type="submit"
+                                                    variant="contained"
+                                                    startIcon={
+                                                        isUpdateLoading ? <CircularProgress sx={{ color: 'white' }} size={20} /> : <DoneIcon />
+                                                    }
+                                                    disabled={!dirty || isUpdateLoading}
+                                                >
+                                                    {i18next.t('entityPage.save')}
+                                                </Button>
                                             </Grid>
                                         </Grid>
                                     </Grid>

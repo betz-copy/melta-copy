@@ -43,9 +43,6 @@ const RjsfTextWidget = ({
         <TextField
             {...textFieldProps}
             color="primary"
-            style={{
-                maxWidth: '250px',
-            }}
             variant={variant}
             id={id}
             placeholder={placeholder}
@@ -53,6 +50,19 @@ const RjsfTextWidget = ({
             autoFocus={autofocus}
             required={required}
             disabled={disabled}
+            size="small"
+            sx={{
+                '& .MuiInputBase-root': {
+                    borderRadius: '10px',
+                },
+                '& fieldset': {
+                    borderColor: '#CCCFE5',
+                    color: '#CCCFE5',
+                },
+                '& label': {
+                    color: '#9398C2',
+                },
+            }}
             inputProps={{
                 readOnly: readonly,
             }}

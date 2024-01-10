@@ -68,15 +68,15 @@ const getRjfsDateOrDateTimeWidget =
         };
 
         const handleOpenDatePicker = () => {
-            if(currDate) return;
+            if (currDate) return;
 
-            const currentDate= new Date();
+            const currentDate = new Date();
             setCurrDate(currentDate);
 
             if (dateOrDateTime === 'dateTime') {
                 return onChange(currentDate.toISOString());
-            } 
-                
+            }
+
             return onChange(format(currentDate, 'yyyy-MM-dd'));
         };
 
@@ -101,6 +101,7 @@ const getRjfsDateOrDateTimeWidget =
                     renderInput={(params) => {
                         return (
                             <TextField
+                                size="small"
                                 {...textFieldProps}
                                 color={color as TextFieldProps['color']}
                                 {...params}
@@ -112,6 +113,18 @@ const getRjfsDateOrDateTimeWidget =
                                 variant={variant}
                                 InputLabelProps={{
                                     shrink: readonly || undefined,
+                                }}
+                                sx={{
+                                    '& .MuiInputBase-root': {
+                                        borderRadius: '10px',
+                                    },
+                                    '& fieldset': {
+                                        borderColor: '#CCCFE5',
+                                        color: '#CCCFE5',
+                                    },
+                                    '& label': {
+                                        color: '#9398C2',
+                                    },
                                 }}
                             />
                         );

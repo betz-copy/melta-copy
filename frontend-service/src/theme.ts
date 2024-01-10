@@ -13,19 +13,13 @@ export const lightTheme = createTheme({
         mode: 'light',
         primary: { main: '#1E2775' },
     },
+    typography: {
+        fontFamily: 'Rubik',
+    },
     components: {
-        // MuiInputBase: {
-        //     styleOverrides: {
-        //         input: {
-        //             backgroundColor: '#EBEFFA',
-        //         },
-        //         root: {
-        //             backgroundColor: '#EBEFFA',
-        //         },
-        //     },
-        // },
         MuiCssBaseline: {
             styleOverrides: {
+                fontFamily: 'Rubik',
                 '::-webkit-scrollbar': { background: 'transparent', width: 6, height: 6 },
                 '::-webkit-scrollbar-thumb': { background: 'gray', borderRadius: 20 },
                 '::-webkit-scrollbar-track': { background: 'lightgray', borderRadius: 20 },
@@ -34,6 +28,8 @@ export const lightTheme = createTheme({
                     '--ag-background-color': '#FFF !important',
                     '--ag-row-hover-color': '#EBEFFA !important',
                     '--ag-foreground-color': '#53566E !important',
+                    '--ag-row-border-style': 'none',
+                    '--ag-border-style': 'none',
 
                     '--ag-header-foreground-color': '#101440 !important',
                     '--ag-header-cell-hover-background-color': '#EBEFFA !important',

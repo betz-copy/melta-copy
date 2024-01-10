@@ -37,7 +37,7 @@ const AddEntityButton: React.FC<{
                         isOpen: false,
                     })
                 }
-                initalStep={addEntityWizardState.initialStep}
+                initalStep={0}
                 initialValues={addEntityWizardState.initialValues}
             />
         </>
