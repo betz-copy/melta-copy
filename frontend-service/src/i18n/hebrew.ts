@@ -107,6 +107,7 @@ export default {
         disabledEntity: 'לא פעיל',
         activeEntity: ' פעיל',
         preview: 'תצוגה מקדימה אינה זמינה',
+        fileDownloadError: 'נכשל להוריד קובץ, נסה שנית או פנה לתמיכה',
     },
     addRelationshipDialog: {
         title: 'הוסף קשר',

@@ -2,6 +2,8 @@ import React from 'react';
 import { IconButton } from '@mui/material';
 import { FileDownload as FileDownloadIcon } from '@mui/icons-material';
 import Downloader from 'js-file-downloader';
+import { toast } from 'react-toastify';
+import i18next from 'i18next';
 import { getFileName } from '../utils/getFileName';
 import { environment } from '../globals';
 
@@ -12,11 +14,16 @@ const DownloadButton: React.FC<{ fileId: string }> = ({ fileId }) => {
         <IconButton
             onClick={async (event) => {
                 event.stopPropagation();
-                new Downloader({
-                    url: `/api${environment.api.storage}/${fileId}`,
-                    filename: fileName,
-                    withCredentials: true,
-                });
+                try {
+                    await new Downloader({
+                        url: `/api${environment.api.storage}/${fileId}`,
+                        filename: fileName,
+                        withCredentials: true,
+                    });
+                } catch (error) {
+                    console.error('Download error:', error);
+                    toast.error(i18next.t('errorPage.fileDownloadError'));
+                }
             }}
             sx={{ color: 'white' }}
         >
