@@ -95,7 +95,7 @@ const InstancesPermissionsCard: React.FC<{
                                         size="small"
                                         checked={permissionType.read.checked}
                                         onChange={permissionType.read.onChange}
-                                        disabled={disabled}
+                                        disabled={disabled || permissionType.write.checked}
                                     />
                                 )}
                             </Grid>
