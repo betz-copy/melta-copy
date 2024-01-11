@@ -7,7 +7,7 @@ import {
     deletePermission,
     deletePermissionsUnderCategory,
     updatePermission,
-} from '../../externalServices/permissionsApi';
+} from '../../externalServices/permissionsService';
 import { IPermissionsOfUser, IPermission as IPermissionPopulated } from './interfaces';
 import UsersManager from '../users/manager';
 import config from '../../config';

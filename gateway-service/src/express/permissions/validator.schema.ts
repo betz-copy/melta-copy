@@ -1,5 +1,5 @@
 import Joi from 'joi';
-import { resourceTypeOptions, scopeOptions } from '../../externalServices/permissionsApi';
+import { resourceTypeOptions, scopeOptions } from '../../externalServices/permissionsService';
 
 const MongoIdSchema = Joi.string().regex(/^[0-9a-fA-F]{24}$/, 'valid MongoId');
 

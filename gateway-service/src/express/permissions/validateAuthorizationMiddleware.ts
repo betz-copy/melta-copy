@@ -1,5 +1,5 @@
 import { Request } from 'express';
-import { checkUserAuthorization, getPermissions, ResourceType } from '../../externalServices/permissionsApi';
+import { checkUserAuthorization, getPermissions, ResourceType } from '../../externalServices/permissionsService';
 import { ServiceError } from '../error';
 import { RequestWithPermissionsOfUserId } from '../instances/middlewares';
 import PermissionsManager from './manager';

@@ -1,10 +1,10 @@
 import { Request } from 'express';
 import lodashUniqby from 'lodash.uniqby';
-import { EntityTemplateManagerService } from '../../externalServices/entityTemplateManager';
-import { IRelationship } from '../../externalServices/instanceManager/interfaces/relationships';
-import { InstanceManagerService } from '../../externalServices/instanceManager';
-import { getPermissions, isRuleManager } from '../../externalServices/permissionsApi';
-import { RelationshipsTemplateManagerService } from '../../externalServices/relationshipsTemplateManager';
+import { EntityTemplateManagerService } from '../../externalServices/entityTemplateService';
+import { IRelationship } from '../../externalServices/instanceService/interfaces/relationships';
+import { InstanceManagerService } from '../../externalServices/instanceService';
+import { getPermissions, isRuleManager } from '../../externalServices/permissionsService';
+import { RelationshipsTemplateManagerService } from '../../externalServices/relationshipsTemplateService';
 import { ServiceError } from '../error';
 import { IPermissionsOfUser, Scope } from '../permissions/interfaces';
 import PermissionsManager from '../permissions/manager';

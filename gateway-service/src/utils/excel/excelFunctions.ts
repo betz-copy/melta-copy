@@ -1,8 +1,8 @@
 /* eslint-disable no-param-reassign */
 import Excel from 'exceljs';
 import { v4 as uuidv4 } from 'uuid';
-import { IEntityTemplatePopulated } from '../../externalServices/entityTemplateManager';
-import { IEntity } from '../../externalServices/instanceManager/interfaces/entities';
+import { IEntityTemplatePopulated } from '../../externalServices/entityTemplateService';
+import { IEntity } from '../../externalServices/instanceService/interfaces/entities';
 import config from '../../config/index';
 import { excelConfig } from './excelConfig';
 

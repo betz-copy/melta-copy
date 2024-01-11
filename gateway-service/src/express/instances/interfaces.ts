@@ -1,5 +1,5 @@
-import { IEntity, ISearchFilter, ISearchSort } from '../../externalServices/instanceManager/interfaces/entities';
-import { IRelationship } from '../../externalServices/instanceManager/interfaces/relationships';
+import { IEntity, ISearchFilter, ISearchSort } from '../../externalServices/instanceService/interfaces/entities';
+import { IRelationship } from '../../externalServices/instanceService/interfaces/relationships';
 
 export interface IRelationshipPopulated extends Omit<IRelationship, 'sourceEntityId' | 'destinationEntityId'> {
     sourceEntity: IEntity;

@@ -3,7 +3,7 @@ import {
     IEntityTemplatePopulated,
     IMongoEntityTemplate,
     IMongoEntityTemplatePopulated,
-} from '../../externalServices/entityTemplateManager';
+} from '../../externalServices/entityTemplateService';
 
 export interface IEntityTemplateWithConstraints extends IEntityTemplate {
     uniqueConstraints: string[][];
