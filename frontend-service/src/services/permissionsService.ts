@@ -31,36 +31,28 @@ export interface IPermissionsOfUser {
     instancesPermissions: Pick<IPermission, '_id' | 'category' | 'scopes'>[];
 }
 
-const getMyPermissionsRequest = async () => {
+export const getMyPermissionsRequest = async () => {
     const { data } = await axios.get<IPermissionsOfUser>(`${permissions}/my`);
     return data;
 };
 
-const getAllPermissionsOfUsersRequest = async () => {
+export const getAllPermissionsOfUsersRequest = async () => {
     const { data } = await axios.get<IPermissionsOfUser[]>(permissions);
     return data;
 };
 
-const createPermissionsBulkRequest = async (permissionsToCreate: Omit<IPermission, '_id'>[]) => {
+export const createPermissionsBulkRequest = async (permissionsToCreate: Omit<IPermission, '_id'>[]) => {
     const { data } = await axios.post<IPermission[]>(`${permissions}/bulk`, permissionsToCreate);
     return data;
 };
 
-const updatePermissionsBulkRequest = async (permission: IPermission[]) => {
+export const updatePermissionsBulkRequest = async (permission: IPermission[]) => {
     const { data } = await axios.put<IPermission[]>(`${permissions}/bulk`, permission);
 
     return data;
 };
 
-const deletePermissionsBulkRequest = async (ids: string[]) => {
+export const deletePermissionsBulkRequest = async (ids: string[]) => {
     const { data } = await axios.delete<IPermission[]>(permissions, { params: { ids } });
     return data;
-};
-
-export {
-    getMyPermissionsRequest,
-    getAllPermissionsOfUsersRequest,
-    deletePermissionsBulkRequest,
-    createPermissionsBulkRequest,
-    updatePermissionsBulkRequest,
 };

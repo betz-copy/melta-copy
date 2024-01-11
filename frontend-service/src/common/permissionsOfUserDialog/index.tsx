@@ -24,9 +24,9 @@ import ManagementPermissionsCard from './managementPermissionsCard';
 import InstancesPermissionsCard from './instancesPermissionsCard';
 import { RootState } from '../../store';
 import {
-    getUserCanReadInstanceOfCategory,
-    getUserCanWriteInstanceOfCategory,
-    getUserPermissionTypeToCategory,
+    canUserReadInstanceOfCategory,
+    canUserWriteInstanceOfCategory,
+    getUserPermissionScopeOfCategory,
 } from '../../utils/permissions/instancePermissions';
 import { IFormPermissionsOfUser } from './permissionsTypes';
 import {
@@ -280,13 +280,13 @@ const PermissionsOfUserDialog: React.FC<{
                                         categoryId: currCategory._id,
                                         categoryDisplayName: currCategory.displayName,
                                         disabled: formikProps.isSubmitting,
-                                        scope: getUserPermissionTypeToCategory(
+                                        scope: getUserPermissionScopeOfCategory(
                                             formikProps.values.instancesPermissions as IPermissionsOfUser['instancesPermissions'],
                                             currCategory._id,
                                         ),
                                         permissionType: {
                                             read: {
-                                                checked: getUserCanReadInstanceOfCategory(
+                                                checked: canUserReadInstanceOfCategory(
                                                     formikProps.values.instancesPermissions as IPermissionsOfUser['instancesPermissions'],
                                                     currCategory,
                                                 ),
@@ -310,7 +310,7 @@ const PermissionsOfUserDialog: React.FC<{
                                                           },
                                             },
                                             write: {
-                                                checked: getUserCanWriteInstanceOfCategory(
+                                                checked: canUserWriteInstanceOfCategory(
                                                     formikProps.values.instancesPermissions as IPermissionsOfUser['instancesPermissions'],
                                                     currCategory,
                                                 ),

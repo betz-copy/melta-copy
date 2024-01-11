@@ -19,7 +19,7 @@ import { IEntity } from '../../interfaces/entities';
 import { environment } from '../../globals';
 import { filterModelToFilterOfTemplate, sortModelToSortOfSearchRequest } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
 import { IPermissionsOfUser } from '../../services/permissionsService';
-import { getUserCanWriteInstanceOfCategory } from '../../utils/permissions/instancePermissions';
+import { canUserWriteInstanceOfCategory } from '../../utils/permissions/instancePermissions';
 
 const { expandedRowCount } = environment.agGrid;
 
@@ -78,7 +78,7 @@ const TemplateTable = forwardRef<
     const [isExpand, setIsExpand] = useState(false);
     const queryClient = useQueryClient();
     const { instancesPermissions } = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
-    const userHasWritePermissions = getUserCanWriteInstanceOfCategory(instancesPermissions, template.category);
+    const userHasWritePermissions = canUserWriteInstanceOfCategory(instancesPermissions, template.category);
     return (
         <Grid container>
             <Grid container paddingLeft={3} justifyContent="space-between" width="100%">

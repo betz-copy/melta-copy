@@ -1,12 +1,10 @@
 import React from 'react';
-import { Card, CardContent, Typography, Grid, Checkbox, Divider, CardHeader, CheckboxProps, FormControlLabel } from '@mui/material';
+import { Card, CardContent, Typography, Grid, Checkbox, Divider, CheckboxProps, FormControlLabel } from '@mui/material';
 import { useSelector } from 'react-redux';
 import i18next from 'i18next';
 import { RootState } from '../../store';
 import { Scope } from '../../services/permissionsService';
 import PermissionViewIcon from './PermissionViewIcon';
-
-// import PermissionViewIcon from './PermissionViewIcon';
 
 type checkboxControlProps = {
     onChange: CheckboxProps['onChange'];

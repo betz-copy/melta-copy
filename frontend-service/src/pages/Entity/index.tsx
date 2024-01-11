@@ -25,7 +25,7 @@ import { BlueTitle } from '../../common/BlueTitle';
 import { ResetFilterButton } from '../../common/EntitiesPage/ResetFilterButton';
 import { EntityTopBar } from './components/TopBar';
 import { getOppositeEntityTemplate, isRelationshipConnectedToEntityTemplate, populateRelationshipTemplate } from '../../utils/templates';
-import { getUserCanWriteInstanceOfCategory } from '../../utils/permissions/instancePermissions';
+import { canUserWriteInstanceOfCategory } from '../../utils/permissions/instancePermissions';
 
 export const getButtonState = (
     isEntityDisabled: boolean,
@@ -97,7 +97,7 @@ const Entity: React.FC = () => {
     const isEntityDisabled = expandedEntity.entity.properties.disabled;
     const currentEntityTemplate = entityTemplates.get(expandedEntity.entity.templateId)!;
 
-    const hasWritePermissionToCurrCategory = getUserCanWriteInstanceOfCategory(instancesPermissions, currentEntityTemplate.category);
+    const hasWritePermissionToCurrCategory = canUserWriteInstanceOfCategory(instancesPermissions, currentEntityTemplate.category);
     const relevantRelationshipTemplates = Array.from(relationshipTemplates.values(), (currRelationshipTemplate) =>
         populateRelationshipTemplate(currRelationshipTemplate, entityTemplates),
     ).filter((currRelationshipTemplatePopulated) =>

@@ -30,7 +30,7 @@ import { EntityDates } from './EntityDates';
 import { RootState } from '../../../store';
 import { IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
 import UpdateStatusWithRuleBreachDialog from './UpdateStatusWithRuleBreachDialog';
-import { getUserCanWriteInstanceOfCategory } from '../../../utils/permissions/instancePermissions';
+import { canUserWriteInstanceOfCategory } from '../../../utils/permissions/instancePermissions';
 
 const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; expandedEntity: IEntityExpanded }> = ({
     entityTemplate,
@@ -134,7 +134,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
         );
     }
 
-    const canWriteInstance = getUserCanWriteInstanceOfCategory(myPermissions.instancesPermissions, entityTemplate.category);
+    const canWriteInstance = canUserWriteInstanceOfCategory(myPermissions.instancesPermissions, entityTemplate.category);
     // const hasPermissionToCategory = Boolean(myPermissions.instancesPermissions.find((instance) => instance.category === entityTemplate.category._id));
     const isEntityDisabled = expandedEntity.entity.properties.disabled;
 

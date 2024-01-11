@@ -8,7 +8,7 @@ import { EntityWizardValues } from './index';
 import { StepComponentProps } from '../index';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IPermissionsOfUser } from '../../../services/permissionsService';
-import { getUserCanWriteInstanceOfCategory } from '../../../utils/permissions/instancePermissions';
+import { canUserWriteInstanceOfCategory } from '../../../utils/permissions/instancePermissions';
 
 const chooseTemplateSchema = {
     template: Yup.object({
@@ -30,11 +30,11 @@ const ChooseTemplate: React.FC<StepComponentProps<EntityWizardValues>> = ({ valu
 
     if (categoryId) {
         entityTemplatesFilteredByCategory = Array.from(entityTemplates.values()).filter((entity) => {
-            return entity.category._id === categoryId && getUserCanWriteInstanceOfCategory(myPermissions.instancesPermissions, entity.category);
+            return entity.category._id === categoryId && canUserWriteInstanceOfCategory(myPermissions.instancesPermissions, entity.category);
         });
     } else {
         entityTemplatesFilteredByCategory = Array.from(entityTemplates.values()).filter((entity) => {
-            return getUserCanWriteInstanceOfCategory(myPermissions.instancesPermissions, entity.category);
+            return canUserWriteInstanceOfCategory(myPermissions.instancesPermissions, entity.category);
         });
     }
 
