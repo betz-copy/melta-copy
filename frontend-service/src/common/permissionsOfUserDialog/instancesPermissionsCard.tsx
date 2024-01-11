@@ -35,21 +35,21 @@ const InstancesPermissionsCard: React.FC<{
     const bgcolor = darkMode ? '#242424' : 'white';
 
     return (
-        <Card variant="outlined" sx={{ bgcolor, overflowY: 'auto', maxHeight: 450 }}>
-            <CardHeader
-                title={i18next.t('permissions.permissionsOfUserDialog.instancesPermissions')}
-                titleTypographyProps={{ fontWeight: 'bold', cursor: 'default', fontSize: '1rem' }}
-                sx={{ bgcolor }}
-            />
+        <Card variant="outlined" sx={{ bgcolor, overflowY: 'auto', maxHeight: 500 }}>
             <CardContent>
                 <Grid container spacing={2}>
-                    <Grid container spacing={2} sx={{ position: 'sticky', top: 0, zIndex: 2, bgcolor }}>
+                    <Grid container sx={{ position: 'sticky', top: 0, zIndex: 2, bgcolor }}>
+                        <Grid item xs={12}>
+                            <Typography sx={{ padding: 2 }} fontWeight="bold">
+                                {i18next.t('permissions.permissionsOfUserDialog.instancesPermissions')}
+                            </Typography>
+                        </Grid>
                         <Grid item xs={6}>
                             <Typography sx={{ paddingLeft: 2 }} fontWeight="bold">
                                 {i18next.t('category')}
                             </Typography>
                         </Grid>
-                        <Grid item xs={3}>
+                        <Grid item xs={3} paddingLeft={2}>
                             <Typography fontWeight="bold">{i18next.t('permissions.permissionsOfUserDialog.read')}</Typography>
                             {!viewMode && (
                                 <FormControlLabel
@@ -65,7 +65,7 @@ const InstancesPermissionsCard: React.FC<{
                                 />
                             )}
                         </Grid>
-                        <Grid item xs={3}>
+                        <Grid item xs={3} paddingLeft={2}>
                             <Typography fontWeight="bold">{i18next.t('permissions.permissionsOfUserDialog.write')}</Typography>
                             {!viewMode && (
                                 <FormControlLabel
