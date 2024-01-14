@@ -39,6 +39,12 @@ export const createPermission = async (permission: Omit<IPermission, '_id'>) => 
     return data;
 };
 
+export const updatePermission = async (id: string, permission: Pick<IPermission, 'resourceType' | 'scopes'>) => {
+    const { data } = await permissionsAxios.put<IPermission>(`${permissionApi.baseRoute}/${id}`, permission);
+
+    return data;
+};
+
 export const deletePermission = async (id: string) => {
     const { data } = await permissionsAxios.delete<IPermission>(`${permissionApi.baseRoute}/${id}`);
 

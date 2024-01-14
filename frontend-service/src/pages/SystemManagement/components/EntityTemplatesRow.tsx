@@ -1,7 +1,7 @@
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 import React, { useEffect, useRef, useState } from 'react';
 import { Grid, IconButton, Tooltip, Typography, tooltipClasses } from '@mui/material';
-import { AppRegistration as AppRegistrationIcon, AddCircle as AddIcon } from '@mui/icons-material';
+import { AppRegistration as AppRegistrationIcon } from '@mui/icons-material';
 import { UseMutateAsyncFunction, useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
@@ -497,6 +497,7 @@ const EntityTemplatesRow: React.FC = () => {
                         getOptionId={(category) => category._id}
                         getOptionLabel={(category) => category.displayName}
                         size="small"
+                        isDraggableDisabled
                     />
                 </Grid>
                 <Grid item>

@@ -105,9 +105,10 @@ export default {
         backToHome: 'לחזרה לעמוד הבית',
         systemUnavailable: 'המערכת לא זמינה כרגע',
         noPermissions: 'אין לך הרשאות לגשת לעמוד זה',
-        disabledEntity: 'לא פעיל',
+        disabledEntity: 'ישות לא פעילה',
         activeEntity: ' פעיל',
         preview: 'תצוגה מקדימה אינה זמינה',
+        fileDownloadError: 'נכשל להוריד קובץ, נסה שנית או פנה לתמיכה',
     },
     addRelationshipDialog: {
         title: 'הוסף קשר',
@@ -222,7 +223,9 @@ export default {
         succeededToDeleteUser: 'נמחק הרשאות של משתמש בהצלחה',
         failedToLoadAllPermissions: 'נכשל לטעון את כל ההרשאות',
         dontHavePermissionsToCategory: 'אין הרשאות לקטגוריה',
+        dontHaveWritePermissionsToCategory: 'אין הרשאות עריכה לקטגוריה',
         dontHavePermissionToEntityPage: 'אין לך הרשאות לגשת לעמוד פרט של ישות זו',
+        dontHaveWritePermissions: 'אין לך הרשאות עריכה',
         permissionsOfUserDialog: {
             readTitle: 'ההרשאות שלי',
             createTitle: 'הוסף משתמש',
@@ -243,6 +246,8 @@ export default {
             instancesPermissions: 'הרשאות על קטגוריות',
             allCategories: 'הכל',
             chooseAll: 'סמן הכל',
+            read: 'קריאה',
+            write: 'עריכה',
         },
     },
     entitiesCardView: {

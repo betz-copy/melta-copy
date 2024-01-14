@@ -4,7 +4,7 @@ import { IMongoProcessInstanceWithSteps, IProcessInstance, ISearchProcessInstanc
 import { IMongoProcessTemplateWithSteps, IProcessTemplateWithSteps, ISearchProcessTemplatesBody } from './interfaces/processTemplate';
 import { IMongoStepInstance, UpdateStepReqBody } from './interfaces/stepInstance';
 import { IMongoStepTemplate } from './interfaces/stepTemplate';
-import { isProcessManager } from '../permissionsApi';
+import { isProcessManager } from '../permissionsService';
 import { NotFoundError } from '../../express/processes/error';
 
 const {
@@ -124,10 +124,10 @@ export class ProcessManagerService {
         return data;
     }
 
-    static async updateStepInstance(id: string, updatedStep: UpdateStepReqBody) {
+    static async updateStepInstance(id: string, stepStatus: UpdateStepReqBody) {
         const { data } = await ProcessManagerService.processServiceManagerApi.patch<IMongoStepInstance>(
             `${instancesBaseRoute}/steps/${id}`,
-            updatedStep,
+            stepStatus,
         );
         return data;
     }

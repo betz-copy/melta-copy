@@ -2,7 +2,7 @@ import React, { forwardRef, useImperativeHandle, useRef, useState } from 'react'
 import { Grid, Box, CircularProgress, Dialog, Icon } from '@mui/material';
 import { ExpandLess, ExpandMore, AddCircle, VerticalAlignBottomOutlined as DownloadIcon } from '@mui/icons-material';
 import i18next from 'i18next';
-import { useMutation } from 'react-query';
+import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import fileDownload from 'js-file-download';
 import { GridApi, IServerSideGetRowsRequest } from '@ag-grid-community/core';
@@ -20,6 +20,8 @@ import { environment } from '../../globals';
 import { filterModelToFilterOfTemplate, sortModelToSortOfSearchRequest } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
 import { lightTheme } from '../../theme';
 import { getEntityTemplateColor } from '../../utils/colors';
+import { IPermissionsOfUser } from '../../services/permissionsService';
+import { canUserWriteInstanceOfCategory } from '../../utils/permissions/instancePermissions';
 
 const { expandedRowCount } = environment.agGrid;
 
@@ -79,6 +81,9 @@ const TemplateTable = forwardRef<
 
     const entityTemplateColor = getEntityTemplateColor(template);
 
+    const queryClient = useQueryClient();
+    const { instancesPermissions } = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
+    const userHasWritePermissions = canUserWriteInstanceOfCategory(instancesPermissions, template.category);
     return (
         <Grid container minWidth="fit-content">
             <Grid container justifyContent="space-between" width="fit-content" minWidth="fit-content">
@@ -105,35 +110,6 @@ const TemplateTable = forwardRef<
                             component="h5"
                             variant="h5"
                         />
-                    </Grid>
-                </Grid>
-                <Grid>
-                    <Grid item>
-                        {/* <IconButtonWithPopover
-                            popoverText={isExpand ? i18next.t('entitiesTableOfTemplate.expandLess') : i18next.t('entitiesTableOfTemplate.expandMore')}
-                            iconButtonProps={{
-                                onClick: () => {
-                                    setIsExpand(!isExpand);
-                                },
-                                size: 'medium',
-                            }}
-                        >
-                            {isExpand ? <ExpandLess color="primary" fontSize="large" /> : <ExpandMore color="primary" fontSize="large" />}
-                        </IconButtonWithPopover> */}
-                        {/* <ResetFilterButton entitiesTableRef={entitiesTableRef} disableButton={!isFiltered} /> */}
-                        {/* <IconButtonWithPopover
-                            popoverText={i18next.t('entitiesTableOfTemplate.downloadOneTable')}
-                            iconButtonProps={{ onClick: () => exportTemplateToExcel(), size: 'medium' }}
-                        >
-                            {isExportingTableToExcelFile ? <CircularProgress size="24px" /> : <DownloadIcon color="primary" fontSize="medium" />}
-                        </IconButtonWithPopover> */}
-                        {/* <AddEntityButton
-                            initialStep={1}
-                            disabled={template.disabled}
-                            initialValues={{ template, properties: { disabled: false }, attachmentsProperties: {} }}
-                        >
-                            <AddCircle color={!template.disabled ? 'primary' : 'disabled'} fontSize="large" data-tour="create-entity" />
-                        </AddEntityButton> */}
                     </Grid>
                 </Grid>
             </Grid>
@@ -188,8 +164,15 @@ const TemplateTable = forwardRef<
                     rowHeight={50}
                     pageRowCount={isExpand ? expandedRowCount : undefined}
                     fontSize="16px"
-                    minColumnWidth={200}
-                    filterStorageProps={{ shouldSaveFilter: true, pageType: page }}
+                    saveStorageProps={{
+                        shouldSaveFilter: true,
+                        shouldSaveWidth: true,
+                        shouldSaveVisibleColumns: true,
+                        shouldSaveSorting: true,
+                        shouldSaveColumnOrder: true,
+                        shouldSavePagination: true,
+                        pageType: page,
+                    }}
                     editRowButtonProps={{
                         onClick: (currEntity) => {
                             setEditDialog({
@@ -197,6 +180,10 @@ const TemplateTable = forwardRef<
                                 entity: currEntity,
                             });
                         },
+                        popoverText: i18next.t(
+                            !userHasWritePermissions ? 'permissions.dontHaveWritePermissions' : 'entitiesTableOfTemplate.editEntity',
+                        ),
+                        disabledButton: !userHasWritePermissions,
                     }}
                     onFilter={() => {
                         setIsFiltered(entitiesTableRef.current?.isFiltered() ?? false);

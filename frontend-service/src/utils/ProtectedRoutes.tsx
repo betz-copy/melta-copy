@@ -50,6 +50,7 @@ export const EntityProtectedRoute: React.FC<{ permissions: IPermissionsOfUser; e
     );
 
     if (isLoading) return <CircularProgress />;
+
     const currentEntityTemplate = entityTemplates.get(expandedEntity!.entity.templateId);
 
     return protectedRoute(children, !permissions.instancesPermissions.find((instance) => instance.category === currentEntityTemplate?.category._id));

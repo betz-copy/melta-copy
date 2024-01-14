@@ -1,6 +1,6 @@
-import React, { useState, forwardRef, useImperativeHandle, useRef } from 'react';
+import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import _isEqual from 'lodash.isequal';
-import { CircularProgress, Divider, Grid, Pagination, Typography } from '@mui/material';
+import { CircularProgress, Grid, Typography } from '@mui/material';
 import { useQuery } from 'react-query';
 import pLimit from 'p-limit';
 import { useTour } from '@reactour/tour';
@@ -9,7 +9,9 @@ import { toast } from 'react-toastify';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { TemplateTable, TemplateTableRef } from './TemplateTable';
 import { searchEntitiesOfTemplateRequest } from '../../services/entitiesService';
+import { environment } from '../../globals';
 
+const { tablesPerLoadingChunkSize } = environment.ganttSettings;
 type TemplateTablesViewResultsRef = {
     templateTablesRefs: Record<string, TemplateTableRef>;
 };
@@ -22,29 +24,46 @@ const TemplateTablesViewResults = forwardRef<
         pageSize?: number;
         pageType: string;
     }
->(({ templates, searchInput, pageSize = 10, pageType }, ref) => {
-    const [currPage, setCurrPage] = useState(1);
-    const countOfPages = Math.ceil(templates.length / pageSize);
-
-    const startOfPageIndex = (currPage - 1) * pageSize;
-    const templatesOfPage = templates.slice(startOfPageIndex, startOfPageIndex + pageSize);
-
+>(({ templates, searchInput, pageType }, ref) => {
     const templateTablesRefs = useRef<Record<string, TemplateTableRef>>({});
+    const [visibleTemplatesCount, setVisibleTemplatesCount] = useState(tablesPerLoadingChunkSize);
+    const loaderRef = useRef(null);
 
     useImperativeHandle(ref, () => ({
         templateTablesRefs: templateTablesRefs.current,
     }));
+
+    useEffect(() => {
+        const observer = new IntersectionObserver((entries) => {
+            const first = entries[0];
+            if (first.isIntersecting) {
+                setVisibleTemplatesCount((prevCount) => prevCount + tablesPerLoadingChunkSize);
+            }
+        });
+
+        const currentLoader = loaderRef.current;
+        if (currentLoader) {
+            observer.observe(currentLoader);
+        }
+
+        return () => {
+            if (currentLoader) {
+                observer.unobserve(currentLoader);
+            }
+        };
+    }, []);
+
     return (
         <Grid container direction="column" spacing={1}>
-            {templatesOfPage.map((template) => (
+            {templates.slice(0, visibleTemplatesCount).map((template) => (
                 <Grid item key={template._id}>
                     <TemplateTable
                         ref={(el) => {
                             if (el) {
                                 templateTablesRefs.current[template._id] = el;
-                                return;
+                            } else {
+                                delete templateTablesRefs.current[template._id];
                             }
-                            delete templateTablesRefs.current[template._id];
                         }}
                         template={template}
                         quickFilterText={searchInput}
@@ -52,19 +71,11 @@ const TemplateTablesViewResults = forwardRef<
                     />
                 </Grid>
             ))}
-            <Grid item>
-                <Divider />
-            </Grid>
-            <Grid item alignSelf="center" margin={2}>
-                <Pagination
-                    page={currPage}
-                    onChange={(_e, page) => setCurrPage(page)}
-                    count={countOfPages}
-                    size="large"
-                    showFirstButton
-                    showLastButton
-                />
-            </Grid>
+            {visibleTemplatesCount < templates.length && (
+                <Grid item container justifyContent="center" ref={loaderRef}>
+                    <CircularProgress />
+                </Grid>
+            )}
         </Grid>
     );
 });

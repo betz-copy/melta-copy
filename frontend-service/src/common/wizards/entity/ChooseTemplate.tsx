@@ -8,6 +8,7 @@ import { EntityWizardValues } from './index';
 import { StepComponentProps } from '../index';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IPermissionsOfUser } from '../../../services/permissionsService';
+import { canUserWriteInstanceOfCategory } from '../../../utils/permissions/instancePermissions';
 
 const chooseTemplateSchema = Yup.object({
     template: Yup.object({
@@ -19,19 +20,22 @@ const chooseTemplateSchema = Yup.object({
 
 const ChooseTemplate: React.FC<StepComponentProps<EntityWizardValues>> = ({ values, touched, errors, setFieldValue }) => {
     const param = useParams();
-    const { categoryId } = param; // assuming if in category page
+    const { categoryId } = param;
     const queryClient = useQueryClient();
 
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
 
-    let entityTemplatesFilteredByCategory: IMongoEntityTemplatePopulated[];
+    let entityTemplatesFilteredByCategory: IMongoEntityTemplatePopulated[] = [];
+
     if (categoryId) {
-        entityTemplatesFilteredByCategory = Array.from(entityTemplates.values()).filter((entity) => entity.category._id === categoryId);
+        entityTemplatesFilteredByCategory = Array.from(entityTemplates.values()).filter((entity) => {
+            return entity.category._id === categoryId && canUserWriteInstanceOfCategory(myPermissions.instancesPermissions, entity.category);
+        });
     } else {
-        entityTemplatesFilteredByCategory = Array.from(entityTemplates.values()).filter((entity) =>
-            myPermissions.instancesPermissions.some(({ category }) => category === entity.category._id),
-        );
+        entityTemplatesFilteredByCategory = Array.from(entityTemplates.values()).filter((entity) => {
+            return canUserWriteInstanceOfCategory(myPermissions.instancesPermissions, entity.category);
+        });
     }
 
     const activeEntityTemplatesFiltered = entityTemplatesFilteredByCategory.filter((entity) => !entity.disabled);

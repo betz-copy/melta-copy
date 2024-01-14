@@ -1,6 +1,13 @@
 import React, { useState } from 'react';
-import { Grid, Card, CardContent, IconButton, Menu, Tooltip, Box, tooltipClasses } from '@mui/material';
-import { Delete as DeleteIcon, ContentCopy as DuplicateIcon, MoreVertOutlined, DoDisturbAlt } from '@mui/icons-material';
+import { Tooltip, tooltipClasses, Grid, Card, CardContent, IconButton, Menu, Box } from '@mui/material';
+import {
+    Delete as DeleteIcon,
+    ContentCopy as DuplicateIcon,
+    MoreVertOutlined,
+    DoDisturbAlt,
+    Edit as EditIcon,
+    AccountTreeOutlined as GraphIcon,
+} from '@mui/icons-material';
 import { useMutation, useQueryClient } from 'react-query';
 import i18next from 'i18next';
 import { toast } from 'react-toastify';
@@ -21,6 +28,8 @@ import { EntityDates } from './EntityDates';
 import { RootState } from '../../../store';
 import { IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
 import UpdateStatusWithRuleBreachDialog from './UpdateStatusWithRuleBreachDialog';
+import { canUserWriteInstanceOfCategory } from '../../../utils/permissions/instancePermissions';
+import TooltipMenuButton from './TooltipMenuButton';
 
 const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; expandedEntity: IEntityExpanded }> = ({
     entityTemplate,
@@ -123,7 +132,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
         );
     }
 
-    const hasPermissionToCategory = Boolean(myPermissions.instancesPermissions.find((instance) => instance.category === entityTemplate.category._id));
+    const canWriteInstance = canUserWriteInstanceOfCategory(myPermissions.instancesPermissions, entityTemplate.category);
     const isEntityDisabled = expandedEntity.entity.properties.disabled;
 
     return (
@@ -206,42 +215,70 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                                     <Grid>
                                         <MenuButton
                                             onClick={() => {
+                                                navigate(`/entity/${entity.properties._id}/graph`);
+                                                handleClose();
+                                            }}
+                                            text={i18next.t('actions.graph')}
+                                            icon={<GraphIcon color="action" />}
+                                        />
+                                    </Grid>
+
+                                    <TooltipMenuButton
+                                        tooltipTitle={
+                                            // eslint-disable-next-line no-nested-ternary
+                                            !canWriteInstance
+                                                ? i18next.t('permissions.dontHaveWritePermissionsToCategory')
+                                                : isEntityDisabled
+                                                ? i18next.t('entityPage.disabledEntity')
+                                                : ''
+                                        }
+                                        onClick={() => {
+                                            if (!canWriteInstance || isEntityDisabled) return;
+                                            setIsEditMode(true);
+                                            handleClose();
+                                        }}
+                                        disabled={!canWriteInstance || isEntityDisabled}
+                                        icon={EditIcon}
+                                        text={i18next.t('actions.edit')}
+                                    />
+
+                                    <TooltipMenuButton
+                                        tooltipTitle={!canWriteInstance ? i18next.t('permissions.dontHaveWritePermissionsToCategory') : ''}
+                                        onClick={() => {
+                                            if (canWriteInstance && !isEntityDisabled) {
                                                 navigate(`/entity/${entity.properties._id}/duplicate`, {
                                                     state: { entityTemplate, expandedEntity, currentEntityTemplate },
                                                 });
-                                                handleClose();
-                                            }}
-                                            text={i18next.t('actions.duplicate')}
-                                            icon={<DuplicateIcon color="action" />}
-                                        />
-                                    </Grid>
-                                    <Tooltip
-                                        arrow
-                                        title={i18next.t('permissions.dontHavePermissionsToCategory') as string}
-                                        disableHoverListener={hasPermissionToCategory}
-                                        placement="right"
-                                    >
-                                        <Grid>
-                                            <MenuButton
-                                                onClick={() => {
-                                                    setOpenDeleteDialog(true);
-                                                    handleClose();
-                                                }}
-                                                disabled={!hasPermissionToCategory}
-                                                text={i18next.t('actions.delete')}
-                                                icon={<DeleteIcon color="action" />}
-                                            />
-                                        </Grid>
-                                    </Tooltip>
-
-                                    <MenuButton
-                                        onClick={() => {
-                                            updateEntityStatus({ currEntity: entity, disabled: !entity.properties.disabled });
+                                            }
                                             handleClose();
                                         }}
-                                        disabled={!hasPermissionToCategory}
+                                        disabled={!canWriteInstance}
+                                        icon={DuplicateIcon}
+                                        text={i18next.t('actions.duplicate')}
+                                    />
+
+                                    <TooltipMenuButton
+                                        tooltipTitle={i18next.t('permissions.dontHaveWritePermissionsToCategory')}
+                                        onClick={() => {
+                                            setOpenDeleteDialog(true);
+                                            handleClose();
+                                        }}
+                                        disabled={!canWriteInstance}
+                                        icon={DeleteIcon}
+                                        text={i18next.t('actions.delete')}
+                                    />
+
+                                    <TooltipMenuButton
+                                        tooltipTitle={!canWriteInstance ? i18next.t('permissions.dontHaveWritePermissionsToCategory') : ''}
+                                        onClick={() => {
+                                            if (canWriteInstance) {
+                                                updateEntityStatus({ currEntity: entity, disabled: !entity.properties.disabled });
+                                            }
+                                            handleClose();
+                                        }}
+                                        disabled={!canWriteInstance}
+                                        icon={DoDisturbAlt}
                                         text={isEntityDisabled ? i18next.t('actions.activate') : i18next.t('actions.disable')}
-                                        icon={<DoDisturbAlt color="action" />}
                                     />
                                 </Menu>
                             </Grid>

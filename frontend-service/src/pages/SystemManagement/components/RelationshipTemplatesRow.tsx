@@ -192,6 +192,7 @@ const RelationshipTemplatesRow: React.FC = () => {
                             setSelectedTemplates={setSourceEntityTemplatesToShow}
                             categories={categoriesArray}
                             size="small"
+                            isDraggableDisabled
                         />
                     </Grid>
                     <Grid item>
@@ -202,6 +203,7 @@ const RelationshipTemplatesRow: React.FC = () => {
                             setSelectedTemplates={setDestinationEntityTemplatesToShow}
                             categories={categoriesArray}
                             size="small"
+                            isDraggableDisabled
                         />
                     </Grid>
                     <Grid item>
