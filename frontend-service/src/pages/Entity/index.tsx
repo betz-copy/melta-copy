@@ -265,8 +265,15 @@ const Entity: React.FC = () => {
                                                             )}
                                                             rowHeight={50}
                                                             fontSize="16px"
-                                                            minColumnWidth={200}
-                                                            filterStorageProps={{ shouldSaveFilter: true, pageType: `entity-${entityId}` }}
+                                                            saveStorageProps={{
+                                                                shouldSaveFilter: false,
+                                                                shouldSaveWidth: false,
+                                                                shouldSaveVisibleColumns: false,
+                                                                shouldSaveSorting: false,
+                                                                shouldSaveColumnOrder: false,
+                                                                shouldSavePagination: false,
+                                                                pageType: `entity-${entityId}`,
+                                                            }}
                                                             onFilter={() => setIsFiltered(entitiesTableRef.current?.isFiltered() ?? false)}
                                                             hasPermissionToCategory={Boolean(permissionToRelatedCategory)}
                                                         />

@@ -142,8 +142,15 @@ const TemplateTable = forwardRef<
                     rowHeight={50}
                     pageRowCount={isExpand ? expandedRowCount : undefined}
                     fontSize="16px"
-                    minColumnWidth={200}
-                    filterStorageProps={{ shouldSaveFilter: true, pageType: page }}
+                    saveStorageProps={{
+                        shouldSaveFilter: true,
+                        shouldSaveWidth: true,
+                        shouldSaveVisibleColumns: true,
+                        shouldSaveSorting: true,
+                        shouldSaveColumnOrder: true,
+                        shouldSavePagination: true,
+                        pageType: page,
+                    }}
                     editRowButtonProps={{
                         onClick: (currEntity) => {
                             setEditDialog({

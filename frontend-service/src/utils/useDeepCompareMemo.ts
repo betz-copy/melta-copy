@@ -1,0 +1,11 @@
+import { useRef, useMemo } from 'react';
+import { isEqual } from 'lodash';
+
+const useDeepCompareMemo = (value: () => any, dependencies: any[]) => {
+    const ref = useRef(dependencies);
+    if (!isEqual(dependencies, ref.current)) {
+        ref.current = dependencies;
+    }
+    return useMemo(value, ref.current);
+};
+export default useDeepCompareMemo;
