@@ -1,9 +1,12 @@
-import { Autocomplete, CircularProgress, Grid, Menu, MenuItem, TextField, ToggleButton, ToggleButtonGroup, Tooltip, Typography } from '@mui/material';
+import { Button, CircularProgress, Grid, Tab, Tabs, Tooltip, List } from '@mui/material';
 import i18next from 'i18next';
 import React, { CSSProperties, useState } from 'react';
 import { toast } from 'react-toastify';
 import { InfoOutlined as InfoIcon } from '@mui/icons-material';
 import { useMutation } from 'react-query';
+import { LoadingButton } from '@mui/lab';
+import BallotIcon from '@mui/icons-material/Ballot';
+import SmsIcon from '@mui/icons-material/Sms';
 import { environment } from '../../../globals';
 import { INotificationGroupCountDetails, INotificationPopulated } from '../../../interfaces/notifications';
 import { getMyNotificationsRequest, manyNotificationSeenRequest } from '../../../services/notificationService';
@@ -11,8 +14,6 @@ import { InfiniteScroll } from '../../InfiniteScroll';
 import PopperSidebar from '../../PopperSidebar';
 import { NotificationCard } from './NotificationCard';
 import { NotificationCount } from './NotificationCount';
-// import { SelectCheckbox } from '../../SelectCheckbox';
-import { LoadingButton } from '@mui/lab';
 
 const { infiniteScrollPageCount, groups } = environment.notifications;
 
@@ -72,7 +73,7 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
             side="right"
             sideMargin={sideBarWidth}
         >
-            <ToggleButtonGroup
+            {/* <ToggleButtonGroup
                 exclusive
                 value={selectedGroup}
                 onChange={(_event, newGroup) => {
@@ -104,7 +105,33 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                         </Grid>
                     </ToggleButton>
                 ))}
-            </ToggleButtonGroup>
+            </ToggleButtonGroup> */}
+            <Tabs
+                value={selectedGroup}
+                onChange={(_event, newGroup) => {
+                    if (!newGroup) return;
+                    setSelectedGroup(newGroup);
+                }}
+                sx={{ height: '3.5rem' }}
+            >
+                {groupNames.map((groupName, index) => (
+                    <Button
+                        key={groupName}
+                        value={groupName}
+                        onClick={(event) => {
+                            setSelectedGroup(groupName);
+                            // setTabOptionsAnchor(event.currentTarget);
+                            event.preventDefault();
+                        }}
+                        sx={{ width: '100%' }}
+                    >
+                        {index === 0 ? <SmsIcon /> : <BallotIcon />}
+                        <Tab label={i18next.t(`notifications.groups.${groupName}`)} />
+                        <NotificationCount notificationCount={notificationCountDetails.groups[groupName]} />
+                    </Button>
+                ))}
+            </Tabs>
+
             {/* 
             <SelectCheckbox
                 title="gjgjgj"
