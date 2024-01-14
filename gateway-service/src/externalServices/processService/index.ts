@@ -124,10 +124,10 @@ export class ProcessManagerService {
         return data;
     }
 
-    static async updateStepInstance(id: string, stepStatus: UpdateStepReqBody) {
+    static async updateStepInstance(id: string, updatedStep: UpdateStepReqBody) {
         const { data } = await ProcessManagerService.processServiceManagerApi.patch<IMongoStepInstance>(
             `${instancesBaseRoute}/steps/${id}`,
-            stepStatus,
+            updatedStep,
         );
         return data;
     }
