@@ -67,6 +67,7 @@ export const environment = {
         isSidebarOpenLocalStorageKey: 'isGanttSidebarOpen',
         ganttEntitiesChunkSize: 1000,
         groupByEntitiesChunkSize: 1000,
+        tablesPerLoadingChunkSize: 5,
         separators: {
             startEnd: ' 🡠 ',
             field: ' × ',

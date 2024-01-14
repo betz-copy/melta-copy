@@ -9,9 +9,9 @@ import { toast } from 'react-toastify';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { TemplateTable, TemplateTableRef } from './TemplateTable';
 import { searchEntitiesOfTemplateRequest } from '../../services/entitiesService';
+import { environment } from '../../globals';
 
-const CHUNK_SIZE = 5;
-
+const { tablesPerLoadingChunkSize } = environment.ganttSettings;
 type TemplateTablesViewResultsRef = {
     templateTablesRefs: Record<string, TemplateTableRef>;
 };
@@ -26,7 +26,7 @@ const TemplateTablesViewResults = forwardRef<
     }
 >(({ templates, searchInput, pageType }, ref) => {
     const templateTablesRefs = useRef<Record<string, TemplateTableRef>>({});
-    const [visibleTemplatesCount, setVisibleTemplatesCount] = useState(CHUNK_SIZE);
+    const [visibleTemplatesCount, setVisibleTemplatesCount] = useState(tablesPerLoadingChunkSize);
     const loaderRef = useRef(null);
 
     useImperativeHandle(ref, () => ({
@@ -37,7 +37,7 @@ const TemplateTablesViewResults = forwardRef<
         const observer = new IntersectionObserver((entries) => {
             const first = entries[0];
             if (first.isIntersecting) {
-                setVisibleTemplatesCount((prevCount) => prevCount + CHUNK_SIZE);
+                setVisibleTemplatesCount((prevCount) => prevCount + tablesPerLoadingChunkSize);
             }
         });
 

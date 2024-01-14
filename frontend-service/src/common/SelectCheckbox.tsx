@@ -196,7 +196,7 @@ const SelectOptionsMenuItemsGrouped = <Option extends any, Group extends any>({
                             setSelectedOptions={setSelectedOptions}
                             getOptionId={getOptionId}
                             getOptionLabel={getOptionLabel}
-                            isDraggableDisabled={!isDraggableDisabled}
+                            isDraggableDisabled={isDraggableDisabled}
                             setOptions={setOptions}
                             menuItemSx={{ padding: '8px 16px 8px 36px' }}
                         />
@@ -365,7 +365,7 @@ const SelectCheckbox = <Option extends any, Group extends any>({
                         getOptionId={getOptionId}
                         getOptionLabel={getOptionLabel}
                         groupsProps={{ ...groupsProps, groups: groupsFiltered! }}
-                        isDraggableDisabled={!isDraggableDisabled}
+                        isDraggableDisabled={isDraggableDisabled}
                         setOptions={setOptions}
                     />
                 ) : (

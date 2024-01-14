@@ -21,12 +21,7 @@ const Value: React.FC<{ hideValue: boolean; value: string; color?: string; isNum
     else innerContent = <>{value}</>;
 
     return (
-        <Grid
-            container
-            justifyContent="space-between"
-            alignItems="center"
-            direction={isNumberField ? 'row-reverse' : 'row'} 
-        >
+        <Grid container justifyContent="space-between" alignItems="center">
             <Grid
                 item
                 sx={{
@@ -37,6 +32,7 @@ const Value: React.FC<{ hideValue: boolean; value: string; color?: string; isNum
                     whiteSpace: 'nowrap',
                     textOverflow: 'ellipsis',
                     width: '70%',
+                    direction: isNumberField ? 'rtl' : undefined,
                 }}
             >
                 {innerContent}
@@ -44,9 +40,7 @@ const Value: React.FC<{ hideValue: boolean; value: string; color?: string; isNum
 
             {hideValue && (
                 <Grid item>
-                    <IconButton style={{ direction: 'ltr' }} onClick={handleClick}>
-                        {hideField ? <VisibilityOff /> : <Visibility />}
-                    </IconButton>
+                    <IconButton onClick={handleClick}>{hideField ? <VisibilityOff /> : <Visibility />}</IconButton>
                 </Grid>
             )}
         </Grid>

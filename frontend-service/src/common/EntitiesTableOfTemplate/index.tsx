@@ -1,9 +1,19 @@
-import React, { forwardRef, ForwardedRef, useImperativeHandle, useRef, useMemo, useState } from 'react';
+import React, { forwardRef, ForwardedRef, useImperativeHandle, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import sortBy from 'lodash.sortby';
 import { Box } from '@mui/material';
 import pickBy from 'lodash.pickby';
 import isEqual from 'lodash.isequal';
-import { ColDef, GridApi, IServerSideDatasource, IServerSideGetRowsParams, IServerSideGetRowsRequest } from '@ag-grid-community/core';
+import {
+    ColumnMovedEvent,
+    ColumnResizedEvent,
+    ColumnVisibleEvent,
+    GridApi,
+    IServerSideDatasource,
+    IServerSideGetRowsParams,
+    IServerSideGetRowsRequest,
+    PaginationChangedEvent,
+} from '@ag-grid-community/core';
 import { AgGridReact } from '@ag-grid-community/react';
 import '@noam7700/ag-grid-enterprise-core';
 import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
@@ -22,10 +32,11 @@ import { DateFilterComponent } from '../../utils/agGrid/DateFilterComponent';
 import { agGridToSearchEntitiesOfTemplateRequest } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
 import { IEntity } from '../../interfaces/entities';
 import { searchEntitiesOfTemplateRequest } from '../../services/entitiesService';
-import { getColumnDefs } from './getColumnDefs';
+import { IGetColumnDefsOptions, getColumnDefs } from './getColumnDefs';
 import { trycatch } from '../../utils/trycatch';
 import { LocalStorage } from '../../utils/localStorage';
 import { environment } from '../../globals';
+import useDeepCompareMemo from '../../utils/useDeepCompareMemo';
 
 const { rowCount } = environment.agGrid;
 
@@ -118,9 +129,16 @@ export type EntitiesTableOfTemplateProps<Data> = {
     rowHeight: number;
     pageRowCount?: number;
     fontSize: React.CSSProperties['fontSize'];
-    minColumnWidth: number;
     hideNonPreview?: boolean;
-    filterStorageProps: { shouldSaveFilter: boolean; pageType?: string };
+    saveStorageProps: {
+        shouldSaveFilter: boolean;
+        shouldSaveWidth: boolean;
+        shouldSaveVisibleColumns: boolean;
+        shouldSaveSorting: boolean;
+        shouldSaveColumnOrder: boolean;
+        shouldSavePagination: boolean;
+        pageType?: string;
+    };
     onFilter?: () => void;
 };
 
@@ -153,35 +171,31 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             pageRowCount = rowCount,
             fontSize,
             hideNonPreview,
-            filterStorageProps,
+            saveStorageProps,
             onFilter,
         }: EntitiesTableOfTemplateProps<Data>,
         ref: ForwardedRef<EntitiesTableOfTemplateRef<Data>>,
     ) => {
-        const savedColumns = localStorage.getItem(`visibleColumns-${template._id}`);
-        const defaultVisibleColumns = savedColumns ? JSON.parse(savedColumns) : {};
+        const savedVisibleColumns = localStorage.getItem(`visibleColumns-${saveStorageProps.pageType}-${template._id}`);
+        const defaultVisibleColumns = savedVisibleColumns ? JSON.parse(savedVisibleColumns) : {};
 
-        const movedColumns = localStorage.getItem(`movedColumns-${template._id}`);
-        const savedColumnsOrder = movedColumns ? JSON.parse(movedColumns) : {};
+        const saveColumnsOrder = localStorage.getItem(`columnsOrder-${saveStorageProps.pageType}-${template._id}`);
+        const defaultColumnsOrder = saveColumnsOrder ? JSON.parse(saveColumnsOrder) : {};
 
-        const columnWidths = localStorage.getItem(`columnWidths-${template._id}`);
-        const defaultColumnsWidth = columnWidths ? JSON.parse(columnWidths) : {};
-
-        const savedSortState = localStorage.getItem(`sortModel-${template._id}`);
-        let sortColumn = {};
-
-        if (savedSortState !== null) {
-            try {
-                sortColumn = JSON.parse(savedSortState);
-            } catch (e) {
-                console.error('Error parsing sort model from localStorage:', e);
-                localStorage.removeItem(`sortModel-${template._id}`);
-            }
-        }
+        const savedColumnWidths = localStorage.getItem(`columnWidths-${saveStorageProps.pageType}-${template._id}`);
+        const defaultColumnWidths = savedColumnWidths ? JSON.parse(savedColumnWidths) : {};
 
         const navigate = useNavigate();
 
         const gridRef = useRef<AgGridReact<Data>>(null);
+
+        const getSortModel = () => {
+            const colState = gridRef.current!.columnApi.getColumnState();
+            return sortBy(
+                colState.filter((s) => Boolean(s.sort)),
+                (c) => c.sortIndex,
+            ).map((s) => ({ colId: s.colId, sort: s.sort! }))!;
+        };
 
         useImperativeHandle(ref, () => {
             return {
@@ -209,12 +223,12 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                     return gridRef.current!.api.getFilterModel();
                 },
                 getSortModel() {
-                    const colState = gridRef.current!.columnApi.getColumnState();
-                    return colState.filter((s) => Boolean(s.sort)).map((s) => ({ colId: s.colId, sort: s.sort! }))!;
+                    return getSortModel();
                 },
             };
         });
-        const columnDefs: ColDef[] = getColumnDefs({
+
+        const columnDefProps: IGetColumnDefsOptions<Data> = {
             template,
             getEntityPropertiesData,
             onNavigateToRow: !showNavigateToRowButton ? undefined : (data) => navigate(`/entity/${getEntityPropertiesData(data)._id}`),
@@ -222,40 +236,12 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             deleteRowButtonProps,
             hideNonPreview,
             editRowButtonProps,
-            visibleColumnStates: defaultVisibleColumns,
-            movedColumnsState: savedColumnsOrder,
-            columnWidthsState: defaultColumnsWidth,
-            sortColumnState: sortColumn,
-        });
-
-        const updateColumnFlexAndResize = () => {
-            if (gridRef.current) {
-                const allColumns = gridRef.current.columnApi.getColumns();
-                const visibleColumns = gridRef.current.columnApi.getAllDisplayedColumns();
-
-                const visibleColumnIds = new Set(visibleColumns.map((col) => col.getId()));
-
-                if (allColumns != null) {
-                    const updatedColumnDefs = allColumns.map((column) => {
-                        const colDef = column.getColDef();
-                        const isVisible = visibleColumnIds.has(column.getId());
-                        if (isVisible) {
-                            if (visibleColumns.length - 2 === visibleColumns.indexOf(column)) {
-                                return { ...colDef, flex: 1, minWidth: 150, hide: false };
-                            } else {
-                                const width = column.getActualWidth();
-                                return { ...colDef, flex: 0, width: width, hide: false };
-                            }
-                        }
-
-                        return { ...colDef, hide: true };
-                    });
-
-                    gridRef.current.api.setColumnDefs(updatedColumnDefs);
-                    gridRef.current.api.refreshCells({ force: true });
-                }
-            }
+            defaultVisibleColumns,
+            defaultColumnsOrder,
+            defaultColumnWidths,
         };
+
+        const columnDefs = useDeepCompareMemo(() => getColumnDefs(columnDefProps), [columnDefProps]);
 
         const datasourceOnFail = (err: unknown) => {
             toast.error(i18next.t('entitiesTableOfTemplate.failedToLoadData'));
@@ -275,52 +261,63 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             '.ag-center-cols-clipper': { minHeight: `${rowHeight * pageRowCount}px !important` },
         });
 
-        //function save to localStorage:
+        // function save to localStorage:
 
-        //Visibility of columns
-        const onColumnVisible = (params) => {
+        // visibility of columns
+        const onColumnVisible = (params: ColumnVisibleEvent<Data>) => {
+            if (!saveStorageProps.shouldSaveVisibleColumns) return;
             const columnState = params.columnApi.getColumnState();
             const updatedVisibleColumns = columnState.reduce((acc, col) => {
+                // eslint-disable-next-line no-param-reassign
                 acc[col.colId] = col.hide === false;
                 return acc;
             }, {});
-            localStorage.setItem(`visibleColumns-${template._id}`, JSON.stringify(updatedVisibleColumns));
-            updateColumnFlexAndResize();
+            localStorage.setItem(`visibleColumns-${saveStorageProps.pageType}-${template._id}`, JSON.stringify(updatedVisibleColumns));
         };
 
-        //Order of columns
-        const onColumnMoved = (params) => {
+        // order of columns
+        const onColumnMoved = (params: ColumnMovedEvent<Data>) => {
+            if (!saveStorageProps.shouldSaveColumnOrder) return;
             const columnState = params.columnApi.getColumnState();
-            const newMovedColumns = columnState.reduce((acc, column) => {
-                acc[column.colId] = { order: column.order != null ? column.order : columnState.indexOf(column) };
+            const newcolumnsOrder = columnState.reduce((acc, column, index) => {
+                // eslint-disable-next-line no-param-reassign
+                acc[column.colId] = { order: index };
                 return acc;
             }, {});
-            localStorage.setItem(`movedColumns-${template._id}`, JSON.stringify(newMovedColumns));
+            localStorage.setItem(`columnsOrder-${saveStorageProps.pageType}-${template._id}`, JSON.stringify(newcolumnsOrder));
         };
 
-        //Width of columns
-        const onColumnResized = (params) => {
-            if (params.finished) {
-                const updatedWidths = {};
-                params.columnApi.getAllDisplayedColumns().forEach((column) => {
-                    const colId = column.getColId();
-                    updatedWidths[colId] = column.getActualWidth();
-                });
-                localStorage.setItem(`columnWidths-${template._id}`, JSON.stringify(updatedWidths));
+        // width of columns
+        const onColumnResized = (params: ColumnResizedEvent<Data>) => {
+            if (
+                params.finished &&
+                // only when change was done on single column, and the cause is user resizing deliberately (mouse clicking)
+                params.column &&
+                (params.source === 'autosizeColumns' || params.source === 'uiColumnDragged' || params.source === 'uiColumnResized')
+            ) {
+                const currColumnWidths = localStorage.getItem(`columnWidths-${saveStorageProps.pageType}-${template._id}`);
+                const currColumnWidthsParsed = currColumnWidths ? JSON.parse(currColumnWidths) : {};
+                localStorage.setItem(
+                    `columnWidths-${saveStorageProps.pageType}-${template._id}`,
+                    JSON.stringify({ ...currColumnWidthsParsed, [params.column.getColId()]: params.column.getActualWidth() }),
+                );
             }
         };
 
-        //Sorting Column
-        const onSortChanged = (params) => {
-            const sortModel = params.columnApi.getColumnState().find((s) => s.sort != null);
-            localStorage.setItem(`sortModel-${template._id}`, JSON.stringify(sortModel));
+        // sorting Column
+        const onSortChanged = () => {
+            if (!saveStorageProps.shouldSaveSorting) return;
+            const sortModel = getSortModel();
+            localStorage.setItem(`sortModel-${saveStorageProps.pageType}-${template._id}`, JSON.stringify(sortModel));
         };
 
-        //Page in table - sessionStorage
-        const onPaginationChanged = (params) => {
+        // page in table - sessionStorage
+        const onPaginationChanged = (params: PaginationChangedEvent<Data>) => {
+            if (!saveStorageProps.shouldSavePagination) return;
+
             if (params.api && params.newPage) {
                 const currentPage = params.api.paginationGetCurrentPage();
-                sessionStorage.setItem(`currentPage-${template._id}`, JSON.stringify(currentPage));
+                sessionStorage.setItem(`currentPage-${saveStorageProps.pageType}-${template._id}`, JSON.stringify(currentPage));
             }
         };
 
@@ -365,13 +362,13 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                     suppressCellFocus
                     onFilterChanged={(params) => {
                         onFilter?.();
-                        if (filterStorageProps.shouldSaveFilter) {
+                        if (saveStorageProps.shouldSaveFilter) {
                             const filterModel = params.api.getFilterModel();
                             if (isEqual(filterModel, defaultFilterModel)) {
-                                LocalStorage.remove(`tableFilter-${filterStorageProps.pageType}-${template._id}`);
+                                LocalStorage.remove(`tableFilter-${saveStorageProps.pageType}-${template._id}`);
                             } else {
                                 LocalStorage.set(
-                                    `tableFilter-${filterStorageProps.pageType}-${template._id}`,
+                                    `tableFilter-${saveStorageProps.pageType}-${template._id}`,
                                     pickBy(filterModel, (_value, key) => key !== 'disabled'),
                                 );
                             }
@@ -380,22 +377,20 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                     suppressCsvExport
                     suppressContextMenu
                     onGridReady={(params) => {
-                        updateColumnFlexAndResize();
                         params.api.setFilterModel({
                             ...defaultFilterModel,
-                            ...LocalStorage.get(`tableFilter-${filterStorageProps.pageType}-${template._id}`),
+                            ...LocalStorage.get(`tableFilter-${saveStorageProps.pageType}-${template._id}`),
                         });
-                        const savedSortModel = localStorage.getItem(`sortModel-${template._id}`);
+                        const savedSortModel = localStorage.getItem(`sortModel-${saveStorageProps.pageType}-${template._id}`);
                         if (savedSortModel) {
-                            const sortModel = JSON.parse(savedSortModel);
+                            const sortModel: IServerSideGetRowsRequest['sortModel'] = JSON.parse(savedSortModel);
                             params.columnApi.applyColumnState({
-                                state: [{ colId: sortModel.colId, sort: sortModel.sort }],
+                                state: sortModel.map((s, i) => ({ ...s, sortIndex: i })),
                                 defaultState: { sort: null },
                             });
                         }
                     }}
                     onFirstDataRendered={(params) => {
-                        updateColumnFlexAndResize();
                         const savedPage = sessionStorage.getItem(`currentPage-${template._id}`);
                         if (savedPage !== null) {
                             const pageToNavigate = JSON.parse(savedPage);
