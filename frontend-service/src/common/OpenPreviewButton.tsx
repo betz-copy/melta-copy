@@ -24,7 +24,7 @@ const OpenPreviewButton: React.FC<{ fileId: string }> = ({ fileId }) => {
                 sx={{ borderRadius: 10 }}
             >
                 <FileDownloadIcon />
-                <Typography style={{ marginRight: '5px' }}>{fileName}</Typography>
+                <Typography style={{ marginRight: '5px', fontSize: '14px' }}>{fileName}</Typography>
             </IconButton>
             <Preview data={data} fileId={fileId} setOpen={setOpen} open={open} loading={isLoading} fileName={fileName} error={isError} />
         </>

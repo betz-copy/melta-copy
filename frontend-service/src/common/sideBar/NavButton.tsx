@@ -21,7 +21,7 @@ const NavButton: React.FC<{ to: string; isDrawerOpen: boolean; text: string; dis
             className="nav-button"
         >
             {({ isActive }) => {
-                if (isActive) onChangeToActive(isActive);
+                onChangeToActive(isActive);
                 return (
                     <Tooltip
                         title={disabled ? (i18next.t('permissions.dontHavePermissionsToCategory') as string) : text}

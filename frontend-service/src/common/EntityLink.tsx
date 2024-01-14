@@ -25,7 +25,13 @@ export const EntityLink: React.FC<EntityLinkProps> = ({ entity, entityTemplate }
         ) : !entityTemplate.propertiesPreview.length ? (
             i18next.t('graph.noPreviewProperties')
         ) : (
-            <EntityPropertiesInternal properties={entity.properties} entityTemplate={entityTemplate} darkMode={darkMode} showPreviewPropertiesOnly />
+            <EntityPropertiesInternal
+                isPreview
+                properties={entity.properties}
+                entityTemplate={entityTemplate}
+                darkMode={darkMode}
+                showPreviewPropertiesOnly
+            />
         );
 
     return (

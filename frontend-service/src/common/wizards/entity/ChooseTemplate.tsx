@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { TextField, Autocomplete } from '@mui/material';
 import * as Yup from 'yup';
 import i18next from 'i18next';
@@ -36,12 +36,15 @@ const ChooseTemplate: React.FC<StepComponentProps<EntityWizardValues>> = ({ valu
 
     const activeEntityTemplatesFiltered = entityTemplatesFilteredByCategory.filter((entity) => !entity.disabled);
 
+    const [disabled, setDisabled] = useState(!!values.template._id);
+
     return (
         <Autocomplete
             id="template"
             options={activeEntityTemplatesFiltered}
             onChange={(_e, value) => setFieldValue('template', value || '')}
             value={values.template._id ? values.template : null}
+            disabled={disabled}
             getOptionLabel={(option) => option.displayName}
             renderInput={(params) => (
                 <TextField

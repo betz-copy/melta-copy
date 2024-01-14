@@ -71,8 +71,6 @@ const Entity: React.FC = () => {
     const isEntityDisabled = expandedEntity.entity.properties.disabled;
     const currentEntityTemplate = entityTemplates.get(expandedEntity.entity.templateId)!;
 
-    const entityTemplateColor = getEntityTemplateColor(currentEntityTemplate);
-
     const relevantRelationshipTemplates = Array.from(relationshipTemplates.values(), (currRelationshipTemplate) =>
         populateRelationshipTemplate(currRelationshipTemplate, entityTemplates),
     ).filter((currRelationshipTemplatePopulated) =>
@@ -136,36 +134,6 @@ const Entity: React.FC = () => {
             />
             <Grid className="pageMargin">
                 <Grid item marginTop="20px" data-tour="entity-details">
-                    <Grid item container xs={5} alignItems="center" flexDirection="row" flexWrap="nowrap">
-                        <Grid item>
-                            <div
-                                style={{
-                                    height: '30px',
-                                    width: '3px',
-                                    backgroundColor: entityTemplateColor,
-                                    borderRadius: '20px',
-                                }}
-                            />
-                        </Grid>
-                        <Grid item>
-                            {currentEntityTemplate.iconFileId && (
-                                <CustomIcon
-                                    iconUrl={currentEntityTemplate.iconFileId || ''}
-                                    height="30px"
-                                    width="30px"
-                                    color={lightTheme.palette.primary.main}
-                                />
-                            )}
-                        </Grid>
-                        <Grid item paddingLeft="10px">
-                            <BlueTitle
-                                title={currentEntityTemplate.displayName}
-                                component="h5"
-                                variant="h5"
-                                style={{ fontSize: '20px', fontWeight: '500' }}
-                            />
-                        </Grid>
-                    </Grid>
                     <div style={{ marginTop: '20px' }}>
                         <EntityDetails entityTemplate={currentEntityTemplate} expandedEntity={expandedEntity} />
                     </div>

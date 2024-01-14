@@ -35,6 +35,7 @@ interface IEntityPropertiesProps {
     showPreviewPropertiesOnly?: boolean;
     style?: CSSProperties;
     innerStyle?: CSSProperties;
+    isPreview?: boolean;
 }
 
 export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkMode?: boolean }> = ({
@@ -45,6 +46,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
     style,
     innerStyle,
     darkMode,
+    isPreview = false,
 }) => {
     const propertiesOrderedToShow = showPreviewPropertiesOnly
         ? entityTemplate.propertiesOrder.filter((propertyKey) => entityTemplate.propertiesPreview!.includes(propertyKey))
@@ -93,14 +95,14 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                                 <Tooltip
                                     placement="bottom"
                                     PopperProps={{
-                                        sx: { [`& .${tooltipClasses.tooltip}`]: { fontSize: '1rem', backgroundColor: '#101440' } },
+                                        sx: { [`& .${tooltipClasses.tooltip}`]: { fontSize: '1rem', backgroundColor: '#101440', color: 'white' } },
                                     }}
-                                    title={hideFieldsToDisplay.includes(propertyKey) ? '' : stringFormatValue}
+                                    title={hideFieldsToDisplay.includes(propertyKey) || propertySchema.format === 'fileId' ? '' : stringFormatValue}
                                 >
                                     <Typography
                                         display="inline"
                                         fontSize="14px"
-                                        color="#53566E"
+                                        color={isPreview ? 'white' : '#53566E'}
                                         style={{
                                             textOverflow: 'ellipsis',
                                             whiteSpace: 'nowrap',

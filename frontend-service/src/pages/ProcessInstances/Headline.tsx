@@ -38,7 +38,7 @@ const ProcessInstancesHeadline: React.FC<{
                         <BlueTitle title={i18next.t('pages.processInstances')} component="h4" variant="h4" style={{ fontSize: '24px' }} />
                     </Grid>
                     <Grid item>
-                        <Grid container wrap="nowrap">
+                        <Grid container wrap="nowrap" gap="15px">
                             <Grid item>
                                 <ProcessTemplatesSelectCheckbox
                                     templates={templatesSelectCheckboxProps.templates}
@@ -47,7 +47,7 @@ const ProcessInstancesHeadline: React.FC<{
                                 />
                             </Grid>
                             <Grid item>
-                                <GlobalSearchBar onSearch={onSearch} borderRadius="0 7px 7px 0" />
+                                <GlobalSearchBar onSearch={onSearch} borderRadius="7px" toTopBar />
                             </Grid>
                         </Grid>
                     </Grid>

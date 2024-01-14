@@ -514,6 +514,7 @@ export default {
             iconSearch: 'חיפוש אייקון (חיפוש באנגלית)',
             chooseFromOptions: 'בחירה מאפשרויות',
             chooseFile: 'בחירת קובץ',
+            dragFile: 'גרור את הקובץ לכאן',
         },
     },
     errorCodes: {

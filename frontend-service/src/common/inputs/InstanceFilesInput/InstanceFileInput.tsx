@@ -39,7 +39,7 @@ export const InstanceFileInput: React.FC<InstanceFileInputProps> = ({
             paddingTop={0.5}
             paddingLeft={1}
             sx={{
-                height: '40px',
+                height: '70px',
             }}
         >
             <Field

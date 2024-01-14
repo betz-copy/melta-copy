@@ -97,7 +97,7 @@ const EditEntityDetails: React.FC<{
                                     <Grid container justifyContent="center">
                                         <Grid item xs={12}>
                                             <Grid container flexDirection={wasOpenFromTable ? 'column' : 'row'}>
-                                                <Box width="75%">
+                                                <Box width={wasOpenFromTable ? '100%' : '75%'}>
                                                     {wasOpenFromTable && (
                                                         <BlueTitle
                                                             title={`${i18next.t('actions.editment')} ${entityTemplate.displayName}`}
@@ -132,9 +132,6 @@ const EditEntityDetails: React.FC<{
                                                                     variant="h6"
                                                                     style={{ marginBottom: '12px', fontSize: '16px', fontWeight: '600' }}
                                                                 />
-                                                                <div style={{ color: '#666666', fontSize: '0.9rem', padding: '2%' }}>
-                                                                    {i18next.t('wizard.entityTemplate.dragAndDropFile')}
-                                                                </div>
                                                                 <>
                                                                     {Object.entries(templateFilesProperties).map(([key, value]) => (
                                                                         <InstanceFileInput

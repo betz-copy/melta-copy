@@ -28,7 +28,7 @@ const steps: StepsType<EntityWizardValues> = [
     {
         label: i18next.t('wizard.entity.chooseEntityTemplate'),
         component: (props) => (
-            <Grid marginTop="20px" container flexDirection="column" gap="40px" height="fit-content">
+            <Grid container flexDirection="column" gap="40px" height="fit-content">
                 <Grid item container flexDirection="column" gap="40px">
                     <Grid item>
                         <BlueTitle

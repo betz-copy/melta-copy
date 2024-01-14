@@ -55,6 +55,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
 
     const handleChangeActiveButton = (isActive: boolean, key: string) => {
         if (isActive) setActiveButton(key);
+        else if (activeButton === key) setActiveButton('');
     };
     const navigate = useNavigate();
 

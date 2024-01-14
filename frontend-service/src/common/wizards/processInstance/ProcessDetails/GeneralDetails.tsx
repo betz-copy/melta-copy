@@ -194,6 +194,19 @@ const GeneralDetails: React.FC<IDetailsStepProp> = ({ detailsFormikData, onNext,
                                                 renderInput={(params) => (
                                                     <TextField
                                                         {...params}
+                                                        size="small"
+                                                        sx={{
+                                                            '& .MuiInputBase-root': {
+                                                                borderRadius: '10px',
+                                                            },
+                                                            '& fieldset': {
+                                                                borderColor: '#CCCFE5',
+                                                                color: '#CCCFE5',
+                                                            },
+                                                            '& label': {
+                                                                color: '#9398C2',
+                                                            },
+                                                        }}
                                                         fullWidth
                                                         name="template"
                                                         variant={variant}
@@ -216,6 +229,19 @@ const GeneralDetails: React.FC<IDetailsStepProp> = ({ detailsFormikData, onNext,
                                             <TextField
                                                 id="name"
                                                 name="name"
+                                                size="small"
+                                                sx={{
+                                                    '& .MuiInputBase-root': {
+                                                        borderRadius: '10px',
+                                                    },
+                                                    '& fieldset': {
+                                                        borderColor: '#CCCFE5',
+                                                        color: '#CCCFE5',
+                                                    },
+                                                    '& label': {
+                                                        color: '#9398C2',
+                                                    },
+                                                }}
                                                 fullWidth
                                                 label={i18next.t('wizard.processInstance.processInstanceName')}
                                                 value={values.name}
@@ -245,6 +271,19 @@ const GeneralDetails: React.FC<IDetailsStepProp> = ({ detailsFormikData, onNext,
                                                     }}
                                                     renderInput={(params) => (
                                                         <TextField
+                                                            size="small"
+                                                            sx={{
+                                                                '& .MuiInputBase-root': {
+                                                                    borderRadius: '10px',
+                                                                },
+                                                                '& fieldset': {
+                                                                    borderColor: '#CCCFE5',
+                                                                    color: '#CCCFE5',
+                                                                },
+                                                                '& label': {
+                                                                    color: '#9398C2',
+                                                                },
+                                                            }}
                                                             fullWidth
                                                             variant={variant}
                                                             InputLabelProps={{
@@ -271,6 +310,19 @@ const GeneralDetails: React.FC<IDetailsStepProp> = ({ detailsFormikData, onNext,
                                                     }}
                                                     renderInput={(params) => (
                                                         <TextField
+                                                            size="small"
+                                                            sx={{
+                                                                '& .MuiInputBase-root': {
+                                                                    borderRadius: '10px',
+                                                                },
+                                                                '& fieldset': {
+                                                                    borderColor: '#CCCFE5',
+                                                                    color: '#CCCFE5',
+                                                                },
+                                                                '& label': {
+                                                                    color: '#9398C2',
+                                                                },
+                                                            }}
                                                             variant={variant}
                                                             fullWidth
                                                             InputLabelProps={{

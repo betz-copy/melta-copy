@@ -23,7 +23,7 @@ const Stepper = <T extends object>({
     const [block, setBlock] = useState(false);
 
     return (
-        <Grid container minWidth="80vh">
+        <Grid container minWidth="70vh">
             {steps.length > 1 && (
                 <Grid container marginBottom="5%">
                     <StepperSideBar steps={steps} activeStep={activeStep} />
