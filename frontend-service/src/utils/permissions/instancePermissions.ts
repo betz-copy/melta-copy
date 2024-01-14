@@ -14,11 +14,10 @@ export const canUserReadInstanceOfCategory = (
 ) => {
     return instancesPermissions.some(({ category, scopes }) => category === categoryId && (scopes?.includes('Write') || scopes?.includes('Read')));
 };
+
 export const getUserPermissionScopeOfCategory = (instancesPermissions: IPermissionsOfUser['instancesPermissions'], categoryId: string) => {
     const permission = instancesPermissions.find(({ category }) => category === categoryId);
 
     if (permission?.scopes.includes('Write')) return 'Write';
     if (permission?.scopes.includes('Read')) return 'Read';
-
-    return undefined;
 };
