@@ -1,4 +1,4 @@
-import { Button, CircularProgress, Grid, Tab, Tabs, Tooltip, List } from '@mui/material';
+import { Button, CircularProgress, Grid, Tab, Tabs, Tooltip, List, IconButton, Divider } from '@mui/material';
 import i18next from 'i18next';
 import React, { CSSProperties, useState } from 'react';
 import { toast } from 'react-toastify';
@@ -7,6 +7,7 @@ import { useMutation } from 'react-query';
 import { LoadingButton } from '@mui/lab';
 import BallotIcon from '@mui/icons-material/Ballot';
 import SmsIcon from '@mui/icons-material/Sms';
+import FilterAltOffIcon from '@mui/icons-material/FilterAltOff';
 import { environment } from '../../../globals';
 import { INotificationGroupCountDetails, INotificationPopulated } from '../../../interfaces/notifications';
 import { getMyNotificationsRequest, manyNotificationSeenRequest } from '../../../services/notificationService';
@@ -14,6 +15,11 @@ import { InfiniteScroll } from '../../InfiniteScroll';
 import PopperSidebar from '../../PopperSidebar';
 import { NotificationCard } from './NotificationCard';
 import { NotificationCount } from './NotificationCount';
+import DateRange from '../../inputs/DateRange';
+import ProcessTemplatesSelectCheckbox from '../../../pages/ProcessInstances/ProcessTemplatesCheckbox';
+import TemplatesSelectCheckbox from '../../templatesSelectCheckbox';
+import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { SelectCheckbox } from '../../SelectCheckbox';
 
 const { infiniteScrollPageCount, groups } = environment.notifications;
 
@@ -33,11 +39,16 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
     updateNotificationCountDetails,
 }) => {
     const groupNames = Object.keys(groups) as (keyof typeof groups)[];
-
     const [selectedGroup, setSelectedGroup] = useState<keyof typeof groups>('general');
-
     // const [tabOptionsAnchor, setTabOptionsAnchor] = useState<HTMLElement>();
-
+    const [startDateInput, setStartDateInput] = useState<Date | null>(null);
+    const [endDateInput, setEndDateInput] = useState<Date | null>(null);
+    const onSetStartDate = (newStartDateInput: Date | null) => {
+        setStartDateInput(newStartDateInput);
+    };
+    const onSetEndDate = (newEndDateInput: Date | null) => {
+        setEndDateInput(newEndDateInput);
+    };
     const { mutate, isLoading } = useMutation((groupName: keyof typeof groups) => manyNotificationSeenRequest(groups[groupName]), {
         onSuccess: (seenNotifications, groupName) => {
             updateNotificationCountDetails();
@@ -150,27 +161,67 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
             {isLoading ? (
                 <CircularProgress sx={{ marginX: 'auto', marginTop: '1rem' }} />
             ) : (
-                <InfiniteScroll<INotificationPopulated>
-                    queryKey={['getMyNotifications', selectedGroup]}
-                    queryFunction={({ pageParam }) =>
-                        getMyNotificationsRequest({
-                            limit: infiniteScrollPageCount,
-                            step: pageParam,
-                            types: groups[selectedGroup],
-                        })
-                    }
-                    onQueryError={(error) => {
-                        console.log('failed to get notifications. error:', error); // eslint-disable-line no-console
-                        toast.error(i18next.t('notifications.failedToGetNotifications'));
-                    }}
-                    endText={i18next.t('notifications.noNotificationsLeft')}
-                >
-                    {(notification) => (
-                        <Grid item style={{ padding: '8px' }}>
-                            <NotificationCard notification={notification} onSeen={updateNotificationCountDetails} />
+                <>
+                    <Grid>
+                        <Grid>
+                            <SelectCheckbox
+                                title="ggg"
+                                options={['a', 'b']}
+                                selectedOptions={[]}
+                                setSelectedOptions={() => {
+                                    console.log('gg');
+                                }}
+                                getOptionId={() => {
+                                    return 'jjj';
+                                }}
+                                getOptionLabel={() => {
+                                    return 'jjj';
+                                }}
+                            />
                         </Grid>
-                    )}
-                </InfiniteScroll>
+                        <Grid>
+                            <IconButton
+                                onClick={() => {
+                                    onSetStartDate(null);
+                                    onSetEndDate(null);
+                                }}
+                                sx={{ borderRadius: 10 }}
+                            >
+                                <FilterAltOffIcon />
+                            </IconButton>
+                        </Grid>
+                    </Grid>
+                    <Grid sx={{ padding: '10px' }}>
+                        <DateRange
+                            onStartDateChange={onSetStartDate}
+                            onEndDateChange={onSetEndDate}
+                            startDateInput={startDateInput}
+                            endDateInput={endDateInput}
+                        />
+                    </Grid>
+                    <Divider />
+                    <InfiniteScroll<INotificationPopulated>
+                        queryKey={['getMyNotifications', selectedGroup]}
+                        queryFunction={({ pageParam }) =>
+                            getMyNotificationsRequest({
+                                limit: infiniteScrollPageCount,
+                                step: pageParam,
+                                types: groups[selectedGroup],
+                            })
+                        }
+                        onQueryError={(error) => {
+                            console.log('failed to get notifications. error:', error); // eslint-disable-line no-console
+                            toast.error(i18next.t('notifications.failedToGetNotifications'));
+                        }}
+                        endText={i18next.t('notifications.noNotificationsLeft')}
+                    >
+                        {(notification) => (
+                            <Grid item style={{ padding: '8px' }}>
+                                <NotificationCard notification={notification} onSeen={updateNotificationCountDetails} />
+                            </Grid>
+                        )}
+                    </InfiniteScroll>
+                </>
             )}
             {/*            
                 // <Menu open={Boolean(rightClickedGroup)} onClose={onCloseTabOptions} anchorEl={tabOptionsAnchor}>
