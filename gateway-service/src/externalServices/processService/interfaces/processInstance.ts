@@ -1,5 +1,5 @@
-import { IMongoEntityTemplatePopulated } from '../../entityTemplateManager';
-import { IEntity } from '../../instanceManager/interfaces/entities';
+import { IMongoEntityTemplatePopulated } from '../../entityTemplateService';
+import { IEntity } from '../../instanceService/interfaces/entities';
 import { IBaseSearchProperties } from './processTemplate';
 import { IMongoStepInstance, IMongoStepInstancePopulated } from './stepInstance';
 

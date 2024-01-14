@@ -1,8 +1,8 @@
 import lodashIsEqual from 'lodash.isequal';
-import { EntityTemplateManagerService, IMongoEntityTemplatePopulated } from '../../externalServices/entityTemplateManager';
+import { EntityTemplateManagerService, IMongoEntityTemplatePopulated } from '../../externalServices/entityTemplateService';
 import { IGantt, ISearchGanttsBody, GanttsService, IMongoGantt, IGanttItem } from '../../externalServices/ganttsService';
-import { InstanceManagerService } from '../../externalServices/instanceManager';
-import { IRelationshipTemplate, RelationshipsTemplateManagerService } from '../../externalServices/relationshipsTemplateManager';
+import { InstanceManagerService } from '../../externalServices/instanceService';
+import { IRelationshipTemplate, RelationshipsTemplateManagerService } from '../../externalServices/relationshipsTemplateService';
 import { ServiceError } from '../error';
 import { getAllowedEntityTemplatesForInstances } from '../instances/middlewares';
 import { IPermissionsOfUser } from '../permissions/interfaces';

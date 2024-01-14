@@ -25,6 +25,34 @@ import { BlueTitle } from '../../common/BlueTitle';
 import { ResetFilterButton } from '../../common/EntitiesPage/ResetFilterButton';
 import { EntityTopBar } from './components/TopBar';
 import { getOppositeEntityTemplate, isRelationshipConnectedToEntityTemplate, populateRelationshipTemplate } from '../../utils/templates';
+import { canUserWriteInstanceOfCategory } from '../../utils/permissions/instancePermissions';
+
+export const getButtonState = (
+    isEntityDisabled: boolean,
+    hasWritePermissionToCurrCategory: boolean,
+    permissionToRelatedCategory?: IPermissionsOfUser['instancesPermissions'][number],
+) => {
+    let isEditButtonsDisabled = false;
+    let disabledButtonText = '';
+
+    if (isEntityDisabled) {
+        isEditButtonsDisabled = true;
+        disabledButtonText = i18next.t('entityPage.disabledEntity');
+    } else if (!hasWritePermissionToCurrCategory) {
+        isEditButtonsDisabled = true;
+        disabledButtonText = i18next.t('permissions.dontHaveWritePermissions');
+    } else if (!permissionToRelatedCategory) {
+        isEditButtonsDisabled = true;
+        disabledButtonText = i18next.t('permissions.dontHavePermissionsToCategory');
+    } else if (permissionToRelatedCategory && !permissionToRelatedCategory.scopes.includes('Write')) {
+        isEditButtonsDisabled = true;
+        disabledButtonText = i18next.t('permissions.dontHaveWritePermissionsToCategory');
+    } else {
+        disabledButtonText = i18next.t('entityPage.createRelationshipPopoverText');
+    }
+
+    return { isEditButtonsDisabled, disabledButtonText };
+};
 
 const Entity: React.FC = () => {
     const [isFiltered, setIsFiltered] = useState(false);
@@ -32,7 +60,7 @@ const Entity: React.FC = () => {
     const queryClient = useQueryClient();
     const { setDisabledActions, setCurrentStep } = useTour();
 
-    const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
+    const { instancesPermissions } = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
 
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
@@ -69,6 +97,7 @@ const Entity: React.FC = () => {
     const isEntityDisabled = expandedEntity.entity.properties.disabled;
     const currentEntityTemplate = entityTemplates.get(expandedEntity.entity.templateId)!;
 
+    const hasWritePermissionToCurrCategory = canUserWriteInstanceOfCategory(instancesPermissions, currentEntityTemplate.category);
     const relevantRelationshipTemplates = Array.from(relationshipTemplates.values(), (currRelationshipTemplate) =>
         populateRelationshipTemplate(currRelationshipTemplate, entityTemplates),
     ).filter((currRelationshipTemplatePopulated) =>
@@ -147,11 +176,13 @@ const Entity: React.FC = () => {
                                 </TabList>
                             </Box>
                             {categoriesWithRelationshipTemplates?.map(({ _id, relationshipTemplates: connectedRelationshipTemplates }, index) => {
-                                const hasPermissionToCategory = Boolean(
-                                    myPermissions.instancesPermissions.find((instance) => instance.category === _id),
-                                );
-                                const canCreateRelationship = hasPermissionToCategory && !isEntityDisabled;
+                                const permissionToRelatedCategory = instancesPermissions.find((instance) => instance.category === _id);
 
+                                const { isEditButtonsDisabled, disabledButtonText } = getButtonState(
+                                    isEntityDisabled,
+                                    hasWritePermissionToCurrCategory,
+                                    permissionToRelatedCategory,
+                                );
                                 return (
                                     <TabPanel key={_id} value={String(index)} sx={{ padding: 0 }}>
                                         {connectedRelationshipTemplates?.map((currRelationshipTemplate) => {
@@ -172,13 +203,12 @@ const Entity: React.FC = () => {
                                                             <ResetFilterButton entitiesTableRef={entitiesTableRef} disableButton={!isFiltered} />
                                                             <IconButtonWithPopover
                                                                 popoverText={
-                                                                    hasPermissionToCategory
-                                                                        ? i18next.t('entityPage.disabledEntity')
-                                                                        : i18next.t('permissions.dontHavePermissionsToCategory')
+                                                                    isEditButtonsDisabled
+                                                                        ? disabledButtonText
+                                                                        : i18next.t('entityPage.createRelationshipPopoverText')
                                                                 }
-                                                                disabledToolTip={canCreateRelationship}
+                                                                disabled={isEditButtonsDisabled}
                                                                 iconButtonProps={{
-                                                                    disabled: !hasPermissionToCategory || isEntityDisabled,
                                                                     onClick: () => {
                                                                         setCreateRelationshipDialogState({
                                                                             isOpen: true,
@@ -200,7 +230,7 @@ const Entity: React.FC = () => {
                                                                 }}
                                                             >
                                                                 <AddCircle
-                                                                    color={canCreateRelationship ? 'primary' : 'disabled'}
+                                                                    color={isEditButtonsDisabled ? 'disabled' : 'primary'}
                                                                     fontSize="large"
                                                                     data-tour="create-relationship"
                                                                 />
@@ -213,15 +243,14 @@ const Entity: React.FC = () => {
                                                             template={getOppositeEntityTemplate(currentEntityTemplate._id, currRelationshipTemplate)}
                                                             showNavigateToRowButton
                                                             deleteRowButtonProps={{
-                                                                popoverText: hasPermissionToCategory
-                                                                    ? i18next.t('entityPage.deleteRelationshipPopoverText')
-                                                                    : i18next.t('permissions.dontHavePermissionsToCategory'),
+                                                                popoverText: isEditButtonsDisabled
+                                                                    ? disabledButtonText
+                                                                    : i18next.t('entityPage.deleteRelationshipPopoverText'),
                                                                 onClick: (connectionToDelete) => {
                                                                     setDeleteRelationshipDialogState({ open: true, connectionToDelete });
                                                                 },
-                                                                disabled: !hasPermissionToCategory,
+                                                                disabledButton: isEditButtonsDisabled,
                                                             }}
-                                                            disabledEntity={!hasPermissionToCategory}
                                                             getRowId={(connection) => {
                                                                 return connection.relationship.properties._id;
                                                             }}
@@ -246,6 +275,7 @@ const Entity: React.FC = () => {
                                                                 pageType: `entity-${entityId}`,
                                                             }}
                                                             onFilter={() => setIsFiltered(entitiesTableRef.current?.isFiltered() ?? false)}
+                                                            hasPermissionToCategory={Boolean(permissionToRelatedCategory)}
                                                         />
                                                     </Box>
                                                 </Grid>

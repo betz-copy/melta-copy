@@ -47,6 +47,11 @@ export const defaultFilterModel = {
     },
 };
 
+export interface IButtonProps<Data> {
+    onClick: (entity: Data) => void;
+    popoverText: string;
+    disabledButton: boolean;
+}
 export const getDatasource = <Data extends any = IEntity>(
     template: IMongoEntityTemplatePopulated,
     quickFilterText: string | undefined,
@@ -111,15 +116,9 @@ export type EntitiesTableOfTemplateProps<Data> = {
     template: IMongoEntityTemplatePopulated;
     onRowSelected?: (data: Data) => void;
     showNavigateToRowButton: boolean;
-    deleteRowButtonProps?: {
-        onClick: (data: Data) => void;
-        popoverText: string;
-        disabled: boolean;
-    };
-    editRowButtonProps?: {
-        onClick: (data: Data) => void;
-    };
-    disabledEntity?: boolean;
+    deleteRowButtonProps?: IButtonProps<Data>;
+    editRowButtonProps?: IButtonProps<Data>;
+    hasPermissionToCategory?: boolean;
     getRowId: (data: Data) => string;
     getEntityPropertiesData: (data: Data) => IEntity['properties'];
     rowModelType: 'serverSide' | 'clientSide' | 'infinite';
@@ -158,7 +157,6 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             template,
             onRowSelected,
             showNavigateToRowButton,
-            disabledEntity,
             getRowId,
             getEntityPropertiesData,
             rowModelType,
@@ -173,6 +171,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             hideNonPreview,
             saveStorageProps,
             onFilter,
+            hasPermissionToCategory,
         }: EntitiesTableOfTemplateProps<Data>,
         ref: ForwardedRef<EntitiesTableOfTemplateRef<Data>>,
     ) => {
@@ -232,10 +231,11 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             template,
             getEntityPropertiesData,
             onNavigateToRow: !showNavigateToRowButton ? undefined : (data) => navigate(`/entity/${getEntityPropertiesData(data)._id}`),
-            disabledEntity,
             deleteRowButtonProps,
             hideNonPreview,
             editRowButtonProps,
+            hasPermissionToCategory,
+
             defaultVisibleColumns,
             defaultColumnsOrder,
             defaultColumnWidths,

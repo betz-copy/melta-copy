@@ -2,7 +2,7 @@ import React, { forwardRef, useImperativeHandle, useRef, useState } from 'react'
 import { Grid, Box, CircularProgress, Dialog } from '@mui/material';
 import { ExpandLess, ExpandMore, AddCircle, VerticalAlignBottomOutlined as DownloadIcon } from '@mui/icons-material';
 import i18next from 'i18next';
-import { useMutation } from 'react-query';
+import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import fileDownload from 'js-file-download';
 import { GridApi, IServerSideGetRowsRequest } from '@ag-grid-community/core';
@@ -18,6 +18,8 @@ import { EditEntityDetails } from '../../pages/Entity/components/EditEntityDetai
 import { IEntity } from '../../interfaces/entities';
 import { environment } from '../../globals';
 import { filterModelToFilterOfTemplate, sortModelToSortOfSearchRequest } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
+import { IPermissionsOfUser } from '../../services/permissionsService';
+import { canUserWriteInstanceOfCategory } from '../../utils/permissions/instancePermissions';
 
 const { expandedRowCount } = environment.agGrid;
 
@@ -74,7 +76,9 @@ const TemplateTable = forwardRef<
         isOpen: false,
     });
     const [isExpand, setIsExpand] = useState(false);
-
+    const queryClient = useQueryClient();
+    const { instancesPermissions } = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
+    const userHasWritePermissions = canUserWriteInstanceOfCategory(instancesPermissions, template.category);
     return (
         <Grid container>
             <Grid container paddingLeft={3} justifyContent="space-between" width="100%">
@@ -106,10 +110,22 @@ const TemplateTable = forwardRef<
                         </IconButtonWithPopover>
                         <AddEntityButton
                             initialStep={1}
-                            disabled={template.disabled}
+                            disabled={template.disabled || !userHasWritePermissions}
                             initialValues={{ template, properties: { disabled: false }, attachmentsProperties: {} }}
+                            popoverText={
+                                // eslint-disable-next-line no-nested-ternary
+                                template.disabled
+                                    ? i18next.t('categoryPage.disabledTemplate')
+                                    : !userHasWritePermissions
+                                    ? i18next.t('permissions.dontHaveWritePermissions')
+                                    : i18next.t('entitiesTableOfTemplate.addEntity')
+                            }
                         >
-                            <AddCircle color={!template.disabled ? 'primary' : 'disabled'} fontSize="large" data-tour="create-entity" />
+                            <AddCircle
+                                color={template.disabled || !userHasWritePermissions ? 'disabled' : 'primary'}
+                                fontSize="large"
+                                data-tour="create-entity"
+                            />
                         </AddEntityButton>
                     </Grid>
                 </Grid>
@@ -142,6 +158,10 @@ const TemplateTable = forwardRef<
                                 entity: currEntity,
                             });
                         },
+                        popoverText: i18next.t(
+                            !userHasWritePermissions ? 'permissions.dontHaveWritePermissions' : 'entitiesTableOfTemplate.editEntity',
+                        ),
+                        disabledButton: !userHasWritePermissions,
                     }}
                     onFilter={() => {
                         setIsFiltered(entitiesTableRef.current?.isFiltered() ?? false);

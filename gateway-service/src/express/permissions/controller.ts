@@ -15,6 +15,10 @@ class PermissionsController {
         res.json(await PermissionsManager.createPermissionsBulk(req.body));
     }
 
+    static async updatePermissionsBulk(req: Request, res: Response) {
+        res.json(await PermissionsManager.updatePermissionsBulk(req.body));
+    }
+
     static async deletePermissions(req: RequestWithQuery<{ ids: string[] }>, res: Response) {
         res.json(await PermissionsManager.deletePermissions(req.query.ids));
     }
