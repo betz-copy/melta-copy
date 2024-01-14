@@ -75,7 +75,12 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                                 width="120px"
                                 style={{ textOverflow: 'ellipsis', whiteSpace: 'nowrap', overflow: 'hidden', textAlign: 'right' }}
                             >
-                                <Typography display="inline" fontSize="14px" color={darkMode ? '#cecece' : '#9398C2'}>
+                                <Typography
+                                    display="inline"
+                                    fontSize="14px"
+                                    color={isPreview ? 'white' : '#9398C2'}
+                                    fontWeight={isPreview ? '800' : ''}
+                                >
                                     {propertySchema.title}:
                                 </Typography>
                             </Grid>
