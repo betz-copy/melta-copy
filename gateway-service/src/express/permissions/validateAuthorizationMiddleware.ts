@@ -1,9 +1,8 @@
 import { Request } from 'express';
-import { checkUserAuthorization, getPermissions, ResourceType } from '../../externalServices/permissionsService';
+import { checkUserAuthorization, getPermissions, ResourceType, Scope } from '../../externalServices/permissionsService';
 import { ServiceError } from '../error';
 import { RequestWithPermissionsOfUserId } from '../instances/middlewares';
 import PermissionsManager from './manager';
-import { Scope } from './interfaces';
 
 export const validateAuthorization = async (
     req: Request,
