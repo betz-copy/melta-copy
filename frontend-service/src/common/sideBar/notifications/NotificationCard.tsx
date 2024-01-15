@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
 import { useMutation } from 'react-query';
 import { LoadingButton } from '@mui/lab';
 import { toast } from 'react-toastify';
 import { useSelector } from 'react-redux';
+import DoneIcon from '@mui/icons-material/Done';
+import CircleIcon from '@mui/icons-material/Circle';
 import {
     INotificationPopulated,
     isNewProcessNotification,
@@ -30,6 +32,7 @@ import { ProcessReviewerUpdateNotification } from './processNotifications/Proces
 import { DeleteProcessNotification } from './processNotifications/DeleteProcessNotification';
 import { DateAboutToExpireNotification } from './generalNotifications/DateAboutToExpireNotification';
 import { ArchiveProcessNotification } from './processNotifications/ArchiveProcessNotification';
+import { environment } from '../../../globals';
 
 interface NotificationCardProps {
     notification: INotificationPopulated;
@@ -45,7 +48,8 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({ notification
             toast.error(i18next.t('notifications.failedSetAsSeen'));
         },
     });
-
+    const [isHovered, setIsHovered] = useState(false);
+    const { notificationData } = environment.notifications;
     const darkMode = useSelector((state: RootState) => state.darkMode);
 
     return (
@@ -62,10 +66,14 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({ notification
         >
             <CardContent sx={{ '&:last-child': { padding: '15px' } }}>
                 <Grid container direction="column">
-                    <Grid item container justifyContent="flex-end" wrap="nowrap">
-                        <Typography fontSize={14}>{getShortDate(notification.createdAt)}</Typography>
+                    <Grid container alignItems="center">
+                        <Grid justifyContent="flex-start" wrap="nowrap" color="#FEF0C0">
+                            <CircleIcon />
+                        </Grid>
+                        <Grid item container justifyContent="flex-end" wrap="nowrap">
+                            <Typography fontSize={14}>{getShortDate(notification.createdAt)}</Typography>
+                        </Grid>
                     </Grid>
-
                     <Grid item sx={{ padding: '10px' }}>
                         {isRuleBreachAlertNotification(notification) && <RuleBreachAlertNotification {...notification.metadata} />}
                         {isRuleBreachRequestNotification(notification) && <RuleBreachRequestNotification {...notification.metadata} />}
@@ -78,8 +86,16 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({ notification
                         {isArchiveProcessNotification(notification) && <ArchiveProcessNotification {...notification.metadata} />}
                     </Grid>
 
-                    <Grid item container justifyContent="flex-end" wrap="nowrap">
+                    <Grid
+                        item
+                        container
+                        justifyContent="flex-end"
+                        wrap="nowrap"
+                        onMouseEnter={() => setIsHovered(true)}
+                        onMouseLeave={() => setIsHovered(false)}
+                    >
                         <LoadingButton onClick={() => mutate()} loading={isLoading}>
+                            {isHovered && <DoneIcon />}
                             {i18next.t('notifications.setAsSeen')}
                         </LoadingButton>
                     </Grid>

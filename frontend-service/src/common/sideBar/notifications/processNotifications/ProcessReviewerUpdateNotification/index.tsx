@@ -8,7 +8,7 @@ export const ProcessReviewerUpdateNotification: React.FC<IProcessReviewerUpdateN
     return (
         <Grid container direction="column" spacing={1}>
             <Grid item>
-                <Typography>{i18next.t('processReviewerUpdateNotification.reviewerUpdate')}</Typography>
+                <Typography color="#4752B6">{i18next.t('processReviewerUpdateNotification.reviewerUpdate')}</Typography>
             </Grid>
             <Description {...metadata} />
         </Grid>

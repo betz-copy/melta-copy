@@ -10,8 +10,10 @@ export const ProcessStatusUpdateNotification: React.FC<IProcessStatusUpdateNotif
     return (
         <Grid container direction="column" spacing={1}>
             <Grid item>
-                <Typography display="inline" fontFamily="Rubik">{`${i18next.t('processStatusUpdateNotification.statusUpdate')} `}</Typography>
-                <Typography display="inline" fontFamily="Rubik">
+                <Typography display="inline" fontFamily="Rubik" color="#4752B6">{`${i18next.t(
+                    'processStatusUpdateNotification.statusUpdate',
+                )} `}</Typography>
+                <Typography display="inline" fontFamily="Rubik" color="#4752B6">
                     {i18next.t(`processStatusUpdateNotification.${step !== undefined ? 'step' : 'process'}`)}
                 </Typography>
             </Grid>

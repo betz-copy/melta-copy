@@ -7,7 +7,7 @@ export const DeleteProcessNotification: React.FC<IDeleteProcessNotificationMetad
     return (
         <Grid container direction="column" spacing={1}>
             <Grid item>
-                <Typography display="inline">{`${i18next.t('deleteProcessNotification.deleteProcessNotification')} `}</Typography>
+                <Typography display="inline" color="#4752B6">{`${i18next.t('deleteProcessNotification.deleteProcessNotification')} `}</Typography>
             </Grid>
             <Grid item>
                 <Typography display="inline">{`${i18next.t('deleteProcessNotification.theProcess')} `}</Typography>

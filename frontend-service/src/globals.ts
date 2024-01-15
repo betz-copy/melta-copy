@@ -104,7 +104,58 @@ export const environment = {
                 NotificationType.archivedProcess,
             ],
         },
-        // colors
+        notificationData: {
+            requests: [
+                {
+                    color: 'blue',
+                    name: NotificationType.ruleBreachRequest,
+                    displayName: 'בקשה לחריגת חוקה',
+                },
+            ],
+            general: [
+                {
+                    color: 'blue',
+                    name: NotificationType.ruleBreachAlert,
+                    displayName: 'התראת חוקה',
+                },
+                {
+                    color: 'blue',
+                    name: NotificationType.archivedProcess,
+                    displayName: 'תהליך ארכיון',
+                },
+                {
+                    color: 'blue',
+                    name: NotificationType.dateAboutToExpire,
+                    displayName: 'תאריך מתקרב',
+                },
+                {
+                    color: 'blue',
+                    name: NotificationType.deleteProcess,
+                    displayName: 'מחיקת תהליך',
+                },
+                {
+                    color: 'blue',
+                    name: NotificationType.newProcess,
+                    displayName: 'יצירת תהליך חדש',
+                },
+                {
+                    color: 'blue',
+                    name: NotificationType.processReviewerUpdate,
+                    displayName: 'עדכון הרשאות תהליך',
+                },
+                {
+                    color: 'blue',
+                    name: NotificationType.processStatusUpdate,
+                    displayName: 'עדכון סטטוס תהליך',
+                },
+
+                {
+                    color: 'blue',
+                    name: NotificationType.ruleBreachResponse,
+                    displayName: 'מענה לחריגת חוקה ',
+                },
+            ],
+        },
     },
     agGrid: {
         rowCount: 5,

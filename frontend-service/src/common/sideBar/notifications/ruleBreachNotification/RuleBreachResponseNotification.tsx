@@ -9,7 +9,7 @@ export const RuleBreachResponseNotification: React.FC<IRuleBreachResponseNotific
     return (
         <Grid container direction="column" spacing={1}>
             <Grid item>
-                <Typography component="p" variant="body1">
+                <Typography component="p" variant="body1" color="#4752B6">
                     {i18next.t('ruleBreachResponseNotification.theRequestOfExecutingTheAction')}
                 </Typography>
             </Grid>

@@ -8,7 +8,7 @@ export const ArchiveProcessNotification: React.FC<IArchiveProcessNotificationMet
     return (
         <Grid container direction="column" spacing={1}>
             <Grid item>
-                <Typography display="inline">
+                <Typography display="inline" color="#4752B6">
                     {isArchived
                         ? i18next.t('archiveProcessNotification.sendProcessToArchive')
                         : i18next.t('archiveProcessNotification.removeProcessFromArchive')}

@@ -8,6 +8,7 @@ import { LoadingButton } from '@mui/lab';
 import BallotIcon from '@mui/icons-material/Ballot';
 import SmsIcon from '@mui/icons-material/Sms';
 import FilterAltOffIcon from '@mui/icons-material/FilterAltOff';
+import EventIcon from '@mui/icons-material/Event';
 import { environment } from '../../../globals';
 import { INotificationGroupCountDetails, INotificationPopulated } from '../../../interfaces/notifications';
 import { getMyNotificationsRequest, manyNotificationSeenRequest } from '../../../services/notificationService';
@@ -18,7 +19,7 @@ import { NotificationCount } from './NotificationCount';
 import DateRange from '../../inputs/DateRange';
 import { SelectCheckbox } from '../../SelectCheckbox';
 
-const { infiniteScrollPageCount, groups } = environment.notifications;
+const { infiniteScrollPageCount, groups, notificationData } = environment.notifications;
 
 interface NotificationsScreenProps {
     open: boolean;
@@ -40,6 +41,9 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
     // const [tabOptionsAnchor, setTabOptionsAnchor] = useState<HTMLElement>();
     const [startDateInput, setStartDateInput] = useState<Date | null>(null);
     const [endDateInput, setEndDateInput] = useState<Date | null>(null);
+    const [openCalenders, setOpenCalenders] = useState<boolean>(false);
+    const [notificationsToShowCheckbox, setNotificationsToShowCheckbox] = useState(notificationData[selectedGroup]);
+
     const onSetStartDate = (newStartDateInput: Date | null) => {
         setStartDateInput(newStartDateInput);
     };
@@ -159,24 +163,44 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                 <CircularProgress sx={{ marginX: 'auto', marginTop: '1rem' }} />
             ) : (
                 <>
-                    <Grid sx={{ width: '100%' }}>
-                        {/* <SelectCheckbox
+                    <Grid>
+                        <SelectCheckbox
                             title="סוג התראה"
-                            options={groups[selectedGroup]}
-                            selectedOptions={groups[selectedGroup]}
-                            // setSelectedOptions={set}
-                            getOptionId={({ _id }) => _id}
+                            options={notificationData[selectedGroup]}
+                            selectedOptions={notificationsToShowCheckbox}
+                            setSelectedOptions={setNotificationsToShowCheckbox}
+                            getOptionId={({ name }) => name}
                             getOptionLabel={({ displayName }) => displayName}
-                        /> */}
-                    </Grid>
-                    <Grid sx={{ padding: '10px' }}>
-                        <DateRange
-                            onStartDateChange={onSetStartDate}
-                            onEndDateChange={onSetEndDate}
-                            startDateInput={startDateInput}
-                            endDateInput={endDateInput}
+                            size="small"
                         />
+
+                        {!openCalenders && (
+                            <Button onClick={() => setOpenCalenders(!openCalenders)}>
+                                <EventIcon />
+                            </Button>
+                        )}
+                        <IconButton
+                            onClick={() => {
+                                onSetStartDate(null);
+                                onSetEndDate(null);
+                                setOpenCalenders(false);
+                            }}
+                            sx={{ borderRadius: 10 }}
+                        >
+                            <FilterAltOffIcon />
+                        </IconButton>
                     </Grid>
+
+                    {openCalenders ? (
+                        <Grid sx={{ padding: '10px' }}>
+                            <DateRange
+                                onStartDateChange={onSetStartDate}
+                                onEndDateChange={onSetEndDate}
+                                startDateInput={startDateInput}
+                                endDateInput={endDateInput}
+                            />
+                        </Grid>
+                    ) : null}
                     <Divider />
                     <InfiniteScroll<INotificationPopulated>
                         queryKey={['getMyNotifications', selectedGroup]}
@@ -201,29 +225,7 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                     </InfiniteScroll>
                 </>
             )}
-            {/*            
-                // <Menu open={Boolean(rightClickedGroup)} onClose={onCloseTabOptions} anchorEl={tabOptionsAnchor}>
-                //     <MenuItem
-                //         onClick={() => {
-                //             onCloseTabOptions();
-
-                //             if (!notificationCountDetails.groups[rightClickedGroup]) return;
-                //             mutate(rightClickedGroup);
-                //         }}
-                //     >
-                //         {i18next.t('notifications.setAllAsSeen', { group: i18next.t(`notifications.groups.${rightClickedGroup}`) })}
-                //     </MenuItem>
-                // </Menu> */}
             <Grid item container justifyContent="flex-end" sx={{ position: 'absolute', bottom: 0, padding: '10px' }}>
-                <IconButton
-                    onClick={() => {
-                        onSetStartDate(null);
-                        onSetEndDate(null);
-                    }}
-                    sx={{ borderRadius: 10 }}
-                >
-                    <FilterAltOffIcon />
-                </IconButton>
                 <LoadingButton
                     onClick={() => {
                         // onCloseTabOptions();

@@ -8,7 +8,7 @@ export const RuleBreachAlertNotification: React.FC<IRuleBreachAlertNotificationM
     return (
         <Grid container direction="column" spacing={1}>
             <Grid item>
-                <Typography component="p" variant="body1">
+                <Typography component="p" variant="body1" color="#4752B6">
                     {i18next.t('ruleBreachAlertNotification.payAttention')}
                 </Typography>
             </Grid>
