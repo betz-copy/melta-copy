@@ -11,6 +11,7 @@ import { ProcessTemplatesRow } from './components/ProcessTemplatesRow';
 
 import '../../css/pages.css';
 import { IPermissionsOfUser } from '../../services/permissionsService';
+import { NoPermissions } from './components/NoPermissions';
 
 const SystemManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> }> = ({ setTitle }) => {
     useEffect(() => setTitle(i18next.t('pages.systemManagement')), [setTitle]);
@@ -71,7 +72,7 @@ const SystemManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateAction
                         {Object.entries(tabsComponentsMapping).map(([tabName, tabComponent]) => {
                             return (
                                 <TabPanel key={tabName} value={tabName}>
-                                    {tabsPermissionsMapping[tabName] && tabComponent}
+                                    {tabsPermissionsMapping[tabName] ? tabComponent : <NoPermissions />}
                                 </TabPanel>
                             );
                         })}
