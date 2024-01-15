@@ -14,7 +14,7 @@ ajv.addKeyword({
     type: 'string',
 });
 const stringFormats = ['date', 'date-time', 'email', 'fileId'];
-const allowedJSONSchemaTypes = ['string', 'number', 'boolean'];
+const allowedJSONSchemaTypes = ['string', 'number', 'boolean', 'array'];
 ajv.addKeyword({
     keyword: 'serialStarter',
     type: 'number',
@@ -39,6 +39,17 @@ const propertiesArraySchema = Joi.array()
             enum: Joi.array().items(Joi.string()).when('type', { not: 'string', then: Joi.forbidden() }),
             pattern: Joi.string().when('type', { not: 'string', then: Joi.forbidden() }),
             patternCustomErrorMessage: Joi.string().when('pattern', { is: Joi.exist(), then: Joi.required(), otherwise: Joi.forbidden() }),
+            items: Joi.object({
+                type: Joi.string().valid('string').required(),
+                format: Joi.string().valid('fileId'),
+                enum: Joi.array().items(Joi.string()).min(1),
+            })
+                .xor('format', 'enum')
+                .when('type', {
+                    is: 'array',
+                    then: Joi.required(),
+                    otherwise: Joi.forbidden(),
+                }),
             dateNotification: Joi.string()
                 .valid('day', 'week', 'twoWeeks')
                 .when('format', { not: Joi.valid('date', 'date-time'), then: Joi.forbidden() })
