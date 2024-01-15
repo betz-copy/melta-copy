@@ -31,7 +31,6 @@ const Value: React.FC<{ hideValue: boolean; value: string; color?: string; isNum
                     overflow: 'hidden',
                     whiteSpace: 'nowrap',
                     textOverflow: 'ellipsis',
-                    width: '70%',
                     direction: isNumberField ? 'rtl' : undefined,
                 }}
             >
