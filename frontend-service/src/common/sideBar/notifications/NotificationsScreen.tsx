@@ -16,9 +16,6 @@ import PopperSidebar from '../../PopperSidebar';
 import { NotificationCard } from './NotificationCard';
 import { NotificationCount } from './NotificationCount';
 import DateRange from '../../inputs/DateRange';
-import ProcessTemplatesSelectCheckbox from '../../../pages/ProcessInstances/ProcessTemplatesCheckbox';
-import TemplatesSelectCheckbox from '../../templatesSelectCheckbox';
-import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { SelectCheckbox } from '../../SelectCheckbox';
 
 const { infiniteScrollPageCount, groups } = environment.notifications;
@@ -162,34 +159,15 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                 <CircularProgress sx={{ marginX: 'auto', marginTop: '1rem' }} />
             ) : (
                 <>
-                    <Grid>
-                        <Grid>
-                            <SelectCheckbox
-                                title="ggg"
-                                options={['a', 'b']}
-                                selectedOptions={[]}
-                                setSelectedOptions={() => {
-                                    console.log('gg');
-                                }}
-                                getOptionId={() => {
-                                    return 'jjj';
-                                }}
-                                getOptionLabel={() => {
-                                    return 'jjj';
-                                }}
-                            />
-                        </Grid>
-                        <Grid>
-                            <IconButton
-                                onClick={() => {
-                                    onSetStartDate(null);
-                                    onSetEndDate(null);
-                                }}
-                                sx={{ borderRadius: 10 }}
-                            >
-                                <FilterAltOffIcon />
-                            </IconButton>
-                        </Grid>
+                    <Grid sx={{ width: '100%' }}>
+                        <SelectCheckbox
+                            title="סוג התראה"
+                            options={groups[selectedGroup]}
+                            selectedOptions={groups[selectedGroup]}
+                            // setSelectedOptions={set}
+                            getOptionId={({ _id }) => _id}
+                            getOptionLabel={({ displayName }) => displayName}
+                        />
                     </Grid>
                     <Grid sx={{ padding: '10px' }}>
                         <DateRange
@@ -237,6 +215,15 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                 //     </MenuItem>
                 // </Menu> */}
             <Grid item container justifyContent="flex-end" sx={{ position: 'absolute', bottom: 0, padding: '10px' }}>
+                <IconButton
+                    onClick={() => {
+                        onSetStartDate(null);
+                        onSetEndDate(null);
+                    }}
+                    sx={{ borderRadius: 10 }}
+                >
+                    <FilterAltOffIcon />
+                </IconButton>
                 <LoadingButton
                     onClick={() => {
                         // onCloseTabOptions();
