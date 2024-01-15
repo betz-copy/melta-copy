@@ -160,14 +160,14 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
             ) : (
                 <>
                     <Grid sx={{ width: '100%' }}>
-                        <SelectCheckbox
+                        {/* <SelectCheckbox
                             title="סוג התראה"
                             options={groups[selectedGroup]}
                             selectedOptions={groups[selectedGroup]}
                             // setSelectedOptions={set}
                             getOptionId={({ _id }) => _id}
                             getOptionLabel={({ displayName }) => displayName}
-                        />
+                        /> */}
                     </Grid>
                     <Grid sx={{ padding: '10px' }}>
                         <DateRange
