@@ -174,9 +174,12 @@ const CategoriesRow: React.FC = () => {
                     />
                 ))}
             </Box>
-            <IconButton style={{ height: '40px', borderRadius: '5px' }}>
+            {
+                /* <IconButton style={{ height: '40px', borderRadius: '5px' }}>
                 <img src="/icons/Add-Category-Group.svg" />
-            </IconButton>
+            </IconButton> */
+                // TODO - add when category group will be supported
+            }
             <CategoryWizard
                 open={categoryWizardDialogState.isWizardOpen}
                 handleClose={() => setCategoryWizardDialogState({ isWizardOpen: false, category: null })}

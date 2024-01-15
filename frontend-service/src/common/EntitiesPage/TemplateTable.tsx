@@ -1,6 +1,5 @@
 import React, { forwardRef, useImperativeHandle, useRef, useState } from 'react';
-import { Grid, Box, CircularProgress, Dialog, Icon } from '@mui/material';
-import { ExpandLess, ExpandMore, AddCircle, VerticalAlignBottomOutlined as DownloadIcon } from '@mui/icons-material';
+import { Grid, Box, CircularProgress, Dialog } from '@mui/material';
 import i18next from 'i18next';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
@@ -139,12 +138,12 @@ const TemplateTable = forwardRef<
                 </Grid>
 
                 <Grid container item flexGrow={1} width={0} justifyContent="flex-end" alignItems="center">
-                    <img src="/icons/load-file.svg" />
+                    <img style={{ opacity: '0.3' }} src="/icons/load-file.svg" />
                     <AddEntityButton
                         initialStep={1}
-                        disabled={template.disabled}
+                        disabled={!userHasWritePermissions}
                         initialValues={{ template, properties: { disabled: false }, attachmentsProperties: {} }}
-                        style={{ borderRadius: '5px' }}
+                        style={{ borderRadius: '5px', opacity: !userHasWritePermissions ? '0.3' : '' }}
                     >
                         {/* <AddCircle color={!template.disabled ? 'primary' : 'disabled'} fontSize="large" data-tour="create-entity" /> */}
                         <img src="/icons/add-entity.svg" />

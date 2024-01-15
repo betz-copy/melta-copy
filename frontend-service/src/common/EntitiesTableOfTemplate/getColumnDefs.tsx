@@ -119,8 +119,8 @@ export const getColumnDefs = <Data extends any = IEntity>({
             pinned: 'left',
             menuTabs: [],
             sortable: false,
-            width: 220,
-            minWidth: 220,
+            width: 180,
+            minWidth: 180,
             flex: 0,
             resizable: false,
             lockPosition: true,
@@ -150,17 +150,6 @@ export const getColumnDefs = <Data extends any = IEntity>({
                                 </IconButtonWithPopover>
                             </NavLink>
                         )}
-                        {deleteRowButtonProps && (
-                            <IconButtonWithPopover
-                                popoverText={disabledEntity ? i18next.t('entityPage.disabledEntity') : deleteRowButtonProps.popoverText}
-                                iconButtonProps={{
-                                    onClick: () => deleteRowButtonProps.onClick(data),
-                                }}
-                                disabled={deleteRowButtonProps.disabledButton || disabledEntity}
-                            >
-                                <DeleteIcon />
-                            </IconButtonWithPopover>
-                        )}
                         {editRowButtonProps && (
                             <IconButtonWithPopover
                                 popoverText={disabledEntity ? i18next.t('entityPage.disabledEntity') : editRowButtonProps.popoverText}
@@ -169,7 +158,10 @@ export const getColumnDefs = <Data extends any = IEntity>({
                                 }}
                                 disabled={editRowButtonProps.disabledButton || disabledEntity}
                             >
-                                <img src="/icons/edit-icon.svg" />
+                                <img
+                                    src="/icons/edit-icon.svg"
+                                    style={{ opacity: editRowButtonProps.disabledButton || disabledEntity ? '0.3' : '1' }}
+                                />
                             </IconButtonWithPopover>
                         )}
 

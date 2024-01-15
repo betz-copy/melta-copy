@@ -18,7 +18,9 @@ const AddEntityButton: React.FC<{
     return (
         <>
             <IconButtonWithPopover
-                popoverText={popoverText || i18next.t('entitiesTableOfTemplate.addEntity')}
+                popoverText={
+                    popoverText || disabled ? i18next.t('permissions.dontHaveWritePermissions') : i18next.t('entitiesTableOfTemplate.addEntity')
+                }
                 disabledToolTip={disabledToolTip}
                 iconButtonProps={{
                     onClick: () => {

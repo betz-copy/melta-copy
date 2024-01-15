@@ -410,10 +410,10 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                         },
                         sortable: true,
                         menuTabs: ['filterMenuTab'],
-                        minWidth: 120,
+                        minWidth: 100,
                         resizable: true,
                         lockPinned: true,
-                        initialWidth: 250,
+                        initialWidth: 100,
                     }}
                     sideBar={{
                         toolPanels: [

@@ -180,7 +180,11 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                             <Grid container flexDirection="row" flexWrap="nowrap">
                                 <IconButton
                                     onClick={() => {
-                                        setIsEditMode(true);
+                                        if (canWriteInstance && !isEntityDisabled) setIsEditMode(true);
+                                    }}
+                                    style={{
+                                        opacity: !canWriteInstance || isEntityDisabled ? '0.3' : '',
+                                        cursor: !canWriteInstance || isEntityDisabled ? 'default' : 'pointer',
                                     }}
                                 >
                                     <Tooltip
@@ -188,7 +192,14 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                                         PopperProps={{
                                             sx: { [`& .${tooltipClasses.tooltip}`]: { fontSize: '1rem', backgroundColor: '#101440' } },
                                         }}
-                                        title={i18next.t('actions.edit')}
+                                        title={
+                                            // eslint-disable-next-line no-nested-ternary
+                                            !canWriteInstance
+                                                ? i18next.t('permissions.dontHaveWritePermissionsToCategory')
+                                                : isEntityDisabled
+                                                ? i18next.t('entityPage.disabledEntity')
+                                                : i18next.t('actions.edit')
+                                        }
                                     >
                                         <img src="/icons/edit-icon.svg" />
                                     </Tooltip>
