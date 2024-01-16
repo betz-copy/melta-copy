@@ -15,8 +15,11 @@ import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
 import { ErrorToast } from '../../../common/ErrorToast';
 import { Box } from './Box';
 import { CardMenu } from './CardMenu';
-import { mainFontSizes } from '../../../theme';
 import { MeltaTooltip } from '../../../common/MeltaTooltip';
+import { environment } from '../../../globals';
+import { EntityTemplateColor } from '../../../common/EntityTemplateColor';
+import { ImageWithDisable } from '../../../common/ImageWithDisable';
+import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
 
 interface CategoryCardProps {
     category: IMongoCategory;
@@ -52,14 +55,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, setDeleteCategory
                 >
                     <Grid item container alignItems="center" gap="10px" flexBasis="90%">
                         <Grid item>
-                            <div
-                                style={{
-                                    height: '18px',
-                                    width: '3px',
-                                    backgroundColor: category.color,
-                                    borderRadius: '20px',
-                                }}
-                            />
+                            <EntityTemplateColor entityTemplateColor={category.color} style={{ height: '18px' }} />
                         </Grid>
 
                         <Grid item>
@@ -73,7 +69,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, setDeleteCategory
                             <MeltaTooltip title={category.displayName}>
                                 <Typography
                                     style={{
-                                        fontSize: mainFontSizes.headlineSubTitleFontSize,
+                                        fontSize: environment.mainFontSizes.headlineSubTitleFontSize,
                                         color: theme.palette.primary.main,
                                         fontWeight: '400',
                                         textOverflow: 'ellipsis',
@@ -145,8 +141,8 @@ const CategoriesRow: React.FC = () => {
             <Box
                 header={
                     <Grid item container justifyContent="space-between" alignItems="center" height="40px">
-                        <Typography style={{ fontSize: mainFontSizes.headlineSubTitleFontSize, fontWeight: '400', color: '#9398C2' }}>
-                            general
+                        <Typography style={{ fontSize: environment.mainFontSizes.headlineSubTitleFontSize, fontWeight: '400', color: '#9398C2' }}>
+                            {i18next.t('general')}
                         </Typography>
                         {isHoverOnBox && (
                             <IconButton onClick={() => {}}>
@@ -175,10 +171,12 @@ const CategoriesRow: React.FC = () => {
                 ))}
             </Box>
             {
-                /* <IconButton style={{ height: '40px', borderRadius: '5px' }}>
-                <img src="/icons/Add-Category-Group.svg" />
-            </IconButton> */
                 // TODO - add when category group will be supported
+                <Grid>
+                    <IconButtonWithPopover popoverText={i18next.t('soon')} style={{ height: '40px', borderRadius: '5px', cursor: 'default' }}>
+                        <ImageWithDisable srcPath="/icons/Add-Category-Group.svg" disabled />
+                    </IconButtonWithPopover>
+                </Grid>
             }
             <CategoryWizard
                 open={categoryWizardDialogState.isWizardOpen}

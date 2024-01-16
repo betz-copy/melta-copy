@@ -1,18 +1,19 @@
 import React from 'react';
-import { ListItemButton, Tooltip, tooltipClasses } from '@mui/material';
+import { ListItemButton } from '@mui/material';
 import i18next from 'i18next';
 import { StyledLink, StyledListItemText } from './NavBar.styled';
 import './NavButton.css';
 import { MeltaTooltip } from '../MeltaTooltip';
 
-const NavButton: React.FC<{ to: string; isDrawerOpen: boolean; text: string; disabled?: boolean; onChangeToActive: (boolean) => void }> = ({
-    to,
-    isDrawerOpen,
-    text,
-    children,
-    disabled = false,
-    onChangeToActive,
-}) => {
+interface NavButtonProps {
+    to: string;
+    isDrawerOpen: boolean;
+    text: string;
+    disabled?: boolean;
+    onChangeToActive: (boolean) => void;
+}
+
+const NavButton: React.FC<NavButtonProps> = ({ to, isDrawerOpen, text, children, disabled = false, onChangeToActive }) => {
     return (
         <StyledLink
             to={to}
@@ -38,7 +39,7 @@ const NavButton: React.FC<{ to: string; isDrawerOpen: boolean; text: string; dis
                                 style={{
                                     justifyContent: 'space-around',
                                     direction: 'rtl',
-                                    backgroundColor: isActive ? 'rgba(255, 255, 255, 0.80)' : 'transparent',
+                                    backgroundColor: isActive ? '#ffffffcc' : 'transparent',
                                     borderRadius: '20px',
                                     height: '32px',
                                 }}

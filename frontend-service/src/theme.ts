@@ -7,11 +7,16 @@ const basicTheme: ThemeOptions = {
     },
 };
 
-// TODO - move to globals file
-export const mainFontSizes = {
-    headlineTitleFontSize: '24px',
-    headlineSubTitleFontSize: '14px',
-};
+// // TODO - move to globals file
+// export const mainFontSizes = {
+//     headlineTitleFontSize: '24px',
+//     headlineSubTitleFontSize: '14px',
+// };
+
+// export const iconSize = {
+//     width: '24px',
+//     height: '24px',
+// };
 
 export const lightTheme = createTheme({
     ...basicTheme,
@@ -37,6 +42,25 @@ export const lightTheme = createTheme({
                     '--ag-header-foreground-color': '#101440 !important',
                     '--ag-header-cell-hover-background-color': '#EBEFFA !important',
                     '--ag-header-cell-moving-background-color': '#EBEFFA !important',
+                },
+            },
+        },
+        MuiTextField: {
+            defaultProps: {
+                size: 'small',
+            },
+            styleOverrides: {
+                root: {
+                    '& .MuiInputBase-root': {
+                        borderRadius: '10px',
+                    },
+                    '& fieldset': {
+                        borderColor: '#CCCFE5',
+                        color: '#CCCFE5',
+                    },
+                    '& label': {
+                        color: '#9398C2',
+                    },
                 },
             },
         },

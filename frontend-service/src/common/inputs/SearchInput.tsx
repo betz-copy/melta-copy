@@ -1,5 +1,5 @@
 import React, { ReactNode } from 'react';
-import { BaseTextFieldProps, InputAdornment, TextField, useTheme } from '@mui/material';
+import { BaseTextFieldProps, Divider, InputAdornment, TextField, useTheme } from '@mui/material';
 import { Search as SearchIcon } from '@mui/icons-material';
 import i18next from 'i18next';
 
@@ -38,7 +38,8 @@ const SearchInput: React.FC<{
             InputProps={{
                 endAdornment: (
                     <InputAdornment position="end" style={{ color: theme.palette.primary.main }}>
-                        <div
+                        <Divider
+                            orientation="vertical"
                             style={{
                                 width: '1px',
                                 height: '22px',

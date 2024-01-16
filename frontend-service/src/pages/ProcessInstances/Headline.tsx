@@ -13,7 +13,7 @@ import { IMongoProcessTemplatePopulated } from '../../interfaces/processes/proce
 import { IPermissionsOfUser } from '../../services/permissionsService';
 import './ProcessesList.css';
 import DateRange from '../../common/inputs/DateRange';
-import { lightTheme, mainFontSizes } from '../../theme';
+import { environment } from '../../globals';
 
 const ProcessInstancesHeadline: React.FC<{
     onSearch: (value: string) => void;
@@ -41,7 +41,7 @@ const ProcessInstancesHeadline: React.FC<{
                             title={i18next.t('pages.processInstances')}
                             component="h4"
                             variant="h4"
-                            style={{ fontSize: mainFontSizes.headlineTitleFontSize }}
+                            style={{ fontSize: environment.mainFontSizes.headlineTitleFontSize }}
                         />
                     </Grid>
                     <Grid item>

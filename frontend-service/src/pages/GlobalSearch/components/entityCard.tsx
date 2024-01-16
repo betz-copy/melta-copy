@@ -16,8 +16,8 @@ import { BlueTitle } from '../../../common/BlueTitle';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
 import { getEntityTemplateColor } from '../../../utils/colors';
 import { EditEntityDetails } from '../../Entity/components/EditEntityDetails';
-import { mainFontSizes } from '../../../theme';
 import { MeltaTooltip } from '../../../common/MeltaTooltip';
+import { environment } from '../../../globals';
 
 interface EntityCardProps {
     entity: IEntity;
@@ -86,7 +86,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
                             {entityTemplate.iconFileId ? (
                                 <CustomIcon color="white" iconUrl={entityTemplate.iconFileId} height="24px" width="24px" />
                             ) : (
-                                <AppRegistrationIcon sx={{ fontSize: mainFontSizes.headlineTitleFontSize, color: 'white' }} />
+                                <AppRegistrationIcon sx={{ fontSize: environment.mainFontSizes.headlineTitleFontSize, color: 'white' }} />
                             )}
                         </Grid>
                         <BlueTitle style={{ width: 'fit-content' }} title={entityTemplate.displayName} component="h6" variant="h6" />
@@ -94,8 +94,8 @@ const EntityCard: React.FC<EntityCardProps> = ({
                 }
                 action={
                     <Grid container alignContent="center" alignItems="center">
-                        <Grid>
-                            <IconButton
+                        <Grid container item alignContent="center" alignItems="center">
+                            {/* <IconButton
                                 onClick={(e) => {
                                     if (!userHavePermission) e.preventDefault();
                                     navigate(`/entity/${entity.properties._id}`);
@@ -104,8 +104,20 @@ const EntityCard: React.FC<EntityCardProps> = ({
                                 <MeltaTooltip placement="bottom" title={i18next.t('wizard.entity.readMore')}>
                                     <img src="/icons/read-more-icon.svg" />
                                 </MeltaTooltip>
-                            </IconButton>
-                            <IconButton
+                            </IconButton> */}
+                            <Grid
+                                item
+                                onClick={(e) => {
+                                    if (!userHavePermission) e.preventDefault();
+                                    navigate(`/entity/${entity.properties._id}`);
+                                }}
+                            >
+                                <IconButtonWithPopover popoverText={i18next.t('wizard.entity.readMore')}>
+                                    <img src="/icons/read-more-icon.svg" />
+                                </IconButtonWithPopover>
+                            </Grid>
+                            <Grid
+                                item
                                 onClick={() => {
                                     setEditDialog({
                                         isOpen: true,
@@ -113,19 +125,20 @@ const EntityCard: React.FC<EntityCardProps> = ({
                                     });
                                 }}
                             >
-                                <MeltaTooltip placement="bottom" title={i18next.t('actions.edit')}>
+                                <IconButtonWithPopover popoverText={i18next.t('actions.edit')}>
                                     <img src="/icons/edit-icon.svg" />
-                                </MeltaTooltip>
-                            </IconButton>
-                            <IconButton
+                                </IconButtonWithPopover>
+                            </Grid>
+                            <Grid
+                                item
                                 onClick={() => {
                                     navigate(`/entity/${entity.properties._id}/graph`);
                                 }}
                             >
-                                <MeltaTooltip placement="bottom" title={i18next.t('actions.graph')}>
+                                <IconButtonWithPopover popoverText={i18next.t('actions.graph')}>
                                     <img src="/icons/graph-icon.svg" />
-                                </MeltaTooltip>
-                            </IconButton>
+                                </IconButtonWithPopover>
+                            </Grid>
                             <IconButton size="large" onClick={() => setOpen(!open)}>
                                 {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
                             </IconButton>
@@ -171,10 +184,11 @@ const EntityCard: React.FC<EntityCardProps> = ({
                             display: 'flex',
                             flexDirection: 'row',
                             flexWrap: 'wrap',
-                            justifyContent: 'space-between',
-                            columnGap: '50px',
+                            columnGap: '20px',
                             alignItems: 'center',
+                            width: '100%',
                         }}
+                        innerStyle={{ width: '310px' }}
                     />
                 </Grid>
             )}

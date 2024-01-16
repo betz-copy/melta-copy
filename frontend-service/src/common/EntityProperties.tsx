@@ -1,5 +1,5 @@
 import React, { CSSProperties } from 'react';
-import { Box, Grid, IconButton, Tooltip, Typography, tooltipClasses } from '@mui/material';
+import { Grid, IconButton, Typography } from '@mui/material';
 import i18next from 'i18next';
 import { useSelector } from 'react-redux';
 import { pdfjs } from 'react-pdf';
@@ -56,7 +56,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
     const [hideFieldsToDisplay, setHideFieldsToDisplay] = React.useState(entityTemplate.properties.hide);
 
     return (
-        <Box style={style}>
+        <Grid container style={style}>
             {propertiesOrderedToShow.map((propertyKey) => {
                 const propertySchema = entityTemplate.properties.properties[propertyKey];
                 const propertyValue = properties[propertyKey];
@@ -69,13 +69,9 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                     propertySchema.enum && entityTemplate.enumPropertiesColors?.[propertyKey]?.[propertyValue],
                 );
                 return (
-                    <Grid key={propertyKey} item width="250px" flexDirection="row" style={innerStyle} alignItems="center">
+                    <Grid key={propertyKey} item flexDirection="row" style={innerStyle} alignItems="center">
                         <Grid container alignItems="center" flexWrap="nowrap">
-                            <Grid
-                                item
-                                width="120px"
-                                style={{ textOverflow: 'ellipsis', whiteSpace: 'nowrap', overflow: 'hidden', textAlign: 'right' }}
-                            >
+                            <Grid item width="30%" style={{ textOverflow: 'ellipsis', whiteSpace: 'nowrap', overflow: 'hidden', textAlign: 'right' }}>
                                 <Typography
                                     display="inline"
                                     fontSize="14px"
@@ -88,7 +84,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                             <Grid
                                 item
                                 container
-                                width="200px"
+                                width="70%"
                                 flexDirection="row"
                                 alignItems="center"
                                 flexWrap="nowrap"
@@ -135,7 +131,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                     </Grid>
                 );
             })}
-        </Box>
+        </Grid>
     );
 };
 

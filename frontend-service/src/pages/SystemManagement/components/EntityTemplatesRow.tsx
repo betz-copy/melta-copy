@@ -1,6 +1,6 @@
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 import React, { useEffect, useRef, useState } from 'react';
-import { Grid, IconButton, Tooltip, Typography, tooltipClasses, useTheme } from '@mui/material';
+import { Grid, IconButton, Skeleton, Tooltip, Typography, tooltipClasses, useTheme } from '@mui/material';
 import { AppRegistration as AppRegistrationIcon } from '@mui/icons-material';
 import { UseMutateAsyncFunction, useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
@@ -28,9 +28,9 @@ import { Box } from './Box';
 import { getEntityTemplateColor } from '../../../utils/colors';
 import { CardMenu } from './CardMenu';
 import { updateCategoryRequest } from '../../../services/templates/categoriesService';
-import { mainFontSizes } from '../../../theme';
 import { MeltaTooltip } from '../../../common/MeltaTooltip';
 import { EntityTemplateColor } from '../../../common/EntityTemplateColor';
+import { environment } from '../../../globals';
 
 const defaultEntityTemplatePopulated: IMongoEntityTemplatePopulated = {
     _id: '',
@@ -103,14 +103,14 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                             {entityTemplate.iconFileId ? (
                                 <CustomIcon iconUrl={entityTemplate.iconFileId} height="24px" width="24px" />
                             ) : (
-                                <AppRegistrationIcon style={{ height: '24px', width: '24px' }} fontSize="small" />
+                                <AppRegistrationIcon style={{ ...environment.iconSize }} fontSize="small" />
                             )}
                         </Grid>
                         <Grid item>
                             <MeltaTooltip title={entityTemplate.displayName}>
                                 <Typography
                                     style={{
-                                        fontSize: mainFontSizes.headlineSubTitleFontSize,
+                                        fontSize: environment.mainFontSizes.headlineSubTitleFontSize,
                                         color: theme.palette.primary.main,
                                         fontWeight: '400',
                                         textOverflow: 'ellipsis',
@@ -249,6 +249,7 @@ interface CategoryEntitiesBoxProps {
         },
         unknown
     >;
+    loadedEntityTemplateId: string;
 }
 
 const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
@@ -256,6 +257,7 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
     setEntityTemplateWizardDialogState,
     setDeleteEntityTemplateDialogState,
     updateEntityTemplateStatusAsync,
+    loadedEntityTemplateId,
 }) => {
     const [isHoverOnBox, setIsHoverOnBox] = useState(false);
     const [isEditableCategory, setIsEditableCategory] = useState(false);
@@ -274,16 +276,16 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
     return (
         <Droppable droppableId={entityTemplatesWithCategory.category._id}>
             {(provided) => (
-                <div ref={provided.innerRef} {...provided.droppableProps}>
+                <Grid ref={provided.innerRef} {...provided.droppableProps}>
                     <Box
                         key={entityTemplatesWithCategory.category._id}
                         header={
                             <Grid item container justifyContent="space-between" alignItems="center" height="40px" width="284px">
-                                <div
+                                <Grid
                                     ref={containerWrapperRef}
                                     contentEditable={isEditableCategory}
                                     style={{
-                                        fontSize: mainFontSizes.headlineSubTitleFontSize,
+                                        fontSize: environment.mainFontSizes.headlineSubTitleFontSize,
                                         fontWeight: '400',
                                         color: isEditableCategory ? 'black' : '#9398C2',
                                         outline: isEditableCategory ? '1px solid black' : '',
@@ -308,7 +310,7 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
                                     }}
                                 >
                                     {entityTemplatesWithCategory.category.displayName}
-                                </div>
+                                </Grid>
                                 {isHoverOnBox && (
                                     <IconButton
                                         onClick={() => {
@@ -340,20 +342,28 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
                         {!!entityTemplatesWithCategory.entityTemplates.length &&
                             entityTemplatesWithCategory.entityTemplates.map((entityTemplate, index) => (
                                 <Draggable draggableId={entityTemplate._id} key={entityTemplate._id} index={index}>
-                                    {(provided2) => (
-                                        <div ref={provided2.innerRef} {...provided2.draggableProps} {...provided2.dragHandleProps}>
-                                            <EntityTemplateCard
-                                                entityTemplate={entityTemplate}
-                                                setDeleteEntityTemplateDialogState={setDeleteEntityTemplateDialogState}
-                                                setEntityTemplateWizardDialogState={setEntityTemplateWizardDialogState}
-                                                updateEntityTemplateStatusAsync={updateEntityTemplateStatusAsync}
-                                            />
-                                        </div>
+                                    {(draggableProvided) => (
+                                        <Grid
+                                            ref={draggableProvided.innerRef}
+                                            {...draggableProvided.draggableProps}
+                                            {...draggableProvided.dragHandleProps}
+                                        >
+                                            {loadedEntityTemplateId === entityTemplate._id ? (
+                                                <Skeleton variant="rounded" height="50px" />
+                                            ) : (
+                                                <EntityTemplateCard
+                                                    entityTemplate={entityTemplate}
+                                                    setDeleteEntityTemplateDialogState={setDeleteEntityTemplateDialogState}
+                                                    setEntityTemplateWizardDialogState={setEntityTemplateWizardDialogState}
+                                                    updateEntityTemplateStatusAsync={updateEntityTemplateStatusAsync}
+                                                />
+                                            )}
+                                        </Grid>
                                     )}
                                 </Draggable>
                             ))}
                     </Box>
-                </div>
+                </Grid>
             )}
         </Droppable>
     );
@@ -369,6 +379,7 @@ const EntityTemplatesRow: React.FC = () => {
     const [categoriesToShow, setCategoriesToShow] = useState<IMongoCategory[]>(categoriesArray);
 
     const [searchText, setSearchText] = useState('');
+    const [loadedEntityTemplateId, setLoadedEntityTemplateId] = useState('');
     const [deleteEntityTemplateDialogState, setDeleteEntityTemplateDialogState] = useState<{
         isDialogOpen: boolean;
         entityTemplateId: string | null;
@@ -433,12 +444,10 @@ const EntityTemplatesRow: React.FC = () => {
         },
     );
 
-    const { mutateAsync, isLoading } = useMutation(
+    const { mutateAsync } = useMutation(
         ({ entityTemplateId, entityTemplate, category }: { entityTemplateId: string; entityTemplate: IEntityTemplate; category: IMongoCategory }) => {
-            // TODO -  set loading list state  with entityTemplateId true - use mui skelaton
-            // queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) =>
-            //     entityTemplateMap!.set(entityTemplateId, entityTemplate),
-            // );
+            setLoadedEntityTemplateId(entityTemplateId);
+
             return updateEntityTemplateRequest(entityTemplateId, {
                 ...entityTemplate,
                 category: category._id,
@@ -448,9 +457,11 @@ const EntityTemplatesRow: React.FC = () => {
         {
             onSuccess(data) {
                 queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) => entityTemplateMap!.set(data._id, data));
+                setLoadedEntityTemplateId('');
             },
-            onError() {
-                // TODO -  set loading list state  with entityTemplateId false and add toastify
+            onError(error: AxiosError) {
+                toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.entityTemplate.failedToEdit')} />);
+                setLoadedEntityTemplateId('');
             },
         },
     );
@@ -531,6 +542,7 @@ const EntityTemplatesRow: React.FC = () => {
                                 setEntityTemplateWizardDialogState={setEntityTemplateWizardDialogState}
                                 setDeleteEntityTemplateDialogState={setDeleteEntityTemplateDialogState}
                                 updateEntityTemplateStatusAsync={updateEntityTemplateStatusAsync}
+                                loadedEntityTemplateId={loadedEntityTemplateId}
                             />
                         </Grid>
                     ))}

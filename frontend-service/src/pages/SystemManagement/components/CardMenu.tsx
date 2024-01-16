@@ -4,6 +4,7 @@ import i18next from 'i18next';
 import { Edit as EditIcon, Delete as DeleteIcon, MoreVertOutlined as OptionsIcon, DoDisturbAlt as DisabledIcon } from '@mui/icons-material';
 import { MenuButton } from '../../../common/MenuButton';
 import { MeltaTooltip } from '../../../common/MeltaTooltip';
+import { environment } from '../../../globals';
 
 export const CardMenu: React.FC<{
     onEditClick: MouseEventHandler;
@@ -25,7 +26,7 @@ export const CardMenu: React.FC<{
     };
     return (
         <>
-            <IconButton onClick={handleClick} style={{ width: '24px', height: '24px' }}>
+            <IconButton onClick={handleClick} style={{ ...environment.iconSize }}>
                 <OptionsIcon />
             </IconButton>
             <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>

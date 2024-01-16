@@ -8,9 +8,22 @@ const IconButtonWithPopover: React.FC<{
     disabledToolTip?: boolean;
     style?: CSSProperties;
     disabled?: boolean;
-}> = ({ children, iconButtonProps, popoverText, disabledToolTip = false, disabled, style }) => {
+    placement?:
+        | 'bottom-end'
+        | 'bottom-start'
+        | 'bottom'
+        | 'left-end'
+        | 'left-start'
+        | 'left'
+        | 'right-end'
+        | 'right-start'
+        | 'right'
+        | 'top-end'
+        | 'top-start'
+        | 'top';
+}> = ({ children, iconButtonProps, popoverText, disabledToolTip = false, disabled, style, placement = 'bottom' }) => {
     return (
-        <MeltaTooltip title={popoverText} disableHoverListener={disabledToolTip}>
+        <MeltaTooltip title={popoverText} disableHoverListener={disabledToolTip} placement={placement}>
             <span>
                 <IconButton {...iconButtonProps} style={style} disabled={disabled}>
                     {children}

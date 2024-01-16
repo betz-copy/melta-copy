@@ -24,6 +24,8 @@ export default {
     failedToExportTable: 'הורדת טבלה נכשלה',
     copyUrl: 'העתק קישור',
     successfullyCopied: 'הקישור הועתק בהצלחה',
+    soon: 'בקרוב...',
+    general: 'כללי',
     entitiesTableOfTemplate: {
         resetFilters: 'איפוס סינונים',
         downloadOneTable: 'הורד טבלה',

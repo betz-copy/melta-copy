@@ -49,7 +49,7 @@ export const getButtonState = (
         isEditButtonsDisabled = true;
         disabledButtonText = i18next.t('permissions.dontHaveWritePermissionsToCategory');
     } else {
-        disabledButtonText = i18next.t('entityPage.createRelationshipPopoverText');
+        disabledButtonText = i18next.t('ruleManagement.create-relationship');
     }
 
     return { isEditButtonsDisabled, disabledButtonText };
@@ -164,9 +164,7 @@ const Entity: React.FC = () => {
             />
             <Grid className="pageMargin">
                 <Grid item marginTop="20px" data-tour="entity-details">
-                    <div style={{ marginTop: '20px' }}>
-                        <EntityDetails entityTemplate={currentEntityTemplate} expandedEntity={expandedEntity} />
-                    </div>
+                    <EntityDetails entityTemplate={currentEntityTemplate} expandedEntity={expandedEntity} />
                 </Grid>
 
                 <Grid data-tour="connected-entities" style={{ marginTop: '2rem' }}>
@@ -201,6 +199,7 @@ const Entity: React.FC = () => {
                                                     </Typography>
                                                     <Typography color="#787C9E">
                                                         {
+                                                            // calculate the amount of the related connections of each entity
                                                             expandedEntity.connections.filter((connection) => {
                                                                 if (
                                                                     expandedEntity.entity.properties._id ===
@@ -267,7 +266,7 @@ const Entity: React.FC = () => {
                                                                 popoverText={
                                                                     isEditButtonsDisabled
                                                                         ? disabledButtonText
-                                                                        : i18next.t('entityPage.createRelationshipPopoverText')
+                                                                        : i18next.t('ruleManagement.create-relationship')
                                                                 }
                                                                 disabled={isEditButtonsDisabled}
                                                                 iconButtonProps={{

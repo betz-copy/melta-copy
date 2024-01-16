@@ -16,7 +16,7 @@ import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTempla
 import { RelationshipTitle } from '../../../common/RelationshipTitle';
 import { populateRelationshipTemplate } from '../../../utils/templates';
 import { CardMenu } from './CardMenu';
-import { mainFontSizes } from '../../../theme';
+import { environment } from '../../../globals';
 
 export const RuleCard: React.FC<{
     rule: IMongoRule;
@@ -48,7 +48,11 @@ export const RuleCard: React.FC<{
                     <Grid item container alignItems="center" justifyContent="space-between" direction="row" flexWrap="nowrap">
                         <Grid item flexBasis="90%" height="30px">
                             <Typography
-                                style={{ fontSize: mainFontSizes.headlineSubTitleFontSize, color: theme.palette.primary.main, fontWeight: '400' }}
+                                style={{
+                                    fontSize: environment.mainFontSizes.headlineSubTitleFontSize,
+                                    color: theme.palette.primary.main,
+                                    fontWeight: '400',
+                                }}
                             >
                                 {rule.name}
                             </Typography>

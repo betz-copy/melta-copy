@@ -24,7 +24,7 @@ import { ErrorToast } from '../../../common/ErrorToast';
 import { Box } from './Box';
 import { CustomIcon } from '../../../common/CustomIcon';
 import { CardMenu } from './CardMenu';
-import { mainFontSizes } from '../../../theme';
+import { environment } from '../../../globals';
 
 interface RelationshipTemplateCardProps {
     relationshipTemplate: IMongoRelationshipTemplatePopulated;
@@ -52,16 +52,7 @@ const RelationshipTemplateCard: React.FC<RelationshipTemplateCardProps> = ({
     return (
         <ViewingCard
             title={
-                <Grid
-                    container
-                    direction="row"
-                    justifyContent="space-between"
-                    // minWidth="530px"
-                    width="100%"
-                    alignItems="center"
-                    paddingLeft="20px"
-                    flexWrap="nowrap"
-                >
+                <Grid container direction="row" justifyContent="space-between" width="100%" alignItems="center" paddingLeft="20px" flexWrap="nowrap">
                     <Grid item container alignItems="center" gap="10px" flexBasis="90%">
                         <RelationshipTitle relationshipTemplate={relationshipTemplate} />
                     </Grid>
@@ -300,9 +291,11 @@ const RelationshipTemplatesRow: React.FC = () => {
                                         color="#9398C2"
                                     />
                                 ) : (
-                                    <AppRegistrationIcon style={{ color: '#9398C2', height: '24px', width: '24px' }} fontSize="small" />
+                                    <AppRegistrationIcon style={{ color: '#9398C2', ...environment.iconSize }} fontSize="small" />
                                 )}
-                                <Typography style={{ fontSize: mainFontSizes.headlineSubTitleFontSize, fontWeight: '400', color: '#9398C2' }}>
+                                <Typography
+                                    style={{ fontSize: environment.mainFontSizes.headlineSubTitleFontSize, fontWeight: '400', color: '#9398C2' }}
+                                >
                                     {relationshipTemplateWithEntity.entityTemplate.displayName}
                                 </Typography>
                                 <img src="/icons/arrow-relation-title.svg" />

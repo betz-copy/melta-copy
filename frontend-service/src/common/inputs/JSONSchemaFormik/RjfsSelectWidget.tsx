@@ -82,7 +82,6 @@ const RjfsSelectWidget = ({
                 <TextField
                     {...textFieldProps}
                     {...params}
-                    size="small"
                     required={required}
                     autoFocus={autofocus}
                     onChange={_onChange}
@@ -95,18 +94,6 @@ const RjfsSelectWidget = ({
                     error={rawErrors.length > 0}
                     color={color as TextFieldProps['color']}
                     label={label || schema.title}
-                    sx={{
-                        '& .MuiInputBase-root': {
-                            borderRadius: '10px',
-                        },
-                        '& fieldset': {
-                            borderColor: '#CCCFE5',
-                            color: '#CCCFE5',
-                        },
-                        '& label': {
-                            color: '#9398C2',
-                        },
-                    }}
                 />
             )}
             renderOption={(props, option) => {

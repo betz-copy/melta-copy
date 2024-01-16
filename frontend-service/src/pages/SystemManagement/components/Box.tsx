@@ -26,19 +26,9 @@ export const Box: React.FC<BoxProps> = ({ children, header, addingIcon, onHover 
                 boxShadow: '0px 2px 6px 0px rgba(30, 39, 117, 0.30);',
                 overflowY: 'overlay',
                 '::-webkit-scrollbar-track': { marginY: '1rem', bgcolor: 'transparent' },
-                // height: 'fit-content',
-                // minHeight: '200px',
-                // minWidth: '200px',
             }}
         >
             <Grid container direction="column">
-                {/* <Grid item container justifyContent="space-between" alignItems="center">
-                    <Typography style={{ fontSize: '14px', fontWeight: '400', color: '#9398C2' }}>{header}</Typography>
-                    <IconButton onClick={() => onEdit()}>
-                        <img src="\icons\edit-icon.svg" />
-                    </IconButton>
-                </Grid> */}
-                {/* <Grid item></Grid> */}
                 {header}
                 <CardContent sx={{ '&:last-child': { padding: 0 } }}>
                     <Grid item container gap="15px" direction="column">

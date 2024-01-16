@@ -32,6 +32,7 @@ import { canUserWriteInstanceOfCategory } from '../../../utils/permissions/insta
 import TooltipMenuButton from './TooltipMenuButton';
 import { ImageWithDisable } from '../../../common/ImageWithDisable';
 import { MeltaTooltip } from '../../../common/MeltaTooltip';
+import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
 
 const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; expandedEntity: IEntityExpanded }> = ({
     entityTemplate,
@@ -144,28 +145,27 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                     background: darkMode ? '#171717' : 'white',
                     opacity: isEntityDisabled ? '0.666' : '1',
                     borderRadius: '10px',
-                    boxShadow: '-2px 2px 6px 0px rgba(30, 39, 117, 0.30)',
+                    boxShadow: '-2px 2px 6px 0px #1e27754d',
                 }}
             >
                 <CardContent sx={{ '&:last-child': { padding: 0 } }}>
                     <Grid item container flexDirection="row" flexWrap="nowrap" padding="20px">
-                        <Grid item container justifyContent="space-between" alignItems="stretch" padding="1rem">
-                            <Grid item xs={11}>
-                                <Box padding="0.2rem">
-                                    <EntityPropertiesInternal
-                                        entityTemplate={entityTemplate}
-                                        properties={entity.properties}
-                                        darkMode={darkMode}
-                                        style={{
-                                            display: 'flex',
-                                            flexDirection: 'row',
-                                            flexWrap: 'wrap',
-                                            rowGap: '20px',
-                                            alignItems: 'center',
-                                        }}
-                                        innerStyle={{ flexBasis: '33.33%' }}
-                                    />
-                                </Box>
+                        <Grid item container justifyContent="space-between" alignItems="stretch" padding="1rem" flexDirection="column">
+                            <Grid item width="100%">
+                                <EntityPropertiesInternal
+                                    entityTemplate={entityTemplate}
+                                    properties={entity.properties}
+                                    darkMode={darkMode}
+                                    style={{
+                                        display: 'flex',
+                                        flexDirection: 'row',
+                                        flexWrap: 'wrap',
+                                        rowGap: '20px',
+                                        alignItems: 'center',
+                                        width: '100%',
+                                    }}
+                                    innerStyle={{ width: '33.33%' }}
+                                />
                             </Grid>
                             <Grid container marginTop="20px">
                                 <EntityDisableCheckbox isEntityDisabled={isEntityDisabled}> </EntityDisableCheckbox>
@@ -180,40 +180,36 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
 
                         <Grid item>
                             <Grid container flexDirection="row" flexWrap="nowrap">
-                                <MeltaTooltip
-                                    placement="bottom"
-                                    PopperProps={{
-                                        sx: { [`& .${tooltipClasses.tooltip}`]: { fontSize: '1rem', backgroundColor: '#101440' } },
+                                <Grid
+                                    onClick={() => {
+                                        if (canWriteInstance && !isEntityDisabled) setIsEditMode(true);
                                     }}
-                                    title={
-                                        // eslint-disable-next-line no-nested-ternary
-                                        !canWriteInstance
-                                            ? i18next.t('permissions.dontHaveWritePermissionsToCategory')
-                                            : isEntityDisabled
-                                            ? i18next.t('entityPage.disabledEntity')
-                                            : i18next.t('actions.edit')
-                                    }
                                 >
-                                    <IconButton
-                                        onClick={() => {
-                                            if (canWriteInstance && !isEntityDisabled) setIsEditMode(true);
-                                        }}
+                                    <IconButtonWithPopover
+                                        popoverText={
+                                            // eslint-disable-next-line no-nested-ternary
+                                            !canWriteInstance
+                                                ? i18next.t('permissions.dontHaveWritePermissionsToCategory')
+                                                : isEntityDisabled
+                                                ? i18next.t('entityPage.disabledEntity')
+                                                : i18next.t('actions.edit')
+                                        }
                                         style={{
                                             cursor: !canWriteInstance || isEntityDisabled ? 'default' : 'pointer',
                                         }}
                                     >
                                         <ImageWithDisable srcPath="/icons/edit-icon.svg" disabled={!canWriteInstance || isEntityDisabled} />
-                                    </IconButton>
-                                </MeltaTooltip>
-                                <IconButton
+                                    </IconButtonWithPopover>
+                                </Grid>
+                                <Grid
                                     onClick={() => {
                                         navigate(`/entity/${entity.properties._id}/graph`);
                                     }}
                                 >
-                                    <MeltaTooltip title={i18next.t('actions.graph')}>
+                                    <IconButtonWithPopover popoverText={i18next.t('actions.graph')}>
                                         <img src="/icons/graph-icon.svg" />
-                                    </MeltaTooltip>
-                                </IconButton>
+                                    </IconButtonWithPopover>
+                                </Grid>
                                 <IconButton onClick={handleClick}>
                                     <MoreVertOutlined />
                                 </IconButton>

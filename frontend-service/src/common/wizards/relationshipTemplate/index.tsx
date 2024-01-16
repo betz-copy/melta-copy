@@ -24,16 +24,6 @@ export interface RelationshipTemplateWizardValues {
     destinationEntity: IMongoEntityTemplatePopulated;
 }
 
-// export interface RegularRelationshipTemplateWizardValues {
-//     _id?: string;
-//     createdAt?: string;
-//     updatedAt?: string;
-//     name: string;
-//     displayName: string;open
-//     sourceEntity: IMongoEntityTemplatePopulated;
-//     destinationEntity: IMongoEntityTemplatePopulated;
-// }
-
 export const defaultInitialValues: RelationshipTemplateWizardValues = {
     name: '',
     displayName: '',

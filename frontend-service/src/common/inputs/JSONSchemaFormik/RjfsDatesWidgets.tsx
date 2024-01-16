@@ -101,7 +101,6 @@ const getRjfsDateOrDateTimeWidget =
                     renderInput={(params) => {
                         return (
                             <TextField
-                                size="small"
                                 {...textFieldProps}
                                 color={color as TextFieldProps['color']}
                                 {...params}
@@ -113,18 +112,6 @@ const getRjfsDateOrDateTimeWidget =
                                 variant={variant}
                                 InputLabelProps={{
                                     shrink: readonly || undefined,
-                                }}
-                                sx={{
-                                    '& .MuiInputBase-root': {
-                                        borderRadius: '10px',
-                                    },
-                                    '& fieldset': {
-                                        borderColor: '#CCCFE5',
-                                        color: '#CCCFE5',
-                                    },
-                                    '& label': {
-                                        color: '#9398C2',
-                                    },
                                 }}
                             />
                         );

@@ -24,8 +24,8 @@ import { IMongoCategory } from '../../interfaces/categories';
 import TemplatesSelectCheckbox from '../templatesSelectCheckbox';
 import { BlueTitle } from '../BlueTitle';
 import { RootState } from '../../store';
-import { mainFontSizes } from '../../theme';
 import { MeltaTooltip } from '../MeltaTooltip';
+import { environment } from '../../globals';
 
 export const GlobalSearchBar: React.FC<{
     inputValue?: string;
@@ -108,7 +108,7 @@ const EntitiesPageHeadline: React.FC<{
         >
             <Grid item>
                 <Grid container direction="row" display="flex" wrap="nowrap" alignItems="center">
-                    <BlueTitle title={pageTitle} component="h4" variant="h4" style={{ fontSize: mainFontSizes.headlineTitleFontSize }} />
+                    <BlueTitle title={pageTitle} component="h4" variant="h4" style={{ fontSize: environment.mainFontSizes.headlineTitleFontSize }} />
                     <Grid item paddingLeft="3rem" paddingTop="5px">
                         <Grid item container wrap="nowrap" gap="15px">
                             <Grid item data-tour="template-filter">
