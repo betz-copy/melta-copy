@@ -80,7 +80,7 @@ export interface INotificationGroupCountDetails {
 
 export interface IBasicNotificationQuery {
     types?: NotificationType[];
-    startDate?: Date;
-    endDate?: Date;
+    startDate?: Date | null;
+    endDate?: Date | null;
     viewerId?: string;
 }

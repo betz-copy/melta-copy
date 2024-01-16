@@ -568,6 +568,7 @@ export default {
         enforcement: 'אכיפה',
     },
     ruleBreachAlertNotification: {
+        breach: 'הפרת חוק',
         payAttention: 'שים לב,',
         by: 'ע"י',
     },

@@ -1,16 +1,20 @@
 import React from 'react';
 import { Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
-import { IProcessStatusUpdateNotificationMetadataPopulated } from '../../../../interfaces/notifications';
+import { IProcessStatusUpdateNotificationMetadataPopulated, NotificationType } from '../../../../interfaces/notifications';
 import { ProcessName } from './ProcessName';
 import { StepName } from './StepName';
 import '../../../../css/index.css';
+import { environment } from '../../../../globals';
 
 export const ProcessStatusUpdateNotification: React.FC<IProcessStatusUpdateNotificationMetadataPopulated> = ({ process, step, status }) => {
+    const { notificationsMoreData } = environment.notifications;
+    const color = notificationsMoreData.general.find((notificationData) => notificationData.type === NotificationType.processStatusUpdate)?.color;
+
     return (
         <Grid container direction="column" spacing={1}>
             <Grid item>
-                <Typography display="inline" fontFamily="Rubik" color="#4752B6">{`${i18next.t(
+                <Typography display="inline" fontFamily="Rubik" color="#4752B6" borderLeft={`4px solid ${color}`} paddingLeft="10px">{`${i18next.t(
                     'processStatusUpdateNotification.statusUpdate',
                 )} `}</Typography>
                 <Typography display="inline" fontFamily="Rubik" color="#4752B6">

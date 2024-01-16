@@ -6,7 +6,6 @@ import { LoadingButton } from '@mui/lab';
 import { toast } from 'react-toastify';
 import { useSelector } from 'react-redux';
 import DoneIcon from '@mui/icons-material/Done';
-import CircleIcon from '@mui/icons-material/Circle';
 import {
     INotificationPopulated,
     isNewProcessNotification,
@@ -49,7 +48,6 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({ notification
         },
     });
     const [isHovered, setIsHovered] = useState(false);
-    const { notificationData } = environment.notifications;
     const darkMode = useSelector((state: RootState) => state.darkMode);
 
     return (
@@ -66,14 +64,10 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({ notification
         >
             <CardContent sx={{ '&:last-child': { padding: '15px' } }}>
                 <Grid container direction="column">
-                    <Grid container alignItems="center">
-                        <Grid justifyContent="flex-start" wrap="nowrap" color="#FEF0C0">
-                            <CircleIcon />
-                        </Grid>
-                        <Grid item container justifyContent="flex-end" wrap="nowrap">
-                            <Typography fontSize={14}>{getShortDate(notification.createdAt)}</Typography>
-                        </Grid>
+                    <Grid item container justifyContent="flex-end" wrap="nowrap">
+                        <Typography fontSize={14}>{getShortDate(notification.createdAt)}</Typography>
                     </Grid>
+
                     <Grid item sx={{ padding: '10px' }}>
                         {isRuleBreachAlertNotification(notification) && <RuleBreachAlertNotification {...notification.metadata} />}
                         {isRuleBreachRequestNotification(notification) && <RuleBreachRequestNotification {...notification.metadata} />}

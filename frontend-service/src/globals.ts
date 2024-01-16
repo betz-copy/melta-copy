@@ -104,54 +104,54 @@ export const environment = {
                 NotificationType.archivedProcess,
             ],
         },
-        notificationData: {
+        notificationsMoreData: {
             requests: [
                 {
-                    color: 'blue',
-                    name: NotificationType.ruleBreachRequest,
+                    color: '#DD3500',
+                    type: NotificationType.ruleBreachRequest,
                     displayName: 'בקשה לחריגת חוקה',
                 },
             ],
             general: [
                 {
-                    color: 'blue',
-                    name: NotificationType.ruleBreachAlert,
+                    color: '#FF7979',
+                    type: NotificationType.ruleBreachAlert,
                     displayName: 'התראת חוקה',
                 },
                 {
-                    color: 'blue',
-                    name: NotificationType.archivedProcess,
+                    color: '#BC8F8F',
+                    type: NotificationType.archivedProcess,
                     displayName: 'תהליך ארכיון',
                 },
                 {
-                    color: 'blue',
-                    name: NotificationType.dateAboutToExpire,
+                    color: '#FFD18C',
+                    type: NotificationType.dateAboutToExpire,
                     displayName: 'תאריך מתקרב',
                 },
                 {
-                    color: 'blue',
-                    name: NotificationType.deleteProcess,
+                    color: '#CD5C5C',
+                    type: NotificationType.deleteProcess,
                     displayName: 'מחיקת תהליך',
                 },
                 {
-                    color: 'blue',
-                    name: NotificationType.newProcess,
+                    color: '#FFD18C',
+                    type: NotificationType.newProcess,
                     displayName: 'יצירת תהליך חדש',
                 },
                 {
-                    color: 'blue',
-                    name: NotificationType.processReviewerUpdate,
+                    color: '#FEF0C0',
+                    type: NotificationType.processReviewerUpdate,
                     displayName: 'עדכון הרשאות תהליך',
                 },
                 {
-                    color: 'blue',
-                    name: NotificationType.processStatusUpdate,
+                    color: '#7BE7FF',
+                    type: NotificationType.processStatusUpdate,
                     displayName: 'עדכון סטטוס תהליך',
                 },
 
                 {
-                    color: 'blue',
-                    name: NotificationType.ruleBreachResponse,
+                    color: '#FF7F50',
+                    type: NotificationType.ruleBreachResponse,
                     displayName: 'מענה לחריגת חוקה ',
                 },
             ],

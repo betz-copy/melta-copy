@@ -1,4 +1,4 @@
-import { Button, CircularProgress, Grid, Tab, Tabs, Tooltip, List, IconButton, Divider } from '@mui/material';
+import { Button, CircularProgress, Grid, Tab, Tabs, Tooltip, List, IconButton, Divider, Box } from '@mui/material';
 import i18next from 'i18next';
 import React, { CSSProperties, useState } from 'react';
 import { toast } from 'react-toastify';
@@ -19,7 +19,7 @@ import { NotificationCount } from './NotificationCount';
 import DateRange from '../../inputs/DateRange';
 import { SelectCheckbox } from '../../SelectCheckbox';
 
-const { infiniteScrollPageCount, groups, notificationData } = environment.notifications;
+const { infiniteScrollPageCount, groups, notificationsMoreData } = environment.notifications;
 
 interface NotificationsScreenProps {
     open: boolean;
@@ -38,17 +38,16 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
 }) => {
     const groupNames = Object.keys(groups) as (keyof typeof groups)[];
     const [selectedGroup, setSelectedGroup] = useState<keyof typeof groups>('general');
-    // const [tabOptionsAnchor, setTabOptionsAnchor] = useState<HTMLElement>();
-    const [startDateInput, setStartDateInput] = useState<Date | null>(null);
-    const [endDateInput, setEndDateInput] = useState<Date | null>(null);
+    const [startDate, setStartDate] = useState<Date | null>(null);
+    const [endDate, setEndDate] = useState<Date | null>(null);
     const [openCalenders, setOpenCalenders] = useState<boolean>(false);
-    const [notificationsToShowCheckbox, setNotificationsToShowCheckbox] = useState(notificationData[selectedGroup]);
+    const [notificationsToShowCheckbox, setNotificationsToShowCheckbox] = useState(notificationsMoreData[selectedGroup]);
 
     const onSetStartDate = (newStartDateInput: Date | null) => {
-        setStartDateInput(newStartDateInput);
+        setStartDate(newStartDateInput);
     };
     const onSetEndDate = (newEndDateInput: Date | null) => {
-        setEndDateInput(newEndDateInput);
+        setEndDate(newEndDateInput);
     };
     const { mutate, isLoading } = useMutation((groupName: keyof typeof groups) => manyNotificationSeenRequest(groups[groupName]), {
         onSuccess: (seenNotifications, groupName) => {
@@ -67,57 +66,8 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
         },
     });
 
-    // const onCloseTabOptions = () => {
-    //     // setCurrGroup(undefined);
-    //     setTabOptionsAnchor(undefined);
-    // };
-
     return (
-        <PopperSidebar
-            open={open}
-            setOpen={setOpen}
-            title={i18next.t('notifications.title')}
-            topButtons={
-                <Tooltip title={i18next.t('notifications.infoRightClickTab')}>
-                    <InfoIcon sx={{ marginTop: '0.4rem' }} />
-                </Tooltip>
-            }
-            side="right"
-            sideMargin={sideBarWidth}
-        >
-            {/* <ToggleButtonGroup
-                exclusive
-                value={selectedGroup}
-                onChange={(_event, newGroup) => {
-                    if (!newGroup) return;
-                    setSelectedGroup(newGroup);
-                }}
-                sx={{ height: '2.5rem' }}
-                fullWidth
-            >
-                {groupNames.map((groupName) => (
-                    <ToggleButton
-                        key={groupName}
-                        value={groupName}
-                        sx={{ padding: '0.5rem', borderBlockColor: 'none' }}
-                        onClick={(event) => {
-                            setSelectedGroup(groupName);
-                            // setTabOptionsAnchor(event.currentTarget);
-                            event.preventDefault();
-                        }}
-                    >
-                        <Grid container wrap="nowrap" alignItems="center" justifyContent="space-between">
-                            <Grid item>
-                                <Typography fontWeight="bold">{i18next.t(`notifications.groups.${groupName}`)}</Typography>
-                            </Grid>
-
-                            <Grid item>
-                                <NotificationCount notificationCount={notificationCountDetails.groups[groupName]} />
-                            </Grid>
-                        </Grid>
-                    </ToggleButton>
-                ))}
-            </ToggleButtonGroup> */}
+        <PopperSidebar open={open} setOpen={setOpen} title={i18next.t('notifications.title')} side="right" sideMargin={sideBarWidth}>
             <Tabs
                 value={selectedGroup}
                 onChange={(_event, newGroup) => {
@@ -144,36 +94,22 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                 ))}
             </Tabs>
 
-            {/* 
-            <SelectCheckbox
-                title="gjgjgj"
-                options={['dd']}
-                selectedOptions={noti}
-                setSelectedOptions={setSelectedTemplates}
-                getOptionId={({ _id }) => _id}
-                getOptionLabel={({ displayName }) => displayName}
-                groupsProps={getCategoriesSelectCheckboxGroupProps(categories)}
-                isDraggableDisabled={isDraggableDisabled}
-                setOptions={setTemplates}
-                size={size}
-                toTopBar={toTopBar}
-            /> */}
-
             {isLoading ? (
                 <CircularProgress sx={{ marginX: 'auto', marginTop: '1rem' }} />
             ) : (
                 <>
                     <Grid>
+                        {/* <Box onClick={(e) => e.stopPropagation()}> */}
                         <SelectCheckbox
                             title="סוג התראה"
-                            options={notificationData[selectedGroup]}
+                            options={notificationsMoreData[selectedGroup]}
                             selectedOptions={notificationsToShowCheckbox}
                             setSelectedOptions={setNotificationsToShowCheckbox}
-                            getOptionId={({ name }) => name}
+                            getOptionId={({ type }) => type}
                             getOptionLabel={({ displayName }) => displayName}
                             size="small"
                         />
-
+                        {/* </Box> */}
                         {!openCalenders && (
                             <Button onClick={() => setOpenCalenders(!openCalenders)}>
                                 <EventIcon />
@@ -196,19 +132,21 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                             <DateRange
                                 onStartDateChange={onSetStartDate}
                                 onEndDateChange={onSetEndDate}
-                                startDateInput={startDateInput}
-                                endDateInput={endDateInput}
+                                startDateInput={startDate}
+                                endDateInput={endDate}
                             />
                         </Grid>
                     ) : null}
                     <Divider />
                     <InfiniteScroll<INotificationPopulated>
-                        queryKey={['getMyNotifications', selectedGroup]}
+                        queryKey={['getMyNotifications', selectedGroup, startDate, endDate, notificationsToShowCheckbox]}
                         queryFunction={({ pageParam }) =>
                             getMyNotificationsRequest({
                                 limit: infiniteScrollPageCount,
                                 step: pageParam,
-                                types: groups[selectedGroup],
+                                types: notificationsToShowCheckbox.map((notification) => notification.type),
+                                startDate,
+                                endDate,
                             })
                         }
                         onQueryError={(error) => {
@@ -228,7 +166,6 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
             <Grid item container justifyContent="flex-end" sx={{ position: 'absolute', bottom: 0, padding: '10px' }}>
                 <LoadingButton
                     onClick={() => {
-                        // onCloseTabOptions();
                         if (!notificationCountDetails.groups[selectedGroup]) return;
                         mutate(selectedGroup);
                     }}

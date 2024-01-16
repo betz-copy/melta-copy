@@ -2,13 +2,17 @@ import React from 'react';
 import { Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
 import RuleBreachInfo from '../../../ruleBreanchInfo/RuleBreachInfo';
-import { IRuleBreachRequestNotificationMetadataPopulated } from '../../../../interfaces/notifications';
+import { IRuleBreachRequestNotificationMetadataPopulated, NotificationType } from '../../../../interfaces/notifications';
+import { environment } from '../../../../globals';
 
 export const RuleBreachRequestNotification: React.FC<IRuleBreachRequestNotificationMetadataPopulated> = ({ request }) => {
+    const { notificationsMoreData } = environment.notifications;
+    const color = notificationsMoreData.requests.find((notificationData) => notificationData.type === NotificationType.ruleBreachRequest)?.color;
+
     return (
         <Grid container direction="column" spacing={1}>
             <Grid item>
-                <Typography component="p" variant="body1" color="#4752B6">
+                <Typography component="p" variant="body1" color="#4752B6" borderLeft={`4px solid ${color}`} paddingLeft="10px">
                     {i18next.t('ruleBreachRequestNotification.requestWaitingForApproval')}
                 </Typography>
             </Grid>

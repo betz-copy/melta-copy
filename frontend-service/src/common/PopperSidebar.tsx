@@ -11,10 +11,9 @@ const PopperSidebar: React.FC<{
     setOpen: React.Dispatch<React.SetStateAction<boolean>>;
     title: string;
     side: 'right' | 'left';
-    topButtons?: React.ReactNode;
     sideMargin?: CSSProperties['margin'];
     width?: CSSProperties['width'];
-}> = ({ children, open, setOpen, title, side, topButtons, sideMargin = 0, width = '22rem' }) => {
+}> = ({ children, open, setOpen, title, side, sideMargin = 0, width = '22rem' }) => {
     const darkMode = useSelector((state: RootState) => state.darkMode);
 
     return (

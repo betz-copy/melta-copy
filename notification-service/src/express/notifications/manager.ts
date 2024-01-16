@@ -38,8 +38,8 @@ export class NotificationsManager {
         return NotificationModel.findById(notificationId).orFail(new NotificationDoesNotExistError(notificationId)).lean();
     }
 
-    public static async createNotification(notificationData: Omit<INotification, 'createdAt'>): Promise<INotification> {
-        return NotificationModel.create({ ...notificationData });
+    public static async createNotification(notificationsMoreData: Omit<INotification, 'createdAt'>): Promise<INotification> {
+        return NotificationModel.create({ ...notificationsMoreData });
     }
 
     public static async notificationSeen(notificationId: string, viewerId: string): Promise<INotification> {
@@ -72,11 +72,13 @@ export class NotificationsManager {
     private static handleQuery({ viewerId, types, startDate, endDate, ...rest }: IBasicNotificationQuery) {
         const query: FilterQuery<INotificationDocument> = { ...rest };
 
-        if (types) query.type = { $in: types };
+        query.type = { $in: types };
         if (viewerId) query.viewers = viewerId;
-        if (startDate && endDate) {
-            query.createdAt = { $gte: startDate, $lte: endDate };
+        if (startDate) {
+            if (endDate) query.createdAt = { $gte: startDate, $lte: endDate };
+            else query.createdAt = { $gte: startDate };
         }
+
         return query;
     }
 }

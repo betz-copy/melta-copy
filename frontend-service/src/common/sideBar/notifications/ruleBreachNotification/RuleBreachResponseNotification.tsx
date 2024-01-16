@@ -3,13 +3,17 @@ import { Box, Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
 import RuleBreachInfo from '../../../ruleBreanchInfo/RuleBreachInfo';
 import { RuleBreachRequestStatus } from '../../../../interfaces/ruleBreaches/ruleBreachRequest';
-import { IRuleBreachResponseNotificationMetadataPopulated } from '../../../../interfaces/notifications';
+import { IRuleBreachResponseNotificationMetadataPopulated, NotificationType } from '../../../../interfaces/notifications';
+import { environment } from '../../../../globals';
 
 export const RuleBreachResponseNotification: React.FC<IRuleBreachResponseNotificationMetadataPopulated> = ({ request }) => {
+    const { notificationsMoreData } = environment.notifications;
+    const color = notificationsMoreData.general.find((notificationData) => notificationData.type === NotificationType.deleteProcess)?.color;
+
     return (
         <Grid container direction="column" spacing={1}>
             <Grid item>
-                <Typography component="p" variant="body1" color="#4752B6">
+                <Typography component="p" variant="body1" color="#4752B6" borderLeft={`4px solid ${color}`} paddingLeft="10px">
                     {i18next.t('ruleBreachResponseNotification.theRequestOfExecutingTheAction')}
                 </Typography>
             </Grid>
