@@ -35,5 +35,7 @@ module.exports = {
         ],
         'no-unused-vars': 'off', // Checked by typescript
         'arrow-body-style': 'off',
+        'no-shadow': 'off',
+        'import/prefer-default-export': 'off',
     },
 };
