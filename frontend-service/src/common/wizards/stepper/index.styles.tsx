@@ -11,13 +11,13 @@ const StepNumberTypography = styled(Typography)<{ type: 'currentStep' | 'finishe
     justifyContent: 'center',
     marginRight: '1.5rem',
     ...(type === 'currentStep' && {
-        backgroundColor: lightTheme.palette.primary.main,
+        backgroundColor: theme.palette.primary.main,
         color: 'white',
         boxShadow: '0px 1px 2px #00000029',
     }),
     ...(type === 'finishedStep' && {
-        border: `2px solid ${lightTheme.palette.primary.main}`,
-        color: lightTheme.palette.primary.main,
+        border: `2px solid ${theme.palette.primary.main}`,
+        color: theme.palette.primary.main,
         boxShadow: '0px 1px 2px #00000029',
     }),
     ...(type === 'futureStep' &&

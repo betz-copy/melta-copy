@@ -25,6 +25,7 @@ import ProcessStepsStep from './ProcessSteps/index';
 import { IPermissionsOfUser } from '../../../services/permissionsService';
 import { IMongoStepTemplatePopulated } from '../../../interfaces/processes/stepTemplate';
 import { AreYouSureDialog } from '../../dialogs/AreYouSureDialog';
+import { MeltaTooltip } from '../../MeltaTooltip';
 
 interface IProcessInstanceWizard {
     open: boolean;
@@ -213,7 +214,7 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({ open, onClose
                             {!isEditMode && hasPermissionsToEditDetails && (
                                 <>
                                     {processInstance.archived ? (
-                                        <Tooltip title={i18next.t('actions.unArchived')}>
+                                        <MeltaTooltip title={i18next.t('actions.unArchived')}>
                                             <IconButton
                                                 onClick={async () => {
                                                     await archiveProcessMutate(processInstance);
@@ -222,9 +223,9 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({ open, onClose
                                             >
                                                 {isLodingArchiveProcess ? <CircularProgress size={20} /> : <UnarchiveIcon color="primary" />}
                                             </IconButton>
-                                        </Tooltip>
+                                        </MeltaTooltip>
                                     ) : (
-                                        <Tooltip title={i18next.t('actions.archived')}>
+                                        <MeltaTooltip title={i18next.t('actions.archived')}>
                                             <IconButton
                                                 onClick={async () => {
                                                     await archiveProcessMutate(processInstance);
@@ -233,23 +234,23 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({ open, onClose
                                             >
                                                 {isLodingArchiveProcess ? <CircularProgress size={20} /> : <ArchiveIcon color="primary" />}
                                             </IconButton>
-                                        </Tooltip>
+                                        </MeltaTooltip>
                                     )}
-                                    <Tooltip title={i18next.t('actions.delete')}>
+                                    <MeltaTooltip title={i18next.t('actions.delete')}>
                                         <IconButton onClick={() => setDeleteDialogState(true)}>
                                             {isDeleteProcessLoading ? <CircularProgress size={20} /> : <DeleteIcon color="primary" />}
                                         </IconButton>
-                                    </Tooltip>
+                                    </MeltaTooltip>
                                 </>
                             )}
                         </Grid>
                         <Grid>
                             {!isEditMode && processIsEditable && (
-                                <Tooltip title={i18next.t('wizard.processInstance.editProcessBth')}>
+                                <MeltaTooltip title={i18next.t('wizard.processInstance.editProcessBth')}>
                                     <IconButton onClick={() => setIsEditMode(true)}>
                                         <EditIcon color="primary" />
                                     </IconButton>
-                                </Tooltip>
+                                </MeltaTooltip>
                             )}
                         </Grid>
                     </Grid>

@@ -11,6 +11,7 @@ import { IMongoRule } from '../../../interfaces/rules';
 import { RelationshipInfo } from '../ActionInfo';
 import { populateRelationshipTemplate } from '../../../utils/templates';
 import { RuleIcon } from './RuleIcon';
+import { MeltaTooltip } from '../../MeltaTooltip';
 
 export const BrokenRuleFull: React.FC<{
     brokenRule: IRuleBreachPopulated['brokenRules'][number];
@@ -30,11 +31,11 @@ export const BrokenRuleFull: React.FC<{
                     <RuleIcon ruleType={ruleTemplate.actionOnFail} />
                 </ListItemIcon>
                 <ListItemText secondary={i18next.t('ruleBreachInfo.relevantEntities')}>
-                    <Tooltip title={ruleTemplate.description}>
+                    <MeltaTooltip title={ruleTemplate.description}>
                         <Box component="span" sx={{ fontWeight: 'bold' }}>
                             {ruleTemplate.name}
                         </Box>
-                    </Tooltip>
+                    </MeltaTooltip>
                 </ListItemText>
                 {open ? <ExpandLessIcon /> : <ExpandMoreIcon />}
             </ListItemButton>

@@ -10,6 +10,7 @@ import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { RemoveFromArrayButton } from '../GanttItemDisplay/GanttItemEdit/RemoveFromArrayButton';
 import { filteredMap } from '../../../utils/filteredMap';
 import { EntityTemplateDisplay } from '../GanttItemDisplay/EntityTemplateDisplay';
+import { MeltaTooltip } from '../../../common/MeltaTooltip';
 
 interface GroupByDisplayProps {
     groupBy: IGanttGroupBy;
@@ -83,11 +84,10 @@ export const GroupByDisplay: React.FC<GroupByDisplayProps> = ({ groupBy, formik,
     if (!groupByEntityTemplate) return null;
 
     return (
-        <Tooltip
+        <MeltaTooltip
             title={`${i18next.t('gantts.groupByEntities')} ${groupByEntityTemplate.displayName}`}
             placement="right"
             disableHoverListener={expanded}
-            arrow
         >
             <Grid container direction="column" alignItems="center" paddingX="1rem" paddingY="0.8rem" spacing={1}>
                 <EntityTemplateDisplay
@@ -99,6 +99,6 @@ export const GroupByDisplay: React.FC<GroupByDisplayProps> = ({ groupBy, formik,
                     main
                 />
             </Grid>
-        </Tooltip>
+        </MeltaTooltip>
     );
 };

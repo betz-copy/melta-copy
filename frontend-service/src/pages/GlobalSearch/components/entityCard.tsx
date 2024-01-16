@@ -16,6 +16,8 @@ import { BlueTitle } from '../../../common/BlueTitle';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
 import { getEntityTemplateColor } from '../../../utils/colors';
 import { EditEntityDetails } from '../../Entity/components/EditEntityDetails';
+import { mainFontSizes } from '../../../theme';
+import { MeltaTooltip } from '../../../common/MeltaTooltip';
 
 interface EntityCardProps {
     entity: IEntity;
@@ -84,7 +86,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
                             {entityTemplate.iconFileId ? (
                                 <CustomIcon color="white" iconUrl={entityTemplate.iconFileId} height="24px" width="24px" />
                             ) : (
-                                <AppRegistrationIcon sx={{ fontSize: '24px', color: 'white' }} />
+                                <AppRegistrationIcon sx={{ fontSize: mainFontSizes.headlineTitleFontSize, color: 'white' }} />
                             )}
                         </Grid>
                         <BlueTitle style={{ width: 'fit-content' }} title={entityTemplate.displayName} component="h6" variant="h6" />
@@ -99,15 +101,9 @@ const EntityCard: React.FC<EntityCardProps> = ({
                                     navigate(`/entity/${entity.properties._id}`);
                                 }}
                             >
-                                <Tooltip
-                                    placement="bottom"
-                                    PopperProps={{
-                                        sx: { [`& .${tooltipClasses.tooltip}`]: { fontSize: '1rem', backgroundColor: '#101440' } },
-                                    }}
-                                    title={i18next.t('wizard.entity.readMore')}
-                                >
+                                <MeltaTooltip placement="bottom" title={i18next.t('wizard.entity.readMore')}>
                                     <img src="/icons/read-more-icon.svg" />
-                                </Tooltip>
+                                </MeltaTooltip>
                             </IconButton>
                             <IconButton
                                 onClick={() => {
@@ -117,30 +113,18 @@ const EntityCard: React.FC<EntityCardProps> = ({
                                     });
                                 }}
                             >
-                                <Tooltip
-                                    placement="bottom"
-                                    PopperProps={{
-                                        sx: { [`& .${tooltipClasses.tooltip}`]: { fontSize: '1rem', backgroundColor: '#101440' } },
-                                    }}
-                                    title={i18next.t('actions.edit')}
-                                >
+                                <MeltaTooltip placement="bottom" title={i18next.t('actions.edit')}>
                                     <img src="/icons/edit-icon.svg" />
-                                </Tooltip>
+                                </MeltaTooltip>
                             </IconButton>
                             <IconButton
                                 onClick={() => {
                                     navigate(`/entity/${entity.properties._id}/graph`);
                                 }}
                             >
-                                <Tooltip
-                                    placement="bottom"
-                                    PopperProps={{
-                                        sx: { [`& .${tooltipClasses.tooltip}`]: { fontSize: '1rem', backgroundColor: '#101440' } },
-                                    }}
-                                    title={i18next.t('actions.graph')}
-                                >
+                                <MeltaTooltip placement="bottom" title={i18next.t('actions.graph')}>
                                     <img src="/icons/graph-icon.svg" />
-                                </Tooltip>
+                                </MeltaTooltip>
                             </IconButton>
                             <IconButton size="large" onClick={() => setOpen(!open)}>
                                 {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}

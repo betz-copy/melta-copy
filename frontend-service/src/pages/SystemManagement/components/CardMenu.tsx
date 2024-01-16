@@ -3,6 +3,7 @@ import { Grid, IconButton, Menu, Tooltip } from '@mui/material';
 import i18next from 'i18next';
 import { Edit as EditIcon, Delete as DeleteIcon, MoreVertOutlined as OptionsIcon, DoDisturbAlt as DisabledIcon } from '@mui/icons-material';
 import { MenuButton } from '../../../common/MenuButton';
+import { MeltaTooltip } from '../../../common/MeltaTooltip';
 
 export const CardMenu: React.FC<{
     onEditClick: MouseEventHandler;
@@ -28,8 +29,7 @@ export const CardMenu: React.FC<{
                 <OptionsIcon />
             </IconButton>
             <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
-                <Tooltip
-                    arrow
+                <MeltaTooltip
                     placement="right"
                     title={disabledProps?.tooltipTitle || String(i18next.t('systemManagement.defaultCantEdit'))}
                     disableHoverListener={!disabledProps?.canEdit}
@@ -45,7 +45,7 @@ export const CardMenu: React.FC<{
                             icon={<EditIcon color="action" />}
                         />
                     </Grid>
-                </Tooltip>
+                </MeltaTooltip>
 
                 {onDeleteClick && (
                     <MenuButton

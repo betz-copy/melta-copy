@@ -4,6 +4,7 @@ import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemp
 import { IEntity } from '../../../../interfaces/entities';
 import { environment } from '../../../../globals';
 import { formatToString } from '../../../../common/EntityProperties';
+import { MeltaTooltip } from '../../../../common/MeltaTooltip';
 
 const { ganttSettings } = environment;
 
@@ -33,7 +34,7 @@ export const PureFieldsDisplay: React.FC<IPureFieldsDisplayProps> = ({ fields, e
                         )}
 
                         <Grid item>
-                            <Tooltip title={`${fieldName} (${entityTemplate.displayName})`} placement="top" disableHoverListener={expanded} arrow>
+                            <MeltaTooltip title={`${fieldName} (${entityTemplate.displayName})`} placement="top" disableHoverListener={expanded}>
                                 <Typography
                                     fontSize={14}
                                     sx={{
@@ -45,7 +46,7 @@ export const PureFieldsDisplay: React.FC<IPureFieldsDisplayProps> = ({ fields, e
                                 >
                                     {`${expanded ? `${fieldName}:` : ''} ${formatToString(entity.properties[field], type, format)}`}
                                 </Typography>
-                            </Tooltip>
+                            </MeltaTooltip>
                         </Grid>
                     </Fragment>
                 );

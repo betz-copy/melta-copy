@@ -30,6 +30,8 @@ import { IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreac
 import UpdateStatusWithRuleBreachDialog from './UpdateStatusWithRuleBreachDialog';
 import { canUserWriteInstanceOfCategory } from '../../../utils/permissions/instancePermissions';
 import TooltipMenuButton from './TooltipMenuButton';
+import { ImageWithDisable } from '../../../common/ImageWithDisable';
+import { MeltaTooltip } from '../../../common/MeltaTooltip';
 
 const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; expandedEntity: IEntityExpanded }> = ({
     entityTemplate,
@@ -178,46 +180,39 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
 
                         <Grid item>
                             <Grid container flexDirection="row" flexWrap="nowrap">
-                                <IconButton
-                                    onClick={() => {
-                                        if (canWriteInstance && !isEntityDisabled) setIsEditMode(true);
+                                <MeltaTooltip
+                                    placement="bottom"
+                                    PopperProps={{
+                                        sx: { [`& .${tooltipClasses.tooltip}`]: { fontSize: '1rem', backgroundColor: '#101440' } },
                                     }}
-                                    style={{
-                                        opacity: !canWriteInstance || isEntityDisabled ? '0.3' : '',
-                                        cursor: !canWriteInstance || isEntityDisabled ? 'default' : 'pointer',
-                                    }}
+                                    title={
+                                        // eslint-disable-next-line no-nested-ternary
+                                        !canWriteInstance
+                                            ? i18next.t('permissions.dontHaveWritePermissionsToCategory')
+                                            : isEntityDisabled
+                                            ? i18next.t('entityPage.disabledEntity')
+                                            : i18next.t('actions.edit')
+                                    }
                                 >
-                                    <Tooltip
-                                        placement="bottom"
-                                        PopperProps={{
-                                            sx: { [`& .${tooltipClasses.tooltip}`]: { fontSize: '1rem', backgroundColor: '#101440' } },
+                                    <IconButton
+                                        onClick={() => {
+                                            if (canWriteInstance && !isEntityDisabled) setIsEditMode(true);
                                         }}
-                                        title={
-                                            // eslint-disable-next-line no-nested-ternary
-                                            !canWriteInstance
-                                                ? i18next.t('permissions.dontHaveWritePermissionsToCategory')
-                                                : isEntityDisabled
-                                                ? i18next.t('entityPage.disabledEntity')
-                                                : i18next.t('actions.edit')
-                                        }
+                                        style={{
+                                            cursor: !canWriteInstance || isEntityDisabled ? 'default' : 'pointer',
+                                        }}
                                     >
-                                        <img src="/icons/edit-icon.svg" />
-                                    </Tooltip>
-                                </IconButton>
+                                        <ImageWithDisable srcPath="/icons/edit-icon.svg" disabled={!canWriteInstance || isEntityDisabled} />
+                                    </IconButton>
+                                </MeltaTooltip>
                                 <IconButton
                                     onClick={() => {
                                         navigate(`/entity/${entity.properties._id}/graph`);
                                     }}
                                 >
-                                    <Tooltip
-                                        placement="bottom"
-                                        PopperProps={{
-                                            sx: { [`& .${tooltipClasses.tooltip}`]: { fontSize: '1rem', backgroundColor: '#101440' } },
-                                        }}
-                                        title={i18next.t('actions.graph')}
-                                    >
+                                    <MeltaTooltip title={i18next.t('actions.graph')}>
                                         <img src="/icons/graph-icon.svg" />
-                                    </Tooltip>
+                                    </MeltaTooltip>
                                 </IconButton>
                                 <IconButton onClick={handleClick}>
                                     <MoreVertOutlined />

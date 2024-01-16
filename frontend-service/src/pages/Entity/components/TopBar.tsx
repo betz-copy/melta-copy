@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Grid, Typography } from '@mui/material';
+import { Box, Grid, Typography, useTheme } from '@mui/material';
 import { useSelector } from 'react-redux';
 import { NavLink } from 'react-router-dom';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
@@ -9,9 +9,9 @@ import { ActivityLog } from './activityLog';
 import { Print } from './print';
 import { IMongoCategory } from '../../../interfaces/categories';
 import { RootState } from '../../../store';
-import { lightTheme } from '../../../theme';
 import { CustomIcon } from '../../../common/CustomIcon';
 import { getEntityTemplateColor } from '../../../utils/colors';
+import { EntityTemplateColor } from '../../../common/EntityTemplateColor';
 
 const EntityTopBar: React.FC<{
     entityTemplate: IMongoEntityTemplatePopulated;
@@ -21,6 +21,8 @@ const EntityTopBar: React.FC<{
         relationshipTemplates: IMongoRelationshipTemplatePopulated[];
     })[];
 }> = ({ entityTemplate, expandedEntity, categoriesWithRelationshipTemplates, relevantRelationshipTemplates }) => {
+    const theme = useTheme();
+
     const darkMode = useSelector((state: RootState) => state.darkMode);
     const entityTemplateColor = getEntityTemplateColor(entityTemplate);
 
@@ -41,34 +43,27 @@ const EntityTopBar: React.FC<{
         >
             <Box display="flex" alignItems="center" gap="15px">
                 <Grid item>
-                    <div
-                        style={{
-                            height: '30px',
-                            width: '3px',
-                            backgroundColor: entityTemplateColor,
-                            borderRadius: '20px',
-                        }}
-                    />
+                    <EntityTemplateColor entityTemplateColor={entityTemplateColor} />
                 </Grid>
                 <Grid item>
                     {entityTemplate.iconFileId && (
-                        <CustomIcon iconUrl={entityTemplate.iconFileId || ''} height="30px" width="30px" color={lightTheme.palette.primary.main} />
+                        <CustomIcon iconUrl={entityTemplate.iconFileId || ''} height="30px" width="30px" color={theme.palette.primary.main} />
                     )}
                 </Grid>
                 <Grid item>
-                    <NavLink to={`/category/${entityTemplate.category._id}`} style={{  textDecoration: 'none' }}>
-                        <Typography color={lightTheme.palette.primary.main} fontWeight="400" component="h4" variant="h4" fontSize="20px">
+                    <NavLink to={`/category/${entityTemplate.category._id}`} style={{ textDecoration: 'none' }}>
+                        <Typography color={theme.palette.primary.main} fontWeight="400" component="h4" variant="h4" fontSize="20px">
                             {entityTemplate.category.displayName}
                         </Typography>
                     </NavLink>
                 </Grid>
                 <Grid item>
-                    <Typography color={lightTheme.palette.primary.main} fontWeight="400" component="h4" variant="h4" fontSize="20px">
+                    <Typography color={theme.palette.primary.main} fontWeight="400" component="h4" variant="h4" fontSize="20px">
                         {'>'}
                     </Typography>
                 </Grid>
                 <Grid item>
-                    <Typography color={lightTheme.palette.primary.main} fontWeight="700" component="h4" variant="h4" fontSize="24px">
+                    <Typography color={theme.palette.primary.main} fontWeight="700" component="h4" variant="h4" fontSize="24px">
                         {entityTemplate.displayName}
                     </Typography>
                 </Grid>

@@ -28,6 +28,7 @@ const DateRange: React.FC<{
                         renderInput={(params) => <TextField {...params} size="small" />}
                         InputProps={{
                             style: { borderRadius: '0px 7px 7px 0px' },
+                            // TODO - implement dark mode when it will be supported
                         }}
                     />
                 </LocalizationProvider>

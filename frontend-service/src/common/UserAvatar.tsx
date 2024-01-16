@@ -1,6 +1,7 @@
 import React from 'react';
 import Avatar from '@mui/material/Avatar';
 import { useSelector } from 'react-redux';
+import { useTheme } from '@mui/material';
 import { IUser } from '../services/kartoffelService';
 import { RootState } from '../store';
 import { lightTheme } from '../theme';
@@ -24,8 +25,10 @@ const getNameInitials = (user: IUser): string => {
 
 const UserAvatar: React.FC<UserAvatarProps> = ({ user, size = 48, bgColor }) => {
     const darkMode = useSelector((state: RootState) => state.darkMode);
+    const theme = useTheme();
+
     // eslint-disable-next-line no-nested-ternary
-    const fontColor = !bgColor ? lightTheme.palette.primary.main : darkMode ? 'black' : 'white';
+    const fontColor = !bgColor ? theme.palette.primary.main : darkMode ? 'black' : 'white';
 
     return (
         <Avatar

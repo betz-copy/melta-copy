@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Box, CircularProgress, Grid, Tab, Typography } from '@mui/material';
+import { Box, CircularProgress, Grid, Tab, Typography, useTheme } from '@mui/material';
 import { useQuery, useQueryClient } from 'react-query';
 import { useParams } from 'react-router-dom';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
@@ -56,6 +56,8 @@ export const getButtonState = (
 };
 
 const Entity: React.FC = () => {
+    const theme = useTheme();
+
     const [isFiltered, setIsFiltered] = useState(false);
     const { entityId } = useParams();
     const queryClient = useQueryClient();
@@ -192,7 +194,7 @@ const Entity: React.FC = () => {
                                             label={
                                                 <Grid container flexDirection="row" alignItems="center" flexWrap="nowrap" gap="10px">
                                                     <Typography
-                                                        color={value === String(index) ? lightTheme.palette.primary.main : '#787C9E'}
+                                                        color={value === String(index) ? theme.palette.primary.main : '#787C9E'}
                                                         style={{ fontWeight: '500', fontSize: '16px' }}
                                                     >
                                                         {displayName}
@@ -222,13 +224,13 @@ const Entity: React.FC = () => {
                                                         iconUrl={iconFileId}
                                                         height="24px"
                                                         width="24px"
-                                                        color={value === String(index) ? lightTheme.palette.primary.main : '#787C9E'}
+                                                        color={value === String(index) ? theme.palette.primary.main : '#787C9E'}
                                                     />
                                                 ) : (
                                                     <HiveIcon
                                                         fontSize="medium"
                                                         sx={{
-                                                            color: value === String(index) ? lightTheme.palette.primary.main : '#787C9E',
+                                                            color: value === String(index) ? theme.palette.primary.main : '#787C9E',
                                                         }}
                                                     />
                                                 )

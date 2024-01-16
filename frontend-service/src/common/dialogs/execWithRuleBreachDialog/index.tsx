@@ -8,6 +8,7 @@ import { IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreac
 import { IRuleMap } from '../../../interfaces/rules';
 import { RootState } from '../../../store';
 import RuleBreachInfo from '../../ruleBreanchInfo/RuleBreachInfo';
+import { MeltaTooltip } from '../../MeltaTooltip';
 
 const ExecWithRuleBreachDialog: React.FC<{
     isSubmitting: boolean;
@@ -45,17 +46,13 @@ const ExecWithRuleBreachDialog: React.FC<{
             </DialogContent>
             <DialogActions>
                 <Button onClick={onCancel}>{i18next.t('execActionWithRuleBreach.cancel')}</Button>
-                <Tooltip
+                <MeltaTooltip
                     title={
                         someBrokenRuleIsEnforcement
                             ? i18next.t('execActionWithRuleBreach.createRequestTooltip')!
                             : i18next.t('execActionWithRuleBreach.execActionWithAlertTooltip')!
                     }
                     placement="top"
-                    arrow
-                    PopperProps={{
-                        sx: { '& .MuiTooltip-tooltip': { fontSize: '0.8rem' } },
-                    }}
                 >
                     <span>
                         <Button
@@ -70,7 +67,7 @@ const ExecWithRuleBreachDialog: React.FC<{
                             {isSubmitting && <CircularProgress size={20} />}
                         </Button>
                     </span>
-                </Tooltip>
+                </MeltaTooltip>
             </DialogActions>
         </Dialog>
     );

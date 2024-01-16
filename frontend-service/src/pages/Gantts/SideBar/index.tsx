@@ -9,6 +9,7 @@ import { RootState } from '../../../store';
 import { CompactDrawer } from '../../../common/CompactDrawer';
 import { IBasicGantt, IGanttItem } from '../../../interfaces/gantts';
 import { GanttItemsDisplay } from './GanttItemsDisplay';
+import { MeltaTooltip } from '../../../common/MeltaTooltip';
 
 interface IGanttSideBarProps {
     gantt: IBasicGantt;
@@ -45,7 +46,7 @@ export const GanttSideBar: React.FC<IGanttSideBarProps> = ({ toggle, open, gantt
                         <Swap
                             condition={edit}
                             isTrue={
-                                <Tooltip title={i18next.t('gantts.actions.addItem')}>
+                                <MeltaTooltip title={i18next.t('gantts.actions.addItem')}>
                                     <Button
                                         fullWidth
                                         sx={{ height: '100%' }}
@@ -60,7 +61,7 @@ export const GanttSideBar: React.FC<IGanttSideBarProps> = ({ toggle, open, gantt
                                     >
                                         <AddIcon sx={{ color: 'gray' }} />
                                     </Button>
-                                </Tooltip>
+                                </MeltaTooltip>
                             }
                         />
                     )}

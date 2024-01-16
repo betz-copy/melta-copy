@@ -3,6 +3,7 @@ import { ListItemButton, Tooltip, tooltipClasses } from '@mui/material';
 import i18next from 'i18next';
 import { StyledLink, StyledListItemText } from './NavBar.styled';
 import './NavButton.css';
+import { MeltaTooltip } from '../MeltaTooltip';
 
 const NavButton: React.FC<{ to: string; isDrawerOpen: boolean; text: string; disabled?: boolean; onChangeToActive: (boolean) => void }> = ({
     to,
@@ -23,13 +24,10 @@ const NavButton: React.FC<{ to: string; isDrawerOpen: boolean; text: string; dis
             {({ isActive }) => {
                 onChangeToActive(isActive);
                 return (
-                    <Tooltip
+                    <MeltaTooltip
                         title={disabled ? (i18next.t('permissions.dontHavePermissionsToCategory') as string) : text}
                         placement="left"
                         disableHoverListener={!disabled && isDrawerOpen} // when drawer is opened text is already shown, so no need for tooltip
-                        PopperProps={{
-                            sx: { [`& .${tooltipClasses.tooltip}`]: { fontSize: '1rem', backgroundColor: '#101440' } },
-                        }}
                     >
                         <div>
                             <ListItemButton
@@ -56,7 +54,7 @@ const NavButton: React.FC<{ to: string; isDrawerOpen: boolean; text: string; dis
                                 )}
                             </ListItemButton>
                         </div>
-                    </Tooltip>
+                    </MeltaTooltip>
                 );
             }}
         </StyledLink>

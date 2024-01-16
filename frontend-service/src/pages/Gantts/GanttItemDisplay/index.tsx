@@ -10,6 +10,7 @@ import { EntityTemplateDisplay } from './EntityTemplateDisplay';
 import { environment } from '../../../globals';
 import { GanttItemEdit } from './GanttItemEdit';
 import { ConnectionIcon } from './ConnectionIcon.styled';
+import { MeltaTooltip } from '../../../common/MeltaTooltip';
 
 const { separators } = environment.ganttSettings;
 
@@ -56,7 +57,7 @@ export const GanttItemDisplay: React.FC<IGanttItemDisplayProps> = ({ item, formi
     const endDateTitle = entityTemplate.properties.properties[item.entityTemplate.endDateField].title;
 
     return (
-        <Tooltip title={title} placement="right" disableHoverListener={expanded} arrow>
+        <MeltaTooltip title={title} placement="right" disableHoverListener={expanded}>
             <Grid container direction="column" alignItems="center" paddingX="1rem" paddingY="0.6rem" spacing={1}>
                 <EntityTemplateDisplay
                     entityTemplate={entityTemplate}
@@ -79,6 +80,6 @@ export const GanttItemDisplay: React.FC<IGanttItemDisplayProps> = ({ item, formi
                     />
                 ))}
             </Grid>
-        </Tooltip>
+        </MeltaTooltip>
     );
 };

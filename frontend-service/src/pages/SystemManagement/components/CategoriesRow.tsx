@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Grid, IconButton, Tooltip, Typography, tooltipClasses } from '@mui/material';
+import { Grid, IconButton, Tooltip, Typography, tooltipClasses, useTheme } from '@mui/material';
 import { Hive as HiveIcon } from '@mui/icons-material';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
@@ -15,6 +15,8 @@ import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
 import { ErrorToast } from '../../../common/ErrorToast';
 import { Box } from './Box';
 import { CardMenu } from './CardMenu';
+import { mainFontSizes } from '../../../theme';
+import { MeltaTooltip } from '../../../common/MeltaTooltip';
 
 interface CategoryCardProps {
     category: IMongoCategory;
@@ -34,6 +36,7 @@ interface CategoryCardProps {
 
 const CategoryCard: React.FC<CategoryCardProps> = ({ category, setDeleteCategoryDialogState, setCategoryWizardDialogState }) => {
     const [isHoverOnCard, setIsHoverOnCard] = useState(false);
+    const theme = useTheme();
 
     return (
         <ViewingCard
@@ -61,22 +64,17 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, setDeleteCategory
 
                         <Grid item>
                             {category.iconFileId ? (
-                                <CustomIcon color="#1E2775" iconUrl={category.iconFileId} height="24px" width="24px" />
+                                <CustomIcon color={theme.palette.primary.main} iconUrl={category.iconFileId} height="24px" width="24px" />
                             ) : (
-                                <HiveIcon style={{ color: '#1E2775' }} fontSize="small" />
+                                <HiveIcon style={{ color: theme.palette.primary.main }} fontSize="small" />
                             )}
                         </Grid>
                         <Grid item>
-                            <Tooltip
-                                PopperProps={{
-                                    sx: { [`& .${tooltipClasses.tooltip}`]: { fontSize: '1rem', backgroundColor: '#101440' } },
-                                }}
-                                title={category.displayName}
-                            >
+                            <MeltaTooltip title={category.displayName}>
                                 <Typography
                                     style={{
-                                        fontSize: '14px',
-                                        color: '#1E2775',
+                                        fontSize: mainFontSizes.headlineSubTitleFontSize,
+                                        color: theme.palette.primary.main,
                                         fontWeight: '400',
                                         textOverflow: 'ellipsis',
                                         whiteSpace: 'nowrap',
@@ -86,7 +84,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, setDeleteCategory
                                 >
                                     {category.displayName}
                                 </Typography>
-                            </Tooltip>
+                            </MeltaTooltip>
                         </Grid>
                     </Grid>
                     <Grid item container flexBasis="10%">
@@ -147,7 +145,9 @@ const CategoriesRow: React.FC = () => {
             <Box
                 header={
                     <Grid item container justifyContent="space-between" alignItems="center" height="40px">
-                        <Typography style={{ fontSize: '14px', fontWeight: '400', color: '#9398C2' }}>general</Typography>
+                        <Typography style={{ fontSize: mainFontSizes.headlineSubTitleFontSize, fontWeight: '400', color: '#9398C2' }}>
+                            general
+                        </Typography>
                         {isHoverOnBox && (
                             <IconButton onClick={() => {}}>
                                 <img src="\icons\edit-icon.svg" />

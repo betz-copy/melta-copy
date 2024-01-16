@@ -24,6 +24,7 @@ import { ErrorToast } from '../../../common/ErrorToast';
 import { Box } from './Box';
 import { CustomIcon } from '../../../common/CustomIcon';
 import { CardMenu } from './CardMenu';
+import { mainFontSizes } from '../../../theme';
 
 interface RelationshipTemplateCardProps {
     relationshipTemplate: IMongoRelationshipTemplatePopulated;
@@ -301,7 +302,7 @@ const RelationshipTemplatesRow: React.FC = () => {
                                 ) : (
                                     <AppRegistrationIcon style={{ color: '#9398C2', height: '24px', width: '24px' }} fontSize="small" />
                                 )}
-                                <Typography style={{ fontSize: '14px', fontWeight: '400', color: '#9398C2' }}>
+                                <Typography style={{ fontSize: mainFontSizes.headlineSubTitleFontSize, fontWeight: '400', color: '#9398C2' }}>
                                     {relationshipTemplateWithEntity.entityTemplate.displayName}
                                 </Typography>
                                 <img src="/icons/arrow-relation-title.svg" />

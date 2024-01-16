@@ -1,10 +1,16 @@
-import { createTheme, ThemeOptions } from '@mui/material';
+import { createTheme, PaletteOptions, ThemeOptions } from '@mui/material';
 
 const basicTheme: ThemeOptions = {
     direction: 'rtl',
     typography: {
-        fontFamily: 'OpenSans',
+        fontFamily: 'Rubik',
     },
+};
+
+// TODO - move to globals file
+export const mainFontSizes = {
+    headlineTitleFontSize: '24px',
+    headlineSubTitleFontSize: '14px',
 };
 
 export const lightTheme = createTheme({
@@ -12,9 +18,6 @@ export const lightTheme = createTheme({
     palette: {
         mode: 'light',
         primary: { main: '#1E2775' },
-    },
-    typography: {
-        fontFamily: 'Rubik',
     },
     components: {
         MuiCssBaseline: {

@@ -1,6 +1,17 @@
 import React, { Dispatch, SetStateAction, useRef } from 'react';
 import i18next from 'i18next';
-import { BaseTextFieldProps, CircularProgress, Grid, Icon, IconButton, ToggleButton, ToggleButtonGroup, Tooltip, Typography } from '@mui/material';
+import {
+    BaseTextFieldProps,
+    CircularProgress,
+    Grid,
+    Icon,
+    IconButton,
+    ToggleButton,
+    ToggleButtonGroup,
+    Tooltip,
+    Typography,
+    useTheme,
+} from '@mui/material';
 import CardsViewIcon from '@mui/icons-material/RecentActors';
 import AddIcon from '@mui/icons-material/Add';
 import SearchIcon from '@mui/icons-material/Search';
@@ -13,7 +24,8 @@ import { IMongoCategory } from '../../interfaces/categories';
 import TemplatesSelectCheckbox from '../templatesSelectCheckbox';
 import { BlueTitle } from '../BlueTitle';
 import { RootState } from '../../store';
-import { lightTheme } from '../../theme';
+import { mainFontSizes } from '../../theme';
+import { MeltaTooltip } from '../MeltaTooltip';
 
 export const GlobalSearchBar: React.FC<{
     inputValue?: string;
@@ -25,6 +37,7 @@ export const GlobalSearchBar: React.FC<{
     toTopBar?: boolean;
 }> = ({ inputValue, setInputValue, onSearch, borderRadius, placeholder, size, toTopBar = false }) => {
     const valueForSearchButtonRef = useRef(inputValue ?? '');
+    const theme = useTheme();
 
     return (
         <SearchInput
@@ -39,7 +52,12 @@ export const GlobalSearchBar: React.FC<{
                 }
             }}
             endAdornmentChildren={
-                <IconButton style={{ color: '#1E2775' }} onClick={() => onSearch(valueForSearchButtonRef.current)} sx={{ padding: 0 }} disableRipple>
+                <IconButton
+                    style={{ color: theme.palette.primary.main }}
+                    onClick={() => onSearch(valueForSearchButtonRef.current)}
+                    sx={{ padding: 0 }}
+                    disableRipple
+                >
                     <SearchIcon />
                 </IconButton>
             }
@@ -74,6 +92,7 @@ const EntitiesPageHeadline: React.FC<{
     pageTitle: string;
 }> = ({ searchInput, setSearchInput, onSearch, entityTemplateSelectCheckboxProps, excelExportProps, viewModeProps, pageTitle }) => {
     const darkMode = useSelector((state: RootState) => state.darkMode);
+    const theme = useTheme();
 
     return (
         <Grid
@@ -89,7 +108,7 @@ const EntitiesPageHeadline: React.FC<{
         >
             <Grid item>
                 <Grid container direction="row" display="flex" wrap="nowrap" alignItems="center">
-                    <BlueTitle title={pageTitle} component="h4" variant="h4" style={{ fontSize: '24px' }} />
+                    <BlueTitle title={pageTitle} component="h4" variant="h4" style={{ fontSize: mainFontSizes.headlineTitleFontSize }} />
                     <Grid item paddingLeft="3rem" paddingTop="5px">
                         <Grid item container wrap="nowrap" gap="15px">
                             <Grid item data-tour="template-filter">
@@ -134,23 +153,23 @@ const EntitiesPageHeadline: React.FC<{
                             size="small"
                         >
                             <ToggleButton value="cards-view">
-                                <Tooltip title={i18next.t('cardsView')!}>
+                                <MeltaTooltip title={i18next.t('cardsView')!}>
                                     <CardsViewIcon />
-                                </Tooltip>
+                                </MeltaTooltip>
                             </ToggleButton>
                             <ToggleButton value="templates-tables-view">
-                                <Tooltip title={i18next.t('templateTablesView')!}>
+                                <MeltaTooltip title={i18next.t('templateTablesView')!}>
                                     <Icon>
                                         <img src="/icons/Tables-View.svg" height="15px" style={{ marginBottom: '10px' }} />
                                     </Icon>
-                                </Tooltip>
+                                </MeltaTooltip>
                             </ToggleButton>
                         </ToggleButtonGroup>
                     </Grid>
                     {excelExportProps && (
                         <Grid item>
                             <IconButton
-                                style={{ background: lightTheme.palette.primary.main, borderRadius: '7px' }}
+                                style={{ background: theme.palette.primary.main, borderRadius: '7px' }}
                                 onClick={excelExportProps.onExcelExport}
                                 disabled={excelExportProps.isLoadingExcel}
                             >
@@ -166,7 +185,7 @@ const EntitiesPageHeadline: React.FC<{
                         </Grid>
                     )}
                     <Grid item>
-                        <AddEntityButton disabledToolTip style={{ background: lightTheme.palette.primary.main, borderRadius: '7px' }}>
+                        <AddEntityButton disabledToolTip style={{ background: theme.palette.primary.main, borderRadius: '7px' }}>
                             <AddIcon htmlColor="white" />
                             <Typography fontSize={14} style={{ fontWeight: '500', padding: '0 10px', color: 'white' }}>
                                 {i18next.t('addEntity')}

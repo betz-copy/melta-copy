@@ -5,6 +5,7 @@ import { Edit as EditIcon, Delete as DeleteIcon, MoreVertOutlined as OptionsIcon
 import { useSelector } from 'react-redux';
 import { MenuButton } from '../../../common/MenuButton';
 import { RootState } from '../../../store';
+import { MeltaTooltip } from '../../../common/MeltaTooltip';
 
 export const ViewingCard: React.FC<{
     title: React.ReactNode;
@@ -51,8 +52,7 @@ export const ViewingCard: React.FC<{
                                 <OptionsIcon />
                             </IconButton>
                             <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
-                                <Tooltip
-                                    arrow
+                                <MeltaTooltip
                                     placement="right"
                                     title={disabledProps?.tooltipTitle || String(i18next.t('systemManagement.defaultCantEdit'))}
                                     disableHoverListener={!disabledProps?.canEdit}
@@ -68,7 +68,7 @@ export const ViewingCard: React.FC<{
                                             icon={<EditIcon color="action" />}
                                         />
                                     </Grid>
-                                </Tooltip>
+                                </MeltaTooltip>
 
                                 {onDeleteClick && (
                                     <MenuButton

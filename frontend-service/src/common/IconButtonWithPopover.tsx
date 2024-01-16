@@ -1,5 +1,6 @@
 import React, { CSSProperties } from 'react';
-import { IconButton, Tooltip, tooltipClasses } from '@mui/material';
+import { IconButton, tooltipClasses } from '@mui/material';
+import { MeltaTooltip } from './MeltaTooltip';
 
 const IconButtonWithPopover: React.FC<{
     iconButtonProps?: React.ComponentProps<typeof IconButton>;
@@ -9,19 +10,13 @@ const IconButtonWithPopover: React.FC<{
     disabled?: boolean;
 }> = ({ children, iconButtonProps, popoverText, disabledToolTip = false, disabled, style }) => {
     return (
-        <Tooltip
-            title={popoverText}
-            disableHoverListener={disabledToolTip}
-            PopperProps={{
-                sx: { [`& .${tooltipClasses.tooltip}`]: { fontSize: '1rem', backgroundColor: '#101440' } },
-            }}
-        >
+        <MeltaTooltip title={popoverText} disableHoverListener={disabledToolTip}>
             <span>
                 <IconButton {...iconButtonProps} style={style} disabled={disabled}>
                     {children}
                 </IconButton>
             </span>
-        </Tooltip>
+        </MeltaTooltip>
     );
 };
 

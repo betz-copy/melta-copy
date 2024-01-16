@@ -1,6 +1,6 @@
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 import React, { useEffect, useRef, useState } from 'react';
-import { Grid, IconButton, Tooltip, Typography, tooltipClasses } from '@mui/material';
+import { Grid, IconButton, Tooltip, Typography, tooltipClasses, useTheme } from '@mui/material';
 import { AppRegistration as AppRegistrationIcon } from '@mui/icons-material';
 import { UseMutateAsyncFunction, useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
@@ -28,6 +28,9 @@ import { Box } from './Box';
 import { getEntityTemplateColor } from '../../../utils/colors';
 import { CardMenu } from './CardMenu';
 import { updateCategoryRequest } from '../../../services/templates/categoriesService';
+import { mainFontSizes } from '../../../theme';
+import { MeltaTooltip } from '../../../common/MeltaTooltip';
+import { EntityTemplateColor } from '../../../common/EntityTemplateColor';
 
 const defaultEntityTemplatePopulated: IMongoEntityTemplatePopulated = {
     _id: '',
@@ -77,6 +80,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
     updateEntityTemplateStatusAsync,
 }) => {
     const [isHoverOnCard, setIsHoverOnCard] = useState(false);
+    const theme = useTheme();
 
     return (
         <ViewingCard
@@ -92,14 +96,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                 >
                     <Grid item container alignItems="center" gap="10px" flexBasis="90%">
                         <Grid item>
-                            <div
-                                style={{
-                                    height: '18px',
-                                    width: '3px',
-                                    backgroundColor: getEntityTemplateColor(entityTemplate),
-                                    borderRadius: '20px',
-                                }}
-                            />
+                            <EntityTemplateColor entityTemplateColor={getEntityTemplateColor(entityTemplate)} style={{ height: '18px' }} />
                         </Grid>
 
                         <Grid item>
@@ -110,16 +107,11 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                             )}
                         </Grid>
                         <Grid item>
-                            <Tooltip
-                                PopperProps={{
-                                    sx: { [`& .${tooltipClasses.tooltip}`]: { fontSize: '1rem', backgroundColor: '#101440' } },
-                                }}
-                                title={entityTemplate.displayName}
-                            >
+                            <MeltaTooltip title={entityTemplate.displayName}>
                                 <Typography
                                     style={{
-                                        fontSize: '14px',
-                                        color: '#1E2775',
+                                        fontSize: mainFontSizes.headlineSubTitleFontSize,
+                                        color: theme.palette.primary.main,
                                         fontWeight: '400',
                                         textOverflow: 'ellipsis',
                                         whiteSpace: 'nowrap',
@@ -129,7 +121,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                                 >
                                     {entityTemplate.displayName}
                                 </Typography>
-                            </Tooltip>
+                            </MeltaTooltip>
                         </Grid>
                     </Grid>
                     <Grid item container flexBasis="10%">
@@ -173,12 +165,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                                     <Typography>-</Typography>
                                 </Grid>
                                 <Grid item color="#53566E">
-                                    <Tooltip
-                                        PopperProps={{
-                                            sx: { [`& .${tooltipClasses.tooltip}`]: { fontSize: '1rem', backgroundColor: '#101440' } },
-                                        }}
-                                        title={key}
-                                    >
+                                    <MeltaTooltip title={key}>
                                         <Typography
                                             style={{
                                                 textOverflow: 'ellipsis',
@@ -190,7 +177,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                                         >
                                             {key}
                                         </Typography>
-                                    </Tooltip>
+                                    </MeltaTooltip>
                                 </Grid>
                                 <Grid item color="#9398C2" fontWeight="400">
                                     {i18next.t(`propertyTypes.${value.type}`)}
@@ -210,12 +197,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                                     <Typography>-</Typography>
                                 </Grid>
                                 <Grid item color="#53566E">
-                                    <Tooltip
-                                        PopperProps={{
-                                            sx: { [`& .${tooltipClasses.tooltip}`]: { fontSize: '1rem', backgroundColor: '#101440' } },
-                                        }}
-                                        title={key}
-                                    >
+                                    <MeltaTooltip title={key}>
                                         <Typography
                                             style={{
                                                 textOverflow: 'ellipsis',
@@ -227,7 +209,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                                         >
                                             {key}
                                         </Typography>
-                                    </Tooltip>
+                                    </MeltaTooltip>
                                 </Grid>
                                 <Grid item color="#9398C2" fontWeight="400">
                                     {entityTemplate.properties.required.includes(key) ? i18next.t('validation.required') : ''}
@@ -301,7 +283,7 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
                                     ref={containerWrapperRef}
                                     contentEditable={isEditableCategory}
                                     style={{
-                                        fontSize: '14px',
+                                        fontSize: mainFontSizes.headlineSubTitleFontSize,
                                         fontWeight: '400',
                                         color: isEditableCategory ? 'black' : '#9398C2',
                                         outline: isEditableCategory ? '1px solid black' : '',
@@ -451,15 +433,24 @@ const EntityTemplatesRow: React.FC = () => {
         },
     );
 
-    const { mutateAsync } = useMutation(
-        ({ entityTemplateId, entityTemplate, category }: { entityTemplateId: string; entityTemplate: IEntityTemplate; category: IMongoCategory }) =>
-            updateEntityTemplateRequest(entityTemplateId, {
+    const { mutateAsync, isLoading } = useMutation(
+        ({ entityTemplateId, entityTemplate, category }: { entityTemplateId: string; entityTemplate: IEntityTemplate; category: IMongoCategory }) => {
+            // TODO -  set loading list state  with entityTemplateId true - use mui skelaton
+            // queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) =>
+            //     entityTemplateMap!.set(entityTemplateId, entityTemplate),
+            // );
+            return updateEntityTemplateRequest(entityTemplateId, {
                 ...entityTemplate,
                 category: category._id,
-            }),
+            });
+        },
+
         {
             onSuccess(data) {
                 queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) => entityTemplateMap!.set(data._id, data));
+            },
+            onError() {
+                // TODO -  set loading list state  with entityTemplateId false and add toastify
             },
         },
     );

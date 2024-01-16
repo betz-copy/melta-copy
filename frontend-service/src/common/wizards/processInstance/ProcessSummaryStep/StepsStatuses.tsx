@@ -14,6 +14,7 @@ import { getStepTemplateByStepInstance } from '../../../../utils/processWizard/s
 import { IMongoProcessTemplatePopulated } from '../../../../interfaces/processes/processTemplate';
 import { getLongDate } from '../../../../utils/date';
 import { StatusColorsNames, StyledCard } from '../../../../pages/ProcessInstances/ProcessCard';
+import { MeltaTooltip } from '../../../MeltaTooltip';
 
 const StepStatus: React.FC<{
     stepInstance: IMongoStepInstancePopulated;
@@ -36,7 +37,7 @@ const StepStatus: React.FC<{
                 <Grid container direction="column">
                     <Grid item>
                         <CardContent>
-                            <Tooltip
+                            <MeltaTooltip
                                 title={i18next.t(`processInstancesPage.stepStatus.${stepInstance.status}`)}
                                 style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', paddingBottom: 5 }}
                             >
@@ -51,7 +52,7 @@ const StepStatus: React.FC<{
                                         <CheckCircleIcon color={StatusColorsNames.Approved} sx={{ fontSize: 35 }} />
                                     )}
                                 </div>
-                            </Tooltip>
+                            </MeltaTooltip>
 
                             <>
                                 {stepInstance.reviewedAt ? (

@@ -2,6 +2,7 @@ import { Grid, IconButton, Tooltip, tooltipClasses, Typography } from '@mui/mate
 import React from 'react';
 import { IUser } from '../../services/kartoffelService';
 import UserAvatar from '../UserAvatar';
+import { MeltaTooltip } from '../MeltaTooltip';
 
 interface ProfileButtonProps {
     currentUser: IUser;
@@ -24,13 +25,10 @@ export const getNameInitials = (user: ProfileButtonProps['currentUser']): string
 const ProfileButton: React.FC<ProfileButtonProps> = ({ currentUser, text, isDrawerOpen, onClick }) => {
     return (
         <Grid container direction="column" alignItems="center">
-            <Tooltip
+            <MeltaTooltip
                 title={text}
                 placement="left"
                 disableHoverListener={isDrawerOpen} // when drawer is opened text is already shown, so no need for tooltip
-                PopperProps={{
-                    sx: { [`& .${tooltipClasses.tooltip}`]: { fontSize: '1rem', backgroundColor: '#101440' } },
-                }}
             >
                 <IconButton onClick={onClick} sx={{ borderRadius: 10 }}>
                     <Grid container alignItems="center" justifyContent="space-between" spacing={1}>
@@ -39,7 +37,7 @@ const ProfileButton: React.FC<ProfileButtonProps> = ({ currentUser, text, isDraw
                         </Grid>
                     </Grid>
                 </IconButton>
-            </Tooltip>
+            </MeltaTooltip>
         </Grid>
     );
 };

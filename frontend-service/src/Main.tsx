@@ -68,6 +68,7 @@ const Main = () => {
         setOpen(!open);
     };
 
+    // TODO - implement when dark mode will be supported
     const handleToggleTheme = () => {
         if (activeTheme.palette.mode === 'light') setActiveTheme(darkTheme);
         else setActiveTheme(lightTheme);

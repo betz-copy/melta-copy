@@ -9,6 +9,7 @@ import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates'
 import { booleanColDef, dateColDef, enumColDef, fileColDef, numberColDef, regexColDef, stringColDef } from '../../utils/agGrid/commonColDefs';
 import IconButtonWithPopover from '../IconButtonWithPopover';
 import { IButtonProps } from '.';
+import { ImageWithDisable } from '../ImageWithDisable';
 
 export interface IGetColumnDefsOptions<Data extends any> {
     template: IMongoEntityTemplatePopulated;
@@ -120,7 +121,6 @@ export const getColumnDefs = <Data extends any = IEntity>({
             menuTabs: [],
             sortable: false,
             width: 180,
-            minWidth: 180,
             flex: 0,
             resizable: false,
             lockPosition: true,
@@ -158,10 +158,7 @@ export const getColumnDefs = <Data extends any = IEntity>({
                                 }}
                                 disabled={editRowButtonProps.disabledButton || disabledEntity}
                             >
-                                <img
-                                    src="/icons/edit-icon.svg"
-                                    style={{ opacity: editRowButtonProps.disabledButton || disabledEntity ? '0.3' : '1' }}
-                                />
+                                <ImageWithDisable srcPath="/icons/edit-icon.svg" disabled={editRowButtonProps.disabledButton || disabledEntity} />
                             </IconButtonWithPopover>
                         )}
 

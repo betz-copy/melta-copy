@@ -1,5 +1,5 @@
 import React, { forwardRef, useImperativeHandle, useRef, useState } from 'react';
-import { Grid, Box, CircularProgress, Dialog } from '@mui/material';
+import { Grid, Box, CircularProgress, Dialog, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
@@ -17,10 +17,11 @@ import { EditEntityDetails } from '../../pages/Entity/components/EditEntityDetai
 import { IEntity } from '../../interfaces/entities';
 import { environment } from '../../globals';
 import { filterModelToFilterOfTemplate, sortModelToSortOfSearchRequest } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
-import { lightTheme } from '../../theme';
 import { getEntityTemplateColor } from '../../utils/colors';
 import { IPermissionsOfUser } from '../../services/permissionsService';
 import { canUserWriteInstanceOfCategory } from '../../utils/permissions/instancePermissions';
+import { EntityTemplateColor } from '../EntityTemplateColor';
+import { ImageWithDisable } from '../ImageWithDisable';
 
 const { expandedRowCount } = environment.agGrid;
 
@@ -37,6 +38,8 @@ const TemplateTable = forwardRef<
         page: string;
     }
 >(({ template, quickFilterText, page }, ref) => {
+    const theme = useTheme();
+
     const entitiesTableRef = useRef<EntitiesTableOfTemplateRef<IEntity>>(null);
 
     useImperativeHandle(ref, () => ({
@@ -88,18 +91,11 @@ const TemplateTable = forwardRef<
             <Grid container justifyContent="space-between" width="fit-content" minWidth="fit-content">
                 <Grid item container xs={5} alignItems="center" minWidth="fit-content">
                     <Grid item minWidth="fit-content">
-                        <div
-                            style={{
-                                height: '30px',
-                                width: '3px',
-                                backgroundColor: entityTemplateColor,
-                                borderRadius: '20px',
-                            }}
-                        />
+                        <EntityTemplateColor entityTemplateColor={entityTemplateColor} />
                     </Grid>
                     <Grid item minWidth="fit-content">
                         {template.iconFileId && (
-                            <CustomIcon iconUrl={template.iconFileId} height="30px" width="30px" color={lightTheme.palette.primary.main} />
+                            <CustomIcon iconUrl={template.iconFileId} height="30px" width="30px" color={theme.palette.primary.main} />
                         )}
                     </Grid>
                     <Grid item paddingLeft="10px" minWidth="fit-content" style={{ whiteSpace: 'nowrap', overflow: 'hidden' }}>
@@ -138,15 +134,14 @@ const TemplateTable = forwardRef<
                 </Grid>
 
                 <Grid container item flexGrow={1} width={0} justifyContent="flex-end" alignItems="center">
-                    <img style={{ opacity: '0.3' }} src="/icons/load-file.svg" />
+                    <ImageWithDisable srcPath="/icons/load-file.svg" disabled />
                     <AddEntityButton
                         initialStep={1}
                         disabled={!userHasWritePermissions}
                         initialValues={{ template, properties: { disabled: false }, attachmentsProperties: {} }}
-                        style={{ borderRadius: '5px', opacity: !userHasWritePermissions ? '0.3' : '' }}
+                        style={{ borderRadius: '5px' }}
                     >
-                        {/* <AddCircle color={!template.disabled ? 'primary' : 'disabled'} fontSize="large" data-tour="create-entity" /> */}
-                        <img src="/icons/add-entity.svg" />
+                        <ImageWithDisable srcPath="/icons/add-entity.svg" disabled={!userHasWritePermissions} />
                     </AddEntityButton>
                 </Grid>
             </Grid>

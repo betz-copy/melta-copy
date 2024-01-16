@@ -1,9 +1,8 @@
 import React, { MouseEventHandler } from 'react';
-import { IconButton, Grid } from '@mui/material';
+import { IconButton, Grid, useTheme, Typography } from '@mui/material';
 import { CloseOutlined as DeleteIcon, FilePresent as FileIcon } from '@mui/icons-material';
 import { Accept, useDropzone } from 'react-dropzone';
 import i18next from 'i18next';
-import { lightTheme } from '../../theme';
 
 interface FileInputProps {
     fileName: string | undefined;
@@ -16,6 +15,8 @@ interface FileInputProps {
 }
 
 const FileInput: React.FC<FileInputProps> = ({ fileName, onDeleteFile, onDropFile, inputText, acceptedFilesTypes, errorText }) => {
+    const theme = useTheme();
+
     const errorStyle = {
         color: 'rgb(211, 47, 47)',
         margin: 0,
@@ -34,7 +35,7 @@ const FileInput: React.FC<FileInputProps> = ({ fileName, onDeleteFile, onDropFil
     });
 
     const inputStyle = {
-        border: isDragActive ? `2px dashed ${lightTheme.palette.primary.main}` : '1px solid rgb(196, 196, 196)',
+        border: isDragActive ? `2px dashed ${theme.palette.primary.main}` : '1px solid rgb(196, 196, 196)',
         borderRadius: '10px',
         borderColor: '#CCCFE5',
         color: '#9398C2',
@@ -47,21 +48,23 @@ const FileInput: React.FC<FileInputProps> = ({ fileName, onDeleteFile, onDropFil
     };
 
     return (
-        <Grid container flexDirection="column" justifyContent="space-around" max-width="100%">
+        <Grid container flexDirection="column" justifyContent="space-around">
             <Grid item>
-                <div style={{ color: '#9398C2' }}>{inputText}</div>
+                <Typography style={{ color: '#9398C2' }}>{inputText}</Typography>
             </Grid>
 
-            <Grid item>
+            <Grid item container>
                 {fileName ? (
-                    <div style={inputStyle} {...getRootProps()}>
+                    <Grid item container style={inputStyle} {...getRootProps()}>
                         <input {...getInputProps()} />
-                        <FileIcon fontSize="medium" style={{ marginRight: '10px', marginLeft: '5px' }} />
-                        <Grid container alignItems="center" justifyContent="space-between" width="95%" flexWrap="nowrap">
-                            <Grid item style={{ overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis', width: '90%' }}>
-                                {fileName}
+                        <Grid container item flexDirection="row" alignItems="center" justifyContent="space-between" flexWrap="nowrap" width="100%">
+                            <Grid item flexGrow="1">
+                                <FileIcon fontSize="medium" />
                             </Grid>
-                            <Grid item>
+                            <Grid item flexGrow="1">
+                                <Typography style={{ overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>{fileName}</Typography>
+                            </Grid>
+                            <Grid item flexGrow="1">
                                 <IconButton
                                     onClick={(e) => {
                                         e.preventDefault();
@@ -74,15 +77,15 @@ const FileInput: React.FC<FileInputProps> = ({ fileName, onDeleteFile, onDropFil
                                 </IconButton>
                             </Grid>
                         </Grid>
-                    </div>
+                    </Grid>
                 ) : (
-                    <div style={inputStyle} {...getRootProps()}>
+                    <Grid style={inputStyle} {...getRootProps()}>
                         <input {...getInputProps()} placeholder="aa" />
                         <img src="\icons\Choose-File.svg" height="25px" width="120px" />
-                        <p>|</p>
+                        <Typography>|</Typography>
                         <img src="\icons\File-Drag-Icon.svg" height="25px" style={{ marginRight: '10px' }} />
-                        <p style={{ marginRight: '30px' }}>{i18next.t('input.imagePicker.dragFile')}</p>
-                    </div>
+                        <Typography style={{ marginRight: '30px' }}>{i18next.t('input.imagePicker.dragFile')}</Typography>
+                    </Grid>
                 )}
                 {errorText && (
                     <p id="error" style={errorStyle}>

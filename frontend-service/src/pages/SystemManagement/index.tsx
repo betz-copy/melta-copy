@@ -1,5 +1,5 @@
 import React, { ReactElement, useEffect } from 'react';
-import { Grid, Box, Tab } from '@mui/material';
+import { Grid, Box, Tab, useTheme } from '@mui/material';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import i18next from 'i18next';
 import { useQueryClient } from 'react-query';
@@ -14,6 +14,8 @@ import { IPermissionsOfUser } from '../../services/permissionsService';
 import { NoPermissions } from './components/NoPermissions';
 
 const SystemManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> }> = ({ setTitle }) => {
+    const theme = useTheme();
+
     useEffect(() => setTitle(i18next.t('pages.systemManagement')), [setTitle]);
 
     const [tabValue, setTabValue] = React.useState('categories');
@@ -62,7 +64,7 @@ const SystemManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateAction
                                         fontFamily: 'Rubik',
                                     }}
                                     sx={{
-                                        borderBottom: tabValue === tabName ? '2px solid #1E2775' : '',
+                                        borderBottom: tabValue === tabName ? `2px solid ${theme.palette.primary.main}` : '',
                                     }}
                                 />
                             ))}

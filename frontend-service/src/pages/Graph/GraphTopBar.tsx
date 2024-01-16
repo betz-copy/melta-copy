@@ -4,6 +4,7 @@ import { useQueryClient, useQuery } from 'react-query';
 import { RestartAltOutlined as ResetIcon } from '@mui/icons-material';
 import i18next from 'i18next';
 import { useSelector } from 'react-redux';
+import { useTheme } from '@mui/material/styles';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { getExpandedEntityByIdRequest } from '../../services/entitiesService';
 import IconButtonWithPopover from '../../common/IconButtonWithPopover';
@@ -11,7 +12,6 @@ import TemplatesSelectCheckbox from '../../common/templatesSelectCheckbox';
 import { ICategoryMap } from '../../interfaces/categories';
 import { RootState } from '../../store';
 import { CopyUrlButton } from '../../common/CopyUrlButton';
-import { lightTheme } from '../../theme';
 
 interface GraphTopBarProps {
     onReset: React.MouseEventHandler<HTMLButtonElement>;
@@ -24,6 +24,8 @@ interface GraphTopBarProps {
 
 const GraphTopBar: React.FC<GraphTopBarProps> = ({ onReset, set3DView, is3DView, entityId, filteredEntityTemplates, setFilteredEntityTemplates }) => {
     const queryClient = useQueryClient();
+
+    const theme = useTheme();
 
     const darkMode = useSelector((state: RootState) => state.darkMode);
 
@@ -53,7 +55,7 @@ const GraphTopBar: React.FC<GraphTopBarProps> = ({ onReset, set3DView, is3DView,
             <Grid item sx={{ display: 'flex', alignItems: 'center' }}>
                 <Typography
                     style={{
-                        color: lightTheme.palette.primary.main,
+                        color: theme.palette.primary.main,
                         fontWeight: '800',
                     }}
                     component="h4"
@@ -64,7 +66,7 @@ const GraphTopBar: React.FC<GraphTopBarProps> = ({ onReset, set3DView, is3DView,
                 <Typography variant="h4" fontSize="30px" color="#d3d8df" marginLeft="5px" marginRight="5px">
                     /
                 </Typography>
-                <Typography style={{ paddingBottom: '2px' }} variant="h4" fontSize="28px" color={lightTheme.palette.primary.main}>
+                <Typography style={{ paddingBottom: '2px' }} variant="h4" fontSize="28px" color={theme.palette.primary.main}>
                     {entityTemplate?.displayName}
                 </Typography>
                 <Box marginLeft="3rem">
@@ -97,7 +99,7 @@ const GraphTopBar: React.FC<GraphTopBarProps> = ({ onReset, set3DView, is3DView,
                     </Grid>
 
                     <Grid item>
-                        <CopyUrlButton style={{ color: lightTheme.palette.primary.main }} />
+                        <CopyUrlButton style={{ color: theme.palette.primary.main }} />
                     </Grid>
 
                     <Grid item>

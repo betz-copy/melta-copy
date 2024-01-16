@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { Grid, IconButton, Typography } from '@mui/material';
-import { AddCircle as AddIcon } from '@mui/icons-material';
+import { Grid, IconButton, Typography, useTheme } from '@mui/material';
 import { UseMutateAsyncFunction, useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import i18next from 'i18next';
@@ -17,6 +16,7 @@ import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTempla
 import { RelationshipTitle } from '../../../common/RelationshipTitle';
 import { populateRelationshipTemplate } from '../../../utils/templates';
 import { CardMenu } from './CardMenu';
+import { mainFontSizes } from '../../../theme';
 
 export const RuleCard: React.FC<{
     rule: IMongoRule;
@@ -36,6 +36,7 @@ export const RuleCard: React.FC<{
     >;
     updateDisabledMutateAsync: UseMutateAsyncFunction<IMongoRule, unknown, IMongoRule, unknown>;
 }> = ({ rule, relationshipTemplates, entityTemplates, setRuleWizardDialogState, setDeleteRuleWizardState, updateDisabledMutateAsync }) => {
+    const theme = useTheme();
     const populatedRelationshipTemplate = populateRelationshipTemplate(relationshipTemplates.get(rule.relationshipTemplateId)!, entityTemplates);
     const [isHoverOnCard, setIsHoverOnCard] = useState(false);
 
@@ -46,7 +47,11 @@ export const RuleCard: React.FC<{
                 <Grid item container gap="10px" paddingLeft="5px" direction="column">
                     <Grid item container alignItems="center" justifyContent="space-between" direction="row" flexWrap="nowrap">
                         <Grid item flexBasis="90%" height="30px">
-                            <Typography style={{ fontSize: '14px', color: '#1E2775', fontWeight: '400' }}>{rule.name}</Typography>
+                            <Typography
+                                style={{ fontSize: mainFontSizes.headlineSubTitleFontSize, color: theme.palette.primary.main, fontWeight: '400' }}
+                            >
+                                {rule.name}
+                            </Typography>
                         </Grid>
                         <Grid item flexBasis="10%">
                             {isHoverOnCard && (

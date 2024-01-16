@@ -3,6 +3,7 @@ import React from 'react';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import { NotificationCount } from './NotificationCount';
 import { INotificationGroupCountDetails } from '../../../interfaces/notifications';
+import { MeltaTooltip } from '../../MeltaTooltip';
 
 interface NotificationsButtonProps {
     notificationCountDetails: INotificationGroupCountDetails;
@@ -13,13 +14,10 @@ interface NotificationsButtonProps {
 
 export const NotificationsButton: React.FC<NotificationsButtonProps> = ({ notificationCountDetails, text, isDrawerOpen, onClick }) => (
     <Grid container direction="column" alignItems="center">
-        <Tooltip
+        <MeltaTooltip
             title={text}
             placement="left"
             disableHoverListener={isDrawerOpen} // when drawer is opened text is already shown, so no need for tooltip
-            PopperProps={{
-                sx: { [`& .${tooltipClasses.tooltip}`]: { fontSize: '1rem', backgroundColor: '#101440' } },
-            }}
         >
             <IconButton onClick={onClick} sx={{ borderRadius: 10, margin: '0.2rem', paddingBottom: '0', paddingX: '0.5rem' }}>
                 <Grid container alignItems="center" justifyContent="space-between" spacing={1}>
@@ -39,6 +37,6 @@ export const NotificationsButton: React.FC<NotificationsButtonProps> = ({ notifi
                     </Grid>
                 </Grid>
             </IconButton>
-        </Tooltip>
+        </MeltaTooltip>
     </Grid>
 );

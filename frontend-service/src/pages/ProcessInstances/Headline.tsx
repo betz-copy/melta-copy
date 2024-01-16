@@ -1,5 +1,5 @@
 import React, { Dispatch, SetStateAction } from 'react';
-import { Grid, IconButton, Typography } from '@mui/material';
+import { Grid, IconButton, Typography, useTheme } from '@mui/material';
 import { Add as AddIcon } from '@mui/icons-material';
 import i18next from 'i18next';
 import { useQueryClient } from 'react-query';
@@ -13,7 +13,7 @@ import { IMongoProcessTemplatePopulated } from '../../interfaces/processes/proce
 import { IPermissionsOfUser } from '../../services/permissionsService';
 import './ProcessesList.css';
 import DateRange from '../../common/inputs/DateRange';
-import { lightTheme } from '../../theme';
+import { lightTheme, mainFontSizes } from '../../theme';
 
 const ProcessInstancesHeadline: React.FC<{
     onSearch: (value: string) => void;
@@ -27,6 +27,8 @@ const ProcessInstancesHeadline: React.FC<{
     startDateInput: Date | null;
     endDateInput: Date | null;
 }> = ({ onSearch, onSetStartDate, onSetEndDate, templatesSelectCheckboxProps, startDateInput, endDateInput }) => {
+    const theme = useTheme();
+
     const queryClient = useQueryClient();
     const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
 
@@ -35,7 +37,12 @@ const ProcessInstancesHeadline: React.FC<{
             <Grid item>
                 <Grid container spacing={5} wrap="nowrap" alignItems="center">
                     <Grid item>
-                        <BlueTitle title={i18next.t('pages.processInstances')} component="h4" variant="h4" style={{ fontSize: '24px' }} />
+                        <BlueTitle
+                            title={i18next.t('pages.processInstances')}
+                            component="h4"
+                            variant="h4"
+                            style={{ fontSize: mainFontSizes.headlineTitleFontSize }}
+                        />
                     </Grid>
                     <Grid item>
                         <Grid container wrap="nowrap" gap="15px">
@@ -75,7 +82,7 @@ const ProcessInstancesHeadline: React.FC<{
 
             <Grid item>
                 {myPermissions.processesManagementId && (
-                    <AddProcessButton style={{ background: lightTheme.palette.primary.main, borderRadius: '5px' }}>
+                    <AddProcessButton style={{ background: theme.palette.primary.main, borderRadius: '5px' }}>
                         <AddIcon htmlColor="white" />
                         <Typography fontSize={14} style={{ fontWeight: '500', padding: '0 10px', color: 'white' }}>
                             {i18next.t('processInstancesPage.addProcess')}

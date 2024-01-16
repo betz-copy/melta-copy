@@ -1,5 +1,5 @@
 import React, { ReactNode } from 'react';
-import { BaseTextFieldProps, InputAdornment, TextField } from '@mui/material';
+import { BaseTextFieldProps, InputAdornment, TextField, useTheme } from '@mui/material';
 import { Search as SearchIcon } from '@mui/icons-material';
 import i18next from 'i18next';
 
@@ -22,6 +22,8 @@ const SearchInput: React.FC<{
     borderRadius = '30px',
     toTopBar = false,
 }) => {
+    const theme = useTheme();
+
     return (
         <TextField
             value={value}
@@ -35,15 +37,23 @@ const SearchInput: React.FC<{
             sx={{ borderRadius, backgroundColor: 'white' }}
             InputProps={{
                 endAdornment: (
-                    <InputAdornment position="end" style={{ color: '#1E2775' }}>
-                        <div style={{ width: '1px', height: '22px', borderRadius: '1.5px', backgroundColor: '#1E2775', marginLeft: '7px' }} />
+                    <InputAdornment position="end" style={{ color: theme.palette.primary.main }}>
+                        <div
+                            style={{
+                                width: '1px',
+                                height: '22px',
+                                borderRadius: '1.5px',
+                                backgroundColor: theme.palette.primary.main,
+                                marginLeft: '7px',
+                            }}
+                        />
                         {endAdornmentChildren}
                     </InputAdornment>
                 ),
                 startAdornment: <InputAdornment position="start" />,
                 style: {
                     borderRadius,
-                    color: '#1E2775',
+                    color: theme.palette.primary.main,
                 },
             }}
         />

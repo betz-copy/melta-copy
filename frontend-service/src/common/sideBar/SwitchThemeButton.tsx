@@ -1,6 +1,7 @@
 import { Grid, Tooltip, tooltipClasses, Typography } from '@mui/material';
 import React from 'react';
 import { DayNightSwitch } from '../inputs/DayNightSwitch';
+import { MeltaTooltip } from '../MeltaTooltip';
 
 interface SwitchThemeButtonProps {
     text: string;
@@ -11,15 +12,7 @@ interface SwitchThemeButtonProps {
 
 export const SwitchThemeButton: React.FC<SwitchThemeButtonProps> = ({ text, isDrawerOpen, onClick, darkMode }) => {
     return (
-        <Tooltip
-            title={text}
-            arrow
-            placement="left"
-            disableHoverListener={isDrawerOpen}
-            PopperProps={{
-                sx: { [`& .${tooltipClasses.tooltip}`]: { fontSize: '1rem' } },
-            }}
-        >
+        <MeltaTooltip title={text} arrow placement="left" disableHoverListener={isDrawerOpen}>
             <Grid container alignItems="center" justifyContent="space-around" spacing={isDrawerOpen ? -9 : 0}>
                 <Grid item width="4rem">
                     <DayNightSwitch checked={darkMode} onClick={onClick} />
@@ -31,6 +24,6 @@ export const SwitchThemeButton: React.FC<SwitchThemeButtonProps> = ({ text, isDr
                     </Grid>
                 )}
             </Grid>
-        </Tooltip>
+        </MeltaTooltip>
     );
 };

@@ -18,6 +18,7 @@ import ProcessInstanceWizard from '../../common/wizards/processInstance';
 import { archiveProcessRequest, deleteProcessRequest } from '../../services/processesService';
 import { MenuButton } from '../../common/MenuButton';
 import { AreYouSureDialog } from '../../common/dialogs/AreYouSureDialog';
+import { MeltaTooltip } from '../../common/MeltaTooltip';
 
 export enum StatusColors {
     Pending = '#ff8f00',
@@ -100,7 +101,7 @@ const StepIcon: React.FC<{
     }, []);
 
     return (
-        <Tooltip
+        <MeltaTooltip
             componentsProps={{
                 tooltip: {
                     sx: {
@@ -144,7 +145,7 @@ const StepIcon: React.FC<{
                     {stepTemplate.displayName}
                 </Typography>
             </Grid>
-        </Tooltip>
+        </MeltaTooltip>
     );
 };
 

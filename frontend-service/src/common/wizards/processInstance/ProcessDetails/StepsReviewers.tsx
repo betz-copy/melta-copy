@@ -13,6 +13,7 @@ import { CustomIcon } from '../../../CustomIcon';
 import { IUser } from '../../../../services/kartoffelService';
 import { getStepInstanceByStepTemplateId } from '../../../../utils/processWizard/steps';
 import { RootState } from '../../../../store';
+import { MeltaTooltip } from '../../../MeltaTooltip';
 
 const ReviewCard = ({ stepTemplate, values, setFieldValue, isEditMode, processInstance }) => {
     const darkMode = useSelector((state: RootState) => state.darkMode);
@@ -47,7 +48,7 @@ const ReviewCard = ({ stepTemplate, values, setFieldValue, isEditMode, processIn
                         )
                     }
                     title={
-                        <Tooltip title={stepTemplate.displayName} arrow>
+                        <MeltaTooltip title={stepTemplate.displayName} arrow>
                             <Typography
                                 variant="h5"
                                 style={{
@@ -59,7 +60,7 @@ const ReviewCard = ({ stepTemplate, values, setFieldValue, isEditMode, processIn
                             >
                                 {stepTemplate.displayName}
                             </Typography>
-                        </Tooltip>
+                        </MeltaTooltip>
                     }
                 />
                 <CardContent onClick={(e) => e.stopPropagation()}>

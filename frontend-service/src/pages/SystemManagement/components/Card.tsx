@@ -19,7 +19,7 @@ export const ViewingCard: React.FC<{
                 onMouseLeave={() => (onHover ? onHover(false) : '')}
                 sx={{
                     bgcolor: darkMode ? '#171717' : '#fff',
-                    // ':hover': { transform: 'scale(1.05)' },
+                    ':hover': { transform: 'scale(1.01)' },
                     borderRadius: '10px',
                     boxShadow: '-2px 2px 6px 0px rgba(30, 39, 117, 0.30)',
                     justifyContent: 'center',

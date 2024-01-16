@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { Divider, IconButton, Grid, Box, Slide, Fade, Tooltip, tooltipClasses, Button } from '@mui/material';
+import { Divider, IconButton, Grid, Box, Slide, Fade, Tooltip, tooltipClasses, Button, useTheme } from '@mui/material';
 import { useQuery, useQueryClient } from 'react-query';
 import {
     ChevronRight as ChevronRightIcon,
@@ -30,8 +30,9 @@ import { NotificationsButton } from './notifications/NotificationsButton';
 import { environment } from '../../globals';
 import { NotificationsScreen } from './notifications/NotificationsScreen';
 import { getMyNotificationGroupCountRequest } from '../../services/notificationService';
-import { lightTheme } from '../../theme';
+import { lightTheme, mainFontSizes } from '../../theme';
 import { GlobalSearchBar } from '../EntitiesPage/Headline';
+import { MeltaTooltip } from '../MeltaTooltip';
 
 type SideBarProps = {
     toggleDrawer: () => any;
@@ -41,6 +42,8 @@ type SideBarProps = {
 const { notifications } = environment;
 
 const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
+    const theme = useTheme();
+
     const drawerRef = useRef<React.ComponentRef<typeof Drawer>>(null);
 
     const queryClient = useQueryClient();
@@ -82,7 +85,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
             ref={drawerRef}
             variant="permanent"
             open={isDrawerOpen}
-            PaperProps={{ sx: { backgroundColor: '#1E2775' } }}
+            PaperProps={{ sx: { backgroundColor: theme.palette.primary.main } }}
             data-tour="side-bar"
             style={{ zIndex: '1' }}
             sx={{ zIndex: '1' }}
@@ -92,7 +95,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                 direction="column"
                 wrap="nowrap"
                 height="100%"
-                bgcolor={lightTheme.palette.primary.main}
+                bgcolor={theme.palette.primary.main}
                 style={{ backgroundImage: 'url(/icons/sideNav-bg.png)', backgroundRepeat: 'no-repeat' }}
             >
                 <Grid item container direction="column" alignItems="center" marginTop="15px" marginBottom="10px">
@@ -130,11 +133,23 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
 
                         {isDrawerOpen && (
                             <div>
-                                <p style={{ color: 'white', fontWeight: '600', margin: 0, fontSize: '14px', fontFamily: 'Rubik' }}>{`${i18next.t(
-                                    'sideBar.hello',
-                                )} ${myPermissions.user.firstName}, `}</p>
+                                <p
+                                    style={{
+                                        color: 'white',
+                                        fontWeight: '600',
+                                        margin: 0,
+                                        fontSize: mainFontSizes.headlineSubTitleFontSize,
+                                        fontFamily: 'Rubik',
+                                    }}
+                                >{`${i18next.t('sideBar.hello')} ${myPermissions.user.firstName}, `}</p>
                                 <Button
-                                    style={{ color: 'white', padding: 0, fontWeight: '400', fontSize: '14px', fontFamily: 'Rubik' }}
+                                    style={{
+                                        color: 'white',
+                                        padding: 0,
+                                        fontWeight: '400',
+                                        fontSize: mainFontSizes.headlineSubTitleFontSize,
+                                        fontFamily: 'Rubik',
+                                    }}
                                     onClick={() => setIsMyPermissionsDialogOpen(!isMyPermissionsDialogOpen)}
                                 >
                                     {i18next.t('permissions.permissionsOfUserDialog.readTitle')}
@@ -178,16 +193,13 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                                     toggleDrawer();
                                 }}
                             >
-                                <Tooltip
+                                <MeltaTooltip
                                     placement="left"
                                     disableHoverListener={isDrawerOpen} // when drawer is opened text is already shown, so no need for tooltip
-                                    PopperProps={{
-                                        sx: { [`& .${tooltipClasses.tooltip}`]: { fontSize: '1rem', backgroundColor: '#101440' } },
-                                    }}
                                     title={isDrawerOpen ? '' : i18next.t('pages.globalSearch')}
                                 >
                                     <img src="/icons/search-icon.svg" style={{ alignSelf: 'center', height: '25px' }} />
-                                </Tooltip>
+                                </MeltaTooltip>
                             </Button>
                         )}
                     </div>

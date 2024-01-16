@@ -9,6 +9,7 @@ import { IEntity } from '../interfaces/entities';
 import { OpenPreviewButton } from './OpenPreviewButton';
 import { RootState } from '../store';
 import { ColoredEnumChip } from './ColoredEnumChip';
+import { MeltaTooltip } from './MeltaTooltip';
 
 pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.js';
 
@@ -97,11 +98,8 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                                     textAlign: 'right',
                                 }}
                             >
-                                <Tooltip
+                                <MeltaTooltip
                                     placement="bottom"
-                                    PopperProps={{
-                                        sx: { [`& .${tooltipClasses.tooltip}`]: { fontSize: '1rem', backgroundColor: '#101440', color: 'white' } },
-                                    }}
                                     title={hideFieldsToDisplay.includes(propertyKey) || propertySchema.format === 'fileId' ? '' : stringFormatValue}
                                 >
                                     <Typography
@@ -116,7 +114,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                                     >
                                         {hideFieldsToDisplay.includes(propertyKey) ? <>••••••••</> : stringFormatValue}
                                     </Typography>
-                                </Tooltip>
+                                </MeltaTooltip>
                                 {hideField && (
                                     <IconButton
                                         onClick={(event) => {

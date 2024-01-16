@@ -5,6 +5,7 @@ import { Preview } from './Preview';
 import { getFileName } from '../utils/getFileName';
 import { getPreviewContentType } from '../utils/getFileType';
 import { useFilePreview } from '../utils/useFilePreview';
+import { mainFontSizes } from '../theme';
 
 const OpenPreviewButton: React.FC<{ fileId: string }> = ({ fileId }) => {
     const fileName = getFileName(fileId);
@@ -24,7 +25,7 @@ const OpenPreviewButton: React.FC<{ fileId: string }> = ({ fileId }) => {
                 sx={{ borderRadius: 10 }}
             >
                 <FileDownloadIcon />
-                <Typography style={{ marginRight: '5px', fontSize: '14px' }}>{fileName}</Typography>
+                <Typography style={{ marginRight: '5px', fontSize: mainFontSizes.headlineSubTitleFontSize }}>{fileName}</Typography>
             </IconButton>
             <Preview data={data} fileId={fileId} setOpen={setOpen} open={open} loading={isLoading} fileName={fileName} error={isError} />
         </>

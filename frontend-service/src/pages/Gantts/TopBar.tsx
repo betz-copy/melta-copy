@@ -24,6 +24,7 @@ import { IBasicGantt } from '../../interfaces/gantts';
 import { CopyUrlButton } from '../../common/CopyUrlButton';
 import { environment } from '../../globals';
 import { AreYouSureDialog } from '../../common/dialogs/AreYouSureDialog';
+import { MeltaTooltip } from '../../common/MeltaTooltip';
 
 const {
     separators,
@@ -96,20 +97,24 @@ export const GanttsTopBar: React.FC<IGanttTopBar> = ({ title, formik, onEdit, on
                                                 sx={{ paddingX: '0.4rem', height: '2.5rem', marginX: '0.8rem' }}
                                             >
                                                 <ToggleButton value onClick={() => setSearchParams({ [heatmapModeKey]: 'true' })}>
-                                                    <Tooltip title={i18next.t('gantts.heatmapMode')!}>
-                                                        <HeatmapModeIcon />
-                                                    </Tooltip>
+                                                    <MeltaTooltip title={i18next.t('gantts.heatmapMode')!}>
+                                                        <Grid>
+                                                            <HeatmapModeIcon />
+                                                        </Grid>
+                                                    </MeltaTooltip>
                                                 </ToggleButton>
                                                 <ToggleButton value={false} onClick={() => setSearchParams({})}>
-                                                    <Tooltip title={i18next.t('gantts.calendarMode')!}>
-                                                        <CalendarModeIcon />
-                                                    </Tooltip>
+                                                    <MeltaTooltip title={i18next.t('gantts.calendarMode')!}>
+                                                        <Grid>
+                                                            <CalendarModeIcon />
+                                                        </Grid>
+                                                    </MeltaTooltip>
                                                 </ToggleButton>
                                             </ToggleButtonGroup>
                                         </Grid>
                                     )}
 
-                                    <Tooltip
+                                    <MeltaTooltip
                                         title={
                                             <>
                                                 {Object.values(separators).map((separator) => (
@@ -127,15 +132,15 @@ export const GanttsTopBar: React.FC<IGanttTopBar> = ({ title, formik, onEdit, on
                                         <IconButton disableRipple>
                                             <InfoIcon />
                                         </IconButton>
-                                    </Tooltip>
+                                    </MeltaTooltip>
 
                                     <CopyUrlButton />
 
-                                    <Tooltip title={i18next.t('gantts.actions.edit')}>
+                                    <MeltaTooltip title={i18next.t('gantts.actions.edit')}>
                                         <IconButton onClick={onEdit}>
                                             <EditIcon />
                                         </IconButton>
-                                    </Tooltip>
+                                    </MeltaTooltip>
                                 </Grid>
                             }
                             isTrue={
@@ -168,11 +173,11 @@ export const GanttsTopBar: React.FC<IGanttTopBar> = ({ title, formik, onEdit, on
                                         ) : (
                                             <>
                                                 <Grid item container wrap="nowrap">
-                                                    <Tooltip title={i18next.t('gantts.actions.delete')}>
+                                                    <MeltaTooltip title={i18next.t('gantts.actions.delete')}>
                                                         <IconButton onClick={() => setDeleteDialogOpen(true)}>
                                                             <DeleteIcon />
                                                         </IconButton>
-                                                    </Tooltip>
+                                                    </MeltaTooltip>
                                                 </Grid>
 
                                                 <Grid
@@ -183,16 +188,16 @@ export const GanttsTopBar: React.FC<IGanttTopBar> = ({ title, formik, onEdit, on
                                                     borderRadius="10px"
                                                     margin="0.2rem"
                                                 >
-                                                    <Tooltip title={i18next.t('gantts.actions.cancel')}>
+                                                    <MeltaTooltip title={i18next.t('gantts.actions.cancel')}>
                                                         <IconButton type="reset">
                                                             <CancelIcon />
                                                         </IconButton>
-                                                    </Tooltip>
-                                                    <Tooltip title={i18next.t('gantts.actions.save')}>
+                                                    </MeltaTooltip>
+                                                    <MeltaTooltip title={i18next.t('gantts.actions.save')}>
                                                         <IconButton type="submit">
                                                             <SaveIcon />
                                                         </IconButton>
-                                                    </Tooltip>
+                                                    </MeltaTooltip>
                                                 </Grid>
                                             </>
                                         )}

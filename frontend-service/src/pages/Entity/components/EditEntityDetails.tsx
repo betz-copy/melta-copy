@@ -117,7 +117,7 @@ const EditEntityDetails: React.FC<{
                                                     />
                                                 </Box>
                                                 {templateFileKeys.length > 0 && (
-                                                    <Box width={wasOpenFromTable ? '95%' : '25%'}>
+                                                    <Box width={wasOpenFromTable ? '95%' : '400px'} maxWidth={wasOpenFromTable ? '95%' : '400px'}>
                                                         <Grid item container flexDirection={wasOpenFromTable ? 'column' : 'row'}>
                                                             <Grid marginTop={wasOpenFromTable ? '20px' : ''} alignSelf="stretch">
                                                                 <Divider

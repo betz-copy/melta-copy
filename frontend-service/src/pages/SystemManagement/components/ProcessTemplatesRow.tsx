@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button, Divider, Grid, IconButton, Tooltip, Typography, tooltipClasses } from '@mui/material';
+import { Button, Divider, Grid, IconButton, Tooltip, Typography, tooltipClasses, useTheme } from '@mui/material';
 import { AddCircle as AddIcon, Search as SearchIcon } from '@mui/icons-material';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
@@ -16,6 +16,8 @@ import { CardMenu } from './CardMenu';
 import { CustomIcon } from '../../../common/CustomIcon';
 import { IUser } from '../../../services/kartoffelService';
 import { IMongoStepTemplatePopulated } from '../../../interfaces/processes/stepTemplate';
+import { mainFontSizes } from '../../../theme';
+import { MeltaTooltip } from '../../../common/MeltaTooltip';
 
 interface StepReviewersProps {
     reviewers: IUser[];
@@ -47,7 +49,7 @@ const StepReviewers: React.FC<StepReviewersProps> = ({ reviewers }) => {
                     <Grid item key={reviewer.id}>
                         <Typography
                             style={{
-                                fontSize: '14px',
+                                fontSize: mainFontSizes.headlineSubTitleFontSize,
                                 color: '#53566E',
                                 fontWeight: '400',
                                 textOverflow: 'ellipsis',
@@ -94,7 +96,7 @@ const ProcessProperties: React.FC<ProcessPropertiesProps> = ({ properties }) => 
                         <Grid item container key={key} direction="row" wrap="nowrap" alignItems="center">
                             <Typography
                                 style={{
-                                    fontSize: '14px',
+                                    fontSize: mainFontSizes.headlineSubTitleFontSize,
                                     color: '#53566E',
                                     fontWeight: '400',
                                     textOverflow: 'ellipsis',
@@ -107,7 +109,7 @@ const ProcessProperties: React.FC<ProcessPropertiesProps> = ({ properties }) => 
                             </Typography>
                             <Typography
                                 style={{
-                                    fontSize: '14px',
+                                    fontSize: mainFontSizes.headlineSubTitleFontSize,
                                     color: '#53566E',
                                     fontWeight: '400',
                                     textOverflow: 'ellipsis',
@@ -131,6 +133,7 @@ interface StepProps {
 }
 
 const Step: React.FC<StepProps> = ({ step }) => {
+    const theme = useTheme();
     const [isOpen, setIsOpen] = useState(false);
 
     return (
@@ -149,13 +152,8 @@ const Step: React.FC<StepProps> = ({ step }) => {
                     ) : (
                         <img style={{ marginLeft: '10px' }} src="/icons/Open-Arrow.svg" />
                     )}
-                    {step.iconFileId && <CustomIcon iconUrl={step.iconFileId} height="24px" width="24px" color="#1E2775" />}
-                    <Tooltip
-                        PopperProps={{
-                            sx: { [`& .${tooltipClasses.tooltip}`]: { fontSize: '1rem', backgroundColor: '#101440' } },
-                        }}
-                        title={step.displayName}
-                    >
+                    {step.iconFileId && <CustomIcon iconUrl={step.iconFileId} height="24px" width="24px" color={theme.palette.primary.main} />}
+                    <MeltaTooltip title={step.displayName}>
                         <Typography
                             style={{
                                 color: '#9398C2',
@@ -170,7 +168,7 @@ const Step: React.FC<StepProps> = ({ step }) => {
                         >
                             {step.displayName}
                         </Typography>
-                    </Tooltip>
+                    </MeltaTooltip>
                 </Button>
             </Grid>
             {isOpen && (
@@ -204,6 +202,7 @@ const ProcessTemplateCard: React.FC<ProcessTemplateCardProps> = ({
     setProcessTemplateWizardDialogState,
     setDeleteProcessTemplateDialogState,
 }) => {
+    const theme = useTheme();
     const [isHoverOnCard, setIsHoverOnCard] = useState(false);
 
     return (
@@ -223,16 +222,11 @@ const ProcessTemplateCard: React.FC<ProcessTemplateCardProps> = ({
                         height="20px"
                     >
                         <Grid item container alignItems="center" gap="10px" flexBasis="90%">
-                            <Tooltip
-                                PopperProps={{
-                                    sx: { [`& .${tooltipClasses.tooltip}`]: { fontSize: '1rem', backgroundColor: '#101440' } },
-                                }}
-                                title={processTemplate.displayName}
-                            >
+                            <MeltaTooltip title={processTemplate.displayName}>
                                 <Typography
                                     style={{
-                                        fontSize: '14px',
-                                        color: '#1E2775',
+                                        fontSize: mainFontSizes.headlineSubTitleFontSize,
+                                        color: theme.palette.primary.main,
                                         fontWeight: '400',
                                         textOverflow: 'ellipsis',
                                         whiteSpace: 'nowrap',
@@ -242,7 +236,7 @@ const ProcessTemplateCard: React.FC<ProcessTemplateCardProps> = ({
                                 >
                                     {processTemplate.displayName}
                                 </Typography>
-                            </Tooltip>
+                            </MeltaTooltip>
                         </Grid>
                         <Grid item container flexBasis="10%">
                             {isHoverOnCard && (
@@ -258,13 +252,10 @@ const ProcessTemplateCard: React.FC<ProcessTemplateCardProps> = ({
                     <Grid item container flexDirection="row" gap="20px">
                         {processTemplate.steps.map((step) => (
                             <Grid key={step._id} item container alignItems="center" gap="10px" width="fit-content">
-                                {step.iconFileId && <CustomIcon iconUrl={step.iconFileId} height="24px" width="24px" color="#1E2775" />}
-                                <Tooltip
-                                    PopperProps={{
-                                        sx: { [`& .${tooltipClasses.tooltip}`]: { fontSize: '1rem', backgroundColor: '#101440' } },
-                                    }}
-                                    title={step.displayName}
-                                >
+                                {step.iconFileId && (
+                                    <CustomIcon iconUrl={step.iconFileId} height="24px" width="24px" color={theme.palette.primary.main} />
+                                )}
+                                <MeltaTooltip title={step.displayName}>
                                     <Typography
                                         style={{
                                             fontSize: '12px',
@@ -278,7 +269,7 @@ const ProcessTemplateCard: React.FC<ProcessTemplateCardProps> = ({
                                     >
                                         {step.displayName}
                                     </Typography>
-                                </Tooltip>
+                                </MeltaTooltip>
                             </Grid>
                         ))}
                     </Grid>
