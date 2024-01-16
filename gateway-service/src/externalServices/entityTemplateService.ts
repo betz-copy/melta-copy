@@ -18,14 +18,19 @@ export interface IMongoCategory extends ICategory {
     updatedAt: string;
 }
 
-interface IEntitySingleProperty {
+export interface IEntitySingleProperty {
     title: string;
-    type: 'string' | 'number' | 'boolean';
+    type: 'string' | 'number' | 'boolean' | 'array';
     format?: 'date' | 'date-time' | 'email' | 'fileId';
     enum?: string[];
+    items?: {
+        type: 'string';
+        enum?: string[];
+        format?: 'fileId';
+    };
     pattern?: string;
     patternCustomErrorMessage?: string;
-    dateNotification?: string;
+    dateNotification?: 'day' | 'week' | 'twoWeeks';
     serialStarter?: number;
     serialCurrent?: number;
 }

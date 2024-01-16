@@ -41,7 +41,7 @@ const processValue = (schema: any, value: any) => {
 };
 
 // copied from @rjs/material-ui SelectWidget (added empty option)
-// https://github.com/rjsf-team/react-jsonschema-form/blob/master/packages/material-ui/src/SelectWidget/SelectWidget.tsx
+// https://github.com/rjsf-team/react-jsonschema-form/blob/v4.0.1/packages/material-ui/src/SelectWidget/SelectWidget.tsx
 const RjfsSelectWidget = ({
     schema,
     id,
@@ -74,8 +74,8 @@ const RjfsSelectWidget = ({
             disabled={disabled}
             readOnly={readonly}
             value={typeof value === 'undefined' ? emptyValue : value}
-            onChange={(event, value) => {
-                onChange(processValue(schema, value?.label));
+            onChange={(event, newValue) => {
+                onChange(processValue(schema, newValue?.label));
                 event.preventDefault();
             }}
             renderInput={(params) => (

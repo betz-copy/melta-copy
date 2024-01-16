@@ -17,19 +17,21 @@ import { IConstraint } from '../../../interfaces/entities';
 
 const { errorCodes } = environment;
 
-export interface EntityTemplateFormInputProperties {
+interface IBaseFormInputPropertyTypes {
+    type: string;
+    options: string[];
+    pattern: string;
+    patternCustomErrorMessage: string;
+}
+export interface EntityTemplateFormInputProperties extends IBaseFormInputPropertyTypes {
     name: string;
     title: string;
-    type: string;
     required: boolean;
     preview: boolean;
     hide: boolean;
-    unique: boolean;
     id: string;
-    options: string[];
+    unique: boolean;
     optionColors: Record<string, string>;
-    pattern: string;
-    patternCustomErrorMessage: string;
     dateNotification: string | null | undefined;
     serialStarter: number | undefined;
 }

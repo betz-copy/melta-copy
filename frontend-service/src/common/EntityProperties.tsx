@@ -11,7 +11,7 @@ import { ColoredEnumChip } from './ColoredEnumChip';
 
 pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.js';
 
-export const formatToString = (value: any, valueType: 'string' | 'number' | 'boolean', format?: string, enumColor?: string) => {
+export const formatToString = (value: any, valueType: 'string' | 'number' | 'boolean' | 'array', format?: string, enumColor?: string) => {
     if (value === null || value === undefined) return '-';
 
     if (valueType === 'boolean') return value ? i18next.t('booleanOptions.yes') : i18next.t('booleanOptions.no');

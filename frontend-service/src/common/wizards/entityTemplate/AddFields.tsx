@@ -9,12 +9,12 @@ import { entityTemplateUniqueProperties, regexSchema, variableNameValidation } f
 import { EntityTemplateWizardValues } from './index';
 import { StepComponentProps } from '../index';
 import { searchEntitiesOfTemplateRequest } from '../../../services/entitiesService';
-import { basePropertyTypes, stringFormats } from '../../../services/templates/enitityTemplatesService';
+import { arrayTypes, basePropertyTypes, stringFormats } from '../../../services/templates/enitityTemplatesService';
 import FieldBlock from './FieldBlock';
 import { ErrorToast } from '../../ErrorToast';
 
 const processStringFormats = [...stringFormats, 'entityReference'];
-const validPropertyTypes = [...basePropertyTypes, ...processStringFormats, 'pattern', 'enum', 'serialNumber'];
+const validPropertyTypes = [...basePropertyTypes, ...processStringFormats, ...arrayTypes, 'enum', 'serialNumber', 'pattern'];
 const dateNotificationTypes: string[] = ['day', 'week', 'twoWeeks'];
 export const propertiesBaseSchema = Yup.object({
     name: Yup.string()
@@ -26,7 +26,7 @@ export const propertiesBaseSchema = Yup.object({
         .required(i18next.t('validation.required')),
     type: Yup.string().required(i18next.t('validation.required')),
     options: Yup.array(Yup.string()).when('type', {
-        is: 'enum',
+        is: (type) => type === 'enum' || type === 'enumArray',
         then: (schema) => schema.min(1, i18next.t('validation.required')),
     }),
     pattern: regexSchema.when('type', { is: 'pattern', then: (schema) => schema.required(i18next.t('validation.required')) }),
@@ -39,6 +39,7 @@ export const propertiesBaseSchema = Yup.object({
 export const attachmentPropertiesBaseSchema = Yup.object({
     name: Yup.string().matches(variableNameValidation, i18next.t('validation.variableName')).required(i18next.t('validation.required')),
     title: Yup.string().required(i18next.t('validation.required')),
+    type: Yup.string().oneOf(['fileId', 'fileIdArray']).required(i18next.t('validation.required')),
 });
 
 const addFieldsSchema = Yup.object({
@@ -112,6 +113,7 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
                     supportSerialNumberType
                     supportEntityReferenceType={false}
                     supportChangeToRequiredWithInstances
+                    supportArrayFields
                 />
             </Grid>
 
@@ -131,6 +133,7 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
                     supportSerialNumberType
                     supportEntityReferenceType={false}
                     supportChangeToRequiredWithInstances
+                    supportArrayFields
                 />
             </Grid>
         </Grid>

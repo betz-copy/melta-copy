@@ -1,10 +1,15 @@
 import { IMongoCategory } from './categories';
 
 export interface IEntitySingleProperty {
-    type: 'string' | 'number' | 'boolean';
     title: string;
+    type: 'string' | 'number' | 'boolean' | 'array';
     format?: string;
     enum?: string[];
+    items?: {
+        type: 'string';
+        enum?: string[];
+        format?: 'fileId';
+    };
     pattern?: string;
     patternCustomErrorMessage?: string;
     dateNotification?: string;

@@ -145,11 +145,13 @@ const customEnumPropertiesColorsSchemaValidation: Joi.CustomValidator = (enumPro
 
     Object.entries(enumPropertiesColors).forEach(([key, value]) => {
         const property = properties[key];
+
         if (!property) throw new Error(`field ${key} does not exist`);
-        if (!property.enum) throw new Error(`field ${key} is not an enum`);
+        if (!property.enum && !property.items?.enum) throw new Error(`field ${key} is not an enum or array enum`);
 
         Object.keys(value).forEach((enumOption) => {
-            if (!property.enum?.includes(enumOption)) throw new Error(`enum option ${enumOption} does not exist in field ${key}`);
+            if (!property.enum?.includes(enumOption) && !property.items?.enum?.includes(enumOption))
+                throw new Error(`enum option ${enumOption} does not exist in field ${key}`);
         });
     });
 
