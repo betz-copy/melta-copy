@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Grid, Card, CardContent, CircularProgress, Box, Divider, Button } from '@mui/material';
-import { Done as DoneIcon, Clear as ClearIcon } from '@mui/icons-material';
+import { Grid, Card, CardContent, CircularProgress, Box, Divider, Button, IconButton } from '@mui/material';
+import { Done as DoneIcon, Clear as ClearIcon, Close as CloseIcon } from '@mui/icons-material';
 import { useMutation } from 'react-query';
 import i18next from 'i18next';
 import { toast } from 'react-toastify';
@@ -134,14 +134,27 @@ const CreateOrEditEntityDetails: React.FC<{
                                         <Grid item xs={12}>
                                             <Grid container flexDirection="column">
                                                 <Box width="100%">
-                                                    <BlueTitle
-                                                        title={`${isEditMode ? i18next.t('actions.editment') : i18next.t('actions.createment')} ${
-                                                            values.template?.displayName || i18next.t('wizard.entity.createNewEntity')
-                                                        }`}
-                                                        component="h6"
-                                                        variant="h6"
-                                                        style={{ fontWeight: '600', fontSize: '20px' }}
-                                                    />
+                                                    <Grid item container justifyContent="space-between">
+                                                        <BlueTitle
+                                                            title={`${isEditMode ? i18next.t('actions.editment') : i18next.t('actions.createment')} ${
+                                                                values.template?.displayName || i18next.t('wizard.entity.createNewEntity')
+                                                            }`}
+                                                            component="h6"
+                                                            variant="h6"
+                                                            style={{ fontWeight: '600', fontSize: '20px' }}
+                                                        />
+                                                        <Grid item>
+                                                            <IconButton
+                                                                aria-label="close"
+                                                                onClick={() => onCancelUpdate()}
+                                                                sx={{
+                                                                    color: (theme) => theme.palette.grey[500],
+                                                                }}
+                                                            >
+                                                                <CloseIcon />
+                                                            </IconButton>
+                                                        </Grid>
+                                                    </Grid>
 
                                                     {!entityTemplate._id && (
                                                         <Grid item marginTop="20px">
