@@ -161,10 +161,12 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                                         flexDirection: 'row',
                                         flexWrap: 'wrap',
                                         rowGap: '20px',
+                                        columnGap: '20px',
                                         alignItems: 'center',
                                         width: '100%',
                                     }}
-                                    innerStyle={{ width: '33.33%' }}
+                                    innerStyle={{ width: '30%' }}
+                                    textWrap
                                 />
                             </Grid>
                             <Grid container marginTop="20px">

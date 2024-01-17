@@ -200,6 +200,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
                             alignItems: 'center',
                         }}
                         innerStyle={{ flexBasis: '33.33%' }}
+                        textWrap
                     />
                     <Grid container marginTop="20px">
                         <EntityDisableCheckbox isEntityDisabled={entity.properties.disabled} />
