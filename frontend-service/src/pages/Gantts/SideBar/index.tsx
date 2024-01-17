@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Box, Button, Tooltip } from '@mui/material';
+import { Box, Button, Grid } from '@mui/material';
 import { useSelector } from 'react-redux';
 import { Add as AddIcon } from '@mui/icons-material';
 import i18next from 'i18next';
@@ -46,22 +46,24 @@ export const GanttSideBar: React.FC<IGanttSideBarProps> = ({ toggle, open, gantt
                         <Swap
                             condition={edit}
                             isTrue={
-                                <MeltaTooltip title={i18next.t('gantts.actions.addItem')}>
-                                    <Button
-                                        fullWidth
-                                        sx={{ height: '100%' }}
-                                        disabled={isLoading}
-                                        onClick={() => {
-                                            push({
-                                                entityTemplate: { id: '', startDateField: '', endDateField: '', fieldsToShow: [] },
-                                                connectedEntityTemplates: [],
-                                            } as IGanttItem);
-                                            setScrollBottom(true);
-                                        }}
-                                    >
-                                        <AddIcon sx={{ color: 'gray' }} />
-                                    </Button>
-                                </MeltaTooltip>
+                                <Grid>
+                                    <MeltaTooltip title={i18next.t('gantts.actions.addItem')}>
+                                        <Button
+                                            fullWidth
+                                            sx={{ height: '100%' }}
+                                            disabled={isLoading}
+                                            onClick={() => {
+                                                push({
+                                                    entityTemplate: { id: '', startDateField: '', endDateField: '', fieldsToShow: [] },
+                                                    connectedEntityTemplates: [],
+                                                } as IGanttItem);
+                                                setScrollBottom(true);
+                                            }}
+                                        >
+                                            <AddIcon sx={{ color: 'gray' }} />
+                                        </Button>
+                                    </MeltaTooltip>
+                                </Grid>
                             }
                         />
                     )}
