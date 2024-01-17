@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Grid, Tooltip, Typography } from '@mui/material';
+import { Grid, Typography } from '@mui/material';
 import { FormikProps } from 'formik';
 import { useQueryClient } from 'react-query';
 import i18next from 'i18next';

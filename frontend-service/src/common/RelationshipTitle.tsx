@@ -1,5 +1,5 @@
 import React, { CSSProperties } from 'react';
-import { Grid, Tooltip, Typography, tooltipClasses } from '@mui/material';
+import { Grid, Typography } from '@mui/material';
 import '../css/realtionshipTitle.css';
 import { getEntityTemplateColor } from '../utils/colors';
 import { IMongoRelationshipTemplatePopulated } from '../interfaces/relationshipTemplates';

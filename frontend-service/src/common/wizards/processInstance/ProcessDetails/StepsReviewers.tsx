@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import _debounce from 'lodash.debounce';
-import { Card, Grid, CardHeader, CardContent, Typography, Fab, Tooltip } from '@mui/material';
+import { Card, Grid, CardHeader, CardContent, Typography, Fab } from '@mui/material';
 import { ScatterPlotOutlined as HiveIcon } from '@mui/icons-material';
 import i18next from 'i18next';
 import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';

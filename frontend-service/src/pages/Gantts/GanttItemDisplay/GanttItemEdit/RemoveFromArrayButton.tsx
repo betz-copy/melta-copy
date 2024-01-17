@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, IconButton, Tooltip } from '@mui/material';
+import { Box, IconButton } from '@mui/material';
 import { CloseOutlined as DeleteIcon } from '@mui/icons-material';
 import { MeltaTooltip } from '../../../../common/MeltaTooltip';
 

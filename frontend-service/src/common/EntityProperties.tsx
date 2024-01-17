@@ -35,7 +35,6 @@ type Template = Pick<IMongoEntityTemplatePopulated, 'properties' | 'propertiesOr
 interface IEntityPropertiesProps {
     entityTemplate: Template;
     properties: IEntity['properties'];
-    hideFields?: boolean;
     showPreviewPropertiesOnly?: boolean;
     style?: CSSProperties;
     innerStyle?: CSSProperties;
@@ -45,11 +44,9 @@ interface IEntityPropertiesProps {
 export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkMode?: boolean }> = ({
     entityTemplate,
     properties,
-    hideFields = false,
     showPreviewPropertiesOnly = false,
     style,
     innerStyle,
-    darkMode,
     textWrap = false,
 }) => {
     const propertiesOrderedToShow = showPreviewPropertiesOnly

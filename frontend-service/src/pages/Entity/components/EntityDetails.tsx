@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Tooltip, tooltipClasses, Grid, Card, CardContent, IconButton, Menu, Box } from '@mui/material';
+import { Grid, Card, CardContent, IconButton, Menu } from '@mui/material';
 import {
     Delete as DeleteIcon,
     ContentCopy as DuplicateIcon,
@@ -31,7 +31,6 @@ import UpdateStatusWithRuleBreachDialog from './UpdateStatusWithRuleBreachDialog
 import { canUserWriteInstanceOfCategory } from '../../../utils/permissions/instancePermissions';
 import TooltipMenuButton from './TooltipMenuButton';
 import { ImageWithDisable } from '../../../common/ImageWithDisable';
-import { MeltaTooltip } from '../../../common/MeltaTooltip';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
 
 const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; expandedEntity: IEntityExpanded }> = ({

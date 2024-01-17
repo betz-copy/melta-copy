@@ -1,4 +1,4 @@
-import { Grid, Tooltip, Typography } from '@mui/material';
+import { Grid, Typography } from '@mui/material';
 import React, { CSSProperties, Fragment } from 'react';
 import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { IEntity } from '../../../../interfaces/entities';

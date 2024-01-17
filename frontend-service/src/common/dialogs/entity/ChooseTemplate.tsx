@@ -45,7 +45,7 @@ const ChooseTemplate: React.FC<{
 
     const activeEntityTemplatesFiltered = entityTemplatesFilteredByCategory.filter((entity) => !entity.disabled);
 
-    const [disabled, setDisabled] = useState(!!values.template._id);
+    const [disabled] = useState(!!values.template._id);
 
     return (
         <Autocomplete

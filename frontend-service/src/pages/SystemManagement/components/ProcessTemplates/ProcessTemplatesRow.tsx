@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Grid, IconButton } from '@mui/material';
-import { AddCircle as AddIcon, Search as SearchIcon } from '@mui/icons-material';
+import { Search as SearchIcon } from '@mui/icons-material';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import i18next from 'i18next';

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, Collapse, Dialog, Grid, IconButton, Tooltip, Typography, tooltipClasses } from '@mui/material';
-import { AppRegistration as AppRegistrationIcon, ReadMore as ReadMoreIcon } from '@mui/icons-material';
+import { Card, CardContent, CardHeader, Collapse, Dialog, Grid, IconButton } from '@mui/material';
+import { AppRegistration as AppRegistrationIcon } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
@@ -41,8 +41,6 @@ const EntityCard: React.FC<EntityCardProps> = ({
     variant = 'outlined',
 }) => {
     const [open, setOpen] = useState<boolean>(openCard);
-
-    const [hideFields, setHideFields] = React.useState(true);
 
     const [editDialog, setEditDialog] = useState<{
         isOpen: boolean;
@@ -168,7 +166,6 @@ const EntityCard: React.FC<EntityCardProps> = ({
                     <EntityProperties
                         entityTemplate={{ ...entityTemplate, propertiesOrder: first5PropsKeys }}
                         properties={first5Props}
-                        hideFields={hideFields}
                         style={{
                             display: 'flex',
                             flexDirection: 'row',
@@ -191,7 +188,6 @@ const EntityCard: React.FC<EntityCardProps> = ({
                     <EntityProperties
                         entityTemplate={entityTemplate}
                         properties={entity.properties}
-                        hideFields={hideFields}
                         style={{
                             display: 'flex',
                             flexDirection: 'row',
@@ -215,7 +211,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
                     isEditMode
                     entityTemplate={entityTemplate}
                     entity={entity}
-                    onSuccessUpdate={(entityObj) => {
+                    onSuccessUpdate={() => {
                         setEditDialog((prev) => ({ ...prev, isOpen: false }));
                     }}
                     onCancelUpdate={() => setEditDialog((prev) => ({ ...prev, isOpen: false }))}

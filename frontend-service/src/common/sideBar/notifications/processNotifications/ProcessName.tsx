@@ -1,4 +1,4 @@
-import { Tooltip, Typography } from '@mui/material';
+import { Typography } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
 import { IMongoProcessInstancePopulated } from '../../../../interfaces/processes/processInstance';

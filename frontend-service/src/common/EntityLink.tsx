@@ -1,4 +1,4 @@
-import { Tooltip, useTheme } from '@mui/material';
+import { useTheme } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
 import { useSelector } from 'react-redux';
@@ -7,7 +7,6 @@ import { IEntity } from '../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { RootState } from '../store';
 import { EntityPropertiesInternal } from './EntityProperties';
-import { lightTheme } from '../theme';
 import { MeltaTooltip } from './MeltaTooltip';
 
 interface EntityLinkProps {

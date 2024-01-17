@@ -52,7 +52,7 @@ const SystemManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateAction
                 <Grid container direction="column">
                     <Grid item>
                         <TabList onChange={(_event, newValue) => setTabValue(newValue)} scrollButtons="auto" variant="scrollable">
-                            {Object.entries(tabsComponentsMapping).map(([tabName, tabComponent]) => (
+                            {Object.keys(tabsComponentsMapping).map((tabName) => (
                                 <Tab
                                     key={tabName}
                                     label={i18next.t(tabName)}

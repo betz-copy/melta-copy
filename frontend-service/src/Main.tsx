@@ -24,7 +24,6 @@ import {
 import ScrollToTop from './ScrollToTop';
 import { RootState } from './store';
 import { LocalStorage } from './utils/localStorage';
-import { darkTheme, lightTheme } from './theme';
 
 const GlobalSearch = lazy(() => import('./pages/GlobalSearch'));
 const Category = lazy(() => import('./pages/Category'));
@@ -49,7 +48,7 @@ const cacheRtl = createCache({
 
 const Main = () => {
     const [open, setOpen] = useState(false);
-    const [activeTheme, setActiveTheme] = useState(lightTheme);
+    // const [activeTheme, setActiveTheme] = useState(lightTheme);
     const [title, setTitle] = useState('');
     const navigate = useNavigate();
     const { setIsOpen, setCurrentStep } = useTour();
@@ -69,10 +68,10 @@ const Main = () => {
     };
 
     // TODO - implement when dark mode will be supported
-    const handleToggleTheme = () => {
-        if (activeTheme.palette.mode === 'light') setActiveTheme(darkTheme);
-        else setActiveTheme(lightTheme);
-    };
+    // const handleToggleTheme = () => {
+    //     if (activeTheme.palette.mode === 'light') setActiveTheme(darkTheme);
+    //     else setActiveTheme(lightTheme);
+    // };
 
     useEffect(() => {
         const didTour = LocalStorage.get<boolean>('didTour');

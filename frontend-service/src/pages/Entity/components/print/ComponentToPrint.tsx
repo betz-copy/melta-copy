@@ -7,7 +7,6 @@ import { IEntityExpanded } from '../../../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { IMongoRelationshipTemplatePopulated } from '../../../../interfaces/relationshipTemplates';
 import { EntityComponentToPrint } from './EntityComponentToPrint';
-import { lightTheme } from '../../../../theme';
 
 const ComponentToPrint = React.forwardRef<
     HTMLDivElement,

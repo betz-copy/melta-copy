@@ -25,7 +25,6 @@ import { ResetFilterButton } from '../../common/EntitiesPage/ResetFilterButton';
 import { EntityTopBar } from './components/TopBar';
 import { getOppositeEntityTemplate, isRelationshipConnectedToEntityTemplate, populateRelationshipTemplate } from '../../utils/templates';
 import { CustomIcon } from '../../common/CustomIcon';
-import { lightTheme } from '../../theme';
 import { canUserWriteInstanceOfCategory } from '../../utils/permissions/instancePermissions';
 
 export const getButtonState = (

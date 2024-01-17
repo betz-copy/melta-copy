@@ -1,12 +1,11 @@
 import React from 'react';
-import { Grid, Tooltip, Typography, styled, useTheme } from '@mui/material';
+import { Grid, Typography, styled, useTheme } from '@mui/material';
 import { useQueryClient } from 'react-query';
 import i18next from 'i18next';
 import { useNavigate } from 'react-router-dom';
 import { IActivityLog } from '../../../../services/activityLogService';
 import { IRelationshipTemplateMap } from '../../../../interfaces/relationshipTemplates';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
-import { lightTheme } from '../../../../theme';
 import { MeltaTooltip } from '../../../../common/MeltaTooltip';
 
 const StyledTypography = styled(Typography)(({ theme }) => ({

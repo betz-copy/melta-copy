@@ -1,4 +1,4 @@
-import { createTheme, PaletteOptions, ThemeOptions } from '@mui/material';
+import { createTheme, ThemeOptions } from '@mui/material';
 
 const basicTheme: ThemeOptions = {
     direction: 'rtl',

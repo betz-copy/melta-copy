@@ -3,7 +3,6 @@ import { ColDef, ValueGetterFunc } from '@ag-grid-community/core';
 import i18next from 'i18next';
 import { NavLink } from 'react-router-dom';
 import { Grid } from '@mui/material';
-import { CloseOutlined as DeleteIcon } from '@mui/icons-material';
 import { IEntity } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { booleanColDef, dateColDef, enumColDef, fileColDef, numberColDef, regexColDef, stringColDef } from '../../utils/agGrid/commonColDefs';

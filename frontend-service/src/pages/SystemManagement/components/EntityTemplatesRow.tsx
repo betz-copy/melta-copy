@@ -1,6 +1,6 @@
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 import React, { useEffect, useRef, useState } from 'react';
-import { Grid, IconButton, Skeleton, Tooltip, Typography, tooltipClasses, useTheme } from '@mui/material';
+import { Grid, IconButton, Skeleton, Typography, useTheme } from '@mui/material';
 import { AppRegistration as AppRegistrationIcon } from '@mui/icons-material';
 import { UseMutateAsyncFunction, useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
@@ -158,7 +158,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                         </Grid>
                     </Grid>
                     {Object.entries(entityTemplate.properties.properties)
-                        .filter(([key, value]) => value.format !== 'fileId')
+                        .filter(([, value]) => value.format !== 'fileId')
                         .map(([key, value]) => (
                             <Grid key={key} item container gap="5px" flexWrap="nowrap">
                                 <Grid item flexBasis="4%" color="#9398C2">
@@ -190,8 +190,8 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                         </Grid>
                     </Grid>
                     {Object.entries(entityTemplate.properties.properties)
-                        .filter(([key, value]) => value.format === 'fileId')
-                        .map(([key, value]) => (
+                        .filter(([, value]) => value.format === 'fileId')
+                        .map(([key]) => (
                             <Grid key={key} item container gap="5px">
                                 <Grid item flexBasis="4%" color="#9398C2">
                                     <Typography>-</Typography>

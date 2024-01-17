@@ -7,7 +7,6 @@ import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemp
 import { EntityDisableCheckbox } from '../EntityDisableCheckbox';
 import { EntityDates } from '../EntityDates';
 import { RootState } from '../../../../store';
-import { lightTheme } from '../../../../theme';
 
 const EntityComponentToPrint: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; entity: IEntity; options?: { showDates?: boolean } }> = ({
     entityTemplate,

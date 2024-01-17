@@ -1,17 +1,6 @@
 import React, { Dispatch, SetStateAction, useRef } from 'react';
 import i18next from 'i18next';
-import {
-    BaseTextFieldProps,
-    CircularProgress,
-    Grid,
-    Icon,
-    IconButton,
-    ToggleButton,
-    ToggleButtonGroup,
-    Tooltip,
-    Typography,
-    useTheme,
-} from '@mui/material';
+import { BaseTextFieldProps, CircularProgress, Grid, Icon, IconButton, ToggleButton, ToggleButtonGroup, Typography, useTheme } from '@mui/material';
 import CardsViewIcon from '@mui/icons-material/RecentActors';
 import AddIcon from '@mui/icons-material/Add';
 import SearchIcon from '@mui/icons-material/Search';

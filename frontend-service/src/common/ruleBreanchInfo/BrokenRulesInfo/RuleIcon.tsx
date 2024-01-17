@@ -1,7 +1,7 @@
 import React from 'react';
 import { Gavel as GavelIcon } from '@mui/icons-material';
 import i18next from 'i18next';
-import { Icon, Tooltip } from '@mui/material';
+import { Icon } from '@mui/material';
 import { IMongoRule } from '../../../interfaces/rules';
 import { MeltaTooltip } from '../../MeltaTooltip';
 

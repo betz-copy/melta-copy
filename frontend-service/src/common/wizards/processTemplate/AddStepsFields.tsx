@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AccordionDetails, AccordionSummary, Grid, IconButton, Tooltip, Typography, useTheme } from '@mui/material';
+import { AccordionDetails, AccordionSummary, Grid, IconButton, Typography, useTheme } from '@mui/material';
 import * as Yup from 'yup';
 import i18next from 'i18next';
 import { ExpandMore as ExpandMoreIcon, Delete as DeleteIcon } from '@mui/icons-material';
@@ -15,7 +15,6 @@ import { StepsNameBlock } from './StepsNameBlock';
 import FieldBlock, { FieldBlockAccordion } from '../entityTemplate/FieldBlock';
 import { attachmentPropertiesBaseSchema, propertiesBaseSchema } from '../entityTemplate/AddFields';
 import { initialFieldCardDataOnAdd, useAreThereProcessInstancesByTemplateId } from './AddDetailsFields';
-import { lightTheme } from '../../../theme';
 import { MeltaTooltip } from '../../MeltaTooltip';
 
 const stepTemplateUniqueNames = (value, context: Yup.TestContext) => {

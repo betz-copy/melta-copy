@@ -1,4 +1,4 @@
-import { Grid, IconButton, Tooltip, tooltipClasses, Typography } from '@mui/material';
+import { Grid, IconButton } from '@mui/material';
 import React from 'react';
 import { IUser } from '../../services/kartoffelService';
 import UserAvatar from '../UserAvatar';

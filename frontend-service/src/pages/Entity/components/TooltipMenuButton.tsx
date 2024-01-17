@@ -1,5 +1,5 @@
 import React from 'react';
-import { Tooltip, MenuItem, ListItemIcon, ListItemText } from '@mui/material';
+import { MenuItem, ListItemIcon, ListItemText } from '@mui/material';
 import { SvgIconComponent } from '@mui/icons-material';
 import { MeltaTooltip } from '../../../common/MeltaTooltip';
 

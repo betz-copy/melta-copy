@@ -1,5 +1,4 @@
 import { styled, Typography } from '@mui/material';
-import { lightTheme } from '../../../theme';
 
 const StepNumberTypography = styled(Typography)<{ type: 'currentStep' | 'finishedStep' | 'futureStep' }>(({ type, theme }) => ({
     height: '40px',

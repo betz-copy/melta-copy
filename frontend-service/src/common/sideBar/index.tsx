@@ -1,11 +1,8 @@
 import React, { useRef, useState } from 'react';
-import { Divider, IconButton, Grid, Box, Slide, Fade, Tooltip, tooltipClasses, Button, useTheme, Typography } from '@mui/material';
+import { Divider, IconButton, Grid, Box, Slide, Fade, Button, useTheme, Typography } from '@mui/material';
 import { useQuery, useQueryClient } from 'react-query';
 import {
-    ChevronRight as ChevronRightIcon,
-    ChevronLeft as ChevronLeftIcon,
     Hive as HiveIcon,
-    Public as PublicIcon,
     Widgets as WidgetsIcon,
     ManageAccounts as ManageAccountsIcon,
     Add as PlusIcon,
@@ -31,7 +28,6 @@ import { environment } from '../../globals';
 import { NotificationsScreen } from './notifications/NotificationsScreen';
 import { getMyNotificationGroupCountRequest } from '../../services/notificationService';
 import { GlobalSearchBar } from '../EntitiesPage/Headline';
-import { MeltaTooltip } from '../MeltaTooltip';
 import IconButtonWithPopover from '../IconButtonWithPopover';
 
 type SideBarProps = {
@@ -72,7 +68,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
     );
     const notificationCountDetails = notificationCountDetailsResponse || { total: 0, groups: {} };
 
-    const { meltaPlus, darkMode } = useSelector((state: RootState) => state);
+    const { meltaPlus } = useSelector((state: RootState) => state);
     const dispatch = useDispatch();
 
     return (

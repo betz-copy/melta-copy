@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Grid, Tooltip } from '@mui/material';
+import { Grid } from '@mui/material';
 import { useQueryClient } from 'react-query';
 import { FormikProps } from 'formik';
 import { IBasicGantt, IGanttItem } from '../../../interfaces/gantts';

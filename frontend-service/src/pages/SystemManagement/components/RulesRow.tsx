@@ -183,11 +183,6 @@ const RulesRow: React.FC = () => {
                 {Array.from(rules.values())
                     .filter(({ name }) => searchText === '' || name.includes(searchText))
                     .map((rule) => {
-                        const populatedRelationshipTemplate = populateRelationshipTemplate(
-                            relationshipTemplates.get(rule.relationshipTemplateId)!,
-                            entityTemplates,
-                        );
-
                         return (
                             <RuleCard
                                 key={rule._id}

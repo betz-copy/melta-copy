@@ -4,7 +4,6 @@ import { useSelector } from 'react-redux';
 import { useTheme } from '@mui/material';
 import { IUser } from '../services/kartoffelService';
 import { RootState } from '../store';
-import { lightTheme } from '../theme';
 
 interface UserAvatarProps {
     user: IUser;

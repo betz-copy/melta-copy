@@ -1,5 +1,5 @@
-import React, { CSSProperties } from 'react';
-import { Grid, Card, CardContent, SxProps, Theme } from '@mui/material';
+import React from 'react';
+import { Grid, Card, CardContent } from '@mui/material';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../store';
 

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import i18next from 'i18next';
-import { Box, Button, CardContent, Grid, Tooltip, Typography } from '@mui/material';
+import { Box, Button, CardContent, Grid, Typography } from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
 import AccessTimeFilledIcon from '@mui/icons-material/AccessTimeFilled';
