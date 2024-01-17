@@ -1,4 +1,4 @@
-import React, { MouseEventHandler } from 'react';
+import React, { MouseEventHandler, useEffect, useRef, useState } from 'react';
 import { IconButton, Grid, useTheme, Typography } from '@mui/material';
 import { CloseOutlined as DeleteIcon, FilePresent as FileIcon } from '@mui/icons-material';
 import { Accept, useDropzone } from 'react-dropzone';
@@ -34,12 +34,29 @@ const FileInput: React.FC<FileInputProps> = ({ fileName, onDeleteFile, onDropFil
         accept: acceptedFilesTypes,
     });
 
+    const [inputWidth, setInputWidth] = useState<number>(200);
+    const inputRef = useRef<HTMLDivElement>(null);
+
+    const updateInputWidth = () => {
+        if (inputRef.current) {
+            setInputWidth(inputRef.current.offsetWidth);
+        }
+    };
+
+    useEffect(() => {
+        updateInputWidth();
+        window.addEventListener('resize', updateInputWidth);
+        return () => {
+            window.removeEventListener('resize', updateInputWidth);
+        };
+    }, []);
+
     const inputStyle = {
         border: isDragActive ? `2px dashed ${theme.palette.primary.main}` : '1px solid #c4c4c4',
         borderRadius: '10px',
         borderColor: '#CCCFE5',
         color: '#9398C2',
-        // width: '100%',
+        width: '100%',
         height: '40px',
         display: 'flex',
         padding: '0px 10px',
@@ -48,33 +65,46 @@ const FileInput: React.FC<FileInputProps> = ({ fileName, onDeleteFile, onDropFil
     };
 
     return (
-        <Grid container flexDirection="column" justifyContent="space-around" width="100%">
+        <Grid container flexDirection="column" justifyContent="space-around" width="100%" ref={inputRef}>
             <Grid item>
                 <Typography style={{ color: '#9398C2' }}>{inputText}</Typography>
             </Grid>
 
-            <Grid item container width="100%">
+            <Grid item container>
                 {fileName ? (
-                    <Grid item container style={inputStyle} {...getRootProps()} width="100%">
+                    <Grid item container style={inputStyle} {...getRootProps()}>
                         <input {...getInputProps()} />
-                        <Grid container item flexDirection="row" alignItems="center" flexWrap="nowrap" width="100%">
-                            <Grid item flexGrow={1}>
-                                <FileIcon fontSize="medium" />
+                        <Grid container item flexDirection="row" alignItems="center" flexWrap="nowrap">
+                            <Grid item container xs={1} justifyContent="center" paddingTop="5px">
+                                <Grid item>
+                                    <FileIcon fontSize="medium" />
+                                </Grid>
                             </Grid>
-                            <Grid item flexGrow={8}>
-                                <Typography style={{ overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>{fileName}</Typography>
-                            </Grid>
-                            <Grid item flexGrow={1}>
-                                <IconButton
-                                    onClick={(e) => {
-                                        e.preventDefault();
-                                        e.stopPropagation();
-                                        onDeleteFile(e);
+                            <Grid item xs={10}>
+                                <Typography
+                                    style={{
+                                        overflow: 'hidden',
+                                        whiteSpace: 'nowrap',
+                                        textOverflow: 'ellipsis',
+                                        maxWidth: inputWidth * 0.7,
                                     }}
-                                    size="small"
                                 >
-                                    <DeleteIcon fontSize="small" />
-                                </IconButton>
+                                    {fileName}
+                                </Typography>
+                            </Grid>
+                            <Grid item container xs={1} justifyContent="flex-end">
+                                <Grid item justifySelf="flex-end">
+                                    <IconButton
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            onDeleteFile(e);
+                                        }}
+                                        size="small"
+                                    >
+                                        <DeleteIcon fontSize="small" />
+                                    </IconButton>
+                                </Grid>
                             </Grid>
                         </Grid>
                     </Grid>
@@ -84,7 +114,17 @@ const FileInput: React.FC<FileInputProps> = ({ fileName, onDeleteFile, onDropFil
                         <img src="\icons\Choose-File.svg" height="25px" width="120px" />
                         <Typography>|</Typography>
                         <img src="\icons\File-Drag-Icon.svg" height="25px" style={{ marginRight: '10px' }} />
-                        <Typography style={{ marginRight: '30px' }}>{i18next.t('input.imagePicker.dragFile')}</Typography>
+                        <Typography
+                            style={{
+                                marginRight: '30px',
+                                overflow: 'hidden',
+                                whiteSpace: 'nowrap',
+                                textOverflow: 'ellipsis',
+                                maxWidth: inputWidth * 0.7 - 150,
+                            }}
+                        >
+                            {i18next.t('input.imagePicker.dragFile')}
+                        </Typography>
                     </Grid>
                 )}
                 {errorText && (
