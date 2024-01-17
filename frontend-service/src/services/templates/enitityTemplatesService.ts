@@ -200,6 +200,7 @@ const updateEntityTemplateStatusRequest = async (entityTemplateId: string, disab
 };
 
 const updateEntityTemplateRequest = async (entityTemplateId: string, updatedEntityTemplate: EntityTemplateWizardValues) => {
+    console.log(updatedEntityTemplate);
     const formData = new FormData();
 
     const entityTemplate = formToJSONSchema(updatedEntityTemplate);
@@ -222,7 +223,6 @@ const updateEntityTemplateRequest = async (entityTemplateId: string, updatedEnti
     formData.append('propertiesOrder', JSON.stringify(entityTemplate.propertiesOrder));
     formData.append('propertiesPreview', JSON.stringify(entityTemplate.propertiesPreview));
     formData.append('uniqueConstraints', JSON.stringify(entityTemplate.uniqueConstraints));
-
     const { data } = await axios.put<IMongoEntityTemplatePopulated>(`${entityTemplates}/${entityTemplateId}`, formData);
     return data;
 };
@@ -232,10 +232,21 @@ const deleteEntityTemplateRequest = async (entityTemplateId: string) => {
     return data;
 };
 
+const updateListFieldRequest = async (id: string, fieldValue: string, values: any, field) => {
+    // try {
+    const { data } = await axios.put<any>(`${entityTemplates}/updateListField/${id}`, { fieldValue, values, field });
+    return data;
+    // } catch (error: any) {
+    //     console.log('CATCHED ERROR');
+    //     return 'ERROR';
+    // }
+};
+
 export {
     createEntityTemplateRequest,
     updateEntityTemplateRequest,
     entityTemplateObjectToEntityTemplateForm,
     deleteEntityTemplateRequest,
     updateEntityTemplateStatusRequest,
+    updateListFieldRequest,
 };

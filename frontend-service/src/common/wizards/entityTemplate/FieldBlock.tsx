@@ -88,6 +88,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
     };
 
     const push = (properties: CommonFormInputProperties) => {
+        console.log([...displayValuesRef.current, properties]);
         setDisplayValues([...displayValuesRef.current, properties] as Values[PropertiesType]);
         updateFormik();
     };
@@ -180,6 +181,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
                                                 supportSerialNumberType,
                                                 supportEntityReferenceType,
                                                 supportChangeToRequiredWithInstances,
+                                                values,
                                             };
 
                                             if (propertiesType === 'properties' || propertiesType === 'detailsProperties') {

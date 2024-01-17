@@ -101,6 +101,7 @@ const Wizard = <T extends object>({
                     }
                     validate={steps[activeStep].validate}
                     onSubmit={async (values, actions) => {
+                        console.log(values);
                         if (isLastStep) {
                             await submitFucntion(values);
                         } else {
