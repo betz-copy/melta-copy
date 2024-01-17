@@ -17,7 +17,7 @@
 
 html,
 body {
-    background: #225AA7;
+    background: #1E2775;
     overflow: hidden;
 }
 
@@ -27,7 +27,7 @@ body {
     left: 0%;
     width: 100%;
     height: 100%;
-    background: #225AA7;
+    background: #1E2775;
     overflow: hidden;
 }
 
@@ -240,7 +240,7 @@ body {
     left: 0%;
     width: 500px;
     height: 100px;
-    background: linear-gradient(to left, #817e97, #225AA7);
+    background: linear-gradient(to left, #817e97, #1E2775);
     /* The points are: centered top, left bottom, right bottom */
     clip-path: polygon(0% 0%, 50% 45%, 50% 55%, 0% 100%);
     transform: translate(-18%, -45%);
@@ -252,7 +252,7 @@ body {
     }
 
     10% {
-        opacity: .4;
+        opacity: 0.4;
     }
 
     15% {
@@ -264,7 +264,7 @@ body {
     }
 
     30% {
-        opacity: .4;
+        opacity: 0.4;
     }
 
     35% {
@@ -276,7 +276,7 @@ body {
     }
 
     50% {
-        opacity: .4;
+        opacity: 0.4;
     }
 
     55% {
@@ -288,7 +288,7 @@ body {
     }
 
     70% {
-        opacity: .4;
+        opacity: 0.4;
     }
 
     75% {
@@ -300,7 +300,7 @@ body {
     }
 
     90% {
-        opacity: .4;
+        opacity: 0.4;
     }
 
     100% {
@@ -540,7 +540,6 @@ body {
 }
 
 @keyframes shadow-change {
-
     0%,
     100% {
         background-image: linear-gradient(45deg, #c9e5d9 0%, #c9e5d9 20%, #fff 21%, #fff 39%, #c9e5d9 40%, #fff 41%, #fff 59%, #c9e5d9 60%);

@@ -20,4 +20,5 @@ export const getUserPermissionScopeOfCategory = (instancesPermissions: IPermissi
 
     if (permission?.scopes.includes('Write')) return 'Write';
     if (permission?.scopes.includes('Read')) return 'Read';
+    return undefined;
 };

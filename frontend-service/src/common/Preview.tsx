@@ -53,8 +53,6 @@ const Preview: React.FC<PreviewProps> = ({ open, fileId, data, setOpen, loading,
         setZoomLevel((prevZoom) => Math.max(prevZoom - 0.1, 0.5));
     };
 
-    if (!fileId) return null;
-
     useEffect(() => {
         const handleScroll = async () => {
             if (containerRef.current) {
@@ -82,6 +80,8 @@ const Preview: React.FC<PreviewProps> = ({ open, fileId, data, setOpen, loading,
     useEffect(() => {
         currentPageRef.current = currentPage;
     }, [currentPage]);
+
+    if (!fileId) return null;
 
     const handleJumpToPage = async () => {
         const pageNumber = parseInt(jumpToPage, 10);

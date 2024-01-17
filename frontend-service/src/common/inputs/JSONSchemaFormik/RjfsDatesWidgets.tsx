@@ -68,15 +68,15 @@ const getRjfsDateOrDateTimeWidget =
         };
 
         const handleOpenDatePicker = () => {
-            if(currDate) return;
+            if (currDate) return;
 
-            const currentDate= new Date();
+            const currentDate = new Date();
             setCurrDate(currentDate);
 
             if (dateOrDateTime === 'dateTime') {
                 return onChange(currentDate.toISOString());
-            } 
-                
+            }
+
             return onChange(format(currentDate, 'yyyy-MM-dd'));
         };
 

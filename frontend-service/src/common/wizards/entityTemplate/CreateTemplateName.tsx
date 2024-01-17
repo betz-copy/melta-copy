@@ -5,10 +5,10 @@ import i18next from 'i18next';
 import { variableNameValidation } from '../../../utils/validation';
 import { StepComponentProps } from '../index';
 
-const createTemplateNameSchema = {
+const createTemplateNameSchema = Yup.object({
     name: Yup.string().matches(variableNameValidation, i18next.t('validation.variableName')).required(i18next.t('validation.required')),
     displayName: Yup.string().required(i18next.t('validation.required')),
-};
+});
 
 const CreateTemplateName = <Values extends { name: string; displayName: string }>({
     values,

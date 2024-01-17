@@ -1,10 +1,11 @@
-import { Autocomplete, AutocompleteProps, SxProps, TextField, Tooltip } from '@mui/material';
+import { Autocomplete, AutocompleteProps, SxProps, TextField } from '@mui/material';
 import React, { useState } from 'react';
 import { useQuery } from 'react-query';
 import { toast } from 'react-toastify';
 import _debounce from 'lodash.debounce';
 import i18next from 'i18next';
 import { IUser, searchUsersRequest } from '../../services/kartoffelService';
+import { MeltaTooltip } from '../MeltaTooltip';
 
 const UserAutocomplete: React.FC<{
     value: IUser | null;
@@ -75,7 +76,7 @@ const UserAutocomplete: React.FC<{
         },
     };
     return (
-        <Tooltip title={value?.displayName || ''} placement="top" sx={{ maxWidth: 'none' }}>
+        <MeltaTooltip title={value?.displayName || ''} sx={{ maxWidth: 'none' }}>
             <Autocomplete
                 value={value}
                 inputValue={currentDisplayValue}
@@ -112,7 +113,7 @@ const UserAutocomplete: React.FC<{
                 readOnly={readOnly}
                 size={size}
             />
-        </Tooltip>
+        </MeltaTooltip>
     );
 };
 

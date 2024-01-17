@@ -1,5 +1,4 @@
 import React, { useEffect } from 'react';
-import { HistoryRounded } from '@mui/icons-material';
 import i18next from 'i18next';
 import { toast } from 'react-toastify';
 import { Divider } from '@mui/material';
@@ -32,7 +31,7 @@ const ActivityLog: React.FC<{ expandedEntity: IEntityExpanded; entityTemplate: I
                 popoverText={i18next.t('entityPage.activityLog.header')}
                 iconButtonProps={{ onClick: () => setOpenPopper((previousOpen) => !previousOpen) }}
             >
-                <HistoryRounded color="primary" fontSize="inherit" />
+                <img src="/icons/history.svg" />
             </IconButtonWithPopover>
 
             <PopperSidebar open={openPopper} setOpen={setOpenPopper} title={i18next.t('entityPage.activityLog.header')} side="left">

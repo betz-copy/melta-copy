@@ -11,9 +11,8 @@
 }
 
 .ag-theme-material .ag-checkbox-input-wrapper.ag-checked::after {
-    color: #225aa7;
+    color: #1E2775;
 }
-
 
 /* Removed in order to manipulate scroll-bar
 /* .ag-body-viewport,
@@ -23,7 +22,7 @@
 } */
 
 .ag-theme-material .ag-checkbox-input-wrapper.ag-checked::after {
-    color: #225aa7;
+    color: #1E2775;
 }
 
 .ag-column-select-virtual-list-viewport::-webkit-scrollbar-track,
@@ -33,7 +32,7 @@
 
 .ag-column-select-virtual-list-viewport::-webkit-scrollbar-thumb,
 .ag-body-horizontal-scroll-viewport::-webkit-scrollbar-thumb {
-    background: #225aa7;
+    background: #1E2775;
     border-radius: 7px;
 }
 

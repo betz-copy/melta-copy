@@ -1,10 +1,12 @@
 import React from 'react';
-import { Box, Typography } from '@mui/material';
+import { Box, Typography, useTheme } from '@mui/material';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 
 const DuplicateTopBar: React.FC<{
     entityTemplate: IMongoEntityTemplatePopulated;
 }> = ({ entityTemplate }) => {
+    const theme = useTheme();
+
     return (
         <Box
             bgcolor="#fcfeff"
@@ -20,7 +22,7 @@ const DuplicateTopBar: React.FC<{
             style={{ top: 0, right: 0, zIndex: 1 }}
         >
             <Box display="flex" alignItems="center">
-                <Typography color="#225AA7" fontWeight="800" component="h4" variant="h4">
+                <Typography color={theme.palette.primary.main} fontWeight="800" component="h4" variant="h4">
                     {entityTemplate.category.displayName}
                 </Typography>
 
@@ -28,7 +30,7 @@ const DuplicateTopBar: React.FC<{
                     /
                 </Typography>
 
-                <Typography paddingBottom="2px" variant="h4" fontSize="28px" color="#225AA7">
+                <Typography paddingBottom="2px" variant="h4" fontSize="28px" color={theme.palette.primary.main}>
                     {entityTemplate.displayName}
                 </Typography>
             </Box>

@@ -74,7 +74,7 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
                         return lastPage.length ? nextPage : undefined;
                     }}
                     endText={i18next.t('entitiesCardView.noSearchLeft')}
-                    style={{ overflowY: 'hidden' }}
+                    style={{ overflowY: 'hidden', gap: '20px' }}
                 >
                     {(entity) => {
                         const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates');

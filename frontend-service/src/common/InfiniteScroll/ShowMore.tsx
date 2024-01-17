@@ -22,5 +22,5 @@ export const ShowMore = forwardRef<HTMLDivElement, ShowMoreProps>(({ isLoading, 
 
     if (endText) return <Grid {...gridProps}>{endText}</Grid>;
 
-    return <></>;
+    return <div />;
 });

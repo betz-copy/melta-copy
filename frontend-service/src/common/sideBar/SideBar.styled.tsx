@@ -14,13 +14,21 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
     '& .MuiDrawer-paper': {
         width: drawerWidth,
         overflowX: 'hidden',
+        transition: theme.transitions.create('width', {
+            easing: theme.transitions.easing.sharp,
+            duration: theme.transitions.duration.leavingScreen,
+        }),
     },
     ...(!open && {
         ...{
-            width: `calc(${theme.spacing(14)} + 1px)`,
+            width: `calc(${theme.spacing(10)} + 1px)`,
         },
         '& .MuiDrawer-paper': {
-            width: `calc(${theme.spacing(14)} + 1px)`,
+            width: `calc(${theme.spacing(10)} + 1px)`,
+            transition: theme.transitions.create('width', {
+                easing: theme.transitions.easing.sharp,
+                duration: theme.transitions.duration.leavingScreen,
+            }),
         },
     }),
 }));

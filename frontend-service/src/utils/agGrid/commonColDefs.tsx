@@ -156,7 +156,7 @@ export const dateColDef = <Data extends any = IEntity>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
     value: { title: string; format?: string },
-    hardcodedWidth: number | undefined,
+    hardcodedWidth?: number,
     hideColumn = false,
     hideValue = false,
 ): ColDef<Data> => {
@@ -205,7 +205,7 @@ export const translatedEnumColDef = <Data extends any = IEntity>(
     valueGetter: ValueGetterFunc<Data>,
     value: { title: string },
     valuesMap: Record<string, string>,
-    hardcodedWidth: number | undefined,
+    hardcodedWidth?: number,
     hideColumn = false,
     hideValue = false,
 ): ColDef<Data> => {
