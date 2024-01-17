@@ -134,7 +134,10 @@ const TemplateTable = forwardRef<
                 </Grid>
 
                 <Grid container item flexGrow={1} width={0} justifyContent="flex-end" alignItems="center">
-                    <ImageWithDisable srcPath="/icons/load-file.svg" disabled />
+                    <IconButtonWithPopover popoverText={i18next.t('soon')} style={{ borderRadius: '5px', cursor: 'default' }}>
+                        <ImageWithDisable srcPath="/icons/load-file.svg" disabled />
+                    </IconButtonWithPopover>
+
                     <AddEntityButton
                         initialStep={1}
                         disabled={!userHasWritePermissions}
