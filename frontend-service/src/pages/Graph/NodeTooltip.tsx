@@ -28,13 +28,7 @@ export const NodeTooltip: React.FC<NodeTooltipProps> = ({ node, entityTemplate, 
         >
             <Grid item>
                 {entityTemplate.propertiesPreview.length ? (
-                    <EntityPropertiesInternal
-                        isPreview
-                        properties={node.data}
-                        showPreviewPropertiesOnly
-                        entityTemplate={entityTemplate}
-                        darkMode={darkMode}
-                    />
+                    <EntityPropertiesInternal properties={node.data} showPreviewPropertiesOnly entityTemplate={entityTemplate} darkMode={darkMode} />
                 ) : (
                     i18next.t('graph.noPreviewProperties')
                 )}
