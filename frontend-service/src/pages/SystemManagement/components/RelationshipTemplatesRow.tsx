@@ -25,6 +25,7 @@ import { Box } from './Box';
 import { CustomIcon } from '../../../common/CustomIcon';
 import { CardMenu } from './CardMenu';
 import { environment } from '../../../globals';
+import { filterRelationships } from '../../../utils/relationshipTemplateManagement';
 
 interface RelationshipTemplateCardProps {
     relationshipTemplate: IMongoRelationshipTemplatePopulated;
@@ -252,25 +253,14 @@ const RelationshipTemplatesRow: React.FC = () => {
 
             <Grid container gap="30px" marginTop="30px">
                 {getRelationshipGroupedByEntitiesTemplate(
-                    Array.from(relationshipTemplates.values())
-                        .map((relationshipTemplate) => populateRelationshipTemplate(relationshipTemplate, entityTemplates))
-                        .filter(
-                            (relationshipTemplate) =>
-                                sourceEntityTemplatesToShow.some(
-                                    (sourceEntityTemplateToShow) => sourceEntityTemplateToShow._id === relationshipTemplate.sourceEntity._id,
-                                ) &&
-                                destinationEntityTemplatesToShow.some(
-                                    (destinationEntityTemplateToShow) =>
-                                        destinationEntityTemplateToShow._id === relationshipTemplate.destinationEntity._id,
-                                ),
-                        )
-                        .filter(
-                            (relationshipTemplate) =>
-                                searchText === '' ||
-                                relationshipTemplate.displayName.includes(searchText) ||
-                                relationshipTemplate.sourceEntity.displayName.includes(searchText) ||
-                                relationshipTemplate.destinationEntity.displayName.includes(searchText),
+                    filterRelationships({
+                        relationshipTemplates: Array.from(relationshipTemplates.values()).map((relationshipTemplate) =>
+                            populateRelationshipTemplate(relationshipTemplate, entityTemplates),
                         ),
+                        destinationEntityTemplatesToShow,
+                        sourceEntityTemplatesToShow,
+                        searchText,
+                    }),
                 ).map((relationshipTemplateWithEntity) => (
                     <Box
                         header={
