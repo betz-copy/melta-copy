@@ -94,7 +94,6 @@ const EditEntityDetails: React.FC<{
                             <Card>
                                 <CardContent>
                                     <Grid container justifyContent="center">
-                                        EditEntityDetails
                                         <Grid container flexDirection="row" width="100%">
                                             <Grid width="75%">
                                                 <BlueTitle

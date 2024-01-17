@@ -144,7 +144,7 @@ const CreateOrEditEntityDetails: React.FC<{
                                                     />
 
                                                     {!entityTemplate._id && (
-                                                        <Grid item>
+                                                        <Grid item marginTop="20px">
                                                             <ChooseTemplate
                                                                 setFieldValue={setFieldValue}
                                                                 values={values}
