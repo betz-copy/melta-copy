@@ -4,8 +4,8 @@ import * as Yup from 'yup';
 import i18next from 'i18next';
 import { useQueryClient } from 'react-query';
 import { useParams } from 'react-router-dom';
+import { FormikErrors, FormikTouched } from 'formik';
 import { EntityWizardValues } from './index';
-import { StepComponentProps } from '../index';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IPermissionsOfUser } from '../../../services/permissionsService';
 import { canUserWriteInstanceOfCategory } from '../../../utils/permissions/instancePermissions';
@@ -18,7 +18,12 @@ const chooseTemplateSchema = Yup.object({
     }).required(i18next.t('validation.required')),
 });
 
-const ChooseTemplate: React.FC<StepComponentProps<EntityWizardValues>> = ({ values, touched, errors, setFieldValue }) => {
+const ChooseTemplate: React.FC<{
+    values: EntityWizardValues;
+    touched: FormikTouched<EntityWizardValues>;
+    errors: FormikErrors<EntityWizardValues>;
+    setFieldValue: (field: string, value: any, shouldValidate?: boolean | undefined) => void;
+}> = ({ values, touched, errors, setFieldValue }) => {
     const param = useParams();
     const { categoryId } = param;
     const queryClient = useQueryClient();

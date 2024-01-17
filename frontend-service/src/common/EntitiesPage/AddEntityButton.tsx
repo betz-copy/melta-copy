@@ -1,7 +1,9 @@
 import React, { useState, CSSProperties } from 'react';
 import i18next from 'i18next';
-import { EntityWizard, EntityWizardValues } from '../wizards/entity';
+import { Dialog } from '@mui/material';
+import { EntityWizardValues } from '../dialogs/entity';
 import IconButtonWithPopover from '../IconButtonWithPopover';
+import { CreateOrEditEntityDetails } from '../dialogs/entity/CreateOrEditEntityDialog';
 
 const AddEntityButton: React.FC<{
     style?: CSSProperties;
@@ -33,16 +35,45 @@ const AddEntityButton: React.FC<{
             >
                 {children}
             </IconButtonWithPopover>
-            <EntityWizard
-                open={addEntityWizardState.isOpen}
-                handleClose={() =>
-                    setAddEntityWizardState({
-                        isOpen: false,
-                    })
-                }
-                initalStep={0}
-                initialValues={addEntityWizardState.initialValues}
-            />
+
+            <Dialog open={addEntityWizardState.isOpen} maxWidth="md">
+                <CreateOrEditEntityDetails
+                    isEditMode={false}
+                    entityTemplate={
+                        addEntityWizardState.initialValues?.template || {
+                            _id: '',
+                            displayName: '',
+                            name: '',
+                            category: {
+                                _id: '',
+                                name: '',
+                                displayName: '',
+                                color: '',
+                            },
+                            properties: {
+                                properties: {},
+                                required: [],
+                                type: 'object',
+                                hide: [],
+                            },
+                            propertiesOrder: [],
+                            propertiesPreview: [],
+                            uniqueConstraints: [],
+                            disabled: false,
+                        }
+                    }
+                    entity={{
+                        properties: { disabled: false, _id: '', createdAt: '', updatedAt: '' },
+                        templateId: '',
+                    }}
+                    onSuccessUpdate={(entityObj) => {}}
+                    onCancelUpdate={() =>
+                        setAddEntityWizardState({
+                            isOpen: false,
+                        })
+                    }
+                />
+            </Dialog>
         </>
     );
 };

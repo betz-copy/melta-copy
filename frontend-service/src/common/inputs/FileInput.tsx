@@ -18,7 +18,7 @@ const FileInput: React.FC<FileInputProps> = ({ fileName, onDeleteFile, onDropFil
     const theme = useTheme();
 
     const errorStyle = {
-        color: 'rgb(211, 47, 47)',
+        color: '#d32f2f',
         margin: 0,
         padding: 0,
     };
@@ -35,11 +35,11 @@ const FileInput: React.FC<FileInputProps> = ({ fileName, onDeleteFile, onDropFil
     });
 
     const inputStyle = {
-        border: isDragActive ? `2px dashed ${theme.palette.primary.main}` : '1px solid rgb(196, 196, 196)',
+        border: isDragActive ? `2px dashed ${theme.palette.primary.main}` : '1px solid #c4c4c4',
         borderRadius: '10px',
         borderColor: '#CCCFE5',
         color: '#9398C2',
-        width: '100%',
+        // width: '100%',
         height: '40px',
         display: 'flex',
         padding: '0px 10px',
@@ -48,23 +48,23 @@ const FileInput: React.FC<FileInputProps> = ({ fileName, onDeleteFile, onDropFil
     };
 
     return (
-        <Grid container flexDirection="column" justifyContent="space-around">
+        <Grid container flexDirection="column" justifyContent="space-around" width="100%">
             <Grid item>
                 <Typography style={{ color: '#9398C2' }}>{inputText}</Typography>
             </Grid>
 
-            <Grid item container>
+            <Grid item container width="100%">
                 {fileName ? (
-                    <Grid item container style={inputStyle} {...getRootProps()}>
+                    <Grid item container style={inputStyle} {...getRootProps()} width="100%">
                         <input {...getInputProps()} />
-                        <Grid container item flexDirection="row" alignItems="center" justifyContent="space-between" flexWrap="nowrap" width="100%">
-                            <Grid item flexGrow="1">
+                        <Grid container item flexDirection="row" alignItems="center" flexWrap="nowrap" width="100%">
+                            <Grid item flexGrow={1}>
                                 <FileIcon fontSize="medium" />
                             </Grid>
-                            <Grid item flexGrow="1">
+                            <Grid item flexGrow={8}>
                                 <Typography style={{ overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>{fileName}</Typography>
                             </Grid>
-                            <Grid item flexGrow="1">
+                            <Grid item flexGrow={1}>
                                 <IconButton
                                     onClick={(e) => {
                                         e.preventDefault();

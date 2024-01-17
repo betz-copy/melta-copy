@@ -7,7 +7,7 @@ import pickBy from 'lodash.pickby';
 import mapValues from 'lodash.mapvalues';
 import ExecWithRuleBreachDialog from '../../../common/dialogs/execWithRuleBreachDialog';
 import { ErrorToast } from '../../../common/ErrorToast';
-import { EntityWizardValues } from '../../../common/wizards/entity';
+import { EntityWizardValues } from '../../../common/dialogs/entity';
 import { IEntity } from '../../../interfaces/entities';
 import { ActionTypes, IUpdateEntityMetadata, IUpdateEntityMetadataPopulated } from '../../../interfaces/ruleBreaches/actionMetadata';
 import { IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';

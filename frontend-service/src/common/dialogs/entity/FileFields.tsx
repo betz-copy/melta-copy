@@ -4,7 +4,7 @@ import i18next from 'i18next';
 import pickBy from 'lodash.pickby';
 import { Grid } from '@mui/material';
 import { EntityWizardValues } from './index';
-import { StepComponentProps } from '../index';
+import { StepComponentProps } from '../../wizards/index';
 import { InstanceFileInput } from '../../inputs/InstanceFilesInput/InstanceFileInput';
 
 const fileFieldsSchema = Yup.object({

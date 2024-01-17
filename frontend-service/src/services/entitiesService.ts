@@ -9,7 +9,7 @@ import {
     ISearchEntitiesOfTemplateBody,
     IExportEntitiesBody,
 } from '../interfaces/entities';
-import { EntityWizardValues } from '../common/wizards/entity';
+import { EntityWizardValues } from '../common/dialogs/entity';
 import { IRuleBreach } from '../interfaces/ruleBreaches/ruleBreach';
 
 const { entities, relationships } = environment.api;

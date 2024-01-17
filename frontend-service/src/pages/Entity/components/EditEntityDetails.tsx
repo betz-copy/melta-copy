@@ -11,25 +11,24 @@ import { AxiosError } from 'axios';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IEntity } from '../../../interfaces/entities';
 import { updateEntityRequest } from '../../../services/entitiesService';
-import { EntityWizardValues } from '../../../common/wizards/entity';
+import { EntityWizardValues } from '../../../common/dialogs/entity';
 import { JSONSchemaFormik, ajvValidate } from '../../../common/inputs/JSONSchemaFormik';
 import { BlueTitle } from '../../../common/BlueTitle';
 import { filterAttachmentsAndEntitiesRefFromPropertiesSchema } from '../../../utils/pickFieldsPropertiesSchema';
 import { IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
 import UpdateEntityWithRuleBreachDialog from './UpdateEntityWithRuleBreachDialog';
 import { environment } from '../../../globals';
-import { toastConstraintValidationError } from '../../../common/wizards/entity/toastConstraintValidationError';
+import { toastConstraintValidationError } from '../../../common/dialogs/entity/toastConstraintValidationError';
 import { InstanceFileInput } from '../../../common/inputs/InstanceFilesInput/InstanceFileInput';
 
 const { errorCodes } = environment;
 
 const EditEntityDetails: React.FC<{
-    wasOpenFromTable?: boolean;
     entityTemplate: IMongoEntityTemplatePopulated;
     entity: IEntity;
     onSuccessUpdate: (data: IEntity) => void;
     onCancelUpdate: () => void;
-}> = ({ wasOpenFromTable = false, entityTemplate, entity, onSuccessUpdate, onCancelUpdate }) => {
+}> = ({ entityTemplate, entity, onSuccessUpdate, onCancelUpdate }) => {
     const [updateWithRuleBreachDialogState, setUpdateWithRuleBreachDialogState] = useState<{
         isOpen: boolean;
         brokenRules?: IRuleBreachPopulated['brokenRules'];
@@ -95,62 +94,56 @@ const EditEntityDetails: React.FC<{
                             <Card>
                                 <CardContent>
                                     <Grid container justifyContent="center">
-                                        <Grid item xs={12}>
-                                            <Grid container flexDirection={wasOpenFromTable ? 'column' : 'row'}>
-                                                <Box width={wasOpenFromTable ? '100%' : '75%'}>
-                                                    {wasOpenFromTable && (
-                                                        <BlueTitle
-                                                            title={`${i18next.t('actions.editment')} ${entityTemplate.displayName}`}
-                                                            component="h6"
-                                                            variant="h6"
-                                                            style={{ fontWeight: '600', fontSize: '20px' }}
-                                                        />
-                                                    )}
-                                                    <JSONSchemaFormik
-                                                        schema={filterAttachmentsAndEntitiesRefFromPropertiesSchema(entityTemplate.properties)}
-                                                        values={values}
-                                                        setValues={(propertiesValues) => setFieldValue('properties', propertiesValues)}
-                                                        errors={errors.properties ?? {}}
-                                                        touched={touched.properties ?? {}}
-                                                        setFieldTouched={(field) => setFieldTouched(`properties.${field}`)}
-                                                        isEditMode
-                                                    />
-                                                </Box>
-                                                {templateFileKeys.length > 0 && (
-                                                    <Box width={wasOpenFromTable ? '95%' : '400px'} maxWidth={wasOpenFromTable ? '95%' : '400px'}>
-                                                        <Grid item container flexDirection={wasOpenFromTable ? 'column' : 'row'}>
-                                                            <Grid marginTop={wasOpenFromTable ? '20px' : ''} alignSelf="stretch">
-                                                                <Divider
-                                                                    orientation={wasOpenFromTable ? 'horizontal' : 'vertical'}
-                                                                    style={{ alignSelf: 'stretch', width: wasOpenFromTable ? '100%' : '5px' }}
-                                                                />
-                                                            </Grid>
-                                                            <Grid paddingLeft="20px" marginTop="20px" marginBottom="20px">
-                                                                <BlueTitle
-                                                                    title={i18next.t('wizard.entityTemplate.attachments')}
-                                                                    component="h6"
-                                                                    variant="h6"
-                                                                    style={{ marginBottom: '12px', fontSize: '16px', fontWeight: '600' }}
-                                                                />
-                                                                <>
-                                                                    {Object.entries(templateFilesProperties).map(([key, value]) => (
-                                                                        <InstanceFileInput
-                                                                            key={key}
-                                                                            fileFieldName={`attachmentsProperties.${key}`}
-                                                                            fieldTemplateTitle={value.title}
-                                                                            setFieldValue={setFieldValue}
-                                                                            required={requiredFilesNames.includes(key)}
-                                                                            value={values.attachmentsProperties[key]}
-                                                                            error={errors.attachmentsProperties?.[key] as string}
-                                                                            setFieldTouched={setFieldTouched}
-                                                                        />
-                                                                    ))}
-                                                                </>
-                                                            </Grid>
-                                                        </Grid>
-                                                    </Box>
-                                                )}
+                                        EditEntityDetails
+                                        <Grid container flexDirection="row" width="100%">
+                                            <Grid width="75%">
+                                                <BlueTitle
+                                                    title={`${i18next.t('actions.editment')} ${entityTemplate.displayName}`}
+                                                    component="h6"
+                                                    variant="h6"
+                                                    style={{ fontWeight: '600', fontSize: '20px' }}
+                                                />
+                                                <JSONSchemaFormik
+                                                    schema={filterAttachmentsAndEntitiesRefFromPropertiesSchema(entityTemplate.properties)}
+                                                    values={values}
+                                                    setValues={(propertiesValues) => setFieldValue('properties', propertiesValues)}
+                                                    errors={errors.properties ?? {}}
+                                                    touched={touched.properties ?? {}}
+                                                    setFieldTouched={(field) => setFieldTouched(`properties.${field}`)}
+                                                    isEditMode
+                                                />
                                             </Grid>
+                                            {templateFileKeys.length > 0 && (
+                                                <Grid container width="25%" maxWidth="25%">
+                                                    <Grid item container flexDirection="row">
+                                                        <Grid>
+                                                            <Divider orientation="vertical" style={{ height: '100%', width: '5px' }} />
+                                                        </Grid>
+                                                        <Grid paddingLeft="20px" marginTop="20px" marginBottom="20px">
+                                                            <BlueTitle
+                                                                title={i18next.t('wizard.entityTemplate.attachments')}
+                                                                component="h6"
+                                                                variant="h6"
+                                                                style={{ marginBottom: '12px', fontSize: '16px', fontWeight: '600' }}
+                                                            />
+                                                            <>
+                                                                {Object.entries(templateFilesProperties).map(([key, value]) => (
+                                                                    <InstanceFileInput
+                                                                        key={key}
+                                                                        fileFieldName={`attachmentsProperties.${key}`}
+                                                                        fieldTemplateTitle={value.title}
+                                                                        setFieldValue={setFieldValue}
+                                                                        required={requiredFilesNames.includes(key)}
+                                                                        value={values.attachmentsProperties[key]}
+                                                                        error={errors.attachmentsProperties?.[key] as string}
+                                                                        setFieldTouched={setFieldTouched}
+                                                                    />
+                                                                ))}
+                                                            </>
+                                                        </Grid>
+                                                    </Grid>
+                                                </Grid>
+                                            )}
                                         </Grid>
                                         <Grid
                                             container

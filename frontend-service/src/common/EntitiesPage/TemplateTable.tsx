@@ -13,7 +13,6 @@ import { ResetFilterButton } from './ResetFilterButton';
 import IconButtonWithPopover from '../IconButtonWithPopover';
 import { CustomIcon } from '../CustomIcon';
 import { exportEntitiesRequest } from '../../services/entitiesService';
-import { EditEntityDetails } from '../../pages/Entity/components/EditEntityDetails';
 import { IEntity } from '../../interfaces/entities';
 import { environment } from '../../globals';
 import { filterModelToFilterOfTemplate, sortModelToSortOfSearchRequest } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
@@ -22,6 +21,7 @@ import { IPermissionsOfUser } from '../../services/permissionsService';
 import { canUserWriteInstanceOfCategory } from '../../utils/permissions/instancePermissions';
 import { EntityTemplateColor } from '../EntityTemplateColor';
 import { ImageWithDisable } from '../ImageWithDisable';
+import { CreateOrEditEntityDetails } from '../dialogs/entity/CreateOrEditEntityDialog';
 
 const { expandedRowCount } = environment.agGrid;
 
@@ -185,8 +185,8 @@ const TemplateTable = forwardRef<
                 />
             </Box>
             <Dialog open={editDialog.isOpen} maxWidth="md">
-                <EditEntityDetails
-                    wasOpenFromTable
+                <CreateOrEditEntityDetails
+                    isEditMode
                     entityTemplate={template}
                     entity={editDialog.entity!}
                     onSuccessUpdate={(entity) => {

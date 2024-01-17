@@ -44,6 +44,7 @@ export default {
     actions: {
         edit: 'עריכה',
         editment: 'עריכת',
+        createment: 'יצירת',
         delete: 'מחיקה',
         graph: 'גרף',
         disable: 'השבתה',
@@ -364,6 +365,7 @@ export default {
         },
         entity: {
             title: 'יצירת ישות',
+            createNewEntity: 'ישות חדשה',
             createdSuccessfully: 'ישות נוצרה בהצלחה',
             editedSuccefully: 'ישות עודכנה בהצלחה',
             duplicatedSuccessfully: 'ישות שוכפלה בהצלחה',

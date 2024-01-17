@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { EntityWizardValues } from './index';
-import { StepComponentProps, StepsType } from '../index';
+import { StepComponentProps, StepsType } from '../../wizards/index';
 import { JSONSchemaFormik, ajvValidate } from '../../inputs/JSONSchemaFormik';
 import { filterAttachmentsAndEntitiesRefFromPropertiesSchema } from '../../../utils/pickFieldsPropertiesSchema';
 

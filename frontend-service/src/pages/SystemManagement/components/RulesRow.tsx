@@ -112,14 +112,6 @@ export const RuleCard: React.FC<{
                             </Typography>
                         </Grid>
                     </Grid>
-                    {/* <Grid item container justifyContent="space-between">
-                    <Grid item flexBasis="25%" color="#9398C2">
-                        {i18next.t('wizard.rule.formula')}
-                    </Grid>
-                    <Grid item flexBasis="70%" color="#53566E" fontWeight="400">
-                        {rule.formula}
-                    </Grid>
-                </Grid> */}
                 </Grid>
             }
             onHover={(isHover: boolean) => setIsHoverOnCard(isHover)}

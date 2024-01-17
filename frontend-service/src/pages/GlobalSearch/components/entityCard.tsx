@@ -15,9 +15,8 @@ import { EntityDates } from '../../Entity/components/EntityDates';
 import { BlueTitle } from '../../../common/BlueTitle';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
 import { getEntityTemplateColor } from '../../../utils/colors';
-import { EditEntityDetails } from '../../Entity/components/EditEntityDetails';
-import { MeltaTooltip } from '../../../common/MeltaTooltip';
 import { environment } from '../../../globals';
+import { CreateOrEditEntityDetails } from '../../../common/dialogs/entity/CreateOrEditEntityDialog';
 
 interface EntityCardProps {
     entity: IEntity;
@@ -95,16 +94,6 @@ const EntityCard: React.FC<EntityCardProps> = ({
                 action={
                     <Grid container alignContent="center" alignItems="center">
                         <Grid container item alignContent="center" alignItems="center">
-                            {/* <IconButton
-                                onClick={(e) => {
-                                    if (!userHavePermission) e.preventDefault();
-                                    navigate(`/entity/${entity.properties._id}`);
-                                }}
-                            >
-                                <MeltaTooltip placement="bottom" title={i18next.t('wizard.entity.readMore')}>
-                                    <img src="/icons/read-more-icon.svg" />
-                                </MeltaTooltip>
-                            </IconButton> */}
                             <Grid
                                 item
                                 onClick={(e) => {
@@ -220,8 +209,9 @@ const EntityCard: React.FC<EntityCardProps> = ({
                     </Grid>
                 </CardContent>
             </Collapse>
-            <Dialog open={editDialog.isOpen}>
-                <EditEntityDetails
+            <Dialog open={editDialog.isOpen} maxWidth="md">
+                <CreateOrEditEntityDetails
+                    isEditMode
                     entityTemplate={entityTemplate}
                     entity={entity}
                     onSuccessUpdate={(entityObj) => {
