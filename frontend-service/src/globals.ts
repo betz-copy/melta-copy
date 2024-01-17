@@ -114,7 +114,7 @@ export const environment = {
             ],
             general: [
                 {
-                    color: '#FF7979',
+                    color: ' #FFAC2F',
                     type: NotificationType.ruleBreachAlert,
                     displayName: 'התראת חוקה',
                 },
@@ -139,7 +139,7 @@ export const environment = {
                     displayName: 'יצירת תהליך חדש',
                 },
                 {
-                    color: '#FEF0C0',
+                    color: '#FF7979',
                     type: NotificationType.processReviewerUpdate,
                     displayName: 'עדכון הרשאות תהליך',
                 },
@@ -150,7 +150,7 @@ export const environment = {
                 },
 
                 {
-                    color: '#FF7F50',
+                    color: '#DD3500',
                     type: NotificationType.ruleBreachResponse,
                     displayName: 'מענה לחריגת חוקה ',
                 },

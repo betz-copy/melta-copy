@@ -17,7 +17,7 @@ export const RuleIcon: React.FC<RuleIconProps> = ({ ruleType }) => {
             }}
         >
             <Icon>
-                <GavelIcon color={ruleType === 'WARNING' ? 'warning' : 'error'} />;
+                <GavelIcon style={{ color: ruleType === 'WARNING' ? '#FFAC2F' : '#DD3500' }} />;
             </Icon>
         </Tooltip>
     );

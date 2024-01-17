@@ -1,8 +1,7 @@
-import { Button, CircularProgress, Grid, Tab, Tabs, Tooltip, List, IconButton, Divider, Box } from '@mui/material';
+import { Button, CircularProgress, Grid, Tab, Tabs, IconButton, Divider, Box } from '@mui/material';
 import i18next from 'i18next';
 import React, { CSSProperties, useState } from 'react';
 import { toast } from 'react-toastify';
-import { InfoOutlined as InfoIcon } from '@mui/icons-material';
 import { useMutation } from 'react-query';
 import { LoadingButton } from '@mui/lab';
 import BallotIcon from '@mui/icons-material/Ballot';
@@ -49,6 +48,11 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
     const onSetEndDate = (newEndDateInput: Date | null) => {
         setEndDate(newEndDateInput);
     };
+    const filterCleaning = () => {
+        onSetStartDate(null);
+        onSetEndDate(null);
+        setOpenCalenders(false);
+    };
     const { mutate, isLoading } = useMutation((groupName: keyof typeof groups) => manyNotificationSeenRequest(groups[groupName]), {
         onSuccess: (seenNotifications, groupName) => {
             updateNotificationCountDetails();
@@ -67,14 +71,21 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
     });
 
     return (
-        <PopperSidebar open={open} setOpen={setOpen} title={i18next.t('notifications.title')} side="right" sideMargin={sideBarWidth}>
+        <PopperSidebar
+            open={open}
+            setOpen={setOpen}
+            title={i18next.t('notifications.title')}
+            side="right"
+            sideMargin={sideBarWidth}
+            filterCleaning={filterCleaning}
+        >
             <Tabs
                 value={selectedGroup}
                 onChange={(_event, newGroup) => {
                     if (!newGroup) return;
                     setSelectedGroup(newGroup);
                 }}
-                sx={{ height: '3.5rem' }}
+                sx={{ height: '3.5rem', display: 'flex', justifyContent: 'space-around' }}
             >
                 {groupNames.map((groupName, index) => (
                     <Button
@@ -82,52 +93,63 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                         value={groupName}
                         onClick={(event) => {
                             setSelectedGroup(groupName);
-                            // setTabOptionsAnchor(event.currentTarget);
+                            setNotificationsToShowCheckbox(notificationsMoreData[groupName]);
                             event.preventDefault();
                         }}
                         sx={{ width: '100%' }}
                     >
-                        {index === 0 ? <SmsIcon /> : <BallotIcon />}
+                        {index === 0 ? <img src="/icons/text-bubble.svg" /> : <img src="/icons/general-notification.svg" />}
                         <Tab label={i18next.t(`notifications.groups.${groupName}`)} />
                         <NotificationCount notificationCount={notificationCountDetails.groups[groupName]} />
                     </Button>
                 ))}
             </Tabs>
-
             {isLoading ? (
                 <CircularProgress sx={{ marginX: 'auto', marginTop: '1rem' }} />
             ) : (
                 <>
-                    <Grid>
-                        {/* <Box onClick={(e) => e.stopPropagation()}> */}
-                        <SelectCheckbox
-                            title="סוג התראה"
-                            options={notificationsMoreData[selectedGroup]}
-                            selectedOptions={notificationsToShowCheckbox}
-                            setSelectedOptions={setNotificationsToShowCheckbox}
-                            getOptionId={({ type }) => type}
-                            getOptionLabel={({ displayName }) => displayName}
-                            size="small"
-                        />
-                        {/* </Box> */}
+                    <Grid sx={{ display: 'flex', justifyContent: 'space-evenly', padding: '10px' }}>
+                        <Box
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                e.preventDefault();
+                            }}
+                            sx={{ width: '90%' }}
+                        >
+                            <SelectCheckbox
+                                title="סוג התראה"
+                                options={notificationsMoreData[selectedGroup]}
+                                selectedOptions={notificationsToShowCheckbox}
+                                setSelectedOptions={setNotificationsToShowCheckbox}
+                                getOptionId={({ type }) => type}
+                                getOptionLabel={({ displayName }) => displayName}
+                                size="small"
+                            />
+                        </Box>
+
                         {!openCalenders && (
-                            <Button onClick={() => setOpenCalenders(!openCalenders)}>
-                                <EventIcon />
+                            <Button
+                                onClick={() => setOpenCalenders(!openCalenders)}
+                                sx={{
+                                    backgroundColor: 'white',
+                                    borderRadius: '8px',
+                                    display: 'inline-block',
+                                    // width: '20px',
+                                    height: '38px',
+                                    padding: '8px', // Add padding around the button
+                                    boxShadow: '0 0 20px rgba(0, 0, 0, 0.3)',
+                                }}
+                            >
+                                <img src="/icons/calendar.svg" />
                             </Button>
                         )}
-                        <IconButton
-                            onClick={() => {
-                                onSetStartDate(null);
-                                onSetEndDate(null);
-                                setOpenCalenders(false);
-                            }}
-                            sx={{ borderRadius: 10 }}
-                        >
+
+                        <IconButton onClick={filterCleaning} sx={{ borderRadius: 10 }}>
                             <FilterAltOffIcon />
                         </IconButton>
                     </Grid>
 
-                    {openCalenders ? (
+                    {openCalenders && (
                         <Grid sx={{ padding: '10px' }}>
                             <DateRange
                                 onStartDateChange={onSetStartDate}
@@ -136,8 +158,8 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                                 endDateInput={endDate}
                             />
                         </Grid>
-                    ) : null}
-                    <Divider />
+                    )}
+
                     <InfiniteScroll<INotificationPopulated>
                         queryKey={['getMyNotifications', selectedGroup, startDate, endDate, notificationsToShowCheckbox]}
                         queryFunction={({ pageParam }) =>
@@ -163,7 +185,7 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                     </InfiniteScroll>
                 </>
             )}
-            <Grid item container justifyContent="flex-end" sx={{ position: 'absolute', bottom: 0, padding: '10px' }}>
+            <Grid item container justifyContent="flex-end" sx={{ bottom: 0, padding: '10px' }}>
                 <LoadingButton
                     onClick={() => {
                         if (!notificationCountDetails.groups[selectedGroup]) return;

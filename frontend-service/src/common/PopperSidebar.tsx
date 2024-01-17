@@ -13,7 +13,8 @@ const PopperSidebar: React.FC<{
     side: 'right' | 'left';
     sideMargin?: CSSProperties['margin'];
     width?: CSSProperties['width'];
-}> = ({ children, open, setOpen, title, side, sideMargin = 0, width = '22rem' }) => {
+    filterCleaning?: () => void;
+}> = ({ children, open, setOpen, title, side, sideMargin = 0, width = '22rem', filterCleaning }) => {
     const darkMode = useSelector((state: RootState) => state.darkMode);
 
     return (
@@ -21,7 +22,13 @@ const PopperSidebar: React.FC<{
             {({ TransitionProps }) => (
                 <Slide {...TransitionProps} direction={side === 'right' ? 'left' : 'right'}>
                     <Box paddingTop="3.8rem" paddingX="1.1rem">
-                        <ClickAwayListener onClickAway={() => setOpen(false)}>
+                        if (filterCleaning) filterCleaning();
+                        <ClickAwayListener
+                            onClickAway={() => {
+                                setOpen(false);
+                                if (filterCleaning) filterCleaning();
+                            }}
+                        >
                             <Grid
                                 container
                                 direction="column"
@@ -34,7 +41,7 @@ const PopperSidebar: React.FC<{
                                 position="sticky"
                                 overflow="none"
                             >
-                                <Grid item>
+                                <Grid item padding="15px">
                                     <Grid container alignItems="center" height="2.5rem" paddingX="0.2rem">
                                         <Typography
                                             color={lightTheme.palette.primary.main}
@@ -46,11 +53,16 @@ const PopperSidebar: React.FC<{
                                         >
                                             {title}
                                         </Typography>
-                                        <IconButton onClick={() => setOpen(false)} size="small">
+                                        <IconButton
+                                            onClick={() => {
+                                                setOpen(false);
+                                                if (filterCleaning) filterCleaning();
+                                            }}
+                                            size="small"
+                                        >
                                             <CloseSharp />
                                         </IconButton>
                                     </Grid>
-                                    <Divider sx={{ marginX: '10px' }} />
                                 </Grid>
 
                                 {children}

@@ -31,7 +31,6 @@ import { ProcessReviewerUpdateNotification } from './processNotifications/Proces
 import { DeleteProcessNotification } from './processNotifications/DeleteProcessNotification';
 import { DateAboutToExpireNotification } from './generalNotifications/DateAboutToExpireNotification';
 import { ArchiveProcessNotification } from './processNotifications/ArchiveProcessNotification';
-import { environment } from '../../../globals';
 
 interface NotificationCardProps {
     notification: INotificationPopulated;
@@ -54,7 +53,7 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({ notification
         <Card
             sx={{
                 // eslint-disable-next-line no-nested-ternary
-                bgcolor: notification.type === NotificationType.dateAboutToExpire ? '#F8E0E0' : darkMode ? '#161616' : '#FFFFFF',
+                bgcolor: notification.type === NotificationType.dateAboutToExpire ? 'rgba(255, 0, 107, 0.05)' : darkMode ? '#161616' : '#FFFFFF',
                 marginTop: '0.5rem',
                 marginX: '1rem',
                 pointerEvents: isSuccess ? 'none' : 'initial',

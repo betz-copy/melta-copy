@@ -335,7 +335,7 @@ const SelectCheckbox = <Option extends any, Group extends any>({
     });
 
     return (
-        <FormControl style={{ background: darkMode ? '#242424' : 'white', borderRadius: '0 7px 7px 0' }}>
+        <FormControl style={{ background: darkMode ? '#242424' : 'white', borderRadius: '0 7px 7px 0', width: '150px' }}>
             <Select
                 displayEmpty
                 renderValue={() => title}
@@ -345,6 +345,12 @@ const SelectCheckbox = <Option extends any, Group extends any>({
                             maxHeight: '230px',
                         },
                     },
+                }}
+                onOpen={(e) => {
+                    console.log(e);
+
+                    e.stopPropagation();
+                    e.preventDefault();
                 }}
                 size={size}
                 style={toTopBar ? { borderRadius: '0 7px 7px 0' } : { borderRadius: '7px 7px 7px 7px' }}
