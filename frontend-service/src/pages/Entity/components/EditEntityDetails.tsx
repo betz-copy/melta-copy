@@ -95,7 +95,7 @@ const EditEntityDetails: React.FC<{
                                 <CardContent>
                                     <Grid container justifyContent="center">
                                         <Grid container flexDirection="row" width="100%">
-                                            <Grid width="75%">
+                                            <Grid xs={8}>
                                                 <BlueTitle
                                                     title={`${i18next.t('actions.editment')} ${entityTemplate.displayName}`}
                                                     component="h6"
@@ -113,12 +113,12 @@ const EditEntityDetails: React.FC<{
                                                 />
                                             </Grid>
                                             {templateFileKeys.length > 0 && (
-                                                <Grid container width="25%" maxWidth="25%">
+                                                <Grid container xs={4}>
                                                     <Grid item container flexDirection="row">
-                                                        <Grid>
+                                                        <Grid item>
                                                             <Divider orientation="vertical" style={{ height: '100%', width: '5px' }} />
                                                         </Grid>
-                                                        <Grid paddingLeft="20px" marginTop="20px" marginBottom="20px">
+                                                        <Grid item flex={1} paddingLeft="20px" marginTop="20px" marginBottom="20px">
                                                             <BlueTitle
                                                                 title={i18next.t('wizard.entityTemplate.attachments')}
                                                                 component="h6"
