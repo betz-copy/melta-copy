@@ -235,9 +235,13 @@ const CreateOrEditEntityDetails: React.FC<{
                                                     type="submit"
                                                     variant="contained"
                                                     startIcon={
-                                                        isUpdateLoading ? <CircularProgress sx={{ color: 'white' }} size={20} /> : <DoneIcon />
+                                                        isUpdateLoading || isCreateLoading ? (
+                                                            <CircularProgress sx={{ color: 'white' }} size={20} />
+                                                        ) : (
+                                                            <DoneIcon />
+                                                        )
                                                     }
-                                                    disabled={!dirty || isUpdateLoading}
+                                                    disabled={!dirty || isUpdateLoading || isCreateLoading}
                                                 >
                                                     {i18next.t('entityPage.save')}
                                                 </Button>
