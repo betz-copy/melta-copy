@@ -60,7 +60,8 @@ const RjfsSelectWidget = ({
     color,
     ...textFieldProps
 }: WidgetProps) => {
-    const { enumOptions, enumDisabled } = options;
+    const { enumOptions } = options;
+
     const emptyValue = multiple ? [] : '';
     const _onChange = ({ target: { value: newValue } }: React.ChangeEvent<{ name?: string; value: unknown }>) =>
         onChange(processValue(schema, newValue));
@@ -73,9 +74,33 @@ const RjfsSelectWidget = ({
             id={id}
             disabled={disabled}
             readOnly={readonly}
-            value={typeof value === 'undefined' ? emptyValue : value}
+            multiple={multiple}
+            // eslint-disable-next-line no-nested-ternary
+            value={typeof value === 'undefined' ? (multiple ? [] : emptyValue) : value}
+            isOptionEqualToValue={(option, val) => option.value === val.value}
             onChange={(event, newValue) => {
-                onChange(processValue(schema, newValue?.label));
+                if (multiple) {
+                    // Filter out duplicate values
+                    const uniqueValues = newValue.reduce((unique, item) => {
+                        const isDuplicate = unique.some(
+                            (uItem) => (typeof uItem === 'string' ? uItem : uItem.value) === (typeof item === 'string' ? item : item.value),
+                        );
+                        if (!isDuplicate) {
+                            unique.push(item);
+                        }
+                        return unique;
+                    }, []);
+
+                    // Map and process values
+                    const updatedValue = uniqueValues.map((item) => (typeof item === 'string' ? { label: item, value: item } : item));
+                    const processedValue = updatedValue.map((option) => processValue(schema, option.value));
+
+                    onChange(processedValue);
+                } else {
+                    // Single selection logic remains unchanged
+                    const processedValue = processValue(schema, newValue ? newValue.value : '');
+                    onChange(processedValue);
+                }
                 event.preventDefault();
             }}
             renderInput={(params) => (
@@ -104,7 +129,7 @@ const RjfsSelectWidget = ({
                 );
             }}
             options={sortBy(enumOptions!, (o) => o.value)}
-            getOptionDisabled={(option) => Boolean(enumDisabled?.includes(option.value))}
+            getOptionDisabled={(option) => Boolean(value?.includes(option.value))}
         />
     );
 };
