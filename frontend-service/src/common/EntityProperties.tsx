@@ -16,6 +16,9 @@ pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.js';
 export const formatToString = (value: any, valueType: 'string' | 'number' | 'boolean', format?: string, enumColor?: string) => {
     if (value === null || value === undefined) return '-';
 
+    if (valueType === 'number') {
+        return value >= 0 ? value : `${(value * -1).toString()}-`;
+    }
     if (valueType === 'boolean') return value ? i18next.t('booleanOptions.yes') : i18next.t('booleanOptions.no');
     if (valueType === 'string') {
         if (format === 'date') return new Date(value).toLocaleDateString('en-uk');
@@ -36,7 +39,7 @@ interface IEntityPropertiesProps {
     showPreviewPropertiesOnly?: boolean;
     style?: CSSProperties;
     innerStyle?: CSSProperties;
-    isPreview?: boolean;
+    textWrap?: boolean;
 }
 
 export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkMode?: boolean }> = ({
@@ -47,7 +50,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
     style,
     innerStyle,
     darkMode,
-    isPreview = false,
+    textWrap = false,
 }) => {
     const propertiesOrderedToShow = showPreviewPropertiesOnly
         ? entityTemplate.propertiesOrder.filter((propertyKey) => entityTemplate.propertiesPreview!.includes(propertyKey))
@@ -56,12 +59,11 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
     const [hideFieldsToDisplay, setHideFieldsToDisplay] = React.useState(entityTemplate.properties.hide);
 
     return (
-        <Grid container style={style}>
+        <Grid container style={{ ...style, alignItems: textWrap ? 'flex-start' : '' }}>
             {propertiesOrderedToShow.map((propertyKey) => {
                 const propertySchema = entityTemplate.properties.properties[propertyKey];
                 const propertyValue = properties[propertyKey];
                 const hideField = entityTemplate.properties.hide.includes(propertyKey);
-                const isLTR = propertySchema.type === 'number' || Boolean(propertySchema.pattern);
                 const stringFormatValue = formatToString(
                     propertyValue,
                     propertySchema.type,
@@ -69,19 +71,20 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                     propertySchema.enum && entityTemplate.enumPropertiesColors?.[propertyKey]?.[propertyValue],
                 );
                 return (
-                    <Grid key={propertyKey} item flexDirection="row" style={innerStyle} alignItems="center">
-                        <Grid container alignItems="center" flexWrap="nowrap">
+                    <Grid id="2" key={propertyKey} item container flexDirection="row" style={innerStyle}>
+                        <Grid id="3" item container flexWrap="nowrap">
                             <Grid item width="30%" style={{ textOverflow: 'ellipsis', whiteSpace: 'nowrap', overflow: 'hidden', textAlign: 'right' }}>
                                 <Typography
                                     display="inline"
                                     fontSize="14px"
-                                    color={isPreview ? 'white' : '#9398C2'}
-                                    fontWeight={isPreview ? '800' : ''}
+                                    color={showPreviewPropertiesOnly ? 'white' : '#9398C2'}
+                                    fontWeight={showPreviewPropertiesOnly ? '800' : ''}
                                 >
                                     {propertySchema.title}:
                                 </Typography>
                             </Grid>
                             <Grid
+                                id="4"
                                 item
                                 container
                                 width="70%"
@@ -90,21 +93,22 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                                 flexWrap="nowrap"
                                 justifyContent="space-between"
                                 style={{
-                                    direction: isLTR ? 'ltr' : 'rtl',
+                                    direction: 'rtl',
                                     textAlign: 'right',
                                 }}
                             >
                                 <MeltaTooltip
+                                    disableHoverListener={textWrap}
                                     placement="bottom"
                                     title={hideFieldsToDisplay.includes(propertyKey) || propertySchema.format === 'fileId' ? '' : stringFormatValue}
                                 >
                                     <Typography
                                         display="inline"
                                         fontSize="14px"
-                                        color={isPreview ? 'white' : '#53566E'}
+                                        color={showPreviewPropertiesOnly ? 'white' : '#53566E'}
                                         style={{
                                             textOverflow: 'ellipsis',
-                                            whiteSpace: 'nowrap',
+                                            whiteSpace: textWrap ? undefined : 'nowrap',
                                             overflow: 'hidden',
                                         }}
                                     >
