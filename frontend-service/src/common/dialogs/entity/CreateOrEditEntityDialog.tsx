@@ -125,7 +125,7 @@ const CreateOrEditEntityDetails: React.FC<{
                     values.template || entityTemplate,
                 );
 
-                const isPropertiesFirst = values.template.propertiesTypeOrder[0] === 'properties';
+                const isPropertiesFirst = values.template?.propertiesTypeOrder[0] === 'properties';
 
                 const propertiesComp = values.template?._id && (
                     <JSONSchemaFormik
@@ -203,23 +203,19 @@ const CreateOrEditEntityDetails: React.FC<{
                                                         </Grid>
                                                     )}
                                                 </Box>
-                                                <Box width="95%" maxWidth="95%">
-                                                    <Grid paddingLeft="20px" marginTop="20px" marginBottom="20px">
+                                                <Box width="95%" maxWidth="95%" paddingLeft="20px">
+                                                    <Grid marginTop="20px" marginBottom="20px">
                                                         {isPropertiesFirst ? propertiesComp : propertiesFilesComp}
                                                     </Grid>
-                                                </Box>
-                                                {templateFileKeys.length > 0 && (
-                                                    <Box width="95%" maxWidth="95%">
+                                                    {templateFileKeys.length > 0 && (
                                                         <Grid item container flexDirection="column">
                                                             <Grid marginTop="20px" alignSelf="stretch">
                                                                 <Divider orientation="horizontal" style={{ alignSelf: 'stretch', width: '100%' }} />
                                                             </Grid>
                                                         </Grid>
-                                                    </Box>
-                                                )}
+                                                    )}
 
-                                                <Box width="95%" maxWidth="95%">
-                                                    <Grid paddingLeft="20px" marginTop="20px" marginBottom="20px">
+                                                    <Grid marginTop="20px" marginBottom="20px">
                                                         {isPropertiesFirst ? propertiesFilesComp : propertiesComp}
                                                     </Grid>
                                                 </Box>

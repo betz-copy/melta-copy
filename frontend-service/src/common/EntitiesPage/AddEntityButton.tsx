@@ -57,6 +57,7 @@ const AddEntityButton: React.FC<{
                                 hide: [],
                             },
                             propertiesOrder: [],
+                            propertiesTypeOrder: [],
                             propertiesPreview: [],
                             uniqueConstraints: [],
                             disabled: false,
