@@ -1,4 +1,4 @@
-import { IEntity } from '../../instanceManager/interfaces/entities';
+import { IEntity } from '../../instanceService/interfaces/entities';
 import { IDeleteProcessNotificationMetadata, INotification, IProcessStatusUpdateNotificationMetadata } from '.';
 import { IMongoProcessInstancePopulated } from '../../processService/interfaces/processInstance';
 import { IMongoStepInstancePopulated } from '../../processService/interfaces/stepInstance';

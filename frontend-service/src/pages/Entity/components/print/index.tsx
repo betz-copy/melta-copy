@@ -1,4 +1,3 @@
-import { FileDownloadOutlined } from '@mui/icons-material';
 import i18next from 'i18next';
 import React from 'react';
 import { useReactToPrint } from 'react-to-print';
@@ -41,7 +40,7 @@ const Print: React.FC<{
     return (
         <>
             <IconButtonWithPopover popoverText={i18next.t('entityPage.print.header')} iconButtonProps={{ onClick: handleOpen }}>
-                <FileDownloadOutlined color="primary" fontSize="inherit" />
+                <img src="/icons/print.svg" />
             </IconButtonWithPopover>
             <div style={{ display: 'none' }}>
                 <style>{getPageMargins()}</style>

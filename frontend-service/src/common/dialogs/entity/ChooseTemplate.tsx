@@ -1,40 +1,51 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { TextField, Autocomplete } from '@mui/material';
 import * as Yup from 'yup';
 import i18next from 'i18next';
 import { useQueryClient } from 'react-query';
 import { useParams } from 'react-router-dom';
+import { FormikErrors, FormikTouched } from 'formik';
 import { EntityWizardValues } from './index';
-import { StepComponentProps } from '../index';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IPermissionsOfUser } from '../../../services/permissionsService';
+import { canUserWriteInstanceOfCategory } from '../../../utils/permissions/instancePermissions';
 
-const chooseTemplateSchema = {
+const chooseTemplateSchema = Yup.object({
     template: Yup.object({
         _id: Yup.string().required(i18next.t('validation.required')),
         displayName: Yup.string().required(i18next.t('validation.required')),
         properties: Yup.object().required(i18next.t('validation.required')),
     }).required(i18next.t('validation.required')),
-};
+});
 
-const ChooseTemplate: React.FC<StepComponentProps<EntityWizardValues>> = ({ values, touched, errors, setFieldValue }) => {
+const ChooseTemplate: React.FC<{
+    values: EntityWizardValues;
+    touched: FormikTouched<EntityWizardValues>;
+    errors: FormikErrors<EntityWizardValues>;
+    setFieldValue: (field: string, value: any, shouldValidate?: boolean | undefined) => void;
+}> = ({ values, touched, errors, setFieldValue }) => {
     const param = useParams();
-    const { categoryId } = param; // assuming if in category page
+    const { categoryId } = param;
     const queryClient = useQueryClient();
 
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
 
-    let entityTemplatesFilteredByCategory: IMongoEntityTemplatePopulated[];
+    let entityTemplatesFilteredByCategory: IMongoEntityTemplatePopulated[] = [];
+
     if (categoryId) {
-        entityTemplatesFilteredByCategory = Array.from(entityTemplates.values()).filter((entity) => entity.category._id === categoryId);
+        entityTemplatesFilteredByCategory = Array.from(entityTemplates.values()).filter((entity) => {
+            return entity.category._id === categoryId && canUserWriteInstanceOfCategory(myPermissions.instancesPermissions, entity.category);
+        });
     } else {
-        entityTemplatesFilteredByCategory = Array.from(entityTemplates.values()).filter((entity) =>
-            myPermissions.instancesPermissions.some(({ category }) => category === entity.category._id),
-        );
+        entityTemplatesFilteredByCategory = Array.from(entityTemplates.values()).filter((entity) => {
+            return canUserWriteInstanceOfCategory(myPermissions.instancesPermissions, entity.category);
+        });
     }
 
     const activeEntityTemplatesFiltered = entityTemplatesFilteredByCategory.filter((entity) => !entity.disabled);
+
+    const [disabled] = useState(!!values.template._id);
 
     return (
         <Autocomplete
@@ -42,13 +53,27 @@ const ChooseTemplate: React.FC<StepComponentProps<EntityWizardValues>> = ({ valu
             options={activeEntityTemplatesFiltered}
             onChange={(_e, value) => setFieldValue('template', value || '')}
             value={values.template._id ? values.template : null}
+            disabled={disabled}
             getOptionLabel={(option) => option.displayName}
             renderInput={(params) => (
                 <TextField
                     {...params}
+                    size="small"
                     error={Boolean(touched.template && errors.template)}
                     fullWidth
-                    sx={{ width: 300 }}
+                    sx={{
+                        '& .MuiInputBase-root': {
+                            borderRadius: '10px',
+                            width: 300,
+                        },
+                        '& fieldset': {
+                            borderColor: '#CCCFE5',
+                            color: '#CCCFE5',
+                        },
+                        '& label': {
+                            color: '#9398C2',
+                        },
+                    }}
                     helperText={(touched.template && errors.template?._id) || errors.template?.displayName || errors.template?.properties}
                     name="template"
                     variant="outlined"

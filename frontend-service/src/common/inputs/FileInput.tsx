@@ -1,8 +1,8 @@
-import React, { MouseEventHandler } from 'react';
-import { IconButton, Grid } from '@mui/material';
+import React, { MouseEventHandler, useEffect, useRef, useState } from 'react';
+import { IconButton, Grid, useTheme, Typography } from '@mui/material';
 import { CloseOutlined as DeleteIcon, FilePresent as FileIcon } from '@mui/icons-material';
 import { Accept, useDropzone } from 'react-dropzone';
-import { lightTheme } from '../../theme';
+import i18next from 'i18next';
 
 interface FileInputProps {
     fileName: string | undefined;
@@ -15,8 +15,10 @@ interface FileInputProps {
 }
 
 const FileInput: React.FC<FileInputProps> = ({ fileName, onDeleteFile, onDropFile, inputText, acceptedFilesTypes, errorText }) => {
+    const theme = useTheme();
+
     const errorStyle = {
-        color: 'rgb(211, 47, 47)',
+        color: '#d32f2f',
         margin: 0,
         padding: 0,
     };
@@ -32,49 +34,106 @@ const FileInput: React.FC<FileInputProps> = ({ fileName, onDeleteFile, onDropFil
         accept: acceptedFilesTypes,
     });
 
+    const [inputWidth, setInputWidth] = useState<number>(200);
+    const inputRef = useRef<HTMLDivElement>(null);
+
+    const updateInputWidth = () => {
+        if (inputRef.current) {
+            setInputWidth(inputRef.current.offsetWidth);
+        }
+    };
+
+    useEffect(() => {
+        updateInputWidth();
+        window.addEventListener('resize', updateInputWidth);
+        return () => {
+            window.removeEventListener('resize', updateInputWidth);
+        };
+    }, []);
+
     const inputStyle = {
-        border: isDragActive ? `2px dashed ${lightTheme.palette.primary.main}` : '1px solid rgb(196, 196, 196)',
-        borderRadius: '5px',
-        width: '230px',
-        height: '56px',
+        border: isDragActive ? `2px dashed ${theme.palette.primary.main}` : '1px solid #c4c4c4',
+        borderRadius: '10px',
+        borderColor: '#CCCFE5',
+        color: '#9398C2',
+        width: '100%',
+        height: '40px',
         display: 'flex',
-        padding: '16px 10px',
-        color: '#666666',
+        padding: '0px 10px',
+        alignItems: 'center',
         cursor: 'pointer',
     };
 
     return (
-        <>
-            {fileName ? (
-                <div style={inputStyle} {...getRootProps()}>
-                    <input {...getInputProps()} />
-                    <FileIcon fontSize="medium" style={{ marginRight: '10px', marginLeft: '5px' }} />
-                    <Grid item style={{ overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis', width: '145px' }}>
-                        {fileName}
+        <Grid container flexDirection="column" justifyContent="space-around" width="100%" ref={inputRef}>
+            <Grid item>
+                <Typography style={{ color: '#9398C2' }}>{inputText}</Typography>
+            </Grid>
+
+            <Grid item container>
+                {fileName ? (
+                    <Grid item container style={inputStyle} {...getRootProps()}>
+                        <input {...getInputProps()} />
+                        <Grid container item flexDirection="row" alignItems="center" flexWrap="nowrap">
+                            <Grid item container xs={1} justifyContent="center" paddingTop="5px">
+                                <Grid item>
+                                    <FileIcon fontSize="medium" />
+                                </Grid>
+                            </Grid>
+                            <Grid item xs={10}>
+                                <Typography
+                                    style={{
+                                        overflow: 'hidden',
+                                        whiteSpace: 'nowrap',
+                                        textOverflow: 'ellipsis',
+                                        maxWidth: inputWidth * 0.7,
+                                    }}
+                                >
+                                    {fileName}
+                                </Typography>
+                            </Grid>
+                            <Grid item container xs={1} justifyContent="flex-end">
+                                <Grid item justifySelf="flex-end">
+                                    <IconButton
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            onDeleteFile(e);
+                                        }}
+                                        size="small"
+                                    >
+                                        <DeleteIcon fontSize="small" />
+                                    </IconButton>
+                                </Grid>
+                            </Grid>
+                        </Grid>
                     </Grid>
-                    <IconButton
-                        onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            onDeleteFile(e);
-                        }}
-                        size="small"
-                    >
-                        <DeleteIcon fontSize="small" />
-                    </IconButton>
-                </div>
-            ) : (
-                <div style={inputStyle} {...getRootProps()}>
-                    <input {...getInputProps()} />
-                    {inputText}
-                </div>
-            )}
-            {errorText && (
-                <p id="error" style={errorStyle}>
-                    {errorText}
-                </p>
-            )}
-        </>
+                ) : (
+                    <Grid style={inputStyle} {...getRootProps()}>
+                        <input {...getInputProps()} placeholder="aa" />
+                        <img src="\icons\Choose-File.svg" height="25px" width="120px" />
+                        <Typography>|</Typography>
+                        <img src="\icons\File-Drag-Icon.svg" height="25px" style={{ marginRight: '10px' }} />
+                        <Typography
+                            style={{
+                                marginRight: '30px',
+                                overflow: 'hidden',
+                                whiteSpace: 'nowrap',
+                                textOverflow: 'ellipsis',
+                                maxWidth: inputWidth * 0.7 - 150,
+                            }}
+                        >
+                            {i18next.t('input.imagePicker.dragFile')}
+                        </Typography>
+                    </Grid>
+                )}
+                {errorText && (
+                    <p id="error" style={errorStyle}>
+                        {errorText}
+                    </p>
+                )}
+            </Grid>
+        </Grid>
     );
 };
 

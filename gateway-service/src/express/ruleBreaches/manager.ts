@@ -1,10 +1,10 @@
 /* eslint-disable no-plusplus */
 import pickBy from 'lodash.pickby';
-import { EntityTemplateManagerService } from '../../externalServices/entityTemplateManager';
-import { IEntity } from '../../externalServices/instanceManager/interfaces/entities';
-import { IConnection } from '../../externalServices/instanceManager/interfaces/rules';
-import { InstanceManagerService } from '../../externalServices/instanceManager';
-import { getPermissions, isRuleManager } from '../../externalServices/permissionsApi';
+import { EntityTemplateManagerService } from '../../externalServices/entityTemplateService';
+import { IEntity } from '../../externalServices/instanceService/interfaces/entities';
+import { IConnection } from '../../externalServices/instanceService/interfaces/rules';
+import { InstanceManagerService } from '../../externalServices/instanceService';
+import { getPermissions, isRuleManager } from '../../externalServices/permissionsService';
 import { deleteFiles } from '../../externalServices/storageService';
 import { filteredMap, trycatch } from '../../utils';
 import { ServiceError } from '../error';

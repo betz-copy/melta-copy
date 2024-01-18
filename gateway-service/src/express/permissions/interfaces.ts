@@ -1,12 +1,5 @@
-import { ResourceType } from '../../externalServices/permissionsApi';
+import { IPermission } from '../../externalServices/permissionsService';
 import { IUser } from '../users/interface';
-
-export interface IPermission {
-    _id: string;
-    userId: string;
-    resourceType: ResourceType;
-    category: string;
-}
 
 export interface IPermissionsOfUser {
     user: IUser;
@@ -14,5 +7,5 @@ export interface IPermissionsOfUser {
     templatesManagementId: string | null;
     processesManagementId: string | null;
     rulesManagementId: string | null;
-    instancesPermissions: Pick<IPermission, '_id' | 'category'>[];
+    instancesPermissions: Pick<IPermission, '_id' | 'category' | 'scopes'>[];
 }

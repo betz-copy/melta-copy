@@ -1,12 +1,12 @@
 import React from 'react';
-import { Grid, Tooltip, Typography, styled } from '@mui/material';
+import { Grid, Typography, styled, useTheme } from '@mui/material';
 import { useQueryClient } from 'react-query';
 import i18next from 'i18next';
 import { useNavigate } from 'react-router-dom';
 import { IActivityLog } from '../../../../services/activityLogService';
 import { IRelationshipTemplateMap } from '../../../../interfaces/relationshipTemplates';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
-import { lightTheme } from '../../../../theme';
+import { MeltaTooltip } from '../../../../common/MeltaTooltip';
 
 const StyledTypography = styled(Typography)(({ theme }) => ({
     fontFamily: 'Rubik',
@@ -36,6 +36,8 @@ const RelationshipMetadataActionText: React.FC<{
     actionMetadata: { relationshipId: string; relationshipTemplateId: string; entityId: string };
     entityTemplate: IMongoEntityTemplatePopulated;
 }> = ({ action, actionMetadata, entityTemplate }) => {
+    const theme = useTheme();
+
     const navigate = useNavigate();
     const queryClient = useQueryClient();
 
@@ -53,7 +55,7 @@ const RelationshipMetadataActionText: React.FC<{
                 {action === 'CREATE_RELATIONSHIP'
                     ? i18next.t('entityPage.activityLog.createRelationship')
                     : i18next.t('entityPage.activityLog.deleteRelationship')}
-                <StyledTypography component="span" display="inline" variant="body2" style={{ color: lightTheme.palette.primary.main }}>
+                <StyledTypography component="span" display="inline" variant="body2" style={{ color: theme.palette.primary.main }}>
                     {' '}
                     &quot;{relationshipTemplate ? relationshipTemplate.displayName : i18next.t('entityPage.activityLog.undefined')}&quot;{' '}
                 </StyledTypography>
@@ -65,7 +67,7 @@ const RelationshipMetadataActionText: React.FC<{
                             display="inline"
                             variant="body2"
                             onClick={() => navigate(`/entity/${actionMetadata?.entityId}`)}
-                            style={{ color: lightTheme.palette.primary.main, cursor: 'pointer' }}
+                            style={{ color: theme.palette.primary.main, cursor: 'pointer' }}
                             borderBottom="1px solid"
                         >
                             {sourceAndDestinationTemplate[0]._id === entityTemplate._id
@@ -83,6 +85,8 @@ const UpdateEntityMetadataActionText: React.FC<{
     actionMetadata: { updatedFields: [{ fieldName: string; oldValue: any; newValue: any }] };
     entityTemplate: IMongoEntityTemplatePopulated;
 }> = ({ actionMetadata, entityTemplate }) => {
+    const theme = useTheme();
+
     const ellipsisStyle: React.CSSProperties = {
         marginLeft: '10px',
         overflow: 'hidden',
@@ -112,29 +116,33 @@ const UpdateEntityMetadataActionText: React.FC<{
             {actionMetadata.updatedFields.map((field) => {
                 return (
                     <Grid key={field.fieldName} style={{ marginBottom: '10px' }}>
-                        <StyledTypography variant="body2" style={{ ...ellipsisStyle, color: lightTheme.palette.primary.main }}>
+                        <StyledTypography variant="body2" style={{ ...ellipsisStyle, color: theme.palette.primary.main }}>
                             {entityTemplate.properties.properties[field.fieldName].title}
                         </StyledTypography>
-                        <Tooltip
+                        <MeltaTooltip
                             PopperProps={popperProps}
                             title={field.oldValue ? field.oldValue : i18next.t('entityPage.activityLog.emptyField')}
                             placement="top-start"
                         >
-                            <StyledTypography variant="body2" style={ellipsisStyle}>
-                                {i18next.t('entityPage.activityLog.from')}{' '}
-                                {field.oldValue ? `"${field.oldValue}"` : i18next.t('entityPage.activityLog.emptyField')}
-                            </StyledTypography>
-                        </Tooltip>
-                        <Tooltip
+                            <Grid>
+                                <StyledTypography variant="body2" style={ellipsisStyle}>
+                                    {i18next.t('entityPage.activityLog.from')}{' '}
+                                    {field.oldValue ? `"${field.oldValue}"` : i18next.t('entityPage.activityLog.emptyField')}
+                                </StyledTypography>
+                            </Grid>
+                        </MeltaTooltip>
+                        <MeltaTooltip
                             placement="bottom-start"
                             PopperProps={popperProps}
                             title={field.newValue ? field.newValue : i18next.t('entityPage.activityLog.emptyField')}
                         >
-                            <StyledTypography variant="body2" style={ellipsisStyle}>
-                                {i18next.t('entityPage.activityLog.to')}{' '}
-                                {field.newValue ? `"${field.newValue}"` : i18next.t('entityPage.activityLog.emptyField')}
-                            </StyledTypography>
-                        </Tooltip>
+                            <Grid>
+                                <StyledTypography variant="body2" style={ellipsisStyle}>
+                                    {i18next.t('entityPage.activityLog.to')}{' '}
+                                    {field.newValue ? `"${field.newValue}"` : i18next.t('entityPage.activityLog.emptyField')}
+                                </StyledTypography>
+                            </Grid>
+                        </MeltaTooltip>
                     </Grid>
                 );
             })}

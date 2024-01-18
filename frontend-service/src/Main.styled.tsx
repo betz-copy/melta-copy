@@ -4,7 +4,7 @@ const MainBox = styled(Box)(({ theme }) => {
     const scrollbarBackground = theme.palette.mode === 'light' ? 'white' : '#131313';
 
     return {
-        backgroundColor: theme.palette.mode === 'light' ? '#F5F5F5' : '#252527',
+        backgroundColor: theme.palette.mode === 'light' ? '#F0F2F7' : '#252527',
         flexGrow: 1,
         height: '100vh',
         '::-webkit-scrollbar': { background: scrollbarBackground, width: 10 },

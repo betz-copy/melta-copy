@@ -3,7 +3,7 @@
 import React from 'react';
 import { getDisplayLabel, WidgetProps } from '@rjsf/utils';
 import validator from '@rjsf/validator-ajv8';
-import { TextField, TextFieldProps } from '@mui/material';
+import { TextField } from '@mui/material';
 
 const RjsfTextWidget = ({
     id,
@@ -42,7 +42,7 @@ const RjsfTextWidget = ({
     return (
         <TextField
             {...textFieldProps}
-            color={color as TextFieldProps['color']}
+            color="primary"
             variant={variant}
             id={id}
             placeholder={placeholder}

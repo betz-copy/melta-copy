@@ -13,13 +13,13 @@ import { AxiosError } from 'axios';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IEntity, IEntityExpanded } from '../../../interfaces/entities';
 import { duplicateEntityRequest } from '../../../services/entitiesService';
-import { EntityWizardValues } from '../../../common/wizards/entity';
+import { EntityWizardValues } from '../../../common/dialogs/entity';
 import { JSONSchemaFormik, ajvValidate } from '../../../common/inputs/JSONSchemaFormik';
 import { BlueTitle } from '../../../common/BlueTitle';
 import { filterAttachmentsAndEntitiesRefFromPropertiesSchema } from '../../../utils/pickFieldsPropertiesSchema';
 import { DuplicateTopBar } from './DuplicateTopBar';
 import { environment } from '../../../globals';
-import { toastConstraintValidationError } from '../../../common/wizards/entity/toastConstraintValidationError';
+import { toastConstraintValidationError } from '../../../common/dialogs/entity/toastConstraintValidationError';
 import { InstanceFileInput } from '../../../common/inputs/InstanceFilesInput/InstanceFileInput';
 
 const { errorCodes } = environment;

@@ -17,7 +17,7 @@ import {
     Status,
 } from '../../../externalServices/processService/interfaces/processInstance';
 import config from '../../../config';
-import { isProcessManager } from '../../../externalServices/permissionsApi';
+import { isProcessManager } from '../../../externalServices/permissionsService';
 
 const { internalSearchPullLimit } = config.processService;
 

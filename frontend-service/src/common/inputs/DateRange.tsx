@@ -5,8 +5,6 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import i18next from 'i18next';
-import { useSelector } from 'react-redux';
-import { RootState } from '../../store';
 
 const DateRange: React.FC<{
     onStartDateChange: (newStartDateInput: Date | null) => void;
@@ -14,7 +12,7 @@ const DateRange: React.FC<{
     startDateInput: Date | null;
     endDateInput: Date | null;
 }> = ({ onStartDateChange, onEndDateChange, startDateInput, endDateInput }) => {
-    const darkMode = useSelector((state: RootState) => state.darkMode);
+    // const darkMode = useSelector((state: RootState) => state.darkMode);
     return (
         <Grid container justifyContent="center" alignItems="center" wrap="nowrap">
             <Grid item>
@@ -28,6 +26,7 @@ const DateRange: React.FC<{
                         renderInput={(params) => <TextField {...params} size="small" />}
                         InputProps={{
                             style: { borderRadius: '0px 7px 7px 0px' },
+                            // TODO - implement dark mode when it will be supported
                         }}
                     />
                 </LocalizationProvider>

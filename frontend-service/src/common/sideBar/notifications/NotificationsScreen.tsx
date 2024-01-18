@@ -1,13 +1,10 @@
-import { Button, CircularProgress, Grid, Tab, Tabs, IconButton, Divider, Box } from '@mui/material';
+import { Button, CircularProgress, Grid, Tab, Tabs, IconButton, Box } from '@mui/material';
 import i18next from 'i18next';
 import React, { CSSProperties, useState } from 'react';
 import { toast } from 'react-toastify';
 import { useMutation } from 'react-query';
 import { LoadingButton } from '@mui/lab';
-import BallotIcon from '@mui/icons-material/Ballot';
-import SmsIcon from '@mui/icons-material/Sms';
 import FilterAltOffIcon from '@mui/icons-material/FilterAltOff';
-import EventIcon from '@mui/icons-material/Event';
 import { environment } from '../../../globals';
 import { INotificationGroupCountDetails, INotificationPopulated } from '../../../interfaces/notifications';
 import { getMyNotificationsRequest, manyNotificationSeenRequest } from '../../../services/notificationService';

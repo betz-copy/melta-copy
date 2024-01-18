@@ -1,19 +1,17 @@
 import React, { useState } from 'react';
 import { Grid, IconButton } from '@mui/material';
-import { AddCircle as AddIcon, Search as SearchIcon } from '@mui/icons-material';
+import { Search as SearchIcon } from '@mui/icons-material';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import i18next from 'i18next';
 import { AxiosError } from 'axios';
-import { Header } from '../../../common/Header';
-import { ProcessTemplateWizard } from '../../../common/wizards/processTemplate';
-import { deleteProcessTemplateRequest, processTemplateObjectToProcessTemplateForm } from '../../../services/templates/processTemplatesService';
-import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
-import { ErrorToast } from '../../../common/ErrorToast';
-import { ViewingBox } from './ViewingBox';
-import { ViewingCard } from './ViewingCard';
-import SearchInput from '../../../common/inputs/SearchInput';
-import { IMongoProcessTemplatePopulated, IProcessTemplateMap } from '../../../interfaces/processes/processTemplate';
+import { ProcessTemplateWizard } from '../../../../common/wizards/processTemplate';
+import { deleteProcessTemplateRequest, processTemplateObjectToProcessTemplateForm } from '../../../../services/templates/processTemplatesService';
+import { AreYouSureDialog } from '../../../../common/dialogs/AreYouSureDialog';
+import { ErrorToast } from '../../../../common/ErrorToast';
+import SearchInput from '../../../../common/inputs/SearchInput';
+import { IMongoProcessTemplatePopulated, IProcessTemplateMap } from '../../../../interfaces/processes/processTemplate';
+import { ProcessTemplateCard } from './ProcessTemplateCard';
 
 const ProcessTemplatesRow: React.FC = () => {
     const queryClient = useQueryClient();
@@ -54,32 +52,35 @@ const ProcessTemplatesRow: React.FC = () => {
     );
 
     return (
-        <Grid item container marginBottom="30px">
-            <Header title={i18next.t('processTemplates')}>
-                <Grid container spacing={1} alignItems="center">
-                    <Grid item>
-                        <SearchInput onChange={setSearchText} endAdornmentChildren={<SearchIcon />} />
-                    </Grid>
-                    <Grid item>
-                        <IconButton onClick={() => setProcessTemplateWizardDialogState({ isWizardOpen: true, processTemplate: null })}>
-                            <AddIcon color="primary" fontSize="large" />
-                        </IconButton>
-                    </Grid>
+        <Grid item container marginBottom="30px" gap="30px">
+            <Grid container spacing={1} alignItems="center">
+                <Grid item>
+                    <SearchInput
+                        onChange={setSearchText}
+                        borderRadius="7px"
+                        placeholder={i18next.t('globalSearch.searchProcesses')}
+                        endAdornmentChildren={<SearchIcon />}
+                    />
                 </Grid>
-            </Header>
-            <ViewingBox>
-                {Array.from(processTemplates.values())
-                    .filter((processTemplate) => searchText === '' || processTemplate.displayName.includes(searchText))
-                    .map((processTemplate) => (
-                        <ViewingCard
-                            minWidth={250}
-                            key={processTemplate._id}
-                            title={processTemplate.displayName}
-                            onEditClick={() => setProcessTemplateWizardDialogState({ isWizardOpen: true, processTemplate })}
-                            onDeleteClick={() => setDeleteProcessTemplateDialogState({ isDialogOpen: true, processTemplateId: processTemplate._id })}
-                        />
-                    ))}
-            </ViewingBox>
+                <Grid item>
+                    <IconButton
+                        style={{ borderRadius: '5px' }}
+                        onClick={() => setProcessTemplateWizardDialogState({ isWizardOpen: true, processTemplate: null })}
+                    >
+                        <img src="icons/Add-New-Process.svg" />
+                    </IconButton>
+                </Grid>
+            </Grid>
+            {Array.from(processTemplates.values())
+                .filter((processTemplate) => searchText === '' || processTemplate.displayName.includes(searchText))
+                .map((processTemplate) => (
+                    <ProcessTemplateCard
+                        key={processTemplate._id}
+                        processTemplate={processTemplate}
+                        setDeleteProcessTemplateDialogState={setDeleteProcessTemplateDialogState}
+                        setProcessTemplateWizardDialogState={setProcessTemplateWizardDialogState}
+                    />
+                ))}
             <ProcessTemplateWizard
                 open={processTemplateWizardDialogState.isWizardOpen}
                 handleClose={() => setProcessTemplateWizardDialogState({ isWizardOpen: false, processTemplate: null })}

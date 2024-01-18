@@ -1,4 +1,4 @@
-import { Tooltip } from '@mui/material';
+import { useTheme } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
 import { useSelector } from 'react-redux';
@@ -7,7 +7,7 @@ import { IEntity } from '../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { RootState } from '../store';
 import { EntityPropertiesInternal } from './EntityProperties';
-import { lightTheme } from '../theme';
+import { MeltaTooltip } from './MeltaTooltip';
 
 interface EntityLinkProps {
     entity: IEntity | null;
@@ -15,6 +15,8 @@ interface EntityLinkProps {
 }
 
 export const EntityLink: React.FC<EntityLinkProps> = ({ entity, entityTemplate }) => {
+    const theme = useTheme();
+
     const linkText = entityTemplate ? entityTemplate.displayName : i18next.t('ruleBreachInfo.updateEntityActionInfo.unknownEntity');
     const link = `/entity/${entity ? entity.properties._id : 'unknownEntity'}`;
     const darkMode = useSelector((state: RootState) => state.darkMode);
@@ -29,10 +31,10 @@ export const EntityLink: React.FC<EntityLinkProps> = ({ entity, entityTemplate }
         );
 
     return (
-        <Tooltip title={tooltip}>
-            <NavLink to={link} style={{ color: lightTheme.palette.primary.main, textDecoration: 'inherit', fontWeight: 'bold' }}>
+        <MeltaTooltip title={tooltip}>
+            <NavLink to={link} style={{ color: theme.palette.primary.main, textDecoration: 'inherit', fontWeight: 'bold' }}>
                 {linkText}
             </NavLink>
-        </Tooltip>
+        </MeltaTooltip>
     );
 };

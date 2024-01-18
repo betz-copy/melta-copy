@@ -1,10 +1,9 @@
 import React, { CSSProperties } from 'react';
-import { Box, Divider, IconButton, Popper, Typography, Grid, ClickAwayListener } from '@mui/material';
+import { Box, IconButton, Popper, Typography, Grid, ClickAwayListener, useTheme } from '@mui/material';
 import { CloseSharp } from '@mui/icons-material';
 import Slide from '@mui/material/Slide';
 import { useSelector } from 'react-redux';
 import { RootState } from '../store';
-import { lightTheme } from '../theme';
 
 const PopperSidebar: React.FC<{
     open: boolean;
@@ -16,13 +15,13 @@ const PopperSidebar: React.FC<{
     filterCleaning?: () => void;
 }> = ({ children, open, setOpen, title, side, sideMargin = 0, width = '22rem', filterCleaning }) => {
     const darkMode = useSelector((state: RootState) => state.darkMode);
+    const theme = useTheme();
 
     return (
         <Popper open={open} transition sx={{ left: side === 'right' ? 0 : 'auto', marginX: sideMargin }}>
             {({ TransitionProps }) => (
                 <Slide {...TransitionProps} direction={side === 'right' ? 'left' : 'right'}>
                     <Box paddingTop="3.8rem" paddingX="1.1rem">
-                        if (filterCleaning) filterCleaning();
                         <ClickAwayListener
                             onClickAway={() => {
                                 setOpen(false);
@@ -43,8 +42,12 @@ const PopperSidebar: React.FC<{
                             >
                                 <Grid item padding="15px">
                                     <Grid container alignItems="center" height="2.5rem" paddingX="0.2rem">
+                                        <IconButton onClick={() => setOpen(false)} size="small" sx={{ position: 'absolute' }}>
+                                            <CloseSharp />
+                                        </IconButton>
+
                                         <Typography
-                                            color={lightTheme.palette.primary.main}
+                                            color={theme.palette.primary.main}
                                             fontFamily="Rubik"
                                             component="h5"
                                             variant="h5"

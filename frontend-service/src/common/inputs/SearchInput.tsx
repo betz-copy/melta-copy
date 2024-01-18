@@ -1,9 +1,7 @@
 import React, { ReactNode } from 'react';
-import { BaseTextFieldProps, InputAdornment, TextField } from '@mui/material';
+import { BaseTextFieldProps, Divider, InputAdornment, TextField, useTheme } from '@mui/material';
 import { Search as SearchIcon } from '@mui/icons-material';
 import i18next from 'i18next';
-import { useSelector } from 'react-redux';
-import { RootState } from '../../store';
 
 const SearchInput: React.FC<{
     value?: string;
@@ -13,6 +11,7 @@ const SearchInput: React.FC<{
     placeholder?: string;
     size?: BaseTextFieldProps['size'];
     borderRadius?: string;
+    toTopBar?: boolean;
 }> = ({
     value,
     onChange,
@@ -20,8 +19,11 @@ const SearchInput: React.FC<{
     endAdornmentChildren = <SearchIcon />,
     placeholder = i18next.t('searchLabel'),
     size = 'small',
-    borderRadius = '0px 7px 7px 0px',
+    borderRadius = '30px',
+    toTopBar = false,
 }) => {
+    const theme = useTheme();
+
     return (
         <TextField
             value={value}
@@ -31,11 +33,28 @@ const SearchInput: React.FC<{
             variant="outlined"
             fullWidth
             size={size}
-            sx={{ marginRight: '2rem' }}
+            style={{ borderRadius, backgroundColor: toTopBar ? '#EBEFFA' : '' }}
+            sx={{ borderRadius, backgroundColor: 'white' }}
             InputProps={{
-                endAdornment: <InputAdornment position="end">{endAdornmentChildren}</InputAdornment>,
-                sx: {
+                endAdornment: (
+                    <InputAdornment position="end" style={{ color: theme.palette.primary.main }}>
+                        <Divider
+                            orientation="vertical"
+                            style={{
+                                width: '1px',
+                                height: '22px',
+                                borderRadius: '1.5px',
+                                backgroundColor: theme.palette.primary.main,
+                                marginLeft: '7px',
+                            }}
+                        />
+                        {endAdornmentChildren}
+                    </InputAdornment>
+                ),
+                startAdornment: <InputAdornment position="start" />,
+                style: {
                     borderRadius,
+                    color: theme.palette.primary.main,
                 },
             }}
         />
