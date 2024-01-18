@@ -125,6 +125,42 @@ const CreateOrEditEntityDetails: React.FC<{
                     values.template || entityTemplate,
                 );
 
+                const isPropertiesFirst = values.template.propertiesTypeOrder[0] === 'properties';
+
+                const propertiesComp = values.template?._id && (
+                    <JSONSchemaFormik
+                        schema={filterAttachmentsAndEntitiesRefFromPropertiesSchema(values.template.properties)}
+                        values={values}
+                        setValues={(propertiesValues) => setFieldValue('properties', propertiesValues)}
+                        errors={errors.properties ?? {}}
+                        touched={touched.properties ?? {}}
+                        setFieldTouched={(field) => setFieldTouched(`properties.${field}`)}
+                        isEditMode
+                    />
+                );
+
+                const propertiesFilesComp = templateFileKeys.length > 0 && (
+                    <>
+                        <BlueTitle
+                            title={i18next.t('wizard.entityTemplate.attachments')}
+                            component="h6"
+                            variant="h6"
+                            style={{ marginBottom: '12px', fontSize: '16px', fontWeight: '600' }}
+                        />
+                        {Object.entries(templateFilesProperties).map(([key, value]) => (
+                            <InstanceFileInput
+                                key={key}
+                                fileFieldName={`attachmentsProperties.${key}`}
+                                fieldTemplateTitle={value.title}
+                                setFieldValue={setFieldValue}
+                                required={requiredFilesNames.includes(key)}
+                                value={values.attachmentsProperties[key]}
+                                error={errors.attachmentsProperties?.[key] as string}
+                                setFieldTouched={setFieldTouched}
+                            />
+                        ))}
+                    </>
+                );
                 return (
                     <>
                         <Form>
@@ -166,18 +202,11 @@ const CreateOrEditEntityDetails: React.FC<{
                                                             />
                                                         </Grid>
                                                     )}
-
-                                                    {values.template?._id && (
-                                                        <JSONSchemaFormik
-                                                            schema={filterAttachmentsAndEntitiesRefFromPropertiesSchema(values.template.properties)}
-                                                            values={values}
-                                                            setValues={(propertiesValues) => setFieldValue('properties', propertiesValues)}
-                                                            errors={errors.properties ?? {}}
-                                                            touched={touched.properties ?? {}}
-                                                            setFieldTouched={(field) => setFieldTouched(`properties.${field}`)}
-                                                            isEditMode
-                                                        />
-                                                    )}
+                                                </Box>
+                                                <Box width="95%" maxWidth="95%">
+                                                    <Grid paddingLeft="20px" marginTop="20px" marginBottom="20px">
+                                                        {isPropertiesFirst ? propertiesComp : propertiesFilesComp}
+                                                    </Grid>
                                                 </Box>
                                                 {templateFileKeys.length > 0 && (
                                                     <Box width="95%" maxWidth="95%">
@@ -185,31 +214,15 @@ const CreateOrEditEntityDetails: React.FC<{
                                                             <Grid marginTop="20px" alignSelf="stretch">
                                                                 <Divider orientation="horizontal" style={{ alignSelf: 'stretch', width: '100%' }} />
                                                             </Grid>
-                                                            <Grid paddingLeft="20px" marginTop="20px" marginBottom="20px">
-                                                                <BlueTitle
-                                                                    title={i18next.t('wizard.entityTemplate.attachments')}
-                                                                    component="h6"
-                                                                    variant="h6"
-                                                                    style={{ marginBottom: '12px', fontSize: '16px', fontWeight: '600' }}
-                                                                />
-                                                                <>
-                                                                    {Object.entries(templateFilesProperties).map(([key, value]) => (
-                                                                        <InstanceFileInput
-                                                                            key={key}
-                                                                            fileFieldName={`attachmentsProperties.${key}`}
-                                                                            fieldTemplateTitle={value.title}
-                                                                            setFieldValue={setFieldValue}
-                                                                            required={requiredFilesNames.includes(key)}
-                                                                            value={values.attachmentsProperties[key]}
-                                                                            error={errors.attachmentsProperties?.[key] as string}
-                                                                            setFieldTouched={setFieldTouched}
-                                                                        />
-                                                                    ))}
-                                                                </>
-                                                            </Grid>
                                                         </Grid>
                                                     </Box>
                                                 )}
+
+                                                <Box width="95%" maxWidth="95%">
+                                                    <Grid paddingLeft="20px" marginTop="20px" marginBottom="20px">
+                                                        {isPropertiesFirst ? propertiesFilesComp : propertiesComp}
+                                                    </Grid>
+                                                </Box>
                                             </Grid>
                                         </Grid>
                                         <Grid
