@@ -1,31 +1,87 @@
-import React, { useEffect } from 'react';
-import { Grid } from '@mui/material';
-
+import React, { ReactElement, useEffect } from 'react';
+import { Grid, Box, Tab, useTheme } from '@mui/material';
+import { TabContext, TabList, TabPanel } from '@mui/lab';
 import i18next from 'i18next';
 import { useQueryClient } from 'react-query';
 import { CategoriesRow } from './components/CategoriesRow';
 import { EntityTemplatesRow } from './components/EntityTemplatesRow';
 import { RelationshipTemplatesRow } from './components/RelationshipTemplatesRow';
 import { RulesRow } from './components/RulesRow';
-import { ProcessTemplatesRow } from './components/ProcessTemplatesRow';
+import { ProcessTemplatesRow } from './components/ProcessTemplates/ProcessTemplatesRow';
 
 import '../../css/pages.css';
 import { IPermissionsOfUser } from '../../services/permissionsService';
+import { NoPermissions } from './components/NoPermissions';
 
 const SystemManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> }> = ({ setTitle }) => {
+    const theme = useTheme();
+
     useEffect(() => setTitle(i18next.t('pages.systemManagement')), [setTitle]);
+
+    const [tabValue, setTabValue] = React.useState('categories');
 
     const queryClient = useQueryClient();
     const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
 
+    const tabsComponentsMapping: Record<string, ReactElement<any, any>> = {
+        categories: <CategoriesRow />,
+        entityTemplates: <EntityTemplatesRow />,
+        relationshipTemplates: <RelationshipTemplatesRow />,
+        rules: <RulesRow />,
+        processTemplates: <ProcessTemplatesRow />,
+    };
+
+    const tabsPermissionsMapping: Record<string, string | null> = {
+        categories: myPermissions.templatesManagementId,
+        entityTemplates: myPermissions.templatesManagementId,
+        relationshipTemplates: myPermissions.templatesManagementId,
+        rules: myPermissions.rulesManagementId,
+        processTemplates: myPermissions.processesManagementId,
+    };
+
     return (
-        <Grid container className="pageMargin" spacing={4}>
-            {myPermissions.templatesManagementId && <CategoriesRow />}
-            {myPermissions.templatesManagementId && <EntityTemplatesRow />}
-            {myPermissions.templatesManagementId && <RelationshipTemplatesRow />}
-            {myPermissions.rulesManagementId && <RulesRow />}
-            {myPermissions.processesManagementId && <ProcessTemplatesRow />}
-        </Grid>
+        <Box
+            sx={{
+                width: '100%',
+                height: '100%',
+                paddingRight: '30px',
+                paddingLeft: '30px',
+            }}
+        >
+            <TabContext value={tabValue}>
+                <Grid container direction="column">
+                    <Grid item>
+                        <TabList onChange={(_event, newValue) => setTabValue(newValue)} scrollButtons="auto" variant="scrollable">
+                            {Object.keys(tabsComponentsMapping).map((tabName) => (
+                                <Tab
+                                    key={tabName}
+                                    label={i18next.t(tabName)}
+                                    value={tabName}
+                                    wrapped
+                                    style={{
+                                        fontWeight: tabValue === tabName ? '600' : '400',
+                                        fontSize: '16px',
+                                        fontFamily: 'Rubik',
+                                    }}
+                                    sx={{
+                                        borderBottom: tabValue === tabName ? `2px solid ${theme.palette.primary.main}` : '',
+                                    }}
+                                />
+                            ))}
+                        </TabList>
+                    </Grid>
+                    <Grid item>
+                        {Object.entries(tabsComponentsMapping).map(([tabName, tabComponent]) => {
+                            return (
+                                <TabPanel key={tabName} value={tabName}>
+                                    {tabsPermissionsMapping[tabName] ? tabComponent : <NoPermissions />}
+                                </TabPanel>
+                            );
+                        })}
+                    </Grid>
+                </Grid>
+            </TabContext>
+        </Box>
     );
 };
 

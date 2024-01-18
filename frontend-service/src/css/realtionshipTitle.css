@@ -1,5 +1,5 @@
 .arrow:before {
-    color: #225aa7;
+    color: #1E2775;
     border-right: 21px solid;
     border-top: 20px solid transparent;
     border-bottom: 20px solid transparent;
@@ -11,7 +11,7 @@
 }
 
 .arrow:after {
-    color: #225aa7;
+    color: #1E2775;
     border-right: 21px solid transparent;
     border-top: 20px solid;
     border-bottom: 20px solid;
@@ -23,7 +23,7 @@
 }
 
 .arrow {
-    background-color: #225aa7;
+    background-color: #1E2775;
     height: 40px;
     line-height: 40px;
     display: inline-block;

@@ -12,7 +12,6 @@ import {
     IconButton,
     Chip,
     Autocomplete,
-    Tooltip,
     Typography,
 } from '@mui/material';
 import {
@@ -29,6 +28,7 @@ import { dateNotificationTypes, validPropertyTypes } from './AddFields';
 
 import { CommonFormInputProperties } from './commonInterfaces';
 import { MinimizedColorPicker } from '../../inputs/MinimizedColorPicker';
+import { MeltaTooltip } from '../../MeltaTooltip';
 
 const UniqueCheckboxTooltipTitle = (
     <Box sx={{ whiteSpace: 'pre-wrap' }}>
@@ -397,7 +397,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                 />
                                             )}
                                             {value.type !== 'serialNumber' && value.unique !== undefined && setValues && (
-                                                <Tooltip title={UniqueCheckboxTooltipTitle}>
+                                                <MeltaTooltip title={UniqueCheckboxTooltipTitle}>
                                                     <FormControlLabel
                                                         control={
                                                             <Switch
@@ -416,7 +416,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                         }
                                                         label={i18next.t('validation.unique')}
                                                     />
-                                                </Tooltip>
+                                                </MeltaTooltip>
                                             )}
                                         </Box>
 

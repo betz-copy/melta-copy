@@ -1,8 +1,8 @@
 import React, { memo } from 'react';
-import { Delete as DeleteIcon, ReadMore as ReadMoreIcon, Edit as EditIcon } from '@mui/icons-material';
 import { ColDef, ValueGetterFunc } from '@ag-grid-community/core';
 import i18next from 'i18next';
 import { NavLink } from 'react-router-dom';
+import { Grid } from '@mui/material';
 import { IEntity } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import {
@@ -17,6 +17,7 @@ import {
 } from '../../utils/agGrid/commonColDefs';
 import IconButtonWithPopover from '../IconButtonWithPopover';
 import { IButtonProps } from '.';
+import { ImageWithDisable } from '../ImageWithDisable';
 
 export interface IGetColumnDefsOptions<Data extends any> {
     template: IMongoEntityTemplatePopulated;
@@ -133,20 +134,12 @@ export const getColumnDefs = <Data extends any = IEntity>({
     });
 
     if (onNavigateToRow || deleteRowButtonProps || editRowButtonProps) {
-        const numberOfButtons = Number(Boolean(onNavigateToRow)) + Number(Boolean(deleteRowButtonProps)) + Number(Boolean(editRowButtonProps));
-        const cellPadding = 46;
-        const iconButtonWidth = 42;
-        const widthToFitButtons = cellPadding + numberOfButtons * iconButtonWidth;
-        const headerNameWidth = 100;
-        const columnWidth = Math.max(headerNameWidth, widthToFitButtons);
-
         columnDefs.push({
             headerName: i18next.t('entitiesTableOfTemplate.actionsHeaderName'),
             pinned: 'left',
             menuTabs: [],
             sortable: false,
-            width: columnWidth,
-            minWidth: columnWidth,
+            width: 180,
             flex: 0,
             resizable: false,
             lockPosition: true,
@@ -155,7 +148,7 @@ export const getColumnDefs = <Data extends any = IEntity>({
             cellRenderer: memo<{ data: Data }>(({ data }) => {
                 const { disabled: disabledEntity } = getEntityPropertiesData(data);
                 return (
-                    <div>
+                    <Grid flexWrap="nowrap">
                         {onNavigateToRow && (
                             <NavLink
                                 to={`/entity/${getEntityPropertiesData(data)._id}`}
@@ -172,24 +165,9 @@ export const getColumnDefs = <Data extends any = IEntity>({
                                     }
                                     disabled={!hasPermissionToCategory}
                                 >
-                                    <ReadMoreIcon
-                                        style={{
-                                            transform: 'scaleX(-1)',
-                                        }}
-                                    />
+                                    <img src="/icons/read-more-icon.svg" />
                                 </IconButtonWithPopover>
                             </NavLink>
-                        )}
-                        {deleteRowButtonProps && (
-                            <IconButtonWithPopover
-                                popoverText={disabledEntity ? i18next.t('entityPage.disabledEntity') : deleteRowButtonProps.popoverText}
-                                iconButtonProps={{
-                                    onClick: () => deleteRowButtonProps.onClick(data),
-                                }}
-                                disabled={deleteRowButtonProps.disabledButton || disabledEntity}
-                            >
-                                <DeleteIcon />
-                            </IconButtonWithPopover>
                         )}
                         {editRowButtonProps && (
                             <IconButtonWithPopover
@@ -199,10 +177,29 @@ export const getColumnDefs = <Data extends any = IEntity>({
                                 }}
                                 disabled={editRowButtonProps.disabledButton || disabledEntity}
                             >
-                                <EditIcon />
+                                <ImageWithDisable srcPath="/icons/edit-icon.svg" disabled={editRowButtonProps.disabledButton || disabledEntity} />
                             </IconButtonWithPopover>
                         )}
-                    </div>
+
+                        {onNavigateToRow && (
+                            <NavLink
+                                to={`/entity/${getEntityPropertiesData(data)._id}/graph`}
+                                onClick={(e) => {
+                                    if (disabledEntity) e.preventDefault();
+                                }}
+                                data-tour="entity-page"
+                            >
+                                <IconButtonWithPopover
+                                    iconButtonProps={{
+                                        disabled: disabledEntity,
+                                    }}
+                                    popoverText={disabledEntity ? i18next.t('permissions.dontHavePermissionsToCategory') : i18next.t('actions.graph')}
+                                >
+                                    <img src="/icons/graph-icon.svg" />
+                                </IconButtonWithPopover>
+                            </NavLink>
+                        )}
+                    </Grid>
                 );
             }),
         });

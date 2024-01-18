@@ -1,4 +1,4 @@
-import { CircularProgress, Grid, Menu, MenuItem, ToggleButton, ToggleButtonGroup, Tooltip, Typography } from '@mui/material';
+import { CircularProgress, Grid, Menu, MenuItem, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
 import i18next from 'i18next';
 import React, { CSSProperties, useState } from 'react';
 import { toast } from 'react-toastify';
@@ -11,6 +11,7 @@ import { InfiniteScroll } from '../../InfiniteScroll';
 import PopperSidebar from '../../PopperSidebar';
 import { NotificationCard } from './NotificationCard';
 import { NotificationCount } from './NotificationCount';
+import { MeltaTooltip } from '../../MeltaTooltip';
 
 const { infiniteScrollPageCount, groups } = environment.notifications;
 
@@ -64,9 +65,9 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
             setOpen={setOpen}
             title={i18next.t('notifications.title')}
             topButtons={
-                <Tooltip title={i18next.t('notifications.infoRightClickTab')}>
+                <MeltaTooltip title={i18next.t('notifications.infoRightClickTab')}>
                     <InfoIcon sx={{ marginTop: '0.4rem' }} />
-                </Tooltip>
+                </MeltaTooltip>
             }
             side="right"
             sideMargin={sideBarWidth}

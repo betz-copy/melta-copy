@@ -39,7 +39,7 @@ const agGridLocaleText = {
     applyFilter: 'בצע',
     resetFilter: 'אפס',
     clearFilter: 'נקה',
-    cancelFilter: 'בטל',
+    cancelFilter: 'ביטול',
 
     // Other
     loadingOoo: 'טוען...',

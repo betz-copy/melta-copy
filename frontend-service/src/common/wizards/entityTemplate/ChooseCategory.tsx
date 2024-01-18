@@ -7,13 +7,13 @@ import { EntityTemplateWizardValues } from './index';
 import { StepComponentProps } from '../index';
 import { ICategoryMap } from '../../../interfaces/categories';
 
-const chooseCategorySchema = {
+const chooseCategorySchema = Yup.object({
     category: Yup.object({
         _id: Yup.string().required(i18next.t('validation.required')),
         name: Yup.string().required(i18next.t('validation.required')),
         displayName: Yup.string().required(i18next.t('validation.required')),
     }).required(i18next.t('validation.required')),
-};
+});
 
 const ChooseCategory: React.FC<StepComponentProps<EntityTemplateWizardValues>> = ({ values, touched, errors, setFieldValue }) => {
     const queryClient = useQueryClient();

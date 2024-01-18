@@ -1,8 +1,9 @@
-import { Grid, IconButton, Tooltip, tooltipClasses, Typography } from '@mui/material';
+import { Grid, IconButton } from '@mui/material';
 import React from 'react';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import { NotificationCount } from './NotificationCount';
 import { INotificationGroupCountDetails } from '../../../interfaces/notifications';
+import { MeltaTooltip } from '../../MeltaTooltip';
 
 interface NotificationsButtonProps {
     notificationCountDetails: INotificationGroupCountDetails;
@@ -13,19 +14,15 @@ interface NotificationsButtonProps {
 
 export const NotificationsButton: React.FC<NotificationsButtonProps> = ({ notificationCountDetails, text, isDrawerOpen, onClick }) => (
     <Grid container direction="column" alignItems="center">
-        <Tooltip
+        <MeltaTooltip
             title={text}
-            arrow
             placement="left"
-            disableHoverListener={isDrawerOpen}
-            PopperProps={{
-                sx: { [`& .${tooltipClasses.tooltip}`]: { fontSize: '1rem' } },
-            }}
+            disableHoverListener={isDrawerOpen} // when drawer is opened text is already shown, so no need for tooltip
         >
             <IconButton onClick={onClick} sx={{ borderRadius: 10, margin: '0.2rem', paddingBottom: '0', paddingX: '0.5rem' }}>
                 <Grid container alignItems="center" justifyContent="space-between" spacing={1}>
                     <Grid item position="relative">
-                        <NotificationsIcon sx={{ color: 'white', fontSize: 38 }} />
+                        <NotificationsIcon sx={{ color: 'white', fontSize: 30, width: '30px', height: '30px' }} />
                         <NotificationCount
                             notificationCount={notificationCountDetails.total}
                             style={{
@@ -34,16 +31,12 @@ export const NotificationsButton: React.FC<NotificationsButtonProps> = ({ notifi
                                 left: '30%',
                                 transform: 'translate(-50%, -50%)',
                                 userSelect: 'none',
+                                backgroundColor: '#FF006B',
                             }}
                         />
                     </Grid>
-                    {isDrawerOpen && (
-                        <Grid item>
-                            <Typography color="white">{text}</Typography>
-                        </Grid>
-                    )}
                 </Grid>
             </IconButton>
-        </Tooltip>
+        </MeltaTooltip>
     </Grid>
 );

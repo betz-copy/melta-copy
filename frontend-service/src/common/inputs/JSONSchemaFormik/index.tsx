@@ -13,6 +13,7 @@ import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplat
 import { RjfsDateWidget, RjfsDateTimeWidget } from './RjfsDatesWidgets';
 import RjfsSelectWidget from './RjfsSelectWidget';
 import RjsfTextWidget from './RjsfStringWidget';
+import './form.css';
 
 const ajvErrorsToFormikErrors = (schema: IMongoEntityTemplatePopulated['properties'], ajvErrors: ErrorObject[]): FormikErrors<any> => {
     const formikErrorsEntries = ajvErrors.map((ajvError) => {
@@ -86,6 +87,7 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
     const ajvExtraErrorsOnlyTouched: ErrorSchema<{}> = pickBy(rjsfExtraErrors, (_value, key) => touched[key]);
     return (
         <JSONSchemaForm
+            id="json-schema"
             schema={schema}
             uiSchema={mapValues(schema.properties, (propertySchema): UiSchema => {
                 if (propertySchema.serialCurrent !== undefined) {
@@ -126,6 +128,7 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
                 DateWidget: RjfsDateWidget,
                 DateTimeWidget: RjfsDateTimeWidget,
                 TextWidget: RjsfTextWidget,
+                EmailWidget: RjsfTextWidget,
             }}
         >
             <div /> {/* remove the built in submit button */}

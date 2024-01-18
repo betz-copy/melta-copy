@@ -1,14 +1,12 @@
 import React, { useState } from 'react';
-import { Grid, Card, CardContent, IconButton, Menu, Box } from '@mui/material';
+import { Grid, Card, CardContent, IconButton, Menu } from '@mui/material';
 import {
     Delete as DeleteIcon,
-    Edit as EditIcon,
     ContentCopy as DuplicateIcon,
-    AccountTreeOutlined as GraphIcon,
     MoreVertOutlined,
     DoDisturbAlt,
-    VisibilityOff,
-    Visibility,
+    Edit as EditIcon,
+    AccountTreeOutlined as GraphIcon,
 } from '@mui/icons-material';
 import { useMutation, useQueryClient } from 'react-query';
 import i18next from 'i18next';
@@ -32,6 +30,8 @@ import { IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreac
 import UpdateStatusWithRuleBreachDialog from './UpdateStatusWithRuleBreachDialog';
 import { canUserWriteInstanceOfCategory } from '../../../utils/permissions/instancePermissions';
 import TooltipMenuButton from './TooltipMenuButton';
+import { ImageWithDisable } from '../../../common/ImageWithDisable';
+import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
 
 const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; expandedEntity: IEntityExpanded }> = ({
     entityTemplate,
@@ -43,7 +43,6 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
     const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
     const queryClient = useQueryClient();
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-    const [hideField, setHideField] = React.useState(true);
 
     const darkMode = useSelector((state: RootState) => state.darkMode);
 
@@ -140,21 +139,78 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
 
     return (
         <>
-            <Card style={{ background: darkMode ? '#171717' : 'white', opacity: isEntityDisabled ? '0.666' : '1' }}>
+            <Card
+                style={{
+                    background: darkMode ? '#171717' : 'white',
+                    opacity: isEntityDisabled ? '0.666' : '1',
+                    borderRadius: '10px',
+                    boxShadow: '-2px 2px 6px 0px #1e27754d',
+                }}
+            >
                 <CardContent sx={{ '&:last-child': { padding: 0 } }}>
-                    <Grid item container justifyContent="space-between" alignItems="stretch" padding="1rem">
-                        <Grid item xs={11}>
-                            <Box padding="0.2rem">
-                                <EntityPropertiesInternal entityTemplate={entityTemplate} properties={entity.properties} darkMode={darkMode} />
-                            </Box>
+                    <Grid item container flexDirection="row" flexWrap="nowrap" padding="20px">
+                        <Grid item container justifyContent="space-between" alignItems="stretch" padding="1rem" flexDirection="column">
+                            <Grid item width="100%">
+                                <EntityPropertiesInternal
+                                    entityTemplate={entityTemplate}
+                                    properties={entity.properties}
+                                    darkMode={darkMode}
+                                    style={{
+                                        display: 'flex',
+                                        flexDirection: 'row',
+                                        flexWrap: 'wrap',
+                                        rowGap: '20px',
+                                        columnGap: '20px',
+                                        alignItems: 'center',
+                                        width: '100%',
+                                    }}
+                                    innerStyle={{ width: '30%' }}
+                                    textWrap
+                                />
+                            </Grid>
+                            <Grid container marginTop="20px">
+                                <EntityDisableCheckbox isEntityDisabled={isEntityDisabled}> </EntityDisableCheckbox>
+                            </Grid>
+                            <Grid marginTop="20px" container item justifyContent="space-between">
+                                <EntityDates
+                                    createdAt={expandedEntity.entity.properties.createdAt}
+                                    updatedAt={expandedEntity.entity.properties.updatedAt}
+                                />
+                            </Grid>
                         </Grid>
+
                         <Grid item>
-                            <Grid container>
-                                {entityTemplate.properties.hide.length > 0 && (
-                                    <IconButton onClick={() => setHideField((cur) => !cur)}>
-                                        {hideField ? <VisibilityOff /> : <Visibility />}
-                                    </IconButton>
-                                )}
+                            <Grid container flexDirection="row" flexWrap="nowrap">
+                                <Grid
+                                    onClick={() => {
+                                        if (canWriteInstance && !isEntityDisabled) setIsEditMode(true);
+                                    }}
+                                >
+                                    <IconButtonWithPopover
+                                        popoverText={
+                                            // eslint-disable-next-line no-nested-ternary
+                                            !canWriteInstance
+                                                ? i18next.t('permissions.dontHaveWritePermissionsToCategory')
+                                                : isEntityDisabled
+                                                ? i18next.t('entityPage.disabledEntity')
+                                                : i18next.t('actions.edit')
+                                        }
+                                        style={{
+                                            cursor: !canWriteInstance || isEntityDisabled ? 'default' : 'pointer',
+                                        }}
+                                    >
+                                        <ImageWithDisable srcPath="/icons/edit-icon.svg" disabled={!canWriteInstance || isEntityDisabled} />
+                                    </IconButtonWithPopover>
+                                </Grid>
+                                <Grid
+                                    onClick={() => {
+                                        navigate(`/entity/${entity.properties._id}/graph`);
+                                    }}
+                                >
+                                    <IconButtonWithPopover popoverText={i18next.t('actions.graph')}>
+                                        <img src="/icons/graph-icon.svg" />
+                                    </IconButtonWithPopover>
+                                </Grid>
                                 <IconButton onClick={handleClick}>
                                     <MoreVertOutlined />
                                 </IconButton>
@@ -230,11 +286,6 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                                 </Menu>
                             </Grid>
                         </Grid>
-
-                        <Grid container>
-                            <EntityDisableCheckbox isEntityDisabled={isEntityDisabled}> </EntityDisableCheckbox>
-                        </Grid>
-                        <EntityDates createdAt={expandedEntity.entity.properties.createdAt} updatedAt={expandedEntity.entity.properties.updatedAt} />
                     </Grid>
                 </CardContent>
 

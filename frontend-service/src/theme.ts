@@ -3,22 +3,65 @@ import { createTheme, ThemeOptions } from '@mui/material';
 const basicTheme: ThemeOptions = {
     direction: 'rtl',
     typography: {
-        fontFamily: 'OpenSans',
+        fontFamily: 'Rubik',
     },
 };
+
+// // TODO - move to globals file
+// export const mainFontSizes = {
+//     headlineTitleFontSize: '24px',
+//     headlineSubTitleFontSize: '14px',
+// };
+
+// export const iconSize = {
+//     width: '24px',
+//     height: '24px',
+// };
 
 export const lightTheme = createTheme({
     ...basicTheme,
     palette: {
         mode: 'light',
-        primary: { main: '#225AA7' },
+        primary: { main: '#1E2775' },
     },
     components: {
         MuiCssBaseline: {
             styleOverrides: {
+                fontFamily: 'Rubik',
                 '::-webkit-scrollbar': { background: 'transparent', width: 6, height: 6 },
                 '::-webkit-scrollbar-thumb': { background: 'gray', borderRadius: 20 },
                 '::-webkit-scrollbar-track': { background: 'lightgray', borderRadius: 20 },
+
+                '.ag-theme-material': {
+                    '--ag-background-color': '#FFF !important',
+                    '--ag-row-hover-color': '#EBEFFA !important',
+                    '--ag-foreground-color': '#53566E !important',
+                    '--ag-row-border-style': 'none',
+                    '--ag-border-style': 'none',
+
+                    '--ag-header-foreground-color': '#101440 !important',
+                    '--ag-header-cell-hover-background-color': '#EBEFFA !important',
+                    '--ag-header-cell-moving-background-color': '#EBEFFA !important',
+                },
+            },
+        },
+        MuiTextField: {
+            defaultProps: {
+                size: 'small',
+            },
+            styleOverrides: {
+                root: {
+                    '& .MuiInputBase-root': {
+                        borderRadius: '10px',
+                    },
+                    '& fieldset': {
+                        borderColor: '#CCCFE5',
+                        color: '#CCCFE5',
+                    },
+                    '& label': {
+                        color: '#9398C2',
+                    },
+                },
             },
         },
     },
@@ -28,7 +71,7 @@ export const darkTheme = createTheme({
     ...basicTheme,
     palette: {
         mode: 'dark',
-        primary: { main: '#225AA7' },
+        primary: { main: '#1E2775' },
     },
     components: {
         MuiCssBaseline: {

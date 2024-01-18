@@ -4,13 +4,14 @@ import { LocalStorage } from '../../utils/localStorage';
 export const darkModeSlice = createSlice({
     name: 'darkMode',
     initialState: () => {
-        const isDarkMode = LocalStorage.get<boolean>('isDarkMode');
-        return isDarkMode || false;
+        // const isDarkMode = LocalStorage.get<boolean>('isDarkMode');
+        // TODO - implement when dark mode will be supported
+        return false;
     },
     reducers: {
         toggleDarkMode: (state) => {
             LocalStorage.set('isDarkMode', !state);
-            return !state;
+            return false;
         },
     },
 });

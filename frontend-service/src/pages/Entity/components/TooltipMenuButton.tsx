@@ -1,6 +1,7 @@
 import React from 'react';
-import { Tooltip, MenuItem, ListItemIcon, ListItemText } from '@mui/material';
+import { MenuItem, ListItemIcon, ListItemText } from '@mui/material';
 import { SvgIconComponent } from '@mui/icons-material';
+import { MeltaTooltip } from '../../../common/MeltaTooltip';
 
 interface TooltipMenuButtonProps {
     tooltipTitle: string;
@@ -12,7 +13,7 @@ interface TooltipMenuButtonProps {
 
 const TooltipMenuButton: React.FC<TooltipMenuButtonProps> = ({ tooltipTitle, onClick, disabled, icon: Icon, text }) => {
     return (
-        <Tooltip arrow title={tooltipTitle} disableHoverListener={!disabled} placement="right">
+        <MeltaTooltip title={tooltipTitle} disableHoverListener={!disabled} placement="right">
             <span>
                 <MenuItem onClick={onClick} disabled={disabled}>
                     <ListItemIcon>
@@ -21,7 +22,7 @@ const TooltipMenuButton: React.FC<TooltipMenuButtonProps> = ({ tooltipTitle, onC
                     <ListItemText primary={text} />
                 </MenuItem>
             </span>
-        </Tooltip>
+        </MeltaTooltip>
     );
 };
 

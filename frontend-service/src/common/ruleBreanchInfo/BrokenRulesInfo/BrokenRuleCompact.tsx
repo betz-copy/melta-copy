@@ -1,8 +1,9 @@
 import React from 'react';
-import { Box, ListItem, ListItemIcon, ListItemText, Tooltip } from '@mui/material';
+import { Box, ListItem, ListItemIcon, ListItemText } from '@mui/material';
 import { IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
 import { IMongoRule } from '../../../interfaces/rules';
 import { RuleIcon } from './RuleIcon';
+import { MeltaTooltip } from '../../MeltaTooltip';
 
 export const BrokenRuleCompact: React.FC<{ brokenRule: IRuleBreachPopulated['brokenRules'][number]; ruleTemplate: IMongoRule }> = ({
     brokenRule,
@@ -14,16 +15,11 @@ export const BrokenRuleCompact: React.FC<{ brokenRule: IRuleBreachPopulated['bro
                 <RuleIcon ruleType={ruleTemplate.actionOnFail} />
             </ListItemIcon>
             <ListItemText>
-                <Tooltip
-                    title={ruleTemplate.description}
-                    PopperProps={{
-                        sx: { '& .MuiTooltip-tooltip': { fontSize: '0.8rem' } },
-                    }}
-                >
+                <MeltaTooltip title={ruleTemplate.description}>
                     <Box component="span" sx={{ fontWeight: 'bold' }}>
                         {ruleTemplate.name}
                     </Box>
-                </Tooltip>
+                </MeltaTooltip>
             </ListItemText>
         </ListItem>
     );

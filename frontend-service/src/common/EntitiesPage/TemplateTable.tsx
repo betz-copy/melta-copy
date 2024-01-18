@@ -1,6 +1,5 @@
 import React, { forwardRef, useImperativeHandle, useRef, useState } from 'react';
-import { Grid, Box, CircularProgress, Dialog } from '@mui/material';
-import { ExpandLess, ExpandMore, AddCircle, VerticalAlignBottomOutlined as DownloadIcon } from '@mui/icons-material';
+import { Grid, Box, CircularProgress, Dialog, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
@@ -14,12 +13,15 @@ import { ResetFilterButton } from './ResetFilterButton';
 import IconButtonWithPopover from '../IconButtonWithPopover';
 import { CustomIcon } from '../CustomIcon';
 import { exportEntitiesRequest } from '../../services/entitiesService';
-import { EditEntityDetails } from '../../pages/Entity/components/EditEntityDetails';
 import { IEntity } from '../../interfaces/entities';
 import { environment } from '../../globals';
 import { filterModelToFilterOfTemplate, sortModelToSortOfSearchRequest } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
+import { getEntityTemplateColor } from '../../utils/colors';
 import { IPermissionsOfUser } from '../../services/permissionsService';
 import { canUserWriteInstanceOfCategory } from '../../utils/permissions/instancePermissions';
+import { EntityTemplateColor } from '../EntityTemplateColor';
+import { ImageWithDisable } from '../ImageWithDisable';
+import { CreateOrEditEntityDetails } from '../dialogs/entity/CreateOrEditEntityDialog';
 
 const { expandedRowCount } = environment.agGrid;
 
@@ -36,6 +38,8 @@ const TemplateTable = forwardRef<
         page: string;
     }
 >(({ template, quickFilterText, page }, ref) => {
+    const theme = useTheme();
+
     const entitiesTableRef = useRef<EntitiesTableOfTemplateRef<IEntity>>(null);
 
     useImperativeHandle(ref, () => ({
@@ -76,60 +80,75 @@ const TemplateTable = forwardRef<
         isOpen: false,
     });
     const [isExpand, setIsExpand] = useState(false);
+
+    const entityTemplateColor = getEntityTemplateColor(template);
+
     const queryClient = useQueryClient();
     const { instancesPermissions } = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
     const userHasWritePermissions = canUserWriteInstanceOfCategory(instancesPermissions, template.category);
     return (
-        <Grid container>
-            <Grid container paddingLeft={3} justifyContent="space-between" width="100%">
-                <Grid item container xs={5}>
-                    <Grid item>{template.iconFileId && <CustomIcon iconUrl={template.iconFileId} height="30px" width="30px" color="#225AA7" />}</Grid>
-                    <Grid item paddingLeft="10px">
-                        <BlueTitle title={template.displayName} component="h5" variant="h5" />
+        <Grid container minWidth="fit-content">
+            <Grid container justifyContent="space-between" width="fit-content" minWidth="fit-content">
+                <Grid item container xs={5} alignItems="center" minWidth="fit-content">
+                    <Grid item minWidth="fit-content">
+                        <EntityTemplateColor entityTemplateColor={entityTemplateColor} />
                     </Grid>
-                </Grid>
-                <Grid>
-                    <Grid item>
-                        <IconButtonWithPopover
-                            popoverText={isExpand ? i18next.t('entitiesTableOfTemplate.expandLess') : i18next.t('entitiesTableOfTemplate.expandMore')}
-                            iconButtonProps={{
-                                onClick: () => {
-                                    setIsExpand(!isExpand);
-                                },
-                                size: 'medium',
-                            }}
-                        >
-                            {isExpand ? <ExpandLess color="primary" fontSize="large" /> : <ExpandMore color="primary" fontSize="large" />}
-                        </IconButtonWithPopover>
-                        <ResetFilterButton entitiesTableRef={entitiesTableRef} disableButton={!isFiltered} />
-                        <IconButtonWithPopover
-                            popoverText={i18next.t('entitiesTableOfTemplate.downloadOneTable')}
-                            iconButtonProps={{ onClick: () => exportTemplateToExcel(), size: 'medium' }}
-                        >
-                            {isExportingTableToExcelFile ? <CircularProgress size="24px" /> : <DownloadIcon color="primary" fontSize="medium" />}
-                        </IconButtonWithPopover>
-                        <AddEntityButton
-                            initialStep={1}
-                            disabled={template.disabled || !userHasWritePermissions}
-                            initialValues={{ template, properties: { disabled: false }, attachmentsProperties: {} }}
-                            popoverText={
-                                // eslint-disable-next-line no-nested-ternary
-                                template.disabled
-                                    ? i18next.t('categoryPage.disabledTemplate')
-                                    : !userHasWritePermissions
-                                    ? i18next.t('permissions.dontHaveWritePermissions')
-                                    : i18next.t('entitiesTableOfTemplate.addEntity')
-                            }
-                        >
-                            <AddCircle
-                                color={template.disabled || !userHasWritePermissions ? 'disabled' : 'primary'}
-                                fontSize="large"
-                                data-tour="create-entity"
-                            />
-                        </AddEntityButton>
+                    <Grid item minWidth="fit-content">
+                        {template.iconFileId && (
+                            <CustomIcon iconUrl={template.iconFileId} height="30px" width="30px" color={theme.palette.primary.main} />
+                        )}
+                    </Grid>
+                    <Grid item paddingLeft="10px" minWidth="fit-content" style={{ whiteSpace: 'nowrap', overflow: 'hidden' }}>
+                        <BlueTitle
+                            style={{ minWidth: 'fit-content', whiteSpace: 'nowrap', overflow: 'hidden', fontWeight: '500', fontSize: '20px' }}
+                            title={template.displayName}
+                            component="h5"
+                            variant="h5"
+                        />
                     </Grid>
                 </Grid>
             </Grid>
+
+            <Grid container flexDirection="row" alignItems="center">
+                <Grid container item flexGrow={1} width={0} justifyContent="flex-start" alignItems="center">
+                    <IconButtonWithPopover
+                        popoverText={isExpand ? i18next.t('entitiesTableOfTemplate.expandLess') : i18next.t('entitiesTableOfTemplate.expandMore')}
+                        iconButtonProps={{
+                            onClick: () => {
+                                setIsExpand(!isExpand);
+                            },
+                            size: 'small',
+                        }}
+                        style={{ borderRadius: '5px' }}
+                    >
+                        {isExpand ? <img src="/icons/reduce-table.svg" /> : <img src="/icons/expans-table.svg" />}
+                    </IconButtonWithPopover>
+                    <ResetFilterButton entitiesTableRef={entitiesTableRef} disableButton={!isFiltered} />
+                    <IconButtonWithPopover
+                        popoverText={i18next.t('entitiesTableOfTemplate.downloadOneTable')}
+                        iconButtonProps={{ onClick: () => exportTemplateToExcel(), size: 'medium' }}
+                        style={{ borderRadius: '5px' }}
+                    >
+                        {isExportingTableToExcelFile ? <CircularProgress size="24px" /> : <img src="/icons/download.svg" />}
+                    </IconButtonWithPopover>
+                </Grid>
+
+                <Grid container item flexGrow={1} width={0} justifyContent="flex-end" alignItems="center">
+                    <IconButtonWithPopover popoverText={i18next.t('soon')} style={{ borderRadius: '5px', cursor: 'default' }}>
+                        <ImageWithDisable srcPath="/icons/load-file.svg" disabled />
+                    </IconButtonWithPopover>
+
+                    <AddEntityButton
+                        initialStep={1}
+                        disabled={!userHasWritePermissions}
+                        initialValues={{ template, properties: { disabled: false }, attachmentsProperties: {} }}
+                        style={{ borderRadius: '5px' }}
+                    >
+                        <ImageWithDisable srcPath="/icons/add-entity.svg" disabled={!userHasWritePermissions} />
+                    </AddEntityButton>
+                </Grid>
+            </Grid>
+
             <Box sx={{ marginBottom: '30px', width: '100%' }}>
                 <EntitiesTableOfTemplate
                     ref={entitiesTableRef}
@@ -168,8 +187,9 @@ const TemplateTable = forwardRef<
                     }}
                 />
             </Box>
-            <Dialog open={editDialog.isOpen}>
-                <EditEntityDetails
+            <Dialog open={editDialog.isOpen} maxWidth="md">
+                <CreateOrEditEntityDetails
+                    isEditMode
                     entityTemplate={template}
                     entity={editDialog.entity!}
                     onSuccessUpdate={(entity) => {

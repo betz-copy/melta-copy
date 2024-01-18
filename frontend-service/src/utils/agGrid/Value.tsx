@@ -14,11 +14,11 @@ const Value: React.FC<{ hideValue: boolean; value: string; color?: string; isNum
         setHideField((curr) => !curr);
     };
 
-    let innerContent = <></>;
+    let innerContent = <div />;
 
     if (hideValue && hideField) innerContent = <>••••••••</>;
     else if (color || color === 'default') innerContent = <ColoredEnumChip label={value} color={color} />;
-    else innerContent = <>{value}</>;
+    else innerContent = <div>{value}</div>;
 
     return (
         <Grid container justifyContent="space-between" alignItems="center">

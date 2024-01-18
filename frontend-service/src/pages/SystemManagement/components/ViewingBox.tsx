@@ -23,8 +23,8 @@ export const ViewingBox: React.FC<ViewingBoxProps> = ({ children, minHeight = 'a
                 maxHeight,
                 borderRadius: 5,
                 padding: '1.6rem',
-                bgcolor: darkMode ? '#252525' : '#f7f7f7',
-                boxShadow: `inset 0 0 7px 0 rgba(0, 0, 0, ${darkMode ? 0.3 : 0.2})`,
+                bgcolor: darkMode ? '#252525' : '#E0E1ED',
+                boxShadow: '0px 2px 6px 0px rgba(30, 39, 117, 0.30);',
                 overflowY: 'overlay',
                 '::-webkit-scrollbar-track': { marginY: '1rem', bgcolor: 'transparent' },
             }}

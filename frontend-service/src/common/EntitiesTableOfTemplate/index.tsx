@@ -322,7 +322,13 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
         };
 
         return (
-            <Box sx={getStyles()}>
+            <Box
+                sx={getStyles()}
+                style={{
+                    borderRadius: '10px',
+                    boxShadow: '-2px 2px 6px 0px rgba(30, 39, 117, 0.30)',
+                }}
+            >
                 <AgGridReact<Data>
                     ref={gridRef}
                     getRowStyle={(params) => {

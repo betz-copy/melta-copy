@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Typography } from '@mui/material';
+import { Box, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import { useQueryClient } from 'react-query';
 import { BlueTitle } from '../../../../common/BlueTitle';
@@ -21,6 +21,8 @@ const ComponentToPrint = React.forwardRef<
         };
     }
 >(({ entityTemplate, expandedEntity, relationshipTemplatesToPrint, options }, ref) => {
+    const theme = useTheme();
+
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
 
@@ -28,7 +30,7 @@ const ComponentToPrint = React.forwardRef<
         <Box ref={ref} margin="20px" style={{ direction: 'rtl' }}>
             <Box paddingBottom="0.4rem" display="flex" justifyContent="space-between" alignItems="center">
                 <Box display="flex" alignItems="center">
-                    <Typography component="h4" variant="h4" color="#225AA7" fontWeight="800">
+                    <Typography component="h4" variant="h4" color={theme.palette.primary.main} fontWeight="800">
                         {entityTemplate.category.displayName}
                     </Typography>
 
@@ -36,7 +38,7 @@ const ComponentToPrint = React.forwardRef<
                         /
                     </Typography>
 
-                    <Typography paddingBottom="2px" variant="h4" fontSize="28px" color="#225AA7">
+                    <Typography paddingBottom="2px" variant="h4" fontSize="28px" color={theme.palette.primary.main}>
                         {entityTemplate.displayName}
                     </Typography>
                 </Box>
@@ -64,7 +66,14 @@ const ComponentToPrint = React.forwardRef<
                                             {sourceEntity.displayName}
                                         </Typography>
 
-                                        <Typography paddingRight="7px" paddingLeft="7px" fontWeight="800" color="#225AA7" component="h5" variant="h5">
+                                        <Typography
+                                            paddingRight="7px"
+                                            paddingLeft="7px"
+                                            fontWeight="800"
+                                            color={theme.palette.primary.main}
+                                            component="h5"
+                                            variant="h5"
+                                        >
                                             {displayName}
                                         </Typography>
 
