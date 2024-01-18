@@ -5,6 +5,8 @@ import { useSelector } from 'react-redux';
 import { Document, Page, pdfjs } from 'react-pdf';
 import ReactPlayer from 'react-player';
 import i18next from 'i18next';
+import ZoomInIcon from '@mui/icons-material/ZoomIn';
+import ZoomOutIcon from '@mui/icons-material/ZoomOut';
 import { RootState } from '../store';
 import FlexBox from './FlexBox';
 import { getFileExtension, getPreviewContentType } from '../utils/getFileType';
@@ -34,6 +36,7 @@ const Preview: React.FC<PreviewProps> = ({ open, fileId, data, setOpen, loading,
     const [numOfPages, setNumOfPages] = useState(1);
     const [currentPage, setCurrentPage] = useState(1);
     const [jumpToPage, setJumpToPage] = useState('1');
+    const [zoomLevel, setZoomLevel] = useState(1);
     const containerRef = useRef<HTMLDivElement>(null);
     const currentPageRef = useRef(currentPage);
     const contentType = getPreviewContentType(fileName);
@@ -42,7 +45,13 @@ const Preview: React.FC<PreviewProps> = ({ open, fileId, data, setOpen, loading,
         setNumOfPages(numPages);
     };
 
-    if (!fileId) return null;
+    const handleZoomIn = () => {
+        setZoomLevel((prevZoom) => Math.min(prevZoom + 0.1, 3));
+    };
+
+    const handleZoomOut = () => {
+        setZoomLevel((prevZoom) => Math.max(prevZoom - 0.1, 0.5));
+    };
 
     useEffect(() => {
         const handleScroll = async () => {
@@ -72,6 +81,8 @@ const Preview: React.FC<PreviewProps> = ({ open, fileId, data, setOpen, loading,
         currentPageRef.current = currentPage;
     }, [currentPage]);
 
+    if (!fileId) return null;
+
     const handleJumpToPage = async () => {
         const pageNumber = parseInt(jumpToPage, 10);
         if (pageNumber >= 1 && pageNumber <= numOfPages) {
@@ -93,7 +104,17 @@ const Preview: React.FC<PreviewProps> = ({ open, fileId, data, setOpen, loading,
 
     let previewContent;
     if (isImage(contentType)) {
-        previewContent = <img src={data} style={{ maxHeight: '50%', marginTop: '65px' }} />;
+        previewContent = (
+            <img
+                src={data}
+                style={{
+                    maxHeight: '100%',
+                    maxWidth: '100%',
+                    transform: `scale(${zoomLevel})`,
+                    transformOrigin: 'center center',
+                }}
+            />
+        );
     } else if (isVideoOrAudio(contentType)) {
         previewContent = <ReactPlayer style={{ marginTop: '65px' }} url={data} controls playing />;
     } else if (isUnsupported(contentType) || error) {
@@ -120,16 +141,11 @@ const Preview: React.FC<PreviewProps> = ({ open, fileId, data, setOpen, loading,
         previewContent = <CircularProgress />;
     } else {
         previewContent = (
-            <Document
-                loading={<CircularProgress style={{ position: 'absolute', left: '50%', transform: 'translate(-50%, -50%)' }} />}
-                file={data}
-                onLoadSuccess={onLoadSuccess}
-                onLoadError={() => null}
-            >
+            <Document file={data} onLoadSuccess={onLoadSuccess} onLoadError={() => null}>
                 <FlexBox direction="column" gap={5}>
                     {Array.from({ length: numOfPages }, (_, i) => (
                         <div key={`page-${i + 1}`} style={{ marginBottom: '20px', background: 'white', position: 'relative' }}>
-                            <Page width={950} pageNumber={i + 1} renderTextLayer={false} />
+                            <Page width={950 * zoomLevel} pageNumber={i + 1} renderTextLayer={false} />
                         </div>
                     ))}
                 </FlexBox>
@@ -148,19 +164,40 @@ const Preview: React.FC<PreviewProps> = ({ open, fileId, data, setOpen, loading,
             <DialogContent sx={{ height: '100vh', position: 'relative', overflow: 'hidden' }}>
                 <FlexBox
                     direction="row"
-                    style={{ paddingBottom: '10px', justifyContent: 'space-between', position: 'sticky', top: 5, left: 10, zIndex: 1, gap: '10px' }}
+                    style={{
+                        paddingBottom: '10px',
+                        justifyContent: 'space-between',
+                        position: 'sticky',
+                        top: 5,
+                        left: 10,
+                        zIndex: 1,
+                        gap: '10px',
+                    }}
                 >
-                    <FlexBox direction="row">
+                    <FlexBox
+                        direction="row"
+                        sx={{
+                            '& .MuiIconButton-root': {
+                                color: 'white',
+                                margin: '0 10px',
+                            },
+                        }}
+                    >
                         <IconButton
-                            aria-label="close"
                             onClick={() => {
                                 setOpen(false);
                             }}
-                            sx={{ color: 'white' }}
                         >
                             <CloseIcon />
                         </IconButton>
+
                         <DownloadButton fileId={fileId} />
+                        <IconButton onClick={handleZoomIn}>
+                            <ZoomInIcon />
+                        </IconButton>
+                        <IconButton onClick={handleZoomOut}>
+                            <ZoomOutIcon />
+                        </IconButton>
                     </FlexBox>
                     {isSpecial(contentType) && extension !== 'pptx' && (
                         <FlexBox direction="row" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>

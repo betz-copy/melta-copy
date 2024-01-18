@@ -1,0 +1,67 @@
+import React, { useState } from 'react';
+import { Grid, Card, CardContent, Collapse } from '@mui/material';
+import { useSelector } from 'react-redux';
+import { RootState } from '../../../store';
+
+export const ViewingCard: React.FC<{
+    title: React.ReactNode;
+    expendedCard?: React.ReactNode;
+    onHover?: (boolean) => void;
+    width?: number;
+}> = ({ title, expendedCard, onHover, width }) => {
+    const darkMode = useSelector((state: RootState) => state.darkMode);
+    const [open, setOpen] = useState<boolean>(false);
+
+    return (
+        <Grid item>
+            <Card
+                onMouseEnter={() => (onHover ? onHover(true) : '')}
+                onMouseLeave={() => (onHover ? onHover(false) : '')}
+                sx={{
+                    bgcolor: darkMode ? '#171717' : '#fff',
+                    ':hover': { transform: 'scale(1.01)' },
+                    borderRadius: '10px',
+                    boxShadow: '-2px 2px 6px 0px rgba(30, 39, 117, 0.30)',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    cursor: 'pointer',
+                    height: 'fit-content',
+                    width: width ? `${width}px` : '100%',
+                }}
+            >
+                <CardContent
+                    style={{ padding: '10px' }}
+                    onClick={(event) => {
+                        event.preventDefault();
+
+                        event.stopPropagation();
+                        setOpen(!!expendedCard);
+                    }}
+                >
+                    {!open && (
+                        <Grid container>
+                            <Grid item>{title}</Grid>
+                        </Grid>
+                    )}
+                </CardContent>
+
+                <Collapse in={open} style={{ transformOrigin: '0 0 0' }} {...{ timeout: 500 }} mountOnEnter unmountOnExit>
+                    <CardContent
+                        style={{ padding: '10px' }}
+                        onClick={(event) => {
+                            event.stopPropagation();
+                            setOpen(false);
+                        }}
+                    >
+                        {open && (
+                            <Grid item container direction="column">
+                                <Grid item>{title}</Grid>
+                                {expendedCard && <Grid item>{expendedCard}</Grid>}
+                            </Grid>
+                        )}
+                    </CardContent>
+                </Collapse>
+            </Card>
+        </Grid>
+    );
+};

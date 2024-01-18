@@ -9,7 +9,7 @@ import {
     wrapKartoffelRequestForUiSearch,
     isDomainUser,
     isIdentifier,
-} from '../../externalServices/kartoffel';
+} from '../../externalServices/kartoffelApi';
 import { IUser } from './interface';
 
 export class UsersManager {

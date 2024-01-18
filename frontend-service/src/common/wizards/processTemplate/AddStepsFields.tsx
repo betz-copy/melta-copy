@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AccordionDetails, AccordionSummary, Grid, IconButton, Tooltip, Typography } from '@mui/material';
+import { AccordionDetails, AccordionSummary, Grid, IconButton, Typography, useTheme } from '@mui/material';
 import * as Yup from 'yup';
 import i18next from 'i18next';
 import { ExpandMore as ExpandMoreIcon, Delete as DeleteIcon } from '@mui/icons-material';
@@ -15,6 +15,7 @@ import { StepsNameBlock } from './StepsNameBlock';
 import FieldBlock, { FieldBlockAccordion } from '../entityTemplate/FieldBlock';
 import { attachmentPropertiesBaseSchema, propertiesBaseSchema } from '../entityTemplate/AddFields';
 import { initialFieldCardDataOnAdd, useAreThereProcessInstancesByTemplateId } from './AddDetailsFields';
+import { MeltaTooltip } from '../../MeltaTooltip';
 
 const stepTemplateUniqueNames = (value, context: Yup.TestContext) => {
     if (!value) return true;
@@ -82,6 +83,8 @@ const AddStepsFields: React.FC<StepComponentProps<ProcessTemplateWizardValues, '
     };
     const isFieldBlockTouched = touched?.steps;
 
+    const theme = useTheme();
+
     return (
         <Grid style={{ width: '100%' }}>
             <FieldArray name="steps">
@@ -93,19 +96,17 @@ const AddStepsFields: React.FC<StepComponentProps<ProcessTemplateWizardValues, '
                                     {i18next.t('validation.oneStep')}
                                 </div>
                             )}
-                            <Tooltip
+                            <MeltaTooltip
                                 title={
                                     isEditMode && areThereAnyInstances
                                         ? i18next.t('wizard.processTemplate.blockAdd')
                                         : i18next.t('wizard.processTemplate.addStep')
                                 }
                                 placement="top"
-                                arrow
-                                sx={{ color: 'white' }}
                             >
                                 <span>
                                     <IconButton
-                                        style={{ justifyContent: 'center', color: '#1B7BB9' }}
+                                        style={{ justifyContent: 'center', color: theme.palette.primary.main }}
                                         disabled={isEditMode && areThereAnyInstances}
                                         onClick={() =>
                                             push({
@@ -122,7 +123,7 @@ const AddStepsFields: React.FC<StepComponentProps<ProcessTemplateWizardValues, '
                                         <AddIcon fontSize="large" />
                                     </IconButton>
                                 </span>
-                            </Tooltip>
+                            </MeltaTooltip>
                         </Grid>
                         <Grid>
                             {values.steps.map((step, index) => (

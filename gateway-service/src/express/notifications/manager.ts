@@ -35,7 +35,7 @@ import {
 import { NotificationService } from '../../externalServices/notificationService';
 import RuleBreachesManager from '../ruleBreaches/manager';
 import ProcessesInstancesManager from '../processes/processInstances/manager';
-import { InstanceManagerService } from '../../externalServices/instanceManager';
+import { InstanceManagerService } from '../../externalServices/instanceService';
 
 export class NotificationsManager {
     static async getMyNotifications(user: Express.User, query: object): Promise<INotificationPopulated[]> {

@@ -1,5 +1,5 @@
 import { IRelationship } from './relationships';
-import { IRelationshipTemplate } from '../../relationshipsTemplateManager';
+import { IRelationshipTemplate } from '../../relationshipsTemplateService';
 
 export interface IEntity {
     templateId: string;

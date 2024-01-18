@@ -8,6 +8,7 @@ import {
     createPermissionsBulkRequestSchema,
     deletePermissionsRequestSchema,
     getMyPermissionsRequestSchema,
+    updatePermissionsBulkRequestSchema,
 } from './validator.schema';
 import { validateUserHasAtLeastSomePermissions, validateUserIsPermissionsManager } from './validateAuthorizationMiddleware';
 
@@ -31,6 +32,13 @@ permissionsRouter.post(
     wrapMiddleware(validateUserIsPermissionsManager),
     wrapController(PermissionsController.createPermissionsBulk),
 );
+permissionsRouter.put(
+    '/bulk',
+    ValidateRequest(updatePermissionsBulkRequestSchema),
+    wrapMiddleware(validateUserIsPermissionsManager),
+    wrapController(PermissionsController.updatePermissionsBulk),
+);
+
 permissionsRouter.delete(
     '/',
     ValidateRequest(deletePermissionsRequestSchema),

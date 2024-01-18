@@ -4,7 +4,6 @@ import i18next from 'i18next';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import _cloneDeep from 'lodash.clonedeep';
-import isEqualWith from 'lodash.isequalwith';
 import { useSelector } from 'react-redux';
 import { Form, Formik, FormikProps } from 'formik';
 import * as Yup from 'yup';
@@ -16,6 +15,7 @@ import {
     IPermission,
     IPermissionsOfUser,
     PermissionResourceType,
+    updatePermissionsBulkRequest,
 } from '../../services/permissionsService';
 import UserAutocomplete from '../inputs/UserAutocomplete';
 import { IUser } from '../../services/kartoffelService';
@@ -23,6 +23,18 @@ import { ICategoryMap } from '../../interfaces/categories';
 import ManagementPermissionsCard from './managementPermissionsCard';
 import InstancesPermissionsCard from './instancesPermissionsCard';
 import { RootState } from '../../store';
+import {
+    canUserReadInstanceOfCategory,
+    canUserWriteInstanceOfCategory,
+    getUserPermissionScopeOfCategory,
+} from '../../utils/permissions/instancePermissions';
+import { IFormPermissionsOfUser } from './permissionsTypes';
+import {
+    doesUserHaveNoPermissions,
+    getPermissionsToDeleteUpdateAndCreate,
+    isPermissionsChanged,
+    permissionsToFormPermissions,
+} from '../../utils/permissions/permissionOfUserDialog';
 
 const defaultEmptyPermissionsOfUser = {
     user: null,
@@ -33,126 +45,30 @@ const defaultEmptyPermissionsOfUser = {
     instancesPermissions: [],
 } as IFormPermissionsOfUser;
 
-type IFormPermissionsOfUser = {
-    user: IUser | null;
-    doesHavePermissionsManagement: boolean;
-    doesHaveTemplatesManagement: boolean;
-    doesHaveRulesManagement: boolean;
-    doesHaveProcessesManagement: boolean;
-    instancesPermissions: Pick<IPermission, 'category'>[];
-};
-
-const doesUserHaveNoPermissions = (permissions: IFormPermissionsOfUser) => {
-    return (
-        !permissions.doesHavePermissionsManagement &&
-        !permissions.doesHaveTemplatesManagement &&
-        !permissions.doesHaveRulesManagement &&
-        !permissions.doesHaveProcessesManagement &&
-        permissions.instancesPermissions.length === 0
-    );
-};
-
-const isPermissionsChanged = (currentPermissions: IFormPermissionsOfUser, newPermissions: IFormPermissionsOfUser) =>
-    isEqualWith(currentPermissions, newPermissions, (firstValue, secondValue) => {
-        if (Array.isArray(firstValue) && Array.isArray(secondValue)) {
-            const firstInstancesPermissions = firstValue as IFormPermissionsOfUser['instancesPermissions'];
-            const secondInstancesPermissions = secondValue as IFormPermissionsOfUser['instancesPermissions'];
-
-            const firstInstancesPermissionsSorted = firstInstancesPermissions.sort((a, b) => a.category.localeCompare(b.category));
-            const secondInstancesPermissionsSorted = secondInstancesPermissions.sort((a, b) => a.category.localeCompare(b.category));
-            return isEqualWith(firstInstancesPermissionsSorted, secondInstancesPermissionsSorted);
-        }
-
-        return undefined;
-    });
-
-const permissionsToFormPermissions = ({
-    user,
-    permissionsManagementId,
-    templatesManagementId,
-    rulesManagementId,
-    processesManagementId,
-    instancesPermissions,
-}: IPermissionsOfUser): IFormPermissionsOfUser => ({
-    user,
-    doesHavePermissionsManagement: Boolean(permissionsManagementId),
-    doesHaveTemplatesManagement: Boolean(templatesManagementId),
-    doesHaveRulesManagement: Boolean(rulesManagementId),
-    doesHaveProcessesManagement: Boolean(processesManagementId),
-    instancesPermissions: instancesPermissions.map(({ category }) => ({ category })),
-});
-
-const getPermissionsToDeleteAndCreate = (
-    formPermissionsOfUser: Omit<IFormPermissionsOfUser, 'user'> & { user: IUser },
-    categories: ICategoryMap,
-    existingPermissionsOfUser?: IPermissionsOfUser,
-): { permissonsIdsToDelete: string[]; permissionsToCreate: Omit<IPermission, '_id'>[] } => {
-    const permissonsIdsToDelete: string[] = [];
-    const permissionsToCreate: Omit<IPermission, '_id'>[] = [];
-
-    if (formPermissionsOfUser.doesHavePermissionsManagement && !existingPermissionsOfUser?.permissionsManagementId) {
-        permissionsToCreate.push({ userId: formPermissionsOfUser.user.id, resourceType: PermissionResourceType.Permissions, category: 'All' });
-    } else if (!formPermissionsOfUser.doesHavePermissionsManagement && existingPermissionsOfUser?.permissionsManagementId) {
-        permissonsIdsToDelete.push(existingPermissionsOfUser.permissionsManagementId);
-    }
-
-    if (formPermissionsOfUser.doesHaveTemplatesManagement && !existingPermissionsOfUser?.templatesManagementId) {
-        permissionsToCreate.push({ userId: formPermissionsOfUser.user.id, resourceType: PermissionResourceType.Templates, category: 'All' });
-    } else if (!formPermissionsOfUser.doesHaveTemplatesManagement && existingPermissionsOfUser?.templatesManagementId) {
-        permissonsIdsToDelete.push(existingPermissionsOfUser.templatesManagementId);
-    }
-
-    if (formPermissionsOfUser.doesHaveRulesManagement && !existingPermissionsOfUser?.rulesManagementId) {
-        permissionsToCreate.push({ userId: formPermissionsOfUser.user.id, resourceType: PermissionResourceType.Rules, category: 'All' });
-    } else if (!formPermissionsOfUser.doesHaveRulesManagement && existingPermissionsOfUser?.rulesManagementId) {
-        permissonsIdsToDelete.push(existingPermissionsOfUser.rulesManagementId);
-    }
-
-    if (formPermissionsOfUser.doesHaveProcessesManagement && !existingPermissionsOfUser?.processesManagementId) {
-        permissionsToCreate.push({ userId: formPermissionsOfUser.user.id, resourceType: PermissionResourceType.Processes, category: 'All' });
-    } else if (!formPermissionsOfUser.doesHaveProcessesManagement && existingPermissionsOfUser?.processesManagementId) {
-        permissonsIdsToDelete.push(existingPermissionsOfUser.processesManagementId);
-    }
-
-    for (const id of categories.keys()) {
-        const permissionsOfUserDialogStateForCategory = formPermissionsOfUser.instancesPermissions.find(
-            ({ category: currCategoryId }) => currCategoryId === id,
-        );
-        const existingPermissionsOfUserForCategory = existingPermissionsOfUser?.instancesPermissions.find(
-            ({ category: currCategoryId }) => currCategoryId === id,
-        );
-
-        if (permissionsOfUserDialogStateForCategory && !existingPermissionsOfUserForCategory) {
-            permissionsToCreate.push({ userId: formPermissionsOfUser.user.id, resourceType: PermissionResourceType.Instances, category: id });
-        } else if (!permissionsOfUserDialogStateForCategory && existingPermissionsOfUserForCategory) {
-            permissonsIdsToDelete.push(existingPermissionsOfUserForCategory._id);
-        }
-    }
-
-    return { permissonsIdsToDelete, permissionsToCreate };
-};
-
 const createOrEditPermissionsOfUserRequest = async (
     formPermissionsOfUser: Omit<IFormPermissionsOfUser, 'user'> & { user: IUser },
     categories: ICategoryMap,
     existingPermissionsOfUser?: IPermissionsOfUser,
 ) => {
-    const { permissonsIdsToDelete, permissionsToCreate } = getPermissionsToDeleteAndCreate(
+    const { permissionsIdsToDelete, permissionsToCreate, permissionsToUpdate } = getPermissionsToDeleteUpdateAndCreate(
         formPermissionsOfUser,
         categories,
         existingPermissionsOfUser,
     );
 
-    if (permissonsIdsToDelete.length > 0) {
-        await deletePermissionsBulkRequest(permissonsIdsToDelete);
+    if (permissionsIdsToDelete.length > 0) {
+        await deletePermissionsBulkRequest(permissionsIdsToDelete);
     }
-    const createdPermissions = await createPermissionsBulkRequest(permissionsToCreate);
+    const updatedPermissions = permissionsToUpdate.length > 0 ? await updatePermissionsBulkRequest(permissionsToUpdate) : [];
+    const createdPermissions = permissionsToCreate.length > 0 ? await createPermissionsBulkRequest(permissionsToCreate) : [];
+    const allNewOrUpdatedPermissions = [...createdPermissions, ...updatedPermissions];
 
-    const createdPermissionsManagement = createdPermissions.find(({ resourceType }) => resourceType === PermissionResourceType.Permissions);
-    const createdTemplatesManagement = createdPermissions.find(({ resourceType }) => resourceType === PermissionResourceType.Templates);
-    const createdRulesManagement = createdPermissions.find(({ resourceType }) => resourceType === PermissionResourceType.Rules);
-    const createdProcessesManagement = createdPermissions.find(({ resourceType }) => resourceType === PermissionResourceType.Processes);
+    const deletedPermissionsSet = new Set(permissionsIdsToDelete);
 
+    const createdPermissionsManagement = allNewOrUpdatedPermissions.find(({ resourceType }) => resourceType === PermissionResourceType.Permissions);
+    const createdTemplatesManagement = allNewOrUpdatedPermissions.find(({ resourceType }) => resourceType === PermissionResourceType.Templates);
+    const createdRulesManagement = allNewOrUpdatedPermissions.find(({ resourceType }) => resourceType === PermissionResourceType.Rules);
+    const createdProcessesManagement = allNewOrUpdatedPermissions.find(({ resourceType }) => resourceType === PermissionResourceType.Processes);
     const newPermissionsOfUser: IPermissionsOfUser = {
         user: formPermissionsOfUser.user,
         permissionsManagementId: !formPermissionsOfUser.doesHavePermissionsManagement
@@ -168,33 +84,33 @@ const createOrEditPermissionsOfUserRequest = async (
             ? null
             : createdRulesManagement?._id ?? existingPermissionsOfUser!.rulesManagementId,
         instancesPermissions: Array.from(categories.keys(), (id) => {
-            const doesUserHasPermissionForCategory = formPermissionsOfUser.instancesPermissions.some(({ category: categoryId }) => categoryId === id);
-            if (!doesUserHasPermissionForCategory) {
-                return null;
-            }
-
-            const createdPermissionForCategory = createdPermissions.find(({ category: categoryId }) => categoryId === id);
-            if (createdPermissionForCategory) {
-                return { _id: createdPermissionForCategory._id, category: createdPermissionForCategory.category };
+            const createdOrUpdatePermission = allNewOrUpdatedPermissions.find(({ category: categoryId }) => categoryId === id);
+            if (createdOrUpdatePermission && !deletedPermissionsSet.has(createdOrUpdatePermission._id)) {
+                return {
+                    _id: createdOrUpdatePermission._id,
+                    category: createdOrUpdatePermission.category,
+                    scopes: createdOrUpdatePermission.scopes,
+                };
             }
 
             const existingPermissionForCategory = existingPermissionsOfUser?.instancesPermissions.find(
                 ({ category: categoryId }) => categoryId === id,
             );
-            if (existingPermissionForCategory) {
+            if (existingPermissionForCategory && !deletedPermissionsSet.has(existingPermissionForCategory._id)) {
                 return existingPermissionForCategory;
             }
 
-            throw new Error('if user has permission to category, it should exist or be created');
-        }).filter(Boolean) as Pick<IPermission, '_id' | 'category'>[],
+            return null;
+        }).filter(Boolean) as Pick<IPermission, '_id' | 'category' | 'scopes'>[],
     };
+
     return newPermissionsOfUser;
 };
 
 const PermissionsOfUserDialog: React.FC<{
     isOpen: boolean;
     handleClose: () => any;
-    mode: 'create' | 'edit' | 'read';
+    mode: 'create' | 'edit' | 'view';
     existingPermissionsOfUser?: IPermissionsOfUser;
 }> = ({ isOpen, handleClose, mode, existingPermissionsOfUser }) => {
     const currentUser = useSelector((state: RootState) => state.user);
@@ -268,7 +184,7 @@ const PermissionsOfUserDialog: React.FC<{
             maxWidth="sm"
             keepMounted={false}
             onClose={handleClose}
-            PaperProps={{ sx: { bgcolor: darkMode ? '#060606' : 'white' } }}
+            PaperProps={{ sx: { bgcolor: darkMode ? '#060606' : 'white', overflow: 'hidden' } }}
         >
             <Formik
                 initialValues={
@@ -293,7 +209,7 @@ const PermissionsOfUserDialog: React.FC<{
                         <DialogTitle>
                             {mode === 'edit' && i18next.t('permissions.permissionsOfUserDialog.editTitle')}
                             {mode === 'create' && i18next.t('permissions.permissionsOfUserDialog.createTitle')}
-                            {mode === 'read' && i18next.t('permissions.permissionsOfUserDialog.readTitle')}
+                            {mode === 'view' && i18next.t('permissions.permissionsOfUserDialog.readTitle')}
                         </DialogTitle>
                         <DialogContent>
                             <Box margin={1} sx={{ bgcolor: darkMode ? '#242424' : 'white' }}>
@@ -301,7 +217,7 @@ const PermissionsOfUserDialog: React.FC<{
                                     value={formikProps.values.user}
                                     onChange={(_e, chosenUser) => formikProps.setFieldValue('user', chosenUser)}
                                     onBlur={(event) => formikProps.handleBlur(event)}
-                                    readOnly={mode === 'read'}
+                                    readOnly={mode === 'view'}
                                     disabled={mode === 'edit'}
                                     isError={Boolean(formikProps.touched.user && formikProps.errors.user)}
                                     helperText={formikProps.touched.user ? formikProps.errors.user : ''}
@@ -310,7 +226,7 @@ const PermissionsOfUserDialog: React.FC<{
 
                             {/* dont show management permissions to regular user (if dont have at all) */}
                             {!(
-                                mode === 'read' &&
+                                mode === 'view' &&
                                 !formikProps.values.doesHavePermissionsManagement &&
                                 !formikProps.values.doesHaveTemplatesManagement &&
                                 !formikProps.values.doesHaveProcessesManagement &&
@@ -321,86 +237,156 @@ const PermissionsOfUserDialog: React.FC<{
                                         permissionsManagement={{
                                             checked: formikProps.values.doesHavePermissionsManagement,
                                             onChange:
-                                                mode === 'read'
+                                                mode === 'view'
                                                     ? () => {}
                                                     : (_e, checked) => formikProps.setFieldValue('doesHavePermissionsManagement', checked),
                                             disabled: formikProps.isSubmitting,
-                                            readOnly: mode === 'read',
+                                            viewMode: mode === 'view',
                                         }}
                                         templatesManagement={{
                                             checked: formikProps.values.doesHaveTemplatesManagement,
                                             onChange:
-                                                mode === 'read'
+                                                mode === 'view'
                                                     ? () => {}
                                                     : (_e, checked) => formikProps.setFieldValue('doesHaveTemplatesManagement', checked),
                                             disabled: formikProps.isSubmitting,
-                                            readOnly: mode === 'read',
+                                            viewMode: mode === 'view',
                                         }}
                                         rulesManagement={{
                                             checked: formikProps.values.doesHaveRulesManagement,
                                             onChange:
-                                                mode === 'read'
+                                                mode === 'view'
                                                     ? () => {}
                                                     : (_e, checked) => formikProps.setFieldValue('doesHaveRulesManagement', checked),
                                             disabled: formikProps.isSubmitting,
-                                            readOnly: mode === 'read',
+                                            viewMode: mode === 'view',
                                         }}
                                         processesManagement={{
                                             checked: formikProps.values.doesHaveProcessesManagement,
                                             onChange:
-                                                mode === 'read'
+                                                mode === 'view'
                                                     ? () => {}
                                                     : (_e, checked) => formikProps.setFieldValue('doesHaveProcessesManagement', checked),
                                             disabled: formikProps.isSubmitting,
-                                            readOnly: mode === 'read',
+                                            viewMode: mode === 'view',
                                         }}
                                     />
                                 </Box>
                             )}
                             <Box margin={1}>
                                 <InstancesPermissionsCard
-                                    categoriesCheckboxProps={Array.from(categories.values(), ({ _id, displayName }) => ({
-                                        categoryId: _id,
-                                        categoryDisplayName: displayName,
+                                    viewMode={mode === 'view'}
+                                    categoriesCheckboxProps={Array.from(categories.values(), (currCategory) => ({
+                                        categoryId: currCategory._id,
+                                        categoryDisplayName: currCategory.displayName,
                                         disabled: formikProps.isSubmitting,
-                                        readOnly: mode === 'read',
-                                        checked: formikProps.values.instancesPermissions.some(({ category }) => category === _id),
-                                        onChange:
-                                            mode === 'read'
-                                                ? () => {}
-                                                : (_e, checked) => {
-                                                      if (checked) {
-                                                          const newInstancesPermissions: Pick<IPermission, 'category'>[] = [
-                                                              ...formikProps.values.instancesPermissions,
-                                                              { category: _id },
-                                                          ];
-                                                          formikProps.setFieldValue('instancesPermissions', newInstancesPermissions);
-                                                          return;
-                                                      }
+                                        scope: getUserPermissionScopeOfCategory(
+                                            formikProps.values.instancesPermissions as IPermissionsOfUser['instancesPermissions'],
+                                            currCategory._id,
+                                        ),
+                                        permissionType: {
+                                            read: {
+                                                checked: canUserReadInstanceOfCategory(
+                                                    formikProps.values.instancesPermissions as IPermissionsOfUser['instancesPermissions'],
+                                                    currCategory,
+                                                ),
+                                                onChange:
+                                                    mode === 'view'
+                                                        ? () => {}
+                                                        : (_e, checked: boolean) => {
+                                                              if (checked) {
+                                                                  const newInstancesPermissions: Pick<IPermission, 'category' | 'scopes'>[] = [
+                                                                      ...formikProps.values.instancesPermissions,
+                                                                      { category: currCategory._id, scopes: ['Read'] },
+                                                                  ];
+                                                                  formikProps.setFieldValue('instancesPermissions', newInstancesPermissions);
+                                                                  return;
+                                                              }
 
-                                                      const newInstancesPermissions = formikProps.values.instancesPermissions.filter(
-                                                          ({ category }) => category !== _id,
-                                                      );
-                                                      formikProps.setFieldValue('instancesPermissions', newInstancesPermissions);
-                                                  },
+                                                              const newInstancesPermissions = formikProps.values.instancesPermissions.filter(
+                                                                  ({ category }) => category !== currCategory._id,
+                                                              );
+                                                              formikProps.setFieldValue('instancesPermissions', newInstancesPermissions);
+                                                          },
+                                            },
+                                            write: {
+                                                checked: canUserWriteInstanceOfCategory(
+                                                    formikProps.values.instancesPermissions as IPermissionsOfUser['instancesPermissions'],
+                                                    currCategory,
+                                                ),
+                                                onChange:
+                                                    mode === 'view'
+                                                        ? () => {}
+                                                        : (_e, checked: boolean) => {
+                                                              const newScopes = checked ? ['Read', 'Write'] : ['Read'];
+                                                              const needToCreateNewInstancePermission = !formikProps.values.instancesPermissions.some(
+                                                                  (instancePermission) => instancePermission.category === currCategory._id,
+                                                              );
+
+                                                              const newInstancesPermissions = needToCreateNewInstancePermission
+                                                                  ? [
+                                                                        ...formikProps.values.instancesPermissions,
+                                                                        { category: currCategory._id, scopes: newScopes },
+                                                                    ]
+                                                                  : formikProps.values.instancesPermissions.map((instancePermission) =>
+                                                                        instancePermission.category === currCategory._id
+                                                                            ? { ...instancePermission, scopes: newScopes }
+                                                                            : instancePermission,
+                                                                    );
+
+                                                              formikProps.setFieldValue('instancesPermissions', newInstancesPermissions);
+                                                          },
+                                            },
+                                        },
                                     }))}
                                     checkboxAllProps={
-                                        mode === 'read'
+                                        mode === 'view'
                                             ? undefined
                                             : {
-                                                  checked: formikProps.values.instancesPermissions.length === categories.size,
                                                   indeterminate:
                                                       formikProps.values.instancesPermissions.length > 0 &&
                                                       formikProps.values.instancesPermissions.length < categories.size,
-                                                  onChange: (_e, checked) => {
-                                                      if (!checked) {
-                                                          formikProps.setFieldValue('instancesPermissions', []);
-                                                          return;
-                                                      }
-                                                      formikProps.setFieldValue(
-                                                          'instancesPermissions',
-                                                          Array.from(categories.keys(), (id) => ({ category: id })),
-                                                      );
+                                                  permissionType: {
+                                                      write: {
+                                                          checked:
+                                                              formikProps.values.instancesPermissions.length === categories.size &&
+                                                              formikProps.values.instancesPermissions.every(({ scopes }) => scopes.includes('Write')),
+                                                          onChange: (_e, checked) => {
+                                                              const newInstancesPermissions = checked
+                                                                  ? Array.from(categories.keys()).map((categoryId) => ({
+                                                                        category: categoryId,
+                                                                        scopes: ['Read', 'Write'],
+                                                                    }))
+                                                                  : [];
+                                                              formikProps.setFieldValue('instancesPermissions', newInstancesPermissions);
+                                                          },
+                                                      },
+                                                      read: {
+                                                          checked:
+                                                              formikProps.values.instancesPermissions.length === categories.size &&
+                                                              formikProps.values.instancesPermissions.every(({ scopes }) => scopes.includes('Read')),
+                                                          onChange: (_e, checked) => {
+                                                              const newInstancesPermissions = Array.from(categories).map((categoryTuple) => {
+                                                                  // Find existing permissions for the category or default to an empty array
+                                                                  const [categoryId] = categoryTuple;
+                                                                  const existingPermissions =
+                                                                      formikProps.values.instancesPermissions.find((p) => p.category === categoryId)
+                                                                          ?.scopes || [];
+                                                                  let newScopes;
+                                                                  if (checked) {
+                                                                      newScopes = existingPermissions.includes('Write')
+                                                                          ? ['Read', 'Write']
+                                                                          : ['Read'];
+                                                                  } else {
+                                                                      newScopes = existingPermissions.includes('Write') ? ['Write'] : [];
+                                                                  }
+
+                                                                  return { category: categoryId, scopes: newScopes };
+                                                              });
+
+                                                              formikProps.setFieldValue('instancesPermissions', newInstancesPermissions);
+                                                          },
+                                                      },
                                                   },
                                               }
                                     }
@@ -410,7 +396,7 @@ const PermissionsOfUserDialog: React.FC<{
                         <DialogActions>
                             <Grid container justifyContent="space-between">
                                 <Grid>
-                                    {mode === 'read' && (
+                                    {mode === 'view' && (
                                         <Button
                                             onClick={() => {
                                                 handleClose();
@@ -427,7 +413,7 @@ const PermissionsOfUserDialog: React.FC<{
                                     <Button onClick={handleClose} autoFocus disabled={formikProps.isSubmitting}>
                                         {i18next.t('permissions.permissionsOfUserDialog.closeBtn')}
                                     </Button>
-                                    {mode !== 'read' && (
+                                    {mode !== 'view' && (
                                         <Button
                                             type="submit"
                                             disabled={

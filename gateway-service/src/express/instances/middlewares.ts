@@ -1,10 +1,10 @@
 import { Request } from 'express';
 import lodashUniqby from 'lodash.uniqby';
-import { EntityTemplateManagerService } from '../../externalServices/entityTemplateManager';
-import { IRelationship } from '../../externalServices/instanceManager/interfaces/relationships';
-import { InstanceManagerService } from '../../externalServices/instanceManager';
-import { getPermissions, isRuleManager } from '../../externalServices/permissionsApi';
-import { RelationshipsTemplateManagerService } from '../../externalServices/relationshipsTemplateManager';
+import { EntityTemplateManagerService } from '../../externalServices/entityTemplateService';
+import { IRelationship } from '../../externalServices/instanceService/interfaces/relationships';
+import { InstanceManagerService } from '../../externalServices/instanceService';
+import { Scope, getPermissions, isRuleManager } from '../../externalServices/permissionsService';
+import { RelationshipsTemplateManagerService } from '../../externalServices/relationshipsTemplateService';
 import { ServiceError } from '../error';
 import { IPermissionsOfUser } from '../permissions/interfaces';
 import PermissionsManager from '../permissions/manager';
@@ -25,7 +25,7 @@ export const validateUserCanCreateEntityInstance = async (req: Request) => {
 
     const categoryId = await getCategoryIdFromTemplateId(templateId);
 
-    return validateAuthorization(req, 'Instances', [categoryId]);
+    return validateAuthorization(req, 'Instances', [categoryId], 'Write');
 };
 
 export const getAllowedEntityTemplatesForInstances = (userPermissions: Omit<IPermissionsOfUser, 'user'>) => {
@@ -63,21 +63,30 @@ export const validateUserCanExportEntities = async (req: Request) => {
 
 export type RequestWithPermissionsOfUserId = Request & { permissionsOfUserId: Omit<IPermissionsOfUser, 'user'> };
 
-export const validateUserCanUpdateGetOrDeleteEntityInstance = async (req: Request) => {
+const validateUserPermissionForEntityInstance = async (req: Request, permissionType: Scope) => {
     const instanceId = req.params.id;
-
     const { templateId } = await InstanceManagerService.getEntityInstanceById(instanceId);
-
     const categoryId = await getCategoryIdFromTemplateId(templateId);
-
     const permissionsArrOfUser = await getPermissions({ userId: req.user!.id });
     const permissionsOfUserId = PermissionsManager.buildPermissionsOfUserId(permissionsArrOfUser);
 
-    if (!permissionsOfUserId.instancesPermissions.some(({ category }) => category === categoryId)) {
-        throw new ServiceError(403, `user not authorized, doesnt have permission on category ${categoryId}`);
+    const hasPermission = permissionsOfUserId.instancesPermissions.some(
+        ({ category, scopes }) => category === categoryId && scopes.includes(permissionType),
+    );
+
+    if (!hasPermission) {
+        throw new ServiceError(403, `User not authorized, does not have ${permissionType.toLowerCase()} permission on category ${categoryId}`);
     }
 
     (req as RequestWithPermissionsOfUserId).permissionsOfUserId = permissionsOfUserId;
+};
+
+export const validateUserCanWriteEntityInstance = async (req: Request) => {
+    await validateUserPermissionForEntityInstance(req, 'Write');
+};
+
+export const validateUserCanReadEntityInstance = async (req: Request) => {
+    await validateUserPermissionForEntityInstance(req, 'Read');
 };
 
 export const validateUserCanGetExpandedEntity = async (req: Request) => {
@@ -111,7 +120,7 @@ const getRelatedCategoriesFromRelationshipInstance = async (relationshipInstance
 export const validateUserCanCreateRelationshipInstance = async (req: Request) => {
     const relatedCategories = await getRelatedCategoriesFromRelationshipInstance(req.body.relationshipInstance);
 
-    return validateAuthorization(req, 'Instances', relatedCategories);
+    return validateAuthorization(req, 'Instances', relatedCategories, 'Write');
 };
 
 export const validateUserCanUpdateOrDeleteRelationshipInstance = async (req: Request) => {
@@ -119,7 +128,7 @@ export const validateUserCanUpdateOrDeleteRelationshipInstance = async (req: Req
 
     const relatedCategories = await getRelatedCategoriesFromRelationshipInstance(relationshipInstance);
 
-    return validateAuthorization(req, 'Instances', relatedCategories);
+    return validateAuthorization(req, 'Instances', relatedCategories, 'Write');
 };
 
 // rules

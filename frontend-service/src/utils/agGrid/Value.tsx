@@ -1,23 +1,27 @@
-/* eslint-disable react/jsx-no-useless-fragment */
 import React from 'react';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { IconButton, Grid } from '@mui/material';
 import { ColoredEnumChip } from '../../common/ColoredEnumChip';
 
-const Value: React.FC<{ hideValue: boolean; value: string; color?: string }> = ({ hideValue, value, color }) => {
+const Value: React.FC<{ hideValue: boolean; value: string; color?: string; isNumberField?: boolean }> = ({
+    hideValue,
+    value,
+    color,
+    isNumberField,
+}) => {
     const [hideField, setHideField] = React.useState(true);
     const handleClick = () => {
         setHideField((curr) => !curr);
     };
 
-    let innerContent = <></>;
+    let innerContent = <div />;
 
     if (hideValue && hideField) innerContent = <>••••••••</>;
     else if (color) innerContent = <ColoredEnumChip label={value} color={color} />;
-    else innerContent = <>{value}</>;
+    else innerContent = <div>{value}</div>;
 
     return (
-        <Grid container justifyContent="space-between" alignItems="center" direction="row">
+        <Grid container justifyContent="space-between" alignItems="center">
             <Grid
                 item
                 sx={{
@@ -28,6 +32,7 @@ const Value: React.FC<{ hideValue: boolean; value: string; color?: string }> = (
                     whiteSpace: 'nowrap',
                     textOverflow: 'ellipsis',
                     width: '70%',
+                    direction: isNumberField ? 'rtl' : undefined,
                 }}
             >
                 {innerContent}

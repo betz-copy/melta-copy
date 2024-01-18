@@ -34,9 +34,15 @@ const EntitiesTableOfTemplateWithQuickFilter: React.FC<{
                     quickFilterText={quickFilterText}
                     rowHeight={25}
                     fontSize="14px"
-                    minColumnWidth={200}
                     hideNonPreview={hideNonPreview}
-                    filterStorageProps={{ shouldSaveFilter: false }}
+                    saveStorageProps={{
+                        shouldSaveFilter: false,
+                        shouldSaveWidth: false,
+                        shouldSaveVisibleColumns: false,
+                        shouldSaveSorting: false,
+                        shouldSaveColumnOrder: false,
+                        shouldSavePagination: false,
+                    }}
                 />
             </div>
         </Box>

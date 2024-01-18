@@ -210,12 +210,15 @@ const updateEntityTemplateStatusRequest = async (entityTemplateId: string, disab
     return data;
 };
 
-const updateEntityTemplateRequest = async (entityTemplateId: string, updatedEntityTemplate: EntityTemplateWizardValues) => {
+const updateEntityTemplateRequest = async (entityTemplateId: string, updatedEntityTemplate: IEntityTemplate | EntityTemplateWizardValues) => {
     const formData = new FormData();
 
-    const entityTemplate = formToJSONSchema(updatedEntityTemplate);
+    const entityTemplate: IEntityTemplate =
+        'attachmentProperties' in updatedEntityTemplate // its type is - EntityTemplateWizardValues
+            ? formToJSONSchema(updatedEntityTemplate as EntityTemplateWizardValues)
+            : updatedEntityTemplate;
 
-    if (updatedEntityTemplate.icon) {
+    if ('attachmentProperties' in updatedEntityTemplate && updatedEntityTemplate.icon) {
         if (updatedEntityTemplate.icon.file instanceof File) {
             formData.append('file', updatedEntityTemplate.icon.file);
         } else {

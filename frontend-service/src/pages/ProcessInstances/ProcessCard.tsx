@@ -1,5 +1,5 @@
 import React, { CSSProperties, useState } from 'react';
-import { Box, Card, CardContent, Grid, Tooltip, Typography, styled, IconButton, Menu, Skeleton } from '@mui/material';
+import { Box, Card, CardContent, Grid, Typography, styled, IconButton, Menu, Skeleton } from '@mui/material';
 import { ScatterPlotOutlined as HiveIcon, FiberManualRecordOutlined as StatusIcon, Unarchive } from '@mui/icons-material';
 import { useMutation, useQueryClient } from 'react-query';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -18,6 +18,7 @@ import ProcessInstanceWizard from '../../common/wizards/processInstance';
 import { archiveProcessRequest, deleteProcessRequest } from '../../services/processesService';
 import { MenuButton } from '../../common/MenuButton';
 import { AreYouSureDialog } from '../../common/dialogs/AreYouSureDialog';
+import { MeltaTooltip } from '../../common/MeltaTooltip';
 
 export enum StatusColors {
     Pending = '#ff8f00',
@@ -100,7 +101,7 @@ const StepIcon: React.FC<{
     }, []);
 
     return (
-        <Tooltip
+        <MeltaTooltip
             componentsProps={{
                 tooltip: {
                     sx: {
@@ -144,7 +145,7 @@ const StepIcon: React.FC<{
                     {stepTemplate.displayName}
                 </Typography>
             </Grid>
-        </Tooltip>
+        </MeltaTooltip>
     );
 };
 

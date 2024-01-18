@@ -1,6 +1,7 @@
 import React from 'react';
 import styled from '@emotion/styled';
 import { StepConnector, stepConnectorClasses, StepIconProps } from '@mui/material';
+import { lightTheme } from '../../../../theme';
 
 const StyleStepIconRoot = styled('div')<{ ownerState: { active?: boolean } }>(() => ({
     display: 'flex',
@@ -13,28 +14,28 @@ const StyleStepIconRoot = styled('div')<{ ownerState: { active?: boolean } }>(()
         transition: 'background-color 0.3s ease-in-out, border-color 0.3s ease-in-out',
     },
     '& .completed': {
-        border: '2px solid #225aa7',
+        border: `2px solid ${lightTheme.palette.primary.main}`,
     },
     '& .active': {
-        backgroundColor: '#225aa7',
+        backgroundColor: lightTheme.palette.primary.main,
     },
     '& .inactive': {
         border: '2px solid gray',
     },
     '&:hover .StepIcon': {
-        border: '2px solid #225aa7',
+        border: `2px solid ${lightTheme.palette.primary.main}`,
     },
 }));
 
 export const StyleStepperConnector: React.FC = styled(StepConnector)(() => ({
     [`&.${stepConnectorClasses.active}`]: {
         [`& .${stepConnectorClasses.line}`]: {
-            backgroundColor: '#225aa7',
+            backgroundColor: lightTheme.palette.primary.main,
         },
     },
     [`&.${stepConnectorClasses.completed}`]: {
         [`& .${stepConnectorClasses.line}`]: {
-            backgroundColor: '#225aa7',
+            backgroundColor: lightTheme.palette.primary.main,
         },
     },
     [`& .${stepConnectorClasses.lineVertical}`]: {

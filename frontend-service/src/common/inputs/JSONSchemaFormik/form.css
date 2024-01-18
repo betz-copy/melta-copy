@@ -1,0 +1,17 @@
+#json-schema > .form-group.field.field-object > .MuiFormControl-root > .MuiGrid-root > .MuiGrid-root {
+    width: 50%;
+    max-width: 50%;
+}
+
+#json-schema > .form-group.field.field-object > .MuiFormControl-root > .MuiGrid-root {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    flex-wrap: wrap;
+    padding: 5px;
+    height: fit-content;
+}
+
+#json-schema {
+    width: 100%;
+}

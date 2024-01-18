@@ -33,7 +33,16 @@ export const InstanceFileInput: React.FC<InstanceFileInputProps> = ({
     const [fileName, setFileName] = useState<string | undefined>(initialFileName);
 
     return (
-        <Box marginTop={1} marginBottom={1} paddingTop={0.5} paddingLeft={1}>
+        <Box
+            marginTop={1}
+            marginBottom={1}
+            paddingTop={0.5}
+            paddingLeft={1}
+            sx={{
+                height: '70px',
+                width: '100%',
+            }}
+        >
             <Field
                 validate={(changedValue) => {
                     return required && !changedValue && i18next.t('validation.requiredFile');
