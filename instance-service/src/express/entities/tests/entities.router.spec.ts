@@ -41,6 +41,7 @@ const defaultTemplate: IMongoEntityTemplate = {
         },
     },
     propertiesOrder: ['testProp'],
+    propertiesTypeOrder: ['properties', 'attachmentProperties'],
     propertiesPreview: ['testProp'],
     disabled: false,
     createdAt: mockDateStr,

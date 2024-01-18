@@ -33,22 +33,32 @@ export const getColumnDefs = <Data extends any = IEntity>({
     hideNonPreview = false,
     editRowButtonProps,
 }: IGetColumnDefsOptions<Data>): ColDef[] => {
-    const columnDefs = Object.entries(template.properties.properties).map(([key, value]) => {
-        const { type, format } = value;
+    const columnDefs = template.propertiesOrder.map((property) => {
+        const propertyTemplate = template.properties.properties[property];
+        const { type, format } = propertyTemplate;
 
-        const hideField = template.properties.hide.includes(key);
+        const hideField = template.properties.hide.includes(property);
 
-        const valueGetter: ValueGetterFunc = ({ data }) => (data ? getEntityPropertiesData(data)[key] : undefined);
+        const valueGetter: ValueGetterFunc = ({ data }) => (data ? getEntityPropertiesData(data)[property] : undefined);
 
-        const hideColumn = hideNonPreview && !template.propertiesPreview.includes(key);
+        const hideColumn = hideNonPreview && !template.propertiesPreview.includes(property);
 
-        if (type === 'number') return numberColDef(key, valueGetter, value, hideColumn, hideField);
-        if (type === 'boolean') return booleanColDef(key, valueGetter, value, hideColumn, hideField);
-        if (format === 'date' || format === 'date-time') return dateColDef(key, valueGetter, value, hideColumn, hideField);
-        if (format === 'fileId') return fileColDef(key, valueGetter, value, hideColumn);
-        if (value.enum) return enumColDef(key, valueGetter, value, value.enum, template.enumPropertiesColors?.[key], hideColumn, hideField);
-        if (value.pattern) return regexColDef(key, valueGetter, value, hideColumn, hideField);
-        return stringColDef(key, valueGetter, value, hideColumn, hideField);
+        if (type === 'number') return numberColDef(property, valueGetter, propertyTemplate, hideColumn, hideField);
+        if (type === 'boolean') return booleanColDef(property, valueGetter, propertyTemplate, hideColumn, hideField);
+        if (format === 'date' || format === 'date-time') return dateColDef(property, valueGetter, propertyTemplate, hideColumn, hideField);
+        if (format === 'fileId') return fileColDef(property, valueGetter, propertyTemplate, hideColumn);
+        if (propertyTemplate.enum)
+            return enumColDef(
+                property,
+                valueGetter,
+                propertyTemplate,
+                propertyTemplate.enum,
+                template.enumPropertiesColors?.[property],
+                hideColumn,
+                hideField,
+            );
+        if (propertyTemplate.pattern) return regexColDef(property, valueGetter, propertyTemplate, hideColumn, hideField);
+        return stringColDef(property, valueGetter, propertyTemplate, hideColumn, hideField);
     });
 
     columnDefs.push(

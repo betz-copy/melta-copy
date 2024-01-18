@@ -25,6 +25,7 @@ export interface IEntityTemplate {
     disabled: boolean;
     category: IMongoCategory['_id'];
     propertiesOrder: string[];
+    propertiesTypeOrder: ('properties' | 'attachmentProperties')[];
     propertiesPreview: string[];
     enumPropertiesColors?: Record<string, Record<string, string>>; // { [fieldName]: { [enumOption1]: [color1], [enumOption2]: [color2] } }
     uniqueConstraints: string[][];

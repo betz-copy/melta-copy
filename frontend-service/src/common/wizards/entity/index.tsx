@@ -67,6 +67,7 @@ const EntityWizard: React.FC<WizardBaseType<EntityWizardValues>> = ({
                 hide: [],
             },
             propertiesOrder: [],
+            propertiesTypeOrder: [],
             propertiesPreview: [],
             uniqueConstraints: [],
             disabled: false,

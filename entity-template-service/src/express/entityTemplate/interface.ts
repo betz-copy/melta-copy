@@ -24,6 +24,7 @@ export interface IEntityTemplate {
     category: string;
     properties: IProperties;
     propertiesOrder: string[];
+    propertiesTypeOrder: ('properties' | 'attachmentProperties')[];
     propertiesPreview: string[];
     enumPropertiesColors?: IEnumPropertiesColors;
     disabled: boolean;

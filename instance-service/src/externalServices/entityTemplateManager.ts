@@ -28,6 +28,7 @@ export interface IEntityTemplate {
     disabled: boolean;
     category: string;
     propertiesOrder: string[];
+    propertiesTypeOrder: ('properties' | 'attachmentProperties')[];
     propertiesPreview: string[];
 }
 
