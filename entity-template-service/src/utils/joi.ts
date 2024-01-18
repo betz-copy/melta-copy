@@ -124,6 +124,8 @@ const customOrderPropertiesValidation: Joi.CustomValidator = (propertiesOrder: s
 };
 export const orderPropertiesSchema = Joi.array().unique().items(Joi.string()).custom(customOrderPropertiesValidation);
 
+export const orderPropertiesTypeSchema = Joi.array().unique().items(Joi.valid('properties', 'attachmentProperties'));
+
 const customPreviewPropertiesValidation: Joi.CustomValidator = (propertiesPreview: string[], helpers) => {
     return validatePropertiesArrayInProperties(propertiesPreview, helpers.state.ancestors[0].properties.properties);
 };
