@@ -115,6 +115,8 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTem
                 format: stringFormats.includes(type) ? type : undefined,
                 enum: type === 'enum' ? options : undefined,
                 items: type === 'enumArray' ? { type: 'string', enum: options } : undefined,
+                minItems: type === 'enumArray' ? 1 : undefined,
+                uniqueItems: type === 'enumArray' ? true : undefined,
                 pattern: type === 'pattern' ? pattern : undefined,
                 patternCustomErrorMessage: type === 'pattern' ? patternCustomErrorMessage : undefined,
                 dateNotification: dateNotification as string | undefined,
@@ -144,7 +146,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTem
     );
 
     attachmentProperties.forEach(({ name, title, type, required }) => {
-        let propertySchema: Pick<IEntitySingleProperty, 'title' | 'format' | 'type' | 'items'> = {
+        let propertySchema: IEntitySingleProperty = {
             title,
             type: 'string',
             format: 'fileId',
@@ -158,6 +160,8 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTem
                     type: 'string',
                     format: 'fileId',
                 },
+                minItems: 1,
+                uniqueItems: true,
             };
         }
 

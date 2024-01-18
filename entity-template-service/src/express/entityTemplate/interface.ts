@@ -13,6 +13,8 @@ export interface IEntitySingleProperty {
         enum?: string[];
         format?: 'fileId';
     };
+    minItems?: 1;
+    uniqueItems?: true;
 }
 
 export interface IProperties {

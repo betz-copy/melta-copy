@@ -50,6 +50,16 @@ const propertiesArraySchema = Joi.array()
                     then: Joi.required(),
                     otherwise: Joi.forbidden(),
                 }),
+            minItems: Joi.valid(1).when('type', {
+                is: 'array',
+                then: Joi.required(),
+                otherwise: Joi.forbidden(),
+            }),
+            uniqueItems: Joi.valid(true).when('type', {
+                is: 'array',
+                then: Joi.required(),
+                otherwise: Joi.forbidden(),
+            }),
             dateNotification: Joi.string()
                 .valid('day', 'week', 'twoWeeks')
                 .when('format', { not: Joi.valid('date', 'date-time'), then: Joi.forbidden() })
