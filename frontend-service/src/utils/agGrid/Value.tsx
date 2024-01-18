@@ -21,12 +21,12 @@ const Value: React.FC<{ hideValue: boolean; value: string; color?: string; isNum
     else innerContent = <div>{value}</div>;
 
     return (
-        <Grid container justifyContent="space-between" alignItems="center">
+        <Grid container justifyContent="space-between" alignItems="center" wrap="nowrap">
             <Grid
                 item
                 sx={{
                     fontFamily: 'Rubik',
-                    fontSize: '16px',
+                    fontSize: '14px',
                     fontWeight: '200',
                     overflow: 'hidden',
                     whiteSpace: 'nowrap',
