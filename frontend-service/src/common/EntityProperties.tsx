@@ -32,7 +32,9 @@ export const formatToString = (
     }
     if (keyEnumColors?.[value] && valueType === 'string') return <ColoredEnumChip label={value} color={keyEnumColors[value]} />;
     if (valueType === 'array') {
-        return value.map((val) => <ColoredEnumChip key={val} label={val} color={keyEnumColors?.[val] || 'default'} style={{ marginRight: '5px' }} />);
+        return value.map((val) => (
+            <ColoredEnumChip key={val} label={val} color={keyEnumColors?.[val] || 'default'} style={{ margin: '5px 0px 0px 5px' }} />
+        ));
     }
     return value;
 };
