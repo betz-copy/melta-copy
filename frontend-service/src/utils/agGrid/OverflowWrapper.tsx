@@ -1,15 +1,16 @@
-import React, { useState, useEffect, useRef, useLayoutEffect, createRef } from 'react';
+import React, { useState, useRef, useLayoutEffect, createRef } from 'react';
 import Grid from '@mui/material/Grid';
-import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
+import { MeltaTooltip } from '../../common/MeltaTooltip';
 
 interface IOverflowWrapperProps<T> {
     items: T[];
     getItemKey: (item: T) => React.Key;
     renderItem: (item: T) => React.JSX.Element;
+    containerStyle?: React.CSSProperties;
 }
 
-const OverflowWrapper = <T extends any>({ items, renderItem, getItemKey }: IOverflowWrapperProps<T>) => {
+const OverflowWrapper = <T extends any>({ items, renderItem, getItemKey, containerStyle }: IOverflowWrapperProps<T>) => {
     const [visibleItems, setVisibleItems] = useState(items);
     const containerRef = useRef(null);
     const itemRefs = useRef<React.RefObject<HTMLDivElement>[]>([]);
@@ -43,7 +44,7 @@ const OverflowWrapper = <T extends any>({ items, renderItem, getItemKey }: IOver
     const overflowItems = items.length > visibleItems.length ? items.slice(visibleItems.length) : [];
 
     return (
-        <Grid ref={containerRef} container wrap="nowrap" alignItems="center" justifyItems="center" gap={`${itemsGap}px`}>
+        <Grid ref={containerRef} container wrap="nowrap" alignItems="center" justifyItems="center" gap={`${itemsGap}px`} style={containerStyle}>
             {visibleItems.map((item, index) => (
                 <Grid ref={itemRefs.current[index]} item key={getItemKey(item)}>
                     {renderItem(item)}
@@ -51,7 +52,7 @@ const OverflowWrapper = <T extends any>({ items, renderItem, getItemKey }: IOver
             ))}
             {overflowItems.length > 0 && (
                 <Grid item>
-                    <Tooltip
+                    <MeltaTooltip
                         title={overflowItems.map((item) => (
                             <Typography key={getItemKey(item)} style={{ margin: '5px' }}>
                                 {item}
@@ -65,11 +66,11 @@ const OverflowWrapper = <T extends any>({ items, renderItem, getItemKey }: IOver
                             justifyContent="center"
                             sx={{ borderRadius: '30px', height: '24px', width: '24px', background: 'var(--Gray-Medium, #9398C2)' }}
                         >
-                            <Typography color="white" fontWeight={700} fontSize="14px">
+                            <Typography color="white" fontWeight={500} fontSize="12px">
                                 +{overflowItems.length}
                             </Typography>
                         </Grid>
-                    </Tooltip>
+                    </MeltaTooltip>
                 </Grid>
             )}
         </Grid>

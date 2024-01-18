@@ -30,6 +30,7 @@ export interface IGetColumnDefsOptions<Data extends any> {
     defaultVisibleColumns?: { [key: string]: boolean };
     defaultColumnsOrder?: { [key: string]: { order: number } };
     defaultColumnWidths?: { [key: string]: number };
+    rowHeight: number;
 }
 
 export const getColumnDefs = <Data extends any = IEntity>({
@@ -43,6 +44,7 @@ export const getColumnDefs = <Data extends any = IEntity>({
     defaultVisibleColumns = {},
     defaultColumnsOrder = {},
     defaultColumnWidths = {},
+    rowHeight,
 }: IGetColumnDefsOptions<Data>): ColDef[] => {
     const columnDefs = Object.entries(template.properties.properties).map(([key, value]) => {
         const { type, format } = value;
@@ -77,6 +79,7 @@ export const getColumnDefs = <Data extends any = IEntity>({
                 value,
                 value.items.enum,
                 defaultColumnWidths[key],
+                rowHeight,
                 template.enumPropertiesColors?.[key],
                 hideColumn,
                 hideField,
