@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useLayoutEffect, createRef } from 'react';
 import Grid from '@mui/material/Grid';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
@@ -7,58 +7,70 @@ interface IOverflowWrapperProps<T> {
     items: T[];
     getItemKey: (item: T) => React.Key;
     renderItem: (item: T) => React.JSX.Element;
-    itemWidth: number;
 }
 
-const OverflowWrapper = <T extends any>({ items, renderItem, getItemKey, itemWidth }: IOverflowWrapperProps<T>) => {
+const OverflowWrapper = <T extends any>({ items, renderItem, getItemKey }: IOverflowWrapperProps<T>) => {
     const [visibleItems, setVisibleItems] = useState(items);
     const containerRef = useRef(null);
+    const itemRefs = useRef<React.RefObject<HTMLDivElement>[]>([]);
+    const itemsGap = 5;
 
-    useEffect(() => {
+    itemRefs.current = items.map((_, i) => itemRefs.current[i] || createRef());
+
+    useLayoutEffect(() => {
+        const itemWidths = itemRefs.current.map((ref) => (ref.current ? ref.current.offsetWidth : 0));
+
         if (containerRef.current) {
-            const resizeObserver = new ResizeObserver((entries) => {
-                for (const entry of entries) {
-                    const containerWidth = entry.contentRect.width;
-                    const maxDisplayCount = Math.floor(containerWidth / itemWidth);
-                    setVisibleItems(items.slice(0, maxDisplayCount));
-                }
-            });
+            const resizeObserver = new ResizeObserver(([entry]) => {
+                const containerWidth = entry.contentRect.width;
+                let displayedItemsWidth = 0;
+                let displayedItemsCount = 0;
+                itemWidths.forEach((itemWidth) => {
+                    if (displayedItemsWidth + itemWidth < containerWidth - 30) {
+                        displayedItemsCount++;
+                        displayedItemsWidth += itemWidth + itemsGap;
+                    }
+                });
 
+                setVisibleItems(items.slice(0, displayedItemsCount));
+            });
             resizeObserver.observe(containerRef.current);
             return () => resizeObserver.disconnect();
         }
-    }, [items, itemWidth, containerRef.current]);
+        return undefined;
+    }, [items, containerRef]);
 
     const overflowItems = items.length > visibleItems.length ? items.slice(visibleItems.length) : [];
 
     return (
-        <Grid ref={containerRef} container wrap="nowrap" alignItems="center" justifyItems="center" gap="5px" sx={{ textOverflow: 'ellipsis' }}>
-            {visibleItems.map((item) => (
-                <Grid item key={getItemKey(item)}>
+        <Grid ref={containerRef} container wrap="nowrap" alignItems="center" justifyItems="center" gap={`${itemsGap}px`}>
+            {visibleItems.map((item, index) => (
+                <Grid ref={itemRefs.current[index]} item key={getItemKey(item)}>
                     {renderItem(item)}
                 </Grid>
             ))}
             {overflowItems.length > 0 && (
-                <Tooltip
-                    title={overflowItems.map((item) => (
-                        <Typography key={getItemKey(item)} style={{ margin: '5px' }}>
-                            {renderItem(item)}
-                        </Typography>
-                    ))}
-                    arrow
-                >
-                    <Grid
-                        item
-                        container
-                        alignItems="center"
-                        justifyContent="center"
-                        sx={{ borderRadius: '30px', height: '24px', width: '24px', background: 'var(--Gray-Medium, #9398C2)' }}
+                <Grid item>
+                    <Tooltip
+                        title={overflowItems.map((item) => (
+                            <Typography key={getItemKey(item)} style={{ margin: '5px' }}>
+                                {item}
+                            </Typography>
+                        ))}
+                        arrow
                     >
-                        <Typography color="white" fontWeight={700} fontSize="14px">
-                            +{overflowItems.length}
-                        </Typography>
-                    </Grid>
-                </Tooltip>
+                        <Grid
+                            container
+                            alignItems="center"
+                            justifyContent="center"
+                            sx={{ borderRadius: '30px', height: '24px', width: '24px', background: 'var(--Gray-Medium, #9398C2)' }}
+                        >
+                            <Typography color="white" fontWeight={700} fontSize="14px">
+                                +{overflowItems.length}
+                            </Typography>
+                        </Grid>
+                    </Tooltip>
+                </Grid>
             )}
         </Grid>
     );

@@ -1,7 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React from 'react';
 import { ColDef, ICellRendererParams, IDateFilterParams, ISetFilterParams, ValueFormatterParams, ValueGetterFunc } from '@ag-grid-community/core';
 import i18next from 'i18next';
-import { Grid, Tooltip, Typography } from '@mui/material';
 import { OpenPreviewButton } from '../../common/OpenPreviewButton';
 import { Value } from './Value';
 import { getDateWithoutTime, getLongDate } from '../date';
@@ -156,62 +155,6 @@ export const enumColDef = <Data extends any = IEntity>(
     };
 };
 
-// const MyComponent = ({ items, enumColorOptions, hideValue }) => {
-//     const [visibleItems, setVisibleItems] = useState(items);
-//     const containerRef = useRef(null);
-
-//     useEffect(() => {
-//         const resizeObserver = new ResizeObserver((entries) => {
-//             for (const entry of entries) {
-//                 const containerWidth = entry.contentRect.width;
-//                 const itemWidth = 100; // Adjust this to the estimated width of your items
-//                 const maxDisplayCount = Math.floor(containerWidth / itemWidth);
-//                 setVisibleItems(items.slice(0, maxDisplayCount));
-//             }
-//         });
-
-//         resizeObserver.observe(containerRef.current);
-
-//         return () => {
-//             resizeObserver.disconnect();
-//         };
-//     }, [items]);
-
-//     const overflowItems = items.length > visibleItems.length ? items.slice(visibleItems.length) : [];
-
-//     return (
-//         <Grid ref={containerRef} container wrap="nowrap" alignItems="center" justifyItems="center" gap="5px" sx={{ textOverflow: 'ellipsis' }}>
-//             {visibleItems.map((item, index) => (
-//                 <Grid item key={index}>
-//                     <Value hideValue={hideValue} value={item} color={enumColorOptions?.[item] || 'default'} />
-//                 </Grid>
-//             ))}
-//             {overflowItems.length > 0 && (
-//                 <Tooltip
-//                     title={overflowItems.map((item) => (
-//                         <Typography key={item} style={{ margin: '5px' }}>
-//                             {item}
-//                         </Typography>
-//                     ))}
-//                     arrow
-//                 >
-//                     <Grid
-//                         item
-//                         container
-//                         alignItems="center"
-//                         justifyContent="center"
-//                         sx={{ borderRadius: '30px', height: '24px', width: '24px', background: 'var(--Gray-Medium, #9398C2)' }}
-//                     >
-//                         <Typography color="white" fontWeight={700} fontSize="14px">
-//                             +{overflowItems.length}
-//                         </Typography>
-//                     </Grid>
-//                 </Tooltip>
-//             )}
-//         </Grid>
-//     );
-// };
-
 export const enumArrayColDef = <Data extends any = IEntity>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
@@ -237,8 +180,8 @@ export const enumArrayColDef = <Data extends any = IEntity>(
             return (
                 <OverflowWrapper
                     items={props.value}
-                    renderItem={(item) => <Value hideValue={hideValue} value={item} color={enumColorOptions?.[item] || 'default'} />}
-                    itemWidth={100}
+                    getItemKey={(item: string) => item}
+                    renderItem={(item: string) => <Value hideValue={hideValue} value={item} color={enumColorOptions?.[item] || 'default'} />}
                 />
             );
         },
