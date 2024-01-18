@@ -1,11 +1,13 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ColDef, ICellRendererParams, IDateFilterParams, ISetFilterParams, ValueFormatterParams, ValueGetterFunc } from '@ag-grid-community/core';
 import i18next from 'i18next';
+import { Grid, Tooltip, Typography } from '@mui/material';
 import { OpenPreviewButton } from '../../common/OpenPreviewButton';
 import { Value } from './Value';
 import { getDateWithoutTime, getLongDate } from '../date';
 import { IEntity } from '../../interfaces/entities';
 import { agGridLocaleText } from './agGridLocaleText';
+import OverflowWrapper from './OverflowWrapper';
 
 export const numberColDef = <Data extends any = IEntity>(
     field: string,
@@ -123,6 +125,7 @@ export const booleanColDef = <Data extends any = IEntity>(
         hide: hideColumn,
     };
 };
+
 export const enumColDef = <Data extends any = IEntity>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
@@ -145,6 +148,101 @@ export const enumColDef = <Data extends any = IEntity>(
         cellRenderer: (props: ICellRendererParams<Data, string | undefined>) => {
             return <Value hideValue={hideValue} value={props.value ?? ''} color={props.value && enumColorOptions?.[props.value]} />;
         },
+        filter: 'agSetColumnFilter',
+        filterParams,
+        width: hardcodedWidth,
+        flex: hardcodedWidth ? 0 : 1,
+        hide: hideColumn,
+    };
+};
+
+// const MyComponent = ({ items, enumColorOptions, hideValue }) => {
+//     const [visibleItems, setVisibleItems] = useState(items);
+//     const containerRef = useRef(null);
+
+//     useEffect(() => {
+//         const resizeObserver = new ResizeObserver((entries) => {
+//             for (const entry of entries) {
+//                 const containerWidth = entry.contentRect.width;
+//                 const itemWidth = 100; // Adjust this to the estimated width of your items
+//                 const maxDisplayCount = Math.floor(containerWidth / itemWidth);
+//                 setVisibleItems(items.slice(0, maxDisplayCount));
+//             }
+//         });
+
+//         resizeObserver.observe(containerRef.current);
+
+//         return () => {
+//             resizeObserver.disconnect();
+//         };
+//     }, [items]);
+
+//     const overflowItems = items.length > visibleItems.length ? items.slice(visibleItems.length) : [];
+
+//     return (
+//         <Grid ref={containerRef} container wrap="nowrap" alignItems="center" justifyItems="center" gap="5px" sx={{ textOverflow: 'ellipsis' }}>
+//             {visibleItems.map((item, index) => (
+//                 <Grid item key={index}>
+//                     <Value hideValue={hideValue} value={item} color={enumColorOptions?.[item] || 'default'} />
+//                 </Grid>
+//             ))}
+//             {overflowItems.length > 0 && (
+//                 <Tooltip
+//                     title={overflowItems.map((item) => (
+//                         <Typography key={item} style={{ margin: '5px' }}>
+//                             {item}
+//                         </Typography>
+//                     ))}
+//                     arrow
+//                 >
+//                     <Grid
+//                         item
+//                         container
+//                         alignItems="center"
+//                         justifyContent="center"
+//                         sx={{ borderRadius: '30px', height: '24px', width: '24px', background: 'var(--Gray-Medium, #9398C2)' }}
+//                     >
+//                         <Typography color="white" fontWeight={700} fontSize="14px">
+//                             +{overflowItems.length}
+//                         </Typography>
+//                     </Grid>
+//                 </Tooltip>
+//             )}
+//         </Grid>
+//     );
+// };
+
+export const enumArrayColDef = <Data extends any = IEntity>(
+    field: string,
+    valueGetter: ValueGetterFunc<Data>,
+    value: { title: string },
+    values: Array<string>,
+    hardcodedWidth: number | undefined,
+    enumColorOptions?: Record<string, string>,
+    hideColumn = false,
+    hideValue = false,
+): ColDef<Data> => {
+    const filterParams: ISetFilterParams<Data, string | undefined> = {
+        suppressMiniFilter: true,
+        values: [...values, undefined],
+    };
+
+    return {
+        field,
+        headerName: value.title,
+        valueGetter,
+
+        cellRenderer: (props) => {
+            if (!props.value) return '';
+            return (
+                <OverflowWrapper
+                    items={props.value}
+                    renderItem={(item) => <Value hideValue={hideValue} value={item} color={enumColorOptions?.[item] || 'default'} />}
+                    itemWidth={100}
+                />
+            );
+        },
+
         filter: 'agSetColumnFilter',
         filterParams,
         width: hardcodedWidth,

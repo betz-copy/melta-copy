@@ -3,7 +3,7 @@ import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { IconButton, Grid } from '@mui/material';
 import { ColoredEnumChip } from '../../common/ColoredEnumChip';
 
-const Value: React.FC<{ hideValue: boolean; value: string; color?: string; isNumberField?: boolean }> = ({
+const Value: React.FC<{ hideValue: boolean; value: string; color?: string; isNumberField?: boolean; useDefaultColoredEnum?: boolean }> = ({
     hideValue,
     value,
     color,
@@ -17,7 +17,7 @@ const Value: React.FC<{ hideValue: boolean; value: string; color?: string; isNum
     let innerContent = <></>;
 
     if (hideValue && hideField) innerContent = <>••••••••</>;
-    else if (color) innerContent = <ColoredEnumChip label={value} color={color} />;
+    else if (color || color === 'default') innerContent = <ColoredEnumChip label={value} color={color} />;
     else innerContent = <>{value}</>;
 
     return (

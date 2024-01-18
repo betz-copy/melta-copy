@@ -5,7 +5,16 @@ import i18next from 'i18next';
 import { NavLink } from 'react-router-dom';
 import { IEntity } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
-import { booleanColDef, dateColDef, enumColDef, fileColDef, numberColDef, regexColDef, stringColDef } from '../../utils/agGrid/commonColDefs';
+import {
+    booleanColDef,
+    dateColDef,
+    enumArrayColDef,
+    enumColDef,
+    fileColDef,
+    numberColDef,
+    regexColDef,
+    stringColDef,
+} from '../../utils/agGrid/commonColDefs';
 import IconButtonWithPopover from '../IconButtonWithPopover';
 import { IButtonProps } from '.';
 
@@ -60,6 +69,17 @@ export const getColumnDefs = <Data extends any = IEntity>({
                 hideField,
             );
         if (value.pattern) return regexColDef(key, valueGetter, value, defaultColumnWidths[key], hideColumn, hideField);
+        if (value.items?.enum)
+            return enumArrayColDef(
+                key,
+                valueGetter,
+                value,
+                value.items.enum,
+                defaultColumnWidths[key],
+                template.enumPropertiesColors?.[key],
+                hideColumn,
+                hideField,
+            );
         return stringColDef(key, valueGetter, value, defaultColumnWidths[key], hideColumn, hideField);
     });
     columnDefs.push(

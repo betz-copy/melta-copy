@@ -4,13 +4,13 @@ import { colorWithOpacity } from '../utils/colorUtils';
 
 interface ColoredEnumChipProps {
     label: string;
-    color?: string;
+    color?: string | 'default';
     style?: CSSProperties;
 }
 
 export const ColoredEnumChip: React.FC<ColoredEnumChipProps> = ({ label, color, style }) => {
-    const backgroundColor = color ? colorWithOpacity(color, 0.1) : '#F7F7F7';
-    const textColor = color || '#000';
+    const backgroundColor = color !== 'default' && color ? colorWithOpacity(color, 0.1) : '#F7F7F7';
+    const textColor = color === 'default' ? '#000' : color;
     return (
         <Chip
             label={label}
