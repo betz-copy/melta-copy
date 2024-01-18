@@ -42,10 +42,6 @@ const PopperSidebar: React.FC<{
                             >
                                 <Grid item padding="15px">
                                     <Grid container alignItems="center" height="2.5rem" paddingX="0.2rem">
-                                        <IconButton onClick={() => setOpen(false)} size="small" sx={{ position: 'absolute' }}>
-                                            <CloseSharp />
-                                        </IconButton>
-
                                         <Typography
                                             color={theme.palette.primary.main}
                                             fontFamily="Rubik"

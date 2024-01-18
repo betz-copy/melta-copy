@@ -43,12 +43,14 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
         setStartDate(newStartDateInput);
     };
     const onSetEndDate = (newEndDateInput: Date | null) => {
+        console.log('gi');
+
         setEndDate(newEndDateInput);
+        console.log({ newEndDateInput });
     };
     const filterCleaning = () => {
         onSetStartDate(null);
         onSetEndDate(null);
-        setOpenCalenders(false);
     };
     const { mutate, isLoading } = useMutation((groupName: keyof typeof groups) => manyNotificationSeenRequest(groups[groupName]), {
         onSuccess: (seenNotifications, groupName) => {
@@ -124,22 +126,20 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                             />
                         </Box>
 
-                        {!openCalenders && (
-                            <Button
-                                onClick={() => setOpenCalenders(!openCalenders)}
-                                sx={{
-                                    backgroundColor: 'white',
-                                    borderRadius: '8px',
-                                    display: 'inline-block',
-                                    // width: '20px',
-                                    height: '38px',
-                                    padding: '8px', // Add padding around the button
-                                    boxShadow: '0 0 20px rgba(0, 0, 0, 0.3)',
-                                }}
-                            >
-                                <img src="/icons/calendar.svg" />
-                            </Button>
-                        )}
+                        <Button
+                            onClick={() => setOpenCalenders(!openCalenders)}
+                            sx={{
+                                backgroundColor: 'white',
+                                borderRadius: '8px',
+                                display: 'inline-block',
+                                // width: '20px',
+                                height: '38px',
+                                padding: '8px', // Add padding around the button
+                                boxShadow: '0 0 20px rgba(0, 0, 0, 0.3)',
+                            }}
+                        >
+                            <img src="/icons/calendar.svg" />
+                        </Button>
 
                         <IconButton onClick={filterCleaning} sx={{ borderRadius: 10 }}>
                             <FilterAltOffIcon />
