@@ -110,7 +110,7 @@ export const booleanColDef = <Data extends any = IEntity>(
             return formatValue(params.value);
         },
         suppressMiniFilter: true,
-        values: [true, false, undefined],
+        values: [true, false],
     };
     return {
         field,
@@ -161,6 +161,7 @@ export const enumArrayColDef = <Data extends any = IEntity>(
     value: { title: string },
     values: Array<string>,
     hardcodedWidth: number | undefined,
+    rowHeight: number,
     enumColorOptions?: Record<string, string>,
     hideColumn = false,
     hideValue = false,
@@ -182,6 +183,7 @@ export const enumArrayColDef = <Data extends any = IEntity>(
                     items={props.value}
                     getItemKey={(item: string) => item}
                     renderItem={(item: string) => <Value hideValue={hideValue} value={item} color={enumColorOptions?.[item] || 'default'} />}
+                    containerStyle={{ height: `${rowHeight}px` }}
                 />
             );
         },
