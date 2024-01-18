@@ -98,7 +98,7 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                         }}
                         sx={{ width: '100%' }}
                     >
-                        {index === 0 ? <img src="/icons/text-bubble.svg" /> : <img src="/icons/general-notification.svg" />}
+                        {index === 0 ? <img src="/icons/text-bubble-clicked.svg" /> : <img src="/icons/general-notification-clicked.svg" />}
                         <Tab label={i18next.t(`notifications.groups.${groupName}`)} />
                         <NotificationCount notificationCount={notificationCountDetails.groups[groupName]} />
                     </Button>
@@ -108,7 +108,7 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                 <CircularProgress sx={{ marginX: 'auto', marginTop: '1rem' }} />
             ) : (
                 <>
-                    <Grid sx={{ display: 'flex', justifyContent: 'space-evenly', padding: '10px' }}>
+                    <Grid sx={{ display: 'flex', justifyContent: 'space-evenly', padding: '15px' }}>
                         <Box
                             onClick={(e) => {
                                 e.stopPropagation();
@@ -148,9 +148,8 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                             <FilterAltOffIcon />
                         </IconButton>
                     </Grid>
-
                     {openCalenders && (
-                        <Grid sx={{ padding: '10px' }}>
+                        <Grid sx={{ padding: '15px' }}>
                             <DateRange
                                 onStartDateChange={onSetStartDate}
                                 onEndDateChange={onSetEndDate}
@@ -159,7 +158,6 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                             />
                         </Grid>
                     )}
-
                     <InfiniteScroll<INotificationPopulated>
                         queryKey={['getMyNotifications', selectedGroup, startDate, endDate, notificationsToShowCheckbox]}
                         queryFunction={({ pageParam }) =>
@@ -183,19 +181,19 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                             </Grid>
                         )}
                     </InfiniteScroll>
+
+                    <LoadingButton
+                        onClick={() => {
+                            if (!notificationCountDetails.groups[selectedGroup]) return;
+                            mutate(selectedGroup);
+                        }}
+                        loading={isLoading}
+                        sx={{ bottom: 0, padding: '10px', justifyContent: 'flex-end' }}
+                    >
+                        {i18next.t('notifications.setAllSeen')}
+                    </LoadingButton>
                 </>
             )}
-            <Grid item container justifyContent="flex-end" sx={{ bottom: 0, padding: '10px' }}>
-                <LoadingButton
-                    onClick={() => {
-                        if (!notificationCountDetails.groups[selectedGroup]) return;
-                        mutate(selectedGroup);
-                    }}
-                    loading={isLoading}
-                >
-                    {i18next.t('notifications.setAllSeen')}
-                </LoadingButton>
-            </Grid>
         </PopperSidebar>
     );
 };
