@@ -38,7 +38,8 @@ export const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
     const touchedTitle = touched?.title;
     const errorTitle = errors?.title;
 
-    const type = `attachmentProperties[${index}].type`;
+    // TODO: implement array field on files
+    // const type = `attachmentProperties[${index}].type`;
 
     const required = `attachmentProperties[${index}].required`;
 
@@ -97,18 +98,6 @@ export const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
                                                     label={i18next.t('validation.required')}
                                                 />
                                             )}
-                                            <FormControlLabel
-                                                control={
-                                                    <Switch
-                                                        id={type}
-                                                        name={type}
-                                                        onChange={onChange}
-                                                        checked={value.type === 'fileIdArray'}
-                                                        disabled={!isEditMode}
-                                                    />
-                                                }
-                                                label={i18next.t('wizard.entityTemplate.filesArrayOption')}
-                                            />
                                         </Box>
 
                                         <IconButton disabled={isDisabled} onClick={() => remove(index)}>
