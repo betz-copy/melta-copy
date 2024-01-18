@@ -519,6 +519,7 @@ export default {
         entityReference: 'שיוך לישות',
         serialNumber: 'מספר סידורי',
         enumArray: 'רשימה מרובה',
+        array: 'מערך',
     },
     input: {
         imagePicker: {
