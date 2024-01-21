@@ -74,6 +74,7 @@ export class RuleSerializer {
         const template = RuleSerializer.entityTemplates.get(entityTemplateId)!;
         const property = template.properties.properties[propertyName];
 
+        if (property.type === 'array') throw new Error('array not supported in formulas! sorry!'); // todo: block in UI too, or support it
         if (property.type !== 'string') return property.type;
         if (property.format === 'date') return 'date';
         if (property.format === 'date-time') return 'datetime';
