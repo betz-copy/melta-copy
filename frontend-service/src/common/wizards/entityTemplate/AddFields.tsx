@@ -39,7 +39,6 @@ export const propertiesBaseSchema = Yup.object({
 export const attachmentPropertiesBaseSchema = Yup.object({
     name: Yup.string().matches(variableNameValidation, i18next.t('validation.variableName')).required(i18next.t('validation.required')),
     title: Yup.string().required(i18next.t('validation.required')),
-    type: Yup.string().oneOf(['fileId', 'fileIdArray']).required(i18next.t('validation.required')),
 });
 
 const addFieldsSchema = Yup.object({
