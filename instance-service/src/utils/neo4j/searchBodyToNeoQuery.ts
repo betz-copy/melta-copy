@@ -149,7 +149,7 @@ const simplePartFilterOfArrayFieldToNeoQuery = (
     const rhsParamName = 'rhs';
     const rhsParamPath = `${parametersParentVariableName}.${rhsParamName}`;
 
-    return { cypherQuery: `${operator === '$ne' ? 'NOT ' : ''}node.${field} IN $${rhsParamPath}`, parameters: { [rhsParamName]: rhs } };
+    return { cypherQuery: `${operator === '$ne' ? 'NOT ' : ''}$${rhsParamPath} IN node.${field}`, parameters: { [rhsParamName]: rhs } };
 };
 
 const inFilterOfArrayField = (field: string, rhs: NonNullable<IFilterOfField['$in']>, parametersParentVariableName: string) => {
