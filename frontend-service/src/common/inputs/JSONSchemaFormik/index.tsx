@@ -103,7 +103,6 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
                     return {
                         'ui:widget': 'SelectWidget',
                         'ui:options': { enumOptions: propertySchema.items!.enum.map((option) => ({ label: option, value: option })) },
-                        'ui:multiple': true,
                     };
                 }
                 return {};
