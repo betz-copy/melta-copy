@@ -26,12 +26,24 @@ const OverflowWrapper = <T extends any>({ items, renderItem, getItemKey, contain
                 const containerWidth = entry.contentRect.width;
                 let displayedItemsWidth = 0;
                 let displayedItemsCount = 0;
-                itemWidths.forEach((itemWidth) => {
-                    if (displayedItemsWidth + itemWidth < containerWidth - 30) {
-                        displayedItemsCount++;
-                        displayedItemsWidth += itemWidth + itemsGap;
+                for (let i = 0; i < itemWidths.length; i++) {
+                    const itemWidth = itemWidths[i];
+
+                    const overflowButtonWidth = 30;
+                    let availableSpace = containerWidth - displayedItemsWidth;
+                    if (i < itemWidths.length - 1) {
+                        // if not last item, need to insert overflow button too (to show overflowItems count)
+                        availableSpace -= overflowButtonWidth;
                     }
-                });
+
+                    // if (displayedItemsWidth + itemWidth >= containerWidth - 30) {
+                    if (itemWidth >= availableSpace - 30) {
+                        break;
+                    }
+
+                    displayedItemsCount++;
+                    displayedItemsWidth += itemWidth + itemsGap;
+                }
 
                 setVisibleItems(items.slice(0, displayedItemsCount));
             });
