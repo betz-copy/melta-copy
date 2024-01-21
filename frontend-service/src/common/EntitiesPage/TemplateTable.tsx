@@ -160,7 +160,7 @@ const TemplateTable = forwardRef<
                     quickFilterText={quickFilterText}
                     rowHeight={50}
                     pageRowCount={isExpand ? expandedRowCount : undefined}
-                    fontSize="16px"
+                    fontSize="14px"
                     saveStorageProps={{
                         shouldSaveFilter: true,
                         shouldSaveWidth: true,

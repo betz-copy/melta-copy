@@ -68,6 +68,9 @@ export const stringColDef = <Data extends any = IEntity>(
         width: hardcodedWidth,
         flex: hardcodedWidth ? 0 : 1,
         hide: hideColumn,
+        cellStyle: { wordBreak: 'normal' },
+        wrapText: true,
+        autoHeight: true,
     };
 };
 
@@ -193,6 +196,9 @@ export const enumArrayColDef = <Data extends any = IEntity>(
         width: hardcodedWidth,
         flex: hardcodedWidth ? 0 : 1,
         hide: hideColumn,
+        cellStyle: { wordBreak: 'normal' },
+        wrapText: true,
+        autoHeight: true,
     };
 };
 export const dateColDef = <Data extends any = IEntity>(
