@@ -102,7 +102,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTem
                 case 'serialNumber':
                     propertyType = 'number';
                     break;
-                case 'enumArray' || 'ssss':
+                case 'enumArray':
                     propertyType = 'array';
                     break;
                 default:
@@ -145,31 +145,15 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTem
         },
     );
 
-    attachmentProperties.forEach(({ name, title, type, required }) => {
-        let propertySchema: IEntitySingleProperty = {
+    attachmentProperties.forEach(({ name, title, required }) => {
+        schema.properties[name] = {
             title,
             type: 'string',
             format: 'fileId',
         };
 
-        if (type === 'fileIdArray') {
-            propertySchema = {
-                title,
-                type: 'array',
-                items: {
-                    type: 'string',
-                    format: 'fileId',
-                },
-                minItems: 1,
-                uniqueItems: true,
-            };
-        }
-
-        propertiesOrder.push(name);
-
         if (required) schema.required.push(name);
     });
-
     const uniqueConstraints = uniqueConstraint.length > 0 ? [uniqueConstraint, ...serialsUniqueConstraints] : serialsUniqueConstraints;
 
     return {
