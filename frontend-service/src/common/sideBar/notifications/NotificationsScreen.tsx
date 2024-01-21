@@ -38,15 +38,14 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
     const [endDate, setEndDate] = useState<Date | null>(null);
     const [openCalenders, setOpenCalenders] = useState<boolean>(false);
     const [notificationsToShowCheckbox, setNotificationsToShowCheckbox] = useState(notificationsMoreData[selectedGroup]);
+    const [generalClicked, setGeneralClicked] = useState<boolean>(true);
+    const [requestsClicked, setRequestsClicked] = useState<boolean>(false);
 
     const onSetStartDate = (newStartDateInput: Date | null) => {
         setStartDate(newStartDateInput);
     };
     const onSetEndDate = (newEndDateInput: Date | null) => {
-        console.log('gi');
-
         setEndDate(newEndDateInput);
-        console.log({ newEndDateInput });
     };
     const filterCleaning = () => {
         onSetStartDate(null);
@@ -86,18 +85,21 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                 }}
                 sx={{ height: '3.5rem', display: 'flex', justifyContent: 'space-around' }}
             >
-                {groupNames.map((groupName, index) => (
+                {groupNames.map((groupName) => (
                     <Button
                         key={groupName}
                         value={groupName}
                         onClick={(event) => {
                             setSelectedGroup(groupName);
+                            setGeneralClicked(!generalClicked);
+                            setRequestsClicked(!requestsClicked);
                             setNotificationsToShowCheckbox(notificationsMoreData[groupName]);
                             event.preventDefault();
                         }}
-                        sx={{ width: '100%' }}
+                        sx={{ width: '100%', color: selectedGroup === groupName ? '#1E2775' : 'inherit' }}
                     >
-                        {index === 0 ? <img src="/icons/text-bubble-clicked.svg" /> : <img src="/icons/general-notification-clicked.svg" />}
+                        <img src={`/icons/${groupName}-notification${selectedGroup === groupName ? '-clicked' : ''}.svg`} />
+
                         <Tab label={i18next.t(`notifications.groups.${groupName}`)} />
                         <NotificationCount notificationCount={notificationCountDetails.groups[groupName]} />
                     </Button>
@@ -110,6 +112,8 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                     <Grid sx={{ display: 'flex', justifyContent: 'space-evenly', padding: '15px' }}>
                         <Box
                             onClick={(e) => {
+                                console.log('helooo shirel');
+
                                 e.stopPropagation();
                                 e.preventDefault();
                             }}
@@ -125,7 +129,6 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                                 size="small"
                             />
                         </Box>
-
                         <Button
                             onClick={() => setOpenCalenders(!openCalenders)}
                             sx={{
@@ -133,9 +136,9 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                                 borderRadius: '8px',
                                 display: 'inline-block',
                                 // width: '20px',
-                                height: '38px',
+                                height: '40px',
                                 padding: '8px', // Add padding around the button
-                                boxShadow: '0 0 20px rgba(0, 0, 0, 0.3)',
+                                boxShadow: '0 0 10px rgba(0, 0, 0, 0.2)',
                             }}
                         >
                             <img src="/icons/calendar.svg" />
@@ -162,7 +165,7 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                                 limit: infiniteScrollPageCount,
                                 step: pageParam,
                                 types: notificationsToShowCheckbox.map((notification) => notification.type),
-                                startDate: startDate ?? undefined ,
+                                startDate: startDate ?? undefined,
                                 endDate: endDate ?? undefined,
                             })
                         }
@@ -179,16 +182,17 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                         )}
                     </InfiniteScroll>
 
-                    <LoadingButton
-                        onClick={() => {
-                            if (!notificationCountDetails.groups[selectedGroup]) return;
-                            mutate(selectedGroup);
-                        }}
-                        loading={isLoading}
-                        sx={{ bottom: 0, padding: '10px', justifyContent: 'flex-end' }}
-                    >
-                        {i18next.t('notifications.setAllSeen')}
-                    </LoadingButton>
+                    <Grid container sx={{ position: 'absolute', bottom: 0, justifyContent: 'flex-end', padding: '8px', backgroundColor: 'white' }}>
+                        <LoadingButton
+                            onClick={() => {
+                                if (!notificationCountDetails.groups[selectedGroup]) return;
+                                mutate(selectedGroup);
+                            }}
+                            loading={isLoading}
+                        >
+                            {i18next.t('notifications.setAllSeen')}
+                        </LoadingButton>
+                    </Grid>
                 </>
             )}
         </PopperSidebar>

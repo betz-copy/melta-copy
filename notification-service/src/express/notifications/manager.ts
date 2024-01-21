@@ -71,32 +71,20 @@ export class NotificationsManager {
 
     private static handleQuery({ viewerId, types, startDate, endDate, ...rest }: IBasicNotificationQuery) {
         const query: FilterQuery<INotificationDocument> = { ...rest };
-
         query.type = { $in: types };
         if (viewerId) query.viewers = viewerId;
-        // if (startDate) {
-        //     if (endDate) query.createdAt = { $gte: startDate, $lte: endDate };
-        //     else query.createdAt = { $gte: startDate };
-        // } else if (endDate) {
-        //     query.createdAt = { $lte: endDate };
-        // // }
-        console.log({ endDate }, { startDate });
-        if (startDate && !endDate) query.createdAt = { $gte: startDate };
-        if (endDate && !startDate) {
-            query.createdAt = { $lte: endDate };
+
+        if (startDate || endDate) {
+            query.createdAt = {};
+
+            if (startDate) {
+                query.createdAt.$gte = startDate;
+            }
+
+            if (endDate) {
+                query.createdAt.$lte = endDate;
+            }
         }
-        if (endDate && startDate) query.createdAt = { $gte: startDate, $lte: endDate };
-        // if (startDate || endDate) {
-        //     query.createdAt = {};
-
-        //     if (startDate) {
-        //         query.createdAt.$gte = startDate;
-        //     }
-
-        //     if (endDate) {
-        //         query.createdAt.$lte = endDate;
-        //     }
-        // }
         return query;
     }
 }
