@@ -68,9 +68,6 @@ export const stringColDef = <Data extends any = IEntity>(
         width: hardcodedWidth,
         flex: hardcodedWidth ? 0 : 1,
         hide: hideColumn,
-        cellStyle: { wordBreak: 'normal' },
-        wrapText: true,
-        autoHeight: true,
     };
 };
 
@@ -179,13 +176,13 @@ export const enumArrayColDef = <Data extends any = IEntity>(
         headerName: value.title,
         valueGetter,
 
-        cellRenderer: (props) => {
+        cellRenderer: (props: ICellRendererParams<Data, string[] | undefined>) => {
             if (!props.value) return '';
             return (
                 <OverflowWrapper
                     items={props.value}
-                    getItemKey={(item: string) => item}
-                    renderItem={(item: string) => <Value hideValue={hideValue} value={item} color={enumColorOptions?.[item] || 'default'} />}
+                    getItemKey={(item) => item}
+                    renderItem={(item) => <Value hideValue={hideValue} value={item} color={enumColorOptions?.[item] || 'default'} />}
                     containerStyle={{ height: `${rowHeight}px` }}
                 />
             );
@@ -196,9 +193,6 @@ export const enumArrayColDef = <Data extends any = IEntity>(
         width: hardcodedWidth,
         flex: hardcodedWidth ? 0 : 1,
         hide: hideColumn,
-        cellStyle: { wordBreak: 'normal' },
-        wrapText: true,
-        autoHeight: true,
     };
 };
 export const dateColDef = <Data extends any = IEntity>(
