@@ -80,6 +80,7 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
         disabled: false,
         properties: [],
         attachmentProperties: [],
+        propertiesTypeOrder: ['properties', 'attachmentProperties'],
     },
     isEditMode = false,
 }) => {

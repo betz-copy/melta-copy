@@ -1,10 +1,10 @@
 import React, { SetStateAction, useCallback, useRef } from 'react';
-import { Accordion, AccordionDetails, AccordionSummary, Button, Grid, styled, Typography } from '@mui/material';
-import { DragDropContext, Droppable } from 'react-beautiful-dnd';
+import { Accordion, AccordionDetails, AccordionSummary, Box, Button, Grid, styled, Typography } from '@mui/material';
+import { DragDropContext, DraggableProvided, Droppable } from 'react-beautiful-dnd';
 import { v4 as uuid } from 'uuid';
 import { FieldArray, FormikErrors, FormikHelpers, FormikTouched } from 'formik';
 import i18next from 'i18next';
-import { ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
+import { DragHandle as DragHandleIcon, ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
 import _debounce from 'lodash.debounce';
 import { FieldEditCardProps, MemoFieldEditCard } from './FieldEditCard';
 import { MemoAttachmentEditCard } from './AttachmentEditCard';
@@ -34,6 +34,7 @@ interface FieldBlockProps<PropertiesType extends string, Values extends Record<P
     supportEntityReferenceType: boolean;
     supportChangeToRequiredWithInstances: boolean;
     supportArrayFields: boolean;
+    draggable?: { isDraggable: false } | { isDraggable: true; dragHandleProps: DraggableProvided['dragHandleProps'] };
 }
 
 const FieldBlock = <PropertiesType extends string, Values extends Record<PropertiesType, CommonFormInputProperties[]>>({
@@ -52,6 +53,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
     supportEntityReferenceType,
     supportChangeToRequiredWithInstances,
     supportArrayFields,
+    draggable = { isDraggable: false },
     initialFieldCardDataOnAdd = {
         name: '',
         title: '',
@@ -152,7 +154,14 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
     return (
         <FieldBlockAccordion style={{ border: isFieldBlockError ? '1px solid red' : '' }}>
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                <Typography>{title}</Typography>
+                <Grid container wrap="nowrap" alignItems="center">
+                    {draggable.isDraggable && (
+                        <Box {...draggable.dragHandleProps} style={{ display: 'flex', alignItems: 'center' }}>
+                            <DragHandleIcon fontSize="large" />
+                        </Box>
+                    )}
+                    <Typography>{title}</Typography>
+                </Grid>
             </AccordionSummary>
 
             <AccordionDetails>

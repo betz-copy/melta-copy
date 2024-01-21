@@ -46,45 +46,50 @@ export const getColumnDefs = <Data extends any = IEntity>({
     defaultColumnWidths = {},
     rowHeight,
 }: IGetColumnDefsOptions<Data>): ColDef[] => {
-    const columnDefs = Object.entries(template.properties.properties).map(([key, value]) => {
-        const { type, format } = value;
+    const columnDefs = template.propertiesOrder.map((property) => {
+        const propertyTemplate = template.properties.properties[property];
+        const { type, format } = propertyTemplate;
 
-        const hideField = template.properties.hide.includes(key);
+        const hideField = template.properties.hide.includes(property);
 
-        const valueGetter: ValueGetterFunc = ({ data }) => (data ? getEntityPropertiesData(data)[key] : undefined);
+        const valueGetter: ValueGetterFunc = ({ data }) => (data ? getEntityPropertiesData(data)[property] : undefined);
 
         const hideColumn =
-            defaultVisibleColumns[key] !== undefined ? !defaultVisibleColumns[key] : hideNonPreview && !template.propertiesPreview.includes(key);
+            defaultVisibleColumns[property] !== undefined
+                ? !defaultVisibleColumns[property]
+                : hideNonPreview && !template.propertiesPreview.includes(property);
 
-        if (type === 'number') return numberColDef(key, valueGetter, value, defaultColumnWidths[key], hideColumn, hideField);
-        if (type === 'boolean') return booleanColDef(key, valueGetter, value, defaultColumnWidths[key], hideColumn, hideField);
-        if (format === 'date' || format === 'date-time') return dateColDef(key, valueGetter, value, defaultColumnWidths[key], hideColumn, hideField);
-        if (format === 'fileId') return fileColDef(key, valueGetter, value, defaultColumnWidths[key], hideColumn);
-        if (value.enum)
+        if (type === 'number') return numberColDef(property, valueGetter, propertyTemplate, defaultColumnWidths[property], hideColumn, hideField);
+        if (type === 'boolean') return booleanColDef(property, valueGetter, propertyTemplate, defaultColumnWidths[property], hideColumn, hideField);
+        if (format === 'date' || format === 'date-time')
+            return dateColDef(property, valueGetter, propertyTemplate, defaultColumnWidths[property], hideColumn, hideField);
+        if (format === 'fileId') return fileColDef(property, valueGetter, propertyTemplate, defaultColumnWidths[property], hideColumn);
+        if (propertyTemplate.enum)
             return enumColDef(
-                key,
+                property,
                 valueGetter,
-                value,
-                value.enum,
-                defaultColumnWidths[key],
-                template.enumPropertiesColors?.[key],
+                propertyTemplate,
+                propertyTemplate.enum,
+                defaultColumnWidths[property],
+                template.enumPropertiesColors?.[property],
                 hideColumn,
                 hideField,
             );
-        if (value.pattern) return regexColDef(key, valueGetter, value, defaultColumnWidths[key], hideColumn, hideField);
-        if (value.items?.enum)
+        if (propertyTemplate.pattern)
+            return regexColDef(property, valueGetter, propertyTemplate, defaultColumnWidths[property], hideColumn, hideField);
+        if (propertyTemplate.items?.enum)
             return enumArrayColDef(
-                key,
+                property,
                 valueGetter,
-                value,
-                value.items.enum,
-                defaultColumnWidths[key],
+                propertyTemplate,
+                propertyTemplate.items.enum,
+                defaultColumnWidths[property],
                 rowHeight,
-                template.enumPropertiesColors?.[key],
+                template.enumPropertiesColors?.[property],
                 hideColumn,
                 hideField,
             );
-        return stringColDef(key, valueGetter, value, defaultColumnWidths[key], hideColumn, hideField);
+        return stringColDef(property, valueGetter, propertyTemplate, defaultColumnWidths[property], hideColumn, hideField);
     });
     columnDefs.push(
         booleanColDef(

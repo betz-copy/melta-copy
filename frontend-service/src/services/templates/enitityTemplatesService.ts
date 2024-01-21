@@ -54,17 +54,23 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
 
     if (iconFileId) {
         const file: Partial<File> = { name: iconFileId };
-        return { ...restOfEntityTemplate, icon: { file, name: getFileName(iconFileId) }, properties: propertiesArray, attachmentProperties };
+        return {
+            ...restOfEntityTemplate,
+            icon: { file, name: getFileName(iconFileId) },
+            properties: propertiesArray,
+            attachmentProperties,
+        };
     }
 
     return { ...restOfEntityTemplate, properties: propertiesArray, attachmentProperties };
 };
 
 export const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTemplate => {
-    const { properties, attachmentProperties, ...restOfProperties } = values;
+    const { properties, attachmentProperties, propertiesTypeOrder, ...restOfProperties } = values;
     const serialsUniqueConstraints: string[][] = [];
 
     const propertiesOrder: string[] = [];
+    const attachmentPropertiesOrder: string[] = [];
     const propertiesPreview: string[] = [];
     const uniqueConstraint: string[] = []; // UI supports only single unique constraint
     const schema: IEntityTemplate['properties'] = {
@@ -152,6 +158,8 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTem
             format: 'fileId',
         };
 
+        attachmentPropertiesOrder.push(name);
+
         if (required) schema.required.push(name);
     });
     const uniqueConstraints = uniqueConstraint.length > 0 ? [uniqueConstraint, ...serialsUniqueConstraints] : serialsUniqueConstraints;
@@ -160,7 +168,11 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTem
         ...restOfProperties,
         properties: schema,
         category: values.category._id,
-        propertiesOrder,
+        propertiesOrder:
+            propertiesTypeOrder[0] === 'properties'
+                ? [...propertiesOrder, ...attachmentPropertiesOrder]
+                : [...attachmentPropertiesOrder, ...propertiesOrder],
+        propertiesTypeOrder,
         propertiesPreview,
         enumPropertiesColors,
         uniqueConstraints,
@@ -185,6 +197,7 @@ const createEntityTemplateRequest = async (newEntityTemplate: EntityTemplateWiza
     formData.append('category', entityTemplate.category);
     formData.append('properties', JSON.stringify(entityTemplate.properties));
     formData.append('propertiesOrder', JSON.stringify(entityTemplate.propertiesOrder));
+    formData.append('propertiesTypeOrder', JSON.stringify(entityTemplate.propertiesTypeOrder));
     formData.append('propertiesPreview', JSON.stringify(entityTemplate.propertiesPreview));
     formData.append('uniqueConstraints', JSON.stringify(entityTemplate.uniqueConstraints));
 
@@ -223,6 +236,7 @@ const updateEntityTemplateRequest = async (entityTemplateId: string, updatedEnti
     formData.append('category', entityTemplate.category);
     formData.append('properties', JSON.stringify(entityTemplate.properties));
     formData.append('propertiesOrder', JSON.stringify(entityTemplate.propertiesOrder));
+    formData.append('propertiesTypeOrder', JSON.stringify(entityTemplate.propertiesTypeOrder));
     formData.append('propertiesPreview', JSON.stringify(entityTemplate.propertiesPreview));
     formData.append('uniqueConstraints', JSON.stringify(entityTemplate.uniqueConstraints));
 

@@ -34,6 +34,7 @@ export interface IEntityTemplate {
         required: string[];
     };
     propertiesOrder: string[];
+    propertiesTypeOrder: ('properties' | 'attachmentProperties')[];
     propertiesPreview: string[];
     disabled: boolean;
     iconFileId: string | null;
