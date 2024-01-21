@@ -191,6 +191,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
                                                 supportSerialNumberType,
                                                 supportEntityReferenceType,
                                                 supportChangeToRequiredWithInstances,
+                                                supportArrayFields,
                                             };
 
                                             if (propertiesType === 'properties' || propertiesType === 'detailsProperties') {

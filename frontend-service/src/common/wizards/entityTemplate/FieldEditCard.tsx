@@ -51,6 +51,7 @@ export interface FieldEditCardProps {
     supportSerialNumberType: boolean;
     supportEntityReferenceType: boolean;
     supportChangeToRequiredWithInstances: boolean;
+    supportArrayFields: boolean;
 }
 
 export const FieldEditCard: React.FC<FieldEditCardProps> = ({
@@ -68,6 +69,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     supportSerialNumberType,
     supportEntityReferenceType,
     supportChangeToRequiredWithInstances,
+    supportArrayFields,
 }) => {
     const name = `properties[${index}].name`;
     const touchedName = touched?.name;
@@ -176,6 +178,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
 
                                                         return !areThereAnyInstances;
                                                     }
+                                                    if (validPropertyType === 'enumArray') return supportArrayFields;
                                                     if (validPropertyType === 'fileId' || validPropertyType === 'fileIdArray') return false; // TODO: support file inputs
                                                     return true;
                                                 })
