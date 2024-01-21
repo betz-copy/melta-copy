@@ -12,7 +12,7 @@ const nums = new Set(['number', 'integer']);
 const processValue = (schema: any, value: any) => {
     // "enum" is a reserved word, so only "type" and "items" can be destructured
     const { type, items } = schema;
-    if (value === '') {
+    if (value === null) {
         return undefined;
     }
     if (type === 'array' && items && nums.has(items.type)) {
@@ -61,7 +61,6 @@ const RjfsSelectWidget = ({
 }: WidgetProps) => {
     const { enumOptions } = options;
 
-    const emptyValue = multiple ? null : '';
     const _onBlur = ({ target: { value: newValue } }: React.FocusEvent<HTMLInputElement>) => onBlur(id, processValue(schema, newValue));
     const _onFocus = ({ target: { value: newValue } }: React.FocusEvent<HTMLInputElement>) => onFocus(id, processValue(schema, newValue));
     const variant = readonly ? 'standard' : 'outlined';
@@ -73,14 +72,14 @@ const RjfsSelectWidget = ({
             readOnly={readonly}
             multiple={multiple}
             // eslint-disable-next-line no-nested-ternary
-            value={typeof value === 'undefined' ? emptyValue : value}
+            value={typeof value === 'undefined' ? null : value}
             isOptionEqualToValue={(option, val) => option === val}
             onChange={(event, newValue) => {
                 if (multiple) {
                     const processedValue = (newValue as string[]).map((option) => processValue(schema, option));
                     onChange(newValue!.length !== 0 ? processedValue : undefined);
                 } else {
-                    const processedValue = processValue(schema, newValue || '');
+                    const processedValue = processValue(schema, newValue);
                     onChange(processedValue);
                 }
                 event.preventDefault();
