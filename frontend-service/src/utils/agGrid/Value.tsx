@@ -8,7 +8,6 @@ const Value: React.FC<{
     value: string;
     color?: string;
     isNumberField?: boolean;
-    useDefaultColoredEnum?: boolean;
 }> = ({ hideValue, value, color, isNumberField }) => {
     const [hideField, setHideField] = React.useState(true);
     const [anchorEl, setAnchorEl] = React.useState<HTMLDivElement | null>(null);
