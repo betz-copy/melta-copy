@@ -26,7 +26,6 @@ const Value: React.FC<{
     };
 
     const open = Boolean(anchorEl);
-    const id = open ? 'simple-popover' : undefined;
 
     let innerContent;
     if (hideValue && hideField) innerContent = <>••••••••</>;
@@ -39,7 +38,6 @@ const Value: React.FC<{
                 item
                 sx={{
                     fontFamily: 'Rubik',
-                    fontSize: '14px',
                     fontWeight: '200',
                     overflow: 'hidden',
                     whiteSpace: 'nowrap',
@@ -52,7 +50,6 @@ const Value: React.FC<{
             </Grid>
 
             <Popover
-                id={id}
                 open={open}
                 anchorEl={anchorEl}
                 onClose={handleClose}
