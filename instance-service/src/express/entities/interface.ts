@@ -46,8 +46,8 @@ export interface IEntityWithDirectRelationships {
 }
 
 export interface IFilterOfField {
-    $eq?: boolean | string | number  | null;
-    $ne?: boolean | string | number  | null;
+    $eq?: boolean | string | number | null;
+    $ne?: boolean | string | number | null;
     $eqi?: string; // case insensitive $eq
     $rgx?: string; // Java Regular Expression (not javascript)
     $gt?: boolean | string | number;
