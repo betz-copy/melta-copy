@@ -8,8 +8,8 @@ export const getMyNotificationsRequest = async (query: {
     limit: number;
     step?: number;
     types?: NotificationType[];
-    startDate: Date | null;
-    endDate: Date | null;
+    startDate?: Date;
+    endDate?: Date;
 }) => {
     const { data } = await axios.get<INotificationPopulated[]>(`${notifications}/my`, { params: query });
     return data;

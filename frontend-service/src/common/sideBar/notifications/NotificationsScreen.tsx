@@ -162,8 +162,8 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                                 limit: infiniteScrollPageCount,
                                 step: pageParam,
                                 types: notificationsToShowCheckbox.map((notification) => notification.type),
-                                startDate,
-                                endDate,
+                                startDate: startDate ?? undefined ,
+                                endDate: endDate ?? undefined,
                             })
                         }
                         onQueryError={(error) => {
