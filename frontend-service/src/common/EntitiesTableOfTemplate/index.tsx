@@ -13,11 +13,14 @@ import {
     IServerSideGetRowsParams,
     IServerSideGetRowsRequest,
     PaginationChangedEvent,
+    StatusPanelDef,
+    ModuleRegistry,
 } from '@ag-grid-community/core';
 import { AgGridReact } from '@ag-grid-community/react';
 import '@noam7700/ag-grid-enterprise-core';
 import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
 import { ColumnsToolPanelModule } from '@noam7700/ag-grid-enterprise-column-tool-panel';
+import { StatusBarModule } from '@noam7700/ag-grid-enterprise-status-bar';
 import { MenuModule } from '@noam7700/ag-grid-enterprise-menu';
 import { SetFilterModule } from '@noam7700/ag-grid-enterprise-set-filter';
 import { ServerSideRowModelModule } from '@noam7700/ag-grid-enterprise-server-side-row-model';
@@ -321,6 +324,16 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             }
         };
 
+        const statusBar = {
+            statusPanels: [
+                {
+                    statusPanel: 'agTotalAndFilteredRowCountComponent',
+                    align: 'center',
+                    statusPanelParams: 'count',
+                },
+            ],
+        };
+
         return (
             <Box
                 sx={getStyles()}
@@ -340,12 +353,19 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                     className="ag-theme-material"
                     containerStyle={{
                         width: '100%',
-                        height: rowModelType === 'infinite' ? `${rowHeight * pageRowCount}px` : undefined,
+                        height: rowModelType === 'infinite' ? `${rowHeight * pageRowCount + 57}px` : undefined,
                         fontFamily: 'Rubik',
                         fontSize,
                         fontWeight: 300,
                     }}
-                    modules={[ServerSideRowModelModule, ColumnsToolPanelModule, MenuModule, SetFilterModule, ClientSideRowModelModule]}
+                    modules={[
+                        ServerSideRowModelModule,
+                        ColumnsToolPanelModule,
+                        MenuModule,
+                        SetFilterModule,
+                        ClientSideRowModelModule,
+                        StatusBarModule,
+                    ]}
                     domLayout={rowModelType !== 'infinite' ? 'autoHeight' : undefined}
                     getRowId={({ data }) => getRowId(data)}
                     columnDefs={columnDefs}
@@ -432,6 +452,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                         ],
                         position: 'left',
                     }}
+                    statusBar={rowModelType === 'infinite' ? statusBar : undefined}
                     localeText={i18next.t('agGridLocaleText', { returnObjects: true })}
                 />
             </Box>

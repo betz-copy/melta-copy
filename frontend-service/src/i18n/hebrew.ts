@@ -31,6 +31,8 @@ export default {
         downloadOneTable: 'הורד טבלה',
         expandMore: 'הרחב כמות שורות',
         expandLess: 'צמצם כמות שורות',
+        tableSize: 'גודל טבלה',
+        lines: 'שורות',
         addRelationship: 'הוסף קשר',
         addEntity: 'הוסף ישות',
         deleteEntity: 'מחק ישות',
