@@ -17,6 +17,7 @@ import { IConstraint } from '../../../interfaces/entities';
 
 const { errorCodes } = environment;
 
+// TODO: implement type array to all types
 interface IBaseFormInputPropertyTypes {
     type: string;
     options: string[];
