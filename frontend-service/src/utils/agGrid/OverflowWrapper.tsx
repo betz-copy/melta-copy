@@ -12,7 +12,6 @@ interface IOverflowWrapperProps<T> {
 
 const OverflowWrapper = <T extends any>({ items, renderItem, getItemKey, containerStyle }: IOverflowWrapperProps<T>) => {
     const [visibleItems, setVisibleItems] = useState(items);
-    const [isOverflowExpanded, setIsOverflowExpanded] = useState(false);
     const containerRef = useRef(null);
     const itemRefs = useRef<React.RefObject<HTMLDivElement>[]>([]);
     const itemsGap = 5;
@@ -20,11 +19,6 @@ const OverflowWrapper = <T extends any>({ items, renderItem, getItemKey, contain
     itemRefs.current = items.map((_, i) => itemRefs.current[i] || createRef());
 
     useLayoutEffect(() => {
-        if (isOverflowExpanded) {
-            setVisibleItems(items);
-            return () => {};
-        }
-
         const itemWidths = itemRefs.current.map((ref) => (ref.current ? ref.current.offsetWidth : 0));
 
         if (containerRef.current) {
@@ -47,32 +41,19 @@ const OverflowWrapper = <T extends any>({ items, renderItem, getItemKey, contain
         }
 
         return () => {};
-    }, [items, containerRef, isOverflowExpanded]);
-
-    const handleOverflowClick = () => {
-        setIsOverflowExpanded(!isOverflowExpanded);
-    };
+    }, [items, containerRef]);
 
     const overflowItems = items.length > visibleItems.length ? items.slice(visibleItems.length) : [];
 
     return (
-        <Grid
-            ref={containerRef}
-            container
-            wrap="wrap"
-            alignItems="center"
-            justifyItems="center"
-            gap={`${itemsGap}px`}
-            style={!isOverflowExpanded ? containerStyle : undefined}
-            onDoubleClick={handleOverflowClick}
-        >
+        <Grid ref={containerRef} container wrap="wrap" alignItems="center" justifyItems="center" gap={`${itemsGap}px`} style={containerStyle}>
             {visibleItems.map((item, index) => (
                 <Grid ref={itemRefs.current[index]} item key={getItemKey(item)}>
                     {renderItem(item)}
                 </Grid>
             ))}
-            {overflowItems.length > 0 && !isOverflowExpanded && (
-                <Grid item onClick={handleOverflowClick} style={{ cursor: 'pointer' }}>
+            {overflowItems.length > 0 && (
+                <Grid item style={{ cursor: 'pointer' }}>
                     <MeltaTooltip
                         title={overflowItems.map((item) => (
                             <Typography key={getItemKey(item)} style={{ margin: '5px' }}>
