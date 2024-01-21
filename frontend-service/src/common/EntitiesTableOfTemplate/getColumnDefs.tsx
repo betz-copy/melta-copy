@@ -177,6 +177,17 @@ export const getColumnDefs = <Data extends any = IEntity>({
                                 </IconButtonWithPopover>
                             </NavLink>
                         )}
+                        {deleteRowButtonProps && (
+                            <IconButtonWithPopover
+                                popoverText={disabledEntity ? i18next.t('entityPage.disabledEntity') : deleteRowButtonProps.popoverText}
+                                iconButtonProps={{
+                                    onClick: () => deleteRowButtonProps.onClick(data),
+                                }}
+                                disabled={deleteRowButtonProps.disabledButton || disabledEntity}
+                            >
+                                <ImageWithDisable srcPath="/icons/delete-icon.svg" disabled={deleteRowButtonProps.disabledButton || disabledEntity} />
+                            </IconButtonWithPopover>
+                        )}
                         {editRowButtonProps && (
                             <IconButtonWithPopover
                                 popoverText={disabledEntity ? i18next.t('entityPage.disabledEntity') : editRowButtonProps.popoverText}
