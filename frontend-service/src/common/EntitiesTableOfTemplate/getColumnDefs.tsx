@@ -5,7 +5,16 @@ import { NavLink } from 'react-router-dom';
 import { Grid } from '@mui/material';
 import { IEntity } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
-import { booleanColDef, dateColDef, enumColDef, fileColDef, numberColDef, regexColDef, stringColDef } from '../../utils/agGrid/commonColDefs';
+import {
+    booleanColDef,
+    dateColDef,
+    enumArrayColDef,
+    enumColDef,
+    fileColDef,
+    numberColDef,
+    regexColDef,
+    stringColDef,
+} from '../../utils/agGrid/commonColDefs';
 import IconButtonWithPopover from '../IconButtonWithPopover';
 import { IButtonProps } from '.';
 import { ImageWithDisable } from '../ImageWithDisable';
@@ -21,6 +30,7 @@ export interface IGetColumnDefsOptions<Data extends any> {
     defaultVisibleColumns?: { [key: string]: boolean };
     defaultColumnsOrder?: { [key: string]: { order: number } };
     defaultColumnWidths?: { [key: string]: number };
+    rowHeight: number;
 }
 
 export const getColumnDefs = <Data extends any = IEntity>({
@@ -34,6 +44,7 @@ export const getColumnDefs = <Data extends any = IEntity>({
     defaultVisibleColumns = {},
     defaultColumnsOrder = {},
     defaultColumnWidths = {},
+    rowHeight,
 }: IGetColumnDefsOptions<Data>): ColDef[] => {
     const columnDefs = template.propertiesOrder.map((property) => {
         const propertyTemplate = template.properties.properties[property];
@@ -66,6 +77,18 @@ export const getColumnDefs = <Data extends any = IEntity>({
             );
         if (propertyTemplate.pattern)
             return regexColDef(property, valueGetter, propertyTemplate, defaultColumnWidths[property], hideColumn, hideField);
+        if (propertyTemplate.items?.enum)
+            return enumArrayColDef(
+                property,
+                valueGetter,
+                propertyTemplate,
+                propertyTemplate.items.enum,
+                defaultColumnWidths[property],
+                rowHeight,
+                template.enumPropertiesColors?.[property],
+                hideColumn,
+                hideField,
+            );
         return stringColDef(property, valueGetter, propertyTemplate, defaultColumnWidths[property], hideColumn, hideField);
     });
     columnDefs.push(

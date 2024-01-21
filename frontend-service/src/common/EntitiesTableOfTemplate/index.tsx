@@ -239,6 +239,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             defaultVisibleColumns,
             defaultColumnsOrder,
             defaultColumnWidths,
+            rowHeight,
         };
 
         const columnDefs = useDeepCompareMemo(() => getColumnDefs(columnDefProps), [columnDefProps]);

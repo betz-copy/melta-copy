@@ -33,6 +33,7 @@ interface FieldBlockProps<PropertiesType extends string, Values extends Record<P
     supportSerialNumberType: boolean;
     supportEntityReferenceType: boolean;
     supportChangeToRequiredWithInstances: boolean;
+    supportArrayFields: boolean;
     draggable?: { isDraggable: false } | { isDraggable: true; dragHandleProps: DraggableProvided['dragHandleProps'] };
 }
 
@@ -51,6 +52,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
     supportSerialNumberType,
     supportEntityReferenceType,
     supportChangeToRequiredWithInstances,
+    supportArrayFields,
     draggable = { isDraggable: false },
     initialFieldCardDataOnAdd = {
         name: '',

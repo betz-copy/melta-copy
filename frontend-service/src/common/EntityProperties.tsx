@@ -13,7 +13,12 @@ import { MeltaTooltip } from './MeltaTooltip';
 
 pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.js';
 
-export const formatToString = (value: any, valueType: 'string' | 'number' | 'boolean', format?: string, enumColor?: string) => {
+export const formatToString = (
+    value: any,
+    valueType: 'string' | 'number' | 'boolean' | 'array',
+    format?: string,
+    keyEnumColors?: Record<string, string>,
+) => {
     if (value === null || value === undefined) return '-';
 
     if (valueType === 'number') {
@@ -25,8 +30,12 @@ export const formatToString = (value: any, valueType: 'string' | 'number' | 'boo
         if (format === 'date-time') return new Date(value).toLocaleString('en-uk');
         if (format === 'fileId') return <OpenPreviewButton fileId={value} />;
     }
-    if (enumColor) return <ColoredEnumChip label={value} color={enumColor} />;
-
+    if (keyEnumColors?.[value] && valueType === 'string') return <ColoredEnumChip label={value} color={keyEnumColors[value]} />;
+    if (valueType === 'array') {
+        return value.map((val) => (
+            <ColoredEnumChip key={val} label={val} color={keyEnumColors?.[val] || 'default'} style={{ margin: '5px 0px 0px 5px' }} />
+        ));
+    }
     return value;
 };
 
@@ -65,7 +74,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                     propertyValue,
                     propertySchema.type,
                     propertySchema.format,
-                    propertySchema.enum && entityTemplate.enumPropertiesColors?.[propertyKey]?.[propertyValue],
+                    (propertySchema.enum || propertySchema.items?.enum) && entityTemplate.enumPropertiesColors?.[propertyKey],
                 );
                 return (
                     <Grid id="2" key={propertyKey} item container flexDirection="row" style={innerStyle}>
