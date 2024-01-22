@@ -10,7 +10,7 @@ import { formatToString } from '../EntityProperties';
 import { getFileName } from '../../utils/getFileName';
 import { RootState } from '../../store';
 
-const getEntityPropertyString = (value: any, type: 'string' | 'number' | 'boolean', format: string | undefined, oldValue: any) => {
+const getEntityPropertyString = (value: any, type: 'string' | 'number' | 'boolean' | 'array', format: string | undefined, oldValue: any) => {
     if (value === null || value === undefined) {
         return '-';
     }

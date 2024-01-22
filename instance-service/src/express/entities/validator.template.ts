@@ -157,10 +157,19 @@ const validateSimplePartFilterOfField = (rhs: boolean | string | number | null, 
     if (type === 'string' && format === 'date-time') {
         const isValid = strictIsValidDateString(rhs as string, "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
         if (!isValid) throw new ValidationError(`filter on field ${path} should be of date-time format (isostring)`);
+        return;
     }
     if (type === 'string' && format === 'date') {
         const isValid = strictIsValidDateString(rhs as string, 'yyyy-MM-dd');
         if (!isValid) throw new ValidationError(`filter on field ${path} should be of date format (yyyy-MM-dd)`);
+        return;
+    }
+
+    if (type === 'array') {
+        if (typeof rhs !== templateOfField.items!.type) {
+            throw new ValidationError(`filter on field ${path} should be of type ${templateOfField.items!.type} (the array's items type)`);
+        }
+        return;
     }
 
     if (typeof rhs !== templateOfField.type) throw new ValidationError(`filter on field ${path} should be of type ${templateOfField.type}`);

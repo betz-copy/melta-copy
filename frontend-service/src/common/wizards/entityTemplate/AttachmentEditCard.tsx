@@ -38,6 +38,9 @@ export const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
     const touchedTitle = touched?.title;
     const errorTitle = errors?.title;
 
+    // TODO: implement array field on files
+    // const type = `attachmentProperties[${index}].type`;
+
     const required = `attachmentProperties[${index}].required`;
 
     const isNewProperty = !initialValue;
