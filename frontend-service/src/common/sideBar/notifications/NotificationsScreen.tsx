@@ -125,10 +125,14 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                                 size="small"
                                 overrideSx={{
                                     '& .MuiSelect-select': {
-                                        backgroundColor: 'white',
+                                        backgroundColor: '#FFFF',
                                         color: '#9398C2',
                                         boxShadow: '0 0 10px rgba(0, 0, 0, 0.2)',
                                     },
+                                }}
+                                onClick={(event) => {
+                                    event.stopPropagation();
+                                    console.log('im here!');
                                 }}
                             />
                         </Grid>
@@ -160,7 +164,7 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                                 endDateInput={endDate}
                                 overrideSx={{
                                     '& input': {
-                                        backgroundColor: 'white',
+                                        backgroundColor: '#FFFF',
                                     },
                                 }}
                             />

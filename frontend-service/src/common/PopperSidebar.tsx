@@ -1,4 +1,4 @@
-import React, { CSSProperties } from 'react';
+import React, { CSSProperties, useEffect, useRef } from 'react';
 import { Box, IconButton, Popper, Typography, Grid, ClickAwayListener, useTheme } from '@mui/material';
 import { CloseSharp } from '@mui/icons-material';
 import Slide from '@mui/material/Slide';
@@ -24,7 +24,7 @@ const PopperSidebar: React.FC<{
                     <Box paddingTop="3.8rem" paddingX="1.1rem">
                         <ClickAwayListener
                             onClickAway={() => {
-                                //  setOpen(false);
+                                setOpen(false);
                                 if (filterCleaning) filterCleaning();
                             }}
                         >

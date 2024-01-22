@@ -41,6 +41,7 @@ export type SelectCheckboxProps<Option extends any, Group extends any = any> = P
     size?: 'small' | 'medium';
     toTopBar?: boolean;
     overrideSx?: object;
+    onClick?: (event: any) => void;
 }>;
 
 const groupByWithInitial = <T extends any>(collection: T[], keys: PropertyKey[], func: (value: T) => PropertyKey) => {
@@ -324,6 +325,7 @@ const SelectCheckbox = <Option extends any, Group extends any>({
     size = 'medium',
     toTopBar,
     overrideSx,
+    onClick,
 }: SelectCheckboxProps<Option, Group>) => {
     const [miniFilterValue, setMiniFilterValue] = useState('');
 
