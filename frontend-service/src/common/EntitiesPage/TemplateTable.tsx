@@ -149,7 +149,7 @@ const TemplateTable = forwardRef<
                         </AddEntityButton>
                     </Grid>
                 </Grid>
-                {isExpand && (
+                {/* {isExpand && (
                     <Grid container flexDirection="row">
                         <Grid container item flexGrow={1} width={0} justifyContent="flex-start" alignItems="center">
                             <Typography fontSize="12px" color="#1E2775" marginRight="10px">
@@ -180,7 +180,7 @@ const TemplateTable = forwardRef<
                             </Typography>
                         </Grid>
                     </Grid>
-                )}
+                )} */}
             </Grid>
 
             <Box sx={{ marginBottom: '30px', width: '100%' }}>

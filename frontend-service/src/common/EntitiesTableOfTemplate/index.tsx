@@ -1,4 +1,4 @@
-import React, { forwardRef, ForwardedRef, useImperativeHandle, useRef, useMemo } from 'react';
+import React, { forwardRef, ForwardedRef, useImperativeHandle, useRef, useMemo, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import sortBy from 'lodash.sortby';
 import { Box } from '@mui/material';
@@ -190,6 +190,33 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
         const navigate = useNavigate();
 
         const gridRef = useRef<AgGridReact<Data>>(null);
+        const gridContainerRef = useRef<HTMLElement>();
+        const [gridHeight, setGridHeight] = useState<number>(0);
+
+        const updateGridHeight = () => {
+            const container = gridContainerRef.current;
+            if (container) {
+                const containerRect = container.getBoundingClientRect();
+                const topPosition = containerRect.top;
+                const screenHeight = window.innerHeight;
+                const height = screenHeight - topPosition - 57;
+                setGridHeight(height);
+            }
+        };
+
+        useEffect(() => {
+            updateGridHeight();
+
+            const handleResize = () => {
+                updateGridHeight();
+            };
+
+            window.addEventListener('resize', handleResize);
+
+            return () => {
+                window.removeEventListener('resize', handleResize);
+            };
+        }, []);
 
         const getSortModel = () => {
             const colState = gridRef.current!.columnApi.getColumnState();
@@ -336,6 +363,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
 
         return (
             <Box
+                ref={gridContainerRef}
                 sx={getStyles()}
                 style={{
                     borderRadius: '10px',
@@ -353,7 +381,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                     className="ag-theme-material"
                     containerStyle={{
                         width: '100%',
-                        height: rowModelType === 'infinite' ? `${rowHeight * pageRowCount + 57}px` : undefined,
+                        height: rowModelType === 'infinite' ? `${gridHeight}px` : undefined,
                         fontFamily: 'Rubik',
                         fontSize,
                         fontWeight: 300,
