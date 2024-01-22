@@ -40,6 +40,7 @@ export type SelectCheckboxProps<Option extends any, Group extends any = any> = P
     setOptions?: Dispatch<SetStateAction<Option[]>>;
     size?: 'small' | 'medium';
     toTopBar?: boolean;
+    overrideSx?: object;
 }>;
 
 const groupByWithInitial = <T extends any>(collection: T[], keys: PropertyKey[], func: (value: T) => PropertyKey) => {
@@ -322,6 +323,7 @@ const SelectCheckbox = <Option extends any, Group extends any>({
     setOptions,
     size = 'medium',
     toTopBar,
+    overrideSx,
 }: SelectCheckboxProps<Option, Group>) => {
     const [miniFilterValue, setMiniFilterValue] = useState('');
 
@@ -335,7 +337,7 @@ const SelectCheckbox = <Option extends any, Group extends any>({
     });
 
     return (
-        <FormControl style={{ background: darkMode ? '#242424' : 'white', borderRadius: '0 7px 7px 0', width: '150px' }}>
+        <FormControl style={{ background: darkMode ? '#242424' : 'white', borderRadius: '0 7px 7px 0', width: '190px' }}>
             <Select
                 displayEmpty
                 renderValue={() => title}
@@ -346,14 +348,9 @@ const SelectCheckbox = <Option extends any, Group extends any>({
                         },
                     },
                 }}
-                onOpen={(e) => {
-                    console.log(e);
-
-                    e.stopPropagation();
-                    e.preventDefault();
-                }}
                 size={size}
-                style={toTopBar ? { borderRadius: '7px', backgroundColor: '#EBEFFA' } : { borderRadius: '7px' }}
+                sx={overrideSx}
+                style={toTopBar ? { borderRadius: '7px', backgroundColor: '#EBEFFA' } : { borderRadius: '7px', backgroundColor: 'red' }}
             >
                 <MiniFilter value={miniFilterValue} onChange={setMiniFilterValue} />
                 <ChooseAllMenuItem

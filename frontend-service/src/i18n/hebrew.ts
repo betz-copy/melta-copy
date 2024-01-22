@@ -197,6 +197,7 @@ export default {
         noOptions: 'אין תוצאות',
     },
     notifications: {
+        notificationType: 'סוג התראה',
         title: 'התראות',
         failedToGetNotifications: 'נכשל לטעון התראות',
         noNotificationsLeft: 'אין עוד התראות',

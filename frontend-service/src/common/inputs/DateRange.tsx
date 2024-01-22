@@ -11,10 +11,11 @@ const DateRange: React.FC<{
     onEndDateChange: (newEndDateInput: Date | null) => void;
     startDateInput: Date | null;
     endDateInput: Date | null;
-}> = ({ onStartDateChange, onEndDateChange, startDateInput, endDateInput }) => {
+    overrideSx?: object;
+}> = ({ onStartDateChange, onEndDateChange, startDateInput, endDateInput, overrideSx }) => {
     // const darkMode = useSelector((state: RootState) => state.darkMode);
     return (
-        <Grid container justifyContent="center" alignItems="center" wrap="nowrap">
+        <Grid container justifyContent="center" alignItems="center" wrap="nowrap" boxShadow={overrideSx && '0 0 10px rgba(0, 0, 0, 0.2)'}>
             <Grid item>
                 <LocalizationProvider dateAdapter={AdapterDateFns}>
                     <DatePicker
@@ -23,9 +24,10 @@ const DateRange: React.FC<{
                         label={i18next.t('processInstancesPage.startDate')}
                         value={startDateInput}
                         onChange={(newStartDate) => onStartDateChange(newStartDate)}
-                        renderInput={(params) => <TextField {...params} size="small" />}
+                        renderInput={(params) => <TextField {...params} size="small" sx={overrideSx} />}
                         InputProps={{
-                            style: { borderRadius: '0px 7px 7px 0px' },
+                            style: { borderRadius: '0px 7px 7px 0px', backgroundColor: overrideSx && 'white' },
+
                             // TODO - implement dark mode when it will be supported
                         }}
                     />
@@ -40,9 +42,9 @@ const DateRange: React.FC<{
                         label={i18next.t('processInstancesPage.endDate')}
                         value={endDateInput}
                         onChange={(newEndDate) => onEndDateChange(newEndDate)}
-                        renderInput={(params) => <TextField {...params} size="small" />}
+                        renderInput={(params) => <TextField {...params} size="small" sx={overrideSx} />}
                         InputProps={{
-                            style: { borderRadius: '7px 0px 0px 7px' },
+                            style: { borderRadius: '7px 0px 0px 7px', backgroundColor: overrideSx && 'white' },
                         }}
                     />
                 </LocalizationProvider>

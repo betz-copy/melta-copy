@@ -50,6 +50,7 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
     const filterCleaning = () => {
         onSetStartDate(null);
         onSetEndDate(null);
+        setNotificationsToShowCheckbox(notificationsMoreData[selectedGroup]);
     };
     const { mutate, isLoading } = useMutation((groupName: keyof typeof groups) => manyNotificationSeenRequest(groups[groupName]), {
         onSuccess: (seenNotifications, groupName) => {
@@ -110,34 +111,33 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
             ) : (
                 <>
                     <Grid sx={{ display: 'flex', justifyContent: 'space-evenly', padding: '15px' }}>
-                        <Box
-                            onClick={(e) => {
-                                console.log('helooo shirel');
-
-                                e.stopPropagation();
-                                e.preventDefault();
-                            }}
-                            sx={{ width: '90%' }}
-                        >
+                        <Grid sx={{ width: '80%' }}>
                             <SelectCheckbox
-                                title="סוג התראה"
+                                title={i18next.t('notifications.notificationType')}
                                 options={notificationsMoreData[selectedGroup]}
                                 selectedOptions={notificationsToShowCheckbox}
                                 setSelectedOptions={setNotificationsToShowCheckbox}
                                 getOptionId={({ type }) => type}
                                 getOptionLabel={({ displayName }) => displayName}
                                 size="small"
+                                overrideSx={{
+                                    '& .MuiSelect-select': {
+                                        backgroundColor: 'white',
+                                        color: '#9398C2',
+                                        boxShadow: '0 0 10px rgba(0, 0, 0, 0.2)',
+                                    },
+                                }}
                             />
-                        </Box>
+                        </Grid>
                         <Button
                             onClick={() => setOpenCalenders(!openCalenders)}
                             sx={{
                                 backgroundColor: 'white',
                                 borderRadius: '8px',
                                 display: 'inline-block',
-                                // width: '20px',
                                 height: '40px',
-                                padding: '8px', // Add padding around the button
+                                width: '10px',
+                                padding: '8px',
                                 boxShadow: '0 0 10px rgba(0, 0, 0, 0.2)',
                             }}
                         >
@@ -155,6 +155,11 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                                 onEndDateChange={onSetEndDate}
                                 startDateInput={startDate}
                                 endDateInput={endDate}
+                                overrideSx={{
+                                    '& input': {
+                                        backgroundColor: 'white',
+                                    },
+                                }}
                             />
                         </Grid>
                     )}
