@@ -166,6 +166,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                                     }}
                                     innerStyle={{ width: '30%' }}
                                     textWrap
+                                    mode="normal"
                                 />
                             </Grid>
                             <Grid container marginTop="20px">

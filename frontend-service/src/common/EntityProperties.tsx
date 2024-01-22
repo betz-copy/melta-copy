@@ -35,7 +35,9 @@ type Template = Pick<IMongoEntityTemplatePopulated, 'properties' | 'propertiesOr
 interface IEntityPropertiesProps {
     entityTemplate: Template;
     properties: IEntity['properties'];
+    mode: 'normal' | 'white';
     showPreviewPropertiesOnly?: boolean;
+    overridePropertiesToShow?: string[];
     style?: CSSProperties;
     innerStyle?: CSSProperties;
     textWrap?: boolean;
@@ -44,14 +46,21 @@ interface IEntityPropertiesProps {
 export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkMode?: boolean }> = ({
     entityTemplate,
     properties,
+    mode,
     showPreviewPropertiesOnly = false,
+    overridePropertiesToShow,
     style,
     innerStyle,
     textWrap = false,
 }) => {
-    const propertiesOrderedToShow = showPreviewPropertiesOnly
-        ? entityTemplate.propertiesOrder.filter((propertyKey) => entityTemplate.propertiesPreview!.includes(propertyKey))
-        : entityTemplate.propertiesOrder;
+    let propertiesOrderedToShow: string[];
+    if (overridePropertiesToShow) {
+        propertiesOrderedToShow = overridePropertiesToShow;
+    } else if (showPreviewPropertiesOnly) {
+        propertiesOrderedToShow = entityTemplate.propertiesOrder.filter((propertyKey) => entityTemplate.propertiesPreview!.includes(propertyKey));
+    } else {
+        propertiesOrderedToShow = entityTemplate.propertiesOrder;
+    }
 
     const [hideFieldsToDisplay, setHideFieldsToDisplay] = React.useState(entityTemplate.properties.hide);
 
@@ -74,8 +83,8 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                                 <Typography
                                     display="inline"
                                     fontSize="14px"
-                                    color={showPreviewPropertiesOnly ? 'white' : '#9398C2'}
-                                    fontWeight={showPreviewPropertiesOnly ? '800' : ''}
+                                    color={mode === 'white' ? 'white' : '#9398C2'}
+                                    fontWeight={mode === 'white' ? '800' : ''}
                                 >
                                     {propertySchema.title}:
                                 </Typography>
@@ -102,7 +111,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                                     <Typography
                                         display="inline"
                                         fontSize="14px"
-                                        color={showPreviewPropertiesOnly ? 'white' : '#53566E'}
+                                        color={mode === 'white' ? 'white' : '#53566E'}
                                         style={{
                                             textOverflow: 'ellipsis',
                                             whiteSpace: textWrap ? undefined : 'nowrap',
