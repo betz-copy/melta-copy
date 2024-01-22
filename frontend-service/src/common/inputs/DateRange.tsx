@@ -27,6 +27,7 @@ const DateRange: React.FC<{
                         renderInput={(params) => <TextField {...params} size="small" sx={overrideSx} />}
                         InputProps={{
                             style: { borderRadius: '0px 7px 7px 0px', backgroundColor: overrideSx && 'white' },
+
                             // TODO - implement dark mode when it will be supported
                         }}
                     />
