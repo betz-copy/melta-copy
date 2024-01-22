@@ -350,7 +350,7 @@ const SelectCheckbox = <Option extends any, Group extends any>({
                 }}
                 size={size}
                 sx={overrideSx}
-                style={toTopBar ? { borderRadius: '7px', backgroundColor: '#EBEFFA' } : { borderRadius: '7px', backgroundColor: 'red' }}
+                style={toTopBar ? { borderRadius: '7px', backgroundColor: '#EBEFFA' } : { borderRadius: '7px' }}
             >
                 <MiniFilter value={miniFilterValue} onChange={setMiniFilterValue} />
                 <ChooseAllMenuItem

@@ -24,7 +24,7 @@ const PopperSidebar: React.FC<{
                     <Box paddingTop="3.8rem" paddingX="1.1rem">
                         <ClickAwayListener
                             onClickAway={() => {
-                                // setOpen(false);
+                                //  setOpen(false);
                                 if (filterCleaning) filterCleaning();
                             }}
                         >

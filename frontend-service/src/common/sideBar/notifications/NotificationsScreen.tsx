@@ -40,6 +40,7 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
     const [notificationsToShowCheckbox, setNotificationsToShowCheckbox] = useState(notificationsMoreData[selectedGroup]);
     const [generalClicked, setGeneralClicked] = useState<boolean>(true);
     const [requestsClicked, setRequestsClicked] = useState<boolean>(false);
+    const [isCheckBoxClicked, setIsCheckBoxClicked] = useState<boolean>(false);
 
     const onSetStartDate = (newStartDateInput: Date | null) => {
         setStartDate(newStartDateInput);
@@ -78,34 +79,36 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
             sideMargin={sideBarWidth}
             filterCleaning={filterCleaning}
         >
-            <Tabs
-                value={selectedGroup}
-                onChange={(_event, newGroup) => {
-                    if (!newGroup) return;
-                    setSelectedGroup(newGroup);
-                }}
-                sx={{ height: '3.5rem', display: 'flex', justifyContent: 'space-around' }}
-            >
-                {groupNames.map((groupName) => (
-                    <Button
-                        key={groupName}
-                        value={groupName}
-                        onClick={(event) => {
-                            setSelectedGroup(groupName);
-                            setGeneralClicked(!generalClicked);
-                            setRequestsClicked(!requestsClicked);
-                            setNotificationsToShowCheckbox(notificationsMoreData[groupName]);
-                            event.preventDefault();
-                        }}
-                        sx={{ width: '100%', color: selectedGroup === groupName ? '#1E2775' : 'inherit' }}
-                    >
-                        <img src={`/icons/${groupName}-notification${selectedGroup === groupName ? '-clicked' : ''}.svg`} />
+            <Grid>
+                <Tabs
+                    value={selectedGroup}
+                    onChange={(_event, newGroup) => {
+                        if (!newGroup) return;
+                        setSelectedGroup(newGroup);
+                    }}
+                    sx={{ height: '3.5rem' }}
+                >
+                    {groupNames.map((groupName) => (
+                        <Button
+                            key={groupName}
+                            value={groupName}
+                            onClick={(event) => {
+                                setSelectedGroup(groupName);
+                                setGeneralClicked(!generalClicked);
+                                setRequestsClicked(!requestsClicked);
+                                setNotificationsToShowCheckbox(notificationsMoreData[groupName]);
+                                event.preventDefault();
+                            }}
+                            sx={{ width: '100%', color: selectedGroup === groupName ? '#1E2775' : 'inherit' }}
+                        >
+                            <img src={`/icons/${groupName}-notification${selectedGroup === groupName ? '-clicked' : ''}.svg`} />
 
-                        <Tab label={i18next.t(`notifications.groups.${groupName}`)} />
-                        <NotificationCount notificationCount={notificationCountDetails.groups[groupName]} />
-                    </Button>
-                ))}
-            </Tabs>
+                            <Tab label={i18next.t(`notifications.groups.${groupName}`)} />
+                            <NotificationCount notificationCount={notificationCountDetails.groups[groupName]} />
+                        </Button>
+                    ))}
+                </Tabs>
+            </Grid>
             {isLoading ? (
                 <CircularProgress sx={{ marginX: 'auto', marginTop: '1rem' }} />
             ) : (
