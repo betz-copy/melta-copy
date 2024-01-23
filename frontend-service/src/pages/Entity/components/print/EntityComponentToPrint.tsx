@@ -25,6 +25,7 @@ const EntityComponentToPrint: React.FC<{ entityTemplate: IMongoEntityTemplatePop
                     darkMode={darkMode}
                     showPreviewPropertiesOnly
                     mode="normal"
+                    textWrap
                 />
             </Box>
 
