@@ -1,4 +1,4 @@
-import React, { forwardRef, ForwardedRef, useImperativeHandle, useRef, useMemo, useEffect, useState } from 'react';
+import React, { forwardRef, ForwardedRef, useImperativeHandle, useRef, useMemo, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import sortBy from 'lodash.sortby';
 import { Box } from '@mui/material';
@@ -9,12 +9,12 @@ import {
     ColumnResizedEvent,
     ColumnVisibleEvent,
     GridApi,
+    IDatasource,
+    IGetRowsParams,
     IServerSideDatasource,
     IServerSideGetRowsParams,
     IServerSideGetRowsRequest,
     PaginationChangedEvent,
-    StatusPanelDef,
-    ModuleRegistry,
 } from '@ag-grid-community/core';
 import { AgGridReact } from '@ag-grid-community/react';
 import '@noam7700/ag-grid-enterprise-core';
@@ -26,13 +26,18 @@ import { SetFilterModule } from '@noam7700/ag-grid-enterprise-set-filter';
 import { ServerSideRowModelModule } from '@noam7700/ag-grid-enterprise-server-side-row-model';
 import i18next from 'i18next';
 import { toast } from 'react-toastify';
+import { InfiniteRowModelModule } from '@ag-grid-community/infinite-row-model';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IAGGridRequest } from '../../utils/agGrid/interfaces';
 import '@ag-grid-community/styles/ag-grid.css';
 import '@ag-grid-community/styles/ag-theme-material.css';
 import '../../css/table.css';
 import { DateFilterComponent } from '../../utils/agGrid/DateFilterComponent';
-import { agGridToSearchEntitiesOfTemplateRequest } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
+import {
+    agGridToSearchEntitiesOfTemplateRequest,
+    filterModelToFilterOfTemplate,
+    sortModelToSortOfSearchRequest,
+} from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
 import { IEntity } from '../../interfaces/entities';
 import { searchEntitiesOfTemplateRequest } from '../../services/entitiesService';
 import { IGetColumnDefsOptions, getColumnDefs } from './getColumnDefs';
@@ -40,6 +45,7 @@ import { trycatch } from '../../utils/trycatch';
 import { LocalStorage } from '../../utils/localStorage';
 import { environment } from '../../globals';
 import useDeepCompareMemo from '../../utils/useDeepCompareMemo';
+import countStatusBarComponent from './countStatusBarComponent';
 
 const { rowCount } = environment.agGrid;
 
@@ -80,12 +86,44 @@ export const getDatasource = <Data extends any = IEntity>(
     };
 };
 
+export const getInfinitieDatasource = (
+    template: IMongoEntityTemplatePopulated,
+    quickFilterText: string | undefined,
+    onFail: ((err: unknown) => void) | undefined,
+): IDatasource => {
+    return {
+        async getRows(params: IGetRowsParams) {
+            const { startRow, endRow, failCallback, successCallback } = params;
+            const { result: data, err } = await trycatch(() =>
+                searchEntitiesOfTemplateRequest(template._id, {
+                    skip: startRow,
+                    limit: endRow,
+                    textSearch: quickFilterText,
+                    filter: filterModelToFilterOfTemplate(params.filterModel, template),
+                    showRelationships: false,
+                    sort: sortModelToSortOfSearchRequest(params.sortModel),
+                }),
+            );
+            if (err || !data) {
+                onFail?.(err);
+                failCallback();
+                return;
+            }
+
+            const rowsThisPage = data.entities.map(({ entity }) => entity);
+
+            const lastRow = data.count <= endRow ? data.count : undefined;
+
+            successCallback(rowsThisPage, lastRow);
+        },
+    };
+};
+
 const getRowModelProps = <Data extends any = IEntity>(
     rowModelType: 'serverSide' | 'clientSide' | 'infinite',
     template: IMongoEntityTemplatePopulated,
     rowData: Data[] | undefined,
     paginationPageSize: number,
-    datasource: IServerSideDatasource | undefined,
     quickFilterText: string | undefined,
     datasourceOnFail: ((err: unknown) => void) | undefined,
 ): React.ComponentProps<typeof AgGridReact<Data>> => {
@@ -96,7 +134,7 @@ const getRowModelProps = <Data extends any = IEntity>(
     if (rowModelType === 'serverSide') {
         return {
             rowModelType,
-            serverSideDatasource: datasource ?? getDatasource(template, quickFilterText, datasourceOnFail),
+            serverSideDatasource: getDatasource(template, quickFilterText, datasourceOnFail),
             cacheBlockSize: 50,
             maxBlocksInCache: 10,
             pagination: true,
@@ -107,7 +145,7 @@ const getRowModelProps = <Data extends any = IEntity>(
     return {
         rowModelType,
         pagination: false,
-        serverSideDatasource: datasource ?? getDatasource(template, quickFilterText, datasourceOnFail),
+        datasource: getInfinitieDatasource(template, quickFilterText, datasourceOnFail),
         cacheBlockSize: 50,
         maxBlocksInCache: 10,
         maxConcurrentDatasourceRequests: 1,
@@ -117,6 +155,8 @@ const getRowModelProps = <Data extends any = IEntity>(
 
 export type EntitiesTableOfTemplateProps<Data> = {
     template: IMongoEntityTemplatePopulated;
+    index: number;
+    column: boolean;
     onRowSelected?: (data: Data) => void;
     showNavigateToRowButton: boolean;
     deleteRowButtonProps?: IButtonProps<Data>;
@@ -125,8 +165,8 @@ export type EntitiesTableOfTemplateProps<Data> = {
     getRowId: (data: Data) => string;
     getEntityPropertiesData: (data: Data) => IEntity['properties'];
     rowModelType: 'serverSide' | 'clientSide' | 'infinite';
+    isExpand: boolean;
     rowData?: Data[];
-    datasource?: IServerSideDatasource;
     quickFilterText?: string;
     rowHeight: number;
     pageRowCount?: number;
@@ -158,6 +198,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
     <Data extends any>(
         {
             template,
+            index: templateTableIndex,
             onRowSelected,
             showNavigateToRowButton,
             getRowId,
@@ -166,12 +207,12 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             deleteRowButtonProps,
             editRowButtonProps,
             rowData,
-            datasource,
             quickFilterText,
             rowHeight,
             pageRowCount = rowCount,
             fontSize,
             hideNonPreview,
+            isExpand,
             saveStorageProps,
             onFilter,
             hasPermissionToCategory,
@@ -199,24 +240,34 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                 const containerRect = container.getBoundingClientRect();
                 const topPosition = containerRect.top;
                 const screenHeight = window.innerHeight;
-                const height = screenHeight - topPosition - 57;
+                let height;
+                if (templateTableIndex === 0) {
+                    height = screenHeight - topPosition - 55;
+                } else {
+                    height = screenHeight - topPosition;
+                    // if (height < 14 * rowHeight) height = 14 * rowHeight;
+                }
                 setGridHeight(height);
             }
         };
+        // useEffect(() => {
+        //     // Update key to force a remount when isExpand changes
+        //     setGridKey((prevKey) => prevKey + 1);
+        // }, [isExpand]);
 
-        useEffect(() => {
-            updateGridHeight();
+        // useEffect(() => {
+        //     updateGridHeight();
 
-            const handleResize = () => {
-                updateGridHeight();
-            };
+        //     const handleResize = () => {
+        //         updateGridHeight();
+        //     };
 
-            window.addEventListener('resize', handleResize);
+        //     window.addEventListener('resize', handleResize);
 
-            return () => {
-                window.removeEventListener('resize', handleResize);
-            };
-        }, []);
+        //     return () => {
+        //         window.removeEventListener('resize', handleResize);
+        //     };
+        // }, []);
 
         const getSortModel = () => {
             const colState = gridRef.current!.columnApi.getColumnState();
@@ -283,8 +334,8 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
         // because we recreate datasource object on every irrelevant render, we recreate only on dependencies
         // usually only quickFilterText changes on deps
         const rowModelProps = useMemo(
-            () => getRowModelProps(rowModelType, template, rowData, pageRowCount, datasource, quickFilterText, datasourceOnFail),
-            [rowModelType, template, rowData, pageRowCount, datasource, quickFilterText],
+            () => getRowModelProps(rowModelType, template, rowData, pageRowCount, quickFilterText, datasourceOnFail),
+            [rowModelType, template, rowData, pageRowCount, quickFilterText],
         );
         const getStyles = () => ({
             '.ag-column-select-virtual-list-viewport': { height: `${rowHeight * pageRowCount}px !important` },
@@ -351,19 +402,25 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             }
         };
 
-        const statusBar = {
-            statusPanels: [
-                {
-                    statusPanel: 'agTotalAndFilteredRowCountComponent',
-                    align: 'center',
-                    statusPanelParams: 'count',
-                },
-            ],
-        };
+        const statusBar = useMemo(() => {
+            if (rowModelType === 'infinite') {
+                const status = {
+                    statusPanels: [
+                        {
+                            statusPanel: countStatusBarComponent,
+                            statusPanelParams: 'count',
+                            align: 'center',
+                        },
+                    ],
+                };
+                return status;
+            }
+            return undefined;
+        }, [rowModelType]);
 
         return (
             <Box
-                ref={gridContainerRef}
+                // ref={gridContainerRef}
                 sx={getStyles()}
                 style={{
                     borderRadius: '10px',
@@ -381,7 +438,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                     className="ag-theme-material"
                     containerStyle={{
                         width: '100%',
-                        height: rowModelType === 'infinite' ? `${gridHeight}px` : undefined,
+                        height: rowModelType === 'infinite' ? `${rowHeight * pageRowCount}px` : undefined,
                         fontFamily: 'Rubik',
                         fontSize,
                         fontWeight: 300,
@@ -393,6 +450,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                         SetFilterModule,
                         ClientSideRowModelModule,
                         StatusBarModule,
+                        InfiniteRowModelModule,
                     ]}
                     domLayout={rowModelType !== 'infinite' ? 'autoHeight' : undefined}
                     getRowId={({ data }) => getRowId(data)}
@@ -480,7 +538,19 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                         ],
                         position: 'left',
                     }}
-                    statusBar={rowModelType === 'infinite' ? statusBar : undefined}
+                    statusBar={
+                        isExpand
+                            ? {
+                                  statusPanels: [
+                                      {
+                                          statusPanel: countStatusBarComponent,
+                                          statusPanelParams: 'count',
+                                          align: 'right',
+                                      },
+                                  ],
+                              }
+                            : undefined
+                    }
                     localeText={i18next.t('agGridLocaleText', { returnObjects: true })}
                 />
             </Box>
