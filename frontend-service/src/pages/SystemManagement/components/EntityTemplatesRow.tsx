@@ -35,7 +35,7 @@ import { environment } from '../../../globals';
 const defaultEntityTemplatePopulated: IMongoEntityTemplatePopulated = {
     _id: '',
     propertiesOrder: [],
-    propertiesTypeOrder: [],
+    propertiesTypeOrder: ['properties', 'attachmentProperties'],
     propertiesPreview: [],
     uniqueConstraints: [],
     name: '',
