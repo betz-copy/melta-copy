@@ -26,7 +26,6 @@ import { SetFilterModule } from '@noam7700/ag-grid-enterprise-set-filter';
 import { ServerSideRowModelModule } from '@noam7700/ag-grid-enterprise-server-side-row-model';
 import i18next from 'i18next';
 import { toast } from 'react-toastify';
-import { InfiniteRowModelModule } from '@ag-grid-community/infinite-row-model';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IAGGridRequest } from '../../utils/agGrid/interfaces';
 import '@ag-grid-community/styles/ag-grid.css';
@@ -141,11 +140,11 @@ const getRowModelProps = <Data extends any = IEntity>(
             paginationPageSize,
         };
     }
-
     return {
-        rowModelType,
+        // it will enter here as infinitie and then i change it to serverSide because it doesnt recognize it as serverside
+        rowModelType: 'serverSide',
         pagination: false,
-        datasource: getInfinitieDatasource(template, quickFilterText, datasourceOnFail),
+        serverSideDatasource: getDatasource(template, quickFilterText, datasourceOnFail),
         cacheBlockSize: 50,
         maxBlocksInCache: 10,
         maxConcurrentDatasourceRequests: 1,
@@ -402,22 +401,6 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             }
         };
 
-        const statusBar = useMemo(() => {
-            if (rowModelType === 'infinite') {
-                const status = {
-                    statusPanels: [
-                        {
-                            statusPanel: countStatusBarComponent,
-                            statusPanelParams: 'count',
-                            align: 'center',
-                        },
-                    ],
-                };
-                return status;
-            }
-            return undefined;
-        }, [rowModelType]);
-
         return (
             <Box
                 // ref={gridContainerRef}
@@ -450,7 +433,6 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                         SetFilterModule,
                         ClientSideRowModelModule,
                         StatusBarModule,
-                        InfiniteRowModelModule,
                     ]}
                     domLayout={rowModelType !== 'infinite' ? 'autoHeight' : undefined}
                     getRowId={({ data }) => getRowId(data)}

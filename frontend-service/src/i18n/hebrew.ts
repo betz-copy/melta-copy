@@ -32,6 +32,7 @@ export default {
         expandMore: 'הרחב כמות שורות',
         expandLess: 'צמצם כמות שורות',
         tableSize: 'גודל טבלה',
+        totalLines: 'סה"כ שורות',
         lines: 'שורות',
         addRelationship: 'הוסף קשר',
         addEntity: 'הוסף ישות',
