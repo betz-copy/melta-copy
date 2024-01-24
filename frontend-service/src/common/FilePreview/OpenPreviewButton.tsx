@@ -14,7 +14,7 @@ const OpenPreviewButton: React.FC<{ fileId: string }> = ({ fileId }) => {
     const { data, refetch, isLoading, isError } = useFilePreview(fileId, contentType);
 
     return (
-        <Grid style={{ overflow: 'hidden', whiteSpace: 'nowrap', maxWidth: '90%' }}>
+        <Grid style={{ overflow: 'hidden', whiteSpace: 'nowrap', maxWidth: '100%' }}>
             <IconButton
                 onClick={async () => {
                     setOpen(true);
