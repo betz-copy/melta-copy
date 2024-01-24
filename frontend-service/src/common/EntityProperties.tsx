@@ -6,10 +6,10 @@ import { pdfjs } from 'react-pdf';
 import { Visibility as VisibilityIcon, VisibilityOff as VisibilityOffIcon } from '@mui/icons-material';
 import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { IEntity } from '../interfaces/entities';
-import { OpenPreviewButton } from './OpenPreviewButton';
 import { RootState } from '../store';
 import { ColoredEnumChip } from './ColoredEnumChip';
 import { MeltaTooltip } from './MeltaTooltip';
+import { OpenPreviewButton } from './FilePreview/OpenPreviewButton';
 
 pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.js';
 

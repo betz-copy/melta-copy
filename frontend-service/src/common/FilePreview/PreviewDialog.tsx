@@ -7,12 +7,12 @@ import ReactPlayer from 'react-player';
 import i18next from 'i18next';
 import ZoomInIcon from '@mui/icons-material/ZoomIn';
 import ZoomOutIcon from '@mui/icons-material/ZoomOut';
-import { RootState } from '../store';
-import FlexBox from './FlexBox';
-import { getFileExtension, getPreviewContentType } from '../utils/getFileType';
+import { RootState } from '../../store';
+import FlexBox from '../FlexBox';
+import { getFileExtension, getPreviewContentType } from '../../utils/getFileType';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
-import { DownloadButton } from './DownloadButton';
+import { DownloadButton } from '../DownloadButton';
 
 pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.js';
 
