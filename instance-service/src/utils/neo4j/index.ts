@@ -27,6 +27,9 @@ class Neo4jClient {
         this.driver = neo4j.driver(url, neo4j.auth.basic(auth.username, auth.password), configuration);
         this.database = database;
 
+        // Create the db if it doesn't exist
+        await this.driver.session().run(`CREATE DATABASE ${database} IF NOT EXISTS`);
+
         await this.verifyConnectivity();
 
         console.log('[NEO4J]: client initialized');
