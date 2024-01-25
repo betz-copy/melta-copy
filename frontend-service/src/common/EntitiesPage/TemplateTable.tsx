@@ -1,5 +1,5 @@
 import React, { forwardRef, useImperativeHandle, useRef, useState } from 'react';
-import { Grid, Box, CircularProgress, Dialog, useTheme, Button, Typography } from '@mui/material';
+import { Grid, Box, CircularProgress, Dialog, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
@@ -23,7 +23,7 @@ import { EntityTemplateColor } from '../EntityTemplateColor';
 import { ImageWithDisable } from '../ImageWithDisable';
 import { CreateOrEditEntityDetails } from '../dialogs/entity/CreateOrEditEntityDialog';
 
-// const { expandedRowCount } = environment.agGrid;
+const { expandedRowCount } = environment.agGrid;
 
 export type TemplateTableRef = {
     getFilterModel: () => ReturnType<GridApi<IEntity>['getFilterModel']> | undefined;
@@ -80,7 +80,8 @@ const TemplateTable = forwardRef<
         isOpen: false,
     });
     const [isExpand, setIsExpand] = useState(false);
-    const [expandedRowCount, setexpandedRowCount] = useState<number>(10);
+
+    // const [expandedRowCount, setexpandedRowCount] = useState<number>(10);
 
     const entityTemplateColor = getEntityTemplateColor(template);
 
@@ -124,6 +125,7 @@ const TemplateTable = forwardRef<
                         >
                             {isExpand ? <img src="/icons/reduce-table.svg" /> : <img src="/icons/expans-table.svg" />}
                         </IconButtonWithPopover>
+
                         <ResetFilterButton entitiesTableRef={entitiesTableRef} disableButton={!isFiltered} />
                         <IconButtonWithPopover
                             popoverText={i18next.t('entitiesTableOfTemplate.downloadOneTable')}
@@ -185,6 +187,7 @@ const TemplateTable = forwardRef<
 
             <Box sx={{ marginBottom: '30px', width: '100%' }}>
                 <EntitiesTableOfTemplate
+                    key={String(isExpand)}
                     ref={entitiesTableRef}
                     template={template}
                     showNavigateToRowButton

@@ -1,4 +1,4 @@
-import React, { forwardRef, ForwardedRef, useImperativeHandle, useRef, useMemo, useState, useEffect } from 'react';
+import React, { forwardRef, ForwardedRef, useImperativeHandle, useRef, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import sortBy from 'lodash.sortby';
 import { Box } from '@mui/material';
@@ -9,8 +9,6 @@ import {
     ColumnResizedEvent,
     ColumnVisibleEvent,
     GridApi,
-    IDatasource,
-    IGetRowsParams,
     IServerSideDatasource,
     IServerSideGetRowsParams,
     IServerSideGetRowsRequest,
@@ -32,11 +30,7 @@ import '@ag-grid-community/styles/ag-grid.css';
 import '@ag-grid-community/styles/ag-theme-material.css';
 import '../../css/table.css';
 import { DateFilterComponent } from '../../utils/agGrid/DateFilterComponent';
-import {
-    agGridToSearchEntitiesOfTemplateRequest,
-    filterModelToFilterOfTemplate,
-    sortModelToSortOfSearchRequest,
-} from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
+import { agGridToSearchEntitiesOfTemplateRequest } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
 import { IEntity } from '../../interfaces/entities';
 import { searchEntitiesOfTemplateRequest } from '../../services/entitiesService';
 import { IGetColumnDefsOptions, getColumnDefs } from './getColumnDefs';
@@ -44,7 +38,8 @@ import { trycatch } from '../../utils/trycatch';
 import { LocalStorage } from '../../utils/localStorage';
 import { environment } from '../../globals';
 import useDeepCompareMemo from '../../utils/useDeepCompareMemo';
-import countStatusBarComponent from './countStatusBarComponent';
+import countStatusBarComponent from '../EntitiesPage/CountStatusBarComponent';
+import Resizable from '../EntitiesPage/ResizableTableOnExpand';
 
 const { rowCount } = environment.agGrid;
 
@@ -85,39 +80,6 @@ export const getDatasource = <Data extends any = IEntity>(
     };
 };
 
-export const getInfinitieDatasource = (
-    template: IMongoEntityTemplatePopulated,
-    quickFilterText: string | undefined,
-    onFail: ((err: unknown) => void) | undefined,
-): IDatasource => {
-    return {
-        async getRows(params: IGetRowsParams) {
-            const { startRow, endRow, failCallback, successCallback } = params;
-            const { result: data, err } = await trycatch(() =>
-                searchEntitiesOfTemplateRequest(template._id, {
-                    skip: startRow,
-                    limit: endRow,
-                    textSearch: quickFilterText,
-                    filter: filterModelToFilterOfTemplate(params.filterModel, template),
-                    showRelationships: false,
-                    sort: sortModelToSortOfSearchRequest(params.sortModel),
-                }),
-            );
-            if (err || !data) {
-                onFail?.(err);
-                failCallback();
-                return;
-            }
-
-            const rowsThisPage = data.entities.map(({ entity }) => entity);
-
-            const lastRow = data.count <= endRow ? data.count : undefined;
-
-            successCallback(rowsThisPage, lastRow);
-        },
-    };
-};
-
 const getRowModelProps = <Data extends any = IEntity>(
     rowModelType: 'serverSide' | 'clientSide' | 'infinite',
     template: IMongoEntityTemplatePopulated,
@@ -141,7 +103,7 @@ const getRowModelProps = <Data extends any = IEntity>(
         };
     }
     return {
-        // it will enter here as infinitie and then i change it to serverSide because it doesnt recognize it as serverside
+        // the serverSide includes advanced infinitie
         rowModelType: 'serverSide',
         pagination: false,
         serverSideDatasource: getDatasource(template, quickFilterText, datasourceOnFail),
@@ -154,8 +116,6 @@ const getRowModelProps = <Data extends any = IEntity>(
 
 export type EntitiesTableOfTemplateProps<Data> = {
     template: IMongoEntityTemplatePopulated;
-    index: number;
-    column: boolean;
     onRowSelected?: (data: Data) => void;
     showNavigateToRowButton: boolean;
     deleteRowButtonProps?: IButtonProps<Data>;
@@ -164,7 +124,6 @@ export type EntitiesTableOfTemplateProps<Data> = {
     getRowId: (data: Data) => string;
     getEntityPropertiesData: (data: Data) => IEntity['properties'];
     rowModelType: 'serverSide' | 'clientSide' | 'infinite';
-    isExpand: boolean;
     rowData?: Data[];
     quickFilterText?: string;
     rowHeight: number;
@@ -197,7 +156,6 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
     <Data extends any>(
         {
             template,
-            index: templateTableIndex,
             onRowSelected,
             showNavigateToRowButton,
             getRowId,
@@ -211,7 +169,6 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             pageRowCount = rowCount,
             fontSize,
             hideNonPreview,
-            isExpand,
             saveStorageProps,
             onFilter,
             hasPermissionToCategory,
@@ -230,43 +187,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
         const navigate = useNavigate();
 
         const gridRef = useRef<AgGridReact<Data>>(null);
-        const gridContainerRef = useRef<HTMLElement>();
-        const [gridHeight, setGridHeight] = useState<number>(0);
-
-        const updateGridHeight = () => {
-            const container = gridContainerRef.current;
-            if (container) {
-                const containerRect = container.getBoundingClientRect();
-                const topPosition = containerRect.top;
-                const screenHeight = window.innerHeight;
-                let height;
-                if (templateTableIndex === 0) {
-                    height = screenHeight - topPosition - 55;
-                } else {
-                    height = screenHeight - topPosition;
-                    // if (height < 14 * rowHeight) height = 14 * rowHeight;
-                }
-                setGridHeight(height);
-            }
-        };
-        // useEffect(() => {
-        //     // Update key to force a remount when isExpand changes
-        //     setGridKey((prevKey) => prevKey + 1);
-        // }, [isExpand]);
-
-        // useEffect(() => {
-        //     updateGridHeight();
-
-        //     const handleResize = () => {
-        //         updateGridHeight();
-        //     };
-
-        //     window.addEventListener('resize', handleResize);
-
-        //     return () => {
-        //         window.removeEventListener('resize', handleResize);
-        //     };
-        // }, []);
+        const [gridHeight, setGridHeight] = useState<number>(rowHeight * pageRowCount);
 
         const getSortModel = () => {
             const colState = gridRef.current!.columnApi.getColumnState();
@@ -315,7 +236,6 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             hideNonPreview,
             editRowButtonProps,
             hasPermissionToCategory,
-
             defaultVisibleColumns,
             defaultColumnsOrder,
             defaultColumnWidths,
@@ -401,9 +321,8 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             }
         };
 
-        return (
+        const content = (
             <Box
-                // ref={gridContainerRef}
                 sx={getStyles()}
                 style={{
                     borderRadius: '10px',
@@ -421,7 +340,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                     className="ag-theme-material"
                     containerStyle={{
                         width: '100%',
-                        height: rowModelType === 'infinite' ? `${rowHeight * pageRowCount}px` : undefined,
+                        height: rowModelType === 'infinite' ? `${gridHeight}px` : undefined,
                         fontFamily: 'Rubik',
                         fontSize,
                         fontWeight: 300,
@@ -521,12 +440,11 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                         position: 'left',
                     }}
                     statusBar={
-                        isExpand
+                        rowModelType === 'infinite'
                             ? {
                                   statusPanels: [
                                       {
                                           statusPanel: countStatusBarComponent,
-                                          statusPanelParams: 'count',
                                           align: 'right',
                                       },
                                   ],
@@ -536,6 +454,14 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                     localeText={i18next.t('agGridLocaleText', { returnObjects: true })}
                 />
             </Box>
+        );
+
+        return rowModelType === 'infinite' ? (
+            <Resizable gridHeight={gridHeight} setGridHeight={setGridHeight} minHeight={rowHeight * pageRowCount}>
+                {content}
+            </Resizable>
+        ) : (
+            content
         );
     },
 );

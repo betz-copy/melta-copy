@@ -4,7 +4,7 @@ import i18next from 'i18next';
 import { Grid, Typography } from '@mui/material';
 
 export default (props: IStatusPanelParams) => {
-    const [count, setCount] = useState(0);
+    const [count, setCount] = useState<number>(0);
     const { api } = props;
 
     useEffect(() => {
