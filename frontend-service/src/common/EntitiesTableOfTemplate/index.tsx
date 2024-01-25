@@ -39,7 +39,7 @@ import { LocalStorage } from '../../utils/localStorage';
 import { environment } from '../../globals';
 import useDeepCompareMemo from '../../utils/useDeepCompareMemo';
 import countStatusBarComponent from '../EntitiesPage/CountStatusBarComponent';
-import Resizable from '../EntitiesPage/ResizableTableOnExpand';
+import Resize from '../EntitiesPage/ResizableTableOnExpand';
 
 const { rowCount } = environment.agGrid;
 
@@ -187,7 +187,9 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
         const navigate = useNavigate();
 
         const gridRef = useRef<AgGridReact<Data>>(null);
-        const [gridHeight, setGridHeight] = useState<number>(rowHeight * pageRowCount);
+        // height of table includes statusbar and titles
+        const minHeightTable = rowHeight * pageRowCount + rowHeight * 2;
+        const [gridHeight, setGridHeight] = useState<number>(minHeightTable);
 
         const getSortModel = () => {
             const colState = gridRef.current!.columnApi.getColumnState();
@@ -457,9 +459,9 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
         );
 
         return rowModelType === 'infinite' ? (
-            <Resizable gridHeight={gridHeight} setGridHeight={setGridHeight} minHeight={rowHeight * pageRowCount}>
+            <Resize gridHeight={gridHeight} setGridHeight={setGridHeight} minHeight={minHeightTable}>
                 {content}
-            </Resizable>
+            </Resize>
         ) : (
             content
         );

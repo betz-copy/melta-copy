@@ -1,5 +1,6 @@
 import React from 'react';
-import { ResizableBox } from 'react-resizable';
+import { Resizable } from 'react-resizable';
+import '../../css/resizeTable.css';
 
 interface ResizableProps {
     gridHeight: number;
@@ -7,22 +8,16 @@ interface ResizableProps {
     minHeight: number;
 }
 
-const Resizable: React.FC<ResizableProps> = ({ gridHeight, setGridHeight, minHeight, children }) => {
+const Resize: React.FC<ResizableProps> = ({ gridHeight, setGridHeight, minHeight, children }) => {
     const onResizeStop = (_event, { size }) => {
         setGridHeight(size.height);
     };
 
     return (
-        <ResizableBox
-            height={gridHeight}
-            axis="y"
-            onResizeStop={onResizeStop}
-            minConstraints={[null, minHeight]}
-            handle={<div style={{ height: '10px', cursor: 'ns-resize' }} />}
-        >
+        <Resizable height={gridHeight} onResize={onResizeStop} minConstraints={[null, minHeight]} resizeHandles={['s']}>
             {children}
-        </ResizableBox>
+        </Resizable>
     );
 };
 
-export default Resizable;
+export default Resize;
