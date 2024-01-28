@@ -81,8 +81,6 @@ const TemplateTable = forwardRef<
     });
     const [isExpand, setIsExpand] = useState(false);
 
-    // const [expandedRowCount, setexpandedRowCount] = useState<number>(10);
-
     const entityTemplateColor = getEntityTemplateColor(template);
 
     const queryClient = useQueryClient();
@@ -110,79 +108,45 @@ const TemplateTable = forwardRef<
                     </Grid>
                 </Grid>
             </Grid>
-            <Grid container flexDirection="column" marginBottom="15px">
-                <Grid container flexDirection="row" alignItems="center">
-                    <Grid container item flexGrow={1} width={0} justifyContent="flex-start" alignItems="center">
-                        <IconButtonWithPopover
-                            popoverText={isExpand ? i18next.t('entitiesTableOfTemplate.expandLess') : i18next.t('entitiesTableOfTemplate.expandMore')}
-                            iconButtonProps={{
-                                onClick: () => {
-                                    setIsExpand(!isExpand);
-                                },
-                                size: 'small',
-                            }}
-                            style={{ borderRadius: '5px' }}
-                        >
-                            {isExpand ? <img src="/icons/reduce-table.svg" /> : <img src="/icons/expans-table.svg" />}
-                        </IconButtonWithPopover>
 
-                        <ResetFilterButton entitiesTableRef={entitiesTableRef} disableButton={!isFiltered} />
-                        <IconButtonWithPopover
-                            popoverText={i18next.t('entitiesTableOfTemplate.downloadOneTable')}
-                            iconButtonProps={{ onClick: () => exportTemplateToExcel(), size: 'medium' }}
-                            style={{ borderRadius: '5px' }}
-                        >
-                            {isExportingTableToExcelFile ? <CircularProgress size="24px" /> : <img src="/icons/download.svg" />}
-                        </IconButtonWithPopover>
-                    </Grid>
-
-                    <Grid container item flexGrow={1} width={0} justifyContent="flex-end" alignItems="center">
-                        <IconButtonWithPopover popoverText={i18next.t('soon')} style={{ borderRadius: '5px', cursor: 'default' }}>
-                            <ImageWithDisable srcPath="/icons/load-file.svg" disabled />
-                        </IconButtonWithPopover>
-
-                        <AddEntityButton
-                            initialStep={1}
-                            disabled={!userHasWritePermissions}
-                            initialValues={{ template, properties: { disabled: false }, attachmentsProperties: {} }}
-                            style={{ borderRadius: '5px' }}
-                        >
-                            <ImageWithDisable srcPath="/icons/add-entity.svg" disabled={!userHasWritePermissions} />
-                        </AddEntityButton>
-                    </Grid>
+            <Grid container flexDirection="row" alignItems="center">
+                <Grid container item flexGrow={1} width={0} justifyContent="flex-start" alignItems="center">
+                    <IconButtonWithPopover
+                        popoverText={isExpand ? i18next.t('entitiesTableOfTemplate.expandLess') : i18next.t('entitiesTableOfTemplate.expandMore')}
+                        iconButtonProps={{
+                            onClick: () => {
+                                setIsExpand(!isExpand);
+                            },
+                            size: 'small',
+                        }}
+                        style={{ borderRadius: '5px' }}
+                    >
+                        {isExpand ? <img src="/icons/reduce-table.svg" /> : <img src="/icons/expans-table.svg" />}
+                    </IconButtonWithPopover>
+                    <ResetFilterButton entitiesTableRef={entitiesTableRef} disableButton={!isFiltered} />
+                    <IconButtonWithPopover
+                        popoverText={i18next.t('entitiesTableOfTemplate.downloadOneTable')}
+                        iconButtonProps={{ onClick: () => exportTemplateToExcel(), size: 'medium' }}
+                        style={{ borderRadius: '5px' }}
+                    >
+                        {isExportingTableToExcelFile ? <CircularProgress size="24px" /> : <img src="/icons/download.svg" />}
+                    </IconButtonWithPopover>
                 </Grid>
-                {/* {isExpand && (
-                    <Grid container flexDirection="row">
-                        <Grid container item flexGrow={1} width={0} justifyContent="flex-start" alignItems="center">
-                            <Typography fontSize="12px" color="#1E2775" marginRight="10px">
-                                {i18next.t('entitiesTableOfTemplate.tableSize')}
-                            </Typography>
-                            {[5, 10, 15].map((rowCount) => (
-                                <Button
-                                    key={rowCount}
-                                    sx={{
-                                        margin: '5px',
-                                        height: '21px',
-                                        width: '29px',
-                                        minWidth: '29px',
-                                        borderRadius: '5px',
-                                        backgroundColor: expandedRowCount === rowCount ? '#1E2775' : '#CCCFE5',
-                                        color: expandedRowCount === rowCount ? 'white' : '#787C9E',
-                                        fontSize: '14px',
-                                        boxSizing: '5px',
-                                        fontWeight: 400,
-                                    }}
-                                    onClick={() => setexpandedRowCount(rowCount)}
-                                >
-                                    {rowCount}
-                                </Button>
-                            ))}
-                            <Typography fontSize="12px" color="#1E2775" marginLeft="10px">
-                                {i18next.t('entitiesTableOfTemplate.lines')}
-                            </Typography>
-                        </Grid>
-                    </Grid>
-                )} */}
+
+                <Grid container item flexGrow={1} width={0} justifyContent="flex-end" alignItems="center">
+                    <IconButtonWithPopover popoverText={i18next.t('soon')} style={{ borderRadius: '5px', cursor: 'default' }}>
+                        <ImageWithDisable srcPath="/icons/load-file.svg" disabled />
+                    </IconButtonWithPopover>
+
+                    <AddEntityButton
+                        initialStep={1}
+                        disabled={!userHasWritePermissions}
+                        initialValues={{ template, properties: { disabled: false }, attachmentsProperties: {} }}
+                        style={{ borderRadius: '5px' }}
+                    >
+                        <ImageWithDisable srcPath="/icons/add-entity.svg" disabled={!userHasWritePermissions} />
+                    </AddEntityButton>
+                </Grid>
             </Grid>
 
             <Box sx={{ marginBottom: '30px', width: '100%' }}>

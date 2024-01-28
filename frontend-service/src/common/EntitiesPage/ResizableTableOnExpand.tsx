@@ -9,12 +9,12 @@ interface ResizableProps {
 }
 
 const Resize: React.FC<ResizableProps> = ({ gridHeight, setGridHeight, minHeight, children }) => {
-    const onResizeStop = (_event, { size }) => {
+    const onResize = (_event, { size }) => {
         setGridHeight(size.height);
     };
 
     return (
-        <Resizable height={gridHeight} onResize={onResizeStop} minConstraints={[null, minHeight]} resizeHandles={['s']}>
+        <Resizable height={gridHeight} onResize={onResize} minConstraints={[null, minHeight]} resizeHandles={['s']} axis="y">
             {children}
         </Resizable>
     );

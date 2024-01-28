@@ -41,7 +41,7 @@ import useDeepCompareMemo from '../../utils/useDeepCompareMemo';
 import countStatusBarComponent from '../EntitiesPage/CountStatusBarComponent';
 import Resize from '../EntitiesPage/ResizableTableOnExpand';
 
-const { rowCount } = environment.agGrid;
+const { rowCount, expandedRowCount } = environment.agGrid;
 
 export const defaultFilterModel = {
     disabled: {
@@ -103,7 +103,7 @@ const getRowModelProps = <Data extends any = IEntity>(
         };
     }
     return {
-        // the serverSide includes advanced infinitie
+        // the serverSide includes advanced infinitie row model
         rowModelType: 'serverSide',
         pagination: false,
         serverSideDatasource: getDatasource(template, quickFilterText, datasourceOnFail),
@@ -189,7 +189,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
         const gridRef = useRef<AgGridReact<Data>>(null);
         // height of table includes statusbar and titles
         const minHeightTable = rowHeight * pageRowCount + rowHeight * 2;
-        const [gridHeight, setGridHeight] = useState<number>(minHeightTable);
+        const [gridHeight, setGridHeight] = useState<number>(rowHeight * expandedRowCount);
 
         const getSortModel = () => {
             const colState = gridRef.current!.columnApi.getColumnState();

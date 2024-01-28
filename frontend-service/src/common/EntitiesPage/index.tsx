@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import i18next from 'i18next';
 import { Box, Grid } from '@mui/material';
 import _debounce from 'lodash.debounce';
@@ -46,6 +46,10 @@ const EntitiesPage: React.FC<{
     });
 
     const [searchInput, setSearchInput] = useState(urlSearchParams.get('search')!);
+
+    useEffect(() => {
+        setSearchInput(urlSearchParams.get('search') || '');
+    }, [urlSearchParams.get('search')]);
 
     const { mutateAsync: exportTemplatesToExcel, isLoading: isLoadingExcelExport } = useMutation(
         async () => {
