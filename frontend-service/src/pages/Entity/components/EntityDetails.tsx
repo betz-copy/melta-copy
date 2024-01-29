@@ -264,7 +264,6 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                                     properties={entity.properties}
                                     darkMode={darkMode}
                                     style={{
-                                        display: 'flex',
                                         flexDirection: 'row',
                                         flexWrap: 'wrap',
                                         rowGap: '20px',
