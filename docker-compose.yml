@@ -1,4 +1,4 @@
-version: '3.4'
+version: "3.4"
 
 services:
   entity-template-service:
@@ -24,7 +24,7 @@ services:
 
   storage-service:
     build: ./storage-service
-    environment: 
+    environment:
       MINIO_ENDPOINT: ${MINIO_ENDPOINT}
       MINIO_BUCKET_NAME: ${MINIO_BUCKET_NAME}
       MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
@@ -103,7 +103,7 @@ services:
 
   preview-service:
     build: ./preview-service
-    environment: 
+    environment:
       PORT: 8000
       MINIO_ENDPOINT: ${MINIO_ENDPOINT}
       MINIO_BUCKET_NAME: ${MINIO_BUCKET_NAME}
@@ -135,11 +135,10 @@ services:
       PREVIEW_SERVICE_URL: ${PREVIEW_SERVICE_URL}
       STORAGE_SERVICE_FILE_HYPER_LINK: ${STORAGE_SERVICE_FILE_HYPER_LINK}
       BASIC_AUTHENTICATION_USERS: ${BASIC_AUTHENTICATION_USERS}
-      
 
   # frontend-service:
-    # build: ./frontend-service
-  
+  #   build: ./frontend-service
+
   nginx:
     image: nginx:alpine
     volumes:
