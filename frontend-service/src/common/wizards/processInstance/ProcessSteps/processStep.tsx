@@ -9,7 +9,6 @@ import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { IMongoStepInstancePopulated } from '../../../../interfaces/processes/stepInstance';
 import { pickProcessFieldsPropertiesSchema } from '../../../../utils/pickFieldsPropertiesSchema';
-import { OpenPreviewButton } from '../../../OpenPreviewButton';
 import { InstanceFileInput } from '../../../inputs/InstanceFilesInput/InstanceFileInput';
 import { ajvValidate, JSONSchemaFormik } from '../../../inputs/JSONSchemaFormik';
 import { getStepValuesFromStepInstance } from './stepsFormik';
@@ -22,6 +21,7 @@ import { IPermissionsOfUser } from '../../../../services/permissionsService';
 import { IMongoProcessInstancePopulated } from '../../../../interfaces/processes/processInstance';
 import { EntityReference } from '../EntityReference';
 import { BlueTitle } from '../../../BlueTitle';
+import { OpenPreviewButton } from '../../../FilePreview/OpenPreviewButton';
 
 interface ProcessStepProps {
     stepInstance: IMongoStepInstancePopulated;

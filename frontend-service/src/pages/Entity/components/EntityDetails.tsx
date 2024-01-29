@@ -148,40 +148,9 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                 }}
             >
                 <CardContent sx={{ '&:last-child': { padding: 0 } }}>
-                    <Grid item container flexDirection="row" flexWrap="nowrap" padding="20px">
-                        <Grid item container justifyContent="space-between" alignItems="stretch" padding="1rem" flexDirection="column">
-                            <Grid item width="100%">
-                                <EntityPropertiesInternal
-                                    entityTemplate={entityTemplate}
-                                    properties={entity.properties}
-                                    darkMode={darkMode}
-                                    style={{
-                                        display: 'flex',
-                                        flexDirection: 'row',
-                                        flexWrap: 'wrap',
-                                        rowGap: '20px',
-                                        columnGap: '20px',
-                                        alignItems: 'center',
-                                        width: '100%',
-                                    }}
-                                    innerStyle={{ width: '30%' }}
-                                    textWrap
-                                    mode="normal"
-                                />
-                            </Grid>
-                            <Grid container marginTop="20px">
-                                <EntityDisableCheckbox isEntityDisabled={isEntityDisabled}> </EntityDisableCheckbox>
-                            </Grid>
-                            <Grid marginTop="20px" container item justifyContent="space-between">
-                                <EntityDates
-                                    createdAt={expandedEntity.entity.properties.createdAt}
-                                    updatedAt={expandedEntity.entity.properties.updatedAt}
-                                />
-                            </Grid>
-                        </Grid>
-
+                    <Grid item container flexDirection="column" flexWrap="nowrap" padding="20px">
                         <Grid item>
-                            <Grid container flexDirection="row" flexWrap="nowrap">
+                            <Grid container flexDirection="row" flexWrap="nowrap" justifyContent="flex-end">
                                 <Grid
                                     onClick={() => {
                                         if (canWriteInstance && !isEntityDisabled) setIsEditMode(true);
@@ -285,6 +254,36 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                                         text={isEntityDisabled ? i18next.t('actions.activate') : i18next.t('actions.disable')}
                                     />
                                 </Menu>
+                            </Grid>
+                        </Grid>
+
+                        <Grid item container justifyContent="space-between" alignItems="stretch" padding="1rem" flexDirection="column">
+                            <Grid item width="100%">
+                                <EntityPropertiesInternal
+                                    entityTemplate={entityTemplate}
+                                    properties={entity.properties}
+                                    darkMode={darkMode}
+                                    style={{
+                                        flexDirection: 'row',
+                                        flexWrap: 'wrap',
+                                        rowGap: '20px',
+                                        columnGap: '20px',
+                                        alignItems: 'center',
+                                        width: '100%',
+                                    }}
+                                    innerStyle={{ width: '32%' }}
+                                    textWrap
+                                    mode="normal"
+                                />
+                            </Grid>
+                            <Grid container marginTop="20px">
+                                <EntityDisableCheckbox isEntityDisabled={isEntityDisabled}> </EntityDisableCheckbox>
+                            </Grid>
+                            <Grid marginTop="20px" container item justifyContent="space-between">
+                                <EntityDates
+                                    createdAt={expandedEntity.entity.properties.createdAt}
+                                    updatedAt={expandedEntity.entity.properties.updatedAt}
+                                />
                             </Grid>
                         </Grid>
                     </Grid>
