@@ -74,7 +74,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
     const [hideFieldsToDisplay, setHideFieldsToDisplay] = React.useState(entityTemplate.properties.hide);
 
     return (
-        <Grid container style={{ ...style, alignItems: textWrap ? 'flex-start' : '' }}>
+        <Grid container style={{ ...style, alignItems: textWrap ? 'flex-start' : 'center', alignContent: 'center' }}>
             {propertiesOrderedToShow.map((propertyKey) => {
                 const propertySchema = entityTemplate.properties.properties[propertyKey];
                 const propertyValue = properties[propertyKey];
@@ -86,25 +86,31 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                     (propertySchema.enum || propertySchema.items?.enum) && entityTemplate.enumPropertiesColors?.[propertyKey],
                 );
                 return (
-                    <Grid id="2" key={propertyKey} item container flexDirection="row" style={innerStyle}>
-                        <Grid id="3" item container flexWrap="nowrap">
-                            <Grid item width="30%" style={{ textOverflow: 'ellipsis', whiteSpace: 'nowrap', overflow: 'hidden', textAlign: 'right' }}>
-                                <Typography
-                                    display="inline"
-                                    fontSize="14px"
-                                    color={mode === 'white' ? 'white' : '#9398C2'}
-                                    fontWeight={mode === 'white' ? '800' : ''}
-                                >
-                                    {propertySchema.title}:
-                                </Typography>
+                    <Grid key={propertyKey} item container flexDirection="row" style={innerStyle} alignItems={textWrap ? 'flex-start' : 'center'}>
+                        <Grid item container width="100%" flexWrap="nowrap" alignItems={textWrap ? 'flex-start' : 'center'}>
+                            <Grid item width="30%">
+                                <MeltaTooltip disableHoverListener={textWrap} placement="bottom" title={propertySchema.title}>
+                                    <Typography
+                                        style={{
+                                            textOverflow: 'ellipsis',
+                                            whiteSpace: textWrap ? undefined : 'nowrap',
+                                            overflow: 'hidden',
+                                            textAlign: 'right',
+                                        }}
+                                        fontSize="14px"
+                                        color={mode === 'white' ? 'white' : '#9398C2'}
+                                        fontWeight={mode === 'white' ? '800' : ''}
+                                    >
+                                        {propertySchema.title}:
+                                    </Typography>
+                                </MeltaTooltip>
                             </Grid>
                             <Grid
-                                id="4"
                                 item
                                 container
                                 width="70%"
                                 flexDirection="row"
-                                alignItems="center"
+                                alignItems={textWrap ? 'flex-start' : 'center'}
                                 flexWrap="nowrap"
                                 justifyContent="space-between"
                                 style={{
@@ -118,7 +124,6 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                                     title={hideFieldsToDisplay.includes(propertyKey) || propertySchema.format === 'fileId' ? '' : stringFormatValue}
                                 >
                                     <Typography
-                                        display="inline"
                                         fontSize="14px"
                                         color={mode === 'white' ? 'white' : '#53566E'}
                                         style={{
@@ -130,21 +135,23 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                                         {hideFieldsToDisplay.includes(propertyKey) ? <>••••••••</> : stringFormatValue}
                                     </Typography>
                                 </MeltaTooltip>
-                                {hideField && (
-                                    <IconButton
-                                        onClick={(event) => {
-                                            event.stopPropagation();
-                                            setHideFieldsToDisplay(() => {
-                                                if (hideFieldsToDisplay.includes(propertyKey))
-                                                    return hideFieldsToDisplay.filter((hiddenProperty) => hiddenProperty !== propertyKey);
-                                                return [...hideFieldsToDisplay, propertyKey];
-                                            });
-                                        }}
-                                        size="small"
-                                    >
-                                        {hideFieldsToDisplay.includes(propertyKey) ? <VisibilityOffIcon /> : <VisibilityIcon />}
-                                    </IconButton>
-                                )}
+                                <Grid item>
+                                    {hideField && (
+                                        <IconButton
+                                            onClick={(event) => {
+                                                event.stopPropagation();
+                                                setHideFieldsToDisplay(() => {
+                                                    if (hideFieldsToDisplay.includes(propertyKey))
+                                                        return hideFieldsToDisplay.filter((hiddenProperty) => hiddenProperty !== propertyKey);
+                                                    return [...hideFieldsToDisplay, propertyKey];
+                                                });
+                                            }}
+                                            size="small"
+                                        >
+                                            {hideFieldsToDisplay.includes(propertyKey) ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                                        </IconButton>
+                                    )}
+                                </Grid>
                             </Grid>
                         </Grid>
                     </Grid>
