@@ -1,7 +1,5 @@
-import neo4j, { Driver, Config, Transaction, QueryResult } from 'neo4j-driver';
+import neo4j, { Config, Driver, Neo4jError, QueryResult, Session, Transaction } from 'neo4j-driver';
 import { retry } from 'ts-retry-promise';
-
-import { trycatch } from '../lib';
 import config from '../../config';
 
 interface Neo4jAuth {
@@ -19,16 +17,15 @@ class Neo4jClient {
 
     private isInitialized: boolean;
 
-    constructor() {
+    private currSession: Session;
+
+    constructor(database: string) {
         this.isInitialized = false;
+        this.database = database;
     }
 
-    async initialize(url: string, auth: Neo4jAuth, database: string, configuration: Config = {}) {
+    async initialize(url: string, auth: Neo4jAuth, configuration: Config = {}) {
         this.driver = neo4j.driver(url, neo4j.auth.basic(auth.username, auth.password), configuration);
-        this.database = database;
-
-        // Create the db if it doesn't exist
-        await this.driver.session().run(`CREATE DATABASE ${database} IF NOT EXISTS`);
 
         await this.verifyConnectivity();
 
@@ -37,52 +34,71 @@ class Neo4jClient {
         this.isInitialized = true;
     }
 
-    async readTransaction<T>(cypherQuery: string, normalizeResultFunction: (queryResult: QueryResult) => T, parameters = {}): Promise<T> {
-        return this.performTransaction('readTransaction', normalizeResultFunction, cypherQuery, parameters);
+    private createSession(sessionOptions: { database?: string } = { database: this.database }) {
+        return this.driver.session(sessionOptions);
     }
 
-    async writeTransaction<T>(cypherQuery: string, normalizeResultFunction: (queryResult: QueryResult) => T, parameters = {}): Promise<T> {
-        return this.performTransaction('writeTransaction', normalizeResultFunction, cypherQuery, parameters);
+    private get session() {
+        if (!this.currSession) this.currSession = this.createSession();
+
+        return this.currSession;
     }
 
-    async performComplexTransaction<T>(transactionType: TransactionType, transactionWork: TransactionWork<T>) {
-        const session = this.driver.session({ database: this.database });
-
+    async wrapDBNotExistsError(func: () => Promise<any>) {
         try {
-            const result = await session[transactionType](transactionWork);
+            return await func();
+        } catch (err) {
+            // Check if the error is caused by non-existing database
+            if (err instanceof Neo4jError && err.code === 'Neo.ClientError.Database.DatabaseNotFound') {
+                // Create the db if it doesn't exist
+                await this.createSession({}).run(`CREATE DATABASE ${this.database} IF NOT EXISTS`);
 
-            return result;
+                // Retry
+                return func();
+            }
+
+            // Throw the error if it's not caused by non-existing database
+            throw err;
         } finally {
-            const { err } = await trycatch(() => session.close());
-            if (err) {
+            try {
+                await this.currSession.close();
+            } catch (err) {
                 console.error('Failed to close session. Possible leak, Error:', err);
             }
         }
     }
 
-    async performTransaction<T>(
+    async readTransaction<T>(cypherQuery: string, normalizeResultFunction: (queryResult: QueryResult) => T, parameters = {}): Promise<T> {
+        return this.wrapDBNotExistsError(this.performTransaction.bind(this, 'readTransaction', normalizeResultFunction, cypherQuery, parameters));
+    }
+
+    async writeTransaction<T>(cypherQuery: string, normalizeResultFunction: (queryResult: QueryResult) => T, parameters = {}): Promise<T> {
+        return this.wrapDBNotExistsError(this.performTransaction.bind(this, 'writeTransaction', normalizeResultFunction, cypherQuery, parameters));
+    }
+
+    async performReadTransaction<T>(transactionWork: TransactionWork<T>) {
+        return this.wrapDBNotExistsError(this.performComplexTransaction.bind(this, 'readTransaction', transactionWork));
+    }
+
+    async performWriteTransaction<T>(transactionWork: TransactionWork<T>) {
+        return this.wrapDBNotExistsError(this.performComplexTransaction.bind(this, 'writeTransaction', transactionWork));
+    }
+
+    private async performComplexTransaction<T>(transactionType: TransactionType, transactionWork: TransactionWork<T>) {
+        const result = await this.session[transactionType](transactionWork);
+
+        return result;
+    }
+
+    private async performTransaction<T>(
         transactionType: TransactionType,
         normalizeResultFunction: (queryResult: QueryResult) => T,
         cypherQuery: string,
         parameters: Record<string, any>,
     ): Promise<T> {
-        const session = this.driver.session({ database: this.database });
+        const result = await this.session[transactionType]((tx) => tx.run(cypherQuery, parameters));
 
-        try {
-            const result = await session[transactionType]((tx) => tx.run(cypherQuery, parameters));
-
-            return normalizeResultFunction(result);
-        } finally {
-            const { err } = await trycatch(() => session.close());
-
-            if (err) {
-                console.error('Failed to close session. Possible leak, Error:', err);
-            }
-        }
-    }
-
-    getSession() {
-        return this.driver.session({ database: this.database });
+        return normalizeResultFunction(result);
     }
 
     async close() {
@@ -98,4 +114,4 @@ class Neo4jClient {
     }
 }
 
-export default new Neo4jClient();
+export default Neo4jClient;
