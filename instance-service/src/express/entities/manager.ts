@@ -1,20 +1,31 @@
-import { Neo4jError, Transaction } from 'neo4j-driver';
-import pickBy from 'lodash.pickby';
+/* eslint-disable class-methods-use-this */
 import differenceWith from 'lodash.differencewith';
 import groupBy from 'lodash.groupby';
 import mapValues from 'lodash.mapvalues';
-import Neo4jClient from '../../utils/neo4j';
+import pickBy from 'lodash.pickby';
+import { Neo4jError, Transaction } from 'neo4j-driver';
+import config from '../../config';
+import { EntityTemplateManagerService, IEntitySingleProperty, IMongoEntityTemplate } from '../../externalServices/entityTemplateManager';
+import { RelationshipsTemplateManagerService } from '../../externalServices/relationshipTemplateManager';
+import DefaultManager from '../../utils/express/manager';
+import { arraysEqualsNonOrdered } from '../../utils/lib';
 import {
     generateDefaultProperties,
     getNeo4jDateTime,
-    normalizeReturnedRelAndEntities,
-    normalizeReturnedEntity,
-    normalizeResponseCount,
-    normalizeRelAndEntitiesForRule,
     normalizeGetDbConstraints,
-    runInTransactionAndNormalize,
+    normalizeRelAndEntitiesForRule,
+    normalizeResponseCount,
+    normalizeReturnedEntity,
+    normalizeReturnedRelAndEntities,
     normalizeSearchWithRelationships,
+    runInTransactionAndNormalize,
 } from '../../utils/neo4j/lib';
+import { searchWithRelationshipsToNeoQuery } from '../../utils/neo4j/searchBodyToNeoQuery';
+import { getLatestGlobalSearchIndex, getLatestTemplateSearchIndex } from '../../utils/redis/getLatestIndex';
+import { NotFoundError, ServiceError } from '../error';
+import { filterDependentRulesOnProperties, filterDependentRulesViaAggregation } from '../rules/getParametersOfFormula';
+import { IBrokenRule, IConnection, IRuleFailureWithCauses } from '../rules/interfaces';
+import { runRulesOnRelationship, runRulesOnRelationshipsOfPinnedEntity, throwIfActionCausedBrokenRules } from '../rules/lib';
 import {
     IConstraint,
     IConstraintsOfTemplate,
@@ -24,20 +35,10 @@ import {
     ISearchEntitiesOfTemplateBody,
     IUniqueConstraint,
 } from './interface';
-import { NotFoundError, ServiceError } from '../error';
-import { getLatestGlobalSearchIndex, getLatestTemplateSearchIndex } from '../../utils/redis/getLatestIndex';
-import { runRulesOnRelationship, runRulesOnRelationshipsOfPinnedEntity, throwIfActionCausedBrokenRules } from '../rules/lib';
-import { IBrokenRule, IConnection, IRuleFailureWithCauses } from '../rules/interfaces';
-import { filterDependentRulesOnProperties, filterDependentRulesViaAggregation } from '../rules/getParametersOfFormula';
-import config from '../../config';
-import { EntityTemplateManagerService, IEntitySingleProperty, IMongoEntityTemplate } from '../../externalServices/entityTemplateManager';
-import { RelationshipsTemplateManagerService } from '../../externalServices/relationshipTemplateManager';
 import { addStringFieldsAndNormalizeDateValues } from './validator.template';
-import { arraysEqualsNonOrdered } from '../../utils/lib';
-import { searchWithRelationshipsToNeoQuery } from '../../utils/neo4j/searchBodyToNeoQuery';
 
-export class EntityManager {
-    private static throwServiceErrorIfFailedConstraintsValidation(err: unknown): never {
+export class EntityManager extends DefaultManager {
+    private throwServiceErrorIfFailedConstraintsValidation(err: unknown): never {
         if (!(err instanceof Neo4jError) || err.code !== 'Neo.ClientError.Schema.ConstraintValidationFailed') {
             throw err;
         }
@@ -82,22 +83,20 @@ export class EntityManager {
         }
     }
 
-    static async createEntity(entity: IEntity, entityTemplate: IMongoEntityTemplate) {
+    async createEntity(entity: IEntity, entityTemplate: IMongoEntityTemplate) {
         const { templateId, properties } = entity;
 
-        return Neo4jClient.writeTransaction(
-            `CREATE (e: \`${templateId}\` $properties) RETURN e`,
-            normalizeReturnedEntity('singleResponseNotNullable'),
-            {
+        return this.neo4jClient
+            .writeTransaction(`CREATE (e: \`${templateId}\` $properties) RETURN e`, normalizeReturnedEntity('singleResponseNotNullable'), {
                 properties: {
                     ...generateDefaultProperties(),
                     ...addStringFieldsAndNormalizeDateValues(properties, entityTemplate),
                 },
-            },
-        ).catch(EntityManager.throwServiceErrorIfFailedConstraintsValidation);
+            })
+            .catch(this.throwServiceErrorIfFailedConstraintsValidation);
     }
 
-    static async searchEntitiesOfTemplate(searchBody: ISearchEntitiesOfTemplateBody, entityTemplate: IMongoEntityTemplate) {
+    async searchEntitiesOfTemplate(searchBody: ISearchEntitiesOfTemplateBody, entityTemplate: IMongoEntityTemplate) {
         let latestIndex: string | null = null;
 
         if (searchBody.textSearch) {
@@ -131,14 +130,14 @@ export class EntityManager {
         );
 
         const [entities, count] = await Promise.all([
-            Neo4jClient.readTransaction(searchCypherQuery.cypherQuery, normalizeSearchWithRelationships, searchCypherQuery.parameters),
-            Neo4jClient.readTransaction(searchCountCypherQuery.cypherQuery, normalizeResponseCount, searchCountCypherQuery.parameters),
+            this.neo4jClient.readTransaction(searchCypherQuery.cypherQuery, normalizeSearchWithRelationships, searchCypherQuery.parameters),
+            this.neo4jClient.readTransaction(searchCountCypherQuery.cypherQuery, normalizeResponseCount, searchCountCypherQuery.parameters),
         ]);
 
         return { entities, count };
     }
 
-    static async searchEntitiesBatch(searchBody: ISearchBatchBody, entityTemplatesMap: Map<string, IMongoEntityTemplate>) {
+    async searchEntitiesBatch(searchBody: ISearchBatchBody, entityTemplatesMap: Map<string, IMongoEntityTemplate>) {
         let latestIndex: string | null = null;
         if (searchBody.textSearch) {
             latestIndex = await getLatestGlobalSearchIndex();
@@ -152,15 +151,15 @@ export class EntityManager {
         const searchCountCypherQuery = searchWithRelationshipsToNeoQuery(searchBody, latestIndex, entityTemplatesMap, true);
 
         const [entities, count] = await Promise.all([
-            Neo4jClient.readTransaction(searchCypherQuery.cypherQuery, normalizeSearchWithRelationships, searchCypherQuery.parameters),
-            Neo4jClient.readTransaction(searchCountCypherQuery.cypherQuery, normalizeResponseCount, searchCountCypherQuery.parameters),
+            this.neo4jClient.readTransaction(searchCypherQuery.cypherQuery, normalizeSearchWithRelationships, searchCypherQuery.parameters),
+            this.neo4jClient.readTransaction(searchCountCypherQuery.cypherQuery, normalizeResponseCount, searchCountCypherQuery.parameters),
         ]);
 
         return { entities, count };
     }
 
-    static async getEntityById(id: string) {
-        const node = await Neo4jClient.readTransaction(`MATCH (e {_id: '${id}'}) RETURN e`, normalizeReturnedEntity('singleResponse'));
+    async getEntityById(id: string) {
+        const node = await this.neo4jClient.readTransaction(`MATCH (e {_id: '${id}'}) RETURN e`, normalizeReturnedEntity('singleResponse'));
 
         if (!node) {
             throw new NotFoundError(`[NEO4J] entity "${id}" not found`);
@@ -169,8 +168,8 @@ export class EntityManager {
         return node;
     }
 
-    static async getExpandedEntityById(id: string, disabled: boolean | null, templateIds: string[], numOfConnections: number) {
-        const nodeAndConnections = await Neo4jClient.readTransaction(
+    async getExpandedEntityById(id: string, disabled: boolean | null, templateIds: string[], numOfConnections: number) {
+        const nodeAndConnections = await this.neo4jClient.readTransaction(
             `MATCH (p {_id:'${id}'})
              CALL apoc.path.expandConfig(p, {
                 labelFilter: '${templateIds.join('|')}',
@@ -189,9 +188,9 @@ export class EntityManager {
         return nodeAndConnections;
     }
 
-    static async deleteEntityById(id: string, deleteAllRelationships: boolean) {
+    async deleteEntityById(id: string, deleteAllRelationships: boolean) {
         try {
-            const node = await Neo4jClient.writeTransaction(
+            const node = await this.neo4jClient.writeTransaction(
                 `MATCH (e {_id: '${id}'}) ${deleteAllRelationships ? 'DETACH' : ''} DELETE e RETURN e`,
                 normalizeReturnedEntity('singleResponse'),
             );
@@ -212,12 +211,12 @@ export class EntityManager {
         }
     }
 
-    static async deleteByTemplateId(templateId: string) {
-        return Neo4jClient.writeTransaction(`MATCH (e: \`${templateId}\`) DETACH DELETE e`, normalizeReturnedEntity('multipleResponses'));
+    async deleteByTemplateId(templateId: string) {
+        return this.neo4jClient.writeTransaction(`MATCH (e: \`${templateId}\`) DETACH DELETE e`, normalizeReturnedEntity('multipleResponses'));
     }
 
-    static async updateStatusById(id: string, disabled: boolean, ignoredRules: IBrokenRule[]) {
-        return Neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
+    async updateStatusById(id: string, disabled: boolean, ignoredRules: IBrokenRule[]) {
+        return this.neo4jClient.performComplexWriteTransaction(async (transaction) => {
             const entity = await runInTransactionAndNormalize(
                 transaction,
                 `MATCH (e {_id: '${id}'}) RETURN e`,
@@ -229,13 +228,13 @@ export class EntityManager {
             }
 
             const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(entity.templateId);
-            const updatedProperties = EntityManager.getUpdatedProperties(
+            const updatedProperties = this.getUpdatedProperties(
                 entity,
                 { ...entity, properties: { ...entity.properties, disabled, updatedAt: new Date().toISOString() } },
                 entityTemplate,
             );
 
-            const ruleFailuresBeforeAction = await EntityManager.runRulesDependOnEntityUpdate(transaction, entity, updatedProperties);
+            const ruleFailuresBeforeAction = await this.runRulesDependOnEntityUpdate(transaction, entity, updatedProperties);
 
             const updatedEntity = await runInTransactionAndNormalize(
                 transaction,
@@ -244,7 +243,7 @@ export class EntityManager {
                 { disabled },
             );
 
-            const ruleFailuresAfterAction = await EntityManager.runRulesDependOnEntityUpdate(transaction, updatedEntity, updatedProperties);
+            const ruleFailuresAfterAction = await this.runRulesDependOnEntityUpdate(transaction, updatedEntity, updatedProperties);
 
             throwIfActionCausedBrokenRules(ignoredRules, ruleFailuresBeforeAction, ruleFailuresAfterAction);
 
@@ -252,7 +251,7 @@ export class EntityManager {
         });
     }
 
-    private static runRulesOnAllRelationshipsOfUpdatedEntity = async (
+    private runRulesOnAllRelationshipsOfUpdatedEntity = async (
         transaction: Transaction,
         connectionsOfEntity: IConnection[],
         entity: IEntity,
@@ -289,7 +288,7 @@ export class EntityManager {
         return ruleFailures.map((ruleFailure) => ({ ...ruleFailure, isTriggeredViaAggregation: false }));
     };
 
-    private static runRulesOnRelationshipsOfNeighboursOfEntityDependentViaAggregation = async (
+    private runRulesOnRelationshipsOfNeighboursOfEntityDependentViaAggregation = async (
         transaction: Transaction,
         connectionsOfDependent: IConnection[],
         dependentEntity: IEntity,
@@ -316,27 +315,26 @@ export class EntityManager {
         return ruleFailures.map((ruleFailure) => ({ ...ruleFailure, isTriggeredViaAggregation: true }));
     };
 
-    private static async runRulesDependOnEntityUpdate(transaction: Transaction, updatedEntity: IEntity, updatedProperties: string[]) {
+    private async runRulesDependOnEntityUpdate(transaction: Transaction, updatedEntity: IEntity, updatedProperties: string[]) {
         const connectionsOfEntity = await runInTransactionAndNormalize(
             transaction,
             `MATCH (s {_id: '${updatedEntity.properties._id}'})-[r]-(d)  RETURN s, r, d`,
             normalizeRelAndEntitiesForRule,
         );
 
-        const ruleFailuresOnAllRelationshipsOfUpdatedEntityPromise = EntityManager.runRulesOnAllRelationshipsOfUpdatedEntity(
+        const ruleFailuresOnAllRelationshipsOfUpdatedEntityPromise = this.runRulesOnAllRelationshipsOfUpdatedEntity(
             transaction,
             connectionsOfEntity,
             updatedEntity,
             updatedProperties,
         );
 
-        const ruleFailuresOnRelationshipsOfNeighboursOfEntityPromise =
-            EntityManager.runRulesOnRelationshipsOfNeighboursOfEntityDependentViaAggregation(
-                transaction,
-                connectionsOfEntity,
-                updatedEntity,
-                updatedProperties,
-            );
+        const ruleFailuresOnRelationshipsOfNeighboursOfEntityPromise = this.runRulesOnRelationshipsOfNeighboursOfEntityDependentViaAggregation(
+            transaction,
+            connectionsOfEntity,
+            updatedEntity,
+            updatedProperties,
+        );
 
         const [ruleFailuresOnAllRelationshipsOfUpdatedEntity, ruleFailuresOnRelationshipsOfNeighboursOfEntity] = await Promise.all([
             ruleFailuresOnAllRelationshipsOfUpdatedEntityPromise,
@@ -347,7 +345,7 @@ export class EntityManager {
         return ruleFailures;
     }
 
-    public static getUpdatedProperties(oldEntity: IEntity, newEntity: IEntity, entityTemplate: IMongoEntityTemplate) {
+    public getUpdatedProperties(oldEntity: IEntity, newEntity: IEntity, entityTemplate: IMongoEntityTemplate) {
         const propertiesWithGeneratedProperties: Record<string, IEntitySingleProperty> = {
             ...entityTemplate.properties.properties,
             disabled: { title: 'doesntMatter', type: 'boolean' },
@@ -362,62 +360,59 @@ export class EntityManager {
         return updatedProperties;
     }
 
-    static async updateEntityById(
-        id: string,
-        entityProperties: Record<string, any>,
-        entityTemplate: IMongoEntityTemplate,
-        ignoredRules: IBrokenRule[],
-    ) {
-        return Neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
-            const entity = await runInTransactionAndNormalize(
-                transaction,
-                `MATCH (e {_id: '${id}'}) RETURN e`,
-                normalizeReturnedEntity('singleResponse'),
-            );
+    async updateEntityById(id: string, entityProperties: Record<string, any>, entityTemplate: IMongoEntityTemplate, ignoredRules: IBrokenRule[]) {
+        return this.neo4jClient
+            .performComplexWriteTransaction(async (transaction) => {
+                const entity = await runInTransactionAndNormalize(
+                    transaction,
+                    `MATCH (e {_id: '${id}'}) RETURN e`,
+                    normalizeReturnedEntity('singleResponse'),
+                );
 
-            if (!entity) {
-                throw new NotFoundError(`[NEO4J] entity "${id}" not found`);
-            }
+                if (!entity) {
+                    throw new NotFoundError(`[NEO4J] entity "${id}" not found`);
+                }
 
-            if (entity.properties.disabled) {
-                throw new ServiceError(400, `[NEO4J] cannot update disabled entity.`);
-            }
+                if (entity.properties.disabled) {
+                    throw new ServiceError(400, `[NEO4J] cannot update disabled entity.`);
+                }
 
-            const updatedProperties = EntityManager.getUpdatedProperties(
-                entity,
-                { templateId: entity.templateId, properties: { ...entityProperties, updatedAt: new Date().toISOString() } },
-                entityTemplate,
-            );
+                const updatedProperties = this.getUpdatedProperties(
+                    entity,
+                    { templateId: entity.templateId, properties: { ...entityProperties, updatedAt: new Date().toISOString() } },
+                    entityTemplate,
+                );
 
-            const ruleFailuresBeforeAction = await EntityManager.runRulesDependOnEntityUpdate(transaction, entity, updatedProperties);
+                const ruleFailuresBeforeAction = await this.runRulesDependOnEntityUpdate(transaction, entity, updatedProperties);
 
-            const updatedEntity = await runInTransactionAndNormalize(
-                transaction,
-                `MATCH (e {_id: $props._id})
+                const updatedEntity = await runInTransactionAndNormalize(
+                    transaction,
+                    `MATCH (e {_id: $props._id})
                  WITH e.createdAt AS createdAt, e.disabled AS disabled, e AS e
                  SET e = $props 
                  SET e.createdAt = createdAt
                  SET e.disabled = disabled
                  RETURN e`,
-                normalizeReturnedEntity('singleResponseNotNullable'),
-                {
-                    props: {
-                        ...addStringFieldsAndNormalizeDateValues(entityProperties, entityTemplate),
-                        updatedAt: getNeo4jDateTime(),
-                        _id: id,
+                    normalizeReturnedEntity('singleResponseNotNullable'),
+                    {
+                        props: {
+                            ...addStringFieldsAndNormalizeDateValues(entityProperties, entityTemplate),
+                            updatedAt: getNeo4jDateTime(),
+                            _id: id,
+                        },
                     },
-                },
-            );
+                );
 
-            const ruleFailuresAfterAction = await EntityManager.runRulesDependOnEntityUpdate(transaction, updatedEntity, updatedProperties);
+                const ruleFailuresAfterAction = await this.runRulesDependOnEntityUpdate(transaction, updatedEntity, updatedProperties);
 
-            throwIfActionCausedBrokenRules(ignoredRules, ruleFailuresBeforeAction, ruleFailuresAfterAction);
+                throwIfActionCausedBrokenRules(ignoredRules, ruleFailuresBeforeAction, ruleFailuresAfterAction);
 
-            return updatedEntity;
-        }).catch(EntityManager.throwServiceErrorIfFailedConstraintsValidation); // constraint validation is performed on end of transaction
+                return updatedEntity;
+            })
+            .catch(this.throwServiceErrorIfFailedConstraintsValidation); // constraint validation is performed on end of transaction
     }
 
-    private static getConstraintFromName(constraintName: string): IConstraint {
+    private getConstraintFromName(constraintName: string): IConstraint {
         const [constraintTypePrefix, constraintTemplateId, ...properties] = constraintName.split(config.constraintsNameDelimiter);
 
         switch (constraintTypePrefix) {
@@ -432,7 +427,7 @@ export class EntityManager {
         }
     }
 
-    private static buildConstraintsOfTemplate(templateId: string, constraints: IConstraint[]) {
+    private buildConstraintsOfTemplate(templateId: string, constraints: IConstraint[]) {
         return constraints.reduce<IConstraintsOfTemplate>(
             (acc, curr) => ({
                 ...acc,
@@ -447,37 +442,37 @@ export class EntityManager {
         );
     }
 
-    static async getConstraintsOfTemplate(templateId: string) {
-        const constraints = await Neo4jClient.readTransaction('call db.constraints', normalizeGetDbConstraints);
+    async getConstraintsOfTemplate(templateId: string) {
+        const constraints = await this.neo4jClient.readTransaction('call db.constraints', normalizeGetDbConstraints);
         const constraintsArrayOfTemplate = constraints
             .filter(({ name }) => {
                 return name.startsWith(config.requiredConstraintsPrefixName) || name.startsWith(config.uniqueConstraintsPrefixName);
             })
-            .map(({ name }) => EntityManager.getConstraintFromName(name))
+            .map(({ name }) => this.getConstraintFromName(name))
             .filter((constraint) => templateId === constraint.templateId);
 
-        return EntityManager.buildConstraintsOfTemplate(templateId, constraintsArrayOfTemplate);
+        return this.buildConstraintsOfTemplate(templateId, constraintsArrayOfTemplate);
     }
 
-    static async getAllConstraints() {
-        const neo4jConstraints = await Neo4jClient.readTransaction('call db.constraints', normalizeGetDbConstraints);
+    async getAllConstraints() {
+        const neo4jConstraints = await this.neo4jClient.readTransaction('call db.constraints', normalizeGetDbConstraints);
         const constraints = neo4jConstraints
             .filter(({ name }) => {
                 return name.startsWith(config.requiredConstraintsPrefixName) || name.startsWith(config.uniqueConstraintsPrefixName);
             })
-            .map(({ name }) => EntityManager.getConstraintFromName(name));
+            .map(({ name }) => this.getConstraintFromName(name));
 
         const constraintsByTemplateIds = groupBy(constraints, 'templateId');
         const constraintsOfTemplates = Object.values(
             mapValues(constraintsByTemplateIds, (constraintsArray, templateId) => {
-                return EntityManager.buildConstraintsOfTemplate(templateId, constraintsArray);
+                return this.buildConstraintsOfTemplate(templateId, constraintsArray);
             }),
         );
 
         return constraintsOfTemplates;
     }
 
-    private static throwServiceErrorIfFailedToCreateConstraint(err: unknown, constraint: IConstraint) {
+    private throwServiceErrorIfFailedToCreateConstraint(err: unknown, constraint: IConstraint) {
         if (err instanceof Neo4jError && err.code === 'Neo.DatabaseError.Schema.ConstraintCreationFailed') {
             throw new ServiceError(400, `[NEO4J] failed to create constraint due to existing invalid data`, {
                 errorCode: config.errorCodes.failedToCreateConstraints,
@@ -488,7 +483,7 @@ export class EntityManager {
         throw err;
     }
 
-    private static async updateRequiredConstraintsOfTemplate(
+    private async updateRequiredConstraintsOfTemplate(
         transaction: Transaction,
         templateId: string,
         requiredConstraintsProps: string[],
@@ -518,7 +513,7 @@ export class EntityManager {
         const createRequiredConstraintsPromises = requiredConstraintsToCreate.map(async (constraint) => {
             await transaction
                 .run(`CREATE CONSTRAINT \`${constraint.constraintName}\` ON (n:\`${templateId}\`) ASSERT exists(n.${constraint.property})`)
-                .catch((err) => EntityManager.throwServiceErrorIfFailedToCreateConstraint(err, constraint));
+                .catch((err) => this.throwServiceErrorIfFailedToCreateConstraint(err, constraint));
         });
 
         const deleteConstraintsPromises = existingRequiredConstraintsToDelete.map(({ constraintName }) =>
@@ -528,7 +523,7 @@ export class EntityManager {
         return Promise.all([...createRequiredConstraintsPromises, ...deleteConstraintsPromises]);
     }
 
-    private static async updateUniqueConstraintsOfTemplate(
+    private async updateUniqueConstraintsOfTemplate(
         transaction: Transaction,
         templateId: string,
         uniqueConstraintsProps: string[][],
@@ -560,7 +555,7 @@ export class EntityManager {
 
             await transaction
                 .run(`CREATE CONSTRAINT \`${constraint.constraintName}\` ON (n:\`${templateId}\`) ASSERT (${propsPart}) IS NODE KEY`)
-                .catch((err) => EntityManager.throwServiceErrorIfFailedToCreateConstraint(err, constraint));
+                .catch((err) => this.throwServiceErrorIfFailedToCreateConstraint(err, constraint));
         });
 
         const deleteConstraintsPromises = existingUniqueConstraintsToDelete.map(({ constraintName }) =>
@@ -570,17 +565,17 @@ export class EntityManager {
         await Promise.all([...createUniqueConstraintsPromises, ...deleteConstraintsPromises]);
     }
 
-    static async updateConstraintsOfTemplate(templateId: string, constraints: { requiredConstraints: string[]; uniqueConstraints: string[][] }) {
-        return Neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
+    async updateConstraintsOfTemplate(templateId: string, constraints: { requiredConstraints: string[]; uniqueConstraints: string[][] }) {
+        return this.neo4jClient.performComplexWriteTransaction(async (transaction) => {
             const existingNeo4jConstraints = await runInTransactionAndNormalize(transaction, 'call db.constraints', normalizeGetDbConstraints);
 
             const updateConstraintsPromises: Promise<any>[] = [];
 
             const existingRequiredConstraints = existingNeo4jConstraints
                 .filter(({ name }) => name.startsWith(config.requiredConstraintsPrefixName))
-                .map(({ name }) => EntityManager.getConstraintFromName(name) as IRequiredConstraint);
+                .map(({ name }) => this.getConstraintFromName(name) as IRequiredConstraint);
 
-            const updateRequiredConstraintsPromise = EntityManager.updateRequiredConstraintsOfTemplate(
+            const updateRequiredConstraintsPromise = this.updateRequiredConstraintsOfTemplate(
                 transaction,
                 templateId,
                 constraints.requiredConstraints,
@@ -590,9 +585,9 @@ export class EntityManager {
 
             const existingUniqueConstraints = existingNeo4jConstraints
                 .filter(({ name }) => name.startsWith(config.uniqueConstraintsPrefixName))
-                .map(({ name }) => EntityManager.getConstraintFromName(name) as IUniqueConstraint);
+                .map(({ name }) => this.getConstraintFromName(name) as IUniqueConstraint);
 
-            const updateUniqueConstraintsPromise = EntityManager.updateUniqueConstraintsOfTemplate(
+            const updateUniqueConstraintsPromise = this.updateUniqueConstraintsOfTemplate(
                 transaction,
                 templateId,
                 constraints.uniqueConstraints,
@@ -605,4 +600,4 @@ export class EntityManager {
     }
 }
 
-export default EntityManager;
+export default this;
