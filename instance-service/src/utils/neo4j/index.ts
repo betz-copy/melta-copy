@@ -76,11 +76,11 @@ class Neo4jClient {
         return this.wrapDBNotExistsError(this.performTransaction.bind(this, 'writeTransaction', normalizeResultFunction, cypherQuery, parameters));
     }
 
-    async performReadTransaction<T>(transactionWork: TransactionWork<T>) {
+    async performComplexReadTransaction<T>(transactionWork: TransactionWork<T>) {
         return this.wrapDBNotExistsError(this.performComplexTransaction.bind(this, 'readTransaction', transactionWork));
     }
 
-    async performWriteTransaction<T>(transactionWork: TransactionWork<T>) {
+    async performComplexWriteTransaction<T>(transactionWork: TransactionWork<T>) {
         return this.wrapDBNotExistsError(this.performComplexTransaction.bind(this, 'writeTransaction', transactionWork));
     }
 
