@@ -64,6 +64,13 @@ export const lightTheme = createTheme({
                 },
             },
         },
+        MuiDialog: {
+            styleOverrides: {
+                paper: {
+                    borderRadius: '20px',
+                },
+            },
+        },
     },
 });
 
