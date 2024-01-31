@@ -110,6 +110,13 @@ services:
       MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
       MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
 
+  workspace-service:
+    build: ./workspace-service
+    environment:
+      PORT: 8000
+      MONGO_URL: ${WORKSPACE_SERVICE_MONGO_URL}
+      MONGO_WORKSPACES_COLLECTION_NAME: ${MONGO_WORKSPACES_COLLECTION_NAME}
+
   gateway-service:
     build: ./gateway-service
     environment:
@@ -124,6 +131,7 @@ services:
       RULE_BREACH_SERVICE_URL: ${RULE_BREACH_SERVICE_URL}
       PROCESS_SERVICE_URL: ${PROCESS_SERVICE_URL}
       GANTT_SERVICE_URL: ${GANTT_SERVICE_URL}
+      WORKSPACE_SERVICE_URL: ${WORKSPACE_SERVICE_URL}
       KARTOFFEL_BASE_URL: ${KARTOFFEL_BASE_URL}
       CALLBACK_URL: ${CALLBACK_URL}
       SHRAGA_URL: ${SHRAGA_URL}
