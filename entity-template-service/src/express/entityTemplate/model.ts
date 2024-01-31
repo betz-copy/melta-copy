@@ -1,7 +1,6 @@
 import * as mongoose from 'mongoose';
-
-import { IEntityTemplate } from './interface';
 import config from '../../config';
+import { IEntityTemplate } from './interface';
 
 const EntityTemplateSchema = new mongoose.Schema(
     {
@@ -58,6 +57,6 @@ const EntityTemplateSchema = new mongoose.Schema(
 
 EntityTemplateSchema.index({ displayName: 'text' });
 
-const EntityTemplateModel = mongoose.model<IEntityTemplate & mongoose.Document>(config.mongo.entityTemplatesCollectionName, EntityTemplateSchema);
+const EntityTemplateModel = mongoose.model<IEntityTemplate>(config.mongo.entityTemplatesCollectionName, EntityTemplateSchema);
 
 export default EntityTemplateModel;

@@ -1,12 +1,17 @@
-import { FilterQuery, Document } from 'mongoose';
-import EntityTemplateModel from './model';
-import { IEntitySingleProperty, IEntityTemplate } from './interface';
-import { ServiceError } from '../error';
+import { Document, FilterQuery } from 'mongoose';
+import { sendUpdateIndexesOnDeleteTemplate, sendUpdateIndexesOnUpdateTemplate } from '../../externalServices/globalSearchIndexCreator';
 import { escapeRegExp } from '../../utils';
-import { sendUpdateIndexesOnUpdateTemplate, sendUpdateIndexesOnDeleteTemplate } from '../../externalServices/globalSearchIndexCreator';
+import DefaultManager from '../../utils/express/manager';
+import { ServiceError } from '../error';
+import { IEntitySingleProperty, IEntityTemplate } from './interface';
+import EntityTemplateModel from './model';
 
-export class EntityTemplateManager {
-    static getTemplates(searchQuery: { search?: string; ids?: string[]; categoryIds?: string[]; limit: number; skip: number }) {
+export class EntityTemplateManager extends DefaultManager<IEntityTemplate> {
+    constructor(dbName: string) {
+        super(dbName, EntityTemplateModel);
+    }
+
+    async getTemplates(searchQuery: { search?: string; ids?: string[]; categoryIds?: string[]; limit: number; skip: number }) {
         const { search: displayName, ids, categoryIds, limit, skip } = searchQuery;
         const query: FilterQuery<IEntityTemplate & Document<any, any, any>> = {};
 
@@ -22,19 +27,19 @@ export class EntityTemplateManager {
             query.category = { $in: categoryIds };
         }
 
-        return EntityTemplateModel.find(query).populate('category').limit(limit).skip(skip).lean().exec();
+        return this.model.find(query).populate('category').limit(limit).skip(skip).lean().exec();
     }
 
-    static getTemplateById(id: string) {
-        return EntityTemplateModel.findById(id).populate('category').orFail(new ServiceError(404, 'Entity Template not found')).lean().exec();
+    async getTemplateById(id: string) {
+        return this.model.findById(id).populate('category').orFail(new ServiceError(404, 'Entity Template not found')).lean().exec();
     }
 
-    static getTemplatesByCategory(category: string) {
-        return EntityTemplateModel.find({ category }).lean().exec();
+    async getTemplatesByCategory(category: string) {
+        return this.model.find({ category }).lean().exec();
     }
 
-    static async createTemplate(templateData: Omit<IEntityTemplate, 'iconFileId'>) {
-        const entityTemplate = await EntityTemplateModel.create(templateData);
+    async createTemplate(templateData: Omit<IEntityTemplate, 'iconFileId'>) {
+        const entityTemplate = await this.model.create(templateData);
 
         await sendUpdateIndexesOnUpdateTemplate(entityTemplate._id);
 
@@ -43,21 +48,19 @@ export class EntityTemplateManager {
         return entityTemplatePopulated;
     }
 
-    static async deleteTemplate(id: string) {
-        const entityTemplate = await EntityTemplateModel.findByIdAndDelete(id)
-            .orFail(new ServiceError(404, 'Entity Template not found'))
-            .lean()
-            .exec();
+    async deleteTemplate(id: string) {
+        const entityTemplate = await this.model.findByIdAndDelete(id).orFail(new ServiceError(404, 'Entity Template not found')).lean().exec();
 
         await sendUpdateIndexesOnDeleteTemplate(id);
 
         return entityTemplate;
     }
 
-    static async updateEntityTemplate(id: string, updatedTemplate: Omit<IEntityTemplate, 'disabled'>) {
-        const currentEntityTemplate = await EntityTemplateManager.getTemplateById(id);
+    async updateEntityTemplate(id: string, updatedTemplate: Omit<IEntityTemplate, 'disabled'>) {
+        const currentEntityTemplate = await this.getTemplateById(id);
 
-        const newEntityTemplate = await EntityTemplateModel.findByIdAndUpdate(id, updatedTemplate, { new: true, overwrite: true })
+        const newEntityTemplate = await this.model
+            .findByIdAndUpdate(id, updatedTemplate, { new: true, overwrite: true })
             .populate('category')
             .orFail(new ServiceError(404, 'Entity Template not found'))
             .lean()
@@ -93,8 +96,9 @@ export class EntityTemplateManager {
         return newEntityTemplate;
     }
 
-    static async updateEntityTemplateStatus(id: string, disabledStatus: boolean) {
-        return EntityTemplateModel.findByIdAndUpdate(id, { disabled: disabledStatus }, { new: true })
+    async updateEntityTemplateStatus(id: string, disabledStatus: boolean) {
+        return this.model
+            .findByIdAndUpdate(id, { disabled: disabledStatus }, { new: true })
             .populate('category')
             .orFail(new ServiceError(404, 'Entity Template not found'))
             .lean()

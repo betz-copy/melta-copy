@@ -1,17 +1,13 @@
 import { Router } from 'express';
-import { addControllerBetterBetter } from '../../utils/express/router.middleware';
+import { createController } from '../../utils/express';
 import ValidateRequest from '../../utils/joi';
 import CategoriesController from './controller';
 import { createCategorySchema, deleteCategorySchema, getCategoriesSchema, getCategoryByIdSchema, updateCategorySchema } from './validator.schema';
-import { ICategory } from './interface';
-import CategoryManager from './manager';
 
 const categoryRouter: Router = Router();
 
-// const controller = addControllerBetter(CategoriesController)<CategoriesController>;
-const controller = addControllerBetterBetter(CategoriesController);
+const controller = createController(CategoriesController)<CategoriesController>;
 
-// categoryRouter.get('/', ValidateRequest(getCategoriesSchema), controller('getCategories'));
 categoryRouter.get('/', ValidateRequest(getCategoriesSchema), controller('getCategories'));
 
 categoryRouter.get('/:categoryId', ValidateRequest(getCategoryByIdSchema), controller('getCategoryById'));
