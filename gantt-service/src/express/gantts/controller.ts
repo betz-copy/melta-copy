@@ -1,25 +1,31 @@
 import { Request, Response } from 'express';
+import DefaultController from '../../utils/express/controller';
+import { IGantt } from './interface';
 import { GanttManager } from './manager';
 
-class GanttController {
-    static async searchGantts(req: Request, res: Response) {
-        res.json(await GanttManager.searchGantts(req.body));
+class GanttController extends DefaultController<IGantt, GanttManager> {
+    constructor(dbName: string) {
+        super(new GanttManager(dbName));
     }
 
-    static async getGanttById(req: Request, res: Response) {
-        res.json(await GanttManager.getGanttById(req.params.ganttId));
+    async searchGantts(req: Request, res: Response) {
+        res.json(await this.manager.searchGantts(req.body));
     }
 
-    static async createGantt(req: Request, res: Response) {
-        res.json(await GanttManager.createGantt(req.body));
+    async getGanttById(req: Request, res: Response) {
+        res.json(await this.manager.getGanttById(req.params.ganttId));
     }
 
-    static async deleteGantt(req: Request, res: Response) {
-        res.json(await GanttManager.deleteGantt(req.params.ganttId));
+    async createGantt(req: Request, res: Response) {
+        res.json(await this.manager.createGantt(req.body));
     }
 
-    static async updateGantt(req: Request, res: Response) {
-        res.json(await GanttManager.updateGantt(req.params.ganttId, req.body));
+    async deleteGantt(req: Request, res: Response) {
+        res.json(await this.manager.deleteGantt(req.params.ganttId));
+    }
+
+    async updateGantt(req: Request, res: Response) {
+        res.json(await this.manager.updateGantt(req.params.ganttId, req.body));
     }
 }
 

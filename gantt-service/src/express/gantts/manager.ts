@@ -1,38 +1,45 @@
 import { FilterQuery } from 'mongoose';
-import FolderModel from './model';
-import { IGantt, IGanttDocument, ISearchGanttsBody } from './interface';
-import { ServiceError } from '../error';
 import { escapeRegExp } from '../../utils';
+import DefaultManager from '../../utils/express/manager';
+import { ServiceError } from '../error';
+import { IGantt, ISearchGanttsBody } from './interface';
+import FolderModel from './model';
 
-export class GanttManager {
-    static searchGantts({ search, limit, step }: ISearchGanttsBody) {
-        const query: FilterQuery<IGanttDocument> = {};
+export class GanttManager extends DefaultManager<IGantt> {
+    constructor(dbName: string) {
+        super(dbName, FolderModel);
+    }
+
+    async searchGantts({ search, limit, step }: ISearchGanttsBody) {
+        const query: FilterQuery<IGantt> = {};
 
         if (search) {
             query.name = { $regex: escapeRegExp(search) };
         }
 
-        return FolderModel.find(query)
+        return this.model
+            .find(query)
             .limit(limit)
             .skip(step * limit)
             .lean()
             .exec();
     }
 
-    static getGanttById(ganttId: string) {
-        return FolderModel.findById(ganttId).orFail(new ServiceError(404, 'Gantt not found')).lean().exec();
+    async getGanttById(ganttId: string) {
+        return this.model.findById(ganttId).orFail(new ServiceError(404, 'Gantt not found')).lean().exec();
     }
 
-    static async createGantt(gantt: IGantt) {
-        return FolderModel.create(gantt);
+    async createGantt(gantt: IGantt) {
+        return this.model.create(gantt);
     }
 
-    static deleteGantt(ganttId: string) {
-        return FolderModel.findByIdAndDelete(ganttId).orFail(new ServiceError(404, 'Gantt not found')).lean().exec();
+    async deleteGantt(ganttId: string) {
+        return this.model.findByIdAndDelete(ganttId).orFail(new ServiceError(404, 'Gantt not found')).lean().exec();
     }
 
-    static async updateGantt(ganttId: string, gantt: IGantt) {
-        return FolderModel.findByIdAndUpdate(ganttId, gantt, { new: true, overwrite: true })
+    async updateGantt(ganttId: string, gantt: IGantt) {
+        return this.model
+            .findByIdAndUpdate(ganttId, gantt, { new: true, overwrite: true })
             .orFail(new ServiceError(404, 'Gantt not found'))
             .lean()
             .exec();
