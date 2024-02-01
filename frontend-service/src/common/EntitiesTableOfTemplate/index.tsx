@@ -40,8 +40,9 @@ import { environment } from '../../globals';
 import useDeepCompareMemo from '../../utils/useDeepCompareMemo';
 import countStatusBarComponent from '../EntitiesPage/CountStatusBarComponent';
 import Resize from '../EntitiesPage/ResizableTableOnExpand';
+import '../../css/resizeTable.css';
 
-const { rowCount, expandedRowCount } = environment.agGrid;
+const { rowCount, defaultExpandedRowCount } = environment.agGrid;
 
 export const defaultFilterModel = {
     disabled: {
@@ -189,7 +190,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
         const gridRef = useRef<AgGridReact<Data>>(null);
         // height of table includes statusbar and titles
         const minHeightTable = rowHeight * pageRowCount + rowHeight * 2;
-        const [gridHeight, setGridHeight] = useState<number>(rowHeight * expandedRowCount);
+        const [gridHeight, setGridHeight] = useState<number>(rowHeight * defaultExpandedRowCount);
 
         const getSortModel = () => {
             const colState = gridRef.current!.columnApi.getColumnState();
@@ -323,10 +324,12 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             }
         };
 
-        const content = (
+        const gridContent = (
             <Box
+                className={rowModelType === 'infinite' ? 'react-grid' : ''}
                 sx={getStyles()}
                 style={{
+                    height: rowModelType === 'infinite' ? `${gridHeight}px` : undefined,
                     borderRadius: '10px',
                     boxShadow: '-2px 2px 6px 0px rgba(30, 39, 117, 0.30)',
                 }}
@@ -460,10 +463,10 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
 
         return rowModelType === 'infinite' ? (
             <Resize gridHeight={gridHeight} setGridHeight={setGridHeight} minHeight={minHeightTable}>
-                {content}
+                {gridContent}
             </Resize>
         ) : (
-            content
+            gridContent
         );
     },
 );

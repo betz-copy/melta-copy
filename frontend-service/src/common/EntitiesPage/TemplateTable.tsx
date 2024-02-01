@@ -23,7 +23,7 @@ import { EntityTemplateColor } from '../EntityTemplateColor';
 import { ImageWithDisable } from '../ImageWithDisable';
 import { CreateOrEditEntityDetails } from '../dialogs/entity/CreateOrEditEntityDialog';
 
-const { rowCount, rowHeight } = environment.agGrid;
+const { rowCount, defaultRowHeight } = environment.agGrid;
 
 export type TemplateTableRef = {
     getFilterModel: () => ReturnType<GridApi<IEntity>['getFilterModel']> | undefined;
@@ -151,7 +151,7 @@ const TemplateTable = forwardRef<
 
             <Box sx={{ marginBottom: '30px', width: '100%' }}>
                 <EntitiesTableOfTemplate
-                    key={String(isExpand)}
+                    key={template._id}
                     ref={entitiesTableRef}
                     template={template}
                     showNavigateToRowButton
@@ -159,7 +159,7 @@ const TemplateTable = forwardRef<
                     getEntityPropertiesData={(currentEntity) => currentEntity.properties}
                     rowModelType={isExpand ? 'infinite' : 'serverSide'}
                     quickFilterText={quickFilterText}
-                    rowHeight={rowHeight}
+                    rowHeight={defaultRowHeight}
                     pageRowCount={isExpand ? rowCount : undefined}
                     fontSize="16px"
                     saveStorageProps={{

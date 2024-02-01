@@ -4,7 +4,7 @@ import i18next from 'i18next';
 import { Grid, Typography } from '@mui/material';
 import { environment } from '../../globals';
 
-const { rowHeight } = environment.agGrid;
+const { defaultRowHeight } = environment.agGrid;
 
 export default (props: IStatusPanelParams) => {
     const [count, setCount] = useState<number>(0);
@@ -24,7 +24,7 @@ export default (props: IStatusPanelParams) => {
     }, [api]);
 
     return (
-        <Grid container alignItems="center" sx={{ height: rowHeight }}>
+        <Grid container alignItems="center" sx={{ height: defaultRowHeight }}>
             <Typography marginRight={1}>{i18next.t('entitiesTableOfTemplate.totalLines')}</Typography>
             <Typography>{count}</Typography>
         </Grid>
