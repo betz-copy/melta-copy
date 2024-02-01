@@ -1,43 +1,49 @@
 import { Request, Response } from 'express';
+import DefaultController from '../../utils/express/controller';
+import { INotification } from './interface';
 import { NotificationsManager } from './manager';
 
-class NotificationsController {
-    static async getNotifications(req: Request, res: Response) {
+class NotificationsController extends DefaultController<INotification, NotificationsManager> {
+    constructor(dbName: string) {
+        super(new NotificationsManager(dbName));
+    }
+
+    async getNotifications(req: Request, res: Response) {
         const { limit, step, ...query } = req.query as any;
 
-        res.json(await NotificationsManager.getNotifications(limit, step, query));
+        res.json(await this.manager.getNotifications(limit, step, query));
     }
 
-    public static async getNotificationCount(req: Request, res: Response) {
-        res.json(await NotificationsManager.getNotificationCount(req.query));
+    async getNotificationCount(req: Request, res: Response) {
+        res.json(await this.manager.getNotificationCount(req.query));
     }
 
-    public static async getNotificationGroupCount(req: Request, res: Response) {
+    async getNotificationGroupCount(req: Request, res: Response) {
         const { groups, ...query } = req.body;
 
-        res.json(await NotificationsManager.getNotificationGroupCount(groups, query));
+        res.json(await this.manager.getNotificationGroupCount(groups, query));
     }
 
-    static async getNotificationById(req: Request, res: Response) {
+    async getNotificationById(req: Request, res: Response) {
         const { notificationId } = req.params;
-        res.json(await NotificationsManager.getNotificationById(notificationId));
+        res.json(await this.manager.getNotificationById(notificationId));
     }
 
-    static async createNotification(req: Request, res: Response) {
-        res.json(await NotificationsManager.createNotification(req.body));
+    async createNotification(req: Request, res: Response) {
+        res.json(await this.manager.createNotification(req.body));
     }
 
-    static async notificationSeen(req: Request, res: Response) {
+    async notificationSeen(req: Request, res: Response) {
         const { notificationId } = req.params;
         const { viewerId } = req.body;
 
-        res.json(await NotificationsManager.notificationSeen(notificationId, viewerId));
+        res.json(await this.manager.notificationSeen(notificationId, viewerId));
     }
 
-    static async manyNotificationSeen(req: Request, res: Response) {
+    async manyNotificationSeen(req: Request, res: Response) {
         const { viewerId, ...query } = req.body;
 
-        res.json(await NotificationsManager.manyNotificationSeen(viewerId, query));
+        res.json(await this.manager.manyNotificationSeen(viewerId, query));
     }
 }
 
