@@ -20,7 +20,8 @@ import { CreateOrEditEntityDetails } from '../../../common/dialogs/entity/Create
 interface EntityCardProps {
     entity: IEntity;
     entityTemplate: IMongoEntityTemplatePopulated;
-    openCard?: boolean;
+    expandCard?: boolean;
+    onExpand?: (entityId: string) => void;
     customActionButton?: {
         icon: React.ReactNode;
         onClick: (event) => void;
@@ -32,14 +33,15 @@ interface EntityCardProps {
 }
 const EntityCard: React.FC<EntityCardProps> = ({
     entity,
-    openCard = false,
+    expandCard = false,
+    onExpand,
     customActionButton,
     entityTemplate,
     userHavePermission = true,
     customCardStyle,
     variant = 'outlined',
 }) => {
-    const [open, setOpen] = useState<boolean>(openCard);
+    const [open, setOpen] = useState<boolean>(expandCard);
 
     const [editDialog, setEditDialog] = useState<{
         isOpen: boolean;
@@ -58,6 +60,11 @@ const EntityCard: React.FC<EntityCardProps> = ({
             .filter((property2) => !entityTemplate.propertiesPreview.includes(property2))
             .slice(0, 5 - entityTemplate.propertiesPreview.length),
     ];
+
+    const onOpen = () => {
+        onExpand && onExpand(entity.properties._id);
+        setOpen(!open);
+    }
 
     return (
         <Card raised variant={variant} sx={{ overflowX: 'auto', borderRadius: '15px', ...customCardStyle }}>
@@ -120,7 +127,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
                                     <img src="/icons/graph-icon.svg" />
                                 </IconButtonWithPopover>
                             </Grid>
-                            <IconButton size="large" onClick={() => setOpen(!open)}>
+                            <IconButton size="large" onClick={onOpen}>
                                 {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
                             </IconButton>
                         </Grid>
@@ -167,6 +174,9 @@ const EntityCard: React.FC<EntityCardProps> = ({
                             flexDirection: 'row',
                             flexWrap: 'wrap',
                             columnGap: '20px',
+                            rowGap: '10px',
+                            paddingBottom: "10px",
+                            paddingTop: "10px",
                             alignItems: 'center',
                             width: '100%',
                         }}

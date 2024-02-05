@@ -12,6 +12,7 @@ export interface PureInfiniteScrollProps<T> {
     getNextPageParam?: GetNextPageParamFunction<T[]>;
     emptyText?: string;
     endText?: string;
+    openIds?: Map<string, boolean>;
 }
 
 export const PureInfiniteScroll = <T extends any>({
@@ -23,6 +24,7 @@ export const PureInfiniteScroll = <T extends any>({
     getNextPageParam = (lastPage, allPages) => (lastPage.length ? allPages.length : undefined),
     emptyText,
     endText,
+    openIds,
 }: PureInfiniteScrollProps<T>) => {
     const showMoreRef = useRef<HTMLDivElement>(null);
 
@@ -54,11 +56,14 @@ export const PureInfiniteScroll = <T extends any>({
     return (
         <>
             {data?.pages.map((page) =>
-                page.map((item) => (
-                    <Grid item key={getItemId(item)}>
-                        {children(item)}
-                    </Grid>
-                )),
+                page.map((item) => {
+                    console.log(openIds);
+                    return (
+                        <Grid item xs={openIds?.get(getItemId(item) as string) ? 12 : 4} key={getItemId(item)}>
+                            {children(item)}
+                        </Grid>
+                    );
+                }),
             )}
 
             <ShowMore

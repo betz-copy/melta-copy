@@ -1,5 +1,5 @@
-import React, { CSSProperties } from 'react';
 import { Grid } from '@mui/material';
+import React, { CSSProperties } from 'react';
 import { PureInfiniteScroll, PureInfiniteScrollProps } from './PureInfiniteScroll';
 
 interface InfiniteScrollProps<T> extends PureInfiniteScrollProps<T> {
@@ -13,14 +13,9 @@ export const InfiniteScroll = <T extends any>({ useContainer = true, style = {},
     return (
         <Grid
             container
-            direction="column"
-            wrap="nowrap"
+            spacing={ 2 }
             marginBottom="3%"
-            sx={{
-                overflowX: 'hidden',
-                overflowY: 'overlay',
-                ...style,
-            }}
+            sx={{ ...style }}
         >
             <PureInfiniteScroll {...innerInfiniteScrollProps} />
         </Grid>
