@@ -1,10 +1,13 @@
 import { Router } from 'express';
-import { FilesController } from './controller';
-import { wrapController } from '../../utils/express';
-import { getPreviewSchema } from './validator.schema';
+import { createController } from '../../utils/express';
 import { ValidateRequest } from '../../utils/joi';
+import { FilesController } from './controller';
+import { getPreviewSchema } from './validator.schema';
 
 const filesRouter: Router = Router();
-filesRouter.get('/:fileId/:needsConversion', ValidateRequest(getPreviewSchema), wrapController(FilesController.createFilePreview));
+
+const controller = createController(FilesController)<FilesController>;
+
+filesRouter.get('/:fileId/:needsConversion', ValidateRequest(getPreviewSchema), controller('createFilePreview'));
 
 export { filesRouter };
