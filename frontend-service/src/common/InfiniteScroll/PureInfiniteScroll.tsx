@@ -56,14 +56,11 @@ export const PureInfiniteScroll = <T extends any>({
     return (
         <>
             {data?.pages.map((page) =>
-                page.map((item) => {
-                    console.log(openIds);
-                    return (
-                        <Grid item xs={openIds?.get(getItemId(item) as string) ? 12 : 4} key={getItemId(item)}>
-                            {children(item)}
-                        </Grid>
-                    );
-                }),
+                page.map((item) => (
+                    <Grid item key={getItemId(item)} {...(openIds ? { xs: openIds?.get(getItemId(item) as string) ? 12 : 4 } : {})}>
+                        {children(item)}
+                    </Grid>
+                )),
             )}
 
             <ShowMore

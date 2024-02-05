@@ -76,6 +76,9 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
                     }}
                     endText={i18next.t('entitiesCardView.noSearchLeft')}
                     openIds={openCardsMap}
+                    direction='row'
+                    wrap='wrap'
+                    spacing={2}
                 >
                     {(entity) => {
                         const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates');
