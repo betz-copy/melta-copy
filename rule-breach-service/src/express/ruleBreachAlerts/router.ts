@@ -1,7 +1,7 @@
 import { Router } from 'express';
-import RuleBreachAlertsController from './controller';
-import { wrapController } from '../../utils/express';
+import { createController } from '../../utils/express';
 import ValidateRequest from '../../utils/joi';
+import RuleBreachAlertsController from './controller';
 import {
     createRuleBreachAlertRequestSchema,
     getRuleBreachAlertByIdRequestSchema,
@@ -11,28 +11,18 @@ import {
 
 const RuleBreachAlertsRouter: Router = Router();
 
-RuleBreachAlertsRouter.post(
-    '/search',
-    ValidateRequest(searchRuleBreachAlertsRequestSchema),
-    wrapController(RuleBreachAlertsController.searchRuleBreachAlerts),
-);
+const controller = createController(RuleBreachAlertsController)<RuleBreachAlertsController>;
 
-RuleBreachAlertsRouter.post(
-    '/',
-    ValidateRequest(createRuleBreachAlertRequestSchema),
-    wrapController(RuleBreachAlertsController.createRuleBreachAlert),
-);
+RuleBreachAlertsRouter.post('/search', ValidateRequest(searchRuleBreachAlertsRequestSchema), controller('searchRuleBreachAlerts'));
 
-RuleBreachAlertsRouter.get(
-    '/:ruleBreachAlertId',
-    ValidateRequest(getRuleBreachAlertByIdRequestSchema),
-    wrapController(RuleBreachAlertsController.getRuleBreachAlertById),
-);
+RuleBreachAlertsRouter.post('/', ValidateRequest(createRuleBreachAlertRequestSchema), controller('createRuleBreachAlert'));
+
+RuleBreachAlertsRouter.get('/:ruleBreachAlertId', ValidateRequest(getRuleBreachAlertByIdRequestSchema), controller('getRuleBreachAlertById'));
 
 RuleBreachAlertsRouter.get(
     '/broken-rules/:ruleId',
     ValidateRequest(getRuleBreachAlertsByRuleIdRequestSchema),
-    wrapController(RuleBreachAlertsController.getRuleBreachAlertsByRuleId),
+    controller('getRuleBreachAlertsByRuleId'),
 );
 
 export default RuleBreachAlertsRouter;
