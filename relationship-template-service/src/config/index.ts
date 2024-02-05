@@ -4,6 +4,7 @@ import './dotenv';
 const config = {
     service: {
         port: env.get('PORT').required().asPortNumber(),
+        dbHeaderName: env.get('DB_HEADER_NAME').default('dbName').asString(),
     },
     mongo: {
         url: env.get('MONGO_URL').required().asString(),

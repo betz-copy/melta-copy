@@ -1,36 +1,41 @@
 import { Document, FilterQuery } from 'mongoose';
-import RuleModel from './model';
-import { IRule } from './interfaces';
-import { ServiceError } from '../error';
 import { escapeRegExp } from '../../utils';
+import DefaultManager from '../../utils/express/manager';
+import { ServiceError } from '../error';
+import { IRule } from './interfaces';
+import RuleModel from './model';
 
-export class RuleManager {
-    static getRuleById(templateId: string) {
-        return RuleModel.findById(templateId).orFail(new ServiceError(404, 'Rule not found')).lean().exec();
+export class RuleManager extends DefaultManager<IRule> {
+    constructor(dbName: string) {
+        super(dbName, RuleModel);
     }
 
-    static async updateRuleById(ruleId: string, updatedFields: Pick<IRule, 'name' | 'description'>) {
-        return RuleModel.findByIdAndUpdate(ruleId, updatedFields, { new: true }).orFail(new ServiceError(404, 'Rule not found')).lean().exec();
+    async getRuleById(templateId: string) {
+        return this.model.findById(templateId).orFail(new ServiceError(404, 'Rule not found')).lean().exec();
     }
 
-    static async updateRuleStatusById(ruleId: string, disabled: boolean) {
+    async updateRuleById(ruleId: string, updatedFields: Pick<IRule, 'name' | 'description'>) {
+        return this.model.findByIdAndUpdate(ruleId, updatedFields, { new: true }).orFail(new ServiceError(404, 'Rule not found')).lean().exec();
+    }
+
+    async updateRuleStatusById(ruleId: string, disabled: boolean) {
         // todo: (extra feature) if enabling again, same as behaviour as creating new rule.
         // ignoring possible breaches in existing entities. make sure client know (popup)
 
-        return RuleModel.findByIdAndUpdate(ruleId, { disabled }, { new: true }).orFail(new ServiceError(404, 'Rule not found')).lean().exec();
+        return this.model.findByIdAndUpdate(ruleId, { disabled }, { new: true }).orFail(new ServiceError(404, 'Rule not found')).lean().exec();
     }
 
-    static async deleteRuleById(ruleId: string) {
+    async deleteRuleById(ruleId: string) {
         // todo: (extra feature) allow to delete if no existing alerts/requests breaches. or maybe allow to delete them together
-        return RuleModel.findByIdAndDelete(ruleId).orFail(new ServiceError(404, 'Rule not found')).lean().exec();
+        return this.model.findByIdAndDelete(ruleId).orFail(new ServiceError(404, 'Rule not found')).lean().exec();
     }
 
-    static async createRule(rule: Omit<IRule, 'disabled'>) {
+    async createRule(rule: Omit<IRule, 'disabled'>) {
         // todo: (extra feature) ignoring possible breaches in existing entities. make sure client know (popup)
-        return RuleModel.create({ ...rule, disabled: false });
+        return this.model.create({ ...rule, disabled: false });
     }
 
-    static searchRules(searchBody: {
+    async searchRules(searchBody: {
         search?: string;
         relationshipTemplateIds?: string[];
         pinnedEntityTemplateIds?: string[];
@@ -62,6 +67,6 @@ export class RuleManager {
             query.unpinnedEntityTemplateId = { $in: unpinnedEntityTemplateIds };
         }
 
-        return RuleModel.find(query).limit(limit).skip(skip).lean().exec();
+        return this.model.find(query).limit(limit).skip(skip).lean().exec();
     }
 }
