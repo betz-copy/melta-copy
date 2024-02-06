@@ -69,7 +69,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
     return (
         <Card raised variant={variant} sx={{ overflowX: 'auto', borderRadius: '15px', ...customCardStyle }}>
             <CardHeader
-                style={{ height: '36px', padding: '0px 27px 0px 0px' }}
+                style={{ height: '36px', padding: '0px 27px 0px 0px', marginTop: "7px" }}
                 title={
                     <Grid container alignItems="center" flexDirection="row" gap="20px">
                         <Grid
@@ -78,11 +78,11 @@ const EntityCard: React.FC<EntityCardProps> = ({
                             justifyContent="center"
                             width="42px"
                             height="42px"
-                            marginTop="27px"
-                            style={{ backgroundColor: entityTemplateColor, borderRadius: '100%' }}
+                            // marginTop="27px"
+                            style={{ borderRadius: '100%' }}
                         >
                             {entityTemplate.iconFileId ? (
-                                <CustomIcon color="white" iconUrl={entityTemplate.iconFileId} height="24px" width="24px" />
+                                <CustomIcon color={entityTemplateColor} iconUrl={entityTemplate.iconFileId} height="24px" width="24px" />
                             ) : (
                                 <AppRegistrationIcon sx={{ fontSize: environment.mainFontSizes.headlineTitleFontSize, color: 'white' }} />
                             )}
@@ -159,8 +159,9 @@ const EntityCard: React.FC<EntityCardProps> = ({
                             ))}
                     </Grid>
                 }
-                sx={{ '& .MuiCardHeader-action': { marginRight: '0px' }, backgroundColor: '#CCCFE580' }} // default is -8px
+                sx={{ '& .MuiCardHeader-action': { marginRight: '0px' } }} // default is -8px
             />
+            <hr style={{border: "1px solid #EBEFFA", marginLeft: "8px", marginRight: "8px"}}></hr>
 
             {!open && (
                 <Grid container paddingLeft="90px" height="fit-content" minHeight="37px" alignItems="center">
