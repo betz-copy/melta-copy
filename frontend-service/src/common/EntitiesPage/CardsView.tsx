@@ -76,8 +76,8 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
                     }}
                     endText={i18next.t('entitiesCardView.noSearchLeft')}
                     openIds={openCardsMap}
-                    direction='row'
-                    wrap='wrap'
+                    direction="row"
+                    wrap="wrap"
                     spacing={2}
                 >
                     {(entity) => {
@@ -90,7 +90,7 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
                                     entityTemplate={entityTemplate}
                                     expandCard={openCardsMap.has(entity.properties._id)}
                                     onExpand={(entityId: string) => {
-                                        setOpenCardsMap(map => new Map(map.set(entityId, !openCardsMap.get(entityId))));
+                                        setOpenCardsMap((map) => new Map(map.set(entityId, !openCardsMap.get(entityId))));
                                     }}
                                 />
                             </Box>

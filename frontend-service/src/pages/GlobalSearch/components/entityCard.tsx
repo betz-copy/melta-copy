@@ -62,9 +62,9 @@ const EntityCard: React.FC<EntityCardProps> = ({
     ];
 
     const onOpen = () => {
-        onExpand && onExpand(entity.properties._id);
+        if (onExpand) onExpand(entity.properties._id);
         setOpen(!open);
-    }
+    };
 
     return (
         <Card raised variant={variant} sx={{ overflowX: 'auto', borderRadius: '15px', ...customCardStyle }}>
@@ -175,8 +175,8 @@ const EntityCard: React.FC<EntityCardProps> = ({
                             flexWrap: 'wrap',
                             columnGap: '20px',
                             rowGap: '10px',
-                            paddingBottom: "10px",
-                            paddingTop: "10px",
+                            paddingBottom: '10px',
+                            paddingTop: '10px',
                             alignItems: 'center',
                             width: '100%',
                         }}
