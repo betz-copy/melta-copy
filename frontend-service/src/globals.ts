@@ -84,7 +84,7 @@ export const environment = {
         },
     },
     entitiesCardsView: {
-        infiniteScrollPageCount: 10,
+        infiniteScrollPageCount: 12,
     },
     notifications: {
         updateInterval: 1000 * 60 * 10,
