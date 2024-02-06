@@ -1,4 +1,5 @@
 import { parse as parsePath } from 'node:path/posix';
+import { transaction } from '../../utils/mongoose';
 import { DocumentNotFoundError, PathDoesNotExistError, PathIsNotFolderError } from '../error';
 import { IWorkspace, WorkspaceTypes } from './interface';
 import { WorkspacesModel } from './model';
@@ -21,19 +22,61 @@ export class WorkspacesManager {
         return WorkspacesModel.findById(id).orFail(new DocumentNotFoundError(id)).lean().exec();
     }
 
-    static async createOne(workspace: Omit<IWorkspace, '_id'>) {
+    private static async handleDirExists(workspace: Omit<IWorkspace, '_id'>) {
         const { dir, name } = parsePath(workspace.path);
 
-        await WorkspacesModel.findOne({ path: dir, name, type: WorkspaceTypes.dir }).orFail(new PathDoesNotExistError(workspace.path)).lean().exec();
+        return WorkspacesModel.findOne({ path: dir, name, type: WorkspaceTypes.dir }).orFail(new PathDoesNotExistError(workspace.path)).lean().exec();
+    }
+
+    static async createOne(workspace: Omit<IWorkspace, '_id'>) {
+        await WorkspacesManager.handleDirExists(workspace);
 
         return WorkspacesModel.create(workspace);
     }
 
     static async updateOne(id: string, workspace: Omit<IWorkspace, '_id'>) {
-        return WorkspacesModel.findByIdAndUpdate(id, workspace, { new: true, overwrite: true }).orFail(new DocumentNotFoundError(id)).lean().exec();
+        return transaction(async (session) => {
+            await WorkspacesManager.handleDirExists(workspace);
+
+            if (workspace.type === WorkspaceTypes.dir) {
+                const currentWorkspace = await WorkspacesModel.findById(id).orFail(new DocumentNotFoundError(id)).lean().exec();
+                const oldPath = `${currentWorkspace.path}/${currentWorkspace.name}`;
+
+                await WorkspacesModel.updateMany(
+                    { path: { $regex: `^${oldPath}` } },
+                    [
+                        {
+                            $set: {
+                                path: {
+                                    $replaceOne: {
+                                        input: '$path',
+                                        find: oldPath,
+                                        replacement: `${workspace.path}/${workspace.name}`,
+                                    },
+                                },
+                            },
+                        },
+                    ],
+                    { session },
+                );
+            }
+
+            return WorkspacesModel.findByIdAndUpdate(id, workspace, { new: true, overwrite: true, session })
+                .orFail(new DocumentNotFoundError(id))
+                .lean()
+                .exec();
+        });
     }
 
     static async deleteOne(id: string) {
-        return WorkspacesModel.findByIdAndDelete(id).orFail(new DocumentNotFoundError(id)).lean().exec();
+        return transaction(async (session) => {
+            const workspace = await WorkspacesModel.findById(id).orFail(new DocumentNotFoundError(id)).lean().exec();
+
+            if (workspace.type === WorkspaceTypes.dir) {
+                await WorkspacesModel.deleteMany({ path: { $regex: `^${workspace.path}/${workspace.name}` } }, { session });
+            }
+
+            return WorkspacesModel.findByIdAndDelete(id, { session }).orFail(new DocumentNotFoundError(id)).lean().exec();
+        });
     }
 }
