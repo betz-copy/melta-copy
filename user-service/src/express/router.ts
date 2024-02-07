@@ -1,9 +1,10 @@
 import { Router } from 'express';
-import permissionsRouter from './permissions/router';
+import { permissionsRouter } from './permissions/router';
 
 const appRouter = Router();
 
 appRouter.use('/api/permissions', permissionsRouter);
+// appRouter.use('/api/users', userRouter);
 
 appRouter.use('/isAlive', (_req, res) => {
     res.status(200).send('alive');

@@ -1,32 +1,12 @@
 import { Router } from 'express';
-import PermissionsController from './controller';
+import { PermissionsController } from './controller';
 import { wrapController } from '../../utils/express';
 import { ValidateRequest } from '../../utils/joi';
-import {
-    getPermissionsRequestSchema,
-    createPermissionRequestSchema,
-    checkUserAuthorizationRequestSchema,
-    deletePermissionRequestSchema,
-    updatePermissionRequestSchema,
-    getPermissionByIdRequestSchema,
-    deletePermissionsRequestSchema,
-} from './validator.schema';
+import { getPermissionsOfUserRequestSchema } from './validator.schema';
 
-const permissionsRouter: Router = Router();
+export const permissionsRouter = Router();
 
-permissionsRouter.get('/', ValidateRequest(getPermissionsRequestSchema), wrapController(PermissionsController.getPermissions));
-permissionsRouter.get('/:id', ValidateRequest(getPermissionByIdRequestSchema), wrapController(PermissionsController.getPermissionById));
+permissionsRouter.get('/', ValidateRequest(getPermissionsOfUserRequestSchema), wrapController(PermissionsController.getCompactPermissionsOfUser));
 
-permissionsRouter.post('/', ValidateRequest(createPermissionRequestSchema), wrapController(PermissionsController.createPermission));
-permissionsRouter.post(
-    '/:userId/authorization',
-    ValidateRequest(checkUserAuthorizationRequestSchema),
-    wrapController(PermissionsController.checkUserAuthorization),
-);
-
-permissionsRouter.put('/:id', ValidateRequest(updatePermissionRequestSchema), wrapController(PermissionsController.updatePermission));
-
-permissionsRouter.delete('/:id', ValidateRequest(deletePermissionRequestSchema), wrapController(PermissionsController.deletePermission));
-permissionsRouter.delete('/', ValidateRequest(deletePermissionsRequestSchema), wrapController(PermissionsController.deletePermissions));
-
-export default permissionsRouter;
+// permissionsRouter.post('/', ValidateRequest(createPermissionsRequestSchema), wrapController(PermissionsController.));
+// permissionsRouter.patch('/user/:userId', ValidateRequest(), wrapController(PermissionsController.));
