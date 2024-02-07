@@ -1,14 +1,17 @@
-import ActivityLogModel from './model';
+import DefaultManager from '../../utils/express/manager';
 import { IActivityLog } from './interface';
+import ActivityLogModel from './model';
 
-export class ActivityLogManager {
-    static getActivity(entityId: string, limit: number, skip: number) {
-        return ActivityLogModel.find({ entityId }).limit(limit).skip(skip).exec();
+export default class ActivityLogManager extends DefaultManager<IActivityLog> {
+    constructor(dbName: string) {
+        super(dbName, ActivityLogModel);
     }
 
-    static createActivity(activityLog: IActivityLog) {
-        return ActivityLogModel.create(activityLog);
+    async getActivity(entityId: string, limit: number, skip: number) {
+        return this.model.find({ entityId }).limit(limit).skip(skip).exec();
+    }
+
+    async createActivity(activityLog: IActivityLog) {
+        return this.model.create(activityLog);
     }
 }
-
-export default ActivityLogManager;

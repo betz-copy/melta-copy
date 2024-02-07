@@ -1,7 +1,6 @@
 import * as mongoose from 'mongoose';
-
-import { IActivityLog } from './interface';
 import config from '../../config';
+import { IActivityLog } from './interface';
 
 const ActivityLogSchema = new mongoose.Schema({
     timestamp: {
@@ -29,6 +28,6 @@ const ActivityLogSchema = new mongoose.Schema({
 
 ActivityLogSchema.index({ entityId: 1, timestamp: -1 });
 
-const ActivityLogModel = mongoose.model<IActivityLog & mongoose.Document>(config.mongo.activitiesCollectionName, ActivityLogSchema);
+const ActivityLogModel = mongoose.model<IActivityLog>(config.mongo.activitiesCollectionName, ActivityLogSchema);
 
 export default ActivityLogModel;
