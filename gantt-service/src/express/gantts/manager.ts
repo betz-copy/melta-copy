@@ -5,7 +5,7 @@ import { ServiceError } from '../error';
 import { IGantt, ISearchGanttsBody } from './interface';
 import FolderModel from './model';
 
-export class GanttManager extends DefaultManager<IGantt> {
+export default class GanttManager extends DefaultManager<IGantt> {
     constructor(dbName: string) {
         super(dbName, FolderModel);
     }
@@ -45,5 +45,3 @@ export class GanttManager extends DefaultManager<IGantt> {
             .exec();
     }
 }
-
-export default GanttManager;

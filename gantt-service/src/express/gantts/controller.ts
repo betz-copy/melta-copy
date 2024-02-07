@@ -1,9 +1,9 @@
 import { Request, Response } from 'express';
 import DefaultController from '../../utils/express/controller';
 import { IGantt } from './interface';
-import { GanttManager } from './manager';
+import GanttManager from './manager';
 
-class GanttController extends DefaultController<IGantt, GanttManager> {
+export default class GanttController extends DefaultController<IGantt, GanttManager> {
     constructor(dbName: string) {
         super(new GanttManager(dbName));
     }
@@ -28,5 +28,3 @@ class GanttController extends DefaultController<IGantt, GanttManager> {
         res.json(await this.manager.updateGantt(req.params.ganttId, req.body));
     }
 }
-
-export default GanttController;
