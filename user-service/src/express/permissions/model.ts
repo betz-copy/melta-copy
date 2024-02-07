@@ -1,49 +1,29 @@
-import * as mongoose from 'mongoose';
-
-import { IPermission, resourceTypeOptions, scopeOptions } from './interface';
+import { Schema, model } from 'mongoose';
 import config from '../../config';
-import { handleMongooseDuplicateKeyError } from '../../utils/mongoose';
+import { PermissionTypeOptions } from './interface';
+import { IPermission } from './interface/permissions';
 
-const PermissionSchema = new mongoose.Schema(
+const { permissionsCollectionName } = config.mongo;
+
+const PermissionSchema = new Schema(
     {
         userId: {
             type: String,
             required: true,
         },
-        resourceType: {
+        type: {
             type: String,
-            enum: resourceTypeOptions,
+            enum: PermissionTypeOptions,
             required: true,
         },
-        category: {
-            type: String,
-            required: true,
-        },
-        scopes: {
-            type: [String],
-            enum: scopeOptions,
+        metadata: {
+            type: Object,
             required: true,
         },
     },
-    {
-        timestamps: true,
-        id: true,
-        versionKey: false,
-        toObject: {
-            virtuals: true,
-        },
-        toJSON: {
-            virtuals: true,
-        },
-    },
+    { timestamps: true, versionKey: false },
 );
 
-// will throw an exception if trying to create permission with the same trio of (resourceType, userId, category)
-PermissionSchema.index({ resourceType: 1, userId: 1, category: 1 }, { unique: true });
+PermissionSchema.index({ userId: 1, type: 1 }, { unique: true });
 
-PermissionSchema.post('save', handleMongooseDuplicateKeyError);
-PermissionSchema.post('findOneAndUpdate', handleMongooseDuplicateKeyError);
-
-const PermissionModel = mongoose.model<IPermission & mongoose.Document>(config.mongo.permissionsCollectionName, PermissionSchema);
-
-export default PermissionModel;
+export const PermissionModel = model<IPermission>(permissionsCollectionName, PermissionSchema);

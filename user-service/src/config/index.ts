@@ -7,8 +7,8 @@ const config = {
     },
     mongo: {
         url: env.get('MONGO_URL').required().asString(),
-        permissionsCollectionName: env.get('MONGO_PERMISSIONS_COLLECTION_NAME').required().asString(),
-    }
+        permissionsCollectionName: env.get('MONGO_PERMISSIONS_COLLECTION_NAME').default('permissions').asString(),
+    },
 };
 
 export default config;
