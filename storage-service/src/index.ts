@@ -1,10 +1,9 @@
-import { Server } from './express/server';
 import { config } from './config';
-import { minioClient } from './utils/minio';
+import { Server } from './express/server';
+import { MinIOClient } from './utils/minio';
 
 const main = async () => {
-    const { url: endPoint, port, accessKey, secretKey, bucketName, useSSL } = config.minio;
-    await minioClient.initialize(endPoint, port, accessKey, secretKey, bucketName, useSSL);
+    await MinIOClient.initialize();
 
     console.log(`Storage connection established!`);
 

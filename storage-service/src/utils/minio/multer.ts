@@ -1,37 +1,41 @@
-import { callbackify } from 'util';
+/* eslint-disable max-classes-per-file */
 import { Request } from 'express';
 import * as Multer from 'multer';
-import { MinIOClient, minioClient } from './minioClient';
-import { generatePath } from '../generatePath';
+import { callbackify } from 'util';
 import { config } from '../../config';
+import DefaultController from '../express/controller';
+import DefaultManager from '../express/manager';
+import { generatePath } from '../generatePath';
 
-class MinioStorage {
-    private client: MinIOClient;
+const { fileKeyName, filesKeyName } = config.multer;
 
-    constructor(client: MinIOClient) {
-        this.client = client;
-    }
-
+class MinioStorage extends DefaultManager {
     async handleFile(_req: Request, file: Express.Multer.File) {
         const path = generatePath(file.originalname);
 
-        await this.client.uploadFileStream(file.stream, path, { 'content-type': file.mimetype });
-        return { ...(await this.client.statFile(path)), path };
+        await this.minioClient.uploadFileStream(file.stream, path, { 'content-type': file.mimetype });
+        return { ...(await this.minioClient.statFile(path)), path };
     }
 
     public _handleFile = callbackify((req: Request, file: Express.Multer.File) => this.handleFile(req, file));
 
     async removeFile(_req: Request, file: Express.Multer.File) {
-        await this.client.removeFile(file.path);
+        await this.minioClient.removeFile(file.path);
     }
 
     public _removeFile = callbackify((req: Request, file: Express.Multer.File) => this.removeFile(req, file));
 }
 
-export const UploadToMinio = (fileKeyName: string) => {
-    return Multer({ storage: new MinioStorage(minioClient), limits: { fileSize: config.service.maxFileSize } }).single(fileKeyName);
-};
+export class MinioMulter extends DefaultController<MinioStorage> {
+    constructor(dbName: string) {
+        super(new MinioStorage(dbName));
+    }
 
-export const UploadBulkToMinio = (filesKeyName: string) => {
-    return Multer({ storage: new MinioStorage(minioClient), limits: { fileSize: config.service.maxFileSize } }).array(filesKeyName);
-};
+    uploadToMinio() {
+        return Multer({ storage: this.manager, limits: { fileSize: config.service.maxFileSize } }).single(fileKeyName);
+    }
+
+    uploadBulkToMinio() {
+        return Multer({ storage: this.manager, limits: { fileSize: config.service.maxFileSize } }).array(filesKeyName);
+    }
+}
