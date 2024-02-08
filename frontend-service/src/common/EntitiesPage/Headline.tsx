@@ -128,7 +128,7 @@ const EntitiesPageHeadline: React.FC<{
                 </Grid>
             </Grid>
             <Grid item>
-                <Grid container spacing={1} wrap="nowrap" alignItems="center">
+                <Grid container spacing={1} wrap="nowrap" alignItems="center" justifyContent="center">
                     <Grid item>
                         <ToggleButtonGroup
                             value={viewModeProps.viewMode}
@@ -158,7 +158,7 @@ const EntitiesPageHeadline: React.FC<{
                     {excelExportProps && (
                         <Grid item>
                             <IconButton
-                                style={{ background: theme.palette.primary.main, borderRadius: '7px' }}
+                                style={{ background: theme.palette.primary.main, borderRadius: '7px', width: '135px', height: '35px' }}
                                 onClick={excelExportProps.onExcelExport}
                                 disabled={excelExportProps.isLoadingExcel}
                             >
@@ -167,16 +167,19 @@ const EntitiesPageHeadline: React.FC<{
                                 ) : (
                                     <DownloadIcon htmlColor="white" />
                                 )}
-                                <Typography fontSize={14} style={{ fontWeight: '500', padding: '0 10px', color: 'white' }}>
+                                <Typography fontSize={14} style={{ fontWeight: '400', padding: '0 5px', color: 'white' }}>
                                     {i18next.t('downloadMultipleTables')}
                                 </Typography>
                             </IconButton>
                         </Grid>
                     )}
                     <Grid item>
-                        <AddEntityButton disabledToolTip style={{ background: theme.palette.primary.main, borderRadius: '7px' }}>
+                        <AddEntityButton
+                            disabledToolTip
+                            style={{ background: theme.palette.primary.main, borderRadius: '7px', width: '135px', height: '35px' }}
+                        >
                             <AddIcon htmlColor="white" />
-                            <Typography fontSize={14} style={{ fontWeight: '500', padding: '0 10px', color: 'white' }}>
+                            <Typography fontSize={14} style={{ fontWeight: '400', padding: '0 5px', color: 'white' }}>
                                 {i18next.t('addEntity')}
                             </Typography>
                         </AddEntityButton>
