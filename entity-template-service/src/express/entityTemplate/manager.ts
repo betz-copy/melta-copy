@@ -1,5 +1,5 @@
 import { Document, FilterQuery } from 'mongoose';
-import { sendUpdateIndexesOnDeleteTemplate, sendUpdateIndexesOnUpdateTemplate } from '../../externalServices/globalSearchIndexCreator';
+import GlobalSearchIndexCreator from '../../externalServices/globalSearchIndexCreator';
 import { escapeRegExp } from '../../utils';
 import DefaultManager from '../../utils/express/manager';
 import { ServiceError } from '../error';
@@ -7,8 +7,11 @@ import { IEntitySingleProperty, IEntityTemplate } from './interface';
 import EntityTemplateModel from './model';
 
 export class EntityTemplateManager extends DefaultManager<IEntityTemplate> {
+    private globalSearchIndexCreator: GlobalSearchIndexCreator;
+
     constructor(dbName: string) {
         super(dbName, EntityTemplateModel);
+        this.globalSearchIndexCreator = new GlobalSearchIndexCreator(dbName);
     }
 
     async getTemplates(searchQuery: { search?: string; ids?: string[]; categoryIds?: string[]; limit: number; skip: number }) {
@@ -41,7 +44,7 @@ export class EntityTemplateManager extends DefaultManager<IEntityTemplate> {
     async createTemplate(templateData: Omit<IEntityTemplate, 'iconFileId'>) {
         const entityTemplate = await this.model.create(templateData);
 
-        await sendUpdateIndexesOnUpdateTemplate(entityTemplate._id);
+        await this.globalSearchIndexCreator.sendUpdateIndexesOnUpdateTemplate(entityTemplate._id);
 
         const entityTemplatePopulated = await entityTemplate.populate('category').execPopulate();
 
@@ -51,7 +54,7 @@ export class EntityTemplateManager extends DefaultManager<IEntityTemplate> {
     async deleteTemplate(id: string) {
         const entityTemplate = await this.model.findByIdAndDelete(id).orFail(new ServiceError(404, 'Entity Template not found')).lean().exec();
 
-        await sendUpdateIndexesOnDeleteTemplate(id);
+        await this.globalSearchIndexCreator.sendUpdateIndexesOnDeleteTemplate(id);
 
         return entityTemplate;
     }
@@ -83,14 +86,14 @@ export class EntityTemplateManager extends DefaultManager<IEntityTemplate> {
         });
 
         if (isPropertyTypeChanged) {
-            await sendUpdateIndexesOnUpdateTemplate(id);
+            await this.globalSearchIndexCreator.sendUpdateIndexesOnUpdateTemplate(id);
         }
 
         const isNewPropertyAdded =
             Object.keys(currentEntityTemplate.properties.properties).length !== Object.keys(newEntityTemplate.properties.properties).length;
 
         if (isNewPropertyAdded) {
-            await sendUpdateIndexesOnUpdateTemplate(id);
+            await this.globalSearchIndexCreator.sendUpdateIndexesOnUpdateTemplate(id);
         }
 
         return newEntityTemplate;

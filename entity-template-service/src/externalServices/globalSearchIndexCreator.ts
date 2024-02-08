@@ -1,7 +1,10 @@
 import menash from 'menashmq';
 import config from '../config';
 
-const { rabbit } = config;
+const {
+    rabbit,
+    service: { dbHeaderName },
+} = config;
 
 export enum Action {
     upsertGlobalIndex = 'upsertGlobalIndex',
@@ -13,20 +16,28 @@ export interface IUpdateIndexRequest {
     templateId?: string;
 }
 
-const sendUpdateIndex = (request: IUpdateIndexRequest) => {
-    return menash.send(rabbit.updateSearchIndexQueueName, request);
-};
+export default class GlobalSearchIndexCreator {
+    private dbName: string;
 
-export const sendUpdateIndexesOnUpdateTemplate = async (changedTemplateId: string) => {
-    return Promise.all([
-        sendUpdateIndex({ action: Action.upsertGlobalIndex }),
-        sendUpdateIndex({ action: Action.upsertTemplateIndex, templateId: changedTemplateId }),
-    ]);
-};
+    constructor(dbName: string) {
+        this.dbName = dbName;
+    }
 
-export const sendUpdateIndexesOnDeleteTemplate = async (deletedTemplateId: string) => {
-    return Promise.all([
-        sendUpdateIndex({ action: Action.upsertGlobalIndex }),
-        sendUpdateIndex({ action: Action.deleteTemplateIndex, templateId: deletedTemplateId }),
-    ]);
-};
+    private sendUpdateIndex(request: IUpdateIndexRequest) {
+        return menash.send(rabbit.updateSearchIndexQueueName, request, { headers: { [dbHeaderName]: this.dbName } });
+    }
+
+    public sendUpdateIndexesOnUpdateTemplate(changedTemplateId: string) {
+        return Promise.all([
+            this.sendUpdateIndex({ action: Action.upsertGlobalIndex }),
+            this.sendUpdateIndex({ action: Action.upsertTemplateIndex, templateId: changedTemplateId }),
+        ]);
+    }
+
+    public sendUpdateIndexesOnDeleteTemplate(deletedTemplateId: string) {
+        return Promise.all([
+            this.sendUpdateIndex({ action: Action.upsertGlobalIndex }),
+            this.sendUpdateIndex({ action: Action.deleteTemplateIndex, templateId: deletedTemplateId }),
+        ]);
+    }
+}
