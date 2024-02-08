@@ -33,6 +33,7 @@ interface FieldBlockProps<PropertiesType extends string, Values extends Record<P
     supportSerialNumberType: boolean;
     supportEntityReferenceType: boolean;
     supportChangeToRequiredWithInstances: boolean;
+    supportEditEnum: boolean;
 }
 
 const FieldBlock = <PropertiesType extends string, Values extends Record<PropertiesType, CommonFormInputProperties[]>>({
@@ -50,6 +51,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
     supportSerialNumberType,
     supportEntityReferenceType,
     supportChangeToRequiredWithInstances,
+    supportEditEnum,
     initialFieldCardDataOnAdd = {
         name: '',
         title: '',
@@ -88,7 +90,6 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
     };
 
     const push = (properties: CommonFormInputProperties) => {
-        console.log([...displayValuesRef.current, properties]);
         setDisplayValues([...displayValuesRef.current, properties] as Values[PropertiesType]);
         updateFormik();
     };
@@ -147,7 +148,6 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
     const setDisplayValueWrapper = (index: number) => (value: SetStateAction<CommonFormInputProperties>) => setDisplayValue(index, value);
 
     const isFieldBlockError = Boolean(touched?.[propertiesType]) && Boolean(errors?.[propertiesType]);
-
     return (
         <FieldBlockAccordion style={{ border: isFieldBlockError ? '1px solid red' : '' }}>
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
@@ -181,7 +181,8 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
                                                 supportSerialNumberType,
                                                 supportEntityReferenceType,
                                                 supportChangeToRequiredWithInstances,
-                                                values,
+                                                supportEditEnum,
+                                                templateId: (values as any)._id,
                                             };
 
                                             if (propertiesType === 'properties' || propertiesType === 'detailsProperties') {

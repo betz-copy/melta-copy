@@ -417,6 +417,33 @@ export class EntityManager {
         }).catch(EntityManager.throwServiceErrorIfFailedConstraintsValidation); // constraint validation is performed on end of transaction
     }
 
+    static async updateListField(id: string, newValue: string, oldValue: string, field: any) {
+        try {
+            const node = await Neo4jClient.writeTransaction(
+                `MATCH (p: \`${id}\`)
+                WHERE p.${field.name} = '${oldValue}'
+                SET p.${field.name} = '${newValue}'
+                RETURN p`,
+                normalizeReturnedEntity('singleResponse'),
+            );
+
+            if (!node) {
+                console.log('IN NODE:');
+                throw new NotFoundError(`[NEO4J] entity not found`);
+            }
+
+            return id;
+        } catch (error) {
+            // catch all errors here. no need if.
+            if (error instanceof NotFoundError) {
+                console.log(error);
+                throw new NotFoundError(`[NEO4J] entity not found`);
+            } else {
+                throw new Error('Change failed');
+            }
+        }
+    }
+
     private static getConstraintFromName(constraintName: string): IConstraint {
         const [constraintTypePrefix, constraintTemplateId, ...properties] = constraintName.split(config.constraintsNameDelimiter);
 

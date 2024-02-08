@@ -132,7 +132,7 @@ const EntityTemplatesRow: React.FC = () => {
                                     <AppRegistrationIcon fontSize="large" />
                                 )
                             }
-                            onEditClick={() => setEntityTemplateWizardDialogState({ isWizardOpen: true, entityTemplate })}
+                            onEditClick={() => {console.log(entityTemplate); setEntityTemplateWizardDialogState({ isWizardOpen: true, entityTemplate });}}
                             onDeleteClick={() => setDeleteEntityTemplateDialogState({ isDialogOpen: true, entityTemplateId: entityTemplate._id })}
                             onDisableClick={() =>
                                 updateEntityTemplateStatusAsync({ entityTemplateId: entityTemplate._id, disabled: !entityTemplate.disabled })
@@ -147,7 +147,9 @@ const EntityTemplatesRow: React.FC = () => {
             </ViewingBox>
             <EntityTemplateWizard
                 open={entityTemplateWizardDialogState.isWizardOpen}
-                handleClose={() => setEntityTemplateWizardDialogState({ isWizardOpen: false, entityTemplate: null })}
+                handleClose={() => {
+                    setEntityTemplateWizardDialogState({ isWizardOpen: false, entityTemplate: null });
+                }}
                 initialValues={entityTemplateObjectToEntityTemplateForm(entityTemplateWizardDialogState.entityTemplate)}
                 isEditMode={Boolean(entityTemplateWizardDialogState.entityTemplate)}
             />

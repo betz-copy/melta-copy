@@ -112,6 +112,7 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
                     supportSerialNumberType
                     supportEntityReferenceType={false}
                     supportChangeToRequiredWithInstances
+                    supportEditEnum
                 />
             </Grid>
 
@@ -131,6 +132,7 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
                     supportSerialNumberType
                     supportEntityReferenceType={false}
                     supportChangeToRequiredWithInstances
+                    supportEditEnum
                 />
             </Grid>
         </Grid>

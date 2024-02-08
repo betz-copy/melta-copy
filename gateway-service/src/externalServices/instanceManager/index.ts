@@ -13,6 +13,11 @@ export class InstanceManagerService {
     private static InstanceManagerApi = axios.create({ baseURL: url, timeout: requestTimeout });
 
     // entity instances
+    static async updateListFieldOfEntity(id: string, newValue: string, oldValue: string, field: any) {
+        const { data } = await this.InstanceManagerApi.put<IEntity>(`${baseEntitiesRoute}/updateListField/${id}`, { newValue, oldValue, field });
+        return data;
+    }
+
     static async getEntityInstanceById(id: string) {
         const { data } = await this.InstanceManagerApi.get<IEntity>(`${baseEntitiesRoute}/${id}`);
         return data;

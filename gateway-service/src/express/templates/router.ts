@@ -79,6 +79,13 @@ templatesRouter.delete(
 );
 
 // entities (templates)
+templatesRouter.put(
+    '/entities/updateListField/:id',
+    // ValidateRequest(updateFieldValueSchema),
+    // wrapMiddleware(validateUserCanUpdateEntityFieldValue),
+    wrapController(TemplatesController.updateEntityFieldValue),
+);
+
 templatesRouter.post(
     '/entities',
     multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).single('file'),

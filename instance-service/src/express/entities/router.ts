@@ -46,6 +46,8 @@ entityRouter.post(
     wrapController(EntityController.searchEntitiesBatch),
 );
 
+entityRouter.put('/updateListField/:id', wrapController(EntityController.updateListField));
+
 entityRouter.post('/expanded/:id', ValidateRequest(getExpandedEntityByIdRequestSchema), wrapController(EntityController.getExpandedEntityById));
 entityRouter.post('/', ValidateRequest(createEntityRequestSchema), wrapMiddleware(validateEntity), wrapController(EntityController.createEntity));
 entityRouter.get('/:id', ValidateRequest(getEntityByIdRequestSchema), wrapController(EntityController.getEntityById));

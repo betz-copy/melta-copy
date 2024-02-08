@@ -64,6 +64,7 @@ const Wizard = <T extends object>({
     useEffect(() => {
         setActiveStep(initalStep);
     }, [open, initalStep]);
+    // const queryClient = useQueryClient();
 
     return (
         <Dialog
@@ -79,7 +80,10 @@ const Wizard = <T extends object>({
                 {title}
                 <IconButton
                     aria-label="close"
-                    onClick={handleClose}
+                    onClick={async () => {
+                        handleClose();
+                        // await queryClient.invalidateQueries('getAllTemplates');
+                    }}
                     sx={{
                         position: 'absolute',
                         right: 12,
@@ -101,7 +105,6 @@ const Wizard = <T extends object>({
                     }
                     validate={steps[activeStep].validate}
                     onSubmit={async (values, actions) => {
-                        console.log(values);
                         if (isLastStep) {
                             await submitFucntion(values);
                         } else {

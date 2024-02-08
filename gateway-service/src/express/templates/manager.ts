@@ -1,9 +1,12 @@
+/* eslint-disable no-param-reassign */
 import { AxiosError } from 'axios';
 import lodashUniqby from 'lodash.uniqby';
 import _isEqual from 'lodash.isequal';
 import {
     EntityTemplateManagerService,
     ICategory,
+    IEntityTemplate,
+    IEntityTemplatePopulated,
     IMongoEntityTemplatePopulated,
     ISearchEntityTemplatesBody,
 } from '../../externalServices/entityTemplateManager';
@@ -392,8 +395,9 @@ export class TemplatesManager {
                 }
                 if (value.type !== newValue.type) throw new ServiceError(400, 'can not change property type');
                 if (value.format !== newValue.format) throw new ServiceError(400, 'can not change property format');
-                if (value.enum && !value.enum?.every((val) => newValue.enum?.includes(val)))
-                    throw new ServiceError(400, 'can not remove options from enum');
+                // changed check for removing options.
+                if (newValue.enum && value.enum && value.enum.length > newValue.enum?.length)
+                    throw new ServiceError(400, 'can not remove properties of the enum');
                 if (value.serialStarter !== newValue.serialStarter) throw new ServiceError(400, 'can not change property serial starter');
             });
         }
@@ -432,6 +436,85 @@ export class TemplatesManager {
 
     static updateEntityTemplateStatus(id: string, disabledStatus: boolean) {
         return EntityTemplateManagerService.updateEntityTemplateStatus(id, disabledStatus);
+    }
+
+    static async updateEntityFieldValue(id: string, field: string, values: any, fieldValue: string) {
+        const template = await EntityTemplateManagerService.getEntityTemplateById(id);
+        if (!values.options) {
+            throw new ServiceError(404, 'No options array');
+        }
+        const index = values.options.indexOf(fieldValue);
+        if (index === -1) {
+            throw new ServiceError(404, 'Field value not found in options array');
+        }
+
+        const templateEnumFieldValues = [...values.options];
+        templateEnumFieldValues[index] = field;
+        const propertiesToKeep = ['name', 'displayName','category', 'properties', 'iconFileId', 'propertiesOrder', 'propertiesPreview'];
+        const templateWithoutProperties = Object.keys(template).reduce((newTemplate, key) => {
+            if (propertiesToKeep.includes(key)) {
+                newTemplate[key] = template[key];
+            }
+            // chnage only the fieldName not to the new color
+            if (key === 'enumPropertiesColors' && values.optionColors?.[fieldValue] !== undefined) {
+                const newFieldName = {
+                    ...values.optionColors,
+                    [field]: values.optionColors[fieldValue],
+                };
+                delete newFieldName[fieldValue];
+                newTemplate[key] = { [values.name]: { ...newFieldName } };
+            }
+            return newTemplate;
+        }, {} as IEntityTemplatePopulated);
+        templateWithoutProperties.properties.properties[values.name].enum = templateEnumFieldValues;
+
+        try {
+            await EntityTemplateManagerService.updateEntityTemplate(id, {
+                ...templateWithoutProperties,
+                category: templateWithoutProperties.category._id,
+            } as Omit<IEntityTemplate, 'disabled'>);
+            console.log('Initial mongoDB update worked');
+        } catch (error) {
+            console.error('Initial mongoDB update failed', error);
+            throw error;
+        }
+        // change the values in neo4j if the mongo worked.
+        try {
+            await InstanceManagerService.updateListFieldOfEntity(id, field, fieldValue, values);
+        } catch (neoError: any) {
+            if (neoError.response.status === 404) {
+                console.error('Neo4j update failed: Node not found');
+                // if not found, its not an error.
+                return field;
+            }
+            console.warn('Neo4j update failed: starting roll-back', neoError.message, neoError.response.status);
+            
+            const templateEnumFieldValues = [...values.options];
+            templateEnumFieldValues[index] = fieldValue;
+            template.properties.properties[values.name].enum = templateEnumFieldValues;
+            const rollBackTemplateWithoutProperties = Object.keys(template).reduce((newTemplate, key) => {
+                if (propertiesToKeep.includes(key)) {
+                    // eslint-disable-next-line no-param-reassign
+                    newTemplate[key] = template[key];
+                }
+                if (key === 'enumPropertiesColors' && values.optionColors?.[field] !== undefined) {
+                    newTemplate[key] = { ...values.optionColors };
+                }
+                return newTemplate;
+            }, {} as IEntityTemplatePopulated);
+
+            try {
+                await EntityTemplateManagerService.updateEntityTemplate(id, {
+                    ...rollBackTemplateWithoutProperties,
+                    category: templateWithoutProperties.category._id,
+                } as Omit<IEntityTemplate, 'disabled'>);
+                return rollBackTemplateWithoutProperties;
+            } catch (error) {
+                console.error('RollBack mongoDB update failed');
+                throw error;
+            }
+        }
+        return field;
     }
 
     // relationship templates

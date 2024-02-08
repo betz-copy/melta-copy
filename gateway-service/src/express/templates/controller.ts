@@ -43,6 +43,10 @@ export default class TemplatesController {
         res.json(await TemplatesManager.updateEntityTemplateStatus(req.params.id, req.body.disabled));
     }
 
+    static async updateEntityFieldValue(req: Request, res: Response) {
+        const { field, values, fieldValue } = req.body;
+        res.json(await TemplatesManager.updateEntityFieldValue(req.params.id, field, values, fieldValue));
+    }
     // relationshipTemplates
     static async createRelationshipTemplate(req: Request, res: Response) {
         res.json(await TemplatesManager.createRelationshipTemplate(req.body));

@@ -175,6 +175,7 @@ const AddStepsFields: React.FC<StepComponentProps<ProcessTemplateWizardValues, '
                                                     supportSerialNumberType={false}
                                                     supportEntityReferenceType
                                                     supportChangeToRequiredWithInstances={false}
+                                                    supportEditEnum={false}
                                                 />
                                             </Grid>
 
@@ -201,6 +202,7 @@ const AddStepsFields: React.FC<StepComponentProps<ProcessTemplateWizardValues, '
                                                     supportSerialNumberType={false}
                                                     supportEntityReferenceType
                                                     supportChangeToRequiredWithInstances={false}
+                                                    supportEditEnum={false}
                                                 />
                                             </Grid>
                                             <Grid item>

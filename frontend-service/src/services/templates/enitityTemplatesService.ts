@@ -233,13 +233,8 @@ const deleteEntityTemplateRequest = async (entityTemplateId: string) => {
 };
 
 const updateListFieldRequest = async (id: string, fieldValue: string, values: any, field) => {
-    // try {
     const { data } = await axios.put<any>(`${entityTemplates}/updateListField/${id}`, { fieldValue, values, field });
     return data;
-    // } catch (error: any) {
-    //     console.log('CATCHED ERROR');
-    //     return 'ERROR';
-    // }
 };
 
 export {
