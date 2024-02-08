@@ -1,3 +1,4 @@
+import { FilterQuery } from 'mongoose';
 import { parse as parsePath } from 'node:path/posix';
 import { transaction } from '../../utils/mongoose';
 import { DocumentNotFoundError, PathDoesNotExistError, PathIsNotFolderError } from '../error';
@@ -9,7 +10,10 @@ export class WorkspacesManager {
         const { ext } = parsePath(path);
         if (ext !== WorkspaceTypes.dir) throw new PathIsNotFolderError(path);
 
-        return WorkspacesModel.find({ path }).lean().exec();
+        const query: FilterQuery<IWorkspace> = { path };
+        if (path === '/') query.name = { $ne: '' };
+
+        return WorkspacesModel.find(query).lean().exec();
     }
 
     static async getFile(path: IWorkspace['path']) {
