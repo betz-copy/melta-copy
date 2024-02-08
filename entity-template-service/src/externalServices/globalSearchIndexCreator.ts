@@ -1,10 +1,7 @@
-import menash from 'menashmq';
 import config from '../config';
+import DefaultExternalServiceRabbit from '../utils/rabbit/manager';
 
-const {
-    rabbit,
-    service: { dbHeaderName },
-} = config;
+const { rabbit } = config;
 
 export enum Action {
     upsertGlobalIndex = 'upsertGlobalIndex',
@@ -16,15 +13,9 @@ export interface IUpdateIndexRequest {
     templateId?: string;
 }
 
-export default class GlobalSearchIndexCreator {
-    private dbName: string;
-
-    constructor(dbName: string) {
-        this.dbName = dbName;
-    }
-
+export default class GlobalSearchIndexCreator extends DefaultExternalServiceRabbit {
     private sendUpdateIndex(request: IUpdateIndexRequest) {
-        return menash.send(rabbit.updateSearchIndexQueueName, request, { headers: { [dbHeaderName]: this.dbName } });
+        return this.sendToQueue(rabbit.updateSearchIndexQueueName, request);
     }
 
     public sendUpdateIndexesOnUpdateTemplate(changedTemplateId: string) {
