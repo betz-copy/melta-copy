@@ -2,6 +2,9 @@ import * as env from 'env-var';
 import './dotenv';
 
 const config = {
+    service: {
+        dbHeaderName: env.get('DB_HEADER_NAME').default('dbName').asString(),
+    },
     rabbit: {
         url: env.get('RABBIT_URL').required().asString(),
         retryOptions: {
