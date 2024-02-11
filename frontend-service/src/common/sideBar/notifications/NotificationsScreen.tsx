@@ -78,6 +78,7 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
             side="right"
             sideMargin={sideBarWidth}
             filterCleaning={filterCleaning}
+            isCheckBoxClicked={isCheckBoxClicked}
         >
             <Grid>
                 <Tabs
@@ -130,10 +131,8 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                                         boxShadow: '0 0 10px rgba(0, 0, 0, 0.2)',
                                     },
                                 }}
-                                onClick={(event) => {
-                                    event.stopPropagation();
-                                    console.log('im here!');
-                                }}
+                                handleClickOnCheckbox={(value) => setIsCheckBoxClicked(value)}
+                                isDraggableDisabled
                             />
                         </Grid>
                         <Button

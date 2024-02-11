@@ -76,7 +76,6 @@ export class NotificationsManager {
 
         if (startDate || endDate) {
             query.createdAt = {};
-
             if (startDate) {
                 query.createdAt.$gte = startDate;
             }

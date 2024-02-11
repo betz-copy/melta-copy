@@ -41,7 +41,7 @@ export type SelectCheckboxProps<Option extends any, Group extends any = any> = P
     size?: 'small' | 'medium';
     toTopBar?: boolean;
     overrideSx?: object;
-    onClick?: (event: any) => void;
+    handleClickOnCheckbox: (value: boolean) => void;
 }>;
 
 const groupByWithInitial = <T extends any>(collection: T[], keys: PropertyKey[], func: (value: T) => PropertyKey) => {
@@ -325,7 +325,7 @@ const SelectCheckbox = <Option extends any, Group extends any>({
     size = 'medium',
     toTopBar,
     overrideSx,
-    onClick,
+    handleClickOnCheckbox = (value: boolean) => {},
 }: SelectCheckboxProps<Option, Group>) => {
     const [miniFilterValue, setMiniFilterValue] = useState('');
 
@@ -352,6 +352,12 @@ const SelectCheckbox = <Option extends any, Group extends any>({
                 }}
                 size={size}
                 sx={overrideSx}
+                onOpen={() => {
+                    handleClickOnCheckbox(true);
+                }}
+                onClose={() => {
+                    handleClickOnCheckbox(false);
+                }}
                 style={toTopBar ? { borderRadius: '7px', backgroundColor: '#EBEFFA' } : { borderRadius: '7px' }}
             >
                 <MiniFilter value={miniFilterValue} onChange={setMiniFilterValue} />

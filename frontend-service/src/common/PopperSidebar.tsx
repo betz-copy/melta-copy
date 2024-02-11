@@ -13,7 +13,8 @@ const PopperSidebar: React.FC<{
     sideMargin?: CSSProperties['margin'];
     width?: CSSProperties['width'];
     filterCleaning?: () => void;
-}> = ({ children, open, setOpen, title, side, sideMargin = 0, width = '22rem', filterCleaning }) => {
+    isCheckBoxClicked?: boolean;
+}> = ({ children, open, setOpen, title, side, sideMargin = 0, width = '22rem', filterCleaning, isCheckBoxClicked = false }) => {
     const darkMode = useSelector((state: RootState) => state.darkMode);
     const theme = useTheme();
 
@@ -24,7 +25,7 @@ const PopperSidebar: React.FC<{
                     <Box paddingTop="3.8rem" paddingX="1.1rem">
                         <ClickAwayListener
                             onClickAway={() => {
-                                setOpen(false);
+                                if (!isCheckBoxClicked) setOpen(false);
                                 if (filterCleaning) filterCleaning();
                             }}
                         >
