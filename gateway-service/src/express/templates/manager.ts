@@ -396,8 +396,8 @@ export class TemplatesManager {
                 if (value.type !== newValue.type) throw new ServiceError(400, 'can not change property type');
                 if (value.format !== newValue.format) throw new ServiceError(400, 'can not change property format');
                 // changed check for removing options.
-                if (newValue.enum && value.enum && value.enum.length > newValue.enum?.length)
-                    throw new ServiceError(400, 'can not remove properties of the enum');
+                // if (newValue.enum && value.enum && value.enum.length > newValue.enum?.length)
+                //     throw new ServiceError(400, 'can not remove properties of the enum');
                 if (value.serialStarter !== newValue.serialStarter) throw new ServiceError(400, 'can not change property serial starter');
             });
         }
@@ -450,7 +450,16 @@ export class TemplatesManager {
 
         const templateEnumFieldValues = [...values.options];
         templateEnumFieldValues[index] = field;
-        const propertiesToKeep = ['name', 'displayName','category', 'properties', 'iconFileId', 'propertiesOrder', 'propertiesPreview'];
+        const propertiesToKeep = [
+            'name',
+            'displayName',
+            'category',
+            'properties',
+            'iconFileId',
+            'propertiesOrder',
+            'propertiesPreview',
+            'propertiesTypeOrder',
+        ];
         const templateWithoutProperties = Object.keys(template).reduce((newTemplate, key) => {
             if (propertiesToKeep.includes(key)) {
                 newTemplate[key] = template[key];
@@ -488,7 +497,7 @@ export class TemplatesManager {
                 return field;
             }
             console.warn('Neo4j update failed: starting roll-back', neoError.message, neoError.response.status);
-            
+
             const templateEnumFieldValues = [...values.options];
             templateEnumFieldValues[index] = fieldValue;
             template.properties.properties[values.name].enum = templateEnumFieldValues;
@@ -515,6 +524,68 @@ export class TemplatesManager {
             }
         }
         return field;
+    }
+
+    static async deleteEntityFieldValue(id: string, values: any, fieldValue: string) {
+        try {
+            const data = await InstanceManagerService.getIfValuefieldIsUsed(id, fieldValue, values.name);
+            const canDeleteFieldValue = data ? false : true;
+
+            if (!canDeleteFieldValue) {
+                throw new ServiceError(400, 'cant remove used values');
+            }
+            console.log('DEKEETE PARAMS:', id, values, fieldValue);
+
+            const template = await EntityTemplateManagerService.getEntityTemplateById(id);
+            if (!values.options) {
+                throw new ServiceError(404, 'No options array');
+            }
+            const index = values.options.indexOf(fieldValue);
+            if (index === -1) {
+                throw new ServiceError(404, 'Field value not found in options array');
+            }
+
+            const templateEnumFieldValues = [...values.options];
+            const propertiesToKeep = [
+                'name',
+                'displayName',
+                'category',
+                'properties',
+                'iconFileId',
+                'propertiesOrder',
+                'propertiesPreview',
+                'propertiesTypeOrder',
+            ];
+            const templateWithoutProperties = Object.keys(template).reduce((newTemplate, key) => {
+                if (propertiesToKeep.includes(key)) {
+                    newTemplate[key] = template[key];
+                }
+                // chnage only the fieldName not to the new color
+                if (key === 'enumPropertiesColors' && values.optionColors?.[fieldValue] !== undefined) {
+                    const newFieldName = {
+                        ...values.optionColors,
+                    };
+                    delete newFieldName[fieldValue];
+                }
+                return newTemplate;
+            }, {} as IEntityTemplatePopulated);
+            templateWithoutProperties.properties.properties[values.name].enum = templateEnumFieldValues;
+
+            try {
+                // remove the field from the mongo
+                console.log('THE FIELDS:', templateWithoutProperties);
+                await EntityTemplateManagerService.updateEntityTemplate(id, {
+                    ...templateWithoutProperties,
+                    category: templateWithoutProperties.category._id,
+                } as Omit<IEntityTemplate, 'disabled'>);
+                console.log('Initial mongoDB update worked');
+            } catch (error) {
+                console.error('Initial mongoDB update failed', error);
+                throw error;
+            }
+        } catch (e) {
+            throw e;
+        }
     }
 
     // relationship templates

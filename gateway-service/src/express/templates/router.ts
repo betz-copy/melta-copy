@@ -23,11 +23,13 @@ import {
     createRelationshipTemplateSchema,
     deleteCategorySchema,
     deleteEntityTemplateSchema,
+    deleteFieldValueSchema,
     deleteRelationshipTemplateSchema,
     deleteRuleByIdRequestSchema,
     updateCategorySchema,
     updateEntityTemplateSchema,
     updateEntityTemplateStatusSchema,
+    updateFieldValueSchema,
     updateRelationshipTemplateSchema,
     updateRuleStatusByIdRequestSchema,
 } from './validator.schema';
@@ -81,11 +83,17 @@ templatesRouter.delete(
 // entities (templates)
 templatesRouter.put(
     '/entities/updateListField/:id',
-    // ValidateRequest(updateFieldValueSchema),
-    // wrapMiddleware(validateUserCanUpdateEntityFieldValue),
+    ValidateRequest(updateFieldValueSchema),
+    wrapMiddleware(validateUserCanUpdateOrDeleteEntityTemplate),
     wrapController(TemplatesController.updateEntityFieldValue),
 );
 
+templatesRouter.patch(
+    '/entities/deleteListField/:id',
+    ValidateRequest(deleteFieldValueSchema),
+    wrapMiddleware(validateUserCanUpdateOrDeleteEntityTemplate),
+    wrapController(TemplatesController.deleteEntityFieldValue),
+);
 templatesRouter.post(
     '/entities',
     multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).single('file'),

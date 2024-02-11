@@ -1,5 +1,5 @@
 import Joi from 'joi';
-import { MongoIdSchema, ColorSchema, ExtendedJoi, iconFileSchema } from '../../utils/joi';
+import { MongoIdSchema, ColorSchema, ExtendedJoi, iconFileSchema, commonFormInputSchema } from '../../utils/joi';
 
 // POST /api/templates/categories
 export const createCategorySchema = Joi.object({
@@ -54,6 +54,23 @@ export const createEntityTemplateSchema = Joi.object({
     query: {},
     params: {},
     file: iconFileSchema,
+});
+
+export const updateFieldValueSchema = Joi.object({
+    body: {
+        fieldValue: Joi.string().required(),
+        values: commonFormInputSchema,
+        field: Joi.string().required(),
+    },
+    // params: { id: MongoIdSchema.required() },
+});
+
+export const deleteFieldValueSchema = Joi.object({
+    body: {
+        fieldValue: Joi.string().required(),
+        field: commonFormInputSchema,
+    },
+    // params: { id: MongoIdSchema.required() },
 });
 
 // PUT /api/templates/entities/:id

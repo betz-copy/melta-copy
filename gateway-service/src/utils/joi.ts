@@ -33,6 +33,23 @@ export const ExtendedJoi = Joi.extend(
     },
 );
 
+export const commonFormInputSchema = Joi.object({
+    name: Joi.string().required(),
+    title: Joi.string().required(),
+    type: Joi.string().required(),
+    id: Joi.string().required(),
+    options: Joi.array().items(Joi.string()).required(),
+    optionColors: Joi.object().pattern(Joi.string(), Joi.string()),
+    pattern: Joi.string().required(),
+    patternCustomErrorMessage: Joi.string().required(),
+    dateNotification: Joi.string().allow(null).optional(),
+    serialStarter: Joi.number().optional(),
+    required: Joi.boolean().optional(),
+    preview: Joi.boolean().optional(),
+    hide: Joi.boolean().optional(),
+    unique: Joi.boolean().optional(),
+});
+
 export const MongoIdSchema = Joi.string().regex(/^[0-9a-fA-F]{24}$/, 'valid MongoId');
 
 export const ColorSchema = Joi.string().regex(/^#[A-Fa-f0-9]{6}$/);

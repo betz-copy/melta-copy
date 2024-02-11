@@ -212,6 +212,19 @@ export class EntityManager {
         }
     }
 
+    static async getIsFieldUsed(id, fieldValue, fieldName){
+        try {
+            const node = await Neo4jClient.readTransaction(
+                `MATCH (n: \`${id}\`) WHERE n.${fieldName} = '${fieldValue}' RETURN n`,
+                normalizeReturnedEntity('singleResponse'),
+            );        
+
+            return node;
+        } catch (error) {
+            throw error;
+        }
+    }
+
     static async deleteByTemplateId(templateId: string) {
         return Neo4jClient.writeTransaction(`MATCH (e: \`${templateId}\`) DETACH DELETE e`, normalizeReturnedEntity('multipleResponses'));
     }

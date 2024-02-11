@@ -4,6 +4,7 @@ import { EntityTemplateFormInputProperties, EntityTemplateWizardValues } from '.
 import { environment } from '../../globals';
 import { IEntitySingleProperty, IEntityTemplate, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { getFileName } from '../../utils/getFileName';
+import { CommonFormInputProperties } from '../../common/wizards/entityTemplate/commonInterfaces';
 
 const { entityTemplates } = environment.api;
 export const basePropertyTypes = ['string', 'number', 'boolean'];
@@ -248,14 +249,13 @@ const deleteEntityTemplateRequest = async (entityTemplateId: string) => {
     return data;
 };
 
-const updateListFieldRequest = async (id: string, fieldValue: string, values: any, field) => {
+const updateListFieldRequest = async (id: string, fieldValue: string, values: CommonFormInputProperties, field: string) => {
     const { data } = await axios.put<any>(`${entityTemplates}/updateListField/${id}`, { fieldValue, values, field });
     return data;
 };
 
-const deleteListFieldRequest = async (id: string, fieldValue: string, values: any, field) => {
-    console.log(id);
-    const { data } = await axios.put<any>(`${entityTemplates}/deleteListField/${id}`, { fieldValue, values, field });
+const deleteListFieldRequest = async (id: string, fieldValue: string, field: CommonFormInputProperties) => {
+    const { data } = await axios.patch<any>(`${entityTemplates}/deleteListField/${id}`, { fieldValue, field });
     return data;
 };
 

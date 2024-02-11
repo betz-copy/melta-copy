@@ -113,6 +113,7 @@ export default {
         preview: 'תצוגה מקדימה אינה זמינה',
         fileDownloadError: 'נכשל להוריד קובץ, נסה שנית או פנה לתמיכה',
         duplicateValue: 'לא ניתן לשנות, ',
+        deleteFieldValue: 'לא ניתן למחוק ערך בשימוש',
     },
     addRelationshipDialog: {
         title: 'הוסף קשר',
@@ -190,6 +191,7 @@ export default {
         title: 'האם אתה בטוח?',
         yes: 'אשר',
         no: 'ביטול',
+        disclaimer: 'שינוי ערך זה יגרור שינוי של מסדי הנתונים ויש לכך השפעות על המערכת כולה',
     },
     userAutocomplete: {
         label: 'משתמש',

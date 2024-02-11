@@ -45,17 +45,20 @@ class EntityController {
     }
 
     static async updateEntityById(req: Request, res: Response) {
-        console.log('UPDATING MONGO');
         const entityTemplate = fetchPropertyFromRequest<IMongoEntityTemplate>(req, 'entityTemplate');
 
         res.json(await EntityManager.updateEntityById(req.params.id, req.body.properties, entityTemplate, req.body.ignoredRules));
     }
 
     static async updateListField(req: Request, res: Response) {
-        // const entityTemplate = fetchPropertyFromRequest<IMongoEntityTemplate>(req, 'entityTemplate');
         const { newValue, oldValue, field } = req.body;
-        console.log('NEW VALUE', newValue, 'OLD VALUE:', oldValue, 'ID:', req.params.id, 'FIELD:', field);
         res.json(await EntityManager.updateListField(req.params.id, newValue, oldValue, field));
+    }
+
+    static async getIsFieldUsed(req: Request, res: Response) {
+        const { fieldValue, fieldName } = req.query; 
+        res.json(await EntityManager.getIsFieldUsed(req.params.id, fieldValue, fieldName));
+
     }
 
     static async getConstraintsOfTemplate(req: Request, res: Response) {

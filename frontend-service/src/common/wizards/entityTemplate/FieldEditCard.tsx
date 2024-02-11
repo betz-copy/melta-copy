@@ -188,15 +188,19 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
 
     const { mutate: deleteListField, isLoading: _isDeleteLoading } = useMutation(
         (tagIndex: number) => {
-            return deleteListFieldRequest(templateId, value.options[tagIndex], value, localOption);
+            return deleteListFieldRequest(templateId, value.options[tagIndex], value);
         },
         {
             onError: () => {
+                console.log("IN ERROR")
                 if (editIndex !== null) {
                     setLocalOption('');
                     setEditIndex(null);
                     // only change to new value on success!
                 }
+                toast.error(<div>{i18next.t('errorPage.deleteFieldValue')}</div>);
+
+                
             },
             onSuccess: (_resultOfMutation, tagIndex) => {
                 queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) => {
@@ -206,12 +210,8 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
 
 
                     if (value.optionColors && Object.keys(value.optionColors).length > 0 && editIndex != null) {
-                        const color = value.optionColors[value.options[editIndex]];
                         const temp = value.optionColors;
                         delete temp[value.options[editIndex]];
-                        if (prevEntityTemplate?.enumPropertiesColors?.[value.name]) {
-                            prevEntityTemplate.enumPropertiesColors[value.name] = { ...temp, [localOption]: color };
-                        }
 
                         setValues?.((prev) => ({
                             ...prev,
@@ -259,7 +259,6 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     };
 
     const handleDelete = async (e, tagIndex: number) => {
-        console.log(e.target);
         deleteListField(tagIndex);
     }
 
@@ -502,20 +501,6 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                         </IconButton>
                                                                     </Box>
                                                                 </Popover>
-                                                                
-                                                                {/* <ThemeProvider theme={theme}>
-                                                                    <AreYouSureDialog
-                                                                        open={open}
-                                                                        handleClose={() => {
-                                                                            setOpen(false);
-                                                                        }}
-                                                                        onYes={() => {
-                                                                            handleSaveEdit(editIndex!);
-                                                                            setOpen(!open);
-                                                                        }}
-                                                                        isLoading={isLoading}
-                                                                    />
-                                                                </ThemeProvider> */}
                                                             
                                                                 <ThemeProvider theme={theme}>
                                                                     <AreYouSureDialog
