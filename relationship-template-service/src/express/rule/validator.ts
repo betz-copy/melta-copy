@@ -11,8 +11,11 @@ import { IRegularFunction, IRelevantTemplates, IRule } from './interfaces';
 import { IConstant, isConstant } from './interfaces/argument';
 
 export class RuleValidator extends DefaultController<IRelationshipTemplate, RelationshipTemplateManager> {
+    private entityTemplateManagerService: EntityTemplateManagerService;
+
     constructor(dbName: string) {
         super(new RelationshipTemplateManager(dbName));
+        this.entityTemplateManagerService = new EntityTemplateManagerService(dbName);
     }
 
     private static joiValidateNoConvert = (schema: Joi.AnySchema<any>, data: any) =>
@@ -386,13 +389,13 @@ export class RuleValidator extends DefaultController<IRelationshipTemplate, Rela
         const doesUnpinnedIdIsOtherEntityTemplate = rule.unpinnedEntityTemplateId === otherEntityTemplateId;
         assert(doesUnpinnedIdIsOtherEntityTemplate, "rule's unpinnedEntityTemplateId is not the other entity template id in relationshipTemplate");
 
-        const pinnedEntityTemplate = await EntityTemplateManagerService.getEntityTemplateById(rule.pinnedEntityTemplateId);
+        const pinnedEntityTemplate = await this.entityTemplateManagerService.getEntityTemplateById(rule.pinnedEntityTemplateId);
 
         const unpinnedEntityTemplateId =
             relationshipTemplateOfRule.sourceEntityId === rule.pinnedEntityTemplateId
                 ? relationshipTemplateOfRule.destinationEntityId
                 : relationshipTemplateOfRule.sourceEntityId;
-        const unpinnedEntityTemplate = await EntityTemplateManagerService.getEntityTemplateById(unpinnedEntityTemplateId);
+        const unpinnedEntityTemplate = await this.entityTemplateManagerService.getEntityTemplateById(unpinnedEntityTemplateId);
 
         const relationshipTemplatesOfPinnedEntityAsSource = (await this.manager.searchTemplates({
             sourceEntityIds: [pinnedEntityTemplate._id],
@@ -407,14 +410,14 @@ export class RuleValidator extends DefaultController<IRelationshipTemplate, Rela
         })) as IMongoRelationshipTemplate[];
 
         const connectionsTemplatesOfPinnedEntityAsSourcePromises = relationshipTemplatesOfPinnedEntityAsSource.map(async (relationshipTemplate) => {
-            const destinationEntity = await EntityTemplateManagerService.getEntityTemplateById(relationshipTemplate.destinationEntityId);
+            const destinationEntity = await this.entityTemplateManagerService.getEntityTemplateById(relationshipTemplate.destinationEntityId);
             return { relationshipTemplate, otherEntityTemplate: destinationEntity };
         });
         const connectionsTemplatesOfPinnedEntityAsSource = await Promise.all(connectionsTemplatesOfPinnedEntityAsSourcePromises);
 
         const connectionsTemplatesOfPinnedEntityAsDestinationPromises = relationshipTemplatesOfPinnedEntityAsDestination.map(
             async (relationshipTemplate) => {
-                const sourceEntity = await EntityTemplateManagerService.getEntityTemplateById(relationshipTemplate.sourceEntityId);
+                const sourceEntity = await this.entityTemplateManagerService.getEntityTemplateById(relationshipTemplate.sourceEntityId);
                 return { relationshipTemplate, otherEntityTemplate: sourceEntity };
             },
         );
