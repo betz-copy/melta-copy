@@ -51,10 +51,11 @@ const ComponentToPrint = React.forwardRef<
 
                     {relationshipTemplatesToPrint.map(({ _id, destinationEntity, sourceEntity, displayName }) => {
                         const relevantConnections = expandedEntity.connections.filter((connection) => connection.relationship.templateId === _id);
-                        let entities =
-                            destinationEntity._id === entityTemplate._id
-                                ? relevantConnections.map((connection) => connection.sourceEntity)
-                                : relevantConnections.map((connection) => connection.destinationEntity);
+                        let entities = relevantConnections.map((connection) => {
+                            return connection.sourceEntity.properties._id === expandedEntity.entity.properties._id
+                                ? connection.destinationEntity
+                                : connection.sourceEntity;
+                        });
 
                         if (!options.showDisabled) entities = entities.filter((entity) => !entity.properties.disabled);
 

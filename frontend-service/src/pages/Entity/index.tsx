@@ -270,20 +270,16 @@ const Entity: React.FC = () => {
                                                                 disabled={isEditButtonsDisabled}
                                                                 iconButtonProps={{
                                                                     onClick: () => {
+                                                                        const [defaultSourceEntity, defaultDestinationEntity] =
+                                                                            currentEntityTemplate._id === currRelationshipTemplate.sourceEntity._id
+                                                                                ? [expandedEntity.entity, null]
+                                                                                : [null, expandedEntity.entity]; // if source and dest are the same template, then put currentEntity in source
                                                                         setCreateRelationshipDialogState({
                                                                             isOpen: true,
                                                                             initialValues: {
                                                                                 relationshipTemplate: currRelationshipTemplate,
-                                                                                sourceEntity:
-                                                                                    currentEntityTemplate._id ===
-                                                                                    currRelationshipTemplate.sourceEntity._id
-                                                                                        ? expandedEntity.entity
-                                                                                        : null,
-                                                                                destinationEntity:
-                                                                                    currentEntityTemplate._id ===
-                                                                                    currRelationshipTemplate.destinationEntity._id
-                                                                                        ? expandedEntity.entity
-                                                                                        : null,
+                                                                                sourceEntity: defaultSourceEntity,
+                                                                                destinationEntity: defaultDestinationEntity,
                                                                             },
                                                                         });
                                                                     },
@@ -316,7 +312,10 @@ const Entity: React.FC = () => {
                                                                 return connection.relationship.properties._id;
                                                             }}
                                                             getEntityPropertiesData={(connection) => {
-                                                                if (currentEntityTemplate._id === connection.destinationEntity.templateId)
+                                                                if (
+                                                                    expandedEntity.entity.properties._id ===
+                                                                    connection.destinationEntity.properties._id
+                                                                )
                                                                     return connection.sourceEntity.properties;
                                                                 return connection.destinationEntity.properties;
                                                             }}
