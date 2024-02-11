@@ -1,11 +1,11 @@
-import axios from 'axios';
 // @ts-ignore
-import { generate, format, JSONSchemaFaker } from 'json-schema-faker';
+import { format, generate } from 'json-schema-faker';
 import * as pLimit from 'p-limit';
 import config from './config';
 import { IMongoEntityTemplate } from './entityTemplates';
 import { IMongoRelationshipTemplate } from './relationshipTemplates';
 import { trycatch } from './utils';
+import { Axios } from './utils/axios';
 
 const limit = pLimit(config.requestLimit);
 
@@ -26,7 +26,7 @@ export const createInstances = async (entityTemplates: IMongoEntityTemplate[], c
         .map((entityTemplate) => {
             return Array.from({ length: chance.integer({ min: minNumberOfEntities, max: maxNumberOfEntities }) }, () =>
                 limit(() =>
-                    axios.post(url + createEntityRoute, {
+                    Axios.post(url + createEntityRoute, {
                         properties: generate(entityTemplate.properties),
                         templateId: entityTemplate._id,
                     }),
@@ -57,7 +57,7 @@ export const createRelationshipInstances = async (
 
                 return limit(async () => {
                     const { result } = await trycatch(() =>
-                        axios.post(url + createRelationshipRoute, {
+                        Axios.post(url + createRelationshipRoute, {
                             relationshipInstance: {
                                 sourceEntityId,
                                 destinationEntityId,
@@ -77,7 +77,7 @@ export const createRelationshipInstances = async (
 };
 
 export const isInstanceServiceAlive = async () => {
-    const { result, err } = await trycatch(() => axios.get(url + isAliveRoute));
+    const { result, err } = await trycatch(() => Axios.get(url + isAliveRoute));
 
     return { result, err };
 };

@@ -1,5 +1,5 @@
-import axios from 'axios';
 import config from './config';
+import { Axios } from './utils/axios';
 
 const { url, createCategoryRoute } = config.entityTemplateService;
 
@@ -14,7 +14,7 @@ export interface IMongoCategory extends ICategory {
 
 export const createCategories = async (categories: ICategory[]) => {
     const promises = categories.map((category) => {
-        return axios.post<IMongoCategory>(url + createCategoryRoute, category);
+        return Axios.post<IMongoCategory>(url + createCategoryRoute, category);
     });
 
     const results = await Promise.all(promises);
@@ -23,7 +23,7 @@ export const createCategories = async (categories: ICategory[]) => {
 };
 
 export const getCategories = async () => {
-    const result = await axios.get<IMongoCategory[]>(url + createCategoryRoute);
+    const result = await Axios.get<IMongoCategory[]>(url + createCategoryRoute);
 
     return result.data;
 };
