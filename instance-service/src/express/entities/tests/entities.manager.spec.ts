@@ -30,6 +30,7 @@ const relationshipTemplate = {
 const entityTemplate: IMongoEntityTemplate = {
     _id: defaultTemplateId,
     propertiesOrder: ['testProp'],
+    propertiesTypeOrder: ['properties', 'attachmentProperties'],
     propertiesPreview: ['testProp'],
     name: 'template',
     displayName: 'template',

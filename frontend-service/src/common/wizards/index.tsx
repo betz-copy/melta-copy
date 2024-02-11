@@ -1,5 +1,5 @@
 import React, { PropsWithChildren, useEffect, useState } from 'react';
-import { Dialog, DialogTitle, DialogContent, Divider, IconButton } from '@mui/material';
+import { Dialog, DialogTitle, DialogContent, IconButton } from '@mui/material';
 import { Close as CloseIcon } from '@mui/icons-material';
 import { Formik, Form, FormikProps, FormikConfig } from 'formik';
 import * as Yup from 'yup';
@@ -69,14 +69,14 @@ const Wizard = <T extends object>({
     return (
         <Dialog
             open={open}
-            maxWidth="lg"
+            maxWidth="md"
             fullWidth
             PaperProps={{ sx: { bgcolor: darkMode ? '#060606' : 'white' } }}
             style={{ height: '80%', margin: 'auto' }}
             disableEnforceFocus
         >
             {/* disableEnforceFocus added for 'raqb' component as mentioned in docs https://github.com/ukrbublik/react-awesome-query-builder#api */}
-            <DialogTitle>
+            <DialogTitle color={(theme) => theme.palette.primary.main} fontSize="20px" fontWeight="600" fontFamily="Rubik">
                 {title}
                 <IconButton
                     aria-label="close"
@@ -94,7 +94,6 @@ const Wizard = <T extends object>({
                     <CloseIcon />
                 </IconButton>
             </DialogTitle>
-            <Divider />
             <DialogContent>
                 <Formik
                     initialValues={initialValues}

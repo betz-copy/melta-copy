@@ -29,6 +29,10 @@ const EntityTemplateSchema = new mongoose.Schema(
             type: [String],
             required: true,
         },
+        propertiesTypeOrder: {
+            type: [String],
+            required: true,
+        },
         propertiesPreview: {
             type: [String],
             required: true,

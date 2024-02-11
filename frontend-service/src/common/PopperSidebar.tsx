@@ -1,5 +1,5 @@
 import React, { CSSProperties } from 'react';
-import { Box, Divider, IconButton, Popper, Typography, Grid, ClickAwayListener } from '@mui/material';
+import { Box, Divider, IconButton, Popper, Typography, Grid, ClickAwayListener, useTheme } from '@mui/material';
 import { CloseSharp } from '@mui/icons-material';
 import Slide from '@mui/material/Slide';
 import { useSelector } from 'react-redux';
@@ -15,6 +15,7 @@ const PopperSidebar: React.FC<{
     width?: CSSProperties['width'];
 }> = ({ children, open, setOpen, title, side, topButtons, sideMargin = 0, width = '22rem' }) => {
     const darkMode = useSelector((state: RootState) => state.darkMode);
+    const theme = useTheme();
 
     return (
         <Popper open={open} transition sx={{ left: side === 'right' ? 0 : 'auto', marginX: sideMargin }}>
@@ -40,7 +41,14 @@ const PopperSidebar: React.FC<{
                                             <CloseSharp />
                                         </IconButton>
 
-                                        <Typography color="#225AA7" fontFamily="Rubik" component="h5" variant="h5" marginX="auto" fontWeight="bold">
+                                        <Typography
+                                            color={theme.palette.primary.main}
+                                            fontFamily="Rubik"
+                                            component="h5"
+                                            variant="h5"
+                                            marginX="auto"
+                                            fontWeight="bold"
+                                        >
                                             {title}
                                         </Typography>
 

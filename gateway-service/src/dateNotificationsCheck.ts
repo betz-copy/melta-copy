@@ -1,9 +1,9 @@
 import * as schedule from 'node-schedule';
 
-import { EntityTemplateManagerService } from './externalServices/entityTemplateManager';
-import { InstanceManagerService } from './externalServices/instanceManager';
-import { IEntityWithDirectRelationships } from './externalServices/instanceManager/interfaces/entities';
-import { getPermissions } from './externalServices/permissionsApi';
+import { EntityTemplateManagerService } from './externalServices/entityTemplateService';
+import { InstanceManagerService } from './externalServices/instanceService';
+import { IEntityWithDirectRelationships } from './externalServices/instanceService/interfaces/entities';
+import { getPermissions } from './externalServices/permissionsService';
 import { NotificationService } from './externalServices/notificationService';
 import { IDateAboutToExpireNotificationMetadata, NotificationType } from './externalServices/notificationService/interfaces';
 import config from './config';

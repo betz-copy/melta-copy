@@ -5,12 +5,12 @@ import { promises as fsp } from 'fs';
 import axios from 'axios';
 import { stream } from 'exceljs';
 import { deleteFiles, duplicateFiles, uploadFiles } from '../../externalServices/storageService';
-import { IEntity, ISearchFilter, ISearchSort } from '../../externalServices/instanceManager/interfaces/entities';
-import { IRelationship } from '../../externalServices/instanceManager/interfaces/relationships';
+import { IEntity, ISearchFilter, ISearchSort } from '../../externalServices/instanceService/interfaces/entities';
+import { IRelationship } from '../../externalServices/instanceService/interfaces/relationships';
 import { IExportEntitiesBody } from './interfaces';
-import { InstanceManagerService } from '../../externalServices/instanceManager';
-import { EntityTemplateManagerService, IEntityTemplatePopulated, IMongoEntityTemplatePopulated } from '../../externalServices/entityTemplateManager';
-import { ActivityLogManagerService, IUpdatedFields } from '../../externalServices/activityLogManager';
+import { InstanceManagerService } from '../../externalServices/instanceService';
+import { EntityTemplateManagerService, IEntityTemplatePopulated, IMongoEntityTemplatePopulated } from '../../externalServices/entityTemplateService';
+import { ActivityLogManagerService, IUpdatedFields } from '../../externalServices/activityLogService';
 import { trycatch } from '../../utils';
 import {
     ActionTypes,

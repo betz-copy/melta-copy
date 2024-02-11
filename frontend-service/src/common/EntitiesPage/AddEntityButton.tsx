@@ -1,7 +1,9 @@
 import React, { useState, CSSProperties } from 'react';
 import i18next from 'i18next';
-import { EntityWizard, EntityWizardValues } from '../wizards/entity';
+import { Dialog } from '@mui/material';
+import { EntityWizardValues } from '../dialogs/entity';
 import IconButtonWithPopover from '../IconButtonWithPopover';
+import { CreateOrEditEntityDetails } from '../dialogs/entity/CreateOrEditEntityDialog';
 
 const AddEntityButton: React.FC<{
     style?: CSSProperties;
@@ -9,7 +11,8 @@ const AddEntityButton: React.FC<{
     initialStep?: number;
     initialValues?: EntityWizardValues;
     disabledToolTip?: boolean;
-}> = ({ style, children, disabled, initialStep, initialValues, disabledToolTip = false }) => {
+    popoverText?: string;
+}> = ({ style, children, disabled, initialStep, initialValues, popoverText, disabledToolTip = false }) => {
     const [addEntityWizardState, setAddEntityWizardState] = useState<{ isOpen: boolean; initialStep?: number; initialValues?: EntityWizardValues }>({
         isOpen: false,
     });
@@ -17,29 +20,61 @@ const AddEntityButton: React.FC<{
     return (
         <>
             <IconButtonWithPopover
-                popoverText={disabled ? i18next.t('categoryPage.disabledTemplate') : i18next.t('entitiesTableOfTemplate.addEntity')}
+                popoverText={
+                    popoverText || disabled ? i18next.t('permissions.dontHaveWritePermissions') : i18next.t('entitiesTableOfTemplate.addEntity')
+                }
                 disabledToolTip={disabledToolTip}
                 iconButtonProps={{
                     onClick: () => {
-                        if (!disabled) setAddEntityWizardState({ isOpen: true, initialStep, initialValues });
+                        setAddEntityWizardState({ isOpen: true, initialStep, initialValues });
                     },
                     style,
-                    disableRipple: disabled,
                 }}
                 style={style}
+                disabled={disabled}
             >
                 {children}
             </IconButtonWithPopover>
-            <EntityWizard
-                open={addEntityWizardState.isOpen}
-                handleClose={() =>
-                    setAddEntityWizardState({
-                        isOpen: false,
-                    })
-                }
-                initalStep={addEntityWizardState.initialStep}
-                initialValues={addEntityWizardState.initialValues}
-            />
+
+            <Dialog open={addEntityWizardState.isOpen} maxWidth="md">
+                <CreateOrEditEntityDetails
+                    isEditMode={false}
+                    entityTemplate={
+                        addEntityWizardState.initialValues?.template || {
+                            _id: '',
+                            displayName: '',
+                            name: '',
+                            category: {
+                                _id: '',
+                                name: '',
+                                displayName: '',
+                                color: '',
+                            },
+                            properties: {
+                                properties: {},
+                                required: [],
+                                type: 'object',
+                                hide: [],
+                            },
+                            propertiesOrder: [],
+                            propertiesTypeOrder: ['properties', 'attachmentProperties'],
+                            propertiesPreview: [],
+                            uniqueConstraints: [],
+                            disabled: false,
+                        }
+                    }
+                    entity={{
+                        properties: { disabled: false, _id: '', createdAt: '', updatedAt: '' },
+                        templateId: '',
+                    }}
+                    onSuccessUpdate={() => {}}
+                    onCancelUpdate={() =>
+                        setAddEntityWizardState({
+                            isOpen: false,
+                        })
+                    }
+                />
+            </Dialog>
         </>
     );
 };

@@ -14,7 +14,7 @@ ajv.addKeyword({
     type: 'string',
 });
 const stringFormats = ['date', 'date-time', 'email', 'fileId'];
-const allowedJSONSchemaTypes = ['string', 'number', 'boolean'];
+const allowedJSONSchemaTypes = ['string', 'number', 'boolean', 'array'];
 ajv.addKeyword({
     keyword: 'serialStarter',
     type: 'number',
@@ -39,6 +39,27 @@ const propertiesArraySchema = Joi.array()
             enum: Joi.array().items(Joi.string()).when('type', { not: 'string', then: Joi.forbidden() }),
             pattern: Joi.string().when('type', { not: 'string', then: Joi.forbidden() }),
             patternCustomErrorMessage: Joi.string().when('pattern', { is: Joi.exist(), then: Joi.required(), otherwise: Joi.forbidden() }),
+            items: Joi.object({
+                type: Joi.string().valid('string').required(),
+                format: Joi.string().valid('fileId'),
+                enum: Joi.array().items(Joi.string()).min(1),
+            })
+                .xor('format', 'enum')
+                .when('type', {
+                    is: 'array',
+                    then: Joi.required(),
+                    otherwise: Joi.forbidden(),
+                }),
+            minItems: Joi.valid(1).when('type', {
+                is: 'array',
+                then: Joi.required(),
+                otherwise: Joi.forbidden(),
+            }),
+            uniqueItems: Joi.valid(true).when('type', {
+                is: 'array',
+                then: Joi.required(),
+                otherwise: Joi.forbidden(),
+            }),
             dateNotification: Joi.string()
                 .valid('day', 'week', 'twoWeeks')
                 .when('format', { not: Joi.valid('date', 'date-time'), then: Joi.forbidden() })
@@ -124,6 +145,8 @@ const customOrderPropertiesValidation: Joi.CustomValidator = (propertiesOrder: s
 };
 export const orderPropertiesSchema = Joi.array().unique().items(Joi.string()).custom(customOrderPropertiesValidation);
 
+export const orderPropertiesTypeSchema = Joi.array().unique().items(Joi.valid('properties', 'attachmentProperties'));
+
 const customPreviewPropertiesValidation: Joi.CustomValidator = (propertiesPreview: string[], helpers) => {
     return validatePropertiesArrayInProperties(propertiesPreview, helpers.state.ancestors[0].properties.properties);
 };
@@ -133,11 +156,13 @@ const customEnumPropertiesColorsSchemaValidation: Joi.CustomValidator = (enumPro
     const { properties }: IEntityTemplate['properties'] = helpers.state.ancestors[0].properties;
     Object.entries(enumPropertiesColors).forEach(([key, value]) => {
         const property = properties[key];
+
         if (!property) throw new Error(`field ${key} does not exist`);
-        if (!property.enum) throw new Error(`field ${key} is not an enum`);
+        if (!property.enum && !property.items?.enum) throw new Error(`field ${key} is not an enum or array enum`);
 
         Object.keys(value).forEach((enumOption) => {
-            if (!property.enum?.includes(enumOption)) throw new Error(`enum option ${enumOption} does not exist in field ${key}`);
+            if (!property.enum?.includes(enumOption) && !property.items?.enum?.includes(enumOption))
+                throw new Error(`enum option ${enumOption} does not exist in field ${key}`);
         });
     });
 

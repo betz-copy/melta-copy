@@ -1,16 +1,18 @@
 import React from 'react';
 import { ColDef, ICellRendererParams, IDateFilterParams, ISetFilterParams, ValueFormatterParams, ValueGetterFunc } from '@ag-grid-community/core';
 import i18next from 'i18next';
-import { OpenPreviewButton } from '../../common/OpenPreviewButton';
+import { OpenPreviewButton } from '../../common/FilePreview/OpenPreviewButton';
 import { Value } from './Value';
 import { getDateWithoutTime, getLongDate } from '../date';
 import { IEntity } from '../../interfaces/entities';
 import { agGridLocaleText } from './agGridLocaleText';
+import OverflowWrapper from './OverflowWrapper';
 
 export const numberColDef = <Data extends any = IEntity>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
     value: { title: string },
+    hardcodedWidth: number | undefined,
     hideColumn = false,
     hideValue = false,
 ): ColDef<Data> => {
@@ -19,9 +21,12 @@ export const numberColDef = <Data extends any = IEntity>(
         headerName: value.title,
         valueGetter,
         filter: 'agNumberColumnFilter',
-        cellRenderer: (props: ICellRendererParams<Data, number | undefined>) => <Value hideValue={hideValue} value={props.value?.toString() ?? ''} />,
+        cellRenderer: (props: ICellRendererParams<Data, number | undefined>) => (
+            <Value hideValue={hideValue} value={props.value?.toString() ?? ''} isNumberField />
+        ),
+        width: hardcodedWidth,
+        flex: hardcodedWidth ? 0 : 1,
         hide: hideColumn,
-        cellStyle: { direction: 'ltr' },
     };
 };
 
@@ -29,6 +34,7 @@ export const regexColDef = <Data extends any = IEntity>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
     value: { title: string },
+    hardcodedWidth: number | undefined,
     hideColumn = false,
     hideValue = false,
 ): ColDef<Data> => {
@@ -38,6 +44,8 @@ export const regexColDef = <Data extends any = IEntity>(
         cellRenderer: (props: ICellRendererParams<Data, string | undefined>) => <Value hideValue={hideValue} value={props.value ?? ''} />,
         valueGetter,
         filter: 'agTextColumnFilter',
+        width: hardcodedWidth,
+        flex: hardcodedWidth ? 0 : 1,
         hide: hideColumn,
         cellStyle: { direction: 'ltr' },
     };
@@ -47,6 +55,7 @@ export const stringColDef = <Data extends any = IEntity>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
     value: { title: string },
+    hardcodedWidth: number | undefined,
     hideColumn = false,
     hideValue = false,
 ): ColDef<Data> => {
@@ -56,6 +65,8 @@ export const stringColDef = <Data extends any = IEntity>(
         cellRenderer: (props: ICellRendererParams<Data, string | undefined>) => <Value hideValue={hideValue} value={props.value ?? ''} />,
         valueGetter,
         filter: 'agTextColumnFilter',
+        width: hardcodedWidth,
+        flex: hardcodedWidth ? 0 : 1,
         hide: hideColumn,
     };
 };
@@ -64,6 +75,7 @@ export const fileColDef = <Data extends any = IEntity>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
     value: { title: string },
+    hardcodedWidth: number | undefined,
     hideColumn = false,
 ): ColDef<Data> => {
     return {
@@ -72,6 +84,8 @@ export const fileColDef = <Data extends any = IEntity>(
         valueGetter,
         cellRenderer: (props: ICellRendererParams<Data, string | undefined>) => (props.value ? <OpenPreviewButton fileId={props.value} /> : null),
         filter: 'agTextColumnFilter',
+        width: hardcodedWidth,
+        flex: hardcodedWidth ? 0 : 1,
         hide: hideColumn,
     };
 };
@@ -80,18 +94,19 @@ export const booleanColDef = <Data extends any = IEntity>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
     value: { title: string },
+    hardcodedWidth: number | undefined,
     hideColumn = false,
     hideValue = false,
 ): ColDef<Data> => {
     const formatValue = (propertyValue: boolean | undefined) => {
         if (!propertyValue) return i18next.t('booleanOptions.no');
-        if (propertyValue === true) return i18next.t('booleanOptions.yes');
-        if (propertyValue === false) return i18next.t('booleanOptions.no');
-        return '';
+        return i18next.t('booleanOptions.yes');
     };
 
     const filterParams: ISetFilterParams<Data, boolean | undefined> = {
-        valueFormatter: (params: ValueFormatterParams<Data, boolean>) => {
+        valueFormatter: (params: ValueFormatterParams<Data, boolean | undefined>) => {
+            if (params.value === null) return agGridLocaleText.blanks;
+
             return formatValue(params.value);
         },
         suppressMiniFilter: true,
@@ -104,14 +119,18 @@ export const booleanColDef = <Data extends any = IEntity>(
         cellRenderer: (props: ICellRendererParams<Data, boolean | undefined>) => <Value hideValue={hideValue} value={formatValue(props.value)} />,
         filter: 'agSetColumnFilter',
         filterParams,
+        width: hardcodedWidth,
+        flex: hardcodedWidth ? 0 : 1,
         hide: hideColumn,
     };
 };
+
 export const enumColDef = <Data extends any = IEntity>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
     value: { title: string },
     values: Array<string>,
+    hardcodedWidth: number | undefined,
     enumColorOptions?: Record<string, string>,
     hideColumn = false,
     hideValue = false,
@@ -130,6 +149,49 @@ export const enumColDef = <Data extends any = IEntity>(
         },
         filter: 'agSetColumnFilter',
         filterParams,
+        width: hardcodedWidth,
+        flex: hardcodedWidth ? 0 : 1,
+        hide: hideColumn,
+    };
+};
+
+export const enumArrayColDef = <Data extends any = IEntity>(
+    field: string,
+    valueGetter: ValueGetterFunc<Data>,
+    value: { title: string },
+    values: Array<string>,
+    hardcodedWidth: number | undefined,
+    rowHeight: number,
+    enumColorOptions?: Record<string, string>,
+    hideColumn = false,
+    hideValue = false,
+): ColDef<Data> => {
+    const filterParams: ISetFilterParams<Data, string | undefined> = {
+        suppressMiniFilter: true,
+        values: [...values, undefined],
+    };
+
+    return {
+        field,
+        headerName: value.title,
+        valueGetter,
+
+        cellRenderer: (props: ICellRendererParams<Data, string[] | undefined>) => {
+            if (!props.value) return '';
+            return (
+                <OverflowWrapper
+                    items={props.value}
+                    getItemKey={(item) => item}
+                    renderItem={(item) => <Value hideValue={hideValue} value={item} color={enumColorOptions?.[item] || 'default'} />}
+                    containerStyle={{ height: `${rowHeight}px` }}
+                />
+            );
+        },
+
+        filter: 'agSetColumnFilter',
+        filterParams,
+        width: hardcodedWidth,
+        flex: hardcodedWidth ? 0 : 1,
         hide: hideColumn,
     };
 };
@@ -137,6 +199,7 @@ export const dateColDef = <Data extends any = IEntity>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
     value: { title: string; format?: string },
+    hardcodedWidth?: number,
     hideColumn = false,
     hideValue = false,
 ): ColDef<Data> => {
@@ -174,6 +237,8 @@ export const dateColDef = <Data extends any = IEntity>(
         filter: 'agDateColumnFilter',
         filterParams,
         minWidth: format === 'date-time' ? 220 : undefined,
+        width: hardcodedWidth,
+        flex: hardcodedWidth ? 0 : 1,
         hide: hideColumn,
     };
 };
@@ -183,6 +248,7 @@ export const translatedEnumColDef = <Data extends any = IEntity>(
     valueGetter: ValueGetterFunc<Data>,
     value: { title: string },
     valuesMap: Record<string, string>,
+    hardcodedWidth?: number,
     hideColumn = false,
     hideValue = false,
 ): ColDef<Data> => {
@@ -205,6 +271,8 @@ export const translatedEnumColDef = <Data extends any = IEntity>(
         cellRenderer: (props: ICellRendererParams<Data, string | undefined>) => <Value hideValue={hideValue} value={formatValue(props.value)} />,
         filter: 'agSetColumnFilter',
         filterParams,
+        width: hardcodedWidth,
+        flex: hardcodedWidth ? 0 : 1,
         hide: hideColumn,
     };
 };

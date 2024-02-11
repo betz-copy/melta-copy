@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useQueryClient } from 'react-query';
 import { useParams } from 'react-router-dom';
 import _debounce from 'lodash.debounce';
@@ -29,20 +29,38 @@ const Category: React.FC = () => {
         .map((id) => entityTemplates.get(id))
         .filter((template): template is IMongoEntityTemplatePopulated => !!template);
 
-    const [templatesToShowCheckbox, setTemplatesToShowCheckbox] = useState<IMongoEntityTemplatePopulated[]>(categoryTemplates);
+    const [templateIdsToShowCheckbox, setTemplateIdsToShowCheckbox] = useLocalStorage<string[]>(
+        `templatesToShow-${categoryId}`,
+        categoryTemplates.map((template) => template._id),
+    );
 
+    const templatesToShowCheckbox = templateIdsToShowCheckbox
+        .map((id) => entityTemplates.get(id))
+        .filter((template): template is IMongoEntityTemplatePopulated => !!template);
+
+    const setTemplatesToShowCheckbox = (newTemplates: React.SetStateAction<IMongoEntityTemplatePopulated[]>) => {
+        setTemplateIdsToShowCheckbox((prevtemplateIdsToShowCheckbox) => {
+            const prevTemplates = prevtemplateIdsToShowCheckbox
+                .map((id) => entityTemplates.get(id))
+                .filter((template): template is IMongoEntityTemplatePopulated => !!template);
+            const updatedTemplates = typeof newTemplates === 'function' ? newTemplates(prevTemplates) : newTemplates;
+            return updatedTemplates.map((template) => template._id);
+        });
+    };
     useEffect(() => {
         setCategoryTemplatesId((prevCategoryTemplatesId) => {
-            const entityTemplatesArr = Array.from(entityTemplates.values());
-
-            const entityTemplatesToAddIds = entityTemplatesArr
-                .filter((template) => template.category._id === category._id && !prevCategoryTemplatesId.includes(template._id))
+            const relevantTemplates = Array.from(entityTemplates.values()).filter((template) => template.category._id === category._id);
+            const entityTemplatesToAddIds = relevantTemplates
+                .filter((template) => !prevCategoryTemplatesId.includes(template._id))
                 .map((template) => template._id);
-
             const existingCategoryTemplatesIds = prevCategoryTemplatesId.filter((templateId) =>
-                entityTemplatesArr.some(({ _id }) => _id === templateId),
+                relevantTemplates.some(({ _id }) => _id === templateId),
             );
 
+            setTemplateIdsToShowCheckbox((prevTemplatesToShowCheckbox) => [
+                ...prevTemplatesToShowCheckbox.filter((templateId) => relevantTemplates.some(({ _id }) => _id === templateId)),
+                ...entityTemplatesToAddIds,
+            ]);
             return [...existingCategoryTemplatesIds, ...entityTemplatesToAddIds];
         });
     }, [entityTemplates.size, category._id]);

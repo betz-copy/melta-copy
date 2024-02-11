@@ -12,7 +12,6 @@ import {
     IconButton,
     Chip,
     Autocomplete,
-    Tooltip,
     Typography,
     Popover,
 } from '@mui/material';
@@ -33,9 +32,10 @@ import { dateNotificationTypes, validPropertyTypes } from './AddFields';
 
 import { CommonFormInputProperties } from './commonInterfaces';
 import { MinimizedColorPicker } from '../../inputs/MinimizedColorPicker';
-import { updateListFieldRequest } from '../../../services/templates/enitityTemplatesService';
+import { deleteListFieldRequest, updateListFieldRequest } from '../../../services/templates/enitityTemplatesService';
 import { AreYouSureDialog } from '../../dialogs/AreYouSureDialog';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
+import { MeltaTooltip } from '../../MeltaTooltip';
 
 const UniqueCheckboxTooltipTitle = (
     <Box sx={{ whiteSpace: 'pre-wrap' }}>
@@ -58,8 +58,9 @@ export interface FieldEditCardProps {
     supportSerialNumberType: boolean;
     supportEntityReferenceType: boolean;
     supportChangeToRequiredWithInstances: boolean;
-    supportEditEnum: boolean;
     templateId: string;
+    supportArrayFields: boolean;
+    supportEditEnum: boolean;
 }
 
 export const FieldEditCard: React.FC<FieldEditCardProps> = ({
@@ -77,8 +78,9 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     supportSerialNumberType,
     supportEntityReferenceType,
     supportChangeToRequiredWithInstances,
-    supportEditEnum,
     templateId,
+    supportArrayFields,
+    supportEditEnum,
 }) => {
     const name = `properties[${index}].name`;
     const touchedName = touched?.name;
@@ -183,6 +185,54 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
         },
     );
 
+
+    const { mutate: deleteListField, isLoading: _isDeleteLoading } = useMutation(
+        (tagIndex: number) => {
+            return deleteListFieldRequest(templateId, value.options[tagIndex], value, localOption);
+        },
+        {
+            onError: () => {
+                if (editIndex !== null) {
+                    setLocalOption('');
+                    setEditIndex(null);
+                    // only change to new value on success!
+                }
+            },
+            onSuccess: (_resultOfMutation, tagIndex) => {
+                queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) => {
+                    const prevEntityTemplate = entityTemplateMap!.get(templateId)!;
+
+                    const newOptions = value.options.filter((_option, i) => i !== tagIndex);
+
+
+                    if (value.optionColors && Object.keys(value.optionColors).length > 0 && editIndex != null) {
+                        const color = value.optionColors[value.options[editIndex]];
+                        const temp = value.optionColors;
+                        delete temp[value.options[editIndex]];
+                        if (prevEntityTemplate?.enumPropertiesColors?.[value.name]) {
+                            prevEntityTemplate.enumPropertiesColors[value.name] = { ...temp, [localOption]: color };
+                        }
+
+                        setValues?.((prev) => ({
+                            ...prev,
+                            options: newOptions,
+                            optionColors: { ...temp},
+                        }));
+                    } else {
+                        setValues?.((prev) => ({
+                            ...prev,
+                            options: newOptions,
+                        }));
+                    }
+                    prevEntityTemplate.properties.properties[value.name].enum = newOptions;
+                    entityTemplateMap!.set(templateId, prevEntityTemplate);
+                    return entityTemplateMap!;
+                });
+                setEditIndex(null);
+            },
+        },
+    );
+
     const handleSaveEdit = async (tagIndex: number) => {
         if (value.options.includes(localOption)) {
             toast.error(<div>{i18next.t('errorPage.duplicateValue')}</div>);
@@ -208,12 +258,17 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
         }
     };
 
+    const handleDelete = async (e, tagIndex: number) => {
+        console.log(e.target);
+        deleteListField(tagIndex);
+    }
+
     const theme = createTheme({
         components: {
             MuiBackdrop: {
                 styleOverrides: {
                     root: {
-                        backgroundColor: 'transparent',
+                        backgroundColor: 'rgba(0,0,0,0.1)',
                     },
                 },
             },
@@ -296,6 +351,8 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
 
                                                         return !areThereAnyInstances;
                                                     }
+                                                    if (validPropertyType === 'enumArray') return supportArrayFields;
+                                                    if (validPropertyType === 'fileId' || validPropertyType === 'fileIdArray') return false; // TODO: support file inputs
                                                     return true;
                                                 })
                                                 .map((validType) => (
@@ -306,7 +363,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                         </TextField>
                                     </Grid>
                                     <Grid item container justifyContent="space-between" flexWrap="nowrap">
-                                        {value.type === 'enum' && (
+                                        {(value.type === 'enum' || value.type === 'enumArray') && (
                                             <Autocomplete
                                                 id={options}
                                                 multiple
@@ -346,16 +403,22 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                         return (
                                                             <Box position="relative" key={option}>
                                                                 <>
-                                                                    <Chip
+                                                                    {chipDisabled ? (<Chip
                                                                         variant="outlined"
                                                                         label={option}
                                                                         {...getTagProps({ index: tagIndex })}
-                                                                        disabled={chipDisabled}
+                                                                        onDelete={undefined}
+                                                                        icon={value.optionColors && <Box width="1.3rem" />}
+                                                                        sx={{ position: 'relative', pr: supportEditEnum ? '22px' : '3px' }}
+                                                                        ref={(ref) => (chipRefs.current[tagIndex] = ref)}
+                                                                    />) : (<Chip
+                                                                        variant="outlined"
+                                                                        label={option}
+                                                                        {...getTagProps({ index: tagIndex })}
                                                                         icon={value.optionColors && <Box width="1.3rem" />}
                                                                         sx={{ position: 'relative', pr: supportEditEnum ? '32px' : '3px' }}
-                                                                        // eslint-disable-next-line no-return-assign
                                                                         ref={(ref) => (chipRefs.current[tagIndex] = ref)}
-                                                                    />
+                                                                    />)}
                                                                     {value.optionColors && (
                                                                         <MinimizedColorPicker
                                                                             color={value.optionColors[option]}
@@ -417,7 +480,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                         },
                                                                     }}
                                                                 >
-                                                                    <Box p={2}>
+                                                                <   Box p={2} style={{ display: 'flex', alignItems: 'center' }}>
                                                                         <TextField
                                                                             key={editIndex}
                                                                             fullWidth
@@ -434,8 +497,26 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                                 }
                                                                             }}
                                                                         />
+                                                                        <IconButton size="small" onClick={(e) => handleDelete(e, tagIndex)}>
+                                                                            <DeleteIcon />
+                                                                        </IconButton>
                                                                     </Box>
                                                                 </Popover>
+                                                                
+                                                                {/* <ThemeProvider theme={theme}>
+                                                                    <AreYouSureDialog
+                                                                        open={open}
+                                                                        handleClose={() => {
+                                                                            setOpen(false);
+                                                                        }}
+                                                                        onYes={() => {
+                                                                            handleSaveEdit(editIndex!);
+                                                                            setOpen(!open);
+                                                                        }}
+                                                                        isLoading={isLoading}
+                                                                    />
+                                                                </ThemeProvider> */}
+                                                            
                                                                 <ThemeProvider theme={theme}>
                                                                     <AreYouSureDialog
                                                                         open={open}
@@ -612,7 +693,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                 />
                                             )}
                                             {value.type !== 'serialNumber' && value.unique !== undefined && setValues && (
-                                                <Tooltip title={UniqueCheckboxTooltipTitle}>
+                                                <MeltaTooltip title={UniqueCheckboxTooltipTitle}>
                                                     <FormControlLabel
                                                         control={
                                                             <Switch
@@ -631,7 +712,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                         }
                                                         label={i18next.t('validation.unique')}
                                                     />
-                                                </Tooltip>
+                                                </MeltaTooltip>
                                             )}
                                         </Box>
 

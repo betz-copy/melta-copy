@@ -82,7 +82,6 @@ const SelectOptionsMenuItems = <Option extends any, Group extends any>({
             setOptions(newOptionsOrder);
         }
 
-        // sync order to selectedOptions too
         setSelectedOptions((prevSelectOptions) => {
             return newOptionsOrder.filter((option) =>
                 prevSelectOptions.some((selectedOption) => getOptionId(selectedOption) === getOptionId(option)),
@@ -347,7 +346,7 @@ const SelectCheckbox = <Option extends any, Group extends any>({
                     },
                 }}
                 size={size}
-                style={toTopBar ? { borderRadius: '0 7px 7px 0' } : { borderRadius: '7px 7px 7px 7px' }}
+                style={toTopBar ? { borderRadius: '7px', backgroundColor: '#EBEFFA' } : { borderRadius: '7px' }}
             >
                 <MiniFilter value={miniFilterValue} onChange={setMiniFilterValue} />
                 <ChooseAllMenuItem

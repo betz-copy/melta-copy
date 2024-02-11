@@ -9,9 +9,9 @@ import {
     IEntityTemplatePopulated,
     IMongoEntityTemplatePopulated,
     ISearchEntityTemplatesBody,
-} from '../../externalServices/entityTemplateManager';
-import { InstanceManagerService } from '../../externalServices/instanceManager';
-import { IRelationshipTemplate, RelationshipsTemplateManagerService } from '../../externalServices/relationshipsTemplateManager';
+} from '../../externalServices/entityTemplateService';
+import { InstanceManagerService } from '../../externalServices/instanceService';
+import { IRelationshipTemplate, RelationshipsTemplateManagerService } from '../../externalServices/relationshipsTemplateService';
 import { deleteFile, uploadFile } from '../../externalServices/storageService';
 import { trycatch } from '../../utils';
 import { removeTmpFile } from '../../utils/fs';
@@ -25,7 +25,7 @@ import { RuleBreachService } from '../../externalServices/ruleBreachService';
 import { IEntityTemplateWithConstraints, IMongoEntityTemplateWithConstraints, IMongoEntityTemplateWithConstraintsPopulated } from './interfaces';
 import { ProcessManagerService } from '../../externalServices/processService';
 import ProcessTemplatesManager from '../processes/processTemplates/manager';
-import { isProcessManager } from '../../externalServices/permissionsApi';
+import { isProcessManager } from '../../externalServices/permissionsService';
 import { IPermissionsOfUser } from '../permissions/interfaces';
 
 const {

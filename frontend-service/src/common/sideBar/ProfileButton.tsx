@@ -1,7 +1,8 @@
-import { Grid, IconButton, Tooltip, tooltipClasses, Typography } from '@mui/material';
+import { Grid, IconButton } from '@mui/material';
 import React from 'react';
 import { IUser } from '../../services/kartoffelService';
 import UserAvatar from '../UserAvatar';
+import { MeltaTooltip } from '../MeltaTooltip';
 
 interface ProfileButtonProps {
     currentUser: IUser;
@@ -24,28 +25,19 @@ export const getNameInitials = (user: ProfileButtonProps['currentUser']): string
 const ProfileButton: React.FC<ProfileButtonProps> = ({ currentUser, text, isDrawerOpen, onClick }) => {
     return (
         <Grid container direction="column" alignItems="center">
-            <Tooltip
+            <MeltaTooltip
                 title={text}
-                arrow
                 placement="left"
-                disableHoverListener={isDrawerOpen}
-                PopperProps={{
-                    sx: { [`& .${tooltipClasses.tooltip}`]: { fontSize: '1rem' } },
-                }}
+                disableHoverListener={isDrawerOpen} // when drawer is opened text is already shown, so no need for tooltip
             >
                 <IconButton onClick={onClick} sx={{ borderRadius: 10 }}>
                     <Grid container alignItems="center" justifyContent="space-between" spacing={1}>
                         <Grid item data-tour="my-permissions">
                             <UserAvatar user={currentUser} />
                         </Grid>
-                        {isDrawerOpen && (
-                            <Grid item>
-                                <Typography color="white">{text}</Typography>
-                            </Grid>
-                        )}
                     </Grid>
                 </IconButton>
-            </Tooltip>
+            </MeltaTooltip>
         </Grid>
     );
 };

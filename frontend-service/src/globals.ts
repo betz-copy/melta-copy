@@ -17,10 +17,7 @@ export const environment = {
         gantts: '/gantts',
         storage: '/files',
         preview: '/preview',
-        getMyPermissions: '/permissions/my',
-        getAllPermissions: '/permissions',
-        createPermissionsBulk: '/permissions/bulk',
-        deletePermissionsBulk: '/permissions',
+        permissions: '/permissions',
         users: '/users',
         activityLog: '/activity-log',
         notifications: '/notifications',
@@ -67,6 +64,7 @@ export const environment = {
         isSidebarOpenLocalStorageKey: 'isGanttSidebarOpen',
         ganttEntitiesChunkSize: 1000,
         groupByEntitiesChunkSize: 1000,
+        tablesPerLoadingChunkSize: 5,
         separators: {
             startEnd: ' 🡠 ',
             field: ' × ',
@@ -117,13 +115,21 @@ export const environment = {
     },
     createdRelationshipIdInBrokenRules: 'created-relationship-id',
     accessTokenName: 'rabaz-access-token',
-    minimumSupportedChromeVersion: 80,
+    minimumSupportedChromeVersion: 85,
     fileIdLength: 32,
     maxDateTimestamp: 8640000000000000,
     errorCodes: {
         ruleBlock: 'RULE_BLOCK',
         failedToCreateConstraints: 'FAILED_TO_CREATE_CONSTRAINTS',
         failedConstraintsValidation: 'FAILED_CONSTRAINTS_VALIDATION',
+    },
+    mainFontSizes: {
+        headlineTitleFontSize: '24px',
+        headlineSubTitleFontSize: '14px',
+    },
+    iconSize: {
+        width: '24px',
+        height: '24px',
     },
     fileExtensions: {
         image: ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'tiff', 'svg', 'webp', 'ico', 'psd', 'raw', 'heif', 'indd', 'ai', 'eps'],

@@ -1,6 +1,7 @@
 import React, { CSSProperties } from 'react';
 import { Grid, styled } from '@mui/material';
 import { BlueTitle } from './BlueTitle';
+import { environment } from '../globals';
 
 export const TopBarGrid = styled(Grid)(({ theme }) => {
     const bgColor: CSSProperties['backgroundColor'] = theme.palette.mode === 'dark' ? '#131313' : '#fcfeff';
@@ -21,8 +22,8 @@ export const TopBarGrid = styled(Grid)(({ theme }) => {
 const TopBar: React.FC<{ title: string; boxStyle?: CSSProperties }> = ({ title, boxStyle }) => {
     if (title.length) {
         return (
-            <TopBarGrid sx={boxStyle}>
-                <BlueTitle title={title} component="h4" variant="h4" />
+            <TopBarGrid sx={boxStyle} display="flex" alignItems="center">
+                <BlueTitle title={title} component="h4" variant="h4" style={{ fontSize: environment.mainFontSizes.headlineTitleFontSize }} />
             </TopBarGrid>
         );
     }

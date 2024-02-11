@@ -1,12 +1,7 @@
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, Collapse, Grid, IconButton } from '@mui/material';
-import {
-    AppRegistration as AppRegistrationIcon,
-    ReadMore as ReadMoreIcon,
-    Visibility as VisibilityIcon,
-    VisibilityOff as VisibilityOffIcon,
-} from '@mui/icons-material';
-import { NavLink } from 'react-router-dom';
+import { Card, CardContent, CardHeader, Collapse, Dialog, Grid, IconButton } from '@mui/material';
+import { AppRegistration as AppRegistrationIcon } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import i18next from 'i18next';
@@ -18,6 +13,9 @@ import { EntityDisableCheckbox } from '../../Entity/components/EntityDisableChec
 import { EntityDates } from '../../Entity/components/EntityDates';
 import { BlueTitle } from '../../../common/BlueTitle';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
+import { getEntityTemplateColor } from '../../../utils/colors';
+import { environment } from '../../../globals';
+import { CreateOrEditEntityDetails } from '../../../common/dialogs/entity/CreateOrEditEntityDialog';
 
 interface EntityCardProps {
     entity: IEntity;
@@ -34,7 +32,7 @@ interface EntityCardProps {
 }
 const EntityCard: React.FC<EntityCardProps> = ({
     entity,
-    openCard = true,
+    openCard = false,
     customActionButton,
     entityTemplate,
     userHavePermission = true,
@@ -43,67 +41,89 @@ const EntityCard: React.FC<EntityCardProps> = ({
 }) => {
     const [open, setOpen] = useState<boolean>(openCard);
 
-    const [hideFields, setHideFields] = React.useState(true);
+    const [editDialog, setEditDialog] = useState<{
+        isOpen: boolean;
+        entity?: IEntity;
+    }>({
+        isOpen: false,
+    });
+
+    const navigate = useNavigate();
+
+    const entityTemplateColor = getEntityTemplateColor(entityTemplate);
+
+    const first5PropsKeys: string[] = [
+        ...entityTemplate.propertiesPreview.slice(0, 5),
+        ...entityTemplate.propertiesOrder
+            .filter((property2) => !entityTemplate.propertiesPreview.includes(property2))
+            .slice(0, 5 - entityTemplate.propertiesPreview.length),
+    ];
 
     return (
-        // todo: move card to common (used by "Entity Page" too)
         <Card raised variant={variant} sx={{ overflowX: 'auto', borderRadius: '15px', ...customCardStyle }}>
             <CardHeader
-                avatar={
-                    <Grid>
-                        {entityTemplate.iconFileId ? (
-                            <CustomIcon iconUrl={entityTemplate.iconFileId} height="40px" width="40px" />
-                        ) : (
-                            <AppRegistrationIcon sx={{ fontSize: '40px' }} />
-                        )}
+                style={{ height: '36px', padding: '0px 27px 0px 0px' }}
+                title={
+                    <Grid container alignItems="center" flexDirection="row" gap="20px">
+                        <Grid
+                            container
+                            alignItems="center"
+                            justifyContent="center"
+                            width="42px"
+                            height="42px"
+                            marginTop="27px"
+                            style={{ backgroundColor: entityTemplateColor, borderRadius: '100%' }}
+                        >
+                            {entityTemplate.iconFileId ? (
+                                <CustomIcon color="white" iconUrl={entityTemplate.iconFileId} height="24px" width="24px" />
+                            ) : (
+                                <AppRegistrationIcon sx={{ fontSize: environment.mainFontSizes.headlineTitleFontSize, color: 'white' }} />
+                            )}
+                        </Grid>
+                        <BlueTitle style={{ width: 'fit-content' }} title={entityTemplate.displayName} component="h6" variant="h6" />
                     </Grid>
                 }
                 action={
-                    <Grid container>
-                        {entityTemplate.properties.hide.length > 0 && open && (
-                            <IconButton
-                                onClick={(event) => {
-                                    event.stopPropagation();
-                                    setHideFields((curr) => !curr);
+                    <Grid container alignContent="center" alignItems="center">
+                        <Grid container item alignContent="center" alignItems="center">
+                            <Grid
+                                item
+                                onClick={(e) => {
+                                    if (!userHavePermission) e.preventDefault();
+                                    navigate(`/entity/${entity.properties._id}`);
                                 }}
-                                size="large"
                             >
-                                {hideFields ? <VisibilityOffIcon /> : <VisibilityIcon />}
-                            </IconButton>
-                        )}
-                        {open ? (
-                            <>
-                                <NavLink
-                                    onClick={(e) => {
-                                        if (!userHavePermission) e.preventDefault();
-                                    }}
-                                    to={`/entity/${entity.properties._id}`}
-                                >
-                                    <IconButtonWithPopover
-                                        popoverText={i18next.t('permissions.dontHavePermissionToEntityPage')}
-                                        iconButtonProps={{
-                                            size: 'large',
-                                            disabled: !userHavePermission,
-                                        }}
-                                        disabledToolTip={userHavePermission}
-                                        disabled={!userHavePermission}
-                                    >
-                                        <ReadMoreIcon
-                                            style={{
-                                                transform: 'scaleX(-1)',
-                                            }}
-                                        />
-                                    </IconButtonWithPopover>
-                                </NavLink>
-                                <IconButton size="large" onClick={() => setOpen(!open)}>
-                                    <KeyboardArrowUpIcon />
-                                </IconButton>
-                            </>
-                        ) : (
+                                <IconButtonWithPopover popoverText={i18next.t('wizard.entity.readMore')}>
+                                    <img src="/icons/read-more-icon.svg" />
+                                </IconButtonWithPopover>
+                            </Grid>
+                            <Grid
+                                item
+                                onClick={() => {
+                                    setEditDialog({
+                                        isOpen: true,
+                                        entity,
+                                    });
+                                }}
+                            >
+                                <IconButtonWithPopover popoverText={i18next.t('actions.edit')}>
+                                    <img src="/icons/edit-icon.svg" />
+                                </IconButtonWithPopover>
+                            </Grid>
+                            <Grid
+                                item
+                                onClick={() => {
+                                    navigate(`/entity/${entity.properties._id}/graph`);
+                                }}
+                            >
+                                <IconButtonWithPopover popoverText={i18next.t('actions.graph')}>
+                                    <img src="/icons/graph-icon.svg" />
+                                </IconButtonWithPopover>
+                            </Grid>
                             <IconButton size="large" onClick={() => setOpen(!open)}>
-                                <KeyboardArrowDownIcon />
+                                {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
                             </IconButton>
-                        )}
+                        </Grid>
 
                         {customActionButton &&
                             (customActionButton.popoverText ? (
@@ -132,21 +152,68 @@ const EntityCard: React.FC<EntityCardProps> = ({
                             ))}
                     </Grid>
                 }
-                title={<BlueTitle title={entityTemplate.displayName} component="h5" variant="h5" />}
-                subheader={entityTemplate.category.displayName}
-                // subheaderTypographyProps={{ variant: 'h6' }}
-                sx={{ '& .MuiCardHeader-action': { marginRight: '0px' } }} // default is -8px
+                sx={{ '& .MuiCardHeader-action': { marginRight: '0px' }, backgroundColor: '#CCCFE580' }} // default is -8px
             />
 
+            {!open && (
+                <Grid container paddingLeft="90px" height="fit-content" minHeight="37px" alignItems="center">
+                    <EntityProperties
+                        entityTemplate={entityTemplate}
+                        properties={entity.properties}
+                        overridePropertiesToShow={first5PropsKeys}
+                        mode="normal"
+                        style={{
+                            display: 'flex',
+                            flexDirection: 'row',
+                            flexWrap: 'wrap',
+                            columnGap: '20px',
+                            alignItems: 'center',
+                            width: '100%',
+                        }}
+                        innerStyle={{ width: '310px' }}
+                    />
+                </Grid>
+            )}
+
             <Collapse in={open} style={{ transformOrigin: '0 0 0' }} {...(entity ? { timeout: 500 } : {})} mountOnEnter unmountOnExit>
-                <CardContent>
-                    <EntityProperties entityTemplate={entityTemplate} properties={entity.properties} hideFields={hideFields} />
-                    <Grid container>
+                <CardContent
+                    style={{
+                        padding: '40px 90px 20px 50px',
+                    }}
+                >
+                    <EntityProperties
+                        entityTemplate={entityTemplate}
+                        properties={entity.properties}
+                        style={{
+                            display: 'flex',
+                            flexDirection: 'row',
+                            flexWrap: 'wrap',
+                            rowGap: '20px',
+                            alignItems: 'center',
+                        }}
+                        innerStyle={{ flexBasis: '33.33%' }}
+                        textWrap
+                        mode="normal"
+                    />
+                    <Grid container marginTop="20px">
                         <EntityDisableCheckbox isEntityDisabled={entity.properties.disabled} />
                     </Grid>
-                    <EntityDates createdAt={entity.properties.createdAt} updatedAt={entity.properties.updatedAt} />
+                    <Grid marginTop="20px">
+                        <EntityDates createdAt={entity.properties.createdAt} updatedAt={entity.properties.updatedAt} />
+                    </Grid>
                 </CardContent>
             </Collapse>
+            <Dialog open={editDialog.isOpen} maxWidth="md">
+                <CreateOrEditEntityDetails
+                    isEditMode
+                    entityTemplate={entityTemplate}
+                    entity={entity}
+                    onSuccessUpdate={() => {
+                        setEditDialog((prev) => ({ ...prev, isOpen: false }));
+                    }}
+                    onCancelUpdate={() => setEditDialog((prev) => ({ ...prev, isOpen: false }))}
+                />
+            </Dialog>
         </Card>
     );
 };

@@ -2,10 +2,10 @@ import React from 'react';
 import i18next from 'i18next';
 import { Card, CardContent, Checkbox, CheckboxProps, FormControlLabel, FormGroup, Typography } from '@mui/material';
 import { useSelector } from 'react-redux';
-import CheckboxReadOnly from './CheckboxReadOnly';
+import PermissionViewIcon from './PermissionViewIcon';
 import { RootState } from '../../store';
 
-type ManagementCheckboxProps = { disabled: boolean; readOnly: boolean; checked: boolean; onChange: CheckboxProps['onChange'] };
+type ManagementCheckboxProps = { disabled: boolean; viewMode: boolean; checked: boolean; onChange: CheckboxProps['onChange'] };
 const ManagementPermissionsCard: React.FC<{
     permissionsManagement: ManagementCheckboxProps;
     templatesManagement: ManagementCheckboxProps;
@@ -26,8 +26,8 @@ const ManagementPermissionsCard: React.FC<{
                         labelPlacement="end"
                         disabled={permissionsManagement.disabled}
                         control={
-                            permissionsManagement.readOnly ? (
-                                <CheckboxReadOnly checked={permissionsManagement.checked} />
+                            permissionsManagement.viewMode ? (
+                                <PermissionViewIcon checked={permissionsManagement.checked} />
                             ) : (
                                 <Checkbox checked={permissionsManagement.checked} onChange={permissionsManagement.onChange} />
                             )
@@ -38,8 +38,8 @@ const ManagementPermissionsCard: React.FC<{
                         labelPlacement="end"
                         disabled={templatesManagement.disabled}
                         control={
-                            templatesManagement.readOnly ? (
-                                <CheckboxReadOnly checked={templatesManagement.checked} />
+                            templatesManagement.viewMode ? (
+                                <PermissionViewIcon checked={templatesManagement.checked} />
                             ) : (
                                 <Checkbox checked={templatesManagement.checked} onChange={templatesManagement.onChange} />
                             )
@@ -50,8 +50,8 @@ const ManagementPermissionsCard: React.FC<{
                         labelPlacement="end"
                         disabled={rulesManagement.disabled}
                         control={
-                            rulesManagement.readOnly ? (
-                                <CheckboxReadOnly checked={rulesManagement.checked} />
+                            rulesManagement.viewMode ? (
+                                <PermissionViewIcon checked={rulesManagement.checked} />
                             ) : (
                                 <Checkbox checked={rulesManagement.checked} onChange={rulesManagement.onChange} />
                             )
@@ -62,8 +62,8 @@ const ManagementPermissionsCard: React.FC<{
                         labelPlacement="end"
                         disabled={processesManagement.disabled}
                         control={
-                            processesManagement.readOnly ? (
-                                <CheckboxReadOnly checked={processesManagement.checked} />
+                            processesManagement.viewMode ? (
+                                <PermissionViewIcon checked={processesManagement.checked} />
                             ) : (
                                 <Checkbox checked={processesManagement.checked} onChange={processesManagement.onChange} />
                             )

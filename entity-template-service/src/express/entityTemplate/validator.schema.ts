@@ -5,6 +5,7 @@ import {
     innerPropertiesSchema,
     orderPropertiesSchema,
     previewPropertiesSchema,
+    orderPropertiesTypeSchema,
     variableNameValidation,
 } from '../../utils/joi';
 
@@ -45,6 +46,7 @@ export const createEntityTemplateSchema = Joi.object({
         properties: innerPropertiesSchema.required(),
         iconFileId: Joi.string().allow(null), // todo: iconFileId is optional and nullable, should be only one of them
         propertiesOrder: orderPropertiesSchema.required(),
+        propertiesTypeOrder: orderPropertiesTypeSchema.required(),
         propertiesPreview: previewPropertiesSchema.required(),
         enumPropertiesColors: enumPropertiesColorsSchema,
     },
@@ -61,6 +63,7 @@ export const updateEntityTemplateSchema = Joi.object({
         properties: innerPropertiesSchema.required(),
         iconFileId: Joi.string().allow(null),
         propertiesOrder: orderPropertiesSchema.required(),
+        propertiesTypeOrder: orderPropertiesTypeSchema.required(),
         propertiesPreview: previewPropertiesSchema.required(),
         enumPropertiesColors: enumPropertiesColorsSchema,
     }).min(1),

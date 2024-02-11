@@ -1,5 +1,5 @@
 import React, { Dispatch, SetStateAction } from 'react';
-import { Grid, IconButton, Typography } from '@mui/material';
+import { Grid, IconButton, Typography, useTheme } from '@mui/material';
 import { Add as AddIcon } from '@mui/icons-material';
 import i18next from 'i18next';
 import { useQueryClient } from 'react-query';
@@ -13,6 +13,7 @@ import { IMongoProcessTemplatePopulated } from '../../interfaces/processes/proce
 import { IPermissionsOfUser } from '../../services/permissionsService';
 import './ProcessesList.css';
 import DateRange from '../../common/inputs/DateRange';
+import { environment } from '../../globals';
 
 const ProcessInstancesHeadline: React.FC<{
     onSearch: (value: string) => void;
@@ -26,18 +27,25 @@ const ProcessInstancesHeadline: React.FC<{
     startDateInput: Date | null;
     endDateInput: Date | null;
 }> = ({ onSearch, onSetStartDate, onSetEndDate, templatesSelectCheckboxProps, startDateInput, endDateInput }) => {
+    const theme = useTheme();
+
     const queryClient = useQueryClient();
     const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
 
     return (
         <TopBarGrid sx={{ height: '3.6rem' }} container justifyContent="space-between" alignItems="center" wrap="nowrap">
             <Grid item>
-                <Grid container spacing={5} wrap="nowrap">
+                <Grid container spacing={5} wrap="nowrap" alignItems="center">
                     <Grid item>
-                        <BlueTitle title={i18next.t('pages.processInstances')} component="h4" variant="h4" />
+                        <BlueTitle
+                            title={i18next.t('pages.processInstances')}
+                            component="h4"
+                            variant="h4"
+                            style={{ fontSize: environment.mainFontSizes.headlineTitleFontSize }}
+                        />
                     </Grid>
                     <Grid item>
-                        <Grid container wrap="nowrap">
+                        <Grid container wrap="nowrap" gap="15px">
                             <Grid item>
                                 <ProcessTemplatesSelectCheckbox
                                     templates={templatesSelectCheckboxProps.templates}
@@ -46,7 +54,7 @@ const ProcessInstancesHeadline: React.FC<{
                                 />
                             </Grid>
                             <Grid item>
-                                <GlobalSearchBar onSearch={onSearch} borderRadius="0 7px 7px 0" />
+                                <GlobalSearchBar onSearch={onSearch} borderRadius="7px" toTopBar />
                             </Grid>
                         </Grid>
                     </Grid>
@@ -74,7 +82,7 @@ const ProcessInstancesHeadline: React.FC<{
 
             <Grid item>
                 {myPermissions.processesManagementId && (
-                    <AddProcessButton style={{ background: '#225AA7', borderRadius: '5px' }}>
+                    <AddProcessButton style={{ background: theme.palette.primary.main, borderRadius: '5px' }}>
                         <AddIcon htmlColor="white" />
                         <Typography fontSize={14} style={{ fontWeight: '500', padding: '0 10px', color: 'white' }}>
                             {i18next.t('processInstancesPage.addProcess')}

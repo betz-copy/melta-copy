@@ -21,9 +21,9 @@ const StepperActions = <T extends object>({
     const isSameObject = isEqual(formikProps.values, formikProps.initialValues);
 
     return (
-        <Grid container justifyContent="space-between">
+        <Grid container justifyContent="space-between" padding="0px 25px">
             <Grid item>
-                <Button variant="outlined" onClick={handleBack} disabled={isLoading || isFirstStep}>
+                <Button variant="outlined" onClick={handleBack} disabled={isLoading || isFirstStep} style={{ display: isFirstStep ? 'none' : '' }}>
                     <ArrowBackIcon
                         style={{
                             transform: 'scaleX(-1)',

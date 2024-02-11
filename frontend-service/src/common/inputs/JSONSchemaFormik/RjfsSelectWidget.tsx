@@ -2,7 +2,6 @@
 import React from 'react';
 import { WidgetProps, asNumber, guessType } from '@rjsf/utils';
 import { Autocomplete, TextField, TextFieldProps } from '@mui/material';
-import sortBy from 'lodash.sortby';
 
 const nums = new Set(['number', 'integer']);
 
@@ -13,7 +12,7 @@ const nums = new Set(['number', 'integer']);
 const processValue = (schema: any, value: any) => {
     // "enum" is a reserved word, so only "type" and "items" can be destructured
     const { type, items } = schema;
-    if (value === '') {
+    if (value === null) {
         return undefined;
     }
     if (type === 'array' && items && nums.has(items.type)) {
@@ -41,7 +40,7 @@ const processValue = (schema: any, value: any) => {
 };
 
 // copied from @rjs/material-ui SelectWidget (added empty option)
-// https://github.com/rjsf-team/react-jsonschema-form/blob/master/packages/material-ui/src/SelectWidget/SelectWidget.tsx
+// https://github.com/rjsf-team/react-jsonschema-form/blob/v4.0.1/packages/material-ui/src/SelectWidget/SelectWidget.tsx
 const RjfsSelectWidget = ({
     schema,
     id,
@@ -60,22 +59,29 @@ const RjfsSelectWidget = ({
     color,
     ...textFieldProps
 }: WidgetProps) => {
-    const { enumOptions, enumDisabled } = options;
-    const emptyValue = multiple ? [] : '';
-    const _onChange = ({ target: { value: newValue } }: React.ChangeEvent<{ name?: string; value: unknown }>) =>
-        onChange(processValue(schema, newValue));
+    const { enumOptions } = options;
+
     const _onBlur = ({ target: { value: newValue } }: React.FocusEvent<HTMLInputElement>) => onBlur(id, processValue(schema, newValue));
     const _onFocus = ({ target: { value: newValue } }: React.FocusEvent<HTMLInputElement>) => onFocus(id, processValue(schema, newValue));
     const variant = readonly ? 'standard' : 'outlined';
 
     return (
-        <Autocomplete
+        <Autocomplete<string | string[], boolean>
             id={id}
             disabled={disabled}
             readOnly={readonly}
-            value={typeof value === 'undefined' ? emptyValue : value}
-            onChange={(event, value) => {
-                onChange(processValue(schema, value?.label));
+            multiple={multiple}
+            // eslint-disable-next-line no-nested-ternary
+            value={typeof value === 'undefined' ? null : value}
+            isOptionEqualToValue={(option, val) => option === val}
+            onChange={(event, newValue) => {
+                if (multiple) {
+                    const processedValue = (newValue as string[]).map((option) => processValue(schema, option));
+                    onChange(newValue!.length !== 0 ? processedValue : undefined);
+                } else {
+                    const processedValue = processValue(schema, newValue);
+                    onChange(processedValue);
+                }
                 event.preventDefault();
             }}
             renderInput={(params) => (
@@ -84,13 +90,13 @@ const RjfsSelectWidget = ({
                     {...params}
                     required={required}
                     autoFocus={autofocus}
-                    onChange={_onChange}
                     onBlur={_onBlur}
                     onFocus={_onFocus}
                     variant={variant}
                     InputLabelProps={{
                         shrink: readonly || undefined,
                     }}
+                    inputProps={{ ...params.inputProps, required: multiple ? required && value.length === 0 : required }}
                     error={rawErrors.length > 0}
                     color={color as TextFieldProps['color']}
                     label={label || schema.title}
@@ -98,13 +104,13 @@ const RjfsSelectWidget = ({
             )}
             renderOption={(props, option) => {
                 return (
-                    <span {...props} style={{ backgroundColor: option.value === value ? 'Gainsboro' : 'white' }}>
-                        {option.value}
+                    <span {...props} style={{ backgroundColor: option === value ? 'Gainsboro' : 'white' }}>
+                        {option}
                     </span>
                 );
             }}
-            options={sortBy(enumOptions!, (o) => o.value)}
-            getOptionDisabled={(option) => Boolean(enumDisabled?.includes(option.value))}
+            options={enumOptions!.map((o) => o.value).sort()}
+            getOptionDisabled={(option) => (multiple ? Boolean(value?.includes(option)) : false)}
         />
     );
 };

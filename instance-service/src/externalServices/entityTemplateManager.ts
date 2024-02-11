@@ -5,15 +5,22 @@ const {
     entityTemplateService: { url, getByIdRoute, searchRoute, timeout },
 } = config;
 export interface IEntitySingleProperty {
-    type: 'string' | 'number' | 'boolean';
     title: string;
+    type: 'string' | 'number' | 'boolean' | 'array';
     format?: string;
     enum?: string[];
+    items?: {
+        type: 'string';
+        enum?: string[];
+        format?: 'fileId';
+    };
+    minItems?: 1;
+    uniqueItems?: true;
     pattern?: string;
     patternCustomErrorMessage?: string;
     dateNotification?: string;
-    serialStarter?: string;
-    serialCurrent?: string;
+    serialStarter?: number;
+    serialCurrent?: number;
 }
 
 export interface IEntityTemplate {
@@ -28,6 +35,7 @@ export interface IEntityTemplate {
     disabled: boolean;
     category: string;
     propertiesOrder: string[];
+    propertiesTypeOrder: ('properties' | 'attachmentProperties')[];
     propertiesPreview: string[];
 }
 

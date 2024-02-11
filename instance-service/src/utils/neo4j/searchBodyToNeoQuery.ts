@@ -133,6 +133,32 @@ const notFilterOfField = (
     return { cypherQuery: `NOT (${filterOfFieldQuery.cypherQuery})`, parameters: filterOfFieldQuery.parameters };
 };
 
+const simplePartFilterOfArrayFieldToNeoQuery = (
+    field: string,
+    operator: '$eq' | '$ne',
+    rhs: boolean | string | number | null,
+    parametersParentVariableName: string,
+): CypherQueryWithParameters => {
+    if (rhs === null && operator === '$eq') {
+        return { cypherQuery: `node.${field} IS NULL`, parameters: {} };
+    }
+    if (rhs === null && operator === '$ne') {
+        return { cypherQuery: `node.${field} IS NOT NULL`, parameters: {} };
+    }
+
+    const rhsParamName = 'rhs';
+    const rhsParamPath = `${parametersParentVariableName}.${rhsParamName}`;
+
+    return { cypherQuery: `${operator === '$ne' ? 'NOT ' : ''}$${rhsParamPath} IN node.${field}`, parameters: { [rhsParamName]: rhs } };
+};
+
+const inFilterOfArrayField = (field: string, rhs: NonNullable<IFilterOfField['$in']>, parametersParentVariableName: string) => {
+    const rhsParamName = 'rhs';
+    const rhsParamPath = `${parametersParentVariableName}.${rhsParamName}`;
+
+    return { cypherQuery: `size([rhsItem IN $${rhsParamPath} WHERE rhsItem IN node.${field}]) > 0`, parameters: { [rhsParamName]: rhs } };
+};
+
 const filterOfFieldToNeoQuery = (
     field: string,
     filterOfField: IFilterOfField,
@@ -150,12 +176,21 @@ const filterOfFieldToNeoQuery = (
             case '$gte':
             case '$lt':
             case '$lte':
-                partFilterOfFieldQuery = simplePartFilterOfFieldToNeoQuery(
+                if (fieldTemplate.type !== 'array') {
+                    partFilterOfFieldQuery = simplePartFilterOfFieldToNeoQuery(
+                        field,
+                        filterType,
+                        filterRhs,
+                        `${parametersParentVariableName}.\`${filterType}\``,
+                        fieldTemplate,
+                    );
+                    break;
+                }
+                partFilterOfFieldQuery = simplePartFilterOfArrayFieldToNeoQuery(
                     field,
-                    filterType,
+                    filterType as '$eq' | '$ne',
                     filterRhs,
                     `${parametersParentVariableName}.\`${filterType}\``,
-                    fieldTemplate,
                 );
                 break;
 
@@ -168,7 +203,11 @@ const filterOfFieldToNeoQuery = (
                 break;
 
             case '$in':
-                partFilterOfFieldQuery = inFilterOfField(field, filterRhs, `${parametersParentVariableName}.\`$in\``, fieldTemplate);
+                if (fieldTemplate.type !== 'array') {
+                    partFilterOfFieldQuery = inFilterOfField(field, filterRhs, `${parametersParentVariableName}.\`$in\``, fieldTemplate);
+                    break;
+                }
+                partFilterOfFieldQuery = inFilterOfArrayField(field, filterRhs, `${parametersParentVariableName}.\`$in\``);
                 break;
 
             case '$not':

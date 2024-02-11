@@ -4,17 +4,18 @@ import * as Yup from 'yup';
 import i18next from 'i18next';
 import { useQuery } from 'react-query';
 import { AxiosError } from 'axios';
+import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
 import { toast } from 'react-toastify';
 import { entityTemplateUniqueProperties, regexSchema, variableNameValidation } from '../../../utils/validation';
 import { EntityTemplateWizardValues } from './index';
 import { StepComponentProps } from '../index';
 import { searchEntitiesOfTemplateRequest } from '../../../services/entitiesService';
-import { basePropertyTypes, stringFormats } from '../../../services/templates/enitityTemplatesService';
+import { arrayTypes, basePropertyTypes, stringFormats } from '../../../services/templates/enitityTemplatesService';
 import FieldBlock from './FieldBlock';
 import { ErrorToast } from '../../ErrorToast';
 
 const processStringFormats = [...stringFormats, 'entityReference'];
-const validPropertyTypes = [...basePropertyTypes, ...processStringFormats, 'pattern', 'enum', 'serialNumber'];
+const validPropertyTypes = [...basePropertyTypes, ...processStringFormats, ...arrayTypes, 'enum', 'serialNumber', 'pattern'];
 const dateNotificationTypes: string[] = ['day', 'week', 'twoWeeks'];
 export const propertiesBaseSchema = Yup.object({
     name: Yup.string()
@@ -26,7 +27,7 @@ export const propertiesBaseSchema = Yup.object({
         .required(i18next.t('validation.required')),
     type: Yup.string().required(i18next.t('validation.required')),
     options: Yup.array(Yup.string()).when('type', {
-        is: 'enum',
+        is: (type) => type === 'enum' || type === 'enumArray',
         then: (schema) => schema.min(1, i18next.t('validation.required')),
     }),
     pattern: regexSchema.when('type', { is: 'pattern', then: (schema) => schema.required(i18next.t('validation.required')) }),
@@ -91,51 +92,76 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
             },
         },
     );
-
     const areThereAnyInstances = isEditMode && areThereInstancesByTemplateIdResponse!.count > 0;
 
-    return (
-        <Grid container direction="column" alignItems="stretch" spacing={1}>
-            <Grid item>
-                <FieldBlock
-                    propertiesType="properties"
-                    values={values}
-                    initialValues={initialValues}
-                    setFieldValue={setFieldValue}
-                    areThereAnyInstances={areThereAnyInstances}
-                    isEditMode={isEditMode}
-                    setBlock={setBlock}
-                    title={i18next.t('wizard.entityTemplate.properties')}
-                    addPropertyButtonLabel={i18next.t('wizard.entityTemplate.addProperty')}
-                    touched={touched}
-                    errors={errors}
-                    supportSerialNumberType
-                    supportEntityReferenceType={false}
-                    supportChangeToRequiredWithInstances
-                    supportEditEnum
-                />
-            </Grid>
+    const onDragEnd = (result: DropResult) => {
+        const { destination, source } = result;
+        if (!destination) return;
 
-            <Grid item>
-                <FieldBlock
-                    propertiesType="attachmentProperties"
-                    values={values}
-                    initialValues={initialValues}
-                    setFieldValue={setFieldValue}
-                    areThereAnyInstances={areThereAnyInstances}
-                    isEditMode={isEditMode}
-                    setBlock={setBlock}
-                    title={i18next.t('wizard.entityTemplate.attachments')}
-                    addPropertyButtonLabel={i18next.t('wizard.entityTemplate.addAttachment')}
-                    touched={touched}
-                    errors={errors}
-                    supportSerialNumberType
-                    supportEntityReferenceType={false}
-                    supportChangeToRequiredWithInstances
-                    supportEditEnum
-                />
-            </Grid>
-        </Grid>
+        const newPropertiesTypeOrder = Array.from(values.propertiesTypeOrder);
+        const [movedOption] = newPropertiesTypeOrder.splice(source.index, 1);
+        newPropertiesTypeOrder.splice(destination.index, 0, movedOption);
+
+        setFieldValue('propertiesTypeOrder', newPropertiesTypeOrder);
+    };
+
+    return (
+        <DragDropContext onDragEnd={onDragEnd}>
+            <Droppable droppableId="propertiesArea">
+                {(provided) => (
+                    <Grid
+                        container
+                        direction="column"
+                        alignItems="center"
+                        ref={provided.innerRef}
+                        {...provided.droppableProps}
+                        style={{ minHeight: '160px' }}
+                    >
+                        {values.propertiesTypeOrder.map((itemId, index) => (
+                            <Draggable key={itemId} draggableId={itemId} index={index}>
+                                {(draggableProvided) => (
+                                    <Grid
+                                        item
+                                        ref={draggableProvided.innerRef}
+                                        {...draggableProvided.draggableProps}
+                                        alignSelf="stretch"
+                                        marginBottom="1rem"
+                                    >
+                                        <FieldBlock
+                                            propertiesType={itemId}
+                                            values={values}
+                                            initialValues={initialValues}
+                                            setFieldValue={setFieldValue}
+                                            areThereAnyInstances={areThereAnyInstances}
+                                            isEditMode={isEditMode}
+                                            setBlock={setBlock}
+                                            title={
+                                                itemId === 'properties'
+                                                    ? i18next.t('wizard.entityTemplate.properties')
+                                                    : i18next.t('wizard.entityTemplate.attachments')
+                                            }
+                                            addPropertyButtonLabel={
+                                                itemId === 'properties'
+                                                    ? i18next.t('wizard.entityTemplate.addProperty')
+                                                    : i18next.t('wizard.entityTemplate.addAttachment')
+                                            }
+                                            touched={touched}
+                                            errors={errors}
+                                            supportSerialNumberType
+                                            supportEntityReferenceType={false}
+                                            supportChangeToRequiredWithInstances
+                                            supportArrayFields
+                                            supportEditEnum
+                                            draggable={{ isDraggable: true, dragHandleProps: draggableProvided.dragHandleProps }}
+                                        />
+                                    </Grid>
+                                )}
+                            </Draggable>
+                        ))}
+                    </Grid>
+                )}
+            </Droppable>
+        </DragDropContext>
     );
 };
 

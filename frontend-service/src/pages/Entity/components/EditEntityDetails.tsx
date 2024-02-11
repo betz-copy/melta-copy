@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Grid, Card, CardContent, CircularProgress, Box, Divider, Button } from '@mui/material';
+import { Grid, Card, CardContent, CircularProgress, Divider, Button } from '@mui/material';
 import { Done as DoneIcon, Clear as ClearIcon } from '@mui/icons-material';
 import { useMutation } from 'react-query';
 import i18next from 'i18next';
@@ -11,14 +11,14 @@ import { AxiosError } from 'axios';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IEntity } from '../../../interfaces/entities';
 import { updateEntityRequest } from '../../../services/entitiesService';
-import { EntityWizardValues } from '../../../common/wizards/entity';
+import { EntityWizardValues } from '../../../common/dialogs/entity';
 import { JSONSchemaFormik, ajvValidate } from '../../../common/inputs/JSONSchemaFormik';
 import { BlueTitle } from '../../../common/BlueTitle';
 import { filterAttachmentsAndEntitiesRefFromPropertiesSchema } from '../../../utils/pickFieldsPropertiesSchema';
 import { IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
 import UpdateEntityWithRuleBreachDialog from './UpdateEntityWithRuleBreachDialog';
 import { environment } from '../../../globals';
-import { toastConstraintValidationError } from '../../../common/wizards/entity/toastConstraintValidationError';
+import { toastConstraintValidationError } from '../../../common/dialogs/entity/toastConstraintValidationError';
 import { InstanceFileInput } from '../../../common/inputs/InstanceFilesInput/InstanceFileInput';
 
 const { errorCodes } = environment;
@@ -94,71 +94,85 @@ const EditEntityDetails: React.FC<{
                             <Card>
                                 <CardContent>
                                     <Grid container justifyContent="center">
-                                        <Grid item xs={12}>
-                                            <Grid container flexDirection="row">
-                                                <Box>
-                                                    <BlueTitle title={i18next.t('wizard.entityTemplate.properties')} component="h6" variant="h6" />
-                                                    <JSONSchemaFormik
-                                                        schema={filterAttachmentsAndEntitiesRefFromPropertiesSchema(entityTemplate.properties)}
-                                                        values={values}
-                                                        setValues={(propertiesValues) => setFieldValue('properties', propertiesValues)}
-                                                        errors={errors.properties ?? {}}
-                                                        touched={touched.properties ?? {}}
-                                                        setFieldTouched={(field) => setFieldTouched(`properties.${field}`)}
-                                                        isEditMode
-                                                    />
-                                                </Box>
-                                                {templateFileKeys.length > 0 && (
-                                                    <Box>
-                                                        <BlueTitle
-                                                            title={i18next.t('wizard.entityTemplate.attachments')}
-                                                            component="h6"
-                                                            variant="h6"
-                                                            style={{ marginBottom: '22px' }}
-                                                        />
-                                                        <div style={{ color: '#666666', fontSize: '0.9rem', padding: '2%' }}>
-                                                            {i18next.t('wizard.entityTemplate.dragAndDropFile')}
-                                                        </div>
-                                                        <>
-                                                            {Object.entries(templateFilesProperties).map(([key, value]) => (
-                                                                <InstanceFileInput
-                                                                    key={key}
-                                                                    fileFieldName={`attachmentsProperties.${key}`}
-                                                                    fieldTemplateTitle={value.title}
-                                                                    setFieldValue={setFieldValue}
-                                                                    required={requiredFilesNames.includes(key)}
-                                                                    value={values.attachmentsProperties[key]}
-                                                                    error={errors.attachmentsProperties?.[key] as string}
-                                                                    setFieldTouched={setFieldTouched}
-                                                                />
-                                                            ))}
-                                                        </>
-                                                    </Box>
-                                                )}
+                                        <Grid container flexDirection="row" width="100%">
+                                            <Grid xs={8}>
+                                                <BlueTitle
+                                                    title={`${i18next.t('actions.editment')} ${entityTemplate.displayName}`}
+                                                    component="h6"
+                                                    variant="h6"
+                                                    style={{ fontWeight: '600', fontSize: '20px' }}
+                                                />
+                                                <JSONSchemaFormik
+                                                    schema={filterAttachmentsAndEntitiesRefFromPropertiesSchema(entityTemplate.properties)}
+                                                    values={values}
+                                                    setValues={(propertiesValues) => setFieldValue('properties', propertiesValues)}
+                                                    errors={errors.properties ?? {}}
+                                                    touched={touched.properties ?? {}}
+                                                    setFieldTouched={(field) => setFieldTouched(`properties.${field}`)}
+                                                    isEditMode
+                                                />
                                             </Grid>
-                                        </Grid>
-                                        <Grid item xs={12}>
-                                            <Divider />
-                                        </Grid>
-                                        <Grid item marginTop="20px">
-                                            <Grid container spacing={4}>
-                                                <Grid item>
-                                                    <Button
-                                                        type="submit"
-                                                        variant="contained"
-                                                        startIcon={
-                                                            isUpdateLoading ? <CircularProgress sx={{ color: 'white' }} size={20} /> : <DoneIcon />
-                                                        }
-                                                        disabled={!dirty || isUpdateLoading}
-                                                    >
-                                                        {i18next.t('entityPage.save')}
-                                                    </Button>
+                                            {templateFileKeys.length > 0 && (
+                                                <Grid container xs={4}>
+                                                    <Grid item container flexDirection="row">
+                                                        <Grid item>
+                                                            <Divider orientation="vertical" style={{ height: '100%', width: '5px' }} />
+                                                        </Grid>
+                                                        <Grid item flex={1} paddingLeft="20px" marginTop="20px" marginBottom="20px">
+                                                            <BlueTitle
+                                                                title={i18next.t('wizard.entityTemplate.attachments')}
+                                                                component="h6"
+                                                                variant="h6"
+                                                                style={{ marginBottom: '12px', fontSize: '16px', fontWeight: '600' }}
+                                                            />
+                                                            <>
+                                                                {Object.entries(templateFilesProperties).map(([key, value]) => (
+                                                                    <InstanceFileInput
+                                                                        key={key}
+                                                                        fileFieldName={`attachmentsProperties.${key}`}
+                                                                        fieldTemplateTitle={value.title}
+                                                                        setFieldValue={setFieldValue}
+                                                                        required={requiredFilesNames.includes(key)}
+                                                                        value={values.attachmentsProperties[key]}
+                                                                        error={errors.attachmentsProperties?.[key] as string}
+                                                                        setFieldTouched={setFieldTouched}
+                                                                    />
+                                                                ))}
+                                                            </>
+                                                        </Grid>
+                                                    </Grid>
                                                 </Grid>
-                                                <Grid item>
-                                                    <Button variant="outlined" startIcon={<ClearIcon />} onClick={() => onCancelUpdate()}>
-                                                        {i18next.t('entityPage.cancel')}
-                                                    </Button>
-                                                </Grid>
+                                            )}
+                                        </Grid>
+                                        <Grid
+                                            container
+                                            flexDirection="row"
+                                            flexWrap="nowrap"
+                                            justifyContent="space-between"
+                                            padding="25px 15px 0px 15px"
+                                        >
+                                            <Grid item>
+                                                <Button
+                                                    style={{ borderRadius: '7px' }}
+                                                    variant="outlined"
+                                                    startIcon={<ClearIcon />}
+                                                    onClick={() => onCancelUpdate()}
+                                                >
+                                                    {i18next.t('entityPage.cancel')}
+                                                </Button>
+                                            </Grid>
+                                            <Grid item>
+                                                <Button
+                                                    style={{ borderRadius: '7px' }}
+                                                    type="submit"
+                                                    variant="contained"
+                                                    startIcon={
+                                                        isUpdateLoading ? <CircularProgress sx={{ color: 'white' }} size={20} /> : <DoneIcon />
+                                                    }
+                                                    disabled={!dirty || isUpdateLoading}
+                                                >
+                                                    {i18next.t('entityPage.save')}
+                                                </Button>
                                             </Grid>
                                         </Grid>
                                     </Grid>

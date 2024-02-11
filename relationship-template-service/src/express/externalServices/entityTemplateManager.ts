@@ -15,9 +15,16 @@ export interface ICategory {
 
 export interface IEntitySingleProperty {
     title: string;
-    type: 'string' | 'number' | 'boolean';
+    type: 'string' | 'number' | 'boolean' | 'array';
     format?: 'date' | 'date-time' | 'email' | 'fileId';
     enum?: string[];
+    items?: {
+        type: 'string';
+        enum?: string[];
+        format?: 'fileId';
+    };
+    minItems?: 1;
+    uniqueItems?: true;
     pattern?: string;
     patternCustomErrorMessage?: string;
     dateNotification?: 'day' | 'week' | 'twoWeeks';
@@ -34,6 +41,7 @@ export interface IEntityTemplate {
         required: string[];
     };
     propertiesOrder: string[];
+    propertiesTypeOrder: ('properties' | 'attachmentProperties')[];
     propertiesPreview: string[];
     disabled: boolean;
     iconFileId: string | null;
