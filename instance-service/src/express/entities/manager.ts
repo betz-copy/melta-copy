@@ -7,7 +7,6 @@ import { Neo4jError, Transaction } from 'neo4j-driver';
 import config from '../../config';
 import { EntityTemplateManagerService, IEntitySingleProperty, IMongoEntityTemplate } from '../../externalServices/entityTemplateManager';
 import { RelationshipsTemplateManagerService } from '../../externalServices/relationshipTemplateManager';
-import DefaultManager from '../../utils/express/manager';
 import { arraysEqualsNonOrdered } from '../../utils/lib';
 import {
     generateDefaultProperties,
@@ -20,12 +19,13 @@ import {
     normalizeSearchWithRelationships,
     runInTransactionAndNormalize,
 } from '../../utils/neo4j/lib';
+import DefaultManager from '../../utils/neo4j/manager';
 import { searchWithRelationshipsToNeoQuery } from '../../utils/neo4j/searchBodyToNeoQuery';
 import { getLatestGlobalSearchIndex, getLatestTemplateSearchIndex } from '../../utils/redis/getLatestIndex';
 import { NotFoundError, ServiceError } from '../error';
 import { filterDependentRulesOnProperties, filterDependentRulesViaAggregation } from '../rules/getParametersOfFormula';
 import { IBrokenRule, IConnection, IRuleFailureWithCauses } from '../rules/interfaces';
-import { runRulesOnRelationship, runRulesOnRelationshipsOfPinnedEntity, throwIfActionCausedBrokenRules } from '../rules/lib';
+import RulesManager from '../rules/lib';
 import {
     IConstraint,
     IConstraintsOfTemplate,
@@ -35,9 +35,25 @@ import {
     ISearchEntitiesOfTemplateBody,
     IUniqueConstraint,
 } from './interface';
-import { addStringFieldsAndNormalizeDateValues } from './validator.template';
+import EntityValidator from './validator.template';
 
-export class EntityManager extends DefaultManager {
+export default class EntityManager extends DefaultManager {
+    private entityTemplateManagerService: EntityTemplateManagerService;
+
+    private relationshipsTemplateManagerService: RelationshipsTemplateManagerService;
+
+    private entityValidator: EntityValidator;
+
+    private rulesManager: RulesManager;
+
+    constructor(dbName: string) {
+        super(dbName);
+        this.entityTemplateManagerService = new EntityTemplateManagerService(dbName);
+        this.relationshipsTemplateManagerService = new RelationshipsTemplateManagerService(dbName);
+        this.entityValidator = new EntityValidator(dbName);
+        this.rulesManager = new RulesManager(dbName);
+    }
+
     private throwServiceErrorIfFailedConstraintsValidation(err: unknown): never {
         if (!(err instanceof Neo4jError) || err.code !== 'Neo.ClientError.Schema.ConstraintValidationFailed') {
             throw err;
@@ -90,7 +106,7 @@ export class EntityManager extends DefaultManager {
             .writeTransaction(`CREATE (e: \`${templateId}\` $properties) RETURN e`, normalizeReturnedEntity('singleResponseNotNullable'), {
                 properties: {
                     ...generateDefaultProperties(),
-                    ...addStringFieldsAndNormalizeDateValues(properties, entityTemplate),
+                    ...this.entityValidator.addStringFieldsAndNormalizeDateValues(properties, entityTemplate),
                 },
             })
             .catch(this.throwServiceErrorIfFailedConstraintsValidation);
@@ -227,7 +243,7 @@ export class EntityManager extends DefaultManager {
                 throw new NotFoundError(`[NEO4J] entity "${id}" not found`);
             }
 
-            const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(entity.templateId);
+            const entityTemplate = await this.entityTemplateManagerService.getEntityTemplateById(entity.templateId);
             const updatedProperties = this.getUpdatedProperties(
                 entity,
                 { ...entity, properties: { ...entity.properties, disabled, updatedAt: new Date().toISOString() } },
@@ -245,7 +261,7 @@ export class EntityManager extends DefaultManager {
 
             const ruleFailuresAfterAction = await this.runRulesDependOnEntityUpdate(transaction, updatedEntity, updatedProperties);
 
-            throwIfActionCausedBrokenRules(ignoredRules, ruleFailuresBeforeAction, ruleFailuresAfterAction);
+            this.rulesManager.throwIfActionCausedBrokenRules(ignoredRules, ruleFailuresBeforeAction, ruleFailuresAfterAction);
 
             return updatedEntity;
         });
@@ -257,10 +273,10 @@ export class EntityManager extends DefaultManager {
         entity: IEntity,
         updatedProperties: string[],
     ): Promise<IRuleFailureWithCauses[]> => {
-        const rulesOfEntityWhenPinned = await RelationshipsTemplateManagerService.searchRules({
+        const rulesOfEntityWhenPinned = await this.relationshipsTemplateManagerService.searchRules({
             pinnedEntityTemplateIds: [entity.templateId],
         });
-        const rulesOfEntityWhenUnpinned = await RelationshipsTemplateManagerService.searchRules({
+        const rulesOfEntityWhenUnpinned = await this.relationshipsTemplateManagerService.searchRules({
             unpinnedEntityTemplateIds: [entity.templateId],
         });
         const rulesOfEntity = [...rulesOfEntityWhenPinned, ...rulesOfEntityWhenUnpinned];
@@ -272,7 +288,7 @@ export class EntityManager extends DefaultManager {
             );
 
             const sourceEntityTemplateId = entity.properties._id === relationship.sourceEntityId ? entity.templateId : neighbourOfEntity.templateId;
-            return runRulesOnRelationship(
+            return this.rulesManager.runRulesOnRelationship(
                 transaction,
                 relevantRulesOfRelationship,
                 relationship.sourceEntityId,
@@ -295,13 +311,13 @@ export class EntityManager extends DefaultManager {
         updatedProperties: string[],
     ): Promise<IRuleFailureWithCauses[]> => {
         const ruleFailuresForEachConnectionPromises = connectionsOfDependent.map(async ({ relationship, destinationEntity: neighbourOfEntity }) => {
-            const rulesOfPinnedEntity = await RelationshipsTemplateManagerService.searchRules({
+            const rulesOfPinnedEntity = await this.relationshipsTemplateManagerService.searchRules({
                 pinnedEntityTemplateIds: [neighbourOfEntity.templateId],
             });
 
             const rulesDependentViaAggregation = filterDependentRulesViaAggregation(rulesOfPinnedEntity, relationship.templateId, updatedProperties);
 
-            return runRulesOnRelationshipsOfPinnedEntity(
+            return this.rulesManager.runRulesOnRelationshipsOfPinnedEntity(
                 transaction,
                 neighbourOfEntity.properties._id,
                 rulesDependentViaAggregation,
@@ -396,7 +412,7 @@ export class EntityManager extends DefaultManager {
                     normalizeReturnedEntity('singleResponseNotNullable'),
                     {
                         props: {
-                            ...addStringFieldsAndNormalizeDateValues(entityProperties, entityTemplate),
+                            ...this.entityValidator.addStringFieldsAndNormalizeDateValues(entityProperties, entityTemplate),
                             updatedAt: getNeo4jDateTime(),
                             _id: id,
                         },
@@ -405,7 +421,7 @@ export class EntityManager extends DefaultManager {
 
                 const ruleFailuresAfterAction = await this.runRulesDependOnEntityUpdate(transaction, updatedEntity, updatedProperties);
 
-                throwIfActionCausedBrokenRules(ignoredRules, ruleFailuresBeforeAction, ruleFailuresAfterAction);
+                this.rulesManager.throwIfActionCausedBrokenRules(ignoredRules, ruleFailuresBeforeAction, ruleFailuresAfterAction);
 
                 return updatedEntity;
             })
@@ -599,5 +615,3 @@ export class EntityManager extends DefaultManager {
         });
     }
 }
-
-export default this;

@@ -1,4 +1,4 @@
-import Neo4jClient from '../neo4j';
+import Neo4jClient from '.';
 
 export default abstract class DefaultManager {
     public neo4jClient: Neo4jClient;

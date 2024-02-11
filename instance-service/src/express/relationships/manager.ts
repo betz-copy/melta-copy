@@ -1,23 +1,33 @@
 import { Transaction } from 'neo4j-driver';
+import config from '../../config';
+import { IMongoRelationshipTemplate, RelationshipsTemplateManagerService } from '../../externalServices/relationshipTemplateManager';
 import {
     generateDefaultProperties,
     getNeo4jDateTime,
-    normalizeResponseCount,
-    normalizeReturnedRelationship,
-    normalizeReturnedDeletedRelationship,
     normalizeRelAndEntitiesForRule,
+    normalizeResponseCount,
+    normalizeReturnedDeletedRelationship,
+    normalizeReturnedRelationship,
     runInTransactionAndNormalize,
 } from '../../utils/neo4j/lib';
-import { IRelationship } from './interface';
+import DefaultManager from '../../utils/neo4j/manager';
 import { NotFoundError, ServiceError } from '../error';
-import { runRulesOnRelationshipsOfPinnedEntity, runRulesOnRelationship, throwIfActionCausedBrokenRules } from '../rules/lib';
-import { IBrokenRule, IRuleFailureWithCauses } from '../rules/interfaces';
 import { filterDependentRulesViaAggregation } from '../rules/getParametersOfFormula';
-import config from '../../config';
-import { IMongoRelationshipTemplate, RelationshipsTemplateManagerService } from '../../externalServices/relationshipTemplateManager';
-import DefaultManager from '../../utils/express/manager';
+import { IBrokenRule, IRuleFailureWithCauses } from '../rules/interfaces';
+import RulesManager from '../rules/lib';
+import { IRelationship } from './interface';
 
 export class RelationshipManager extends DefaultManager {
+    private relationshipsTemplateManagerService: RelationshipsTemplateManagerService;
+
+    private rulesManager: RulesManager;
+
+    constructor(dbName: string) {
+        super(dbName);
+        this.relationshipsTemplateManagerService = new RelationshipsTemplateManagerService(dbName);
+        this.rulesManager = new RulesManager(dbName);
+    }
+
     async getRelationshipById(id: string) {
         const relationship = await this.neo4jClient.readTransaction(
             `MATCH (s)-[r]->(d) WHERE r._id='${id}' RETURN r, s, d`,
@@ -49,11 +59,11 @@ export class RelationshipManager extends DefaultManager {
         destinationEntityId: string,
         relationshipId: string,
     ): Promise<IRuleFailureWithCauses[]> => {
-        const rulesOfRelationship = await RelationshipsTemplateManagerService.searchRules({
+        const rulesOfRelationship = await this.relationshipsTemplateManagerService.searchRules({
             relationshipTemplateIds: [relationshipTemplate._id],
         });
 
-        const ruleFailures = await runRulesOnRelationship(
+        const ruleFailures = await this.rulesManager.runRulesOnRelationship(
             transaction,
             rulesOfRelationship,
             sourceEntityId,
@@ -73,13 +83,18 @@ export class RelationshipManager extends DefaultManager {
         dependentRelationshipTemplateId: string,
         excludedUnpinnedEntityId?: string,
     ): Promise<IRuleFailureWithCauses[]> => {
-        const rulesOfPinnedEntity = await RelationshipsTemplateManagerService.searchRules({
+        const rulesOfPinnedEntity = await this.relationshipsTemplateManagerService.searchRules({
             pinnedEntityTemplateIds: [pinnedEntityTemplateId],
         });
 
         const relevantRules = filterDependentRulesViaAggregation(rulesOfPinnedEntity, dependentRelationshipTemplateId);
 
-        const ruleFailures = await runRulesOnRelationshipsOfPinnedEntity(transaction, pinnedEntityId, relevantRules, excludedUnpinnedEntityId);
+        const ruleFailures = await this.rulesManager.runRulesOnRelationshipsOfPinnedEntity(
+            transaction,
+            pinnedEntityId,
+            relevantRules,
+            excludedUnpinnedEntityId,
+        );
         return ruleFailures.map((ruleFailure) => ({ ...ruleFailure, isTriggeredViaAggregation: true }));
     };
 
@@ -167,7 +182,12 @@ export class RelationshipManager extends DefaultManager {
                 createdRelationship.properties._id,
             );
 
-            throwIfActionCausedBrokenRules(ignoredRules, ruleFailuresBeforeAction, ruleFailuresAfterAction, createdRelationship.properties._id);
+            this.rulesManager.throwIfActionCausedBrokenRules(
+                ignoredRules,
+                ruleFailuresBeforeAction,
+                ruleFailuresAfterAction,
+                createdRelationship.properties._id,
+            );
 
             return createdRelationship;
         });
@@ -184,7 +204,7 @@ export class RelationshipManager extends DefaultManager {
                 throw new NotFoundError(`[NEO4J] relationship "${id}" not found`);
             }
 
-            const relationshipTemplate = await RelationshipsTemplateManagerService.getRelationshipTemplateById(relationship.templateId);
+            const relationshipTemplate = await this.relationshipsTemplateManagerService.getRelationshipTemplateById(relationship.templateId);
 
             const ruleFailuresBeforeAction = await this.runRulesDependOnRelationship(
                 transaction,
@@ -215,7 +235,7 @@ export class RelationshipManager extends DefaultManager {
                 relationship.destinationEntityId,
             );
 
-            throwIfActionCausedBrokenRules(ignoredRules, ruleFailuresBeforeAction, ruleFailuresAfterAction);
+            this.rulesManager.throwIfActionCausedBrokenRules(ignoredRules, ruleFailuresBeforeAction, ruleFailuresAfterAction);
 
             return relationship;
         });

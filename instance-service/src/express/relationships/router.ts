@@ -1,45 +1,36 @@
 import { Router } from 'express';
-import { wrapController, wrapMiddleware } from '../../utils/express';
-import {
-    getRelationshipByIdRequestSchema,
-    createRelationshipRequestSchema,
-    deleteRelationshipByIdRequestSchema,
-    updateRelationshipByIdRequestSchema,
-    getRelationshipsCountRequestSchema,
-    getRelationshipsConnectionsByIdRequestSchema,
-} from './validator.schema';
+import { createController } from '../../utils/express';
 import ValidateRequest from '../../utils/joi';
 import RelationshipController from './controller';
-import { validateRelationship } from './validator.template';
+import {
+    createRelationshipRequestSchema,
+    deleteRelationshipByIdRequestSchema,
+    getRelationshipByIdRequestSchema,
+    getRelationshipsConnectionsByIdRequestSchema,
+    getRelationshipsCountRequestSchema,
+    updateRelationshipByIdRequestSchema,
+} from './validator.schema';
+import RelationshipValidator from './validator.template';
 
 const relationshipRouter: Router = Router();
+
+const relationshipController = createController(RelationshipController)<RelationshipController>;
+const relationshipValidatorController = createController(RelationshipValidator)<RelationshipValidator>;
 
 relationshipRouter.post(
     '/connections',
     ValidateRequest(getRelationshipsConnectionsByIdRequestSchema),
-    wrapController(RelationshipController.getRelationshipsConnectionsById),
+    relationshipController('getRelationshipsConnectionsById'),
 );
-relationshipRouter.get(
-    '/count',
-    ValidateRequest(getRelationshipsCountRequestSchema),
-    wrapController(RelationshipController.getRelationshipsCountByTemplateId),
-);
-relationshipRouter.get('/:id', ValidateRequest(getRelationshipByIdRequestSchema), wrapController(RelationshipController.getRelationshipById));
+relationshipRouter.get('/count', ValidateRequest(getRelationshipsCountRequestSchema), relationshipController('getRelationshipsCountByTemplateId'));
+relationshipRouter.get('/:id', ValidateRequest(getRelationshipByIdRequestSchema), relationshipController('getRelationshipById'));
 relationshipRouter.post(
     '/',
     ValidateRequest(createRelationshipRequestSchema),
-    wrapMiddleware(validateRelationship),
-    wrapController(RelationshipController.createRelationship),
+    relationshipValidatorController('validateRelationship'),
+    relationshipController('createRelationship'),
 );
-relationshipRouter.delete(
-    '/:id',
-    ValidateRequest(deleteRelationshipByIdRequestSchema),
-    wrapController(RelationshipController.deleteRelationshipById),
-);
-relationshipRouter.put(
-    '/:id',
-    ValidateRequest(updateRelationshipByIdRequestSchema),
-    wrapController(RelationshipController.updateRelationshipPropertiesById),
-);
+relationshipRouter.delete('/:id', ValidateRequest(deleteRelationshipByIdRequestSchema), relationshipController('deleteRelationshipById'));
+relationshipRouter.put('/:id', ValidateRequest(updateRelationshipByIdRequestSchema), relationshipController('updateRelationshipPropertiesById'));
 
 export default relationshipRouter;

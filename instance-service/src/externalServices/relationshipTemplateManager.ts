@@ -1,7 +1,6 @@
-import axios from 'axios';
-
 import config from '../config';
 import { IMongoRule } from '../express/rules/interfaces';
+import DefaultExternalServiceApi from '../utils/express/externalService';
 
 const { relationshipTemplateService: relationshipManager } = config;
 const { url, getRelationshipByIdRoute, searchTemplatesRoute, searchRulesRoute, timeout } = relationshipManager;
@@ -38,28 +37,25 @@ export interface ISearchRulesBody {
     skip?: number;
 }
 
-export class RelationshipsTemplateManagerService {
-    static RelationshipsTemplateManagerAxiosApi = axios.create({ baseURL: url, timeout });
+export class RelationshipsTemplateManagerService extends DefaultExternalServiceApi {
+    constructor(dbName: string) {
+        super(dbName, { baseURL: url, timeout });
+    }
 
-    static async searchRelationshipTemplates(searchBody: ISearchRelationshipTemplatesBody = {}) {
-        const { data } = await RelationshipsTemplateManagerService.RelationshipsTemplateManagerAxiosApi.post<IMongoRelationshipTemplate[]>(
-            searchTemplatesRoute,
-            searchBody,
-        );
+    async searchRelationshipTemplates(searchBody: ISearchRelationshipTemplatesBody = {}) {
+        const { data } = await this.api.post<IMongoRelationshipTemplate[]>(searchTemplatesRoute, searchBody);
 
         return data;
     }
 
-    static async getRelationshipTemplateById(id: string) {
-        const { data } = await RelationshipsTemplateManagerService.RelationshipsTemplateManagerAxiosApi.get<IMongoRelationshipTemplate>(
-            `${getRelationshipByIdRoute}/${id}`,
-        );
+    async getRelationshipTemplateById(id: string) {
+        const { data } = await this.api.get<IMongoRelationshipTemplate>(`${getRelationshipByIdRoute}/${id}`);
 
         return data;
     }
 
-    static async searchRules(searchBody: Omit<ISearchRulesBody, 'disabled'>) {
-        const { data } = await RelationshipsTemplateManagerService.RelationshipsTemplateManagerAxiosApi.post<IMongoRule[]>(searchRulesRoute, {
+    async searchRules(searchBody: Omit<ISearchRulesBody, 'disabled'>) {
+        const { data } = await this.api.post<IMongoRule[]>(searchRulesRoute, {
             ...searchBody,
             disabled: false,
         });
