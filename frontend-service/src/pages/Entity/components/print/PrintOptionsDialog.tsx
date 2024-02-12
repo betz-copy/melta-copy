@@ -5,16 +5,23 @@ import i18next from 'i18next';
 import { SelectCheckbox } from '../../../../common/SelectCheckbox';
 import { IMongoRelationshipTemplatePopulated } from '../../../../interfaces/relationshipTemplates';
 import { IMongoCategory } from '../../../../interfaces/categories';
+import { IEntityExpanded } from '../../../../interfaces/entities';
+import { IConnectionTemplateOfExpandedEntity } from '../..';
 
 const PrintOptionsDialog: React.FC<{
     open: boolean;
     handleClose: () => void;
-    relevantRelationshipTemplates: IMongoRelationshipTemplatePopulated[];
-    selected: IMongoRelationshipTemplatePopulated[];
-    setSelected: React.Dispatch<React.SetStateAction<IMongoRelationshipTemplatePopulated[]>>;
-    categoriesWithRelationshipTemplates: (IMongoCategory & {
-        relationshipTemplates: IMongoRelationshipTemplatePopulated[];
-    })[];
+    expandedEntity: IEntityExpanded;
+    connectionsTemplates: IConnectionTemplateOfExpandedEntity[];
+    selected: IConnectionTemplateOfExpandedEntity[];
+    setSelected: React.Dispatch<React.SetStateAction<IConnectionTemplateOfExpandedEntity[]>>;
+    categoriesWithConnectionsTemplates: {
+        category: IMongoCategory;
+        connectionsTemplates: {
+            relationshipTemplate: IMongoRelationshipTemplatePopulated;
+            isExpandedEntityRelationshipSource: boolean;
+        }[];
+    }[];
     options: {
         showDate: boolean;
         setShowDate: React.Dispatch<React.SetStateAction<boolean>>;
@@ -24,7 +31,7 @@ const PrintOptionsDialog: React.FC<{
         setShowEntityDates: React.Dispatch<React.SetStateAction<boolean>>;
     };
     onClick: React.MouseEventHandler<HTMLButtonElement>;
-}> = ({ open, handleClose, relevantRelationshipTemplates, selected, setSelected, categoriesWithRelationshipTemplates, onClick, options }) => {
+}> = ({ open, handleClose, expandedEntity, connectionsTemplates, selected, setSelected, categoriesWithConnectionsTemplates, onClick, options }) => {
     return (
         <Dialog open={open} onClose={handleClose}>
             <DialogTitle paddingLeft="4px">
@@ -42,26 +49,38 @@ const PrintOptionsDialog: React.FC<{
                     <Grid item>
                         <SelectCheckbox
                             title={i18next.t('entityPage.print.chooseRelationship')}
-                            options={relevantRelationshipTemplates}
+                            options={connectionsTemplates}
                             isDraggableDisabled
                             selectedOptions={selected}
                             setSelectedOptions={setSelected}
-                            getOptionId={({ _id }) => _id}
+                            getOptionId={({ relationshipTemplate, isExpandedEntityRelationshipSource }) =>
+                                `${relationshipTemplate._id}${isExpandedEntityRelationshipSource}`
+                            }
                             getOptionLabel={({
-                                displayName,
-                                sourceEntity: { displayName: sourceEntityDisplayName },
-                                destinationEntity: { displayName: destinationEntityDisplayName },
+                                relationshipTemplate: {
+                                    displayName,
+                                    sourceEntity: { displayName: sourceEntityDisplayName },
+                                    destinationEntity: { _id: destinationEntityId, displayName: destinationEntityDisplayName },
+                                },
+                                isExpandedEntityRelationshipSource,
                             }) => {
+                                if (!isExpandedEntityRelationshipSource && destinationEntityId === expandedEntity.entity.templateId) {
+                                    // special case to differentiate between outgoing/incoming relationships of relationshipTemplate that is of format expandedEntityTemplate -> expandedEntityTemplate
+                                    return `${displayName} (${sourceEntityDisplayName} < ${destinationEntityDisplayName})`;
+                                }
+
                                 return `${displayName} (${sourceEntityDisplayName} > ${destinationEntityDisplayName})`;
                             }}
                             groupsProps={{
                                 useGroups: true,
-                                groups: categoriesWithRelationshipTemplates,
-                                getGroupId: ({ _id }) => _id,
-                                getGroupLabel: ({ displayName }) => displayName,
+                                groups: categoriesWithConnectionsTemplates,
+                                getGroupId: ({ category: { _id } }) => _id,
+                                getGroupLabel: ({ category: { displayName } }) => displayName,
                                 getGroupOfOption: (option, groups) =>
                                     groups.find((group) =>
-                                        group.relationshipTemplates.find((relationshipTemplate) => relationshipTemplate._id === option._id),
+                                        group.connectionsTemplates.find(
+                                            ({ relationshipTemplate }) => relationshipTemplate._id === option.relationshipTemplate._id,
+                                        ),
                                     )!,
                             }}
                         />

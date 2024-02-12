@@ -5,6 +5,7 @@ import { getEntityTemplateColor } from '../utils/colors';
 import { IMongoRelationshipTemplatePopulated } from '../interfaces/relationshipTemplates';
 import { MeltaTooltip } from './MeltaTooltip';
 import { EntityTemplateColor } from './EntityTemplateColor';
+import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 
 const TextComponent: React.FC<{ title: string; style?: CSSProperties }> = ({ title, style }) => {
     return (
@@ -29,13 +30,27 @@ const TextComponent: React.FC<{ title: string; style?: CSSProperties }> = ({ tit
     );
 };
 
+export const EntityTemplateTextComponent: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; style?: React.CSSProperties }> = ({
+    entityTemplate,
+    style,
+}) => {
+    const entityTemplateColor = getEntityTemplateColor(entityTemplate);
+
+    return (
+        <Grid container flexWrap="nowrap" alignItems="center">
+            <Grid item>
+                <EntityTemplateColor entityTemplateColor={entityTemplateColor} style={{ height: '18px' }} />
+            </Grid>
+            <TextComponent title={entityTemplate.displayName} style={style} />
+        </Grid>
+    );
+};
+
 const RelationshipTitle: React.FC<{
     relationshipTemplate: IMongoRelationshipTemplatePopulated;
-    style?: React.CSSProperties;
-}> = ({ relationshipTemplate, style }) => {
-    const srcEntityTemplateColor = getEntityTemplateColor(relationshipTemplate.sourceEntity);
-    const destEntityTemplateColor = getEntityTemplateColor(relationshipTemplate.destinationEntity);
-
+    EntityTemplateTextComponent?: React.JSXElementConstructor<{ entityTemplate: IMongoEntityTemplatePopulated; isRelationshipSource: boolean }>;
+    style?: CSSProperties;
+}> = ({ relationshipTemplate, EntityTemplateTextComponent: EntityTemplateTextComponentOverride, style }) => {
     return (
         <Grid
             container
@@ -44,11 +59,12 @@ const RelationshipTitle: React.FC<{
             flexWrap="nowrap"
             style={{ ...style, borderRadius: '10px', backgroundColor: '#FFF' }}
         >
-            <Grid item container flexWrap="nowrap" alignItems="center">
-                <Grid item>
-                    <EntityTemplateColor entityTemplateColor={srcEntityTemplateColor} style={{ height: '18px' }} />
-                </Grid>
-                <TextComponent title={relationshipTemplate.sourceEntity.displayName} />
+            <Grid item marginRight="20px">
+                {EntityTemplateTextComponentOverride ? (
+                    <EntityTemplateTextComponentOverride entityTemplate={relationshipTemplate.sourceEntity} isRelationshipSource />
+                ) : (
+                    <EntityTemplateTextComponent entityTemplate={relationshipTemplate.sourceEntity} />
+                )}
             </Grid>
             <Grid item container flexWrap="nowrap">
                 <img src="\icons\arrow-tail.svg" />
@@ -64,11 +80,12 @@ const RelationshipTitle: React.FC<{
 
                 <img src="\icons\arrow-head.svg" />
             </Grid>
-            <Grid item container marginLeft="20px" flexWrap="nowrap" alignItems="center">
-                <Grid item>
-                    <EntityTemplateColor entityTemplateColor={destEntityTemplateColor} style={{ height: '18px' }} />
-                </Grid>
-                <TextComponent title={relationshipTemplate.destinationEntity.displayName} />
+            <Grid item marginLeft="20px">
+                {EntityTemplateTextComponentOverride ? (
+                    <EntityTemplateTextComponentOverride entityTemplate={relationshipTemplate.destinationEntity} isRelationshipSource={false} />
+                ) : (
+                    <EntityTemplateTextComponent entityTemplate={relationshipTemplate.destinationEntity} />
+                )}
             </Grid>
         </Grid>
     );
