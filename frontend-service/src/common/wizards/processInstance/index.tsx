@@ -290,6 +290,7 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({ open, onClose
                     setDeleteDialogState(false);
                     onClose(true);
                 }}
+                fromDeletion={false}
             />
         </Dialog>
     );

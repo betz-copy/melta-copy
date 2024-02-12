@@ -512,6 +512,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                             setOpen(!open);
                                                                         }}
                                                                         isLoading={isLoading}
+                                                                        fromDeletion
                                                                     />
                                                                 </ThemeProvider>
                                                             </Box>

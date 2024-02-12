@@ -100,6 +100,8 @@ const DeleteRelationshipDialog: React.FC<{
                 handleClose={handleClose}
                 onYes={async () => deleteRelationship()}
                 isLoading={isLoadingDeleteRelationship}
+                fromDeletion={false}
+
             />
 
             {deleteWithRuleBreachDialogState.isOpen && (

@@ -563,6 +563,7 @@ const EntityTemplatesRow: React.FC = () => {
                 handleClose={() => setDeleteEntityTemplateDialogState({ isDialogOpen: false, entityTemplateId: null })}
                 onYes={() => deleteTemplateMutateAsync(deleteEntityTemplateDialogState.entityTemplateId!)}
                 isLoading={deleteTemplateIsLoading}
+                fromDeletion={false}
             />
         </Grid>
     );

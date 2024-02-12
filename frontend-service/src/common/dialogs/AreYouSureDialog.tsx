@@ -7,18 +7,20 @@ const AreYouSureDialog: React.FC<{
     handleClose: () => void;
     title?: string;
     isLoading?: boolean;
+    fromDeletion: boolean;
     onYes: MouseEventHandler;
     onNo?: MouseEventHandler;
-}> = ({ open, handleClose, title = i18next.t('areYouSureDialog.title'), isLoading = false, onYes, onNo }) => {
+}> = ({ open, handleClose, title = i18next.t('areYouSureDialog.title'), isLoading = false, onYes, onNo, fromDeletion }) => {
     return (
         <Dialog open={open} onClose={handleClose}>
             <DialogTitle><div>{title}</div>
-                    <div>
+            {fromDeletion ? <div>
                         <Typography variant="caption" color="textSecondary">{i18next.t('areYouSureDialog.disclaimer')}</Typography>
-                    </div></DialogTitle>
+                    </div> : null}
+            </DialogTitle>
             <DialogActions>
                 <Button onClick={onNo ?? handleClose}>{i18next.t('areYouSureDialog.no')}</Button>
-                <Button onClick={onYes} autoFocus disabled={isLoading}>
+                <Button onClick={onYes} disabled={isLoading}>
                     {i18next.t('areYouSureDialog.yes')}
                     {isLoading && <CircularProgress size={20} />}
                 </Button>

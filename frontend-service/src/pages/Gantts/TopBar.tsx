@@ -209,7 +209,7 @@ export const GanttsTopBar: React.FC<IGanttTopBar> = ({ title, formik, onEdit, on
                 )}
             </TopBarGrid>
 
-            <AreYouSureDialog open={deleteDialogOpen} handleClose={() => setDeleteDialogOpen(false)} onYes={() => onDelete()} />
+            <AreYouSureDialog fromDeletion={false} open={deleteDialogOpen} handleClose={() => setDeleteDialogOpen(false)} onYes={() => onDelete()} />
         </>
     );
 };

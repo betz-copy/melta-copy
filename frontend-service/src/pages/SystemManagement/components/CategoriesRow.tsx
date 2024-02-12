@@ -189,6 +189,7 @@ const CategoriesRow: React.FC = () => {
                 handleClose={() => setDeleteCategoryDialogState({ isDialogOpen: false, categoryId: null })}
                 onYes={() => mutateAsync(deleteCategoryDialogState.categoryId!)}
                 isLoading={isLoading}
+                fromDeletion={false}
             />
         </Grid>
     );

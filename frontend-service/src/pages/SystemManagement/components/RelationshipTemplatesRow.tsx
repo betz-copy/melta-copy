@@ -344,6 +344,7 @@ const RelationshipTemplatesRow: React.FC = () => {
                 handleClose={() => setDeleteRelationshipTemplateDialogState({ isDialogOpen: false, relationshipTemplateId: null })}
                 onYes={() => mutateAsync(deleteRelationshipTemplateDialogState.relationshipTemplateId!)}
                 isLoading={isLoading}
+                fromDeletion={false}
             />
         </Grid>
     );

@@ -14,7 +14,6 @@ import {
     validateUserCanUpdateOrDeleteEntityTemplate,
     validateUserCanUpdateOrDeleteRelationshipTemplate,
 } from './middlewares';
-
 import config from '../../config';
 import ValidateRequest from '../../utils/joi';
 import {
@@ -87,7 +86,6 @@ templatesRouter.put(
     wrapMiddleware(validateUserCanUpdateOrDeleteEntityTemplate),
     wrapController(TemplatesController.updateEntityFieldValue),
 );
-
 templatesRouter.patch(
     '/entities/deleteListField/:id',
     ValidateRequest(deleteFieldValueSchema),
