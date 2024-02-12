@@ -192,7 +192,6 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
         },
         {
             onError: () => {
-                console.log("IN ERROR")
                 if (editIndex !== null) {
                     setLocalOption('');
                     setEditIndex(null);
@@ -258,7 +257,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
         }
     };
 
-    const handleDelete = async (e, tagIndex: number) => {
+    const handleDelete = async (tagIndex: number) => {
         deleteListField(tagIndex);
     }
 
@@ -496,7 +495,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                                 }
                                                                             }}
                                                                         />
-                                                                        <IconButton size="small" onClick={(e) => handleDelete(e, tagIndex)}>
+                                                                        <IconButton size="small" onClick={() => handleDelete(tagIndex)}>
                                                                             <DeleteIcon />
                                                                         </IconButton>
                                                                     </Box>

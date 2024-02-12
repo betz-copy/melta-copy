@@ -30,6 +30,53 @@ export const getExpandedEntityByIdRequestSchema = Joi.object({
     },
 });
 
+
+const commonFormInputSchema = Joi.object({
+    name: Joi.string().required(),
+    title: Joi.string().required(),
+    type: Joi.string().required(),
+    id: Joi.string().required(),
+    options: Joi.array().items(Joi.string()).required(),
+    optionColors: Joi.object().pattern(Joi.string(), Joi.string()),
+    pattern: Joi.string().allow(""),
+    patternCustomErrorMessage: Joi.string().allow(""),
+    dateNotification: Joi.string().allow(null).optional(),
+    serialStarter: Joi.number().optional(),
+    required: Joi.boolean().optional(),
+    preview: Joi.boolean().optional(),
+    hide: Joi.boolean().optional(),
+    unique: Joi.boolean().optional(),
+});
+
+/**
+ * PUT /api/instances/entities/updateListField/:id
+ */
+export const updateListFieldRequestSchema = Joi.object({
+    query: {},
+    body: {
+        newValue: Joi.string().required(),
+        oldValue: Joi.string().required(),
+        field: commonFormInputSchema,
+    },
+    params: {
+        id: Joi.string().required(),
+    },
+});
+
+/**
+ * GET /api/instances/entities/getIsFieldUsed/:id
+ */
+export const getIfValuefieldIsUsedRequestSchema = Joi.object({
+    query: {},
+    body: {
+        fieldValue: Joi.string().required(),
+        fieldName: Joi.string().required(),
+    },
+    params: {
+        id: Joi.string().required(),
+    },
+});
+
 /**
  * DELETE /api/instances/entities/:id?deleteAllRelationships=true
  */

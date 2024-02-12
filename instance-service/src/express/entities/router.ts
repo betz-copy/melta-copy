@@ -16,6 +16,8 @@ import {
     getExpandedEntityByIdRequestSchema,
     searchEntitiesBatchRequestSchema,
     searchEntitiesOfTemplateRequestSchema,
+    updateListFieldRequestSchema,
+    getIfValuefieldIsUsedRequestSchema,
 } from './validator.schema';
 
 const entityRouter: Router = Router();
@@ -46,8 +48,8 @@ entityRouter.post(
     wrapController(EntityController.searchEntitiesBatch),
 );
 
-entityRouter.put('/updateListField/:id', wrapController(EntityController.updateListField));
-entityRouter.get('/getIsFieldUsed/:id', wrapController(EntityController.getIsFieldUsed));
+entityRouter.put('/updateListField/:id', ValidateRequest(updateListFieldRequestSchema), wrapController(EntityController.updateListField));
+entityRouter.get('/getIsFieldUsed/:id', ValidateRequest(getIfValuefieldIsUsedRequestSchema), wrapController(EntityController.getIsFieldUsed));
 
 
 entityRouter.post('/expanded/:id', ValidateRequest(getExpandedEntityByIdRequestSchema), wrapController(EntityController.getExpandedEntityById));

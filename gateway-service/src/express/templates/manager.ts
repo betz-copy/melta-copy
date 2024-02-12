@@ -22,7 +22,12 @@ import { IRule } from './rules/interfaces';
 import { getParametersOfFormula } from './rules';
 import { IFormula } from './rules/interfaces/formula';
 import { RuleBreachService } from '../../externalServices/ruleBreachService';
-import { IEntityTemplateWithConstraints, IMongoEntityTemplateWithConstraints, IMongoEntityTemplateWithConstraintsPopulated } from './interfaces';
+import {
+    CommonFormInputProperties,
+    IEntityTemplateWithConstraints,
+    IMongoEntityTemplateWithConstraints,
+    IMongoEntityTemplateWithConstraintsPopulated,
+} from './interfaces';
 import { ProcessManagerService } from '../../externalServices/processService';
 import ProcessTemplatesManager from '../processes/processTemplates/manager';
 import { isProcessManager } from '../../externalServices/permissionsService';
@@ -438,7 +443,7 @@ export class TemplatesManager {
         return EntityTemplateManagerService.updateEntityTemplateStatus(id, disabledStatus);
     }
 
-    static async updateEntityFieldValue(id: string, field: string, values: any, fieldValue: string) {
+    static async updateEntityFieldValue(id: string, field: string, values: CommonFormInputProperties, fieldValue: string) {
         const template = await EntityTemplateManagerService.getEntityTemplateById(id);
         if (!values.options) {
             throw new ServiceError(404, 'No options array');
@@ -466,7 +471,7 @@ export class TemplatesManager {
             }
             // chnage only the fieldName not to the new color
             if (key === 'enumPropertiesColors' && values.optionColors?.[fieldValue] !== undefined) {
-                const newFieldName = {
+                const newFieldName: Record<string, string> = {
                     ...values.optionColors,
                     [field]: values.optionColors[fieldValue],
                 };
@@ -507,11 +512,10 @@ export class TemplatesManager {
                     newTemplate[key] = template[key];
                 }
                 if (key === 'enumPropertiesColors' && values.optionColors?.[field] !== undefined) {
-                    newTemplate[key] = { ...values.optionColors };
+                    newTemplate[key] = { [values.name]: { ...values.optionColors } };
                 }
                 return newTemplate;
             }, {} as IEntityTemplatePopulated);
-
             try {
                 await EntityTemplateManagerService.updateEntityTemplate(id, {
                     ...rollBackTemplateWithoutProperties,
@@ -526,7 +530,7 @@ export class TemplatesManager {
         return field;
     }
 
-    static async deleteEntityFieldValue(id: string, values: any, fieldValue: string) {
+    static async deleteEntityFieldValue(id: string, values: CommonFormInputProperties, fieldValue: string) {
         try {
             const data = await InstanceManagerService.getIfValuefieldIsUsed(id, fieldValue, values.name);
             const canDeleteFieldValue = data ? false : true;
@@ -534,8 +538,6 @@ export class TemplatesManager {
             if (!canDeleteFieldValue) {
                 throw new ServiceError(400, 'cant remove used values');
             }
-            console.log('DEKEETE PARAMS:', id, values, fieldValue);
-
             const template = await EntityTemplateManagerService.getEntityTemplateById(id);
             if (!values.options) {
                 throw new ServiceError(404, 'No options array');
@@ -573,7 +575,6 @@ export class TemplatesManager {
 
             try {
                 // remove the field from the mongo
-                console.log('THE FIELDS:', templateWithoutProperties);
                 await EntityTemplateManagerService.updateEntityTemplate(id, {
                     ...templateWithoutProperties,
                     category: templateWithoutProperties.category._id,
