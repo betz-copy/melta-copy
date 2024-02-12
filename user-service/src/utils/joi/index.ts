@@ -1,6 +1,6 @@
 import { Request } from 'express';
 import * as Joi from 'joi';
-import { wrapValidator } from './express';
+import { wrapValidator } from '../express';
 
 const defaultValidationOptions: Joi.ValidationOptions = {
     abortEarly: false,
@@ -32,18 +32,4 @@ export const ValidateRequest = (schema: Joi.ObjectSchema<any>, options: Joi.Vali
     };
 
     return wrapValidator(validator);
-};
-
-export const validateObject = (object: any, schema: Joi.ObjectSchema<any>, options: Joi.ValidationOptions = defaultValidationOptions) => {
-    const { error, value } = schema.validate(object, options);
-
-    if (error) {
-        throw error;
-    }
-
-    if (options.convert) {
-        return value;
-    }
-
-    return object;
 };

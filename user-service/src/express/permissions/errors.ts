@@ -7,3 +7,8 @@ export class SinglePermissionOfTypePerUserError extends ServiceError {
     }
 }
 
+export class UnknownPermissionTypeError extends ServiceError {
+    constructor(type: string) {
+        super(404, `Unknown permission type '${type}'`);
+    }
+}
