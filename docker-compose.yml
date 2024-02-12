@@ -139,8 +139,8 @@ services:
       BASIC_AUTHENTICATION_USERS: ${BASIC_AUTHENTICATION_USERS}
       
 
-  # frontend-service:
-    # build: ./frontend-service
+  frontend-service:
+    build: ./frontend-service
   
   nginx:
     image: nginx:alpine
