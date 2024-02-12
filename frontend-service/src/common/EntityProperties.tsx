@@ -1,15 +1,15 @@
-import React, { CSSProperties } from 'react';
+import { Visibility as VisibilityIcon, VisibilityOff as VisibilityOffIcon } from '@mui/icons-material';
 import { Grid, IconButton, Typography } from '@mui/material';
 import i18next from 'i18next';
-import { useSelector } from 'react-redux';
+import React, { CSSProperties } from 'react';
 import { pdfjs } from 'react-pdf';
-import { Visibility as VisibilityIcon, VisibilityOff as VisibilityOffIcon } from '@mui/icons-material';
-import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
+import { useSelector } from 'react-redux';
 import { IEntity } from '../interfaces/entities';
+import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { RootState } from '../store';
 import { ColoredEnumChip } from './ColoredEnumChip';
+import { OpenPreview } from './FilePreview/OpenPreview';
 import { MeltaTooltip } from './MeltaTooltip';
-import { OpenPreviewButton } from './FilePreview/OpenPreviewButton';
 
 pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.js';
 
@@ -28,7 +28,7 @@ export const formatToString = (
     if (valueType === 'string') {
         if (format === 'date') return new Date(value).toLocaleDateString('en-uk');
         if (format === 'date-time') return new Date(value).toLocaleString('en-uk');
-        if (format === 'fileId') return <OpenPreviewButton fileId={value} />;
+        if (format === 'fileId') return <OpenPreview fileId={value} />;
     }
     if (keyEnumColors?.[value] && valueType === 'string') return <ColoredEnumChip label={value} color={keyEnumColors[value]} />;
     if (valueType === 'array') {
@@ -88,7 +88,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                 return (
                     <Grid key={propertyKey} item container flexDirection="row" style={innerStyle} alignItems={textWrap ? 'flex-start' : 'center'}>
                         <Grid item container width="100%" flexWrap="nowrap" gap="15px" alignItems={textWrap ? 'flex-start' : 'center'}>
-                            <Grid item width="30%">
+                            <Grid item width="25%">
                                 <MeltaTooltip disableHoverListener={textWrap} placement="bottom" title={propertySchema.title}>
                                     <Typography
                                         style={{
@@ -112,7 +112,8 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                                 flexDirection="row"
                                 alignItems={textWrap ? 'flex-start' : 'center'}
                                 flexWrap="nowrap"
-                                justifyContent="space-between"
+                                gap={2}
+                                // justifyContent="space-between"
                                 style={{
                                     direction: 'rtl',
                                     textAlign: 'right',

@@ -1,12 +1,12 @@
-import React from 'react';
 import { ColDef, ICellRendererParams, IDateFilterParams, ISetFilterParams, ValueFormatterParams, ValueGetterFunc } from '@ag-grid-community/core';
 import i18next from 'i18next';
-import { OpenPreviewButton } from '../../common/FilePreview/OpenPreviewButton';
-import { Value } from './Value';
-import { getDateWithoutTime, getLongDate } from '../date';
+import React from 'react';
+import { OpenPreview } from '../../common/FilePreview/OpenPreview';
 import { IEntity } from '../../interfaces/entities';
-import { agGridLocaleText } from './agGridLocaleText';
+import { getDateWithoutTime, getLongDate } from '../date';
 import OverflowWrapper from './OverflowWrapper';
+import { Value } from './Value';
+import { agGridLocaleText } from './agGridLocaleText';
 
 export const numberColDef = <Data extends any = IEntity>(
     field: string,
@@ -82,7 +82,7 @@ export const fileColDef = <Data extends any = IEntity>(
         field,
         headerName: value.title,
         valueGetter,
-        cellRenderer: (props: ICellRendererParams<Data, string | undefined>) => (props.value ? <OpenPreviewButton fileId={props.value} /> : null),
+        cellRenderer: (props: ICellRendererParams<Data, string | undefined>) => (props.value ? <OpenPreview fileId={props.value} /> : null),
         filter: 'agTextColumnFilter',
         width: hardcodedWidth,
         flex: hardcodedWidth ? 0 : 1,

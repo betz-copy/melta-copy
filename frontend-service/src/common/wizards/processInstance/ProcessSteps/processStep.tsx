@@ -1,27 +1,27 @@
-import { Grid, Button, CircularProgress, Box, Typography, TextField } from '@mui/material';
-import { Formik, Form, Field } from 'formik';
+import { Clear as ClearIcon, Done as DoneIcon, Edit as EditIcon } from '@mui/icons-material';
+import { Box, Button, CircularProgress, Grid, TextField, Typography } from '@mui/material';
+import { AxiosError } from 'axios';
+import { Field, Form, Formik } from 'formik';
 import i18next from 'i18next';
 import pickBy from 'lodash.pickby';
 import React, { FC } from 'react';
-import { Done as DoneIcon, Clear as ClearIcon, Edit as EditIcon } from '@mui/icons-material';
-import { AxiosError } from 'axios';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import { IMongoStepInstancePopulated } from '../../../../interfaces/processes/stepInstance';
-import { pickProcessFieldsPropertiesSchema } from '../../../../utils/pickFieldsPropertiesSchema';
-import { InstanceFileInput } from '../../../inputs/InstanceFilesInput/InstanceFileInput';
-import { ajvValidate, JSONSchemaFormik } from '../../../inputs/JSONSchemaFormik';
-import { getStepValuesFromStepInstance } from './stepsFormik';
-import { updateStepRequest } from '../../../../services/processesService';
-import { ErrorToast } from '../../../ErrorToast';
-import ProcessStatus from '../ProcessSummaryStep/ProcessStatus';
-import { IMongoStepTemplatePopulated } from '../../../../interfaces/processes/stepTemplate';
 import { ProcessStepValues } from '.';
-import { IPermissionsOfUser } from '../../../../services/permissionsService';
 import { IMongoProcessInstancePopulated } from '../../../../interfaces/processes/processInstance';
-import { EntityReference } from '../EntityReference';
+import { IMongoStepInstancePopulated } from '../../../../interfaces/processes/stepInstance';
+import { IMongoStepTemplatePopulated } from '../../../../interfaces/processes/stepTemplate';
+import { IPermissionsOfUser } from '../../../../services/permissionsService';
+import { updateStepRequest } from '../../../../services/processesService';
+import { pickProcessFieldsPropertiesSchema } from '../../../../utils/pickFieldsPropertiesSchema';
 import { BlueTitle } from '../../../BlueTitle';
-import { OpenPreviewButton } from '../../../FilePreview/OpenPreviewButton';
+import { ErrorToast } from '../../../ErrorToast';
+import { OpenPreview } from '../../../FilePreview/OpenPreview';
+import { InstanceFileInput } from '../../../inputs/InstanceFilesInput/InstanceFileInput';
+import { JSONSchemaFormik, ajvValidate } from '../../../inputs/JSONSchemaFormik';
+import { EntityReference } from '../EntityReference';
+import ProcessStatus from '../ProcessSummaryStep/ProcessStatus';
+import { getStepValuesFromStepInstance } from './stepsFormik';
 
 interface ProcessStepProps {
     stepInstance: IMongoStepInstancePopulated;
@@ -211,7 +211,7 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                                                 </Grid>
                                                                 <Grid item>
                                                                     {values.attachmentsProperties[fieldName] ? (
-                                                                        <OpenPreviewButton fileId={values.attachmentsProperties[fieldName].name} />
+                                                                        <OpenPreview fileId={values.attachmentsProperties[fieldName].name} />
                                                                     ) : (
                                                                         <Typography display="inline" variant="h6">
                                                                             -

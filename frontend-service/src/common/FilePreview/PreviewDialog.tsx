@@ -31,7 +31,7 @@ const isVideoOrAudio = (type: string) => ['video', 'audio'].includes(type);
 const isUnsupported = (type: string) => type === 'unsupported';
 const isSpecial = (type: string) => !(isImage(type) || isVideoOrAudio(type) || isUnsupported(type));
 
-const Preview: React.FC<PreviewProps> = ({ open, fileId, data, setOpen, loading, fileName, error }) => {
+const PreviewDialog: React.FC<PreviewProps> = ({ open, fileId, data, setOpen, loading, fileName, error }) => {
     const darkMode = useSelector((state: RootState) => state.darkMode);
     const [numOfPages, setNumOfPages] = useState(1);
     const [currentPage, setCurrentPage] = useState(1);
@@ -268,4 +268,4 @@ const Preview: React.FC<PreviewProps> = ({ open, fileId, data, setOpen, loading,
     );
 };
 
-export { Preview };
+export { PreviewDialog };
