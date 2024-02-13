@@ -1,58 +1,68 @@
+/* eslint-disable class-methods-use-this */
 import { Document, FilterQuery, Types } from 'mongoose';
-import ProcessTemplateModel from './model';
+import config from '../../../config';
+import { escapeRegExp } from '../../../utils';
+import DefaultManager from '../../../utils/express/manager';
+import { getProcessTemplatesByReviewerIdAggregation, transaction } from '../../../utils/mongoose';
+import { ServiceError, TemplateNotFoundError } from '../../error';
+import ProcessInstanceManager from '../../instances/processes/manager';
+import StepTemplateManager from '../steps/manager';
 import {
     IMongoProcessTemplate,
     IMongoProcessTemplatePopulated,
     IProcessSingleProperty,
+    IProcessTemplate,
     IProcessTemplatePopulated,
     IProcessTemplateSearchProperties,
     ProcessTemplateDocument,
 } from './interface';
-import { TemplateNotFoundError, ServiceError } from '../../error';
-import { escapeRegExp } from '../../../utils';
-import ProcessInstanceManager from '../../instances/processes/manager';
-import { getProcessTemplatesByReviewerIdAggregation, transaction } from '../../../utils/mongoose';
-import StepTemplateManager from '../steps/manager';
-import config from '../../../config';
+import ProcessTemplateModel from './model';
 
 type ProcessTemplateType<T extends boolean> = T extends true ? IMongoProcessTemplatePopulated & Document : IMongoProcessTemplate & Document;
 
-class ProcessTemplateManager {
-    static async getProcessTemplateById<T extends boolean = true>(id: string, shouldPopulate: T = true as T): Promise<ProcessTemplateType<T>> {
-        const query = ProcessTemplateModel.findById(id).orFail(new TemplateNotFoundError('process', id)).lean();
+export default class ProcessTemplateManager extends DefaultManager<IProcessTemplate> {
+    private processInstanceManager: ProcessInstanceManager;
+
+    private stepTemplateManager: StepTemplateManager;
+
+    constructor(dbName: string) {
+        super(dbName, ProcessTemplateModel);
+        this.processInstanceManager = new ProcessInstanceManager(dbName);
+        this.stepTemplateManager = new StepTemplateManager(dbName);
+    }
+
+    async getProcessTemplateById<T extends boolean = true>(id: string, shouldPopulate: T = true as T): Promise<ProcessTemplateType<T>> {
+        const query = this.model.findById(id).orFail(new TemplateNotFoundError('process', id)).lean();
         return (shouldPopulate ? query.populate(config.processFields.steps) : query).exec() as Promise<ProcessTemplateType<T>>;
     }
 
-    static async createProcessTemplate(processTemplate: IProcessTemplatePopulated): Promise<IMongoProcessTemplatePopulated> {
+    async createProcessTemplate(processTemplate: IProcessTemplatePopulated): Promise<IMongoProcessTemplatePopulated> {
         const templateId: string = await transaction(async (session) => {
-            const steps = await StepTemplateManager.createStepsTemplates(processTemplate.steps, session);
+            const steps = await this.stepTemplateManager.createStepsTemplates(processTemplate.steps, session);
             const stepsIds = steps.map((step) => step._id);
             // mongoose create doesn't work well with sessions,the first argument must be an array
             // so use insertMany instead and pass array of one process.
-            const [{ _id }] = await ProcessTemplateModel.insertMany([{ ...processTemplate, steps: stepsIds }], { session });
+            const [{ _id }] = await this.model.insertMany([{ ...processTemplate, steps: stepsIds }], { session });
             return _id;
         });
         return this.getProcessTemplateById(templateId);
     }
 
-    static async throwIfProcessTemplateHasInstances(templateId: string) {
-        const processInstances = await ProcessInstanceManager.getProcessesByTemplateId(templateId).catch(() => {});
+    async throwIfProcessTemplateHasInstances(templateId: string) {
+        const processInstances = await this.processInstanceManager.getProcessesByTemplateId(templateId).catch(() => {});
         if (processInstances) throw new ServiceError(400, 'process template still has instances');
     }
 
-    static async deleteProcessTemplate(id: string): Promise<IMongoProcessTemplatePopulated> {
+    async deleteProcessTemplate(id: string): Promise<IMongoProcessTemplatePopulated> {
         const processTemplateToDelete = await this.getProcessTemplateById(id, false);
-        await ProcessTemplateManager.throwIfProcessTemplateHasInstances(id);
+        await this.throwIfProcessTemplateHasInstances(id);
         return transaction(async (session) => {
-            await StepTemplateManager.deleteStepsByIds(processTemplateToDelete.steps, session);
-            return ProcessTemplateModel.findByIdAndDelete(id)
-                .orFail(new TemplateNotFoundError('process', id))
-                .populate(config.processFields.steps)
-                .lean();
+            await this.stepTemplateManager.deleteStepsByIds(processTemplateToDelete.steps, session);
+            return this.model.findByIdAndDelete(id).orFail(new TemplateNotFoundError('process', id)).populate(config.processFields.steps).lean();
         });
     }
 
-    private static validateProperties(
+    private validateProperties(
         updatedProperties: Record<string, IProcessSingleProperty>,
         currProperties: Record<string, IProcessSingleProperty>,
         updatedPropertiesRequired: string[] = [],
@@ -72,8 +82,8 @@ class ProcessTemplateManager {
         });
     }
 
-    private static async throwIfCantUpdateProcessTemplate(updatedTemplate: IProcessTemplatePopulated, currTemplate: IMongoProcessTemplatePopulated) {
-        const processInstances = await ProcessInstanceManager.searchProcesses({ templateIds: [currTemplate._id], limit: 0, skip: 0 });
+    private async throwIfCantUpdateProcessTemplate(updatedTemplate: IProcessTemplatePopulated, currTemplate: IMongoProcessTemplatePopulated) {
+        const processInstances = await this.processInstanceManager.searchProcesses({ templateIds: [currTemplate._id], limit: 0, skip: 0 });
         if (processInstances.length === 0) {
             return;
         }
@@ -99,19 +109,20 @@ class ProcessTemplateManager {
         });
     }
 
-    static async updateTemplate(id: string, updatedData: IMongoProcessTemplatePopulated): Promise<IMongoProcessTemplatePopulated> {
+    async updateTemplate(id: string, updatedData: IMongoProcessTemplatePopulated): Promise<IMongoProcessTemplatePopulated> {
         const currProcessTemplate = await this.getProcessTemplateById(id);
         await this.throwIfCantUpdateProcessTemplate(updatedData, currProcessTemplate);
         return transaction(async (session) => {
-            const stepsIds = await StepTemplateManager.updateStepsTemplates(updatedData.steps, session);
-            return ProcessTemplateModel.findByIdAndUpdate(id, { ...updatedData, steps: stepsIds }, { new: true, session })
+            const stepsIds = await this.stepTemplateManager.updateStepsTemplates(updatedData.steps, session);
+            return this.model
+                .findByIdAndUpdate(id, { ...updatedData, steps: stepsIds }, { new: true, session })
                 .populate(config.processFields.steps)
                 .orFail(new TemplateNotFoundError('process', id))
                 .lean();
         });
     }
 
-    static async searchTemplates({ displayName, ids, limit, skip, reviewerId }: IProcessTemplateSearchProperties) {
+    async searchTemplates({ displayName, ids, limit, skip, reviewerId }: IProcessTemplateSearchProperties) {
         const query: FilterQuery<ProcessTemplateDocument> = {};
 
         if (displayName) query.displayName = { $regex: escapeRegExp(displayName) };
@@ -120,8 +131,6 @@ class ProcessTemplateManager {
             return getProcessTemplatesByReviewerIdAggregation(query, reviewerId, limit, skip);
         }
 
-        return ProcessTemplateModel.find(query, {}, { limit, skip }).populate(config.processFields.steps).lean().exec();
+        return this.model.find(query, {}, { limit, skip }).populate(config.processFields.steps).lean().exec();
     }
 }
-
-export default ProcessTemplateManager;

@@ -1,10 +1,10 @@
-import { connection, ClientSession, Types, Model, FilterQuery } from 'mongoose';
-import { ProcessInstanceDocument } from '../../express/instances/processes/interface';
-import { StepInstanceDocument } from '../../express/instances/steps/interface';
-import ProcessTemplateModel from '../../express/templates/processes/model';
-import { IMongoProcessTemplatePopulated, ProcessTemplateDocument } from '../../express/templates/processes/interface';
+import { ClientSession, FilterQuery, Model, Types, connection } from 'mongoose';
 import config from '../../config';
+import { IProcessInstance, ProcessInstanceDocument } from '../../express/instances/processes/interface';
 import ProcessInstanceModel from '../../express/instances/processes/model';
+import { IStepInstance } from '../../express/instances/steps/interface';
+import { IMongoProcessTemplatePopulated, ProcessTemplateDocument } from '../../express/templates/processes/interface';
+import ProcessTemplateModel from '../../express/templates/processes/model';
 
 export const transaction = async <T, Func extends (session: ClientSession) => Promise<T>>(func: Func): Promise<T> => {
     let ret;
@@ -16,11 +16,7 @@ export const transaction = async <T, Func extends (session: ClientSession) => Pr
     return ret;
 };
 
-export const getTemplateAggregation = async (
-    model: Model<ProcessInstanceDocument> | Model<StepInstanceDocument>,
-    foreignCollectionName: string,
-    id: string,
-) => {
+export const getTemplateAggregation = async (model: Model<IProcessInstance> | Model<IStepInstance>, foreignCollectionName: string, id: string) => {
     return model.aggregate([
         {
             $match: {
@@ -126,7 +122,6 @@ export const searchAllowedProcessInstanceForReviewerAggregation = (
     limit: number,
     skip: number,
 ) => {
-
     const aggregationPipeline: FilterQuery<ProcessInstanceDocument>[] = [
         { $match: query },
         {

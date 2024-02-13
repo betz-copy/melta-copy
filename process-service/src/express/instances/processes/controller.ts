@@ -1,30 +1,34 @@
 import { Request, Response } from 'express';
+import DefaultController from '../../../utils/express/controller';
+import { IProcessInstance } from './interface';
 import ProcessInstanceManager from './manager';
 
-class ProcessInstanceController {
-    static async getProcessById(req: Request, res: Response) {
-        res.json(await ProcessInstanceManager.getProcessById(req.params.id));
+export default class ProcessInstanceController extends DefaultController<IProcessInstance, ProcessInstanceManager> {
+    constructor(dbName: string) {
+        super(new ProcessInstanceManager(dbName));
     }
 
-    static async createProcess(req: Request, res: Response) {
-        res.json(await ProcessInstanceManager.createProcess(req.body));
+    async getProcessById(req: Request, res: Response) {
+        res.json(await this.manager.getProcessById(req.params.id));
     }
 
-    static async deleteProcess(req: Request, res: Response) {
-        res.json(await ProcessInstanceManager.deleteProcess(req.params.id));
+    async createProcess(req: Request, res: Response) {
+        res.json(await this.manager.createProcess(req.body));
     }
 
-    static async updateProcess(req: Request, res: Response) {
-        res.json(await ProcessInstanceManager.updateProcess(req.params.id, req.body));
+    async deleteProcess(req: Request, res: Response) {
+        res.json(await this.manager.deleteProcess(req.params.id));
     }
 
-    static async archiveProcess(req: Request, res: Response) {
-        res.json(await ProcessInstanceManager.archiveProcess(req.params.id, req.body));
+    async updateProcess(req: Request, res: Response) {
+        res.json(await this.manager.updateProcess(req.params.id, req.body));
     }
 
-    static async searchProcesses(req: Request, res: Response) {
-        res.json(await ProcessInstanceManager.searchProcesses(req.body));
+    async archiveProcess(req: Request, res: Response) {
+        res.json(await this.manager.archiveProcess(req.params.id, req.body));
+    }
+
+    async searchProcesses(req: Request, res: Response) {
+        res.json(await this.manager.searchProcesses(req.body));
     }
 }
-
-export default ProcessInstanceController;
