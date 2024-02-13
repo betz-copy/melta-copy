@@ -18,7 +18,7 @@ export const VideoPreview: React.FC<IVideoPreview> = ({ data, maxHeight, maxWidt
                     position: 'relative',
                     right: 0,
                     bottom: 0,
-                    width: maxWidth,
+                    width: '100%',
                     height: maxHeight,
                     backgroundSize: 'cover',
                     overflow: 'hidden',
