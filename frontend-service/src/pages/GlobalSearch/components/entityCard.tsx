@@ -18,6 +18,7 @@ import { FileExtensions } from '../../../interfaces/preview';
 import { getEntityTemplateColor } from '../../../utils/colors';
 import { EntityDates } from '../../Entity/components/EntityDates';
 import { EntityDisableCheckbox } from '../../Entity/components/EntityDisableCheckbox';
+import { v4 as uuid } from 'uuid';
 
 interface EntityCardProps {
     entity: IEntity;
@@ -45,6 +46,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
 }) => {
     const [open, setOpen] = useState<boolean>(expandCard);
     const [fileId, setFileId] = useState<string>();
+    const id = uuid();
 
     useEffect(() => {
         let propertyName: string | undefined;
@@ -64,6 +66,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
 
     const onOpen = () => {
         if (onExpand) onExpand(entity.properties._id);
+        !open && document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
         setOpen(!open);
     };
 
@@ -81,6 +84,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
         <Card
             raised
             variant={variant}
+            id={id}
             sx={{
                 overflowX: 'auto',
                 borderRadius: '15px',
