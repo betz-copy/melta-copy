@@ -8,6 +8,7 @@ const config = {
     mongo: {
         url: env.get('MONGO_URL').required().asString(),
         permissionsCollectionName: env.get('MONGO_PERMISSIONS_COLLECTION_NAME').default('permissions').asString(),
+        usersCollectionName: env.get('MONGO_USERS_COLLECTION_NAME').default('users').asString(),
     },
 };
 

@@ -1,14 +1,14 @@
-import { IPermissionsCompact } from '../permissions/interface/permissionsFormatted';
+import { ICompactPermissions } from '../permissions/interface/permissions';
 
-export interface IUser {
+export interface IBaseUser {
     _id: string;
     externalId: string;
     fullName: string;
+    jobTitle: string;
     preferences: {
         darkMode?: boolean;
-        profilePictureId?: string;
     };
 }
-export interface IUserWithPermissions extends IUser {
-    permissions: IPermissionsCompact;
+export interface IUser extends IBaseUser {
+    permissions: ICompactPermissions;
 }
