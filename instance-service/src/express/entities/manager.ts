@@ -369,6 +369,7 @@ export class EntityManager {
         ignoredRules: IBrokenRule[],
     ) {
         return Neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
+            console.log("UPDATED ENTITY");
             const entity = await runInTransactionAndNormalize(
                 transaction,
                 `MATCH (e {_id: '${id}'}) RETURN e`,
@@ -388,8 +389,9 @@ export class EntityManager {
                 { templateId: entity.templateId, properties: { ...entityProperties, updatedAt: new Date().toISOString() } },
                 entityTemplate,
             );
-
+            console.log("UPDATED PROPERT");
             const ruleFailuresBeforeAction = await EntityManager.runRulesDependOnEntityUpdate(transaction, entity, updatedProperties);
+            console.log("RULES DEPEND ON ENTITIY");
 
             const updatedEntity = await runInTransactionAndNormalize(
                 transaction,
@@ -410,9 +412,10 @@ export class EntityManager {
             );
 
             const ruleFailuresAfterAction = await EntityManager.runRulesDependOnEntityUpdate(transaction, updatedEntity, updatedProperties);
+            console.log("RULES DEPEND ON ENTITIY SECOND");
 
             throwIfActionCausedBrokenRules(ignoredRules, ruleFailuresBeforeAction, ruleFailuresAfterAction);
-
+            console.log("UPDATEDDDD:", updatedEntity)
             return updatedEntity;
         }).catch(EntityManager.throwServiceErrorIfFailedConstraintsValidation); // constraint validation is performed on end of transaction
     }

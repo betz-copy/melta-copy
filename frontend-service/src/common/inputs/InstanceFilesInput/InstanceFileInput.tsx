@@ -1,9 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 import i18next from 'i18next';
 import { Box } from '@mui/material';
 import { Field, FormikProps } from 'formik';
 import FileInput from '../FileInput';
-import { getFileName } from '../../../utils/getFileName';
 import { ProcessStepValues } from '../../wizards/processInstance/ProcessSteps';
 import { ProcessDetailsValues } from '../../wizards/processInstance/ProcessDetails';
 
@@ -12,9 +11,9 @@ type ProcessFormikProps = ProcessStepValues | ProcessDetailsValues;
 interface InstanceFileInputProps {
     fileFieldName: string;
     fieldTemplateTitle: string;
-    setFieldValue: (field: string, value: File | null) => void;
+    setFieldValue: (field: string, value: File[]) => void; // Update to accept an array of files
     required: Boolean;
-    value: File | undefined;
+    value: File[] | undefined; // Update to accept an array of files
     error: string | undefined;
     setFieldTouched: FormikProps<ProcessFormikProps>['setFieldTouched'];
 }
@@ -28,10 +27,6 @@ export const InstanceFileInput: React.FC<InstanceFileInputProps> = ({
     error,
     setFieldTouched,
 }) => {
-    const fileId = value?.name;
-    const initialFileName = fileId && !(value instanceof File) ? getFileName(fileId) : fileId;
-    const [fileName, setFileName] = useState<string | undefined>(initialFileName);
-
     return (
         <Box
             marginTop={1}
@@ -45,21 +40,22 @@ export const InstanceFileInput: React.FC<InstanceFileInputProps> = ({
         >
             <Field
                 validate={(changedValue) => {
-                    return required && !changedValue && i18next.t('validation.requiredFile');
+                    return required && (!changedValue || changedValue.length === 0) && i18next.t('validation.requiredFile');
                 }}
                 name={fileFieldName}
                 component={FileInput}
                 fileFieldName={fileFieldName}
                 inputText={`${fieldTemplateTitle} ${required ? '*' : ''}`}
-                fileName={fileName}
-                onDropFile={(acceptedFile) => {
-                    setFileName(acceptedFile.name);
-                    setFieldValue(fileFieldName, acceptedFile);
+                files={value || []}
+                onDropFiles={(acceptedFiles) => {
+                    console.log(acceptedFiles)
+                    setFieldValue(fileFieldName, acceptedFiles);
                     setFieldTouched(fileFieldName, true, false);
                 }}
-                onDeleteFile={() => {
-                    setFileName(undefined);
-                    setFieldValue(fileFieldName, null);
+                onDeleteFile={(fileIndex) => {
+                    const updatedFiles = [...(value || [])];
+                    updatedFiles.splice(fileIndex, 1);
+                    setFieldValue(fileFieldName, updatedFiles);
                     setFieldTouched(fileFieldName, true, false);
                 }}
                 errorText={error}

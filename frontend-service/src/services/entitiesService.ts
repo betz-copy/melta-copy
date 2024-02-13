@@ -48,6 +48,7 @@ export const updateEntityStatusRequest = async (entityId: string, disabled: bool
 };
 
 export const updateEntityRequest = async (entityId: string, newEntityData: EntityWizardValues, ignoredRules?: IRuleBreach['brokenRules']) => {
+    console.log(entityId, newEntityData);
     const formData = new FormData();
     const [fileToUpload, unchangedFiles] = partition(Object.entries(newEntityData.attachmentsProperties), ([_key, value]) => value instanceof File);
 
@@ -65,7 +66,7 @@ export const updateEntityRequest = async (entityId: string, newEntityData: Entit
     if (ignoredRules) {
         formData.append('ignoredRules', JSON.stringify(ignoredRules));
     }
-
+    console.log(formData);
     const { data } = await axios.put<IEntity>(`${entities}/${entityId}`, formData);
 
     return data;
