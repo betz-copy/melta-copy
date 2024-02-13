@@ -26,4 +26,4 @@ const PermissionSchema = new Schema(
 
 PermissionSchema.index({ userId: 1, type: 1 }, { unique: true });
 
-export const PermissionModel = model<IPermission>(permissionsCollectionName, PermissionSchema);
+export const PermissionsModel = model<IPermission>(permissionsCollectionName, PermissionSchema);

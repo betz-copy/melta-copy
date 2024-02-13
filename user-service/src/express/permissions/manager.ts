@@ -2,7 +2,7 @@ import { transaction } from '../../utils/mongoose';
 import { SinglePermissionOfTypePerUserError } from './errors';
 import { PermissionType } from './interface';
 import { IPermission, ICompactPermissions, ICompactNullablePermissions } from './interface/permissions';
-import { PermissionModel } from './model';
+import { PermissionsModel } from './model';
 
 export class PermissionsManager {
     static async getCompactPermissions(permissions: IPermission[]) {
@@ -17,7 +17,7 @@ export class PermissionsManager {
     }
 
     static async getCompactPermissionsOfUser(userId: string) {
-        const permissions = await PermissionModel.find({ userId }).lean().exec();
+        const permissions = await PermissionsModel.find({ userId }).lean().exec();
         return this.getCompactPermissions(permissions);
     }
 
@@ -26,8 +26,8 @@ export class PermissionsManager {
             const actions = Object.entries(permissionsCompact).map((entry) => {
                 const [type, metadata] = entry as [PermissionType, ICompactNullablePermissions[PermissionType]];
 
-                if (metadata === null) return PermissionModel.deleteOne({ userId, type }, { session }).exec();
-                return PermissionModel.updateOne({ userId, type }, { metadata }, { upsert: true, session }).exec();
+                if (metadata === null) return PermissionsModel.deleteOne({ userId, type }, { session }).exec();
+                return PermissionsModel.updateOne({ userId, type }, { metadata }, { upsert: true, session }).exec();
             });
 
             await Promise.all(actions);
