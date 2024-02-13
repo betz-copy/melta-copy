@@ -15,7 +15,7 @@ const MenuItemContent: React.FC<{ checked: boolean; indeterminate?: boolean; lab
 }) => {
     return (
         <>
-            <Checkbox checked={checked} indeterminate={indeterminate} sx={{ padding: '0px' }} />
+            <Checkbox checked={checked} indeterminate={indeterminate} sx={{ padding: '0px', width: '20px', height: '20px' }} />
             <ListItemText primary={<Typography style={{ fontWeight: '100' }}>{label}</Typography>} />
         </>
     );
@@ -246,9 +246,13 @@ const getOptionsAndGroupsMiniFiltered = <Option extends any, Group extends any>(
 export const MiniFilter: React.FC<{ value: string; onChange: (value: string) => void }> = ({ value, onChange }) => {
     // must wrap with TextField with Grid. no idea why, but it works :O
     return (
-        <Grid container padding="8px 16px 8px 16px">
+        <Grid container padding="8px 16px 8px 16px" gap="10px" width="199px" height="34px" borderRadius="7px">
             <Grid item xs={12}>
                 <TextField
+                    // padding="0px, 10px, 0px, 0px"
+                    // gap="10px"
+                    // width="143px"
+                    // height="16px"
                     value={value}
                     onChange={(e) => onChange(e.target.value)}
                     onKeyDown={(e) => {
@@ -261,6 +265,7 @@ export const MiniFilter: React.FC<{ value: string; onChange: (value: string) => 
                     variant="standard"
                     fullWidth
                 />
+                <img style={{ marginLeft: '10px' }} src="/icons/search-icon.svg" />
             </Grid>
         </Grid>
     );
@@ -334,19 +339,40 @@ const SelectCheckbox = <Option extends any, Group extends any>({
     });
 
     return (
-        <FormControl style={{ background: darkMode ? '#242424' : 'white', borderRadius: '0 7px 7px 0' }}>
+        <FormControl style={{ background: darkMode ? '#EBEFFA' : '#EBEFFA', borderRadius: '7px, 7px, 0px, 0px' }}>
             <Select
                 displayEmpty
                 renderValue={() => title}
                 MenuProps={{
                     PaperProps: {
                         style: {
-                            maxHeight: '230px',
+                            maxHeight: '220px',
+                            maxWidth: '219px',
+                            backgroundColor: '#EBEFFA',
+                            borderRadius: '20px, 0px, 20px, 20px',
+                            padding: '5px, 10px, 5px, 10px',
+                            boxShadow: '-2px 2px 4px 0px #1E27754D',
+                            top: '39px',
                         },
                     },
                 }}
                 size={size}
-                style={toTopBar ? { borderRadius: '7px', backgroundColor: '#EBEFFA' } : { borderRadius: '7px' }}
+                style={
+                    toTopBar
+                        ? {
+                              borderRadius: '7px',
+                              backgroundColor: '#EBEFFA',
+                              maxWidth: '130px',
+                              maxHeight: '35px',
+                              fontFamily: 'Rubik',
+                              color: '#1E2775',
+                              padding: '6.99px, 13.98px, 6.99px, 13.98px',
+                              fontSize: '14px',
+                              lineHeight: '16.59px',
+                              fontWeight: 400,
+                          }
+                        : { borderRadius: '7px' }
+                }
             >
                 <MiniFilter value={miniFilterValue} onChange={setMiniFilterValue} />
                 <ChooseAllMenuItem
