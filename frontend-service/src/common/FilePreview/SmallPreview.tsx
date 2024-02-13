@@ -1,6 +1,6 @@
 import { Card, Grid, Skeleton, SxProps, Typography } from '@mui/material';
 import i18next from 'i18next';
-import React, { useMemo } from 'react';
+import React, { CSSProperties, useMemo } from 'react';
 import { pdfjs } from 'react-pdf';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
@@ -15,8 +15,8 @@ interface IPreviewProps {
     loading: boolean;
     error: boolean;
     fileName: string;
-    maxHeight?: string;
-    maxWidth?: string;
+    maxHeight?: CSSProperties['maxHeight'];
+    maxWidth?: CSSProperties['maxWidth'];
     sx?: SxProps;
 }
 
@@ -55,7 +55,12 @@ const SmallPreview: React.FC<IPreviewProps> = ({ fileId, data, loading, fileName
                 </div>
             );
 
-        if (displayVideoOrAudio(contentType)) return <VideoPreview data={data} maxHeight={maxHeight} maxWidth={'8.1vw'} />;
+        if (displayVideoOrAudio(contentType))
+            return (
+                <div style={{ display: 'flex', justifyContent: 'center', alignContent: 'center', alignItems: 'center', backgroundColor: 'black' }}>
+                    <VideoPreview data={data} maxHeight={maxHeight} maxWidth={maxWidth} />
+                </div>
+            );
 
         if (isUnsupported(contentType) || error) {
             return (

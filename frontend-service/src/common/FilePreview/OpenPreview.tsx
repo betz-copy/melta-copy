@@ -1,5 +1,5 @@
 import { Box, Grid, IconButton, Typography } from '@mui/material';
-import React, { useState } from 'react';
+import React, { CSSProperties, useState } from 'react';
 import { environment } from '../../globals';
 import { FileExtensions } from '../../interfaces/preview';
 import { getFileName } from '../../utils/getFileName';
@@ -14,9 +14,11 @@ interface IOpenPreview {
     targetExtension?: FileExtensions;
     getSmallPreview?: boolean;
     startOpen?: boolean;
+    maxHeight?: CSSProperties['maxHeight'];
+    maxWidth?: CSSProperties['maxWidth'];
 }
 
-const OpenPreview: React.FC<IOpenPreview> = ({ fileId, targetExtension, getSmallPreview = false, startOpen = false }) => {
+const OpenPreview: React.FC<IOpenPreview> = ({ fileId, targetExtension, getSmallPreview = false, startOpen = false, maxHeight, maxWidth }) => {
     const [open, setOpen] = useState(startOpen);
 
     const fileName = getFileName(fileId);
@@ -31,6 +33,8 @@ const OpenPreview: React.FC<IOpenPreview> = ({ fileId, targetExtension, getSmall
                 loading={isLoading}
                 fileName={fileName}
                 error={isError}
+                maxHeight={maxHeight}
+                maxWidth={maxWidth}
                 sx={{ height: '100%', width: '100%' }}
             />
         </Box>

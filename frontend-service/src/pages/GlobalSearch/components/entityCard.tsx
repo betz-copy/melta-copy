@@ -1,7 +1,7 @@
 import { AppRegistration as AppRegistrationIcon } from '@mui/icons-material';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
-import { Box, Card, CardContent, CardHeader, Collapse, Dialog, Grid, IconButton, Skeleton } from '@mui/material';
+import { Box, Card, CardContent, CardHeader, Collapse, Dialog, Grid, IconButton } from '@mui/material';
 import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -14,10 +14,10 @@ import { CreateOrEditEntityDetails } from '../../../common/dialogs/entity/Create
 import { environment } from '../../../globals';
 import { IEntity } from '../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { FileExtensions } from '../../../interfaces/preview';
 import { getEntityTemplateColor } from '../../../utils/colors';
 import { EntityDates } from '../../Entity/components/EntityDates';
 import { EntityDisableCheckbox } from '../../Entity/components/EntityDisableCheckbox';
-import { FileExtensions } from '../../../interfaces/preview';
 
 interface EntityCardProps {
     entity: IEntity;
@@ -186,7 +186,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
 
             {!open && (
                 <Grid container>
-                    <Grid item xs={8} container paddingLeft="4px" height="fit-content" minHeight="37px" alignItems="center">
+                    <Grid item xs={8} container paddingLeft="4px" height="fit-content" minHeight="37px" alignItems="center" sx={{}}>
                         <EntityProperties
                             entityTemplate={entityTemplate}
                             properties={entity.properties}
@@ -198,7 +198,6 @@ const EntityCard: React.FC<EntityCardProps> = ({
                                 flexWrap: 'wrap',
                                 rowGap: '10px',
                                 marginRight: '1rem',
-                                // paddingBottom: '10px',
                                 paddingTop: '10px',
                                 alignItems: 'center',
                                 width: '100%',
@@ -207,7 +206,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
                     </Grid>
                     <Grid item xs={4}>
                         {fileId ? (
-                            <Box sx={{ height: '20vh', width: '8.2vw', marginBottom: '14px' }}>
+                            <Box sx={{ height: '20vh', marginBottom: '14px', marginLeft: '1rem', marginRight: '1rem' }}>
                                 <OpenPreview fileId={fileId!} getSmallPreview startOpen targetExtension={FileExtensions.png} />
                             </Box>
                         ) : (
@@ -247,8 +246,24 @@ const EntityCard: React.FC<EntityCardProps> = ({
                     </Collapse>
                 </Grid>
                 <Grid item xs={1.5}>
-                    {/* <Preview data={data} fileId={fileId} setOpen={setOpen} open={open} loading={isLoading} fileName={fileName} error={isError} /> */}
-                    <Skeleton variant="rectangular" width="95%" height="95%" sx={{ borderRadius: '1rem' }} />
+                    {open ? (
+                        fileId ? (
+                            <Box sx={{ marginRight: '1rem', marginBottom: '1rem' }}>
+                                <OpenPreview
+                                    fileId={fileId}
+                                    getSmallPreview
+                                    startOpen
+                                    targetExtension={FileExtensions.png}
+                                    maxHeight={'24vh'}
+                                    maxWidth={'10vw'}
+                                />
+                            </Box>
+                        ) : (
+                            <img src="/icons/no-file.svg" style={{ height: '20vh', width: '8.2vw', marginBottom: '2px' }} />
+                        )
+                    ) : (
+                        <></>
+                    )}
                 </Grid>
             </Grid>
             <Dialog open={editDialog.isOpen} maxWidth="md">

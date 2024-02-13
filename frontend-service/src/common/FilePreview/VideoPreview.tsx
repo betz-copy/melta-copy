@@ -1,6 +1,4 @@
-import { Box } from '@mui/material';
-import React, { CSSProperties, useRef, useState } from 'react';
-import ReactPlayer from 'react-player';
+import React, { CSSProperties, useRef } from 'react';
 
 interface IVideoPreview {
     data: string;
@@ -9,37 +7,25 @@ interface IVideoPreview {
 }
 
 export const VideoPreview: React.FC<IVideoPreview> = ({ data, maxHeight, maxWidth }) => {
-    const [playing, setPlaying] = useState(false);
-    const playerRef = useRef<ReactPlayer>(null);
+    const playerRef = useRef<HTMLVideoElement>(null);
 
     return (
-        <Box
-            onMouseEnter={() => setPlaying(true)}
-            onClick={() => setPlaying(!playing)}
-            onMouseLeave={() => {
-                playerRef.current?.seekTo(0);
-                setPlaying(false);
-            }}
-            sx={{
-                cursor: 'pointer',
-                borderRadius: '1rem',
-                overflow: 'hidden',
-                objectFit: 'cover',
-                display: 'block',
-            }}
-        >
-            <ReactPlayer
+        <div style={{ maxHeight, maxWidth }}>
+            <video
+                controls
                 ref={playerRef}
-                url={data}
-                playing={playing}
-                loop
                 style={{
-                    maxWidth,
-                    maxHeight,
-                    borderRadius: '1rem',
-                    cursor: 'pointer',
+                    position: 'relative',
+                    right: 0,
+                    bottom: 0,
+                    width: maxWidth,
+                    height: maxHeight,
+                    backgroundSize: 'cover',
+                    overflow: 'hidden',
                 }}
-            />
-        </Box>
+            >
+                <source src={data} />
+            </video>
+        </div>
     );
 };
