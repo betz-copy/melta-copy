@@ -220,6 +220,21 @@ export class InstancesManager {
         return this.createEntityInstance(duplicatedInstanceData, files, user);
     }
 
+    static async viewEntityInstance(id: string, userId: string) {
+        const currentEntity = await InstanceManagerService.getEntityInstanceById(id);
+        const currentEntityTemplate = await EntityTemplateManagerService.getEntityTemplateById(currentEntity.templateId);
+
+
+        await ActivityLogManagerService.createActivityLog({
+            action: 'VIEW_ENTITY',
+            entityId: id,
+            metadata: {},
+            timestamp: new Date(),
+            userId: userId,
+        });
+
+    }
+
     static async updateEntityInstance(
         id: string,
         updatedInstanceData: IEntity,
@@ -242,7 +257,7 @@ export class InstancesManager {
         });
 
         const updatedInstance = await InstanceManagerService.updateEntityInstance(
-            id,
+            id,user.id
             {
                 templateId: updatedInstanceData.templateId,
                 properties: { ...uploadedFilesProperties, ...updatedInstanceData.properties },
