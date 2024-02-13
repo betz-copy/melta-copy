@@ -86,22 +86,13 @@ const EntityCard: React.FC<EntityCardProps> = ({
                 borderRadius: '15px',
                 ...customCardStyle,
                 overflow: 'hidden',
-                // minHeight: open ? undefined : '30vh',
             }}
         >
             <CardHeader
                 style={{ height: '36px', padding: '0px 27px 0px 0px', marginTop: '7px' }}
                 title={
                     <Grid container alignItems="center" flexDirection="row" gap="20px">
-                        <Grid
-                            container
-                            alignItems="center"
-                            justifyContent="center"
-                            width="42px"
-                            height="42px"
-                            // marginTop="27px"
-                            // style={{ borderRadius: '100%' }}
-                        >
+                        <Grid container alignItems="center" justifyContent="center" width="42px" height="42px">
                             {entityTemplate.iconFileId ? (
                                 <CustomIcon color={entityTemplateColor} iconUrl={entityTemplate.iconFileId} height="24px" width="24px" />
                             ) : (
@@ -186,7 +177,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
 
             {!open && (
                 <Grid container>
-                    <Grid item xs={8} container paddingLeft="4px" height="fit-content" minHeight="37px" alignItems="center" sx={{}}>
+                    <Grid item xs={8} container paddingLeft="4px" height="fit-content" minHeight="37px" alignItems="center">
                         <EntityProperties
                             entityTemplate={entityTemplate}
                             properties={entity.properties}

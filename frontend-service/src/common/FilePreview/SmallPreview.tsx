@@ -15,12 +15,12 @@ interface IPreviewProps {
     loading: boolean;
     error: boolean;
     fileName: string;
-    maxHeight?: CSSProperties['maxHeight'];
-    maxWidth?: CSSProperties['maxWidth'];
+    height?: CSSProperties['maxHeight'];
+    width?: CSSProperties['maxWidth'];
     sx?: SxProps;
 }
 
-const SmallPreview: React.FC<IPreviewProps> = ({ fileId, data, loading, fileName, error, maxWidth = '100%', maxHeight = '20vh', sx }) => {
+const SmallPreview: React.FC<IPreviewProps> = ({ fileId, data, loading, fileName, error, width = '100%', height = '20vh', sx }) => {
     const displayImage = (type: string) => ['image', 'document'].includes(type);
     const displayVideoOrAudio = (type: string) => ['video', 'audio'].includes(type);
     const isUnsupported = (type: string) => type === 'unsupported';
@@ -32,21 +32,21 @@ const SmallPreview: React.FC<IPreviewProps> = ({ fileId, data, loading, fileName
     const previewContent = useMemo(() => {
         if (loading || !data)
             return (
-                <div style={{ width: maxWidth, height: maxHeight, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ width: width, height: height, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <Skeleton variant="rectangular" sx={{ borderRadius: '1rem' }} />
                 </div>
             );
 
         if (displayImage(contentType))
             return (
-                <div style={{ maxHeight, display: 'flex', alignItems: 'center', alignContent: 'center' }}>
+                <div style={{ maxHeight: height, display: 'flex', alignItems: 'center', alignContent: 'center' }}>
                     <img
                         src={data}
                         style={{
                             position: 'relative',
                             right: '50%',
                             transform: 'translate(50%)',
-                            maxHeight,
+                            maxHeight: height,
                             objectFit: 'cover',
                             display: 'block',
                             borderRadius: '1rem',
@@ -58,7 +58,7 @@ const SmallPreview: React.FC<IPreviewProps> = ({ fileId, data, loading, fileName
         if (displayVideoOrAudio(contentType))
             return (
                 <div style={{ display: 'flex', justifyContent: 'center', alignContent: 'center', alignItems: 'center', backgroundColor: 'black' }}>
-                    <VideoPreview data={data} maxHeight={maxHeight} maxWidth={maxWidth} />
+                    <VideoPreview data={data} maxHeight={height} maxWidth={width} />
                 </div>
             );
 
@@ -69,8 +69,8 @@ const SmallPreview: React.FC<IPreviewProps> = ({ fileId, data, loading, fileName
                         borderRadius: '1rem',
                         bgcolor: '#4c494c',
                         display: 'grid',
-                        height: maxHeight,
-                        width: maxWidth,
+                        height: height,
+                        width: width,
                     }}
                     elevation={10}
                 >
@@ -82,7 +82,7 @@ const SmallPreview: React.FC<IPreviewProps> = ({ fileId, data, loading, fileName
         }
 
         return (
-            <div style={{ width: maxWidth, height: maxHeight, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ width: width, height: height, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <Skeleton variant="rectangular" sx={{ borderRadius: '1rem' }} />
             </div>
         );

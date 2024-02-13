@@ -2,8 +2,8 @@ import React, { CSSProperties, useRef } from 'react';
 
 interface IVideoPreview {
     data: string;
-    maxHeight?: CSSProperties['maxHeight'];
-    maxWidth?: CSSProperties['maxWidth'];
+    maxHeight: CSSProperties['maxHeight'];
+    maxWidth: CSSProperties['maxWidth'];
 }
 
 export const VideoPreview: React.FC<IVideoPreview> = ({ data, maxHeight, maxWidth }) => {

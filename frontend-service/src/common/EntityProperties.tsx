@@ -113,7 +113,6 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                                 alignItems={textWrap ? 'flex-start' : 'center'}
                                 flexWrap="nowrap"
                                 gap={2}
-                                // justifyContent="space-between"
                                 style={{
                                     direction: 'rtl',
                                     textAlign: 'right',
