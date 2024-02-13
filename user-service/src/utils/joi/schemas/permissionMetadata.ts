@@ -16,9 +16,9 @@ const getPermissionMetadataSchema = (classHierarchy: readonly string[]) => {
     return joi.object(schema);
 };
 
-export const adminPermissionMetadataSchema = getPermissionMetadataSchema([]);
-export const rulesPermissionMetadataSchema = getPermissionMetadataSchema([]);
-export const permissionsPermissionMetadataSchema = getPermissionMetadataSchema([]);
-export const processesPermissionMetadataSchema = getPermissionMetadataSchema([]);
-export const templatesPermissionMetadataSchema = getPermissionMetadataSchema([]);
-export const instancesPermissionMetadataSchema = getPermissionMetadataSchema(IInstancePermissionOrderedHierarchy);
+export const AdminPermissionMetadataSchema = getPermissionMetadataSchema([]);
+export const RulesPermissionMetadataSchema = getPermissionMetadataSchema([]);
+export const PermissionsPermissionMetadataSchema = getPermissionMetadataSchema([]);
+export const ProcessesPermissionMetadataSchema = getPermissionMetadataSchema([]);
+export const TemplatesPermissionMetadataSchema = getPermissionMetadataSchema([]);
+export const InstancesPermissionMetadataSchema = getPermissionMetadataSchema(IInstancePermissionOrderedHierarchy);
