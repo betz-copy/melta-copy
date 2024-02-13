@@ -480,8 +480,8 @@ export class TemplatesManager {
             }
             return newTemplate;
         }, {} as IEntityTemplatePopulated);
-        templateWithoutProperties.properties.properties[values.name].enum = templateEnumFieldValues;
-
+        if (!templateWithoutProperties.properties.properties[values.name].items)
+            templateWithoutProperties.properties.properties[values.name].enum = templateEnumFieldValues;
         try {
             await EntityTemplateManagerService.updateEntityTemplate(id, {
                 ...templateWithoutProperties,
@@ -505,7 +505,8 @@ export class TemplatesManager {
 
             const templateEnumFieldValues = [...values.options];
             templateEnumFieldValues[index] = fieldValue;
-            template.properties.properties[values.name].enum = templateEnumFieldValues;
+            if (!templateWithoutProperties.properties.properties[values.name].items)
+                template.properties.properties[values.name].enum = templateEnumFieldValues;
             const rollBackTemplateWithoutProperties = Object.keys(template).reduce((newTemplate, key) => {
                 if (propertiesToKeep.includes(key)) {
                     // eslint-disable-next-line no-param-reassign
@@ -532,7 +533,7 @@ export class TemplatesManager {
 
     static async deleteEntityFieldValue(id: string, values: CommonFormInputProperties, fieldValue: string) {
         try {
-            const data = await InstanceManagerService.getIfValuefieldIsUsed(id, fieldValue, values.name);
+            const data = await InstanceManagerService.getIfValuefieldIsUsed(id, fieldValue, values.name, values.type);
             const canDeleteFieldValue = data ? false : true;
 
             if (!canDeleteFieldValue) {
@@ -571,7 +572,8 @@ export class TemplatesManager {
                 }
                 return newTemplate;
             }, {} as IEntityTemplatePopulated);
-            templateWithoutProperties.properties.properties[values.name].enum = templateEnumFieldValues;
+            if (!templateWithoutProperties.properties.properties[values.name].items)
+                templateWithoutProperties.properties.properties[values.name].enum = templateEnumFieldValues;
 
             try {
                 // remove the field from the mongo

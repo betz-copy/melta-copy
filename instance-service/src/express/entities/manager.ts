@@ -212,12 +212,19 @@ export class EntityManager {
         }
     }
 
-    static async getIsFieldUsed(id, fieldValue, fieldName){
+    static async getIsFieldUsed(id: string, fieldValue: string, fieldName: string, type: string){
         try {
-            const node = await Neo4jClient.readTransaction(
+            let node;
+            if(type === "enumArray"){
+                node = await Neo4jClient.readTransaction(
+                    `MATCH (n: \`${id}\`) WHERE '${fieldValue}' IN n.${fieldName} RETURN n`,
+                    normalizeReturnedEntity('singleResponse'),
+                );       
+            }
+            else {node = await Neo4jClient.readTransaction(
                 `MATCH (n: \`${id}\`) WHERE n.${fieldName} = '${fieldValue}' RETURN n`,
                 normalizeReturnedEntity('singleResponse'),
-            );        
+            );    }    
 
             return node;
         } catch (error) {
@@ -431,17 +438,26 @@ export class EntityManager {
     }
 
     static async updateListField(id: string, newValue: string, oldValue: string, field: any) {
+        let node;
         try {
-            const node = await Neo4jClient.writeTransaction(
+            if(field.type === "enumArray"){
+                node = await Neo4jClient.writeTransaction(
+                    `MATCH (p: \`${id}\`)
+                    SET p.${field.name} = [val IN p.${field.name} WHERE val <> '${oldValue}'] + ['${newValue}']
+                    RETURN p`,
+                    normalizeReturnedEntity('singleResponse')
+                );
+                               
+            }
+            else { node = await Neo4jClient.writeTransaction(
                 `MATCH (p: \`${id}\`)
                 WHERE p.${field.name} = '${oldValue}'
                 SET p.${field.name} = '${newValue}'
                 RETURN p`,
                 normalizeReturnedEntity('singleResponse'),
-            );
+            );}
 
             if (!node) {
-                console.log('IN NODE:');
                 throw new NotFoundError(`[NEO4J] entity not found`);
             }
 
@@ -449,7 +465,6 @@ export class EntityManager {
         } catch (error) {
             // catch all errors here. no need if.
             if (error instanceof NotFoundError) {
-                console.log(error);
                 throw new NotFoundError(`[NEO4J] entity not found`);
             } else {
                 throw new Error('Change failed');

@@ -56,8 +56,8 @@ class EntityController {
     }
 
     static async getIsFieldUsed(req: Request, res: Response) {
-        const { fieldValue, fieldName } = req.query; 
-        res.json(await EntityManager.getIsFieldUsed(req.params.id, fieldValue, fieldName));
+        const { fieldValue, fieldName, type } = req.query; 
+        res.json(await EntityManager.getIsFieldUsed(req.params.id, fieldValue as string, fieldName as string, type as string));
 
     }
 

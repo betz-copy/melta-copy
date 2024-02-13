@@ -67,15 +67,17 @@ export const updateListFieldRequestSchema = Joi.object({
  * GET /api/instances/entities/getIsFieldUsed/:id
  */
 export const getIfValuefieldIsUsedRequestSchema = Joi.object({
-    query: {},
-    body: {
-        fieldValue: Joi.string().required(),
-        fieldName: Joi.string().required(),
-    },
+    body: {},
     params: {
         id: Joi.string().required(),
     },
+    query: {
+        type: Joi.string().required(),
+        fieldValue: Joi.string().required(),
+        fieldName: Joi.string().required(),
+    },
 });
+
 
 /**
  * DELETE /api/instances/entities/:id?deleteAllRelationships=true
