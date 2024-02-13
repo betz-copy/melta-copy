@@ -5,4 +5,8 @@ export class UsersController {
     static async getUserById(req: Request, res: Response) {
         res.json(UsersManager.getUserById(req.params.id));
     }
+
+    static async updateUserPreferencesById(req: Request, res: Response) {
+        res.json(UsersManager.updateUserPreferencesById(req.params.id, req.body));
+    }
 }
