@@ -325,7 +325,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
                                     <Grid item xs={3} sx={{ display: 'flex', justifyContent: 'flex-end' }}>
                                         <OpenPreview
                                             fileId={fileId}
-                                            img={<img src="/icons/expand-preview-file.svg" style={{ height: '14px' }} />}
+                                            img={<img src="/icons/expand-preview-file.svg" style={{ height: '18px' }} />}
                                             showText={false}
                                         />
                                     </Grid>
