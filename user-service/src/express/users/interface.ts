@@ -12,3 +12,10 @@ export interface IBaseUser {
 export interface IUser extends IBaseUser {
     permissions: ICompactPermissions;
 }
+
+export interface IUserSearchBody {
+    fullName?: string;
+    jobTitle?: string;
+    preferences?: IUser['preferences'];
+    permissions?: IUser['permissions'];
+}
