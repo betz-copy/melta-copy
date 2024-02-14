@@ -5,7 +5,7 @@ import * as logger from 'morgan';
 
 import { once } from 'events';
 import { errorMiddleware } from './error';
-import appRouter from './router';
+import { appRouter } from './router';
 
 class Server {
     private app: express.Application;
