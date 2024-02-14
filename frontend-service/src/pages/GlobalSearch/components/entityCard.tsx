@@ -20,7 +20,6 @@ import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplat
 import { FileExtensions } from '../../../interfaces/preview';
 import { getEntityTemplateColor } from '../../../utils/colors';
 import { getFileName } from '../../../utils/getFileName';
-import { getFileNameWithoutExtension } from '../../../utils/getFileType';
 import { EntityDates } from '../../Entity/components/EntityDates';
 import { EntityDisableCheckbox } from '../../Entity/components/EntityDisableCheckbox';
 
@@ -238,7 +237,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
                                                     color: 'white',
                                                 }}
                                             >
-                                                {fileName && getFileNameWithoutExtension(fileName)}
+                                                {fileName}
                                             </Typography>
                                         </MeltaTooltip>
                                     </Grid>
@@ -290,8 +289,47 @@ const EntityCard: React.FC<EntityCardProps> = ({
                 <Grid item xs={1.5}>
                     {open &&
                         (fileId ? (
-                            <Box sx={{ marginRight: '1rem', marginBottom: '1rem' }}>
+                            <Box sx={{ marginBottom: '14px', marginRight: '1rem' }}>
                                 <OpenSmallPreview fileId={fileId} targetExtension={FileExtensions.png} maxHeight="24vh" maxWidth="10vw" />
+                                <Grid
+                                    container
+                                    sx={{
+                                        position: 'relative',
+                                        bottom: '34px',
+                                        backgroundColor: '#101440',
+                                        height: '34px',
+                                        width: '100%',
+                                        borderBottomLeftRadius: '1rem',
+                                        borderBottomRightRadius: '1rem',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                    }}
+                                >
+                                    <Grid item xs={9}>
+                                        <MeltaTooltip title={fileName}>
+                                            <Typography
+                                                sx={{
+                                                    marginLeft: '6px',
+                                                    fontSize: environment.mainFontSizes.headlineSubTitleFontSize,
+                                                    textOverflow: 'ellipsis',
+                                                    overflow: 'hidden',
+                                                    whiteSpace: 'nowrap',
+                                                    maxWidth: '100%',
+                                                    color: 'white',
+                                                }}
+                                            >
+                                                {fileName}
+                                            </Typography>
+                                        </MeltaTooltip>
+                                    </Grid>
+                                    <Grid item xs={3} sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                                        <OpenPreview
+                                            fileId={fileId}
+                                            img={<img src="/icons/expand-preview-file.svg" style={{ height: '14px' }} />}
+                                            showText={false}
+                                        />
+                                    </Grid>
+                                </Grid>
                             </Box>
                         ) : (
                             <img src="/icons/no-file.svg" style={{ height: '24vh', width: '10vw', marginBottom: '2px' }} />
