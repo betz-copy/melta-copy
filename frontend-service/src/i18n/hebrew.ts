@@ -133,7 +133,7 @@ export default {
         unknownEntity: 'לא ידוע',
         noOptions: 'אין תוצאות',
     },
-    searchLabel: 'חיפוש...',
+    searchLabel: 'חיפוש שם תבנית',
     booleanOptions: { yes: 'כן', no: 'לא' },
     graph: {
         navigateToEntityPage: 'עבור לעמוד הפרט',
