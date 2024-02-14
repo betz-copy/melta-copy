@@ -1,3 +1,4 @@
+/* eslint-disable jsx-a11y/media-has-caption */
 import React, { CSSProperties, useRef } from 'react';
 
 interface IVideoPreview {

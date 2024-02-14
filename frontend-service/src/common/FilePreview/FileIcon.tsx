@@ -1,6 +1,6 @@
-import React from 'react';
+/* eslint-disable jsx-a11y/img-redundant-alt */
+import React, { CSSProperties } from 'react';
 import FilePresentIcon from '@mui/icons-material/FilePresent';
-import { CSSProperties } from 'react';
 
 interface FileIconProps {
     extension: string;

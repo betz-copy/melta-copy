@@ -22,7 +22,6 @@ const OpenSmallPreview: React.FC<IOpenSmallPreview> = ({ fileId, targetExtension
         <Box sx={{ borderRadius: '1rem', border: '2px solid #1E2775', overflow: 'hidden' }}>
             <SmallPreview
                 data={data}
-                fileId={fileId}
                 loading={isLoading}
                 fileName={fileName}
                 error={isError}

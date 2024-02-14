@@ -74,7 +74,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
 
     const onOpen = () => {
         if (onExpand) onExpand(entity.properties._id);
-        !open && document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+        if (!open) document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
         setOpen(!open);
     };
 
@@ -185,7 +185,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
                 }
                 sx={{ '& .MuiCardHeader-action': { marginRight: '0px' } }} // default is -8px
             />
-            <hr style={{ border: '1px solid #EBEFFA', marginLeft: '8px', marginRight: '8px' }}></hr>
+            <hr style={{ border: '1px solid #EBEFFA', marginLeft: '8px', marginRight: '8px' }} />
 
             {!open && (
                 <Grid container>
@@ -288,17 +288,14 @@ const EntityCard: React.FC<EntityCardProps> = ({
                     </Collapse>
                 </Grid>
                 <Grid item xs={1.5}>
-                    {open ? (
-                        fileId ? (
+                    {open &&
+                        (fileId ? (
                             <Box sx={{ marginRight: '1rem', marginBottom: '1rem' }}>
-                                <OpenSmallPreview fileId={fileId} targetExtension={FileExtensions.png} maxHeight={'24vh'} maxWidth={'10vw'} />
+                                <OpenSmallPreview fileId={fileId} targetExtension={FileExtensions.png} maxHeight="24vh" maxWidth="10vw" />
                             </Box>
                         ) : (
                             <img src="/icons/no-file.svg" style={{ height: '24vh', width: '10vw', marginBottom: '2px' }} />
-                        )
-                    ) : (
-                        <></>
-                    )}
+                        ))}
                 </Grid>
             </Grid>
             <Dialog open={editDialog.isOpen} maxWidth="md">

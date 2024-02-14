@@ -10,7 +10,6 @@ import { VideoPreview } from './VideoPreview';
 pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.js';
 
 interface IPreviewProps {
-    fileId: string;
     data: string | undefined;
     loading: boolean;
     error: boolean;
@@ -20,19 +19,17 @@ interface IPreviewProps {
     sx?: SxProps;
 }
 
-const SmallPreview: React.FC<IPreviewProps> = ({ fileId, data, loading, fileName, error, width = '100%', height = '20vh', sx }) => {
+const SmallPreview: React.FC<IPreviewProps> = ({ data, loading, fileName, error, width = '100%', height = '20vh', sx }) => {
     const displayImage = (type: string) => ['image', 'document'].includes(type);
     const displayVideoOrAudio = (type: string) => ['video', 'audio'].includes(type);
     const isUnsupported = (type: string) => type === 'unsupported';
 
     const contentType = getPreviewContentType(fileName);
 
-    if (!fileId) return null;
-
     const previewContent = useMemo(() => {
         if (loading || !data)
             return (
-                <div style={{ width: width, height: height, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ width, height, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <Skeleton variant="rectangular" sx={{ borderRadius: '1rem' }} />
                 </div>
             );
@@ -64,16 +61,7 @@ const SmallPreview: React.FC<IPreviewProps> = ({ fileId, data, loading, fileName
 
         if (isUnsupported(contentType) || error) {
             return (
-                <Card
-                    sx={{
-                        borderRadius: '1rem',
-                        bgcolor: '#4c494c',
-                        display: 'grid',
-                        height: height,
-                        width: width,
-                    }}
-                    elevation={10}
-                >
+                <Card sx={{ borderRadius: '1rem', bgcolor: '#4c494c', display: 'grid', height, width }} elevation={10}>
                     <Typography variant="body1" style={{ color: 'white', marginTop: '10px', fontSize: '20px' }}>
                         {i18next.t('errorPage.preview')}
                     </Typography>
@@ -82,11 +70,11 @@ const SmallPreview: React.FC<IPreviewProps> = ({ fileId, data, loading, fileName
         }
 
         return (
-            <div style={{ width: width, height: height, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ width, height, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <Skeleton variant="rectangular" sx={{ borderRadius: '1rem' }} />
             </div>
         );
-    }, [loading, data]);
+    }, [loading, data]); // eslint-disable-line react-hooks/exhaustive-deps
 
     return (
         <Grid container sx={{ overflowY: 'hidden', overflowX: 'hidden' }} justifyContent="center">
