@@ -64,6 +64,7 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
                         return searchEntitiesResult.entities.map(({ entity }) => entity);
                     }}
                     onQueryError={(error) => {
+                        // eslint-disable-next-line no-console
                         console.log('failed to search entities error:', error);
                         toast.error(i18next.t('entitiesCardView.failedToLoadResults'));
 
