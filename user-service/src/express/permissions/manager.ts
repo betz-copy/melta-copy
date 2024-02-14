@@ -1,6 +1,7 @@
+import { FilterQuery } from 'mongoose';
+import { typedObjectEntries } from '../../utils';
 import { transaction } from '../../utils/mongoose';
 import { SinglePermissionOfTypePerUserError } from './errors';
-import { PermissionType } from './interface';
 import { IPermission, ICompactPermissions, ICompactNullablePermissions } from './interface/permissions';
 import { PermissionsModel } from './model';
 
@@ -23,14 +24,22 @@ export class PermissionsManager {
 
     static async updatePermissionsOfUser(userId: string, permissionsCompact: ICompactNullablePermissions) {
         await transaction(async (session) => {
-            const actions = Object.entries(permissionsCompact).map((entry) => {
-                const [type, metadata] = entry as [PermissionType, ICompactNullablePermissions[PermissionType]];
-
+            const actions = typedObjectEntries(permissionsCompact).map(([type, metadata]) => {
                 if (metadata === null) return PermissionsModel.deleteOne({ userId, type }, { session }).exec();
                 return PermissionsModel.updateOne({ userId, type }, { metadata }, { upsert: true, session }).exec();
             });
 
             await Promise.all(actions);
         });
+    }
+
+    static async searchByCompactPermissions(compactPermissions: ICompactPermissions) {
+        const subQueries: FilterQuery<IPermission>[] = [];
+
+        typedObjectEntries(compactPermissions).forEach(async ([type, metadata]) => {
+            subQueries.push({ type, metadata });
+        });
+
+        return PermissionsModel.find({ $or: subQueries }).lean().exec();
     }
 }
