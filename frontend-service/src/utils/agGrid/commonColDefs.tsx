@@ -1,7 +1,7 @@
 import { ColDef, ICellRendererParams, IDateFilterParams, ISetFilterParams, ValueFormatterParams, ValueGetterFunc } from '@ag-grid-community/core';
 import i18next from 'i18next';
 import React from 'react';
-import { OpenPreview } from '../../common/FilePreview/OpenPreview';
+import OpenPreview from '../../common/FilePreview/OpenPreview';
 import { IEntity } from '../../interfaces/entities';
 import { getDateWithoutTime, getLongDate } from '../date';
 import OverflowWrapper from './OverflowWrapper';

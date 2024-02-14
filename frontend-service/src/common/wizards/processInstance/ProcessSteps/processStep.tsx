@@ -16,7 +16,7 @@ import { updateStepRequest } from '../../../../services/processesService';
 import { pickProcessFieldsPropertiesSchema } from '../../../../utils/pickFieldsPropertiesSchema';
 import { BlueTitle } from '../../../BlueTitle';
 import { ErrorToast } from '../../../ErrorToast';
-import { OpenPreview } from '../../../FilePreview/OpenPreview';
+import OpenPreview from '../../../FilePreview/OpenPreview';
 import { InstanceFileInput } from '../../../inputs/InstanceFilesInput/InstanceFileInput';
 import { JSONSchemaFormik, ajvValidate } from '../../../inputs/JSONSchemaFormik';
 import { EntityReference } from '../EntityReference';

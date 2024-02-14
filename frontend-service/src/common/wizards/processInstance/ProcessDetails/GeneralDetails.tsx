@@ -13,7 +13,7 @@ import { IMongoProcessTemplatePopulated, IProcessSingleProperty, IProcessTemplat
 import { pickProcessFieldsPropertiesSchema } from '../../../../utils/pickFieldsPropertiesSchema';
 import { setInitialStepsObject } from '../../../../utils/processWizard/steps';
 import { BlueTitle } from '../../../BlueTitle';
-import { OpenPreview } from '../../../FilePreview/OpenPreview';
+import OpenPreview from '../../../FilePreview/OpenPreview';
 import { InstanceFileInput } from '../../../inputs/InstanceFilesInput/InstanceFileInput';
 import { JSONSchemaFormik } from '../../../inputs/JSONSchemaFormik';
 import { EntityReference } from '../EntityReference';

@@ -436,7 +436,7 @@ export default {
             createdSuccessfully: 'תהליך נוצר בהצלחה',
             failedToEdit: 'נכשל לערוך תהליך',
             failedToCreate: 'נכשל ליצור תהליך',
-            nextToSteps: 'מעבר לשלביי התהליך',
+            nextToSteps: 'מעבר לשלבי התהליך',
             nextToSummaryDetails: 'מעבר לסיכום התהליך',
             chooseRefEntity: 'בחר יישות לשיוך',
             refEntities: 'ישויות משוייכות',

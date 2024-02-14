@@ -8,7 +8,7 @@ import { IEntity } from '../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { RootState } from '../store';
 import { ColoredEnumChip } from './ColoredEnumChip';
-import { OpenPreview } from './FilePreview/OpenPreview';
+import OpenPreview from './FilePreview/OpenPreview';
 import { MeltaTooltip } from './MeltaTooltip';
 
 pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.js';

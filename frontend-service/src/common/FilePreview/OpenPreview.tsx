@@ -1,44 +1,23 @@
-import { Box, Grid, IconButton, Typography } from '@mui/material';
-import React, { CSSProperties, useState } from 'react';
+import { Grid, IconButton, Typography } from '@mui/material';
+import React, { ReactNode, useState } from 'react';
 import { environment } from '../../globals';
-import { FileExtensions } from '../../interfaces/preview';
 import { getFileName } from '../../utils/getFileName';
 import { getFileExtension, getFileNameWithoutExtension, getPreviewContentType } from '../../utils/getFileType';
 import { useFilePreview } from '../../utils/useFilePreview';
 import FileIcon from './FileIcon';
 import { PreviewDialog } from './PreviewDialog';
-import { SmallPreview } from './SmallPreview';
 
-interface IOpenPreview {
+const OpenPreview: React.FC<{
     fileId: string;
-    targetExtension?: FileExtensions;
-    getSmallPreview?: boolean;
-    startOpen?: boolean;
-    maxHeight?: CSSProperties['maxHeight'];
-    maxWidth?: CSSProperties['maxWidth'];
-}
-
-const OpenPreview: React.FC<IOpenPreview> = ({ fileId, targetExtension, getSmallPreview = false, startOpen = false, maxHeight, maxWidth }) => {
-    const [open, setOpen] = useState(startOpen);
-
+    img?: ReactNode;
+    showText?: boolean;
+}> = ({ fileId, img, showText = true }) => {
     const fileName = getFileName(fileId);
+    const [open, setOpen] = useState(false);
     const contentType = getPreviewContentType(fileName);
-    const { data, refetch, isLoading, isError } = useFilePreview(fileId, contentType, targetExtension);
+    const { data, refetch, isLoading, isError } = useFilePreview(fileId, contentType);
 
-    return getSmallPreview ? (
-        <Box sx={{ borderRadius: '1rem', border: '2px solid #1E2775', overflow: 'hidden' }}>
-            <SmallPreview
-                data={data}
-                fileId={fileId}
-                loading={isLoading}
-                fileName={fileName}
-                error={isError}
-                maxHeight={maxHeight}
-                maxWidth={maxWidth}
-                sx={{ height: '100%', width: '100%' }}
-            />
-        </Box>
-    ) : (
+    return (
         <Grid sx={{ overflow: 'hidden', whiteSpace: 'nowrap', maxWidth: '100%' }}>
             <IconButton
                 onClick={async () => {
@@ -49,24 +28,26 @@ const OpenPreview: React.FC<IOpenPreview> = ({ fileId, targetExtension, getSmall
                 }}
                 sx={{ borderRadius: 10, maxWidth: '100%' }}
             >
-                <FileIcon extension={getFileExtension(fileName)} style={{ height: '18px' }} />
+                {img ?? <FileIcon extension={getFileExtension(fileName)} style={{ height: '18px' }} />}
 
-                <Typography
-                    sx={{
-                        marginRight: '5px',
-                        fontSize: environment.mainFontSizes.headlineSubTitleFontSize,
-                        textOverflow: 'ellipsis',
-                        overflow: 'hidden',
-                        whiteSpace: 'nowrap',
-                        maxWidth: '100%',
-                    }}
-                >
-                    {getFileNameWithoutExtension(fileName)}
-                </Typography>
+                {showText && (
+                    <Typography
+                        sx={{
+                            marginRight: '5px',
+                            fontSize: environment.mainFontSizes.headlineSubTitleFontSize,
+                            textOverflow: 'ellipsis',
+                            overflow: 'hidden',
+                            whiteSpace: 'nowrap',
+                            maxWidth: '100%',
+                        }}
+                    >
+                        {getFileNameWithoutExtension(fileName)}
+                    </Typography>
+                )}
             </IconButton>
             <PreviewDialog data={data} fileId={fileId} setOpen={setOpen} open={open} loading={isLoading} fileName={fileName} error={isError} />
         </Grid>
     );
 };
 
-export { OpenPreview };
+export default OpenPreview;

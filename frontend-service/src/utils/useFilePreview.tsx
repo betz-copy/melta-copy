@@ -4,7 +4,7 @@ import { FileExtensions } from '../interfaces/preview';
 
 export const useFilePreview = (fileId: string, contentType: string, targetExtension?: FileExtensions) => {
     return useQuery(
-        ['preview', fileId],
+        ['preview', fileId, targetExtension],
         () => {
             if (contentType === 'unsupported') {
                 return contentType;
