@@ -1,4 +1,4 @@
-import { Button, CircularProgress, Grid, Tab, Tabs, IconButton, Box } from '@mui/material';
+import { Button, CircularProgress, Grid, Tab, Tabs, IconButton } from '@mui/material';
 import i18next from 'i18next';
 import React, { CSSProperties, useState } from 'react';
 import { toast } from 'react-toastify';
@@ -36,11 +36,9 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
     const [selectedGroup, setSelectedGroup] = useState<keyof typeof groups>('general');
     const [startDate, setStartDate] = useState<Date | null>(null);
     const [endDate, setEndDate] = useState<Date | null>(null);
-    const [openCalenders, setOpenCalenders] = useState<boolean>(false);
+    const [openCalenders, setOpenCalendars] = useState<boolean>(false);
     const [notificationsToShowCheckbox, setNotificationsToShowCheckbox] = useState(notificationsMoreData[selectedGroup]);
-    const [generalClicked, setGeneralClicked] = useState<boolean>(true);
-    const [requestsClicked, setRequestsClicked] = useState<boolean>(false);
-    const [isCheckBoxClicked, setIsCheckBoxClicked] = useState<boolean>(false);
+    const [isCheckBoxClicked, setIsCheckBoxClicked] = useState(false);
 
     const onSetStartDate = (newStartDateInput: Date | null) => {
         setStartDate(newStartDateInput);
@@ -69,7 +67,10 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
             toast.error(i18next.t('notifications.failedSetAllAsSeen', { group: translatedGroupName }));
         },
     });
-
+    const handleGroupChange = (_event, newGroup) => {
+        if (!newGroup) return;
+        setSelectedGroup(newGroup);
+    };
     return (
         <PopperSidebar
             open={open}
@@ -81,22 +82,13 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
             isCheckBoxClicked={isCheckBoxClicked}
         >
             <Grid>
-                <Tabs
-                    value={selectedGroup}
-                    onChange={(_event, newGroup) => {
-                        if (!newGroup) return;
-                        setSelectedGroup(newGroup);
-                    }}
-                    sx={{ height: '3.5rem' }}
-                >
+                <Tabs value={selectedGroup} onChange={handleGroupChange} sx={{ height: '3.5rem' }}>
                     {groupNames.map((groupName) => (
                         <Button
                             key={groupName}
                             value={groupName}
                             onClick={(event) => {
                                 setSelectedGroup(groupName);
-                                setGeneralClicked(!generalClicked);
-                                setRequestsClicked(!requestsClicked);
                                 setNotificationsToShowCheckbox(notificationsMoreData[groupName]);
                                 event.preventDefault();
                             }}
@@ -131,12 +123,12 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                                         boxShadow: '0 0 10px rgba(0, 0, 0, 0.2)',
                                     },
                                 }}
-                                handleClickOnCheckbox={(value) => setIsCheckBoxClicked(value)}
+                                handleCheckboxClick={(value) => setIsCheckBoxClicked(value)}
                                 isDraggableDisabled
                             />
                         </Grid>
                         <Button
-                            onClick={() => setOpenCalenders(!openCalenders)}
+                            onClick={() => setOpenCalendars(!openCalenders)}
                             sx={{
                                 backgroundColor: 'white',
                                 borderRadius: '8px',
@@ -175,7 +167,7 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                             getMyNotificationsRequest({
                                 limit: infiniteScrollPageCount,
                                 step: pageParam,
-                                types: notificationsToShowCheckbox.map((notification) => notification.type),
+                                types: notificationsToShowCheckbox.map(({ type }) => type),
                                 startDate: startDate ?? undefined,
                                 endDate: endDate ?? undefined,
                             })

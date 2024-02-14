@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Card, CardContent, Grid, Typography } from '@mui/material';
+import { Card, CardContent, Grid, Typography, colors } from '@mui/material';
 import i18next from 'i18next';
 import { useMutation } from 'react-query';
 import { LoadingButton } from '@mui/lab';
@@ -68,15 +68,25 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({ notification
                     </Grid>
 
                     <Grid item sx={{ padding: '10px' }}>
-                        {isRuleBreachAlertNotification(notification) && <RuleBreachAlertNotification {...notification.metadata} />}
-                        {isRuleBreachRequestNotification(notification) && <RuleBreachRequestNotification {...notification.metadata} />}
-                        {isRuleBreachResponseNotification(notification) && <RuleBreachResponseNotification {...notification.metadata} />}
-                        {isNewProcessNotification(notification) && <NewProcessNotification {...notification.metadata} />}
-                        {isProcessStatusUpdateNotification(notification) && <ProcessStatusUpdateNotification {...notification.metadata} />}
-                        {isProcessReviewerUpdateNotification(notification) && <ProcessReviewerUpdateNotification {...notification.metadata} />}
+                        {isRuleBreachAlertNotification(notification) && (
+                            <RuleBreachAlertNotification {...notification.metadata} titleColor="#4752B6" />
+                        )}
+                        {isRuleBreachRequestNotification(notification) && (
+                            <RuleBreachRequestNotification {...notification.metadata} titleColor="#4752B6" />
+                        )}
+                        {isRuleBreachResponseNotification(notification) && (
+                            <RuleBreachResponseNotification {...notification.metadata} titleColor="#4752B6" />
+                        )}
+                        {isNewProcessNotification(notification) && <NewProcessNotification {...notification.metadata} titleColor="#4752B6" />}
+                        {isProcessStatusUpdateNotification(notification) && (
+                            <ProcessStatusUpdateNotification {...notification.metadata} titleColor="#4752B6" />
+                        )}
+                        {isProcessReviewerUpdateNotification(notification) && (
+                            <ProcessReviewerUpdateNotification {...notification.metadata} titleColor="#4752B6" />
+                        )}
                         {isDateAboutToExpireNotification(notification) && <DateAboutToExpireNotification {...notification.metadata} />}
-                        {isDeleteProcessNotification(notification) && <DeleteProcessNotification {...notification.metadata} />}
-                        {isArchiveProcessNotification(notification) && <ArchiveProcessNotification {...notification.metadata} />}
+                        {isDeleteProcessNotification(notification) && <DeleteProcessNotification {...notification.metadata} titleColor="#4752B6" />}
+                        {isArchiveProcessNotification(notification) && <ArchiveProcessNotification {...notification.metadata} titleColor="#4752B6" />}
                     </Grid>
 
                     <Grid
@@ -88,8 +98,10 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({ notification
                         onMouseLeave={() => setIsHovered(false)}
                     >
                         <LoadingButton onClick={() => mutate()} loading={isLoading}>
-                            {isHovered && <DoneIcon />}
-                            {i18next.t('notifications.setAsSeen')}
+                            <Grid container>
+                                {isHovered && <DoneIcon />}
+                                {i18next.t('notifications.setAsSeen')}
+                            </Grid>
                         </LoadingButton>
                     </Grid>
                 </Grid>

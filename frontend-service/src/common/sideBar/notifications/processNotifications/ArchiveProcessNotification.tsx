@@ -5,14 +5,14 @@ import { IArchiveProcessNotificationMetadataPopulated, NotificationType } from '
 import { ProcessName } from './ProcessName';
 import { environment } from '../../../../globals';
 
-export const ArchiveProcessNotification: React.FC<IArchiveProcessNotificationMetadataPopulated> = ({ process, isArchived }) => {
+export const ArchiveProcessNotification: React.FC<IArchiveProcessNotificationMetadataPopulated> = ({ process, isArchived, titleColor }) => {
     const { notificationsMoreData } = environment.notifications;
     const color = notificationsMoreData.general.find((notificationData) => notificationData.type === NotificationType.archivedProcess)?.color;
 
     return (
         <Grid container direction="column" spacing={1}>
             <Grid item>
-                <Typography display="inline" color="#4752B6" borderLeft={`4px solid ${color}`} paddingLeft="10px">
+                <Typography display="inline" color={titleColor} borderLeft={`4px solid ${color}`} paddingLeft="10px">
                     {isArchived
                         ? i18next.t('archiveProcessNotification.sendProcessToArchive')
                         : i18next.t('archiveProcessNotification.removeProcessFromArchive')}

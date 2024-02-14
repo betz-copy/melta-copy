@@ -4,7 +4,6 @@ import { NotificationsManager } from './manager';
 class NotificationsController {
     static async getNotifications(req: Request, res: Response) {
         const { limit, step, ...query } = req.query as any;
-        console.log('rest of query', { query });
 
         res.json(await NotificationsManager.getNotifications(limit, step, query));
     }

@@ -4,14 +4,14 @@ import i18next from 'i18next';
 import { IDeleteProcessNotificationMetadataPopulated, NotificationType } from '../../../../interfaces/notifications';
 import { environment } from '../../../../globals';
 
-export const DeleteProcessNotification: React.FC<IDeleteProcessNotificationMetadataPopulated> = ({ processName }) => {
+export const DeleteProcessNotification: React.FC<IDeleteProcessNotificationMetadataPopulated> = ({ processName, titleColor }) => {
     const { notificationsMoreData } = environment.notifications;
     const color = notificationsMoreData.general.find((notificationData) => notificationData.type === NotificationType.deleteProcess)?.color;
 
     return (
         <Grid container direction="column" spacing={1}>
             <Grid item>
-                <Typography display="inline" color="#4752B6" borderLeft={`4px solid ${color}`} paddingLeft="10px">{`${i18next.t(
+                <Typography display="inline" color={titleColor} borderLeft={`4px solid ${color}`} paddingLeft="10px">{`${i18next.t(
                     'deleteProcessNotification.deleteProcessNotification',
                 )} `}</Typography>
             </Grid>

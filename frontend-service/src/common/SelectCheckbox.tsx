@@ -41,7 +41,7 @@ export type SelectCheckboxProps<Option extends any, Group extends any = any> = P
     size?: 'small' | 'medium';
     toTopBar?: boolean;
     overrideSx?: object;
-    handleClickOnCheckbox: (value: boolean) => void;
+    handleCheckboxClick: (value: boolean) => void;
 }>;
 
 const groupByWithInitial = <T extends any>(collection: T[], keys: PropertyKey[], func: (value: T) => PropertyKey) => {
@@ -325,7 +325,7 @@ const SelectCheckbox = <Option extends any, Group extends any>({
     size = 'medium',
     toTopBar,
     overrideSx,
-    handleClickOnCheckbox = (value: boolean) => {},
+    handleCheckboxClick = () => {},
 }: SelectCheckboxProps<Option, Group>) => {
     const [miniFilterValue, setMiniFilterValue] = useState('');
 
@@ -339,7 +339,7 @@ const SelectCheckbox = <Option extends any, Group extends any>({
     });
 
     return (
-        <FormControl style={{ background: darkMode ? '#242424' : 'white', borderRadius: '0 7px 7px 0', width: '190px' }}>
+        <FormControl style={{ background: darkMode ? '#242424' : 'white', borderRadius: '0 7px 7px 0', width: '13rem' }}>
             <Select
                 displayEmpty
                 renderValue={() => title}
@@ -353,10 +353,10 @@ const SelectCheckbox = <Option extends any, Group extends any>({
                 size={size}
                 sx={overrideSx}
                 onOpen={() => {
-                    handleClickOnCheckbox(true);
+                    handleCheckboxClick(true);
                 }}
                 onClose={() => {
-                    handleClickOnCheckbox(false);
+                    handleCheckboxClick(false);
                 }}
                 style={toTopBar ? { borderRadius: '7px', backgroundColor: '#EBEFFA' } : { borderRadius: '7px' }}
             >

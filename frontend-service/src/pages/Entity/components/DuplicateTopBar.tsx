@@ -1,7 +1,6 @@
 import React from 'react';
 import { Box, Typography, useTheme } from '@mui/material';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { lightTheme } from '../../../theme';
 
 const DuplicateTopBar: React.FC<{
     entityTemplate: IMongoEntityTemplatePopulated;

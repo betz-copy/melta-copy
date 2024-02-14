@@ -8,8 +8,7 @@ import { EntityDisableCheckbox } from '../EntityDisableCheckbox';
 import { EntityDates } from '../EntityDates';
 import { RootState } from '../../../../store';
 
-// eslint-disable-next-line import/export
-export const EntityComponentToPrint: React.FC<{
+const EntityComponentToPrint: React.FC<{
     entityTemplate: IMongoEntityTemplatePopulated;
     entity: IEntity;
     options?: { showDates?: boolean };
@@ -34,3 +33,4 @@ export const EntityComponentToPrint: React.FC<{
         </Box>
     );
 };
+export { EntityComponentToPrint };

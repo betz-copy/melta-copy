@@ -7,12 +7,13 @@ import { environment } from '../../../../../globals';
 
 export const ProcessReviewerUpdateNotification: React.FC<IProcessReviewerUpdateNotificationMetadataPopulated> = (metadata) => {
     const { notificationsMoreData } = environment.notifications;
+    const { titleColor } = metadata;
     const color = notificationsMoreData.general.find((notificationData) => notificationData.type === NotificationType.processReviewerUpdate)?.color;
 
     return (
         <Grid container direction="column" spacing={1}>
             <Grid item>
-                <Typography color="#4752B6" borderLeft={`4px solid ${color}`} paddingLeft="10px">
+                <Typography color={titleColor} borderLeft={`4px solid ${color}`} paddingLeft="10px">
                     {i18next.t('processReviewerUpdateNotification.reviewerUpdate')}
                 </Typography>
             </Grid>

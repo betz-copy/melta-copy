@@ -5,14 +5,14 @@ import RuleBreachInfo from '../../../ruleBreanchInfo/RuleBreachInfo';
 import { IRuleBreachAlertNotificationMetadataPopulated, NotificationType } from '../../../../interfaces/notifications';
 import { environment } from '../../../../globals';
 
-export const RuleBreachAlertNotification: React.FC<IRuleBreachAlertNotificationMetadataPopulated> = ({ alert }) => {
+export const RuleBreachAlertNotification: React.FC<IRuleBreachAlertNotificationMetadataPopulated> = ({ alert, titleColor }) => {
     const { notificationsMoreData } = environment.notifications;
     const color = notificationsMoreData.general.find((notificationData) => notificationData.type === NotificationType.ruleBreachAlert)?.color;
 
     return (
         <Grid container direction="column" spacing={1}>
             <Grid item>
-                <Typography component="p" variant="body1" color="#4752B6" borderLeft={`4px solid ${color}`} paddingLeft="10px">
+                <Typography component="p" variant="body1" color={titleColor} borderLeft={`4px solid ${color}`} paddingLeft="10px">
                     {i18next.t('ruleBreachAlertNotification.breach')}
                 </Typography>
                 <Typography>{i18next.t('ruleBreachAlertNotification.payAttention')}</Typography>

@@ -38,8 +38,8 @@ export class NotificationsManager {
         return NotificationModel.findById(notificationId).orFail(new NotificationDoesNotExistError(notificationId)).lean();
     }
 
-    public static async createNotification(notificationsMoreData: Omit<INotification, 'createdAt'>): Promise<INotification> {
-        return NotificationModel.create({ ...notificationsMoreData });
+    public static async createNotification(notificationData: Omit<INotification, 'createdAt'>): Promise<INotification> {
+        return NotificationModel.create({ ...notificationData });
     }
 
     public static async notificationSeen(notificationId: string, viewerId: string): Promise<INotification> {
