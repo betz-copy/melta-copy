@@ -92,16 +92,20 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                                 setNotificationsToShowCheckbox(notificationsMoreData[groupName]);
                                 event.preventDefault();
                             }}
-                            sx={{ width: '100%', color: selectedGroup === groupName ? '#1E2775' : 'inherit' }}
+                            sx={{ width: '100%', color: selectedGroup === groupName ? '#012169' : 'inherit' }}
                         >
                             <img src={`/icons/${groupName}-notification${selectedGroup === groupName ? '-clicked' : ''}.svg`} />
 
-                            <Tab label={i18next.t(`notifications.groups.${groupName}`)} />
+                            <Tab
+                                label={i18next.t(`notifications.groups.${groupName}`)}
+                                // sx={{ color: selectedGroup === groupName ? '#012169' : 'inherit' }}
+                            />
                             <NotificationCount notificationCount={notificationCountDetails.groups[groupName]} />
                         </Button>
                     ))}
                 </Tabs>
             </Grid>
+
             {isLoading ? (
                 <CircularProgress sx={{ marginX: 'auto', marginTop: '1rem' }} />
             ) : (
