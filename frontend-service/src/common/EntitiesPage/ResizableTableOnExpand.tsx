@@ -1,42 +1,40 @@
 import React from 'react';
-import { Resizable } from 'react-resizable';
-import '../../css/resizeTable.css';
+import { ResizableBox } from 'react-resizable';
+import '../../css/resizeTable.css'; // Make sure the CSS is correctly imported for handle visibility
 
-interface ResizableProps {
+interface ResizableBoxProps {
     gridHeight: number;
     setGridHeight: React.Dispatch<React.SetStateAction<number>>;
     minHeight: number;
 }
 
-const Resize: React.FC<ResizableProps> = ({ gridHeight, setGridHeight, minHeight, children }) => {
-    const [resizing, setResizing] = React.useState(false);
+const ResizeBoxComponent = ({ gridHeight, setGridHeight, minHeight, children }) => {
+    const [isResizing, setIsResizing] = React.useState(false);
 
     const onResizeStart = () => {
-        setResizing(true);
+        setIsResizing(true); // This triggers the visual feedback to start
     };
 
-    const onResizeStop = () => {
-        setResizing(false);
-    };
-
-    const onResize = (_event, { size }) => {
+    const onResizeStop = (_event, { size }) => {
         setGridHeight(size.height);
+        setIsResizing(false); // This stops the visual feedback
     };
 
     return (
-        <Resizable
+        <ResizableBox
+            width={Infinity}
             height={gridHeight}
-            onResize={onResize}
+            minConstraints={[Infinity, minHeight]}
+            maxConstraints={[Infinity, Infinity]}
             onResizeStart={onResizeStart}
             onResizeStop={onResizeStop}
-            minConstraints={[null, minHeight]}
             resizeHandles={['s']}
             axis="y"
-            className={resizing ? 'resizing' : ''}
+            className={`box-content ${isResizing ? 'resizing' : ''}`}
         >
-            {children}
-        </Resizable>
+            <div >{children}</div>
+        </ResizableBox>
     );
 };
 
-export default Resize;
+export default ResizeBoxComponent;

@@ -39,7 +39,7 @@ import { LocalStorage } from '../../utils/localStorage';
 import { environment } from '../../globals';
 import useDeepCompareMemo from '../../utils/useDeepCompareMemo';
 import countStatusBarComponent from '../EntitiesPage/CountStatusBarComponent';
-import Resize from '../EntitiesPage/ResizableTableOnExpand';
+import ResizeBoxComponent from '../EntitiesPage/ResizableTableOnExpand';
 import '../../css/resizeTable.css';
 
 const { rowCount, defaultExpandedRowCount } = environment.agGrid;
@@ -461,13 +461,17 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             </Box>
         );
 
-        return rowModelType === 'infinite' ? (
-            <Resize gridHeight={gridHeight} setGridHeight={setGridHeight} minHeight={minHeightTable}>
-                {gridContent}
-            </Resize>
-        ) : (
-            gridContent
-        );
+        const content = useMemo(() => {
+            return rowModelType === 'infinite' ? (
+                <ResizeBoxComponent gridHeight={gridHeight} setGridHeight={setGridHeight} minHeight={minHeightTable}>
+                    {gridContent}
+                </ResizeBoxComponent>
+            ) : (
+                gridContent
+            );
+        }, [rowModelType, gridHeight, setGridHeight, minHeightTable, gridContent]); // Ensure all dependencies are listed
+
+        return <div>{content}</div>;
     },
 );
 

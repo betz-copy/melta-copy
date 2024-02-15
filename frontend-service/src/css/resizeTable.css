@@ -19,10 +19,20 @@
     bottom: 0;
 }
 
-.react-grid {
-    transition: height 0.2s ease;
+.resizing .box-content {
+    opacity: 0;
+    transition: opacity 0.3s ease; 
 }
 
-.react-grid.resizing {
-    transition: margin 0.2s ease;
-} 
+.box-content {
+    transition: opacity 0.3s ease; 
+    background-color: #194aeb0a;
+
+    border-radius: 10px;
+}
+
+
+.resize-handle {
+    background-color: #ccc; 
+    border-radius: 2px;
+}
