@@ -1,4 +1,4 @@
-import { Button, CircularProgress, Grid, Tab, Tabs, IconButton, Typography } from '@mui/material';
+import { Button, CircularProgress, Grid, Tab, Tabs, IconButton } from '@mui/material';
 import i18next from 'i18next';
 import React, { CSSProperties, useState } from 'react';
 import { toast } from 'react-toastify';
@@ -14,6 +14,7 @@ import { NotificationCard } from './NotificationCard';
 import { NotificationCount } from './NotificationCount';
 import DateRange from '../../inputs/DateRange';
 import { SelectCheckbox } from '../../SelectCheckbox';
+import IconButtonWithPopover from '../../IconButtonWithPopover';
 
 const { infiniteScrollPageCount, groups, notificationsMoreData } = environment.notifications;
 
@@ -49,6 +50,7 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
     const filterCleaning = () => {
         onSetStartDate(null);
         onSetEndDate(null);
+        setOpenCalendars(false);
         setNotificationsToShowCheckbox(notificationsMoreData[selectedGroup]);
     };
     const { mutate, isLoading } = useMutation((groupName: keyof typeof groups) => manyNotificationSeenRequest(groups[groupName]), {
@@ -82,14 +84,21 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
             isCheckBoxClicked={isCheckBoxClicked}
         >
             <Grid>
-                <Tabs value={selectedGroup} onChange={handleGroupChange} sx={{ height: '55px' }}>
+                <Tabs value={selectedGroup} onChange={handleGroupChange} sx={{ height: '60px' }}>
                     {groupNames.map((groupName) => (
                         <Tab
                             value={groupName}
                             key={groupName}
                             iconPosition="start"
                             icon={<img src={`/icons/${groupName}-notification${selectedGroup === groupName ? '-clicked' : ''}.svg`} />}
-                            label={i18next.t(`notifications.groups.${groupName}`)}
+                            label={
+                                <Grid container gap="10px" display="flex" alignItems="center" justifyContent="space-around">
+                                    <Grid item> {i18next.t(`notifications.groups.${groupName}`)}</Grid>
+                                    <Grid item>
+                                        <NotificationCount notificationCount={notificationCountDetails.groups[groupName]} />
+                                    </Grid>
+                                </Grid>
+                            }
                             onClick={(event) => {
                                 setSelectedGroup(groupName);
                                 setNotificationsToShowCheckbox(notificationsMoreData[groupName]);
@@ -97,18 +106,12 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                             }}
                             sx={{
                                 width: '50%',
-                                // color: selectedGroup === groupName ? '#012169' : 'inherit',
                                 '&:focus': {
                                     color: '#1E2775',
                                     fontWeight: '700',
                                 },
                             }}
-                        >
-                            {/* <img src={`/icons/${groupName}-notification${selectedGroup === groupName ? '-clicked' : ''}.svg`} />
-                            // sx={{ color: selectedGroup === groupName ? '#012169' : 'inherit' }}
-                            > */}
-                            {/* <NotificationCount notificationCount={notificationCountDetails.groups[groupName]} /> */}
-                        </Tab>
+                        />
                     ))}
                 </Tabs>
             </Grid>
@@ -118,7 +121,7 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
             ) : (
                 <>
                     <Grid sx={{ display: 'flex', justifyContent: 'space-evenly', padding: '15px' }}>
-                        <Grid sx={{ width: '80%' }}>
+                        <Grid sx={{ width: openCalenders ? '100%' : '80%' }}>
                             <SelectCheckbox
                                 title={i18next.t('notifications.notificationType')}
                                 options={notificationsMoreData[selectedGroup]}
@@ -131,6 +134,7 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                                     '& .MuiSelect-select': {
                                         backgroundColor: '#FFFF',
                                         color: '#9398C2',
+                                        borderRadius: '10px',
                                         boxShadow: '0 0 10px rgba(0, 0, 0, 0.2)',
                                         border: 0,
                                     },
@@ -144,27 +148,26 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                                 }}
                                 handleCheckboxClick={(value) => setIsCheckBoxClicked(value)}
                                 isDraggableDisabled
-                                toTopBar
                             />
                         </Grid>
-                        <Button
-                            onClick={() => setOpenCalendars(!openCalenders)}
-                            sx={{
-                                backgroundColor: 'white',
-                                borderRadius: '8px',
-                                display: 'inline-block',
-                                height: '40px',
-                                width: '10px',
-                                padding: '8px',
-                                boxShadow: '0 0 10px rgba(0, 0, 0, 0.2)',
-                            }}
-                        >
-                            <img src="/icons/calendar.svg" />
-                        </Button>
-
-                        <IconButton onClick={filterCleaning} sx={{ borderRadius: 10 }}>
+                        {!openCalenders && (
+                            <Grid
+                                item
+                                sx={{
+                                    backgroundColor: 'white',
+                                    borderRadius: '10px',
+                                    display: 'flex',
+                                    padding: '8px',
+                                    boxShadow: '0 0 10px rgba(0, 0, 0, 0.2)',
+                                }}
+                                onClick={() => setOpenCalendars(!openCalenders)}
+                            >
+                                <img src="/icons/calendar.svg" style={{ height: '20px' }} />
+                            </Grid>
+                        )}
+                        {/* <IconButton onClick={filterCleaning} sx={{ borderRadius: 10 }}>
                             <FilterAltOffIcon />
-                        </IconButton>
+                        </IconButton> */}
                     </Grid>
                     {openCalenders && (
                         <Grid sx={{ padding: '15px' }}>
@@ -177,8 +180,30 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                                     '& input': {
                                         backgroundColor: '#FFFF',
                                     },
+                                    '& .MuiInput-underline:after': {
+                                        border: 0,
+                                    },
+                                    '& .MuiOutlinedInput-root': {
+                                        '& fieldset': {
+                                            border: 0,
+                                        },
+
+                                        '&.Mui-focused fieldset': {
+                                            border: 0,
+                                        },
+                                    },
                                 }}
                             />
+                            <IconButtonWithPopover
+                                iconButtonProps={{ onClick: () => filterCleaning() }}
+                                popoverText={i18next.t('entitiesTableOfTemplate.resetFilters')}
+                                // placement="bottom-start"
+                                // disabled
+                                style={{ borderRadius: '5px' }}
+                            >
+                                {/* <img src="/icons/delete-filters.svg" /> :  */}
+                                <img src="/icons/delete-filters-enable.svg" />
+                            </IconButtonWithPopover>
                         </Grid>
                     )}
                     <InfiniteScroll<INotificationPopulated>

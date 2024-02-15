@@ -11,7 +11,7 @@ export const NotificationCount: React.FC<NotificationCountProps> = ({ notificati
 
     return (
         <Typography
-            borderRadius={25}
+            borderRadius="20px"
             fontSize={12}
             width="24px"
             height="24px"
@@ -19,13 +19,10 @@ export const NotificationCount: React.FC<NotificationCountProps> = ({ notificati
             fontWeight="bold"
             color="white"
             bgcolor="#FF006B"
-            borderRight="0.22rem solid #FF006B"
-            borderLeft="0.32rem solid #FF006B"
-            borderTop="0.15rem solid #FF006B"
-            paddingTop="0.1rem"
-            paddingBottom={0}
-            paddingX={0}
-            align="center"
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
+            lineHeight="15.6px"
             sx={{ userSelect: 'none', direction: 'rtl', ...style }}
         >
             {notificationCount}

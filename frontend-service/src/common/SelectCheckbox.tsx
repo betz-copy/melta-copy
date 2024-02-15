@@ -52,7 +52,6 @@ export type SelectCheckboxProps<Option extends any, Group extends any = any> = P
     isDraggableDisabled?: boolean;
     setOptions?: Dispatch<SetStateAction<Option[]>>;
     size?: 'small' | 'medium';
-    toTopBar?: boolean;
     overrideSx?: object;
     handleCheckboxClick: (value: boolean) => void;
 }>;
@@ -336,7 +335,6 @@ const SelectCheckbox = <Option extends any, Group extends any>({
     isDraggableDisabled = false,
     setOptions,
     size = 'medium',
-    toTopBar,
     overrideSx,
     handleCheckboxClick = () => {},
 }: SelectCheckboxProps<Option, Group>) => {
@@ -364,15 +362,13 @@ const SelectCheckbox = <Option extends any, Group extends any>({
                     },
                 }}
                 size={size}
-                sx={overrideSx}
+                sx={{ ...overrideSx, backgroundColor: 'white' }}
                 onOpen={() => {
                     handleCheckboxClick(true);
                 }}
                 onClose={() => {
                     handleCheckboxClick(false);
                 }}
-                style={toTopBar ? { borderRadius: '7px', backgroundColor: 'red' } : { borderRadius: '7px', border: 'none', backgroundColor: 'red' }}
-                // input={<OutlinedInput style={{ border: 'none' }} />}
             >
                 <MiniFilter value={miniFilterValue} onChange={setMiniFilterValue} />
                 <ChooseAllMenuItem
