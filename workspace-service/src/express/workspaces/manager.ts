@@ -6,9 +6,19 @@ import { IWorkspace, WorkspaceTypes } from './interface';
 import { WorkspacesModel } from './model';
 
 export class WorkspacesManager {
+    static async getFile(path: IWorkspace['path']) {
+        const { dir, name, ext } = parsePath(path);
+
+        return WorkspacesModel.findOne({ path: dir, name, type: ext }).orFail(new PathDoesNotExistError(path)).lean().exec();
+    }
+
+    private static async handleDirExists(path: IWorkspace['path']) {
+        const { type } = await WorkspacesManager.getFile(path);
+        if (type !== WorkspaceTypes.dir) throw new PathIsNotFolderError(path);
+    }
+
     static async getDir(path: IWorkspace['path']) {
-        const { ext } = parsePath(path);
-        if (ext !== WorkspaceTypes.dir) throw new PathIsNotFolderError(path);
+        await WorkspacesManager.handleDirExists(path);
 
         const query: FilterQuery<IWorkspace> = { path };
         if (path === '/') query.name = { $ne: '' };
@@ -16,31 +26,19 @@ export class WorkspacesManager {
         return WorkspacesModel.find(query).lean().exec();
     }
 
-    static async getFile(path: IWorkspace['path']) {
-        const { dir, name, ext } = parsePath(path);
-
-        return WorkspacesModel.findOne({ path: dir, name, type: ext }).orFail(new PathDoesNotExistError(path)).lean().exec();
-    }
-
     static async getById(id: string) {
         return WorkspacesModel.findById(id).orFail(new DocumentNotFoundError(id)).lean().exec();
     }
 
-    private static async handleDirExists(workspace: Omit<IWorkspace, '_id'>) {
-        const { dir, name } = parsePath(workspace.path);
-
-        return WorkspacesModel.findOne({ path: dir, name, type: WorkspaceTypes.dir }).orFail(new PathDoesNotExistError(workspace.path)).lean().exec();
-    }
-
     static async createOne(workspace: Omit<IWorkspace, '_id'>) {
-        await WorkspacesManager.handleDirExists(workspace);
+        await WorkspacesManager.handleDirExists(workspace.path);
 
         return WorkspacesModel.create(workspace);
     }
 
     static async updateOne(id: string, workspace: Omit<IWorkspace, '_id'>) {
         return transaction(async (session) => {
-            await WorkspacesManager.handleDirExists(workspace);
+            await WorkspacesManager.handleDirExists(workspace.path);
 
             if (workspace.type === WorkspaceTypes.dir) {
                 const currentWorkspace = await WorkspacesModel.findById(id).orFail(new DocumentNotFoundError(id)).lean().exec();
