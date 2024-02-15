@@ -1,8 +1,21 @@
-import React, { Fragment, PropsWithChildren, Key, Dispatch, SetStateAction, useState } from 'react';
+import React, { Fragment, PropsWithChildren, Key, Dispatch, SetStateAction, useState, useEffect } from 'react';
 import i18next from 'i18next';
 import lodashGroupBy from 'lodash.groupby';
 import lodashUniqby from 'lodash.uniqby';
-import { FormControl, Grid, Typography, ListItemText, MenuItem, Select, Checkbox, SxProps, Theme, TextField, Divider } from '@mui/material';
+import {
+    FormControl,
+    Grid,
+    Typography,
+    ListItemText,
+    MenuItem,
+    Select,
+    Checkbox,
+    SxProps,
+    Theme,
+    TextField,
+    Divider,
+    OutlinedInput,
+} from '@mui/material';
 import { useSelector } from 'react-redux';
 import { DragDropContext, Draggable, Droppable, DropResult } from 'react-beautiful-dnd';
 import { DragHandle as DragHandleIcon } from '@mui/icons-material';
@@ -339,7 +352,7 @@ const SelectCheckbox = <Option extends any, Group extends any>({
     });
 
     return (
-        <FormControl style={{ background: darkMode ? '#242424' : 'white', borderRadius: '0 7px 7px 0', width: '13rem' }} variant="outlined">
+        <FormControl sx={{ background: darkMode ? '#242424' : 'white', width: '13rem' }}>
             <Select
                 displayEmpty
                 renderValue={() => title}
@@ -358,7 +371,8 @@ const SelectCheckbox = <Option extends any, Group extends any>({
                 onClose={() => {
                     handleCheckboxClick(false);
                 }}
-                style={toTopBar ? { borderRadius: '7px', backgroundColor: '#EBEFFA' } : { borderRadius: '7px' }}
+                style={toTopBar ? { borderRadius: '7px', backgroundColor: 'red' } : { borderRadius: '7px', border: 'none', backgroundColor: 'red' }}
+                // input={<OutlinedInput style={{ border: 'none' }} />}
             >
                 <MiniFilter value={miniFilterValue} onChange={setMiniFilterValue} />
                 <ChooseAllMenuItem

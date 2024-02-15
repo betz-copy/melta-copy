@@ -1,4 +1,4 @@
-import { Button, CircularProgress, Grid, Tab, Tabs, IconButton } from '@mui/material';
+import { Button, CircularProgress, Grid, Tab, Tabs, IconButton, Typography } from '@mui/material';
 import i18next from 'i18next';
 import React, { CSSProperties, useState } from 'react';
 import { toast } from 'react-toastify';
@@ -82,26 +82,33 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
             isCheckBoxClicked={isCheckBoxClicked}
         >
             <Grid>
-                <Tabs value={selectedGroup} onChange={handleGroupChange} sx={{ height: '3.5rem' }}>
+                <Tabs value={selectedGroup} onChange={handleGroupChange} sx={{ height: '55px' }}>
                     {groupNames.map((groupName) => (
-                        <Button
-                            key={groupName}
+                        <Tab
                             value={groupName}
+                            key={groupName}
+                            iconPosition="start"
+                            icon={<img src={`/icons/${groupName}-notification${selectedGroup === groupName ? '-clicked' : ''}.svg`} />}
+                            label={i18next.t(`notifications.groups.${groupName}`)}
                             onClick={(event) => {
                                 setSelectedGroup(groupName);
                                 setNotificationsToShowCheckbox(notificationsMoreData[groupName]);
                                 event.preventDefault();
                             }}
-                            sx={{ width: '100%', color: selectedGroup === groupName ? '#012169' : 'inherit' }}
+                            sx={{
+                                width: '50%',
+                                // color: selectedGroup === groupName ? '#012169' : 'inherit',
+                                '&:focus': {
+                                    color: '#1E2775',
+                                    fontWeight: '700',
+                                },
+                            }}
                         >
-                            <img src={`/icons/${groupName}-notification${selectedGroup === groupName ? '-clicked' : ''}.svg`} />
-
-                            <Tab
-                                label={i18next.t(`notifications.groups.${groupName}`)}
-                                // sx={{ color: selectedGroup === groupName ? '#012169' : 'inherit' }}
-                            />
-                            <NotificationCount notificationCount={notificationCountDetails.groups[groupName]} />
-                        </Button>
+                            {/* <img src={`/icons/${groupName}-notification${selectedGroup === groupName ? '-clicked' : ''}.svg`} />
+                            // sx={{ color: selectedGroup === groupName ? '#012169' : 'inherit' }}
+                            > */}
+                            {/* <NotificationCount notificationCount={notificationCountDetails.groups[groupName]} /> */}
+                        </Tab>
                     ))}
                 </Tabs>
             </Grid>
@@ -125,10 +132,19 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                                         backgroundColor: '#FFFF',
                                         color: '#9398C2',
                                         boxShadow: '0 0 10px rgba(0, 0, 0, 0.2)',
+                                        border: 0,
+                                    },
+                                    '& .MuiOutlinedInput-notchedOutline': { border: 0 },
+                                    '&.MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline': {
+                                        border: 0,
+                                    },
+                                    '&.MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                                        border: 0,
                                     },
                                 }}
                                 handleCheckboxClick={(value) => setIsCheckBoxClicked(value)}
                                 isDraggableDisabled
+                                toTopBar
                             />
                         </Grid>
                         <Button
