@@ -12,6 +12,7 @@ import _ from 'lodash';
 import DeleteIcon from '@mui/icons-material/Delete';
 import UnarchiveIcon from '@mui/icons-material/Unarchive';
 import ArchiveIcon from '@mui/icons-material/Archive';
+import PrintIcon from '@mui/icons-material/Print';
 import { ProcessSideStepper } from './ProcessSideStepper';
 import { BlueTitle } from '../../BlueTitle';
 import ProcessDetails, { ProcessDetailsValues } from './ProcessDetails';
@@ -63,6 +64,7 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({ open, onClose
 
     const [isEditMode, setIsEditMode] = useState<boolean>(false);
     const [isStepEditMode, setIsStepEditMode] = useState(false);
+    const [print, setPrint] = useState(false);
 
     const [isProcessChanged, setIsProcessChanged] = useState<boolean>(false);
     const { isLoading, mutateAsync } = useMutation((processData: ProcessDetailsValues) => updateProcessRequest(processInstance._id, processData), {
@@ -210,6 +212,21 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({ open, onClose
                                 </Grid>
                             </Grid>
                         )}
+                        <Grid>
+                            {activeStep === 2 && (
+                                <MeltaTooltip title={i18next.t('actions.print')}>
+                                    <IconButton
+                                        onClick={async () => {
+                                            setPrint(true);
+                                            // onClose(true);
+                                        }}
+                                    >
+                                        {<PrintIcon color="primary" />}
+                                    </IconButton>
+                                </MeltaTooltip>
+                            )}
+                        </Grid>
+
                         <Grid>
                             {!isEditMode && hasPermissionsToEditDetails && (
                                 <>
