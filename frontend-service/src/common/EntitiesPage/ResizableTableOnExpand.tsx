@@ -1,6 +1,7 @@
 import React from 'react';
 import { ResizableBox } from 'react-resizable';
 import '../../css/resizeTable.css'; // Make sure the CSS is correctly imported for handle visibility
+import { Grid } from '@mui/material';
 
 interface ResizableBoxProps {
     gridHeight: number;
@@ -8,7 +9,7 @@ interface ResizableBoxProps {
     minHeight: number;
 }
 
-const ResizeBoxComponent = ({ gridHeight, setGridHeight, minHeight, children }) => {
+const ResizeBoxComponent: React.FC<ResizableBoxProps> = ({ gridHeight, setGridHeight, minHeight, children }) => {
     const [isResizing, setIsResizing] = React.useState(false);
 
     const onResizeStart = () => {
@@ -32,7 +33,7 @@ const ResizeBoxComponent = ({ gridHeight, setGridHeight, minHeight, children }) 
             axis="y"
             className={`box-content ${isResizing ? 'resizing' : ''}`}
         >
-            <div >{children}</div>
+            <Grid className={`box-content ${isResizing ? 'resizing' : ''}`}>{children}</Grid>
         </ResizableBox>
     );
 };
