@@ -3,7 +3,7 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import { Box, Card, CardContent, CardHeader, Collapse, Dialog, Grid, IconButton, Typography } from '@mui/material';
 import i18next from 'i18next';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { v4 as uuid } from 'uuid';
 import { BlueTitle } from '../../../common/BlueTitle';
@@ -50,6 +50,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
     const [open, setOpen] = useState<boolean>(expandCard);
     const [fileId, setFileId] = useState<string>();
     const [fileName, setFileName] = useState<string>();
+    const cardRef = useRef<HTMLDivElement>(null);
     const id = uuid();
 
     useEffect(() => {
@@ -73,7 +74,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
 
     const onOpen = () => {
         if (onExpand) onExpand(entity.properties._id);
-        if (!open) document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+        if (!open) cardRef.current?.scrollIntoView({ behavior: 'smooth' });
         setOpen(!open);
     };
 
@@ -91,12 +92,13 @@ const EntityCard: React.FC<EntityCardProps> = ({
         <Card
             raised
             variant={variant}
+            ref={cardRef}
             id={id}
             sx={{
                 overflowX: 'auto',
                 borderRadius: '15px',
-                ...customCardStyle,
                 overflow: 'hidden',
+                ...customCardStyle,
             }}
         >
             <CardHeader

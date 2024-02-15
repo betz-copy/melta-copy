@@ -20,8 +20,8 @@ interface IPreviewProps {
 }
 
 const SmallPreview: React.FC<IPreviewProps> = ({ data, loading, fileName, error, width = '100%', height = '20vh', sx }) => {
-    const displayImage = (type: string) => ['image', 'document'].includes(type);
-    const displayVideoOrAudio = (type: string) => ['video', 'audio'].includes(type);
+    const shouldDisplayImage = (type: string) => ['image', 'document'].includes(type);
+    const shouldDisplayVideoOrAudio = (type: string) => ['video', 'audio'].includes(type);
     const isUnsupported = (type: string) => type === 'unsupported';
 
     const contentType = getPreviewContentType(fileName);
@@ -34,7 +34,7 @@ const SmallPreview: React.FC<IPreviewProps> = ({ data, loading, fileName, error,
                 </div>
             );
 
-        if (displayImage(contentType))
+        if (shouldDisplayImage(contentType))
             return (
                 <div style={{ maxHeight: height, display: 'flex', alignItems: 'center', alignContent: 'center' }}>
                     <img
@@ -52,7 +52,7 @@ const SmallPreview: React.FC<IPreviewProps> = ({ data, loading, fileName, error,
                 </div>
             );
 
-        if (displayVideoOrAudio(contentType))
+        if (shouldDisplayVideoOrAudio(contentType))
             return (
                 <div style={{ display: 'flex', justifyContent: 'center', alignContent: 'center', alignItems: 'center', backgroundColor: 'black' }}>
                     <VideoPreview data={data} maxHeight={height} maxWidth={width} />

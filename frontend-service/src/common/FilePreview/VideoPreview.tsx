@@ -1,5 +1,5 @@
 /* eslint-disable jsx-a11y/media-has-caption */
-import React, { CSSProperties, useRef } from 'react';
+import React, { CSSProperties } from 'react';
 
 interface IVideoPreview {
     data: string;
@@ -8,13 +8,10 @@ interface IVideoPreview {
 }
 
 export const VideoPreview: React.FC<IVideoPreview> = ({ data, maxHeight, maxWidth }) => {
-    const playerRef = useRef<HTMLVideoElement>(null);
-
     return (
         <div style={{ maxHeight, maxWidth }}>
             <video
                 controls
-                ref={playerRef}
                 style={{
                     position: 'relative',
                     right: 0,

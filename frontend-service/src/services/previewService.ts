@@ -9,7 +9,7 @@ pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.js';
 const getFilePreviewRequest = async (path: string, needsConversion: boolean, targetExtension?: FileExtensions) => {
     const { data } = await axios.get(`${preview}/${path}/${needsConversion}`, {
         responseType: 'blob',
-        params: targetExtension ? { targetExtension } : {},
+        params: { targetExtension },
     });
     return URL.createObjectURL(data);
 };
