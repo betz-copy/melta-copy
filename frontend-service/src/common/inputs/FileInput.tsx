@@ -23,7 +23,7 @@ const FileInput: React.FC<FileInputProps> = ({ files, onDropFiles, onDropFile, o
         margin: 0,
         padding: 0,
     };
-
+    console.log(files);
     const onDrop = (acceptedFiles: File[] | File) => {
         if (Array.isArray(acceptedFiles) && onDropFiles) {
             onDropFiles(acceptedFiles);
@@ -67,6 +67,7 @@ const FileInput: React.FC<FileInputProps> = ({ files, onDropFiles, onDropFile, o
         alignItems: 'center',
         cursor: 'pointer',
     };
+    console.log(files); // for regular [{name: .....}], mine: [...., .....]
 
     return (
         <Grid container flexDirection="column" justifyContent="space-around" width="100%" ref={inputRef}>

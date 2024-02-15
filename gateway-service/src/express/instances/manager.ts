@@ -36,6 +36,7 @@ export class InstancesManager {
         const fileIds = await uploadFiles(files);
 
         const filePropertiesEntries = files.map((file, index) => {
+            console.log(file, fileIds);
             return [file.fieldname, fileIds[index]];
         });
         return Object.fromEntries(filePropertiesEntries);
@@ -228,7 +229,19 @@ export class InstancesManager {
         userId: string,
         createAlert: boolean = true,
     ) {
+        console.log('FILES:', files);
         const uploadedFilesProperties = await InstancesManager.uploadInstanceFiles(files);
+        console.log('UPLOADED FILE PROPS:', uploadedFilesProperties);
+        const filesToUpload: any = {};
+        //not for image picker
+        Object.entries(uploadedFilesProperties).forEach(([key, value]) => {
+            const [group, _index] = key.split('.');
+            if (!filesToUpload[group]) {
+                filesToUpload[group] = [];
+            }
+            filesToUpload[group].push(value);
+        });
+        console.log('FILES TO UPLOAD', filesToUpload);
         const currentEntity = await InstanceManagerService.getEntityInstanceById(id);
 
         const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(currentEntity.templateId);
@@ -240,7 +253,10 @@ export class InstancesManager {
                 }
             }
         });
-
+        if (filesToUpload?.files) {
+            updatedInstanceData.properties.files = filesToUpload.files;
+        }
+        console.log('SENT TO INASTANCE:', { ...filesToUpload, ...updatedInstanceData.properties });
         const updatedInstance = await InstanceManagerService.updateEntityInstance(
             id,
             {

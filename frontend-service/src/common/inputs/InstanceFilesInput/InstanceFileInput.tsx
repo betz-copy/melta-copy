@@ -48,7 +48,8 @@ export const InstanceFileInput: React.FC<InstanceFileInputProps> = ({
                 inputText={`${fieldTemplateTitle} ${required ? '*' : ''}`}
                 files={value || []}
                 onDropFiles={(acceptedFiles) => {
-                    console.log(acceptedFiles)
+                    console.log(acceptedFiles, value)
+                    console.log(fileFieldName, acceptedFiles)
                     setFieldValue(fileFieldName, acceptedFiles);
                     setFieldTouched(fileFieldName, true, false);
                 }}

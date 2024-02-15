@@ -59,7 +59,9 @@ const FileAttachmentsEdit: React.FC<FileAttachmentsProps> = ({
     required = [],
 }) => (
     <>
-        {Object.entries(templateFileProperties).map(([key, value]) => (
+        {Object.entries(templateFileProperties).map(([key, value]) => {
+            console.log("IN GENERAL DETAILS:", key,value, values.detailsAttachments);
+            (
             <InstanceFileInput
                 key={key}
                 fileFieldName={`detailsAttachments.${key}`}
@@ -74,7 +76,7 @@ const FileAttachmentsEdit: React.FC<FileAttachmentsProps> = ({
                 }
                 setFieldTouched={setFieldTouched}
             />
-        ))}
+        )})}
     </>
 );
 

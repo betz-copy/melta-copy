@@ -158,7 +158,9 @@ const CreateOrEditEntityDetails: React.FC<{
                             variant="h6"
                             style={{ marginBottom: '12px', fontSize: '16px', fontWeight: '600' }}
                         />
-                        {Object.entries(templateFilesProperties).map(([key, value]) => (
+                        {Object.entries(templateFilesProperties).map(([key, value]) => {
+                            console.log("IN CREATE OR EDIT ENTITY DIALOG:", key, value, values.attachmentsProperties);
+                            (
                             <InstanceFileInput
                                 key={key}
                                 fileFieldName={`attachmentsProperties.${key}`}
@@ -169,7 +171,7 @@ const CreateOrEditEntityDetails: React.FC<{
                                 error={errors.attachmentsProperties?.[key] as string}
                                 setFieldTouched={setFieldTouched}
                             />
-                        ))}
+                        )})}
                     </>
                 );
                 return (

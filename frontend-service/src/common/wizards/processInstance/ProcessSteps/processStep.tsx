@@ -182,7 +182,9 @@ export const ProcessStep: FC<ProcessStepProps> = ({
 
                                             {templateFileProperties && isStepEditMode ? (
                                                 <Box>
-                                                    {Object.entries(templateFileProperties).map(([key, value]) => (
+                                                    {Object.entries(templateFileProperties).map(([key, value]) => {
+                                                        console.log("IN PROCESS STEP:", key,value, values.attachmentsProperties);
+                                                        (
                                                         <InstanceFileInput
                                                             key={key}
                                                             fileFieldName={`attachmentsProperties.${key}`}
@@ -197,7 +199,7 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                                             }
                                                             setFieldTouched={setFieldTouched}
                                                         />
-                                                    ))}
+                                                    )})}
                                                 </Box>
                                             ) : (
                                                 templateFileProperties && (

@@ -410,7 +410,6 @@ export class EntityManager {
                     },
                 },
             );
-
             const ruleFailuresAfterAction = await EntityManager.runRulesDependOnEntityUpdate(transaction, updatedEntity, updatedProperties);
             console.log("RULES DEPEND ON ENTITIY SECOND");
 

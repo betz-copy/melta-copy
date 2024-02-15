@@ -10,8 +10,8 @@ import pickBy from 'lodash.pickby';
 import { AxiosError } from 'axios';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IEntity } from '../../../interfaces/entities';
-import { updateEntityRequest } from '../../../services/entitiesService';
-import { EntityWizardValues } from '../../../common/dialogs/entity';
+import { updateEntityRequest, updateEntityRequestForMultiple } from '../../../services/entitiesService';
+import { EntityWizardValues, EntityWizardValuesNew } from '../../../common/dialogs/entity';
 import { JSONSchemaFormik, ajvValidate } from '../../../common/inputs/JSONSchemaFormik';
 import { BlueTitle } from '../../../common/BlueTitle';
 import { filterAttachmentsAndEntitiesRefFromPropertiesSchema } from '../../../utils/pickFieldsPropertiesSchema';
@@ -29,6 +29,7 @@ const EditEntityDetails: React.FC<{
     onSuccessUpdate: (data: IEntity) => void;
     onCancelUpdate: () => void;
 }> = ({ entityTemplate, entity, onSuccessUpdate, onCancelUpdate }) => {
+    console.log(entity, entityTemplate);
     const [updateWithRuleBreachDialogState, setUpdateWithRuleBreachDialogState] = useState<{
         isOpen: boolean;
         brokenRules?: IRuleBreachPopulated['brokenRules'];
@@ -36,17 +37,25 @@ const EditEntityDetails: React.FC<{
         updateEntityFormData?: EntityWizardValues;
     }>({ isOpen: false });
 
-    const templateFilesProperties = pickBy(entityTemplate.properties.properties, (value) => value.format === 'fileId');
+    const templateFilesProperties = pickBy(entityTemplate.properties.properties, (value) => value.type === 'array');
     const templateFileKeys = Object.keys(templateFilesProperties);
     const requiredFilesNames = entityTemplate.properties.required.filter((name) => templateFileKeys.includes(name));
 
     const fieldProperties = pickBy(entity.properties, (_value, key) => !templateFileKeys.includes(key)) as IEntity['properties'];
     const fileIdsProperties = pickBy(entity.properties, (_value, key) => templateFileKeys.includes(key));
-    const fileProperties = mapValues(fileIdsProperties, (value) => ({ name: value })) as Record<string, File>;
-
+    Object.entries(fileIdsProperties).forEach(([key, value]) => {
+        console.log(key, value);
+        fileIdsProperties[key] = value.map((item) => {
+            console.log(item);
+            return {name: item}
+        });
+        
+    });
+    console.log(fileIdsProperties)
+    const fileProperties = fileIdsProperties; //mapValues(fileIdsProperties, (value) => [{ name: value }]) as Record<string, File[]>;
     const { isLoading: isUpdateLoading, mutateAsync: updateMutation } = useMutation(
-        ({ newEntityData, ignoredRules }: { newEntityData: EntityWizardValues; ignoredRules?: IRuleBreach['brokenRules'] }) =>
-            updateEntityRequest(entity.properties._id, newEntityData, ignoredRules),
+        ({ newEntityData, ignoredRules }: { newEntityData: EntityWizardValuesNew; ignoredRules?: IRuleBreach['brokenRules'] }) =>
+        updateEntityRequestForMultiple(entity.properties._id, newEntityData, ignoredRules),
         {
             onSuccess: (data) => {
                 toast.success(i18next.t('wizard.entity.editedSuccefully'));
@@ -71,12 +80,13 @@ const EditEntityDetails: React.FC<{
             },
         },
     );
+    console.log(templateFilesProperties);
 
     return (
         <Formik
             initialValues={{ properties: fieldProperties, attachmentsProperties: fileProperties }}
             onSubmit={async (values) => {
-                console.log({ ...values, template: entityTemplate })
+                console.log("SUBMITTINGGGGG:", { ...values, template: entityTemplate }, values)
                 updateMutation({ newEntityData: { ...values, template: entityTemplate } });
             }}
             validate={(values) => {
@@ -89,6 +99,7 @@ const EditEntityDetails: React.FC<{
             }}
         >
             {({ setFieldValue, values, errors, touched, setFieldTouched, dirty }) => {
+                console.log(values)
                 return (
                     <>
                         <Form>
@@ -127,7 +138,9 @@ const EditEntityDetails: React.FC<{
                                                                 style={{ marginBottom: '12px', fontSize: '16px', fontWeight: '600' }}
                                                             />
                                                             <>
-                                                                {Object.entries(templateFilesProperties).map(([key, value]) => (
+                                                                {Object.entries(templateFilesProperties).map(([key, value]) => {
+                                                                    console.log(key, values, templateFilesProperties); 
+                                                                return(
                                                                     <InstanceFileInput
                                                                         key={key}
                                                                         fileFieldName={`attachmentsProperties.${key}`}
@@ -138,7 +151,7 @@ const EditEntityDetails: React.FC<{
                                                                         error={errors.attachmentsProperties?.[key] as string}
                                                                         setFieldTouched={setFieldTouched}
                                                                     />
-                                                                ))}
+                                                                )})}
                                                             </>
                                                         </Grid>
                                                     </Grid>
@@ -185,6 +198,7 @@ const EditEntityDetails: React.FC<{
                                 isLoadingUpdateEntity={isUpdateLoading}
                                 handleClose={() => setUpdateWithRuleBreachDialogState({ isOpen: false })}
                                 onUpdateEntity={() => {
+                                    console.log(updateWithRuleBreachDialogState.updateEntityFormData);
                                     return updateMutation({
                                         newEntityData: updateWithRuleBreachDialogState.updateEntityFormData!,
                                         ignoredRules: updateWithRuleBreachDialogState.rawBrokenRules!,

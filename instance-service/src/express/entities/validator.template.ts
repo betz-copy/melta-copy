@@ -54,7 +54,7 @@ const getEntityTemplateByIdOrThrowValidationError = async (templateId: string) =
 export const validateEntity = async (req: Request) => {
     console.log("VALIDATE ENTITY");
     const entityTemplate = await getEntityTemplateByIdOrThrowValidationError(req.body.templateId);
-
+    console.log("ENTITYY TEMPLATE:", entityTemplate.properties, req.body.properties.firstFile, req.body);
     const validateFunction = ajv.compile(entityTemplate.properties);
     const valid = validateFunction(req.body.properties);
 

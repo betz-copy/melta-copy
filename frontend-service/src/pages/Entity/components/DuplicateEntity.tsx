@@ -119,7 +119,8 @@ const DuplicateEntity: React.FC<{}> = () => {
                                                                     {i18next.t('wizard.entityTemplate.dragAndDropFile')}
                                                                 </div>
                                                                 <>
-                                                                    {Object.entries(templateFilesProperties).map(([key, value]) => (
+                                                                    {Object.entries(templateFilesProperties).map(([key, value]) => {
+                                                                        console.log("IN DUPLICATE ENTITY:", key,value, values.attachmentsProperties); (
                                                                         <InstanceFileInput
                                                                             key={key}
                                                                             fileFieldName={`attachmentsProperties.${key}`}
@@ -134,7 +135,7 @@ const DuplicateEntity: React.FC<{}> = () => {
                                                                             }
                                                                             setFieldTouched={setFieldTouched}
                                                                         />
-                                                                    ))}
+                                                                    )})}
                                                                 </>
                                                             </Box>
                                                         )}
