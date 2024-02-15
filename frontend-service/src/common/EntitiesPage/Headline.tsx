@@ -24,7 +24,8 @@ export const GlobalSearchBar: React.FC<{
     placeholder?: string;
     size?: BaseTextFieldProps['size'];
     toTopBar?: boolean;
-}> = ({ inputValue, setInputValue, onSearch, borderRadius, placeholder, size, toTopBar = false }) => {
+    height?: string;
+}> = ({ inputValue, setInputValue, onSearch, borderRadius, placeholder, size, toTopBar = false, height }) => {
     const valueForSearchButtonRef = useRef(inputValue ?? '');
     const theme = useTheme();
 
@@ -54,6 +55,7 @@ export const GlobalSearchBar: React.FC<{
             size={size}
             borderRadius={borderRadius}
             toTopBar={toTopBar}
+            height={height}
         />
     );
 };

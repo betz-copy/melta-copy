@@ -28,11 +28,7 @@ const MenuItemContent: React.FC<{ checked: boolean; indeterminate?: boolean; lab
 }) => {
     return (
         <>
-            <Checkbox
-                checked={checked}
-                indeterminate={indeterminate}
-                style={{ padding: '0px', width: '20px', height: '20px', color: '#4752B6', borderRadius: '4px' }}
-            />
+            <Checkbox checked={checked} indeterminate={indeterminate} />
             <ListItemText
                 primary={
                     <Typography
@@ -93,7 +89,7 @@ const SelectOptionsMenuItems = <Option extends any, Group extends any>({
     getOptionId,
     getOptionLabel,
     isDraggableDisabled,
-    menuItemSx = { width: '104px', height: '24px', padding: '0px, 5px, 0px, 0px' },
+    menuItemSx = { width: '100%', height: '24px', padding: '0px, 5px, 0px, 0px' },
 }: {
     options: SelectCheckboxProps<Option, Group>['options'];
     selectedOptions: SelectCheckboxProps<Option, Group>['selectedOptions'];
@@ -214,6 +210,7 @@ const SelectOptionsMenuItemsGrouped = <Option extends any, Group extends any>({
                 return (
                     <Fragment key={getGroupId(group)}>
                         <MenuItem
+                            sx={{ padding: '0px, 5px, 0px, 0px' }}
                             onClick={() => {
                                 setSelectedOptions((prevSelectedOptions) => {
                                     const prevSelectedOptionsOfGroup = prevSelectedOptions.filter(
@@ -317,40 +314,27 @@ export const MiniFilter: React.FC<{ value: string; onChange: (value: string) => 
                             e.stopPropagation();
                         }
                     }}
-                    // style={{
-                    //     padding: '0px, 10px, 0px, 0px',
-                    //     height: '16px',
-                    //     gap: '10px',
-                    //     width: '143px',
-                    //     fontFamily: 'Rubik',
-                    //     fontSize: '12px',
-                    //     fontWeight: '400',
-                    //     lineHeight: '16px',
-                    //     letterSpacing: '0em',
-                    //     color: '#8D8D8E',
-                    //     textAlign: 'right',
-                    // }}
                     style={{
                         gap: '10px',
                         background: '#FFFFFF',
                         borderRadius: '7px',
                         width: '199px',
-                        minHeight: '34px',
+                        height: '34px',
                     }}
                     placeholder={i18next.t('searchLabel')}
                     fullWidth
                     InputProps={{
+                        style: {
+                            height: '34px',
+                        },
                         endAdornment: (
                             <InputAdornment
                                 position="end"
                                 style={{
-                                    minWidth: '143px',
-                                    maxWidth: '143px',
-                                    width: '143px',
-                                    height: '16px',
-                                    minHeight: '16px',
-                                    maxHeight: '16px',
                                     margin: 'auto',
+                                    maxHeight: '34px',
+                                    minHeight: '34px',
+                                    height: '34px',
                                     borderRadius: '7px',
                                     padding: '0px, 10px, 0px, 0px',
                                     fontFamily: 'Rubik',
@@ -361,6 +345,8 @@ export const MiniFilter: React.FC<{ value: string; onChange: (value: string) => 
                                     color: '#8D8D8E',
                                     textAlign: 'right',
                                     gap: '10px',
+                                    boxSizing: 'border-box',
+                                    font: 'webkit-control',
                                 }}
                             >
                                 <Divider
@@ -411,6 +397,7 @@ const ChooseAllMenuItem = <Option extends any, Group extends any>({
 }) => {
     return (
         <MenuItem
+            sx={{ padding: '0px, 5px, 0px, 0px' }}
             onClick={() => {
                 const prevChecked = selectedOptionsFiltered.length === optionsFiltered.length;
                 if (prevChecked) {
@@ -433,7 +420,7 @@ const ChooseAllMenuItem = <Option extends any, Group extends any>({
         >
             <Grid
                 style={{
-                    width: '16px',
+                    width: '24px',
                     height: '24px',
                     gap: '2px',
                 }}
@@ -480,16 +467,19 @@ const SelectCheckbox = <Option extends any, Group extends any>({
                 MenuProps={{
                     PaperProps: {
                         style: {
-                            maxHeight: '180px',
-                            width: '219px',
+                            height: '180px',
+                            minWidth: '219px',
                             backgroundColor: '#EBEFFA',
                             borderRadius: '20px, 0px, 20px, 20px',
                             padding: '5px, 10px, 5px, 10px',
                             boxShadow: '-2px 2px 4px 0px #1E27754D',
                             top: '39px',
                             gap: '15px',
-                            right: '125px',
                         },
+                    },
+                    transformOrigin: {
+                        vertical: 'top',
+                        horizontal: 162,
                     },
                 }}
                 size={size}
@@ -504,7 +494,6 @@ const SelectCheckbox = <Option extends any, Group extends any>({
                               color: '#1E2775',
                               padding: '6.99px, 13.98px, 6.99px, 13.98px',
                               fontSize: '14px',
-                              lineHeight: '16.59px',
                               fontWeight: 400,
                           }
                         : {
@@ -512,21 +501,6 @@ const SelectCheckbox = <Option extends any, Group extends any>({
                           }
                 }
             >
-                {/* <Grid
-                    style={{
-                        borderRadius: '7px',
-                        backgroundColor: '#EBEFFA',
-                        maxWidth: '130px',
-                        maxHeight: '40px',
-                        fontFamily: 'Rubik',
-                        color: '#1E2775',
-                        padding: '6.99px, 13.98px, 6.99px, 13.98px',
-                        fontSize: '14px',
-                        lineHeight: '16.59px',
-                        fontWeight: 400,
-                        left: '89px',
-                    }}
-                /> */}
                 <MiniFilter value={miniFilterValue} onChange={setMiniFilterValue} />
                 <ChooseAllMenuItem
                     selectedOptionsFiltered={selectedOptionsFiltered}

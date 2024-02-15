@@ -64,6 +64,17 @@ export const lightTheme = createTheme({
                 },
             },
         },
+        MuiCheckbox: {
+            defaultProps: {},
+            styleOverrides: {
+                root: {
+                    '& .MuiSvgIcon-root': {
+                        color: '#4752B6',
+                        borderRadius: '4px',
+                    },
+                },
+            },
+        },
     },
 });
 
