@@ -5,12 +5,11 @@ import { useMutation } from 'react-query';
 import i18next from 'i18next';
 import { toast } from 'react-toastify';
 import { Form, Formik } from 'formik';
-import mapValues from 'lodash.mapvalues';
 import pickBy from 'lodash.pickby';
 import { AxiosError } from 'axios';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IEntity } from '../../../interfaces/entities';
-import { updateEntityRequest, updateEntityRequestForMultiple } from '../../../services/entitiesService';
+import { updateEntityRequestForMultiple } from '../../../services/entitiesService';
 import { EntityWizardValues, EntityWizardValuesNew } from '../../../common/dialogs/entity';
 import { JSONSchemaFormik, ajvValidate } from '../../../common/inputs/JSONSchemaFormik';
 import { BlueTitle } from '../../../common/BlueTitle';
@@ -29,7 +28,6 @@ const EditEntityDetails: React.FC<{
     onSuccessUpdate: (data: IEntity) => void;
     onCancelUpdate: () => void;
 }> = ({ entityTemplate, entity, onSuccessUpdate, onCancelUpdate }) => {
-    console.log(entity, entityTemplate);
     const [updateWithRuleBreachDialogState, setUpdateWithRuleBreachDialogState] = useState<{
         isOpen: boolean;
         brokenRules?: IRuleBreachPopulated['brokenRules'];
@@ -37,21 +35,25 @@ const EditEntityDetails: React.FC<{
         updateEntityFormData?: EntityWizardValues;
     }>({ isOpen: false });
 
-    const templateFilesProperties = pickBy(entityTemplate.properties.properties, (value) => value.type === 'array');
+    const templateFilesProperties = pickBy(entityTemplate.properties.properties, (value) => (value.type === 'array' && value.items?.format==="fileId")); // || value.format === "fileId");
+    console.log(templateFilesProperties)
     const templateFileKeys = Object.keys(templateFilesProperties);
     const requiredFilesNames = entityTemplate.properties.required.filter((name) => templateFileKeys.includes(name));
 
     const fieldProperties = pickBy(entity.properties, (_value, key) => !templateFileKeys.includes(key)) as IEntity['properties'];
     const fileIdsProperties = pickBy(entity.properties, (_value, key) => templateFileKeys.includes(key));
     Object.entries(fileIdsProperties).forEach(([key, value]) => {
-        console.log(key, value);
-        fileIdsProperties[key] = value.map((item) => {
-            console.log(item);
-            return {name: item}
-        });
+        console.log(key, value)
+        if(Array.isArray(value)){
+            fileIdsProperties[key] = value?.map((item) => {
+                return {name: item}
+            });
+        }
+        else {
+            fileIdsProperties[key] =  {name: value};
+        }
         
     });
-    console.log(fileIdsProperties)
     const fileProperties = fileIdsProperties; //mapValues(fileIdsProperties, (value) => [{ name: value }]) as Record<string, File[]>;
     const { isLoading: isUpdateLoading, mutateAsync: updateMutation } = useMutation(
         ({ newEntityData, ignoredRules }: { newEntityData: EntityWizardValuesNew; ignoredRules?: IRuleBreach['brokenRules'] }) =>
@@ -80,13 +82,13 @@ const EditEntityDetails: React.FC<{
             },
         },
     );
-    console.log(templateFilesProperties);
 
+    console.log(entityTemplate, filterAttachmentsAndEntitiesRefFromPropertiesSchema(entityTemplate.properties));
     return (
         <Formik
             initialValues={{ properties: fieldProperties, attachmentsProperties: fileProperties }}
             onSubmit={async (values) => {
-                console.log("SUBMITTINGGGGG:", { ...values, template: entityTemplate }, values)
+                console.log(values)
                 updateMutation({ newEntityData: { ...values, template: entityTemplate } });
             }}
             validate={(values) => {
@@ -99,7 +101,6 @@ const EditEntityDetails: React.FC<{
             }}
         >
             {({ setFieldValue, values, errors, touched, setFieldTouched, dirty }) => {
-                console.log(values)
                 return (
                     <>
                         <Form>
@@ -139,7 +140,7 @@ const EditEntityDetails: React.FC<{
                                                             />
                                                             <>
                                                                 {Object.entries(templateFilesProperties).map(([key, value]) => {
-                                                                    console.log(key, values, templateFilesProperties); 
+                                                                console.log(templateFilesProperties)
                                                                 return(
                                                                     <InstanceFileInput
                                                                         key={key}

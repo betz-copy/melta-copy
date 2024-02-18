@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import i18next from 'i18next';
 import { Box } from '@mui/material';
 import { Field, FormikProps } from 'formik';
 import FileInput from '../FileInput';
 import { ProcessStepValues } from '../../wizards/processInstance/ProcessSteps';
 import { ProcessDetailsValues } from '../../wizards/processInstance/ProcessDetails';
+import { getFileName } from '../../../utils/getFileName';
 
 type ProcessFormikProps = ProcessStepValues | ProcessDetailsValues;
 
@@ -27,6 +28,8 @@ export const InstanceFileInput: React.FC<InstanceFileInputProps> = ({
     error,
     setFieldTouched,
 }) => {
+    const [filesName, setFilesName] = useState<string[]>(value ? value.map(file => getFileName(file.name)) : []);
+        
     return (
         <Box
             marginTop={1}
@@ -42,20 +45,20 @@ export const InstanceFileInput: React.FC<InstanceFileInputProps> = ({
                 validate={(changedValue) => {
                     return required && (!changedValue || changedValue.length === 0) && i18next.t('validation.requiredFile');
                 }}
-                name={fileFieldName}
+                name={filesName}
                 component={FileInput}
                 fileFieldName={fileFieldName}
                 inputText={`${fieldTemplateTitle} ${required ? '*' : ''}`}
-                files={value || []}
+                files={filesName || []}
                 onDropFiles={(acceptedFiles) => {
-                    console.log(acceptedFiles, value)
-                    console.log(fileFieldName, acceptedFiles)
                     setFieldValue(fileFieldName, acceptedFiles);
+                    setFilesName(acceptedFiles.map((file) => file.name))
                     setFieldTouched(fileFieldName, true, false);
                 }}
                 onDeleteFile={(fileIndex) => {
                     const updatedFiles = [...(value || [])];
                     updatedFiles.splice(fileIndex, 1);
+                    // setFileName
                     setFieldValue(fileFieldName, updatedFiles);
                     setFieldTouched(fileFieldName, true, false);
                 }}

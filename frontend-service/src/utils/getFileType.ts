@@ -1,7 +1,6 @@
 import { environment } from '../globals';
 
 export const getFileExtension = (name: string) => {
-    console.log('NAME:', name);
     return name.match(/\.([^.]*)$/)?.pop() || '';
 };
 

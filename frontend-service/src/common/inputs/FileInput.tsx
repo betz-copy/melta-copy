@@ -6,7 +6,7 @@ import FileIcon from '../FilePreview/FileIcon';
 import { getFileExtension } from '../../utils/getFileType';
 
 interface FileInputProps {
-    files: File[];
+    files: string[];
     onDropFiles?: (acceptedFiles: File[]) => void;
     onDropFile?: (acceptedFiles: File) => void;
     onDeleteFile: (fileIndex: number) => void;
@@ -23,7 +23,6 @@ const FileInput: React.FC<FileInputProps> = ({ files, onDropFiles, onDropFile, o
         margin: 0,
         padding: 0,
     };
-    console.log(files);
     const onDrop = (acceptedFiles: File[] | File) => {
         if (Array.isArray(acceptedFiles) && onDropFiles) {
             onDropFiles(acceptedFiles);
@@ -67,8 +66,6 @@ const FileInput: React.FC<FileInputProps> = ({ files, onDropFiles, onDropFile, o
         alignItems: 'center',
         cursor: 'pointer',
     };
-    console.log(files); // for regular [{name: .....}], mine: [...., .....]
-
     return (
         <Grid container flexDirection="column" justifyContent="space-around" width="100%" ref={inputRef}>
             <Grid item>
@@ -82,7 +79,7 @@ const FileInput: React.FC<FileInputProps> = ({ files, onDropFiles, onDropFile, o
                         <Grid key={index} item container justifyContent="space-between" alignItems="center" width="100%">
                             <Grid item container xs={1} justifyContent="center" paddingTop="5px">
                                 <Grid item>
-                                    <FileIcon extension={getFileExtension(file.name)} style={{ height: '20px' }} />
+                                    <FileIcon extension={getFileExtension(file)} style={{ height: '20px' }} />
                                 </Grid>
                             </Grid>
                             <Grid item xs={10}>
@@ -94,7 +91,7 @@ const FileInput: React.FC<FileInputProps> = ({ files, onDropFiles, onDropFile, o
                                         maxWidth: inputWidth * 0.7,
                                     }}
                                 >
-                                    {file.name}
+                                    {file}
                                 </Typography>
                             </Grid>
                             <Grid item container xs={1} justifyContent="flex-end">

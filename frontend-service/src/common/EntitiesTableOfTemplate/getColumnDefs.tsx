@@ -10,6 +10,7 @@ import {
     dateColDef,
     enumArrayColDef,
     enumColDef,
+    enumFilesColDef,
     fileColDef,
     numberColDef,
     regexColDef,
@@ -89,6 +90,16 @@ export const getColumnDefs = <Data extends any = IEntity>({
                 hideColumn,
                 hideField,
             );
+            console.log(propertyTemplate, property)
+        if (propertyTemplate.items){
+            return enumFilesColDef(
+                property,
+                valueGetter,
+                {title: propertyTemplate.title},
+                defaultColumnWidths[property],
+                rowHeight,
+            )
+        }
         return stringColDef(property, valueGetter, propertyTemplate, defaultColumnWidths[property], hideColumn, hideField);
     });
     columnDefs.push(

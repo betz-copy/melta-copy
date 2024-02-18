@@ -7,7 +7,10 @@ export const filterAttachmentsAndEntitiesRefFromPropertiesSchema = (
 ): IMongoEntityTemplatePopulated['properties'] => {
     return {
         ...schema,
-        properties: pickBy(schema.properties, (value) => value.format !== 'fileId' && value.format !== 'entityReference'),
+        properties: pickBy(
+            schema.properties,
+            (value) => value.format !== 'fileId' && value.format !== 'entityReference' && value.items?.format !== 'fileId',
+        ),
         required: schema.required.filter(
             (requiredKey) => schema.properties[requiredKey].format !== 'fileId' && schema.properties[requiredKey].format !== 'entityReference',
         ),

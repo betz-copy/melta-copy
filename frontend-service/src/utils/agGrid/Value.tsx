@@ -9,6 +9,7 @@ const Value: React.FC<{
     color?: string;
     isNumberField?: boolean;
 }> = ({ hideValue, value, color, isNumberField }) => {
+    console.log(value)
     const [hideField, setHideField] = React.useState(true);
     const [anchorEl, setAnchorEl] = React.useState<HTMLDivElement | null>(null);
 

@@ -7,6 +7,7 @@ import { getDateWithoutTime, getLongDate } from '../date';
 import { IEntity } from '../../interfaces/entities';
 import { agGridLocaleText } from './agGridLocaleText';
 import OverflowWrapper from './OverflowWrapper';
+import { getFileName } from '../getFileName';
 
 export const numberColDef = <Data extends any = IEntity>(
     field: string,
@@ -195,6 +196,53 @@ export const enumArrayColDef = <Data extends any = IEntity>(
         hide: hideColumn,
     };
 };
+
+export const enumFilesColDef = <Data extends any = IEntity>(
+    field: string,
+    valueGetter: ValueGetterFunc<Data>,
+    value: { title: string },
+    hardcodedWidth: number | undefined,
+    rowHeight: number,
+    enumColorOptions?: Record<string, string>,
+    hideColumn = false,
+    hideValue = false,
+): ColDef<Data> => {
+    const filterParams: ISetFilterParams<Data, string | undefined> = {
+        suppressMiniFilter: true,
+        values: [], // You may need to fetch enum values dynamically or provide them here
+    };
+
+    return {
+        field,
+        headerName: value.title,
+        valueGetter,
+        cellRenderer: (props) => {
+            const enumArray = valueGetter(props) as string[];
+            if (enumArray && enumArray.length > 0) {
+                const items = enumArray.map((file) => getFileName(file));
+                return (
+                    <OverflowWrapper
+                        items={enumArray} 
+                        getItemKey={(item) => item} 
+                        renderItem={(item) => (
+                            <OpenPreviewButton fileId={item} />
+                            )} 
+                        containerStyle={{ height: `${rowHeight}px` }}
+                        files = {items}
+                    />
+                );
+            } else {
+                return null;
+            }
+        },
+        filter: 'agSetColumnFilter',
+        filterParams,
+        width: hardcodedWidth,
+        flex: hardcodedWidth ? 0 : 1,
+        hide: hideColumn,
+    };
+};
+
 export const dateColDef = <Data extends any = IEntity>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,

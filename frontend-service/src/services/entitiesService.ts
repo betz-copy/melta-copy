@@ -55,11 +55,9 @@ export const updateEntityRequest = async (entityId: string, newEntityData: Entit
     const fileProperties = {};
     unchangedFiles.forEach(([key, value]) => {
         if (value) {
-            console.log(key, value);
             fileProperties[key] = value.name;
         }
     });
-    console.log(fileToUpload, unchangedFiles);
     formData.append('properties', JSON.stringify({ ...newEntityData.properties, ...fileProperties }));
     formData.append('templateId', newEntityData.template._id);
 
@@ -72,37 +70,30 @@ export const updateEntityRequest = async (entityId: string, newEntityData: Entit
 };
 
 export const updateEntityRequestForMultiple = async (entityId: string, newEntityData: any, ignoredRules?: IRuleBreach['brokenRules']) => {
-    console.log(newEntityData, newEntityData.attachmentsProperties.files, Object.entries(newEntityData.attachmentsProperties));
     const formData = new FormData();
 
     const filesToUpload: any = [];
     const unchangedFiles: any = [];
 
     Object.entries(newEntityData.attachmentsProperties).forEach(([key, value]: [string, any]) => {
-        console.log(key, value);
         value.forEach((file, index) => {
             if (file instanceof File) {
                 filesToUpload.push([`${key}.${index}`, file]);
             } else {
-                unchangedFiles.push([`${key}.${index}`, file]);
+                unchangedFiles.push([`${key}`, file]);
             }
         });
     });
     filesToUpload.forEach(([key, value]) => {
-        console.log(key, value);
         formData.append(key, value as Blob);
     });
-
-    console.log('11111111111111', filesToUpload, unchangedFiles);
-
-    const fileProperties = {};
     unchangedFiles.forEach(([key, value]) => {
         if (value) {
-            fileProperties[key] = value.name;
+            newEntityData.properties[key].push(value.name);
         }
     });
 
-    formData.append('properties', JSON.stringify({ ...newEntityData.properties, ...fileProperties }));
+    formData.append('properties', JSON.stringify({ ...newEntityData.properties }));
     formData.append('templateId', newEntityData.template._id);
 
     if (ignoredRules) {
@@ -113,6 +104,7 @@ export const updateEntityRequestForMultiple = async (entityId: string, newEntity
 
     return data;
 };
+
 export const duplicateEntityRequest = async (entityId: string, newEntityData: EntityWizardValues) => {
     const formData = new FormData();
     const [fileToUpload, unchangedFiles] = partition(Object.entries(newEntityData.attachmentsProperties), ([_key, value]) => value instanceof File);

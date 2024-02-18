@@ -7,10 +7,11 @@ interface IOverflowWrapperProps<T> {
     items: T[];
     getItemKey: (item: T) => React.Key;
     renderItem: (item: T) => React.JSX.Element;
+    files?: T[];
     containerStyle?: React.CSSProperties;
 }
 
-const OverflowWrapper = <T extends any>({ items, renderItem, getItemKey, containerStyle }: IOverflowWrapperProps<T>) => {
+const OverflowWrapper = <T extends any>({ items, renderItem, getItemKey, containerStyle, files }: IOverflowWrapperProps<T>) => {
     const [visibleItems, setVisibleItems] = useState(items);
     const containerRef = useRef(null);
     const itemRefs = useRef<React.RefObject<HTMLDivElement>[]>([]);
@@ -55,8 +56,11 @@ const OverflowWrapper = <T extends any>({ items, renderItem, getItemKey, contain
         return () => {};
     }, [items, containerRef]);
 
-    const overflowItems = items.length > visibleItems.length ? items.slice(visibleItems.length) : [];
-
+    let overflowItems = items.length > visibleItems.length ? items.slice(visibleItems.length) : [];
+    console.log(overflowItems);
+    if (files && files.length > 0 && items.length > visibleItems.length) {
+        overflowItems = files;
+    }    
     return (
         <Grid ref={containerRef} container wrap="wrap" alignItems="center" justifyItems="center" gap={`${itemsGap}px`} style={containerStyle}>
             {visibleItems.map((item, index) => (
