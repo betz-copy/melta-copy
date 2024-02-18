@@ -103,7 +103,6 @@ const CreateOrEditEntityDetails: React.FC<{
             },
         },
     );
-        console.log(fieldProperties, fileProperties, entityTemplate);
     return (
         <Formik
             initialValues={{ properties: fieldProperties, attachmentsProperties: fileProperties, template: entityTemplate }}
