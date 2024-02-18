@@ -103,7 +103,7 @@ const CreateOrEditEntityDetails: React.FC<{
             },
         },
     );
-
+        console.log(fieldProperties, fileProperties, entityTemplate);
     return (
         <Formik
             initialValues={{ properties: fieldProperties, attachmentsProperties: fileProperties, template: entityTemplate }}
@@ -129,7 +129,17 @@ const CreateOrEditEntityDetails: React.FC<{
                 const schema = filterAttachmentsAndEntitiesRefFromPropertiesSchema(values.template.properties);
 
                 useEffect(() => {
-                    console.log(schema);
+                    schema.required.forEach((field) => {
+                        const fieldProperties = schema.properties[field].enum;
+                        const itemFieldProperties = schema.properties[field]?.items?.enum;
+
+                        if (fieldProperties?.length === 1 && fieldProperties[0] !== undefined) {
+                            setFieldValue(`properties.${field}`, fieldProperties[0]);
+                        }
+                        if (itemFieldProperties?.length === 1 && itemFieldProperties[0] !== undefined) {
+                            setFieldValue(`properties.${field}`, [itemFieldProperties[0]]);
+                        }
+                    });
 
                     Object.entries<object>(schema.properties).forEach(([propertyName, propertyValues]) => {
                         if (propertyValues.hasOwnProperty('serialCurrent')) {
