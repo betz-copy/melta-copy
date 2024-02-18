@@ -104,7 +104,7 @@ const getRowModelProps = <Data extends any = IEntity>(
         };
     }
     return {
-        // the serverSide includes advanced infinitie row model
+        // the serverSide includes advanced infinite row model
         rowModelType: 'serverSide',
         pagination: false,
         serverSideDatasource: getDatasource(template, quickFilterText, datasourceOnFail),
@@ -326,10 +326,8 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
 
         const gridContent = (
             <Box
-                className={rowModelType === 'infinite' ? 'react-grid' : ''}
                 sx={getStyles()}
                 style={{
-                    height: rowModelType === 'infinite' ? `${gridHeight}px` : undefined,
                     borderRadius: '10px',
                     boxShadow: '-2px 2px 6px 0px rgba(30, 39, 117, 0.30)',
                 }}
@@ -469,7 +467,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             ) : (
                 gridContent
             );
-        }, [rowModelType, gridHeight, setGridHeight, minHeightTable, gridContent]); // Ensure all dependencies are listed
+        }, [rowModelType, gridHeight, setGridHeight, minHeightTable, gridContent]);
 
         return <div>{content}</div>;
     },

@@ -1,6 +1,6 @@
 import React from 'react';
 import { ResizableBox } from 'react-resizable';
-import '../../css/resizeTable.css'; // Make sure the CSS is correctly imported for handle visibility
+import '../../css/resizeTable.css';
 import { Grid } from '@mui/material';
 
 interface ResizableBoxProps {
@@ -13,12 +13,12 @@ const ResizeBoxComponent: React.FC<ResizableBoxProps> = ({ gridHeight, setGridHe
     const [isResizing, setIsResizing] = React.useState(false);
 
     const onResizeStart = () => {
-        setIsResizing(true); // This triggers the visual feedback to start
+        setIsResizing(true);
     };
 
     const onResizeStop = (_event, { size }) => {
         setGridHeight(size.height);
-        setIsResizing(false); // This stops the visual feedback
+        setIsResizing(false);
     };
 
     return (

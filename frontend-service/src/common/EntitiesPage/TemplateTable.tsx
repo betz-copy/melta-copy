@@ -151,7 +151,6 @@ const TemplateTable = forwardRef<
 
             <Box sx={{ marginBottom: '30px', width: '100%' }}>
                 <EntitiesTableOfTemplate
-                    key={template._id}
                     ref={entitiesTableRef}
                     template={template}
                     showNavigateToRowButton
