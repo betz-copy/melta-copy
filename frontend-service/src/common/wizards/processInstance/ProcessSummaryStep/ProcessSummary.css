@@ -1,0 +1,16 @@
+@media print {
+    .print-container {
+        display: flex;
+        flex-direction: row-reverse; /* Reverse the order of the elements for printing */
+        flex-wrap: wrap;
+    }
+
+    .print-container > * {
+        flex-basis: 33%; /* Adjust as needed to control the width of each element */
+    }
+
+    .print-in-line {
+        display: flex;
+        flex-direction: row-reverse;
+    }
+}

@@ -15,19 +15,22 @@ import { IMongoProcessTemplatePopulated } from '../../../../interfaces/processes
 import { getLongDate } from '../../../../utils/date';
 import { StatusColorsNames, StyledCard } from '../../../../pages/ProcessInstances/ProcessCard';
 import { MeltaTooltip } from '../../../MeltaTooltip';
+import './ProcessSummary.css';
 
 const StepStatus: React.FC<{
     stepInstance: IMongoStepInstancePopulated;
     processTemplate: IMongoProcessTemplatePopulated;
     open: boolean;
     handleClick: () => void;
-}> = ({ stepInstance, processTemplate, open, handleClick }) => {
+    print: boolean;
+}> = ({ stepInstance, processTemplate, open, handleClick, print }) => {
     return (
         <div style={{ paddingTop: '10px' }}>
             <StyledCard
                 style={{
                     minHeight: 270,
                     minWidth: 235,
+                    pageBreakInside: 'avoid',
                 }}
             >
                 <CardHeader
@@ -77,28 +80,41 @@ const StepStatus: React.FC<{
                                 <Grid item>
                                     {stepInstance.comments && (
                                         <>
-                                            <div
-                                                style={{
-                                                    transition: 'all 0.7s ease-in-out',
-                                                    maxHeight: open ? '350px' : '0',
-                                                    maxWidth: open ? '350px' : '0',
-                                                    overflowX: 'hidden',
-                                                    overflowY: 'auto',
-                                                }}
-                                            >
-                                                {i18next.t('wizard.processInstance.step.comment')}:
-                                                <Typography gutterBottom component="div" style={{ wordBreak: 'break-word', width: 350 }}>
-                                                    {stepInstance.comments}
-                                                </Typography>
-                                            </div>
-                                            <Button
-                                                size="small"
-                                                color="inherit"
-                                                onClick={handleClick}
-                                                startIcon={open ? <KeyboardArrowUpIcon /> : <KeyboardArrowLeftIcon />}
-                                            >
-                                                {!open && i18next.t('wizard.processInstance.step.comment')}
-                                            </Button>
+                                            {!print && (
+                                                <>
+                                                    <div
+                                                        style={{
+                                                            transition: 'all 0.7s ease-in-out',
+                                                            maxHeight: open ? '350px' : '0',
+                                                            maxWidth: open ? '350px' : '0',
+                                                            overflowX: 'hidden',
+                                                            overflowY: 'auto',
+                                                        }}
+                                                    >
+                                                        {i18next.t('wizard.processInstance.step.comment')}:
+                                                        <Typography gutterBottom component="div" style={{ wordBreak: 'break-word', width: 350 }}>
+                                                            {stepInstance.comments}
+                                                        </Typography>
+                                                    </div>
+                                                    <Button
+                                                        size="small"
+                                                        color="inherit"
+                                                        onClick={handleClick}
+                                                        startIcon={open ? <KeyboardArrowUpIcon /> : <KeyboardArrowLeftIcon />}
+                                                    >
+                                                        {!open && i18next.t('wizard.processInstance.step.comment')}
+                                                    </Button>
+                                                </>
+                                            )}
+
+                                            {print && (
+                                                <Grid textAlign="center">
+                                                    <Typography component="h6" fontWeight="bold" fontSize="14px">
+                                                        {i18next.t('wizard.processInstance.step.comment')}
+                                                    </Typography>
+                                                    <Typography fontSize="14px">{stepInstance.comments}</Typography>
+                                                </Grid>
+                                            )}
                                         </>
                                     )}
                                 </Grid>
@@ -111,10 +127,11 @@ const StepStatus: React.FC<{
     );
 };
 
-const StepsStatuses: React.FC<{ processInstance: IMongoProcessInstancePopulated; processTemplate: IMongoProcessTemplatePopulated }> = ({
-    processInstance,
-    processTemplate,
-}) => {
+const StepsStatuses: React.FC<{
+    processInstance: IMongoProcessInstancePopulated;
+    processTemplate: IMongoProcessTemplatePopulated;
+    print: boolean;
+}> = ({ processInstance, processTemplate, print }) => {
     const [openStep, setOpenStep] = useState(-1);
 
     // Count the steps by their status
@@ -130,7 +147,7 @@ const StepsStatuses: React.FC<{ processInstance: IMongoProcessInstancePopulated;
                 variant="h5"
                 style={{ fontSize: '30px', fontWeight: 600, opacity: 0.9, display: 'flex', justifyContent: 'center', padding: '10px' }}
             />
-            <Box display="flex" justifyContent="center" paddingBottom={2}>
+            <Box display="flex" justifyContent="center" paddingBottom={2} className="print-in-line">
                 <Typography variant="body1" style={{ margin: '0 10px' }}>{` ${i18next.t(
                     'wizard.processInstance.step.pendingSteps',
                 )}: ${pendingSteps}`}</Typography>
@@ -142,7 +159,7 @@ const StepsStatuses: React.FC<{ processInstance: IMongoProcessInstancePopulated;
                 )}: ${rejectedSteps}`}</Typography>
             </Box>
             <Box>
-                <Grid item container justifyContent="center" flexWrap="wrap" spacing={5} paddingBottom={3}>
+                <Grid item container justifyContent="center" flexWrap="wrap" spacing={5} paddingBottom={3} className="print-container">
                     {processInstance.steps.map((stepInstance, index) => (
                         <Grid item key={stepInstance._id}>
                             <StepStatus
@@ -150,6 +167,7 @@ const StepsStatuses: React.FC<{ processInstance: IMongoProcessInstancePopulated;
                                 stepInstance={stepInstance}
                                 open={openStep === index}
                                 handleClick={() => setOpenStep(openStep === index ? -1 : index)}
+                                print={print}
                             />
                         </Grid>
                     ))}
