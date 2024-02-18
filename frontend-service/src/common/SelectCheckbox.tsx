@@ -210,7 +210,7 @@ const SelectOptionsMenuItemsGrouped = <Option extends any, Group extends any>({
                 return (
                     <Fragment key={getGroupId(group)}>
                         <MenuItem
-                            sx={{ padding: '0px, 5px, 0px, 0px' }}
+                            sx={{ width: '100%', height: '24px', padding: '0px, 5px, 0px, 0px' }}
                             onClick={() => {
                                 setSelectedOptions((prevSelectedOptions) => {
                                     const prevSelectedOptionsOfGroup = prevSelectedOptions.filter(
@@ -248,10 +248,13 @@ const SelectOptionsMenuItemsGrouped = <Option extends any, Group extends any>({
                             getOptionLabel={getOptionLabel}
                             isDraggableDisabled={isDraggableDisabled}
                             setOptions={setOptions}
-                            menuItemSx={{ padding: '8px 16px 8px 36px' }}
                         />
                         {/* divider between groups */}
-                        {index < groups.length - 1 && <Divider style={{ width: '199px', border: '1px solid #9398C280', background: '#9398C280' }} />}
+                        {index < groups.length - 1 && (
+                            <Box sx={{ display: 'flex', justifyContent: 'center', my: '5px' }}>
+                                <Divider style={{ width: '199px' }} />
+                            </Box>
+                        )}
                     </Fragment>
                 );
             })}
@@ -332,8 +335,6 @@ export const MiniFilter: React.FC<{ value: string; onChange: (value: string) => 
                                 position="end"
                                 style={{
                                     margin: 'auto',
-                                    maxHeight: '34px',
-                                    minHeight: '34px',
                                     height: '34px',
                                     borderRadius: '7px',
                                     padding: '0px, 10px, 0px, 0px',
@@ -385,11 +386,13 @@ export const MiniFilter: React.FC<{ value: string; onChange: (value: string) => 
 };
 
 const ChooseAllMenuItem = <Option extends any, Group extends any>({
+    options,
     selectedOptionsFiltered,
     setSelectedOptions,
     optionsFiltered,
     getOptionId,
 }: {
+    options: Option[];
     selectedOptionsFiltered: Option[];
     setSelectedOptions: SelectCheckboxProps<Option, Group>['setSelectedOptions'];
     optionsFiltered: Option[];
@@ -397,24 +400,26 @@ const ChooseAllMenuItem = <Option extends any, Group extends any>({
 }) => {
     return (
         <MenuItem
-            sx={{ padding: '0px, 5px, 0px, 0px' }}
+            sx={{ width: '100%', height: '24px', padding: '0px, 5px, 0px, 0px' }}
             onClick={() => {
                 const prevChecked = selectedOptionsFiltered.length === optionsFiltered.length;
                 if (prevChecked) {
-                    setSelectedOptions((prevSelectedOptions) => {
-                        const selectedOptionsWithoutOptionsFiltered = prevSelectedOptions.filter((selectedOption) => {
-                            const isSelectedOptionInOptionsFiltered = optionsFiltered.some(
-                                (option) => getOptionId(option) === getOptionId(selectedOption),
-                            );
-                            return !isSelectedOptionInOptionsFiltered;
-                        });
-                        return selectedOptionsWithoutOptionsFiltered;
-                    });
+                    // setSelectedOptions((prevSelectedOptions) => {
+                    //     const selectedOptionsWithoutOptionsFiltered = prevSelectedOptions.filter((selectedOption) => {
+                    //         const isSelectedOptionInOptionsFiltered = optionsFiltered.some(
+                    //             (option) => getOptionId(option) === getOptionId(selectedOption),
+                    //         );
+                    //         return !isSelectedOptionInOptionsFiltered;
+                    //     });
+                    //     return selectedOptionsWithoutOptionsFiltered;
+                    // });
+                    setSelectedOptions([]);
                 } else {
-                    setSelectedOptions((prevSelectedOptions) => {
-                        const newSelectedOptions = lodashUniqby([...prevSelectedOptions, ...optionsFiltered], getOptionId);
-                        return newSelectedOptions;
-                    });
+                    // setSelectedOptions((prevSelectedOptions) => {
+                    //     const newSelectedOptions = lodashUniqby([...prevSelectedOptions, ...optionsFiltered], getOptionId);
+                    //     return newSelectedOptions;
+                    // });
+                    setSelectedOptions(options);
                 }
             }}
         >
@@ -452,18 +457,29 @@ const SelectCheckbox = <Option extends any, Group extends any>({
 
     const darkMode = useSelector((state: RootState) => state.darkMode);
 
-    const { optionsFiltered, groupsFiltered } = getOptionsAndGroupsMiniFiltered(miniFilterValue, options, getOptionId, getOptionLabel, groupsProps);
+    console.log({ options });
+
+    let { optionsFiltered, groupsFiltered } = getOptionsAndGroupsMiniFiltered(miniFilterValue, options, getOptionId, getOptionLabel, groupsProps);
+    console.log({ optionsFiltered });
 
     const selectedOptionsFiltered = selectedOptions.filter((selectedOption) => {
         const isSelectedOptionInOptionsFiltered = optionsFiltered.some((option) => getOptionId(option) === getOptionId(selectedOption));
         return isSelectedOptionInOptionsFiltered;
     });
 
+    console.log({ selectedOptionsFiltered });
+
     return (
         <FormControl style={{ background: darkMode ? '#EBEFFA' : '#EBEFFA', borderRadius: '7px, 7px, 0px, 0px' }}>
             <Select
                 displayEmpty
                 renderValue={() => title}
+                onClose={() => {
+                    optionsFiltered = options;
+                    console.log({ optionsFiltered });
+                    return optionsFiltered;
+                }}
+                // FIX IT
                 MenuProps={{
                     PaperProps: {
                         style: {
@@ -503,12 +519,13 @@ const SelectCheckbox = <Option extends any, Group extends any>({
             >
                 <MiniFilter value={miniFilterValue} onChange={setMiniFilterValue} />
                 <ChooseAllMenuItem
+                    options={options}
                     selectedOptionsFiltered={selectedOptionsFiltered}
                     setSelectedOptions={setSelectedOptions}
                     optionsFiltered={optionsFiltered}
                     getOptionId={getOptionId}
                 />
-                <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+                <Box sx={{ display: 'flex', justifyContent: 'center', my: '5px' }}>
                     <Divider style={{ width: '199px' }} />
                 </Box>
                 {groupsProps.useGroups ? (

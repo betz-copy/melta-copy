@@ -48,7 +48,16 @@ export const GlobalSearchBar: React.FC<{
                     sx={{ padding: 0 }}
                     disableRipple
                 >
-                    <SearchIcon />
+                    <img
+                        color="#1E2775"
+                        width="14px"
+                        height="14px"
+                        style={{
+                            top: '7px',
+                            left: '8px',
+                        }}
+                        src="/icons/search-blue.svg"
+                    />
                 </IconButton>
             }
             placeholder={placeholder}
