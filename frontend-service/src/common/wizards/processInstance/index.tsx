@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Button, Dialog, DialogTitle, DialogContent, DialogActions, Grid, CircularProgress, IconButton } from '@mui/material';
 import { Done as DoneIcon, Clear as ClearIcon } from '@mui/icons-material';
 import i18next from 'i18next';
@@ -28,6 +28,7 @@ import { IPermissionsOfUser } from '../../../services/permissionsService';
 import { IMongoStepTemplatePopulated } from '../../../interfaces/processes/stepTemplate';
 import { AreYouSureDialog } from '../../dialogs/AreYouSureDialog';
 import { MeltaTooltip } from '../../MeltaTooltip';
+import './ProcessSummaryStep/ProcessSummary.css';
 
 interface IProcessInstanceWizard {
     open: boolean;
@@ -56,11 +57,35 @@ const wizardContentStyles = makeStyles(() => ({
 }));
 
 const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({ open, onClose, processInstance, stepTemplate }) => {
-    const componentRef = React.useRef(null);
+    const [isPrinting, setIsPrinting] = useState(false);
+    const componentRef = useRef(null);
+    const promiseResolveRef = React.useRef<(() => void) | null>(null);
+
+    useEffect(() => {
+        console.log('isPrinting changed:', isPrinting);
+
+        if (isPrinting && promiseResolveRef.current) {
+            console.log('Triggering printing process...');
+            promiseResolveRef.current();
+        }
+    }, [isPrinting]);
+
     const handlePrint = useReactToPrint({
         content: () => componentRef.current,
-        documentTitle: `${processInstance.name}-${new Date().toLocaleDateString('en-uk')}`,
+        onBeforeGetContent: () => {
+            console.log('Setting promiseResolveRef.current...');
+            return new Promise((resolve) => {
+                promiseResolveRef.current = resolve as () => void;
+                console.log('promiseResolveRef.current:', promiseResolveRef.current);
+                setIsPrinting(true);
+            });
+        },
+        onAfterPrint: () => {
+            promiseResolveRef.current = null;
+            setIsPrinting(false);
+        },
     });
+
     const queryClient = useQueryClient();
     const processTemplatesMap = queryClient.getQueryData<IProcessTemplateMap>('getProcessTemplates')!;
     const [currProcessInstance, setCurrProcessInstance] = useState<IMongoProcessInstancePopulated>(processInstance);
@@ -126,6 +151,7 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({ open, onClose
             component: (
                 <ProcessSummary
                     ref={componentRef}
+                    isPrinting={isPrinting}
                     processInstance={currProcessInstance}
                     processTemplate={processTemplatesMap.get(currProcessInstance.templateId)!}
                 />

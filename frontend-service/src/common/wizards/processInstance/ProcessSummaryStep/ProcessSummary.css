@@ -6,22 +6,10 @@
     display: none;
 }
 
+.rtl {
+    direction: rtl;
+}
 @media print {
-    .print-container {
-        display: flex;
-        flex-direction: row-reverse;
-        flex-wrap: wrap;
-    }
-
-    .print-container > * {
-        flex-basis: 33%;
-    }
-
-    .print-in-line {
-        display: flex;
-        flex-direction: row-reverse;
-    }
-
     .overflow {
         overflow-y: visible;
     }

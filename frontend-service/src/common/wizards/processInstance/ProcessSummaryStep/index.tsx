@@ -1,5 +1,5 @@
 import { Box, Grid } from '@mui/material';
-import React from 'react';
+import React, { useEffect } from 'react';
 import i18next from 'i18next';
 import ProcessStatus from './ProcessStatus';
 import StepsStatuses from './StepsStatuses';
@@ -10,9 +10,13 @@ import './ProcessSummary.css';
 export interface ProcessSummaryProp {
     processInstance: IMongoProcessInstancePopulated;
     processTemplate: IMongoProcessTemplatePopulated;
+    isPrinting: boolean;
 }
 
-const ProcessSummary = React.forwardRef<HTMLDivElement, ProcessSummaryProp>(({ processInstance, processTemplate }, ref) => {
+const ProcessSummary = React.forwardRef<HTMLDivElement, ProcessSummaryProp>(({ processInstance, processTemplate, isPrinting }, ref) => {
+    useEffect(() => {
+        console.log('isprintitng', isPrinting);
+    }, [isPrinting]);
     return (
         <Box
             ref={ref}
@@ -25,7 +29,11 @@ const ProcessSummary = React.forwardRef<HTMLDivElement, ProcessSummaryProp>(({ p
         >
             <Grid container justifyContent="space-around" direction="column">
                 <Grid item xs={3}>
-                    <ProcessStatus title={i18next.t('wizard.processInstance.summary.processStatus')} instance={processInstance} />
+                    <ProcessStatus
+                        title={i18next.t('wizard.processInstance.summary.processStatus')}
+                        instance={processInstance}
+                        isPrinting={isPrinting}
+                    />
                 </Grid>
 
                 <Grid item xs={3}>

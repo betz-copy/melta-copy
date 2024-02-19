@@ -141,7 +141,7 @@ const StepsStatuses: React.FC<{
                 variant="h5"
                 style={{ fontSize: '30px', fontWeight: 600, opacity: 0.9, display: 'flex', justifyContent: 'center', padding: '10px' }}
             />
-            <Box display="flex" justifyContent="center" paddingBottom={2} className="print-in-line">
+            <Box display="flex" justifyContent="center" paddingBottom={2}>
                 <Typography variant="body1" style={{ margin: '0 10px' }}>{` ${i18next.t(
                     'wizard.processInstance.step.pendingSteps',
                 )}: ${pendingSteps}`}</Typography>
@@ -153,7 +153,7 @@ const StepsStatuses: React.FC<{
                 )}: ${rejectedSteps}`}</Typography>
             </Box>
             <Box>
-                <Grid item container justifyContent="center" flexWrap="wrap" spacing={5} paddingBottom={3} className="print-container">
+                <Grid item container justifyContent="center" flexWrap="wrap" spacing={5} paddingBottom={3}>
                     {processInstance.steps.map((stepInstance, index) => (
                         <Grid item key={stepInstance._id}>
                             <StepStatus
