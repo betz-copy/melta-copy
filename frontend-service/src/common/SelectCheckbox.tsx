@@ -180,6 +180,7 @@ const SelectOptionsMenuItems = <Option extends any, Group extends any>({
 
 const SelectOptionsMenuItemsGrouped = <Option extends any, Group extends any>({
     options,
+    optionsFiltered,
     selectedOptions,
     setSelectedOptions,
     getOptionId,
@@ -188,7 +189,8 @@ const SelectOptionsMenuItemsGrouped = <Option extends any, Group extends any>({
     setOptions,
     groupsProps: { groups, getGroupOfOption, getGroupId, getGroupLabel },
 }: {
-    options: SelectCheckboxProps<Option, Group>['options'];
+    options: Option[];
+    optionsFiltered: SelectCheckboxProps<Option, Group>['options'];
     selectedOptions: SelectCheckboxProps<Option, Group>['selectedOptions'];
     setSelectedOptions: SelectCheckboxProps<Option, Group>['setSelectedOptions'];
     getOptionId: SelectCheckboxProps<Option, Group>['getOptionId'];
@@ -198,6 +200,9 @@ const SelectOptionsMenuItemsGrouped = <Option extends any, Group extends any>({
     setOptions?: Dispatch<SetStateAction<Option[]>>;
 }) => {
     const optionsByGroups = groupByWithInitial(options, groups.map(getGroupId), (option) => getGroupId(getGroupOfOption(option, groups)));
+    const filteredOptionsByGroups = groupByWithInitial(optionsFiltered, groups.map(getGroupId), (option) =>
+        getGroupId(getGroupOfOption(option, groups)),
+    );
     const selectedOptionsByGroups = groupByWithInitial(selectedOptions, groups.map(getGroupId), (option) =>
         getGroupId(getGroupOfOption(option, groups)),
     );
@@ -206,6 +211,7 @@ const SelectOptionsMenuItemsGrouped = <Option extends any, Group extends any>({
         <>
             {groups.map((group, index) => {
                 const optionsOfGroup = optionsByGroups[getGroupId(group)];
+                const filteredOptionsOfGroup = filteredOptionsByGroups[getGroupId(group)];
                 const selectedOptionsOfGroup = selectedOptionsByGroups[getGroupId(group)];
                 return (
                     <Fragment key={getGroupId(group)}>
@@ -217,31 +223,36 @@ const SelectOptionsMenuItemsGrouped = <Option extends any, Group extends any>({
                                         (option) => getGroupId(getGroupOfOption(option, groups)) === getGroupId(group),
                                     );
                                     const prevChecked = optionsOfGroup.length === prevSelectedOptionsOfGroup.length;
+                                    const prevFiltered = selectedOptionsOfGroup.length === filteredOptionsOfGroup.length;
 
                                     if (prevChecked) {
-                                        const selectedOptionsWithoutGroup = prevSelectedOptions.filter((prevSelectedOption) => {
-                                            const isSelectedOptionInGroup = optionsOfGroup.some(
-                                                (optionOfGroup) => getOptionId(optionOfGroup) === getOptionId(prevSelectedOption),
-                                            );
-                                            return !isSelectedOptionInGroup;
-                                        });
-                                        return selectedOptionsWithoutGroup;
+                                        if (prevFiltered) {
+                                            const selectedOptionsWithoutGroup = prevSelectedOptions.filter((prevSelectedOption) => {
+                                                const isSelectedOptionInGroup = optionsOfGroup.some(
+                                                    (optionOfGroup) => getOptionId(optionOfGroup) === getOptionId(prevSelectedOption),
+                                                );
+                                                return !isSelectedOptionInGroup;
+                                            });
+                                            setSelectedOptions(selectedOptionsWithoutGroup);
+                                            return selectedOptionsWithoutGroup;
+                                        }
                                     }
 
                                     const selectedOptionsWithGroup = lodashUniqby([...prevSelectedOptions, ...optionsOfGroup], getOptionId);
+                                    setSelectedOptions(selectedOptionsWithGroup);
                                     return selectedOptionsWithGroup;
                                 });
                             }}
                         >
                             <MenuItemContent
-                                checked={selectedOptionsOfGroup.length === optionsOfGroup.length}
-                                indeterminate={selectedOptionsOfGroup.length > 0 && selectedOptionsOfGroup.length < optionsOfGroup.length}
+                                checked={selectedOptionsOfGroup.length === filteredOptionsOfGroup.length}
+                                indeterminate={selectedOptionsOfGroup.length > 0 && selectedOptionsOfGroup.length < filteredOptionsOfGroup.length}
                                 label={getGroupLabel(group)}
                                 order={index}
                             />
                         </MenuItem>
                         <SelectOptionsMenuItems
-                            options={optionsOfGroup}
+                            options={filteredOptionsOfGroup}
                             selectedOptions={selectedOptions}
                             setSelectedOptions={setSelectedOptions}
                             getOptionId={getOptionId}
@@ -390,13 +401,11 @@ const ChooseAllMenuItem = <Option extends any, Group extends any>({
     selectedOptionsFiltered,
     setSelectedOptions,
     optionsFiltered,
-    getOptionId,
 }: {
     options: Option[];
     selectedOptionsFiltered: Option[];
     setSelectedOptions: SelectCheckboxProps<Option, Group>['setSelectedOptions'];
     optionsFiltered: Option[];
-    getOptionId: SelectCheckboxProps<Option, Group>['getOptionId'];
 }) => {
     return (
         <MenuItem
@@ -404,21 +413,8 @@ const ChooseAllMenuItem = <Option extends any, Group extends any>({
             onClick={() => {
                 const prevChecked = selectedOptionsFiltered.length === optionsFiltered.length;
                 if (prevChecked) {
-                    // setSelectedOptions((prevSelectedOptions) => {
-                    //     const selectedOptionsWithoutOptionsFiltered = prevSelectedOptions.filter((selectedOption) => {
-                    //         const isSelectedOptionInOptionsFiltered = optionsFiltered.some(
-                    //             (option) => getOptionId(option) === getOptionId(selectedOption),
-                    //         );
-                    //         return !isSelectedOptionInOptionsFiltered;
-                    //     });
-                    //     return selectedOptionsWithoutOptionsFiltered;
-                    // });
                     setSelectedOptions([]);
                 } else {
-                    // setSelectedOptions((prevSelectedOptions) => {
-                    //     const newSelectedOptions = lodashUniqby([...prevSelectedOptions, ...optionsFiltered], getOptionId);
-                    //     return newSelectedOptions;
-                    // });
                     setSelectedOptions(options);
                 }
             }}
@@ -457,29 +453,21 @@ const SelectCheckbox = <Option extends any, Group extends any>({
 
     const darkMode = useSelector((state: RootState) => state.darkMode);
 
-    console.log({ options });
-
-    let { optionsFiltered, groupsFiltered } = getOptionsAndGroupsMiniFiltered(miniFilterValue, options, getOptionId, getOptionLabel, groupsProps);
-    console.log({ optionsFiltered });
+    const { optionsFiltered, groupsFiltered } = getOptionsAndGroupsMiniFiltered(miniFilterValue, options, getOptionId, getOptionLabel, groupsProps);
 
     const selectedOptionsFiltered = selectedOptions.filter((selectedOption) => {
         const isSelectedOptionInOptionsFiltered = optionsFiltered.some((option) => getOptionId(option) === getOptionId(selectedOption));
         return isSelectedOptionInOptionsFiltered;
     });
 
-    console.log({ selectedOptionsFiltered });
-
     return (
         <FormControl style={{ background: darkMode ? '#EBEFFA' : '#EBEFFA', borderRadius: '7px, 7px, 0px, 0px' }}>
             <Select
                 displayEmpty
                 renderValue={() => title}
-                onClose={() => {
-                    optionsFiltered = options;
-                    console.log({ optionsFiltered });
-                    return optionsFiltered;
+                onOpen={() => {
+                    setMiniFilterValue('');
                 }}
-                // FIX IT
                 MenuProps={{
                     PaperProps: {
                         style: {
@@ -523,14 +511,14 @@ const SelectCheckbox = <Option extends any, Group extends any>({
                     selectedOptionsFiltered={selectedOptionsFiltered}
                     setSelectedOptions={setSelectedOptions}
                     optionsFiltered={optionsFiltered}
-                    getOptionId={getOptionId}
                 />
                 <Box sx={{ display: 'flex', justifyContent: 'center', my: '5px' }}>
                     <Divider style={{ width: '199px' }} />
                 </Box>
                 {groupsProps.useGroups ? (
                     <SelectOptionsMenuItemsGrouped
-                        options={optionsFiltered}
+                        options={options}
+                        optionsFiltered={optionsFiltered}
                         selectedOptions={selectedOptionsFiltered}
                         setSelectedOptions={setSelectedOptions}
                         getOptionId={getOptionId}
