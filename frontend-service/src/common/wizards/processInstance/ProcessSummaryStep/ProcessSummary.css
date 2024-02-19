@@ -1,16 +1,32 @@
+.overflow {
+    overflow-y: auto;
+}
+
+.dont-show-not-print-mode {
+    display: none;
+}
+
 @media print {
     .print-container {
         display: flex;
-        flex-direction: row-reverse; /* Reverse the order of the elements for printing */
+        flex-direction: row-reverse;
         flex-wrap: wrap;
     }
 
     .print-container > * {
-        flex-basis: 33%; /* Adjust as needed to control the width of each element */
+        flex-basis: 33%;
     }
 
     .print-in-line {
         display: flex;
         flex-direction: row-reverse;
+    }
+
+    .overflow {
+        overflow-y: visible;
+    }
+
+    .dont-print {
+        display: none;
     }
 }

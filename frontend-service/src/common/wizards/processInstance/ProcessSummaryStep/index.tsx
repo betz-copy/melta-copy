@@ -10,28 +10,26 @@ import './ProcessSummary.css';
 export interface ProcessSummaryProp {
     processInstance: IMongoProcessInstancePopulated;
     processTemplate: IMongoProcessTemplatePopulated;
-    print: boolean;
 }
 
-const ProcessSummary = React.forwardRef<HTMLDivElement, ProcessSummaryProp>(({ processInstance, processTemplate, print }, ref) => {
+const ProcessSummary = React.forwardRef<HTMLDivElement, ProcessSummaryProp>(({ processInstance, processTemplate }, ref) => {
     return (
         <Box
             ref={ref}
+            className="overflow"
             sx={{
                 width: '100%',
                 paddingRight: '60px',
                 paddingLeft: '30px',
-                ...(!print ? { overflowY: 'auto' } : {}),
-                ...(print ? { overflow: 'none' } : {}),
             }}
         >
             <Grid container justifyContent="space-around" direction="column">
                 <Grid item xs={3}>
-                    <ProcessStatus title={i18next.t('wizard.processInstance.summary.processStatus')} instance={processInstance} print={print} />
+                    <ProcessStatus title={i18next.t('wizard.processInstance.summary.processStatus')} instance={processInstance} />
                 </Grid>
 
                 <Grid item xs={3}>
-                    <StepsStatuses processInstance={processInstance} processTemplate={processTemplate} print={print} />
+                    <StepsStatuses processInstance={processInstance} processTemplate={processTemplate} />
                 </Grid>
             </Grid>
         </Box>

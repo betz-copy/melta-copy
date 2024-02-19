@@ -56,9 +56,6 @@ const wizardContentStyles = makeStyles(() => ({
 }));
 
 const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({ open, onClose, processInstance, stepTemplate }) => {
-    console.log('🚀 ~ stepTemplate:', stepTemplate);
-    console.log('🚀 ~ processInstance:', processInstance);
-    const [print, setPrint] = useState(true);
     const componentRef = React.useRef(null);
     const handlePrint = useReactToPrint({
         content: () => componentRef.current,
@@ -129,7 +126,6 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({ open, onClose
             component: (
                 <ProcessSummary
                     ref={componentRef}
-                    print={print}
                     processInstance={currProcessInstance}
                     processTemplate={processTemplatesMap.get(currProcessInstance.templateId)!}
                 />
@@ -241,9 +237,8 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({ open, onClose
                                 <MeltaTooltip title={i18next.t('actions.print')}>
                                     <IconButton
                                         onClick={() => {
-                                            setPrint(true);
+                                            onClose(isProcessChanged);
                                             handlePrint();
-                                            onClose(true);
                                         }}
                                     >
                                         <PrintIcon color="primary" />

@@ -85,13 +85,9 @@ interface ProcessStatusProps {
         isEditMode: boolean;
         values: FormikProps<ProcessStepValues>['values'];
     };
-    print?: boolean;
 }
 
-const ProcessStatus: React.FC<ProcessStatusProps> = ({ title, instance, editStatus, print }) => {
-    console.log('🚀 ~ instance:', instance);
-    console.log(title, instance);
-
+const ProcessStatus: React.FC<ProcessStatusProps> = ({ title, instance, editStatus }) => {
     const currentUser = useSelector((state: RootState) => state.user) as IUser;
     const handleSetStatus = (newStatus: Status) => {
         const newStatusToSet = newStatus !== editStatus!.values.status ? newStatus : Status.Pending;
@@ -101,7 +97,7 @@ const ProcessStatus: React.FC<ProcessStatusProps> = ({ title, instance, editStat
         <Grid container flexDirection="column" alignItems="stretch" spacing={2}>
             <Grid item container justifyContent="center">
                 <BlueTitle
-                    title={print ? `${instance.name} ${title}` : title}
+                    title={title}
                     component="h4"
                     variant={editStatus ? 'h5' : 'h4'}
                     style={{ fontWeight: 600, opacity: 0.9, marginBottom: 7 }}
