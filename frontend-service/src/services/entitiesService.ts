@@ -1,4 +1,3 @@
-import partition from 'lodash.partition';
 import axios from '../axios';
 import { environment } from '../globals';
 import {
@@ -9,9 +8,8 @@ import {
     ISearchEntitiesOfTemplateBody,
     IExportEntitiesBody,
 } from '../interfaces/entities';
-import { EntityWizardValues } from '../common/dialogs/entity';
+import { EntityWizardValuesNew } from '../common/dialogs/entity';
 import { IRuleBreach } from '../interfaces/ruleBreaches/ruleBreach';
-import { D } from '../utils/icons/fa6Icons';
 
 const { entities, relationships } = environment.api;
 
@@ -33,9 +31,23 @@ export const getRelationshipInstancesCountByTemplateIdRequest = async (templateI
     return data;
 };
 
-export const createEntityRequest = async (entity: EntityWizardValues) => {
+export const createEntityRequest = async (entity: EntityWizardValuesNew) => {
     const formData = new FormData();
-    Object.entries(entity.attachmentsProperties).forEach(([key, value]) => formData.append(key, value!));
+
+    const filesToUpload: any = [];
+    Object.entries(entity.attachmentsProperties).forEach(([key, value]: [string, any]) => {
+        value.forEach((file, index) => {
+            if (file instanceof File && entity.template.properties.properties[key].items) {
+                filesToUpload.push([`${key}.${index}`, file]);
+            } else if (file instanceof File) {
+                filesToUpload.push([`${key}`, file]);
+            }
+        });
+    });
+    filesToUpload.forEach(([key, value]) => {
+        formData.append(key, value as Blob);
+    });
+    // Object.entries(entity.attachmentsProperties).forEach(([key, value]) => formData.append(key, value));
     formData.append('properties', JSON.stringify(entity.properties));
     formData.append('templateId', entity.template._id);
     const { data } = await axios.post<IEntity>(entities, formData);
@@ -47,38 +59,22 @@ export const updateEntityStatusRequest = async (entityId: string, disabled: bool
     return data;
 };
 
-export const updateEntityRequest = async (entityId: string, newEntityData: EntityWizardValues, ignoredRules?: IRuleBreach['brokenRules']) => {
-    const formData = new FormData();
-    const [fileToUpload, unchangedFiles] = partition(Object.entries(newEntityData.attachmentsProperties), ([_key, value]) => value instanceof File);
-
-    fileToUpload.forEach(([key, value]) => formData.append(key, value as Blob));
-    const fileProperties = {};
-    unchangedFiles.forEach(([key, value]) => {
-        if (value) {
-            fileProperties[key] = value.name;
-        }
-    });
-    formData.append('properties', JSON.stringify({ ...newEntityData.properties, ...fileProperties }));
-    formData.append('templateId', newEntityData.template._id);
-
-    if (ignoredRules) {
-        formData.append('ignoredRules', JSON.stringify(ignoredRules));
-    }
-    const { data } = await axios.put<IEntity>(`${entities}/${entityId}`, formData);
-
-    return data;
-};
-
-export const updateEntityRequestForMultiple = async (entityId: string, newEntityData: any, ignoredRules?: IRuleBreach['brokenRules']) => {
+export const updateEntityRequestForMultiple = async (
+    entityId: string,
+    newEntityData: EntityWizardValuesNew,
+    ignoredRules?: IRuleBreach['brokenRules'],
+) => {
     const formData = new FormData();
 
     const filesToUpload: any = [];
-    const unchangedFiles: any = [];
+    const unchangedFiles: any = []; /////send single file as array to the back
 
     Object.entries(newEntityData.attachmentsProperties).forEach(([key, value]: [string, any]) => {
         value.forEach((file, index) => {
-            if (file instanceof File) {
+            if (file instanceof File && newEntityData.template.properties.properties[key].items) {
                 filesToUpload.push([`${key}.${index}`, file]);
+            } else if (file instanceof File) {
+                filesToUpload.push([`${key}`, file]);
             } else {
                 unchangedFiles.push([`${key}`, file]);
             }
@@ -88,39 +84,64 @@ export const updateEntityRequestForMultiple = async (entityId: string, newEntity
         formData.append(key, value as Blob);
     });
     unchangedFiles.forEach(([key, value]) => {
-        if (value) {
-            newEntityData.properties[key].push(value.name);
+        if (!newEntityData.template.properties.properties[key].items) {
+            newEntityData.properties[key] = value.name;
+        } else {
+            if (!newEntityData.properties[key]) {
+                newEntityData.properties[key] = [];
+            }
+            if (value) {
+                newEntityData.properties[key].push(value.name);
+            }
         }
     });
-
+    console.log(unchangedFiles, filesToUpload, newEntityData);
     formData.append('properties', JSON.stringify({ ...newEntityData.properties }));
     formData.append('templateId', newEntityData.template._id);
 
     if (ignoredRules) {
         formData.append('ignoredRules', JSON.stringify(ignoredRules));
     }
-    console.log(formData);
     const { data } = await axios.put<IEntity>(`${entities}/${entityId}`, formData);
-
     return data;
 };
 
-export const duplicateEntityRequest = async (entityId: string, newEntityData: EntityWizardValues) => {
+export const duplicateEntityRequest = async (entityId: string, newEntityData: EntityWizardValuesNew) => {
     const formData = new FormData();
-    const [fileToUpload, unchangedFiles] = partition(Object.entries(newEntityData.attachmentsProperties), ([_key, value]) => value instanceof File);
+    const filesToUpload: any = [];
+    const unchangedFiles: any = [];
 
-    fileToUpload.forEach(([key, value]) => formData.append(key, value as Blob));
-    const fileProperties = {};
+    Object.entries(newEntityData.attachmentsProperties).forEach(([key, value]: [string, any]) => {
+        value.forEach((file, index) => {
+            if (file instanceof File && newEntityData.template.properties.properties[key].items) {
+                filesToUpload.push([`${key}.${index}`, file]);
+            } else if (file instanceof File) {
+                filesToUpload.push([`${key}`, file]);
+            } else {
+                unchangedFiles.push([`${key}`, file]);
+            }
+        });
+    });
+
+    filesToUpload.forEach(([key, value]) => {
+        formData.append(key, value as Blob);
+    });
     unchangedFiles.forEach(([key, value]) => {
-        if (value) {
-            fileProperties[key] = value.name;
+        if (!newEntityData.template.properties.properties[key].items) {
+            newEntityData.properties[key] = value.name;
+        } else {
+            if (!newEntityData.properties[key]) {
+                newEntityData.properties[key] = [];
+            }
+            if (value) {
+                newEntityData.properties[key].push(value.name);
+            }
         }
     });
 
-    formData.append('properties', JSON.stringify({ ...newEntityData.properties, ...fileProperties }));
+    formData.append('properties', JSON.stringify({ ...newEntityData.properties }));
     formData.append('templateId', newEntityData.template._id);
     const { data } = await axios.post<IEntity>(`${entities}/${entityId}/duplicate`, formData);
-
     return data;
 };
 

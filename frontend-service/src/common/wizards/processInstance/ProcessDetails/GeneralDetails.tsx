@@ -43,7 +43,7 @@ type FileAttachmentsProps = {
     templateFileProperties: Record<string, IProcessSingleProperty>;
     values: any;
     errors?: any;
-    setFieldValue?: (field: string, value: File | null) => void;
+    setFieldValue?: (field: string, value: File[]) => void;
     required?: string[];
     touched: FormikProps<ProcessDetailsValues>['touched'];
     setFieldTouched: FormikProps<ProcessFormikProps>['setFieldTouched'];
@@ -60,7 +60,6 @@ const FileAttachmentsEdit: React.FC<FileAttachmentsProps> = ({
 }) => (
     <>
         {Object.entries(templateFileProperties).map(([key, value]) => {
-            console.log("IN GENERAL DETAILS:", key,value, values.detailsAttachments);
             (
             <InstanceFileInput
                 key={key}
@@ -75,6 +74,7 @@ const FileAttachmentsEdit: React.FC<FileAttachmentsProps> = ({
                         : undefined
                 }
                 setFieldTouched={setFieldTouched}
+                multiple={false}
             />
         )})}
     </>

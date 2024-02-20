@@ -11,8 +11,8 @@ import { AxiosError } from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IEntity } from '../../../interfaces/entities';
-import { createEntityRequest, updateEntityRequest } from '../../../services/entitiesService';
-import { EntityWizardValues } from '.';
+import { createEntityRequest, updateEntityRequestForMultiple } from '../../../services/entitiesService';
+import { EntityWizardValuesNew } from '.';
 import { JSONSchemaFormik, ajvValidate } from '../../inputs/JSONSchemaFormik';
 import { BlueTitle } from '../../BlueTitle';
 import { filterAttachmentsAndEntitiesRefFromPropertiesSchema } from '../../../utils/pickFieldsPropertiesSchema';
@@ -26,7 +26,7 @@ import { ChooseTemplate } from './ChooseTemplate';
 const { errorCodes } = environment;
 
 const getEntityTemplateFilesFieldsInfo = (entityTemplate: IMongoEntityTemplatePopulated) => {
-    const templateFilesProperties = pickBy(entityTemplate.properties.properties, (value) => value.format === 'fileId');
+    const templateFilesProperties = pickBy(entityTemplate.properties.properties, (value) => (value.type === 'array' && value.items?.format==="fileId") || value.format === "fileId");
     const templateFileKeys = Object.keys(templateFilesProperties);
     const requiredFilesNames = entityTemplate.properties.required.filter((name) => templateFileKeys.includes(name));
 
@@ -44,7 +44,7 @@ const CreateOrEditEntityDetails: React.FC<{
         isOpen: boolean;
         brokenRules?: IRuleBreachPopulated['brokenRules'];
         rawBrokenRules?: IRuleBreach['brokenRules'];
-        updateEntityFormData?: EntityWizardValues;
+        updateEntityFormData?: EntityWizardValuesNew;
     }>({ isOpen: false });
 
     const { templateFileKeys: initialTemplateFileKeys } = getEntityTemplateFilesFieldsInfo(entityTemplate);
@@ -52,11 +52,21 @@ const CreateOrEditEntityDetails: React.FC<{
     // for initial values
     const fieldProperties = pickBy(entity.properties, (_value, key) => !initialTemplateFileKeys.includes(key)) as IEntity['properties'];
     const fileIdsProperties = pickBy(entity.properties, (_value, key) => initialTemplateFileKeys.includes(key));
-    const fileProperties = mapValues(fileIdsProperties, (value) => ({ name: value })) as Record<string, File>;
-
+    Object.entries(fileIdsProperties)?.forEach(([key, value]) => {
+        if(Array.isArray(value)){
+            fileIdsProperties[key] = value?.map((item) => {
+                return {name: item}
+            });
+        }
+        else {
+            fileIdsProperties[key] =  [{name: value}];
+        }
+        
+    });
+    const fileProperties = fileIdsProperties; 
     const { isLoading: isUpdateLoading, mutateAsync: updateMutation } = useMutation(
-        ({ newEntityData, ignoredRules }: { newEntityData: EntityWizardValues; ignoredRules?: IRuleBreach['brokenRules'] }) =>
-            updateEntityRequest(entity.properties._id, newEntityData, ignoredRules),
+        ({ newEntityData, ignoredRules }: { newEntityData: EntityWizardValuesNew; ignoredRules?: IRuleBreach['brokenRules'] }) =>
+            updateEntityRequestForMultiple(entity.properties._id, newEntityData, ignoredRules),
         {
             onSuccess: (data) => {
                 toast.success(i18next.t('wizard.entity.editedSuccefully'));
@@ -85,14 +95,14 @@ const CreateOrEditEntityDetails: React.FC<{
     const navigate = useNavigate();
 
     const { isLoading: isCreateLoading, mutateAsync: createMutation } = useMutation(
-        (entityToCreate: EntityWizardValues) => createEntityRequest(entityToCreate),
+        (entityToCreate: EntityWizardValuesNew) => createEntityRequest(entityToCreate),
         {
             onSuccess: (newEntity) => {
                 toast.success(i18next.t('wizard.entity.createdSuccessfully'));
                 onCancelUpdate();
                 navigate(`/entity/${newEntity.properties._id}`);
             },
-            onError: (err: AxiosError, { template }: EntityWizardValues) => {
+            onError: (err: AxiosError, { template }: EntityWizardValuesNew) => {
                 const errorMetadata = err.response?.data?.metadata;
                 if (errorMetadata?.errorCode === errorCodes.failedConstraintsValidation) {
                     toastConstraintValidationError(errorMetadata, template);
@@ -108,6 +118,7 @@ const CreateOrEditEntityDetails: React.FC<{
         <Formik
             initialValues={{ properties: fieldProperties, attachmentsProperties: fileProperties, template: entityTemplate }}
             onSubmit={async (values) => {
+                console.log(values);
                 if (isEditMode) updateMutation({ newEntityData: values });
                 else createMutation(values);
             }}
@@ -157,17 +168,17 @@ const CreateOrEditEntityDetails: React.FC<{
                             style={{ marginBottom: '12px', fontSize: '16px', fontWeight: '600' }}
                         />
                         {Object.entries(templateFilesProperties).map(([key, value]) => {
-                            console.log("IN CREATE OR EDIT ENTITY DIALOG:", key, value, values.attachmentsProperties);
-                            (
+                            return (
                             <InstanceFileInput
                                 key={key}
                                 fileFieldName={`attachmentsProperties.${key}`}
                                 fieldTemplateTitle={value.title}
                                 setFieldValue={setFieldValue}
                                 required={requiredFilesNames.includes(key)}
-                                value={values.attachmentsProperties[key]}
+                                value={ values.attachmentsProperties[key] || undefined}
                                 error={errors.attachmentsProperties?.[key] as string}
                                 setFieldTouched={setFieldTouched}
+                                multiple={templateFilesProperties[key].items ? true : false}
                             />
                         )})}
                     </>

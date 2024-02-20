@@ -7,7 +7,7 @@ import pickBy from 'lodash.pickby';
 import mapValues from 'lodash.mapvalues';
 import ExecWithRuleBreachDialog from '../../../common/dialogs/execWithRuleBreachDialog';
 import { ErrorToast } from '../../../common/ErrorToast';
-import { EntityWizardValues } from '../../../common/dialogs/entity';
+import { EntityWizardValuesNew } from '../../../common/dialogs/entity';
 import { IEntity } from '../../../interfaces/entities';
 import { ActionTypes, IUpdateEntityMetadata, IUpdateEntityMetadataPopulated } from '../../../interfaces/ruleBreaches/actionMetadata';
 import { IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
@@ -17,27 +17,33 @@ import { environment } from '../../../globals';
 
 const { errorCodes } = environment;
 
-const getUpdateEntityActionMetadata = (currEntity: IEntity, updateEntityFormData: EntityWizardValues): IUpdateEntityMetadataPopulated => {
-    const templatePropertiesUpdated = pickBy(updateEntityFormData.template.properties.properties, ({ format }, propertyKey) => {
-        if (format === 'fileId') {
+const getUpdateEntityActionMetadata = (currEntity: IEntity, updateEntityFormData: EntityWizardValuesNew): IUpdateEntityMetadataPopulated => {
+    const templatePropertiesUpdated = pickBy(updateEntityFormData.template.properties.properties, ({ format, items }, propertyKey) => {
+        if (format === 'fileId' || (items && items.format === "fileId")) {
             const attachmentProperty = updateEntityFormData.attachmentsProperties[propertyKey];
             if (attachmentProperty instanceof File) return true;
-            return currEntity.properties[propertyKey] !== updateEntityFormData.attachmentsProperties[propertyKey]?.name;
+            if (updateEntityFormData.template.properties.properties[propertyKey].items) {
+                return currEntity.properties[propertyKey].some((element, index) => {
+                    return element !== updateEntityFormData?.attachmentsProperties?.[propertyKey]?.[index]?.name;
+                });
+            }
+            return currEntity.properties[propertyKey] !== updateEntityFormData.attachmentsProperties[propertyKey]?.[0].name;
         }
         return currEntity.properties[propertyKey] !== updateEntityFormData.properties[propertyKey];
     });
-    const updatedFields = mapValues(templatePropertiesUpdated, ({ format }, propertyKey) => {
-        if (format === 'fileId') {
+    
+    const updatedFields = mapValues(templatePropertiesUpdated, ({ format, items }, propertyKey) => {
+        if (format === 'fileId' || (items && items.format === "fileId")) {
             return updateEntityFormData.attachmentsProperties[propertyKey] ?? null;
         }
         return updateEntityFormData.properties[propertyKey] ?? null;
     });
-
     return {
         entity: currEntity,
         updatedFields,
     };
 };
+
 
 const UpdateEntityWithRuleBreachDialog: React.FC<{
     isLoadingUpdateEntity: boolean;
@@ -46,12 +52,11 @@ const UpdateEntityWithRuleBreachDialog: React.FC<{
     brokenRules: IRuleBreachPopulated['brokenRules'];
     rawBrokenRules: IRuleBreach['brokenRules'];
     currEntity: IEntity;
-    updateEntityFormData: EntityWizardValues;
+    updateEntityFormData: EntityWizardValuesNew;
     onUpdatedRuleBlock: (brokenRules: IRuleBreachPopulated['brokenRules'], rawBrokenRules: IRuleBreach['brokenRules']) => void;
 }> = ({ isLoadingUpdateEntity, handleClose, onUpdateEntity, brokenRules, rawBrokenRules, currEntity, updateEntityFormData, onUpdatedRuleBlock }) => {
     const queryClient = useQueryClient();
     const rules = queryClient.getQueryData<IRuleMap>('getRules')!;
-
     const actionMetadata = getUpdateEntityActionMetadata(currEntity, updateEntityFormData);
     const { mutateAsync: createRuleBreachRequest, isLoading: isLoadingCreateRuleBreachRequest } = useMutation(
         () => {

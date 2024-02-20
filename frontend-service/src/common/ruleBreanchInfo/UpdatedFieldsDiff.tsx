@@ -10,24 +10,40 @@ import { formatToString } from '../EntityProperties';
 import { getFileName } from '../../utils/getFileName';
 import { RootState } from '../../store';
 
-const getEntityPropertyString = (value: any, type: 'string' | 'number' | 'boolean' | 'array', format: string | undefined, oldValue: any) => {
+
+const getEntityPropertyString = (value: any, type: 'string' | 'number' | 'boolean' | 'array', format: string | undefined, oldValue: any, items?: any) => {
     if (value === null || value === undefined) {
         return '-';
     }
-
-    if (format !== 'fileId') {
+    if (format !== 'fileId' && !items) {
         return formatToString(value, type, format);
     }
+    //single
+    if(format === 'fileId'){
+        const oldFileName = oldValue ? getFileName(oldValue) : undefined;
+        const fileName = value[0] instanceof File ? value[0].name : getFileName(value);
+        const fileContentChanged = value instanceof File || value !== oldValue;
 
-    const oldFileName = oldValue ? getFileName(oldValue) : undefined;
-    const fileName = value instanceof File ? value.name : getFileName(value);
-
-    const fileContentChanged = value instanceof File || value !== oldValue;
-
-    if (oldFileName === fileName && fileContentChanged) {
-        return `${fileName} (${i18next.t('ruleBreachInfo.updateEntityActionInfo.fileContentUpdated')})`;
+        if (oldFileName === fileName && fileContentChanged) {
+            return `${fileName} (${i18next.t('ruleBreachInfo.updateEntityActionInfo.fileContentUpdated')})`;
+        }
+        return fileName;
     }
-    return fileName;
+    //multiple
+    else {
+        const updatedFiles = value.map((file, index) => {
+            const oldFile = oldValue ? oldValue[index] : undefined;
+            const oldFileName = oldFile ? getFileName(oldFile) : undefined;
+            const fileName = file instanceof File ? file.name : getFileName(file);
+            const fileContentChanged = file instanceof File || !oldValue || !oldValue.includes(file.name);
+
+            if (oldFileName === fileName && fileContentChanged) {
+                return `${fileName} (${i18next.t('ruleBreachInfo.updateEntityActionInfo.fileContentUpdated')})`;
+            }
+            return fileName;
+        });
+        return updatedFiles.join('\n');
+    }
 };
 
 const getEntityPropertiesString = (
@@ -38,8 +54,7 @@ const getEntityPropertiesString = (
     const fieldPropertiesStrings = Object.entries(entityTemplate.properties.properties).map(([propertyKey, propertyTemplate]) => {
         const oldValue = oldEntityProperties?.[propertyKey];
         const value = entityProperties[propertyKey];
-        const valueFormatted = getEntityPropertyString(value, propertyTemplate.type, propertyTemplate.format, oldValue);
-
+        const valueFormatted = getEntityPropertyString(value, propertyTemplate.type, propertyTemplate.format, oldValue, propertyTemplate.items);
         return `${propertyTemplate.title}: ${valueFormatted}`;
     });
     return fieldPropertiesStrings.join('\n');
@@ -57,7 +72,6 @@ export const UpdatedFieldsDiff: React.FC<{
     const newPropertiesWithNulls = { ...oldProperties, ...updatedFields };
     // updatedFields specifies fields to remove w/ nulls. but shouldn't be in the IEntity properties
     const newProperties = pickBy(newPropertiesWithNulls, (property) => property !== null);
-
     return (
         <ReactDiffViewer
             oldValue={

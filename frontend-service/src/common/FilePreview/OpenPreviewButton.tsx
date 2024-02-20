@@ -8,9 +8,7 @@ import { environment } from '../../globals';
 import FileIcon from './FileIcon';
 
 const OpenPreviewButton: React.FC<{ fileId: string }> = ({ fileId }) => {
-    console.log(fileId)
     const fileName = getFileName(fileId);
-    console.log(fileName)
     const [open, setOpen] = useState(false);
     const contentType = getPreviewContentType(fileName);
     const { data, refetch, isLoading, isError } = useFilePreview(fileId, contentType);

@@ -66,6 +66,7 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
 };
 
 export const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTemplate => {
+    //// change to support file types
     const { properties, attachmentProperties, propertiesTypeOrder, ...restOfProperties } = values;
     const serialsUniqueConstraints: string[][] = [];
 
@@ -151,13 +152,25 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTem
         },
     );
 
-    attachmentProperties.forEach(({ name, title, required }) => {
-        schema.properties[name] = {
-            title,
-            type: 'string',
-            format: 'fileId',
-        };
-
+    attachmentProperties.forEach(({ name, title, required, type }) => {
+        console.log(type);
+        if (type === 'multipleFiles') {
+            schema.properties[name] = {
+                title,
+                type: 'array',
+                items: {
+                    type: 'string',
+                    format: 'fileId',
+                },
+                minItems: 1,
+            };
+        } else {
+            schema.properties[name] = {
+                title,
+                type: 'string',
+                format: 'fileId',
+            };
+        }
         attachmentPropertiesOrder.push(name);
 
         if (required) schema.required.push(name);
@@ -214,12 +227,12 @@ const updateEntityTemplateStatusRequest = async (entityTemplateId: string, disab
 
 const updateEntityTemplateRequest = async (entityTemplateId: string, updatedEntityTemplate: IEntityTemplate | EntityTemplateWizardValues) => {
     const formData = new FormData();
-
     const entityTemplate: IEntityTemplate =
         'attachmentProperties' in updatedEntityTemplate // its type is - EntityTemplateWizardValues
             ? formToJSONSchema(updatedEntityTemplate as EntityTemplateWizardValues)
             : updatedEntityTemplate;
 
+    console.log(updatedEntityTemplate, entityTemplate);
     if ('attachmentProperties' in updatedEntityTemplate && updatedEntityTemplate.icon) {
         if (updatedEntityTemplate.icon.file instanceof File) {
             formData.append('file', updatedEntityTemplate.icon.file);

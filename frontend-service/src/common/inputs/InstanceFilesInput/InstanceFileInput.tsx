@@ -12,11 +12,12 @@ type ProcessFormikProps = ProcessStepValues | ProcessDetailsValues;
 interface InstanceFileInputProps {
     fileFieldName: string;
     fieldTemplateTitle: string;
-    setFieldValue: (field: string, value: File[]) => void; // Update to accept an array of files
+    setFieldValue: (field: string, value: File[]) => void; 
     required: Boolean;
-    value: File[] | undefined; // Update to accept an array of files
+    value: File[] | undefined;
     error: string | undefined;
     setFieldTouched: FormikProps<ProcessFormikProps>['setFieldTouched'];
+    multiple: boolean;
 }
 
 export const InstanceFileInput: React.FC<InstanceFileInputProps> = ({
@@ -27,9 +28,10 @@ export const InstanceFileInput: React.FC<InstanceFileInputProps> = ({
     value,
     error,
     setFieldTouched,
+    multiple
 }) => {
+    console.log(value)
     const [filesName, setFilesName] = useState<string[]>(value ? value.map(file => getFileName(file.name)) : []);
-        
     return (
         <Box
             marginTop={1}
@@ -51,6 +53,7 @@ export const InstanceFileInput: React.FC<InstanceFileInputProps> = ({
                 inputText={`${fieldTemplateTitle} ${required ? '*' : ''}`}
                 files={filesName || []}
                 onDropFiles={(acceptedFiles) => {
+                    console.log(acceptedFiles)
                     setFieldValue(fileFieldName, acceptedFiles);
                     setFilesName(acceptedFiles.map((file) => file.name))
                     setFieldTouched(fileFieldName, true, false);
@@ -58,11 +61,12 @@ export const InstanceFileInput: React.FC<InstanceFileInputProps> = ({
                 onDeleteFile={(fileIndex) => {
                     const updatedFiles = [...(value || [])];
                     updatedFiles.splice(fileIndex, 1);
-                    // setFileName
                     setFieldValue(fileFieldName, updatedFiles);
+                    setFilesName(updatedFiles.map((file) => getFileName(file.name)))
                     setFieldTouched(fileFieldName, true, false);
                 }}
                 errorText={error}
+                multiple={multiple}
             />
         </Box>
     );

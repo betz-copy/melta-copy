@@ -19,7 +19,6 @@ class InstancesController {
 
     static async updateEntityInstance(req: Request, res: Response) {
         const { ignoredRules, ...instanceData } = req.body;
-        console.log('INSTANCE SATA:', instanceData);
         res.json(
             await InstancesManager.updateEntityInstance(req.params.id, instanceData, req.files as Express.Multer.File[], ignoredRules, req.user!.id),
         );

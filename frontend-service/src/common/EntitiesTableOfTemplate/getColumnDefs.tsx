@@ -90,7 +90,6 @@ export const getColumnDefs = <Data extends any = IEntity>({
                 hideColumn,
                 hideField,
             );
-            console.log(propertyTemplate, property)
         if (propertyTemplate.items){
             return enumFilesColDef(
                 property,

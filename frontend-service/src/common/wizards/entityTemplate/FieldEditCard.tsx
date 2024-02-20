@@ -182,11 +182,12 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                     if (validPropertyType === 'fileId' || validPropertyType === 'fileIdArray') return false; // TODO: support file inputs
                                                     return true;
                                                 })
-                                                .map((validType) => (
+                                                .map((validType) => {
+                                                    return(
                                                     <MenuItem key={validType} value={validType}>
                                                         {i18next.t(`propertyTypes.${validType}`)}
                                                     </MenuItem>
-                                                ))}
+                                                )})}
                                         </TextField>
                                     </Grid>
                                     <Grid item container justifyContent="space-between" flexWrap="nowrap">

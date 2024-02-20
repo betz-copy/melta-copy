@@ -83,7 +83,6 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
     setFieldTouched,
     isEditMode = false,
 }) => {
-    console.log(schema)
     const rjsfExtraErrors = formikErrorsToRjsfExtraErrors(errors as Record<string, string>);
     const ajvExtraErrorsOnlyTouched: ErrorSchema<{}> = pickBy(rjsfExtraErrors, (_value, key) => touched[key]);
     return (

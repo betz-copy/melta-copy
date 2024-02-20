@@ -109,13 +109,29 @@ export class InstancesManager {
 
     static async createEntityInstance(instanceData: IEntity, files: Express.Multer.File[], user: Express.User) {
         const fileProperties = await InstancesManager.uploadInstanceFiles(files);
+
+        const filesToUpload: any = {};
+        //not for image picker
+        Object.entries(fileProperties).forEach(([key, value]) => {
+            const [group, _index] = key.split('.');
+            if (group === key) {
+                //for single files
+                filesToUpload[key] = value;
+            } else {
+                if (!filesToUpload[group]) {
+                    filesToUpload[group] = [];
+                }
+                filesToUpload[group].push(value);
+            }
+        });
+
         const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(instanceData.templateId);
         let templateUpdated = false;
 
         const updatedProperties = {
             ...entityTemplate.properties.properties,
         };
-        const newInstanceData: IEntity = { templateId: instanceData.templateId, properties: { ...fileProperties, ...instanceData.properties } };
+        const newInstanceData: IEntity = { templateId: instanceData.templateId, properties: { ...filesToUpload, ...instanceData.properties } };
 
         Object.keys(entityTemplate.properties.properties).forEach((key) => {
             if (entityTemplate.properties.properties[key].serialCurrent !== undefined) {
@@ -127,6 +143,7 @@ export class InstancesManager {
                 templateUpdated = true;
             }
         });
+
         if (templateUpdated) {
             const { category, _id, createdAt, updatedAt, disabled, ...restOfEntityTemplate } = entityTemplate;
             await EntityTemplateManagerService.updateEntityTemplate(instanceData.templateId, {
@@ -229,19 +246,21 @@ export class InstancesManager {
         userId: string,
         createAlert: boolean = true,
     ) {
-        console.log('FILES:', files);
         const uploadedFilesProperties = await InstancesManager.uploadInstanceFiles(files);
-        console.log('UPLOADED FILE PROPS:', uploadedFilesProperties);
         const filesToUpload: any = {};
         //not for image picker
         Object.entries(uploadedFilesProperties).forEach(([key, value]) => {
             const [group, _index] = key.split('.');
-            if (!filesToUpload[group]) {
-                filesToUpload[group] = [];
+            if (group === key) {
+                //for single files
+                filesToUpload[key] = value;
+            } else {
+                if (!filesToUpload[group]) {
+                    filesToUpload[group] = [];
+                }
+                filesToUpload[group].push(value);
             }
-            filesToUpload[group].push(value);
         });
-        console.log('FILES TO UPLOAD', filesToUpload);
         const currentEntity = await InstanceManagerService.getEntityInstanceById(id);
 
         const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(currentEntity.templateId);
@@ -256,12 +275,11 @@ export class InstancesManager {
         if (filesToUpload?.files) {
             updatedInstanceData.properties.files = filesToUpload.files;
         }
-        console.log('SENT TO INASTANCE:', { ...filesToUpload, ...updatedInstanceData.properties });
         const updatedInstance = await InstanceManagerService.updateEntityInstance(
             id,
             {
                 templateId: updatedInstanceData.templateId,
-                properties: { ...uploadedFilesProperties, ...updatedInstanceData.properties },
+                properties: { ...filesToUpload, ...updatedInstanceData.properties },
             },
             ignoredRules,
         ).catch(InstancesManager.handleBrokenRulesError);
@@ -279,14 +297,13 @@ export class InstancesManager {
             const propertyTemplate = entityTemplate.properties.properties[field];
 
             let newValue: any;
-            if (propertyTemplate.format === 'fileId') {
+            if (propertyTemplate.format === 'fileId' || propertyTemplate.items?.format === 'fileId') {
                 newValue = uploadedFilesProperties[field] ?? updatedInstance.properties[field];
             } else {
                 newValue = updatedInstance.properties[field];
             }
 
             if (currentEntity.properties[field] === newValue) continue;
-
             updatedFields[field] = newValue ?? null;
             activityLogUpdatedFields.push({
                 fieldName: field,
@@ -309,7 +326,6 @@ export class InstancesManager {
                 userId,
             );
         }
-
         await ActivityLogManagerService.createActivityLog({
             action: 'UPDATE_ENTITY',
             metadata: { updatedFields: activityLogUpdatedFields },

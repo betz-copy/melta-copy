@@ -27,7 +27,8 @@ export const errorMiddleware = (error: Error, _req: express.Request, res: expres
         });
     }
 
-    console.log(JSON.stringify(error, null, 4));
-
+    // TODO: add some logging
+    console.error('Request failed with error: ', error); // eslint-disable-line no-console
+    
     next();
 };

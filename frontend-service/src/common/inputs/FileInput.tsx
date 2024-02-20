@@ -11,11 +11,12 @@ interface FileInputProps {
     onDropFile?: (acceptedFiles: File) => void;
     onDeleteFile: (fileIndex: number) => void;
     inputText: string;
+    multiple: boolean;
     acceptedFilesTypes?: Accept;
     errorText?: string;
 }
 
-const FileInput: React.FC<FileInputProps> = ({ files, onDropFiles, onDropFile, onDeleteFile, inputText, acceptedFilesTypes, errorText }) => {
+const FileInput: React.FC<FileInputProps> = ({ files, onDropFiles, onDropFile, onDeleteFile, inputText, acceptedFilesTypes, errorText, multiple }) => {
     const theme = useTheme();
 
     const errorStyle = {
@@ -34,7 +35,7 @@ const FileInput: React.FC<FileInputProps> = ({ files, onDropFiles, onDropFile, o
     const { getRootProps, getInputProps, isDragActive } = useDropzone({
         onDrop,
         accept: acceptedFilesTypes,
-        multiple: true, 
+        multiple: multiple, 
     });
 
     const [inputWidth, setInputWidth] = useState<number>(200);
@@ -60,11 +61,13 @@ const FileInput: React.FC<FileInputProps> = ({ files, onDropFiles, onDropFile, o
         borderColor: '#CCCFE5',
         color: '#9398C2',
         width: '100%',
-        height: 'auto',
+        minHeight: '40px',
+        maxHeight: '86px',
         display: 'flex',
         padding: '10px',
         alignItems: 'center',
         cursor: 'pointer',
+        overflowY: 'auto',
     };
     return (
         <Grid container flexDirection="column" justifyContent="space-around" width="100%" ref={inputRef}>
@@ -72,7 +75,7 @@ const FileInput: React.FC<FileInputProps> = ({ files, onDropFiles, onDropFile, o
                 <Typography style={{ color: '#9398C2' }}>{inputText}</Typography>
             </Grid>
 
-            <Grid item container style={inputStyle} {...getRootProps()}>
+            <Grid item container sx={inputStyle} {...getRootProps()} >
                 <input {...getInputProps()} />
                 <Grid item container alignItems="center" flexWrap="wrap">
                     {files?.map((file, index) => (

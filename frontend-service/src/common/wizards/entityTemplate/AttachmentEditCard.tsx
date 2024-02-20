@@ -1,6 +1,6 @@
 import React, { memo } from 'react';
 import { FormikErrors, FormikTouched } from 'formik';
-import { TextField, Box, Grid, Card, CardContent, Switch, FormControlLabel, IconButton } from '@mui/material';
+import { TextField, Box, Grid, Card, CardContent, Switch, FormControlLabel, IconButton, MenuItem } from '@mui/material';
 import { Delete as DeleteIcon, DragHandle as DragHandleIcon } from '@mui/icons-material';
 import { Draggable } from 'react-beautiful-dnd';
 import i18next from 'i18next';
@@ -39,7 +39,9 @@ export const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
     const title = `attachmentProperties[${index}].title`;
     const touchedTitle = touched?.title;
     const errorTitle = errors?.title;
+    const type = `properties[${index}].type`;
 
+    const validPropertyTypes = ["singleFile", "multipleFiles"];
     // TODO: implement array field on files
     // const type = `attachmentProperties[${index}].type`;
 
@@ -83,6 +85,28 @@ export const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
                                             helperText={touchedTitle && errorTitle}
                                             sx={{ width: '50%', marginRight: '5px' }}
                                         />
+                                        <TextField
+                                            select
+                                            type="text"
+                                            label={i18next.t('wizard.entityTemplate.propertyType')}
+                                            id={type}
+                                            name={type}
+                                            value={value.type}
+                                            onChange={onChange}
+                                            // error={touchedType && Boolean(errorType)}
+                                            // helperText={touchedType && errorType}
+                                            disabled={isDisabled}
+                                            sx={{ marginRight: '5px' }}
+                                            fullWidth
+                                        >
+                                            {validPropertyTypes
+                                                .map((validType) => {
+                                                    return(
+                                                    <MenuItem key={validType} value={validType}>
+                                                        {i18next.t(`propertyTypes.${validType}`)}
+                                                    </MenuItem>
+                                                )})}
+                                        </TextField>
                                     </Grid>
                                     <Grid container justifyContent="space-between">
                                         <Box>
