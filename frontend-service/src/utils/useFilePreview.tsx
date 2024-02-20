@@ -1,10 +1,10 @@
 import { useQuery } from 'react-query';
+import { IFile } from '../interfaces/preview';
 import { getFilePreviewRequest } from '../services/previewService';
-import { FileExtensions } from '../interfaces/preview';
 
-export const useFilePreview = (fileId: string, contentType: string, targetExtension?: FileExtensions) => {
+export const useFilePreview = (fileId: IFile['id'], contentType: IFile['contentType'], targetExtension?: IFile['targetExtension']) => {
     return useQuery(
-        ['preview', fileId, targetExtension],
+        ['preview', fileId, contentType, targetExtension],
         () => {
             if (contentType === 'unsupported') {
                 return contentType;
