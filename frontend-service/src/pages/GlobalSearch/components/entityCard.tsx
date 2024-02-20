@@ -5,7 +5,6 @@ import { Box, Card, CardContent, CardHeader, Dialog, Divider, Grid, IconButton, 
 import i18next from 'i18next';
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { v4 as uuid } from 'uuid';
 import { BlueTitle } from '../../../common/BlueTitle';
 import { CustomIcon } from '../../../common/CustomIcon';
 import { EntityProperties } from '../../../common/EntityProperties';
@@ -54,7 +53,6 @@ const EntityCard: React.FC<EntityCardProps> = ({
     const [files, setFiles] = useState<IFile[]>([]);
     const [previewImageIndex, setPreviewImageIndex] = useState(0);
     const cardRef = useRef<HTMLDivElement>(null);
-    const id = uuid();
 
     useEffect(() => {
         const filePropertyNames = entityTemplate.propertiesOrder.filter((propertyName) => {
@@ -110,7 +108,6 @@ const EntityCard: React.FC<EntityCardProps> = ({
         <Card
             raised
             variant={variant}
-            id={id}
             ref={cardRef}
             sx={{ borderRadius: '15px', overflow: 'hidden', minHeight: '18rem', ...customCardStyle }}
         >
