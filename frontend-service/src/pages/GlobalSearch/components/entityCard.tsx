@@ -36,6 +36,7 @@ interface EntityCardProps {
     userHavePermission?: boolean;
     customCardStyle?: React.CSSProperties;
     variant?: 'outlined' | 'elevation';
+    refetchTemplateId?: (id: string) => void;
 }
 
 const EntityCard: React.FC<EntityCardProps> = ({
@@ -47,6 +48,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
     userHavePermission = true,
     customCardStyle,
     variant = 'outlined',
+    refetchTemplateId,
 }) => {
     const [open, setOpen] = useState<boolean>(expandCard);
     const [shouldDisplayFilePreview, setShouldDisplayFilePreview] = useState(false);
@@ -105,12 +107,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
     ];
 
     return (
-        <Card
-            raised
-            variant={variant}
-            ref={cardRef}
-            sx={{ borderRadius: '15px', overflow: 'hidden', minHeight: '18rem', ...customCardStyle }}
-        >
+        <Card raised variant={variant} ref={cardRef} sx={{ borderRadius: '15px', overflow: 'hidden', minHeight: '18rem', ...customCardStyle }}>
             <CardHeader
                 style={{ height: '36px', padding: '0px 27px 0px 0px', marginTop: '7px' }}
                 title={
@@ -383,9 +380,8 @@ const EntityCard: React.FC<EntityCardProps> = ({
                     entity={entity}
                     onSuccessUpdate={() => {
                         setEditDialog((prev) => ({ ...prev, isOpen: false }));
-                        // One way to update the entity:
-                        // entity = 
-                        window.location.reload();
+
+                        if (refetchTemplateId) refetchTemplateId(entityTemplate._id);
                     }}
                     onCancelUpdate={() => setEditDialog((prev) => ({ ...prev, isOpen: false }))}
                 />

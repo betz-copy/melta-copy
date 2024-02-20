@@ -27,6 +27,10 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
 
     const queryClient = useQueryClient();
 
+    const invalidateQueryAndRefetch = (templateId: string) => {
+        queryClient.invalidateQueries({ queryKey: ['searchEntities', [templateId]] });
+    };
+
     useImperativeHandle(ref, () => ({
         refetch: () => queryClient.resetQueries({ queryKey: ['searchEntities', templateIds, searchInput], exact: true }),
     }));
@@ -93,6 +97,7 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
                                     onExpand={(entityId) => {
                                         setOpenCardsMap((map) => new Map(map.set(entityId, !openCardsMap.get(entityId))));
                                     }}
+                                    refetchTemplateId={ invalidateQueryAndRefetch}
                                 />
                             </Box>
                         );
