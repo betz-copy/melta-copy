@@ -888,4 +888,7 @@ export default {
             TimelineYear: 'שנה פרוסה',
         },
     },
+    camera: {
+        cameraNotFound: 'מצלמה לא נמצאה',
+    },
 };
