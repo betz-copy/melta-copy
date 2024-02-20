@@ -66,6 +66,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
             refetchOnWindowFocus: true,
         },
     );
+
     const notificationCountDetails = notificationCountDetailsResponse || { total: 0, groups: {} };
 
     const { meltaPlus } = useSelector((state: RootState) => state);

@@ -350,7 +350,7 @@ const SelectCheckbox = <Option extends any, Group extends any>({
     });
 
     return (
-        <FormControl sx={{ background: darkMode ? '#242424' : 'white', width: '13rem' }}>
+        <FormControl sx={{ background: darkMode ? '#242424' : 'white' }}>
             <Select
                 displayEmpty
                 renderValue={() => title}

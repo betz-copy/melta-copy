@@ -12,9 +12,8 @@ const PopperSidebar: React.FC<{
     side: 'right' | 'left';
     sideMargin?: CSSProperties['margin'];
     width?: CSSProperties['width'];
-    filterCleaning?: () => void;
     isCheckBoxClicked?: boolean;
-}> = ({ children, open, setOpen, title, side, sideMargin = 0, width = '22rem', filterCleaning, isCheckBoxClicked = false }) => {
+}> = ({ children, open, setOpen, title, side, sideMargin = 0, width = '22rem', isCheckBoxClicked = false }) => {
     const darkMode = useSelector((state: RootState) => state.darkMode);
     const theme = useTheme();
 
@@ -26,7 +25,6 @@ const PopperSidebar: React.FC<{
                         <ClickAwayListener
                             onClickAway={() => {
                                 if (!isCheckBoxClicked) setOpen(false);
-                                if (filterCleaning) filterCleaning();
                             }}
                         >
                             <Grid
@@ -56,7 +54,6 @@ const PopperSidebar: React.FC<{
                                         <IconButton
                                             onClick={() => {
                                                 setOpen(false);
-                                                if (filterCleaning) filterCleaning();
                                             }}
                                             size="small"
                                         >

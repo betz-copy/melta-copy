@@ -51,7 +51,7 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
         onSetStartDate(null);
         onSetEndDate(null);
         setOpenCalendars(false);
-        setNotificationsToShowCheckbox(notificationsMoreData[selectedGroup]);
+        // setNotificationsToShowCheckbox(notificationsMoreData[selectedGroup]);
     };
     const { mutate, isLoading } = useMutation((groupName: keyof typeof groups) => manyNotificationSeenRequest(groups[groupName]), {
         onSuccess: (seenNotifications, groupName) => {
@@ -80,19 +80,22 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
             title={i18next.t('notifications.title')}
             side="right"
             sideMargin={sideBarWidth}
-            filterCleaning={filterCleaning}
             isCheckBoxClicked={isCheckBoxClicked}
         >
             <Grid>
-                <Tabs value={selectedGroup} onChange={handleGroupChange} sx={{ height: '60px' }}>
+                <Tabs value={selectedGroup} onChange={handleGroupChange}>
                     {groupNames.map((groupName) => (
                         <Tab
                             value={groupName}
                             key={groupName}
                             iconPosition="start"
-                            icon={<img src={`/icons/${groupName}-notification${selectedGroup === groupName ? '-clicked' : ''}.svg`} />}
                             label={
                                 <Grid container gap="10px" display="flex" alignItems="center" justifyContent="space-around">
+                                    {/* <img src={`/icons/${groupName}-notification${selectedGroup === groupName ? '-clicked' : ''}.svg`} /> */}
+                                    <img
+                                        src="/icons/general-notification-clicked.svg"
+                                        style={{ fill: selectedGroup === groupName ? 'red' : 'blue' }}
+                                    />
                                     <Grid item> {i18next.t(`notifications.groups.${groupName}`)}</Grid>
                                     <Grid item>
                                         <NotificationCount notificationCount={notificationCountDetails.groups[groupName]} />
@@ -137,6 +140,7 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                                         borderRadius: '10px',
                                         boxShadow: '0 0 10px rgba(0, 0, 0, 0.2)',
                                         border: 0,
+                                        width: openCalenders ? '17rem' : '13rem',
                                     },
                                     '& .MuiOutlinedInput-notchedOutline': { border: 0 },
                                     '&.MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline': {
@@ -194,11 +198,12 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                                     },
                                 }}
                             />
+
                             <IconButtonWithPopover
                                 iconButtonProps={{ onClick: () => filterCleaning() }}
                                 popoverText={i18next.t('entitiesTableOfTemplate.resetFilters')}
-                                // placement="bottom-start"
-                                // disabled
+                                // placement="bottom-start"`
+                                disabled={!(startDate || endDate)}
                                 style={{ borderRadius: '5px' }}
                             >
                                 {/* <img src="/icons/delete-filters.svg" /> :  */}
