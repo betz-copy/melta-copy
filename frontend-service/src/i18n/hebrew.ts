@@ -890,5 +890,6 @@ export default {
     },
     camera: {
         cameraNotFound: 'מצלמה לא נמצאה',
+        somethingWentWrong: 'משהו השתבש, אנא נסה שנית',
     },
 };

@@ -3,8 +3,8 @@ import { IconButton, Grid, useTheme, Typography } from '@mui/material';
 import { CloseOutlined as DeleteIcon, FilePresent as FileIcon, CameraAlt as CameraIcon } from '@mui/icons-material';
 import { Accept, useDropzone } from 'react-dropzone';
 import i18next from 'i18next';
-import VideoPlayer from '../dialogs/VideoPlayer';
 import { toast } from 'react-toastify';
+import VideoPlayer from '../dialogs/VideoPlayer';
 
 interface FileInputProps {
     fileName: string | undefined;
@@ -137,7 +137,8 @@ const FileInput: React.FC<FileInputProps> = ({ fileName, onDeleteFile, onDropFil
                                     borderRadius: '7px',
                                     marginLeft: '5px',
                                 }}
-                                onClick={() => {
+                                onClick={(event) => {
+                                    event.stopPropagation();
                                     if (!stream) {
                                         toast(i18next.t('camera.cameraNotFound'));
                                     } else {
