@@ -15,7 +15,6 @@ const ActivityLogRow: React.FC<{ log: IActivityLog; entityTemplate: IMongoEntity
     const { data: user, isLoading } = useQuery(['getUserById', log.userId], () => getUserByIdRequest(log.userId));
 
     const darkMode = useSelector((state: RootState) => state.darkMode);
- 
     return (
         <Grid container>
             <Grid item padding="10px">

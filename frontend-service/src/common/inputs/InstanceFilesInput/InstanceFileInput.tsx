@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import i18next from 'i18next';
 import { Box } from '@mui/material';
 import { Field, FormikProps } from 'formik';
-import FileInput from '../FileInput';
+import FilesInput from '../FilesInput'; 
 import { ProcessStepValues } from '../../wizards/processInstance/ProcessSteps';
 import { ProcessDetailsValues } from '../../wizards/processInstance/ProcessDetails';
 import { getFileName } from '../../../utils/getFileName';
@@ -30,7 +30,6 @@ export const InstanceFileInput: React.FC<InstanceFileInputProps> = ({
     setFieldTouched,
     multiple
 }) => {
-    console.log(value)
     const [filesName, setFilesName] = useState<string[]>(value ? value.map(file => getFileName(file.name)) : []);
     return (
         <Box
@@ -48,12 +47,11 @@ export const InstanceFileInput: React.FC<InstanceFileInputProps> = ({
                     return required && (!changedValue || changedValue.length === 0) && i18next.t('validation.requiredFile');
                 }}
                 name={filesName}
-                component={FileInput}
+                component={FilesInput}
                 fileFieldName={fileFieldName}
                 inputText={`${fieldTemplateTitle} ${required ? '*' : ''}`}
                 files={filesName || []}
                 onDropFiles={(acceptedFiles) => {
-                    console.log(acceptedFiles)
                     setFieldValue(fileFieldName, acceptedFiles);
                     setFilesName(acceptedFiles.map((file) => file.name))
                     setFieldTouched(fileFieldName, true, false);

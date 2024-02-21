@@ -83,6 +83,9 @@ export const updateEntityRequestForMultiple = async (
     filesToUpload.forEach(([key, value]) => {
         formData.append(key, value as Blob);
     });
+    unchangedFiles.forEach(([key, _value]) => {
+        newEntityData.properties[key] = [];
+    });
     unchangedFiles.forEach(([key, value]) => {
         if (!newEntityData.template.properties.properties[key].items) {
             newEntityData.properties[key] = value.name;
@@ -95,7 +98,6 @@ export const updateEntityRequestForMultiple = async (
             }
         }
     });
-    console.log(unchangedFiles, filesToUpload, newEntityData);
     formData.append('properties', JSON.stringify({ ...newEntityData.properties }));
     formData.append('templateId', newEntityData.template._id);
 

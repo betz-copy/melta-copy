@@ -293,8 +293,6 @@ export class TemplatesManager {
         file?: Express.Multer.File,
     ): Promise<IMongoEntityTemplateWithConstraintsPopulated> {
         await EntityTemplateManagerService.getCategoryById(templateData.category);
-        console.log('CREATEEEE:', templateData, templateData.properties);
-
         let iconFileId: string | null;
         if (file) {
             iconFileId = await uploadFile(file);
@@ -417,7 +415,6 @@ export class TemplatesManager {
 
         const { uniqueConstraints, properties, ...restOfTemplateData } = updatedTemplateData;
         const { required: requiredConstraints, ...restOfTemplatePropertiesObject } = properties;
-        console.log('OKKKK:', { ...restOfTemplateData, properties: restOfTemplatePropertiesObject });
         const updatedTemplate = await EntityTemplateManagerService.updateEntityTemplate(id, {
             ...restOfTemplateData,
             properties: restOfTemplatePropertiesObject,

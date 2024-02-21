@@ -80,7 +80,6 @@ const EditEntityDetails: React.FC<{
             },
         },
     );
-
     return (
         <Formik
             initialValues={{ properties: fieldProperties, attachmentsProperties: fileProperties }}
@@ -136,7 +135,6 @@ const EditEntityDetails: React.FC<{
                                                             />
                                                             <>
                                                                 {Object.entries(templateFilesProperties).map(([key, value]) => {
-                                                                    console.log("EDIT ENTITY:", templateFilesProperties, values.attachmentsProperties[key])
                                                                     return(
                                                                     <InstanceFileInput
                                                                         key={key}

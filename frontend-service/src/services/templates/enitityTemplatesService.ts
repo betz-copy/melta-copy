@@ -153,7 +153,6 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTem
     );
 
     attachmentProperties.forEach(({ name, title, required, type }) => {
-        console.log(type);
         if (type === 'multipleFiles') {
             schema.properties[name] = {
                 title,
@@ -232,7 +231,6 @@ const updateEntityTemplateRequest = async (entityTemplateId: string, updatedEnti
             ? formToJSONSchema(updatedEntityTemplate as EntityTemplateWizardValues)
             : updatedEntityTemplate;
 
-    console.log(updatedEntityTemplate, entityTemplate);
     if ('attachmentProperties' in updatedEntityTemplate && updatedEntityTemplate.icon) {
         if (updatedEntityTemplate.icon.file instanceof File) {
             formData.append('file', updatedEntityTemplate.icon.file);

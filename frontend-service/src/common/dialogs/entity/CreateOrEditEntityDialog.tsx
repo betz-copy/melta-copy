@@ -5,7 +5,6 @@ import { useMutation } from 'react-query';
 import i18next from 'i18next';
 import { toast } from 'react-toastify';
 import { Form, Formik } from 'formik';
-import mapValues from 'lodash.mapvalues';
 import pickBy from 'lodash.pickby';
 import { AxiosError } from 'axios';
 import { useNavigate } from 'react-router-dom';
@@ -118,7 +117,6 @@ const CreateOrEditEntityDetails: React.FC<{
         <Formik
             initialValues={{ properties: fieldProperties, attachmentsProperties: fileProperties, template: entityTemplate }}
             onSubmit={async (values) => {
-                console.log(values);
                 if (isEditMode) updateMutation({ newEntityData: values });
                 else createMutation(values);
             }}

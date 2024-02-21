@@ -36,7 +36,6 @@ export class InstancesManager {
         const fileIds = await uploadFiles(files);
 
         const filePropertiesEntries = files.map((file, index) => {
-            console.log(file, fileIds);
             return [file.fieldname, fileIds[index]];
         });
         return Object.fromEntries(filePropertiesEntries);
@@ -302,7 +301,12 @@ export class InstancesManager {
             } else {
                 newValue = updatedInstance.properties[field];
             }
-
+            if (
+                Array.isArray(currentEntity.properties[field]) &&
+                newValue.length === currentEntity.properties[field].length &&
+                newValue.every((element, index) => element === currentEntity.properties[field][index])
+            )
+                continue;
             if (currentEntity.properties[field] === newValue) continue;
             updatedFields[field] = newValue ?? null;
             activityLogUpdatedFields.push({
