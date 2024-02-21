@@ -36,7 +36,7 @@ interface EntityCardProps {
     userHavePermission?: boolean;
     customCardStyle?: React.CSSProperties;
     variant?: 'outlined' | 'elevation';
-    refetchTemplateId?: (id: string) => void;
+    invalidateQuery?: (id: string) => void;
 }
 
 const EntityCard: React.FC<EntityCardProps> = ({
@@ -48,7 +48,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
     userHavePermission = true,
     customCardStyle,
     variant = 'outlined',
-    refetchTemplateId,
+    invalidateQuery,
 }) => {
     const [open, setOpen] = useState<boolean>(expandCard);
     const [shouldDisplayFilePreview, setShouldDisplayFilePreview] = useState(false);
@@ -381,7 +381,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
                     onSuccessUpdate={() => {
                         setEditDialog((prev) => ({ ...prev, isOpen: false }));
 
-                        if (refetchTemplateId) refetchTemplateId(entityTemplate._id);
+                        if (invalidateQuery) invalidateQuery(entityTemplate._id);
                     }}
                     onCancelUpdate={() => setEditDialog((prev) => ({ ...prev, isOpen: false }))}
                 />
