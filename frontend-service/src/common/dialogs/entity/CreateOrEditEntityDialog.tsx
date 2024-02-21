@@ -140,11 +140,13 @@ const CreateOrEditEntityDetails: React.FC<{
                         }
                     });
 
-                    Object.entries<object>(schema.properties).forEach(([propertyName, propertyValues]) => {
-                        if (propertyValues.hasOwnProperty('serialCurrent')) {
-                            setFieldValue(`properties.${propertyName}`, propertyValues['serialCurrent']);
-                        }
-                    });
+                    if (!isEditMode) {
+                        Object.entries<object>(schema.properties).forEach(([propertyName, propertyValues]) => {
+                            if (propertyValues.hasOwnProperty('serialCurrent')) {
+                                setFieldValue(`properties.${propertyName}`, propertyValues['serialCurrent']);
+                            }
+                        });
+                    }
                 }, [values.template]);
 
                 const propertiesComp = values.template?._id && (
