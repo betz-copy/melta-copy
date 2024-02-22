@@ -49,6 +49,7 @@ InstancesRouter.post('/entities/search/template/:templateId', wrapMiddleware(val
 InstancesRouter.post(
     '/entities/export',
     wrapMiddleware(validateUserCanExportEntities),
+    wrapMiddleware(InstancesController.viewEntityInstance),
     ValidateRequest(exportEntitiesSchema),
     wrapController(InstancesController.exportEntities),
 );
@@ -57,8 +58,8 @@ InstancesRouter.post(
     '/entities/expanded/:id',
     wrapMiddleware(validateUserCanReadEntityInstance),
     wrapMiddleware(validateUserCanGetExpandedEntity),
+    wrapMiddleware(InstancesController.viewEntityInstance),
     InstanceManagerProxy,
-    wrapController(InstancesController.viewEntityInstance),
 );
 InstancesRouter.post(
     '/entities',

@@ -110,11 +110,11 @@ export class InstancesManager {
         const fileProperties = await InstancesManager.uploadInstanceFiles(files);
         const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(instanceData.templateId);
         let templateUpdated = false;
-
+        console.log("KIASGIAJGI");
         const updatedProperties = {
             ...entityTemplate.properties.properties,
         };
-        const newInstanceData: IEntity = { templateId: instanceData.templateId, properties: { ...fileProperties, ...instanceData.properties } };
+        const newInstanceData: IEntity = { templateId: instanceData.templateId, properties: { ...fileProperties, ...instanceData.properties } , viewers: [] };
 
         Object.keys(entityTemplate.properties.properties).forEach((key) => {
             if (entityTemplate.properties.properties[key].serialCurrent !== undefined) {
@@ -212,19 +212,19 @@ export class InstancesManager {
 
         const duplicatedFilesEntriesProperties = Object.fromEntries(duplicatedFilesEntries);
 
+        const viewersCopy = instanceData.viewers.map((userId) => userId);
         const duplicatedInstanceData: IEntity = {
             templateId: instanceData.templateId,
             properties: { ...instanceData.properties, ...duplicatedFilesEntriesProperties },
+            viewers: viewersCopy,
         };
 
         return this.createEntityInstance(duplicatedInstanceData, files, user);
     }
 
     static async viewEntityInstance(id: string, userId: string) {
-        const currentEntity = await InstanceManagerService.getEntityInstanceById(id);
-        const currentEntityTemplate = await EntityTemplateManagerService.getEntityTemplateById(currentEntity.templateId);
-
-
+        console.log("viewed entity");
+        console.log(id)
         await ActivityLogManagerService.createActivityLog({
             action: 'VIEW_ENTITY',
             entityId: id,
@@ -232,7 +232,11 @@ export class InstancesManager {
             timestamp: new Date(),
             userId: userId,
         });
-
+        const updatedEntity = await InstanceManagerService.getEntityInstanceById(id);
+        if(updatedEntity.viewers.indexOf(userId) === -1)
+            updatedEntity.viewers.push(userId);
+        console.log(updatedEntity.viewers)
+        await this.updateEntityInstance(id, updatedEntity, [] ,[],userId )
     }
 
     static async updateEntityInstance(
@@ -257,10 +261,11 @@ export class InstancesManager {
         });
 
         const updatedInstance = await InstanceManagerService.updateEntityInstance(
-            id,user.id
+            id,
             {
                 templateId: updatedInstanceData.templateId,
                 properties: { ...uploadedFilesProperties, ...updatedInstanceData.properties },
+                viewers: updatedInstanceData.viewers,
             },
             ignoredRules,
         ).catch(InstancesManager.handleBrokenRulesError);
@@ -382,7 +387,7 @@ export class InstancesManager {
             ...updatedFields,
             entityId: createdRelationship.sourceEntityId,
             metadata: { ...updatedFields.metadata, entityId: createdRelationship.destinationEntityId },
-        });
+        });5
         await ActivityLogManagerService.createActivityLog({
             ...updatedFields,
             entityId: createdRelationship.destinationEntityId,
