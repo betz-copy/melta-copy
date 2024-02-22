@@ -103,9 +103,7 @@ const ProcessStatus: React.FC<ProcessStatusProps> = ({ title, instance, editStat
         <Grid container flexDirection="column" alignItems="stretch" spacing={2}>
             <Grid item container flexDirection="row">
                 <Grid item container flexDirection="column" alignItems="flex-end" style={{ display: isPrinting ? 'inherit' : 'none' }}>
-                    <Typography style={{ wordBreak: 'break-word' }}>{`${i18next.t(
-                        'wizard.processInstance.summary.printedAt',
-                    )} : ${new Date().toLocaleDateString('en-UK')}`}</Typography>
+                    <Typography>{`${i18next.t('wizard.processInstance.summary.printedAt')} : ${new Date().toLocaleDateString('en-UK')}`}</Typography>
                     <Typography>{`${i18next.t('wizard.processInstance.summary.printedBy')} : ${myPermissions.user.fullName}`}</Typography>
                 </Grid>
 

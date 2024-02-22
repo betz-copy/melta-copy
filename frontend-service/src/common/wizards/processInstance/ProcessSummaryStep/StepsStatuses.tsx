@@ -114,9 +114,7 @@ const StepStatus: React.FC<{
                                                         component="h6"
                                                         variant="body1"
                                                     />
-                                                    <Typography fontSize="14px" style={{ wordBreak: 'break-word' }}>
-                                                        {stepInstance.comments}
-                                                    </Typography>
+                                                    <Typography fontSize="14px">{stepInstance.comments}</Typography>
                                                 </div>
                                             )}
                                         </>
