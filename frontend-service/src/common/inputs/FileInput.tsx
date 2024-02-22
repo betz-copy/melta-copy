@@ -19,7 +19,7 @@ interface FileInputProps {
 const FileInput: React.FC<FileInputProps> = ({ fileName, onDeleteFile, onDropFile, inputText, acceptedFilesTypes, errorText }) => {
     const theme = useTheme();
 
-    const [stream, setStream] = useState<MediaStream>();
+    const [stream, setStream] = useState<MediaStream | null>(null);
     const [open, setOpen] = useState(false);
 
     const errorStyle = {
@@ -170,7 +170,7 @@ const FileInput: React.FC<FileInputProps> = ({ fileName, onDeleteFile, onDropFil
                     )}
                 </Grid>
             </Grid>
-            <VideoPlayer stream={stream!} open={open} setOpen={setOpen} />
+            {stream && <VideoPlayer stream={stream} open={open} setOpen={setOpen} onPictureTaken={onDropFile} />}
         </>
     );
 };

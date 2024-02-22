@@ -891,5 +891,7 @@ export default {
     camera: {
         cameraNotFound: 'מצלמה לא נמצאה',
         somethingWentWrong: 'משהו השתבש, אנא נסה שנית',
+        imgName: 'שם התמונה',
+        browserNotSupported: 'דפדפן לא תומך',
     },
 };

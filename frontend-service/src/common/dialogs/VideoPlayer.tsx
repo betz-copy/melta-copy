@@ -1,66 +1,54 @@
-import { Button, Dialog, DialogContent, Grid, IconButton } from '@mui/material';
+import { CircularProgress, Dialog, DialogContent, Grid, IconButton, TextField } from '@mui/material';
 import React, { useEffect, useRef, useState } from 'react';
-import { Camera as CameraIcon, Check as CheckIcon, Close as CloseIcon, Done as DoneIcon, Clear as ClearIcon } from '@mui/icons-material';
+import { Camera as CameraIcon, Check as CheckIcon, Close as CloseIcon } from '@mui/icons-material';
 import { toast } from 'react-toastify';
 import i18next from 'i18next';
 import { Form, Formik, FormikProps } from 'formik';
-import Yup from "yup";
 
 const VideoPlayer: React.FC<{
     stream: MediaStream;
     open: boolean;
     setOpen: React.Dispatch<React.SetStateAction<boolean>>;
-}> = ({ stream, open, setOpen }) => {
+    onPictureTaken: (file: File) => void;
+}> = ({ stream, open, setOpen, onPictureTaken }) => {
     console.log({ stream });
 
     const videoRef = useRef<HTMLVideoElement>(null);
+    const canvasRef = useRef<HTMLCanvasElement>(null);
 
-    // const [state, setState] = useState<{
-    //     imageDataURL: string | null;
-    // }>({ imageDataURL: null });
+    console.log({ videoRef });
 
-    const [imageDataURL, setImageDataURL] = useState<string | null>(null);
+    const [imageURL, setImageURL] = useState<string | null>(null);
     const [imgName, setImgName] = useState<string | null>(null);
 
     useEffect(() => {
-        // if (videoRef.current) videoRef.current.srcObject = stream;
-        // if (stream.active === false) {
-        //     toast(i18next.t('camera.somethingWentWrong'));
-        //     setOpen(false);
-        // } // ISN'T DOING ANYTHING
         if (videoRef.current && stream) {
             videoRef.current.srcObject = stream;
         }
     }, [stream]);
 
-    const initializeMedia = async () => {
-        // setState({ imageDataURL: null });
+    const urlToFile = async () => {
+        const response = await fetch(imageURL!);
+        const blob = await response.blob();
+        return new File([blob], `${imgName!}.png`);
+    };
 
+    const uploadImg = async () => {
+        const file = await urlToFile();
+        onPictureTaken(file);
+        setOpen(false);
+        setImageURL(null);
+        setImgName(null);
+    };
+
+    const initializeMedia = async () => {
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
             toast(i18next.t('camera.somethingWentWrong'));
             return;
         }
 
-        // if (!('mediaDevices' in navigator)) {
-        //     navigator.mediaDevices = {};
-        // }
+        const canvas = canvasRef.current!;
 
-        // if (!('getUserMedia' in navigator.mediaDevices)) {
-        //     navigator.mediaDevices.getUserMedia = (constraints) => {
-        //         const getUserMedia = navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
-
-        //         if (!getUserMedia) {
-        //             return Promise.reject(new Error('getUserMedia Not Implemented'));
-        //         }
-
-        //         return new Promise((resolve, reject) => {
-        //             getUserMedia.call(navigator, constraints, resolve, reject);
-        //         });
-        //     };
-        // }
-        console.log('hi im here!');
-
-        const canvas = document.createElement('canvas');
         canvas.width = videoRef.current!.videoWidth;
         canvas.height = videoRef.current!.videoHeight;
         const context = canvas.getContext('2d');
@@ -74,92 +62,59 @@ const VideoPlayer: React.FC<{
             track.stop();
         });
 
-        // console.log('canvas.toDataURL()', canvas.toDataURL());
-        // if (canvas.toDataURL() && canvas.toDataURL() !== 'data:,') {
-        //     setState({ imageDataURL: canvas.toDataURL() });
-        // }
         const dataURL = canvas.toDataURL();
-        console.log({ dataURL });
 
         if (dataURL && dataURL !== 'data:,') {
-            setImageDataURL(dataURL);
+            setImageURL(dataURL);
         } else {
             toast(i18next.t('camera.somethingWentWrong'));
-            // setState({ imageDataURL: null });
         }
     };
 
     return (
-        <Dialog open={open} onClose={() => setOpen(false)} maxWidth={false} sx={{ maxWidth: imgName? 1500 : 500, mx: 'auto' }}>
+        <Dialog open={open} onClose={() => setOpen(false)} maxWidth={false} sx={{ maxWidth: 1500, mx: 'auto' }}>
             <DialogContent sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                {imgName? (
-                         <Formik
-                         initialValues={{name: imgName}}
-                         onSubmit={async (value) => setImgName(value.name)}
-                       >
-                         {(formikProps: FormikProps<string>) => (
-                           <Form>
-                                 <Grid
-                                            container
-                                            flexDirection="row"
-                                            flexWrap="nowrap"
-                                            justifyContent="space-between"
-                                            padding="25px 15px 0px 15px"
-                                        >
-                                            <Grid item>
-                                                <Button
-                                                    style={{ borderRadius: '7px' }}
-                                                    variant="outlined"
-                                                    startIcon={<ClearIcon />}
-                                                    onClick={() => setImgName(null)}
-                                                >
-                                                    {i18next.t('entityPage.cancel')}
-                                                </Button>
-                                            </Grid>
-                                            <Grid item>
-                                                <Button
-                                                    style={{ borderRadius: '7px' }}
-                                                    type="submit"
-                                                    variant="contained"
-                                                    startIcon={
-                                                        // isUpdateLoading || isCreateLoading ? (
-                                                        //     <CircularProgress sx={{ color: 'white' }} size={20} />
-                                                        // ) : (
-                                                            <DoneIcon />
-                                                        // )
-                                                    }
-                                                    disabled={!formikProps.values}
-                                                >
-                                                    {i18next.t('entityPage.save')}
-                                                </Button>
-                                            </Grid>
-                                        </Grid>
-                           </Form>
-                         )}
-                       </Formik>
-                ):(
-                {imageDataURL ? (
+                {imageURL ? (
                     <>
-                        <img src={imageDataURL} alt="cameraPic" style={{ padding: '10px', width: 1000, height: 750 }} />
-                        <Grid sx={{ display: 'flex', padding: '5px', justifyContent: 'space-between' }}>
-                            <IconButton sx={{ mx: 'auto' }}>
-                                <CheckIcon style={{ color: '#3CB371', width: '35px', height: '35px' }} />
-                            </IconButton>
-                            <IconButton sx={{ mx: 'auto' }} onClick={() => setImageDataURL(null)}>
-                                <CloseIcon style={{ color: '#D22B2B', width: '35px', height: '35px' }} />
+                        <Grid style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                            <IconButton onClick={() => setImageURL(null)}>
+                                <CloseIcon style={{ width: '23px', height: '23px' }} />
                             </IconButton>
                         </Grid>
+                        <img src={imageURL} alt="cameraPic" style={{ padding: '10px', width: 1000, height: 710 }} />
+                        <Formik initialValues={{ name: imgName }} onSubmit={async (value) => setImgName(value.name)}>
+                            {(formikProps: FormikProps<string>) => (
+                                <Form style={{ display: 'flex', justifyContent: 'center' }}>
+                                    <TextField
+                                        label={i18next.t('camera.imgName')}
+                                        value={imgName}
+                                        onChange={(e) => setImgName(e.target.value)}
+                                        variant="standard"
+                                        type="text"
+                                        sx={{ width: 260 }}
+                                    />
+                                    <IconButton disabled={!formikProps.values || !imgName} type="submit" onClick={() => uploadImg()}>
+                                        <CheckIcon style={{ color: '#1E2775', width: '25px', height: '25px' }} />
+                                    </IconButton>
+                                </Form>
+                            )}
+                        </Formik>
                     </>
                 ) : (
                     <>
-                        <video ref={videoRef} autoPlay muted style={{ padding: '10px', width: 1000, height: 750 }}>
-                            <track kind="captions" src="" />
+                        <video ref={videoRef} autoPlay muted style={{ padding: '10px', width: 1000, height: 725 }}>
+                            {videoRef.current && videoRef.current.currentTime !== 0 && videoRef.current.networkState !== 0 ? (
+                                <track kind="captions" src="" />
+                            ) : (
+                                <CircularProgress sx={{ color: '#CCCFE5', mx: 'auto', mb: '10px' }} size={35} />
+                            )}
                         </video>
-                        <IconButton sx={{ mx: 'auto' }} onClick={initializeMedia}>
+
+                        <canvas ref={canvasRef} style={{ display: 'none' }} />
+                        <IconButton sx={{ mx: 'auto' }} onClick={initializeMedia} disabled={!videoRef.current}>
                             <CameraIcon style={{ color: '#1E2775', width: '35px', height: '35px' }} />
                         </IconButton>
                     </>
-                )}
                 )}
             </DialogContent>
         </Dialog>
