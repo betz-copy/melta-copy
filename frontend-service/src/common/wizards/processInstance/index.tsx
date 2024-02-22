@@ -28,7 +28,6 @@ import { IPermissionsOfUser } from '../../../services/permissionsService';
 import { IMongoStepTemplatePopulated } from '../../../interfaces/processes/stepTemplate';
 import { AreYouSureDialog } from '../../dialogs/AreYouSureDialog';
 import { MeltaTooltip } from '../../MeltaTooltip';
-import { PrintDialog } from './PrintDialog';
 
 interface IProcessInstanceWizard {
     open: boolean;
@@ -61,7 +60,6 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({ open, onClose
     const processTemplatesMap = queryClient.getQueryData<IProcessTemplateMap>('getProcessTemplates')!;
     const [currProcessInstance, setCurrProcessInstance] = useState<IMongoProcessInstancePopulated>(processInstance);
     const [isPrinting, setIsPrinting] = useState(false);
-    const [openModal, setOpenModal] = React.useState(false);
 
     const componentRef = useRef(null);
     const promiseResolveRef = React.useRef<(() => void) | null>(null);
@@ -168,7 +166,6 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({ open, onClose
         if (activeStep === 0) detailsFormikData.submitForm();
     };
 
-    const handleClose = () => setOpenModal(false);
     const [deleteDialogState, setDeleteDialogState] = useState<boolean>(false);
 
     const { mutateAsync: deleteProcessMutate, isLoading: isDeleteProcessLoading } = useMutation(
@@ -211,151 +208,148 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({ open, onClose
         hasPermissionsToEditDetails && activeStep === 0 && processInstance.status === Status.Pending && !processInstance.archived;
 
     return (
-        <>
-            <Dialog
-                keepMounted={false}
-                open={open}
-                fullWidth
-                maxWidth="xl"
-                PaperProps={{
-                    style: {
-                        height: '85vh',
-                        overflowY: 'visible',
-                    },
-                }}
-                style={{ display: isPrinting ? 'none' : 'block' }}
-            >
-                <DialogTitle height="8vh" margin={0} display="flex" justifyContent="space-between" alignItems="center">
-                    <BlueTitle title={detailsFormikData.values.name} variant="h4" component="p" />
-                    <Grid>
-                        <Grid container>
-                            {isEditMode && activeStep !== 1 && (
-                                <Grid container spacing={1}>
-                                    <Grid item>
-                                        <Button
-                                            size="large"
-                                            variant="outlined"
-                                            startIcon={isLoading ? <CircularProgress sx={{ color: 'white' }} size={20} /> : <ClearIcon />}
-                                            onClick={() => {
-                                                if (activeStep === 0)
-                                                    detailsFormikData.setValues(getInitialDetailsValues(currProcessInstance, processTemplatesMap));
-                                                setIsEditMode(false);
-                                            }}
-                                        >
-                                            {i18next.t('wizard.processInstance.cancelBth')}
-                                        </Button>
-                                    </Grid>
-                                    <Grid item>
-                                        <Button
-                                            size="large"
-                                            variant="contained"
-                                            onClick={() => handleSubmit()}
-                                            disabled={!detailsFormikData.dirty || isLoading}
-                                            startIcon={isLoading ? <CircularProgress sx={{ color: 'white' }} size={20} /> : <DoneIcon />}
-                                        >
-                                            {i18next.t('wizard.processInstance.saveBth')}
-                                        </Button>
-                                    </Grid>
+        <Dialog
+            keepMounted={false}
+            open={open}
+            fullWidth
+            maxWidth="xl"
+            PaperProps={{
+                style: {
+                    height: '85vh',
+                    overflowY: 'visible',
+                },
+            }}
+            style={{ display: isPrinting ? 'none' : 'block' }}
+        >
+            <DialogTitle height="8vh" margin={0} display="flex" justifyContent="space-between" alignItems="center">
+                <BlueTitle title={detailsFormikData.values.name} variant="h4" component="p" />
+                <Grid>
+                    <Grid container>
+                        {isEditMode && activeStep !== 1 && (
+                            <Grid container spacing={1}>
+                                <Grid item>
+                                    <Button
+                                        size="large"
+                                        variant="outlined"
+                                        startIcon={isLoading ? <CircularProgress sx={{ color: 'white' }} size={20} /> : <ClearIcon />}
+                                        onClick={() => {
+                                            if (activeStep === 0)
+                                                detailsFormikData.setValues(getInitialDetailsValues(currProcessInstance, processTemplatesMap));
+                                            setIsEditMode(false);
+                                        }}
+                                    >
+                                        {i18next.t('wizard.processInstance.cancelBth')}
+                                    </Button>
                                 </Grid>
-                            )}
-                            <Grid>
-                                {activeStep === 2 && (
-                                    <MeltaTooltip title={i18next.t('actions.print')}>
-                                        <IconButton
-                                            onClick={() => {
-                                                handlePrint();
-                                            }}
-                                        >
-                                            <PrintIcon color="primary" />
-                                        </IconButton>
-                                    </MeltaTooltip>
-                                )}
+                                <Grid item>
+                                    <Button
+                                        size="large"
+                                        variant="contained"
+                                        onClick={() => handleSubmit()}
+                                        disabled={!detailsFormikData.dirty || isLoading}
+                                        startIcon={isLoading ? <CircularProgress sx={{ color: 'white' }} size={20} /> : <DoneIcon />}
+                                    >
+                                        {i18next.t('wizard.processInstance.saveBth')}
+                                    </Button>
+                                </Grid>
                             </Grid>
+                        )}
+                        <Grid>
+                            {activeStep === 2 && (
+                                <MeltaTooltip title={i18next.t('actions.print')}>
+                                    <IconButton
+                                        onClick={() => {
+                                            handlePrint();
+                                        }}
+                                    >
+                                        <PrintIcon color="primary" />
+                                    </IconButton>
+                                </MeltaTooltip>
+                            )}
+                        </Grid>
 
-                            <Grid>
-                                {!isEditMode && hasPermissionsToEditDetails && (
-                                    <>
-                                        {processInstance.archived ? (
-                                            <MeltaTooltip title={i18next.t('actions.unArchived')}>
-                                                <IconButton
-                                                    onClick={async () => {
-                                                        await archiveProcessMutate(processInstance);
-                                                        onClose(true);
-                                                    }}
-                                                >
-                                                    {isLodingArchiveProcess ? <CircularProgress size={20} /> : <UnarchiveIcon color="primary" />}
-                                                </IconButton>
-                                            </MeltaTooltip>
-                                        ) : (
-                                            <MeltaTooltip title={i18next.t('actions.archived')}>
-                                                <IconButton
-                                                    onClick={async () => {
-                                                        await archiveProcessMutate(processInstance);
-                                                        onClose(true);
-                                                    }}
-                                                >
-                                                    {isLodingArchiveProcess ? <CircularProgress size={20} /> : <ArchiveIcon color="primary" />}
-                                                </IconButton>
-                                            </MeltaTooltip>
-                                        )}
-                                        <MeltaTooltip title={i18next.t('actions.delete')}>
-                                            <IconButton onClick={() => setDeleteDialogState(true)}>
-                                                {isDeleteProcessLoading ? <CircularProgress size={20} /> : <DeleteIcon color="primary" />}
+                        <Grid>
+                            {!isEditMode && hasPermissionsToEditDetails && (
+                                <>
+                                    {processInstance.archived ? (
+                                        <MeltaTooltip title={i18next.t('actions.unArchived')}>
+                                            <IconButton
+                                                onClick={async () => {
+                                                    await archiveProcessMutate(processInstance);
+                                                    onClose(true);
+                                                }}
+                                            >
+                                                {isLodingArchiveProcess ? <CircularProgress size={20} /> : <UnarchiveIcon color="primary" />}
                                             </IconButton>
                                         </MeltaTooltip>
-                                    </>
-                                )}
-                            </Grid>
-                            <Grid>
-                                {!isEditMode && processIsEditable && (
-                                    <MeltaTooltip title={i18next.t('wizard.processInstance.editProcessBth')}>
-                                        <IconButton onClick={() => setIsEditMode(true)}>
-                                            <EditIcon color="primary" />
+                                    ) : (
+                                        <MeltaTooltip title={i18next.t('actions.archived')}>
+                                            <IconButton
+                                                onClick={async () => {
+                                                    await archiveProcessMutate(processInstance);
+                                                    onClose(true);
+                                                }}
+                                            >
+                                                {isLodingArchiveProcess ? <CircularProgress size={20} /> : <ArchiveIcon color="primary" />}
+                                            </IconButton>
+                                        </MeltaTooltip>
+                                    )}
+                                    <MeltaTooltip title={i18next.t('actions.delete')}>
+                                        <IconButton onClick={() => setDeleteDialogState(true)}>
+                                            {isDeleteProcessLoading ? <CircularProgress size={20} /> : <DeleteIcon color="primary" />}
                                         </IconButton>
                                     </MeltaTooltip>
-                                )}
-                            </Grid>
+                                </>
+                            )}
+                        </Grid>
+                        <Grid>
+                            {!isEditMode && processIsEditable && (
+                                <MeltaTooltip title={i18next.t('wizard.processInstance.editProcessBth')}>
+                                    <IconButton onClick={() => setIsEditMode(true)}>
+                                        <EditIcon color="primary" />
+                                    </IconButton>
+                                </MeltaTooltip>
+                            )}
                         </Grid>
                     </Grid>
-                </DialogTitle>
-                <DialogContent dividers className={classes.container}>
-                    <Grid className={classes.stepper}>
-                        <ProcessSideStepper
-                            steps={steps.map((step) => step.label)}
-                            activeStep={activeStep}
-                            title={isEditMode ? i18next.t('wizard.processInstance.editProcess') : i18next.t('wizard.processInstance.showProcess')}
-                        />
-                    </Grid>
-                    <Grid className={classes.content}>{steps[activeStep].component}</Grid>
-                </DialogContent>
-                <DialogActions>
-                    {activeStep > 0 && (
-                        <Button onClick={handleBack} disabled={isEditMode || isStepEditMode}>
-                            {i18next.t('processInstancesPage.backBth')}
-                        </Button>
-                    )}
-                    <Button disabled={isEditMode || isStepEditMode} onClick={() => onClose(isProcessChanged)}>
-                        {i18next.t('processInstancesPage.closeBth')}
+                </Grid>
+            </DialogTitle>
+            <DialogContent dividers className={classes.container}>
+                <Grid className={classes.stepper}>
+                    <ProcessSideStepper
+                        steps={steps.map((step) => step.label)}
+                        activeStep={activeStep}
+                        title={isEditMode ? i18next.t('wizard.processInstance.editProcess') : i18next.t('wizard.processInstance.showProcess')}
+                    />
+                </Grid>
+                <Grid className={classes.content}>{steps[activeStep].component}</Grid>
+            </DialogContent>
+            <DialogActions>
+                {activeStep > 0 && (
+                    <Button onClick={handleBack} disabled={isEditMode || isStepEditMode}>
+                        {i18next.t('processInstancesPage.backBth')}
                     </Button>
-                    {activeStep !== steps.length - 1 && (
-                        <Button disabled={isLoading || isEditMode || isStepEditMode} onClick={handleNext}>
-                            {nextBthText}
-                        </Button>
-                    )}
-                </DialogActions>
+                )}
+                <Button disabled={isEditMode || isStepEditMode} onClick={() => onClose(isProcessChanged)}>
+                    {i18next.t('processInstancesPage.closeBth')}
+                </Button>
+                {activeStep !== steps.length - 1 && (
+                    <Button disabled={isLoading || isEditMode || isStepEditMode} onClick={handleNext}>
+                        {nextBthText}
+                    </Button>
+                )}
+            </DialogActions>
 
-                <AreYouSureDialog
-                    open={deleteDialogState}
-                    handleClose={() => setDeleteDialogState(false)}
-                    onYes={async () => {
-                        await deleteProcessMutate(processInstance._id);
-                        setDeleteDialogState(false);
-                        onClose(true);
-                    }}
-                />
-            </Dialog>
-            <PrintDialog open={openModal} handleClose={handleClose} isPrinting={isPrinting} onClick={handlePrint} setIsprinting={setIsPrinting} />
-        </>
+            <AreYouSureDialog
+                open={deleteDialogState}
+                handleClose={() => setDeleteDialogState(false)}
+                onYes={async () => {
+                    await deleteProcessMutate(processInstance._id);
+                    setDeleteDialogState(false);
+                    onClose(true);
+                }}
+            />
+        </Dialog>
     );
 };
 
