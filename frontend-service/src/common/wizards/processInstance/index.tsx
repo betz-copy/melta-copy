@@ -28,7 +28,6 @@ import { IPermissionsOfUser } from '../../../services/permissionsService';
 import { IMongoStepTemplatePopulated } from '../../../interfaces/processes/stepTemplate';
 import { AreYouSureDialog } from '../../dialogs/AreYouSureDialog';
 import { MeltaTooltip } from '../../MeltaTooltip';
-import './ProcessSummaryStep/ProcessSummary.css';
 import { PrintDialog } from './PrintDialog';
 
 interface IProcessInstanceWizard {
@@ -58,6 +57,9 @@ const wizardContentStyles = makeStyles(() => ({
 }));
 
 const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({ open, onClose, processInstance, stepTemplate }) => {
+    const queryClient = useQueryClient();
+    const processTemplatesMap = queryClient.getQueryData<IProcessTemplateMap>('getProcessTemplates')!;
+    const [currProcessInstance, setCurrProcessInstance] = useState<IMongoProcessInstancePopulated>(processInstance);
     const [isPrinting, setIsPrinting] = useState(false);
     const [openModal, setOpenModal] = React.useState(false);
 
@@ -65,10 +67,7 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({ open, onClose
     const promiseResolveRef = React.useRef<(() => void) | null>(null);
 
     useEffect(() => {
-        console.log('isPrinting changed:', isPrinting);
-
         if (isPrinting && promiseResolveRef.current) {
-            console.log('Triggering printing process...');
             promiseResolveRef.current();
         }
     }, [isPrinting]);
@@ -76,24 +75,17 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({ open, onClose
     const handlePrint = useReactToPrint({
         content: () => componentRef.current,
         documentTitle: `${processInstance.name}-${new Date().toLocaleDateString('en-uk')}`,
-        bodyClass: 'rtl',
-        // onBeforeGetContent: () => {
-        //     console.log('Setting promiseResolveRef.current...');
-        //     return new Promise((resolve) => {
-        //         promiseResolveRef.current = resolve as () => void;
-        //         console.log('promiseResolveRef.current:', promiseResolveRef.current);
-        //         setIsPrinting(true);
-        //     });
-        // },
-        // onAfterPrint: () => {
-        //     promiseResolveRef.current = null;
-        //     setIsPrinting(false);
-        // },
+        onBeforeGetContent: () => {
+            return new Promise((resolve) => {
+                promiseResolveRef.current = resolve as () => void;
+                setIsPrinting(true);
+            });
+        },
+        onAfterPrint: () => {
+            promiseResolveRef.current = null;
+            setIsPrinting(false);
+        },
     });
-
-    const queryClient = useQueryClient();
-    const processTemplatesMap = queryClient.getQueryData<IProcessTemplateMap>('getProcessTemplates')!;
-    const [currProcessInstance, setCurrProcessInstance] = useState<IMongoProcessInstancePopulated>(processInstance);
 
     const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
     const hasPermissionsToEditDetails = Boolean(myPermissions.processesManagementId);
@@ -175,7 +167,7 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({ open, onClose
     const handleSubmit = () => {
         if (activeStep === 0) detailsFormikData.submitForm();
     };
-    const handleOpen = () => setOpenModal(true);
+
     const handleClose = () => setOpenModal(false);
     const [deleteDialogState, setDeleteDialogState] = useState<boolean>(false);
 
@@ -231,6 +223,7 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({ open, onClose
                         overflowY: 'visible',
                     },
                 }}
+                style={{ display: isPrinting ? 'none' : 'block' }}
             >
                 <DialogTitle height="8vh" margin={0} display="flex" justifyContent="space-between" alignItems="center">
                     <BlueTitle title={detailsFormikData.values.name} variant="h4" component="p" />
@@ -270,8 +263,7 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({ open, onClose
                                     <MeltaTooltip title={i18next.t('actions.print')}>
                                         <IconButton
                                             onClick={() => {
-                                                // onClose(isProcessChanged);
-                                                handleOpen();
+                                                handlePrint();
                                             }}
                                         >
                                             <PrintIcon color="primary" />

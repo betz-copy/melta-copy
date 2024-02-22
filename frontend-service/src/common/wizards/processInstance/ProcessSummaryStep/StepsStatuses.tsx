@@ -15,20 +15,21 @@ import { IMongoProcessTemplatePopulated } from '../../../../interfaces/processes
 import { getLongDate } from '../../../../utils/date';
 import { StatusColorsNames, StyledCard } from '../../../../pages/ProcessInstances/ProcessCard';
 import { MeltaTooltip } from '../../../MeltaTooltip';
-import './ProcessSummary.css';
 
 const StepStatus: React.FC<{
     stepInstance: IMongoStepInstancePopulated;
     processTemplate: IMongoProcessTemplatePopulated;
     open: boolean;
     handleClick: () => void;
-}> = ({ stepInstance, processTemplate, open, handleClick }) => {
+    isPrinting: boolean;
+}> = ({ stepInstance, processTemplate, open, handleClick, isPrinting }) => {
     return (
         <div style={{ paddingTop: '10px' }}>
             <StyledCard
                 style={{
                     minHeight: 270,
-                    minWidth: 235,
+                    minWidth: !isPrinting ? 235 : undefined,
+                    maxWidth: isPrinting ? 200 : undefined,
                     pageBreakInside: 'avoid',
                 }}
             >
@@ -79,37 +80,45 @@ const StepStatus: React.FC<{
                                 <Grid item>
                                     {stepInstance.comments && (
                                         <>
-                                            <div className="dont-print">
-                                                <div
-                                                    style={{
-                                                        transition: 'all 0.7s ease-in-out',
-                                                        maxHeight: open ? '350px' : '0',
-                                                        maxWidth: open ? '350px' : '0',
-                                                        overflowX: 'hidden',
-                                                        overflowY: 'auto',
-                                                    }}
-                                                >
-                                                    {i18next.t('wizard.processInstance.step.comment')}:
-                                                    <Typography gutterBottom component="div" style={{ wordBreak: 'break-word', width: 350 }}>
+                                            {!isPrinting && (
+                                                <>
+                                                    <div
+                                                        style={{
+                                                            transition: 'all 0.7s ease-in-out',
+                                                            maxHeight: open ? '350px' : '0',
+                                                            maxWidth: open ? '350px' : '0',
+                                                            overflowX: 'hidden',
+                                                            overflowY: 'auto',
+                                                        }}
+                                                    >
+                                                        {i18next.t('wizard.processInstance.step.comment')}:
+                                                        <Typography gutterBottom component="div" style={{ wordBreak: 'break-word', width: 350 }}>
+                                                            {stepInstance.comments}
+                                                        </Typography>
+                                                    </div>
+                                                    <Button
+                                                        size="small"
+                                                        color="inherit"
+                                                        onClick={handleClick}
+                                                        startIcon={open ? <KeyboardArrowUpIcon /> : <KeyboardArrowLeftIcon />}
+                                                    >
+                                                        {!open && i18next.t('wizard.processInstance.step.comment')}
+                                                    </Button>
+                                                </>
+                                            )}
+
+                                            {isPrinting && (
+                                                <div style={{ textAlign: 'center' }}>
+                                                    <BlueTitle
+                                                        title={i18next.t('wizard.processInstance.step.comment')}
+                                                        component="h6"
+                                                        variant="body1"
+                                                    />
+                                                    <Typography fontSize="14px" style={{ wordBreak: 'break-word' }}>
                                                         {stepInstance.comments}
                                                     </Typography>
                                                 </div>
-                                                <Button
-                                                    size="small"
-                                                    color="inherit"
-                                                    onClick={handleClick}
-                                                    startIcon={open ? <KeyboardArrowUpIcon /> : <KeyboardArrowLeftIcon />}
-                                                >
-                                                    {!open && i18next.t('wizard.processInstance.step.comment')}
-                                                </Button>
-                                            </div>
-
-                                            <Grid textAlign="center" className="dont-show-not-print-mode">
-                                                <Typography component="h6" fontWeight="bold" fontSize="14px">
-                                                    {i18next.t('wizard.processInstance.step.comment')}
-                                                </Typography>
-                                                <Typography fontSize="14px">{stepInstance.comments}</Typography>
-                                            </Grid>
+                                            )}
                                         </>
                                     )}
                                 </Grid>
@@ -125,7 +134,8 @@ const StepStatus: React.FC<{
 const StepsStatuses: React.FC<{
     processInstance: IMongoProcessInstancePopulated;
     processTemplate: IMongoProcessTemplatePopulated;
-}> = ({ processInstance, processTemplate }) => {
+    isPrinting: boolean;
+}> = ({ processInstance, processTemplate, isPrinting }) => {
     const [openStep, setOpenStep] = useState(-1);
 
     // Count the steps by their status
@@ -161,6 +171,7 @@ const StepsStatuses: React.FC<{
                                 stepInstance={stepInstance}
                                 open={openStep === index}
                                 handleClick={() => setOpenStep(openStep === index ? -1 : index)}
+                                isPrinting={isPrinting}
                             />
                         </Grid>
                     ))}
