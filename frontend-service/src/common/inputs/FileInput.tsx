@@ -52,13 +52,9 @@ const FileInput: React.FC<FileInputProps> = ({ fileName, onDeleteFile, onDropFil
         updateInputWidth();
         window.addEventListener('resize', updateInputWidth);
 
-        try {
-            navigator.mediaDevices.getUserMedia({ video: true, audio: false }).then((userStream) => {
-                setStream(userStream);
-            });
-        } catch (error) {
-            console.log(error);
-        }
+        navigator.mediaDevices.getUserMedia({ video: true, audio: false }).then((userStream) => {
+            setStream(userStream);
+        });
 
         return () => {
             window.removeEventListener('resize', updateInputWidth);
@@ -170,7 +166,7 @@ const FileInput: React.FC<FileInputProps> = ({ fileName, onDeleteFile, onDropFil
                     )}
                 </Grid>
             </Grid>
-            {stream && <VideoPlayer stream={stream} open={open} setOpen={setOpen} onPictureTaken={onDropFile} />}
+            {stream && <VideoPlayer stream={stream} setStream={setStream} open={open} setOpen={setOpen} onPictureTaken={onDropFile} />}
         </>
     );
 };

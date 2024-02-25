@@ -1,34 +1,40 @@
-import { CircularProgress, Dialog, DialogContent, Grid, IconButton, TextField } from '@mui/material';
+import { Button, Dialog, DialogContent, Grid, IconButton, TextField } from '@mui/material';
 import React, { useEffect, useRef, useState } from 'react';
-import { Camera as CameraIcon, Check as CheckIcon, Close as CloseIcon } from '@mui/icons-material';
+import { Camera as CameraIcon, Check as CheckIcon, Close as CloseIcon, PlayArrow as PlayIcon } from '@mui/icons-material';
 import { toast } from 'react-toastify';
 import i18next from 'i18next';
 import { Form, Formik, FormikProps } from 'formik';
 
 const VideoPlayer: React.FC<{
     stream: MediaStream;
+    setStream: React.Dispatch<React.SetStateAction<MediaStream | null>>;
     open: boolean;
     setOpen: React.Dispatch<React.SetStateAction<boolean>>;
     onPictureTaken: (file: File) => void;
-}> = ({ stream, open, setOpen, onPictureTaken }) => {
-    console.log({ stream });
-
+}> = ({ stream, setStream, open, setOpen, onPictureTaken }) => {
     const videoRef = useRef<HTMLVideoElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
 
-    console.log({ videoRef });
-
-    const [imageURL, setImageURL] = useState<string | null>(null);
+    const [imgURL, setImgURL] = useState<string | null>(null);
     const [imgName, setImgName] = useState<string | null>(null);
+    const [streamKey, setStreamKey] = useState(false);
 
     useEffect(() => {
-        if (videoRef.current && stream) {
+        const initializeVideo = () => {
+            if (!videoRef.current || !stream) return;
+
             videoRef.current.srcObject = stream;
+            canvasRef.current!.width = videoRef.current.videoWidth;
+            canvasRef.current!.height = videoRef.current.videoHeight;
+        };
+
+        if (open) {
+            initializeVideo();
         }
-    }, [stream]);
+    }, [open, stream, streamKey]);
 
     const urlToFile = async () => {
-        const response = await fetch(imageURL!);
+        const response = await fetch(imgURL!);
         const blob = await response.blob();
         return new File([blob], `${imgName!}.png`);
     };
@@ -37,9 +43,15 @@ const VideoPlayer: React.FC<{
         const file = await urlToFile();
         onPictureTaken(file);
         setOpen(false);
-        setImageURL(null);
+        setImgURL(null);
         setImgName(null);
     };
+
+    useEffect(() => {
+        navigator.mediaDevices.getUserMedia({ video: true, audio: false }).then((userStream) => {
+            setStream(userStream);
+        });
+    }, [setStream, streamKey]);
 
     const initializeMedia = async () => {
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -48,7 +60,6 @@ const VideoPlayer: React.FC<{
         }
 
         const canvas = canvasRef.current!;
-
         canvas.width = videoRef.current!.videoWidth;
         canvas.height = videoRef.current!.videoHeight;
         const context = canvas.getContext('2d');
@@ -63,9 +74,8 @@ const VideoPlayer: React.FC<{
         });
 
         const dataURL = canvas.toDataURL();
-
         if (dataURL && dataURL !== 'data:,') {
-            setImageURL(dataURL);
+            setImgURL(dataURL);
         } else {
             toast(i18next.t('camera.somethingWentWrong'));
         }
@@ -74,14 +84,19 @@ const VideoPlayer: React.FC<{
     return (
         <Dialog open={open} onClose={() => setOpen(false)} maxWidth={false} sx={{ maxWidth: 1500, mx: 'auto' }}>
             <DialogContent sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                {imageURL ? (
+                {imgURL ? (
                     <>
                         <Grid style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                            <IconButton onClick={() => setImageURL(null)}>
+                            <IconButton
+                                onClick={() => {
+                                    setImgURL(null);
+                                    setImgName(null);
+                                }}
+                            >
                                 <CloseIcon style={{ width: '23px', height: '23px' }} />
                             </IconButton>
                         </Grid>
-                        <img src={imageURL} alt="cameraPic" style={{ padding: '10px', width: 1000, height: 710 }} />
+                        <img src={imgURL} alt="cameraPic" style={{ padding: '10px', width: 1000, height: 710 }} />
                         <Formik initialValues={{ name: imgName }} onSubmit={async (value) => setImgName(value.name)}>
                             {(formikProps: FormikProps<string>) => (
                                 <Form style={{ display: 'flex', justifyContent: 'center' }}>
@@ -102,18 +117,31 @@ const VideoPlayer: React.FC<{
                     </>
                 ) : (
                     <>
-                        <video ref={videoRef} autoPlay muted style={{ padding: '10px', width: 1000, height: 725 }}>
-                            {videoRef.current && videoRef.current.currentTime !== 0 && videoRef.current.networkState !== 0 ? (
-                                <track kind="captions" src="" />
-                            ) : (
-                                <CircularProgress sx={{ color: '#CCCFE5', mx: 'auto', mb: '10px' }} size={35} />
-                            )}
-                        </video>
-
+                        <video ref={videoRef} autoPlay muted style={{ padding: '10px', width: 1000, height: 725 }} />
                         <canvas ref={canvasRef} style={{ display: 'none' }} />
-                        <IconButton sx={{ mx: 'auto' }} onClick={initializeMedia} disabled={!videoRef.current}>
-                            <CameraIcon style={{ color: '#1E2775', width: '35px', height: '35px' }} />
-                        </IconButton>
+                        <Grid container flexDirection="row" flexWrap="nowrap" justifyContent="space-between" padding="25px 15px 0px 15px">
+                            <Grid item>
+                                <Button
+                                    style={{ borderRadius: '7px' }}
+                                    onClick={() => setStreamKey((prevKey) => !prevKey)}
+                                    variant="outlined"
+                                    startIcon={<PlayIcon />}
+                                >
+                                    {i18next.t('camera.startVideo')}
+                                </Button>
+                            </Grid>
+                            <Grid item>
+                                <Button
+                                    style={{ borderRadius: '7px' }}
+                                    variant="contained"
+                                    onClick={initializeMedia}
+                                    disabled={!videoRef.current}
+                                    startIcon={<CameraIcon />}
+                                >
+                                    {i18next.t('camera.takePicture')}
+                                </Button>
+                            </Grid>
+                        </Grid>
                     </>
                 )}
             </DialogContent>
