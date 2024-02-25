@@ -110,7 +110,7 @@ const ProcessStatus: React.FC<ProcessStatusProps> = ({ title, instance, editStat
                 <Grid item container flexDirection="column" alignItems="center">
                     <Grid item>
                         <BlueTitle
-                            title={isPrinting && 'name' in instance ? `${title}` : title}
+                            title={title}
                             component="h4"
                             variant={editStatus ? 'h5' : 'h4'}
                             style={{ fontWeight: 600, opacity: 0.9, marginBottom: 7 }}
