@@ -19,6 +19,7 @@ import UpdateEntityWithRuleBreachDialog from './UpdateEntityWithRuleBreachDialog
 import { environment } from '../../../globals';
 import { toastConstraintValidationError } from '../../../common/dialogs/entity/toastConstraintValidationError';
 import { InstanceFileInput } from '../../../common/inputs/InstanceFilesInput/InstanceFileInput';
+import { InstanceSingleFileInput } from '../../../common/inputs/InstanceFilesInput/InstanceSingleFileInput';
 
 const { errorCodes } = environment;
 
@@ -48,11 +49,11 @@ const EditEntityDetails: React.FC<{
             });
         }
         else {
-            fileIdsProperties[key] =  [{name: value}];
+            fileIdsProperties[key] =  {name: value};
         }
         
     });
-    const fileProperties = fileIdsProperties; //mapValues(fileIdsProperties, (value) => [{ name: value }]) as Record<string, File[]>;
+    const fileProperties = fileIdsProperties;
     const { isLoading: isUpdateLoading, mutateAsync: updateMutation } = useMutation(
         ({ newEntityData, ignoredRules }: { newEntityData: EntityWizardValuesNew; ignoredRules?: IRuleBreach['brokenRules'] }) =>
         updateEntityRequestForMultiple(entity.properties._id, newEntityData, ignoredRules),
@@ -135,7 +136,19 @@ const EditEntityDetails: React.FC<{
                                                             />
                                                             <>
                                                                 {Object.entries(templateFilesProperties).map(([key, value]) => {
-                                                                    return(
+                                                                    if(value.items === undefined){
+                                                                        return (<InstanceSingleFileInput
+                                                                            key={key}
+                                                                            fileFieldName={`attachmentsProperties.${key}`}
+                                                                            fieldTemplateTitle={value.title}
+                                                                            setFieldValue={setFieldValue}
+                                                                            required={requiredFilesNames.includes(key)}
+                                                                            value={values.attachmentsProperties[key]}
+                                                                            error={errors.attachmentsProperties?.[key] as string}
+                                                                            setFieldTouched={setFieldTouched}
+                                                                        />)
+                                                                    }
+                                                                    else return(
                                                                     <InstanceFileInput
                                                                         key={key}
                                                                         fileFieldName={`attachmentsProperties.${key}`}

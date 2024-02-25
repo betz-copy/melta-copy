@@ -7,7 +7,6 @@ export const getFileExtension = (name: string) => {
 export const getFileNameWithoutExtension = (name: string) => {
     const lastDotIndex = name.lastIndexOf('.');
     const fileNameWithoutExtension = lastDotIndex !== -1 ? name.slice(0, lastDotIndex) : name;
-    console.log(fileNameWithoutExtension.trim());
     return fileNameWithoutExtension.trim();
 };
 

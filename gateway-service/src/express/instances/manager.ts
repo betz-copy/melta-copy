@@ -296,12 +296,13 @@ export class InstancesManager {
             const propertyTemplate = entityTemplate.properties.properties[field];
 
             let newValue: any;
-            if (propertyTemplate.format === 'fileId' || propertyTemplate.items?.format === 'fileId') {
+            if (propertyTemplate?.format === 'fileId' || propertyTemplate?.items?.format === 'fileId') {
                 newValue = uploadedFilesProperties[field] ?? updatedInstance.properties[field];
             } else {
                 newValue = updatedInstance.properties[field];
             }
             if (
+                newValue !== undefined &&
                 Array.isArray(currentEntity.properties[field]) &&
                 newValue.length === currentEntity.properties[field].length &&
                 newValue.every((element, index) => element === currentEntity.properties[field][index])

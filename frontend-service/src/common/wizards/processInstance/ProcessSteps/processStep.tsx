@@ -48,6 +48,7 @@ export const ProcessStep: FC<ProcessStepProps> = ({
             stepInstance.reviewers.some((reviewer) => reviewer.id === myPermissions.user.id)) &&
         !processInstance.archived;
 
+        
     const templateFileProperties = pickBy(stepTemplate.properties.properties, (value) => value.format === 'fileId');
     const templateEntityReferenceProperties = pickBy(stepTemplate.properties.properties, (value) => value.format === 'entityReference');
     const { isLoading: editStepIsLoading, mutateAsync: editStepMutateAsync } = useMutation(
@@ -183,7 +184,8 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                             {templateFileProperties && isStepEditMode ? (
                                                 <Box>
                                                     {Object.entries(templateFileProperties).map(([key, value]) => {
-                                                        (
+                                                        console.log("VALUE IN PROCESS STEP:", value);
+                                                        return (
                                                         <InstanceFileInput
                                                             key={key}
                                                             fileFieldName={`attachmentsProperties.${key}`}

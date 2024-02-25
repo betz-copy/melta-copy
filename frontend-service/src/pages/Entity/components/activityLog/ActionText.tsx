@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Grid, Typography, styled, useTheme } from '@mui/material';
 import { useQueryClient } from 'react-query';
 import i18next from 'i18next';
@@ -7,8 +7,6 @@ import { IActivityLog } from '../../../../services/activityLogService';
 import { IRelationshipTemplateMap } from '../../../../interfaces/relationshipTemplates';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { MeltaTooltip } from '../../../../common/MeltaTooltip';
-import { getFileNameWithoutExtension } from '../../../../utils/getFileType';
-import { getFileName } from '../../../../utils/getFileName';
 
 const StyledTypography = styled(Typography)(({ theme }) => ({
     fontFamily: 'Rubik',

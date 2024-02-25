@@ -21,6 +21,7 @@ import { toastConstraintValidationError } from './toastConstraintValidationError
 import { InstanceFileInput } from '../../inputs/InstanceFilesInput/InstanceFileInput';
 import UpdateEntityWithRuleBreachDialog from '../../../pages/Entity/components/UpdateEntityWithRuleBreachDialog';
 import { ChooseTemplate } from './ChooseTemplate';
+import { InstanceSingleFileInput } from '../../inputs/InstanceFilesInput/InstanceSingleFileInput';
 
 const { errorCodes } = environment;
 
@@ -58,7 +59,7 @@ const CreateOrEditEntityDetails: React.FC<{
             });
         }
         else {
-            fileIdsProperties[key] =  [{name: value}];
+            fileIdsProperties[key] =  {name: value};
         }
         
     });
@@ -166,19 +167,31 @@ const CreateOrEditEntityDetails: React.FC<{
                             style={{ marginBottom: '12px', fontSize: '16px', fontWeight: '600' }}
                         />
                         {Object.entries(templateFilesProperties).map(([key, value]) => {
-                            return (
-                            <InstanceFileInput
-                                key={key}
-                                fileFieldName={`attachmentsProperties.${key}`}
-                                fieldTemplateTitle={value.title}
-                                setFieldValue={setFieldValue}
-                                required={requiredFilesNames.includes(key)}
-                                value={ values.attachmentsProperties[key] || undefined}
-                                error={errors.attachmentsProperties?.[key] as string}
-                                setFieldTouched={setFieldTouched}
-                                multiple={templateFilesProperties[key].items ? true : false}
-                            />
-                        )})}
+                                                                    if(value.items === undefined){
+                                                                        return (<InstanceSingleFileInput
+                                                                            key={key}
+                                                                            fileFieldName={`attachmentsProperties.${key}`}
+                                                                            fieldTemplateTitle={value.title}
+                                                                            setFieldValue={setFieldValue}
+                                                                            required={requiredFilesNames.includes(key)}
+                                                                            value={values.attachmentsProperties[key]}
+                                                                            error={errors.attachmentsProperties?.[key] as string}
+                                                                            setFieldTouched={setFieldTouched}
+                                                                        />)
+                                                                    }
+                                                                    else return(
+                                                                    <InstanceFileInput
+                                                                        key={key}
+                                                                        fileFieldName={`attachmentsProperties.${key}`}
+                                                                        fieldTemplateTitle={value.title}
+                                                                        setFieldValue={setFieldValue}
+                                                                        required={requiredFilesNames.includes(key)}
+                                                                        value={values.attachmentsProperties[key]}
+                                                                        error={errors.attachmentsProperties?.[key] as string}
+                                                                        setFieldTouched={setFieldTouched}
+                                                                        multiple={value.items ? true : false}
+                                                                    />
+                                                                )})}
                     </>
                 );
                 return (

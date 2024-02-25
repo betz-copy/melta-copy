@@ -34,6 +34,7 @@ const FileInput: React.FC<FileInputProps> = ({ fileName, onDeleteFile, onDropFil
     const { getRootProps, getInputProps, isDragActive } = useDropzone({
         onDrop,
         accept: acceptedFilesTypes,
+        multiple: false,
     });
 
     const [inputWidth, setInputWidth] = useState<number>(200);

@@ -21,6 +21,7 @@ import { DuplicateTopBar } from './DuplicateTopBar';
 import { environment } from '../../../globals';
 import { toastConstraintValidationError } from '../../../common/dialogs/entity/toastConstraintValidationError';
 import { InstanceFileInput } from '../../../common/inputs/InstanceFilesInput/InstanceFileInput';
+import { InstanceSingleFileInput } from '../../../common/inputs/InstanceFilesInput/InstanceSingleFileInput';
 
 const { errorCodes } = environment;
 
@@ -61,7 +62,6 @@ const DuplicateEntity: React.FC<{}> = () => {
 
     const fieldProperties = pickBy(entity.properties, (_value, key) => !templateFileKeys.includes(key)) as IEntity['properties'];
     const fileIdsProperties = pickBy(entity.properties, (_value, key) => templateFileKeys.includes(key));
-    // const fileProperties = mapValues(fileIdsProperties, (value) => ({ name: value })) as Record<string, File>;
     Object.entries(fileIdsProperties).forEach(([key, value]) => {
         if(Array.isArray(value)){
             fileIdsProperties[key] = value?.map((item) => {
@@ -69,7 +69,7 @@ const DuplicateEntity: React.FC<{}> = () => {
             });
         }
         else {
-            fileIdsProperties[key] =  [{name: value}];
+            fileIdsProperties[key] =  {name: value};
         }
         
     });
@@ -130,24 +130,33 @@ const DuplicateEntity: React.FC<{}> = () => {
                                                                     {i18next.t('wizard.entityTemplate.dragAndDropFile')}
                                                                 </div>
                                                                 <>
-                                                                    {Object.entries(templateFilesProperties).map(([key, value]) => {
-                                                                        return (
-                                                                        <InstanceFileInput
+                                                                {Object.entries(templateFilesProperties).map(([key, value]) => {
+                                                                    console.log(value, values.attachmentsProperties, key);
+                                                                    if(value.items === undefined){
+                                                                        return (<InstanceSingleFileInput
                                                                             key={key}
                                                                             fileFieldName={`attachmentsProperties.${key}`}
                                                                             fieldTemplateTitle={value.title}
                                                                             setFieldValue={setFieldValue}
                                                                             required={requiredFilesNames.includes(key)}
                                                                             value={values.attachmentsProperties[key]}
-                                                                            error={
-                                                                                errors.attachmentsProperties?.[key]
-                                                                                    ? JSON.stringify(errors.attachmentsProperties?.[key])
-                                                                                    : undefined
-                                                                            }
+                                                                            error={errors.attachmentsProperties?.[key] as string}
                                                                             setFieldTouched={setFieldTouched}
-                                                                            multiple={value.items ? true : false}
-                                                                        />
-                                                                    )})}
+                                                                        />)
+                                                                    }
+                                                                    else return(
+                                                                    <InstanceFileInput
+                                                                        key={key}
+                                                                        fileFieldName={`attachmentsProperties.${key}`}
+                                                                        fieldTemplateTitle={value.title}
+                                                                        setFieldValue={setFieldValue}
+                                                                        required={requiredFilesNames.includes(key)}
+                                                                        value={values.attachmentsProperties[key]}
+                                                                        error={errors.attachmentsProperties?.[key] as string}
+                                                                        setFieldTouched={setFieldTouched}
+                                                                        multiple={value.items ? true : false}
+                                                                    />
+                                                                )})}
                                                                 </>
                                                             </Box>
                                                         )}
