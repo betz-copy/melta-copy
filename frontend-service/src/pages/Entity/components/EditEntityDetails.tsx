@@ -42,6 +42,7 @@ const EditEntityDetails: React.FC<{
 
     const fieldProperties = pickBy(entity.properties, (_value, key) => !templateFileKeys.includes(key)) as IEntity['properties'];
     const fileIdsProperties = pickBy(entity.properties, (_value, key) => templateFileKeys.includes(key));
+    console.log(fileIdsProperties)
     Object.entries(fileIdsProperties).forEach(([key, value]) => {
         if(Array.isArray(value)){
             fileIdsProperties[key] = value?.map((item) => {
@@ -135,22 +136,10 @@ const EditEntityDetails: React.FC<{
                                                                 style={{ marginBottom: '12px', fontSize: '16px', fontWeight: '600' }}
                                                             />
                                                             <>
-                                                                {Object.entries(templateFilesProperties).map(([key, value]) => {
-                                                                    if(value.items === undefined){
-                                                                        return (<InstanceSingleFileInput
-                                                                            key={key}
-                                                                            fileFieldName={`attachmentsProperties.${key}`}
-                                                                            fieldTemplateTitle={value.title}
-                                                                            setFieldValue={setFieldValue}
-                                                                            required={requiredFilesNames.includes(key)}
-                                                                            value={values.attachmentsProperties[key]}
-                                                                            error={errors.attachmentsProperties?.[key] as string}
-                                                                            setFieldTouched={setFieldTouched}
-                                                                        />)
-                                                                    }
-                                                                    else return(
-                                                                    <InstanceFileInput
-                                                                        key={key}
+                                                            {Object.entries(templateFilesProperties).map(([key, value], index) => (
+                                                            <Grid item key={key} marginTop={index > 0 ? 5 : 0}>
+                                                                {value.items === undefined ? (
+                                                                    <InstanceSingleFileInput
                                                                         fileFieldName={`attachmentsProperties.${key}`}
                                                                         fieldTemplateTitle={value.title}
                                                                         setFieldValue={setFieldValue}
@@ -158,9 +147,21 @@ const EditEntityDetails: React.FC<{
                                                                         value={values.attachmentsProperties[key]}
                                                                         error={errors.attachmentsProperties?.[key] as string}
                                                                         setFieldTouched={setFieldTouched}
-                                                                        multiple={value.items ? true : false}
                                                                     />
-                                                                )})}
+                                                                ) : (
+                                                                    <InstanceFileInput
+                                                                        fileFieldName={`attachmentsProperties.${key}`}
+                                                                        fieldTemplateTitle={value.title}
+                                                                        setFieldValue={setFieldValue}
+                                                                        required={requiredFilesNames.includes(key)}
+                                                                        value={values.attachmentsProperties[key]}
+                                                                        error={errors.attachmentsProperties?.[key] as string}
+                                                                        setFieldTouched={setFieldTouched}
+                                                                        multiple
+                                                                    />
+                                                                )}
+                                                            </Grid>
+                                                        ))}
                                                             </>
                                                         </Grid>
                                                     </Grid>

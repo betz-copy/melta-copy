@@ -60,38 +60,40 @@ const FileAttachmentsEdit: React.FC<FileAttachmentsProps> = ({
     required = [],
 }) => (
     <>
-        {Object.entries(templateFileProperties).map(([key, value]) => {
-            if(value.items === undefined){
-                return (<InstanceSingleFileInput
-                    key={key}
-                    fileFieldName={`detailsAttachments.${key}`}
-                    fieldTemplateTitle={value.title}
-                    setFieldValue={setFieldValue}
-                    required={required.includes(key)} // file error
-                    value={values.detailsAttachments[key]}
-                    error={
-                        errors.detailsAttachments?.[key] && touched.detailsAttachments?.[key]
-                            ? JSON.stringify(errors.detailsAttachments?.[key])
-                            : undefined
-                    }                    setFieldTouched={setFieldTouched}
-                />)
-            }
-            else return(
-            <InstanceFileInput
-                key={key}
-                fileFieldName={`detailsAttachments.${key}`}
-                fieldTemplateTitle={value.title}
-                setFieldValue={setFieldValue}
-                required={required.includes(key)} 
-                value={values.detailsAttachments[key]}
-                error={
-                    errors.detailsAttachments?.[key] && touched.detailsAttachments?.[key]
-                        ? JSON.stringify(errors.detailsAttachments?.[key])
-                        : undefined
-                }                setFieldTouched={setFieldTouched}
-                multiple={value.items ? true : false}
-            />
-        )})}
+        {Object.entries(templateFileProperties).map(([key, value], index) => 
+        <Grid item key={key} marginTop={index > 0 ? 5 : 0}>
+                    {value.items === undefined ? (
+                        <InstanceSingleFileInput
+                                    key={key}
+                                    fileFieldName={`detailsAttachments.${key}`}
+                                    fieldTemplateTitle={value.title}
+                                    setFieldValue={setFieldValue}
+                                    required={required.includes(key)} // file error
+                                    value={values.detailsAttachments[key]}
+                                    error={
+                                        errors.detailsAttachments?.[key] && touched.detailsAttachments?.[key]
+                                            ? JSON.stringify(errors.detailsAttachments?.[key])
+                                            : undefined
+                                    }                    setFieldTouched={setFieldTouched}
+                                />
+                    ) : (
+                        <InstanceFileInput
+                                key={key}
+                                fileFieldName={`detailsAttachments.${key}`}
+                                fieldTemplateTitle={value.title}
+                                setFieldValue={setFieldValue}
+                                required={required.includes(key)} 
+                                value={values.detailsAttachments[key]}
+                                error={
+                                    errors.detailsAttachments?.[key] && touched.detailsAttachments?.[key]
+                                        ? JSON.stringify(errors.detailsAttachments?.[key])
+                                        : undefined
+                                }                setFieldTouched={setFieldTouched}
+                                multiple={value.items ? true : false}
+                            />
+                    )}
+                </Grid>
+        )}
     </>
 );
 
@@ -120,6 +122,7 @@ const FileAttachmentsView: React.FC<FileAttachmentsProps> = ({ templateFilePrope
 );
 
 const FileAttachments = ({ viewMode, templateFileProperties, values, errors, touched, setFieldValue, required, setFieldTouched }) => {
+    console.log(values)
     return (
         <Box>
             <BlueTitle title={i18next.t('wizard.entityTemplate.attachments')} component="h6" variant="h6" style={{ marginBottom: '22px' }} />
@@ -147,6 +150,7 @@ const FileAttachments = ({ viewMode, templateFileProperties, values, errors, tou
 
 const GeneralDetails: React.FC<IDetailsStepProp> = ({ detailsFormikData, onNext, processInstance, isEditMode }) => {
     const { values, touched, errors, setFieldValue, setFieldTouched, handleBlur, resetForm } = detailsFormikData;
+    console.log(values)
     const queryClient = useQueryClient();
     const processTemplatesMap = queryClient.getQueryData<IProcessTemplateMap>('getProcessTemplates')!;
     const [previousTemplate, setPreviousTemplate] = useState<IMongoProcessTemplatePopulated>();

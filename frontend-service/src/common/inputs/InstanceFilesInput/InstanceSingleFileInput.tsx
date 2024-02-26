@@ -57,7 +57,8 @@ export const InstanceSingleFileInput: React.FC<InstanceFileInputProps> = ({
                     setFieldValue(fileFieldName, acceptedFile);
                     setFieldTouched(fileFieldName, true, false);
                 }}
-                onDeleteFile={() => {
+                onDeleteFile={(event: React.MouseEvent<HTMLButtonElement>) => {
+                    event.stopPropagation();
                     setFileName(undefined);
                     setFieldValue(fileFieldName, undefined);
                     setFieldTouched(fileFieldName, true, false);

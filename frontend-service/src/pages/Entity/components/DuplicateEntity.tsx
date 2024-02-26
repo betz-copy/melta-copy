@@ -130,10 +130,22 @@ const DuplicateEntity: React.FC<{}> = () => {
                                                                     {i18next.t('wizard.entityTemplate.dragAndDropFile')}
                                                                 </div>
                                                                 <>
-                                                                {Object.entries(templateFilesProperties).map(([key, value]) => {
-                                                                    if(value.items === undefined){
-                                                                        return (<InstanceSingleFileInput
-                                                                            key={key}
+                                                                {Object.entries(templateFilesProperties).map(([key, value], index) =>
+                                                                <Grid item key={key} marginTop={index > 0 ? 5 : 0}>
+                                                                {value.items === undefined ? (
+                                                                    <InstanceSingleFileInput
+                                                                                key={key}
+                                                                                fileFieldName={`attachmentsProperties.${key}`}
+                                                                                fieldTemplateTitle={value.title}
+                                                                                setFieldValue={setFieldValue}
+                                                                                required={requiredFilesNames.includes(key)}
+                                                                                value={values.attachmentsProperties[key]}
+                                                                                error={errors.attachmentsProperties?.[key] as string}
+                                                                                setFieldTouched={setFieldTouched}
+                                                                            />
+                                                                ) : (
+                                                                    <InstanceFileInput
+                                                                    key={key}
                                                                             fileFieldName={`attachmentsProperties.${key}`}
                                                                             fieldTemplateTitle={value.title}
                                                                             setFieldValue={setFieldValue}
@@ -141,21 +153,11 @@ const DuplicateEntity: React.FC<{}> = () => {
                                                                             value={values.attachmentsProperties[key]}
                                                                             error={errors.attachmentsProperties?.[key] as string}
                                                                             setFieldTouched={setFieldTouched}
-                                                                        />)
-                                                                    }
-                                                                    else return(
-                                                                    <InstanceFileInput
-                                                                        key={key}
-                                                                        fileFieldName={`attachmentsProperties.${key}`}
-                                                                        fieldTemplateTitle={value.title}
-                                                                        setFieldValue={setFieldValue}
-                                                                        required={requiredFilesNames.includes(key)}
-                                                                        value={values.attachmentsProperties[key]}
-                                                                        error={errors.attachmentsProperties?.[key] as string}
-                                                                        setFieldTouched={setFieldTouched}
-                                                                        multiple={value.items ? true : false}
+                                                                            multiple={value.items ? true : false}
                                                                     />
-                                                                )})}
+                                                                )}
+                                                            </Grid> 
+                                                                )}
                                                                 </>
                                                             </Box>
                                                         )}

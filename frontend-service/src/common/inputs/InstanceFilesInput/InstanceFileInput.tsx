@@ -30,6 +30,7 @@ export const InstanceFileInput: React.FC<InstanceFileInputProps> = ({
     setFieldTouched,
     multiple
 }) => {
+    console.log(value)
     const [filesName, setFilesName] = useState<string[]>(value ? value.map(file => getFileName(file.name)) : []);
     return (
         <Box
@@ -52,15 +53,19 @@ export const InstanceFileInput: React.FC<InstanceFileInputProps> = ({
                 inputText={`${fieldTemplateTitle} ${required ? '*' : ''}`}
                 files={filesName || []}
                 onDropFiles={(acceptedFiles : File[]) => {
-                    setFieldValue(fileFieldName, acceptedFiles);
-                    setFilesName(acceptedFiles.map((file) => file.name))
+                    const updatedFiles = value ? [...value, ...acceptedFiles] : acceptedFiles;
+                    console.log(filesName, acceptedFiles, [...filesName, ...acceptedFiles.map(file => file.name)]);
+                    console.log(acceptedFiles, value, updatedFiles)
+                    setFieldValue(fileFieldName, updatedFiles);
+                    setFilesName([...filesName, ...acceptedFiles.map(file => file.name)]);
                     setFieldTouched(fileFieldName, true, false);
                 }}
-                onDeleteFile={(fileIndex : number) => {
+                onDeleteFile={(fileIndex : number, event: React.MouseEvent<HTMLButtonElement>) => {
+                    event.stopPropagation();
                     const updatedFiles = [...(value || [])];
                     updatedFiles.splice(fileIndex, 1);
                     setFieldValue(fileFieldName, updatedFiles);
-                    setFilesName(updatedFiles.map((file) => getFileName(file.name)))
+                    setFilesName(updatedFiles.map((file : File | {name: string}) => file instanceof File ? file.name : getFileName(file.name)))
                     setFieldTouched(fileFieldName, true, false);
                 }}
                 errorText={error}

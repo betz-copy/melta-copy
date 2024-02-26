@@ -10,7 +10,7 @@ interface FilesInputProps {
     files: string[];
     onDropFiles?: (acceptedFiles: File[]) => void;
     onDropFile?: (acceptedFiles: File) => void;
-    onDeleteFile: (fileIndex: number) => void;
+    onDeleteFile: (fileIndex: number, event: React.MouseEvent<HTMLButtonElement>) => void;
     inputText: string;
     multiple: boolean;
     acceptedFilesTypes?: Accept;
@@ -101,7 +101,7 @@ const FilesInput: React.FC<FilesInputProps> = ({ files, onDropFiles, onDropFile,
                                 </Grid>
                                 <Grid item container xs={1} justifyContent="flex-end">
                                     <Grid item justifySelf="flex-end">
-                                        <IconButton onClick={() => onDeleteFile(index)} size="small">
+                                        <IconButton onClick={(e) => onDeleteFile(index, e)} size="small">
                                             <DeleteIcon fontSize="small" />
                                         </IconButton>
                                     </Grid>

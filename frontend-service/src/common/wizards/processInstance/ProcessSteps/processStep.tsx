@@ -55,6 +55,7 @@ export const ProcessStep: FC<ProcessStepProps> = ({
         (stepData: ProcessStepValues) => updateStepRequest(stepInstance._id, stepData, processInstance._id, stepInstance),
         {
             onSuccess: (updatedStepInstance) => {
+                console.log(updatedStepInstance)
                 toast.success(i18next.t('wizard.processInstance.step.editedSuccessfully'));
                 onStepUpdateSuccess(updatedStepInstance);
             },
@@ -64,6 +65,7 @@ export const ProcessStep: FC<ProcessStepProps> = ({
             },
         },
     );
+    console.log(templateFileProperties, getStepValuesFromStepInstance(stepInstance, stepTemplate))
     return (
         <Formik
             initialValues={getStepValuesFromStepInstance(stepInstance, stepTemplate)}
@@ -182,38 +184,43 @@ export const ProcessStep: FC<ProcessStepProps> = ({
 
                                             {templateFileProperties && isStepEditMode ? (
                                                 <Box>
-                                                    {Object.entries(templateFileProperties).map(([key, value]) => {
-                                                        const files = values.properties[key]?.map((file) => {return {name: file}});
-                                                                    if(value.items === undefined){
-                                                                        return (<InstanceSingleFileInput
+                                                    {Object.entries(templateFileProperties).map(([key, value], index) => {
+                                                        console.log(values, values.attachmentsProperties[key])
+                                                                    return <Grid item key={key} marginTop={index > 0 ? 5 : 0}>
+                                                                { value.items === undefined ? 
+                                                                       <InstanceSingleFileInput
                                                                             key={key}
                                                                             fileFieldName={`attachmentsProperties.${key}`}
                                                                             fieldTemplateTitle={value.title}
                                                                             setFieldValue={setFieldValue}
                                                                             required={required.includes(key)}
-                                                                            value={files}
+                                                                            value={values.attachmentsProperties[key]}
                                                                             error={errors.properties?.[key] as string}
                                                                             setFieldTouched={setFieldTouched}
-                                                                        />)
-                                                                    }
-                                                                    else return(
+                                                                        />
+                                                                    
+                                                                    :
                                                                     <InstanceFileInput
                                                                         key={key}
                                                                         fileFieldName={`attachmentsProperties.${key}`}
                                                                         fieldTemplateTitle={value.title}
                                                                         setFieldValue={setFieldValue}
                                                                         required={required.includes(key)}
-                                                                        value={files}
+                                                                        value={values.attachmentsProperties[key]}
                                                                         error={errors.properties?.[key] as string}
                                                                         setFieldTouched={setFieldTouched}
                                                                         multiple={value.items ? true : false}
                                                                     />
-                                                                )})}
+                                                                }
+                                                                    </Grid>
+                                                                
+                                                                })}
                                                 </Box>
                                             ) : (
                                                 templateFileProperties && (
                                                     <>
                                                         {Object.entries(templateFileProperties).map(([fieldName, { title }]) => {
+                                                            console.log(values, fieldName)
                                                             return(
                                                             <Grid container spacing={1} key={fieldName} display='flex' flexDirection="column">
                                                                 <Grid item>
@@ -222,9 +229,9 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                                                     </Typography>
                                                                 </Grid>
                                                                 <Grid item>
-                                                                    {values.properties[fieldName] ? (
-                                                                        values.properties[fieldName].map((file) => {
-                                                                            return <OpenPreviewButton fileId={file}/>
+                                                                    {values.attachmentsProperties[fieldName] ? (
+                                                                        values.attachmentsProperties[fieldName].map((file) => {
+                                                                            return <OpenPreviewButton fileId={file.name}/>
                                                                         })) : (
                                                                         <Typography display="inline" variant="h6">
                                                                             -

@@ -45,6 +45,7 @@ export const deleteProcessRequest = async (processId: string) => {
 };
 
 const handleAttachmentProperties = (attachments: object) => {
+    console.log(attachments);
     const formData = new FormData();
     const filesToUpload: any = [];
     const unchangedFiles: any = [];
@@ -65,6 +66,7 @@ const handleAttachmentProperties = (attachments: object) => {
             }
         }
     });
+    console.log(filesToUpload, unchangedFiles);
     filesToUpload.forEach(([key, value]) => formData.append(key, value as Blob));
 
     const fileProperties: { [key: string]: string } = {};
@@ -109,7 +111,7 @@ export const searchProcessesRequest = async (searchBody: ISearchProcessInstances
 
 export const updateStepRequest = async (stepId: string, values: ProcessStepValues, processId: string, currStep: IMongoStepInstancePopulated) => {
     const { formData, fileProperties } = handleAttachmentProperties(values.attachmentsProperties);
-
+    console.log(formData, fileProperties);
     const entityReferences = referencedEntityToEntityId(values.entityReferences);
 
     formData.append(
@@ -124,5 +126,6 @@ export const updateStepRequest = async (stepId: string, values: ProcessStepValue
     if (values.comments !== '') formData.append('comments', values.comments);
 
     const { data } = await axios.patch<IMongoStepInstancePopulated>(`${processes}/${processId}/steps/${stepId}`, formData);
+    console.log(data);
     return data;
 };
