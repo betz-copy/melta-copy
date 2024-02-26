@@ -138,6 +138,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                                     canEdit: entityTemplate.disabled,
                                     tooltipTitle: i18next.t('systemManagement.disabledEntityTemplate'),
                                 }}
+                                // onDuplicateClick={() => }
                             />
                         )}
                     </Grid>
@@ -250,7 +251,15 @@ interface CategoryEntitiesBoxProps {
         },
         unknown
     >;
-    loadedEntityTemplateId: string;
+    duplicateEntityTemplateDialogState: UseMutateAsyncFunction<
+        IMongoEntityTemplatePopulated,
+        unknown,
+        {
+            entityTemplateId: string;
+            disabled: boolean;
+        },
+        unknown
+    >;
 }
 
 const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
