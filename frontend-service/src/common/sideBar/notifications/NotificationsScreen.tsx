@@ -203,7 +203,7 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                                 iconButtonProps={{ onClick: () => filterCleaning() }}
                                 popoverText={i18next.t('entitiesTableOfTemplate.resetFilters')}
                                 disabled={!(startDate || endDate)}
-                                style={{ borderRadius: '5px', position: '' }}
+                                style={{ borderRadius: '5px' }}
                             >
                                 {startDate || endDate ? <img src="/icons/delete-filters-enable.svg" /> : <img src="/icons/delete-filters.svg" />}
                             </IconButtonWithPopover>
