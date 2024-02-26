@@ -18,6 +18,7 @@ const StartPageSearch: React.FC<{
                     size="medium"
                     borderRadius="30px"
                     height="56px"
+                    width="768px"
                 />
             </Grid>
         </Grid>

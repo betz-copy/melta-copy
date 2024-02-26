@@ -28,7 +28,7 @@ const MenuItemContent: React.FC<{ checked: boolean; indeterminate?: boolean; lab
 }) => {
     return (
         <>
-            <Checkbox checked={checked} indeterminate={indeterminate} />
+            <Checkbox checked={checked} indeterminate={indeterminate} sx={{ borderRadius: '4px', color: 'white' }} />
             <ListItemText
                 primary={
                     <Typography
@@ -157,13 +157,7 @@ const SelectOptionsMenuItems = <Option extends any, Group extends any>({
                                                 justifyContent: 'center',
                                             }}
                                         >
-                                            {!isDraggableDisabled && (
-                                                <>
-                                                    <Divider color="#101440" style={{ width: '8px' }} />
-                                                    <Divider color="#101440" style={{ width: '8px' }} />
-                                                    <Divider color="#101440" style={{ width: '8px' }} />
-                                                </>
-                                            )}
+                                            {!isDraggableDisabled && <img src="/icons/draggable-icon.svg" />}
                                         </Grid>
                                         <MenuItemContent checked={isOptionChecked(option)} label={getOptionLabel(option)} order={index + 1} />
                                     </MenuItem>
@@ -419,13 +413,6 @@ const ChooseAllMenuItem = <Option extends any, Group extends any>({
                 }
             }}
         >
-            <Grid
-                style={{
-                    width: '24px',
-                    height: '24px',
-                    gap: '2px',
-                }}
-            />
             <MenuItemContent
                 checked={selectedOptionsFiltered.length === optionsFiltered.length}
                 indeterminate={selectedOptionsFiltered.length < optionsFiltered.length && selectedOptionsFiltered.length > 0}
@@ -502,6 +489,14 @@ const SelectCheckbox = <Option extends any, Group extends any>({
                           }
                         : {
                               borderRadius: '7px',
+                              backgroundColor: '#FFFFFF',
+                              maxWidth: '131px',
+                              maxHeight: '34px',
+                              fontFamily: 'Rubik',
+                              color: '#787C9E',
+                              padding: '0px, 8px, 0px, 8px',
+                              fontSize: '14px',
+                              fontWeight: 400,
                           }
                 }
             >

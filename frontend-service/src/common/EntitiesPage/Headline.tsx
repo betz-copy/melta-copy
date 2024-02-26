@@ -3,7 +3,6 @@ import i18next from 'i18next';
 import { BaseTextFieldProps, CircularProgress, Grid, Icon, IconButton, ToggleButton, ToggleButtonGroup, Typography, useTheme } from '@mui/material';
 import CardsViewIcon from '@mui/icons-material/RecentActors';
 import AddIcon from '@mui/icons-material/Add';
-import SearchIcon from '@mui/icons-material/Search';
 import DownloadIcon from '@mui/icons-material/VerticalAlignBottomOutlined';
 import { useSelector } from 'react-redux';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
@@ -25,7 +24,8 @@ export const GlobalSearchBar: React.FC<{
     size?: BaseTextFieldProps['size'];
     toTopBar?: boolean;
     height?: string;
-}> = ({ inputValue, setInputValue, onSearch, borderRadius, placeholder, size, toTopBar = false, height }) => {
+    width?: string;
+}> = ({ inputValue, setInputValue, onSearch, borderRadius, placeholder, size, toTopBar = false, height, width }) => {
     const valueForSearchButtonRef = useRef(inputValue ?? '');
     const theme = useTheme();
 
@@ -65,6 +65,7 @@ export const GlobalSearchBar: React.FC<{
             borderRadius={borderRadius}
             toTopBar={toTopBar}
             height={height}
+            width={width}
         />
     );
 };

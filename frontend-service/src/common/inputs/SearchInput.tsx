@@ -12,6 +12,7 @@ const SearchInput: React.FC<{
     borderRadius?: string;
     toTopBar?: boolean;
     height?: string;
+    width?: string;
 }> = ({
     value,
     onChange,
@@ -33,6 +34,7 @@ const SearchInput: React.FC<{
     borderRadius = '7px',
     toTopBar = false,
     height = '34px',
+    width = '231px',
 }) => {
     const theme = useTheme();
 
@@ -45,8 +47,7 @@ const SearchInput: React.FC<{
             variant="outlined"
             fullWidth
             size={size}
-            style={{ borderRadius, backgroundColor: toTopBar ? '#EBEFFA' : '' }}
-            sx={{ borderRadius, backgroundColor: '#EBEFFA', height, padding: '0px, 8px, 0px, 8px', gap: '5px' }}
+            sx={{ borderRadius, backgroundColor: toTopBar ? '#EBEFFA' : '#FFFFFF', height, padding: '0px, 8px, 0px, 8px', gap: '5px' }}
             InputProps={{
                 endAdornment: (
                     <InputAdornment
@@ -59,7 +60,6 @@ const SearchInput: React.FC<{
                             lineHeight: '16px',
                             letterSpacing: '0em',
                             textAlign: 'right',
-                            // maxWidth: '175px',
                             height: '16px',
                             padding: '0px, 10px, 0px, 0px',
                             gap: '10px',
@@ -96,6 +96,7 @@ const SearchInput: React.FC<{
                     borderRadius,
                     color: theme.palette.primary.main,
                     height,
+                    width,
                 },
             }}
         />
