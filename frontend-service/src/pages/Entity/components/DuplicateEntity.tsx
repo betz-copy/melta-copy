@@ -131,7 +131,6 @@ const DuplicateEntity: React.FC<{}> = () => {
                                                                 </div>
                                                                 <>
                                                                 {Object.entries(templateFilesProperties).map(([key, value]) => {
-                                                                    console.log(value, values.attachmentsProperties, key);
                                                                     if(value.items === undefined){
                                                                         return (<InstanceSingleFileInput
                                                                             key={key}

@@ -179,7 +179,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                         return !areThereAnyInstances;
                                                     }
                                                     if (validPropertyType === 'enumArray') return supportArrayFields;
-                                                    if (validPropertyType === 'fileId' || validPropertyType === 'fileIdArray') return false; // TODO: support file inputs
+                                                    if (validPropertyType === 'fileId' || validPropertyType === 'multipleFiles') return false; // TODO: support file inputs
                                                     return true;
                                                 })
                                                 .map((validType) => {

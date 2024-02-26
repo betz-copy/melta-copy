@@ -68,7 +68,6 @@ export const updateEntityRequestForMultiple = async (
 
     const filesToUpload: any = [];
     const unchangedFiles: any = []; /////send single file as array to the back
-    console.log(newEntityData.attachmentsProperties);
     Object.entries(newEntityData.attachmentsProperties).forEach(([key, value]: [string, any]) => {
         if (Array.isArray(value) && value) {
             value.forEach((file, index) => {
@@ -95,7 +94,6 @@ export const updateEntityRequestForMultiple = async (
         newEntityData.properties[key] = [];
     });
     unchangedFiles.forEach(([key, value]) => {
-        console.log(unchangedFiles, key, value);
         if (!newEntityData.template.properties.properties[key].items) {
             newEntityData.properties[key] = value.name;
         } else {

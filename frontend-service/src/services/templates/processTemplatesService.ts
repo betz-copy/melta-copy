@@ -10,10 +10,11 @@ import {
     IProcessDetails,
     IProcessSingleProperty,
 } from '../../interfaces/processes/processTemplate';
+import { Type } from 'ajv/dist/compile/util';
 
 const { processTemplates } = environment.api;
-export const basePropertyTypes = ['string', 'number', 'boolean'];
-export const stringFormats = ['date', 'date-time', 'email', 'entityReference'];
+export const basePropertyTypes = ['string', 'number', 'boolean', 'array'];
+export const stringFormats = ['date', 'date-time', 'email', 'entityReference', 'fileId'];
 
 const processTemplateObjectToProcessTemplateForm = (
     processTemplate: IMongoProcessTemplatePopulated | null,
@@ -107,7 +108,6 @@ const processTemplateObjectToProcessTemplateForm = (
 };
 const formToJSONSchema = (values: ProcessTemplateWizardValues): ICreateProcessTemplateBody | IUpdateProcessTemplateBody => {
     const { detailsProperties, detailsAttachmentProperties, steps, ...restOfProperties } = values;
-
     const detailsPropertiesOrder: string[] = [];
     const stepTemplates: ICreateProcessTemplateBody['steps'] | IUpdateProcessTemplateBody['steps'] = [];
 
@@ -132,12 +132,23 @@ const formToJSONSchema = (values: ProcessTemplateWizardValues): ICreateProcessTe
         if (required) detailsSchema.required.push(name);
     });
 
-    detailsAttachmentProperties.forEach(({ name, title, required }) => {
-        detailsSchema.properties[name] = {
-            title,
-            type: 'string',
-            format: 'fileId',
-        };
+    detailsAttachmentProperties.forEach(({ name, title, required, type }) => {
+        if (type === 'multipleFiles') {
+            detailsSchema.properties[name] = {
+                title,
+                type: 'array',
+                items: {
+                    type: 'string',
+                    format: 'fileId',
+                },
+            };
+        } else {
+            detailsSchema.properties[name] = {
+                title,
+                type: 'string',
+                format: 'fileId',
+            };
+        }
 
         if (required) detailsSchema.required.push(name);
 
@@ -166,12 +177,23 @@ const formToJSONSchema = (values: ProcessTemplateWizardValues): ICreateProcessTe
             if (required) stepSchema.required.push(name);
         });
 
-        step.attachmentProperties.forEach(({ name, title, required }) => {
-            stepSchema.properties[name] = {
-                title,
-                type: 'string',
-                format: 'fileId',
-            };
+        step.attachmentProperties.forEach(({ name, title, required, type }) => {
+            if (type === 'multipleFiles') {
+                stepSchema.properties[name] = {
+                    title,
+                    type: 'array',
+                    items: {
+                        type: 'string',
+                        format: 'fileId',
+                    },
+                };
+            } else {
+                stepSchema.properties[name] = {
+                    title,
+                    type: 'string',
+                    format: 'fileId',
+                };
+            }
 
             if (required) stepSchema.required.push(name);
 
@@ -215,7 +237,6 @@ const updateProcessTemplateRequest = async (processTemplateId: string, updatedPr
             formData.append(String(index), step.icon!.file as File);
         }
     });
-
     const processTemplate = formToJSONSchema(updatedProcessTemplate);
     formData.append('name', processTemplate.name);
     formData.append('displayName', processTemplate.displayName);

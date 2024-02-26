@@ -51,12 +51,12 @@ export const InstanceFileInput: React.FC<InstanceFileInputProps> = ({
                 fileFieldName={fileFieldName}
                 inputText={`${fieldTemplateTitle} ${required ? '*' : ''}`}
                 files={filesName || []}
-                onDropFiles={(acceptedFiles) => {
+                onDropFiles={(acceptedFiles : File[]) => {
                     setFieldValue(fileFieldName, acceptedFiles);
                     setFilesName(acceptedFiles.map((file) => file.name))
                     setFieldTouched(fileFieldName, true, false);
                 }}
-                onDeleteFile={(fileIndex) => {
+                onDeleteFile={(fileIndex : number) => {
                     const updatedFiles = [...(value || [])];
                     updatedFiles.splice(fileIndex, 1);
                     setFieldValue(fileFieldName, updatedFiles);

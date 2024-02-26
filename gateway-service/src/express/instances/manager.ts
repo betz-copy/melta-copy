@@ -34,11 +34,26 @@ export class InstancesManager {
         }
 
         const fileIds = await uploadFiles(files);
-
         const filePropertiesEntries = files.map((file, index) => {
             return [file.fieldname, fileIds[index]];
         });
-        return Object.fromEntries(filePropertiesEntries);
+
+        const filesToUpload: any = {};
+        //not for image picker
+        Object.entries(Object.fromEntries(filePropertiesEntries)).forEach(([key, value]) => {
+            const [group, _index] = key.split('.');
+            if (group === key) {
+                //for single files
+                filesToUpload[key] = value;
+            } else {
+                if (!filesToUpload[group]) {
+                    filesToUpload[group] = [];
+                }
+                filesToUpload[group].push(value);
+            }
+        });
+
+        return filesToUpload;
     }
 
     static async exportEntities(exportEntitiesBody: IExportEntitiesBody) {
@@ -246,20 +261,6 @@ export class InstancesManager {
         createAlert: boolean = true,
     ) {
         const uploadedFilesProperties = await InstancesManager.uploadInstanceFiles(files);
-        const filesToUpload: any = {};
-        //not for image picker
-        Object.entries(uploadedFilesProperties).forEach(([key, value]) => {
-            const [group, _index] = key.split('.');
-            if (group === key) {
-                //for single files
-                filesToUpload[key] = value;
-            } else {
-                if (!filesToUpload[group]) {
-                    filesToUpload[group] = [];
-                }
-                filesToUpload[group].push(value);
-            }
-        });
         const currentEntity = await InstanceManagerService.getEntityInstanceById(id);
 
         const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(currentEntity.templateId);
@@ -271,14 +272,14 @@ export class InstancesManager {
                 }
             }
         });
-        if (filesToUpload?.files) {
-            updatedInstanceData.properties.files = filesToUpload.files;
+        if (uploadedFilesProperties?.files) {
+            updatedInstanceData.properties.files = uploadedFilesProperties.files;
         }
         const updatedInstance = await InstanceManagerService.updateEntityInstance(
             id,
             {
                 templateId: updatedInstanceData.templateId,
-                properties: { ...filesToUpload, ...updatedInstanceData.properties },
+                properties: { ...uploadedFilesProperties, ...updatedInstanceData.properties },
             },
             ignoredRules,
         ).catch(InstancesManager.handleBrokenRulesError);

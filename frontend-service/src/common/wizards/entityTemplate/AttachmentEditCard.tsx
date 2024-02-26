@@ -32,6 +32,7 @@ export const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
     remove,
     supportChangeToRequiredWithInstances,
 }) => {
+    console.log(value)
     const name = `attachmentProperties[${index}].name`;
     const touchedName = touched?.name;
     const errorName = errors?.name;
@@ -41,7 +42,7 @@ export const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
     const errorTitle = errors?.title;
     const type = `properties[${index}].type`;
 
-    const validPropertyTypes = ["singleFile", "multipleFiles"];
+    const validPropertyTypes = ["fileId", "multipleFiles"];
     // TODO: implement array field on files
     // const type = `attachmentProperties[${index}].type`;
 
@@ -93,8 +94,6 @@ export const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
                                             name={type}
                                             value={value.type}
                                             onChange={onChange}
-                                            // error={touchedType && Boolean(errorType)}
-                                            // helperText={touchedType && errorType}
                                             disabled={isDisabled}
                                             sx={{ marginRight: '5px' }}
                                             fullWidth

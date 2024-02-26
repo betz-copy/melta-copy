@@ -46,8 +46,25 @@ export const deleteProcessRequest = async (processId: string) => {
 
 const handleAttachmentProperties = (attachments: object) => {
     const formData = new FormData();
-    const [filesToUpload, unchangedFiles] = partition(Object.entries(attachments), ([_key, value]) => value instanceof File);
-
+    const filesToUpload: any = [];
+    const unchangedFiles: any = [];
+    Object.entries(attachments).forEach(([key, value]: [string, any]) => {
+        if (Array.isArray(value) && value) {
+            value.forEach((file, index) => {
+                if (file instanceof File) {
+                    filesToUpload.push([`${key}.${index}`, file]);
+                } else {
+                    unchangedFiles.push([`${key}`, file]);
+                }
+            });
+        } else if (value) {
+            if (value instanceof File) {
+                filesToUpload.push([`${key}`, value]);
+            } else {
+                unchangedFiles.push([`${key}`, value]);
+            }
+        }
+    });
     filesToUpload.forEach(([key, value]) => formData.append(key, value as Blob));
 
     const fileProperties: { [key: string]: string } = {};
@@ -56,7 +73,6 @@ const handleAttachmentProperties = (attachments: object) => {
             fileProperties[key] = (value as { name: string }).name;
         }
     });
-
     return { formData, fileProperties };
 };
 

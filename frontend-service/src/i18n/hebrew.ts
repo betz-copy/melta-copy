@@ -520,7 +520,7 @@ export default {
         serialNumber: 'מספר סידורי',
         enumArray: 'רשימה מרובה',
         array: 'מערך',
-        singleFile: 'קובץ יחיד',
+        fileId: 'קובץ יחיד',
         multipleFiles: 'קבצים מרובים',
     },
     input: {

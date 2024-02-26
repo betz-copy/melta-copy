@@ -70,7 +70,6 @@ const FilesInput: React.FC<FilesInputProps> = ({ files, onDropFiles, onDropFile,
         cursor: 'pointer',
         overflowY: 'auto',
     };
-    console.log(files)
     return (
         <Grid container flexDirection="column" justifyContent="space-around" width="100%" ref={inputRef}>
             <Grid item>

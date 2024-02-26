@@ -120,7 +120,6 @@ export default class ProcessesInstancesManager {
 
     static async createProcessInstance(processData: IProcessInstance, files: Express.Multer.File[], userId: string) {
         const processTemplate = await ProcessManagerService.getProcessTemplateById(processData.templateId);
-
         this.checkEntityReferenceFields(processData.details, processTemplate.details.properties);
         if (!files.length) {
             const process = await ProcessManagerService.createProcessInstance(processData);
@@ -139,7 +138,6 @@ export default class ProcessesInstancesManager {
                 return removeTmpFile(file.path);
             }),
         );
-
         const process = await ProcessManagerService.createProcessInstance({ ...processData, details: processDetails }).catch(async (error) => {
             await deleteFiles(Object.values(filesProperties)).catch(() => {
                 // eslint-disable-next-line no-console
@@ -147,7 +145,6 @@ export default class ProcessesInstancesManager {
             });
             throw error;
         });
-
         await Promise.allSettled([
             this.sendNewProcessNotification(process._id),
             this.sendProcessReviewerUpdateNotifications([process._id], process.steps),

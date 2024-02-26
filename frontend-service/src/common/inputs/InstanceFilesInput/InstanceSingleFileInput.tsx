@@ -28,7 +28,6 @@ export const InstanceSingleFileInput: React.FC<InstanceFileInputProps> = ({
     error,
     setFieldTouched,
 }) => {
-    console.log(value);
     const fileId = value?.name;
     const initialFileName = fileId && !(value instanceof File) ? getFileName(fileId) : fileId;
     const [fileName, setFileName] = useState<string | undefined>(initialFileName);
@@ -60,7 +59,6 @@ export const InstanceSingleFileInput: React.FC<InstanceFileInputProps> = ({
                 }}
                 onDeleteFile={() => {
                     setFileName(undefined);
-                    console.log(fileFieldName, value)
                     setFieldValue(fileFieldName, undefined);
                     setFieldTouched(fileFieldName, true, false);
                 }}
