@@ -29,8 +29,12 @@ const DateRange: React.FC<{
                             style: { borderRadius: '0px 7px 7px 0px', backgroundColor: overrideSx && 'white' },
                             // TODO - implement dark mode when it will be supported
                         }}
-                        // icon={}
-                        // slots={{ calendarIcon: () => <img src="/icons/calendar.svg" style={{ height: '20px' }} /> }}
+                        components={
+                            overrideSx && {
+                                // eslint-disable-next-line react/no-unstable-nested-components
+                                OpenPickerIcon: () => <img src="/icons/calendar.svg" style={{ height: '20px' }} alt="calendar icon" />,
+                            }
+                        }
                     />
                 </LocalizationProvider>
             </Grid>
@@ -47,6 +51,12 @@ const DateRange: React.FC<{
                         InputProps={{
                             style: { borderRadius: '7px 0px 0px 7px', backgroundColor: overrideSx && 'white' },
                         }}
+                        components={
+                            overrideSx && {
+                                // eslint-disable-next-line react/no-unstable-nested-components
+                                OpenPickerIcon: () => <img src="/icons/calendar.svg" style={{ height: '20px' }} alt="calendar icon" />,
+                            }
+                        }
                     />
                 </LocalizationProvider>
             </Grid>

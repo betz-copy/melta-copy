@@ -1,10 +1,9 @@
-import { Button, CircularProgress, Grid, Tab, Tabs, IconButton } from '@mui/material';
+import { CircularProgress, Grid, Tab, Tabs } from '@mui/material';
 import i18next from 'i18next';
 import React, { CSSProperties, useState } from 'react';
 import { toast } from 'react-toastify';
 import { useMutation } from 'react-query';
 import { LoadingButton } from '@mui/lab';
-import FilterAltOffIcon from '@mui/icons-material/FilterAltOff';
 import { environment } from '../../../globals';
 import { INotificationGroupCountDetails, INotificationPopulated } from '../../../interfaces/notifications';
 import { getMyNotificationsRequest, manyNotificationSeenRequest } from '../../../services/notificationService';
@@ -123,7 +122,7 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                 <CircularProgress sx={{ marginX: 'auto', marginTop: '1rem' }} />
             ) : (
                 <>
-                    <Grid sx={{ display: 'flex', justifyContent: 'space-evenly', padding: '15px' }}>
+                    <Grid sx={{ display: 'flex', justifyContent: 'space-evenly', padding: '17px' }}>
                         <Grid sx={{ width: openCalenders ? '100%' : '80%' }}>
                             <SelectCheckbox
                                 title={i18next.t('notifications.notificationType')}
@@ -171,7 +170,7 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                         )}
                     </Grid>
                     {openCalenders && (
-                        <Grid sx={{ padding: '15px' }}>
+                        <Grid sx={{ padding: '17px' }}>
                             <DateRange
                                 onStartDateChange={onSetStartDate}
                                 onEndDateChange={onSetEndDate}
@@ -185,7 +184,6 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                                     '.MuiOutlinedInput-notchedOutline': {
                                         border: 0,
                                         boxShadow: '0 0 10px rgba(0, 0, 0, 0.2)',
-
                                         borderRadius: '12px 12px 12px 12px',
                                     },
                                     '& .MuiOutlinedInput-root': {
@@ -203,7 +201,7 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                                 iconButtonProps={{ onClick: () => filterCleaning() }}
                                 popoverText={i18next.t('entitiesTableOfTemplate.resetFilters')}
                                 disabled={!(startDate || endDate)}
-                                style={{ borderRadius: '5px' }}
+                                style={{ borderRadius: '5px', padding: '10px', display: 'flex', alignItems: 'flex-end' }}
                             >
                                 {startDate || endDate ? <img src="/icons/delete-filters-enable.svg" /> : <img src="/icons/delete-filters.svg" />}
                             </IconButtonWithPopover>
