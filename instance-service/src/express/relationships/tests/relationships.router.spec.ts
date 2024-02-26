@@ -48,6 +48,7 @@ describe('Relationship router', () => {
                 },
             },
             propertiesOrder: ['testProp'],
+            propertiesTypeOrder: ['properties', 'attachmentProperties'],
             propertiesPreview: ['testProp'],
             disabled: false,
             createdAt: mockDateStr,

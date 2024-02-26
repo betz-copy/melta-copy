@@ -29,6 +29,7 @@ import { NotificationsScreen } from './notifications/NotificationsScreen';
 import { getMyNotificationGroupCountRequest } from '../../services/notificationService';
 import { GlobalSearchBar } from '../EntitiesPage/Headline';
 import IconButtonWithPopover from '../IconButtonWithPopover';
+import { sideBarTransition } from '../../theme';
 
 type SideBarProps = {
     toggleDrawer: () => any;
@@ -351,6 +352,9 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                             <IconButton
                                 onClick={toggleDrawer}
                                 size="large"
+                                sx={{
+                                    transition: sideBarTransition,
+                                }}
                                 style={{
                                     height: '50px',
                                     width: '30px',
@@ -365,6 +369,9 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                         ) : (
                             <IconButton
                                 onClick={toggleDrawer}
+                                sx={{
+                                    transition: sideBarTransition,
+                                }}
                                 style={{
                                     height: '50px',
                                     width: '30px',

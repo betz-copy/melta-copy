@@ -1,11 +1,12 @@
 import React from 'react';
 import { ColDef, ICellRendererParams, IDateFilterParams, ISetFilterParams, ValueFormatterParams, ValueGetterFunc } from '@ag-grid-community/core';
 import i18next from 'i18next';
-import { OpenPreviewButton } from '../../common/OpenPreviewButton';
+import { OpenPreviewButton } from '../../common/FilePreview/OpenPreviewButton';
 import { Value } from './Value';
 import { getDateWithoutTime, getLongDate } from '../date';
 import { IEntity } from '../../interfaces/entities';
 import { agGridLocaleText } from './agGridLocaleText';
+import OverflowWrapper from './OverflowWrapper';
 
 export const numberColDef = <Data extends any = IEntity>(
     field: string,
@@ -109,7 +110,7 @@ export const booleanColDef = <Data extends any = IEntity>(
             return formatValue(params.value);
         },
         suppressMiniFilter: true,
-        values: [true, false, undefined],
+        values: [true, false],
     };
     return {
         field,
@@ -123,6 +124,7 @@ export const booleanColDef = <Data extends any = IEntity>(
         hide: hideColumn,
     };
 };
+
 export const enumColDef = <Data extends any = IEntity>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
@@ -145,6 +147,47 @@ export const enumColDef = <Data extends any = IEntity>(
         cellRenderer: (props: ICellRendererParams<Data, string | undefined>) => {
             return <Value hideValue={hideValue} value={props.value ?? ''} color={props.value && enumColorOptions?.[props.value]} />;
         },
+        filter: 'agSetColumnFilter',
+        filterParams,
+        width: hardcodedWidth,
+        flex: hardcodedWidth ? 0 : 1,
+        hide: hideColumn,
+    };
+};
+
+export const enumArrayColDef = <Data extends any = IEntity>(
+    field: string,
+    valueGetter: ValueGetterFunc<Data>,
+    value: { title: string },
+    values: Array<string>,
+    hardcodedWidth: number | undefined,
+    rowHeight: number,
+    enumColorOptions?: Record<string, string>,
+    hideColumn = false,
+    hideValue = false,
+): ColDef<Data> => {
+    const filterParams: ISetFilterParams<Data, string | undefined> = {
+        suppressMiniFilter: true,
+        values: [...values, undefined],
+    };
+
+    return {
+        field,
+        headerName: value.title,
+        valueGetter,
+
+        cellRenderer: (props: ICellRendererParams<Data, string[] | undefined>) => {
+            if (!props.value) return '';
+            return (
+                <OverflowWrapper
+                    items={props.value}
+                    getItemKey={(item) => item}
+                    renderItem={(item) => <Value hideValue={hideValue} value={item} color={enumColorOptions?.[item] || 'default'} />}
+                    containerStyle={{ height: `${rowHeight}px` }}
+                />
+            );
+        },
+
         filter: 'agSetColumnFilter',
         filterParams,
         width: hardcodedWidth,

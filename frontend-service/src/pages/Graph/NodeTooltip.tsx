@@ -22,13 +22,21 @@ export const NodeTooltip: React.FC<NodeTooltipProps> = ({ node, entityTemplate, 
             container
             direction="column"
             style={{
-                padding: '0.4rem',
+                padding: '5px',
+                maxWidth: '700px',
                 backgroundColor: LocalStorage.get<boolean>(graphSettings.is3DViewLocalStorageKey) ? 'rgba(0, 0, 0, 0.5)' : undefined,
             }}
         >
             <Grid item>
                 {entityTemplate.propertiesPreview.length ? (
-                    <EntityPropertiesInternal properties={node.data} showPreviewPropertiesOnly entityTemplate={entityTemplate} darkMode={darkMode} />
+                    <EntityPropertiesInternal
+                        properties={node.data}
+                        showPreviewPropertiesOnly
+                        entityTemplate={entityTemplate}
+                        darkMode={darkMode}
+                        mode="white"
+                        textWrap
+                    />
                 ) : (
                     i18next.t('graph.noPreviewProperties')
                 )}

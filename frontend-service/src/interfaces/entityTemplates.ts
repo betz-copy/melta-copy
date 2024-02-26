@@ -1,10 +1,17 @@
 import { IMongoCategory } from './categories';
 
 export interface IEntitySingleProperty {
-    type: 'string' | 'number' | 'boolean';
     title: string;
+    type: 'string' | 'number' | 'boolean' | 'array';
     format?: string;
     enum?: string[];
+    items?: {
+        type: 'string';
+        enum?: string[];
+        format?: 'fileId';
+    };
+    minItems?: 1;
+    uniqueItems?: true;
     pattern?: string;
     patternCustomErrorMessage?: string;
     dateNotification?: string;
@@ -25,6 +32,7 @@ export interface IEntityTemplate {
     disabled: boolean;
     category: IMongoCategory['_id'];
     propertiesOrder: string[];
+    propertiesTypeOrder: ('properties' | 'attachmentProperties')[];
     propertiesPreview: string[];
     enumPropertiesColors?: Record<string, Record<string, string>>; // { [fieldName]: { [enumOption1]: [color1], [enumOption2]: [color2] } }
     uniqueConstraints: string[][];

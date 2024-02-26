@@ -116,7 +116,7 @@ export const environment = {
     },
     createdRelationshipIdInBrokenRules: 'created-relationship-id',
     accessTokenName: 'rabaz-access-token',
-    minimumSupportedChromeVersion: 80,
+    minimumSupportedChromeVersion: 85,
     fileIdLength: 32,
     maxDateTimestamp: 8640000000000000,
     errorCodes: {

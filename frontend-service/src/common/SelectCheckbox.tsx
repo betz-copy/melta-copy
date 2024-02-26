@@ -82,7 +82,6 @@ const SelectOptionsMenuItems = <Option extends any, Group extends any>({
             setOptions(newOptionsOrder);
         }
 
-        // sync order to selectedOptions too
         setSelectedOptions((prevSelectOptions) => {
             return newOptionsOrder.filter((option) =>
                 prevSelectOptions.some((selectedOption) => getOptionId(selectedOption) === getOptionId(option)),

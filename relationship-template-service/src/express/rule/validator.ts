@@ -33,6 +33,10 @@ const jsonSchemaTypeToType = ({ type, format }: IEntitySingleProperty): IConstan
         case 'date-time':
             return 'dateTime';
         default:
+            if (type === 'array') {
+                // todo: block in UI too, or support it
+                throw new Error('array not supported in formulas! sorry!');
+            }
             return type;
     }
 };

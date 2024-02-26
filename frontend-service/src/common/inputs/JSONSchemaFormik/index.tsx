@@ -99,6 +99,12 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
                         },
                     };
                 }
+                if (propertySchema.type === 'array' && propertySchema.items!.enum) {
+                    return {
+                        'ui:widget': 'SelectWidget',
+                        'ui:options': { enumOptions: propertySchema.items!.enum.map((option) => ({ label: option, value: option })) },
+                    };
+                }
                 return {};
             })}
             onChange={({ formData }) => {

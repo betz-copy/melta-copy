@@ -159,7 +159,7 @@ const TemplateTable = forwardRef<
                     rowModelType={isExpand ? 'infinite' : 'serverSide'}
                     quickFilterText={quickFilterText}
                     rowHeight={defaultRowHeight}
-                    fontSize="16px"
+                    fontSize="14px"
                     saveStorageProps={{
                         shouldSaveFilter: true,
                         shouldSaveWidth: true,

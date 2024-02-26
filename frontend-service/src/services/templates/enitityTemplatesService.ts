@@ -7,7 +7,8 @@ import { getFileName } from '../../utils/getFileName';
 
 const { entityTemplates } = environment.api;
 export const basePropertyTypes = ['string', 'number', 'boolean'];
-export const stringFormats = ['date', 'date-time', 'email'];
+export const stringFormats = ['date', 'date-time', 'email', 'fileId'];
+export const arrayTypes = ['fileIdArray', 'enumArray'];
 
 const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTemplatePopulated | null): EntityTemplateWizardValues | undefined => {
     if (!entityTemplate) return undefined;
@@ -21,15 +22,11 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
         const value = properties.properties[key];
 
         let type = value.format || value.type;
-        if (value.serialStarter !== undefined) {
-            type = 'serialNumber';
-        }
-        if (value.enum) {
-            type = 'enum';
-        }
-        if (value.pattern) {
-            type = 'pattern';
-        }
+        if (value.serialStarter !== undefined) type = 'serialNumber';
+        else if (value.enum) type = 'enum';
+        else if (value.pattern) type = 'pattern';
+        else if (value.items?.enum) type = 'enumArray';
+        else if (value.items?.format === 'fileId') type = 'fileIdArray';
 
         const property: EntityTemplateFormInputProperties = {
             id: uuid(),
@@ -40,7 +37,7 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
             hide: properties.hide.includes(key),
             unique: type !== 'serialNumber' && uniqueConstraints.filter((constraints) => constraints.includes(key)).length > 0, // serials cant be marked unique
             type,
-            options: value.enum || [],
+            options: value.enum || value.items?.enum || [],
             optionColors: enumPropertiesColors?.[key] ? enumPropertiesColors[key] : {},
             pattern: value.pattern || '',
             patternCustomErrorMessage: value.patternCustomErrorMessage || '',
@@ -48,7 +45,7 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
             serialStarter: value.serialStarter,
         };
 
-        if (value.format === 'fileId') {
+        if (value.format === 'fileId' || value.items?.format === 'fileId') {
             attachmentProperties.push(property);
         } else {
             propertiesArray.push(property);
@@ -57,17 +54,23 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
 
     if (iconFileId) {
         const file: Partial<File> = { name: iconFileId };
-        return { ...restOfEntityTemplate, icon: { file, name: getFileName(iconFileId) }, properties: propertiesArray, attachmentProperties };
+        return {
+            ...restOfEntityTemplate,
+            icon: { file, name: getFileName(iconFileId) },
+            properties: propertiesArray,
+            attachmentProperties,
+        };
     }
 
     return { ...restOfEntityTemplate, properties: propertiesArray, attachmentProperties };
 };
 
 export const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTemplate => {
-    const { properties, attachmentProperties, ...restOfProperties } = values;
+    const { properties, attachmentProperties, propertiesTypeOrder, ...restOfProperties } = values;
     const serialsUniqueConstraints: string[][] = [];
 
     const propertiesOrder: string[] = [];
+    const attachmentPropertiesOrder: string[] = [];
     const propertiesPreview: string[] = [];
     const uniqueConstraint: string[] = []; // UI supports only single unique constraint
     const schema: IEntityTemplate['properties'] = {
@@ -105,6 +108,9 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTem
                 case 'serialNumber':
                     propertyType = 'number';
                     break;
+                case 'enumArray':
+                    propertyType = 'array';
+                    break;
                 default:
                     propertyType = 'string';
             }
@@ -114,6 +120,9 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTem
                 type: propertyType,
                 format: stringFormats.includes(type) ? type : undefined,
                 enum: type === 'enum' ? options : undefined,
+                items: type === 'enumArray' ? { type: 'string', enum: options } : undefined,
+                minItems: type === 'enumArray' ? 1 : undefined,
+                uniqueItems: type === 'enumArray' ? true : undefined,
                 pattern: type === 'pattern' ? pattern : undefined,
                 patternCustomErrorMessage: type === 'pattern' ? patternCustomErrorMessage : undefined,
                 dateNotification: dateNotification as string | undefined,
@@ -129,7 +138,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTem
             if (preview) propertiesPreview.push(name);
             if (type === 'serialNumber') serialsUniqueConstraints.push([name]);
 
-            if (type === 'enum') {
+            if (type === 'enum' || type === 'enumArray') {
                 Object.entries(optionColors).forEach(([option, color]) => {
                     if (!color) return;
 
@@ -149,18 +158,21 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTem
             format: 'fileId',
         };
 
-        propertiesOrder.push(name);
+        attachmentPropertiesOrder.push(name);
 
         if (required) schema.required.push(name);
     });
-
     const uniqueConstraints = uniqueConstraint.length > 0 ? [uniqueConstraint, ...serialsUniqueConstraints] : serialsUniqueConstraints;
 
     return {
         ...restOfProperties,
         properties: schema,
         category: values.category._id,
-        propertiesOrder,
+        propertiesOrder:
+            propertiesTypeOrder[0] === 'properties'
+                ? [...propertiesOrder, ...attachmentPropertiesOrder]
+                : [...attachmentPropertiesOrder, ...propertiesOrder],
+        propertiesTypeOrder,
         propertiesPreview,
         enumPropertiesColors,
         uniqueConstraints,
@@ -185,6 +197,7 @@ const createEntityTemplateRequest = async (newEntityTemplate: EntityTemplateWiza
     formData.append('category', entityTemplate.category);
     formData.append('properties', JSON.stringify(entityTemplate.properties));
     formData.append('propertiesOrder', JSON.stringify(entityTemplate.propertiesOrder));
+    formData.append('propertiesTypeOrder', JSON.stringify(entityTemplate.propertiesTypeOrder));
     formData.append('propertiesPreview', JSON.stringify(entityTemplate.propertiesPreview));
     formData.append('uniqueConstraints', JSON.stringify(entityTemplate.uniqueConstraints));
 
@@ -223,6 +236,7 @@ const updateEntityTemplateRequest = async (entityTemplateId: string, updatedEnti
     formData.append('category', entityTemplate.category);
     formData.append('properties', JSON.stringify(entityTemplate.properties));
     formData.append('propertiesOrder', JSON.stringify(entityTemplate.propertiesOrder));
+    formData.append('propertiesTypeOrder', JSON.stringify(entityTemplate.propertiesTypeOrder));
     formData.append('propertiesPreview', JSON.stringify(entityTemplate.propertiesPreview));
     formData.append('uniqueConstraints', JSON.stringify(entityTemplate.uniqueConstraints));
 
