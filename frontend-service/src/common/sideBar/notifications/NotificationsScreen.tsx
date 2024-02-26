@@ -184,18 +184,18 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                                     '& input': {
                                         backgroundColor: '#FFFF',
                                     },
-                                    '& .MuiInput-underline:after': {
-                                        border: 0,
-                                    },
-                                    '& .MuiOutlinedInput-root': {
-                                        '& fieldset': {
-                                            border: 0,
-                                        },
+                                    // '& .MuiInput-underline:after': {
+                                    //     border: 0,
+                                    // },
+                                    // '& .MuiOutlinedInput-root': {
+                                    //     '& fieldset': {
+                                    //         border: 0,
+                                    //     },
 
-                                        '&.Mui-focused fieldset': {
-                                            border: 0,
-                                        },
-                                    },
+                                    //     '&.Mui-focused fieldset': {
+                                    //         border: 0,
+                                    //     },
+                                    // },
                                 }}
                             />
 
