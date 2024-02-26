@@ -89,7 +89,7 @@ class ProcessTemplateManager {
         if (updatedSteps.length !== currTemplate.steps.length) throw new ServiceError(400, 'can not delete or add steps');
         updatedSteps.forEach((step, index) => {
             const currStep = currTemplate.steps[index];
-            if (step.name !== currStep.name) throw new ServiceError(400, `can not change step[${index}] name`);
+            // if (step.name !== currStep.name) throw new ServiceError(400, `can not change step[${index}] name`);
             this.validateProperties(
                 step.properties.properties,
                 currStep.properties.properties,
