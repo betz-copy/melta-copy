@@ -38,9 +38,9 @@ import { trycatch } from '../../utils/trycatch';
 import { LocalStorage } from '../../utils/localStorage';
 import { environment } from '../../globals';
 import useDeepCompareMemo from '../../utils/useDeepCompareMemo';
-import countStatusBarComponent from '../EntitiesPage/CountStatusBarComponent';
-import ResizeBoxComponent from '../EntitiesPage/ResizableTableOnExpand';
+import { ResizeBox } from '../EntitiesPage/ResizeBox';
 import '../../css/resizeTable.css';
+import { RowCountGridStatusBar } from '../EntitiesPage/RowCountGridStatusBar';
 
 const { rowCount, defaultExpandedRowCount } = environment.agGrid;
 
@@ -262,6 +262,10 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
         const getStyles = () => ({
             '.ag-column-select-virtual-list-viewport': { height: `${rowHeight * pageRowCount}px !important` },
             '.ag-center-cols-clipper': { minHeight: `${rowHeight * pageRowCount}px !important` },
+            '.ag-paging-panel': {
+                height: '45px',
+            },
+            '.ag-paging-panel > *': { fontSize: '15px' },
         });
 
         // function save to localStorage:
@@ -447,7 +451,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                             ? {
                                   statusPanels: [
                                       {
-                                          statusPanel: countStatusBarComponent,
+                                          statusPanel: RowCountGridStatusBar,
                                           align: 'right',
                                       },
                                   ],
@@ -459,17 +463,13 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             </Box>
         );
 
-        const content = useMemo(() => {
-            return rowModelType === 'infinite' ? (
-                <ResizeBoxComponent gridHeight={gridHeight} setGridHeight={setGridHeight} minHeight={minHeightTable}>
-                    {gridContent}
-                </ResizeBoxComponent>
-            ) : (
-                gridContent
-            );
-        }, [rowModelType, gridHeight, setGridHeight, minHeightTable, gridContent]);
-
-        return <div>{content}</div>;
+        return rowModelType === 'infinite' ? (
+            <ResizeBox initialHeight={gridHeight} setHeight={setGridHeight} minHeight={minHeightTable}>
+                {gridContent}
+            </ResizeBox>
+        ) : (
+            gridContent
+        );
     },
 );
 

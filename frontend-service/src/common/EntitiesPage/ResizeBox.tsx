@@ -3,13 +3,13 @@ import { ResizableBox } from 'react-resizable';
 import '../../css/resizeTable.css';
 import { Grid } from '@mui/material';
 
-interface ResizableBoxProps {
-    gridHeight: number;
-    setGridHeight: React.Dispatch<React.SetStateAction<number>>;
+interface ResizeBoxProps {
+    initialHeight: number;
+    setHeight: React.Dispatch<React.SetStateAction<number>>;
     minHeight: number;
 }
 
-const ResizeBoxComponent: React.FC<ResizableBoxProps> = ({ gridHeight, setGridHeight, minHeight, children }) => {
+const ResizeBox: React.FC<ResizeBoxProps> = ({ initialHeight, setHeight, minHeight, children }) => {
     const [isResizing, setIsResizing] = React.useState(false);
 
     const onResizeStart = () => {
@@ -17,14 +17,14 @@ const ResizeBoxComponent: React.FC<ResizableBoxProps> = ({ gridHeight, setGridHe
     };
 
     const onResizeStop = (_event, { size }) => {
-        setGridHeight(size.height);
+        setHeight(size.height);
         setIsResizing(false);
     };
 
     return (
         <ResizableBox
             width={Infinity}
-            height={gridHeight}
+            height={initialHeight}
             minConstraints={[Infinity, minHeight]}
             maxConstraints={[Infinity, Infinity]}
             onResizeStart={onResizeStart}
@@ -38,4 +38,4 @@ const ResizeBoxComponent: React.FC<ResizableBoxProps> = ({ gridHeight, setGridHe
     );
 };
 
-export default ResizeBoxComponent;
+export { ResizeBox };

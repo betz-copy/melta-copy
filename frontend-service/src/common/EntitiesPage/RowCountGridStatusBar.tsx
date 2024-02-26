@@ -2,13 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { IStatusPanelParams } from '@ag-grid-community/core';
 import i18next from 'i18next';
 import { Grid, Typography } from '@mui/material';
-import { environment } from '../../globals';
 
-const { defaultRowHeight } = environment.agGrid;
-
-export default (props: IStatusPanelParams) => {
+const RowCountGridStatusBar: React.FC<IStatusPanelParams> = ({ api }) => {
     const [count, setCount] = useState<number>(0);
-    const { api } = props;
 
     useEffect(() => {
         const updateCount = () => {
@@ -24,9 +20,12 @@ export default (props: IStatusPanelParams) => {
     }, [api]);
 
     return (
-        <Grid container alignItems="center" sx={{ height: defaultRowHeight }}>
-            <Typography marginRight={1}>{i18next.t('entitiesTableOfTemplate.totalLines')}</Typography>
-            <Typography>{count}</Typography>
+        <Grid container alignItems="center" sx={{ height: '45px' }}>
+            <Typography fontSize="15px" color="rgba(0,0,0,0.54)">
+                {`${i18next.t('entitiesTableOfTemplate.totalLines')} ${count}`}
+            </Typography>
         </Grid>
     );
 };
+
+export { RowCountGridStatusBar };
