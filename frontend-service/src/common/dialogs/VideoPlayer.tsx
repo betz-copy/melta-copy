@@ -12,26 +12,23 @@ const VideoPlayer: React.FC<{
     setOpen: React.Dispatch<React.SetStateAction<boolean>>;
     onPictureTaken: (file: File) => void;
 }> = ({ stream, setStream, open, setOpen, onPictureTaken }) => {
-    const videoRef = useRef<HTMLVideoElement>(null);
+    const [videoRef, setVideoRef] = useState<HTMLVideoElement | null>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
 
     const [imgURL, setImgURL] = useState<string | null>(null);
     const [imgName, setImgName] = useState<string | null>(null);
-    const [streamKey, setStreamKey] = useState(false);
 
     useEffect(() => {
         const initializeVideo = () => {
-            if (!videoRef.current || !stream) return;
+            if (!videoRef || !stream) return;
 
-            videoRef.current.srcObject = stream;
-            canvasRef.current!.width = videoRef.current.videoWidth;
-            canvasRef.current!.height = videoRef.current.videoHeight;
+            videoRef.srcObject = stream;
         };
 
         if (open) {
             initializeVideo();
         }
-    }, [open, stream, streamKey]);
+    }, [open, stream, videoRef]);
 
     const urlToFile = async () => {
         const response = await fetch(imgURL!);
@@ -47,12 +44,6 @@ const VideoPlayer: React.FC<{
         setImgName(null);
     };
 
-    useEffect(() => {
-        navigator.mediaDevices.getUserMedia({ video: true, audio: false }).then((userStream) => {
-            setStream(userStream);
-        });
-    }, [setStream, streamKey]);
-
     const initializeMedia = async () => {
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
             toast(i18next.t('camera.somethingWentWrong'));
@@ -60,15 +51,15 @@ const VideoPlayer: React.FC<{
         }
 
         const canvas = canvasRef.current!;
-        canvas.width = videoRef.current!.videoWidth;
-        canvas.height = videoRef.current!.videoHeight;
+        canvas.width = videoRef!.videoWidth;
+        canvas.height = videoRef!.videoHeight;
         const context = canvas.getContext('2d');
 
         if (!context) {
             toast(i18next.t('camera.somethingWentWrong'));
         }
 
-        context!.drawImage(videoRef.current!, 0, 0, canvas.width, canvas.height);
+        context!.drawImage(videoRef!, 0, 0, canvas.width, canvas.height);
         stream.getVideoTracks().forEach((track) => {
             track.stop();
         });
@@ -91,12 +82,15 @@ const VideoPlayer: React.FC<{
                                 onClick={() => {
                                     setImgURL(null);
                                     setImgName(null);
+                                    navigator.mediaDevices.getUserMedia({ video: true, audio: false }).then((userStream) => {
+                                        setStream(userStream);
+                                    });
                                 }}
                             >
                                 <CloseIcon style={{ width: '23px', height: '23px' }} />
                             </IconButton>
                         </Grid>
-                        <img src={imgURL} alt="cameraPic" style={{ padding: '10px', width: 1000, height: 710 }} />
+                        <img src={imgURL} alt="cameraPic" style={{ paddingLeft: '10px', paddingRight: '10px', width: 1000, height: 775 }} />
                         <Formik initialValues={{ name: imgName }} onSubmit={async (value) => setImgName(value.name)}>
                             {(formikProps: FormikProps<string>) => (
                                 <Form style={{ display: 'flex', justifyContent: 'center' }}>
@@ -117,31 +111,18 @@ const VideoPlayer: React.FC<{
                     </>
                 ) : (
                     <>
-                        <video ref={videoRef} autoPlay muted style={{ padding: '10px', width: 1000, height: 725 }} />
+                        <video ref={(ref) => setVideoRef(ref)} autoPlay muted style={{ padding: '10px', width: 1000, height: 775 }} />
                         <canvas ref={canvasRef} style={{ display: 'none' }} />
-                        <Grid container flexDirection="row" flexWrap="nowrap" justifyContent="space-between" padding="25px 15px 0px 15px">
-                            <Grid item>
-                                <Button
-                                    style={{ borderRadius: '7px' }}
-                                    onClick={() => setStreamKey((prevKey) => !prevKey)}
-                                    variant="outlined"
-                                    startIcon={<PlayIcon />}
-                                >
-                                    {i18next.t('camera.startVideo')}
-                                </Button>
-                            </Grid>
-                            <Grid item>
-                                <Button
-                                    style={{ borderRadius: '7px' }}
-                                    variant="contained"
-                                    onClick={initializeMedia}
-                                    disabled={!videoRef.current}
-                                    startIcon={<CameraIcon />}
-                                >
-                                    {i18next.t('camera.takePicture')}
-                                </Button>
-                            </Grid>
-                        </Grid>
+
+                        <Button
+                            sx={{ borderRadius: '7px', width: '135px', mx: 'auto' }}
+                            variant="contained"
+                            onClick={initializeMedia}
+                            disabled={!videoRef}
+                            startIcon={<CameraIcon />}
+                        >
+                            {i18next.t('camera.takePicture')}
+                        </Button>
                     </>
                 )}
             </DialogContent>

@@ -52,10 +52,6 @@ const FileInput: React.FC<FileInputProps> = ({ fileName, onDeleteFile, onDropFil
         updateInputWidth();
         window.addEventListener('resize', updateInputWidth);
 
-        navigator.mediaDevices.getUserMedia({ video: true, audio: false }).then((userStream) => {
-            setStream(userStream);
-        });
-
         return () => {
             window.removeEventListener('resize', updateInputWidth);
         };
@@ -135,11 +131,16 @@ const FileInput: React.FC<FileInputProps> = ({ fileName, onDeleteFile, onDropFil
                                 }}
                                 onClick={(event) => {
                                     event.stopPropagation();
-                                    if (!stream) {
-                                        toast(i18next.t('camera.cameraNotFound'));
-                                    } else {
-                                        setOpen(true);
-                                    }
+
+                                    navigator.mediaDevices
+                                        .getUserMedia({ video: true, audio: false })
+                                        .then((userStream) => {
+                                            setStream(userStream);
+                                            setOpen(true);
+                                        })
+                                        .catch(() => {
+                                            toast(i18next.t('camera.cameraNotFound'));
+                                        });
                                 }}
                             >
                                 <CameraIcon style={{ color: '#1E2775', width: '20px', height: '20px' }} />
@@ -166,7 +167,7 @@ const FileInput: React.FC<FileInputProps> = ({ fileName, onDeleteFile, onDropFil
                     )}
                 </Grid>
             </Grid>
-            {stream && <VideoPlayer stream={stream} setStream={setStream} open={open} setOpen={setOpen} onPictureTaken={onDropFile} />}
+            {open && <VideoPlayer stream={stream!} setStream={setStream} open={open} setOpen={setOpen} onPictureTaken={onDropFile} />}
         </>
     );
 };

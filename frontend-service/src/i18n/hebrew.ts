@@ -893,7 +893,6 @@ export default {
         somethingWentWrong: 'משהו השתבש, אנא נסה שנית',
         imgName: 'שם התמונה',
         browserNotSupported: 'דפדפן לא תומך',
-        startVideo: 'התחל וידאו',
         takePicture: 'צלם תמונה',
     },
 };
