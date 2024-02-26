@@ -103,7 +103,9 @@ const VideoPlayer: React.FC<{
                                         sx={{ width: 260 }}
                                     />
                                     <IconButton disabled={!formikProps.values || !imgName} type="submit" onClick={() => uploadImg()}>
-                                        <CheckIcon style={{ color: '#1E2775', width: '25px', height: '25px' }} />
+                                        <CheckIcon
+                                            style={{ color: !formikProps.values || !imgName ? '#CCCFE5' : '#1E2775', width: '25px', height: '25px' }}
+                                        />
                                     </IconButton>
                                 </Form>
                             )}
