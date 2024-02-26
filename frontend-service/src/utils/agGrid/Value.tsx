@@ -78,7 +78,9 @@ const Value: React.FC<{
 
             {hideValue && (
                 <Grid item>
-                    <IconButton onClick={handleClick}>{hideField ? <VisibilityOff /> : <Visibility />}</IconButton>
+                    <IconButton onClick={handleClick}>
+                        {hideField ? <VisibilityOff style={{ color: '#9398C2' }} /> : <Visibility style={{ color: '#9398C2' }} />}
+                    </IconButton>
                 </Grid>
             )}
         </Grid>

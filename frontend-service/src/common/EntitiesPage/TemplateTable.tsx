@@ -23,7 +23,7 @@ import { EntityTemplateColor } from '../EntityTemplateColor';
 import { ImageWithDisable } from '../ImageWithDisable';
 import { CreateOrEditEntityDetails } from '../dialogs/entity/CreateOrEditEntityDialog';
 
-const { expandedRowCount } = environment.agGrid;
+const { defaultRowHeight } = environment.agGrid;
 
 export type TemplateTableRef = {
     getFilterModel: () => ReturnType<GridApi<IEntity>['getFilterModel']> | undefined;
@@ -158,8 +158,7 @@ const TemplateTable = forwardRef<
                     getEntityPropertiesData={(currentEntity) => currentEntity.properties}
                     rowModelType={isExpand ? 'infinite' : 'serverSide'}
                     quickFilterText={quickFilterText}
-                    rowHeight={50}
-                    pageRowCount={isExpand ? expandedRowCount : undefined}
+                    rowHeight={defaultRowHeight}
                     fontSize="14px"
                     saveStorageProps={{
                         shouldSaveFilter: true,

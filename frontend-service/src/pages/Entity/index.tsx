@@ -26,6 +26,9 @@ import { EntityTopBar } from './components/TopBar';
 import { getOppositeEntityTemplate, isRelationshipConnectedToEntityTemplate, populateRelationshipTemplate } from '../../utils/templates';
 import { CustomIcon } from '../../common/CustomIcon';
 import { canUserWriteInstanceOfCategory } from '../../utils/permissions/instancePermissions';
+import { environment } from '../../globals';
+
+const { defaultRowHeight } = environment.agGrid;
 
 export const getButtonState = (
     isEntityDisabled: boolean,
@@ -324,7 +327,7 @@ const Entity: React.FC = () => {
                                                             rowData={expandedEntity.connections.filter(
                                                                 (connection) => connection.relationship.templateId === currRelationshipTemplate._id,
                                                             )}
-                                                            rowHeight={50}
+                                                            rowHeight={defaultRowHeight}
                                                             fontSize="16px"
                                                             saveStorageProps={{
                                                                 shouldSaveFilter: false,
