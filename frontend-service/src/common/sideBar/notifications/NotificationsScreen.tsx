@@ -169,9 +169,6 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                                 <img src="/icons/calendar.svg" style={{ height: '20px' }} />
                             </Grid>
                         )}
-                        {/* <IconButton onClick={filterCleaning} sx={{ borderRadius: 10 }}>
-                            <FilterAltOffIcon />
-                        </IconButton> */}
                     </Grid>
                     {openCalenders && (
                         <Grid sx={{ padding: '15px' }}>
@@ -184,18 +181,19 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                                     '& input': {
                                         backgroundColor: '#FFFF',
                                     },
-                                    // '& .MuiInput-underline:after': {
-                                    //     border: 0,
-                                    // },
-                                    // '& .MuiOutlinedInput-root': {
-                                    //     '& fieldset': {
-                                    //         border: 0,
-                                    //     },
 
-                                    //     '&.Mui-focused fieldset': {
-                                    //         border: 0,
-                                    //     },
-                                    // },
+                                    '.MuiOutlinedInput-notchedOutline': {
+                                        border: 0,
+                                        boxShadow: '-2px 2px 6px 0px',
+                                    },
+                                    '& .MuiOutlinedInput-root': {
+                                        '&.Mui-focused fieldset': {
+                                            borderRadius: '12px',
+                                            boxShadow: '-2px 2px 6px 0px',
+                                            border: 0,
+                                        },
+                                    },
+                                    '& .MuiOutlinedInput-notchedOutline': {},
                                 }}
                             />
 
