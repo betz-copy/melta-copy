@@ -184,28 +184,28 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
 
                                     '.MuiOutlinedInput-notchedOutline': {
                                         border: 0,
-                                        boxShadow: '-2px 2px 6px 0px',
+                                        boxShadow: '0 0 10px rgba(0, 0, 0, 0.2)',
+
+                                        borderRadius: '12px 12px 12px 12px',
                                     },
                                     '& .MuiOutlinedInput-root': {
                                         '&.Mui-focused fieldset': {
-                                            borderRadius: '12px',
-                                            boxShadow: '-2px 2px 6px 0px',
+                                            borderRadius: '15px',
+                                            boxShadow: '0 0 10px rgba(0, 0, 0, 0.2)',
+
                                             border: 0,
                                         },
                                     },
-                                    '& .MuiOutlinedInput-notchedOutline': {},
                                 }}
                             />
 
                             <IconButtonWithPopover
                                 iconButtonProps={{ onClick: () => filterCleaning() }}
                                 popoverText={i18next.t('entitiesTableOfTemplate.resetFilters')}
-                                // placement="bottom-start"`
                                 disabled={!(startDate || endDate)}
-                                style={{ borderRadius: '5px' }}
+                                style={{ borderRadius: '5px', position: '' }}
                             >
-                                {/* <img src="/icons/delete-filters.svg" /> :  */}
-                                <img src="/icons/delete-filters-enable.svg" />
+                                {startDate || endDate ? <img src="/icons/delete-filters-enable.svg" /> : <img src="/icons/delete-filters.svg" />}
                             </IconButtonWithPopover>
                         </Grid>
                     )}

@@ -15,7 +15,7 @@ const DateRange: React.FC<{
 }> = ({ onStartDateChange, onEndDateChange, startDateInput, endDateInput, overrideSx }) => {
     // const darkMode = useSelector((state: RootState) => state.darkMode);
     return (
-        <Grid container justifyContent="center" alignItems="center" wrap="nowrap" boxShadow={overrideSx && '0 0 10px rgba(0, 0, 0, 0.2)'}>
+        <Grid container justifyContent="center" alignItems="center" wrap="nowrap" spacing={overrideSx && 2}>
             <Grid item>
                 <LocalizationProvider dateAdapter={AdapterDateFns}>
                     <DatePicker
@@ -27,9 +27,10 @@ const DateRange: React.FC<{
                         renderInput={(params) => <TextField {...params} size="small" sx={overrideSx} />}
                         InputProps={{
                             style: { borderRadius: '0px 7px 7px 0px', backgroundColor: overrideSx && 'white' },
-
                             // TODO - implement dark mode when it will be supported
                         }}
+                        // icon={}
+                        // slots={{ calendarIcon: () => <img src="/icons/calendar.svg" style={{ height: '20px' }} /> }}
                     />
                 </LocalizationProvider>
             </Grid>
