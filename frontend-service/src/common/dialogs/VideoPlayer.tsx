@@ -1,6 +1,6 @@
 import { Button, Dialog, DialogContent, Grid, IconButton, TextField } from '@mui/material';
 import React, { useEffect, useRef, useState } from 'react';
-import { Camera as CameraIcon, Check as CheckIcon, Close as CloseIcon, PlayArrow as PlayIcon } from '@mui/icons-material';
+import { Camera as CameraIcon, Check as CheckIcon, Close as CloseIcon } from '@mui/icons-material';
 import { toast } from 'react-toastify';
 import i18next from 'i18next';
 import { Form, Formik, FormikProps } from 'formik';
