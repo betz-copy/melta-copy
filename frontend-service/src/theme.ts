@@ -7,6 +7,8 @@ const basicTheme: ThemeOptions = {
     },
 };
 
+export const sideBarTransition = 'all 0.3s linear';
+
 // // TODO - move to globals file
 // export const mainFontSizes = {
 //     headlineTitleFontSize: '24px',

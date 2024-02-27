@@ -140,6 +140,7 @@ const EntitiesPageHeadline: React.FC<{
                             exclusive
                             color="primary"
                             size="small"
+                            sx={{ height: '35px' }}
                         >
                             <ToggleButton value="cards-view">
                                 <MeltaTooltip title={i18next.t('cardsView')!}>

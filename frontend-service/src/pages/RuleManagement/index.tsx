@@ -10,6 +10,9 @@ import { BreachType } from '../../interfaces/ruleBreaches/ruleBreach';
 
 import '../../css/pages.css';
 import { BlueTitle } from '../../common/BlueTitle';
+import { environment } from '../../globals';
+
+const { defaultRowHeight } = environment.agGrid;
 
 const RuleManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> }> = ({ setTitle }) => {
     const [ruleBreachDialogState, setRuleBreachDialogState] = useState<{
@@ -38,13 +41,19 @@ const RuleManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<s
         <Grid container className="pageMargin" spacing={3}>
             <Grid item xs={12}>
                 <BlueTitle title={i18next.t('ruleManagement.alerts')} component="h5" variant="h5" />
-                <RuleBreachTable rowHeight={50} fontSize="16px" minColumnWidth={200} breachType="alert" onReviewBreachClick={onReviewBreachClick} />
+                <RuleBreachTable
+                    rowHeight={defaultRowHeight}
+                    fontSize="16px"
+                    minColumnWidth={200}
+                    breachType="alert"
+                    onReviewBreachClick={onReviewBreachClick}
+                />
             </Grid>
             <Grid item xs={12}>
                 <BlueTitle title={i18next.t('ruleManagement.requests')} component="h5" variant="h5" />
                 <RuleBreachTable
                     ref={ruleBreachRequestsRef}
-                    rowHeight={50}
+                    rowHeight={defaultRowHeight}
                     fontSize="16px"
                     minColumnWidth={200}
                     breachType="request"

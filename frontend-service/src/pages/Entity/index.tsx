@@ -27,6 +27,9 @@ import { populateRelationshipTemplate } from '../../utils/templates';
 import { CustomIcon } from '../../common/CustomIcon';
 import { canUserWriteInstanceOfCategory } from '../../utils/permissions/instancePermissions';
 import { EntityLink } from '../../common/EntityLink';
+import { environment } from '../../globals';
+
+const { defaultRowHeight } = environment.agGrid;
 
 export const getButtonState = (
     isEntityDisabled: boolean,
