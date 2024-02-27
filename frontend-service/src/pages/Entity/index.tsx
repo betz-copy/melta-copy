@@ -59,27 +59,20 @@ const ConnectionsTableTitle: React.FC<{
     expandedEntity: IEntityExpanded;
     connectionTemplate: IConnectionTemplateOfExpandedEntity;
 }> = ({ expandedEntity, connectionTemplate: { relationshipTemplate, isExpandedEntityRelationshipSource } }) => {
-    const EntityTemplateTextComponentOverride = useCallback<
-        React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; isRelationshipSource: boolean }>
-    >(
-        ({ entityTemplate, isRelationshipSource }) => {
-            if (isRelationshipSource === isExpandedEntityRelationshipSource) {
-                return (
-                    <Box sx={{ whiteSpace: 'nowrap' }}>
-                        <EntityLink entity={expandedEntity.entity} entityTemplate={entityTemplate} />
-                    </Box>
-                );
-            }
-
-            return <EntityTemplateTextComponent entityTemplate={entityTemplate} />;
-        },
-        [expandedEntity, isExpandedEntityRelationshipSource],
-    );
-
     return (
         <RelationshipTitle
             relationshipTemplate={relationshipTemplate}
-            EntityTemplateTextComponent={EntityTemplateTextComponentOverride}
+            renderEntityTemplateText={({ entityTemplate, isRelationshipSource }) => {
+                if (isRelationshipSource === isExpandedEntityRelationshipSource) {
+                    return (
+                        <Box sx={{ whiteSpace: 'nowrap' }}>
+                            <EntityLink entity={expandedEntity.entity} entityTemplate={entityTemplate} />
+                        </Box>
+                    );
+                }
+
+                return <EntityTemplateTextComponent entityTemplate={entityTemplate} />;
+            }}
             style={{ padding: '5px 20px', width: 'fit-content' }}
         />
     );

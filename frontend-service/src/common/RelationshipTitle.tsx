@@ -48,9 +48,9 @@ export const EntityTemplateTextComponent: React.FC<{ entityTemplate: IMongoEntit
 
 const RelationshipTitle: React.FC<{
     relationshipTemplate: IMongoRelationshipTemplatePopulated;
-    EntityTemplateTextComponent?: React.JSXElementConstructor<{ entityTemplate: IMongoEntityTemplatePopulated; isRelationshipSource: boolean }>;
+    renderEntityTemplateText?: React.JSXElementConstructor<{ entityTemplate: IMongoEntityTemplatePopulated; isRelationshipSource: boolean }>;
     style?: CSSProperties;
-}> = ({ relationshipTemplate, EntityTemplateTextComponent: EntityTemplateTextComponentOverride, style }) => {
+}> = ({ relationshipTemplate, renderEntityTemplateText: EntityTemplateTextComponentOverride, style }) => {
     return (
         <Grid
             container
