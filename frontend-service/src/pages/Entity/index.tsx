@@ -428,7 +428,7 @@ const Entity: React.FC = () => {
                                         permissionToRelatedCategory,
                                     );
                                     return (
-                                        <TabPanel key={_id} value={String(index)} sx={{ padding: 0 }}>
+                                        <TabPanel key={_id} value={String(index)}>
                                             {connectionsTemplatesOfCategory.map((connectionTemplate, connectedRelationshipTemplateIndex) => (
                                                 <ConnectionsTable
                                                     // eslint-disable-next-line react/no-array-index-key
