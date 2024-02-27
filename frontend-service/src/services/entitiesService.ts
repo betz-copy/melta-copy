@@ -14,6 +14,7 @@ import { IRuleBreach } from '../interfaces/ruleBreaches/ruleBreach';
 const { entities, relationships } = environment.api;
 
 export const exportEntitiesRequest = async (body: IExportEntitiesBody) => {
+    console.log(body);
     const { data } = await axios.post(`${entities}/export`, body, { responseType: 'blob', timeout: 60000 });
     return data;
 };
@@ -36,18 +37,22 @@ export const createEntityRequest = async (entity: EntityWizardValuesNew) => {
 
     const filesToUpload: any = [];
     Object.entries(entity.attachmentsProperties).forEach(([key, value]: [string, any]) => {
-        value.forEach((file, index) => {
-            if (file instanceof File && entity.template.properties.properties[key].items) {
-                filesToUpload.push([`${key}.${index}`, file]);
-            } else if (file instanceof File) {
-                filesToUpload.push([`${key}`, file]);
-            }
-        });
+        console.log(value, key, entity.attachmentsProperties);
+        if (Array.isArray(value)) {
+            value.forEach((file, index) => {
+                if (file instanceof File && entity.template.properties.properties[key].items) {
+                    filesToUpload.push([`${key}.${index}`, file]);
+                } else if (file instanceof File) {
+                    filesToUpload.push([`${key}`, file]);
+                }
+            });
+        } else {
+            filesToUpload.push([`${key}`, value]);
+        }
     });
     filesToUpload.forEach(([key, value]) => {
         formData.append(key, value as Blob);
     });
-    // Object.entries(entity.attachmentsProperties).forEach(([key, value]) => formData.append(key, value));
     formData.append('properties', JSON.stringify(entity.properties));
     formData.append('templateId', entity.template._id);
     const { data } = await axios.post<IEntity>(entities, formData);

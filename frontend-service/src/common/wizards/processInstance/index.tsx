@@ -65,7 +65,7 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({ open, onClose
     const [isStepEditMode, setIsStepEditMode] = useState(false);
 
     const [isProcessChanged, setIsProcessChanged] = useState<boolean>(false);
-    const { isLoading, mutateAsync } = useMutation((processData: ProcessDetailsValues) => updateProcessRequest(processInstance._id, processData), {
+    const { isLoading, mutateAsync } = useMutation((processData: ProcessDetailsValues) => updateProcessRequest(processInstance._id, processData, stepTemplate), {
         onSuccess: (processNewData) => {
             toast.success(i18next.t('wizard.processInstance.editedSuccessfully'));
             setIsProcessChanged(true);

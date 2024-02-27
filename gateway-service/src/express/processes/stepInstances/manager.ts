@@ -64,7 +64,9 @@ export default class StepsInstancesManager {
             if (updatedStepStatus) this.handleNotificationsOnUpdateStepInstance(updatedProcess, process, updatedStep);
             return this.getStepInstanceWithEntitesAndReviewers(updatedStep, userId);
         }
+        console.log('BEFORE FIEs');
         const filesProperties = await InstancesManager.uploadInstanceFiles(files);
+        console.log('AFTER FILEs');
         const regularProperties = processServiceUpdateData.properties;
         Object.keys(filesProperties).forEach((key) => {
             if (regularProperties?.[key] != undefined) {

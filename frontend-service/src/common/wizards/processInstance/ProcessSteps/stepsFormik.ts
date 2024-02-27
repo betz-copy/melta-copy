@@ -8,7 +8,8 @@ const splitStepProperties = (stepInstance: IMongoStepInstancePopulated, stepTemp
     const newProperties = {};
 
     Object.keys(stepTemplate.properties.properties).forEach((key) => {
-        if (!stepInstance.properties?.[key]) newProperties[key] = undefined;
+        if (!stepInstance.properties?.[key]) {
+        } //newProperties[key] = undefined;
         else newProperties[key] = stepInstance.properties?.[key];
     });
 
@@ -30,15 +31,17 @@ const splitStepProperties = (stepInstance: IMongoStepInstancePopulated, stepTemp
     const fileIdsProperties = pickBy(newProperties, (_value, key) => templateFileKeys.includes(key));
     console.log(fileIdsProperties);
     Object.entries(fileIdsProperties)?.forEach(([key, value]) => {
+        console.log(value);
         if (Array.isArray(value)) {
             fileIdsProperties[key] = value?.map((item) => {
-                return { name: item };
+                if (item !== undefined) return { name: item };
             });
-        } else {
+        } else if (value) {
             fileIdsProperties[key] = { name: value };
         }
     });
     const attachmentsProperties = fileIdsProperties;
+    console.log(attachmentsProperties);
     return { properties, attachmentsProperties, entitiesData };
 };
 

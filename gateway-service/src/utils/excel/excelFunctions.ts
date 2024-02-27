@@ -5,7 +5,6 @@ import { IEntityTemplatePopulated } from '../../externalServices/entityTemplateS
 import { IEntity } from '../../externalServices/instanceService/interfaces/entities';
 import config from '../../config/index';
 import { excelConfig } from './excelConfig';
-
 interface IExcelStyle {
     columnHeader: {
         font: Partial<Excel.Font>;
@@ -67,6 +66,7 @@ const cerateWorksheet = async (workbook: Excel.Workbook, template: IEntityTempla
 };
 
 export const getFileName = (fileId: string) => {
+    console.log('GET FILE NAME :', fileId);
     return fileId.slice(config.storageService.fileIdLength);
 };
 
@@ -86,6 +86,89 @@ const fixFileProperties = (rows: IEntity['properties'][], template: IEntityTempl
         });
     return rows;
 };
+
+// const fixFileProperties = async (rows: IEntity['properties'][], template: IEntityTemplatePopulated) => {
+//     const { properties } = template.properties;
+//     const updatedRows = await Promise.all(
+//         rows.map(async (row) => {
+//             const updatedRow: IEntity['properties'] = { ...row };
+//             for (const [key, value] of Object.entries(properties)) {
+//                 if (value.format === 'fileId') {
+//                     console.log('FILE IF:', updatedRow[key]);
+//                     if (updatedRow[key] !== undefined) {
+//                         updatedRow[key] = {
+//                             text: getFileName(updatedRow[key]),
+//                             hyperlink: `${config.storageService.fileHyperLink}/${encodeURIComponent(updatedRow[key])}`,
+//                         };
+//                     }
+//                 } else if (value.items && value.items.format === 'fileId') {
+//                     console.log('IN LSE IF:', value, updatedRow[key]);
+//                     if (Array.isArray(updatedRow[key])) {
+//                         updatedRow[key] = await Promise.all(
+//                             updatedRow[key].map(async (fileId: string) => {
+//                                 const fileName = getFileName(fileId);
+//                                 return {
+//                                     text: fileName,
+//                                     hyperlink: `${config.storageService.fileHyperLink}/${encodeURIComponent(fileName)}`,
+//                                 };
+//                             }),
+//                         );
+//                     } else if (updatedRow[key] !== undefined) {
+//                         console.log('NOT UNDEFINED', updatedRow[key]);
+//                         const fileName = getFileName(updatedRow[key]);
+//                         updatedRow[key] = {
+//                             text: fileName,
+//                             hyperlink: `${config.storageService.fileHyperLink}/${encodeURIComponent(fileName)}`,
+//                         };
+//                     }
+//                 }
+//             }
+//             return updatedRow;
+//         }),
+//     );
+//     return updatedRows;
+// };
+
+// const fixFileProperties = async (rows: IEntity['properties'][], template: IEntityTemplatePopulated) => {
+//     const { properties } = template.properties;
+
+//     for (const [key, value] of Object.entries(properties)) {
+//         if (value.format === 'fileId') {
+//             rows.forEach((row) => {
+//                 if (row[key]) {
+//                     row[key] = {
+//                         text: getFileName(row[key]),
+//                         hyperlink: `${config.storageService.fileHyperLink}/${encodeURIComponent(row[key])}`,
+//                     };
+//                 }
+//             });
+//         } else if (value.items && value.items.format === 'fileId') {
+//             await Promise.all(
+//                 rows.map(async (row) => {
+//                     if (row[key]) {
+//                         const zip = new JSZip();
+//                         const files = Array.isArray(row[key]) ? row[key] : [row[key]];
+
+//                         files.forEach((file, index) => {
+//                             zip.file(`${key}_${index}_${getFileName(file)}`, file);
+//                         });
+
+//                         const zipBlob = await zip.generateAsync({ type: 'blob' });
+//                         const zipUrl = URL.createObjectURL(zipBlob);
+
+//                         row[key] = {
+//                             text: 'Download ZIP',
+//                             hyperlink: zipUrl,
+//                         };
+//                     }
+//                     return row;
+//                 }),
+//             );
+//         }
+//     }
+
+//     return rows;
+// };
 
 const styleAWorksheet = (worksheet: Excel.Worksheet) => {
     worksheet.eachColumnKey((col: Excel.Column) => {

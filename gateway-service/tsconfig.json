@@ -20,7 +20,7 @@
     "esModuleInterop": true,
     "outDir": "./dist/",
     "lib": [
-      "ES2020.Promise"
+      "ES2020.Promise",
     ]
   },
   "include": [

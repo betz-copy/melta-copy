@@ -52,7 +52,7 @@ export class InstancesManager {
                 filesToUpload[group].push(value);
             }
         });
-
+        console.log('FILES TO UPALAOD', filesToUpload);
         return filesToUpload;
     }
 
@@ -99,7 +99,7 @@ export class InstancesManager {
                 filter,
                 sort,
             });
-            const rows = fixFileProperties(
+            const rows = await fixFileProperties(
                 chunk.map((row) => row.entity.properties),
                 template,
             );

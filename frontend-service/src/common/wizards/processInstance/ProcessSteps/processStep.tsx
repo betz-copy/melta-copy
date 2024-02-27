@@ -52,7 +52,7 @@ export const ProcessStep: FC<ProcessStepProps> = ({
     const templateFileProperties = pickBy(stepTemplate.properties.properties, (value) => (value.type === 'array' && value.items?.format==="fileId") || value.format === "fileId");
     const templateEntityReferenceProperties = pickBy(stepTemplate.properties.properties, (value) => value.format === 'entityReference');
     const { isLoading: editStepIsLoading, mutateAsync: editStepMutateAsync } = useMutation(
-        (stepData: ProcessStepValues) => updateStepRequest(stepInstance._id, stepData, processInstance._id, stepInstance),
+        (stepData: ProcessStepValues) => updateStepRequest(stepInstance._id, stepData, processInstance._id, stepInstance, templateFileProperties),
         {
             onSuccess: (updatedStepInstance) => {
                 console.log(updatedStepInstance)
@@ -220,7 +220,7 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                                 templateFileProperties && (
                                                     <>
                                                         {Object.entries(templateFileProperties).map(([fieldName, { title }]) => {
-                                                            console.log(values, fieldName)
+                                                            console.log(values, values.attachmentsProperties[fieldName], fieldName)
                                                             return(
                                                             <Grid container spacing={1} key={fieldName} display='flex' flexDirection="column">
                                                                 <Grid item>
@@ -228,11 +228,11 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                                                         {title}:
                                                                     </Typography>
                                                                 </Grid>
-                                                                <Grid item>
-                                                                    {values.attachmentsProperties[fieldName] ? (
-                                                                        values.attachmentsProperties[fieldName].map((file) => {
+                                                                <Grid item sx={{overflowY:"auto", maxHeight: "90px"}}>
+                                                                    {values.attachmentsProperties[fieldName] !== undefined ? (
+                                                                        (Array.isArray(values.attachmentsProperties[fieldName]) ? values.attachmentsProperties[fieldName].map((file) => {
                                                                             return <OpenPreviewButton fileId={file.name}/>
-                                                                        })) : (
+                                                                        }) : <OpenPreviewButton fileId={values.attachmentsProperties[fieldName].name} /> )) : (
                                                                         <Typography display="inline" variant="h6">
                                                                             -
                                                                         </Typography>

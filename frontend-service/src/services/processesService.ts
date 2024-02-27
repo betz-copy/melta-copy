@@ -44,7 +44,7 @@ export const deleteProcessRequest = async (processId: string) => {
     return data;
 };
 
-const handleAttachmentProperties = (attachments: object) => {
+const handleAttachmentProperties = (attachments: object, template: any) => {
     console.log(attachments);
     const formData = new FormData();
     const filesToUpload: any = [];
@@ -69,18 +69,34 @@ const handleAttachmentProperties = (attachments: object) => {
     console.log(filesToUpload, unchangedFiles);
     filesToUpload.forEach(([key, value]) => formData.append(key, value as Blob));
 
-    const fileProperties: { [key: string]: string } = {};
+    const fileProperties: { [key: string]: any } = {};
+    // unchangedFiles.forEach(([key, value]) => {
+    //     if (value) {
+    //         fileProperties[key] = (value as { name: string }).name;
+    //     }
+    // });
+
+    unchangedFiles.forEach(([key, _value]) => {
+        fileProperties[key] = [];
+    });
     unchangedFiles.forEach(([key, value]) => {
-        if (value) {
-            fileProperties[key] = (value as { name: string }).name;
+        console.log(template, key, value);
+        if (!template[key].items) {
+            fileProperties[key] = value.name;
+        } else {
+            if (value) {
+                fileProperties[key].push(value.name);
+            }
         }
     });
+
+    console.log(fileProperties);
     return { formData, fileProperties };
 };
 
-export const updateProcessRequest = async (processId: string, updatedData: ProcessDetailsValues) => {
+export const updateProcessRequest = async (processId: string, updatedData: ProcessDetailsValues, template: any) => {
     const entityReferences = referencedEntityToEntityId(updatedData.entityReferences);
-    const { formData, fileProperties } = handleAttachmentProperties(updatedData.detailsAttachments);
+    const { formData, fileProperties } = handleAttachmentProperties(updatedData.detailsAttachments, template);
     const transformedStepsObj = mapValues(updatedData.steps, (reviewers) => reviewers.map(({ id }) => id));
     formData.append(
         'details',
@@ -109,8 +125,14 @@ export const searchProcessesRequest = async (searchBody: ISearchProcessInstances
     return data;
 };
 
-export const updateStepRequest = async (stepId: string, values: ProcessStepValues, processId: string, currStep: IMongoStepInstancePopulated) => {
-    const { formData, fileProperties } = handleAttachmentProperties(values.attachmentsProperties);
+export const updateStepRequest = async (
+    stepId: string,
+    values: ProcessStepValues,
+    processId: string,
+    currStep: IMongoStepInstancePopulated,
+    template: any,
+) => {
+    const { formData, fileProperties } = handleAttachmentProperties(values.attachmentsProperties, template);
     console.log(formData, fileProperties);
     const entityReferences = referencedEntityToEntityId(values.entityReferences);
 
