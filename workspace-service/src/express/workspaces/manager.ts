@@ -23,7 +23,7 @@ export class WorkspacesManager {
         const query: FilterQuery<IWorkspace> = { path };
         if (path === '/') query.name = { $ne: '' };
 
-        return WorkspacesModel.find(query).lean().exec();
+        return WorkspacesModel.find(query).sort({ name: 1 }).lean().exec();
     }
 
     static async getById(id: string) {
