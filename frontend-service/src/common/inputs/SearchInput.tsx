@@ -23,8 +23,8 @@ const SearchInput: React.FC<{
             width="14px"
             height="14px"
             style={{
-                top: '7px',
-                left: '8px',
+                marginRight: '8px',
+                marginLeft: '8px',
             }}
             src="/icons/search-blue.svg"
         />

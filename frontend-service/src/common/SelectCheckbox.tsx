@@ -25,10 +25,46 @@ const MenuItemContent: React.FC<{ checked: boolean; indeterminate?: boolean; lab
     checked,
     indeterminate,
     label,
+    order,
 }) => {
     return (
         <>
-            <Checkbox checked={checked} indeterminate={indeterminate} sx={{ borderRadius: '4px', color: 'white' }} />
+            <Checkbox
+                checked={checked}
+                indeterminate={indeterminate}
+                checkedIcon={
+                    <Box
+                        sx={{
+                            borderRadius: '4px',
+                            background: '#4752B6',
+                            width: '20px',
+                            height: '20px',
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                        }}
+                    >
+                        <img src="/icons/checked-icon.svg" style={{ width: '14px', height: '14px' }} />
+                    </Box>
+                }
+                icon={
+                    <Box
+                        sx={{
+                            borderRadius: '4px',
+                            background: order === 0 ? '#4752B6' : '',
+                            border: order === 0 ? 'none' : '1px solid #4752B6',
+                            width: '20px',
+                            height: '20px',
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                        }}
+                    >
+                        {order === 0 && <img src="/icons/not-checked-icon.svg" style={{ width: '11px', height: '14px' }} />}
+                    </Box>
+                }
+                sx={{ borderRadius: '4px', color: '#4752B6' }}
+            />
             <ListItemText
                 primary={
                     <Typography
@@ -89,7 +125,7 @@ const SelectOptionsMenuItems = <Option extends any, Group extends any>({
     getOptionId,
     getOptionLabel,
     isDraggableDisabled,
-    menuItemSx = { width: '100%', height: '24px', padding: '0px, 5px, 0px, 0px' },
+    menuItemSx = { width: '100%', height: '24px', padding: '0px, 5px, 0px, 0px', my: '5px' },
 }: {
     options: SelectCheckboxProps<Option, Group>['options'];
     selectedOptions: SelectCheckboxProps<Option, Group>['selectedOptions'];
@@ -210,7 +246,7 @@ const SelectOptionsMenuItemsGrouped = <Option extends any, Group extends any>({
                 return (
                     <Fragment key={getGroupId(group)}>
                         <MenuItem
-                            sx={{ width: '100%', height: '24px', padding: '0px, 5px, 0px, 0px' }}
+                            sx={{ width: '100%', height: '24px', padding: '0px, 5px, 0px, 0px', my: '5px' }}
                             onClick={() => {
                                 setSelectedOptions((prevSelectedOptions) => {
                                     const prevSelectedOptionsOfGroup = prevSelectedOptions.filter(
@@ -302,7 +338,11 @@ const getOptionsAndGroupsMiniFiltered = <Option extends any, Group extends any>(
     return { optionsFiltered, groupsFiltered };
 };
 
-export const MiniFilter: React.FC<{ value: string; onChange: (value: string) => void }> = ({ value, onChange }) => {
+export const MiniFilter: React.FC<{ value: string; onChange: (value: string) => void; toTopBar: boolean | undefined }> = ({
+    value,
+    onChange,
+    toTopBar,
+}) => {
     // must wrap with TextField with Grid. no idea why, but it works :O
     return (
         <Grid container>
@@ -315,6 +355,7 @@ export const MiniFilter: React.FC<{ value: string; onChange: (value: string) => 
             >
                 <TextField
                     value={value}
+                    variant="standard"
                     onChange={(e) => onChange(e.target.value)}
                     onKeyDown={(e) => {
                         if (e.key !== 'Escape') {
@@ -324,7 +365,7 @@ export const MiniFilter: React.FC<{ value: string; onChange: (value: string) => 
                     }}
                     style={{
                         gap: '10px',
-                        background: '#FFFFFF',
+                        background: toTopBar ? '#FFFFFF' : '#EBEFFA',
                         borderRadius: '7px',
                         width: '199px',
                         height: '34px',
@@ -332,27 +373,24 @@ export const MiniFilter: React.FC<{ value: string; onChange: (value: string) => 
                     placeholder={i18next.t('searchLabel')}
                     fullWidth
                     InputProps={{
+                        disableUnderline: true,
                         style: {
                             height: '34px',
+                            fontFamily: 'Rubik',
+                            fontSize: '12px',
+                            color: '#8D8D8E',
+                            textAlign: 'right',
+                            gap: '10px',
+                            boxSizing: 'border-box',
+                            borderRadius: '7px',
                         },
                         endAdornment: (
                             <InputAdornment
                                 position="end"
-                                style={{
-                                    margin: 'auto',
-                                    height: '34px',
-                                    borderRadius: '7px',
-                                    padding: '0px, 10px, 0px, 0px',
-                                    fontFamily: 'Rubik',
-                                    fontSize: '12px',
+                                sx={{
                                     fontWeight: '400',
-                                    lineHeight: '16px',
                                     letterSpacing: '0em',
-                                    color: '#8D8D8E',
-                                    textAlign: 'right',
-                                    gap: '10px',
-                                    boxSizing: 'border-box',
-                                    font: 'webkit-control',
+                                    lineHeight: '16px',
                                 }}
                             >
                                 <Divider
@@ -374,8 +412,8 @@ export const MiniFilter: React.FC<{ value: string; onChange: (value: string) => 
                                         width="14px"
                                         height="14px"
                                         style={{
-                                            top: '7px',
-                                            left: '8px',
+                                            marginRight: '8px',
+                                            marginLeft: '8px',
                                         }}
                                         src="/icons/search-blue.svg"
                                     />
@@ -403,7 +441,7 @@ const ChooseAllMenuItem = <Option extends any, Group extends any>({
 }) => {
     return (
         <MenuItem
-            sx={{ width: '100%', height: '24px', padding: '0px, 5px, 0px, 0px' }}
+            sx={{ width: '100%', height: '24px', padding: '0px, 5px, 0px, 0px', my: '5px' }}
             onClick={() => {
                 const prevChecked = selectedOptionsFiltered.length === optionsFiltered.length;
                 if (prevChecked) {
@@ -448,7 +486,7 @@ const SelectCheckbox = <Option extends any, Group extends any>({
     });
 
     return (
-        <FormControl style={{ background: darkMode ? '#EBEFFA' : '#EBEFFA', borderRadius: '7px, 7px, 0px, 0px' }}>
+        <FormControl style={{ background: darkMode ? '#242424' : 'white', borderRadius: '0 7px 7px 0' }}>
             <Select
                 displayEmpty
                 renderValue={() => title}
@@ -460,7 +498,7 @@ const SelectCheckbox = <Option extends any, Group extends any>({
                         style: {
                             height: '180px',
                             minWidth: '219px',
-                            backgroundColor: '#EBEFFA',
+                            backgroundColor: toTopBar ? '#EBEFFA' : '#FFFFFF',
                             borderRadius: '20px, 0px, 20px, 20px',
                             padding: '5px, 10px, 5px, 10px',
                             boxShadow: '-2px 2px 4px 0px #1E27754D',
@@ -470,37 +508,30 @@ const SelectCheckbox = <Option extends any, Group extends any>({
                     },
                     transformOrigin: {
                         vertical: 'top',
-                        horizontal: 162,
+                        horizontal: toTopBar ? 162 : 170,
                     },
                 }}
                 size={size}
+                sx={{ borderRadius: '7px', fontFamily: 'Rubik', fontSize: '14px', fontWeight: 400 }}
                 style={
                     toTopBar
                         ? {
-                              borderRadius: '7px',
                               backgroundColor: '#EBEFFA',
                               maxWidth: '130px',
                               maxHeight: '35px',
-                              fontFamily: 'Rubik',
                               color: '#1E2775',
                               padding: '6.99px, 13.98px, 6.99px, 13.98px',
-                              fontSize: '14px',
-                              fontWeight: 400,
                           }
                         : {
-                              borderRadius: '7px',
                               backgroundColor: '#FFFFFF',
                               maxWidth: '131px',
                               maxHeight: '34px',
-                              fontFamily: 'Rubik',
                               color: '#787C9E',
                               padding: '0px, 8px, 0px, 8px',
-                              fontSize: '14px',
-                              fontWeight: 400,
                           }
                 }
             >
-                <MiniFilter value={miniFilterValue} onChange={setMiniFilterValue} />
+                <MiniFilter value={miniFilterValue} onChange={setMiniFilterValue} toTopBar={toTopBar} />
                 <ChooseAllMenuItem
                     options={options}
                     selectedOptionsFiltered={selectedOptionsFiltered}
