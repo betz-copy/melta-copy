@@ -231,7 +231,7 @@ const ConnectionsTable: React.FC<{
 
                         return false;
                     })}
-                    rowHeight={50}
+                    rowHeight={defaultRowHeight}
                     fontSize="16px"
                     saveStorageProps={{
                         shouldSaveFilter: false,
