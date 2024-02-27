@@ -100,7 +100,7 @@ const ComponentToPrint = React.forwardRef<
                                                 variant="h4"
                                                 fontSize="26px"
                                                 color="gray"
-                                                fontWeight={!isExpandedEntityRelationshipSource ? '900' : undefined}
+                                                fontWeight={isExpandedEntityRelationshipSource ? undefined : '900'}
                                             >
                                                 {destinationEntity.displayName}
                                             </Typography>
