@@ -2,20 +2,20 @@ import { ICompactPermissions } from '../permissions/interface/permissions';
 
 export interface IBaseUser {
     _id: string;
-    externalId: string;
     fullName: string;
     jobTitle: string;
+    hierarchy: string;
+    mail: string;
     preferences: {
         darkMode?: boolean;
+    };
+    externalMetadata: {
+        kartoffelId: string;
+        digitalIdentitySource: string;
     };
 }
 export interface IUser extends IBaseUser {
     permissions: ICompactPermissions;
 }
 
-export interface IUserSearchBody {
-    fullName?: string;
-    jobTitle?: string;
-    preferences?: IUser['preferences'];
-    permissions?: IUser['permissions'];
-}
+export type IUserSearchBody = Partial<Pick<IUser, 'fullName' | 'jobTitle' | 'permissions'>>;

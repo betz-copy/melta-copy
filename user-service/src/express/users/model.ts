@@ -4,11 +4,6 @@ import config from '../../config';
 
 const UserSchema = new mongoose.Schema(
     {
-        externalId: {
-            type: String,
-            required: true,
-            unique: true,
-        },
         fullName: {
             type: String,
             required: true,
@@ -17,9 +12,28 @@ const UserSchema = new mongoose.Schema(
             type: String,
             required: true,
         },
+        hierarchy: {
+            type: String,
+            required: true,
+        },
+        mail: {
+            type: String,
+            required: true,
+        },
         preferences: {
             darkMode: {
                 type: Boolean,
+            },
+        },
+        externalMetadata: {
+            kartoffelId: {
+                type: String,
+                required: true,
+                unique: true,
+            },
+            digitalIdentitySource: {
+                type: String,
+                required: true,
             },
         },
     },
