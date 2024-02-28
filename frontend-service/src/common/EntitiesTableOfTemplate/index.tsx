@@ -263,21 +263,10 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
         const getStyles = () => ({
             '.ag-column-select-virtual-list-viewport': { height: `${rowHeight * pageRowCount}px !important` },
             '.ag-center-cols-clipper': { minHeight: `${rowHeight * pageRowCount}px !important` },
-            '.ag-theme-material': {
-                '--ag-borders-critical': 'none',
-                '--ag-row-border-style': 'none',
-            },
             '.ag-paging-panel': {
                 height: '45px',
-                borderTop: '1px solid #1E27754D',
             },
             '.ag-paging-panel > *': { fontSize: '15px' },
-            '.ag-header': {
-                borderBottom: '1.5px solid #9398C2',
-            },
-            '.ag-status-bar': {
-                borderTop: '1px solid #1E27754D',
-            },
         });
 
         // function save to localStorage:
