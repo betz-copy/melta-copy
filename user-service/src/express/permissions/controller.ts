@@ -6,7 +6,7 @@ export class PermissionsController {
         res.json(await PermissionsManager.getCompactPermissionsOfUser(req.query.userId as string));
     }
 
-    static async updateCompactPermissionsOfUser(req: Request, res: Response) {
-        res.json(await PermissionsManager.updatePermissionsOfUser(req.body.userId, req.body.permissions));
+    static async syncCompactPermissionsOfUser(req: Request, res: Response) {
+        res.json(await PermissionsManager.syncCompactPermissionsOfUser(req.body.userId, req.body.permissions));
     }
 }

@@ -22,7 +22,7 @@ export class PermissionsManager {
         return this.getCompactPermissions(permissions);
     }
 
-    static async updatePermissionsOfUser(userId: string, permissionsCompact: ICompactNullablePermissions) {
+    static async syncCompactPermissionsOfUser(userId: string, permissionsCompact: ICompactNullablePermissions) {
         await transaction(async (session) => {
             const actions = typedObjectEntries(permissionsCompact).map(([type, metadata]) => {
                 if (metadata === null) return PermissionsModel.deleteOne({ userId, type }, { session }).exec();

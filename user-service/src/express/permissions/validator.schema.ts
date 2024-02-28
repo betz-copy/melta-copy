@@ -12,7 +12,7 @@ export const getCompactPermissionsOfUserRequestSchema = joi.object({
 });
 
 // POST /api/permissions/compact/update
-export const updateCompactPermissionsRequestSchema = joi.object({
+export const syncCompactPermissionsRequestSchema = joi.object({
     query: {},
     body: {
         userId: mongoIdSchema.required(),
