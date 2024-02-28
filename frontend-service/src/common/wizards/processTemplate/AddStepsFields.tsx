@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AccordionDetails, AccordionSummary, Divider, Grid, IconButton, Typography, useTheme } from '@mui/material';
+import { AccordionDetails, AccordionSummary, Grid, IconButton, Typography, useTheme } from '@mui/material';
 import * as Yup from 'yup';
 import i18next from 'i18next';
 import { ExpandMore as ExpandMoreIcon, Delete as DeleteIcon } from '@mui/icons-material';
@@ -150,7 +150,7 @@ const AddStepsFields: React.FC<StepComponentProps<ProcessTemplateWizardValues, '
                             </MeltaTooltip>
                         </Grid>
                         <DragDropContext onDragEnd={onDragEnd}>
-                            <Droppable droppableId="selectCheckboxDroppable">
+                            <Droppable droppableId="addStepsFieldsDroppable">
                                 {(provided) => (
                                     <Grid ref={provided.innerRef} {...provided.droppableProps}>
                                         {values.steps.map((step, index) => (
@@ -160,7 +160,8 @@ const AddStepsFields: React.FC<StepComponentProps<ProcessTemplateWizardValues, '
                                                         ref={draggableProvided.innerRef}
                                                         {...draggableProvided.draggableProps}
                                                         {...draggableProvided.dragHandleProps}
-                                                        style={{ border: isFieldBlockTouched && errors.steps?.[index] ? '1px solid red' : '' }}
+                                                        // style={{ border: isFieldBlockTouched && errors.steps?.[index] ? '1px solid red' : '' }}
+                                                        // FIX IT!!!
                                                         expanded={expandedIndex === index}
                                                         onChange={() => handleChange(index)}
                                                         // eslint-disable-next-line react/no-array-index-key
@@ -168,21 +169,7 @@ const AddStepsFields: React.FC<StepComponentProps<ProcessTemplateWizardValues, '
                                                         TransitionProps={{ unmountOnExit: true }} // performance issues with many steps
                                                     >
                                                         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                                                            <Grid
-                                                                style={{
-                                                                    width: '24px',
-                                                                    height: '24px',
-                                                                    gap: '2px',
-                                                                    display: 'flex',
-                                                                    flexDirection: 'column',
-                                                                    alignContent: 'center',
-                                                                    justifyContent: 'center',
-                                                                }}
-                                                            >
-                                                                <Divider color="#101440" style={{ width: '8px' }} />
-                                                                <Divider color="#101440" style={{ width: '8px' }} />
-                                                                <Divider color="#101440" style={{ width: '8px' }} />
-                                                            </Grid>
+                                                            <img src="/icons/draggable-icon.svg" />
                                                             <Typography>{` ${i18next.t('wizard.processTemplate.level')}: ${
                                                                 values.steps[index].displayName || ''
                                                             }`}</Typography>
