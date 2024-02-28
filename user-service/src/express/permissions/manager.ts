@@ -4,6 +4,7 @@ import { transaction } from '../../utils/mongoose';
 import { SinglePermissionOfTypePerUserError } from './errors';
 import { IPermission, ICompactPermissions, ICompactNullablePermissions } from './interface/permissions';
 import { PermissionsModel } from './model';
+import { UsersManager } from '../users/manager';
 
 export class PermissionsManager {
     static async getCompactPermissions(permissions: IPermission[]) {
@@ -23,10 +24,12 @@ export class PermissionsManager {
     }
 
     static async syncCompactPermissionsOfUser(userId: string, permissionsCompact: ICompactNullablePermissions) {
+        UsersManager.getUserById(userId); // Validate user exists
+
         await transaction(async (session) => {
             const actions = typedObjectEntries(permissionsCompact).map(([type, metadata]) => {
-                if (metadata === null) return PermissionsModel.deleteOne({ userId, type }, { session }).exec();
-                return PermissionsModel.updateOne({ userId, type }, { metadata }, { upsert: true, session }).exec();
+                if (metadata === null) return PermissionsModel.deleteOne({ userId, type }, { session }).lean().exec();
+                return PermissionsModel.updateOne({ userId, type }, { metadata }, { upsert: true, session }).lean().exec();
             });
 
             await Promise.all(actions);
