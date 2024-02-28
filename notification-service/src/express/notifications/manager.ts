@@ -28,10 +28,23 @@ export class NotificationsManager {
                 notificationCountDetails.groups[group] = await this.getNotificationCount({ ...query, types: groups[group] });
             }),
         ]);
+        console.log({ totalCount }, { groups }, { query });
 
         notificationCountDetails.total = totalCount;
 
         return notificationCountDetails;
+
+        //        const notificationCountDetails: INotificationGroupCountDetails = { total: 0, groups: {} };
+        //        const groupCounts = await Promise.all(
+        //            Object.keys(groups).map(async (group) => {
+        //                const count = await this.getNotificationCount({ ...query, types: groups[group] });
+        //                notificationCountDetails.groups[group] = count;
+        //                return count;
+        //            }),
+        //        );
+        //        notificationCountDetails.total = groupCounts.reduce((acc, curr) => acc + curr, 0);
+
+        // return notificationCountDetails;
     }
 
     public static async getNotificationById(notificationId: string): Promise<INotification> {

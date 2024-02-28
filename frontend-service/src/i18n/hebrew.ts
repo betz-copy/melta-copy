@@ -215,6 +215,17 @@ export default {
         processDeleted: 'תהליך זה נמחק',
         stepDeleted: 'שלב זה נמחק',
         unknown: 'לא ידוע',
+        displayNames: {
+            ruleBreachRequest: 'בקשה לחריגת חוקה',
+            ruleBreachAlert: 'התראת חוקה',
+            archivedProcess: 'תהליך ארכיון',
+            dateAboutToExpire: 'תאריך מתקרב',
+            deleteProcess: 'מחיקת תהליך',
+            newProcess: 'יצירת תהליך חדש',
+            processReviewerUpdate: 'עדכון הרשאות תהליך',
+            processStatusUpdate: 'עדכון סטטוס תהליך',
+            ruleBreachResponse: 'מענה לחריגת חוקה ',
+        },
     },
     permissions: {
         failedToLoadMyPermissions: 'נכשל לטעון הרשאות',

@@ -50,7 +50,6 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
         onSetStartDate(null);
         onSetEndDate(null);
         setOpenCalendars(false);
-        // setNotificationsToShowCheckbox(notificationsMoreData[selectedGroup]);
     };
     const { mutate, isLoading } = useMutation((groupName: keyof typeof groups) => manyNotificationSeenRequest(groups[groupName]), {
         onSuccess: (seenNotifications, groupName) => {
@@ -90,10 +89,17 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                             iconPosition="start"
                             label={
                                 <Grid container gap="10px" display="flex" alignItems="center" justifyContent="space-around">
-                                    {/* <img src={`/icons/${groupName}-notification${selectedGroup === groupName ? '-clicked' : ''}.svg`} /> */}
                                     <img
-                                        src="/icons/general-notification-clicked.svg"
-                                        style={{ fill: selectedGroup === groupName ? 'red' : 'blue' }}
+                                        src={
+                                            // eslint-disable-next-line no-nested-ternary
+                                            groupName === 'general'
+                                                ? selectedGroup === groupName
+                                                    ? '/icons/general-notification-clicked.svg'
+                                                    : '/icons/general-notification.svg'
+                                                : selectedGroup === groupName
+                                                ? '/icons/requests-notification-clicked.svg'
+                                                : '/icons/requests-notification.svg'
+                                        }
                                     />
                                     <Grid item> {i18next.t(`notifications.groups.${groupName}`)}</Grid>
                                     <Grid item>
@@ -122,8 +128,8 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                 <CircularProgress sx={{ marginX: 'auto', marginTop: '1rem' }} />
             ) : (
                 <>
-                    <Grid sx={{ display: 'flex', justifyContent: 'space-evenly', padding: '17px' }}>
-                        <Grid sx={{ width: openCalenders ? '100%' : '80%' }}>
+                    <Grid sx={{ display: 'flex', justifyContent: 'space-around', padding: '18px' }}>
+                        <Grid item sx={{ width: openCalenders ? '100%' : '80%' }}>
                             <SelectCheckbox
                                 title={i18next.t('notifications.notificationType')}
                                 options={notificationsMoreData[selectedGroup]}
@@ -136,7 +142,7 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                                     '& .MuiSelect-select': {
                                         backgroundColor: '#FFFF',
                                         color: '#9398C2',
-                                        borderRadius: '10px',
+                                        borderRadius: '12px',
                                         boxShadow: '0 0 10px rgba(0, 0, 0, 0.2)',
                                         border: 0,
                                         width: openCalenders ? '17rem' : '13rem',
@@ -179,18 +185,18 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                                 overrideSx={{
                                     '& input': {
                                         backgroundColor: '#FFFF',
+                                        fontSize: '15px',
                                     },
 
                                     '.MuiOutlinedInput-notchedOutline': {
                                         border: 0,
                                         boxShadow: '0 0 10px rgba(0, 0, 0, 0.2)',
-                                        borderRadius: '12px 12px 12px 12px',
+                                        borderRadius: '12px',
                                     },
                                     '& .MuiOutlinedInput-root': {
                                         '&.Mui-focused fieldset': {
                                             borderRadius: '15px',
                                             boxShadow: '0 0 10px rgba(0, 0, 0, 0.2)',
-
                                             border: 0,
                                         },
                                     },
@@ -199,9 +205,13 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
 
                             <IconButtonWithPopover
                                 iconButtonProps={{ onClick: () => filterCleaning() }}
-                                popoverText={i18next.t('entitiesTableOfTemplate.resetFilters')}
+                                popoverText=""
                                 disabled={!(startDate || endDate)}
-                                style={{ borderRadius: '5px', padding: '10px', display: 'flex', alignItems: 'flex-end' }}
+                                style={{
+                                    borderRadius: '5px',
+                                    padding: '6px, 4px, 6px, 4px',
+                                    marginRight: '208px',
+                                }}
                             >
                                 {startDate || endDate ? <img src="/icons/delete-filters-enable.svg" /> : <img src="/icons/delete-filters.svg" />}
                             </IconButtonWithPopover>

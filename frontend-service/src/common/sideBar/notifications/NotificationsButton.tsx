@@ -13,8 +13,6 @@ interface NotificationsButtonProps {
 }
 
 export const NotificationsButton: React.FC<NotificationsButtonProps> = ({ notificationCountDetails, text, isDrawerOpen, onClick }) => {
-    console.log({ notificationCountDetails });
-
     return (
         <Grid container direction="column" alignItems="center">
             <MeltaTooltip

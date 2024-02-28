@@ -1,3 +1,4 @@
+import i18next from 'i18next';
 import { ILabelIcon } from './utils/graph/helperTypes';
 import { NotificationType } from './interfaces/notifications';
 
@@ -107,50 +108,49 @@ export const environment = {
                 {
                     color: '#DD3500',
                     type: NotificationType.ruleBreachRequest,
-                    displayName: 'בקשה לחריגת חוקה',
+                    displayName: i18next.t('notifications.displayNames.ruleBreachRequest'),
                 },
             ],
             general: [
                 {
                     color: ' #FFAC2F',
                     type: NotificationType.ruleBreachAlert,
-                    displayName: 'התראת חוקה',
+                    displayName: i18next.t('notifications.displayNames.ruleBreachAlert'),
+                },
+                {
+                    color: '#DD3500',
+                    type: NotificationType.ruleBreachResponse,
+                    displayName: i18next.t('notifications.displayNames.ruleBreachResponse'),
                 },
                 {
                     color: '#BC8F8F',
                     type: NotificationType.archivedProcess,
-                    displayName: 'תהליך ארכיון',
+                    displayName: i18next.t('notifications.displayNames.archivedProcess'),
                 },
                 {
                     color: '#FFD18C',
                     type: NotificationType.dateAboutToExpire,
-                    displayName: 'תאריך מתקרב',
+                    displayName: i18next.t('notifications.displayNames.dateAboutToExpire'),
                 },
                 {
                     color: '#CD5C5C',
                     type: NotificationType.deleteProcess,
-                    displayName: 'מחיקת תהליך',
+                    displayName: i18next.t('notifications.displayNames.deleteProcess'),
                 },
                 {
                     color: '#FFD18C',
                     type: NotificationType.newProcess,
-                    displayName: 'יצירת תהליך חדש',
+                    displayName: i18next.t('notifications.displayNames.newProcess'),
                 },
                 {
                     color: '#FF7979',
                     type: NotificationType.processReviewerUpdate,
-                    displayName: 'עדכון הרשאות תהליך',
+                    displayName: i18next.t('notifications.displayNames.processReviewerUpdate'),
                 },
                 {
                     color: '#7BE7FF',
                     type: NotificationType.processStatusUpdate,
-                    displayName: 'עדכון סטטוס תהליך',
-                },
-
-                {
-                    color: '#DD3500',
-                    type: NotificationType.ruleBreachResponse,
-                    displayName: 'מענה לחריגת חוקה ',
+                    displayName: i18next.t('notifications.displayNames.processStatusUpdate'),
                 },
             ],
         },
