@@ -82,6 +82,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
 }) => {
     const [isHoverOnCard, setIsHoverOnCard] = useState(false);
     const theme = useTheme();
+    const { properties, propertiesOrder, propertiesPreview, propertiesTypeOrder } = entityTemplate;
 
     return (
         <ViewingCard
@@ -129,6 +130,18 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                         {isHoverOnCard && (
                             <CardMenu
                                 onEditClick={() => setEntityTemplateWizardDialogState({ isWizardOpen: true, entityTemplate })}
+                                onDuplicateClick={() =>
+                                    setEntityTemplateWizardDialogState({
+                                        isWizardOpen: true,
+                                        entityTemplate: {
+                                            ...defaultEntityTemplatePopulated,
+                                            properties,
+                                            propertiesOrder,
+                                            propertiesPreview,
+                                            propertiesTypeOrder,
+                                        },
+                                    })
+                                }
                                 onDeleteClick={() => setDeleteEntityTemplateDialogState({ isDialogOpen: true, entityTemplateId: entityTemplate._id })}
                                 onDisableClick={() =>
                                     updateEntityTemplateStatusAsync({ entityTemplateId: entityTemplate._id, disabled: !entityTemplate.disabled })
@@ -138,7 +151,6 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                                     canEdit: entityTemplate.disabled,
                                     tooltipTitle: i18next.t('systemManagement.disabledEntityTemplate'),
                                 }}
-                                // onDuplicateClick={() => }
                             />
                         )}
                     </Grid>
@@ -243,15 +255,6 @@ interface CategoryEntitiesBoxProps {
         }>
     >;
     updateEntityTemplateStatusAsync: UseMutateAsyncFunction<
-        IMongoEntityTemplatePopulated,
-        unknown,
-        {
-            entityTemplateId: string;
-            disabled: boolean;
-        },
-        unknown
-    >;
-    duplicateEntityTemplateDialogState: UseMutateAsyncFunction<
         IMongoEntityTemplatePopulated,
         unknown,
         {
@@ -563,7 +566,7 @@ const EntityTemplatesRow: React.FC = () => {
                 handleClose={() => setEntityTemplateWizardDialogState({ isWizardOpen: false, entityTemplate: null })}
                 initialValues={entityTemplateObjectToEntityTemplateForm(entityTemplateWizardDialogState.entityTemplate)}
                 isEditMode={Boolean(entityTemplateWizardDialogState.entityTemplate?._id)}
-                initalStep={entityTemplateWizardDialogState.entityTemplate?.category ? 1 : 0}
+                initalStep={entityTemplateWizardDialogState.entityTemplate?.category._id ? 1 : 0}
             />
             <AreYouSureDialog
                 open={deleteEntityTemplateDialogState.isDialogOpen}

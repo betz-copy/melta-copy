@@ -55,6 +55,17 @@ export const CardMenu: React.FC<{
                     </Grid>
                 </MeltaTooltip>
 
+                {onDuplicateClick && (
+                    <MenuButton
+                        onClick={(e) => {
+                            onDuplicateClick(e);
+                            handleClose(e);
+                        }}
+                        text={i18next.t('actions.duplicate')}
+                        icon={<DuplicateIcon color="action" />}
+                    />
+                )}
+
                 {onDeleteClick && (
                     <MenuButton
                         onClick={(e) => {
@@ -76,16 +87,6 @@ export const CardMenu: React.FC<{
                         icon={<DisabledIcon color="action" />}
                     />
                 )}
-                <MenuButton
-                    onClick={(e) => {
-                        if (onDuplicateClick) {
-                            onDuplicateClick(e);
-                            handleClose(e);
-                        }
-                    }}
-                    text={i18next.t('actions.duplicate')}
-                    icon={<DuplicateIcon color="action" />}
-                />
             </Menu>
         </>
     );
