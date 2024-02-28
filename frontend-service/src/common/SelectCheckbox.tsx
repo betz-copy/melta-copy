@@ -16,6 +16,7 @@ import {
     Divider,
     Box,
     InputAdornment,
+    useTheme,
 } from '@mui/material';
 import { useSelector } from 'react-redux';
 import { DragDropContext, Draggable, Droppable, DropResult } from 'react-beautiful-dnd';
@@ -25,7 +26,6 @@ const MenuItemContent: React.FC<{ checked: boolean; indeterminate?: boolean; lab
     checked,
     indeterminate,
     label,
-    order,
 }) => {
     return (
         <>
@@ -44,15 +44,15 @@ const MenuItemContent: React.FC<{ checked: boolean; indeterminate?: boolean; lab
                             alignItems: 'center',
                         }}
                     >
-                        <img src="/icons/checked-icon.svg" style={{ width: '14px', height: '14px' }} />
+                        <img src="/icons/checked-icon.svg" style={{ width: '9.33px', height: '6.42px' }} />
                     </Box>
                 }
-                icon={
+                indeterminateIcon={
                     <Box
                         sx={{
                             borderRadius: '4px',
-                            background: order === 0 ? '#4752B6' : '',
-                            border: order === 0 ? 'none' : '1px solid #4752B6',
+                            background: '#4752B6',
+                            border: 'none',
                             width: '20px',
                             height: '20px',
                             display: 'flex',
@@ -60,8 +60,21 @@ const MenuItemContent: React.FC<{ checked: boolean; indeterminate?: boolean; lab
                             alignItems: 'center',
                         }}
                     >
-                        {order === 0 && <img src="/icons/not-checked-icon.svg" style={{ width: '11px', height: '14px' }} />}
+                        <img src="/icons/not-checked-icon.svg" style={{ width: '11px', height: '14px' }} />
                     </Box>
+                }
+                icon={
+                    <Box
+                        sx={{
+                            borderRadius: '4px',
+                            border: '1px solid #4752B6',
+                            width: '20px',
+                            height: '20px',
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                        }}
+                    />
                 }
                 sx={{ borderRadius: '4px', color: '#4752B6' }}
             />
@@ -343,6 +356,7 @@ export const MiniFilter: React.FC<{ value: string; onChange: (value: string) => 
     onChange,
     toTopBar,
 }) => {
+    const theme = useTheme();
     // must wrap with TextField with Grid. no idea why, but it works :O
     return (
         <Grid container>
@@ -355,7 +369,6 @@ export const MiniFilter: React.FC<{ value: string; onChange: (value: string) => 
             >
                 <TextField
                     value={value}
-                    variant="standard"
                     onChange={(e) => onChange(e.target.value)}
                     onKeyDown={(e) => {
                         if (e.key !== 'Escape') {
@@ -363,17 +376,19 @@ export const MiniFilter: React.FC<{ value: string; onChange: (value: string) => 
                             e.stopPropagation();
                         }
                     }}
-                    style={{
+                    sx={{
                         gap: '10px',
                         background: toTopBar ? '#FFFFFF' : '#EBEFFA',
                         borderRadius: '7px',
                         width: '199px',
                         height: '34px',
+                        '& .MuiOutlinedInput-notchedOutline': {
+                            border: 'none',
+                        },
                     }}
                     placeholder={i18next.t('searchLabel')}
                     fullWidth
                     InputProps={{
-                        disableUnderline: true,
                         style: {
                             height: '34px',
                             fontFamily: 'Rubik',
@@ -381,7 +396,6 @@ export const MiniFilter: React.FC<{ value: string; onChange: (value: string) => 
                             color: '#8D8D8E',
                             textAlign: 'right',
                             gap: '10px',
-                            boxSizing: 'border-box',
                             borderRadius: '7px',
                         },
                         endAdornment: (
@@ -395,7 +409,12 @@ export const MiniFilter: React.FC<{ value: string; onChange: (value: string) => 
                             >
                                 <Divider
                                     orientation="vertical"
-                                    style={{ height: '20px', width: '1px', background: '#1E2775', border: '1.5px solid #1E2775' }}
+                                    style={{
+                                        width: '1px',
+                                        height: '20px',
+                                        borderRadius: '1.5px',
+                                        backgroundColor: theme.palette.primary.main,
+                                    }}
                                 />
                                 <Box
                                     sx={{
@@ -475,6 +494,7 @@ const SelectCheckbox = <Option extends any, Group extends any>({
     toTopBar,
 }: SelectCheckboxProps<Option, Group>) => {
     const [miniFilterValue, setMiniFilterValue] = useState('');
+    const [isOpen, setIsOpen] = useState(false);
 
     const darkMode = useSelector((state: RootState) => state.darkMode);
 
@@ -492,7 +512,9 @@ const SelectCheckbox = <Option extends any, Group extends any>({
                 renderValue={() => title}
                 onOpen={() => {
                     setMiniFilterValue('');
+                    setIsOpen(true);
                 }}
+                onClose={() => setIsOpen(false)}
                 MenuProps={{
                     PaperProps: {
                         style: {
@@ -512,7 +534,16 @@ const SelectCheckbox = <Option extends any, Group extends any>({
                     },
                 }}
                 size={size}
-                sx={{ borderRadius: '7px', fontFamily: 'Rubik', fontSize: '14px', fontWeight: 400 }}
+                sx={{
+                    borderRadius: isOpen ? '7px 7px 0 0' : '7px',
+                    fontFamily: 'Rubik',
+                    fontSize: '14px',
+                    fontWeight: 400,
+                    boxShadow: 'none',
+                    '& .MuiOutlinedInput-notchedOutline': {
+                        display: 'none',
+                    },
+                }}
                 style={
                     toTopBar
                         ? {

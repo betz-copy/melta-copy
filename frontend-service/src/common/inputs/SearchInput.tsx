@@ -23,7 +23,6 @@ const SearchInput: React.FC<{
             width="14px"
             height="14px"
             style={{
-                marginRight: '8px',
                 marginLeft: '8px',
             }}
             src="/icons/search-blue.svg"
@@ -44,36 +43,49 @@ const SearchInput: React.FC<{
             onChange={(e) => onChange(e.target.value)}
             onKeyDown={onKeyDown}
             placeholder={placeholder}
-            variant="outlined"
             fullWidth
             size={size}
-            sx={{ borderRadius, backgroundColor: toTopBar ? '#EBEFFA' : '#FFFFFF', height, padding: '0px, 8px, 0px, 8px', gap: '5px' }}
+            sx={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignContent: 'center',
+                borderRadius,
+                backgroundColor: toTopBar ? '#EBEFFA' : '#FFFFFF',
+                height,
+                padding: '0px, 8px, 0px, 8px',
+                gap: '10px',
+                '& .MuiOutlinedInput-notchedOutline': {
+                    border: 'none',
+                },
+            }}
             InputProps={{
+                style: {
+                    borderRadius,
+                    color: theme.palette.primary.main,
+                    height,
+                    width,
+                    fontFamily: 'Rubik',
+                    fontSize: '12px',
+                    textAlign: 'right',
+                    gap: '10px',
+                },
                 endAdornment: (
                     <InputAdornment
                         position="end"
-                        style={{
-                            color: '#787C9E',
-                            fontFamily: 'Rubik',
-                            fontSize: '12px',
+                        sx={{
                             fontWeight: '400',
-                            lineHeight: '16px',
                             letterSpacing: '0em',
-                            textAlign: 'right',
-                            height: '16px',
-                            padding: '0px, 10px, 0px, 0px',
-                            gap: '10px',
-                            font: 'webkit-control',
+                            lineHeight: '16px',
                         }}
                     >
                         <Divider
                             orientation="vertical"
                             style={{
                                 width: '1px',
-                                height: '22px',
+                                height: '20px',
                                 borderRadius: '1.5px',
                                 backgroundColor: theme.palette.primary.main,
-                                marginLeft: '7px',
+                                marginLeft: '8px',
                             }}
                         />
 
@@ -92,12 +104,6 @@ const SearchInput: React.FC<{
                     </InputAdornment>
                 ),
                 startAdornment: <InputAdornment position="start" />,
-                style: {
-                    borderRadius,
-                    color: theme.palette.primary.main,
-                    height,
-                    width,
-                },
             }}
         />
     );
