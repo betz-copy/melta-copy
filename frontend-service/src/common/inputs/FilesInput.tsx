@@ -125,7 +125,7 @@ const FilesInput: React.FC<FilesInputProps> = ({ files, onDropFiles, onDropFile,
                             maxWidth: inputWidth * 0.7 - 150,
                         }}
                     >
-                        {i18next.t('input.imagePicker.dragFile')}
+                        {i18next.t('input.imagePicker.dragFiles')}
                     </Typography>
                 </Grid>
             )}

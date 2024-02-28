@@ -45,7 +45,6 @@ export const deleteProcessRequest = async (processId: string) => {
 };
 
 const handleAttachmentProperties = (attachments: object, template: any) => {
-    console.log(attachments);
     const formData = new FormData();
     const filesToUpload: any = [];
     const unchangedFiles: any = [];
@@ -66,16 +65,9 @@ const handleAttachmentProperties = (attachments: object, template: any) => {
             }
         }
     });
-    console.log(filesToUpload, unchangedFiles);
     filesToUpload.forEach(([key, value]) => formData.append(key, value as Blob));
 
     const fileProperties: { [key: string]: any } = {};
-    // unchangedFiles.forEach(([key, value]) => {
-    //     if (value) {
-    //         fileProperties[key] = (value as { name: string }).name;
-    //     }
-    // });
-
     unchangedFiles.forEach(([key, _value]) => {
         fileProperties[key] = [];
     });
@@ -89,8 +81,6 @@ const handleAttachmentProperties = (attachments: object, template: any) => {
             }
         }
     });
-
-    console.log(fileProperties);
     return { formData, fileProperties };
 };
 
