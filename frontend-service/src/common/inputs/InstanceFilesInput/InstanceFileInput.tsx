@@ -30,7 +30,6 @@ export const InstanceFileInput: React.FC<InstanceFileInputProps> = ({
     setFieldTouched,
     multiple
 }) => {
-    console.log(value)
     const [filesName, setFilesName] = useState<string[]>(value ? value.map(file => getFileName(file.name)) : []);
     return (
         <Box
@@ -54,6 +53,7 @@ export const InstanceFileInput: React.FC<InstanceFileInputProps> = ({
                 files={filesName || []}
                 onDropFiles={(acceptedFiles : File[]) => {
                     const updatedFiles = value ? [...value, ...acceptedFiles] : acceptedFiles;
+                    console.log(updatedFiles);
                     setFieldValue(fileFieldName, updatedFiles);
                     setFilesName([...filesName, ...acceptedFiles.map(file => file.name)]);
                     setFieldTouched(fileFieldName, true, false);

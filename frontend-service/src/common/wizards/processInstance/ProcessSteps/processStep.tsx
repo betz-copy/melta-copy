@@ -55,7 +55,6 @@ export const ProcessStep: FC<ProcessStepProps> = ({
         (stepData: ProcessStepValues) => updateStepRequest(stepInstance._id, stepData, processInstance._id, stepInstance, templateFileProperties),
         {
             onSuccess: (updatedStepInstance) => {
-                console.log(updatedStepInstance)
                 toast.success(i18next.t('wizard.processInstance.step.editedSuccessfully'));
                 onStepUpdateSuccess(updatedStepInstance);
             },
@@ -65,7 +64,6 @@ export const ProcessStep: FC<ProcessStepProps> = ({
             },
         },
     );
-    console.log(templateFileProperties, getStepValuesFromStepInstance(stepInstance, stepTemplate))
     return (
         <Formik
             initialValues={getStepValuesFromStepInstance(stepInstance, stepTemplate)}
@@ -185,7 +183,6 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                             {templateFileProperties && isStepEditMode ? (
                                                 <Box>
                                                     {Object.entries(templateFileProperties).map(([key, value], index) => {
-                                                        console.log(values, values.attachmentsProperties[key])
                                                                     return <Grid item key={key} marginTop={index > 0 ? 5 : 0}>
                                                                 { value.items === undefined ? 
                                                                        <InstanceSingleFileInput
@@ -220,7 +217,6 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                                 templateFileProperties && (
                                                     <>
                                                         {Object.entries(templateFileProperties).map(([fieldName, { title }]) => {
-                                                            console.log(values, values.attachmentsProperties[fieldName], fieldName)
                                                             return(
                                                             <Grid container spacing={1} key={fieldName} display='flex' flexDirection="column">
                                                                 <Grid item>

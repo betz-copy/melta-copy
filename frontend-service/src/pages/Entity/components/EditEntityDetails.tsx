@@ -42,7 +42,6 @@ const EditEntityDetails: React.FC<{
 
     const fieldProperties = pickBy(entity.properties, (_value, key) => !templateFileKeys.includes(key)) as IEntity['properties'];
     const fileIdsProperties = pickBy(entity.properties, (_value, key) => templateFileKeys.includes(key));
-    console.log(fileIdsProperties)
     Object.entries(fileIdsProperties).forEach(([key, value]) => {
         if(Array.isArray(value)){
             fileIdsProperties[key] = value?.map((item) => {
@@ -86,6 +85,7 @@ const EditEntityDetails: React.FC<{
         <Formik
             initialValues={{ properties: fieldProperties, attachmentsProperties: fileProperties }}
             onSubmit={async (values) => {
+                console.log(values);
                 updateMutation({ newEntityData: { ...values, template: entityTemplate } });
             }}
             validate={(values) => {

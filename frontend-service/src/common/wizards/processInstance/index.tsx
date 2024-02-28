@@ -96,7 +96,6 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({ open, onClose
                     processTemplate={processTemplatesMap.get(processInstance!.templateId)!}
                     processInstance={currProcessInstance}
                     onStepUpdateSuccess={async (stepInstance) => {
-                        console.log(stepInstance)
                         setCurrProcessInstance((prev) => {
                             const newSteps = prev.steps;
                             const updatedStepIndex = newSteps.findIndex((step) => step._id === stepInstance._id);

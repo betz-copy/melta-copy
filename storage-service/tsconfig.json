@@ -17,7 +17,8 @@
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "forceConsistentCasingInFileNames": true,
-    "outDir": "./dist/"
+    "outDir": "./dist/",
+    // "esModuleInterop": true
   },
   "include": [
     "src/**/*"

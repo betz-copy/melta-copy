@@ -64,26 +64,13 @@ export default class StepsInstancesManager {
             if (updatedStepStatus) this.handleNotificationsOnUpdateStepInstance(updatedProcess, process, updatedStep);
             return this.getStepInstanceWithEntitesAndReviewers(updatedStep, userId);
         }
-        console.log('BEFORE FIEs');
-        const filesProperties = await InstancesManager.uploadInstanceFiles(files);
-        console.log('AFTER FILEs');
-        const regularProperties = processServiceUpdateData.properties;
-        Object.keys(filesProperties).forEach((key) => {
-            if (regularProperties?.[key] != undefined) {
-                if (Array.isArray(regularProperties[key])) {
-                    regularProperties[key] = [...regularProperties[key], ...filesProperties[key]];
-                } else {
-                    regularProperties[key] = [regularProperties[key], ...filesProperties[key]];
-                }
-            } else if (regularProperties) {
-                regularProperties[key] = filesProperties[key];
-            }
-        });
+        const filesProperties = await InstancesManager.uploadInstanceFiles(files, processServiceUpdateData.properties);
         const { properties: oldProperties } = await ProcessManagerService.getStepInstanceById(stepId);
+        console.log('UPDATE STEP:', filesProperties, oldProperties);
 
         const updatedStep = await ProcessManagerService.updateStepInstance(stepId, {
             ...processServiceUpdateData,
-            properties: regularProperties,
+            properties: filesProperties,
         }).catch((processServiceError) => {
             deleteFiles(Object.values(filesProperties)).catch((deleteFilesError) => {
                 // eslint-disable-next-line no-console
@@ -92,7 +79,7 @@ export default class StepsInstancesManager {
             });
             throw processServiceError;
         });
-        if (oldProperties) await ProcessesInstancesManager.removeUnusedFileIds(stepTemplate.properties, oldProperties, { ...regularProperties });
+        if (oldProperties) await ProcessesInstancesManager.removeUnusedFileIds(stepTemplate.properties, oldProperties, { ...filesProperties });
         await Promise.all(
             files.map((file) => {
                 return removeTmpFile(file.path);

@@ -66,7 +66,6 @@ const TemplateTable = forwardRef<
                 toast.error(i18next.t('failedToExportTable'));
             },
             onSuccess(data) {
-                console.log(data)
                 fileDownload(data, `${template.displayName}.xlsx`);
             },
         },

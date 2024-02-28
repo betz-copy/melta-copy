@@ -122,7 +122,6 @@ const FileAttachmentsView: React.FC<FileAttachmentsProps> = ({ templateFilePrope
 );
 
 const FileAttachments = ({ viewMode, templateFileProperties, values, errors, touched, setFieldValue, required, setFieldTouched }) => {
-    console.log(values)
     return (
         <Box>
             <BlueTitle title={i18next.t('wizard.entityTemplate.attachments')} component="h6" variant="h6" style={{ marginBottom: '22px' }} />
@@ -150,7 +149,6 @@ const FileAttachments = ({ viewMode, templateFileProperties, values, errors, tou
 
 const GeneralDetails: React.FC<IDetailsStepProp> = ({ detailsFormikData, onNext, processInstance, isEditMode }) => {
     const { values, touched, errors, setFieldValue, setFieldTouched, handleBlur, resetForm } = detailsFormikData;
-    console.log(values)
     const queryClient = useQueryClient();
     const processTemplatesMap = queryClient.getQueryData<IProcessTemplateMap>('getProcessTemplates')!;
     const [previousTemplate, setPreviousTemplate] = useState<IMongoProcessTemplatePopulated>();

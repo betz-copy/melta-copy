@@ -76,7 +76,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
     } else {
         propertiesOrderedToShow = entityTemplate.propertiesOrder;
     }
-
+    console.log(properties)
     const [hideFieldsToDisplay, setHideFieldsToDisplay] = React.useState(entityTemplate.properties.hide);
 
     return (

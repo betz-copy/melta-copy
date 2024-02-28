@@ -28,9 +28,9 @@ import { cerateWorksheet, createWorkbook, fixFileProperties, styleAWorksheet } f
 const { errorCodes } = config;
 
 export class InstancesManager {
-    static async uploadInstanceFiles(files: Express.Multer.File[]): Promise<Record<string, string>> {
+    static async uploadInstanceFiles(files: Express.Multer.File[], props: any): Promise<Record<string, string>> {
         if (files.length === 0) {
-            return {};
+            return props;
         }
 
         const fileIds = await uploadFiles(files);
@@ -52,8 +52,20 @@ export class InstancesManager {
                 filesToUpload[group].push(value);
             }
         });
-        console.log('FILES TO UPALAOD', filesToUpload);
-        return filesToUpload;
+
+        Object.keys(filesToUpload).forEach((key) => {
+            if (props?.[key] != undefined) {
+                if (Array.isArray(props[key])) {
+                    props[key] = [...props[key], ...filesToUpload[key]];
+                } else {
+                    props[key] = [props[key], ...filesToUpload[key]];
+                }
+            } else if (props) {
+                props[key] = filesToUpload[key];
+            }
+        });
+
+        return props;
     }
 
     static async exportEntities(exportEntitiesBody: IExportEntitiesBody) {
@@ -122,30 +134,14 @@ export class InstancesManager {
     }
 
     static async createEntityInstance(instanceData: IEntity, files: Express.Multer.File[], user: Express.User) {
-        const fileProperties = await InstancesManager.uploadInstanceFiles(files);
-
-        const filesToUpload: any = {};
-        //not for image picker
-        Object.entries(fileProperties).forEach(([key, value]) => {
-            const [group, _index] = key.split('.');
-            if (group === key) {
-                //for single files
-                filesToUpload[key] = value;
-            } else {
-                if (!filesToUpload[group]) {
-                    filesToUpload[group] = [];
-                }
-                filesToUpload[group].push(value);
-            }
-        });
-
+        const fileProperties = await InstancesManager.uploadInstanceFiles(files, instanceData.properties);
         const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(instanceData.templateId);
         let templateUpdated = false;
 
         const updatedProperties = {
             ...entityTemplate.properties.properties,
         };
-        const newInstanceData: IEntity = { templateId: instanceData.templateId, properties: { ...filesToUpload, ...instanceData.properties } };
+        const newInstanceData: IEntity = { templateId: instanceData.templateId, properties: { ...fileProperties } };
 
         Object.keys(entityTemplate.properties.properties).forEach((key) => {
             if (entityTemplate.properties.properties[key].serialCurrent !== undefined) {
@@ -157,7 +153,6 @@ export class InstancesManager {
                 templateUpdated = true;
             }
         });
-
         if (templateUpdated) {
             const { category, _id, createdAt, updatedAt, disabled, ...restOfEntityTemplate } = entityTemplate;
             await EntityTemplateManagerService.updateEntityTemplate(instanceData.templateId, {
@@ -260,7 +255,7 @@ export class InstancesManager {
         userId: string,
         createAlert: boolean = true,
     ) {
-        const uploadedFilesProperties = await InstancesManager.uploadInstanceFiles(files);
+        const uploadedFilesAndProperties = await InstancesManager.uploadInstanceFiles(files, updatedInstanceData.properties);
         const currentEntity = await InstanceManagerService.getEntityInstanceById(id);
 
         const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(currentEntity.templateId);
@@ -272,14 +267,12 @@ export class InstancesManager {
                 }
             }
         });
-        if (uploadedFilesProperties?.files) {
-            updatedInstanceData.properties.files = uploadedFilesProperties.files;
-        }
+
         const updatedInstance = await InstanceManagerService.updateEntityInstance(
             id,
             {
                 templateId: updatedInstanceData.templateId,
-                properties: { ...uploadedFilesProperties, ...updatedInstanceData.properties },
+                properties: { ...uploadedFilesAndProperties },
             },
             ignoredRules,
         ).catch(InstancesManager.handleBrokenRulesError);
@@ -298,7 +291,7 @@ export class InstancesManager {
 
             let newValue: any;
             if (propertyTemplate?.format === 'fileId' || propertyTemplate?.items?.format === 'fileId') {
-                newValue = uploadedFilesProperties[field] ?? updatedInstance.properties[field];
+                newValue = uploadedFilesAndProperties[field] ?? updatedInstance.properties[field];
             } else {
                 newValue = updatedInstance.properties[field];
             }

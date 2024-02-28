@@ -1,6 +1,7 @@
 import * as express from 'express';
 import { getFileName } from '../../utils/generatePath';
 import { FilesManager } from './manager';
+import * as JSZip from 'jszip';
 
 export class FilesController {
     static async downloadFile(req: express.Request, res: express.Response) {
@@ -12,6 +13,27 @@ export class FilesController {
         res.setHeader('Content-Disposition', `attachment; filename=${getFileName(path)}`);
 
         stream.pipe(res);
+    }
+
+    static async downloadZip(req: express.Request, res: express.Response) {
+        const { path } = req.params;
+        const fileIds = path.split('?');
+        const filesData = await FilesManager.getFilesData(fileIds);
+
+        const zip = new JSZip();
+
+        filesData.forEach((fileData, index) => {
+            zip.file(`${fileIds[index].toString().slice(32)}`, fileData);
+        });
+
+        const zipBlob = await zip.generateAsync({ type: 'nodebuffer' });
+
+        res.setHeader('Content-Type', 'application/zip');
+        res.setHeader('Content-Disposition', `attachment; filename="filesZip${Date.now()}.zip"`);
+
+        res.send(zipBlob);
+
+        //stream
     }
 
     static async uploadFile(req: express.Request, res: express.Response) {
@@ -49,6 +71,7 @@ export class FilesController {
 
     static async deleteFiles(req: express.Request, res: express.Response) {
         const { paths } = req.body;
+        console.log('PATH:', paths);
         res.json(await FilesManager.deleteFiles(paths));
     }
 }

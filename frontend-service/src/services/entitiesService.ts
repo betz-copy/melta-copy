@@ -14,7 +14,6 @@ import { IRuleBreach } from '../interfaces/ruleBreaches/ruleBreach';
 const { entities, relationships } = environment.api;
 
 export const exportEntitiesRequest = async (body: IExportEntitiesBody) => {
-    console.log(body);
     const { data } = await axios.post(`${entities}/export`, body, { responseType: 'blob', timeout: 60000 });
     return data;
 };
@@ -37,7 +36,6 @@ export const createEntityRequest = async (entity: EntityWizardValuesNew) => {
 
     const filesToUpload: any = [];
     Object.entries(entity.attachmentsProperties).forEach(([key, value]: [string, any]) => {
-        console.log(value, key, entity.attachmentsProperties);
         if (Array.isArray(value)) {
             value.forEach((file, index) => {
                 if (file instanceof File && entity.template.properties.properties[key].items) {
@@ -92,6 +90,7 @@ export const updateEntityRequestForMultiple = async (
             }
         }
     });
+    console.log(filesToUpload, unchangedFiles);
     filesToUpload.forEach(([key, value]) => {
         formData.append(key, value as Blob);
     });

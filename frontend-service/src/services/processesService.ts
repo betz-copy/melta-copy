@@ -72,7 +72,6 @@ const handleAttachmentProperties = (attachments: object, template: any) => {
         fileProperties[key] = [];
     });
     unchangedFiles.forEach(([key, value]) => {
-        console.log(template, key, value);
         if (!template[key].items) {
             fileProperties[key] = value.name;
         } else {
@@ -123,7 +122,6 @@ export const updateStepRequest = async (
     template: any,
 ) => {
     const { formData, fileProperties } = handleAttachmentProperties(values.attachmentsProperties, template);
-    console.log(formData, fileProperties);
     const entityReferences = referencedEntityToEntityId(values.entityReferences);
 
     formData.append(
@@ -138,6 +136,5 @@ export const updateStepRequest = async (
     if (values.comments !== '') formData.append('comments', values.comments);
 
     const { data } = await axios.patch<IMongoStepInstancePopulated>(`${processes}/${processId}/steps/${stepId}`, formData);
-    console.log(data);
     return data;
 };

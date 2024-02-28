@@ -3,7 +3,6 @@ import StepInstanceManager from './manager';
 
 class StepInstanceController {
     static async updateStep(req: Request, res: Response) {
-        console.log('UPDATE STEp GATEWAY');
         res.json(
             await StepInstanceManager.updateStep(req.params.processId, req.params.stepId, req.body, req.files as Express.Multer.File[], req.user!.id),
         );
