@@ -61,7 +61,6 @@ export const createEntityRequestSchema = Joi.object({
     body: {
         templateId: Joi.string().required(),
         properties: Joi.object().required(),
-        viewers: Joi.array().items(Joi.string()).required(),
     },
     query: {},
     params: {},

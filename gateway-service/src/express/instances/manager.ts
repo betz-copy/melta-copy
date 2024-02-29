@@ -110,11 +110,10 @@ export class InstancesManager {
         const fileProperties = await InstancesManager.uploadInstanceFiles(files);
         const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(instanceData.templateId);
         let templateUpdated = false;
-        console.log("KIASGIAJGI");
         const updatedProperties = {
             ...entityTemplate.properties.properties,
         };
-        const newInstanceData: IEntity = { templateId: instanceData.templateId, properties: { ...fileProperties, ...instanceData.properties } , viewers: [] };
+        const newInstanceData: IEntity = { templateId: instanceData.templateId, properties: { ...fileProperties, ...instanceData.properties } };
 
         Object.keys(entityTemplate.properties.properties).forEach((key) => {
             if (entityTemplate.properties.properties[key].serialCurrent !== undefined) {
@@ -137,7 +136,7 @@ export class InstancesManager {
                 },
             });
         }
-
+        
         const entity = await InstanceManagerService.createEntityInstance(newInstanceData);
 
         await ActivityLogManagerService.createActivityLog({
@@ -149,7 +148,7 @@ export class InstancesManager {
         });
         return entity;
     }
-
+    
     private static async deleteUnusedFiles(currentEntity: IEntity, instanceData: IEntity, files: Express.Multer.File[]) {
         const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(currentEntity.templateId);
         const newFilesKeys = files.map((file) => file.fieldname);
@@ -174,7 +173,7 @@ export class InstancesManager {
         const entity = await InstanceManagerService.updateEntityStatus(id, disabledStatus, ignoredRules).catch(
             InstancesManager.handleBrokenRulesError,
         );
-
+        
         if (createAlert && ignoredRules.length) {
             await RuleBreachesManager.createRuleBreachAlert<IUpdateEntityStatusMetadata>(
                 {
@@ -198,7 +197,7 @@ export class InstancesManager {
         });
         return entity;
     }
-
+    
     static async duplicateEntityInstance(id: string, instanceData: IEntity, files: Express.Multer.File[], user: Express.User) {
         const currentEntity = await InstanceManagerService.getEntityInstanceById(id);
         const currentEntityTemplate = await EntityTemplateManagerService.getEntityTemplateById(currentEntity.templateId);
@@ -207,24 +206,20 @@ export class InstancesManager {
         const filesEntriesToDuplicate = filesEntries.filter(([_key, value]) => Object.values(instanceData.properties).includes(value));
 
         const duplicatedFiles = await duplicateFiles(filesEntriesToDuplicate.map(([_key, value]) => value));
-
+        
         const duplicatedFilesEntries = filesEntriesToDuplicate.map(([key], index) => [key, duplicatedFiles[index].path]);
 
         const duplicatedFilesEntriesProperties = Object.fromEntries(duplicatedFilesEntries);
 
-        const viewersCopy = instanceData.viewers.map((userId) => userId);
         const duplicatedInstanceData: IEntity = {
             templateId: instanceData.templateId,
             properties: { ...instanceData.properties, ...duplicatedFilesEntriesProperties },
-            viewers: viewersCopy,
         };
-
+        
         return this.createEntityInstance(duplicatedInstanceData, files, user);
     }
 
     static async viewEntityInstance(id: string, userId: string) {
-        console.log("viewed entity");
-        console.log(id)
         await ActivityLogManagerService.createActivityLog({
             action: 'VIEW_ENTITY',
             entityId: id,
@@ -232,13 +227,8 @@ export class InstancesManager {
             timestamp: new Date(),
             userId: userId,
         });
-        const updatedEntity = await InstanceManagerService.getEntityInstanceById(id);
-        if(updatedEntity.viewers.indexOf(userId) === -1)
-            updatedEntity.viewers.push(userId);
-        console.log(updatedEntity.viewers)
-        await this.updateEntityInstance(id, updatedEntity, [] ,[],userId )
     }
-
+    
     static async updateEntityInstance(
         id: string,
         updatedInstanceData: IEntity,
@@ -265,7 +255,6 @@ export class InstancesManager {
             {
                 templateId: updatedInstanceData.templateId,
                 properties: { ...uploadedFilesProperties, ...updatedInstanceData.properties },
-                viewers: updatedInstanceData.viewers,
             },
             ignoredRules,
         ).catch(InstancesManager.handleBrokenRulesError);
@@ -273,7 +262,7 @@ export class InstancesManager {
         await InstancesManager.deleteUnusedFiles(currentEntity, updatedInstanceData, files).catch(() =>
             console.log(`failed to delete files of instanceId ${id}`),
         );
-
+        
         const updatedFields: Record<string, any> = {};
         const activityLogUpdatedFields: IUpdatedFields[] = [];
 
@@ -290,7 +279,7 @@ export class InstancesManager {
             }
 
             if (currentEntity.properties[field] === newValue) continue;
-
+            
             updatedFields[field] = newValue ?? null;
             activityLogUpdatedFields.push({
                 fieldName: field,
@@ -313,7 +302,7 @@ export class InstancesManager {
                 userId,
             );
         }
-
+        
         await ActivityLogManagerService.createActivityLog({
             action: 'UPDATE_ENTITY',
             metadata: { updatedFields: activityLogUpdatedFields },
@@ -427,7 +416,7 @@ export class InstancesManager {
                 relationshipId: relationship.properties._id,
             },
         };
-
+        
         await ActivityLogManagerService.createActivityLog({
             ...updatedFields,
             entityId: relationship.sourceEntityId,
@@ -438,7 +427,7 @@ export class InstancesManager {
             entityId: relationship.destinationEntityId,
             metadata: { ...updatedFields.metadata, entityId: relationship.sourceEntityId },
         });
-
+        
         return relationship;
     }
 
