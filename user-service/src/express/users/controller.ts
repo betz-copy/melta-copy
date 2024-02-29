@@ -10,7 +10,7 @@ export class UsersController {
         res.json(UsersManager.searchUsers(req.body));
     }
 
-    static async updateUserPreferencesById(req: Request, res: Response) {
-        res.json(UsersManager.updateUserPreferencesById(req.params.id, req.body));
+    static async createUser(req: Request, res: Response) {
+        res.json(UsersManager.createUser(req.body));
     }
 }

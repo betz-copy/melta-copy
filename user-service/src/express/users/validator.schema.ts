@@ -1,6 +1,7 @@
 import * as joi from 'joi';
 import { mongoIdSchema } from '../../utils/joi/schemas';
-import { UserPreferencesSchema, UsersSearchSchema } from '../../utils/joi/schemas/user';
+import { CompactPermissionsSchema } from '../../utils/joi/schemas/permission';
+import { userSchema } from '../../utils/joi/schemas/user';
 
 // GET /api/users/:id
 export const getUserByIdRequestSchema = joi.object({
@@ -11,10 +12,21 @@ export const getUserByIdRequestSchema = joi.object({
     },
 });
 
-// POST /api/users
+// POST /api/users/search
 export const searchUsersRequestSchema = joi.object({
     query: {},
-    body: UsersSearchSchema.required(),
+    body: joi.object({
+        fullName: joi.string(),
+        jobTitle: joi.string(),
+        permissions: CompactPermissionsSchema,
+    }),
+    params: {},
+});
+
+// POST /api/users
+export const createUserRequestSchema = joi.object({
+    query: {},
+    body: userSchema.required(),
     params: {},
 });
 

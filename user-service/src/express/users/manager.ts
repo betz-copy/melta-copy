@@ -22,7 +22,11 @@ export class UsersManager {
         return UsersModel.find(query).lean().exec();
     }
 
-    static async updateUserPreferencesById(id: string, preferences: Partial<IUser['preferences']>) {
-        return UsersModel.findByIdAndUpdate(id, { preferences }, { new: true }).lean().exec();
+    static async createUser({ permissions, ...baseUser }: Omit<IUser, '_id'>) {
+        const newUser = await UsersModel.create(baseUser);
+
+        await PermissionsManager.syncCompactPermissionsOfUser(newUser._id, permissions);
+
+        return newUser;
     }
 }
