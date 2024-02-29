@@ -9,7 +9,7 @@ export const useFilePreview = (fileId: IFile['id'], contentType: IFile['contentT
             if (contentType === 'unsupported') {
                 return contentType;
             }
-            const needsConversion = !['image', 'video', 'audio', 'pdf'].includes(contentType);
+            const needsConversion = !['image', 'video', 'audio'].includes(contentType);
             return getFilePreviewRequest(fileId, needsConversion, targetExtension);
         },
         {

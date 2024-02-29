@@ -27,17 +27,9 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
 
     const queryClient = useQueryClient();
 
-    /**
-     * 
-     * @param templateId the entityTemplate that we want to refetch using invalidateQuery
-     */
-    const invalidateQuery = (templateId: string) => {
-        queryClient.invalidateQueries({ queryKey: ['searchEntities', [templateId]] });
-    };
+    const refetch = () => queryClient.resetQueries({ queryKey: ['searchEntities', templateIds, searchInput], exact: true });
 
-    useImperativeHandle(ref, () => ({
-        refetch: () => queryClient.resetQueries({ queryKey: ['searchEntities', templateIds, searchInput], exact: true }),
-    }));
+    useImperativeHandle(ref, () => ({ refetch }));
 
     return (
         <Grid container direction="column" spacing={3}>
@@ -101,7 +93,7 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
                                     onExpand={(entityId) => {
                                         setOpenCardsMap((map) => new Map(map.set(entityId, !openCardsMap.get(entityId))));
                                     }}
-                                    invalidateQuery={ invalidateQuery}
+                                    refetchQuery={refetch}
                                 />
                             </Box>
                         );

@@ -29,17 +29,27 @@ const SmallPreview: React.FC<IPreviewProps> = ({
     height = `${environment.smallPreviewHeight.number}${environment.smallPreviewHeight.unit}`,
     sx,
 }) => {
-    const shouldDisplayImage = (type: string) => ['image', 'document'].includes(type);
+    const shouldDisplayImage = (type: string) => ['image', 'document', 'pdf'].includes(type);
     const shouldDisplayVideoOrAudio = (type: string) => ['video', 'audio'].includes(type);
     const isUnsupported = (type: string) => type === 'unsupported';
 
     const previewContent = useMemo(() => {
-        if (loading || !data)
+        if (loading)
             return (
                 <Box sx={{ width, height, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <CircularProgress size={20} />
                 </Box>
             );
+
+        if (isUnsupported(contentType) || error || !data) {
+            return (
+                <Card sx={{ borderRadius: '1rem', bgcolor: '#4c494c', display: 'grid', height, width }} elevation={10}>
+                    <Typography variant="body1" sx={{ color: 'white', marginTop: '10px', fontSize: '20px' }}>
+                        {i18next.t('errorPage.preview')}
+                    </Typography>
+                </Card>
+            );
+        }
 
         if (shouldDisplayImage(contentType))
             return (
@@ -65,16 +75,6 @@ const SmallPreview: React.FC<IPreviewProps> = ({
                     <VideoPreview data={data} maxHeight={height} maxWidth={width} />
                 </Box>
             );
-
-        if (isUnsupported(contentType) || error) {
-            return (
-                <Card sx={{ borderRadius: '1rem', bgcolor: '#4c494c', display: 'grid', height, width }} elevation={10}>
-                    <Typography variant="body1" sx={{ color: 'white', marginTop: '10px', fontSize: '20px' }}>
-                        {i18next.t('errorPage.preview')}
-                    </Typography>
-                </Card>
-            );
-        }
 
         return (
             <Box sx={{ width, height, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

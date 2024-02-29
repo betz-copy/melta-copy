@@ -36,7 +36,7 @@ interface EntityCardProps {
     userHavePermission?: boolean;
     customCardStyle?: React.CSSProperties;
     variant?: 'outlined' | 'elevation';
-    invalidateQuery?: (id: string) => void;
+    refetchQuery?: () => void;
 }
 
 const EntityCard: React.FC<EntityCardProps> = ({
@@ -48,7 +48,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
     userHavePermission = true,
     customCardStyle,
     variant = 'outlined',
-    invalidateQuery,
+    refetchQuery,
 }) => {
     const [open, setOpen] = useState<boolean>(expandCard);
     const [shouldDisplayFilePreview, setShouldDisplayFilePreview] = useState(false);
@@ -298,6 +298,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
                                 entityTemplate={entityTemplate}
                                 properties={entity.properties}
                                 textWrap
+                                removeFiles
                                 style={{
                                     display: 'flex',
                                     flexDirection: 'row',
@@ -311,7 +312,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
                             <Grid container marginTop="20px">
                                 <EntityDisableCheckbox isEntityDisabled={entity.properties.disabled} />
                             </Grid>
-                            <Grid marginTop="20px">
+                            <Grid marginTop="6.5vh">
                                 <EntityDates createdAt={entity.properties.createdAt} updatedAt={entity.properties.updatedAt} />
                             </Grid>
                         </CardContent>
@@ -369,7 +370,9 @@ const EntityCard: React.FC<EntityCardProps> = ({
                                 </Grid>
                             </Box>
                         ) : (
-                            <img src="/icons/no-file.svg" style={{ height: '24vh', width: '10vw', marginBottom: '2px' }} />
+                            shouldDisplayFilePreview && (
+                                <img src="/icons/no-file.svg" style={{ height: '24vh', width: '10vw', marginBottom: '2px' }} />
+                            )
                         ))}
                 </Grid>
             </Grid>
@@ -380,8 +383,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
                     entity={entity}
                     onSuccessUpdate={() => {
                         setEditDialog((prev) => ({ ...prev, isOpen: false }));
-
-                        if (invalidateQuery) invalidateQuery(entityTemplate._id);
+                        refetchQuery?.();
                     }}
                     onCancelUpdate={() => setEditDialog((prev) => ({ ...prev, isOpen: false }))}
                 />

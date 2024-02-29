@@ -1,11 +1,12 @@
 /* eslint-disable react-hooks/rules-of-hooks */
-import { KeyboardArrowLeft as KeyboardArrowLeftIcon, KeyboardArrowRight as KeyboardArrowRightIcon } from '@mui/icons-material';
+import { KeyboardArrowLeft, KeyboardArrowRight } from '@mui/icons-material';
 import { Box, IconButton } from '@mui/material';
 import React, { CSSProperties } from 'react';
 import { environment } from '../../globals';
 import { FileExtensions, IFile } from '../../interfaces/preview';
 import { useFilePreview } from '../../utils/useFilePreview';
 import { SmallPreview } from './SmallPreview';
+import { getFileExtension } from '../../utils/getFileType';
 
 interface IOpenSmallPreview {
     files: IFile[];
@@ -19,7 +20,12 @@ interface IOpenSmallPreview {
 
 const OpenSmallPreview: React.FC<IOpenSmallPreview> = ({ files, currentIndex, increaseIndex, decreaseIndex, maxHeight, maxWidth }) => {
     const file = files[currentIndex];
-    const { data, isLoading, isError } = useFilePreview(file.id, file.contentType, file.targetExtension);
+    const { data, isLoading, isError } = useFilePreview(
+        file.id,
+        file.contentType,
+        file.targetExtension,
+        getFileExtension(file.name) === FileExtensions.pdf,
+    );
 
     const getHalfTheHeight = (height: CSSProperties['maxHeight']) =>
         `${Number(height?.toString().replace(/\D/g, '') || environment.smallPreviewHeight.number) / 2}${
@@ -36,17 +42,16 @@ const OpenSmallPreview: React.FC<IOpenSmallPreview> = ({ files, currentIndex, in
                         top: getHalfTheHeight(maxHeight),
                         color: '#101440',
                         zIndex: 2,
-                        fontSize: '16px',
+                        '&:hover': { color: 'white', bgcolor: '#10144040' },
                     }}
                     disabled={currentIndex === 0}
                     onClick={() => {
                         decreaseIndex();
                     }}
                 >
-                    <KeyboardArrowRightIcon />
+                    <KeyboardArrowRight />
                 </IconButton>
             </Box>
-
             <SmallPreview
                 data={data}
                 loading={isLoading}
@@ -56,7 +61,6 @@ const OpenSmallPreview: React.FC<IOpenSmallPreview> = ({ files, currentIndex, in
                 width={maxWidth}
                 sx={{ height: '100%', width: '100%' }}
             />
-
             <Box sx={{ height: '0px', display: 'flex', justifyContent: 'end', alignItems: 'center' }}>
                 <IconButton
                     sx={{
@@ -65,14 +69,14 @@ const OpenSmallPreview: React.FC<IOpenSmallPreview> = ({ files, currentIndex, in
                         bottom: getHalfTheHeight(maxHeight),
                         color: '#101440',
                         zIndex: 2,
-                        fontSize: '16px',
+                        '&:hover': { color: 'white', bgcolor: '#10144040' },
                     }}
                     disabled={currentIndex === files.length - 1}
                     onClick={() => {
                         increaseIndex();
                     }}
                 >
-                    <KeyboardArrowLeftIcon />
+                    <KeyboardArrowLeft />
                 </IconButton>
             </Box>
         </Box>

@@ -47,6 +47,7 @@ interface IEntityPropertiesProps {
     mode: 'normal' | 'white';
     showPreviewPropertiesOnly?: boolean;
     overridePropertiesToShow?: string[];
+    removeFiles?: boolean;
     style?: CSSProperties;
     innerStyle?: CSSProperties;
     textWrap?: boolean;
@@ -58,6 +59,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
     mode,
     showPreviewPropertiesOnly = false,
     overridePropertiesToShow,
+    removeFiles = false,
     style,
     innerStyle,
     textWrap = false,
@@ -67,8 +69,12 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
         propertiesOrderedToShow = overridePropertiesToShow;
     } else if (showPreviewPropertiesOnly) {
         propertiesOrderedToShow = entityTemplate.propertiesOrder.filter((propertyKey) => entityTemplate.propertiesPreview!.includes(propertyKey));
+    } else if (removeFiles) {
+        propertiesOrderedToShow = entityTemplate.propertiesOrder.filter(
+            (propertyKey) => entityTemplate.properties.properties[propertyKey].format !== 'fileId',
+        );
     } else {
-        propertiesOrderedToShow = entityTemplate.propertiesOrder.filter((propertyKey) => entityTemplate.properties.properties[propertyKey].format !== 'fileId');
+        propertiesOrderedToShow = entityTemplate.propertiesOrder;
     }
 
     const [hideFieldsToDisplay, setHideFieldsToDisplay] = React.useState(entityTemplate.properties.hide);
@@ -130,6 +136,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                                             textOverflow: 'ellipsis',
                                             whiteSpace: textWrap ? undefined : 'nowrap',
                                             overflow: 'hidden',
+                                            paddingLeft: '1rem',
                                         }}
                                     >
                                         {hideFieldsToDisplay.includes(propertyKey) ? <>••••••••</> : stringFormatValue}
