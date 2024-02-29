@@ -1,4 +1,4 @@
-import React, { memo, SetStateAction } from 'react';
+import React, { memo, SetStateAction, useEffect } from 'react';
 import { FormikErrors, FormikTouched } from 'formik';
 import {
     TextField,
@@ -71,6 +71,9 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     supportChangeToRequiredWithInstances,
     supportArrayFields,
 }) => {
+    useEffect(() => {
+        console.log(value.calculateTime);
+    }, [value.calculateTime]);
     const name = `properties[${index}].name`;
     const touchedName = touched?.name;
     const errorName = errors?.name;
@@ -100,6 +103,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     const errorOptions = errors?.options;
 
     const dateNotification = `properties[${index}].dateNotification`;
+    const calculateTime = `properties[${index}].calculateTime`;
     const touchedDateNotification = touched?.dateNotification;
     const errorDateNotification = errors?.dateNotification;
 
@@ -397,6 +401,20 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                         />
                                                     }
                                                     label={i18next.t('validation.hide')}
+                                                />
+                                            )}
+                                            {(value.type === 'date' || value.type === 'date-time') && (
+                                                <FormControlLabel
+                                                    control={
+                                                        <Switch
+                                                            id={calculateTime}
+                                                            name={calculateTime}
+                                                            onChange={onChange}
+                                                            // disabled={value.calculateTime ?? false}
+                                                            checked={value.calculateTime ?? false}
+                                                        />
+                                                    }
+                                                    label={i18next.t('validation.calculateTime')}
                                                 />
                                             )}
                                             {value.type !== 'serialNumber' && value.unique !== undefined && setValues && (

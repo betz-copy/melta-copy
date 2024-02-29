@@ -8,7 +8,8 @@ const Value: React.FC<{
     value: string;
     color?: string;
     isNumberField?: boolean;
-}> = ({ hideValue, value, color, isNumberField }) => {
+    calculateTime?: boolean;
+}> = ({ hideValue, value, color, isNumberField, calculateTime }) => {
     const [hideField, setHideField] = React.useState(true);
     const [anchorEl, setAnchorEl] = React.useState<HTMLDivElement | null>(null);
 
@@ -24,11 +25,20 @@ const Value: React.FC<{
         setAnchorEl(null);
     };
 
+    const handleCalculatetime = () => {
+        const options = { hour12: false };
+        const currentDate = new Date().toLocaleString('en-UK', options);
+        const timeRegex = /\d{2}:\d{2}(:\d{2})?/;
+        const isDateTime = timeRegex.test(value);
+        return value;
+    };
+
     const open = Boolean(anchorEl);
 
     let innerContent;
     if (hideValue && hideField) innerContent = <>••••••••</>;
     else if (color || color === 'default') innerContent = <ColoredEnumChip label={value} color={color} />;
+    else if (calculateTime) innerContent = handleCalculatetime();
     else innerContent = value;
 
     return (
