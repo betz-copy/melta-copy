@@ -61,25 +61,40 @@ class ProcessTemplateManager {
         // if (updatedPropertiesRequired.some((reqField) => !currPropertiesRequired.includes(reqField))) {
         //     throw new ServiceError(400, 'can not update required field');
         // }
-        console.log("start validateProperties");
-        console.log({updatedProperties});
-        console.log({currProperties});
         
         Object.entries(currProperties).forEach(([key, value]) => {
-            console.log({currProperties});
             const newValue = updatedProperties[key];
-            console.log({newValue});
+            if (newValue) {
             // if (!newValue) throw new ServiceError(400, 'can not remove property');
             if (value.type !== newValue.type) throw new ServiceError(400, 'can not change property type');
-            console.log("value.type !== newValue.type");
             if (value.format !== newValue.format) throw new ServiceError(400, 'can not change property format');
-            console.log("value.format !== newValue.format");
             if (value.enum && !value.enum?.every((val) => newValue.enum?.includes(val)))
                 throw new ServiceError(400, 'can not remove options from enum');   
-            console.log("value.enum && !value.enum?.every((val) => newValue.enum?.includes(val))");
+            }
                      
         });
-        console.log("end validateProperties");
+    }
+
+    private static IsValuesEqual(updatedSteps, currSteps):boolean{
+        const idCountMap = new Map();
+
+        updatedSteps.forEach((step) => {
+        const count = idCountMap.has(step._id) ? idCountMap.get(step._id) + 1 : 1;
+        idCountMap.set(step._id, count);
+        });
+
+        currSteps.forEach((step) => {
+            if (!idCountMap.has(step._id)) {
+                return false;
+            }
+            const count = idCountMap.get(step._id);
+            if (count === 1) {
+                idCountMap.delete(step._id);
+            } else {
+                idCountMap.set(step._id, count - 1);
+            }
+        });
+        return idCountMap.size === 0;
     }
 
     private static async throwIfCantUpdateProcessTemplate(updatedTemplate: IProcessTemplatePopulated, currTemplate: IMongoProcessTemplatePopulated) {
@@ -87,7 +102,9 @@ class ProcessTemplateManager {
         if (processInstances.length === 0) {
             return;
         }
-
+        console.log("currTemplate.steps", currTemplate.steps);
+        console.log("updatedTemplate.steps", updatedTemplate.steps);
+        
         const { details: updatedDetails, name: updatedName, steps: updatedSteps } = updatedTemplate;
         if (updatedName !== currTemplate.name) throw new ServiceError(400, 'can not change step template name');
         this.validateProperties(
@@ -96,20 +113,11 @@ class ProcessTemplateManager {
             // updatedDetails.properties.required,
             // currTemplate.details.properties.required,
         );
-        console.log("between 2 if");
-        console.log({updatedSteps});
-        console.log({currTemplate});
         
         if (updatedSteps.length !== currTemplate.steps.length) throw new ServiceError(400, 'can not delete or add steps');
-        console.log("after if");
 
         updatedSteps.forEach((step, index) => {
-            console.log({index});
-            console.log({step});
-            
-            const currStep = currTemplate.steps[index];
-            console.log({currStep});
-            
+            const currStep = currTemplate.steps[index];            
             // if (step.name !== currStep.name) throw new ServiceError(400, `can not change step[${index}] name`);
             this.validateProperties(
                 step.properties.properties,
@@ -118,18 +126,15 @@ class ProcessTemplateManager {
                 // currStep.properties.required,
             );
         });
-        console.log("end throwIfCantUpdateProcessTemplate");
+
+        if (!this.IsValuesEqual(updatedSteps, currTemplate.steps)) throw new ServiceError(400, `values are not equal`);
     }
 
     static async updateTemplate(id: string, updatedData: IMongoProcessTemplatePopulated): Promise<IMongoProcessTemplatePopulated> {
-        console.log("start updateTemplate");
         const currProcessTemplate = await this.getProcessTemplateById(id);
         await this.throwIfCantUpdateProcessTemplate(updatedData, currProcessTemplate);
-        console.log("before return");
         return transaction(async (session) => {
-            console.log({session});
             const stepsIds = await StepTemplateManager.updateStepsTemplates(updatedData.steps, session);
-            console.log({stepsIds});
             return ProcessTemplateModel.findByIdAndUpdate(id, { ...updatedData, steps: stepsIds }, { new: true, session })
                 .populate(config.processFields.steps)
                 .orFail(new TemplateNotFoundError('process', id))
