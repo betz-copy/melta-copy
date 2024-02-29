@@ -249,13 +249,13 @@ const deleteEntityTemplateRequest = async (entityTemplateId: string) => {
     return data;
 };
 
-const updateListFieldRequest = async (id: string, fieldValue: string, values: CommonFormInputProperties, field: string) => {
-    const { data } = await axios.put<any>(`${entityTemplates}/updateListField/${id}`, { fieldValue, values, field });
+const updateEnumFieldRequest = async (id: string, fieldValue: string, values: CommonFormInputProperties, field: string) => {
+    const { data } = await axios.put<void>(`${entityTemplates}/updateEnumField/${id}`, { fieldValue, values, field });
     return data;
 };
 
-const deleteListFieldRequest = async (id: string, fieldValue: string, field: CommonFormInputProperties) => {
-    const { data } = await axios.patch<any>(`${entityTemplates}/deleteListField/${id}`, { fieldValue, field });
+const deleteEnumFieldRequest = async (id: string, fieldValue: string, field: CommonFormInputProperties) => {
+    const { data } = await axios.patch<void>(`${entityTemplates}/deleteEnumField/${id}`, { fieldValue, field });
     return data;
 };
 
@@ -265,6 +265,6 @@ export {
     entityTemplateObjectToEntityTemplateForm,
     deleteEntityTemplateRequest,
     updateEntityTemplateStatusRequest,
-    updateListFieldRequest,
-    deleteListFieldRequest,
+    updateEnumFieldRequest,
+    deleteEnumFieldRequest,
 };

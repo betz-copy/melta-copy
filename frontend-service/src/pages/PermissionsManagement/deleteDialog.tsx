@@ -50,7 +50,6 @@ const DeletePermissionsOfUserDialog: React.FC<{ isOpen: boolean; permissionsOfUs
                 handleClose();
             }}
             isLoading={isLoadingDeleteAllPermissionsOfUser}
-            fromDeletion={false}
         />
     );
 };

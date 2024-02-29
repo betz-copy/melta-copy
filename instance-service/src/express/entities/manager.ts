@@ -437,7 +437,7 @@ export class EntityManager {
         }).catch(EntityManager.throwServiceErrorIfFailedConstraintsValidation); // constraint validation is performed on end of transaction
     }
 
-    static async updateListField(id: string, newValue: string, oldValue: string, field: any) {
+    static async updateEnumField(id: string, newValue: string, oldValue: string, field: any) {
         let node;
         try {
             if(field.type === "enumArray"){

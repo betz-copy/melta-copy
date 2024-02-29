@@ -71,6 +71,8 @@ export default {
         disabledSuccessfully: 'ישות הושבתה בהצלחה',
         activatedSuccessfully: 'ישות הופעלה בהצלחה',
         disabledEntity: 'ישות לא פעילה',
+        deleteEnumFieldSuccessfully: 'ערך נמחק בהצלחה',
+        updatedEnumFieldSuccessfully: 'ערך נוסף בהצלחה',
         activityLog: {
             deleteRelationship: 'מחק קשר מסוג',
             createRelationship: 'יצר קשר מסוג ',
@@ -112,7 +114,7 @@ export default {
         activeEntity: ' פעיל',
         preview: 'תצוגה מקדימה אינה זמינה',
         fileDownloadError: 'נכשל להוריד קובץ, נסה שנית או פנה לתמיכה',
-        duplicateValue: 'לא ניתן לשנות, ',
+        duplicateValue: 'לא ניתן לשנות, ערך זה כבר קיים ',
         deleteFieldValue: 'לא ניתן למחוק ערך בשימוש',
     },
     addRelationshipDialog: {

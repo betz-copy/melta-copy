@@ -7,16 +7,14 @@ const AreYouSureDialog: React.FC<{
     handleClose: () => void;
     title?: string;
     isLoading?: boolean;
-    fromDeletion: boolean;
+    fromDeletion?: string;
     onYes: MouseEventHandler;
     onNo?: MouseEventHandler;
 }> = ({ open, handleClose, title = i18next.t('areYouSureDialog.title'), isLoading = false, onYes, onNo, fromDeletion }) => {
     return (
         <Dialog open={open} onClose={handleClose}>
             <DialogTitle><div>{title}</div>
-            {fromDeletion ? <div>
-                        <Typography variant="caption" color="textSecondary">{i18next.t('areYouSureDialog.disclaimer')}</Typography>
-                    </div> : null}
+                    <Typography variant="caption" color="textSecondary">{fromDeletion || ""}</Typography>
             </DialogTitle>
             <DialogActions>
                 <Button onClick={onNo ?? handleClose}>{i18next.t('areYouSureDialog.no')}</Button>

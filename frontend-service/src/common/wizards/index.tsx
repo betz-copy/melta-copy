@@ -64,7 +64,6 @@ const Wizard = <T extends object>({
     useEffect(() => {
         setActiveStep(initalStep);
     }, [open, initalStep]);
-    // const queryClient = useQueryClient();
 
     return (
         <Dialog
@@ -82,7 +81,6 @@ const Wizard = <T extends object>({
                     aria-label="close"
                     onClick={async () => {
                         handleClose();
-                        // await queryClient.invalidateQueries('getAllTemplates');
                     }}
                     sx={{
                         position: 'absolute',

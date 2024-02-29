@@ -324,7 +324,6 @@ const ProcessCard: React.FC<{
                     onChangedProcessDialogClose(null);
                     setDeleteDialogState(false);
                 }}
-                fromDeletion={false}
             />
             {open.isOpen && (
                 <ProcessInstanceWizard

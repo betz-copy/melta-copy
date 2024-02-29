@@ -400,9 +400,6 @@ export class TemplatesManager {
                 }
                 if (value.type !== newValue.type) throw new ServiceError(400, 'can not change property type');
                 if (value.format !== newValue.format) throw new ServiceError(400, 'can not change property format');
-                // changed check for removing options.
-                // if (newValue.enum && value.enum && value.enum.length > newValue.enum?.length)
-                //     throw new ServiceError(400, 'can not remove properties of the enum');
                 if (value.serialStarter !== newValue.serialStarter) throw new ServiceError(400, 'can not change property serial starter');
             });
         }
@@ -494,7 +491,7 @@ export class TemplatesManager {
         }
         // change the values in neo4j if the mongo worked.
         try {
-            await InstanceManagerService.updateListFieldOfEntity(id, field, fieldValue, values);
+            await InstanceManagerService.updateEnumFieldOfEntity(id, field, fieldValue, values);
         } catch (neoError: any) {
             if (neoError.response.status === 404) {
                 console.error('Neo4j update failed: Node not found');

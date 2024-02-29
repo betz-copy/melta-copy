@@ -207,7 +207,6 @@ const RulesRow: React.FC = () => {
                 handleClose={() => setDeleteRuleWizardState({ isWizardOpen: false, ruleId: null })}
                 onYes={() => deleteMutateAsync(deleteRuleWizardState.ruleId!)}
                 isLoading={isLoading}
-                fromDeletion={false}
             />
         </Grid>
     );

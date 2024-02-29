@@ -294,8 +294,6 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                     handleClose={closeDeleteDialog}
                     onYes={() => deleteMutation()}
                     isLoading={isDeleteLoading}
-                    fromDeletion={false}
-
                 />
             </Card>
             {updateStatusWithRuleBreachDialogState.isOpen && (

@@ -92,7 +92,6 @@ const ProcessTemplatesRow: React.FC = () => {
                 handleClose={() => setDeleteProcessTemplateDialogState({ isDialogOpen: false, processTemplateId: null })}
                 onYes={() => deleteTemplateMutateAsync(deleteProcessTemplateDialogState.processTemplateId!)}
                 isLoading={deleteTemplateIsLoading}
-                fromDeletion={false}
             />
         </Grid>
     );

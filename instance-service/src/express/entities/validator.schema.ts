@@ -49,9 +49,9 @@ const commonFormInputSchema = Joi.object({
 });
 
 /**
- * PUT /api/instances/entities/updateListField/:id
+ * PUT /api/instances/entities/updateEnumField/:id
  */
-export const updateListFieldRequestSchema = Joi.object({
+export const updateEnumFieldRequestSchema = Joi.object({
     query: {},
     body: {
         newValue: Joi.string().required(),

@@ -81,7 +81,6 @@ const AddDetailsFields: React.FC<StepComponentProps<ProcessTemplateWizardValues,
                     supportEntityReferenceType
                     supportChangeToRequiredWithInstances={false}
                     supportArrayFields={false}
-                    supportEditEnum={false}
                 />
             </Grid>
 
@@ -103,7 +102,6 @@ const AddDetailsFields: React.FC<StepComponentProps<ProcessTemplateWizardValues,
                     supportEntityReferenceType
                     supportChangeToRequiredWithInstances={false}
                     supportArrayFields={false}
-                    supportEditEnum={false}
                 />
             </Grid>
         </Grid>

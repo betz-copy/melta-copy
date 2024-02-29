@@ -16,7 +16,7 @@ import {
     getExpandedEntityByIdRequestSchema,
     searchEntitiesBatchRequestSchema,
     searchEntitiesOfTemplateRequestSchema,
-    updateListFieldRequestSchema,
+    updateEnumFieldRequestSchema,
     getIfValuefieldIsUsedRequestSchema,
 } from './validator.schema';
 
@@ -48,7 +48,7 @@ entityRouter.post(
     wrapController(EntityController.searchEntitiesBatch),
 );
 
-entityRouter.put('/updateListField/:id', ValidateRequest(updateListFieldRequestSchema), wrapController(EntityController.updateListField));
+entityRouter.put('/updateEnumField/:id', ValidateRequest(updateEnumFieldRequestSchema), wrapController(EntityController.updateEnumField));
 entityRouter.get('/getIsFieldUsed/:id', ValidateRequest(getIfValuefieldIsUsedRequestSchema), wrapController(EntityController.getIsFieldUsed));
 
 

@@ -34,7 +34,7 @@ interface FieldBlockProps<PropertiesType extends string, Values extends Record<P
     supportEntityReferenceType: boolean;
     supportChangeToRequiredWithInstances: boolean;
     supportArrayFields: boolean;
-    supportEditEnum: boolean;
+    supportEditEnum?: boolean;
     draggable?: { isDraggable: false } | { isDraggable: true; dragHandleProps: DraggableProvided['dragHandleProps'] };
 }
 

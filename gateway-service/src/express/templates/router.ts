@@ -81,13 +81,13 @@ templatesRouter.delete(
 
 // entities (templates)
 templatesRouter.put(
-    '/entities/updateListField/:id',
+    '/entities/updateEnumField/:id',
     ValidateRequest(updateFieldValueSchema),
     wrapMiddleware(validateUserCanUpdateOrDeleteEntityTemplate),
     wrapController(TemplatesController.updateEntityFieldValue),
 );
 templatesRouter.patch(
-    '/entities/deleteListField/:id',
+    '/entities/deleteEnumField/:id',
     ValidateRequest(deleteFieldValueSchema),
     wrapMiddleware(validateUserCanUpdateOrDeleteEntityTemplate),
     wrapController(TemplatesController.deleteEntityFieldValue),

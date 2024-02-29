@@ -56,21 +56,21 @@ export const createEntityTemplateSchema = Joi.object({
     file: iconFileSchema,
 });
 
+// PUT /api/templates/entities/updateEnumField/:id
 export const updateFieldValueSchema = Joi.object({
     body: {
         fieldValue: Joi.string().required(),
         values: commonFormInputSchema,
         field: Joi.string().required(),
     },
-    // params: { id: MongoIdSchema.required() },
 });
 
+// DELETE /api/templates/entities/deleteEnumField/:id
 export const deleteFieldValueSchema = Joi.object({
     body: {
         fieldValue: Joi.string().required(),
         field: commonFormInputSchema,
     },
-    // params: { id: MongoIdSchema.required() },
 });
 
 // PUT /api/templates/entities/:id

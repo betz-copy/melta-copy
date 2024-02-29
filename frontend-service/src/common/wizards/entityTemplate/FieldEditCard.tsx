@@ -32,7 +32,7 @@ import { dateNotificationTypes, validPropertyTypes } from './AddFields';
 
 import { CommonFormInputProperties } from './commonInterfaces';
 import { MinimizedColorPicker } from '../../inputs/MinimizedColorPicker';
-import { deleteListFieldRequest, updateListFieldRequest } from '../../../services/templates/enitityTemplatesService';
+import { deleteEnumFieldRequest, updateEnumFieldRequest } from '../../../services/templates/enitityTemplatesService';
 import { AreYouSureDialog } from '../../dialogs/AreYouSureDialog';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { MeltaTooltip } from '../../MeltaTooltip';
@@ -60,7 +60,7 @@ export interface FieldEditCardProps {
     supportChangeToRequiredWithInstances: boolean;
     templateId: string;
     supportArrayFields: boolean;
-    supportEditEnum: boolean;
+    supportEditEnum?: boolean;
 }
 
 export const FieldEditCard: React.FC<FieldEditCardProps> = ({
@@ -134,9 +134,9 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
         setLocalOption(e.target.value);
     };
 
-    const { mutate: updateListField, isLoading } = useMutation(
+    const { mutate: updateEnumField, isLoading } = useMutation(
         (tagIndex: number) => {
-            return updateListFieldRequest(templateId, value.options[tagIndex], value, localOption);
+            return updateEnumFieldRequest(templateId, value.options[tagIndex], value, localOption);
         },
         {
             onError: () => {
@@ -150,45 +150,38 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                 queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) => {
                     const prevEntityTemplate = entityTemplateMap!.get(templateId)!;
 
-                    const newOptions = value.options.map((option, i) => {
-                        if (tagIndex === i) {
-                            return localOption;
-                        }
-                        return option;
-                    });
+                    const newOptions = value.options.map((option, i) => tagIndex === i ? localOption : option);
 
+                    const newOptionColors = { ...value.optionColors };
                     if (value.optionColors && Object.keys(value.optionColors).length > 0 && editIndex != null) {
                         const color = value.optionColors[value.options[editIndex]];
-                        const temp = value.optionColors;
-                        delete temp[value.options[editIndex]];
+                        delete newOptionColors[value.options[editIndex]];
+                        newOptionColors[localOption] = color;
                         if (prevEntityTemplate?.enumPropertiesColors?.[value.name]) {
-                            prevEntityTemplate.enumPropertiesColors[value.name] = { ...temp, [localOption]: color };
+                            prevEntityTemplate.enumPropertiesColors[value.name] = newOptionColors;
                         }
 
-                        setValues?.((prev) => ({
-                            ...prev,
-                            options: newOptions,
-                            optionColors: { ...temp, [localOption]: color },
-                        }));
-                    } else {
-                        setValues?.((prev) => ({
-                            ...prev,
-                            options: newOptions,
-                        }));
                     }
+                    setValues?.((prev) => ({
+                        ...prev,
+                        options: newOptions,
+                        optionColors: newOptionColors,
+                    }));
                     prevEntityTemplate.properties.properties[value.name].enum = newOptions;
                     entityTemplateMap!.set(templateId, prevEntityTemplate);
                     return entityTemplateMap!;
                 });
                 setEditIndex(null);
+                toast.success(<div>{i18next.t('entityPage.updatedEnumFieldSuccessfully')}</div>);
+
             },
         },
     );
 
 
-    const { mutate: deleteListField, isLoading: _isDeleteLoading } = useMutation(
+    const { mutate: deleteEnumField, isLoading: isDeleteLoading } = useMutation(
         (tagIndex: number) => {
-            return deleteListFieldRequest(templateId, value.options[tagIndex], value);
+            return deleteEnumFieldRequest(templateId, value.options[tagIndex], value);
         },
         {
             onError: () => {
@@ -197,9 +190,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                     setEditIndex(null);
                     // only change to new value on success!
                 }
-                toast.error(<div>{i18next.t('errorPage.deleteFieldValue')}</div>);
-
-                
+                toast.error(<div>{i18next.t('errorPage.deleteFieldValue')}</div>);    
             },
             onSuccess: (_resultOfMutation, tagIndex) => {
                 queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) => {
@@ -207,49 +198,40 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
 
                     const newOptions = value.options.filter((_option, i) => i !== tagIndex);
 
-
+                    const newOptionColors = {...value.optionColors};
                     if (value.optionColors && Object.keys(value.optionColors).length > 0 && editIndex != null) {
-                        const temp = value.optionColors;
-                        delete temp[value.options[editIndex]];
-
-                        setValues?.((prev) => ({
-                            ...prev,
-                            options: newOptions,
-                            optionColors: { ...temp},
-                        }));
-                    } else {
-                        setValues?.((prev) => ({
-                            ...prev,
-                            options: newOptions,
-                        }));
-                    }
+                        delete newOptionColors[value.options[editIndex]];
+                    } 
+                    setValues?.((prev) => ({
+                        ...prev,
+                        options: newOptions,
+                        optionColors: newOptionColors,
+                    }));
                     prevEntityTemplate.properties.properties[value.name].enum = newOptions;
                     entityTemplateMap!.set(templateId, prevEntityTemplate);
                     return entityTemplateMap!;
                 });
                 setEditIndex(null);
+                toast.success(<div>{i18next.t('entityPage.deleteEnumFieldSuccessfully')}</div>);
             },
         },
     );
 
-    const handleSaveEdit = async (tagIndex: number) => {
+    const handleSaveEdit = (tagIndex: number) => {
+        const checkIfOldEnumValue = initialEnumOptions.length > tagIndex && isDisabled;
         if (value.options.includes(localOption)) {
             toast.error(<div>{i18next.t('errorPage.duplicateValue')}</div>);
             setLocalOption(value.options[tagIndex]);
-        } else if (initialEnumOptions.length > tagIndex && isDisabled) {
-            updateListField(tagIndex);
+        } else if (checkIfOldEnumValue) {
+            updateEnumField(tagIndex);
         } else {
             const oldColor = value.optionColors?.[value.options[tagIndex]];
-            const newOptions = value.options.map((option, i) => {
-                if (tagIndex === i) {
-                    return localOption;
-                }
-                return option;
-            });
+            const newOptions = value.options.map((option, index) => index === tagIndex ? localOption : option);
+
             if (oldColor) {
-                const temp = value.optionColors!;
-                delete temp[value.options[tagIndex]];
-                setValues?.((prev) => ({ ...prev, optionColors: { ...temp, [localOption]: oldColor }, options: newOptions }));
+                const newOptionColors = {...value.optionColors!};
+                delete newOptionColors[value.options[tagIndex]];
+                setValues?.((prev) => ({ ...prev, optionColors: { ...newOptionColors, [localOption]: oldColor }, options: newOptions }));
             } else {
                 setValues?.((prev) => ({ ...prev, options: newOptions }));
             }
@@ -257,8 +239,8 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
         }
     };
 
-    const handleDelete = async (tagIndex: number) => {
-        deleteListField(tagIndex);
+    const handleDelete = (tagIndex: number) => {
+        deleteEnumField(tagIndex);
     }
 
     const theme = createTheme({
@@ -280,6 +262,29 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
             },
         },
     });
+
+    const updateOldDisabledEnumVals = (currValue: string[]) => {
+        const newValues = currValue.filter((_option, pos) => pos >= initialEnumOptions.length);
+        const initialOptions = value.options.slice(0, initialEnumOptions.length);
+
+        const newOptions = [
+            ...initialOptions,
+            ...newValues,
+        ]
+
+        const tempColors = Object.keys({...value.optionColors}).reduce((acc, key) => {
+        if (newOptions.includes(key) && value.optionColors) {
+            acc[key] = value.optionColors[key];
+        }
+        return acc;}, {});
+        setValues?.((prev) => ({
+            ...prev,
+            options: [
+                ...value.options.slice(0, initialEnumOptions.length),
+                ...newValues,],
+            optionColors: tempColors,
+        }));
+    }
 
     const chipRefs = useRef<(HTMLDivElement | null)[]>([]);
     const [open, setOpen] = useState<boolean>(false);
@@ -370,24 +375,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                 value={value.options}
                                                 onChange={(_e, currValue) => {
                                                     if (isDisabled) {
-                                                        const newValues = currValue.filter((_option, pos) => pos >= initialEnumOptions.length);
-                                                        const newOptions = [
-                                                            ...value.options.slice(0, initialEnumOptions.length),
-                                                            ...newValues,
-                                                        ]
-                                                        const tempColors = {...value.optionColors};
-                                                        for (const key in tempColors) {
-                                                            if (!newOptions.includes(key)) {
-                                                                delete tempColors[key];
-                                                            }
-                                                        }
-                                                        setValues?.((prev) => ({
-                                                            ...prev,
-                                                            options: [
-                                                                ...value.options.slice(0, initialEnumOptions.length),
-                                                                ...newValues,],
-                                                            optionColors: tempColors,
-                                                            }));
+                                                       updateOldDisabledEnumVals(currValue);
                                                     } else {
                                                         setValues?.((prev) => ({
                                                             ...prev,
@@ -495,7 +483,9 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                                 }
                                                                             }}
                                                                         />
-                                                                        <IconButton size="small" onClick={() => handleDelete(tagIndex)}>
+                                                                        <IconButton size="small" onClick={() => {
+                                                                            if (!isDeleteLoading) { 
+                                                                                handleDelete(tagIndex);}}} disabled={isDeleteLoading}>
                                                                             <DeleteIcon />
                                                                         </IconButton>
                                                                     </Box>
@@ -512,7 +502,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                             setOpen(!open);
                                                                         }}
                                                                         isLoading={isLoading}
-                                                                        fromDeletion
+                                                                        fromDeletion={i18next.t('areYouSureDialog.disclaimer')}
                                                                     />
                                                                 </ThemeProvider>
                                                             </Box>
