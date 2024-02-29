@@ -21,20 +21,24 @@ const getUpdateEntityActionMetadata = (currEntity: IEntity, updateEntityFormData
     const templatePropertiesUpdated = pickBy(updateEntityFormData.template.properties.properties, ({ format, items }, propertyKey) => {
         if (format === 'fileId' || (items && items.format === "fileId")) {
             const attachmentProperty = updateEntityFormData.attachmentsProperties[propertyKey];
-            if (attachmentProperty instanceof File) return true;
-            if (updateEntityFormData.template.properties.properties[propertyKey].items) {
-                return currEntity.properties[propertyKey].some((element, index) => {
-                    return element !== updateEntityFormData?.attachmentsProperties?.[propertyKey]?.[index]?.name;
-                });
+            if (attachmentProperty instanceof File) return true; //for single file the options as new File or undefined
+            if (updateEntityFormData.template.properties.properties[propertyKey].items && attachmentProperty && Array.isArray(attachmentProperty)) { //if its array
+                const attachmentFileName = attachmentProperty?.map(file => file.name);
+                if(attachmentFileName.length !== currEntity.properties[propertyKey].length) return true;
+                return !attachmentFileName.every((file, index) => file === currEntity.properties[propertyKey][index])
             }
-            return currEntity.properties[propertyKey] !== updateEntityFormData.attachmentsProperties[propertyKey]?.[0].name;
+            return currEntity.properties[propertyKey] !== attachmentProperty?.name; //for single file the options as new File or undefined
         }
         return currEntity.properties[propertyKey] !== updateEntityFormData.properties[propertyKey];
     });
-    
     const updatedFields = mapValues(templatePropertiesUpdated, ({ format, items }, propertyKey) => {
-        if (format === 'fileId' || (items && items.format === "fileId")) {
+        if (format === 'fileId') {
             return updateEntityFormData.attachmentsProperties[propertyKey] ?? null;
+        }
+        if((items && items.format === "fileId" && Array.isArray(updateEntityFormData.attachmentsProperties[propertyKey]))){
+            const filesArray = updateEntityFormData.attachmentsProperties[propertyKey] as File[];
+            if (filesArray.length === 0) return null; 
+            return filesArray.map((file : File | {name: string}) => file instanceof File ? file : file.name);        
         }
         return updateEntityFormData.properties[propertyKey] ?? null;
     });

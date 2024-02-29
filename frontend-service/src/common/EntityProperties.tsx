@@ -76,7 +76,6 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
     } else {
         propertiesOrderedToShow = entityTemplate.propertiesOrder;
     }
-    console.log(properties)
     const [hideFieldsToDisplay, setHideFieldsToDisplay] = React.useState(entityTemplate.properties.hide);
 
     return (
@@ -136,7 +135,8 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                                         style={{
                                             textOverflow: 'ellipsis',
                                             whiteSpace: textWrap ? undefined : 'nowrap',
-                                            overflow: 'hidden',
+                                            overflowY: "auto",
+                                            maxHeight: "100px"
                                         }}
                                     >
                                         {hideFieldsToDisplay.includes(propertyKey) ? <>••••••••</> : stringFormatValue}

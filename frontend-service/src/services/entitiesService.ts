@@ -90,7 +90,6 @@ export const updateEntityRequestForMultiple = async (
             }
         }
     });
-    console.log(filesToUpload, unchangedFiles);
     filesToUpload.forEach(([key, value]) => {
         formData.append(key, value as Blob);
     });

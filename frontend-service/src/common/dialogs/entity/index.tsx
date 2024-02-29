@@ -9,6 +9,6 @@ export interface EntityWizardValues {
 export interface EntityWizardValuesNew {
     template: IMongoEntityTemplatePopulated;
     properties: object & { disabled: boolean };
-    attachmentsProperties: Record<string, File[] | undefined>;
+    attachmentsProperties: Record<string, File[] | File | undefined>;
 }
 

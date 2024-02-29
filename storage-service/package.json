@@ -18,6 +18,7 @@
   "license": "ISC",
   "dependencies": {
     "@types/jszip": "^3.4.1",
+    "archiver": "^7.0.0",
     "body-parser": "^1.19.0",
     "dotenv": "^8.2.0",
     "env-var": "^6.3.0",

@@ -35,8 +35,7 @@ const getEntityPropertyString = (value: any, type: 'string' | 'number' | 'boolea
             const oldFile = oldValue ? oldValue[index] : undefined;
             const oldFileName = oldFile ? getFileName(oldFile) : undefined;
             const fileName = file instanceof File ? file.name : getFileName(file);
-            const fileContentChanged = file instanceof File || !oldValue || !oldValue.includes(file.name);
-
+            const fileContentChanged = file instanceof File || !oldValue || !oldValue.includes(file);
             if (oldFileName === fileName && fileContentChanged) {
                 return `${fileName} (${i18next.t('ruleBreachInfo.updateEntityActionInfo.fileContentUpdated')})`;
             }
@@ -51,9 +50,11 @@ const getEntityPropertiesString = (
     entityTemplate: IMongoEntityTemplatePopulated,
     oldEntityProperties?: Record<string, any>,
 ) => {
+    console.log(entityTemplate.properties.properties)
     const fieldPropertiesStrings = Object.entries(entityTemplate.properties.properties).map(([propertyKey, propertyTemplate]) => {
         const oldValue = oldEntityProperties?.[propertyKey];
         const value = entityProperties[propertyKey];
+        console.log(propertyKey, value)
         const valueFormatted = getEntityPropertyString(value, propertyTemplate.type, propertyTemplate.format, oldValue, propertyTemplate.items);
         return `${propertyTemplate.title}: ${valueFormatted}`;
     });
@@ -68,10 +69,10 @@ export const UpdatedFieldsDiff: React.FC<{
     const oldProperties = before ?? entity?.properties;
 
     const darkMode = useSelector((state: RootState) => state.darkMode);
-
     const newPropertiesWithNulls = { ...oldProperties, ...updatedFields };
     // updatedFields specifies fields to remove w/ nulls. but shouldn't be in the IEntity properties
     const newProperties = pickBy(newPropertiesWithNulls, (property) => property !== null);
+    console.log(newProperties, oldProperties)
     return (
         <ReactDiffViewer
             oldValue={

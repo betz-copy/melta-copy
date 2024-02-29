@@ -1,7 +1,8 @@
 import * as express from 'express';
 import { getFileName } from '../../utils/generatePath';
 import { FilesManager } from './manager';
-import * as JSZip from 'jszip';
+// import * as JSZip from 'jszip';
+import * as archiver from 'archiver';
 
 export class FilesController {
     static async downloadFile(req: express.Request, res: express.Response) {
@@ -16,26 +17,33 @@ export class FilesController {
     }
 
     static async downloadZip(req: express.Request, res: express.Response) {
-        const { path } = req.params;
-        const fileIds = path.split('?');
-        const filesData = await FilesManager.getFilesData(fileIds);
+        try {
+            const { path } = req.params;
+            const fileIds = path.split('?');
+            const filesData = await FilesManager.getFilesData(fileIds);
 
-        const zip = new JSZip();
+            const archive = archiver('zip', {
+                zlib: { level: 9 },
+            });
 
-        filesData.forEach((fileData, index) => {
-            zip.file(`${fileIds[index].toString().slice(32)}`, fileData);
-        });
+            res.setHeader('Content-Type', 'application/zip');
+            res.setHeader('Content-Disposition', `attachment; filename="filesZip${Date.now()}.zip"`);
 
-        const zipBlob = await zip.generateAsync({ type: 'nodebuffer' });
+            archive.pipe(res);
 
-        res.setHeader('Content-Type', 'application/zip');
-        res.setHeader('Content-Disposition', `attachment; filename="filesZip${Date.now()}.zip"`);
+            for (let i = 0; i < fileIds.length; i++) {
+                const fileId = fileIds[i];
+                const fileData = filesData[i];
+                const fileName = fileId.toString().slice(32);
+                archive.append(fileData, { name: fileName });
+            }
 
-        res.send(zipBlob);
-
-        //stream
+            archive.finalize();
+        } catch (error) {
+            console.error('Error downloading zip:', error);
+            res.status(500).send('Internal Server Error');
+        }
     }
-
     static async uploadFile(req: express.Request, res: express.Response) {
         res.json(FilesManager.uploadFile(req.file));
     }

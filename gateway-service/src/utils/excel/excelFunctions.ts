@@ -86,7 +86,7 @@ const fixFileProperties = (rows: IEntity['properties'][], template: IEntityTempl
                 if (row[key]) {
                     const files = row[key].join('?');
                     row[key] = {
-                        text: `zip${index}`,
+                        text: `attachmentZip${index}`,
                         hyperlink: `${config.storageService.fileHyperLink}/zip/${encodeURIComponent(files)}`,
                     };
                 }

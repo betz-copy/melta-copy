@@ -156,11 +156,9 @@ export default class ProcessesInstancesManager {
         oldProperties: Record<string, any>,
         newProperties: Record<string, any>,
     ) {
-        console.log('REMOVE:', templateProperties, oldProperties, newProperties);
         const oldFileIds = new Set<string>(this.extractFileIdsFromProperties(templateProperties, oldProperties));
         const newFileIds = new Set<string>(this.extractFileIdsFromProperties(templateProperties, newProperties));
 
-        console.log('LAKDVFWQF', oldFileIds, newFileIds);
         const idsToDelete = Array.from(oldFileIds).filter((id) => !newFileIds.has(id));
         // eslint-disable-next-line no-console
         if (idsToDelete.length) await deleteFiles(idsToDelete).catch(() => console.log(`failed to delete unused files: ${idsToDelete}`));
@@ -249,6 +247,8 @@ export default class ProcessesInstancesManager {
         Object.entries(templateProperties.properties).forEach(([key, value]) => {
             if (value.format === PropertyFormats.FileId && instanceProperties[key]) {
                 fileIds.push(instanceProperties[key]);
+            } else if (value.items?.format === PropertyFormats.FileId && instanceProperties[key]) {
+                fileIds.push(...instanceProperties[key]);
             }
         });
         return fileIds;

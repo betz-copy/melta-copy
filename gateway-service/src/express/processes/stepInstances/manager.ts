@@ -59,6 +59,7 @@ export default class StepsInstancesManager {
         const stepTemplate = await ProcessManagerService.getStepTemplateByStepInstanceId(stepId);
         if (properties) await ProcessesInstancesManager.checkEntityReferenceFields(properties, stepTemplate.properties);
         if (!files.length) {
+            //add remove old files
             const updatedStep = await ProcessManagerService.updateStepInstance(stepId, processServiceUpdateData);
             const updatedProcess = await ProcessManagerService.getProcessInstanceById(processId);
             if (updatedStepStatus) this.handleNotificationsOnUpdateStepInstance(updatedProcess, process, updatedStep);
@@ -66,8 +67,6 @@ export default class StepsInstancesManager {
         }
         const filesProperties = await InstancesManager.uploadInstanceFiles(files, processServiceUpdateData.properties);
         const { properties: oldProperties } = await ProcessManagerService.getStepInstanceById(stepId);
-        console.log('UPDATE STEP:', filesProperties, oldProperties);
-
         const updatedStep = await ProcessManagerService.updateStepInstance(stepId, {
             ...processServiceUpdateData,
             properties: filesProperties,
