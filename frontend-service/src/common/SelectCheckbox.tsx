@@ -377,7 +377,6 @@ export const MiniFilter: React.FC<{ value: string; onChange: (value: string) => 
                         }
                     }}
                     sx={{
-                        gap: '10px',
                         background: toTopBar ? '#FFFFFF' : '#EBEFFA',
                         borderRadius: '7px',
                         width: '199px',
@@ -390,21 +389,21 @@ export const MiniFilter: React.FC<{ value: string; onChange: (value: string) => 
                     fullWidth
                     InputProps={{
                         style: {
-                            height: '34px',
                             fontFamily: 'Rubik',
                             fontSize: '12px',
                             color: '#8D8D8E',
                             textAlign: 'right',
-                            gap: '10px',
                             borderRadius: '7px',
                         },
                         endAdornment: (
                             <InputAdornment
                                 position="end"
                                 sx={{
+                                    padding: '0px, 10px, 0px, 0px',
                                     fontWeight: '400',
                                     letterSpacing: '0em',
                                     lineHeight: '16px',
+                                    gap: '10px',
                                 }}
                             >
                                 <Divider
@@ -416,27 +415,7 @@ export const MiniFilter: React.FC<{ value: string; onChange: (value: string) => 
                                         backgroundColor: theme.palette.primary.main,
                                     }}
                                 />
-                                <Box
-                                    sx={{
-                                        width: '30px',
-                                        height: '28px',
-                                        borderRadius: '10px',
-                                        display: 'flex',
-                                        justifyItems: 'center',
-                                        alignItems: 'center',
-                                    }}
-                                >
-                                    <img
-                                        color="#1E2775"
-                                        width="14px"
-                                        height="14px"
-                                        style={{
-                                            marginRight: '8px',
-                                            marginLeft: '8px',
-                                        }}
-                                        src="/icons/search-blue.svg"
-                                    />
-                                </Box>
+                                <img color="#1E2775" width="14px" height="14px" style={{}} src="/icons/search-blue.svg" />
                             </InputAdornment>
                         ),
                         startAdornment: <InputAdornment position="start" />,
@@ -506,7 +485,7 @@ const SelectCheckbox = <Option extends any, Group extends any>({
     });
 
     return (
-        <FormControl style={{ background: darkMode ? '#242424' : 'white', borderRadius: '0 7px 7px 0' }}>
+        <FormControl style={{ background: darkMode ? '#242424' : 'white', borderRadius: isOpen ? '7px 7px 0 0' : '7px' }}>
             <Select
                 displayEmpty
                 renderValue={() => title}
@@ -518,24 +497,32 @@ const SelectCheckbox = <Option extends any, Group extends any>({
                 MenuProps={{
                     PaperProps: {
                         style: {
-                            height: '180px',
+                            height: toTopBar ? '180px' : '333px',
                             minWidth: '219px',
                             backgroundColor: toTopBar ? '#EBEFFA' : '#FFFFFF',
                             borderRadius: '20px, 0px, 20px, 20px',
-                            padding: '5px, 10px, 5px, 10px',
+                            padding: '5px, 10px',
                             boxShadow: '-2px 2px 4px 0px #1E27754D',
                             top: '39px',
                             gap: '15px',
                         },
+                        sx: {
+                            overflowY: 'overlay',
+                            '::-webkit-scrollbar-track': {
+                                marginL: '17px',
+                                bgcolor: toTopBar ? '#EBEFFA' : '#FFFFFF',
+                                borderRadius: '5px',
+                            },
+                            '::-webkit-scrollbar-thumb': { background: toTopBar ? '' : '#EBEFFA' },
+                        },
                     },
                     transformOrigin: {
                         vertical: 'top',
-                        horizontal: toTopBar ? 162 : 170,
+                        horizontal: toTopBar ? 162 : 166,
                     },
                 }}
                 size={size}
                 sx={{
-                    borderRadius: isOpen ? '7px 7px 0 0' : '7px',
                     fontFamily: 'Rubik',
                     fontSize: '14px',
                     fontWeight: 400,
@@ -543,24 +530,12 @@ const SelectCheckbox = <Option extends any, Group extends any>({
                     '& .MuiOutlinedInput-notchedOutline': {
                         display: 'none',
                     },
+                    background: toTopBar ? '#EBEFFA' : '#FFFFFF',
+                    maxWidth: toTopBar ? '130px' : '131px',
+                    maxHeight: toTopBar ? '35px' : '34px',
+                    color: toTopBar ? '#1E2775' : '#787C9E',
+                    padding: toTopBar ? '6.99px, 13.98px' : '0px, 8px',
                 }}
-                style={
-                    toTopBar
-                        ? {
-                              backgroundColor: '#EBEFFA',
-                              maxWidth: '130px',
-                              maxHeight: '35px',
-                              color: '#1E2775',
-                              padding: '6.99px, 13.98px, 6.99px, 13.98px',
-                          }
-                        : {
-                              backgroundColor: '#FFFFFF',
-                              maxWidth: '131px',
-                              maxHeight: '34px',
-                              color: '#787C9E',
-                              padding: '0px, 8px, 0px, 8px',
-                          }
-                }
             >
                 <MiniFilter value={miniFilterValue} onChange={setMiniFilterValue} toTopBar={toTopBar} />
                 <ChooseAllMenuItem

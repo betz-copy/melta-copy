@@ -55,12 +55,7 @@ const ProcessTemplatesRow: React.FC = () => {
         <Grid item container marginBottom="30px" gap="30px">
             <Grid container spacing={1} alignItems="center">
                 <Grid item>
-                    <SearchInput
-                        onChange={setSearchText}
-                        borderRadius="7px"
-                        placeholder={i18next.t('globalSearch.searchProcesses')}
-                        endAdornmentChildren={<SearchIcon />}
-                    />
+                    <SearchInput onChange={setSearchText} borderRadius="7px" placeholder={i18next.t('globalSearch.searchProcesses')} />
                 </Grid>
                 <Grid item>
                     <IconButton

@@ -17,17 +17,7 @@ const SearchInput: React.FC<{
     value,
     onChange,
     onKeyDown,
-    endAdornmentChildren = (
-        <img
-            color="#1E2775"
-            width="14px"
-            height="14px"
-            style={{
-                marginLeft: '8px',
-            }}
-            src="/icons/search-blue.svg"
-        />
-    ),
+    endAdornmentChildren = <img color="#1E2775" width="14px" height="14px" src="/icons/search-blue.svg" />,
     placeholder = i18next.t('searchLabel'),
     size = 'small',
     borderRadius = '7px',
@@ -52,8 +42,8 @@ const SearchInput: React.FC<{
                 borderRadius,
                 backgroundColor: toTopBar ? '#EBEFFA' : '#FFFFFF',
                 height,
+                width,
                 padding: '0px, 8px, 0px, 8px',
-                gap: '10px',
                 '& .MuiOutlinedInput-notchedOutline': {
                     border: 'none',
                 },
@@ -62,12 +52,9 @@ const SearchInput: React.FC<{
                 style: {
                     borderRadius,
                     color: theme.palette.primary.main,
-                    height,
-                    width,
                     fontFamily: 'Rubik',
                     fontSize: '12px',
                     textAlign: 'right',
-                    gap: '10px',
                 },
                 endAdornment: (
                     <InputAdornment
@@ -76,6 +63,7 @@ const SearchInput: React.FC<{
                             fontWeight: '400',
                             letterSpacing: '0em',
                             lineHeight: '16px',
+                            gap: '10px',
                         }}
                     >
                         <Divider
@@ -85,22 +73,9 @@ const SearchInput: React.FC<{
                                 height: '20px',
                                 borderRadius: '1.5px',
                                 backgroundColor: theme.palette.primary.main,
-                                marginLeft: '8px',
                             }}
                         />
-
-                        <Box
-                            sx={{
-                                width: '30px',
-                                height: '28px',
-                                borderRadius: '10px',
-                                display: 'flex',
-                                justifyItems: 'center',
-                                alignItems: 'center',
-                            }}
-                        >
-                            {endAdornmentChildren}
-                        </Box>
+                        {endAdornmentChildren}
                     </InputAdornment>
                 ),
                 startAdornment: <InputAdornment position="start" />,
