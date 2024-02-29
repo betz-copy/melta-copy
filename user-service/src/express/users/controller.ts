@@ -13,4 +13,12 @@ export class UsersController {
     static async createUser(req: Request, res: Response) {
         res.json(UsersManager.createUser(req.body));
     }
+
+    static async updateUser(req: Request, res: Response) {
+        res.json(UsersManager.updateUser(req.params.id, req.body));
+    }
+
+    static async updateUsersBulk(req: Request, res: Response) {
+        res.json(UsersManager.updateUsersBulk(req.body));
+    }
 }

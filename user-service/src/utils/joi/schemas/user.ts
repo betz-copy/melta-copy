@@ -1,11 +1,12 @@
 import * as joi from 'joi';
 import { CompactPermissionsSchema } from './permission';
+import { partialSchema } from '.';
 
-export const userSchema = joi.object({
+export const baseUserSchema = joi.object({
     fullName: joi.string().required(),
     jobTitle: joi.string().required(),
     hierarchy: joi.string().required(),
-    mail: joi.string().email().required(),
+    mail: joi.string().required(),
     preferences: joi
         .object({
             darkMode: joi.boolean(),
@@ -17,5 +18,11 @@ export const userSchema = joi.object({
             digitalIdentitySource: joi.string().required(),
         })
         .required(),
+});
+
+export const userSchema = baseUserSchema.keys({
     permissions: CompactPermissionsSchema.required(),
 });
+
+export const partialBaseUserSchema = partialSchema(baseUserSchema);
+export const partialUserSchema = partialSchema(userSchema);

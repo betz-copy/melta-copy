@@ -1,7 +1,7 @@
 import * as joi from 'joi';
 import { mongoIdSchema } from '../../utils/joi/schemas';
 import { CompactPermissionsSchema } from '../../utils/joi/schemas/permission';
-import { userSchema } from '../../utils/joi/schemas/user';
+import { partialBaseUserSchema, userSchema } from '../../utils/joi/schemas/user';
 
 // GET /api/users/:id
 export const getUserByIdRequestSchema = joi.object({
@@ -30,11 +30,18 @@ export const createUserRequestSchema = joi.object({
     params: {},
 });
 
-// PATCH /api/users/:id/preferences
-export const updateUserPreferencesByIdRequestSchema = joi.object({
+// PATCH /api/users/:id
+export const updateUserRequestSchema = joi.object({
     query: {},
-    body: UserPreferencesSchema.required(),
+    body: partialBaseUserSchema.required(),
     params: {
         id: mongoIdSchema.required(),
     },
+});
+
+// PATCH /api/users/bulk
+export const updateUsersBulkRequestSchema = joi.object({
+    query: {},
+    body: joi.object().pattern(mongoIdSchema, partialBaseUserSchema.required()),
+    params: {},
 });

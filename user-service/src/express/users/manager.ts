@@ -2,6 +2,7 @@ import { FilterQuery } from 'mongoose';
 import { IBaseUser, IUser, IUserSearchBody } from './interface';
 import { UsersModel } from './model';
 import { PermissionsManager } from '../permissions/manager';
+import { typedObjectEntries } from '../../utils';
 
 export class UsersManager {
     static async getUserById(id: string) {
@@ -28,5 +29,15 @@ export class UsersManager {
         await PermissionsManager.syncCompactPermissionsOfUser(newUser._id, permissions);
 
         return newUser;
+    }
+
+    static async updateUser(id: string, updateData: Partial<IBaseUser>) {
+        return UsersModel.findByIdAndUpdate(id, updateData, { new: true }).lean().exec();
+    }
+
+    static async updateUsersBulk(bulkUpdateData: Record<string, IBaseUser>) {
+        await UsersModel.bulkWrite(
+            typedObjectEntries(bulkUpdateData).map(([id, updateData]) => ({ updateOne: { filter: { _id: id }, update: updateData } })),
+        );
     }
 }
