@@ -14,6 +14,7 @@ import ProcessInstanceManager from '../../instances/processes/manager';
 import { getProcessTemplatesByReviewerIdAggregation, transaction } from '../../../utils/mongoose';
 import StepTemplateManager from '../steps/manager';
 import config from '../../../config';
+import { IMongoStepTemplate } from '../steps/interface';
 
 type ProcessTemplateType<T extends boolean> = T extends true ? IMongoProcessTemplatePopulated & Document : IMongoProcessTemplate & Document;
 
@@ -75,25 +76,17 @@ class ProcessTemplateManager {
         });
     }
 
-    private static IsValuesEqual(updatedSteps, currSteps):boolean{
+    private static IsValuesEqual(updatedSteps: IMongoStepTemplate[], currSteps: IMongoStepTemplate[]): boolean {
         const idCountMap = new Map();
-
-        updatedSteps.forEach((step) => {
-        const count = idCountMap.has(step._id) ? idCountMap.get(step._id) + 1 : 1;
-        idCountMap.set(step._id, count);
-        });
-
-        currSteps.forEach((step) => {
-            if (!idCountMap.has(step._id)) {
-                return false;
-            }
-            const count = idCountMap.get(step._id);
-            if (count === 1) {
-                idCountMap.delete(step._id);
-            } else {
-                idCountMap.set(step._id, count - 1);
-            }
-        });
+        updatedSteps.forEach(updatedStep => {
+           idCountMap.set(updatedStep._id,1);
+       });
+       for (const currStep of currSteps) {
+          if (!idCountMap.has(currStep._id.toString())) {
+              return false;
+           }
+            idCountMap.delete(currStep._id.toString());
+        };
         return idCountMap.size === 0;
     }
 
@@ -102,8 +95,6 @@ class ProcessTemplateManager {
         if (processInstances.length === 0) {
             return;
         }
-        console.log("currTemplate.steps", currTemplate.steps);
-        console.log("updatedTemplate.steps", updatedTemplate.steps);
         
         const { details: updatedDetails, name: updatedName, steps: updatedSteps } = updatedTemplate;
         if (updatedName !== currTemplate.name) throw new ServiceError(400, 'can not change step template name');
@@ -113,9 +104,10 @@ class ProcessTemplateManager {
             // updatedDetails.properties.required,
             // currTemplate.details.properties.required,
         );
-        
+               
         if (updatedSteps.length !== currTemplate.steps.length) throw new ServiceError(400, 'can not delete or add steps');
-
+        if (!this.IsValuesEqual(updatedSteps, currTemplate.steps)) throw new ServiceError(400, `values are not equal`);
+        
         updatedSteps.forEach((step, index) => {
             const currStep = currTemplate.steps[index];            
             // if (step.name !== currStep.name) throw new ServiceError(400, `can not change step[${index}] name`);
@@ -126,13 +118,11 @@ class ProcessTemplateManager {
                 // currStep.properties.required,
             );
         });
-
-        if (!this.IsValuesEqual(updatedSteps, currTemplate.steps)) throw new ServiceError(400, `values are not equal`);
     }
 
     static async updateTemplate(id: string, updatedData: IMongoProcessTemplatePopulated): Promise<IMongoProcessTemplatePopulated> {
         const currProcessTemplate = await this.getProcessTemplateById(id);
-        await this.throwIfCantUpdateProcessTemplate(updatedData, currProcessTemplate);
+        await this.throwIfCantUpdateProcessTemplate(updatedData, currProcessTemplate);        
         return transaction(async (session) => {
             const stepsIds = await StepTemplateManager.updateStepsTemplates(updatedData.steps, session);
             return ProcessTemplateModel.findByIdAndUpdate(id, { ...updatedData, steps: stepsIds }, { new: true, session })
