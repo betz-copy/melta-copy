@@ -56,24 +56,26 @@ class ProcessTemplateManager {
     private static validateProperties(
         updatedProperties: Record<string, IProcessSingleProperty>,
         currProperties: Record<string, IProcessSingleProperty>,
-        // updatedPropertiesRequired: string[] = [],
-        // currPropertiesRequired: string[] = [],
-    ) {
-        // if (updatedPropertiesRequired.some((reqField) => !currPropertiesRequired.includes(reqField))) {
-        //     throw new ServiceError(400, 'can not update required field');
-        // }
+        updatedPropertiesRequired: string[] = [],
+        currPropertiesRequired: string[] = [],
+    ) {        
+        if (updatedPropertiesRequired.some((reqField) => !currPropertiesRequired.includes(reqField))) {
+            throw new ServiceError(400, 'can not update required field');
+        }        
         
         Object.entries(currProperties).forEach(([key, value]) => {
             const newValue = updatedProperties[key];
-            if (newValue) {
-            // if (!newValue) throw new ServiceError(400, 'can not remove property');
+            console.log({updatedProperties});
+            
+            if (newValue) {  
+            if (!newValue) throw new ServiceError(400, 'can not remove property');
             if (value.type !== newValue.type) throw new ServiceError(400, 'can not change property type');
             if (value.format !== newValue.format) throw new ServiceError(400, 'can not change property format');
             if (value.enum && !value.enum?.every((val) => newValue.enum?.includes(val)))
                 throw new ServiceError(400, 'can not remove options from enum');   
-            }
-                     
+            }         
         });
+        
     }
 
     private static IsValuesEqual(updatedSteps: IMongoStepTemplate[], currSteps: IMongoStepTemplate[]): boolean {
@@ -101,21 +103,21 @@ class ProcessTemplateManager {
         this.validateProperties(
             updatedDetails.properties.properties,
             currTemplate.details.properties.properties,
-            // updatedDetails.properties.required,
-            // currTemplate.details.properties.required,
+            updatedDetails.properties.required,
+            currTemplate.details.properties.required,
         );
                
         if (updatedSteps.length !== currTemplate.steps.length) throw new ServiceError(400, 'can not delete or add steps');
         if (!this.IsValuesEqual(updatedSteps, currTemplate.steps)) throw new ServiceError(400, `values are not equal`);
-        
-        updatedSteps.forEach((step, index) => {
-            const currStep = currTemplate.steps[index];            
-            // if (step.name !== currStep.name) throw new ServiceError(400, `can not change step[${index}] name`);
+
+        updatedSteps.forEach((step, index) => {            
+            const currStep = currTemplate.steps.find(currStep => step._id.toString() === currStep._id.toString());                        
+            if (step.name !== currStep!.name) throw new ServiceError(400, `can not change step[${index}] name`);
             this.validateProperties(
                 step.properties.properties,
-                currStep.properties.properties,
-                // step.properties.required,
-                // currStep.properties.required,
+                currStep!.properties.properties,
+                step.properties.required,
+                currStep!.properties.required,
             );
         });
     }
