@@ -264,7 +264,7 @@ interface CategoryEntitiesBoxProps {
         },
         unknown
     >;
-    loadedEntityTemplateId;
+    loadedEntityTemplateId: string;
 }
 
 const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
