@@ -1,5 +1,5 @@
 import * as joi from 'joi';
-import { PermissionScopeOptions, PermissionType, PermissionTypeOptions } from '../../../express/permissions/interface';
+import { PermissionType } from '../../../../express/permissions/interface';
 import {
     AdminPermissionMetadataSchema,
     InstancesPermissionMetadataSchema,
@@ -7,11 +7,8 @@ import {
     ProcessesPermissionMetadataSchema,
     RulesPermissionMetadataSchema,
     TemplatesPermissionMetadataSchema,
-} from './permissionMetadata';
-import { UnknownPermissionTypeError } from '../../../express/permissions/errors';
-
-export const PermissionScopeSchema = joi.string().valid(...PermissionScopeOptions);
-export const PermissionTypeSchema = joi.string().valid(...PermissionTypeOptions);
+} from './metadata';
+import { UnknownPermissionTypeError } from '../../../../express/permissions/errors';
 
 const getCompactPermissionSchema = (allowNull: boolean = false) => {
     return joi.custom((value) => {

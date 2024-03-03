@@ -1,6 +1,6 @@
 import * as joi from 'joi';
-import { IInstancePermissionOrderedHierarchy } from '../../../express/permissions/interface/permissions';
-import { PermissionScopeSchema } from './permission';
+import { IInstancePermissionOrderedHierarchy } from '../../../../express/permissions/interface/permissions';
+import { PermissionScopeSchema } from '.';
 
 const getPermissionMetadataSchema = (classHierarchy: readonly string[]) => {
     const [className, ...restOfHierarchy] = classHierarchy;

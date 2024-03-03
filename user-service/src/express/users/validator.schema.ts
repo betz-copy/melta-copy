@@ -1,6 +1,6 @@
 import * as joi from 'joi';
 import { mongoIdSchema } from '../../utils/joi/schemas';
-import { CompactPermissionsSchema } from '../../utils/joi/schemas/permission';
+import { CompactPermissionsSchema } from '../../utils/joi/schemas/permission/compact';
 import { partialBaseUserSchema, userSchema } from '../../utils/joi/schemas/user';
 
 // GET /api/users/:id

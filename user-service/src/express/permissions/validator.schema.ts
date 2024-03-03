@@ -1,6 +1,6 @@
 import * as joi from 'joi';
 import { mongoIdSchema } from '../../utils/joi/schemas';
-import { CompactNullablePermissionsSchema } from '../../utils/joi/schemas/permission';
+import { CompactNullablePermissionsSchema } from '../../utils/joi/schemas/permission/compact';
 
 // GET /api/permissions/compact
 export const getCompactPermissionsOfUserRequestSchema = joi.object({
