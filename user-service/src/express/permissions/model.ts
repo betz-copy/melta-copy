@@ -1,5 +1,5 @@
 import { Schema, model } from 'mongoose';
-import config from '../../config';
+import { config } from '../../config';
 import { PermissionTypeOptions } from './interface';
 import { IPermission } from './interface/permissions';
 

@@ -19,10 +19,8 @@ export const baseUserSchema = joi.object({
         })
         .required(),
 });
+export const partialBaseUserSchema = partialSchema(baseUserSchema);
 
 export const userSchema = baseUserSchema.keys({
     permissions: CompactPermissionsSchema.required(),
 });
-
-export const partialBaseUserSchema = partialSchema(baseUserSchema);
-export const partialUserSchema = partialSchema(userSchema);

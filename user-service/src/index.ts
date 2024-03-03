@@ -1,14 +1,14 @@
 /* eslint-disable no-console */
 import * as mongoose from 'mongoose';
 import Server from './express/server';
-import config from './config';
+import { config } from './config';
 
 const { mongo, service } = config;
 
 const initializeMongo = async () => {
     console.log('Connecting to Mongo...');
 
-    await mongoose.connect(mongo.url, { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false, useCreateIndex: true });
+    await mongoose.connect(mongo.url);
 
     console.log('Mongo connection established');
 };

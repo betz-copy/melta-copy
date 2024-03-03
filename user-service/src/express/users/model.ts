@@ -1,6 +1,6 @@
 import * as mongoose from 'mongoose';
 import { IBaseUser } from './interface';
-import config from '../../config';
+import { config } from '../../config';
 
 const UserSchema = new mongoose.Schema(
     {

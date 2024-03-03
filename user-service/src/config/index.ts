@@ -1,7 +1,7 @@
 import * as env from 'env-var';
 import './dotenv';
 
-const config = {
+export const config = {
     service: {
         port: env.get('PORT').required().asIntPositive(),
     },
@@ -11,5 +11,3 @@ const config = {
         usersCollectionName: env.get('MONGO_USERS_COLLECTION_NAME').default('users').asString(),
     },
 };
-
-export default config;
