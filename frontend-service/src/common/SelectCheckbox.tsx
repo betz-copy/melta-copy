@@ -484,6 +484,17 @@ const SelectCheckbox = <Option extends any, Group extends any>({
         return isSelectedOptionInOptionsFiltered;
     });
 
+    let horizontalOrigin = 0;
+    if (toTopBar) {
+        horizontalOrigin = 162;
+    } else if (title === i18next.t('systemManagement.destinationTemplates')) {
+        horizontalOrigin = 166;
+    } else if (title === i18next.t('systemManagement.sourceTemplates')) {
+        horizontalOrigin = 160;
+    } else if (title === i18next.t('categories')) {
+        horizontalOrigin = 171;
+    }
+
     return (
         <FormControl style={{ background: darkMode ? '#242424' : 'white', borderRadius: isOpen ? '7px 7px 0 0' : '7px' }}>
             <Select
@@ -500,8 +511,8 @@ const SelectCheckbox = <Option extends any, Group extends any>({
                             height: toTopBar ? '180px' : '333px',
                             minWidth: '219px',
                             backgroundColor: toTopBar ? '#EBEFFA' : '#FFFFFF',
-                            borderRadius: '20px, 0px, 20px, 20px',
-                            padding: '5px, 10px',
+                            borderRadius: toTopBar ? '20px 0px 20px 20px' : '20px 0px 20px 20px',
+                            padding: toTopBar ? '5px, 10px' : '10px, 10px, 5px, 10px',
                             boxShadow: '-2px 2px 4px 0px #1E27754D',
                             top: '39px',
                             gap: '15px',
@@ -509,7 +520,7 @@ const SelectCheckbox = <Option extends any, Group extends any>({
                         sx: {
                             overflowY: 'overlay',
                             '::-webkit-scrollbar-track': {
-                                marginL: '17px',
+                                marginY: '1rem',
                                 bgcolor: toTopBar ? '#EBEFFA' : '#FFFFFF',
                                 borderRadius: '5px',
                             },
@@ -518,7 +529,7 @@ const SelectCheckbox = <Option extends any, Group extends any>({
                     },
                     transformOrigin: {
                         vertical: 'top',
-                        horizontal: toTopBar ? 162 : 166,
+                        horizontal: horizontalOrigin,
                     },
                 }}
                 size={size}
@@ -527,6 +538,7 @@ const SelectCheckbox = <Option extends any, Group extends any>({
                     fontSize: '14px',
                     fontWeight: 400,
                     boxShadow: 'none',
+                    borderRadius: isOpen ? '7px 7px 0 0' : '7px',
                     '& .MuiOutlinedInput-notchedOutline': {
                         display: 'none',
                     },
