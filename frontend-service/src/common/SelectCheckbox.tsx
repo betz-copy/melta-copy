@@ -1,21 +1,8 @@
-import React, { Fragment, PropsWithChildren, Key, Dispatch, SetStateAction, useState, useEffect } from 'react';
+import React, { Fragment, PropsWithChildren, Key, Dispatch, SetStateAction, useState } from 'react';
 import i18next from 'i18next';
 import lodashGroupBy from 'lodash.groupby';
 import lodashUniqby from 'lodash.uniqby';
-import {
-    FormControl,
-    Grid,
-    Typography,
-    ListItemText,
-    MenuItem,
-    Select,
-    Checkbox,
-    SxProps,
-    Theme,
-    TextField,
-    Divider,
-    OutlinedInput,
-} from '@mui/material';
+import { FormControl, Grid, Typography, ListItemText, MenuItem, Select, Checkbox, SxProps, Theme, TextField, Divider } from '@mui/material';
 import { useSelector } from 'react-redux';
 import { DragDropContext, Draggable, Droppable, DropResult } from 'react-beautiful-dnd';
 import { DragHandle as DragHandleIcon } from '@mui/icons-material';
@@ -230,7 +217,7 @@ const getOptionsAndGroupsMiniFiltered = <Option extends any, Group extends any>(
     getOptionLabel: SelectCheckboxProps<Option, Group>['getOptionLabel'],
     groupsProps: NonNullable<SelectCheckboxProps<Option, Group>['groupsProps']>,
 ) => {
-    const optionsFilteredByLabel = options.filter((option) => getOptionLabel(option).includes(miniFilterValue));
+    const optionsFilteredByLabel = options.filter((option) => getOptionLabel(option)?.includes(miniFilterValue));
     if (!groupsProps.useGroups) return { optionsFiltered: optionsFilteredByLabel, groupsFiltered: undefined };
 
     const { groups, getGroupOfOption, getGroupId, getGroupLabel } = groupsProps;

@@ -20,7 +20,6 @@ export class NotificationsManager {
         query: Omit<IBasicNotificationQuery, 'types'>,
     ): Promise<INotificationGroupCountDetails> {
         const notificationCountDetails: INotificationGroupCountDetails = { total: 0, groups: {} };
-
         const [totalCount] = await Promise.all([
             this.getNotificationCount(query),
 
@@ -28,23 +27,10 @@ export class NotificationsManager {
                 notificationCountDetails.groups[group] = await this.getNotificationCount({ ...query, types: groups[group] });
             }),
         ]);
-        console.log({ totalCount }, { groups }, { query });
 
         notificationCountDetails.total = totalCount;
 
         return notificationCountDetails;
-
-        //        const notificationCountDetails: INotificationGroupCountDetails = { total: 0, groups: {} };
-        //        const groupCounts = await Promise.all(
-        //            Object.keys(groups).map(async (group) => {
-        //                const count = await this.getNotificationCount({ ...query, types: groups[group] });
-        //                notificationCountDetails.groups[group] = count;
-        //                return count;
-        //            }),
-        //        );
-        //        notificationCountDetails.total = groupCounts.reduce((acc, curr) => acc + curr, 0);
-
-        // return notificationCountDetails;
     }
 
     public static async getNotificationById(notificationId: string): Promise<INotification> {
@@ -84,7 +70,7 @@ export class NotificationsManager {
 
     private static handleQuery({ viewerId, types, startDate, endDate, ...rest }: IBasicNotificationQuery) {
         const query: FilterQuery<INotificationDocument> = { ...rest };
-        query.type = { $in: types };
+        if (types) query.type = { $in: types };
         if (viewerId) query.viewers = viewerId;
 
         if (startDate || endDate) {
