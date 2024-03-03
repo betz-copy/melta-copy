@@ -17,15 +17,9 @@
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "forceConsistentCasingInFileNames": true,
-    "skipLibCheck": true,
     "outDir": "./dist/",
-    "lib": [
-      "ES2020.Promise",
-      "esnext", // this is for Array.flat
-      "DOM" // for supertest Blob issue]
-    ]
+    "lib": ["ES2020.Promise"],
+    "skipLibCheck": true
   },
-  "include": [
-    "src/**/*"
-  ]
+  "include": ["src/**/*"]
 }
