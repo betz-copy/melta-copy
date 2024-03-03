@@ -82,7 +82,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
 }) => {
     const [isHoverOnCard, setIsHoverOnCard] = useState(false);
     const theme = useTheme();
-    const { properties, propertiesOrder, propertiesPreview, propertiesTypeOrder } = entityTemplate;
+    const { properties, propertiesOrder, propertiesPreview, propertiesTypeOrder, uniqueConstraints } = entityTemplate;
 
     return (
         <ViewingCard
@@ -139,6 +139,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                                             propertiesOrder,
                                             propertiesPreview,
                                             propertiesTypeOrder,
+                                            uniqueConstraints,
                                         },
                                     })
                                 }
@@ -263,6 +264,7 @@ interface CategoryEntitiesBoxProps {
         },
         unknown
     >;
+    loadedEntityTemplateId;
 }
 
 const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
