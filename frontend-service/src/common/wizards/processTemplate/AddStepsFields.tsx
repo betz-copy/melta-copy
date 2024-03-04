@@ -162,14 +162,15 @@ const AddStepsFields: React.FC<StepComponentProps<ProcessTemplateWizardValues, '
                                                         {...draggableProvided.dragHandleProps}
                                                         expanded={expandedIndex === index}
                                                         onChange={() => handleChange(index)}
+                                                        style={{
+                                                            ...draggableProvided.draggableProps.style,
+                                                            border: isFieldBlockTouched && errors.steps?.[index] ? '1px solid red' : '',
+                                                        }}
                                                         // eslint-disable-next-line react/no-array-index-key
                                                         key={index}
                                                         TransitionProps={{ unmountOnExit: true }} // performance issues with many steps
                                                     >
-                                                        <AccordionSummary
-                                                            expandIcon={<ExpandMoreIcon />}
-                                                            style={{ border: isFieldBlockTouched && errors.steps?.[index] ? '1px solid red' : '' }}
-                                                        >
+                                                        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                                                             <img src="/icons/draggable-icon.svg" />
                                                             <Typography>{` ${i18next.t('wizard.processTemplate.level')}: ${
                                                                 values.steps[index].displayName || ''
