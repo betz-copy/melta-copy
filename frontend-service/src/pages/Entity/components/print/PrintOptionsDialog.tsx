@@ -1,5 +1,5 @@
 import React from 'react';
-import { Dialog, DialogTitle, DialogContent, Grid, Button, Checkbox, FormControlLabel, DialogActions, IconButton } from '@mui/material';
+import { Dialog, DialogTitle, DialogContent, Grid, Button, FormControlLabel, DialogActions, IconButton } from '@mui/material';
 import { PrintOutlined, CloseOutlined } from '@mui/icons-material';
 import i18next from 'i18next';
 import { SelectCheckbox } from '../../../../common/SelectCheckbox';
@@ -7,6 +7,7 @@ import { IMongoRelationshipTemplatePopulated } from '../../../../interfaces/rela
 import { IMongoCategory } from '../../../../interfaces/categories';
 import { IEntityExpanded } from '../../../../interfaces/entities';
 import { IConnectionTemplateOfExpandedEntity } from '../..';
+import { MeltaCheckbox } from '../../../../common/MeltaCheckbox';
 
 const PrintOptionsDialog: React.FC<{
     open: boolean;
@@ -88,19 +89,21 @@ const PrintOptionsDialog: React.FC<{
                     <Grid paddingTop="25px">
                         <Grid>
                             <FormControlLabel
-                                control={<Checkbox checked={options.showDate} onChange={() => options.setShowDate((cur) => !cur)} />}
+                                control={<MeltaCheckbox checked={options.showDate} onChange={() => options.setShowDate((cur) => !cur)} />}
                                 label={i18next.t('entityPage.print.showDate')}
                             />
                         </Grid>
                         <Grid>
                             <FormControlLabel
-                                control={<Checkbox checked={options.showDisabled} onChange={() => options.setShowDisabled((cur) => !cur)} />}
+                                control={<MeltaCheckbox checked={options.showDisabled} onChange={() => options.setShowDisabled((cur) => !cur)} />}
                                 label={i18next.t('entityPage.print.showDisabled')}
                             />
                         </Grid>
                         <Grid>
                             <FormControlLabel
-                                control={<Checkbox checked={options.showEntityDates} onChange={() => options.setShowEntityDates((cur) => !cur)} />}
+                                control={
+                                    <MeltaCheckbox checked={options.showEntityDates} onChange={() => options.setShowEntityDates((cur) => !cur)} />
+                                }
                                 label={i18next.t('entityPage.print.showEntityDates')}
                             />
                         </Grid>
