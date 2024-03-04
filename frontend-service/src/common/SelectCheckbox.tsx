@@ -447,13 +447,11 @@ const SelectCheckbox = <Option extends any, Group extends any>({
         return isSelectedOptionInOptionsFiltered;
     });
 
-    let horizontalOrigin = 162;
-    if (title === i18next.t('systemManagement.destinationTemplates')) {
-        horizontalOrigin = 166;
+    let horizontalOrigin = 172;
+    if (title === i18next.t('systemManagement.destinationTemplates') || title === i18next.t('categories')) {
+        horizontalOrigin = 181;
     } else if (title === i18next.t('systemManagement.sourceTemplates')) {
-        horizontalOrigin = 160;
-    } else if (title === i18next.t('categories')) {
-        horizontalOrigin = 171;
+        horizontalOrigin = 177;
     }
 
     return (
