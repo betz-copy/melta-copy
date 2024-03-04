@@ -4,6 +4,7 @@ import { UsersModel } from './model';
 import { PermissionsManager } from '../permissions/manager';
 import { typedObjectEntries } from '../../utils';
 import { UserDoesNotExistError } from './errors';
+import { ICompactPermissions } from '../permissions/interface/permissions';
 
 export class UsersManager {
     static async getUserById(id: string): Promise<IUser> {
@@ -11,10 +12,20 @@ export class UsersManager {
         return this.appendPermissionsToUser(baseUser);
     }
 
-    static async searchUsers(filter: IUserSearchBody): Promise<IUser[]> {
-        const { permissions, ...restOfFilter } = filter;
+    static async searchUsers(search: string, permissions: ICompactPermissions, limit: number, step: number): Promise<IUser[]> {
+        const query: FilterQuery<IBaseUser> = {};
 
-        const query: FilterQuery<IBaseUser> = restOfFilter;
+        if (search) {
+            const searchRegex = { $regex: new RegExp(search, 'i') };
+
+            query.$or = [
+                { fullName: searchRegex },
+                { jobTitle: searchRegex },
+                { hierarchy: searchRegex },
+                { mail: searchRegex },
+                { 'externalMetadata.kartoffelId': searchRegex },
+            ];
+        }
 
         if (permissions) {
             const simplePermissions = await PermissionsManager.searchByCompactPermissions(permissions);
@@ -22,7 +33,10 @@ export class UsersManager {
             query.$in = simplePermissions.map(({ userId }) => userId);
         }
 
-        const baseUsers = await UsersModel.find(query).lean().exec();
+        const baseUsers = await UsersModel.find(query, { limit, skip: step * limit })
+            .lean()
+            .exec();
+
         return this.appendPermissionsToUsers(baseUsers);
     }
 

@@ -7,7 +7,9 @@ export class UsersController {
     }
 
     static async searchUsers(req: Request, res: Response) {
-        res.json(await UsersManager.searchUsers(req.body));
+        const { search, permissions, limit, step } = req.body;
+
+        res.json(await UsersManager.searchUsers(search, permissions, limit, step));
     }
 
     static async createUser(req: Request, res: Response) {

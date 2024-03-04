@@ -2,6 +2,9 @@ import * as joi from 'joi';
 import { mongoIdSchema } from '../../utils/joi/schemas';
 import { CompactPermissionsSchema } from '../../utils/joi/schemas/permission/compact';
 import { partialBaseUserSchema, userSchema } from '../../utils/joi/schemas/user';
+import { config } from '../../config';
+
+const { maxFindLimit } = config.mongo;
 
 // GET /api/users/:id
 export const getUserByIdRequestSchema = joi.object({
@@ -16,9 +19,10 @@ export const getUserByIdRequestSchema = joi.object({
 export const searchUsersRequestSchema = joi.object({
     query: {},
     body: joi.object({
-        fullName: joi.string(),
-        jobTitle: joi.string(),
+        search: joi.string(),
         permissions: CompactPermissionsSchema,
+        limit: joi.number().integer().min(1).max(maxFindLimit).required(),
+        step: joi.number().integer().min(0).default(0),
     }),
     params: {},
 });

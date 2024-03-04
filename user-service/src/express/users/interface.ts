@@ -17,5 +17,3 @@ export interface IBaseUser {
 export interface IUser extends IBaseUser {
     permissions: ICompactPermissions;
 }
-
-export type IUserSearchBody = Partial<Pick<IUser, 'fullName' | 'jobTitle' | 'permissions'>>;
