@@ -1,5 +1,5 @@
 import React, { ReactNode } from 'react';
-import { BaseTextFieldProps, Box, Divider, InputAdornment, TextField, useTheme } from '@mui/material';
+import { BaseTextFieldProps, Divider, InputAdornment, TextField, useTheme } from '@mui/material';
 import i18next from 'i18next';
 
 const SearchInput: React.FC<{
