@@ -3,7 +3,6 @@ import i18next from 'i18next';
 import { BaseTextFieldProps, CircularProgress, Grid, Icon, IconButton, ToggleButton, ToggleButtonGroup, Typography, useTheme } from '@mui/material';
 import CardsViewIcon from '@mui/icons-material/RecentActors';
 import AddIcon from '@mui/icons-material/Add';
-import SearchIcon from '@mui/icons-material/Search';
 import DownloadIcon from '@mui/icons-material/VerticalAlignBottomOutlined';
 import { useSelector } from 'react-redux';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
@@ -24,7 +23,9 @@ export const GlobalSearchBar: React.FC<{
     placeholder?: string;
     size?: BaseTextFieldProps['size'];
     toTopBar?: boolean;
-}> = ({ inputValue, setInputValue, onSearch, borderRadius, placeholder, size, toTopBar = false }) => {
+    height?: string;
+    width?: string;
+}> = ({ inputValue, setInputValue, onSearch, borderRadius, placeholder, size, toTopBar = false, height, width }) => {
     const valueForSearchButtonRef = useRef(inputValue ?? '');
     const theme = useTheme();
 
@@ -47,13 +48,24 @@ export const GlobalSearchBar: React.FC<{
                     sx={{ padding: 0 }}
                     disableRipple
                 >
-                    <SearchIcon />
+                    <img
+                        color="#1E2775"
+                        width="14px"
+                        height="14px"
+                        style={{
+                            top: '7px',
+                            left: '8px',
+                        }}
+                        src="/icons/search-blue.svg"
+                    />
                 </IconButton>
             }
             placeholder={placeholder}
             size={size}
             borderRadius={borderRadius}
             toTopBar={toTopBar}
+            height={height}
+            width={width}
         />
     );
 };

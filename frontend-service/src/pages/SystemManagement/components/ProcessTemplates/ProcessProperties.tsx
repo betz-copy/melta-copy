@@ -26,6 +26,7 @@ export const ProcessProperties: React.FC<ProcessPropertiesProps> = ({ properties
                     ) : (
                         <img style={{ marginLeft: '10px' }} src="/icons/Open-Arrow.svg" />
                     )}
+
                     <Typography color="#9398C2">{i18next.t('wizard.processTemplate.properties')}</Typography>
                 </Button>
             </Grid>
