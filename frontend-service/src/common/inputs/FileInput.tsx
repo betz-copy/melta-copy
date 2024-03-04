@@ -1,8 +1,10 @@
 import React, { MouseEventHandler, useEffect, useRef, useState } from 'react';
 import { IconButton, Grid, useTheme, Typography } from '@mui/material';
-import { CloseOutlined as DeleteIcon, FilePresent as FileIcon } from '@mui/icons-material';
+import { CloseOutlined as DeleteIcon } from '@mui/icons-material';
 import { Accept, useDropzone } from 'react-dropzone';
 import i18next from 'i18next';
+import FileIcon from '../FilePreview/FileIcon';
+import { getFileExtension } from '../../utils/getFileType';
 
 interface FileInputProps {
     fileName: string | undefined;
@@ -77,7 +79,7 @@ const FileInput: React.FC<FileInputProps> = ({ fileName, onDeleteFile, onDropFil
                         <Grid container item flexDirection="row" alignItems="center" flexWrap="nowrap">
                             <Grid item container xs={1} justifyContent="center" paddingTop="5px">
                                 <Grid item>
-                                    <FileIcon fontSize="medium" />
+                                    <FileIcon extension={getFileExtension(fileName)} style={{ height: '20px' }} />
                                 </Grid>
                             </Grid>
                             <Grid item xs={10}>

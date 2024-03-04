@@ -17,6 +17,7 @@ interface AttachmentEditCardProps {
     errors?: FormikErrors<CommonFormInputProperties>;
     onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
     remove: (index: number) => any;
+    supportChangeToRequiredWithInstances: boolean;
 }
 
 export const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
@@ -29,6 +30,7 @@ export const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
     errors,
     onChange,
     remove,
+    supportChangeToRequiredWithInstances,
 }) => {
     const name = `attachmentProperties[${index}].name`;
     const touchedName = touched?.name;
@@ -92,7 +94,11 @@ export const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
                                                             name={required}
                                                             onChange={onChange}
                                                             checked={value.required}
-                                                            disabled={isEditMode && areThereAnyInstances}
+                                                            disabled={(supportChangeToRequiredWithInstances
+                                                                ? false
+                                                                : isEditMode &&
+                                                                  areThereAnyInstances &&
+                                                                  (isNewProperty || (!isNewProperty && !initialValue?.required)))}
                                                         />
                                                     }
                                                     label={i18next.t('validation.required')}

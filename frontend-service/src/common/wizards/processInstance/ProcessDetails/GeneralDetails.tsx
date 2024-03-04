@@ -14,11 +14,11 @@ import { JSONSchemaFormik } from '../../../inputs/JSONSchemaFormik';
 import { BlueTitle } from '../../../BlueTitle';
 import { pickProcessFieldsPropertiesSchema } from '../../../../utils/pickFieldsPropertiesSchema';
 import { InstanceFileInput } from '../../../inputs/InstanceFilesInput/InstanceFileInput';
-import { OpenPreviewButton } from '../../../OpenPreviewButton';
 import { setInitialStepsObject } from '../../../../utils/processWizard/steps';
 import { EntityReference } from '../EntityReference';
 import { ProcessStepValues } from '../ProcessSteps';
 import { initDetailsValues } from './detailsFormik';
+import { OpenPreviewButton } from '../../../FilePreview/OpenPreviewButton';
 
 export const SchemaForm = ({ viewMode, values, errors, touched, setFieldValue, setFieldTouched }) => {
     return (

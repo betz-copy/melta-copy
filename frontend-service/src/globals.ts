@@ -105,7 +105,8 @@ export const environment = {
     },
     agGrid: {
         rowCount: 5,
-        expandedRowCount: 10,
+        defaultExpandedRowCount: 13,
+        defaultRowHeight: 50,
     },
     activityLog: {
         infiniteScrollPageCount: 10,

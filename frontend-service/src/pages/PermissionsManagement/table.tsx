@@ -14,6 +14,9 @@ import ScrollContainer from 'react-indiana-drag-scroll';
 import { IMongoCategory } from '../../interfaces/categories';
 import { IPermissionsOfUser } from '../../services/permissionsService';
 import { IUser } from '../../services/kartoffelService';
+import { environment } from '../../globals';
+
+const { defaultRowHeight } = environment.agGrid;
 
 const defaultColDef: ColDef<IPermissionsOfUser> = {
     editable: false,
@@ -194,7 +197,7 @@ const Table: React.FC<{
             getRowId={({ data: permissionsOfUser }) => permissionsOfUser.user.id}
             pagination
             paginationAutoPageSize
-            rowHeight={50}
+            rowHeight={defaultRowHeight}
             rowStyle={{ alignItems: 'center' }}
             enableRtl
             enableCellTextSelection

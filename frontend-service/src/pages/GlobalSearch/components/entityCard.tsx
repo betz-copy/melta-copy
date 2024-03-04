@@ -5,7 +5,6 @@ import { useNavigate } from 'react-router-dom';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import i18next from 'i18next';
-import pickBy from 'lodash.pickby';
 import { CustomIcon } from '../../../common/CustomIcon';
 import { IEntity } from '../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
@@ -59,11 +58,6 @@ const EntityCard: React.FC<EntityCardProps> = ({
             .filter((property2) => !entityTemplate.propertiesPreview.includes(property2))
             .slice(0, 5 - entityTemplate.propertiesPreview.length),
     ];
-
-    const first5Props: IEntity['properties'] = pickBy(
-        entity.properties as IEntity['properties'],
-        (_value, key) => first5PropsKeys.includes(key) || key === '_id' || key === 'createdAt' || key === 'updatedAt' || key === 'disabled',
-    ) as IEntity['properties'];
 
     return (
         <Card raised variant={variant} sx={{ overflowX: 'auto', borderRadius: '15px', ...customCardStyle }}>
@@ -164,8 +158,10 @@ const EntityCard: React.FC<EntityCardProps> = ({
             {!open && (
                 <Grid container paddingLeft="90px" height="fit-content" minHeight="37px" alignItems="center">
                     <EntityProperties
-                        entityTemplate={{ ...entityTemplate, propertiesOrder: first5PropsKeys }}
-                        properties={first5Props}
+                        entityTemplate={entityTemplate}
+                        properties={entity.properties}
+                        overridePropertiesToShow={first5PropsKeys}
+                        mode="normal"
                         style={{
                             display: 'flex',
                             flexDirection: 'row',
@@ -197,6 +193,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
                         }}
                         innerStyle={{ flexBasis: '33.33%' }}
                         textWrap
+                        mode="normal"
                     />
                     <Grid container marginTop="20px">
                         <EntityDisableCheckbox isEntityDisabled={entity.properties.disabled} />
