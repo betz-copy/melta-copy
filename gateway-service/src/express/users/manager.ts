@@ -1,64 +1,25 @@
-import {
-    IKartoffelUser,
-    searchUsersByName,
-    getEntityById,
-    getUserByDigitalIdentity,
-    getUserByIdentifier,
-    isKartoffelId,
-    getUserById,
-    wrapKartoffelRequestForUiSearch,
-    isDomainUser,
-    isIdentifier,
-} from '../../externalServices/kartoffel';
-import { IUser } from './interface';
+import { UserService } from '../../externalServices/userService';
+import { ICompactPermissions } from '../../externalServices/userService/interfaces/permissions/permissions';
+import { IBaseUser, IUserSearchBody } from '../../externalServices/userService/interfaces/users';
 
 export class UsersManager {
-    private static getFormattedDisplayName(fullName: string, hierarchy?: string, jobTitle?: string) {
-        let displayName: string = fullName;
-        if (hierarchy && jobTitle) {
-            displayName += `- ${hierarchy}/${jobTitle}`;
-        } else if (hierarchy) {
-            displayName += `- ${hierarchy}`;
-        } else if (jobTitle) {
-            displayName += `- ${jobTitle}`;
-        }
-
-        return displayName;
+    static async getUserById(userId: string) {
+        return UserService.getUserById(userId);
     }
 
-    static kartoffelUserToUser(kartoffelUser: IKartoffelUser): IUser {
-        const { id, fullName, hierarchy, jobTitle, digitalIdentities, firstName, lastName } = kartoffelUser;
-
-        const displayName = UsersManager.getFormattedDisplayName(fullName, hierarchy, jobTitle);
-
-        return { id, displayName, firstName, lastName, fullName, digitalIdentities: digitalIdentities.map(({ uniqueId }) => ({ uniqueId })) };
+    static async searchUsers(searchBody: IUserSearchBody) {
+        return UserService.searchUsers(searchBody);
     }
 
-    static async getUserById(id: string) {
-        const kartoffelUser = await getEntityById(id);
-
-        return UsersManager.kartoffelUserToUser(kartoffelUser);
+    static async updateUserExternalMetadata(userId: string, externalMetadata: Partial<IBaseUser['externalMetadata']>) {
+        return UserService.updateUser(userId, { externalMetadata });
     }
 
-    static async searchUsers(search: string) {
-        if (isDomainUser(search)) {
-            const kartoffelUsers = await wrapKartoffelRequestForUiSearch(() => getUserByDigitalIdentity(search));
-            return kartoffelUsers.map(UsersManager.kartoffelUserToUser);
-        }
+    static async syncUser(userId: string) {
+        // TODO
+    }
 
-        if (isIdentifier(search)) {
-            const kartoffelUsers = await wrapKartoffelRequestForUiSearch(() => getUserByIdentifier(search));
-            return kartoffelUsers.map(UsersManager.kartoffelUserToUser);
-        }
-
-        if (isKartoffelId(search)) {
-            const kartoffelUsers = await wrapKartoffelRequestForUiSearch(() => getUserById(search));
-            return kartoffelUsers.map(UsersManager.kartoffelUserToUser);
-        }
-
-        const kartoffelUsers = await searchUsersByName(search);
-        return kartoffelUsers.map(UsersManager.kartoffelUserToUser);
+    static async syncUserPermissions(userId: string, permissions: ICompactPermissions) {
+        return UserService.syncUserPermissions(userId, permissions);
     }
 }
-
-export default UsersManager;

@@ -1,17 +1,45 @@
-import Joi from 'joi';
+import joi from 'joi';
 
-// GET /api/users/search?fullName=
-export const searchUsersRequestSchema = Joi.object({
-    params: {},
-    query: {
-        search: Joi.string().required(),
-    },
-    body: {},
+const UserExternalMetadataSchema = joi.object({
+    kartoffelId: joi.string().required(),
+    digitalIdentitySource: joi.string().required(),
 });
 
 // GET /api/users/:userId
-export const getUserById = Joi.object({
-    params: { userId: Joi.string().required() },
+export const getUserByIdRequestSchema = joi.object({
     query: {},
     body: {},
+    params: {
+        userId: joi.string().required(),
+    },
+});
+
+// POST /api/users/search
+export const searchUsersRequestSchema = joi.object({
+    query: {},
+    body: {
+        search: joi.string(),
+        permissions: joi.object(),
+        limit: joi.number().integer().required(),
+        step: joi.number().integer(),
+    },
+    params: {},
+});
+
+// PATCH /api/users/:userId/external
+export const updateUserExternalMetadataRequestSchema = joi.object({
+    query: {},
+    body: UserExternalMetadataSchema.required(),
+    params: {
+        userId: joi.string().required(),
+    },
+});
+
+// POST /api/users/:userId/permissions/sync
+export const syncUserPermissionsRequestSchema = joi.object({
+    query: {},
+    body: joi.object(),
+    params: {
+        userId: joi.string().required(),
+    },
 });

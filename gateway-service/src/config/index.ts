@@ -60,9 +60,10 @@ const config = {
         searchOfTemplateRoute: env.get('INSTANCE_SERVICE_SEARCH_OF_TEMPLATE_ROUTE').default('/search/template').asString(),
         requestTimeout: env.get('INSTANCE_SERVICE_REQUEST_TIMEOUT').default(10000).asIntPositive(),
     },
-    permissionService: {
-        baseUrl: env.get('PERMISSION_SERVICE_BASE_URL').required().asString(),
-        baseRoute: env.get('PERMISSION_SERVICE_BASE_ROUTE').default('/api/permissions').asString(),
+    userService: {
+        url: env.get('USER_SERVICE_BASE_URL').required().asString(),
+        usersRoute: env.get('USER_SERVICE_BASE_ROUTE').default('/api/users').asString(),
+        permissionsRoute: env.get('USER_SERVICE_BASE_ROUTE').default('/api/permissions').asString(),
         checkAuthorizationRoute: env.get('PERMISSION_SERVICE_CHECK_AUTHERIZATION_ROUTE').default('authorization').asString(),
         requestTimeout: env.get('PERMISSION_SERVICE_REQUEST_TIMEOUT').default(10000).asIntPositive(),
     },
