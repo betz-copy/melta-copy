@@ -39,7 +39,7 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
     const [openCalenders, setOpenCalendars] = useState<boolean>(false);
     const [notificationsToShowCheckbox, setNotificationsToShowCheckbox] = useState(notificationsMoreData[selectedGroup]);
     const [isCheckBoxClicked, setIsCheckBoxClicked] = useState(false);
-    console.log({ notificationsToShowCheckbox });
+    console.log('shirelll', { notificationsToShowCheckbox });
 
     const onSetStartDate = (newStartDateInput: Date | null) => {
         setStartDate(newStartDateInput);
@@ -137,7 +137,7 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                                 selectedOptions={notificationsToShowCheckbox}
                                 setSelectedOptions={setNotificationsToShowCheckbox}
                                 getOptionId={({ type }) => type}
-                                getOptionLabel={({ displayName }) => displayName}
+                                getOptionLabel={(option) => option.displayName()}
                                 size="small"
                                 overrideSx={{
                                     '& .MuiSelect-select': {

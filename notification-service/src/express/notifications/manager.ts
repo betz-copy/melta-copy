@@ -83,6 +83,8 @@ export class NotificationsManager {
                 query.createdAt.$lte = endDate;
             }
         }
+        console.log({ query });
+
         return query;
     }
 }

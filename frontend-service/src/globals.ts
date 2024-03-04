@@ -108,49 +108,50 @@ export const environment = {
                 {
                     color: '#DD3500',
                     type: NotificationType.ruleBreachRequest,
-                    displayName: i18next.t('notifications.displayNames.ruleBreachRequest'),
+                    displayName: () => i18next?.t('notifications.displayNames.ruleBreachRequest'),
+                    //  i18next?.isInitialized &&
                 },
             ],
             general: [
                 {
                     color: ' #FFAC2F',
                     type: NotificationType.ruleBreachAlert,
-                    displayName: i18next.t('notifications.displayNames.ruleBreachAlert'),
+                    displayName: () => i18next.t('notifications.displayNames.ruleBreachAlert'),
                 },
                 {
                     color: '#DD3500',
                     type: NotificationType.ruleBreachResponse,
-                    displayName: i18next.t('notifications.displayNames.ruleBreachResponse'),
+                    displayName: () => i18next.t('notifications.displayNames.ruleBreachResponse'),
                 },
                 {
                     color: '#BC8F8F',
                     type: NotificationType.archivedProcess,
-                    displayName: i18next.t('notifications.displayNames.archivedProcess'),
+                    displayName: () => i18next.t('notifications.displayNames.archivedProcess'),
                 },
                 {
                     color: '#FFD18C',
                     type: NotificationType.dateAboutToExpire,
-                    displayName: i18next.t('notifications.displayNames.dateAboutToExpire'),
+                    displayName: () => i18next.t('notifications.displayNames.dateAboutToExpire'),
                 },
                 {
                     color: '#CD5C5C',
                     type: NotificationType.deleteProcess,
-                    displayName: i18next.t('notifications.displayNames.deleteProcess'),
+                    displayName: () => i18next.t('notifications.displayNames.deleteProcess'),
                 },
                 {
                     color: '#FFD18C',
                     type: NotificationType.newProcess,
-                    displayName: i18next.t('notifications.displayNames.newProcess'),
+                    displayName: () => i18next.t('notifications.displayNames.newProcess'),
                 },
                 {
                     color: '#FF7979',
                     type: NotificationType.processReviewerUpdate,
-                    displayName: i18next.t('notifications.displayNames.processReviewerUpdate'),
+                    displayName: () => i18next.t('notifications.displayNames.processReviewerUpdate'),
                 },
                 {
                     color: '#7BE7FF',
                     type: NotificationType.processStatusUpdate,
-                    displayName: i18next.t('notifications.displayNames.processStatusUpdate'),
+                    displayName: () => i18next.t('notifications.displayNames.processStatusUpdate'),
                 },
             ],
         },

@@ -279,6 +279,8 @@ const ChooseAllMenuItem = <Option extends any, Group extends any>({
     optionsFiltered: Option[];
     getOptionId: SelectCheckboxProps<Option, Group>['getOptionId'];
 }) => {
+    console.log({ selectedOptionsFiltered }, { optionsFiltered });
+
     return (
         <MenuItem
             onClick={() => {
@@ -289,11 +291,17 @@ const ChooseAllMenuItem = <Option extends any, Group extends any>({
                             const isSelectedOptionInOptionsFiltered = optionsFiltered.some(
                                 (option) => getOptionId(option) === getOptionId(selectedOption),
                             );
+                            // console.log({ isSelectedOptionInOptionsFiltered });
+
                             return !isSelectedOptionInOptionsFiltered;
                         });
+                        console.log('dd', { selectedOptionsWithoutOptionsFiltered });
+
                         return selectedOptionsWithoutOptionsFiltered;
                     });
                 } else {
+                    console.log('hello i want all');
+
                     setSelectedOptions((prevSelectedOptions) => {
                         const newSelectedOptions = lodashUniqby([...prevSelectedOptions, ...optionsFiltered], getOptionId);
                         return newSelectedOptions;
@@ -325,6 +333,8 @@ const SelectCheckbox = <Option extends any, Group extends any>({
     overrideSx,
     handleCheckboxClick = () => {},
 }: SelectCheckboxProps<Option, Group>) => {
+    console.log({ selectedOptions });
+
     const [miniFilterValue, setMiniFilterValue] = useState('');
 
     const darkMode = useSelector((state: RootState) => state.darkMode);
@@ -335,6 +345,7 @@ const SelectCheckbox = <Option extends any, Group extends any>({
         const isSelectedOptionInOptionsFiltered = optionsFiltered.some((option) => getOptionId(option) === getOptionId(selectedOption));
         return isSelectedOptionInOptionsFiltered;
     });
+    console.log({ selectedOptionsFiltered });
 
     return (
         <FormControl sx={{ background: darkMode ? '#242424' : 'white' }}>
