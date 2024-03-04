@@ -1,5 +1,5 @@
 import { FilterQuery } from 'mongoose';
-import { IBaseUser, IUser, IUserSearchBody } from './interface';
+import { IBaseUser, IUser } from './interface';
 import { UsersModel } from './model';
 import { PermissionsManager } from '../permissions/manager';
 import { typedObjectEntries } from '../../utils';
