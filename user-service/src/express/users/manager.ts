@@ -27,7 +27,7 @@ export class UsersManager {
     }
 
     static async createUser({ permissions, ...userData }: Omit<IUser, '_id'>): Promise<IUser> {
-        const baseUser = await UsersModel.create(userData);
+        const baseUser = (await UsersModel.create(userData)).toObject();
 
         await PermissionsManager.syncCompactPermissionsOfUser(baseUser._id, permissions);
 
