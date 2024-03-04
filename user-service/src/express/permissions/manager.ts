@@ -7,7 +7,7 @@ import { PermissionsModel } from './model';
 import { UsersManager } from '../users/manager';
 
 export class PermissionsManager {
-    static async getCompactPermissions(permissions: IPermission[]) {
+    static async getCompactPermissions(permissions: IPermission[]): Promise<ICompactPermissions> {
         const compactPermissions: ICompactPermissions = {};
 
         permissions.forEach((permission) => {
@@ -18,12 +18,12 @@ export class PermissionsManager {
         return compactPermissions;
     }
 
-    static async getCompactPermissionsOfUser(userId: string) {
+    static async getCompactPermissionsOfUser(userId: string): Promise<ICompactPermissions> {
         const permissions = await PermissionsModel.find({ userId }).lean().exec();
         return this.getCompactPermissions(permissions);
     }
 
-    static async syncCompactPermissionsOfUser(userId: string, permissionsCompact: ICompactNullablePermissions) {
+    static async syncCompactPermissionsOfUser(userId: string, permissionsCompact: ICompactNullablePermissions): Promise<void> {
         UsersManager.getUserById(userId); // Validate user exists
 
         await transaction(async (session) => {
@@ -36,7 +36,7 @@ export class PermissionsManager {
         });
     }
 
-    static async searchByCompactPermissions(compactPermissions: ICompactPermissions) {
+    static async searchByCompactPermissions(compactPermissions: ICompactPermissions): Promise<IPermission[]> {
         const subQueries: FilterQuery<IPermission>[] = [];
 
         typedObjectEntries(compactPermissions).forEach(async ([type, metadata]) => {

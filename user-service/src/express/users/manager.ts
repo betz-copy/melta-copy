@@ -3,13 +3,15 @@ import { IBaseUser, IUser, IUserSearchBody } from './interface';
 import { UsersModel } from './model';
 import { PermissionsManager } from '../permissions/manager';
 import { typedObjectEntries } from '../../utils';
+import { UserDoesNotExistError } from './errors';
 
 export class UsersManager {
-    static async getUserById(id: string) {
-        return UsersModel.findById(id).lean().exec();
+    static async getUserById(id: string): Promise<IUser> {
+        const baseUser = await UsersModel.findById(id).orFail(new UserDoesNotExistError(id)).lean().exec();
+        return this.appendPermissionsToUser(baseUser);
     }
 
-    static async searchUsers(filter: IUserSearchBody) {
+    static async searchUsers(filter: IUserSearchBody): Promise<IUser[]> {
         const { permissions, ...restOfFilter } = filter;
 
         const query: FilterQuery<IBaseUser> = restOfFilter;
@@ -20,24 +22,35 @@ export class UsersManager {
             query.$in = simplePermissions.map(({ userId }) => userId);
         }
 
-        return UsersModel.find(query).lean().exec();
+        const baseUsers = await UsersModel.find(query).lean().exec();
+        return this.appendPermissionsToUsers(baseUsers);
     }
 
-    static async createUser({ permissions, ...baseUser }: Omit<IUser, '_id'>) {
-        const newUser = await UsersModel.create(baseUser);
+    static async createUser({ permissions, ...userData }: Omit<IUser, '_id'>): Promise<IUser> {
+        const baseUser = await UsersModel.create(userData);
 
-        await PermissionsManager.syncCompactPermissionsOfUser(newUser._id, permissions);
+        await PermissionsManager.syncCompactPermissionsOfUser(baseUser._id, permissions);
 
-        return newUser;
+        return this.appendPermissionsToUser(baseUser);
     }
 
-    static async updateUser(id: string, updateData: Partial<IBaseUser>) {
-        return UsersModel.findByIdAndUpdate(id, updateData, { new: true }).lean().exec();
+    static async updateUser(id: string, updateData: Partial<IBaseUser>): Promise<IUser> {
+        const baseUser = await UsersModel.findByIdAndUpdate(id, updateData, { new: true }).orFail(new UserDoesNotExistError(id)).lean().exec();
+        return this.appendPermissionsToUser(baseUser);
     }
 
-    static async updateUsersBulk(bulkUpdateData: Record<string, IBaseUser>) {
+    static async updateUsersBulk(bulkUpdateData: Record<string, IBaseUser>): Promise<void> {
         await UsersModel.bulkWrite(
             typedObjectEntries(bulkUpdateData).map(([id, updateData]) => ({ updateOne: { filter: { _id: id }, update: updateData } })),
         );
+    }
+
+    private static async appendPermissionsToUser(user: IBaseUser): Promise<IUser> {
+        const permissions = await PermissionsManager.getCompactPermissionsOfUser(user._id);
+        return { ...user, permissions };
+    }
+
+    private static async appendPermissionsToUsers(users: IBaseUser[]): Promise<IUser[]> {
+        return Promise.all(users.map((user) => this.appendPermissionsToUser(user)));
     }
 }
