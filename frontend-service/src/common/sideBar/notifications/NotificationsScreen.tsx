@@ -39,7 +39,6 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
     const [openCalenders, setOpenCalendars] = useState<boolean>(false);
     const [notificationsToShowCheckbox, setNotificationsToShowCheckbox] = useState(notificationsMoreData[selectedGroup]);
     const [isCheckBoxClicked, setIsCheckBoxClicked] = useState(false);
-    console.log('shirelll', { notificationsToShowCheckbox });
 
     const onSetStartDate = (newStartDateInput: Date | null) => {
         setStartDate(newStartDateInput);

@@ -12,8 +12,6 @@ export const getMyNotificationsRequest = async (query: {
     endDate?: Date;
 }) => {
     const { data } = await axios.get<INotificationPopulated[]>(`${notifications}/my`, { params: query });
-    console.log({ data });
-    console.log({ query });
     return data;
 };
 
