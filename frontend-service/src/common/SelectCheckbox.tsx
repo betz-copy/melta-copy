@@ -484,10 +484,8 @@ const SelectCheckbox = <Option extends any, Group extends any>({
         return isSelectedOptionInOptionsFiltered;
     });
 
-    let horizontalOrigin = 0;
-    if (toTopBar) {
-        horizontalOrigin = 162;
-    } else if (title === i18next.t('systemManagement.destinationTemplates')) {
+    let horizontalOrigin = 162;
+    if (title === i18next.t('systemManagement.destinationTemplates')) {
         horizontalOrigin = 166;
     } else if (title === i18next.t('systemManagement.sourceTemplates')) {
         horizontalOrigin = 160;
@@ -511,7 +509,7 @@ const SelectCheckbox = <Option extends any, Group extends any>({
                             height: toTopBar ? '180px' : '333px',
                             minWidth: '219px',
                             backgroundColor: toTopBar ? '#EBEFFA' : '#FFFFFF',
-                            borderRadius: toTopBar ? '20px 0px 20px 20px' : '20px 0px 20px 20px',
+                            borderRadius: '20px 0px 20px 20px',
                             padding: toTopBar ? '5px, 10px' : '10px, 10px, 5px, 10px',
                             boxShadow: '-2px 2px 4px 0px #1E27754D',
                             top: '39px',
