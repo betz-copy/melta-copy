@@ -23,7 +23,7 @@ export class PermissionsManager {
         return this.getCompactPermissions(permissions);
     }
 
-    static async syncCompactPermissionsOfUser(userId: string, permissionsCompact: ICompactNullablePermissions): Promise<void> {
+    static async syncCompactPermissionsOfUser(userId: string, permissionsCompact: ICompactNullablePermissions): Promise<ICompactPermissions> {
         UsersManager.getUserById(userId); // Validate user exists
 
         await transaction(async (session) => {
@@ -34,6 +34,8 @@ export class PermissionsManager {
 
             await Promise.all(actions);
         });
+
+        return this.getCompactPermissionsOfUser(userId);
     }
 
     static async searchByCompactPermissions(compactPermissions: ICompactPermissions): Promise<IPermission[]> {
