@@ -160,21 +160,22 @@ const AddStepsFields: React.FC<StepComponentProps<ProcessTemplateWizardValues, '
                                                         ref={draggableProvided.innerRef}
                                                         {...draggableProvided.draggableProps}
                                                         {...draggableProvided.dragHandleProps}
-                                                        // style={{ border: isFieldBlockTouched && errors.steps?.[index] ? '1px solid red' : '' }}
-                                                        // FIX IT!!!
                                                         expanded={expandedIndex === index}
                                                         onChange={() => handleChange(index)}
                                                         // eslint-disable-next-line react/no-array-index-key
                                                         key={index}
                                                         TransitionProps={{ unmountOnExit: true }} // performance issues with many steps
                                                     >
-                                                        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                                                        <AccordionSummary
+                                                            expandIcon={<ExpandMoreIcon />}
+                                                            style={{ border: isFieldBlockTouched && errors.steps?.[index] ? '1px solid red' : '' }}
+                                                        >
                                                             <img src="/icons/draggable-icon.svg" />
                                                             <Typography>{` ${i18next.t('wizard.processTemplate.level')}: ${
                                                                 values.steps[index].displayName || ''
                                                             }`}</Typography>
                                                         </AccordionSummary>
-                                                        <Grid item>
+                                                        <Grid item sx={{ mt: '7px' }}>
                                                             <StepsNameBlock
                                                                 values={values}
                                                                 errors={errors}
