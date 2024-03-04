@@ -9,7 +9,6 @@ import {
     ListItemText,
     MenuItem,
     Select,
-    Checkbox,
     SxProps,
     Theme,
     TextField,
@@ -21,6 +20,8 @@ import {
 import { useSelector } from 'react-redux';
 import { DragDropContext, Draggable, Droppable, DropResult } from 'react-beautiful-dnd';
 import { RootState } from '../store';
+import { MeltaTooltip } from './MeltaTooltip';
+import { MeltaCheckbox } from './MeltaCheckbox';
 
 const MenuItemContent: React.FC<{ checked: boolean; indeterminate?: boolean; label: string; order: number }> = ({
     checked,
@@ -29,73 +30,30 @@ const MenuItemContent: React.FC<{ checked: boolean; indeterminate?: boolean; lab
 }) => {
     return (
         <>
-            <Checkbox
-                checked={checked}
-                indeterminate={indeterminate}
-                checkedIcon={
-                    <Box
-                        sx={{
-                            borderRadius: '4px',
-                            background: '#4752B6',
-                            width: '20px',
-                            height: '20px',
-                            display: 'flex',
-                            justifyContent: 'center',
-                            alignItems: 'center',
-                        }}
-                    >
-                        <img src="/icons/checked-icon.svg" style={{ width: '9.33px', height: '6.42px' }} />
-                    </Box>
-                }
-                indeterminateIcon={
-                    <Box
-                        sx={{
-                            borderRadius: '4px',
-                            background: '#4752B6',
-                            border: 'none',
-                            width: '20px',
-                            height: '20px',
-                            display: 'flex',
-                            justifyContent: 'center',
-                            alignItems: 'center',
-                        }}
-                    >
-                        <img src="/icons/not-checked-icon.svg" style={{ width: '11px', height: '14px' }} />
-                    </Box>
-                }
-                icon={
-                    <Box
-                        sx={{
-                            borderRadius: '4px',
-                            border: '1px solid #4752B6',
-                            width: '20px',
-                            height: '20px',
-                            display: 'flex',
-                            justifyContent: 'center',
-                            alignItems: 'center',
-                        }}
-                    />
-                }
-                sx={{ borderRadius: '4px', color: '#4752B6' }}
-            />
+            <MeltaCheckbox checked={checked} indeterminate={indeterminate} />
             <ListItemText
                 primary={
-                    <Typography
-                        style={{
-                            fontFamily: 'Rubik',
-                            fontSize: '14px',
-                            fontWeight: '400',
-                            lineHeight: '17px',
-                            letterSpacing: '0em',
-                            textAlign: 'right',
-                            color: '#101440',
-                            width: '45px',
-                            height: '17px',
-                            marginRight: '10px',
-                        }}
-                    >
-                        {label}
-                    </Typography>
+                    <MeltaTooltip title={label}>
+                        <Typography
+                            style={{
+                                fontFamily: 'Rubik',
+                                fontSize: '14px',
+                                fontWeight: '400',
+                                lineHeight: '17px',
+                                letterSpacing: '0em',
+                                textAlign: 'right',
+                                color: '#101440',
+                                width: '125px',
+                                height: '17px',
+                                marginRight: '10px',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap',
+                                overflow: 'hidden',
+                            }}
+                        >
+                            {label}
+                        </Typography>
+                    </MeltaTooltip>
                 }
             />
         </>
@@ -193,7 +151,12 @@ const SelectOptionsMenuItems = <Option extends any, Group extends any>({
                                                 return [...prevSelectedOptions, option];
                                             });
                                         }}
-                                        sx={menuItemSx}
+                                        sx={{
+                                            ...menuItemSx,
+                                            textOverflow: 'ellipsis',
+                                            whiteSpace: 'nowrap',
+                                            overflow: 'hidden',
+                                        }}
                                     >
                                         <Grid
                                             style={{

@@ -56,7 +56,7 @@
     "@types/uuid": "^8.3.4",
     "ajv": "^8.11.0",
     "ajv-formats": "^2.1.1",
-    "axios": "^0.24.0",
+    "axios": "^1.6.7",
     "axios-mock-adapter": "^1.19.0",
     "bowser": "^2.11.0",
     "d3-force": "^3.0.0",
