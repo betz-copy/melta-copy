@@ -1,10 +1,10 @@
 import React, { MouseEventHandler, useEffect, useRef, useState } from 'react';
 import { IconButton, Grid, useTheme, Typography } from '@mui/material';
-import { CloseOutlined as DeleteIcon, FilePresent as FileIcon, CameraAlt as CameraIcon } from '@mui/icons-material';
+import { CloseOutlined as DeleteIcon, FilePresent as FileIcon, CameraAltOutlined as CameraIcon } from '@mui/icons-material';
 import { Accept, useDropzone } from 'react-dropzone';
 import i18next from 'i18next';
 import { toast } from 'react-toastify';
-import VideoPlayer from '../dialogs/VideoPlayer';
+import VideoPlayer from '../dialogs/Camera/VideoPlayer';
 
 interface FileInputProps {
     fileName: string | undefined;
@@ -56,6 +56,17 @@ const FileInput: React.FC<FileInputProps> = ({ fileName, onDeleteFile, onDropFil
             window.removeEventListener('resize', updateInputWidth);
         };
     }, []);
+
+    const onCameraClick = async (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+        event.stopPropagation();
+        try {
+            const userStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+            setStream(userStream);
+            setOpen(true);
+        } catch {
+            toast(i18next.t('camera.cameraNotFound'));
+        }
+    };
 
     const inputStyle = {
         border: isDragActive ? `2px dashed ${theme.palette.primary.main}` : '1px solid #c4c4c4',
@@ -124,23 +135,11 @@ const FileInput: React.FC<FileInputProps> = ({ fileName, onDeleteFile, onDropFil
                                     background: '#CCCFE5',
                                     height: '25px',
                                     width: '25px',
-                                    padding: '6.99px, 13.98px, 6.99px, 13.98px',
-                                    gap: '10px',
                                     borderRadius: '7px',
                                     marginLeft: '5px',
                                 }}
                                 onClick={(event) => {
-                                    event.stopPropagation();
-
-                                    navigator.mediaDevices
-                                        .getUserMedia({ video: true, audio: false })
-                                        .then((userStream) => {
-                                            setStream(userStream);
-                                            setOpen(true);
-                                        })
-                                        .catch(() => {
-                                            toast(i18next.t('camera.cameraNotFound'));
-                                        });
+                                    onCameraClick(event);
                                 }}
                             >
                                 <CameraIcon style={{ color: '#1E2775', width: '20px', height: '20px' }} />

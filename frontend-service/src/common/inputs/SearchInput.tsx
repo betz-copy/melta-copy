@@ -59,7 +59,6 @@ const SearchInput: React.FC<{
                             lineHeight: '16px',
                             letterSpacing: '0em',
                             textAlign: 'right',
-                            // maxWidth: '175px',
                             height: '16px',
                             padding: '0px, 10px, 0px, 0px',
                             gap: '10px',
