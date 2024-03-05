@@ -1,7 +1,9 @@
 import React from 'react';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { IconButton, Grid, Popover } from '@mui/material';
+
 import { ColoredEnumChip } from '../../common/ColoredEnumChip';
+import { CalculateDateDifference } from './CalculateDateDifference';
 
 const Value: React.FC<{
     hideValue: boolean;
@@ -25,20 +27,12 @@ const Value: React.FC<{
         setAnchorEl(null);
     };
 
-    const handleCalculatetime = () => {
-        const options = { hour12: false };
-        const currentDate = new Date().toLocaleString('en-UK', options);
-        const timeRegex = /\d{2}:\d{2}(:\d{2})?/;
-        const isDateTime = timeRegex.test(value);
-        return value;
-    };
-
     const open = Boolean(anchorEl);
 
     let innerContent;
     if (hideValue && hideField) innerContent = <>••••••••</>;
     else if (color || color === 'default') innerContent = <ColoredEnumChip label={value} color={color} />;
-    else if (calculateTime) innerContent = handleCalculatetime();
+    else if (calculateTime && value) innerContent = <CalculateDateDifference value={value} />;
     else innerContent = value;
 
     return (

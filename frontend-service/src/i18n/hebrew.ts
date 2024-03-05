@@ -26,6 +26,15 @@ export default {
     successfullyCopied: 'הקישור הועתק בהצלחה',
     soon: 'בקרוב...',
     general: 'כללי',
+    agGridTimes: {
+        hours: 'שעות',
+        days: 'ימים',
+        months: 'חודשים',
+        years: 'שנים',
+        minutes: 'דקות',
+        future: 'בעוד',
+        ago: 'לפני',
+    },
     entitiesTableOfTemplate: {
         resetFilters: 'איפוס סינונים',
         downloadOneTable: 'הורד טבלה',
