@@ -889,4 +889,11 @@ export default {
             TimelineYear: 'שנה פרוסה',
         },
     },
+    camera: {
+        cameraNotFound: 'מצלמה לא נמצאה',
+        somethingWentWrong: 'משהו השתבש, אנא נסה שנית',
+        imgName: 'שם התמונה',
+        browserNotSupported: 'דפדפן לא תומך',
+        takePicture: 'צלם תמונה',
+    },
 };
