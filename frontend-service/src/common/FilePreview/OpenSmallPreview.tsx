@@ -7,6 +7,7 @@ import { FileExtensions, IFile } from '../../interfaces/preview';
 import { useFilePreview } from '../../utils/useFilePreview';
 import { SmallPreview } from './SmallPreview';
 import { getFileExtension } from '../../utils/getFileType';
+import { getFileName } from '../../utils/getFileName';
 
 interface IOpenSmallPreview {
     files: IFile[];
@@ -23,8 +24,7 @@ const OpenSmallPreview: React.FC<IOpenSmallPreview> = ({ files, currentIndex, in
     const { data, isLoading, isError } = useFilePreview(
         file.id,
         file.contentType,
-        file.targetExtension,
-        getFileExtension(file.name) === FileExtensions.pdf,
+        getFileExtension(getFileName(file.id)) !== FileExtensions.pdf ? file.targetExtension : undefined,
     );
 
     const getHalfTheHeight = (height: CSSProperties['maxHeight']) =>

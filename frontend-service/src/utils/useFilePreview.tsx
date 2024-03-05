@@ -2,14 +2,19 @@ import { useQuery } from 'react-query';
 import { IFile } from '../interfaces/preview';
 import { getFilePreviewRequest } from '../services/previewService';
 
-export const useFilePreview = (fileId: IFile['id'], contentType: IFile['contentType'], targetExtension?: IFile['targetExtension']) => {
+export const useFilePreview = (
+    fileId: IFile['id'],
+    contentType: IFile['contentType'],
+    targetExtension?: IFile['targetExtension'],
+    isPreview: boolean = false,
+) => {
     return useQuery(
-        ['preview', fileId, contentType, targetExtension],
+        ['preview', fileId, contentType, targetExtension, isPreview],
         () => {
             if (contentType === 'unsupported') {
                 return contentType;
             }
-            const needsConversion = !['image', 'video', 'audio'].includes(contentType);
+            const needsConversion = !['image', 'video', 'audio', ...(!isPreview ? ['pdf'] : [])].includes(contentType);
             return getFilePreviewRequest(fileId, needsConversion, targetExtension);
         },
         {
