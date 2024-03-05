@@ -29,6 +29,7 @@ export default {
     agGridTimes: {
         hours: 'שעות',
         days: 'ימים',
+        weeks: 'שבועות',
         months: 'חודשים',
         years: 'שנים',
         minutes: 'דקות',
