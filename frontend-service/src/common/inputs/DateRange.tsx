@@ -5,6 +5,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import i18next from 'i18next';
+import heLocale from 'date-fns/locale/he';
 
 const DateRange: React.FC<{
     onStartDateChange: (newStartDateInput: Date | null) => void;
@@ -14,13 +15,18 @@ const DateRange: React.FC<{
     overrideSx?: object;
 }> = ({ onStartDateChange, onEndDateChange, startDateInput, endDateInput, overrideSx }) => {
     // const darkMode = useSelector((state: RootState) => state.darkMode);
+
     return (
         <Grid container justifyContent="center" alignItems="center" wrap="nowrap" spacing={overrideSx && 2}>
             <Grid item>
-                <LocalizationProvider dateAdapter={AdapterDateFns}>
+                <LocalizationProvider
+                    dateAdapter={AdapterDateFns}
+                    adapterLocale={heLocale}
+                    localeText={i18next.t('muiDatePickersLocaleText', { returnObjects: true })}
+                >
                     <DatePicker
                         inputFormat="dd/MM/yyyy"
-                        maxDate={endDateInput}
+                        maxDate={new Date()}
                         label={i18next.t('processInstancesPage.startDate')}
                         value={startDateInput}
                         onChange={(newStartDate) => onStartDateChange(newStartDate)}
@@ -39,11 +45,16 @@ const DateRange: React.FC<{
                 </LocalizationProvider>
             </Grid>
             <Grid item className="processList-dateContainer">
-                <LocalizationProvider dateAdapter={AdapterDateFns}>
+                <LocalizationProvider
+                    dateAdapter={AdapterDateFns}
+                    adapterLocale={heLocale}
+                    localeText={i18next.t('muiDatePickersLocaleText', { returnObjects: true })}
+                >
                     <DatePicker
                         inputFormat="dd/MM/yyyy"
                         className="react-datepicker-wrapper"
                         minDate={startDateInput}
+                        maxDate={new Date()}
                         label={i18next.t('processInstancesPage.endDate')}
                         value={endDateInput}
                         onChange={(newEndDate) => onEndDateChange(newEndDate)}
