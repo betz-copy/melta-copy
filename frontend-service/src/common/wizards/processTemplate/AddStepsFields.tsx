@@ -91,22 +91,16 @@ const AddStepsFields: React.FC<StepComponentProps<ProcessTemplateWizardValues, '
         const { destination, source } = result;
         if (!destination) return;
 
+        setExpandedIndex((prevExpandedIndex) => {
+            if (prevExpandedIndex === source.index) return destination.index;
+            return prevExpandedIndex;
+        });
+
         const newValuesOrder = Array.from(values.steps);
         const [movedOption] = newValuesOrder.splice(source.index, 1);
         newValuesOrder.splice(destination.index, 0, movedOption);
 
-        console.log(values);
-        console.log({ newValuesOrder });
-
-        if (setValues) {
-            setValues({ ...values, steps: newValuesOrder });
-        }
-
-        // setSelectedOptions((prevSelectOptions) => {
-        //     return newOptionsOrder.filter((option) =>
-        //         prevSelectOptions.some((selectedOption) => getOptionId(selectedOption) === getOptionId(option)),
-        //     );
-        // });
+        setFieldValue('steps', newValuesOrder);
     };
 
     return (
@@ -154,7 +148,7 @@ const AddStepsFields: React.FC<StepComponentProps<ProcessTemplateWizardValues, '
                                 {(provided) => (
                                     <Grid ref={provided.innerRef} {...provided.droppableProps}>
                                         {values.steps.map((step, index) => (
-                                            <Draggable draggableId={values.steps[index]._id!} index={index} key={values.steps[index]._id!}>
+                                            <Draggable draggableId={step._id || step.draggableId} index={index} key={step._id || step.draggableId}>
                                                 {(draggableProvided) => (
                                                     <FieldBlockAccordion
                                                         ref={draggableProvided.innerRef}

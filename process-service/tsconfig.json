@@ -20,7 +20,7 @@
     "noFallthroughCasesInSwitch": true,
     "forceConsistentCasingInFileNames": true,
     "outDir": "./dist/",
-    "lib": ["ES2020.Promise", "ESNext"]
+    "lib": ["ES2020.Promise"]
   },
   "include": ["src/**/*"]
 }

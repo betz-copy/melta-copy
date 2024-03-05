@@ -14,7 +14,6 @@ import ProcessInstanceManager from '../../instances/processes/manager';
 import { getProcessTemplatesByReviewerIdAggregation, transaction } from '../../../utils/mongoose';
 import StepTemplateManager from '../steps/manager';
 import config from '../../../config';
-import { IMongoStepTemplate } from '../steps/interface';
 
 type ProcessTemplateType<T extends boolean> = T extends true ? IMongoProcessTemplatePopulated & Document : IMongoProcessTemplate & Document;
 
@@ -73,20 +72,6 @@ class ProcessTemplateManager {
         });  
     }
 
-    private static IsValuesEqual(updatedSteps: IMongoStepTemplate[], currSteps: IMongoStepTemplate[]): boolean {
-        const idCountMap = new Map();
-        updatedSteps.forEach(updatedStep => {
-           idCountMap.set(updatedStep._id,1);
-       });
-       for (const currStep of currSteps) {
-          if (!idCountMap.has(currStep._id.toString())) {
-              return false;
-           }
-            idCountMap.delete(currStep._id.toString());
-        };
-        return idCountMap.size === 0;
-    }
-
     private static async throwIfCantUpdateProcessTemplate(updatedTemplate: IProcessTemplatePopulated, currTemplate: IMongoProcessTemplatePopulated) {
         const processInstances = await ProcessInstanceManager.searchProcesses({ templateIds: [currTemplate._id], limit: 0, skip: 0 });
         if (processInstances.length === 0) {
@@ -103,10 +88,10 @@ class ProcessTemplateManager {
         );
                
         if (updatedSteps.length !== currTemplate.steps.length) throw new ServiceError(400, 'can not delete or add steps');
-        if (!this.IsValuesEqual(updatedSteps, currTemplate.steps)) throw new ServiceError(400, `values are not equal`);
 
         updatedSteps.forEach((step, index) => {            
-            const currStep = currTemplate.steps.find(currStep => step._id.toString() === currStep._id.toString());                        
+            const currStep = currTemplate.steps.find(currStep => step._id.toString() === currStep._id.toString());     
+            if (!currStep) throw new ServiceError(400, `can not add new step id ${step._id})` );                   
             if (step.name !== currStep!.name) throw new ServiceError(400, `can not change step[${index}] name`);
             this.validateProperties(
                 step.properties.properties,
