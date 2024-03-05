@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import CameraView from './CameraView';
 import ImageView from './ImageView';
 
-interface IVideoPlayerProps {
+interface ICameraProps {
     stream: MediaStream;
     setStream: React.Dispatch<React.SetStateAction<MediaStream | null>>;
     open: boolean;
@@ -11,7 +11,7 @@ interface IVideoPlayerProps {
     onPictureTaken: (file: File) => void;
 }
 
-const VideoPlayer: React.FC<IVideoPlayerProps> = ({ stream, setStream, open, setOpen, onPictureTaken }) => {
+const Camera: React.FC<ICameraProps> = ({ stream, setStream, open, setOpen, onPictureTaken }) => {
     const [videoRef, setVideoRef] = useState<HTMLVideoElement | null>(null);
     const [imgURL, setImgURL] = useState<string | null>(null);
     const cameraSize = { width: 1000, height: 775 };
@@ -62,4 +62,4 @@ const VideoPlayer: React.FC<IVideoPlayerProps> = ({ stream, setStream, open, set
     );
 };
 
-export default VideoPlayer;
+export default Camera;

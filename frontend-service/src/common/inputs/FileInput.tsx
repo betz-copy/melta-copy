@@ -4,7 +4,7 @@ import { CloseOutlined as DeleteIcon, FilePresent as FileIcon, CameraAltOutlined
 import { Accept, useDropzone } from 'react-dropzone';
 import i18next from 'i18next';
 import { toast } from 'react-toastify';
-import VideoPlayer from '../dialogs/Camera/VideoPlayer';
+import Camera from '../dialogs/Camera';
 
 interface FileInputProps {
     fileName: string | undefined;
@@ -166,7 +166,7 @@ const FileInput: React.FC<FileInputProps> = ({ fileName, onDeleteFile, onDropFil
                     )}
                 </Grid>
             </Grid>
-            {open && <VideoPlayer stream={stream!} setStream={setStream} open={open} setOpen={setOpen} onPictureTaken={onDropFile} />}
+            {open && <Camera stream={stream!} setStream={setStream} open={open} setOpen={setOpen} onPictureTaken={onDropFile} />}
         </>
     );
 };
