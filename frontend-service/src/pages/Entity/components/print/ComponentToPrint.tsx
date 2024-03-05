@@ -18,6 +18,7 @@ const ComponentToPrint = React.forwardRef<
             showDate: boolean;
             showDisabled: boolean;
             showEntityDates: boolean;
+            showEntityFiles: boolean;
         };
     }
 >(({ entityTemplate, expandedEntity, connectionsTemplatesToPrint, options }, ref) => {
@@ -121,6 +122,9 @@ const ComponentToPrint = React.forwardRef<
                         },
                     )}
                 </>
+            )}
+            {options.showEntityFiles && (
+                <BlueTitle title={i18next.t('entityPage.print.appendices')} component="h4" variant="h4" style={{ marginTop: '2rem' }} />
             )}
         </Box>
     );

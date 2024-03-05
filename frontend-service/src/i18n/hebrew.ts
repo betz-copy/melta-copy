@@ -98,6 +98,8 @@ export default {
             showEntityDates: 'הראה תאריכי יצירה ועדכון של ישויות',
             chooseRelationship: 'בחירת קשרים',
             printOptions: 'הגדרות הדפסה',
+            showFiles: 'הראה קבצים מצורפים',
+            appendices: 'נספחים',
         },
     },
     categoryPage: {

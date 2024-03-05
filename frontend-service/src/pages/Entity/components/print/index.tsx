@@ -18,6 +18,9 @@ const Print: React.FC<{
         connectionsTemplates: IConnectionTemplateOfExpandedEntity[];
     }[];
 }> = ({ entityTemplate, expandedEntity, categoriesWithConnectionsTemplates, connectionsTemplates }) => {
+    console.log({ entityTemplate });
+    console.log({ expandedEntity });
+
     const [openModal, setOpenModal] = React.useState(false);
     const handleOpen = () => setOpenModal(true);
     const handleClose = () => setOpenModal(false);
@@ -32,6 +35,7 @@ const Print: React.FC<{
     const [showDate, setShowDate] = React.useState(true);
     const [showDisabled, setShowDisabled] = React.useState(true);
     const [showEntityDates, setShowEntityDates] = React.useState(true);
+    const [showEntityFiles, setShowEntityFiles] = React.useState(true);
 
     const getPageMargins = () => {
         // eslint-disable-next-line quotes
@@ -51,7 +55,7 @@ const Print: React.FC<{
                     entityTemplate={entityTemplate}
                     expandedEntity={expandedEntity}
                     connectionsTemplatesToPrint={selected}
-                    options={{ showDate, showDisabled, showEntityDates }}
+                    options={{ showDate, showDisabled, showEntityDates, showEntityFiles }}
                 />
             </div>
             <PrintOptionsDialog
@@ -63,7 +67,16 @@ const Print: React.FC<{
                 setSelected={setSelected}
                 categoriesWithConnectionsTemplates={categoriesWithConnectionsTemplates}
                 onClick={handlePrint}
-                options={{ setShowDate, showDate, showDisabled, setShowDisabled, showEntityDates, setShowEntityDates }}
+                options={{
+                    setShowDate,
+                    showDate,
+                    showDisabled,
+                    setShowDisabled,
+                    showEntityDates,
+                    setShowEntityDates,
+                    showEntityFiles,
+                    setShowEntityFiles,
+                }}
             />
         </>
     );

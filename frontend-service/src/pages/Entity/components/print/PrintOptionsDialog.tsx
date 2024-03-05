@@ -30,6 +30,8 @@ const PrintOptionsDialog: React.FC<{
         setShowDisabled: React.Dispatch<React.SetStateAction<boolean>>;
         showEntityDates: boolean;
         setShowEntityDates: React.Dispatch<React.SetStateAction<boolean>>;
+        showEntityFiles: boolean;
+        setShowEntityFiles: React.Dispatch<React.SetStateAction<boolean>>;
     };
     onClick: React.MouseEventHandler<HTMLButtonElement>;
 }> = ({ open, handleClose, expandedEntity, connectionsTemplates, selected, setSelected, categoriesWithConnectionsTemplates, onClick, options }) => {
@@ -105,6 +107,14 @@ const PrintOptionsDialog: React.FC<{
                                     <MeltaCheckbox checked={options.showEntityDates} onChange={() => options.setShowEntityDates((cur) => !cur)} />
                                 }
                                 label={i18next.t('entityPage.print.showEntityDates')}
+                            />
+                        </Grid>
+                        <Grid>
+                            <FormControlLabel
+                                control={
+                                    <MeltaCheckbox checked={options.showEntityFiles} onChange={() => options.setShowEntityFiles((cur) => !cur)} />
+                                }
+                                label={i18next.t('entityPage.print.showFiles')}
                             />
                         </Grid>
                     </Grid>
