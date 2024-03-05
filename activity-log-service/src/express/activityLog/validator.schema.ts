@@ -5,7 +5,7 @@ export const getActivitySchema = Joi.object({
     query: {
         limit: Joi.number().integer().min(0).default(0),
         skip: Joi.number().integer().min(0).default(0),
-        actions: Joi.array().items(Joi.string()).default("'DELETE_RELATIONSHIP', 'CREATE_RELATIONSHIP', 'UPDATE_ENTITY', 'CREATE_ENTITY', 'DISABLE_ENTITY', 'ACTIVATE_ENTITY'"),
+        actions: Joi.array().items(Joi.string()).default(['DELETE_RELATIONSHIP', 'CREATE_RELATIONSHIP', 'UPDATE_ENTITY', 'CREATE_ENTITY', 'DISABLE_ENTITY', 'ACTIVATE_ENTITY' ]),
     },
     body: {},
     params: {

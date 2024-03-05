@@ -27,7 +27,7 @@ interface IUpdateEntityMetadata extends IBaseActivityLog {
 
 export type IActivityLog = IEmptyMetadata | IRelationshipMetadata | IUpdateEntityMetadata;
 
-const getActivityLogRequest = async (entityId: string, limit: number, skip: number, actions?: string[]) => {
+const getActivityLogRequest = async (entityId: string, limit: number, skip: number, actions?: string[]) => {                    
     const { data } = await axios.get<IActivityLog[]>(`${activityLog}/${entityId}`, { params: { limit, skip, actions } });
     return data;
 };

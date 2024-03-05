@@ -35,7 +35,7 @@ class InstancesController {
         if(req.originalUrl.indexOf("export") !== -1){
             for(let i=0 ; i<Object.keys(req.body.templates).length; i++){
                 let entities = await InstanceManagerService.searchEntitiesOfTemplateRequest(Object.keys(req.body.templates)[i],{
-                    limit: 100,
+                    limit: 10000,
                 });
                 for(let i=0 ; i<entities["entities"].length; i++){
                     await InstancesManager.viewEntityInstance(entities["entities"][i].entity.properties._id, req.user!.id);
