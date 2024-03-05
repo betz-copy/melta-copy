@@ -1,5 +1,8 @@
 node_modules/
 dist/
 coverage/
-.env
 
+# ignore all .env, except in current directory (used for docker-compose)
+# in services directories we upload to git only .env.dev, and not .env
+**/*/.env
+!./.env

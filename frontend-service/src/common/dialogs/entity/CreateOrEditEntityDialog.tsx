@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Grid, Card, CardContent, CircularProgress, Box, Divider, Button, IconButton } from '@mui/material';
 import { Done as DoneIcon, Clear as ClearIcon, Close as CloseIcon } from '@mui/icons-material';
 import { useMutation } from 'react-query';
@@ -103,7 +103,6 @@ const CreateOrEditEntityDetails: React.FC<{
             },
         },
     );
-
     return (
         <Formik
             initialValues={{ properties: fieldProperties, attachmentsProperties: fileProperties, template: entityTemplate }}
@@ -126,16 +125,39 @@ const CreateOrEditEntityDetails: React.FC<{
                 );
 
                 const isPropertiesFirst = values.template?.propertiesTypeOrder[0] === 'properties';
+                const schema = filterAttachmentsAndEntitiesRefFromPropertiesSchema(values.template.properties);
+
+                useEffect(() => {
+                    schema.required.forEach((field) => {
+                        const fieldProperties = schema.properties[field].enum;
+                        const itemFieldProperties = schema.properties[field]?.items?.enum;
+
+                        if (fieldProperties?.length === 1 && fieldProperties[0] !== undefined) {
+                            setFieldValue(`properties.${field}`, fieldProperties[0]);
+                        }
+                        if (itemFieldProperties?.length === 1 && itemFieldProperties[0] !== undefined) {
+                            setFieldValue(`properties.${field}`, [itemFieldProperties[0]]);
+                        }
+                    });
+
+                    if (!isEditMode) {
+                        Object.entries<object>(schema.properties).forEach(([propertyName, propertyValues]) => {
+                            if (propertyValues.hasOwnProperty('serialCurrent')) {
+                                setFieldValue(`properties.${propertyName}`, propertyValues['serialCurrent']);
+                            }
+                        });
+                    }
+                }, [values.template]);
 
                 const propertiesComp = values.template?._id && (
                     <JSONSchemaFormik
-                        schema={filterAttachmentsAndEntitiesRefFromPropertiesSchema(values.template.properties)}
+                        schema={schema}
                         values={values}
                         setValues={(propertiesValues) => setFieldValue('properties', propertiesValues)}
                         errors={errors.properties ?? {}}
                         touched={touched.properties ?? {}}
                         setFieldTouched={(field) => setFieldTouched(`properties.${field}`)}
-                        isEditMode
+                        isEditMode={isEditMode}
                     />
                 );
 

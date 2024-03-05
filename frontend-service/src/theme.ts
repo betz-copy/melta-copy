@@ -7,6 +7,8 @@ const basicTheme: ThemeOptions = {
     },
 };
 
+export const sideBarTransition = 'all 0.3s linear';
+
 // // TODO - move to globals file
 // export const mainFontSizes = {
 //     headlineTitleFontSize: '24px',
@@ -64,14 +66,10 @@ export const lightTheme = createTheme({
                 },
             },
         },
-        MuiCheckbox: {
-            defaultProps: {},
+        MuiDialog: {
             styleOverrides: {
-                root: {
-                    '& .MuiSvgIcon-root': {
-                        color: '#4752B6',
-                        borderRadius: '4px',
-                    },
+                paper: {
+                    borderRadius: '20px',
                 },
             },
         },

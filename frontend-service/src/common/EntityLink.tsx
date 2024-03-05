@@ -1,4 +1,4 @@
-import { useTheme } from '@mui/material';
+import { Grid, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
 import { useSelector } from 'react-redux';
@@ -27,7 +27,16 @@ export const EntityLink: React.FC<EntityLinkProps> = ({ entity, entityTemplate }
         ) : !entityTemplate.propertiesPreview.length ? (
             i18next.t('graph.noPreviewProperties')
         ) : (
-            <EntityPropertiesInternal properties={entity.properties} entityTemplate={entityTemplate} darkMode={darkMode} showPreviewPropertiesOnly />
+            <Grid style={{ maxHeight: '500px', overflowY: 'auto' }}>
+                <EntityPropertiesInternal
+                    properties={entity.properties}
+                    entityTemplate={entityTemplate}
+                    darkMode={darkMode}
+                    showPreviewPropertiesOnly
+                    mode="white"
+                    textWrap
+                />
+            </Grid>
         );
 
     return (

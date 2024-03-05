@@ -9,17 +9,19 @@ import {
     ListItemText,
     MenuItem,
     Select,
-    Checkbox,
     SxProps,
     Theme,
     TextField,
     Divider,
     Box,
     InputAdornment,
+    useTheme,
 } from '@mui/material';
 import { useSelector } from 'react-redux';
 import { DragDropContext, Draggable, Droppable, DropResult } from 'react-beautiful-dnd';
 import { RootState } from '../store';
+import { MeltaTooltip } from './MeltaTooltip';
+import { MeltaCheckbox } from './MeltaCheckbox';
 
 const MenuItemContent: React.FC<{ checked: boolean; indeterminate?: boolean; label: string; order: number }> = ({
     checked,
@@ -28,25 +30,30 @@ const MenuItemContent: React.FC<{ checked: boolean; indeterminate?: boolean; lab
 }) => {
     return (
         <>
-            <Checkbox checked={checked} indeterminate={indeterminate} />
+            <MeltaCheckbox checked={checked} indeterminate={indeterminate} />
             <ListItemText
                 primary={
-                    <Typography
-                        style={{
-                            fontFamily: 'Rubik',
-                            fontSize: '14px',
-                            fontWeight: '400',
-                            lineHeight: '17px',
-                            letterSpacing: '0em',
-                            textAlign: 'right',
-                            color: '#101440',
-                            width: '45px',
-                            height: '17px',
-                            marginRight: '10px',
-                        }}
-                    >
-                        {label}
-                    </Typography>
+                    <MeltaTooltip title={label}>
+                        <Typography
+                            style={{
+                                fontFamily: 'Rubik',
+                                fontSize: '14px',
+                                fontWeight: '400',
+                                lineHeight: '17px',
+                                letterSpacing: '0em',
+                                textAlign: 'right',
+                                color: '#101440',
+                                width: '125px',
+                                height: '17px',
+                                marginRight: '10px',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap',
+                                overflow: 'hidden',
+                            }}
+                        >
+                            {label}
+                        </Typography>
+                    </MeltaTooltip>
                 }
             />
         </>
@@ -89,7 +96,7 @@ const SelectOptionsMenuItems = <Option extends any, Group extends any>({
     getOptionId,
     getOptionLabel,
     isDraggableDisabled,
-    menuItemSx = { width: '100%', height: '24px', padding: '0px, 5px, 0px, 0px' },
+    menuItemSx = { width: '100%', height: '24px', padding: '0px, 5px, 0px, 0px', my: '5px' },
 }: {
     options: SelectCheckboxProps<Option, Group>['options'];
     selectedOptions: SelectCheckboxProps<Option, Group>['selectedOptions'];
@@ -144,7 +151,12 @@ const SelectOptionsMenuItems = <Option extends any, Group extends any>({
                                                 return [...prevSelectedOptions, option];
                                             });
                                         }}
-                                        sx={menuItemSx}
+                                        sx={{
+                                            ...menuItemSx,
+                                            textOverflow: 'ellipsis',
+                                            whiteSpace: 'nowrap',
+                                            overflow: 'hidden',
+                                        }}
                                     >
                                         <Grid
                                             style={{
@@ -157,13 +169,7 @@ const SelectOptionsMenuItems = <Option extends any, Group extends any>({
                                                 justifyContent: 'center',
                                             }}
                                         >
-                                            {!isDraggableDisabled && (
-                                                <>
-                                                    <Divider color="#101440" style={{ width: '8px' }} />
-                                                    <Divider color="#101440" style={{ width: '8px' }} />
-                                                    <Divider color="#101440" style={{ width: '8px' }} />
-                                                </>
-                                            )}
+                                            {!isDraggableDisabled && <img src="/icons/draggable-icon.svg" />}
                                         </Grid>
                                         <MenuItemContent checked={isOptionChecked(option)} label={getOptionLabel(option)} order={index + 1} />
                                     </MenuItem>
@@ -216,7 +222,7 @@ const SelectOptionsMenuItemsGrouped = <Option extends any, Group extends any>({
                 return (
                     <Fragment key={getGroupId(group)}>
                         <MenuItem
-                            sx={{ width: '100%', height: '24px', padding: '0px, 5px, 0px, 0px' }}
+                            sx={{ width: '100%', height: '24px', padding: '0px, 5px, 0px, 0px', my: '5px' }}
                             onClick={() => {
                                 setSelectedOptions((prevSelectedOptions) => {
                                     const prevSelectedOptionsOfGroup = prevSelectedOptions.filter(
@@ -308,7 +314,12 @@ const getOptionsAndGroupsMiniFiltered = <Option extends any, Group extends any>(
     return { optionsFiltered, groupsFiltered };
 };
 
-export const MiniFilter: React.FC<{ value: string; onChange: (value: string) => void }> = ({ value, onChange }) => {
+export const MiniFilter: React.FC<{ value: string; onChange: (value: string) => void; toTopBar: boolean | undefined }> = ({
+    value,
+    onChange,
+    toTopBar,
+}) => {
+    const theme = useTheme();
     // must wrap with TextField with Grid. no idea why, but it works :O
     return (
         <Grid container>
@@ -328,64 +339,46 @@ export const MiniFilter: React.FC<{ value: string; onChange: (value: string) => 
                             e.stopPropagation();
                         }
                     }}
-                    style={{
-                        gap: '10px',
-                        background: '#FFFFFF',
+                    sx={{
+                        background: toTopBar ? '#FFFFFF' : '#EBEFFA',
                         borderRadius: '7px',
                         width: '199px',
                         height: '34px',
+                        '& .MuiOutlinedInput-notchedOutline': {
+                            border: 'none',
+                        },
                     }}
                     placeholder={i18next.t('searchLabel')}
                     fullWidth
                     InputProps={{
                         style: {
-                            height: '34px',
+                            fontFamily: 'Rubik',
+                            fontSize: '12px',
+                            color: '#8D8D8E',
+                            textAlign: 'right',
+                            borderRadius: '7px',
                         },
                         endAdornment: (
                             <InputAdornment
                                 position="end"
-                                style={{
-                                    margin: 'auto',
-                                    height: '34px',
-                                    borderRadius: '7px',
+                                sx={{
                                     padding: '0px, 10px, 0px, 0px',
-                                    fontFamily: 'Rubik',
-                                    fontSize: '12px',
                                     fontWeight: '400',
-                                    lineHeight: '16px',
                                     letterSpacing: '0em',
-                                    color: '#8D8D8E',
-                                    textAlign: 'right',
+                                    lineHeight: '16px',
                                     gap: '10px',
-                                    boxSizing: 'border-box',
-                                    font: 'webkit-control',
                                 }}
                             >
                                 <Divider
                                     orientation="vertical"
-                                    style={{ height: '20px', width: '1px', background: '#1E2775', border: '1.5px solid #1E2775' }}
-                                />
-                                <Box
-                                    sx={{
-                                        width: '30px',
-                                        height: '28px',
-                                        borderRadius: '10px',
-                                        display: 'flex',
-                                        justifyItems: 'center',
-                                        alignItems: 'center',
+                                    style={{
+                                        width: '1px',
+                                        height: '20px',
+                                        borderRadius: '1.5px',
+                                        backgroundColor: theme.palette.primary.main,
                                     }}
-                                >
-                                    <img
-                                        color="#1E2775"
-                                        width="14px"
-                                        height="14px"
-                                        style={{
-                                            top: '7px',
-                                            left: '8px',
-                                        }}
-                                        src="/icons/search-blue.svg"
-                                    />
-                                </Box>
+                                />
+                                <img color="#1E2775" width="14px" height="14px" style={{}} src="/icons/search-blue.svg" />
                             </InputAdornment>
                         ),
                         startAdornment: <InputAdornment position="start" />,
@@ -409,7 +402,7 @@ const ChooseAllMenuItem = <Option extends any, Group extends any>({
 }) => {
     return (
         <MenuItem
-            sx={{ width: '100%', height: '24px', padding: '0px, 5px, 0px, 0px' }}
+            sx={{ width: '100%', height: '24px', padding: '0px, 5px, 0px, 0px', my: '5px' }}
             onClick={() => {
                 const prevChecked = selectedOptionsFiltered.length === optionsFiltered.length;
                 if (prevChecked) {
@@ -419,13 +412,6 @@ const ChooseAllMenuItem = <Option extends any, Group extends any>({
                 }
             }}
         >
-            <Grid
-                style={{
-                    width: '24px',
-                    height: '24px',
-                    gap: '2px',
-                }}
-            />
             <MenuItemContent
                 checked={selectedOptionsFiltered.length === optionsFiltered.length}
                 indeterminate={selectedOptionsFiltered.length < optionsFiltered.length && selectedOptionsFiltered.length > 0}
@@ -450,6 +436,7 @@ const SelectCheckbox = <Option extends any, Group extends any>({
     toTopBar,
 }: SelectCheckboxProps<Option, Group>) => {
     const [miniFilterValue, setMiniFilterValue] = useState('');
+    const [isOpen, setIsOpen] = useState(false);
 
     const darkMode = useSelector((state: RootState) => state.darkMode);
 
@@ -460,52 +447,68 @@ const SelectCheckbox = <Option extends any, Group extends any>({
         return isSelectedOptionInOptionsFiltered;
     });
 
+    let horizontalOrigin = 172;
+    if (title === i18next.t('systemManagement.destinationTemplates') || title === i18next.t('categories')) {
+        horizontalOrigin = 181;
+    } else if (title === i18next.t('systemManagement.sourceTemplates')) {
+        horizontalOrigin = 177;
+    }
+
     return (
-        <FormControl style={{ background: darkMode ? '#EBEFFA' : '#EBEFFA', borderRadius: '7px, 7px, 0px, 0px' }}>
+        <FormControl style={{ background: darkMode ? '#242424' : 'white', borderRadius: isOpen ? '7px 7px 0 0' : '7px' }}>
             <Select
                 displayEmpty
                 renderValue={() => title}
                 onOpen={() => {
                     setMiniFilterValue('');
+                    setIsOpen(true);
                 }}
+                onClose={() => setIsOpen(false)}
                 MenuProps={{
                     PaperProps: {
                         style: {
-                            height: '180px',
+                            height: toTopBar ? '180px' : '333px',
                             minWidth: '219px',
-                            backgroundColor: '#EBEFFA',
-                            borderRadius: '20px, 0px, 20px, 20px',
-                            padding: '5px, 10px, 5px, 10px',
+                            backgroundColor: toTopBar ? '#EBEFFA' : '#FFFFFF',
+                            borderRadius: '20px 0px 20px 20px',
+                            padding: toTopBar ? '5px, 10px' : '10px, 10px, 5px, 10px',
                             boxShadow: '-2px 2px 4px 0px #1E27754D',
                             top: '39px',
                             gap: '15px',
                         },
+                        sx: {
+                            overflowY: 'overlay',
+                            '::-webkit-scrollbar-track': {
+                                marginY: '1rem',
+                                bgcolor: toTopBar ? '#EBEFFA' : '#FFFFFF',
+                                borderRadius: '5px',
+                            },
+                            '::-webkit-scrollbar-thumb': { background: toTopBar ? '' : '#EBEFFA' },
+                        },
                     },
                     transformOrigin: {
                         vertical: 'top',
-                        horizontal: 162,
+                        horizontal: horizontalOrigin,
                     },
                 }}
                 size={size}
-                style={
-                    toTopBar
-                        ? {
-                              borderRadius: '7px',
-                              backgroundColor: '#EBEFFA',
-                              maxWidth: '130px',
-                              maxHeight: '35px',
-                              fontFamily: 'Rubik',
-                              color: '#1E2775',
-                              padding: '6.99px, 13.98px, 6.99px, 13.98px',
-                              fontSize: '14px',
-                              fontWeight: 400,
-                          }
-                        : {
-                              borderRadius: '7px',
-                          }
-                }
+                sx={{
+                    fontFamily: 'Rubik',
+                    fontSize: '14px',
+                    fontWeight: 400,
+                    boxShadow: 'none',
+                    borderRadius: isOpen ? '7px 7px 0 0' : '7px',
+                    '& .MuiOutlinedInput-notchedOutline': {
+                        display: 'none',
+                    },
+                    background: toTopBar ? '#EBEFFA' : '#FFFFFF',
+                    maxWidth: toTopBar ? '130px' : '131px',
+                    maxHeight: toTopBar ? '35px' : '34px',
+                    color: toTopBar ? '#1E2775' : '#787C9E',
+                    padding: toTopBar ? '6.99px, 13.98px' : '0px, 8px',
+                }}
             >
-                <MiniFilter value={miniFilterValue} onChange={setMiniFilterValue} />
+                <MiniFilter value={miniFilterValue} onChange={setMiniFilterValue} toTopBar={toTopBar} />
                 <ChooseAllMenuItem
                     options={options}
                     selectedOptionsFiltered={selectedOptionsFiltered}

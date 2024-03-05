@@ -1,5 +1,5 @@
 import React from 'react';
-import { Grid, Checkbox, FormControlLabel } from '@mui/material';
+import { Grid, FormControlLabel, Checkbox } from '@mui/material';
 import { CircleRounded } from '@mui/icons-material';
 import i18next from 'i18next';
 

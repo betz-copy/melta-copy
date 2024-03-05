@@ -5,18 +5,19 @@ import IconButtonWithPopover from '../../../../common/IconButtonWithPopover';
 import { IMongoCategory } from '../../../../interfaces/categories';
 import { IEntityExpanded } from '../../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
-import { IMongoRelationshipTemplatePopulated } from '../../../../interfaces/relationshipTemplates';
 import { ComponentToPrint } from './ComponentToPrint';
 import { PrintOptionsDialog } from './PrintOptionsDialog';
+import { IConnectionTemplateOfExpandedEntity } from '../..';
 
 const Print: React.FC<{
     entityTemplate: IMongoEntityTemplatePopulated;
     expandedEntity: IEntityExpanded;
-    relevantRelationshipTemplates: IMongoRelationshipTemplatePopulated[];
-    categoriesWithRelationshipTemplates: (IMongoCategory & {
-        relationshipTemplates: IMongoRelationshipTemplatePopulated[];
-    })[];
-}> = ({ entityTemplate, expandedEntity, categoriesWithRelationshipTemplates, relevantRelationshipTemplates }) => {
+    connectionsTemplates: IConnectionTemplateOfExpandedEntity[];
+    categoriesWithConnectionsTemplates: {
+        category: IMongoCategory;
+        connectionsTemplates: IConnectionTemplateOfExpandedEntity[];
+    }[];
+}> = ({ entityTemplate, expandedEntity, categoriesWithConnectionsTemplates, connectionsTemplates }) => {
     const [openModal, setOpenModal] = React.useState(false);
     const handleOpen = () => setOpenModal(true);
     const handleClose = () => setOpenModal(false);
@@ -27,7 +28,7 @@ const Print: React.FC<{
         documentTitle: `${entityTemplate.category.displayName}-${entityTemplate.displayName}-${new Date().toLocaleDateString('en-uk')}`,
     });
 
-    const [selected, setSelected] = React.useState(relevantRelationshipTemplates);
+    const [selected, setSelected] = React.useState(connectionsTemplates);
     const [showDate, setShowDate] = React.useState(true);
     const [showDisabled, setShowDisabled] = React.useState(true);
     const [showEntityDates, setShowEntityDates] = React.useState(true);
@@ -49,17 +50,18 @@ const Print: React.FC<{
                     ref={componentRef}
                     entityTemplate={entityTemplate}
                     expandedEntity={expandedEntity}
-                    relationshipTemplatesToPrint={selected}
+                    connectionsTemplatesToPrint={selected}
                     options={{ showDate, showDisabled, showEntityDates }}
                 />
             </div>
             <PrintOptionsDialog
                 open={openModal}
-                relevantRelationshipTemplates={relevantRelationshipTemplates}
+                expandedEntity={expandedEntity}
+                connectionsTemplates={connectionsTemplates}
                 handleClose={handleClose}
                 selected={selected}
                 setSelected={setSelected}
-                categoriesWithRelationshipTemplates={categoriesWithRelationshipTemplates}
+                categoriesWithConnectionsTemplates={categoriesWithConnectionsTemplates}
                 onClick={handlePrint}
                 options={{ setShowDate, showDate, showDisabled, setShowDisabled, showEntityDates, setShowEntityDates }}
             />
