@@ -71,9 +71,6 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     supportChangeToRequiredWithInstances,
     supportArrayFields,
 }) => {
-    useEffect(() => {
-        console.log(value.calculateTime);
-    }, [value.calculateTime]);
     const name = `properties[${index}].name`;
     const touchedName = touched?.name;
     const errorName = errors?.name;
@@ -403,7 +400,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                     label={i18next.t('validation.hide')}
                                                 />
                                             )}
-                                            {(value.type === 'date' || value.type === 'date-time') && (
+                                            {(value.type === 'date' || value.type === 'date-time') && 'calculateTime' in value && (
                                                 <FormControlLabel
                                                     control={
                                                         <Switch
