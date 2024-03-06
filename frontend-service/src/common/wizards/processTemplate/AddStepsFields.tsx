@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { AccordionDetails, AccordionSummary, Grid, IconButton, Typography, useTheme } from '@mui/material';
 import * as Yup from 'yup';
 import i18next from 'i18next';
@@ -7,6 +7,7 @@ import AddIcon from '@mui/icons-material/Add';
 import _debounce from 'lodash.debounce';
 import { FieldArray, FormikErrors } from 'formik';
 import { DragDropContext, DropResult, Droppable, Draggable } from 'react-beautiful-dnd';
+import { v4 as uuid } from 'uuid';
 import { processTemplateUniquePropertiesSteps, variableNameValidation } from '../../../utils/validation';
 import { ProcessTemplateWizardValues } from './index';
 import { StepComponentProps } from '../index';
@@ -148,7 +149,7 @@ const AddStepsFields: React.FC<StepComponentProps<ProcessTemplateWizardValues, '
                                 {(provided) => (
                                     <Grid ref={provided.innerRef} {...provided.droppableProps}>
                                         {values.steps.map((step, index) => (
-                                            <Draggable draggableId={step._id || step.draggableId} index={index} key={step._id || step.draggableId}>
+                                            <Draggable draggableId={step.draggableId} index={index} key={step.draggableId}>
                                                 {(draggableProvided) => (
                                                     <FieldBlockAccordion
                                                         ref={draggableProvided.innerRef}
