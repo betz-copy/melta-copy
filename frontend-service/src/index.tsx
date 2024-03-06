@@ -2,7 +2,6 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './i18n';
 import { QueryClient, QueryClientProvider } from 'react-query';
-import { BrowserRouter as Router } from 'react-router-dom';
 import { ReactQueryDevtools } from 'react-query/devtools';
 import { Provider, useSelector } from 'react-redux';
 import { ThemeProvider } from '@mui/material';
@@ -38,20 +37,18 @@ const Index: React.FC = () => {
     return (
         <QueryClientProvider client={queryClient}>
             <ThemeProvider theme={darkMode ? darkTheme : lightTheme}>
-                <Router>
-                    <TourWrapper>
-                        <App />
-                    </TourWrapper>
-                    <ToastContainer
-                        theme={darkMode ? 'dark' : 'light'}
-                        position="bottom-right"
-                        autoClose={5000}
-                        limit={5}
-                        pauseOnFocusLoss={false}
-                        rtl
-                        newestOnTop
-                    />
-                </Router>
+                <TourWrapper>
+                    <App />
+                </TourWrapper>
+                <ToastContainer
+                    theme={darkMode ? 'dark' : 'light'}
+                    position="bottom-right"
+                    autoClose={5000}
+                    limit={5}
+                    pauseOnFocusLoss={false}
+                    rtl
+                    newestOnTop
+                />
             </ThemeProvider>
             <ReactQueryDevtools />
         </QueryClientProvider>

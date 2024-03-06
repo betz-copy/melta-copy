@@ -14,7 +14,6 @@ import i18next from 'i18next';
 import { useSelector } from 'react-redux';
 import { useQueryClient } from 'react-query';
 import { FormikProps } from 'formik';
-import { useSearchParams } from 'react-router-dom';
 import { RootState } from '../../store';
 import { IPermissionsOfUser } from '../../services/permissionsService';
 import { Swap } from '../../common/Swap';
@@ -25,6 +24,7 @@ import { CopyUrlButton } from '../../common/CopyUrlButton';
 import { environment } from '../../globals';
 import { AreYouSureDialog } from '../../common/dialogs/AreYouSureDialog';
 import { MeltaTooltip } from '../../common/MeltaTooltip';
+import { useSearchParams } from '../../utils/hooks/useSearchParams';
 
 const {
     separators,

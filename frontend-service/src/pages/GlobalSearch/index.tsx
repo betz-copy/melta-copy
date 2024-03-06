@@ -1,13 +1,12 @@
+import i18next from 'i18next';
 import React, { useState } from 'react';
 import { useQueryClient } from 'react-query';
-import { useSearchParams } from 'react-router-dom';
-import i18next from 'i18next';
+import EntitiesPage from '../../common/EntitiesPage';
 import { ICategoryMap } from '../../interfaces/categories';
-
 import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
 import { IPermissionsOfUser } from '../../services/permissionsService';
+import { useSearchParams } from '../../utils/hooks/useSearchParams';
 import StartPageSearch from './components/StartPageSearch';
-import EntitiesPage from '../../common/EntitiesPage';
 
 const GlobalSearch: React.FC<{}> = () => {
     const queryClient = useQueryClient();
@@ -29,7 +28,7 @@ const GlobalSearch: React.FC<{}> = () => {
     const [urlSearchParams, setUrlSearchParams] = useSearchParams({});
 
     return urlSearchParams.get('search') === null ? (
-        <StartPageSearch onSearch={(searchValue) => setUrlSearchParams({ search: searchValue })} />
+        <StartPageSearch onSearch={(searchValue) => setUrlSearchParams({ search: searchValue, viewMode: 'templates-tables-view' })} />
     ) : (
         <EntitiesPage
             pageType="globalSearch"

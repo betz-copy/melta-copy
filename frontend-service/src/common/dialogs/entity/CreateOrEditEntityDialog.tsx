@@ -1,27 +1,27 @@
-import React, { useState } from 'react';
-import { Grid, Card, CardContent, CircularProgress, Box, Divider, Button, IconButton } from '@mui/material';
-import { Done as DoneIcon, Clear as ClearIcon, Close as CloseIcon } from '@mui/icons-material';
-import { useMutation } from 'react-query';
-import i18next from 'i18next';
-import { toast } from 'react-toastify';
+import { Clear as ClearIcon, Close as CloseIcon, Done as DoneIcon } from '@mui/icons-material';
+import { Box, Button, Card, CardContent, CircularProgress, Divider, Grid, IconButton } from '@mui/material';
+import { AxiosError } from 'axios';
 import { Form, Formik } from 'formik';
+import i18next from 'i18next';
 import mapValues from 'lodash.mapvalues';
 import pickBy from 'lodash.pickby';
-import { AxiosError } from 'axios';
-import { useNavigate } from 'react-router-dom';
-import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { IEntity } from '../../../interfaces/entities';
-import { createEntityRequest, updateEntityRequest } from '../../../services/entitiesService';
+import React, { useState } from 'react';
+import { useMutation } from 'react-query';
+import { toast } from 'react-toastify';
+import { useLocation } from 'wouter';
 import { EntityWizardValues } from '.';
-import { JSONSchemaFormik, ajvValidate } from '../../inputs/JSONSchemaFormik';
-import { BlueTitle } from '../../BlueTitle';
-import { filterAttachmentsAndEntitiesRefFromPropertiesSchema } from '../../../utils/pickFieldsPropertiesSchema';
-import { IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
 import { environment } from '../../../globals';
-import { toastConstraintValidationError } from './toastConstraintValidationError';
-import { InstanceFileInput } from '../../inputs/InstanceFilesInput/InstanceFileInput';
+import { IEntity } from '../../../interfaces/entities';
+import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
 import UpdateEntityWithRuleBreachDialog from '../../../pages/Entity/components/UpdateEntityWithRuleBreachDialog';
+import { createEntityRequest, updateEntityRequest } from '../../../services/entitiesService';
+import { filterAttachmentsAndEntitiesRefFromPropertiesSchema } from '../../../utils/pickFieldsPropertiesSchema';
+import { BlueTitle } from '../../BlueTitle';
+import { InstanceFileInput } from '../../inputs/InstanceFilesInput/InstanceFileInput';
+import { ajvValidate, JSONSchemaFormik } from '../../inputs/JSONSchemaFormik';
 import { ChooseTemplate } from './ChooseTemplate';
+import { toastConstraintValidationError } from './toastConstraintValidationError';
 
 const { errorCodes } = environment;
 
@@ -82,7 +82,8 @@ const CreateOrEditEntityDetails: React.FC<{
             },
         },
     );
-    const navigate = useNavigate();
+
+    const [_, navigate] = useLocation();
 
     const { isLoading: isCreateLoading, mutateAsync: createMutation } = useMutation(
         (entityToCreate: EntityWizardValues) => createEntityRequest(entityToCreate),

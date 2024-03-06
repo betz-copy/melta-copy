@@ -1,5 +1,5 @@
 import { useQuery } from 'react-query';
-import { getFilePreviewRequest } from '../services/previewService';
+import { getFilePreviewRequest } from '../../services/previewService';
 
 export const useFilePreview = (fileId: string, contentType: string) => {
     return useQuery(

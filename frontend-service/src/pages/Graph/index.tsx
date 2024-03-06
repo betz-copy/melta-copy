@@ -1,31 +1,32 @@
 /* eslint-disable no-param-reassign */
-import React, { useEffect, useRef, useState } from 'react';
-import * as ReactDOMServer from 'react-dom/server';
 import { Box, CircularProgress } from '@mui/material';
 import { forceManyBody } from 'd3-force';
-import ForceGraph, { ForceGraphMethods, ForceGraphProps, GraphData, NodeObject } from 'react-force-graph-2d';
-import ForceGraph3D, { ForceGraphMethods as ForceGraphMethods3D, ForceGraphProps as ForceGraphProps3D } from 'react-force-graph-3d';
-import { useQuery, useQueryClient, useQueries } from 'react-query';
-import { useParams, useSearchParams } from 'react-router-dom';
 import uniqBy from 'lodash.uniqby';
 import uniqWith from 'lodash.uniqwith';
+import React, { useEffect, useRef, useState } from 'react';
+import * as ReactDOMServer from 'react-dom/server';
+import ForceGraph, { ForceGraphMethods, ForceGraphProps, GraphData, NodeObject } from 'react-force-graph-2d';
+import ForceGraph3D, { ForceGraphMethods as ForceGraphMethods3D, ForceGraphProps as ForceGraphProps3D } from 'react-force-graph-3d';
+import { useQueries, useQuery, useQueryClient } from 'react-query';
 import { useSelector } from 'react-redux';
+import { useParams } from 'wouter';
 
-import { expandedEntityToGraphData, getGraphDataWithNodeSizes, getFixedGraphLinks, fixHighlighted, updateNodeLabelIcons } from '../../utils/graph';
-import { drawLinkLabel, drawNode, lookAt } from '../../utils/graph/2DCanvas';
-import { LinkMiddlePoint3D, create3DLabel, create3DNodeDetails, lookAt3D, scale3DNode } from '../../utils/graph/3DCanvas';
+import { environment } from '../../globals';
+import { IEntityExpanded } from '../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IRelationshipTemplateMap } from '../../interfaces/relationshipTemplates';
-import { IEntityExpanded } from '../../interfaces/entities';
 import { getExpandedEntityByIdRequest } from '../../services/entitiesService';
-import { GraphTopBar } from './GraphTopBar';
-import { environment } from '../../globals';
-import { PartialRequired, SharedProperties } from '../../utils/typeHelpers';
-import { GraphNodeMenu } from './GraphNodeMenu';
-import { GraphMenu } from './GraphMenu';
 import { RootState } from '../../store';
+import { expandedEntityToGraphData, fixHighlighted, getFixedGraphLinks, getGraphDataWithNodeSizes, updateNodeLabelIcons } from '../../utils/graph';
+import { drawLinkLabel, drawNode, lookAt } from '../../utils/graph/2DCanvas';
+import { create3DLabel, create3DNodeDetails, LinkMiddlePoint3D, lookAt3D, scale3DNode } from '../../utils/graph/3DCanvas';
+import { useLocalStorage } from '../../utils/hooks/useLocalStorage';
+import { useSearchParams } from '../../utils/hooks/useSearchParams';
+import { PartialRequired, SharedProperties } from '../../utils/typeHelpers';
+import { GraphMenu } from './GraphMenu';
+import { GraphNodeMenu } from './GraphNodeMenu';
+import { GraphTopBar } from './GraphTopBar';
 import { NodeTooltip } from './NodeTooltip';
-import { useLocalStorage } from '../../utils/useLocalStorage';
 
 interface genericMenuState {
     node: NodeObject;
@@ -49,7 +50,7 @@ const Graph: React.FC = () => {
     const [shouldZoomToFit, setShouldZoomToFit] = useState(true);
     const [shouldUpdateHighlighted, setShouldUpdateHighlighted] = useState(false);
 
-    const { entityId } = useParams() as { entityId: string };
+    const { entityId } = useParams<{ entityId: string }>();
     const [searchParams, setSearchParams] = useSearchParams();
 
     const [nodeMenuState, setNodeMenuState] = useState<genericMenuState>();
@@ -77,7 +78,7 @@ const Graph: React.FC = () => {
             setWidth(mainBox.offsetWidth);
         }
 
-        return () => { }; // eslint-disable-line prettier/prettier
+        return () => {}; // eslint-disable-line prettier/prettier
     };
 
     window.addEventListener('resize', updateGraphSize);

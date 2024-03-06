@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useInfiniteQuery, useQuery, useQueryClient } from 'react-query';
-import { useSearchParams } from 'react-router-dom';
 import { render } from 'react-dom';
 import {
     Day,
@@ -39,7 +38,7 @@ import numberingSystems from '../../CLDR/hebrew/numberingSystems.json';
 import timeZoneNames from '../../CLDR/hebrew/timeZoneNames.json';
 import numbers from '../../CLDR/hebrew/numbers.json';
 import caHebrew from '../../CLDR/hebrew/ca-hebrew.json';
-import { useDynamicStyleSheet } from '../../utils/useDynamicStyleSheet';
+import { useDynamicStyleSheet } from '../../utils/hooks/useDynamicStyleSheet';
 import { RootState } from '../../store';
 import lightTheme from '../../css/syncfusion/light.css?inline'; // eslint-disable-line import/no-unresolved
 import darkTheme from '../../css/syncfusion/dark.css?inline'; // eslint-disable-line import/no-unresolved
@@ -48,6 +47,7 @@ import '../../css/syncfusion/schedule.css';
 import { environment } from '../../globals';
 import { Heatmap } from './Heatmap';
 import { ScheduleToolbar } from './ScheduleToolbar';
+import { useSearchParams } from '../../utils/hooks/useSearchParams';
 
 loadCldr(numberingSystems, caHebrew, timeZoneNames, numbers);
 L10n.load({ 'he-IL': hebrew.schedule });

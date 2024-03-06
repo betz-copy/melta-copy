@@ -1,9 +1,4 @@
-import React, { forwardRef, ForwardedRef, useImperativeHandle, useRef, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
-import sortBy from 'lodash.sortby';
-import { Box } from '@mui/material';
-import pickBy from 'lodash.pickby';
-import isEqual from 'lodash.isequal';
+import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
 import {
     ColumnMovedEvent,
     ColumnResizedEvent,
@@ -15,28 +10,33 @@ import {
     PaginationChangedEvent,
 } from '@ag-grid-community/core';
 import { AgGridReact } from '@ag-grid-community/react';
-import '@noam7700/ag-grid-enterprise-core';
-import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
-import { ColumnsToolPanelModule } from '@noam7700/ag-grid-enterprise-column-tool-panel';
-import { MenuModule } from '@noam7700/ag-grid-enterprise-menu';
-import { SetFilterModule } from '@noam7700/ag-grid-enterprise-set-filter';
-import { ServerSideRowModelModule } from '@noam7700/ag-grid-enterprise-server-side-row-model';
-import i18next from 'i18next';
-import { toast } from 'react-toastify';
-import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
-import { IAGGridRequest } from '../../utils/agGrid/interfaces';
 import '@ag-grid-community/styles/ag-grid.css';
 import '@ag-grid-community/styles/ag-theme-material.css';
+import { Box } from '@mui/material';
+import { ColumnsToolPanelModule } from '@noam7700/ag-grid-enterprise-column-tool-panel';
+import '@noam7700/ag-grid-enterprise-core';
+import { MenuModule } from '@noam7700/ag-grid-enterprise-menu';
+import { ServerSideRowModelModule } from '@noam7700/ag-grid-enterprise-server-side-row-model';
+import { SetFilterModule } from '@noam7700/ag-grid-enterprise-set-filter';
+import i18next from 'i18next';
+import isEqual from 'lodash.isequal';
+import pickBy from 'lodash.pickby';
+import sortBy from 'lodash.sortby';
+import React, { ForwardedRef, forwardRef, useImperativeHandle, useMemo, useRef } from 'react';
+import { toast } from 'react-toastify';
+import { useLocation } from 'wouter';
 import '../../css/table.css';
-import { DateFilterComponent } from '../../utils/agGrid/DateFilterComponent';
-import { agGridToSearchEntitiesOfTemplateRequest } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
-import { IEntity } from '../../interfaces/entities';
-import { searchEntitiesOfTemplateRequest } from '../../services/entitiesService';
-import { IGetColumnDefsOptions, getColumnDefs } from './getColumnDefs';
-import { trycatch } from '../../utils/trycatch';
-import { LocalStorage } from '../../utils/localStorage';
 import { environment } from '../../globals';
-import useDeepCompareMemo from '../../utils/useDeepCompareMemo';
+import { IEntity } from '../../interfaces/entities';
+import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { searchEntitiesOfTemplateRequest } from '../../services/entitiesService';
+import { agGridToSearchEntitiesOfTemplateRequest } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
+import { DateFilterComponent } from '../../utils/agGrid/DateFilterComponent';
+import { IAGGridRequest } from '../../utils/agGrid/interfaces';
+import useDeepCompareMemo from '../../utils/hooks/useDeepCompareMemo';
+import { LocalStorage } from '../../utils/localStorage';
+import { trycatch } from '../../utils/trycatch';
+import { getColumnDefs, IGetColumnDefsOptions } from './getColumnDefs';
 
 const { rowCount } = environment.agGrid;
 
@@ -184,7 +184,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
         const savedColumnWidths = localStorage.getItem(`columnWidths-${saveStorageProps.pageType}-${template._id}`);
         const defaultColumnWidths = savedColumnWidths ? JSON.parse(savedColumnWidths) : {};
 
-        const navigate = useNavigate();
+        const [_, navigate] = useLocation();
 
         const gridRef = useRef<AgGridReact<Data>>(null);
 

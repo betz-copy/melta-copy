@@ -1,8 +1,8 @@
-import { styled, Drawer as MuiDrawer, Toolbar as MuiToolbar } from '@mui/material';
+import { styled, Drawer as MuiDrawer, Toolbar as MuiToolbar, Divider } from '@mui/material';
 
 const drawerWidth = 240;
 
-const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' })(({ theme, open }) => ({
+export const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' })(({ theme, open }) => ({
     flexShrink: 0,
     width: drawerWidth,
     whiteSpace: 'nowrap',
@@ -33,10 +33,15 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
     }),
 }));
 
-const Toolbar = styled(MuiToolbar)({
+export const DrawerDivider = styled(Divider)({
+    backgroundColor: 'white',
+    width: '85%',
+    alignSelf: 'center',
+    opacity: 0.8,
+});
+
+export const Toolbar = styled(MuiToolbar)({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'flex-end',
 });
-
-export { Drawer, Toolbar };

@@ -1,4 +1,5 @@
 import { environment } from '../globals';
+import { WorkspaceTypes } from '../interfaces/workspaces';
 import { agGridLocaleText } from '../utils/agGrid/agGridLocaleText';
 import { muiDatePickersLocaleText } from '../utils/datePickers';
 
@@ -476,6 +477,16 @@ export default {
             },
             editProcessBth: 'ערוך תהליך',
         },
+        workspace: {
+            title: 'יצירת סביבת עבודה',
+            createdSuccessfully: 'מרחב עבודה נוצר בהצלחה',
+            editedSuccessfully: 'מרחב עבודה עודכן בהצלחה',
+            failedToCreate: 'נכשל ליצור מרחב עבודה',
+            failedToEdit: 'נכשל בעריכת מרחב עבודה',
+            chooseDetails: 'בחירת פרטים',
+            chooseIcons: 'בחירת אייקונים',
+            chooseColors: 'בחירת צבעים',
+        },
     },
     validation: {
         required: 'חובה',
@@ -764,6 +775,22 @@ export default {
             failedToDelete: 'נכשל למחוק טבלה',
             addGroupBy: 'הוסף קיבוץ',
             deleteGroupBy: 'מחק קיבוץ',
+        },
+    },
+    workspaces: {
+        goBack: 'חזור',
+        createNew: 'צור חדש',
+        edit: 'ערוך',
+        cancelEdit: 'בטל מצב עריכה',
+        requestedWorkspaceDoesntExist: 'סביבת העבודה המבוקשת אינה קיימת',
+        type: 'סוג',
+        types: {
+            [WorkspaceTypes.dir]: 'תיקייה',
+            [WorkspaceTypes.mlt]: 'סביבת עבודה',
+        },
+        color: 'צבע {{color}}',
+        colors: {
+            primary: 'ראשי',
         },
     },
     agGridLocaleText,

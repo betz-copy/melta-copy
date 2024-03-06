@@ -1,15 +1,16 @@
 /* eslint-disable no-param-reassign */
-import React from 'react';
 import { Menu as MuiMenu, MenuItem } from '@mui/material';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import i18next from 'i18next';
+import React from 'react';
 import { GraphData, NodeObject } from 'react-force-graph-2d';
 import { useQuery, useQueryClient } from 'react-query';
-import i18next from 'i18next';
-import { IRelationshipTemplateMap } from '../../interfaces/relationshipTemplates';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { useLocation } from 'wouter';
 import { IEntityExpanded } from '../../interfaces/entities';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IRelationshipTemplateMap } from '../../interfaces/relationshipTemplates';
 import { getExpandedEntityByIdRequest } from '../../services/entitiesService';
 import { expandedEntityToGraphData, highlightNode } from '../../utils/graph';
+import { useSearchParams } from '../../utils/hooks/useSearchParams';
 
 const GraphNodeMenu: React.FC<{
     graphData: GraphData;
@@ -19,7 +20,7 @@ const GraphNodeMenu: React.FC<{
     onCloseMenu: () => void;
     addNewGraphData: (graphData: GraphData) => void;
 }> = ({ graphData, filteredEntityTemplates, node, location, onCloseMenu, addNewGraphData }) => {
-    const navigate = useNavigate();
+    const [_, navigate] = useLocation();
     const [searchParams, setSearchParams] = useSearchParams();
 
     const queryClient = useQueryClient();

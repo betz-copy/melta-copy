@@ -2,7 +2,7 @@ import { useTheme } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
 import { useSelector } from 'react-redux';
-import { NavLink } from 'react-router-dom';
+import { Link } from 'wouter';
 import { IEntity } from '../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { RootState } from '../store';
@@ -38,9 +38,9 @@ export const EntityLink: React.FC<EntityLinkProps> = ({ entity, entityTemplate }
 
     return (
         <MeltaTooltip title={tooltip}>
-            <NavLink to={link} style={{ color: theme.palette.primary.main, textDecoration: 'inherit', fontWeight: 'bold' }}>
+            <Link href={link} style={{ color: theme.palette.primary.main, textDecoration: 'inherit', fontWeight: 'bold' }}>
                 {linkText}
-            </NavLink>
+            </Link>
         </MeltaTooltip>
     );
 };

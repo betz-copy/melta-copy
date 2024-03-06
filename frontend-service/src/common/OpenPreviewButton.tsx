@@ -4,7 +4,7 @@ import { FileDownload as FileDownloadIcon } from '@mui/icons-material';
 import { Preview } from './Preview';
 import { getFileName } from '../utils/getFileName';
 import { getPreviewContentType } from '../utils/getFileType';
-import { useFilePreview } from '../utils/useFilePreview';
+import { useFilePreview } from '../utils/hooks/useFilePreview';
 import { environment } from '../globals';
 
 const OpenPreviewButton: React.FC<{ fileId: string }> = ({ fileId }) => {

@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Box, CircularProgress, Grid, Tab, Typography, useTheme } from '@mui/material';
 import { useQuery, useQueryClient } from 'react-query';
-import { useParams } from 'react-router-dom';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import i18next from 'i18next';
 import { useTour } from '@reactour/tour';
@@ -26,6 +25,7 @@ import { EntityTopBar } from './components/TopBar';
 import { getOppositeEntityTemplate, isRelationshipConnectedToEntityTemplate, populateRelationshipTemplate } from '../../utils/templates';
 import { CustomIcon } from '../../common/CustomIcon';
 import { canUserWriteInstanceOfCategory } from '../../utils/permissions/instancePermissions';
+import { useParams } from 'wouter';
 
 export const getButtonState = (
     isEntityDisabled: boolean,
@@ -58,7 +58,7 @@ const Entity: React.FC = () => {
     const theme = useTheme();
 
     const [isFiltered, setIsFiltered] = useState(false);
-    const { entityId } = useParams();
+    const { entityId } = useParams<{ entityId: string }>();
     const queryClient = useQueryClient();
     const { setDisabledActions, setCurrentStep } = useTour();
 
