@@ -28,18 +28,25 @@ const CalculateDateDifference: React.FC<{ value: string }> = ({ value }) => {
     const isDateTime = timeRegex.test(value);
     const parsedDate = isDateTime ? parse(value, 'dd/MM/yyyy, HH:mm:ss', new Date()) : parse(value, 'dd/MM/yyyy', new Date());
 
-    const { diffInMinutes, diffInHours, diffInDays } = calculateDifferences(currentDateTime, parsedDate);
-    const { minutes, hours, years, months } = intervalToDuration({ start: currentDateTime, end: parsedDate });
+    const { diffInMinutes, diffInHours, diffInDays, diffInMonths } = calculateDifferences(currentDateTime, parsedDate);
+    const { minutes, hours, years, months, days } = intervalToDuration({ start: currentDateTime, end: parsedDate });
 
     useEffect(() => {
-        const intervalId = setTimeout(() => setCurrentDateTime(new Date()), 60000);
-        return () => clearInterval(intervalId);
-    }, [currentDateTime]);
+        const delayUntilNextMinute = 60000 - new Date().getSeconds() * 1000;
+        const initialTimeoutId = setTimeout(() => {
+            setCurrentDateTime(new Date());
+            const intervalId = setInterval(() => setCurrentDateTime(new Date()), 60000);
+            return () => clearInterval(intervalId);
+        }, delayUntilNextMinute);
+
+        return () => clearTimeout(initialTimeoutId);
+    }, []);
 
     let displayValue = '';
-    if (isDateTime && diffInMinutes <= 60) displayValue = `${minutes} ${i18next.t('agGridTimes.minutes')}`;
+    if (isDateTime && diffInMinutes < 60) displayValue = `${minutes} ${i18next.t('agGridTimes.minutes')}`;
     else if (diffInHours < 24) displayValue = `${hours} ${i18next.t('agGridTimes.hours')} ${minutes} ${i18next.t('agGridTimes.minutes')}`;
-    else if (diffInDays < 365) displayValue = `${months} ${i18next.t('agGridTimes.months')} ${diffInDays} ${i18next.t('agGridTimes.days')}`;
+    else if (diffInDays < 30) displayValue = `${days} ${i18next.t('agGridTimes.days')} ${hours} ${i18next.t('agGridTimes.hours')}`;
+    else if (diffInMonths < 12) displayValue = `${months} ${i18next.t('agGridTimes.months')} ${days} ${i18next.t('agGridTimes.days')}`;
     else displayValue = `${years} ${i18next.t('agGridTimes.years')} ${months} ${i18next.t('agGridTimes.months')}`;
 
     return (
