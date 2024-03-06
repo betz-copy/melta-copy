@@ -26,10 +26,10 @@ type PreviewProps = {
     fileName: string;
 };
 
-const isImage = (type: string) => type === 'image';
-const isVideoOrAudio = (type: string) => ['video', 'audio'].includes(type);
-const isUnsupported = (type: string) => type === 'unsupported';
-const isSpecial = (type: string) => !(isImage(type) || isVideoOrAudio(type) || isUnsupported(type));
+export const isImage = (type: string) => type === 'image';
+export const isVideoOrAudio = (type: string) => ['video', 'audio'].includes(type);
+export const isUnsupported = (type: string) => type === 'unsupported';
+export const isSpecial = (type: string) => !(isImage(type) || isVideoOrAudio(type) || isUnsupported(type));
 
 const Preview: React.FC<PreviewProps> = ({ open, fileId, data, setOpen, loading, fileName, error }) => {
     const darkMode = useSelector((state: RootState) => state.darkMode);

@@ -7,6 +7,7 @@ import { IEntityExpanded } from '../../../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { EntityComponentToPrint } from './EntityComponentToPrint';
 import { IConnectionTemplateOfExpandedEntity } from '../..';
+import { FilesToPrint } from './FilesToPrint';
 
 const ComponentToPrint = React.forwardRef<
     HTMLDivElement,
@@ -124,7 +125,14 @@ const ComponentToPrint = React.forwardRef<
                 </>
             )}
             {options.showEntityFiles && (
-                <BlueTitle title={i18next.t('entityPage.print.appendices')} component="h4" variant="h4" style={{ marginTop: '2rem' }} />
+                <>
+                    <BlueTitle title={i18next.t('entityPage.print.appendices')} component="h4" variant="h4" style={{ marginTop: '2rem' }} />
+                    {entityTemplate.propertiesOrder.map((propertyKey) => {
+                        const propertySchema = entityTemplate.properties.properties[propertyKey];
+                        const propertyValue = expandedEntity.entity.properties[propertyKey];
+                        if (propertySchema.format === 'fileId') return <FilesToPrint fileId={propertyValue} />;
+                    })}
+                </>
             )}
         </Box>
     );
