@@ -46,7 +46,7 @@ const CalculateDateDifference: React.FC<{ date: string }> = ({ date }) => {
         case isDateTime && hours > 0:
             displayValue = `${hours} ${i18next.t('agGridTimes.hours')} ${minutes} ${i18next.t('agGridTimes.minutes')}`;
             break;
-        case isDateTime && minutes > 0:
+        case isDateTime && minutes >= 0:
             displayValue = `${minutes} ${i18next.t('agGridTimes.minutes')}`;
             break;
         case isToday(parsedDate):
