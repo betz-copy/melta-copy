@@ -158,12 +158,12 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                             <JSONSchemaFormik
                                                 schema={propertiesSchema}
                                                 values={{ ...values, properties: values.properties }}
-                                                setValues={(propertiesValues) => {
+                                                setValues={async (propertiesValues) => {
                                                     setFieldValue('properties', propertiesValues);
                                                 }}
                                                 errors={errors.properties ?? {}}
                                                 touched={touched.properties ?? {}}
-                                                setFieldTouched={(field) => {
+                                                setFieldTouched={async (field) => {
                                                     setFieldTouched(`properties.${field}`);
                                                 }}
                                                 readonly={!isStepEditMode}

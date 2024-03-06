@@ -5,7 +5,7 @@ import { toast } from 'react-toastify';
 import { InfoOutlined as InfoIcon } from '@mui/icons-material';
 import { useMutation } from 'react-query';
 import { environment } from '../../../globals';
-import { INotificationGroupCountDetails, INotificationPopulated } from '../../../interfaces/notifications';
+import { INotificationGroupCountDetails, INotificationPopulated, NotificationType } from '../../../interfaces/notifications';
 import { getMyNotificationsRequest, manyNotificationSeenRequest } from '../../../services/notificationService';
 import { InfiniteScroll } from '../../InfiniteScroll';
 import PopperSidebar from '../../PopperSidebar';
@@ -23,6 +23,11 @@ interface NotificationsScreenProps {
     updateNotificationCountDetails: () => void;
 }
 
+interface IGroups {
+    requests: NotificationType[];
+    general: NotificationType[];
+}
+
 export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
     open,
     setOpen,
@@ -37,22 +42,25 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
     const [rightClickedGroup, setRightClickedGroup] = useState<keyof typeof groups>();
     const [tabOptionsAnchor, setTabOptionsAnchor] = useState<HTMLElement>();
 
-    const { mutate, isLoading } = useMutation((groupName: keyof typeof groups) => manyNotificationSeenRequest(groups[groupName]), {
-        onSuccess: (seenNotifications, groupName) => {
-            updateNotificationCountDetails();
+    const { mutate, isLoading } = useMutation(
+        (groupName: keyof typeof groups) => manyNotificationSeenRequest((groups as unknown as IGroups)[groupName]),
+        {
+            onSuccess: (seenNotifications, groupName) => {
+                updateNotificationCountDetails();
 
-            if (seenNotifications.length) {
-                toast.success(i18next.t('notifications.allSeen', { group: i18next.t(`notifications.groups.${groupName}`) }));
-            }
-        },
-        onError: (error, groupName) => {
-            const translatedGroupName = i18next.t(`notifications.groups.${groupName}`);
+                if (seenNotifications.length) {
+                    toast.success(i18next.t('notifications.allSeen', { group: i18next.t(`notifications.groups.${groupName}`) }));
+                }
+            },
+            onError: (error, groupName) => {
+                const translatedGroupName = i18next.t(`notifications.groups.${groupName}`);
 
-            // eslint-disable-next-line no-console
-            console.log(`failed to set all notifications of group "${translatedGroupName}" as seen. error:`, error);
-            toast.error(i18next.t('notifications.failedSetAllAsSeen', { group: translatedGroupName }));
+                // eslint-disable-next-line no-console
+                console.log(`failed to set all notifications of group "${translatedGroupName}" as seen. error:`, error);
+                toast.error(i18next.t('notifications.failedSetAllAsSeen', { group: translatedGroupName }));
+            },
         },
-    });
+    );
 
     const onCloseTabOptions = () => {
         setRightClickedGroup(undefined);
@@ -115,7 +123,7 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                         getMyNotificationsRequest({
                             limit: infiniteScrollPageCount,
                             step: pageParam,
-                            types: groups[selectedGroup],
+                            types: (groups as unknown as IGroups)[selectedGroup],
                         })
                     }
                     onQueryError={(error) => {

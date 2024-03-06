@@ -31,7 +31,6 @@ export const NotificationsButton: React.FC<NotificationsButtonProps> = ({ notifi
                                 left: '30%',
                                 transform: 'translate(-50%, -50%)',
                                 userSelect: 'none',
-                                backgroundColor: '#FF006B',
                             }}
                         />
                     </Grid>

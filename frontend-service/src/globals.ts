@@ -1162,4 +1162,4 @@ export const environment = {
             'prw',
         ],
     },
-};
+} as const;

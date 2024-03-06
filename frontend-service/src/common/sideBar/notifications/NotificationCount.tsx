@@ -9,6 +9,8 @@ interface NotificationCountProps {
 export const NotificationCount: React.FC<NotificationCountProps> = ({ notificationCount, style }) => {
     if (!notificationCount) return null;
 
+    const color = '#FF1D18';
+
     return (
         <Typography
             borderRadius={25}
@@ -16,9 +18,9 @@ export const NotificationCount: React.FC<NotificationCountProps> = ({ notificati
             minWidth="1.25rem"
             fontWeight="bold"
             color="white"
-            bgcolor="red"
-            borderRight="0.22rem solid red"
-            borderLeft="0.3rem solid red"
+            bgcolor={color}
+            borderRight={`0.22rem solid ${color}`}
+            borderLeft={`0.3rem solid ${color}`}
             paddingTop="0.1rem"
             paddingBottom={0}
             paddingX={0}

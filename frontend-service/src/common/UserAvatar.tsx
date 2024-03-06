@@ -32,8 +32,6 @@ const UserAvatar: React.FC<UserAvatarProps> = ({ user, size = 48, bgColor }) => 
     return (
         <Avatar
             sx={{
-                border: '#FF006B 3px solid',
-                borderRadius: 10,
                 height: size,
                 width: size,
                 maxWidth: '100%',
