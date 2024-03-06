@@ -28,6 +28,12 @@ export class PathIsNotFolderError extends ServiceError {
     }
 }
 
+export class WorkspaceUnderRootMustBeDirError extends ServiceError {
+    constructor() {
+        super(400, 'Workspace under root must be a directory');
+    }
+}
+
 export const errorMiddleware = (error: Error, _req: express.Request, res: express.Response, next: express.NextFunction) => {
     if (error.name === 'ValidationError') {
         res.status(400).send({
