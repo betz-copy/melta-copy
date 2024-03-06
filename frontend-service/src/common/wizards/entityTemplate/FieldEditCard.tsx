@@ -400,20 +400,6 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                     label={i18next.t('validation.hide')}
                                                 />
                                             )}
-                                            {(value.type === 'date' || value.type === 'date-time') && 'calculateTime' in value && (
-                                                <FormControlLabel
-                                                    control={
-                                                        <Switch
-                                                            id={calculateTime}
-                                                            name={calculateTime}
-                                                            onChange={onChange}
-                                                            // disabled={value.calculateTime ?? false}
-                                                            checked={value.calculateTime ?? false}
-                                                        />
-                                                    }
-                                                    label={i18next.t('validation.calculateTime')}
-                                                />
-                                            )}
                                             {value.type !== 'serialNumber' && value.unique !== undefined && setValues && (
                                                 <MeltaTooltip title={UniqueCheckboxTooltipTitle}>
                                                     <FormControlLabel
@@ -435,6 +421,19 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                         label={i18next.t('validation.unique')}
                                                     />
                                                 </MeltaTooltip>
+                                            )}
+                                            {(value.type === 'date' || value.type === 'date-time') && 'calculateTime' in value && (
+                                                <FormControlLabel
+                                                    control={
+                                                        <Switch
+                                                            id={calculateTime}
+                                                            name={calculateTime}
+                                                            onChange={onChange}
+                                                            checked={value.calculateTime ?? false}
+                                                        />
+                                                    }
+                                                    label={i18next.t('validation.calculateTime')}
+                                                />
                                             )}
                                         </Box>
 

@@ -2,13 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { intervalToDuration, isFuture, isToday, isTomorrow, isYesterday, parse } from 'date-fns';
 import i18next from 'i18next';
 
-const CalculateDateDifference: React.FC<{ value: string }> = ({ value }) => {
+const CalculateDateDifference: React.FC<{ date: string }> = ({ date }) => {
     const [currentDateTime, setCurrentDateTime] = useState(new Date());
     const [viewIndicateTime, setViewIndicateTime] = useState(true);
 
     const timeRegex = /\d{2}:\d{2}(:\d{2})?/;
-    const isDateTime = timeRegex.test(value);
-    const parsedDate = isDateTime ? parse(value, 'dd/MM/yyyy, HH:mm:ss', new Date()) : parse(value, 'dd/MM/yyyy', new Date());
+    const isDateTime = timeRegex.test(date);
+    const parsedDate = isDateTime ? parse(date, 'dd/MM/yyyy, HH:mm:ss', new Date()) : parse(date, 'dd/MM/yyyy', new Date());
 
     const { minutes = 0, hours = 0, years = 0, months = 0, days = 0 } = intervalToDuration({ start: currentDateTime, end: parsedDate });
 
@@ -65,7 +65,7 @@ const CalculateDateDifference: React.FC<{ value: string }> = ({ value }) => {
     return (
         <div>
             {viewIndicateTime && (isFuture(parsedDate) ? i18next.t('agGridTimes.future') : i18next.t('agGridTimes.ago'))}
-            {` ${displayValue} (${value})`}
+            {` ${displayValue} (${date})`}
         </div>
     );
 };

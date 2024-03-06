@@ -1,7 +1,6 @@
 import React from 'react';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { IconButton, Grid, Popover } from '@mui/material';
-
 import { ColoredEnumChip } from '../../common/ColoredEnumChip';
 import { CalculateDateDifference } from './CalculateDateDifference';
 
@@ -32,7 +31,7 @@ const Value: React.FC<{
     let innerContent;
     if (hideValue && hideField) innerContent = <>••••••••</>;
     else if (color || color === 'default') innerContent = <ColoredEnumChip label={value} color={color} />;
-    else if (calculateTime && value) innerContent = <CalculateDateDifference value={value} />;
+    else if (calculateTime && value) innerContent = <CalculateDateDifference date={value} />;
     else innerContent = value;
 
     return (
