@@ -21,16 +21,11 @@ const ActivityLog: React.FC<{ expandedEntity: IEntityExpanded; entityTemplate: I
     entityTemplate,
 }) => {
     const [openPopper, setOpenPopper] = React.useState(false);
-    const types = [i18next.t('entityPage.activityLog.actions'), i18next.t('entityPage.activityLog.viewers')];
     const entityId = expandedEntity.entity.properties._id;
     useEffect(() => {
         setOpenPopper(false);
     }, [entityId]);
-    const [tab, setValue] = React.useState(types[0]);
-
-    const handleChange = (event: React.SyntheticEvent, newValue: string) => {
-        setValue(newValue);
-    };
+    const [tab, setValue] = React.useState(i18next.t('entityPage.activityLog.actions') as string);
 
     return (
         <>
@@ -43,12 +38,14 @@ const ActivityLog: React.FC<{ expandedEntity: IEntityExpanded; entityTemplate: I
             <PopperSidebar open={openPopper} setOpen={setOpenPopper} title={i18next.t('entityPage.activityLog.header')} side="left">
                 <TabContext value={tab}>
                     <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                        <TabList onChange={handleChange} aria-label="basic tabs example" centered>
-                            <Tab label={types[0]} value={types[0]}/>
-                            <Tab label={types[1]} value={types[1]}/>
+                        <TabList onChange={(event: React.SyntheticEvent, newValue: string) => {
+                            setValue(newValue);
+                        }} centered>
+                            <Tab label={i18next.t('entityPage.activityLog.actions')} value={i18next.t('entityPage.activityLog.actions')} />
+                            <Tab label={i18next.t('entityPage.activityLog.viewers')} value={i18next.t('entityPage.activityLog.viewers')} />
                         </TabList>
                     </Box>
-                    <TabPanel value={types[0]}><InfiniteScroll<IActivityLog>
+                    <TabPanel value={i18next.t('entityPage.activityLog.actions')}><InfiniteScroll<IActivityLog>
                         queryKey={['getActivityLogRequest', entityId]}
                         queryFunction={({ pageParam }) => getActivityLogRequest(entityId, infiniteScrollPageCount, pageParam)}
                         onQueryError={(error) => {
@@ -69,9 +66,10 @@ const ActivityLog: React.FC<{ expandedEntity: IEntityExpanded; entityTemplate: I
                             </>
                         )}
                     </InfiniteScroll></TabPanel>
-                    <TabPanel value={types[1]}><InfiniteScroll<IActivityLog>
+                    <TabPanel value={i18next.t('entityPage.activityLog.viewers')}>
+                        <InfiniteScroll<IActivityLog>
                         queryKey={['getActivityLogRequest', entityId]}
-                        queryFunction={({ pageParam }) => getActivityLogRequest(entityId, infiniteScrollPageCount, pageParam, ['VIEW_ENTITY'])}
+                        queryFunction={({ pageParam }) => getActivityLogRequest(entityId, infiniteScrollPageCount, pageParam, ['VIEW_ENTITY_FILE'])}
 
                         onQueryError={(error) => {
                             // eslint-disable-next-line no-console
@@ -90,7 +88,8 @@ const ActivityLog: React.FC<{ expandedEntity: IEntityExpanded; entityTemplate: I
                                 <Divider variant="middle" style={{ marginTop: '7px' }} />
                             </>
                         )}
-                    </InfiniteScroll></TabPanel>
+                    </InfiniteScroll>
+                    </TabPanel>
                 </TabContext>
 
             </PopperSidebar>

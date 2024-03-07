@@ -16,7 +16,6 @@ const { entities, relationships } = environment.api;
 
 export const exportEntitiesRequest = async (body: IExportEntitiesBody) => {
     const { data } = await axios.post(`${entities}/export`, body, { responseType: 'blob', timeout: 60000 });
-    
     return data;
 };
 

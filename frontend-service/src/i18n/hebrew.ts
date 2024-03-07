@@ -88,7 +88,7 @@ export default {
             withEntity: 'עם ישות מסוג',
             failedToGetActivities: 'נכשל לטעון היסטוריה',
             undefined: 'לא ידוע',
-            viewers: 'צופים',
+            viewers: 'צפיות',
             actions: 'פעולות',
         },
         print: {

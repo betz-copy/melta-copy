@@ -110,6 +110,7 @@ export class InstancesManager {
         const fileProperties = await InstancesManager.uploadInstanceFiles(files);
         const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(instanceData.templateId);
         let templateUpdated = false;
+
         const updatedProperties = {
             ...entityTemplate.properties.properties,
         };
@@ -221,11 +222,11 @@ export class InstancesManager {
 
     static async viewEntityInstance(id: string, userId: string) {
         await ActivityLogManagerService.createActivityLog({
-            action: 'VIEW_ENTITY',
+            action: 'VIEW_ENTITY_FILE',
             entityId: id,
             metadata: {},
             timestamp: new Date(),
-            userId: userId,
+            userId,
         });
     }
     
@@ -376,7 +377,7 @@ export class InstancesManager {
             ...updatedFields,
             entityId: createdRelationship.sourceEntityId,
             metadata: { ...updatedFields.metadata, entityId: createdRelationship.destinationEntityId },
-        });5
+        });
         await ActivityLogManagerService.createActivityLog({
             ...updatedFields,
             entityId: createdRelationship.destinationEntityId,

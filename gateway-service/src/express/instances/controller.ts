@@ -2,8 +2,6 @@ import { promises as fsp } from 'fs';
 import { promisify } from 'util';
 import { Request, Response } from 'express';
 import { InstancesManager } from './manager';
-import { InstanceManagerService } from '../../externalServices/instanceService';
-
 
 class InstancesController {
     static async createEntityInstance(req: Request, res: Response) {
@@ -32,19 +30,7 @@ class InstancesController {
     }
 
     static async viewEntityInstance(req: Request) {
-        if(req.originalUrl.indexOf("export") !== -1){
-            for(let i=0 ; i<Object.keys(req.body.templates).length; i++){
-                let entities = await InstanceManagerService.searchEntitiesOfTemplateRequest(Object.keys(req.body.templates)[i],{
-                    limit: 10000,
-                });
-                for(let i=0 ; i<entities["entities"].length; i++){
-                    await InstancesManager.viewEntityInstance(entities["entities"][i].entity.properties._id, req.user!.id);
-                }
-            }
-        }
-        else {
-            await InstancesManager.viewEntityInstance(req.params.id, req.user!.id);
-        }
+        await InstancesManager.viewEntityInstance(req.params.id, req.user!.id);
     }
 
     static async deleteEntityInstance(req: Request, res: Response) {

@@ -19,7 +19,7 @@ const ActivityLogSchema = new mongoose.Schema({
     action: {
         type: String,
         required: true,
-        enum: ['DELETE_RELATIONSHIP', 'CREATE_RELATIONSHIP', 'UPDATE_ENTITY', 'CREATE_ENTITY', 'DISABLE_ENTITY', 'ACTIVATE_ENTITY', 'VIEW_ENTITY'],
+        enum: ['DELETE_RELATIONSHIP', 'CREATE_RELATIONSHIP', 'UPDATE_ENTITY', 'CREATE_ENTITY', 'DISABLE_ENTITY', 'ACTIVATE_ENTITY', 'VIEW_ENTITY_FILE'],
     },
     metadata: {
         type: Object,
@@ -27,9 +27,9 @@ const ActivityLogSchema = new mongoose.Schema({
     },
 });
 
-//ActivityLogSchema.index({ entityId: 1, timestamp: -1 });
+ActivityLogSchema.index({ entityId: 1, timestamp: -1 });
 
-ActivityLogSchema.index({ entityId:1, userId: 1 }, { unique : true, partialFilterExpression: { action: { $eq: 'VIEW_ENTITY'}}})
+ActivityLogSchema.index({ entityId:1, userId: 1 }, { unique : true, partialFilterExpression: { action: { $eq: 'VIEW_ENTITY_FILE'}}})
 
 const ActivityLogModel = mongoose.model<IActivityLog & mongoose.Document>(config.mongo.activitiesCollectionName, ActivityLogSchema);
 

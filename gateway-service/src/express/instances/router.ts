@@ -49,7 +49,6 @@ InstancesRouter.post('/entities/search/template/:templateId', wrapMiddleware(val
 InstancesRouter.post(
     '/entities/export',
     wrapMiddleware(validateUserCanExportEntities),
-    wrapMiddleware(InstancesController.viewEntityInstance),
     ValidateRequest(exportEntitiesSchema),
     wrapController(InstancesController.exportEntities),
 );
