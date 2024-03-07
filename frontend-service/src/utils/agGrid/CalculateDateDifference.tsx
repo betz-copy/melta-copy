@@ -4,7 +4,8 @@ import i18next from 'i18next';
 
 const CalculateDateDifference: React.FC<{ date: string }> = ({ date }) => {
     const [currentDateTime, setCurrentDateTime] = useState(new Date());
-    const [viewIndicateTime, setViewIndicateTime] = useState(true);
+    const [showTimeIndicator, setShowTimeIndicator] = useState(true);
+    const [startMinuteTimer, setStartMinuteTimer] = useState(false);
 
     const timeRegex = /\d{2}:\d{2}(:\d{2})?/;
     const isDateTime = timeRegex.test(date);
@@ -13,59 +14,62 @@ const CalculateDateDifference: React.FC<{ date: string }> = ({ date }) => {
     const { minutes = 0, hours = 0, years = 0, months = 0, days = 0 } = intervalToDuration({ start: currentDateTime, end: parsedDate });
 
     useEffect(() => {
-        const delayUntilNextMinute = 60000 - new Date().getSeconds() * 1000;
+        const currentSecond = currentDateTime.getSeconds();
+        const desiredSecond = parsedDate.getSeconds();
+        const secondsUntilSecondOfDate = Math.abs(currentSecond - desiredSecond);
+
         const initialTimeoutId = setTimeout(() => {
             setCurrentDateTime(new Date());
-            const intervalId = setInterval(() => {
-                setCurrentDateTime(new Date());
-            }, 60000);
-
-            return () => clearInterval(intervalId);
-        }, delayUntilNextMinute);
+            setStartMinuteTimer(true);
+        }, secondsUntilSecondOfDate * 1000);
 
         return () => clearTimeout(initialTimeoutId);
     }, []);
 
     useEffect(() => {
+        if (startMinuteTimer) {
+            const intervalId = setInterval(() => {
+                setCurrentDateTime(new Date());
+            }, 60000);
+
+            return () => clearInterval(intervalId);
+        }
+        return undefined;
+    }, [startMinuteTimer]);
+
+    useEffect(() => {
         if (!isDateTime && (isToday(parsedDate) || isTomorrow(parsedDate) || isYesterday(parsedDate))) {
-            setViewIndicateTime(false);
+            setShowTimeIndicator(false);
         }
     }, [parsedDate, isDateTime]);
 
-    let displayValue = '';
-    switch (true) {
-        case years > 0:
-            displayValue = `${years} ${i18next.t('agGridTimes.years')} ${months} ${i18next.t('agGridTimes.months')}`;
-            break;
-        case months > 0:
-            displayValue = `${months} ${i18next.t('agGridTimes.months')} ${days} ${i18next.t('agGridTimes.days')}`;
-            break;
-        case (isDateTime && days > 0) || (!isDateTime && days > 1):
-            displayValue = `${days} ${i18next.t('agGridTimes.days')} ${isDateTime ? `${hours} ${i18next.t('agGridTimes.hours')}` : ''}`;
-            break;
-        case isDateTime && hours > 0:
-            displayValue = `${hours} ${i18next.t('agGridTimes.hours')} ${minutes} ${i18next.t('agGridTimes.minutes')}`;
-            break;
-        case isDateTime && minutes >= 0:
-            displayValue = `${minutes} ${i18next.t('agGridTimes.minutes')}`;
-            break;
-        case isToday(parsedDate):
-            displayValue = i18next.t('agGridTimes.today');
-            break;
-        case isTomorrow(parsedDate):
-            displayValue = i18next.t('agGridTimes.tomorrow');
-            break;
-        case isYesterday(parsedDate):
-            displayValue = i18next.t('agGridTimes.yesterday');
-            break;
-        default:
-            displayValue = '0';
-    }
+    const displayValue = () => {
+        switch (true) {
+            case years > 0:
+                return `${years} ${i18next.t('agGridTimes.years')} ${months} ${i18next.t('agGridTimes.months')}`;
+            case months > 0:
+                return `${months} ${i18next.t('agGridTimes.months')} ${days} ${i18next.t('agGridTimes.days')}`;
+            case (isDateTime && days > 0) || (!isDateTime && days > 1):
+                return `${days} ${i18next.t('agGridTimes.days')} ${isDateTime ? `${hours} ${i18next.t('agGridTimes.hours')}` : ''}`;
+            case isDateTime && hours > 0:
+                return `${hours} ${i18next.t('agGridTimes.hours')} ${minutes} ${i18next.t('agGridTimes.minutes')}`;
+            case isDateTime && minutes >= 0:
+                return `${minutes} ${i18next.t('agGridTimes.minutes')}`;
+            case isToday(parsedDate):
+                return i18next.t('agGridTimes.today');
+            case isTomorrow(parsedDate):
+                return i18next.t('agGridTimes.tomorrow');
+            case isYesterday(parsedDate):
+                return i18next.t('agGridTimes.yesterday');
+            default:
+                return '0';
+        }
+    };
 
     return (
         <div>
-            {viewIndicateTime && (isFuture(parsedDate) ? i18next.t('agGridTimes.future') : i18next.t('agGridTimes.ago'))}
-            {` ${displayValue} (${date})`}
+            {showTimeIndicator && (isFuture(parsedDate) ? i18next.t('agGridTimes.future') : i18next.t('agGridTimes.ago'))}
+            {` ${displayValue()} (${date})`}
         </div>
     );
 };
