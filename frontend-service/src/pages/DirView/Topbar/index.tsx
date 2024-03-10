@@ -2,11 +2,10 @@ import { Add, ArrowForward, Edit, EditOff } from '@mui/icons-material';
 import { Grid, SxProps } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
-import { useSelector } from 'react-redux';
 import { useLocation } from 'wouter';
 import { Mode } from '..';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
-import { RootState } from '../../../store';
+import { useDarkModeStore } from '../../../stores/darkMode';
 import { Loading } from './Loading';
 import { Navigation } from './Navigation';
 
@@ -20,7 +19,7 @@ interface ITopbarProps {
 export const Topbar: React.FC<ITopbarProps> = ({ loading, openWizard, mode, setMode }) => {
     const [location, setLocation] = useLocation();
 
-    const darkMode = useSelector((state: RootState) => state.darkMode);
+    const darkMode = useDarkModeStore((state) => state.darkMode);
 
     const iconStyle: SxProps = { fontSize: '2rem' };
 

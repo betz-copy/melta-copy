@@ -1,0 +1,35 @@
+import { create } from 'zustand';
+
+export interface UserState {
+    user: {
+        id: string;
+        adfsId: string;
+        name: {
+            firstName: string;
+            lastName: string;
+        };
+        displayName: string;
+        unit: string;
+        rank: string;
+        exp: number;
+        iat: number;
+    };
+    setUser: (user: UserState['user']) => void;
+}
+
+export const useUserStore = create<UserState>((set) => ({
+    user: {
+        id: '',
+        adfsId: '',
+        name: {
+            firstName: '',
+            lastName: '',
+        },
+        displayName: '',
+        unit: '',
+        rank: '',
+        exp: 0,
+        iat: 0,
+    },
+    setUser: (user) => set({ user }),
+}));

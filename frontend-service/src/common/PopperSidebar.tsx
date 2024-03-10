@@ -2,8 +2,7 @@ import React, { CSSProperties } from 'react';
 import { Box, Divider, IconButton, Popper, Typography, Grid, ClickAwayListener, useTheme } from '@mui/material';
 import { CloseSharp } from '@mui/icons-material';
 import Slide from '@mui/material/Slide';
-import { useSelector } from 'react-redux';
-import { RootState } from '../store';
+import { useDarkModeStore } from '../stores/darkMode';
 
 const PopperSidebar: React.FC<{
     open: boolean;
@@ -14,7 +13,7 @@ const PopperSidebar: React.FC<{
     sideMargin?: CSSProperties['margin'];
     width?: CSSProperties['width'];
 }> = ({ children, open, setOpen, title, side, topButtons, sideMargin = 0, width = '22rem' }) => {
-    const darkMode = useSelector((state: RootState) => state.darkMode);
+    const darkMode = useDarkModeStore((state) => state.darkMode);
     const theme = useTheme();
 
     return (

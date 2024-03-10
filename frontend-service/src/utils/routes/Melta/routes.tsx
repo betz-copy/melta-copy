@@ -3,7 +3,6 @@ import { useTour } from '@reactour/tour';
 import i18next from 'i18next';
 import React, { lazy, Suspense, useEffect, useState } from 'react';
 import { useQueryClient } from 'react-query';
-import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import { Route, Switch, useLocation, useRoute } from 'wouter';
 import { SideBar } from '../../../common/sideBar';
@@ -12,7 +11,7 @@ import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { MainBox } from '../../../Main.styled';
 import ScrollToTop from '../../../ScrollToTop';
 import { IPermissionsOfUser } from '../../../services/permissionsService';
-import { RootState } from '../../../store';
+import { useMeltaPlusStore } from '../../../stores/meltaPlus';
 import { LocalStorage } from '../../localStorage';
 import {
     CategoryProtectedRoute,
@@ -50,7 +49,7 @@ export const MeltaRoutesInner: React.FC = () => {
     const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
 
-    const meltaPlus = useSelector((state: RootState) => state.meltaPlus);
+    const meltaPlus = useMeltaPlusStore((state) => state.meltaPlus);
 
     const [pageScrollTarget, setPageScrollTarget] = useState<HTMLElement | undefined>(undefined);
     const trigger = useScrollTrigger({ target: pageScrollTarget, disableHysteresis: true, threshold: 300 });

@@ -5,7 +5,6 @@ import i18next from 'i18next';
 import _cloneDeep from 'lodash.clonedeep';
 import React from 'react';
 import { useMutation, useQueryClient } from 'react-query';
-import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import { useLocation } from 'wouter';
 import * as Yup from 'yup';
@@ -19,7 +18,8 @@ import {
     PermissionResourceType,
     updatePermissionsBulkRequest,
 } from '../../services/permissionsService';
-import { RootState } from '../../store';
+import { useDarkModeStore } from '../../stores/darkMode';
+import { useUserStore } from '../../stores/user';
 import {
     canUserReadInstanceOfCategory,
     canUserWriteInstanceOfCategory,
@@ -113,11 +113,11 @@ const PermissionsOfUserDialog: React.FC<{
     mode: 'create' | 'edit' | 'view';
     existingPermissionsOfUser?: IPermissionsOfUser;
 }> = ({ isOpen, handleClose, mode, existingPermissionsOfUser }) => {
-    const currentUser = useSelector((state: RootState) => state.user);
+    const currentUser = useUserStore((state) => state.user);
     const [_, navigate] = useLocation();
     const { setIsOpen, setCurrentStep } = useTour();
 
-    const darkMode = useSelector((state: RootState) => state.darkMode);
+    const darkMode = useDarkModeStore((state) => state.darkMode);
 
     const queryClient = useQueryClient();
     const allPermissions = queryClient.getQueryData<IPermissionsOfUser[]>('getAllPermissions');

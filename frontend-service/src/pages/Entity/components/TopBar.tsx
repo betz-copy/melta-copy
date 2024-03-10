@@ -1,17 +1,16 @@
-import React from 'react';
 import { Box, Grid, Typography, useTheme } from '@mui/material';
-import { useSelector } from 'react-redux';
-import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import React from 'react';
+import { Link } from 'wouter';
+import { CustomIcon } from '../../../common/CustomIcon';
+import { EntityTemplateColor } from '../../../common/EntityTemplateColor';
+import { IMongoCategory } from '../../../interfaces/categories';
 import { IEntityExpanded } from '../../../interfaces/entities';
+import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IMongoRelationshipTemplatePopulated } from '../../../interfaces/relationshipTemplates';
+import { useDarkModeStore } from '../../../stores/darkMode';
+import { getEntityTemplateColor } from '../../../utils/colors';
 import { ActivityLog } from './activityLog';
 import { Print } from './print';
-import { IMongoCategory } from '../../../interfaces/categories';
-import { RootState } from '../../../store';
-import { CustomIcon } from '../../../common/CustomIcon';
-import { getEntityTemplateColor } from '../../../utils/colors';
-import { EntityTemplateColor } from '../../../common/EntityTemplateColor';
-import { Link } from 'wouter';
 
 const EntityTopBar: React.FC<{
     entityTemplate: IMongoEntityTemplatePopulated;
@@ -23,7 +22,7 @@ const EntityTopBar: React.FC<{
 }> = ({ entityTemplate, expandedEntity, categoriesWithRelationshipTemplates, relevantRelationshipTemplates }) => {
     const theme = useTheme();
 
-    const darkMode = useSelector((state: RootState) => state.darkMode);
+    const darkMode = useDarkModeStore((state) => state.darkMode);
     const entityTemplateColor = getEntityTemplateColor(entityTemplate);
 
     return (

@@ -1,18 +1,17 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Close as CloseIcon } from '@mui/icons-material';
 import { Button, Card, CircularProgress, Dialog, DialogContent, Grid, IconButton, TextField, Typography } from '@mui/material';
-import { useSelector } from 'react-redux';
 import { Document, Page, pdfjs } from 'react-pdf';
 import ReactPlayer from 'react-player';
 import i18next from 'i18next';
 import ZoomInIcon from '@mui/icons-material/ZoomIn';
 import ZoomOutIcon from '@mui/icons-material/ZoomOut';
-import { RootState } from '../store';
 import FlexBox from './FlexBox';
 import { getFileExtension, getPreviewContentType } from '../utils/getFileType';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import { DownloadButton } from './DownloadButton';
+import { useDarkModeStore } from '../stores/darkMode';
 
 pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.js';
 
@@ -32,7 +31,7 @@ const isUnsupported = (type: string) => type === 'unsupported';
 const isSpecial = (type: string) => !(isImage(type) || isVideoOrAudio(type) || isUnsupported(type));
 
 const Preview: React.FC<PreviewProps> = ({ open, fileId, data, setOpen, loading, fileName, error }) => {
-    const darkMode = useSelector((state: RootState) => state.darkMode);
+    const darkMode = useDarkModeStore((state) => state.darkMode);
     const [numOfPages, setNumOfPages] = useState(1);
     const [currentPage, setCurrentPage] = useState(1);
     const [jumpToPage, setJumpToPage] = useState('1');

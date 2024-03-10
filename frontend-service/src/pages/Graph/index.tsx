@@ -8,7 +8,6 @@ import * as ReactDOMServer from 'react-dom/server';
 import ForceGraph, { ForceGraphMethods, ForceGraphProps, GraphData, NodeObject } from 'react-force-graph-2d';
 import ForceGraph3D, { ForceGraphMethods as ForceGraphMethods3D, ForceGraphProps as ForceGraphProps3D } from 'react-force-graph-3d';
 import { useQueries, useQuery, useQueryClient } from 'react-query';
-import { useSelector } from 'react-redux';
 import { useParams } from 'wouter';
 
 import { environment } from '../../globals';
@@ -16,7 +15,7 @@ import { IEntityExpanded } from '../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IRelationshipTemplateMap } from '../../interfaces/relationshipTemplates';
 import { getExpandedEntityByIdRequest } from '../../services/entitiesService';
-import { RootState } from '../../store';
+import { useDarkModeStore } from '../../stores/darkMode';
 import { expandedEntityToGraphData, fixHighlighted, getFixedGraphLinks, getGraphDataWithNodeSizes, updateNodeLabelIcons } from '../../utils/graph';
 import { drawLinkLabel, drawNode, lookAt } from '../../utils/graph/2DCanvas';
 import { create3DLabel, create3DNodeDetails, LinkMiddlePoint3D, lookAt3D, scale3DNode } from '../../utils/graph/3DCanvas';
@@ -56,7 +55,7 @@ const Graph: React.FC = () => {
     const [nodeMenuState, setNodeMenuState] = useState<genericMenuState>();
     const [graphMenuState, setGraphMenuState] = useState<Omit<genericMenuState, 'node'>>();
 
-    const darkMode = useSelector((state: RootState) => state.darkMode);
+    const darkMode = useDarkModeStore((state) => state.darkMode);
 
     const queryClient = useQueryClient();
 

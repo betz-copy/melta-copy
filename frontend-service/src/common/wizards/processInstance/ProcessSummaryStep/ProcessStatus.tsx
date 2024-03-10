@@ -7,15 +7,13 @@ import CancelIcon from '@mui/icons-material/Cancel';
 import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
 import AccessTimeFilledIcon from '@mui/icons-material/AccessTimeFilled';
 import { FormikProps } from 'formik';
-import { useSelector } from 'react-redux';
 import { IMongoProcessInstancePopulated, Status } from '../../../../interfaces/processes/processInstance';
 import { getLongDate } from '../../../../utils/date';
 import { BlueTitle } from '../../../BlueTitle';
-import { RootState } from '../../../../store';
 import { IMongoStepInstancePopulated } from '../../../../interfaces/processes/stepInstance';
 import { ProcessStepValues } from '../ProcessSteps/index';
-import { IUser } from '../../../../services/kartoffelService';
 import { StatusColorsNames } from '../../../../pages/ProcessInstances/ProcessCard';
+import { useUserStore } from '../../../../stores/user';
 
 interface StatusDisplayProps {
     status: Status;
@@ -88,7 +86,7 @@ interface ProcessStatusProps {
 }
 
 const ProcessStatus: React.FC<ProcessStatusProps> = ({ title, instance, editStatus }) => {
-    const currentUser = useSelector((state: RootState) => state.user) as IUser;
+    const currentUser = useUserStore((state) => state.user);
     const handleSetStatus = (newStatus: Status) => {
         const newStatusToSet = newStatus !== editStatus!.values.status ? newStatus : Status.Pending;
         editStatus!.setFieldValue('status', newStatusToSet);

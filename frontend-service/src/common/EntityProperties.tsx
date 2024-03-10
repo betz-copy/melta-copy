@@ -1,15 +1,14 @@
 import React, { CSSProperties } from 'react';
 import { Grid, IconButton, Typography } from '@mui/material';
 import i18next from 'i18next';
-import { useSelector } from 'react-redux';
 import { pdfjs } from 'react-pdf';
 import { Visibility as VisibilityIcon, VisibilityOff as VisibilityOffIcon } from '@mui/icons-material';
 import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { IEntity } from '../interfaces/entities';
 import { OpenPreviewButton } from './OpenPreviewButton';
-import { RootState } from '../store';
 import { ColoredEnumChip } from './ColoredEnumChip';
 import { MeltaTooltip } from './MeltaTooltip';
+import { useDarkModeStore } from '../stores/darkMode';
 
 pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.js';
 
@@ -155,7 +154,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
 };
 
 export const EntityProperties: React.FC<IEntityPropertiesProps> = (props) => {
-    const darkMode = useSelector((state: RootState) => state.darkMode);
+    const darkMode = useDarkModeStore((state) => state.darkMode);
 
     return <EntityPropertiesInternal {...props} darkMode={darkMode} />;
 };

@@ -11,10 +11,8 @@ import {
     GridView as HeatmapModeIcon,
 } from '@mui/icons-material';
 import i18next from 'i18next';
-import { useSelector } from 'react-redux';
 import { useQueryClient } from 'react-query';
 import { FormikProps } from 'formik';
-import { RootState } from '../../store';
 import { IPermissionsOfUser } from '../../services/permissionsService';
 import { Swap } from '../../common/Swap';
 import { BlueTitle } from '../../common/BlueTitle';
@@ -25,6 +23,7 @@ import { environment } from '../../globals';
 import { AreYouSureDialog } from '../../common/dialogs/AreYouSureDialog';
 import { MeltaTooltip } from '../../common/MeltaTooltip';
 import { useSearchParams } from '../../utils/hooks/useSearchParams';
+import { useDarkModeStore } from '../../stores/darkMode';
 
 const {
     separators,
@@ -43,7 +42,7 @@ interface IGanttTopBar {
 }
 
 export const GanttsTopBar: React.FC<IGanttTopBar> = ({ title, formik, onEdit, onDelete, onAddGroupBy, edit, isGroupBy, isLoading }) => {
-    const darkMode = useSelector((state: RootState) => state.darkMode);
+    const darkMode = useDarkModeStore((state) => state.darkMode);
 
     const [searchParams, setSearchParams] = useSearchParams();
     const heatmapMode = Boolean(searchParams.get(heatmapModeKey));

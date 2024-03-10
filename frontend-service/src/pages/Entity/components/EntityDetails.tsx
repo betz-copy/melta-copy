@@ -11,7 +11,6 @@ import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React, { useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
-import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import { useLocation } from 'wouter';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
@@ -25,7 +24,7 @@ import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../inte
 import { IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
 import { deleteEntityRequest, updateEntityStatusRequest } from '../../../services/entitiesService';
 import { IPermissionsOfUser } from '../../../services/permissionsService';
-import { RootState } from '../../../store';
+import { useDarkModeStore } from '../../../stores/darkMode';
 import { canUserWriteInstanceOfCategory } from '../../../utils/permissions/instancePermissions';
 import { EditEntityDetails } from './EditEntityDetails';
 import { EntityDates } from './EntityDates';
@@ -44,7 +43,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
     const queryClient = useQueryClient();
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
 
-    const darkMode = useSelector((state: RootState) => state.darkMode);
+    const darkMode = useDarkModeStore((state) => state.darkMode);
 
     const open = Boolean(anchorEl);
 

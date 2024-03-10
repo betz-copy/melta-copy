@@ -2,14 +2,13 @@ import { Home } from '@mui/icons-material';
 import { Breadcrumbs, Button } from '@mui/material';
 import React, { useMemo } from 'react';
 import ScrollContainer from 'react-indiana-drag-scroll';
-import { useSelector } from 'react-redux';
 import { useLocation } from 'wouter';
-import { RootState } from '../../../store';
+import { useDarkModeStore } from '../../../stores/darkMode';
 
 export const Navigation: React.FC = () => {
     const [location, setLocation] = useLocation();
 
-    const darkMode = useSelector((state: RootState) => state.darkMode);
+    const darkMode = useDarkModeStore((state) => state.darkMode);
 
     const iconColor = useMemo(() => (darkMode ? '#fff' : '#000'), [darkMode]);
 

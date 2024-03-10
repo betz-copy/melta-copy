@@ -4,7 +4,6 @@ import i18next from 'i18next';
 import { useMutation } from 'react-query';
 import { LoadingButton } from '@mui/lab';
 import { toast } from 'react-toastify';
-import { useSelector } from 'react-redux';
 import {
     INotificationPopulated,
     isNewProcessNotification,
@@ -22,13 +21,13 @@ import { notificationSeenRequest } from '../../../services/notificationService';
 import { RuleBreachAlertNotification } from './ruleBreachNotification/RuleBreachAlertNotification';
 import { RuleBreachRequestNotification } from './ruleBreachNotification/RuleBreachRequestNotification';
 import { RuleBreachResponseNotification } from './ruleBreachNotification/RuleBreachResponseNotification';
-import { RootState } from '../../../store';
 import { NewProcessNotification } from './processNotifications/NewProcessNotification';
 import { ProcessStatusUpdateNotification } from './processNotifications/ProcessStatusUpdateNotification';
 import { ProcessReviewerUpdateNotification } from './processNotifications/ProcessReviewerUpdateNotification';
 import { DeleteProcessNotification } from './processNotifications/DeleteProcessNotification';
 import { DateAboutToExpireNotification } from './generalNotifications/DateAboutToExpireNotification';
 import { ArchiveProcessNotification } from './processNotifications/ArchiveProcessNotification';
+import { useDarkModeStore } from '../../../stores/darkMode';
 
 interface NotificationCardProps {
     notification: INotificationPopulated;
@@ -45,7 +44,7 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({ notification
         },
     });
 
-    const darkMode = useSelector((state: RootState) => state.darkMode);
+    const darkMode = useDarkModeStore((state) => state.darkMode);
 
     return (
         <Card

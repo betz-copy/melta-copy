@@ -2,7 +2,6 @@ import Bowser from 'bowser';
 import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';
 import { useQuery } from 'react-query';
-import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { LoadingAnimation } from './common/LoadingAnimation';
@@ -13,8 +12,7 @@ import ErrorPage from './pages/ErrorPage';
 import { AuthService } from './services/authService';
 import { BackendConfigState, getBackendConfigRequest } from './services/backendConfigService';
 import { getMyPermissionsRequest, IPermissionsOfUser } from './services/permissionsService';
-import { RootState } from './store';
-import { setUser } from './store/reducers/user';
+import { useUserStore } from './stores/user';
 
 const App: React.FC = () => {
     useEffect(() => {
@@ -28,7 +26,8 @@ const App: React.FC = () => {
         }
     }, []);
 
-    const currentUser = useSelector((state: RootState) => state.user);
+    const currentUser = useUserStore((state) => state.user);
+    const setUser = useUserStore((state) => state.setUser);
     const { isError: isErrorBackendConfig } = useQuery<BackendConfigState>('getBackendConfig', getBackendConfigRequest, {
         onError: () => {
             toast.error(i18next.t('error.config'));
@@ -47,21 +46,20 @@ const App: React.FC = () => {
         },
     );
 
-    const dispatch = useDispatch();
-
     const [isLoadingUser, setIsLoadingUser] = useState(true);
 
     useEffect(() => {
         const initUser = async () => {
             const user = AuthService.getUser();
-            if (user) {
-                dispatch(setUser(user));
-                setIsLoadingUser(false);
-            }
+
+            if (!user) return;
+
+            setUser(user);
+            setIsLoadingUser(false);
         };
 
         initUser();
-    }, [dispatch]);
+    }, [setUser]);
 
     if (isLoadingUser || isLoadingMyPermissions) <LoadingAnimation />;
 
