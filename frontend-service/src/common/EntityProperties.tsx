@@ -1,11 +1,11 @@
 import React, { CSSProperties } from 'react';
-import { Grid, IconButton, Typography } from '@mui/material';
+import { Box, Button, Grid, IconButton, Typography } from '@mui/material';
 import i18next from 'i18next';
 import { useSelector } from 'react-redux';
 import { pdfjs } from 'react-pdf';
 import { Visibility as VisibilityIcon, VisibilityOff as VisibilityOffIcon } from '@mui/icons-material';
 import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
-import { IEntity } from '../interfaces/entities';
+import { IEntity, IFile } from '../interfaces/entities';
 import { RootState } from '../store';
 import { ColoredEnumChip } from './ColoredEnumChip';
 import { MeltaTooltip } from './MeltaTooltip';
@@ -18,6 +18,7 @@ export const formatToString = (
     valueType: 'string' | 'number' | 'boolean' | 'array',
     format?: string,
     keyEnumColors?: Record<string, string>,
+    files?: IFile[],
 ) => {
     if (value === null || value === undefined) return '-';
 
@@ -28,7 +29,19 @@ export const formatToString = (
     if (valueType === 'string') {
         if (format === 'date') return new Date(value).toLocaleDateString('en-uk');
         if (format === 'date-time') return new Date(value).toLocaleString('en-uk');
-        if (format === 'fileId') return <OpenPreviewButton fileId={value} />;
+        if (format === 'fileId')
+            return (
+                <Button
+                    onClick={() => {
+                        if (files) {
+                            const thisFile = files.find((file) => file.id === value);
+                            window.scrollTo({ top: thisFile!.firstPage, behavior: 'smooth' });
+                        }
+                    }}
+                >
+                    <OpenPreviewButton fileId={value} />
+                </Button>
+            );
     }
     if (keyEnumColors?.[value] && valueType === 'string') return <ColoredEnumChip label={value} color={keyEnumColors[value]} />;
     if (valueType === 'array') {
@@ -46,6 +59,7 @@ interface IEntityPropertiesProps {
     properties: IEntity['properties'];
     mode: 'normal' | 'white';
     showPreviewPropertiesOnly?: boolean;
+    files?: IFile[];
     overridePropertiesToShow?: string[];
     style?: CSSProperties;
     innerStyle?: CSSProperties;
@@ -57,6 +71,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
     properties,
     mode,
     showPreviewPropertiesOnly = false,
+    files,
     overridePropertiesToShow,
     style,
     innerStyle,
@@ -66,7 +81,14 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
     if (overridePropertiesToShow) {
         propertiesOrderedToShow = overridePropertiesToShow;
     } else if (showPreviewPropertiesOnly) {
-        propertiesOrderedToShow = entityTemplate.propertiesOrder.filter((propertyKey) => entityTemplate.propertiesPreview!.includes(propertyKey));
+        if (files) {
+            propertiesOrderedToShow = entityTemplate.propertiesOrder.filter(
+                (propertyKey) =>
+                    entityTemplate.propertiesPreview!.includes(propertyKey) || entityTemplate.properties.properties[propertyKey].format === 'fileId',
+            );
+        } else {
+            propertiesOrderedToShow = entityTemplate.propertiesOrder.filter((propertyKey) => entityTemplate.propertiesPreview!.includes(propertyKey));
+        }
     } else {
         propertiesOrderedToShow = entityTemplate.propertiesOrder;
     }
@@ -84,6 +106,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                     propertySchema.type,
                     propertySchema.format,
                     (propertySchema.enum || propertySchema.items?.enum) && entityTemplate.enumPropertiesColors?.[propertyKey],
+                    files,
                 );
                 return (
                     <Grid key={propertyKey} item container flexDirection="row" style={innerStyle} alignItems={textWrap ? 'flex-start' : 'center'}>

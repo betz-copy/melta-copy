@@ -114,3 +114,10 @@ export interface IExportEntitiesBody {
         };
     };
 }
+
+export interface IFile {
+    name: string;
+    id: string;
+    type: string;
+    firstPage?: number;
+}

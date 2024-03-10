@@ -1,26 +1,37 @@
-import React, { useState } from 'react';
-import { Grid } from '@mui/material';
+import React, { useRef, useState } from 'react';
+import { Box, Grid } from '@mui/material';
 import { toast } from 'react-toastify';
 import i18next from 'i18next';
 import { Document, Page } from 'react-pdf';
 import { isImage, isUnsupported } from '../../../../common/FilePreview/PreviewDialog';
-import { getPreviewContentType } from '../../../../utils/getFileType';
 import FlexBox from '../../../../common/FlexBox';
-import { getFileName } from '../../../../utils/getFileName';
 import { useFilePreview } from '../../../../utils/useFilePreview';
+import { IFile } from '../../../../interfaces/entities';
 
-const FilesToPrint: React.FC<{ fileId: string }> = ({ fileId }) => {
-    const fileName = getFileName(fileId);
-    const contentType = getPreviewContentType(fileName);
-    const { data, refetch, isLoading, isError, error } = useFilePreview(fileId, contentType);
+const FileToPrint: React.FC<{ file: IFile; setFiles: React.Dispatch<React.SetStateAction<IFile[]>> }> = ({ file, setFiles }) => {
+    const { data, refetch, isLoading, isError, error } = useFilePreview(file.id, file.type);
     console.log({ data });
-    console.log({ fileId });
-    console.log({ fileName });
+    console.log('file.id', file.id);
+    console.log('file.name', file.name);
+    console.log('file.type', file.type);
 
     const [numOfPages, setNumOfPages] = useState(1);
+    const fileRef = useRef(null);
 
     if (isLoading) {
         return <div>Loading...</div>;
+    }
+
+    if (fileRef.current) {
+        const element = fileRef.current as HTMLElement;
+        setFiles((prevFiles) => {
+            return prevFiles.map((existingFile) => {
+                if (existingFile.id === file.id) {
+                    return { ...existingFile, firstPage: element.offsetTop };
+                }
+                return existingFile;
+            });
+        });
     }
 
     // if (isError || !data) {
@@ -33,12 +44,14 @@ const FilesToPrint: React.FC<{ fileId: string }> = ({ fileId }) => {
     };
 
     let previewContent;
-    if (isImage(contentType)) {
+    if (isImage(file.type)) {
         previewContent = (
-            <div
-                style={{
+            <Box
+                sx={{
                     overflow: 'auto',
-                    height: '95vh',
+                    margin: 'auto',
+                    height: '100%',
+                    width: '100%',
                     display: 'flex',
                     justifyContent: 'center',
                     alignItems: 'center',
@@ -46,7 +59,6 @@ const FilesToPrint: React.FC<{ fileId: string }> = ({ fileId }) => {
             >
                 <img
                     src={data}
-                    alt={`Preview of ${fileName}`}
                     onError={async () => {
                         // Handle image loading errors
                         console.log('Error loading image');
@@ -54,36 +66,26 @@ const FilesToPrint: React.FC<{ fileId: string }> = ({ fileId }) => {
                             await refetch();
                         }
                     }}
-                    onLoad={async (event) => {
+                    onLoad={async () => {
                         if (!data) {
                             await refetch();
                         }
-                        const img = event.target as HTMLImageElement;
-                        const aspectRatio = img.naturalWidth / img.naturalHeight;
-                        const containerHeight = window.innerHeight * 0.95;
-                        const containerWidth = containerHeight * aspectRatio;
-
-                        if (containerWidth > window.innerWidth) {
-                            img.style.width = '100%';
-                            img.style.height = 'auto';
-                        } else {
-                            img.style.height = '95vh';
-                            img.style.width = 'auto';
+                    }}
+                    style={
+                        {
+                            // maxWidth: '100%',
+                            // maxHeight: '100%',
+                            // transformOrigin: 'center center',
                         }
-                    }}
-                    style={{
-                        maxWidth: '100%',
-                        maxHeight: '95vh',
-                        transformOrigin: 'center center',
-                    }}
+                    }
                 />
-            </div>
+            </Box>
         );
     }
     // else if (isVideoOrAudio(contentType)) {
     //     previewContent = <ReactPlayer style={{ marginTop: '65px' }} url={data} controls playing />;
     // }
-    else if (isUnsupported(contentType) || isError || !data) {
+    else if (isUnsupported(file.type) || isError || !data) {
         previewContent = toast(i18next.t('errorPage.preview'));
     } else {
         previewContent = (
@@ -99,7 +101,11 @@ const FilesToPrint: React.FC<{ fileId: string }> = ({ fileId }) => {
         );
     }
 
-    return <Grid item>{previewContent}</Grid>;
+    return (
+        <Grid item ref={fileRef}>
+            {previewContent}
+        </Grid>
+    );
 };
 
-export { FilesToPrint };
+export { FileToPrint };

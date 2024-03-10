@@ -3,11 +3,13 @@ import React from 'react';
 import { useReactToPrint } from 'react-to-print';
 import IconButtonWithPopover from '../../../../common/IconButtonWithPopover';
 import { IMongoCategory } from '../../../../interfaces/categories';
-import { IEntityExpanded } from '../../../../interfaces/entities';
+import { IEntityExpanded, IFile } from '../../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { ComponentToPrint } from './ComponentToPrint';
 import { PrintOptionsDialog } from './PrintOptionsDialog';
 import { IConnectionTemplateOfExpandedEntity } from '../..';
+import { getFileName } from '../../../../utils/getFileName';
+import { getPreviewContentType } from '../../../../utils/getFileType';
 
 const Print: React.FC<{
     entityTemplate: IMongoEntityTemplatePopulated;
@@ -28,11 +30,28 @@ const Print: React.FC<{
         documentTitle: `${entityTemplate.category.displayName}-${entityTemplate.displayName}-${new Date().toLocaleDateString('en-uk')}`,
     });
 
+    const getEntityFiles = (): IFile[] => {
+        return entityTemplate.propertiesOrder
+            .map((propertyKey) => {
+                const propertySchema = entityTemplate.properties.properties[propertyKey];
+                const propertyValue = expandedEntity.entity.properties[propertyKey];
+                if (propertySchema.format === 'fileId') {
+                    const name = getFileName(propertyValue);
+                    return { id: propertyValue, name, type: getPreviewContentType(name), key: propertyKey } as IFile;
+                }
+                return undefined;
+            })
+            .filter((file) => file !== undefined) as IFile[];
+    };
+
+    const files = getEntityFiles();
+
     const [selected, setSelected] = React.useState(connectionsTemplates);
+    const [selectedFiles, setSelectedFiles] = React.useState(getEntityFiles());
     const [showDate, setShowDate] = React.useState(true);
     const [showDisabled, setShowDisabled] = React.useState(true);
     const [showEntityDates, setShowEntityDates] = React.useState(true);
-    const [showEntityFiles, setShowEntityFiles] = React.useState(true);
+    const [showPreviewPropertiesOnly, setShowPreviewPropertiesOnly] = React.useState(false);
 
     const getPageMargins = () => {
         // eslint-disable-next-line quotes
@@ -52,7 +71,9 @@ const Print: React.FC<{
                     entityTemplate={entityTemplate}
                     expandedEntity={expandedEntity}
                     connectionsTemplatesToPrint={selected}
-                    options={{ showDate, showDisabled, showEntityDates, showEntityFiles }}
+                    filesToPrint={selectedFiles}
+                    setFilesToPrint={setSelectedFiles}
+                    options={{ showDate, showDisabled, showEntityDates, showEntityFiles: selectedFiles.length !== 0, showPreviewPropertiesOnly }}
                 />
             </div>
             <PrintOptionsDialog
@@ -62,6 +83,9 @@ const Print: React.FC<{
                 handleClose={handleClose}
                 selected={selected}
                 setSelected={setSelected}
+                files={files}
+                selectedFiles={selectedFiles}
+                setSelectedFiles={setSelectedFiles}
                 categoriesWithConnectionsTemplates={categoriesWithConnectionsTemplates}
                 onClick={handlePrint}
                 options={{
@@ -71,8 +95,8 @@ const Print: React.FC<{
                     setShowDisabled,
                     showEntityDates,
                     setShowEntityDates,
-                    showEntityFiles,
-                    setShowEntityFiles,
+                    showPreviewPropertiesOnly,
+                    setShowPreviewPropertiesOnly,
                 }}
             />
         </>

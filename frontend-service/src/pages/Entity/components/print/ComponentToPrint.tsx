@@ -3,11 +3,11 @@ import { Box, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import { useQueryClient } from 'react-query';
 import { BlueTitle } from '../../../../common/BlueTitle';
-import { IEntityExpanded } from '../../../../interfaces/entities';
+import { IEntityExpanded, IFile } from '../../../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { EntityComponentToPrint } from './EntityComponentToPrint';
 import { IConnectionTemplateOfExpandedEntity } from '../..';
-import { FilesToPrint } from './FilesToPrint';
+import { FileToPrint } from './FileToPrint';
 
 const ComponentToPrint = React.forwardRef<
     HTMLDivElement,
@@ -15,14 +15,17 @@ const ComponentToPrint = React.forwardRef<
         entityTemplate: IMongoEntityTemplatePopulated;
         expandedEntity: IEntityExpanded;
         connectionsTemplatesToPrint: IConnectionTemplateOfExpandedEntity[];
+        filesToPrint: IFile[];
+        setFilesToPrint: React.Dispatch<React.SetStateAction<IFile[]>>;
         options: {
             showDate: boolean;
             showDisabled: boolean;
             showEntityDates: boolean;
             showEntityFiles: boolean;
+            showPreviewPropertiesOnly: boolean;
         };
     }
->(({ entityTemplate, expandedEntity, connectionsTemplatesToPrint, options }, ref) => {
+>(({ entityTemplate, expandedEntity, connectionsTemplatesToPrint, options, filesToPrint, setFilesToPrint }, ref) => {
     const theme = useTheme();
 
     const queryClient = useQueryClient();
@@ -46,7 +49,12 @@ const ComponentToPrint = React.forwardRef<
                 </Box>
                 {options.showDate && <Box> {new Date().toLocaleDateString('en-uk')}</Box>}
             </Box>
-            <EntityComponentToPrint entityTemplate={entityTemplate} entity={expandedEntity.entity} />
+            <EntityComponentToPrint
+                entityTemplate={entityTemplate}
+                entity={expandedEntity.entity}
+                showPreviewPropertiesOnly={options.showPreviewPropertiesOnly}
+                files={filesToPrint}
+            />
             {connectionsTemplatesToPrint.length !== 0 && (
                 <>
                     <BlueTitle title={i18next.t('entityPage.relationshipTitle')} component="h4" variant="h4" style={{ marginTop: '2rem' }} />
@@ -114,6 +122,7 @@ const ComponentToPrint = React.forwardRef<
                                                     entityTemplate={entityTemplates.get(entity.templateId)!}
                                                     entity={entity}
                                                     options={{ showDates: options.showEntityDates }}
+                                                    showPreviewPropertiesOnly
                                                 />
                                             </div>
                                         ))}
@@ -127,11 +136,9 @@ const ComponentToPrint = React.forwardRef<
             {options.showEntityFiles && (
                 <>
                     <BlueTitle title={i18next.t('entityPage.print.appendices')} component="h4" variant="h4" style={{ marginTop: '2rem' }} />
-                    {entityTemplate.propertiesOrder.map((propertyKey) => {
-                        const propertySchema = entityTemplate.properties.properties[propertyKey];
-                        const propertyValue = expandedEntity.entity.properties[propertyKey];
-                        if (propertySchema.format === 'fileId') return <FilesToPrint fileId={propertyValue} />;
-                    })}
+                    {filesToPrint.map((file) => (
+                        <FileToPrint file={file} key={file.id} setFiles={setFilesToPrint} />
+                    ))}
                 </>
             )}
         </Box>

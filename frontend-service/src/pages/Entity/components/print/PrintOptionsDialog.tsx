@@ -5,7 +5,7 @@ import i18next from 'i18next';
 import { SelectCheckbox } from '../../../../common/SelectCheckbox';
 import { IMongoRelationshipTemplatePopulated } from '../../../../interfaces/relationshipTemplates';
 import { IMongoCategory } from '../../../../interfaces/categories';
-import { IEntityExpanded } from '../../../../interfaces/entities';
+import { IEntityExpanded, IFile } from '../../../../interfaces/entities';
 import { IConnectionTemplateOfExpandedEntity } from '../..';
 import { MeltaCheckbox } from '../../../../common/MeltaCheckbox';
 
@@ -16,6 +16,9 @@ const PrintOptionsDialog: React.FC<{
     connectionsTemplates: IConnectionTemplateOfExpandedEntity[];
     selected: IConnectionTemplateOfExpandedEntity[];
     setSelected: React.Dispatch<React.SetStateAction<IConnectionTemplateOfExpandedEntity[]>>;
+    files: IFile[];
+    selectedFiles: IFile[];
+    setSelectedFiles: React.Dispatch<React.SetStateAction<IFile[]>>;
     categoriesWithConnectionsTemplates: {
         category: IMongoCategory;
         connectionsTemplates: {
@@ -30,11 +33,24 @@ const PrintOptionsDialog: React.FC<{
         setShowDisabled: React.Dispatch<React.SetStateAction<boolean>>;
         showEntityDates: boolean;
         setShowEntityDates: React.Dispatch<React.SetStateAction<boolean>>;
-        showEntityFiles: boolean;
-        setShowEntityFiles: React.Dispatch<React.SetStateAction<boolean>>;
+        showPreviewPropertiesOnly: boolean;
+        setShowPreviewPropertiesOnly: React.Dispatch<React.SetStateAction<boolean>>;
     };
     onClick: React.MouseEventHandler<HTMLButtonElement>;
-}> = ({ open, handleClose, expandedEntity, connectionsTemplates, selected, setSelected, categoriesWithConnectionsTemplates, onClick, options }) => {
+}> = ({
+    open,
+    handleClose,
+    expandedEntity,
+    connectionsTemplates,
+    selected,
+    setSelected,
+    files,
+    selectedFiles,
+    setSelectedFiles,
+    categoriesWithConnectionsTemplates,
+    onClick,
+    options,
+}) => {
     return (
         <Dialog open={open} onClose={handleClose}>
             <DialogTitle paddingLeft="4px">
@@ -87,8 +103,30 @@ const PrintOptionsDialog: React.FC<{
                                     )!,
                             }}
                         />
+                        {files.length !== 0 && (
+                            <SelectCheckbox
+                                title={i18next.t('entityPage.print.chooseFiles')}
+                                options={files}
+                                isDraggableDisabled
+                                selectedOptions={selectedFiles}
+                                setSelectedOptions={setSelectedFiles}
+                                getOptionId={(file) => file.id}
+                                getOptionLabel={(file) => file.name}
+                            />
+                        )}
                     </Grid>
                     <Grid paddingTop="25px">
+                        <Grid>
+                            <FormControlLabel
+                                control={
+                                    <MeltaCheckbox
+                                        checked={options.showPreviewPropertiesOnly}
+                                        onChange={() => options.setShowPreviewPropertiesOnly((cur) => !cur)}
+                                    />
+                                }
+                                label={i18next.t('entityPage.print.showOnlyPreviewProperties')}
+                            />
+                        </Grid>
                         <Grid>
                             <FormControlLabel
                                 control={<MeltaCheckbox checked={options.showDate} onChange={() => options.setShowDate((cur) => !cur)} />}
@@ -107,14 +145,6 @@ const PrintOptionsDialog: React.FC<{
                                     <MeltaCheckbox checked={options.showEntityDates} onChange={() => options.setShowEntityDates((cur) => !cur)} />
                                 }
                                 label={i18next.t('entityPage.print.showEntityDates')}
-                            />
-                        </Grid>
-                        <Grid>
-                            <FormControlLabel
-                                control={
-                                    <MeltaCheckbox checked={options.showEntityFiles} onChange={() => options.setShowEntityFiles((cur) => !cur)} />
-                                }
-                                label={i18next.t('entityPage.print.showFiles')}
                             />
                         </Grid>
                     </Grid>
