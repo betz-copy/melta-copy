@@ -6,6 +6,7 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import i18next from 'i18next';
 import heLocale from 'date-fns/locale/he';
+import DatePickerWrapper from './DatePickerWrapper';
 
 const DateRange: React.FC<{
     onStartDateChange: (newStartDateInput: Date | null) => void;
@@ -17,8 +18,8 @@ const DateRange: React.FC<{
     // const darkMode = useSelector((state: RootState) => state.darkMode);
 
     return (
-        <Grid container justifyContent="center" alignItems="center" wrap="nowrap" spacing={overrideSx && 2}>
-            <Grid item>
+        <Grid container justifyContent="center" alignItems="center" wrap="nowrap" spacing={overrideSx ? 2 : 0}>
+            {/* <Grid item>
                 <LocalizationProvider
                     dateAdapter={AdapterDateFns}
                     adapterLocale={heLocale}
@@ -42,8 +43,23 @@ const DateRange: React.FC<{
                             }
                         }
                     />
-                </LocalizationProvider>
-            </Grid>
+                </LocalizationProvider> */}
+
+            <DatePickerWrapper
+                label={i18next.t('processInstancesPage.startDate')}
+                value={startDateInput}
+                onChange={onStartDateChange}
+                maxDate={new Date()}
+                minDate={undefined}
+                sx={overrideSx}
+                components={
+                    overrideSx && {
+                        // eslint-disable-next-line react/no-unstable-nested-components
+                        OpenPickerIcon: () => <img src="/icons/calendar.svg" style={{ height: '20px' }} alt="calendar icon" />,
+                    }
+                }
+            />
+            {/* </Grid> */}
             <Grid item className="processList-dateContainer">
                 <LocalizationProvider
                     dateAdapter={AdapterDateFns}

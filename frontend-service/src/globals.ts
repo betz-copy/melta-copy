@@ -109,7 +109,6 @@ export const environment = {
                     color: '#DD3500',
                     type: NotificationType.ruleBreachRequest,
                     displayName: () => i18next?.t('notifications.displayNames.ruleBreachRequest'),
-                    //  i18next?.isInitialized &&
                 },
             ],
             general: [
