@@ -1,9 +1,10 @@
 import { Kartoffel } from '../../externalServices/kartoffel';
-import { IKartoffelUser } from '../../externalServices/kartoffel/interface';
+import { IKartoffelUser, IKartoffelUserDigitalIdentity } from '../../externalServices/kartoffel/interface';
 import { UserService } from '../../externalServices/userService';
 import { ICompactPermissions } from '../../externalServices/userService/interfaces/permissions/permissions';
 import { IBaseUser, IUser, IUserSearchBody } from '../../externalServices/userService/interfaces/users';
-import { IExternalUserData } from './interfaces';
+import { DigitalIdentitySourceDoesNotExistsError } from './error';
+import { IExternalUser, IExternalUserDigitalIdentity } from './interfaces';
 
 export class UsersManager {
     static async getUserById(userId: string): Promise<IUser> {
@@ -14,7 +15,16 @@ export class UsersManager {
         return UserService.searchUsers(searchBody);
     }
 
-    static async updateUserExternalMetadata(userId: string, externalMetadata: Partial<IBaseUser['externalMetadata']>) {
+    static async createUser(kartoffelId: string, digitalIdentitySource: string, permissions: ICompactPermissions): Promise<IUser> {
+        const kartoffelUser = await Kartoffel.getUserById(kartoffelId);
+
+        const digitalIdentity = this.getExternalUserDigitalIdentity(kartoffelUser, digitalIdentitySource);
+        if (!digitalIdentity) throw new DigitalIdentitySourceDoesNotExistsError(digitalIdentitySource, kartoffelId);
+
+        return UserService.createUser({ ...digitalIdentity, permissions, externalMetadata: { kartoffelId, digitalIdentitySource }, preferences: {} });
+    }
+
+    static async updateUserExternalMetadata(userId: string, externalMetadata: Partial<IBaseUser['externalMetadata']>): Promise<IUser> {
         return UserService.updateUser(userId, { externalMetadata });
     }
 
@@ -37,8 +47,8 @@ export class UsersManager {
         return Promise.all(kartoffelUsers.map((kartoffelUser) => this.kartoffelUserToExternalUserData(kartoffelUser)));
     }
 
-    private static async kartoffelUserToExternalUserData(kartoffelUser: IKartoffelUser): Promise<IExternalUserData> {
-        const digitalIdentities: IExternalUserData['digitalIdentities'] = {};
+    private static kartoffelUserToExternalUserData(kartoffelUser: IKartoffelUser): IExternalUser {
+        const digitalIdentities: IExternalUser['digitalIdentities'] = {};
 
         kartoffelUser.digitalIdentities.forEach((kartoffelDigitalIdentity) => {
             digitalIdentities[kartoffelDigitalIdentity.source] = {
@@ -52,6 +62,29 @@ export class UsersManager {
         return {
             kartoffelId: kartoffelUser.id,
             digitalIdentities,
+        };
+    }
+
+    private static getExternalUserDigitalIdentity(
+        kartoffelUser: IKartoffelUser,
+        digitalIdentitySource: string,
+    ): IExternalUserDigitalIdentity | undefined {
+        const kartoffelDigitalIdentity = kartoffelUser.digitalIdentities.find((digitalIdentity) => digitalIdentity.source === digitalIdentitySource);
+
+        if (!kartoffelDigitalIdentity) return undefined;
+
+        return this.kartoffelUserDigitalIdentityToExternalUserDigitalIdentity(kartoffelDigitalIdentity, kartoffelUser);
+    }
+
+    private static kartoffelUserDigitalIdentityToExternalUserDigitalIdentity(
+        digitalIdentity: IKartoffelUserDigitalIdentity,
+        kartoffelUser: IKartoffelUser,
+    ): IExternalUserDigitalIdentity {
+        return {
+            fullName: kartoffelUser.fullName || `${kartoffelUser.firstName} ${kartoffelUser.lastName}`,
+            hierarchy: digitalIdentity.role.hierarchy,
+            jobTitle: digitalIdentity.role.jobTitle,
+            mail: digitalIdentity.mail,
         };
     }
 }

@@ -10,6 +10,12 @@ export class UsersController {
         res.json(await UsersManager.searchUsers(req.body));
     }
 
+    static async createUser(req: Request, res: Response) {
+        const { kartoffelId, digitalIdentitySource, permissions } = req.body;
+
+        res.json(await UsersManager.createUser(kartoffelId, digitalIdentitySource, permissions));
+    }
+
     static async updateUserExternalMetadata(req: Request, res: Response) {
         res.json(await UsersManager.updateUserExternalMetadata(req.params.userId, req.body));
     }

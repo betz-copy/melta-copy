@@ -26,6 +26,15 @@ export const searchUsersRequestSchema = joi.object({
     params: {},
 });
 
+// POST /api/users
+export const createUserRequestSchema = joi.object({
+    query: {},
+    body: UserExternalMetadataSchema.keys({
+        permissions: joi.object(),
+    }).required(),
+    params: {},
+});
+
 // PATCH /api/users/:userId/external
 export const updateUserExternalMetadataRequestSchema = joi.object({
     query: {},

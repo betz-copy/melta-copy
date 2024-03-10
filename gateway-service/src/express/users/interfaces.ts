@@ -1,8 +1,10 @@
 import { IBaseUser } from '../../externalServices/userService/interfaces/users';
 
-export interface IExternalUserData {
+export type IExternalUserDigitalIdentity = Omit<IBaseUser, '_id' | 'preferences' | 'externalMetadata'>;
+
+export interface IExternalUser {
     kartoffelId: string;
     digitalIdentities: {
-        [source: string]: Omit<IBaseUser, '_id' | 'preferences' | 'externalMetadata'>;
+        [source: string]: IExternalUserDigitalIdentity;
     };
 }

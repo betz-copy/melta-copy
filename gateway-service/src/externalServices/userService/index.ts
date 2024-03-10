@@ -24,6 +24,11 @@ export class UserService {
         return data;
     }
 
+    static async createUser(userData: Omit<IUser, '_id'>): Promise<IUser> {
+        const { data } = await this.userService.post<IUser>(usersRoute, userData);
+        return data;
+    }
+
     static async updateUser(userId: string, updates: DeepPartial<IBaseUser>): Promise<IUser> {
         const { data } = await this.userService.patch<IUser>(`${usersRoute}/${userId}`, updates);
         return data;

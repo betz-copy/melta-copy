@@ -1,3 +1,26 @@
+export interface IKartoffelUserDigitalIdentity {
+    createdAt: string;
+    entityId: string;
+    isRoleAttachable: boolean;
+    mail: string;
+    source: string;
+    type: string;
+    uniqueId: string;
+    updatedAt: string;
+    role: {
+        clearance?: string;
+        createdAt?: string;
+        digitalIdentityUniqueId: string;
+        directGroup: string;
+        hierarchy: string;
+        hierarchyIds: string[];
+        jobTitle: string;
+        roleId: string;
+        source: string;
+        updatedAt?: string;
+    };
+}
+
 export interface IKartoffelUser {
     address: string;
     akaUnit: string;
@@ -34,26 +57,5 @@ export interface IKartoffelUser {
     sex: string;
     status?: string;
     updatedAt: string;
-    digitalIdentities: {
-        createdAt: string;
-        entityId: string;
-        isRoleAttachable: boolean;
-        mail: string;
-        source: string;
-        type: string;
-        uniqueId: string;
-        updatedAt: string;
-        role: {
-            clearance?: string;
-            createdAt?: string;
-            digitalIdentityUniqueId: string;
-            directGroup: string;
-            hierarchy: string;
-            hierarchyIds: string[];
-            jobTitle: string;
-            roleId: string;
-            source: string;
-            updatedAt?: string;
-        };
-    }[];
+    digitalIdentities: IKartoffelUserDigitalIdentity[];
 }
