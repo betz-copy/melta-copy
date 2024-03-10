@@ -3,6 +3,7 @@ import { IKartoffelUser, IKartoffelUserDigitalIdentity } from '../../externalSer
 import { UserService } from '../../externalServices/userService';
 import { ICompactPermissions } from '../../externalServices/userService/interfaces/permissions/permissions';
 import { IBaseUser, IUser, IUserSearchBody } from '../../externalServices/userService/interfaces/users';
+import { objectContains } from '../../utils';
 import { DigitalIdentitySourceDoesNotExistsError } from './error';
 import { IExternalUser, IExternalUserDigitalIdentity } from './interfaces';
 
@@ -16,10 +17,7 @@ export class UsersManager {
     }
 
     static async createUser(kartoffelId: string, digitalIdentitySource: string, permissions: ICompactPermissions): Promise<IUser> {
-        const kartoffelUser = await Kartoffel.getUserById(kartoffelId);
-
-        const digitalIdentity = this.getExternalUserDigitalIdentity(kartoffelUser, digitalIdentitySource);
-        if (!digitalIdentity) throw new DigitalIdentitySourceDoesNotExistsError(digitalIdentitySource, kartoffelId);
+        const digitalIdentity = await this.getExternalUserDigitalIdentity(kartoffelId, digitalIdentitySource);
 
         return UserService.createUser({ ...digitalIdentity, permissions, externalMetadata: { kartoffelId, digitalIdentitySource }, preferences: {} });
     }
@@ -31,7 +29,21 @@ export class UsersManager {
     static async syncUserPermissions(userId: string, permissions: ICompactPermissions): Promise<ICompactPermissions> {
         return UserService.syncUserPermissions(userId, permissions);
     }
-    static async searchExternalUsers(search: string): Promise<IExternalUserData[]> {
+
+    static async syncUser(userId: string): Promise<IUser> {
+        const user = await UserService.getUserById(userId);
+
+        const digitalIdentity = await this.getExternalUserDigitalIdentity(
+            user.externalMetadata.kartoffelId,
+            user.externalMetadata.digitalIdentitySource,
+        );
+
+        if (objectContains(user, digitalIdentity)) return user;
+
+        return UserService.updateUser(userId, digitalIdentity);
+    }
+
+    static async searchExternalUsers(search: string): Promise<IExternalUser[]> {
         let kartoffelUsers: IKartoffelUser[];
 
         if (Kartoffel.isDomainUser(search)) {
@@ -65,13 +77,11 @@ export class UsersManager {
         };
     }
 
-    private static getExternalUserDigitalIdentity(
-        kartoffelUser: IKartoffelUser,
-        digitalIdentitySource: string,
-    ): IExternalUserDigitalIdentity | undefined {
-        const kartoffelDigitalIdentity = kartoffelUser.digitalIdentities.find((digitalIdentity) => digitalIdentity.source === digitalIdentitySource);
+    private static async getExternalUserDigitalIdentity(kartoffelId: string, digitalIdentitySource: string): Promise<IExternalUserDigitalIdentity> {
+        const kartoffelUser = await Kartoffel.getUserById(kartoffelId);
 
-        if (!kartoffelDigitalIdentity) return undefined;
+        const kartoffelDigitalIdentity = kartoffelUser.digitalIdentities.find((digitalIdentity) => digitalIdentity.source === digitalIdentitySource);
+        if (!kartoffelDigitalIdentity) throw new DigitalIdentitySourceDoesNotExistsError(digitalIdentitySource, kartoffelUser.id);
 
         return this.kartoffelUserDigitalIdentityToExternalUserDigitalIdentity(kartoffelDigitalIdentity, kartoffelUser);
     }

@@ -1,6 +1,7 @@
 /* eslint-disable no-plusplus */
 import { pipeline } from 'stream';
 import { promisify } from 'util';
+import lodashIsEqual from 'lodash.isequal';
 
 // eslint-disable-next-line import/prefer-default-export
 export const promisePipe = promisify(pipeline);
@@ -27,4 +28,14 @@ export const filteredMap = <T, V>(arr: T[], func: (value: T) => { include: true;
     }
 
     return newArr;
+};
+
+export const objectContains = <T extends Object>(obj: T, subObj: any) => {
+    for (const key in subObj) {
+        if (!lodashIsEqual(obj[key], subObj[key])) {
+            return false;
+        }
+    }
+
+    return true;
 };
