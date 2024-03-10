@@ -17,4 +17,8 @@ export class UsersController {
     static async syncUserPermissions(req: Request, res: Response) {
         res.json(await UsersManager.syncUserPermissions(req.params.userId, req.body));
     }
+
+    static async searchExternalUsers(req: Request, res: Response) {
+        res.json(await UsersManager.searchExternalUsers(req.body.search));
+    }
 }

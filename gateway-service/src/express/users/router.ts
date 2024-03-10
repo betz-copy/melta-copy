@@ -4,6 +4,7 @@ import { wrapController } from '../../utils/express';
 import ValidateRequest from '../../utils/joi';
 import {
     getUserByIdRequestSchema,
+    searchExternalUsersRequestSchema,
     searchUsersRequestSchema,
     syncUserPermissionsRequestSchema,
     updateUserExternalMetadataRequestSchema,
@@ -21,3 +22,5 @@ usersRouter.patch(
 );
 
 usersRouter.post('/:userId/permissions/sync', ValidateRequest(syncUserPermissionsRequestSchema), wrapController(UsersController.syncUserPermissions));
+
+usersRouter.get('/external', ValidateRequest(searchExternalUsersRequestSchema), wrapController(UsersController.searchExternalUsers));

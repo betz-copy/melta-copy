@@ -43,3 +43,12 @@ export const syncUserPermissionsRequestSchema = joi.object({
         userId: joi.string().required(),
     },
 });
+
+// GET /api/users/external
+export const searchExternalUsersRequestSchema = joi.object({
+    query: {
+        search: joi.string().required(),
+    },
+    body: {},
+    params: {},
+});
