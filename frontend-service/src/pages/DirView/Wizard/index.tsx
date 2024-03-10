@@ -4,17 +4,19 @@ import React from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { useLocation } from 'wouter';
+import { ErrorToast } from '../../../common/ErrorToast';
+import { StepsType, Wizard, WizardBaseType } from '../../../common/wizards/index';
 import fileDetails from '../../../interfaces/fileDetails';
 import { IWorkspace, WorkspaceTypes } from '../../../interfaces/workspaces';
 import { createOne, updateOne } from '../../../services/workspacesService';
-import { ErrorToast } from '../../../common/ErrorToast';
-import { StepsType, Wizard, WizardBaseType } from '../../../common/wizards/index';
-import { ChooseColors, chooseColorsSchema } from './ChooseColors';
+import { getFileName } from '../../../utils/getFileName';
+// import { ChooseColors, chooseColorsSchema } from './ChooseColors';
 import { ChooseDetails, chooseDetailsSchema } from './ChooseDetails';
 import { ChooseIcons } from './ChooseIcons';
 
-export interface WorkspaceWizardValues extends Omit<IWorkspace, 'path'> {
-    // icon?: fileDetails;
+export interface WorkspaceWizardValues extends Omit<IWorkspace, '_id' | 'path' | 'iconFileId' | 'logoFileId'> {
+    icon?: fileDetails;
+    logo?: fileDetails;
 }
 
 const steps: StepsType<WorkspaceWizardValues> = [
@@ -35,6 +37,16 @@ const steps: StepsType<WorkspaceWizardValues> = [
     // },
 ];
 
+export const workspaceObjectToWorkspaceForm = (workspace: IWorkspace | null): WorkspaceWizardValues | undefined => {
+    if (!workspace) return undefined;
+    const { iconFileId, logoFileId, ...workspaceValues } = workspace as IWorkspace & WorkspaceWizardValues;
+
+    if (iconFileId) workspaceValues.icon = { file: { name: iconFileId }, name: getFileName(iconFileId) };
+    if (logoFileId) workspaceValues.logo = { file: { name: iconFileId }, name: getFileName(logoFileId) };
+
+    return workspaceValues;
+};
+
 export const WorkspaceWizard: React.FC<WizardBaseType<WorkspaceWizardValues>> = ({
     open,
     handleClose,
@@ -47,10 +59,9 @@ export const WorkspaceWizard: React.FC<WizardBaseType<WorkspaceWizardValues>> = 
     const queryClient = useQueryClient();
 
     const { isLoading, mutateAsync } = useMutation(
-        ({ _id, ...workspaceValues }: WorkspaceWizardValues) => {
+        ({ _id, ...workspaceValues }: WorkspaceWizardValues & { _id?: string }) => {
             const workspace = { ...workspaceValues, path: location };
-
-            return isEditMode === true ? updateOne(_id, workspace) : createOne(workspace);
+            return isEditMode === true ? updateOne(_id!, workspace) : createOne(workspace);
         },
         {
             onSuccess: () => {

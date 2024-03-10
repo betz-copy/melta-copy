@@ -1,6 +1,6 @@
 import Joi from 'joi';
-import { FilePathSchema, HexColorSchema, MongoIdSchema } from '../../utils/joi';
-import { Colors, WorkspaceTypes } from './interface';
+import { ExtendedJoi, FilePathSchema, iconFileSchema, MongoIdSchema } from '../../utils/joi';
+import { WorkspaceTypes } from './interface';
 
 const workspaceSchema = Joi.object({
     name: Joi.string().required(),
@@ -8,7 +8,9 @@ const workspaceSchema = Joi.object({
     type: Joi.string()
         .valid(...Object.values(WorkspaceTypes))
         .required(),
-    colors: Joi.object(Object.values(Colors).reduce((acc, color) => ({ ...acc, [color]: HexColorSchema.required() }), {})).required(),
+    colors: ExtendedJoi.stringToObject(),
+    iconFileId: Joi.string(),
+    logoFileId: Joi.string(),
 });
 
 // POST /api/workspaces/dir
@@ -43,6 +45,7 @@ export const createOneSchema = Joi.object({
     query: {},
     body: workspaceSchema,
     params: {},
+    files: Joi.array().items(iconFileSchema),
 });
 
 // DELETE /api/workspaces/:id
@@ -61,4 +64,5 @@ export const updateOneSchema = Joi.object({
     params: {
         id: MongoIdSchema.required(),
     },
+    files: Joi.array().items(iconFileSchema),
 });

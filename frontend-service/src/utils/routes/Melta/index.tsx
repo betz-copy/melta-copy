@@ -12,17 +12,17 @@ import { IRuleMap } from '../../../interfaces/rules';
 import ErrorPage from '../../../pages/ErrorPage';
 import { getAllTemplates, GetAllTemplatesType } from '../../../services/templates/getAllTemplates';
 import { getFile } from '../../../services/workspacesService';
+import { useWorkspaceStore } from '../../../stores/workspace';
 import { mapTemplates } from '../../templates';
 import { MeltaRoutesInner } from './routes';
-import { environment } from '../../../globals';
-
-const { workspaceQueryKey } = environment;
 
 interface IMeltaRoutesProps {
     path: string;
 }
 
 export const MeltaRoutes: React.FC<IMeltaRoutesProps> = ({ path }) => {
+    const setWorkspace = useWorkspaceStore((state) => state.setWorkspace);
+
     const queryClient = useQueryClient();
 
     // use queries enabled false, setting query data by hand "queryClient.setQueryData" (setting from getAllTemplates)
@@ -47,20 +47,25 @@ export const MeltaRoutes: React.FC<IMeltaRoutesProps> = ({ path }) => {
         },
     });
 
-    const { isLoading: isLoadingWorkspace, isError: isErrorWorkspace } = useQuery({
-        queryKey: workspaceQueryKey,
+    const {
+        data: workspace,
+        isLoading: isLoadingWorkspace,
+        isError: isErrorWorkspace,
+    } = useQuery({
+        queryKey: ['workspace', path],
         queryFn: () => getFile(path),
-        staleTime: Infinity,
     });
 
     useEffect(() => {
-        queryClient.invalidateQueries({ queryKey: workspaceQueryKey });
-    }, [queryClient, path]);
+        if (!workspace) return;
+
+        setWorkspace(workspace);
+    }, [workspace, setWorkspace]);
 
     const isLoading = useMemo(() => isLoadingAllTemplates || isLoadingWorkspace, [isLoadingAllTemplates, isLoadingWorkspace]);
     const isError = useMemo(() => isErrorAllTemplates || isErrorWorkspace, [isErrorAllTemplates, isErrorWorkspace]);
 
-    if (isLoading) return <LoadingAnimation />;
+    if (isLoading) return <LoadingAnimation isLoading={isLoadingWorkspace} />;
 
     if (isError) return <ErrorPage errorText={i18next.t('errorPage.systemUnavailable')} />;
 

@@ -15,11 +15,11 @@ export class WorkspaceController {
     }
 
     static async createOne(req: Request, res: Response) {
-        res.json(await WorkspaceManager.createOne(req.body));
+        res.json(await WorkspaceManager.createOne(req.body, req.files as Express.Multer.File[]));
     }
 
     static async updateOne(req: Request, res: Response) {
-        res.json(await WorkspaceManager.updateOne(req.params.id, req.body));
+        res.json(await WorkspaceManager.updateOne(req.params.id, req.body, req.files as Express.Multer.File[]));
     }
 
     static async deleteOne(req: Request, res: Response) {

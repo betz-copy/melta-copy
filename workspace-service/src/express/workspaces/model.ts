@@ -26,6 +26,12 @@ const WorkspacesSchema = new mongoose.Schema<IWorkspace>(
             index: true,
         },
         colors: ColorsSchema,
+        iconFileId: {
+            type: String,
+        },
+        logoFileId: {
+            type: String,
+        },
     },
     { timestamps: true, versionKey: false },
 );

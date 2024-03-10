@@ -15,4 +15,6 @@ export interface IWorkspace {
     path: string;
     type: WorkspaceTypes;
     colors: Record<Colors, HexColor>;
+    iconFileId?: string;
+    logoFileId?: string;
 }

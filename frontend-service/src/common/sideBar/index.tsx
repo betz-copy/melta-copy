@@ -12,20 +12,19 @@ import { Box, Button, Grid, IconButton, Slide, Typography, useTheme } from '@mui
 import i18next from 'i18next';
 import React, { useRef, useState } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
-import { useDispatch, useSelector } from 'react-redux';
 import { useLocation } from 'wouter';
 
 import { environment } from '../../globals';
 import { ICategoryMap } from '../../interfaces/categories';
 import { INotificationCountGroups } from '../../interfaces/notifications';
-import { IWorkspace } from '../../interfaces/workspaces';
 import { getMyNotificationGroupCountRequest } from '../../services/notificationService';
 import { IPermissionsOfUser } from '../../services/permissionsService';
-import { RootState } from '../../store';
-import { toggleMeltaPlus } from '../../store/reducers/meltaPlus';
+import { useMeltaPlusStore } from '../../stores/meltaPlus';
+import { useWorkspaceStore } from '../../stores/workspace';
 import { CustomIcon, CustomImage } from '../CustomIcon';
 import { GlobalSearchBar } from '../EntitiesPage/Headline';
 import IconButtonWithPopover from '../IconButtonWithPopover';
+import { MeltaIcon } from '../MeltaIcon';
 import PermissionsOfUserDialog from '../permissionsOfUserDialog';
 import { NavButton } from './NavButton';
 import { NotificationsButton } from './notifications/NotificationsButton';
@@ -33,12 +32,12 @@ import { NotificationsScreen } from './notifications/NotificationsScreen';
 import { ProfileButton } from './ProfileButton';
 import { Drawer, DrawerDivider } from './SideBar.styled';
 
-type SideBarProps = {
+interface SideBarProps {
     toggleDrawer: () => any;
     isDrawerOpen: boolean;
-};
+}
 
-const { notifications, workspaceQueryKey } = environment;
+const { notifications } = environment;
 
 const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
     const theme = useTheme();
@@ -72,10 +71,10 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
     );
     const notificationCountDetails = notificationCountDetailsResponse || { total: 0, groups: {} };
 
-    const { meltaPlus } = useSelector((state: RootState) => state);
-    const dispatch = useDispatch();
+    const meltaPlus = useMeltaPlusStore((state) => state.meltaPlus);
+    const toggleMeltaPlus = useMeltaPlusStore((state) => state.toggleMeltaPlus);
 
-    const workspace = queryClient.getQueryData<IWorkspace>(workspaceQueryKey);
+    const workspace = useWorkspaceStore((state) => state.workspace);
 
     return (
         <Drawer
@@ -100,14 +99,14 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                     <Box
                         position="relative"
                         onClick={(event) => {
-                            if (event.detail >= 3) dispatch(toggleMeltaPlus());
+                            if (event.detail >= 3) toggleMeltaPlus();
                         }}
                     >
                         <Slide in={meltaPlus} direction="down">
                             <PlusIcon
                                 sx={{
                                     position: 'absolute',
-                                    left: '-15%',
+                                    left: isDrawerOpen ? '-90%' : '-15%',
                                     top: '18%',
                                     fontSize: 40,
                                     color: 'white',
@@ -121,13 +120,15 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                         <Button
                             onClick={() => {
                                 navigate('');
+                                setActiveButton(null);
                             }}
                             style={{ width: '50px' }}
                         >
-                            <img
-                                src={isDrawerOpen ? '/icons/Melta_Logo.svg' : '/icons/Melta_Short_Logo.svg'}
+                            <MeltaIcon
+                                iconUrl={isDrawerOpen ? workspace.logoFileId : workspace.iconFileId}
+                                expanded={isDrawerOpen}
+                                width={isDrawerOpen ? '150px' : '70px'}
                                 style={{ margin: '0.6rem' }}
-                                height="30px"
                             />
                         </Button>
                     </Box>

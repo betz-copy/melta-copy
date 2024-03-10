@@ -9,6 +9,8 @@ const workspaceSchema = Joi.object({
         .valid(...Object.values(WorkspaceTypes))
         .required(),
     colors: Joi.object(Object.values(Colors).reduce((acc, color) => ({ ...acc, [color]: HexColorSchema.required() }), {})).required(),
+    iconFileId: Joi.string(),
+    logoFileId: Joi.string(),
 });
 
 // POST /api/workspaces/dir

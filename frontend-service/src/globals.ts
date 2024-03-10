@@ -132,7 +132,6 @@ export const environment = {
         width: '24px',
         height: '24px',
     },
-    workspaceQueryKey: ['workspace'],
     fileExtensions: {
         image: ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'tiff', 'svg', 'webp', 'ico', 'psd', 'raw', 'heif', 'indd', 'ai', 'eps'],
         video: ['mp4', 'mov', 'avi', 'wmv', 'flv', 'mkv', 'webm', 'avchd', '3gp', '3g2', '3gpp', '3gpp2', 'm4v'],

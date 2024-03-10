@@ -1,6 +1,7 @@
 import axios from '../axios';
 import { environment } from '../globals';
 import { IWorkspace } from '../interfaces/workspaces';
+import { WorkspaceWizardValues } from '../pages/DirView/Wizard';
 
 const {
     api: { workspaces },
@@ -21,12 +22,38 @@ export const getById = async (id: string) => {
     return data;
 };
 
-export const createOne = async (workspace: Omit<IWorkspace, '_id'>) => {
-    const { data } = await axios.post<IWorkspace>(`${workspaces}/`, workspace);
+const generateFormData = (workspace: WorkspaceWizardValues, appendFiles: (formData: FormData) => void) => {
+    const formData = new FormData();
+
+    Object.entries(workspace).forEach(([key, value]) => {
+        formData.append(key, typeof value === 'object' ? JSON.stringify(value) : value);
+    });
+
+    appendFiles(formData);
+
+    return formData;
+};
+
+export const createOne = async (workspaceValues: WorkspaceWizardValues) => {
+    const { icon, logo, ...workspace } = workspaceValues;
+
+    const formData = generateFormData(workspace, (currentFormData) => {
+        if (icon) currentFormData.append('iconFileId', icon.file as File);
+        if (logo) currentFormData.append('logoFileId', logo.file as File);
+    });
+
+    const { data } = await axios.post<IWorkspace>(`${workspaces}/`, formData);
     return data;
 };
 
-export const updateOne = async (id: string, workspace: Omit<IWorkspace, '_id'>) => {
-    const { data } = await axios.put<IWorkspace>(`${workspaces}/${id}`, workspace);
+export const updateOne = async (id: string, workspaceValues: WorkspaceWizardValues) => {
+    const { icon, logo, ...workspace } = workspaceValues;
+
+    const formData = generateFormData(workspace, (currentFormData) => {
+        if (icon) currentFormData.append('iconFileId', icon.file instanceof File ? icon.file : icon.file.name!);
+        if (logo) currentFormData.append('logoFileId', logo.file instanceof File ? logo.file : logo.file.name!);
+    });
+
+    const { data } = await axios.put<IWorkspace>(`${workspaces}/${id}`, formData);
     return data;
 };

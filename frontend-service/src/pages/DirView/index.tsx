@@ -2,12 +2,13 @@ import { Box } from '@mui/material';
 import i18next from 'i18next';
 import React, { useMemo, useState } from 'react';
 import { useQuery } from 'react-query';
-import { WorkspaceWizard, WorkspaceWizardValues } from './Wizard';
+import { IWorkspace } from '../../interfaces/workspaces';
 import { MainBox } from '../../Main.styled';
 import { getDir } from '../../services/workspacesService';
 import ErrorPage from '../ErrorPage';
 import { Topbar } from './Topbar';
 import { Waves } from './Waves';
+import { workspaceObjectToWorkspaceForm, WorkspaceWizard } from './Wizard';
 import { Workspace } from './Workspace';
 
 export enum Mode {
@@ -17,7 +18,7 @@ export enum Mode {
 
 const DirView: React.FC<{ params: { '*': string } }> = ({ params }) => {
     const [mode, setMode] = useState(Mode.view);
-    const [wizardDialogState, setWizardDialogState] = useState<{ isWizardOpen: boolean; workspace: WorkspaceWizardValues | null }>({
+    const [wizardDialogState, setWizardDialogState] = useState<{ isWizardOpen: boolean; workspace: IWorkspace | null }>({
         isWizardOpen: false,
         workspace: null,
     });
@@ -57,7 +58,7 @@ const DirView: React.FC<{ params: { '*': string } }> = ({ params }) => {
             <WorkspaceWizard
                 open={wizardDialogState.isWizardOpen}
                 handleClose={() => setWizardDialogState({ isWizardOpen: false, workspace: null })}
-                initialValues={wizardDialogState.workspace || undefined}
+                initialValues={workspaceObjectToWorkspaceForm(wizardDialogState.workspace)}
                 isEditMode={Boolean(wizardDialogState.workspace)}
             />
         </>
