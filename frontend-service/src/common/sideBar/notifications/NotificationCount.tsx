@@ -11,18 +11,18 @@ export const NotificationCount: React.FC<NotificationCountProps> = ({ notificati
 
     return (
         <Typography
-            borderRadius="20px"
+            borderRadius={25}
             fontSize={12}
-            width="24px"
-            height="24px"
             minWidth="1.25rem"
             fontWeight="bold"
             color="white"
             bgcolor="#FF006B"
-            display="flex"
-            alignItems="center"
-            justifyContent="center"
-            lineHeight="15.6px"
+            borderRight="0.22rem solid #FF006B"
+            borderLeft="0.3rem solid #FF006B"
+            paddingTop="0.1rem"
+            paddingBottom={0}
+            paddingX={0}
+            align="center"
             sx={{ userSelect: 'none', direction: 'rtl', ...style }}
         >
             {notificationCount}
