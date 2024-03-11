@@ -1,5 +1,4 @@
 import React from 'react';
-import { Grid } from '@mui/material';
 import TextField from '@mui/material/TextField';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -7,13 +6,12 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import i18next from 'i18next';
 import heLocale from 'date-fns/locale/he';
 
-const DatePickerWrapper = ({ label, value, onChange, minDate, maxDate, sx, components }) => (
-    <Grid item>
-        <LocalizationProvider
-            dateAdapter={AdapterDateFns}
-            adapterLocale={heLocale}
-            localeText={i18next.t('muiDatePickersLocaleText', { returnObjects: true })}
-        />
+const DatePickerWrapper: React.FC<any> = ({ label, value, onChange, minDate, maxDate, sx, components, isStartDate = false }) => (
+    <LocalizationProvider
+        dateAdapter={AdapterDateFns}
+        adapterLocale={heLocale}
+        localeText={i18next.t('muiDatePickersLocaleText', { returnObjects: true })}
+    >
         <DatePicker
             inputFormat="dd/MM/yyyy"
             minDate={minDate}
@@ -23,11 +21,11 @@ const DatePickerWrapper = ({ label, value, onChange, minDate, maxDate, sx, compo
             onChange={onChange}
             renderInput={(params) => <TextField {...params} size="small" sx={sx} />}
             InputProps={{
-                style: { borderRadius: '7px', backgroundColor: sx && 'white' },
+                style: { borderRadius: isStartDate ? '0px 7px 7px 0px' : '7px 0px 0px 7px', backgroundColor: sx && 'white' },
             }}
             components={components}
         />
-    </Grid>
+    </LocalizationProvider>
 );
 
 export default DatePickerWrapper;
