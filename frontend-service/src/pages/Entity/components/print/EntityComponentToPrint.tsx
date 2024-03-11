@@ -18,8 +18,6 @@ const EntityComponentToPrint: React.FC<{
     const theme = useTheme();
 
     const darkMode = useSelector((state: RootState) => state.darkMode);
-    console.log({ entity });
-    console.log({ entityTemplate });
 
     return (
         <Box border={`2px solid ${theme.palette.primary.main}`} borderRadius="20px" padding="1rem" style={{ pageBreakInside: 'avoid' }}>
@@ -32,6 +30,7 @@ const EntityComponentToPrint: React.FC<{
                     files={files}
                     mode="normal"
                     textWrap
+                    toPrint
                 />
             </Box>
 

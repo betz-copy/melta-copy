@@ -8,6 +8,16 @@ import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../i
 import { EntityComponentToPrint } from './EntityComponentToPrint';
 import { IConnectionTemplateOfExpandedEntity } from '../..';
 import { FileToPrint } from './FileToPrint';
+import { useFilePreview } from '../../../../utils/useFilePreview';
+
+const FileData: React.FC<{ file: IFile; setFiles: React.Dispatch<React.SetStateAction<IFile[]>> }> = ({ file, setFiles }) => {
+    const filePreview = useFilePreview(file.id, file.type);
+    const { data, refetch } = filePreview;
+    if (!data) {
+        refetch();
+    }
+    return <FileToPrint file={file} key={`${file.id}${file.name}`} setFiles={setFiles} filePreview={filePreview} />;
+};
 
 const ComponentToPrint = React.forwardRef<
     HTMLDivElement,
@@ -136,9 +146,9 @@ const ComponentToPrint = React.forwardRef<
             {options.showEntityFiles && (
                 <>
                     <BlueTitle title={i18next.t('entityPage.print.appendices')} component="h4" variant="h4" style={{ marginTop: '2rem' }} />
-                    {filesToPrint.map((file) => (
-                        <FileToPrint file={file} key={file.id} setFiles={setFilesToPrint} />
-                    ))}
+                    {filesToPrint.map((file) => {
+                        return <FileData file={file} key={file.id} setFiles={setFilesToPrint} />;
+                    })}
                 </>
             )}
         </Box>

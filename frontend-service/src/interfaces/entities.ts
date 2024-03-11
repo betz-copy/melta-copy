@@ -119,5 +119,5 @@ export interface IFile {
     name: string;
     id: string;
     type: string;
-    firstPage?: number;
+    extension: string;
 }

@@ -1,5 +1,5 @@
 import React, { CSSProperties } from 'react';
-import { Box, Button, Grid, IconButton, Typography } from '@mui/material';
+import { Grid, IconButton, Typography } from '@mui/material';
 import i18next from 'i18next';
 import { useSelector } from 'react-redux';
 import { pdfjs } from 'react-pdf';
@@ -18,7 +18,7 @@ export const formatToString = (
     valueType: 'string' | 'number' | 'boolean' | 'array',
     format?: string,
     keyEnumColors?: Record<string, string>,
-    files?: IFile[],
+    toPrint?: boolean,
 ) => {
     if (value === null || value === undefined) return '-';
 
@@ -29,19 +29,7 @@ export const formatToString = (
     if (valueType === 'string') {
         if (format === 'date') return new Date(value).toLocaleDateString('en-uk');
         if (format === 'date-time') return new Date(value).toLocaleString('en-uk');
-        if (format === 'fileId')
-            return (
-                <Button
-                    onClick={() => {
-                        if (files) {
-                            const thisFile = files.find((file) => file.id === value);
-                            window.scrollTo({ top: thisFile!.firstPage, behavior: 'smooth' });
-                        }
-                    }}
-                >
-                    <OpenPreviewButton fileId={value} />
-                </Button>
-            );
+        if (format === 'fileId') return <OpenPreviewButton fileId={value} toPrint={toPrint} />;
     }
     if (keyEnumColors?.[value] && valueType === 'string') return <ColoredEnumChip label={value} color={keyEnumColors[value]} />;
     if (valueType === 'array') {
@@ -64,6 +52,7 @@ interface IEntityPropertiesProps {
     style?: CSSProperties;
     innerStyle?: CSSProperties;
     textWrap?: boolean;
+    toPrint?: boolean;
 }
 
 export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkMode?: boolean }> = ({
@@ -76,6 +65,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
     style,
     innerStyle,
     textWrap = false,
+    toPrint = false,
 }) => {
     let propertiesOrderedToShow: string[];
     if (overridePropertiesToShow) {
@@ -106,8 +96,9 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                     propertySchema.type,
                     propertySchema.format,
                     (propertySchema.enum || propertySchema.items?.enum) && entityTemplate.enumPropertiesColors?.[propertyKey],
-                    files,
+                    toPrint,
                 );
+
                 return (
                     <Grid key={propertyKey} item container flexDirection="row" style={innerStyle} alignItems={textWrap ? 'flex-start' : 'center'}>
                         <Grid item container width="100%" flexWrap="nowrap" gap="15px" alignItems={textWrap ? 'flex-start' : 'center'}>

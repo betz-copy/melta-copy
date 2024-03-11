@@ -9,7 +9,8 @@ import { ComponentToPrint } from './ComponentToPrint';
 import { PrintOptionsDialog } from './PrintOptionsDialog';
 import { IConnectionTemplateOfExpandedEntity } from '../..';
 import { getFileName } from '../../../../utils/getFileName';
-import { getPreviewContentType } from '../../../../utils/getFileType';
+import { getFileExtension, getPreviewContentType } from '../../../../utils/getFileType';
+import { isUnsupported, isVideoOrAudio } from '../../../../common/FilePreview/PreviewDialog';
 
 const Print: React.FC<{
     entityTemplate: IMongoEntityTemplatePopulated;
@@ -37,17 +38,25 @@ const Print: React.FC<{
                 const propertyValue = expandedEntity.entity.properties[propertyKey];
                 if (propertySchema.format === 'fileId') {
                     const name = getFileName(propertyValue);
-                    return { id: propertyValue, name, type: getPreviewContentType(name), key: propertyKey } as IFile;
+                    return {
+                        id: propertyValue,
+                        name,
+                        type: getPreviewContentType(name),
+                        key: propertyKey,
+                        extension: getFileExtension(name),
+                    } as IFile;
                 }
                 return undefined;
             })
             .filter((file) => file !== undefined) as IFile[];
     };
 
-    const files = getEntityFiles();
+    const files = getEntityFiles().filter(
+        (file) => !isVideoOrAudio(file.type) && !isUnsupported(file.type) && file.extension !== 'pptx' && !file.name.includes('txt'),
+    );
 
     const [selected, setSelected] = React.useState(connectionsTemplates);
-    const [selectedFiles, setSelectedFiles] = React.useState(getEntityFiles());
+    const [selectedFiles, setSelectedFiles] = React.useState(files);
     const [showDate, setShowDate] = React.useState(true);
     const [showDisabled, setShowDisabled] = React.useState(true);
     const [showEntityDates, setShowEntityDates] = React.useState(true);
