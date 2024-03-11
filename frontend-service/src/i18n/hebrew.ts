@@ -700,6 +700,7 @@ export default {
         noInstancesFound: 'לא נמצאו תהליכים',
         openProcessesTitle: 'תהליכים פתוחים',
         closedProcessesTitle: 'תהליכים סגורים',
+        someStepIsApprovedAreYouSureEditProcessDetails: 'קיים שלב שכבר אושר. האם אתה בטוח רוצה לשנות את פרטי התהליך?',
         stepStatus: {
             pending: 'ממתין',
             approved: 'בוצע',
