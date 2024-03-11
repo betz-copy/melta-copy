@@ -67,7 +67,7 @@ export class WorkspacesManager {
                 );
             }
 
-            return WorkspacesModel.findByIdAndUpdate(id, workspace, { new: true, overwrite: true, session })
+            return WorkspacesModel.findOneAndReplace({ _id: id }, workspace, { new: true, session })
                 .orFail(new DocumentNotFoundError(id))
                 .lean()
                 .exec();
