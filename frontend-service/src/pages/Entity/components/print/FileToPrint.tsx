@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Box, Grid } from '@mui/material';
 import i18next from 'i18next';
 import { Document, Page } from 'react-pdf';
