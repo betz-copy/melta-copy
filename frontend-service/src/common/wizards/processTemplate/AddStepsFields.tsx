@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { AccordionDetails, AccordionSummary, Grid, IconButton, Typography, useTheme } from '@mui/material';
 import * as Yup from 'yup';
 import i18next from 'i18next';
-import { ExpandMore as ExpandMoreIcon, Delete as DeleteIcon } from '@mui/icons-material';
+import { ExpandMore as ExpandMoreIcon, Delete as DeleteIcon, DragHandle as DragHandleIcon } from '@mui/icons-material';
 import AddIcon from '@mui/icons-material/Add';
 import _debounce from 'lodash.debounce';
 import { FieldArray, FormikErrors } from 'formik';
@@ -166,7 +166,7 @@ const AddStepsFields: React.FC<StepComponentProps<ProcessTemplateWizardValues, '
                                                         TransitionProps={{ unmountOnExit: true }} // performance issues with many steps
                                                     >
                                                         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                                                            <img src="/icons/draggable-icon.svg" />
+                                                            <DragHandleIcon />
                                                             <Typography>{` ${i18next.t('wizard.processTemplate.level')}: ${
                                                                 values.steps[index].displayName || ''
                                                             }`}</Typography>
