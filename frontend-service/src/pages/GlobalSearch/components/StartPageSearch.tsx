@@ -12,7 +12,14 @@ const StartPageSearch: React.FC<{
                 <img src="/icons/Melta_Google_Logo.svg" style={{ margin: '0.6rem', color: 'black' }} width="400px" />
             </Grid>
             <Grid item width="800px">
-                <GlobalSearchBar onSearch={onSearch} placeholder={i18next.t('globalSearch.searchLabel')} size="medium" borderRadius="30px" />
+                <GlobalSearchBar
+                    onSearch={onSearch}
+                    placeholder={i18next.t('globalSearch.searchLabel')}
+                    size="medium"
+                    borderRadius="30px"
+                    height="56px"
+                    width="768px"
+                />
             </Grid>
         </Grid>
     );

@@ -160,7 +160,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
 
                     <Grid
                         style={{
-                            width: isDrawerOpen ? '90%' : '',
+                            width: isDrawerOpen ? '199px' : '',
                             borderRadius: '15px',
                             display: 'flex',
                             alignContent: 'center',
@@ -176,6 +176,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                                 placeholder={i18next.t('pages.globalSearch')}
                                 size="small"
                                 borderRadius="30px"
+                                width="199px"
                             />
                         ) : (
                             <Grid onClick={() => toggleDrawer()}>

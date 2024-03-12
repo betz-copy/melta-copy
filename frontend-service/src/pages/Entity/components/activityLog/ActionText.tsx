@@ -45,9 +45,12 @@ const RelationshipMetadataActionText: React.FC<{
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
 
     const relationshipTemplate = relationshipTemplates.get(actionMetadata.relationshipTemplateId);
-    const sourceAndDestinationTemplate = Array.from(entityTemplates.values()).filter(
-        (template) => template._id === relationshipTemplate?.sourceEntityId || template._id === relationshipTemplate?.destinationEntityId,
-    );
+
+    const otherEntityTemplateId =
+        relationshipTemplate?.sourceEntityId !== entityTemplate._id
+            ? relationshipTemplate?.sourceEntityId
+            : relationshipTemplate?.destinationEntityId;
+    const otherEntityTemplate = otherEntityTemplateId ? entityTemplates.get(otherEntityTemplateId) : undefined;
 
     return (
         <Grid item container>
@@ -70,9 +73,7 @@ const RelationshipMetadataActionText: React.FC<{
                             style={{ color: theme.palette.primary.main, cursor: 'pointer' }}
                             borderBottom="1px solid"
                         >
-                            {sourceAndDestinationTemplate[0]._id === entityTemplate._id
-                                ? sourceAndDestinationTemplate[1].displayName
-                                : sourceAndDestinationTemplate[0].displayName}
+                            {otherEntityTemplate?.displayName}
                         </StyledTypography>
                     </>
                 )}

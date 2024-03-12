@@ -4,7 +4,6 @@ import { useSelector } from 'react-redux';
 import { NavLink } from 'react-router-dom';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IEntityExpanded } from '../../../interfaces/entities';
-import { IMongoRelationshipTemplatePopulated } from '../../../interfaces/relationshipTemplates';
 import { ActivityLog } from './activityLog';
 import { Print } from './print';
 import { IMongoCategory } from '../../../interfaces/categories';
@@ -12,15 +11,17 @@ import { RootState } from '../../../store';
 import { CustomIcon } from '../../../common/CustomIcon';
 import { getEntityTemplateColor } from '../../../utils/colors';
 import { EntityTemplateColor } from '../../../common/EntityTemplateColor';
+import { IConnectionTemplateOfExpandedEntity } from '..';
 
 const EntityTopBar: React.FC<{
     entityTemplate: IMongoEntityTemplatePopulated;
     expandedEntity: IEntityExpanded;
-    relevantRelationshipTemplates: IMongoRelationshipTemplatePopulated[];
-    categoriesWithRelationshipTemplates: (IMongoCategory & {
-        relationshipTemplates: IMongoRelationshipTemplatePopulated[];
-    })[];
-}> = ({ entityTemplate, expandedEntity, categoriesWithRelationshipTemplates, relevantRelationshipTemplates }) => {
+    connectionsTemplates: IConnectionTemplateOfExpandedEntity[];
+    categoriesWithConnectionsTemplates: {
+        category: IMongoCategory;
+        connectionsTemplates: IConnectionTemplateOfExpandedEntity[];
+    }[];
+}> = ({ entityTemplate, expandedEntity, categoriesWithConnectionsTemplates, connectionsTemplates }) => {
     const theme = useTheme();
 
     const darkMode = useSelector((state: RootState) => state.darkMode);
@@ -72,8 +73,8 @@ const EntityTopBar: React.FC<{
                 <Print
                     entityTemplate={entityTemplate}
                     expandedEntity={expandedEntity}
-                    categoriesWithRelationshipTemplates={categoriesWithRelationshipTemplates}
-                    relevantRelationshipTemplates={relevantRelationshipTemplates}
+                    categoriesWithConnectionsTemplates={categoriesWithConnectionsTemplates}
+                    connectionsTemplates={connectionsTemplates}
                 />
                 <ActivityLog entityTemplate={entityTemplate} expandedEntity={expandedEntity} />
             </Box>
