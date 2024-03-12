@@ -11,7 +11,7 @@ interface IBaseActivityLog {
 }
 
 interface IEmptyMetadata extends IBaseActivityLog {
-    action: 'CREATE_ENTITY' | 'DISABLE_ENTITY' | 'ACTIVATE_ENTITY' | 'VIEW_ENTITY_FILE';
+    action: 'CREATE_ENTITY' | 'DISABLE_ENTITY' | 'ACTIVATE_ENTITY' | 'VIEW_ENTITY';
     metadata: {};
 }
 
@@ -27,8 +27,8 @@ interface IUpdateEntityMetadata extends IBaseActivityLog {
 
 export type IActivityLog = IEmptyMetadata | IRelationshipMetadata | IUpdateEntityMetadata;
 
-const getActivityLogRequest = async (entityId: string, limit: number, skip: number, actions?: string[]) => {                    
-    const { data } = await axios.get<IActivityLog[]>(`${activityLog}/${entityId}`, { params: { limit, skip, actions } });
+const getActivityLogRequest = async (entityId: string, limit: number, skip: number, action?: string) => {                    
+    const { data } = await axios.get<IActivityLog[]>(`${activityLog}/${entityId}`, { params: { limit, skip, action } });
     return data;
 };
 

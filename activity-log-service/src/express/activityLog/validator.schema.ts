@@ -5,7 +5,7 @@ export const getActivitySchema = Joi.object({
     query: {
         limit: Joi.number().integer().min(0).default(0),
         skip: Joi.number().integer().min(0).default(0),
-        actions: Joi.array().items(Joi.string()).default([]),
+        action: Joi.string().default([]),
     },
     body: {},
     params: {
@@ -20,7 +20,7 @@ export const createActivityRequestSchema = Joi.object({
         entityId: Joi.string().required(),
         userId: Joi.string().required(),
         action: Joi.string()
-            .valid('DELETE_RELATIONSHIP', 'CREATE_RELATIONSHIP', 'UPDATE_ENTITY', 'CREATE_ENTITY', 'DISABLE_ENTITY', 'ACTIVATE_ENTITY' , 'VIEW_ENTITY_FILE')
+            .valid('DELETE_RELATIONSHIP', 'CREATE_RELATIONSHIP', 'UPDATE_ENTITY', 'CREATE_ENTITY', 'DISABLE_ENTITY', 'ACTIVATE_ENTITY' , 'VIEW_ENTITY')
             .required(),
         metadata: Joi.when('action', {
             switch: [

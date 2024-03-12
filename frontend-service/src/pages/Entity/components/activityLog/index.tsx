@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import i18next from 'i18next';
 import { toast } from 'react-toastify';
-import { Box, Button, Divider } from '@mui/material';
+import { Box, Divider } from '@mui/material';
 import IconButtonWithPopover from '../../../../common/IconButtonWithPopover';
 import { IEntityExpanded } from '../../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
@@ -10,7 +10,7 @@ import { InfiniteScroll } from '../../../../common/InfiniteScroll';
 import { getActivityLogRequest, IActivityLog } from '../../../../services/activityLogService';
 import ActivityLogRow from './ActivityLogRow';
 import { environment } from '../../../../globals';
-import Tabs from '@mui/material/Tabs';
+
 import Tab from '@mui/material/Tab';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 
@@ -25,7 +25,7 @@ const ActivityLog: React.FC<{ expandedEntity: IEntityExpanded; entityTemplate: I
     useEffect(() => {
         setOpenPopper(false);
     }, [entityId]);
-    const [tab, setValue] = React.useState(i18next.t('entityPage.activityLog.actions') as string);
+    const [tab, setTab] = React.useState(i18next.t('entityPage.activityLog.actions') as string);
 
     return (
         <>
@@ -39,7 +39,7 @@ const ActivityLog: React.FC<{ expandedEntity: IEntityExpanded; entityTemplate: I
                 <TabContext value={tab}>
                     <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                         <TabList onChange={(event: React.SyntheticEvent, newValue: string) => {
-                            setValue(newValue);
+                            setTab(newValue);
                         }} centered>
                             <Tab label={i18next.t('entityPage.activityLog.actions')} value={i18next.t('entityPage.activityLog.actions')} />
                             <Tab label={i18next.t('entityPage.activityLog.viewers')} value={i18next.t('entityPage.activityLog.viewers')} />
@@ -69,7 +69,7 @@ const ActivityLog: React.FC<{ expandedEntity: IEntityExpanded; entityTemplate: I
                     <TabPanel value={i18next.t('entityPage.activityLog.viewers')}>
                         <InfiniteScroll<IActivityLog>
                         queryKey={['getActivityLogRequest', entityId]}
-                        queryFunction={({ pageParam }) => getActivityLogRequest(entityId, infiniteScrollPageCount, pageParam, ['VIEW_ENTITY_FILE'])}
+                        queryFunction={({ pageParam }) => getActivityLogRequest(entityId, infiniteScrollPageCount, pageParam, 'VIEW_ENTITY')}
 
                         onQueryError={(error) => {
                             // eslint-disable-next-line no-console

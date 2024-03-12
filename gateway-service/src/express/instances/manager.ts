@@ -222,7 +222,7 @@ export class InstancesManager {
 
     static async viewEntityInstance(id: string, userId: string) {
         await ActivityLogManagerService.createActivityLog({
-            action: 'VIEW_ENTITY_FILE',
+            action: 'VIEW_ENTITY',
             entityId: id,
             metadata: {},
             timestamp: new Date(),
