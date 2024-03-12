@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Typography, useTheme } from '@mui/material';
+import { Box, Grid, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import { useQueryClient } from 'react-query';
 import { BlueTitle } from '../../../../common/BlueTitle';
@@ -10,13 +10,13 @@ import { IConnectionTemplateOfExpandedEntity } from '../..';
 import { FileToPrint } from './FileToPrint';
 import { useFilePreview } from '../../../../utils/useFilePreview';
 
-const FileData: React.FC<{ file: IFile; setFiles: React.Dispatch<React.SetStateAction<IFile[]>> }> = ({ file, setFiles }) => {
+const FileData: React.FC<{ file: IFile }> = ({ file }) => {
     const filePreview = useFilePreview(file.id, file.type);
     const { data, refetch } = filePreview;
     if (!data) {
         refetch();
     }
-    return <FileToPrint file={file} key={`${file.id}${file.name}`} setFiles={setFiles} filePreview={filePreview} />;
+    return <FileToPrint file={file} key={`${file.id}${file.name}`} filePreview={filePreview} />;
 };
 
 const ComponentToPrint = React.forwardRef<
@@ -26,7 +26,6 @@ const ComponentToPrint = React.forwardRef<
         expandedEntity: IEntityExpanded;
         connectionsTemplatesToPrint: IConnectionTemplateOfExpandedEntity[];
         filesToPrint: IFile[];
-        setFilesToPrint: React.Dispatch<React.SetStateAction<IFile[]>>;
         options: {
             showDate: boolean;
             showDisabled: boolean;
@@ -35,7 +34,7 @@ const ComponentToPrint = React.forwardRef<
             showPreviewPropertiesOnly: boolean;
         };
     }
->(({ entityTemplate, expandedEntity, connectionsTemplatesToPrint, options, filesToPrint, setFilesToPrint }, ref) => {
+>(({ entityTemplate, expandedEntity, connectionsTemplatesToPrint, options, filesToPrint }, ref) => {
     const theme = useTheme();
 
     const queryClient = useQueryClient();
@@ -145,9 +144,11 @@ const ComponentToPrint = React.forwardRef<
             )}
             {options.showEntityFiles && (
                 <>
-                    <BlueTitle title={i18next.t('entityPage.print.appendices')} component="h4" variant="h4" style={{ marginTop: '2rem' }} />
+                    <Grid sx={{ width: '100%', height: '100%', paddingY: '55%', paddingX: '37.5%' }}>
+                        <BlueTitle title={i18next.t('entityPage.print.appendices')} component="h2" variant="h2" style={{ marginTop: '2rem' }} />
+                    </Grid>
                     {filesToPrint.map((file) => {
-                        return <FileData file={file} key={file.id} setFiles={setFilesToPrint} />;
+                        return <FileData file={file} key={file.id} />;
                     })}
                 </>
             )}

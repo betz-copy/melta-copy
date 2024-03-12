@@ -9,9 +9,8 @@ import { IFile } from '../../../../interfaces/entities';
 
 const FileToPrint: React.FC<{
     file: IFile;
-    setFiles: React.Dispatch<React.SetStateAction<IFile[]>>;
     filePreview: UseQueryResult<string, unknown>;
-}> = ({ file, setFiles, filePreview }) => {
+}> = ({ file, filePreview }) => {
     const { data, refetch, isLoading, isError } = filePreview;
 
     const [numOfPages, setNumOfPages] = useState(1);
