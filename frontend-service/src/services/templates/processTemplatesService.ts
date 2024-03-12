@@ -199,7 +199,6 @@ const createProcessTemplateRequest = async (newProcessTemplate: ProcessTemplateW
     const formData = new FormData();
     newProcessTemplate.steps.map((step, index) => formData.append(String(index), step.icon!.file as File));
     const processTemplate = formToJSONSchema(newProcessTemplate);
-    console.log({ processTemplate });
 
     formData.append('displayName', processTemplate.displayName);
     formData.append('name', processTemplate.name);
@@ -207,8 +206,6 @@ const createProcessTemplateRequest = async (newProcessTemplate: ProcessTemplateW
     formData.append('steps', JSON.stringify(processTemplate.steps));
 
     const { data } = await axios.post<IMongoProcessTemplatePopulated>(processTemplates, formData);
-    console.log({ data });
-
     return data;
 };
 
@@ -226,7 +223,6 @@ const updateProcessTemplateRequest = async (processTemplateId: string, updatedPr
     formData.append('details', JSON.stringify(processTemplate.details));
     formData.append('steps', JSON.stringify(processTemplate.steps));
     const { data } = await axios.put<IMongoProcessTemplatePopulated>(`${processTemplates}/${processTemplateId}`, formData);
-    console.log({ data });
 
     return data;
 };

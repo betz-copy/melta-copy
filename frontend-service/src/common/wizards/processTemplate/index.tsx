@@ -72,8 +72,6 @@ const ProcessTemplateWizard: React.FC<WizardBaseType<ProcessTemplateWizardValues
     },
     isEditMode = false,
 }) => {
-    console.log({ initialValues });
-
     const queryClient = useQueryClient();
     const { isLoading, mutateAsync } = useMutation(
         (processTemplate: ProcessTemplateWizardValues) =>

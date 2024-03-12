@@ -64,7 +64,6 @@ const addStepsFieldsSchema = Yup.object({
 
 const AddStepsFields: React.FC<StepComponentProps<ProcessTemplateWizardValues, 'isEditMode' | 'setBlock'>> = ({
     values,
-    setValues,
     touched,
     errors,
     setFieldValue,

@@ -57,19 +57,19 @@ class ProcessTemplateManager {
         currProperties: Record<string, IProcessSingleProperty>,
         updatedPropertiesRequired: string[] = [],
         currPropertiesRequired: string[] = [],
-    ) {        
+    ) {
         if (updatedPropertiesRequired.some((reqField) => !currPropertiesRequired.includes(reqField))) {
             throw new ServiceError(400, 'can not update required field');
-        }        
-        
+        }
+
         Object.entries(currProperties).forEach(([key, value]) => {
             const newValue = updatedProperties[key];
             if (!newValue) throw new ServiceError(400, 'can not remove property');
             if (value.type !== newValue.type) throw new ServiceError(400, 'can not change property type');
             if (value.format !== newValue.format) throw new ServiceError(400, 'can not change property format');
             if (value.enum && !value.enum?.every((val) => newValue.enum?.includes(val)))
-                throw new ServiceError(400, 'can not remove options from enum');   
-        });  
+                throw new ServiceError(400, 'can not remove options from enum');
+        });
     }
 
     private static async throwIfCantUpdateProcessTemplate(updatedTemplate: IProcessTemplatePopulated, currTemplate: IMongoProcessTemplatePopulated) {
@@ -77,7 +77,7 @@ class ProcessTemplateManager {
         if (processInstances.length === 0) {
             return;
         }
-        
+
         const { details: updatedDetails, name: updatedName, steps: updatedSteps } = updatedTemplate;
         if (updatedName !== currTemplate.name) throw new ServiceError(400, 'can not change step template name');
         this.validateProperties(
@@ -86,12 +86,12 @@ class ProcessTemplateManager {
             updatedDetails.properties.required,
             currTemplate.details.properties.required,
         );
-               
+
         if (updatedSteps.length !== currTemplate.steps.length) throw new ServiceError(400, 'can not delete or add steps');
 
-        updatedSteps.forEach((step, index) => {            
-            const currStep = currTemplate.steps.find(currStep => step._id.toString() === currStep._id.toString());     
-            if (!currStep) throw new ServiceError(400, `can not add new step id ${step._id})` );                   
+        updatedSteps.forEach((step, index) => {
+            const currStep = currTemplate.steps.find((currTemplateStep) => step._id.toString() === currTemplateStep._id.toString());
+            if (!currStep) throw new ServiceError(400, `can not add new step id ${step._id})`);
             if (step.name !== currStep!.name) throw new ServiceError(400, `can not change step[${index}] name`);
             this.validateProperties(
                 step.properties.properties,
@@ -104,7 +104,7 @@ class ProcessTemplateManager {
 
     static async updateTemplate(id: string, updatedData: IMongoProcessTemplatePopulated): Promise<IMongoProcessTemplatePopulated> {
         const currProcessTemplate = await this.getProcessTemplateById(id);
-        await this.throwIfCantUpdateProcessTemplate(updatedData, currProcessTemplate);        
+        await this.throwIfCantUpdateProcessTemplate(updatedData, currProcessTemplate);
         return transaction(async (session) => {
             const stepsIds = await StepTemplateManager.updateStepsTemplates(updatedData.steps, session);
             return ProcessTemplateModel.findByIdAndUpdate(id, { ...updatedData, steps: stepsIds }, { new: true, session })
