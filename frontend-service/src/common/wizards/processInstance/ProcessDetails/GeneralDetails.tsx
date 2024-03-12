@@ -97,19 +97,20 @@ const FileAttachmentsEdit: React.FC<FileAttachmentsProps> = ({
     </>
 );
 
-const FileAttachmentsView: React.FC<FileAttachmentsProps> = ({ templateFileProperties, values }) => (
+export const FileAttachmentsView: React.FC<FileAttachmentsProps> = ({ templateFileProperties, values }) => {
+    return (
     <>
         {Object.entries(templateFileProperties).map(([fieldName, { title }]) => {
             return(
-            <Grid container spacing={1} alignItems="center" key={fieldName}>
+            <Grid container spacing={1} display='flex' flexDirection="column" key={fieldName}>
                 <Grid item>
                     <Typography display="inline" variant="body1">
                         {title}:
                     </Typography>
                 </Grid>
-                <Grid item>
+                <Grid item sx={{overflowY:"auto", maxHeight: "90px"}}>
                     {values.detailsAttachments[fieldName] ? (
-                        <OpenPreviewButton fileId={values.detailsAttachments[fieldName].name} />
+                        Array.isArray(values.detailsAttachments[fieldName]) ? values.detailsAttachments[fieldName].map(v => {return <OpenPreviewButton fileId={v.name}/>}) : <OpenPreviewButton fileId={values.detailsAttachments[fieldName].name} />
                     ) : (
                         <Typography display="inline" variant="h6">
                             -
@@ -119,7 +120,7 @@ const FileAttachmentsView: React.FC<FileAttachmentsProps> = ({ templateFilePrope
             </Grid>
         )})}
     </>
-);
+)};
 
 const FileAttachments = ({ viewMode, templateFileProperties, values, errors, touched, setFieldValue, required, setFieldTouched }) => {
     return (

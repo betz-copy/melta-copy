@@ -28,9 +28,9 @@ import { cerateWorksheet, createWorkbook, fixFileProperties, styleAWorksheet } f
 const { errorCodes } = config;
 
 export class InstancesManager {
-    static async uploadInstanceFiles(files: Express.Multer.File[], props: any): Promise<Record<string, string>> {
+    static async uploadInstanceFiles(files: Express.Multer.File[], props: any): Promise<any> {
         if (files.length === 0) {
-            return props;
+            return { props, files };
         }
 
         const fileIds = await uploadFiles(files);
@@ -64,8 +64,7 @@ export class InstancesManager {
                 props[key] = filesToUpload[key];
             }
         });
-
-        return props;
+        return { props, files: filesToUpload };
     }
 
     static async exportEntities(exportEntitiesBody: IExportEntitiesBody) {
@@ -134,7 +133,7 @@ export class InstancesManager {
     }
 
     static async createEntityInstance(instanceData: IEntity, files: Express.Multer.File[], user: Express.User) {
-        const fileProperties = await InstancesManager.uploadInstanceFiles(files, instanceData.properties);
+        const { props: fileProperties } = await InstancesManager.uploadInstanceFiles(files, instanceData.properties);
         const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(instanceData.templateId);
         let templateUpdated = false;
 
@@ -255,7 +254,7 @@ export class InstancesManager {
         userId: string,
         createAlert: boolean = true,
     ) {
-        const uploadedFilesAndProperties = await InstancesManager.uploadInstanceFiles(files, updatedInstanceData.properties);
+        const { props: uploadedFilesAndProperties } = await InstancesManager.uploadInstanceFiles(files, updatedInstanceData.properties);
         const currentEntity = await InstanceManagerService.getEntityInstanceById(id);
 
         const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(currentEntity.templateId);

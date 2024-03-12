@@ -24,7 +24,25 @@ const referencedEntityToEntityId = (entityReferences: Record<string, IReferenced
 };
 export const createProcessRequest = async (process: ProcessDetailsValues) => {
     const formData = new FormData();
-    Object.entries(process.detailsAttachments).forEach(([key, value]) => formData.append(key, value as Blob));
+    // Object.entries(process.detailsAttachments).forEach(([key, value]) => formData.append(key, value as Blob));
+
+    const filesToUpload: any = [];
+    Object.entries(process.detailsAttachments).forEach(([key, value]: [string, any]) => {
+        if (Array.isArray(value)) {
+            value.forEach((file, index) => {
+                if (file instanceof File && process?.template?.details.properties.properties[key].items) {
+                    filesToUpload.push([`${key}.${index}`, file]);
+                } else if (file instanceof File) {
+                    filesToUpload.push([`${key}`, file]);
+                }
+            });
+        } else {
+            filesToUpload.push([`${key}`, value]);
+        }
+    });
+    filesToUpload.forEach(([key, value]) => {
+        formData.append(key, value as Blob);
+    });
     const entityReferences = referencedEntityToEntityId(process.entityReferences);
     formData.append('name', process.name);
     formData.append('details', JSON.stringify({ ...process.details, ...entityReferences }));

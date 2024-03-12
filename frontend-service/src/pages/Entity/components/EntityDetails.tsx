@@ -38,6 +38,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
     expandedEntity,
 }) => {
     const { entity } = expandedEntity;
+    console.log(entity)
     const navigate = useNavigate();
     const [isEditMode, setIsEditMode] = useState(false);
     const [openDeleteDialog, setOpenDeleteDialog] = useState(false);

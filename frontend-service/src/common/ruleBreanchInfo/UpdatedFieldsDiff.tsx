@@ -50,11 +50,9 @@ const getEntityPropertiesString = (
     entityTemplate: IMongoEntityTemplatePopulated,
     oldEntityProperties?: Record<string, any>,
 ) => {
-    console.log(entityTemplate.properties.properties)
     const fieldPropertiesStrings = Object.entries(entityTemplate.properties.properties).map(([propertyKey, propertyTemplate]) => {
         const oldValue = oldEntityProperties?.[propertyKey];
         const value = entityProperties[propertyKey];
-        console.log(propertyKey, value)
         const valueFormatted = getEntityPropertyString(value, propertyTemplate.type, propertyTemplate.format, oldValue, propertyTemplate.items);
         return `${propertyTemplate.title}: ${valueFormatted}`;
     });
@@ -72,7 +70,6 @@ export const UpdatedFieldsDiff: React.FC<{
     const newPropertiesWithNulls = { ...oldProperties, ...updatedFields };
     // updatedFields specifies fields to remove w/ nulls. but shouldn't be in the IEntity properties
     const newProperties = pickBy(newPropertiesWithNulls, (property) => property !== null);
-    console.log(newProperties, oldProperties)
     return (
         <ReactDiffViewer
             oldValue={

@@ -130,15 +130,15 @@ export default class ProcessesInstancesManager {
             ]);
             return this.getPopulatedProcess(process, userId);
         }
-        const processDetails = await InstancesManager.uploadInstanceFiles(files, processData.details);
-
+        const { props: processDetails, files: filesToUpload } = await InstancesManager.uploadInstanceFiles(files, processData.details);
         await Promise.all(
             files.map((file) => {
                 return removeTmpFile(file.path);
             }),
         );
+        //delete isnt correct
         const process = await ProcessManagerService.createProcessInstance({ ...processData, details: processDetails }).catch(async (error) => {
-            await deleteFiles(Object.values(processDetails)).catch(() => {
+            await deleteFiles(Object.values(filesToUpload).flat(1) as string[]).catch(() => {
                 // eslint-disable-next-line no-console
                 console.log('failed to delete process unused files');
             });
@@ -177,14 +177,14 @@ export default class ProcessesInstancesManager {
             return this.getPopulatedProcess(updatedProcess, userId);
         }
 
-        const filesProperties = await InstancesManager.uploadInstanceFiles(files, processData.details);
+        const { props, files: filesToUpload } = await InstancesManager.uploadInstanceFiles(files, processData.details);
 
         const updatedProcessInstance = {
             ...processData,
-            details: filesProperties,
+            details: props,
         };
 
-        if (filesProperties) {
+        if (props) {
             await this.removeUnusedFileIds(processTemplate.details.properties, currProcessInstance.details, updatedProcessInstance.details);
         }
 
@@ -195,7 +195,7 @@ export default class ProcessesInstancesManager {
         );
 
         const updatedProcess = await ProcessManagerService.updateProcessInstance(processId, updatedProcessInstance).catch(async (error) => {
-            await deleteFiles(Object.values(filesProperties)).catch(() => {
+            await deleteFiles(Object.values(filesToUpload).flat(1) as string[]).catch(() => {
                 // eslint-disable-next-line no-console
                 console.log('failed to delete process unused files');
             });

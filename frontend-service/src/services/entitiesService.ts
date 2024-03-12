@@ -67,6 +67,7 @@ export const updateEntityRequestForMultiple = async (
     newEntityData: EntityWizardValuesNew,
     ignoredRules?: IRuleBreach['brokenRules'],
 ) => {
+    console.log(newEntityData);
     const formData = new FormData();
 
     const filesToUpload: any = [];
@@ -115,6 +116,7 @@ export const updateEntityRequestForMultiple = async (
         formData.append('ignoredRules', JSON.stringify(ignoredRules));
     }
     const { data } = await axios.put<IEntity>(`${entities}/${entityId}`, formData);
+    console.log(data);
     return data;
 };
 

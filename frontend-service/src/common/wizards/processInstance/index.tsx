@@ -78,7 +78,6 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({ open, onClose
         },
     });
     const detailsFormikData = useProcessDetailsFormik(processInstance, processTemplatesMap, mutateAsync);
-
     const [activeStep, setActiveStep] = React.useState(stepTemplate ? 1 : 0);
 
     const classes = wizardContentStyles();

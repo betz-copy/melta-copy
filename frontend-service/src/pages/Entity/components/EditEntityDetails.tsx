@@ -85,7 +85,6 @@ const EditEntityDetails: React.FC<{
         <Formik
             initialValues={{ properties: fieldProperties, attachmentsProperties: fileProperties }}
             onSubmit={async (values) => {
-                console.log(values);
                 updateMutation({ newEntityData: { ...values, template: entityTemplate } });
             }}
             validate={(values) => {

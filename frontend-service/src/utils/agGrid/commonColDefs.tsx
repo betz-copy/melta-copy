@@ -203,15 +203,13 @@ export const enumFilesColDef = <Data extends any = IEntity>(
     value: { title: string },
     hardcodedWidth: number | undefined,
     rowHeight: number,
-    enumColorOptions?: Record<string, string>,
     hideColumn = false,
-    hideValue = false,
 ): ColDef<Data> => {
     const filterParams: ISetFilterParams<Data, string | undefined> = {
         suppressMiniFilter: true,
         values: [], // You may need to fetch enum values dynamically or provide them here
     };
-
+    
     return {
         field,
         headerName: value.title,

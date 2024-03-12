@@ -65,20 +65,20 @@ export default class StepsInstancesManager {
             if (updatedStepStatus) this.handleNotificationsOnUpdateStepInstance(updatedProcess, process, updatedStep);
             return this.getStepInstanceWithEntitesAndReviewers(updatedStep, userId);
         }
-        const filesProperties = await InstancesManager.uploadInstanceFiles(files, processServiceUpdateData.properties);
+        const { props, files: filesToUpload } = await InstancesManager.uploadInstanceFiles(files, processServiceUpdateData.properties);
         const { properties: oldProperties } = await ProcessManagerService.getStepInstanceById(stepId);
         const updatedStep = await ProcessManagerService.updateStepInstance(stepId, {
             ...processServiceUpdateData,
-            properties: filesProperties,
+            properties: props,
         }).catch((processServiceError) => {
-            deleteFiles(Object.values(filesProperties)).catch((deleteFilesError) => {
+            deleteFiles(Object.values(filesToUpload).flat(1) as string[]).catch((deleteFilesError) => {
                 // eslint-disable-next-line no-console
                 console.log(`failed to delete files ${deleteFilesError}`);
                 throw processServiceError;
             });
             throw processServiceError;
         });
-        if (oldProperties) await ProcessesInstancesManager.removeUnusedFileIds(stepTemplate.properties, oldProperties, { ...filesProperties });
+        if (oldProperties) await ProcessesInstancesManager.removeUnusedFileIds(stepTemplate.properties, oldProperties, { ...props });
         await Promise.all(
             files.map((file) => {
                 return removeTmpFile(file.path);

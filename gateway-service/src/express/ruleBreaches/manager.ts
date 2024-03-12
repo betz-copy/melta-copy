@@ -257,7 +257,7 @@ export class RuleBreachesManager {
     private static async uploadRuleBreachFiles(ruleBreach: Partial<IRuleBreach>, files: Express.Multer.File[]) {
         if (!isUpdateEntityRuleBreach(ruleBreach) || !files.length) return;
 
-        const uploadedFilesProperties = await InstancesManager.uploadInstanceFiles(files, ruleBreach.actionMetadata.updatedFields);
+        const { props: uploadedFilesProperties } = await InstancesManager.uploadInstanceFiles(files, ruleBreach.actionMetadata.updatedFields);
 
         // eslint-disable-next-line no-param-reassign
         ruleBreach.actionMetadata.updatedFields = {

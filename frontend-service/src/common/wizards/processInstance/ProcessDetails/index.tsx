@@ -69,7 +69,6 @@ const ProcessDetails: React.FC<ProcessDetailsProps> = ({ detailsFormikData, isEd
         const templateFileProperties = detailsFormikData.values.template
             ? pickBy(detailsFormikData.values.template.details.properties.properties, (value) => (value.type === 'array' && value.items?.format==="fileId") || value.format === "fileId")
             : undefined;
-
         const templateEntityReferenceProperties = detailsFormikData.values.template
             ? pickBy(detailsFormikData.values.template.details.properties.properties, (value) => value.format === 'entityReference')
             : undefined;
