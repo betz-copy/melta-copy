@@ -30,7 +30,7 @@ const EntityComponentToPrint: React.FC<{
                     files={files}
                     mode="normal"
                     textWrap
-                    toPrint
+                    download
                 />
             </Box>
 

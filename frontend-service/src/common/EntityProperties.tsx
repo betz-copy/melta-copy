@@ -18,7 +18,7 @@ export const formatToString = (
     valueType: 'string' | 'number' | 'boolean' | 'array',
     format?: string,
     keyEnumColors?: Record<string, string>,
-    toPrint?: boolean,
+    download?: boolean,
 ) => {
     if (value === null || value === undefined) return '-';
 
@@ -29,7 +29,7 @@ export const formatToString = (
     if (valueType === 'string') {
         if (format === 'date') return new Date(value).toLocaleDateString('en-uk');
         if (format === 'date-time') return new Date(value).toLocaleString('en-uk');
-        if (format === 'fileId') return <OpenPreviewButton fileId={value} toPrint={toPrint} />;
+        if (format === 'fileId') return <OpenPreviewButton fileId={value} download={download} />;
     }
     if (keyEnumColors?.[value] && valueType === 'string') return <ColoredEnumChip label={value} color={keyEnumColors[value]} />;
     if (valueType === 'array') {
@@ -52,7 +52,7 @@ interface IEntityPropertiesProps {
     style?: CSSProperties;
     innerStyle?: CSSProperties;
     textWrap?: boolean;
-    toPrint?: boolean;
+    download?: boolean;
 }
 
 export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkMode?: boolean }> = ({
@@ -65,7 +65,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
     style,
     innerStyle,
     textWrap = false,
-    toPrint = false,
+    download = false,
 }) => {
     let propertiesOrderedToShow: string[];
     if (overridePropertiesToShow) {
@@ -96,7 +96,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                     propertySchema.type,
                     propertySchema.format,
                     (propertySchema.enum || propertySchema.items?.enum) && entityTemplate.enumPropertiesColors?.[propertyKey],
-                    toPrint,
+                    download,
                 );
 
                 return (
