@@ -29,7 +29,6 @@ export interface ProcessTemplateWizardValues extends Omit<IMongoProcessTemplateP
     detailsAttachmentProperties: ProcessTemplateFormInputProperties[];
     steps: Array<{
         _id?: string;
-        draggableId: string;
         name: string;
         displayName: string;
         properties: ProcessTemplateFormInputProperties[];
@@ -56,6 +55,7 @@ const stepsComponents: StepsType<ProcessTemplateWizardValues> = [
         validationSchema: addStepsFieldsSchema,
     },
 ];
+
 const ProcessTemplateWizard: React.FC<WizardBaseType<ProcessTemplateWizardValues>> = ({
     open,
     handleClose,
@@ -68,18 +68,7 @@ const ProcessTemplateWizard: React.FC<WizardBaseType<ProcessTemplateWizardValues
         displayName: '',
         detailsProperties: [],
         detailsAttachmentProperties: [],
-        steps: [
-            {
-                _id: uuid(),
-                draggableId: uuid(),
-                name: '',
-                displayName: '',
-                properties: [],
-                attachmentProperties: [],
-                reviewers: [],
-                icon: undefined,
-            },
-        ],
+        steps: [],
     },
     isEditMode = false,
 }) => {

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { AccordionDetails, AccordionSummary, Grid, IconButton, Typography, useTheme } from '@mui/material';
 import * as Yup from 'yup';
 import i18next from 'i18next';
@@ -129,6 +129,7 @@ const AddStepsFields: React.FC<StepComponentProps<ProcessTemplateWizardValues, '
                                         disabled={isEditMode && areThereAnyInstances}
                                         onClick={() =>
                                             push({
+                                                _id: uuid(),
                                                 name: '',
                                                 displayName: '',
                                                 properties: [],
@@ -149,7 +150,7 @@ const AddStepsFields: React.FC<StepComponentProps<ProcessTemplateWizardValues, '
                                 {(provided) => (
                                     <Grid ref={provided.innerRef} {...provided.droppableProps}>
                                         {values.steps.map((step, index) => (
-                                            <Draggable draggableId={step.draggableId} index={index} key={step.draggableId}>
+                                            <Draggable draggableId={step._id!} index={index} key={step._id}>
                                                 {(draggableProvided) => (
                                                     <FieldBlockAccordion
                                                         ref={draggableProvided.innerRef}
