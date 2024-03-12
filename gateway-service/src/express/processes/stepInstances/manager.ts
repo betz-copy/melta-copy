@@ -59,29 +59,26 @@ export default class StepsInstancesManager {
         const stepTemplate = await ProcessManagerService.getStepTemplateByStepInstanceId(stepId);
         if (properties) await ProcessesInstancesManager.checkEntityReferenceFields(properties, stepTemplate.properties);
         if (!files.length) {
+            //add remove old files
             const updatedStep = await ProcessManagerService.updateStepInstance(stepId, processServiceUpdateData);
             const updatedProcess = await ProcessManagerService.getProcessInstanceById(processId);
             if (updatedStepStatus) this.handleNotificationsOnUpdateStepInstance(updatedProcess, process, updatedStep);
             return this.getStepInstanceWithEntitesAndReviewers(updatedStep, userId);
         }
-        const filesProperties = await InstancesManager.uploadInstanceFiles(files);
-        const regularProperties = processServiceUpdateData.properties;
-
-        const newProperties = { ...regularProperties, ...filesProperties };
+        const { props, files: filesToUpload } = await InstancesManager.uploadInstanceFiles(files, processServiceUpdateData.properties);
         const { properties: oldProperties } = await ProcessManagerService.getStepInstanceById(stepId);
-
-        const updatedStep = await ProcessManagerService.updateStepInstance(stepId, { ...processServiceUpdateData, properties: newProperties }).catch(
-            (processServiceError) => {
-                deleteFiles(Object.values(filesProperties)).catch((deleteFilesError) => {
-                    // eslint-disable-next-line no-console
-                    console.log(`failed to delete files ${deleteFilesError}`);
-                    throw processServiceError;
-                });
+        const updatedStep = await ProcessManagerService.updateStepInstance(stepId, {
+            ...processServiceUpdateData,
+            properties: props,
+        }).catch((processServiceError) => {
+            deleteFiles(Object.values(filesToUpload).flat(1) as string[]).catch((deleteFilesError) => {
+                // eslint-disable-next-line no-console
+                console.log(`failed to delete files ${deleteFilesError}`);
                 throw processServiceError;
-            },
-        );
-
-        if (oldProperties) await ProcessesInstancesManager.removeUnusedFileIds(stepTemplate.properties, oldProperties, newProperties);
+            });
+            throw processServiceError;
+        });
+        if (oldProperties) await ProcessesInstancesManager.removeUnusedFileIds(stepTemplate.properties, oldProperties, { ...props });
         await Promise.all(
             files.map((file) => {
                 return removeTmpFile(file.path);

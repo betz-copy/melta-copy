@@ -10,8 +10,13 @@ export enum PropertyFormats {
 
 export interface IProcessSingleProperty {
     title: string;
-    type: 'string' | 'number' | 'boolean';
+    type: 'string' | 'number' | 'boolean' | 'array';
     format?: PropertyFormats;
+    items?: {
+        type: 'string';
+        enum?: string[];
+        format?: 'fileId';
+    };
     enum?: string[];
     pattern?: string;
     patternCustomErrorMessage?: string;

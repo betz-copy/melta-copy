@@ -118,7 +118,6 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
         const displayValuesCopy = [...displayValuesRef.current] as Values[PropertiesType];
 
         displayValuesCopy[index] = { ...displayValuesCopy[index], [field]: value };
-
         setDisplayValues(displayValuesCopy);
         updateFormik();
     };

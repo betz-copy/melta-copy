@@ -520,6 +520,8 @@ export default {
         serialNumber: 'מספר סידורי',
         enumArray: 'רשימה מרובה',
         array: 'מערך',
+        fileId: 'קובץ יחיד',
+        multipleFiles: 'קבצים מרובים',
     },
     input: {
         imagePicker: {
@@ -527,6 +529,7 @@ export default {
             chooseFromOptions: 'בחירה מאפשרויות',
             chooseFile: 'בחירת קובץ',
             dragFile: 'גרור את הקובץ לכאן',
+            dragFiles: 'גרור את הקבצים לכאן',
         },
     },
     errorCodes: {

@@ -5,14 +5,13 @@ import { useMutation } from 'react-query';
 import i18next from 'i18next';
 import { toast } from 'react-toastify';
 import { Form, Formik } from 'formik';
-import mapValues from 'lodash.mapvalues';
 import pickBy from 'lodash.pickby';
 import { AxiosError } from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IEntity } from '../../../interfaces/entities';
-import { createEntityRequest, updateEntityRequest } from '../../../services/entitiesService';
-import { EntityWizardValues } from '.';
+import { createEntityRequest, updateEntityRequestForMultiple } from '../../../services/entitiesService';
+import { EntityWizardValuesNew } from '.';
 import { JSONSchemaFormik, ajvValidate } from '../../inputs/JSONSchemaFormik';
 import { BlueTitle } from '../../BlueTitle';
 import { filterAttachmentsAndEntitiesRefFromPropertiesSchema } from '../../../utils/pickFieldsPropertiesSchema';
@@ -22,11 +21,12 @@ import { toastConstraintValidationError } from './toastConstraintValidationError
 import { InstanceFileInput } from '../../inputs/InstanceFilesInput/InstanceFileInput';
 import UpdateEntityWithRuleBreachDialog from '../../../pages/Entity/components/UpdateEntityWithRuleBreachDialog';
 import { ChooseTemplate } from './ChooseTemplate';
+import { InstanceSingleFileInput } from '../../inputs/InstanceFilesInput/InstanceSingleFileInput';
 
 const { errorCodes } = environment;
 
 const getEntityTemplateFilesFieldsInfo = (entityTemplate: IMongoEntityTemplatePopulated) => {
-    const templateFilesProperties = pickBy(entityTemplate.properties.properties, (value) => value.format === 'fileId');
+    const templateFilesProperties = pickBy(entityTemplate.properties.properties, (value) => (value.type === 'array' && value.items?.format==="fileId") || value.format === "fileId");
     const templateFileKeys = Object.keys(templateFilesProperties);
     const requiredFilesNames = entityTemplate.properties.required.filter((name) => templateFileKeys.includes(name));
 
@@ -44,7 +44,7 @@ const CreateOrEditEntityDetails: React.FC<{
         isOpen: boolean;
         brokenRules?: IRuleBreachPopulated['brokenRules'];
         rawBrokenRules?: IRuleBreach['brokenRules'];
-        updateEntityFormData?: EntityWizardValues;
+        updateEntityFormData?: EntityWizardValuesNew;
     }>({ isOpen: false });
 
     const { templateFileKeys: initialTemplateFileKeys } = getEntityTemplateFilesFieldsInfo(entityTemplate);
@@ -52,11 +52,21 @@ const CreateOrEditEntityDetails: React.FC<{
     // for initial values
     const fieldProperties = pickBy(entity.properties, (_value, key) => !initialTemplateFileKeys.includes(key)) as IEntity['properties'];
     const fileIdsProperties = pickBy(entity.properties, (_value, key) => initialTemplateFileKeys.includes(key));
-    const fileProperties = mapValues(fileIdsProperties, (value) => ({ name: value })) as Record<string, File>;
-
+    Object.entries(fileIdsProperties)?.forEach(([key, value]) => {
+        if(Array.isArray(value)){
+            fileIdsProperties[key] = value?.map((item) => {
+                return {name: item}
+            });
+        }
+        else {
+            fileIdsProperties[key] =  {name: value};
+        }
+        
+    });
+    const fileProperties = fileIdsProperties; 
     const { isLoading: isUpdateLoading, mutateAsync: updateMutation } = useMutation(
-        ({ newEntityData, ignoredRules }: { newEntityData: EntityWizardValues; ignoredRules?: IRuleBreach['brokenRules'] }) =>
-            updateEntityRequest(entity.properties._id, newEntityData, ignoredRules),
+        ({ newEntityData, ignoredRules }: { newEntityData: EntityWizardValuesNew; ignoredRules?: IRuleBreach['brokenRules'] }) =>
+            updateEntityRequestForMultiple(entity.properties._id, newEntityData, ignoredRules),
         {
             onSuccess: (data) => {
                 toast.success(i18next.t('wizard.entity.editedSuccefully'));
@@ -85,14 +95,14 @@ const CreateOrEditEntityDetails: React.FC<{
     const navigate = useNavigate();
 
     const { isLoading: isCreateLoading, mutateAsync: createMutation } = useMutation(
-        (entityToCreate: EntityWizardValues) => createEntityRequest(entityToCreate),
+        (entityToCreate: EntityWizardValuesNew) => createEntityRequest(entityToCreate),
         {
             onSuccess: (newEntity) => {
                 toast.success(i18next.t('wizard.entity.createdSuccessfully'));
                 onCancelUpdate();
                 navigate(`/entity/${newEntity.properties._id}`);
             },
-            onError: (err: AxiosError, { template }: EntityWizardValues) => {
+            onError: (err: AxiosError, { template }: EntityWizardValuesNew) => {
                 const errorMetadata = err.response?.data?.metadata;
                 if (errorMetadata?.errorCode === errorCodes.failedConstraintsValidation) {
                     toastConstraintValidationError(errorMetadata, template);
@@ -129,8 +139,6 @@ const CreateOrEditEntityDetails: React.FC<{
                 const schema = filterAttachmentsAndEntitiesRefFromPropertiesSchema(values.template.properties);
 
                 useEffect(() => {
-                    console.log(schema);
-
                     Object.entries<object>(schema.properties).forEach(([propertyName, propertyValues]) => {
                         if (propertyValues.hasOwnProperty('serialCurrent')) {
                             setFieldValue(`properties.${propertyName}`, propertyValues['serialCurrent']);
@@ -158,18 +166,34 @@ const CreateOrEditEntityDetails: React.FC<{
                             variant="h6"
                             style={{ marginBottom: '12px', fontSize: '16px', fontWeight: '600' }}
                         />
-                        {Object.entries(templateFilesProperties).map(([key, value]) => (
-                            <InstanceFileInput
-                                key={key}
-                                fileFieldName={`attachmentsProperties.${key}`}
-                                fieldTemplateTitle={value.title}
-                                setFieldValue={setFieldValue}
-                                required={requiredFilesNames.includes(key)}
-                                value={values.attachmentsProperties[key]}
-                                error={errors.attachmentsProperties?.[key] as string}
-                                setFieldTouched={setFieldTouched}
-                            />
-                        ))}
+                        {Object.entries(templateFilesProperties).map(([key, value], index) => 
+                    <Grid item key={key} marginTop={index > 0 ? 5 : 0}>
+                    {value.items === undefined ? (
+                        <InstanceSingleFileInput
+                                    key={key}
+                                    fileFieldName={`attachmentsProperties.${key}`}
+                                    fieldTemplateTitle={value.title}
+                                    setFieldValue={setFieldValue}
+                                    required={requiredFilesNames.includes(key)}
+                                    value={values.attachmentsProperties[key]}
+                                    error={errors.attachmentsProperties?.[key] as string}
+                                    setFieldTouched={setFieldTouched}
+                                />
+                    ) : (
+                        <InstanceFileInput
+                            key={key}
+                            fileFieldName={`attachmentsProperties.${key}`}
+                            fieldTemplateTitle={value.title}
+                            setFieldValue={setFieldValue}
+                            required={requiredFilesNames.includes(key)}
+                            value={values.attachmentsProperties[key]}
+                            error={errors.attachmentsProperties?.[key] as string}
+                            setFieldTouched={setFieldTouched}
+                            multiple={value.items ? true : false}
+                        />
+                    )}
+                </Grid>
+                    )}
                     </>
                 );
                 return (

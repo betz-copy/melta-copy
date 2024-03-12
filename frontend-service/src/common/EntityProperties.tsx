@@ -4,7 +4,7 @@ import i18next from 'i18next';
 import { useSelector } from 'react-redux';
 import { pdfjs } from 'react-pdf';
 import { Visibility as VisibilityIcon, VisibilityOff as VisibilityOffIcon } from '@mui/icons-material';
-import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
+import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { IEntity } from '../interfaces/entities';
 import { RootState } from '../store';
 import { ColoredEnumChip } from './ColoredEnumChip';
@@ -18,6 +18,7 @@ export const formatToString = (
     valueType: 'string' | 'number' | 'boolean' | 'array',
     format?: string,
     keyEnumColors?: Record<string, string>,
+    propertySchema?: IEntitySingleProperty,
 ) => {
     if (value === null || value === undefined) return '-';
 
@@ -32,7 +33,12 @@ export const formatToString = (
     }
     if (keyEnumColors?.[value] && valueType === 'string') return <ColoredEnumChip label={value} color={keyEnumColors[value]} />;
     if (valueType === 'array') {
-        return value.map((val) => (
+        if(propertySchema?.items?.format === "fileId"){
+            return value.map((val) => (
+                <OpenPreviewButton fileId={val} />
+            ));
+        }
+        return value.map((val) =>(
             <ColoredEnumChip key={val} label={val} color={keyEnumColors?.[val] || 'default'} style={{ margin: '5px 0px 0px 5px' }} />
         ));
     }
@@ -70,7 +76,6 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
     } else {
         propertiesOrderedToShow = entityTemplate.propertiesOrder;
     }
-
     const [hideFieldsToDisplay, setHideFieldsToDisplay] = React.useState(entityTemplate.properties.hide);
 
     return (
@@ -84,6 +89,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                     propertySchema.type,
                     propertySchema.format,
                     (propertySchema.enum || propertySchema.items?.enum) && entityTemplate.enumPropertiesColors?.[propertyKey],
+                    propertySchema
                 );
                 return (
                     <Grid key={propertyKey} item container flexDirection="row" style={innerStyle} alignItems={textWrap ? 'flex-start' : 'center'}>
@@ -129,7 +135,8 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                                         style={{
                                             textOverflow: 'ellipsis',
                                             whiteSpace: textWrap ? undefined : 'nowrap',
-                                            overflow: 'hidden',
+                                            overflowY: "auto",
+                                            maxHeight: "100px"
                                         }}
                                     >
                                         {hideFieldsToDisplay.includes(propertyKey) ? <>••••••••</> : stringFormatValue}

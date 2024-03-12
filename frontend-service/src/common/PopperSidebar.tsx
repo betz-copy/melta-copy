@@ -16,7 +16,6 @@ const PopperSidebar: React.FC<{
 }> = ({ children, open, setOpen, title, side, topButtons, sideMargin = 0, width = '22rem' }) => {
     const darkMode = useSelector((state: RootState) => state.darkMode);
     const theme = useTheme();
-
     return (
         <Popper open={open} transition sx={{ left: side === 'right' ? 0 : 'auto', marginX: sideMargin }}>
             {({ TransitionProps }) => (

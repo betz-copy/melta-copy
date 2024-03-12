@@ -5,13 +5,12 @@ import { useMutation } from 'react-query';
 import i18next from 'i18next';
 import { toast } from 'react-toastify';
 import { Form, Formik } from 'formik';
-import mapValues from 'lodash.mapvalues';
 import pickBy from 'lodash.pickby';
 import { AxiosError } from 'axios';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IEntity } from '../../../interfaces/entities';
-import { updateEntityRequest } from '../../../services/entitiesService';
-import { EntityWizardValues } from '../../../common/dialogs/entity';
+import { updateEntityRequestForMultiple } from '../../../services/entitiesService';
+import { EntityWizardValuesNew } from '../../../common/dialogs/entity';
 import { JSONSchemaFormik, ajvValidate } from '../../../common/inputs/JSONSchemaFormik';
 import { BlueTitle } from '../../../common/BlueTitle';
 import { filterAttachmentsAndEntitiesRefFromPropertiesSchema } from '../../../utils/pickFieldsPropertiesSchema';
@@ -20,6 +19,7 @@ import UpdateEntityWithRuleBreachDialog from './UpdateEntityWithRuleBreachDialog
 import { environment } from '../../../globals';
 import { toastConstraintValidationError } from '../../../common/dialogs/entity/toastConstraintValidationError';
 import { InstanceFileInput } from '../../../common/inputs/InstanceFilesInput/InstanceFileInput';
+import { InstanceSingleFileInput } from '../../../common/inputs/InstanceFilesInput/InstanceSingleFileInput';
 
 const { errorCodes } = environment;
 
@@ -33,20 +33,30 @@ const EditEntityDetails: React.FC<{
         isOpen: boolean;
         brokenRules?: IRuleBreachPopulated['brokenRules'];
         rawBrokenRules?: IRuleBreach['brokenRules'];
-        updateEntityFormData?: EntityWizardValues;
+        updateEntityFormData?: EntityWizardValuesNew;
     }>({ isOpen: false });
 
-    const templateFilesProperties = pickBy(entityTemplate.properties.properties, (value) => value.format === 'fileId');
+    const templateFilesProperties = pickBy(entityTemplate.properties.properties, (value) => (value.type === 'array' && value.items?.format==="fileId") || value.format === "fileId");
     const templateFileKeys = Object.keys(templateFilesProperties);
     const requiredFilesNames = entityTemplate.properties.required.filter((name) => templateFileKeys.includes(name));
 
     const fieldProperties = pickBy(entity.properties, (_value, key) => !templateFileKeys.includes(key)) as IEntity['properties'];
     const fileIdsProperties = pickBy(entity.properties, (_value, key) => templateFileKeys.includes(key));
-    const fileProperties = mapValues(fileIdsProperties, (value) => ({ name: value })) as Record<string, File>;
-
+    Object.entries(fileIdsProperties).forEach(([key, value]) => {
+        if(Array.isArray(value)){
+            fileIdsProperties[key] = value?.map((item) => {
+                return {name: item}
+            });
+        }
+        else {
+            fileIdsProperties[key] =  {name: value};
+        }
+        
+    });
+    const fileProperties = fileIdsProperties;
     const { isLoading: isUpdateLoading, mutateAsync: updateMutation } = useMutation(
-        ({ newEntityData, ignoredRules }: { newEntityData: EntityWizardValues; ignoredRules?: IRuleBreach['brokenRules'] }) =>
-            updateEntityRequest(entity.properties._id, newEntityData, ignoredRules),
+        ({ newEntityData, ignoredRules }: { newEntityData: EntityWizardValuesNew; ignoredRules?: IRuleBreach['brokenRules'] }) =>
+        updateEntityRequestForMultiple(entity.properties._id, newEntityData, ignoredRules),
         {
             onSuccess: (data) => {
                 toast.success(i18next.t('wizard.entity.editedSuccefully'));
@@ -71,12 +81,10 @@ const EditEntityDetails: React.FC<{
             },
         },
     );
-
     return (
         <Formik
             initialValues={{ properties: fieldProperties, attachmentsProperties: fileProperties }}
             onSubmit={async (values) => {
-                console.log({ ...values, template: entityTemplate })
                 updateMutation({ newEntityData: { ...values, template: entityTemplate } });
             }}
             validate={(values) => {
@@ -127,9 +135,10 @@ const EditEntityDetails: React.FC<{
                                                                 style={{ marginBottom: '12px', fontSize: '16px', fontWeight: '600' }}
                                                             />
                                                             <>
-                                                                {Object.entries(templateFilesProperties).map(([key, value]) => (
-                                                                    <InstanceFileInput
-                                                                        key={key}
+                                                            {Object.entries(templateFilesProperties).map(([key, value], index) => (
+                                                            <Grid item key={key} marginTop={index > 0 ? 5 : 0}>
+                                                                {value.items === undefined ? (
+                                                                    <InstanceSingleFileInput
                                                                         fileFieldName={`attachmentsProperties.${key}`}
                                                                         fieldTemplateTitle={value.title}
                                                                         setFieldValue={setFieldValue}
@@ -138,7 +147,20 @@ const EditEntityDetails: React.FC<{
                                                                         error={errors.attachmentsProperties?.[key] as string}
                                                                         setFieldTouched={setFieldTouched}
                                                                     />
-                                                                ))}
+                                                                ) : (
+                                                                    <InstanceFileInput
+                                                                        fileFieldName={`attachmentsProperties.${key}`}
+                                                                        fieldTemplateTitle={value.title}
+                                                                        setFieldValue={setFieldValue}
+                                                                        required={requiredFilesNames.includes(key)}
+                                                                        value={values.attachmentsProperties[key]}
+                                                                        error={errors.attachmentsProperties?.[key] as string}
+                                                                        setFieldTouched={setFieldTouched}
+                                                                        multiple
+                                                                    />
+                                                                )}
+                                                            </Grid>
+                                                        ))}
                                                             </>
                                                         </Grid>
                                                     </Grid>

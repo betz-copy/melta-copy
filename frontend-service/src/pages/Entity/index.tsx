@@ -152,7 +152,6 @@ const Entity: React.FC = () => {
             };
         });
     };
-
     return (
         <>
             <EntityTopBar
