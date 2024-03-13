@@ -363,7 +363,13 @@ const Entity: React.FC = () => {
                                 <TabList style={{ height: '60px' }} onChange={(_event, newValue) => setValue(newValue)}>
                                     {categoriesWithConnectionsTemplates?.map(({ category: { _id, displayName, iconFileId } }, index) => (
                                         <Tab
-                                            style={{ display: 'flex', flexDirection: 'row', gap: '15px', height: '20px', alignItems: 'center' }}
+                                            style={{
+                                                display: 'flex',
+                                                flexDirection: 'row',
+                                                gap: '15px',
+                                                height: '20px',
+                                                alignItems: 'center',
+                                            }}
                                             key={_id}
                                             label={
                                                 <Grid container flexDirection="row" alignItems="center" flexWrap="nowrap" gap="10px">

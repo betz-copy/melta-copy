@@ -1,5 +1,6 @@
 import { Grid } from '@mui/material';
 import React, { CSSProperties } from 'react';
+import { environment } from '../globals';
 
 interface EntityTemplateColorProps {
     entityTemplateColor: string;
@@ -10,7 +11,7 @@ const EntityTemplateColor: React.FC<EntityTemplateColorProps> = ({ entityTemplat
     return (
         <Grid
             style={{
-                height: '30px',
+                height: environment.iconSize.height,
                 width: '3px',
                 backgroundColor: entityTemplateColor,
                 borderRadius: '20px',

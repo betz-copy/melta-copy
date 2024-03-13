@@ -46,7 +46,7 @@ const EntityTopBar: React.FC<{
                 <Grid item>
                     <EntityTemplateColor entityTemplateColor={entityTemplateColor} />
                 </Grid>
-                <Grid item>
+                <Grid item sx={{ display: 'flex', justifyContent: 'center', alignContent: 'center' }}>
                     {entityTemplate.iconFileId && (
                         <CustomIcon iconUrl={entityTemplate.iconFileId || ''} height="30px" width="30px" color={theme.palette.primary.main} />
                     )}
