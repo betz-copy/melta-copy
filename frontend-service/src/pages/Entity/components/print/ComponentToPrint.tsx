@@ -10,11 +10,32 @@ import { IConnectionTemplateOfExpandedEntity } from '../..';
 import { FileToPrint } from './FileToPrint';
 import { useFilePreview } from '../../../../utils/useFilePreview';
 
-const FileData: React.FC<{ file: IFile }> = ({ file }) => {
+const FileData: React.FC<{
+    file: IFile;
+    isFilesLoading: Set<number> | undefined;
+    setIsFilesLoading: React.Dispatch<React.SetStateAction<Set<number> | undefined>>;
+    index: number;
+    setIsFilesError: React.Dispatch<React.SetStateAction<boolean>>;
+}> = ({ file, isFilesLoading, setIsFilesLoading, index, setIsFilesError }) => {
     const filePreview = useFilePreview(file.id, file.type);
-    const { data, refetch } = filePreview;
+    const { data, refetch, isLoading, isError } = filePreview;
     if (!data) {
         refetch();
+    }
+
+    if (isError) {
+        setIsFilesError(true);
+    }
+
+    if (isLoading && !isFilesLoading?.has(index)) {
+        const newLoadingSet = new Set(isFilesLoading);
+        newLoadingSet.add(index);
+        setIsFilesLoading(newLoadingSet);
+    }
+    if (!isLoading && isFilesLoading?.has(index)) {
+        const newLoadingSet = new Set(isFilesLoading);
+        newLoadingSet.delete(index);
+        setIsFilesLoading(newLoadingSet);
     }
     return <FileToPrint file={file} key={`${file.id}${file.name}`} filePreview={filePreview} />;
 };
@@ -25,6 +46,9 @@ const ComponentToPrint = React.forwardRef<
         entityTemplate: IMongoEntityTemplatePopulated;
         expandedEntity: IEntityExpanded;
         connectionsTemplatesToPrint: IConnectionTemplateOfExpandedEntity[];
+        isFilesLoading: Set<number> | undefined;
+        setIsFilesLoading: React.Dispatch<React.SetStateAction<Set<number> | undefined>>;
+        setIsFilesError: React.Dispatch<React.SetStateAction<boolean>>;
         filesToPrint: IFile[];
         options: {
             showDate: boolean;
@@ -34,126 +58,140 @@ const ComponentToPrint = React.forwardRef<
             showPreviewPropertiesOnly: boolean;
         };
     }
->(({ entityTemplate, expandedEntity, connectionsTemplatesToPrint, options, filesToPrint }, ref) => {
-    const theme = useTheme();
+>(
+    (
+        { entityTemplate, expandedEntity, connectionsTemplatesToPrint, options, filesToPrint, isFilesLoading, setIsFilesLoading, setIsFilesError },
+        ref,
+    ) => {
+        const theme = useTheme();
 
-    const queryClient = useQueryClient();
-    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+        const queryClient = useQueryClient();
+        const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
 
-    return (
-        <Box ref={ref} margin="20px" style={{ direction: 'rtl' }}>
-            <Box paddingBottom="0.4rem" display="flex" justifyContent="space-between" alignItems="center">
-                <Box display="flex" alignItems="center">
-                    <Typography component="h4" variant="h4" color={theme.palette.primary.main} fontWeight="800">
-                        {entityTemplate.category.displayName}
-                    </Typography>
+        return (
+            <Box ref={ref} margin="20px" style={{ direction: 'rtl' }}>
+                <Box paddingBottom="0.4rem" display="flex" justifyContent="space-between" alignItems="center">
+                    <Box display="flex" alignItems="center">
+                        <Typography component="h4" variant="h4" color={theme.palette.primary.main} fontWeight="800">
+                            {entityTemplate.category.displayName}
+                        </Typography>
 
-                    <Typography variant="h4" fontSize="30px" color="#d3d8df" marginLeft="5px" marginRight="5px">
-                        /
-                    </Typography>
+                        <Typography variant="h4" fontSize="30px" color="#d3d8df" marginLeft="5px" marginRight="5px">
+                            /
+                        </Typography>
 
-                    <Typography paddingBottom="2px" variant="h4" fontSize="28px" color={theme.palette.primary.main}>
-                        {entityTemplate.displayName}
-                    </Typography>
+                        <Typography paddingBottom="2px" variant="h4" fontSize="28px" color={theme.palette.primary.main}>
+                            {entityTemplate.displayName}
+                        </Typography>
+                    </Box>
+                    {options.showDate && <Box> {new Date().toLocaleDateString('en-uk')}</Box>}
                 </Box>
-                {options.showDate && <Box> {new Date().toLocaleDateString('en-uk')}</Box>}
-            </Box>
-            <EntityComponentToPrint
-                entityTemplate={entityTemplate}
-                entity={expandedEntity.entity}
-                showPreviewPropertiesOnly={options.showPreviewPropertiesOnly}
-                files={filesToPrint}
-            />
-            {connectionsTemplatesToPrint.length !== 0 && (
-                <>
-                    <BlueTitle title={i18next.t('entityPage.relationshipTitle')} component="h4" variant="h4" style={{ marginTop: '2rem' }} />
+                <EntityComponentToPrint
+                    entityTemplate={entityTemplate}
+                    entity={expandedEntity.entity}
+                    showPreviewPropertiesOnly={options.showPreviewPropertiesOnly}
+                    files={filesToPrint}
+                />
+                {connectionsTemplatesToPrint.length !== 0 && (
+                    <>
+                        <BlueTitle title={i18next.t('entityPage.relationshipTitle')} component="h4" variant="h4" style={{ marginTop: '2rem' }} />
 
-                    {connectionsTemplatesToPrint.map(
-                        ({ relationshipTemplate: { _id, destinationEntity, sourceEntity, displayName }, isExpandedEntityRelationshipSource }) => {
-                            const relevantConnections = expandedEntity.connections.filter((connection) => {
-                                if (isExpandedEntityRelationshipSource) {
+                        {connectionsTemplatesToPrint.map(
+                            ({ relationshipTemplate: { _id, destinationEntity, sourceEntity, displayName }, isExpandedEntityRelationshipSource }) => {
+                                const relevantConnections = expandedEntity.connections.filter((connection) => {
+                                    if (isExpandedEntityRelationshipSource) {
+                                        return (
+                                            connection.relationship.templateId === _id &&
+                                            connection.sourceEntity.properties._id === expandedEntity.entity.properties._id
+                                        );
+                                    }
+
                                     return (
                                         connection.relationship.templateId === _id &&
-                                        connection.sourceEntity.properties._id === expandedEntity.entity.properties._id
+                                        connection.destinationEntity.properties._id === expandedEntity.entity.properties._id
                                     );
-                                }
+                                });
+                                let entities = relevantConnections.map((connection) => {
+                                    return connection.sourceEntity.properties._id === expandedEntity.entity.properties._id
+                                        ? connection.destinationEntity
+                                        : connection.sourceEntity;
+                                });
 
-                                return (
-                                    connection.relationship.templateId === _id &&
-                                    connection.destinationEntity.properties._id === expandedEntity.entity.properties._id
-                                );
-                            });
-                            let entities = relevantConnections.map((connection) => {
-                                return connection.sourceEntity.properties._id === expandedEntity.entity.properties._id
-                                    ? connection.destinationEntity
-                                    : connection.sourceEntity;
-                            });
+                                if (!options.showDisabled) entities = entities.filter((entity) => !entity.properties.disabled);
 
-                            if (!options.showDisabled) entities = entities.filter((entity) => !entity.properties.disabled);
+                                if (entities.length !== 0)
+                                    return (
+                                        <div key={_id}>
+                                            <Box display="flex" alignItems="center" marginTop="2rem" marginBottom="0.5rem">
+                                                <Typography
+                                                    variant="h4"
+                                                    fontSize="26px"
+                                                    color="gray"
+                                                    fontWeight={isExpandedEntityRelationshipSource ? '900' : undefined}
+                                                >
+                                                    {sourceEntity.displayName}
+                                                </Typography>
 
-                            if (entities.length !== 0)
-                                return (
-                                    <div key={_id}>
-                                        <Box display="flex" alignItems="center" marginTop="2rem" marginBottom="0.5rem">
-                                            <Typography
-                                                variant="h4"
-                                                fontSize="26px"
-                                                color="gray"
-                                                fontWeight={isExpandedEntityRelationshipSource ? '900' : undefined}
-                                            >
-                                                {sourceEntity.displayName}
-                                            </Typography>
+                                                <Typography
+                                                    paddingRight="7px"
+                                                    paddingLeft="7px"
+                                                    fontWeight="800"
+                                                    color={theme.palette.primary.main}
+                                                    component="h5"
+                                                    variant="h5"
+                                                >
+                                                    {displayName}
+                                                </Typography>
 
-                                            <Typography
-                                                paddingRight="7px"
-                                                paddingLeft="7px"
-                                                fontWeight="800"
-                                                color={theme.palette.primary.main}
-                                                component="h5"
-                                                variant="h5"
-                                            >
-                                                {displayName}
-                                            </Typography>
+                                                <Typography
+                                                    variant="h4"
+                                                    fontSize="26px"
+                                                    color="gray"
+                                                    fontWeight={isExpandedEntityRelationshipSource ? undefined : '900'}
+                                                >
+                                                    {destinationEntity.displayName}
+                                                </Typography>
+                                            </Box>
 
-                                            <Typography
-                                                variant="h4"
-                                                fontSize="26px"
-                                                color="gray"
-                                                fontWeight={isExpandedEntityRelationshipSource ? undefined : '900'}
-                                            >
-                                                {destinationEntity.displayName}
-                                            </Typography>
-                                        </Box>
-
-                                        {entities.map((entity) => (
-                                            <div key={entity.properties._id} style={{ marginBottom: '0.5rem' }}>
-                                                <EntityComponentToPrint
-                                                    entityTemplate={entityTemplates.get(entity.templateId)!}
-                                                    entity={entity}
-                                                    options={{ showDates: options.showEntityDates }}
-                                                    showPreviewPropertiesOnly
-                                                />
-                                            </div>
-                                        ))}
-                                    </div>
-                                );
-                            return <div key={_id}> </div>;
-                        },
-                    )}
-                </>
-            )}
-            {options.showEntityFiles && (
-                <>
-                    <Grid sx={{ width: '100%', height: '100%', paddingY: '55%', paddingX: '37.5%' }}>
-                        <BlueTitle title={i18next.t('entityPage.print.appendices')} component="h2" variant="h2" style={{ marginTop: '2rem' }} />
-                    </Grid>
-                    {filesToPrint.map((file) => {
-                        return <FileData file={file} key={file.id} />;
-                    })}
-                </>
-            )}
-        </Box>
-    );
-});
+                                            {entities.map((entity) => (
+                                                <div key={entity.properties._id} style={{ marginBottom: '0.5rem' }}>
+                                                    <EntityComponentToPrint
+                                                        entityTemplate={entityTemplates.get(entity.templateId)!}
+                                                        entity={entity}
+                                                        options={{ showDates: options.showEntityDates }}
+                                                        showPreviewPropertiesOnly
+                                                    />
+                                                </div>
+                                            ))}
+                                        </div>
+                                    );
+                                return <div key={_id}> </div>;
+                            },
+                        )}
+                    </>
+                )}
+                {options.showEntityFiles && (
+                    <>
+                        <Grid sx={{ width: '100%', height: '100%', paddingY: '55%', paddingX: '37.5%' }}>
+                            <BlueTitle title={i18next.t('entityPage.print.appendices')} component="h2" variant="h2" style={{ marginTop: '2rem' }} />
+                        </Grid>
+                        {filesToPrint.map((file, index) => {
+                            return (
+                                <FileData
+                                    file={file}
+                                    key={file.id}
+                                    isFilesLoading={isFilesLoading}
+                                    setIsFilesLoading={setIsFilesLoading}
+                                    index={index}
+                                    setIsFilesError={setIsFilesError}
+                                />
+                            );
+                        })}
+                    </>
+                )}
+            </Box>
+        );
+    },
+);
 
 export { ComponentToPrint };

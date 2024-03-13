@@ -116,6 +116,7 @@ export default {
         activeEntity: ' פעיל',
         preview: 'תצוגה מקדימה אינה זמינה',
         fileDownloadError: 'נכשל להוריד קובץ, נסה שנית או פנה לתמיכה',
+        filePrintError: 'נכשל לפתוח קובץ להדפסה, נסה שנית או פנה לתמיכה',
     },
     addRelationshipDialog: {
         title: 'הוסף קשר',
@@ -896,7 +897,6 @@ export default {
         cameraNotFound: 'מצלמה לא נמצאה',
         somethingWentWrong: 'משהו השתבש, אנא נסה שנית',
         imgName: 'שם התמונה',
-        browserNotSupported: 'דפדפן לא תומך',
         takePicture: 'צלם תמונה',
     },
 };

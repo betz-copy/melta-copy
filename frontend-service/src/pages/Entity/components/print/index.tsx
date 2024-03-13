@@ -36,7 +36,7 @@ const Print: React.FC<{
             .map((propertyKey) => {
                 const propertySchema = entityTemplate.properties.properties[propertyKey];
                 const propertyValue = expandedEntity.entity.properties[propertyKey];
-                if (propertySchema.format === 'fileId') {
+                if (propertyValue && propertySchema.format === 'fileId') {
                     const name = getFileName(propertyValue);
                     return {
                         id: propertyValue,
@@ -62,6 +62,9 @@ const Print: React.FC<{
     const [showEntityDates, setShowEntityDates] = React.useState(true);
     const [showPreviewPropertiesOnly, setShowPreviewPropertiesOnly] = React.useState(false);
 
+    const [isFilesLoading, setIsFilesLoading] = React.useState<Set<number>>();
+    const [isFilesError, setIsFilesError] = React.useState(false);
+
     const getPageMargins = () => {
         // eslint-disable-next-line quotes
         return `@page { margin: 15px 10px 15px 10px !important; }`;
@@ -81,6 +84,9 @@ const Print: React.FC<{
                     expandedEntity={expandedEntity}
                     connectionsTemplatesToPrint={selected}
                     filesToPrint={selectedFiles}
+                    isFilesLoading={isFilesLoading}
+                    setIsFilesLoading={setIsFilesLoading}
+                    setIsFilesError={setIsFilesError}
                     options={{ showDate, showDisabled, showEntityDates, showEntityFiles: selectedFiles.length !== 0, showPreviewPropertiesOnly }}
                 />
             </div>
@@ -94,6 +100,8 @@ const Print: React.FC<{
                 files={files}
                 selectedFiles={selectedFiles}
                 setSelectedFiles={setSelectedFiles}
+                isFilesLoading={isFilesLoading}
+                isFilesError={isFilesError}
                 categoriesWithConnectionsTemplates={categoriesWithConnectionsTemplates}
                 onClick={handlePrint}
                 options={{

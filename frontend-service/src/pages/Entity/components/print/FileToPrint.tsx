@@ -1,9 +1,8 @@
 import React, { useRef, useState } from 'react';
 import { Box, Grid } from '@mui/material';
-import i18next from 'i18next';
 import { Document, Page } from 'react-pdf';
 import { UseQueryResult } from 'react-query';
-import { isImage, isUnsupported } from '../../../../common/FilePreview/PreviewDialog';
+import { isImage } from '../../../../common/FilePreview/PreviewDialog';
 import FlexBox from '../../../../common/FlexBox';
 import { IFile } from '../../../../interfaces/entities';
 
@@ -11,18 +10,10 @@ const FileToPrint: React.FC<{
     file: IFile;
     filePreview: UseQueryResult<string, unknown>;
 }> = ({ file, filePreview }) => {
-    const { data, refetch, isLoading, isError } = filePreview;
+    const { data, refetch } = filePreview;
 
     const [numOfPages, setNumOfPages] = useState(1);
     const fileRef = useRef(null);
-
-    if (isLoading || isError) {
-        return <div>{i18next.t('errorPage.preview')}</div>;
-    }
-
-    if (isError || !data || isUnsupported(file.type)) {
-        return <div>Error loading file preview</div>;
-    }
 
     const onLoadSuccess = ({ numPages }: { numPages: number }) => {
         setNumOfPages(numPages);

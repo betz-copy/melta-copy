@@ -1,7 +1,8 @@
 import React from 'react';
-import { Dialog, DialogTitle, DialogContent, Grid, Button, FormControlLabel, DialogActions, IconButton } from '@mui/material';
+import { Dialog, DialogTitle, DialogContent, Grid, Button, FormControlLabel, DialogActions, IconButton, CircularProgress } from '@mui/material';
 import { PrintOutlined, CloseOutlined } from '@mui/icons-material';
 import i18next from 'i18next';
+import { toast } from 'react-toastify';
 import { SelectCheckbox } from '../../../../common/SelectCheckbox';
 import { IMongoRelationshipTemplatePopulated } from '../../../../interfaces/relationshipTemplates';
 import { IMongoCategory } from '../../../../interfaces/categories';
@@ -19,6 +20,8 @@ const PrintOptionsDialog: React.FC<{
     files: IFile[];
     selectedFiles: IFile[];
     setSelectedFiles: React.Dispatch<React.SetStateAction<IFile[]>>;
+    isFilesLoading: Set<number> | undefined;
+    isFilesError: boolean;
     categoriesWithConnectionsTemplates: {
         category: IMongoCategory;
         connectionsTemplates: {
@@ -47,6 +50,8 @@ const PrintOptionsDialog: React.FC<{
     files,
     selectedFiles,
     setSelectedFiles,
+    isFilesLoading,
+    isFilesError,
     categoriesWithConnectionsTemplates,
     onClick,
     options,
@@ -153,12 +158,18 @@ const PrintOptionsDialog: React.FC<{
             <DialogActions style={{ paddingLeft: '24px' }}>
                 <Button
                     onClick={(ev) => {
-                        handleClose();
-                        onClick(ev);
+                        if (isFilesError) {
+                            toast.error(i18next.t('errorPage.filePrintError'));
+                        } else {
+                            handleClose();
+                            onClick(ev);
+                        }
                     }}
                     endIcon={<PrintOutlined />}
+                    disabled={isFilesLoading && isFilesLoading.size > 0}
                 >
                     {i18next.t('entityPage.print.continue')}
+                    {isFilesLoading && isFilesLoading.size > 0 && <CircularProgress size={20} />}
                 </Button>
             </DialogActions>
         </Dialog>

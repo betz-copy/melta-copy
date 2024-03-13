@@ -64,7 +64,7 @@ const FileInput: React.FC<FileInputProps> = ({ fileName, onDeleteFile, onDropFil
             setStream(userStream);
             setOpen(true);
         } catch {
-            toast(i18next.t('camera.cameraNotFound'));
+            toast.error(i18next.t('camera.cameraNotFound'));
         }
     };
 
