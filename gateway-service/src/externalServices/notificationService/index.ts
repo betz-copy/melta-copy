@@ -15,6 +15,8 @@ export class NotificationService {
     });
 
     static async getNotifications(query: object): Promise<INotification[]> {
+        console.log('ll', { query });
+
         const { data } = await this.notificationService.get<INotification[]>('/', { params: query });
         return data;
     }

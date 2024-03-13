@@ -72,6 +72,8 @@ export class NotificationsManager {
 
     private static handleQuery({ viewerId, types, startDate, endDate, ...rest }: IBasicNotificationQuery) {
         const query: FilterQuery<INotificationDocument> = { ...rest };
+        console.log({ startDate }, { endDate });
+
         if (viewerId) query.viewers = viewerId;
 
         if (types) query.type = { $in: types };
