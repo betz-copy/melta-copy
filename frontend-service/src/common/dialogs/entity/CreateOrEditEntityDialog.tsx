@@ -215,7 +215,7 @@ const CreateOrEditEntityDetails: React.FC<{
                             <Card>
                                 <CardContent>
                                     <Grid container justifyContent="center">
-                                        <Grid item xs={12}>
+                                        <Grid item container xs={12}>
                                             <Grid container flexDirection="column">
                                                 <Box width="100%">
                                                     <Grid item container justifyContent="space-between">
@@ -271,6 +271,7 @@ const CreateOrEditEntityDetails: React.FC<{
                                         </Grid>
                                         <Grid
                                             container
+                                            item
                                             flexDirection="row"
                                             flexWrap="nowrap"
                                             justifyContent="space-between"

@@ -79,6 +79,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
     const [hideFieldsToDisplay, setHideFieldsToDisplay] = React.useState(entityTemplate.properties.hide);
 
     return (
+        
         <Grid container style={{ ...style, alignItems: textWrap ? 'flex-start' : 'center', alignContent: 'center' }}>
             {propertiesOrderedToShow.map((propertyKey) => {
                 const propertySchema = entityTemplate.properties.properties[propertyKey];
@@ -136,7 +137,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                                             textOverflow: 'ellipsis',
                                             whiteSpace: textWrap ? undefined : 'nowrap',
                                             overflowY: "auto",
-                                            maxHeight: "100px"
+                                            maxHeight: "111px"
                                         }}
                                     >
                                         {hideFieldsToDisplay.includes(propertyKey) ? <>••••••••</> : stringFormatValue}
