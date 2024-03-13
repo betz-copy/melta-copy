@@ -1,11 +1,10 @@
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 import { Grid, Card, CardContent, CircularProgress, Box, Divider, Button } from '@mui/material';
 import { Done as DoneIcon, Clear as ClearIcon } from '@mui/icons-material';
 import { useMutation } from 'react-query';
 import i18next from 'i18next';
 import { toast } from 'react-toastify';
 import { Form, Formik } from 'formik';
-import mapValues from 'lodash.mapvalues';
 import pickBy from 'lodash.pickby';
 import { useLocation } from 'react-router';
 import { useNavigate } from 'react-router-dom';
@@ -13,7 +12,7 @@ import { AxiosError } from 'axios';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IEntity, IEntityExpanded } from '../../../interfaces/entities';
 import { duplicateEntityRequest } from '../../../services/entitiesService';
-import { EntityWizardValues, EntityWizardValuesNew } from '../../../common/dialogs/entity';
+import { EntityWizardValues } from '../../../common/dialogs/entity';
 import { JSONSchemaFormik, ajvValidate } from '../../../common/inputs/JSONSchemaFormik';
 import { BlueTitle } from '../../../common/BlueTitle';
 import { filterAttachmentsAndEntitiesRefFromPropertiesSchema } from '../../../utils/pickFieldsPropertiesSchema';
@@ -38,7 +37,7 @@ const DuplicateEntity: React.FC<{}> = () => {
     }
 
     const { isLoading: isDuplicateLoading, mutateAsync: duplicateMutation } = useMutation(
-        (newEntityDate: EntityWizardValuesNew) => duplicateEntityRequest(entity.properties._id, newEntityDate),
+        (newEntityDate: EntityWizardValues) => duplicateEntityRequest(entity.properties._id, newEntityDate),
         {
             onSuccess: (data) => {
                 toast.success(i18next.t('wizard.entity.duplicatedSuccessfully'));

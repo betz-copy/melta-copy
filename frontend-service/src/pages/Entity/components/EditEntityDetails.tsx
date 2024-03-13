@@ -10,7 +10,7 @@ import { AxiosError } from 'axios';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IEntity } from '../../../interfaces/entities';
 import { updateEntityRequestForMultiple } from '../../../services/entitiesService';
-import { EntityWizardValuesNew } from '../../../common/dialogs/entity';
+import { EntityWizardValues } from '../../../common/dialogs/entity';
 import { JSONSchemaFormik, ajvValidate } from '../../../common/inputs/JSONSchemaFormik';
 import { BlueTitle } from '../../../common/BlueTitle';
 import { filterAttachmentsAndEntitiesRefFromPropertiesSchema } from '../../../utils/pickFieldsPropertiesSchema';
@@ -33,7 +33,7 @@ const EditEntityDetails: React.FC<{
         isOpen: boolean;
         brokenRules?: IRuleBreachPopulated['brokenRules'];
         rawBrokenRules?: IRuleBreach['brokenRules'];
-        updateEntityFormData?: EntityWizardValuesNew;
+        updateEntityFormData?: EntityWizardValues;
     }>({ isOpen: false });
 
     const templateFilesProperties = pickBy(entityTemplate.properties.properties, (value) => (value.type === 'array' && value.items?.format==="fileId") || value.format === "fileId");
@@ -55,7 +55,7 @@ const EditEntityDetails: React.FC<{
     });
     const fileProperties = fileIdsProperties;
     const { isLoading: isUpdateLoading, mutateAsync: updateMutation } = useMutation(
-        ({ newEntityData, ignoredRules }: { newEntityData: EntityWizardValuesNew; ignoredRules?: IRuleBreach['brokenRules'] }) =>
+        ({ newEntityData, ignoredRules }: { newEntityData: EntityWizardValues; ignoredRules?: IRuleBreach['brokenRules'] }) =>
         updateEntityRequestForMultiple(entity.properties._id, newEntityData, ignoredRules),
         {
             onSuccess: (data) => {

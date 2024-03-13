@@ -40,6 +40,7 @@ export const ProcessStep: FC<ProcessStepProps> = ({
     setIsStepEditMode,
     onStepUpdateSuccess,
 }) => {
+
     const queryClient = useQueryClient();
     const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
 
@@ -183,20 +184,8 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                             {templateFileProperties && isStepEditMode ? (
                                                 <Box>
                                                     {Object.entries(templateFileProperties).map(([key, value], index) => {
-                                                                    return <Grid item key={key} marginTop={index > 0 ? 5 : 0}>
-                                                                { value.items === undefined ? 
-                                                                       <InstanceSingleFileInput
-                                                                            key={key}
-                                                                            fileFieldName={`attachmentsProperties.${key}`}
-                                                                            fieldTemplateTitle={value.title}
-                                                                            setFieldValue={setFieldValue}
-                                                                            required={required.includes(key)}
-                                                                            value={values.attachmentsProperties[key]}
-                                                                            error={errors.properties?.[key] as string}
-                                                                            setFieldTouched={setFieldTouched}
-                                                                        />
-                                                                    
-                                                                    :
+                                                            return <Grid item key={key} marginTop={index > 0 ? 5 : 0}>
+                                                                { !!value.items ? 
                                                                     <InstanceFileInput
                                                                         key={key}
                                                                         fileFieldName={`attachmentsProperties.${key}`}
@@ -206,8 +195,18 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                                                         value={values.attachmentsProperties[key]}
                                                                         error={errors.properties?.[key] as string}
                                                                         setFieldTouched={setFieldTouched}
-                                                                        multiple={value.items ? true : false}
-                                                                    />
+                                                                        multiple={!!value.items}
+                                                                    /> :
+                                                                    <InstanceSingleFileInput
+                                                                            key={key}
+                                                                            fileFieldName={`attachmentsProperties.${key}`}
+                                                                            fieldTemplateTitle={value.title}
+                                                                            setFieldValue={setFieldValue}
+                                                                            required={required.includes(key)}
+                                                                            value={values.attachmentsProperties[key]}
+                                                                            error={errors.properties?.[key] as string}
+                                                                            setFieldTouched={setFieldTouched}
+                                                                        />
                                                                 }
                                                                     </Grid>
                                                                 
@@ -217,6 +216,17 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                                 templateFileProperties && (
                                                     <>
                                                         {Object.entries(templateFileProperties).map(([fieldName, { title }]) => {
+                                                            let attachments = <Typography display="inline" variant="h6">-</Typography>;
+                                                            if (values.attachmentsProperties[fieldName] !== undefined) {
+                                                                if (Array.isArray(values.attachmentsProperties[fieldName])) {
+                                                                    attachments = values.attachmentsProperties[fieldName].map((file) => (
+                                                                        <OpenPreviewButton fileId={file.name} key={file.name} />
+                                                                    ));
+                                                                } else {
+                                                                    attachments = <OpenPreviewButton fileId={values.attachmentsProperties[fieldName].name} key={fieldName} />;
+                                                                }
+                                                            } 
+
                                                             return(
                                                             <Grid container spacing={1} key={fieldName} display='flex' flexDirection="column">
                                                                 <Grid item>
@@ -225,14 +235,7 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                                                     </Typography>
                                                                 </Grid>
                                                                 <Grid item sx={{overflowY:"auto", maxHeight: "90px"}}>
-                                                                    {values.attachmentsProperties[fieldName] !== undefined ? (
-                                                                        (Array.isArray(values.attachmentsProperties[fieldName]) ? values.attachmentsProperties[fieldName].map((file) => {
-                                                                            return <OpenPreviewButton fileId={file.name}/>
-                                                                        }) : <OpenPreviewButton fileId={values.attachmentsProperties[fieldName].name} /> )) : (
-                                                                        <Typography display="inline" variant="h6">
-                                                                            -
-                                                                        </Typography>
-                                                                    )}
+                                                                    {attachments}
                                                                 </Grid>
                                                             </Grid>
                                                         )})}

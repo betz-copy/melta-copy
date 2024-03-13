@@ -8,7 +8,7 @@ import {
     ISearchEntitiesOfTemplateBody,
     IExportEntitiesBody,
 } from '../interfaces/entities';
-import { EntityWizardValuesNew } from '../common/dialogs/entity';
+import { EntityWizardValues } from '../common/dialogs/entity';
 import { IRuleBreach } from '../interfaces/ruleBreaches/ruleBreach';
 
 const { entities, relationships } = environment.api;
@@ -34,7 +34,7 @@ export const getRelationshipInstancesCountByTemplateIdRequest = async (templateI
     return data;
 };
 
-export const createEntityRequest = async (entity: EntityWizardValuesNew) => {
+export const createEntityRequest = async (entity: EntityWizardValues) => {
     const formData = new FormData();
 
     const filesToUpload: any = [];
@@ -67,10 +67,9 @@ export const updateEntityStatusRequest = async (entityId: string, disabled: bool
 
 export const updateEntityRequestForMultiple = async (
     entityId: string,
-    newEntityData: EntityWizardValuesNew,
+    newEntityData: EntityWizardValues,
     ignoredRules?: IRuleBreach['brokenRules'],
 ) => {
-    console.log(newEntityData);
     const formData = new FormData();
 
     const filesToUpload: any = [];
@@ -119,11 +118,10 @@ export const updateEntityRequestForMultiple = async (
         formData.append('ignoredRules', JSON.stringify(ignoredRules));
     }
     const { data } = await axios.put<IEntity>(`${entities}/${entityId}`, formData);
-    console.log(data);
     return data;
 };
 
-export const duplicateEntityRequest = async (entityId: string, newEntityData: EntityWizardValuesNew) => {
+export const duplicateEntityRequest = async (entityId: string, newEntityData: EntityWizardValues) => {
     const formData = new FormData();
     const filesToUpload: any = [];
     const unchangedFiles: any = [];

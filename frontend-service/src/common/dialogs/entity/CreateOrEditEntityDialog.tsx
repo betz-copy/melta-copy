@@ -11,7 +11,7 @@ import { useNavigate } from 'react-router-dom';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IEntity } from '../../../interfaces/entities';
 import { createEntityRequest, updateEntityRequestForMultiple } from '../../../services/entitiesService';
-import { EntityWizardValuesNew } from '.';
+import { EntityWizardValues } from '.';
 import { JSONSchemaFormik, ajvValidate } from '../../inputs/JSONSchemaFormik';
 import { BlueTitle } from '../../BlueTitle';
 import { filterAttachmentsAndEntitiesRefFromPropertiesSchema } from '../../../utils/pickFieldsPropertiesSchema';
@@ -44,7 +44,7 @@ const CreateOrEditEntityDetails: React.FC<{
         isOpen: boolean;
         brokenRules?: IRuleBreachPopulated['brokenRules'];
         rawBrokenRules?: IRuleBreach['brokenRules'];
-        updateEntityFormData?: EntityWizardValuesNew;
+        updateEntityFormData?: EntityWizardValues;
     }>({ isOpen: false });
 
     const { templateFileKeys: initialTemplateFileKeys } = getEntityTemplateFilesFieldsInfo(entityTemplate);
@@ -65,7 +65,7 @@ const CreateOrEditEntityDetails: React.FC<{
     });
     const fileProperties = fileIdsProperties; 
     const { isLoading: isUpdateLoading, mutateAsync: updateMutation } = useMutation(
-        ({ newEntityData, ignoredRules }: { newEntityData: EntityWizardValuesNew; ignoredRules?: IRuleBreach['brokenRules'] }) =>
+        ({ newEntityData, ignoredRules }: { newEntityData: EntityWizardValues; ignoredRules?: IRuleBreach['brokenRules'] }) =>
             updateEntityRequestForMultiple(entity.properties._id, newEntityData, ignoredRules),
         {
             onSuccess: (data) => {
@@ -95,14 +95,14 @@ const CreateOrEditEntityDetails: React.FC<{
     const navigate = useNavigate();
 
     const { isLoading: isCreateLoading, mutateAsync: createMutation } = useMutation(
-        (entityToCreate: EntityWizardValuesNew) => createEntityRequest(entityToCreate),
+        (entityToCreate: EntityWizardValues) => createEntityRequest(entityToCreate),
         {
             onSuccess: (newEntity) => {
                 toast.success(i18next.t('wizard.entity.createdSuccessfully'));
                 onCancelUpdate();
                 navigate(`/entity/${newEntity.properties._id}`);
             },
-            onError: (err: AxiosError, { template }: EntityWizardValuesNew) => {
+            onError: (err: AxiosError, { template }: EntityWizardValues) => {
                 const errorMetadata = err.response?.data?.metadata;
                 if (errorMetadata?.errorCode === errorCodes.failedConstraintsValidation) {
                     toastConstraintValidationError(errorMetadata, template);
@@ -181,7 +181,19 @@ const CreateOrEditEntityDetails: React.FC<{
                         />
                         {Object.entries(templateFilesProperties).map(([key, value], index) => 
                     <Grid item key={key} marginTop={index > 0 ? 5 : 0}>
-                    {value.items === undefined ? (
+                    { !!value.items ? (
+                        <InstanceFileInput
+                            key={key}
+                            fileFieldName={`attachmentsProperties.${key}`}
+                            fieldTemplateTitle={value.title}
+                            setFieldValue={setFieldValue}
+                            required={requiredFilesNames.includes(key)}
+                            value={values.attachmentsProperties[key]}
+                            error={errors.attachmentsProperties?.[key] as string}
+                            setFieldTouched={setFieldTouched}
+                            multiple={!!value.items}
+                        />
+                    ) : (
                         <InstanceSingleFileInput
                                     key={key}
                                     fileFieldName={`attachmentsProperties.${key}`}
@@ -192,19 +204,7 @@ const CreateOrEditEntityDetails: React.FC<{
                                     error={errors.attachmentsProperties?.[key] as string}
                                     setFieldTouched={setFieldTouched}
                                 />
-                    ) : (
-                        <InstanceFileInput
-                            key={key}
-                            fileFieldName={`attachmentsProperties.${key}`}
-                            fieldTemplateTitle={value.title}
-                            setFieldValue={setFieldValue}
-                            required={requiredFilesNames.includes(key)}
-                            value={values.attachmentsProperties[key]}
-                            error={errors.attachmentsProperties?.[key] as string}
-                            setFieldTouched={setFieldTouched}
-                            multiple={value.items ? true : false}
-                        />
-                    )}
+                    ) }
                 </Grid>
                     )}
                     </>

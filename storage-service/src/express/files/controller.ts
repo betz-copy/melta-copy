@@ -1,7 +1,6 @@
 import * as express from 'express';
 import { getFileName } from '../../utils/generatePath';
 import { FilesManager } from './manager';
-// import * as JSZip from 'jszip';
 import * as archiver from 'archiver';
 
 export class FilesController {
@@ -79,7 +78,6 @@ export class FilesController {
 
     static async deleteFiles(req: express.Request, res: express.Response) {
         const { paths } = req.body;
-        console.log('PATH:', paths);
         res.json(await FilesManager.deleteFiles(paths));
     }
 }

@@ -9,7 +9,6 @@ import i18next from 'i18next';
 interface FilesInputProps {
     files: string[];
     onDropFiles?: (acceptedFiles: File[]) => void;
-    onDropFile?: (acceptedFiles: File) => void;
     onDeleteFile: (fileIndex: number, event: React.MouseEvent<HTMLButtonElement>) => void;
     inputText: string;
     multiple: boolean;
@@ -17,19 +16,12 @@ interface FilesInputProps {
     errorText?: string;
 }
 
-const FilesInput: React.FC<FilesInputProps> = ({ files, onDropFiles, onDropFile, onDeleteFile, inputText, acceptedFilesTypes, errorText, multiple }) => {
+const FilesInput: React.FC<FilesInputProps> = ({ files, onDropFiles, onDeleteFile, inputText, acceptedFilesTypes, errorText, multiple }) => {
     const theme = useTheme();
 
-    const errorStyle = {
-        color: '#d32f2f',
-        margin: 0,
-        padding: 0,
-    };
     const onDrop = (acceptedFiles: File[] | File) => {
         if (Array.isArray(acceptedFiles) && onDropFiles) {
             onDropFiles(acceptedFiles);
-        } else if(onDropFile && !Array.isArray(acceptedFiles) ){
-            onDropFile(acceptedFiles);
         }
     };
 
@@ -130,7 +122,7 @@ const FilesInput: React.FC<FilesInputProps> = ({ files, onDropFiles, onDropFile,
                 </Grid>
             )}
             {errorText && (
-                <p id="error" style={errorStyle}>
+                <p id="error" style={{color: '#d32f2f', margin: 0, padding: 0}}>
                     {errorText}
                 </p>
             )}

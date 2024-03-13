@@ -8,9 +8,9 @@ const splitStepProperties = (stepInstance: IMongoStepInstancePopulated, stepTemp
     const newProperties = {};
 
     Object.keys(stepTemplate.properties.properties).forEach((key) => {
-        if (!stepInstance.properties?.[key]) {
-        } //newProperties[key] = undefined;
-        else newProperties[key] = stepInstance.properties?.[key];
+        if (stepInstance.properties && stepInstance.properties[key]) {
+            newProperties[key] = stepInstance.properties[key];
+        }
     });
 
     const templateFilesProperties = pickBy(

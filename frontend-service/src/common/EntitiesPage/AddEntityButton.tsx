@@ -1,7 +1,7 @@
 import React, { useState, CSSProperties } from 'react';
 import i18next from 'i18next';
 import { Dialog } from '@mui/material';
-import { EntityWizardValuesNew } from '../dialogs/entity';
+import { EntityWizardValues } from '../dialogs/entity';
 import IconButtonWithPopover from '../IconButtonWithPopover';
 import { CreateOrEditEntityDetails } from '../dialogs/entity/CreateOrEditEntityDialog';
 
@@ -9,11 +9,11 @@ const AddEntityButton: React.FC<{
     style?: CSSProperties;
     disabled?: boolean;
     initialStep?: number;
-    initialValues?: EntityWizardValuesNew;
+    initialValues?: EntityWizardValues;
     disabledToolTip?: boolean;
     popoverText?: string;
 }> = ({ style, children, disabled, initialStep, initialValues, popoverText, disabledToolTip = false }) => {
-    const [addEntityWizardState, setAddEntityWizardState] = useState<{ isOpen: boolean; initialStep?: number; initialValues?: EntityWizardValuesNew }>({
+    const [addEntityWizardState, setAddEntityWizardState] = useState<{ isOpen: boolean; initialStep?: number; initialValues?: EntityWizardValues }>({
         isOpen: false,
     });
 

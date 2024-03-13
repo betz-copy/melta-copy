@@ -7,7 +7,7 @@ import pickBy from 'lodash.pickby';
 import mapValues from 'lodash.mapvalues';
 import ExecWithRuleBreachDialog from '../../../common/dialogs/execWithRuleBreachDialog';
 import { ErrorToast } from '../../../common/ErrorToast';
-import { EntityWizardValuesNew } from '../../../common/dialogs/entity';
+import { EntityWizardValues } from '../../../common/dialogs/entity';
 import { IEntity } from '../../../interfaces/entities';
 import { ActionTypes, IUpdateEntityMetadata, IUpdateEntityMetadataPopulated } from '../../../interfaces/ruleBreaches/actionMetadata';
 import { IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
@@ -17,7 +17,7 @@ import { environment } from '../../../globals';
 
 const { errorCodes } = environment;
 
-const getUpdateEntityActionMetadata = (currEntity: IEntity, updateEntityFormData: EntityWizardValuesNew): IUpdateEntityMetadataPopulated => {
+const getUpdateEntityActionMetadata = (currEntity: IEntity, updateEntityFormData: EntityWizardValues): IUpdateEntityMetadataPopulated => {
     const templatePropertiesUpdated = pickBy(updateEntityFormData.template.properties.properties, ({ format, items }, propertyKey) => {
         if (format === 'fileId' || (items && items.format === "fileId")) {
             const attachmentProperty = updateEntityFormData.attachmentsProperties[propertyKey];
@@ -56,7 +56,7 @@ const UpdateEntityWithRuleBreachDialog: React.FC<{
     brokenRules: IRuleBreachPopulated['brokenRules'];
     rawBrokenRules: IRuleBreach['brokenRules'];
     currEntity: IEntity;
-    updateEntityFormData: EntityWizardValuesNew;
+    updateEntityFormData: EntityWizardValues;
     onUpdatedRuleBlock: (brokenRules: IRuleBreachPopulated['brokenRules'], rawBrokenRules: IRuleBreach['brokenRules']) => void;
 }> = ({ isLoadingUpdateEntity, handleClose, onUpdateEntity, brokenRules, rawBrokenRules, currEntity, updateEntityFormData, onUpdatedRuleBlock }) => {
     const queryClient = useQueryClient();

@@ -3,14 +3,14 @@ import * as Yup from 'yup';
 import i18next from 'i18next';
 import pickBy from 'lodash.pickby';
 import { Grid } from '@mui/material';
-import { EntityWizardValuesNew } from './index';
+import { EntityWizardValues } from './index';
 import { StepComponentProps } from '../../wizards/index';
 import { InstanceFileInput } from '../../inputs/InstanceFilesInput/InstanceFileInput';
 
 const fileFieldsSchema = Yup.object({
     attachmentsProperties: Yup.object().required(i18next.t('validation.required')),
 });
-const FileFields: React.FC<StepComponentProps<EntityWizardValuesNew>> = ({ values, setFieldValue, errors, setFieldTouched }) => {
+const FileFields: React.FC<StepComponentProps<EntityWizardValues>> = ({ values, setFieldValue, errors, setFieldTouched }) => {
     const filesProperties = pickBy(values.template.properties.properties, (value) => (value.type === 'array' && value.items?.format==="fileId") || value.format === "fileId");
     const requiredFilesNames = values.template.properties.required.filter((name) => Object.keys(filesProperties).includes(name));
     return (

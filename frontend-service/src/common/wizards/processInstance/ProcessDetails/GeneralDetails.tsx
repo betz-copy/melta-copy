@@ -89,7 +89,7 @@ const FileAttachmentsEdit: React.FC<FileAttachmentsProps> = ({
                                         ? JSON.stringify(errors.detailsAttachments?.[key])
                                         : undefined
                                 }                setFieldTouched={setFieldTouched}
-                                multiple={value.items ? true : false}
+                                multiple={!!value.items}
                             />
                     )}
                 </Grid>
@@ -101,6 +101,14 @@ export const FileAttachmentsView: React.FC<FileAttachmentsProps> = ({ templateFi
     return (
     <>
         {Object.entries(templateFileProperties).map(([fieldName, { title }]) => {
+             let attachments = <Typography display="inline" variant="h6">-</Typography>;;
+             if (values.detailsAttachments[fieldName]) {
+                 if (Array.isArray(values.detailsAttachments[fieldName])) {
+                     attachments = values.detailsAttachments[fieldName].map(v => <OpenPreviewButton fileId={v.name}/>);
+                 } else {
+                     attachments = <OpenPreviewButton fileId={values.detailsAttachments[fieldName].name} />;
+                 }
+             } 
             return(
             <Grid container spacing={1} display='flex' flexDirection="column" key={fieldName}>
                 <Grid item>
@@ -109,13 +117,7 @@ export const FileAttachmentsView: React.FC<FileAttachmentsProps> = ({ templateFi
                     </Typography>
                 </Grid>
                 <Grid item sx={{overflowY:"auto", maxHeight: "90px"}}>
-                    {values.detailsAttachments[fieldName] ? (
-                        Array.isArray(values.detailsAttachments[fieldName]) ? values.detailsAttachments[fieldName].map(v => {return <OpenPreviewButton fileId={v.name}/>}) : <OpenPreviewButton fileId={values.detailsAttachments[fieldName].name} />
-                    ) : (
-                        <Typography display="inline" variant="h6">
-                            -
-                        </Typography>
-                    )}
+                   {attachments}
                 </Grid>
             </Grid>
         )})}
