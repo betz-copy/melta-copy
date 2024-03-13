@@ -56,7 +56,7 @@ export const createEntityTemplateSchema = Joi.object({
     file: iconFileSchema,
 });
 
-// PUT /api/templates/entities/updateEnumField/:id
+// PUT /api/templates/entities/update-enum-field/:id
 export const updateFieldValueSchema = Joi.object({
     body: {
         fieldValue: Joi.string().required(),
@@ -65,7 +65,7 @@ export const updateFieldValueSchema = Joi.object({
     },
 });
 
-// DELETE /api/templates/entities/deleteEnumField/:id
+// DELETE /api/templates/entities/delete-enum-field/:id
 export const deleteFieldValueSchema = Joi.object({
     body: {
         fieldValue: Joi.string().required(),

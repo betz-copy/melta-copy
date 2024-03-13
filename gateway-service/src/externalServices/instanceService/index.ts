@@ -14,12 +14,12 @@ export class InstanceManagerService {
 
     // entity instances
     static async updateEnumFieldOfEntity(id: string, newValue: string, oldValue: string, field: any) {
-        const { data } = await this.InstanceManagerApi.put<IEntity>(`${baseEntitiesRoute}/updateEnumField/${id}`, { newValue, oldValue, field });
+        const { data } = await this.InstanceManagerApi.put<IEntity>(`${baseEntitiesRoute}/update-enum-field/${id}`, { newValue, oldValue, field });
         return data;
     }
 
     static async getIfValuefieldIsUsed(id: string, fieldValue: string, fieldName: string, type: string) {
-        const { data } = await this.InstanceManagerApi.get<IEntity>(`${baseEntitiesRoute}/getIsFieldUsed/${id}`, {
+        const { data } = await this.InstanceManagerApi.get<IEntity>(`${baseEntitiesRoute}/get-is-field-used/${id}`, {
             params: {
                 fieldValue: fieldValue,
                 fieldName: fieldName,

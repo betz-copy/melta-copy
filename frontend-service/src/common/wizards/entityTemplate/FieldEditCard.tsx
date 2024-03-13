@@ -1,4 +1,4 @@
-import React, { memo, SetStateAction, useRef, useState } from 'react';
+import React, { memo, SetStateAction, useEffect, useRef, useState } from 'react';
 import { FormikErrors, FormikTouched } from 'formik';
 import {
     TextField,
@@ -25,7 +25,7 @@ import { Draggable } from 'react-beautiful-dnd';
 import i18next from 'i18next';
 import isEqual from 'lodash.isequal';
 import EditIcon from '@mui/icons-material/Edit';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { ThemeProvider } from '@mui/material/styles';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { dateNotificationTypes, validPropertyTypes } from './AddFields';
@@ -36,6 +36,7 @@ import { deleteEnumFieldRequest, updateEnumFieldRequest } from '../../../service
 import { AreYouSureDialog } from '../../dialogs/AreYouSureDialog';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { MeltaTooltip } from '../../MeltaTooltip';
+import { areYouSure } from '../../../theme';
 
 const UniqueCheckboxTooltipTitle = (
     <Box sx={{ whiteSpace: 'pre-wrap' }}>
@@ -128,14 +129,17 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     const queryClient = useQueryClient();
 
     const [localOption, setLocalOption] = useState<string>('');
+    const [duplicate, setDuplicate] = useState<boolean>(false);
 
     const handleEditChange = (e, _tagIndex) => {
         e.preventDefault();
         setLocalOption(e.target.value);
+        setDuplicate(false)
     };
 
     const { mutate: updateEnumField, isLoading } = useMutation(
-        (tagIndex: number) => {
+        (mutationArgs: { templateId: string; tagIndex: number; localOption: string; value: any }) => {
+            const { templateId, tagIndex, localOption, value } = mutationArgs;
             return updateEnumFieldRequest(templateId, value.options[tagIndex], value, localOption);
         },
         {
@@ -143,15 +147,13 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                 if (editIndex !== null) {
                     setLocalOption('');
                     setEditIndex(null);
-                    // only change to new value on success!
                 }
+                toast.error(<div>{i18next.t('errorPage.updateEnumField')}</div>);
             },
-            onSuccess: (_resultOfMutation, tagIndex) => {
+            onSuccess: (_resultOfMutation, { tagIndex }) => {
                 queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) => {
                     const prevEntityTemplate = entityTemplateMap!.get(templateId)!;
-
                     const newOptions = value.options.map((option, i) => tagIndex === i ? localOption : option);
-
                     const newOptionColors = { ...value.optionColors };
                     if (value.optionColors && Object.keys(value.optionColors).length > 0 && editIndex != null) {
                         const color = value.optionColors[value.options[editIndex]];
@@ -160,7 +162,6 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                         if (prevEntityTemplate?.enumPropertiesColors?.[value.name]) {
                             prevEntityTemplate.enumPropertiesColors[value.name] = newOptionColors;
                         }
-
                     }
                     setValues?.((prev) => ({
                         ...prev,
@@ -173,14 +174,13 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                 });
                 setEditIndex(null);
                 toast.success(<div>{i18next.t('entityPage.updatedEnumFieldSuccessfully')}</div>);
-
             },
         },
     );
-
-
+    
     const { mutate: deleteEnumField, isLoading: isDeleteLoading } = useMutation(
-        (tagIndex: number) => {
+        (mutationArgs: { templateId: string; tagIndex: number; value: any }) => {
+            const { templateId, tagIndex, value } = mutationArgs;
             return deleteEnumFieldRequest(templateId, value.options[tagIndex], value);
         },
         {
@@ -188,20 +188,17 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                 if (editIndex !== null) {
                     setLocalOption('');
                     setEditIndex(null);
-                    // only change to new value on success!
                 }
-                toast.error(<div>{i18next.t('errorPage.deleteFieldValue')}</div>);    
+                toast.error(<div>{i18next.t('errorPage.deleteFieldValue')}</div>);
             },
-            onSuccess: (_resultOfMutation, tagIndex) => {
+            onSuccess: (_resultOfMutation, { tagIndex }) => {
                 queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) => {
                     const prevEntityTemplate = entityTemplateMap!.get(templateId)!;
-
                     const newOptions = value.options.filter((_option, i) => i !== tagIndex);
-
-                    const newOptionColors = {...value.optionColors};
+                    const newOptionColors = { ...value.optionColors };
                     if (value.optionColors && Object.keys(value.optionColors).length > 0 && editIndex != null) {
                         delete newOptionColors[value.options[editIndex]];
-                    } 
+                    }
                     setValues?.((prev) => ({
                         ...prev,
                         options: newOptions,
@@ -216,14 +213,27 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
             },
         },
     );
+    
+    const handleUpdateEnumField = (templateId: string, tagIndex: number, localOption: string, value: any) => {
+        updateEnumField({ templateId, tagIndex, localOption, value });
+    };
+    
+    const handleDeleteEnumField = (templateId: string, tagIndex: number, value: any) => {
+        deleteEnumField({ templateId, tagIndex, value });
+    };
+
+    useEffect(()=>{
+        if(!editIndex) setDuplicate(false)
+    }, [editIndex])
 
     const handleSaveEdit = (tagIndex: number) => {
         const checkIfOldEnumValue = initialEnumOptions.length > tagIndex && isDisabled;
-        if (value.options.includes(localOption)) {
-            toast.error(<div>{i18next.t('errorPage.duplicateValue')}</div>);
-            setLocalOption(value.options[tagIndex]);
+        setDuplicate(false);
+        if (value.options[tagIndex]===localOption) setEditIndex(null);
+        else if (value.options.includes(localOption)) {
+            setDuplicate(true);
         } else if (checkIfOldEnumValue) {
-            updateEnumField(tagIndex);
+            handleUpdateEnumField(templateId, tagIndex, localOption, value)
         } else {
             const oldColor = value.optionColors?.[value.options[tagIndex]];
             const newOptions = value.options.map((option, index) => index === tagIndex ? localOption : option);
@@ -240,28 +250,28 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     };
 
     const handleDelete = (tagIndex: number) => {
-        deleteEnumField(tagIndex);
+        handleDeleteEnumField(templateId, tagIndex, value);
     }
-
-    const theme = createTheme({
-        components: {
-            MuiBackdrop: {
-                styleOverrides: {
-                    root: {
-                        backgroundColor: 'rgba(0,0,0,0.1)',
-                    },
-                },
-            },
-            MuiDialog: {
-                styleOverrides: {
-                    paper: {
-                        boxShadow: '0 4px 8px rgba(0, 0, 0, 0.05)',
-                        border: '1px solid #bdbdbd',
-                    },
-                },
-            },
-        },
-    });
+    
+    // const theme = createTheme({
+    //     components: {
+    //         MuiBackdrop: {
+    //             styleOverrides: {
+    //                 root: {
+    //                     backgroundColor: 'rgba(0,0,0,0.1)',
+    //                 },
+    //             },
+    //         },
+    //         MuiDialog: {
+    //             styleOverrides: {
+    //                 paper: {
+    //                     boxShadow: '0 4px 8px rgba(0, 0, 0, 0.05)',
+    //                     border: '1px solid #bdbdbd',
+    //                 },
+    //             },
+    //         },
+    //     },
+    // });
 
     const updateOldDisabledEnumVals = (currValue: string[]) => {
         const newValues = currValue.filter((_option, pos) => pos >= initialEnumOptions.length);
@@ -466,7 +476,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                         },
                                                                     }}
                                                                 >
-                                                                <   Box p={2} style={{ display: 'flex', alignItems: 'center' }}>
+                                                                <   Box p={2} style={{ display: 'flex', alignItems: 'center', borderColor: duplicate ? 'red' : 'inherit', borderStyle: duplicate? 'solid' : "inherit" }}>
                                                                         <TextField
                                                                             key={editIndex}
                                                                             fullWidth
@@ -476,7 +486,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                                 e.stopPropagation();
                                                                                 if (e.key === 'Enter') {
                                                                                     e.preventDefault();
-                                                                                    if (tagIndex > initialEnumOptions.length - 1) {
+                                                                                    if (tagIndex > initialEnumOptions.length - 1 || value.options[tagIndex]===localOption || value.options.includes(localOption)) {
                                                                                         setOpen(false);
                                                                                         handleSaveEdit(editIndex!);
                                                                                     } else setOpen(true);
@@ -488,10 +498,12 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                                 handleDelete(tagIndex);}}} disabled={isDeleteLoading}>
                                                                             <DeleteIcon />
                                                                         </IconButton>
+                                                                        {duplicate && <Typography variant="body2" color="error">{i18next.t('errorPage.duplicateValue')}</Typography>}
+
                                                                     </Box>
                                                                 </Popover>
                                                             
-                                                                <ThemeProvider theme={theme}>
+                                                                <ThemeProvider theme={areYouSure}>
                                                                     <AreYouSureDialog
                                                                         open={open}
                                                                         handleClose={() => {

@@ -43,6 +43,17 @@ const {
     ruleHasAlertsOrRequests,
 } = config.errorCodes;
 
+const propertiesToKeep = [
+    'name',
+    'displayName',
+    'category',
+    'properties',
+    'iconFileId',
+    'propertiesOrder',
+    'propertiesPreview',
+    'propertiesTypeOrder',
+];
+
 export class TemplatesManager {
     // get all entityTemplates that are one relationship (step) away  from the original users permissions
     private static getAllEntityTemplateThatAreOneRelationshipAwayFromUsersPermissions(
@@ -440,8 +451,14 @@ export class TemplatesManager {
         return EntityTemplateManagerService.updateEntityTemplateStatus(id, disabledStatus);
     }
 
-    static async updateEntityFieldValue(id: string, field: string, values: CommonFormInputProperties, fieldValue: string) {
-        const template = await EntityTemplateManagerService.getEntityTemplateById(id);
+    static async prepareUpdateOrDelete(
+        id: string,
+        values: CommonFormInputProperties,
+        fieldValue: string,
+        template: IMongoEntityTemplatePopulated,
+        update: boolean,
+        field: string,
+    ) {
         if (!values.options) {
             throw new ServiceError(404, 'No options array');
         }
@@ -451,29 +468,25 @@ export class TemplatesManager {
         }
 
         const templateEnumFieldValues = [...values.options];
-        templateEnumFieldValues[index] = field;
-        const propertiesToKeep = [
-            'name',
-            'displayName',
-            'category',
-            'properties',
-            'iconFileId',
-            'propertiesOrder',
-            'propertiesPreview',
-            'propertiesTypeOrder',
-        ];
+        if (update) templateEnumFieldValues[index] = field;
         const templateWithoutProperties = Object.keys(template).reduce((newTemplate, key) => {
             if (propertiesToKeep.includes(key)) {
                 newTemplate[key] = template[key];
             }
             // chnage only the fieldName not to the new color
             if (key === 'enumPropertiesColors' && values.optionColors?.[fieldValue] !== undefined) {
-                const newFieldName: Record<string, string> = {
-                    ...values.optionColors,
-                    [field]: values.optionColors[fieldValue],
-                };
+                let newFieldName;
+                if (update)
+                    newFieldName = {
+                        ...values.optionColors,
+                        [field]: values.optionColors[fieldValue],
+                    };
+                else
+                    newFieldName = {
+                        ...values.optionColors,
+                    };
                 delete newFieldName[fieldValue];
-                newTemplate[key] = { [values.name]: { ...newFieldName } };
+                if (update) newTemplate[key] = { [values.name]: { ...newFieldName } };
             }
             return newTemplate;
         }, {} as IEntityTemplatePopulated);
@@ -485,11 +498,18 @@ export class TemplatesManager {
                 category: templateWithoutProperties.category._id,
             } as Omit<IEntityTemplate, 'disabled'>);
             console.log('Initial mongoDB update worked');
+            return templateWithoutProperties;
         } catch (error) {
             console.error('Initial mongoDB update failed', error);
             throw error;
         }
-        // change the values in neo4j if the mongo worked.
+    }
+
+    static async updateEntityFieldValue(id: string, field: string, values: CommonFormInputProperties, fieldValue: string) {
+        const template = await EntityTemplateManagerService.getEntityTemplateById(id);
+        const templateWithoutProperties = await TemplatesManager.prepareUpdateOrDelete(id, values, fieldValue, template, false, '');
+        const index = values.options.indexOf(fieldValue);
+
         try {
             await InstanceManagerService.updateEnumFieldOfEntity(id, field, fieldValue, values);
         } catch (neoError: any) {
@@ -500,10 +520,10 @@ export class TemplatesManager {
             }
             console.warn('Neo4j update failed: starting roll-back', neoError.message, neoError.response.status);
 
-            const templateEnumFieldValues = [...values.options];
-            templateEnumFieldValues[index] = fieldValue;
+            const templateEnumFieldValuesRB = [...values.options];
+            templateEnumFieldValuesRB[index] = fieldValue;
             if (!templateWithoutProperties.properties.properties[values.name].items)
-                template.properties.properties[values.name].enum = templateEnumFieldValues;
+                template.properties.properties[values.name].enum = templateEnumFieldValuesRB;
             const rollBackTemplateWithoutProperties = Object.keys(template).reduce((newTemplate, key) => {
                 if (propertiesToKeep.includes(key)) {
                     // eslint-disable-next-line no-param-reassign
@@ -537,52 +557,7 @@ export class TemplatesManager {
                 throw new ServiceError(400, 'cant remove used values');
             }
             const template = await EntityTemplateManagerService.getEntityTemplateById(id);
-            if (!values.options) {
-                throw new ServiceError(404, 'No options array');
-            }
-            const index = values.options.indexOf(fieldValue);
-            if (index === -1) {
-                throw new ServiceError(404, 'Field value not found in options array');
-            }
-
-            const templateEnumFieldValues = [...values.options];
-            const propertiesToKeep = [
-                'name',
-                'displayName',
-                'category',
-                'properties',
-                'iconFileId',
-                'propertiesOrder',
-                'propertiesPreview',
-                'propertiesTypeOrder',
-            ];
-            const templateWithoutProperties = Object.keys(template).reduce((newTemplate, key) => {
-                if (propertiesToKeep.includes(key)) {
-                    newTemplate[key] = template[key];
-                }
-                // chnage only the fieldName not to the new color
-                if (key === 'enumPropertiesColors' && values.optionColors?.[fieldValue] !== undefined) {
-                    const newFieldName = {
-                        ...values.optionColors,
-                    };
-                    delete newFieldName[fieldValue];
-                }
-                return newTemplate;
-            }, {} as IEntityTemplatePopulated);
-            if (!templateWithoutProperties.properties.properties[values.name].items)
-                templateWithoutProperties.properties.properties[values.name].enum = templateEnumFieldValues;
-
-            try {
-                // remove the field from the mongo
-                await EntityTemplateManagerService.updateEntityTemplate(id, {
-                    ...templateWithoutProperties,
-                    category: templateWithoutProperties.category._id,
-                } as Omit<IEntityTemplate, 'disabled'>);
-                console.log('Initial mongoDB update worked');
-            } catch (error) {
-                console.error('Initial mongoDB update failed', error);
-                throw error;
-            }
+            TemplatesManager.prepareUpdateOrDelete(id, values, fieldValue, template, false, '');
         } catch (e) {
             throw e;
         }

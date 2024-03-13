@@ -49,7 +49,7 @@ const commonFormInputSchema = Joi.object({
 });
 
 /**
- * PUT /api/instances/entities/updateEnumField/:id
+ * PUT /api/instances/entities/update-enum-field/:id
  */
 export const updateEnumFieldRequestSchema = Joi.object({
     query: {},
@@ -64,7 +64,7 @@ export const updateEnumFieldRequestSchema = Joi.object({
 });
 
 /**
- * GET /api/instances/entities/getIsFieldUsed/:id
+ * GET /api/instances/entities/get-is-field-used/:id
  */
 export const getIfValuefieldIsUsedRequestSchema = Joi.object({
     body: {},

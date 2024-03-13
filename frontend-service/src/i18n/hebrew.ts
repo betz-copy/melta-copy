@@ -114,7 +114,7 @@ export default {
         activeEntity: ' פעיל',
         preview: 'תצוגה מקדימה אינה זמינה',
         fileDownloadError: 'נכשל להוריד קובץ, נסה שנית או פנה לתמיכה',
-        duplicateValue: 'לא ניתן לשנות, ערך זה כבר קיים ',
+        duplicateValue: 'ערך זה כבר קיים',
         deleteFieldValue: 'לא ניתן למחוק ערך בשימוש',
     },
     addRelationshipDialog: {
@@ -193,7 +193,7 @@ export default {
         title: 'האם אתה בטוח?',
         yes: 'אשר',
         no: 'ביטול',
-        disclaimer: 'שינוי ערך זה יגרור שינוי של ערך זה בישויות ותבניות ויש לכך השפעות על המערכת כולה',
+        disclaimer: 'שים לב! שינוי ערך ברשימה יגרור שינוי ישויות ויש לכך השפעות על המערכת כולה',
     },
     userAutocomplete: {
         label: 'משתמש',

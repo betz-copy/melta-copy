@@ -48,8 +48,8 @@ entityRouter.post(
     wrapController(EntityController.searchEntitiesBatch),
 );
 
-entityRouter.put('/updateEnumField/:id', ValidateRequest(updateEnumFieldRequestSchema), wrapController(EntityController.updateEnumField));
-entityRouter.get('/getIsFieldUsed/:id', ValidateRequest(getIfValuefieldIsUsedRequestSchema), wrapController(EntityController.getIsFieldUsed));
+entityRouter.put('/update-enum-field/:id', ValidateRequest(updateEnumFieldRequestSchema), wrapController(EntityController.updateEnumField));
+entityRouter.get('/get-is-field-used/:id', ValidateRequest(getIfValuefieldIsUsedRequestSchema), wrapController(EntityController.getIsFieldUsed));
 
 
 entityRouter.post('/expanded/:id', ValidateRequest(getExpandedEntityByIdRequestSchema), wrapController(EntityController.getExpandedEntityById));

@@ -250,12 +250,12 @@ const deleteEntityTemplateRequest = async (entityTemplateId: string) => {
 };
 
 const updateEnumFieldRequest = async (id: string, fieldValue: string, values: CommonFormInputProperties, field: string) => {
-    const { data } = await axios.put<void>(`${entityTemplates}/updateEnumField/${id}`, { fieldValue, values, field });
+    const { data } = await axios.put<void>(`${entityTemplates}/update-enum-field/${id}`, { fieldValue, values, field });
     return data;
 };
 
 const deleteEnumFieldRequest = async (id: string, fieldValue: string, field: CommonFormInputProperties) => {
-    const { data } = await axios.patch<void>(`${entityTemplates}/deleteEnumField/${id}`, { fieldValue, field });
+    const { data } = await axios.patch<void>(`${entityTemplates}/delete-enum-field/${id}`, { fieldValue, field });
     return data;
 };
 

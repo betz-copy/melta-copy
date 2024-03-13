@@ -551,9 +551,8 @@ const EntityTemplatesRow: React.FC = () => {
             </DragDropContext>
             <EntityTemplateWizard
                 open={entityTemplateWizardDialogState.isWizardOpen}
-                handleClose={() => {
-                    setEntityTemplateWizardDialogState({ isWizardOpen: false, entityTemplate: null });
-                }}
+                handleClose={() =>
+                    setEntityTemplateWizardDialogState({ isWizardOpen: false, entityTemplate: null })}
                 initialValues={entityTemplateObjectToEntityTemplateForm(entityTemplateWizardDialogState.entityTemplate)}
                 isEditMode={Boolean(entityTemplateWizardDialogState.entityTemplate?._id)}
                 initalStep={entityTemplateWizardDialogState.entityTemplate?.category ? 1 : 0}

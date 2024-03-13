@@ -18,6 +18,27 @@ const basicTheme: ThemeOptions = {
 //     height: '24px',
 // };
 
+export const areYouSure = createTheme({
+    ...basicTheme,
+    components: {
+        MuiBackdrop: {
+            styleOverrides: {
+                root: {
+                    backgroundColor: 'rgba(0,0,0,0.1)',
+                },
+            },
+        },
+        MuiDialog: {
+            styleOverrides: {
+                paper: {
+                    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.05)',
+                    border: '1px solid #bdbdbd',
+                },
+            },
+        },
+    },
+});
+
 export const lightTheme = createTheme({
     ...basicTheme,
     palette: {
