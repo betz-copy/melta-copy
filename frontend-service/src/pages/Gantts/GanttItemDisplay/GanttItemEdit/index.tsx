@@ -84,8 +84,6 @@ export const GanttItemEdit: React.FC<IGanttItemEditProps> = ({ ganttItem, index,
                     options={entityTemplateDateFields || []}
                     label={i18next.t('gantts.startDateField')}
                     getOptionLabel={(option) => entityTemplate?.properties.properties[option]?.title || ''}
-                    // disabled={!entityTemplate}
-                    // getOptionDisabled={(option) => ganttItem.entityTemplate.endDateField === option}
                 />
             </Grid>
             <Grid item>
@@ -95,8 +93,6 @@ export const GanttItemEdit: React.FC<IGanttItemEditProps> = ({ ganttItem, index,
                     options={entityTemplateDateFields || []}
                     label={i18next.t('gantts.endDateField')}
                     getOptionLabel={(option) => entityTemplate?.properties.properties[option]?.title || ''}
-                    // disabled={!entityTemplate}
-                    // getOptionDisabled={(option) => ganttItem.entityTemplate.startDateField === option}
                 />
             </Grid>
 
