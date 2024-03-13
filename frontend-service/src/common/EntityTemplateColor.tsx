@@ -11,7 +11,7 @@ const EntityTemplateColor: React.FC<EntityTemplateColorProps> = ({ entityTemplat
     return (
         <Grid
             style={{
-                height: environment.iconSize.height,
+                height: '20px',
                 width: '3px',
                 backgroundColor: entityTemplateColor,
                 borderRadius: '20px',
