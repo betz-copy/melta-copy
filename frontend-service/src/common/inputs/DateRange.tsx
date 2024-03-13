@@ -9,7 +9,8 @@ const DateRange: React.FC<{
     startDateInput: Date | null;
     endDateInput: Date | null;
     overrideSx?: object;
-}> = ({ onStartDateChange, onEndDateChange, startDateInput, endDateInput, overrideSx }) => {
+    isNotificationFilter: boolean;
+}> = ({ onStartDateChange, onEndDateChange, startDateInput, endDateInput, overrideSx, isNotificationFilter = false }) => {
     // const darkMode = useSelector((state: RootState) => state.darkMode);
 
     return (
@@ -19,7 +20,7 @@ const DateRange: React.FC<{
                     label={i18next.t('processInstancesPage.startDate')}
                     value={startDateInput}
                     onChange={onStartDateChange}
-                    maxDate={new Date()}
+                    maxDate={isNotificationFilter ? new Date() : endDateInput}
                     minDate={undefined}
                     sx={overrideSx}
                     components={
@@ -36,7 +37,7 @@ const DateRange: React.FC<{
                     label={i18next.t('processInstancesPage.endDate')}
                     value={endDateInput}
                     onChange={onEndDateChange}
-                    maxDate={new Date()}
+                    maxDate={isNotificationFilter ? new Date() : undefined}
                     minDate={startDateInput}
                     sx={overrideSx}
                     components={
