@@ -9,7 +9,7 @@ const config = {
         maxFileSize: env.get('MAX_FILE_SIZE').default(50000000).asInt(),
         searchEntitiesChunkSize: env.get('SEARCH_ENTITIES_CHUNK_SIZE').default(50).asIntPositive(),
         excelFilePath: env.get('EXCEL_FILE_PATH').default('/usr/src/app').asString(),
-        dateAlertTime: env.get('DATE_ALERT_TIME').default('* * * * *').asString(),
+        dateAlertTime: env.get('DATE_ALERT_TIME').default('0 0 * * *').asString(),
     },
     authentication: {
         isRequired: env.get('IS_AUTHENTICATION_REQUIRED').default('true').asBool(),
