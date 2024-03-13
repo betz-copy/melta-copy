@@ -6,6 +6,7 @@ import { ProcessName } from './ProcessName';
 import { StepName } from './StepName';
 import '../../../../css/index.css';
 import { environment } from '../../../../globals';
+import { NotificationColor } from '../../../notificationColor';
 
 export const ProcessStatusUpdateNotification: React.FC<IProcessStatusUpdateNotificationMetadataPopulated> = ({
     process,
@@ -18,12 +19,11 @@ export const ProcessStatusUpdateNotification: React.FC<IProcessStatusUpdateNotif
 
     return (
         <Grid container direction="column" spacing={1}>
-            <Grid item>
-                <Typography display="inline" fontFamily="Rubik" color={titleColor} borderLeft={`4px solid ${color}`} paddingLeft="10px">{`${i18next.t(
-                    'processStatusUpdateNotification.statusUpdate',
-                )} `}</Typography>
-                <Typography display="inline" fontFamily="Rubik" color={titleColor}>
-                    {i18next.t(`processStatusUpdateNotification.${step !== undefined ? 'step' : 'process'}`)}
+            <Grid container>
+                <NotificationColor color={color!} />
+                <Typography display="inline" fontFamily="Rubik" color={titleColor} paddingLeft="10px">
+                    {`${i18next.t('processStatusUpdateNotification.statusUpdate')} 
+                    ${i18next.t(`processStatusUpdateNotification.${step !== undefined ? 'step' : 'process'}`)} `}
                 </Typography>
             </Grid>
             <Grid item>

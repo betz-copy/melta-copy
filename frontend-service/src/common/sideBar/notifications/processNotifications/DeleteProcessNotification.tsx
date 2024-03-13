@@ -3,6 +3,7 @@ import { Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
 import { IDeleteProcessNotificationMetadataPopulated, NotificationType } from '../../../../interfaces/notifications';
 import { environment } from '../../../../globals';
+import { NotificationColor } from '../../../notificationColor';
 
 export const DeleteProcessNotification: React.FC<IDeleteProcessNotificationMetadataPopulated> = ({ processName, titleColor }) => {
     const { notificationsMoreData } = environment.notifications;
@@ -10,10 +11,11 @@ export const DeleteProcessNotification: React.FC<IDeleteProcessNotificationMetad
 
     return (
         <Grid container direction="column" spacing={1}>
-            <Grid item>
-                <Typography display="inline" color={titleColor} borderLeft={`4px solid ${color}`} paddingLeft="10px">{`${i18next.t(
-                    'deleteProcessNotification.deleteProcessNotification',
-                )} `}</Typography>
+            <Grid container>
+                <NotificationColor color={color!} />
+                <Typography display="inline" color={titleColor} paddingLeft="10px">
+                    {`${i18next.t('deleteProcessNotification.deleteProcessNotification')} `}
+                </Typography>
             </Grid>
             <Grid item>
                 <Typography display="inline">{`${i18next.t('deleteProcessNotification.theProcess')} `}</Typography>

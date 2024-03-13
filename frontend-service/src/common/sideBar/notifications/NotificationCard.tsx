@@ -59,14 +59,18 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({ notification
                 pointerEvents: isSuccess ? 'none' : 'initial',
                 opacity: isSuccess ? '0.20' : '1',
                 borderRadius: '20px',
+                boxShadow: '-2px 2px 6px 0px #1E277540',
             }}
         >
             <CardContent sx={{ '&:last-child': { padding: '15px' } }}>
                 <Grid container direction="column">
-                    <Grid item container justifyContent="flex-end" wrap="nowrap">
-                        <Typography fontSize={14}>{getShortDate(notification.createdAt)}</Typography>
-                    </Grid>
-
+                    {!isDateAboutToExpireNotification(notification) && (
+                        <Grid item container justifyContent="flex-end" wrap="nowrap">
+                            <Typography sx={{ fontSize: '11px', fontWeight: '350px', color: '#5A6173' }}>
+                                {getShortDate(notification.createdAt)}
+                            </Typography>
+                        </Grid>
+                    )}
                     <Grid item sx={{ padding: '10px' }}>
                         {isRuleBreachAlertNotification(notification) && (
                             <RuleBreachAlertNotification {...notification.metadata} titleColor="#4752B6" />
@@ -88,21 +92,28 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({ notification
                         {isDeleteProcessNotification(notification) && <DeleteProcessNotification {...notification.metadata} titleColor="#4752B6" />}
                         {isArchiveProcessNotification(notification) && <ArchiveProcessNotification {...notification.metadata} titleColor="#4752B6" />}
                     </Grid>
-
-                    <Grid
-                        item
-                        container
-                        justifyContent="flex-end"
-                        wrap="nowrap"
-                        onMouseEnter={() => setIsHovered(true)}
-                        onMouseLeave={() => setIsHovered(false)}
-                    >
-                        <LoadingButton onClick={() => mutate()} loading={isLoading}>
-                            <Grid container>
-                                {isHovered && <DoneIcon />}
-                                {i18next.t('notifications.setAsSeen')}
+                    <Grid container wrap="nowrap" margin="-5px">
+                        {isDateAboutToExpireNotification(notification) && (
+                            <Grid item container alignItems="center" marginLeft="5.5%">
+                                <Typography sx={{ fontSize: '11px', fontWeight: '350px', color: '#5A6173' }}>
+                                    {getShortDate(notification.createdAt)}
+                                </Typography>
                             </Grid>
-                        </LoadingButton>
+                        )}
+                        <Grid
+                            item
+                            container
+                            justifyContent="flex-end"
+                            onMouseEnter={() => setIsHovered(true)}
+                            onMouseLeave={() => setIsHovered(false)}
+                        >
+                            <LoadingButton onClick={() => mutate()} loading={isLoading}>
+                                <Grid item container alignItems="center" fontSize="12px" fontWeight={400} color="#5A6173">
+                                    {isHovered && <DoneIcon fontSize="small" />}
+                                    {i18next.t('notifications.setAsSeen')}
+                                </Grid>
+                            </LoadingButton>
+                        </Grid>
                     </Grid>
                 </Grid>
             </CardContent>

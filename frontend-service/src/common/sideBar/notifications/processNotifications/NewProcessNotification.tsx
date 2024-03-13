@@ -4,6 +4,7 @@ import i18next from 'i18next';
 import { INewProcessNotificationMetadataPopulated, NotificationType } from '../../../../interfaces/notifications';
 import { ProcessName } from './ProcessName';
 import { environment } from '../../../../globals';
+import { NotificationColor } from '../../../notificationColor';
 
 export const NewProcessNotification: React.FC<INewProcessNotificationMetadataPopulated> = ({ process, titleColor }) => {
     const { notificationsMoreData } = environment.notifications;
@@ -11,8 +12,9 @@ export const NewProcessNotification: React.FC<INewProcessNotificationMetadataPop
 
     return (
         <Grid container direction="column" spacing={1}>
-            <Grid item>
-                <Typography color={titleColor} sx={{ borderLeft: `4px solid ${color}`, paddingLeft: '10px' }}>
+            <Grid container>
+                <NotificationColor color={color!} />
+                <Typography color={titleColor} sx={{ paddingLeft: '10px' }}>
                     {i18next.t('newProcessNotification.newProcess')}
                 </Typography>
             </Grid>

@@ -615,14 +615,13 @@ export default {
         processName: 'תהליך חדש בשם',
     },
     dateAboutToExpireNotification: {
-        dateAboutToExpireHeadline: 'שים לב\n',
         propertyValue: 'התאריך',
         entityTemplateName: 'בישות',
         aboutToExpire: 'מתקרב',
     },
     processStatusUpdateNotification: {
-        statusUpdate: 'עדכון סטטוס',
-        process: 'תהליך',
+        statusUpdate: ' עדכון סטטוס',
+        process: 'תהליך ',
         step: 'שלב',
         processStatus: 'הסטטוס של התהליך',
         stepStatusPart1: 'הסטטוס של השלב',

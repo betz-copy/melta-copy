@@ -13,13 +13,14 @@ export const NotificationCount: React.FC<NotificationCountProps> = ({ notificati
         <Typography
             borderRadius={25}
             fontSize={12}
-            minWidth="1.25rem"
+            minWidth="1.4rem"
+            minHeight="1.4rem"
             fontWeight="bold"
             color="white"
             bgcolor="#FF006B"
             borderRight="0.22rem solid #FF006B"
             borderLeft="0.3rem solid #FF006B"
-            paddingTop="0.1rem"
+            paddingTop="0.17rem"
             paddingBottom={0}
             paddingX={0}
             align="center"

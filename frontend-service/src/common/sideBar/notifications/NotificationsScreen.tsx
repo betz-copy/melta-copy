@@ -101,7 +101,13 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                                                 : '/icons/requests-notification.svg'
                                         }
                                     />
-                                    <Grid item> {i18next.t(`notifications.groups.${groupName}`)}</Grid>
+                                    <Grid
+                                        item
+                                        color={selectedGroup !== groupName ? '#787C9E' : ''}
+                                        fontWeight={selectedGroup !== groupName ? 400 : undefined}
+                                    >
+                                        {i18next.t(`notifications.groups.${groupName}`)}
+                                    </Grid>
                                     <Grid item>
                                         <NotificationCount notificationCount={notificationCountDetails.groups[groupName]} />
                                     </Grid>
@@ -143,7 +149,7 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                                         backgroundColor: '#FFFF',
                                         color: '#9398C2',
                                         borderRadius: '12px',
-                                        boxShadow: '0 0 10px rgba(0, 0, 0, 0.2)',
+                                        boxShadow: '-2px 2px 6px 0px #1E277540',
                                         border: 0,
                                         width: openCalenders ? '17rem' : '13rem',
                                     },
@@ -167,7 +173,7 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                                     borderRadius: '10px',
                                     display: 'flex',
                                     padding: '8px',
-                                    boxShadow: '0 0 10px rgba(0, 0, 0, 0.2)',
+                                    boxShadow: '-2px 2px 6px 0px #1E277540',
                                 }}
                                 onClick={() => setOpenCalendars(!openCalenders)}
                             >
@@ -190,13 +196,13 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
 
                                     '.MuiOutlinedInput-notchedOutline': {
                                         border: 0,
-                                        boxShadow: '0 0 10px rgba(0, 0, 0, 0.2)',
+                                        boxShadow: '-2px 2px 6px 0px #1E277540',
                                         borderRadius: '12px',
                                     },
                                     '& .MuiOutlinedInput-root': {
                                         '&.Mui-focused fieldset': {
                                             borderRadius: '15px',
-                                            boxShadow: '0 0 10px rgba(0, 0, 0, 0.2)',
+                                            boxShadow: '-2px 2px 6px 0px #1E277540',
                                             border: 0,
                                         },
                                     },

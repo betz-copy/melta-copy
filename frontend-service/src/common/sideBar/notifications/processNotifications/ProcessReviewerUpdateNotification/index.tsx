@@ -4,6 +4,7 @@ import i18next from 'i18next';
 import { IProcessReviewerUpdateNotificationMetadataPopulated, NotificationType } from '../../../../../interfaces/notifications';
 import { Description } from './Description';
 import { environment } from '../../../../../globals';
+import { NotificationColor } from '../../../../notificationColor';
 
 export const ProcessReviewerUpdateNotification: React.FC<IProcessReviewerUpdateNotificationMetadataPopulated> = (metadata) => {
     const { notificationsMoreData } = environment.notifications;
@@ -12,8 +13,9 @@ export const ProcessReviewerUpdateNotification: React.FC<IProcessReviewerUpdateN
 
     return (
         <Grid container direction="column" spacing={1}>
-            <Grid item>
-                <Typography color={titleColor} borderLeft={`4px solid ${color}`} paddingLeft="10px">
+            <Grid container>
+                <NotificationColor color={color!} />
+                <Typography color={titleColor} paddingLeft="10px">
                     {i18next.t('processReviewerUpdateNotification.reviewerUpdate')}
                 </Typography>
             </Grid>

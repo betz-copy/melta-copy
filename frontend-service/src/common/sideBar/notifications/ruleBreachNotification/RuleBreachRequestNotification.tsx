@@ -4,6 +4,7 @@ import i18next from 'i18next';
 import RuleBreachInfo from '../../../ruleBreanchInfo/RuleBreachInfo';
 import { IRuleBreachRequestNotificationMetadataPopulated, NotificationType } from '../../../../interfaces/notifications';
 import { environment } from '../../../../globals';
+import { NotificationColor } from '../../../notificationColor';
 
 export const RuleBreachRequestNotification: React.FC<IRuleBreachRequestNotificationMetadataPopulated> = ({ request, titleColor }) => {
     const { notificationsMoreData } = environment.notifications;
@@ -11,8 +12,9 @@ export const RuleBreachRequestNotification: React.FC<IRuleBreachRequestNotificat
 
     return (
         <Grid container direction="column" spacing={1}>
-            <Grid item>
-                <Typography component="p" variant="body1" color={titleColor} borderLeft={`4px solid ${color}`} paddingLeft="10px">
+            <Grid container>
+                <NotificationColor color={color!} />
+                <Typography component="p" variant="body1" color={titleColor} paddingLeft="10px">
                     {i18next.t('ruleBreachRequestNotification.requestWaitingForApproval')}
                 </Typography>
             </Grid>
