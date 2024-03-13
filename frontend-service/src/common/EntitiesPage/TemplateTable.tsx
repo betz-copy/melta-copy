@@ -93,7 +93,7 @@ const TemplateTable = forwardRef<
                     <Grid item minWidth="fit-content">
                         <EntityTemplateColor entityTemplateColor={entityTemplateColor} />
                     </Grid>
-                    <Grid item minWidth="fit-content">
+                    <Grid item minWidth="fit-content" sx={{ display: 'flex', justifyContent: 'center', alignContent: 'center' }}>
                         {template.iconFileId && (
                             <CustomIcon iconUrl={template.iconFileId} height="30px" width="30px" color={theme.palette.primary.main} />
                         )}
