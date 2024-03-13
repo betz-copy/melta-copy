@@ -108,7 +108,7 @@ const TemplateTable = forwardRef<
                             />
                         )}
                     </Grid>
-                    <Grid item paddingLeft="10px" minWidth="fit-content" style={{ whiteSpace: 'nowrap', overflow: 'hidden' }}>
+                    <Grid item minWidth="fit-content" style={{ whiteSpace: 'nowrap', overflow: 'hidden' }}>
                         <BlueTitle
                             style={{ minWidth: 'fit-content', whiteSpace: 'nowrap', overflow: 'hidden', fontWeight: '500', fontSize: '20px' }}
                             title={template.displayName}
