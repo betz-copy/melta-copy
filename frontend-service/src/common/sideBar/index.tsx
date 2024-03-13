@@ -88,7 +88,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                 wrap="nowrap"
                 height="100%"
                 bgcolor={theme.palette.primary.main}
-                style={{ backgroundImage: 'url(/icons/sideNav-bg.png)', backgroundRepeat: 'no-repeat' }}
+                style={{ backgroundImage: 'url(/icons/sideNav-bg.png)', backgroundRepeat: 'no-repeat', backgroundPositionY: '-27px' }}
             >
                 <Grid item container direction="column" alignItems="center" marginTop="15px" marginBottom="10px">
                     <Box
