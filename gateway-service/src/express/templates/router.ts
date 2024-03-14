@@ -38,15 +38,27 @@ const {
     service: { uploadsFolderPath },
 } = config;
 
+const addLoggingIdToProxyRequest = (proxyReq: any, req: any) => {
+    if (req.headers['logging-id']) {
+        proxyReq.setHeader('logging-id', req.headers['logging-id']);
+    }
+};
+
 const EntityTemplatesManagerProxy = createProxyMiddleware({
     target: entityTemplateManager.url,
-    onProxyReq: fixRequestBody,
+    onProxyReq: (proxyReq, req, _res) => {
+        addLoggingIdToProxyRequest(proxyReq, req);
+        fixRequestBody(proxyReq, req);
+    },
     proxyTimeout: entityTemplateManager.requestTimeout,
 });
 
 const RelationshipTemplatesManagerProxy = createProxyMiddleware({
     target: relationshipTemplateManager.url,
-    onProxyReq: fixRequestBody,
+    onProxyReq: (proxyReq, req, _res) => {
+        addLoggingIdToProxyRequest(proxyReq, req);
+        fixRequestBody(proxyReq, req);
+    },
     proxyTimeout: relationshipTemplateManager.requestTimeout,
 });
 

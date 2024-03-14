@@ -1,11 +1,22 @@
 import * as http from 'http';
 import * as express from 'express';
 import * as helmet from 'helmet';
+import axios from 'axios';
 
 import { once } from 'events';
 import { errorMiddleware } from './error';
 import appRouter from './router';
 import morganMiddleware from '../utils/express/morgan.middleware';
+
+const loggerMiddleware = (req: express.Request, res: express.Response, next: express.NextFunction) => {
+    axios.defaults.headers.common = {
+        'logging-id': req.headers['logging-id'] as string,
+    };
+
+    res.setHeader('logging-id', req.headers['logging-id'] as string);
+
+    next();
+};
 
 class Server {
     private app: express.Application;
@@ -23,10 +34,12 @@ class Server {
         const app = express();
 
         app.use(helmet());
+        app.use(loggerMiddleware);
         app.use(express.json());
         app.use(express.urlencoded({ extended: true }));
 
         app.use(morganMiddleware);
+
         app.use(appRouter);
 
         app.use(errorMiddleware);
