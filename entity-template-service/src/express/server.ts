@@ -9,12 +9,13 @@ import appRouter from './router';
 import morganMiddleware from '../utils/express/morgan.middleware';
 
 const loggerMiddleware = (req: express.Request, res: express.Response, next: express.NextFunction) => {
-    axios.defaults.headers.common = {
-        'logging-id': req.headers['logging-id'] as string,
-    };
+    if (!req.headers['logging-id']) {
+        axios.defaults.headers.common = {
+            'logging-id': req.headers['logging-id'] as string,
+        };
 
-    res.setHeader('logging-id', req.headers['logging-id'] as string);
-
+        res.setHeader('logging-id', req.headers['logging-id'] as string);
+    }
     next();
 };
 
