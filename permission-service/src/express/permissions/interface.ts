@@ -1,8 +1,10 @@
 export const resourceTypeOptions = ['Templates', 'Instances', 'Permissions', 'Rules', 'Processes'] as const;
-export type ResourceType = (typeof resourceTypeOptions)[number];
+// eslint-disable-next-line prettier/prettier
+export type ResourceType = typeof resourceTypeOptions[number];
 
 export const scopeOptions = ['Read', 'Write'] as const;
-export type Scope = (typeof scopeOptions)[number];
+// eslint-disable-next-line prettier/prettier
+export type Scope = typeof scopeOptions[number];
 
 export interface IPermission {
     id: string;
