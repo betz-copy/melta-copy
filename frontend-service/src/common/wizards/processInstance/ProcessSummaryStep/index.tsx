@@ -19,13 +19,13 @@ const ProcessSummary = React.forwardRef<HTMLDivElement, ProcessSummaryProp>(({ p
             sx={{
                 width: '100%',
                 paddingRight: '60px',
-                paddingLeft: '30px',
+                paddingLeft: '60px',
                 paddingTop: isPrinting ? '60px' : undefined,
                 overflowY: isPrinting ? 'visible' : 'auto',
             }}
             style={{ direction: 'rtl' }}
         >
-            <Grid container justifyContent="space-around" direction="column">
+            <Grid container alignItems="space-around" direction="column">
                 <Grid item xs={3}>
                     <ProcessStatus
                         title={i18next.t('wizard.processInstance.summary.processStatus')}

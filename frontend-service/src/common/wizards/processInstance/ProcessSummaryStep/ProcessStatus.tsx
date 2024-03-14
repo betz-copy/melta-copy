@@ -1,11 +1,13 @@
 import React from 'react';
 import i18next from 'i18next';
 import { Grid, IconButton, SvgIconProps, Typography } from '@mui/material';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
-import CancelIcon from '@mui/icons-material/Cancel';
-import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
-import AccessTimeFilledIcon from '@mui/icons-material/AccessTimeFilled';
+import {
+    AccessTimeFilled as AccessTimeFilledIcon,
+    CancelOutlined as CancelOutlinedIcon,
+    Cancel as CancelIcon,
+    CheckCircleOutline as CheckCircleOutlineIcon,
+    CheckCircle as CheckCircleIcon,
+} from '@mui/icons-material';
 import { FormikProps } from 'formik';
 import { useSelector } from 'react-redux';
 import { useQueryClient } from 'react-query';
@@ -102,7 +104,13 @@ const ProcessStatus: React.FC<ProcessStatusProps> = ({ title, instance, editStat
     return (
         <Grid container flexDirection="column" alignItems="stretch" spacing={2}>
             <Grid item container flexDirection="row">
-                <Grid item container flexDirection="column" alignItems="flex-end" style={{ display: isPrinting ? 'inherit' : 'none' }}>
+                <Grid
+                    item
+                    container
+                    flexDirection="column"
+                    alignItems="flex-end"
+                    style={{ display: isPrinting ? 'inherit' : 'none', paddingRight: '475px' }}
+                >
                     <Typography>{`${i18next.t('wizard.processInstance.summary.printedAt')} : ${new Date().toLocaleDateString('en-UK')}`}</Typography>
                     <Typography>{`${i18next.t('wizard.processInstance.summary.printedBy')} : ${myPermissions.user.fullName}`}</Typography>
                 </Grid>
