@@ -4,10 +4,12 @@ import { PrintOutlined, CloseOutlined } from '@mui/icons-material';
 import i18next from 'i18next';
 import { toast } from 'react-toastify';
 import { MeltaCheckbox } from '../../../common/MeltaCheckbox';
+import { IFile } from '../../../interfaces/entities';
 
 const PrintOptionsDialog: React.FC<{
     open: boolean;
     handleClose: () => void;
+    files: IFile[];
     isFilesLoading: Set<number> | undefined;
     isFilesError: boolean;
     options: {
@@ -17,7 +19,7 @@ const PrintOptionsDialog: React.FC<{
         setShowFiles: React.Dispatch<React.SetStateAction<boolean>>;
     };
     onClick: React.MouseEventHandler<HTMLButtonElement>;
-}> = ({ open, handleClose, isFilesLoading, isFilesError, onClick, options }) => {
+}> = ({ open, handleClose, files, isFilesLoading, isFilesError, onClick, options }) => {
     return (
         <Dialog open={open} onClose={handleClose}>
             <DialogTitle paddingLeft="4px">
@@ -39,12 +41,14 @@ const PrintOptionsDialog: React.FC<{
                                 label={i18next.t('processInstance.print.showSummary')}
                             />
                         </Grid>
-                        <Grid>
-                            <FormControlLabel
-                                control={<MeltaCheckbox checked={options.showFiles} onChange={() => options.setShowFiles((cur) => !cur)} />}
-                                label={i18next.t('processInstance.print.showFiles')}
-                            />
-                        </Grid>
+                        {files && (
+                            <Grid>
+                                <FormControlLabel
+                                    control={<MeltaCheckbox checked={options.showFiles} onChange={() => options.setShowFiles((cur) => !cur)} />}
+                                    label={i18next.t('processInstance.print.showFiles')}
+                                />
+                            </Grid>
+                        )}
                     </Grid>
                 </Grid>
             </DialogContent>

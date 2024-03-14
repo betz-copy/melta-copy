@@ -2,7 +2,6 @@ import i18next from 'i18next';
 import React from 'react';
 import { useReactToPrint } from 'react-to-print';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
-import { IMongoCategory } from '../../../interfaces/categories';
 import { IFile } from '../../../interfaces/entities';
 import { ComponentToPrint } from './ComponentToPrint';
 import { PrintOptionsDialog } from './PrintOptionsDialog';
@@ -26,11 +25,11 @@ const Print: React.FC<{
         documentTitle: `${processTemplate.displayName}-${expandedProcess.name}-${new Date().toLocaleDateString('en-uk')}`,
     });
 
-    const getEntityFiles = (): IFile[] => {
-        return processTemplate.details
+    const getProcessFiles = (): IFile[] => {
+        return processTemplate.steps
             .map((propertyKey) => {
-                const propertySchema = processTemplate.properties.properties[propertyKey];
-                const propertyValue = expandedEntity.entity.properties[propertyKey];
+                const propertySchema = processTemplate.steps.details[propertyKey];
+                const propertyValue = expandedProcess.steps.details[propertyKey];
                 if (propertyValue && propertySchema.format === 'fileId') {
                     const name = getFileName(propertyValue);
                     return {
@@ -46,7 +45,7 @@ const Print: React.FC<{
             .filter((file) => file !== undefined) as IFile[];
     };
 
-    const files = getEntityFiles().filter(
+    const files = getProcessFiles().filter(
         (file) => !isVideoOrAudio(file.type) && !isUnsupported(file.type) && file.extension !== 'pptx' && !file.name.includes('txt'),
     );
 
@@ -71,39 +70,27 @@ const Print: React.FC<{
 
                 <ComponentToPrint
                     ref={componentRef}
-                    entityTemplate={entityTemplate}
-                    expandedEntity={expandedEntity}
-                    connectionsTemplatesToPrint={selected}
-                    filesToPrint={selectedFiles}
+                    processTemplate={processTemplate}
+                    expandedProcess={expandedProcess}
+                    options={{ showSummary, showFiles }}
+                    filesToPrint={files}
                     isFilesLoading={isFilesLoading}
                     setIsFilesLoading={setIsFilesLoading}
                     setIsFilesError={setIsFilesError}
-                    options={{ showDate, showDisabled, showEntityDates, showEntityFiles: selectedFiles.length !== 0, showPreviewPropertiesOnly }}
                 />
             </div>
             <PrintOptionsDialog
                 open={openModal}
-                expandedEntity={expandedEntity}
-                connectionsTemplates={connectionsTemplates}
                 handleClose={handleClose}
-                selected={selected}
-                setSelected={setSelected}
                 files={files}
-                selectedFiles={selectedFiles}
-                setSelectedFiles={setSelectedFiles}
                 isFilesLoading={isFilesLoading}
                 isFilesError={isFilesError}
-                categoriesWithConnectionsTemplates={categoriesWithConnectionsTemplates}
                 onClick={handlePrint}
                 options={{
-                    setShowDate,
-                    showDate,
-                    showDisabled,
-                    setShowDisabled,
-                    showEntityDates,
-                    setShowEntityDates,
-                    showPreviewPropertiesOnly,
-                    setShowPreviewPropertiesOnly,
+                    showSummary,
+                    setShowSummary,
+                    showFiles,
+                    setShowFiles,
                 }}
             />
         </>
