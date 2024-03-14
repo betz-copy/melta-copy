@@ -28,7 +28,7 @@ interface StatusDisplayProps {
     fontSize?: number;
 }
 
-const getColor = (status: Status) => {
+export const getColor = (status: Status) => {
     switch (status) {
         case Status.Approved:
             return StatusColorsNames.Approved;

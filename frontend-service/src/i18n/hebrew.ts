@@ -471,6 +471,7 @@ export default {
                 StepStatusNotYetBeeUpdated: 'טרם עודכן סטטוס של שלב זה',
                 printedBy: 'הודפס ע"י',
                 printedAt: 'תאריך',
+                print: { showSummary: 'הראה סיכום', showFiles: 'הצג קבצים מצורפים' },
             },
             step: {
                 stepStatus: 'סטטוס שלב',
