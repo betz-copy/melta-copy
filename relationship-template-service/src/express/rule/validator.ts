@@ -1,7 +1,7 @@
 import * as Joi from 'joi';
 import { isValid as isValidDate, parse } from 'date-fns';
 import { Request } from 'express';
-import assert from 'assert';
+import * as assert from 'assert';
 import { IRule, IRelevantTemplates, IRegularFunction } from './interfaces';
 import { RelationshipTemplateManager } from '../relationshipTemplate/manager';
 import { EntityTemplateManagerService, IEntitySingleProperty, IEntityTemplatePopulated } from '../externalServices/entityTemplateManager';

@@ -1,6 +1,6 @@
-import http from 'http';
-import express from 'express';
-import helmet from 'helmet';
+import * as http from 'http';
+import * as express from 'express';
+import * as helmet from 'helmet';
 
 import { once } from 'events';
 import { errorMiddleware } from './error';

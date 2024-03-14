@@ -7,7 +7,6 @@
     "sourceMap": true,
     "removeComments": true,
     "strict": true,
-    "esModuleInterop": true,
     "noImplicitAny": false,
     "strictNullChecks": true,
     "strictFunctionTypes": true,

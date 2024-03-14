@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import * as mongoose from 'mongoose';
 import { INotificationDocument } from './interface';
 import config from '../../config';
 

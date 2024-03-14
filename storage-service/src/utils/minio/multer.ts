@@ -1,6 +1,6 @@
 import { callbackify } from 'util';
 import { Request } from 'express';
-import Multer from 'multer';
+import * as Multer from 'multer';
 import { MinIOClient, minioClient } from './minioClient';
 import { generatePath } from '../generatePath';
 import { config } from '../../config';
