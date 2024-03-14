@@ -54,6 +54,7 @@ export default {
         deleteOrArcivhed: 'מחיקה או שליחה לארכיון',
         unArchived: 'הוצא מארכיון',
         archived: 'הכנס לארכיון',
+        print: 'הדפס',
     },
     entityPage: {
         deleteRelationshipPopoverText: 'מחק קשר',
@@ -468,6 +469,8 @@ export default {
                 lastChangeMade: 'סטטוס תהליך שונה',
                 inLevel: 'בשלב',
                 StepStatusNotYetBeeUpdated: 'טרם עודכן סטטוס של שלב זה',
+                printedBy: 'הודפס ע"י',
+                printedAt: 'תאריך',
             },
             step: {
                 stepStatus: 'סטטוס שלב',
