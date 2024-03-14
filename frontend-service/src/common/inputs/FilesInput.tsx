@@ -60,28 +60,21 @@ const FilesInput: React.FC<FilesInputProps> = ({
         borderColor: '#CCCFE5',
         color: '#9398C2',
         width: '100%',
-        minHeight: '40px',
-        maxHeight: '150px',
+        height: '150px', // Set a fixed height
         display: 'flex',
         padding: '10px',
-        alignItems: 'center',
+        // alignItems: 'center',
         cursor: 'pointer',
         overflowY: 'auto',
     };
 
     const fileTextStyle = {
-        backgroundColor: "white",
-        whiteSpace: 'nowrap',
-        textOverflow: 'ellipsis',
-        maxWidth: inputWidth * 0.7 - 150,
-        position: 'sticky',
-        top: '0',
-        zIndex: 1,
-        display: "flex",
-        flexDirection: "row",
-        gap:"3px",
-        paddingBottom: "2px",
-        width: "100%"
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: '10px', // Adjust the gap between images
+        maxWidth: '200px', // Adjust the maximum width of the container
+        margin: 'auto', // Center the container horizontally
     };
 
     return (
@@ -92,46 +85,45 @@ const FilesInput: React.FC<FilesInputProps> = ({
 
             <Grid item container sx={inputStyle} {...getRootProps()}>
                 <input {...getInputProps()} />
-                <Grid item sx={fileTextStyle}>
-                    <img src="\icons\Choose-File.svg" height="25px" width="120px" />
-                    <Typography>|</Typography>
-                    <img src="\icons\File-Drag-Icon.svg" height="25px" style={{ marginRight: '10px' }} />
-                    <Typography sx={{backgroundColor: "white"}}>
-                        {i18next.t('input.imagePicker.dragFiles')}
-                    </Typography>
-                </Grid>
-                <Grid item container alignItems="center" flexWrap="wrap" overflow="auto">
-                    {files.map((file, index) => (
-                        <Grid key={index} item container justifyContent="space-between" alignItems="center" width="100%">
-                            <Grid item container xs={1} justifyContent="center" paddingTop="5px">
-                                <Grid item>
-                                    <FileIcon extension={getFileExtension(file)} style={{ height: '20px' }} />
+                {files.length > 0 ? (
+                    <Grid item flexWrap="wrap" overflow="auto" width="100%">
+                        {files.map((file, index) => (
+                            <Grid key={index} item container justifyContent="space-between" alignItems="center" width="100%">
+                                <Grid item container xs={1} justifyContent="center" paddingTop="5px">
+                                    <Grid item>
+                                        <FileIcon extension={getFileExtension(file)} style={{ height: '20px' }} />
+                                    </Grid>
+                                </Grid>
+                                <Grid item xs={10}>
+                                    <Typography
+                                        style={{
+                                            overflow: 'hidden',
+                                            whiteSpace: 'nowrap',
+                                            textOverflow: 'ellipsis',
+                                            maxWidth: inputWidth * 0.7,
+                                        }}
+                                    >
+                                        {file}
+                                    </Typography>
+                                </Grid>
+                                <Grid item container xs={1} justifyContent="flex-end">
+                                    <Grid item justifySelf="flex-end">
+                                        <IconButton onClick={(e) => onDeleteFile(index, e)} size="small">
+                                            <DeleteIcon fontSize="small" />
+                                        </IconButton>
+                                    </Grid>
                                 </Grid>
                             </Grid>
-                            <Grid item xs={10}>
-                                <Typography
-                                    style={{
-                                        overflow: 'hidden',
-                                        whiteSpace: 'nowrap',
-                                        textOverflow: 'ellipsis',
-                                        maxWidth: inputWidth * 0.7,
-                                    }}
-                                >
-                                    {file}
-                                </Typography>
-                            </Grid>
-                            <Grid item container xs={1} justifyContent="flex-end">
-                                <Grid item justifySelf="flex-end">
-                                    <IconButton onClick={(e) => onDeleteFile(index, e)} size="small">
-                                        <DeleteIcon fontSize="small" />
-                                    </IconButton>
-                                </Grid>
-                            </Grid>
-                        </Grid>
-                    ))}
-                </Grid>
+                        ))}
+                    </Grid>
+                ) : (
+                    <Grid item sx={fileTextStyle}>
+                        <img src="\icons\upload-files.svg" style={{ marginRight: '10px' }} />
+                        <img src="\icons\Choose-File.svg" height="25px" width="120px" />
+                    </Grid>
+                )}
             </Grid>
-            
+
             {errorText && (
                 <p id="error" style={{ color: '#d32f2f', margin: 0, padding: 0 }}>
                     {errorText}
