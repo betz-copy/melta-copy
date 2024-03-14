@@ -1,4 +1,4 @@
-import * as mongoose from 'mongoose';
+import mongoose from 'mongoose';
 import { IProcessInstance, ProcessInstanceDocument, Status } from './interface';
 import config from '../../../config';
 

@@ -1,4 +1,4 @@
-import * as mongoose from 'mongoose';
+import mongoose from 'mongoose';
 
 import { IPermission, resourceTypeOptions, scopeOptions } from './interface';
 import config from '../../config';

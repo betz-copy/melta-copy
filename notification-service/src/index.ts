@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import * as mongoose from 'mongoose';
+import mongoose from 'mongoose';
 import menash from 'menashmq';
 import Server from './express/server';
 import config from './config';

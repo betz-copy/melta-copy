@@ -1,5 +1,5 @@
 import * as request from 'supertest';
-import * as mongoose from 'mongoose';
+import mongoose from 'mongoose';
 import { Express } from 'express';
 import Server from '../src/express/server';
 import processTemplateExample1 from './mock/templates';
