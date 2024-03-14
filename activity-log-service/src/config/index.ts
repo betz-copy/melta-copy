@@ -9,6 +9,7 @@ const config = {
         url: env.get('MONGO_URL').required().asString(),
         activitiesCollectionName: env.get('MONGO_ACTIVITIES_COLLECTION_NAME').required().asString(),
     },
+    logs: {}
 };
 
 export default config;
