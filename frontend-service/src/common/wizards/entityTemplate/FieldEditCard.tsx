@@ -25,7 +25,7 @@ import { Draggable } from 'react-beautiful-dnd';
 import i18next from 'i18next';
 import isEqual from 'lodash.isequal';
 import EditIcon from '@mui/icons-material/Edit';
-import { ThemeProvider } from '@mui/material/styles';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { dateNotificationTypes, validPropertyTypes } from './AddFields';
@@ -253,25 +253,25 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
         handleDeleteEnumField(templateId, tagIndex, value);
     }
     
-    // const theme = createTheme({
-    //     components: {
-    //         MuiBackdrop: {
-    //             styleOverrides: {
-    //                 root: {
-    //                     backgroundColor: 'rgba(0,0,0,0.1)',
-    //                 },
-    //             },
-    //         },
-    //         MuiDialog: {
-    //             styleOverrides: {
-    //                 paper: {
-    //                     boxShadow: '0 4px 8px rgba(0, 0, 0, 0.05)',
-    //                     border: '1px solid #bdbdbd',
-    //                 },
-    //             },
-    //         },
-    //     },
-    // });
+    const theme = createTheme({
+        components: {
+            MuiBackdrop: {
+                styleOverrides: {
+                    root: {
+                        backgroundColor: 'rgba(0,0,0,0.1)',
+                    },
+                },
+            },
+            MuiDialog: {
+                styleOverrides: {
+                    paper: {
+                        boxShadow: '0 4px 8px rgba(0, 0, 0, 0.05)',
+                        border: '1px solid #bdbdbd',
+                    },
+                },
+            },
+        },
+    });
 
     const updateOldDisabledEnumVals = (currValue: string[]) => {
         const newValues = currValue.filter((_option, pos) => pos >= initialEnumOptions.length);
@@ -503,7 +503,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                     </Box>
                                                                 </Popover>
                                                             
-                                                                <ThemeProvider theme={areYouSure}>
+                                                                <ThemeProvider theme={theme}>
                                                                     <AreYouSureDialog
                                                                         open={open}
                                                                         handleClose={() => {
@@ -514,7 +514,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                             setOpen(!open);
                                                                         }}
                                                                         isLoading={isLoading}
-                                                                        fromDeletion={i18next.t('areYouSureDialog.disclaimer')}
+                                                                        fromDeletion={`${i18next.t('areYouSureDialog.disclaimer')} ${option}`}
                                                                     />
                                                                 </ThemeProvider>
                                                             </Box>
