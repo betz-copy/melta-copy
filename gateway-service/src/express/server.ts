@@ -2,13 +2,13 @@ import http from 'http';
 import { once } from 'events';
 import express from 'express';
 import helmet from 'helmet';
-import logger from 'morgan';
 import passport from 'passport';
 import cookieParser from 'cookie-parser';
 
 import { initPassport } from '../utils/express/passport';
 import { errorMiddleware } from './error';
 import appRouter from './router';
+import morganMiddleware from '../utils/express/morgan.middleware';
 import config from '../config';
 
 class Server {
@@ -35,7 +35,7 @@ class Server {
             res.status(200).send('alive');
         });
 
-        app.use(logger('dev'));
+        app.use(morganMiddleware);
 
         app.use(passport.initialize());
         initPassport();

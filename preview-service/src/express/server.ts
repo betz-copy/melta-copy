@@ -1,13 +1,13 @@
-import * as http from 'http';
-import * as express from 'express';
-import * as bodyParser from 'body-parser';
-import * as helmet from 'helmet';
-import * as logger from 'morgan';
+import http from 'http';
+import express from 'express';
+import bodyParser from 'body-parser';
+import helmet from 'helmet';
 
 import { once } from 'events';
 import { errorMiddleware } from './error';
 import { appRouter } from './router';
 import { config } from '../config';
+import morganMiddleware from '../utils/express/morgan.middleware';
 
 export class Server {
     private app: express.Application;
@@ -23,7 +23,7 @@ export class Server {
         const app = express();
 
         app.use(helmet());
-        app.use(logger('dev'));
+        app.use(morganMiddleware);
         app.use(bodyParser.json({ limit: config.service.maxFileSize }));
         app.use(
             bodyParser.urlencoded({

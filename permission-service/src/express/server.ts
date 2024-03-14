@@ -1,11 +1,11 @@
-import * as http from 'http';
-import * as express from 'express';
-import * as helmet from 'helmet';
-import * as logger from 'morgan';
+import http from 'http';
+import express from 'express';
+import helmet from 'helmet';
 
 import { once } from 'events';
 import { errorMiddleware } from './error';
 import appRouter from './router';
+import morganMiddleware from '../utils/express/morgan.middleware';
 
 class Server {
     private app: express.Application;
@@ -26,7 +26,7 @@ class Server {
         app.use(express.json());
         app.use(express.urlencoded({ extended: true }));
 
-        app.use(logger('dev'));
+        app.use(morganMiddleware);
         app.use(appRouter);
 
         app.use(errorMiddleware);
