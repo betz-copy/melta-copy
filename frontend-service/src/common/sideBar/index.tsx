@@ -221,7 +221,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                         '::-webkit-scrollbar': { width: 4 },
                         '::-webkit-scrollbar-track': { background: 'transparent' },
                         '::-webkit-scrollbar-thumb': { background: 'lightgray' },
-                        marginTop: '13px',
+                        marginTop: '17px',
                     }}
                 >
                     {Array.from(
