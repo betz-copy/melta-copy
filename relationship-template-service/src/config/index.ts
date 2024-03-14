@@ -20,7 +20,7 @@ const config = {
         enableFile: env.get('ENABLE_FILE_LOGGING').default('false').asBool(),
         enableRotateFile: env.get('ENABLE_ROTATE_FILE_LOGGING').default('true').asBool(),
         extraDefault: {
-            serviceName: env.get('LOG_SERVICE_NAME').default('gateway').asString(),
+            serviceName: env.get('LOG_SERVICE_NAME').default('relationship-template-service').asString(),
             environment: env.get('LOG_ENVIRONMENT').default('dev').asString(),
         },
         fileSettings: {
