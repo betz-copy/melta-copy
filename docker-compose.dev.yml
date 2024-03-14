@@ -58,6 +58,61 @@ services:
       - "7687:7687"
     restart: always
 
+  # ELK
+  elastic:
+    image: elasticsearch:7.9.1
+    container_name: elastic
+    volumes:
+      - elastic_data:/usr/share/elasticsearch/data/
+      - ./elk/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+    environment:
+      - discovery.type=single-node
+      - http.host=0.0.0.0
+      - transport.host=0.0.0.0
+      - xpack.security.enabled=false
+      - xpack.monitoring.enabled=false
+      - cluster.name=elasticsearch
+      - bootstrap.memory_lock=true
+    ports:
+      - 9200:9200
+    restart: always
+  
+  logstash:
+    image: logstash:7.9.1
+    container_name: logstash
+    ports:
+      - '5044:5044'
+      - '9600:9600'
+    volumes:
+      - ./elk/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+      - ./elk/logstash.yml:/usr/share/logstash/config/logstash.yml
+      - logstash_data:/usr/share/logstash/data
+    depends_on:
+      - elastic
+  
+  kibana:
+    image: kibana:7.9.1
+    container_name: kibana
+    volumes:
+      - ./elk/kibana.yml:/usr/share/kibana/config/kibana.yml
+      - kibana_data:/usr/share/kibana/data
+    ports:
+      - 5601:5601
+    depends_on:
+      - elastic
+    restart: always
+  
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:7.9.1
+    container_name: filebeat
+    user: root
+    volumes:
+      - logs:/var/log/test
+      - ./elk/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+    depends_on:
+      - logstash
+    command: filebeat -e -strict.perms=false
+
   mock-service:
     build: ./mock-service
     environment:
@@ -88,57 +143,89 @@ services:
     ports:
       - 8001:8000
     restart: always
+    volumes:
+      - logs:/usr/src/app/logs
 
   relationship-template-service:
     ports:
       - 8002:8000
     restart: always
+    volumes:
+      - logs:/usr/src/app/logs
 
   gateway-service:
     ports:
       - 8003:8000
     restart: always
+    volumes:
+      - logs:/usr/src/app/logs
 
   permission-service:
     ports:
       - 8005:8000
     restart: always
+    volumes:
+      - logs:/usr/src/app/logs
   
   storage-service:
     ports:
       - 8006:8000
     restart: always
+    volumes:
+      - logs:/usr/src/app/logs
 
   instance-service:
     ports:
       - 8007:8000
     restart: always
+    volumes:
+      - logs:/usr/src/app/logs
   
   nginx:
     ports:
       - 80:80
     restart: always
+    volumes:
+      - logs:/usr/src/app/logs
 
   global-search-service:
     restart: always
+    volumes:
+      - logs:/usr/src/app/logs
 
   notification-service:
     restart: always
+    volumes:
+      - logs:/usr/src/app/logs
 
   rule-breach-service:
     restart: always
+    volumes:
+      - logs:/usr/src/app/logs
   
   process-service:
     ports:
       - 8008:8000
     restart: always
+    volumes:
+      - logs:/usr/src/app/logs
   
   gantt-service:
     ports:
       - 8009:8000
     restart: always
+    volumes:
+      - logs:/usr/src/app/logs
 
   preview-service:
     ports:
       - 8011:8000
-    restart: always  
+    restart: always
+    volumes:
+      - logs:/usr/src/app/logs  
+
+volumes:
+  elastic_data:
+  logstash_data:
+  kibana_data:
+  logs: {}

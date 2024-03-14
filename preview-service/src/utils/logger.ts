@@ -1,6 +1,6 @@
 import 'winston-daily-rotate-file';
 import { Logform, Logger, createLogger, format, transport, transports } from 'winston';
-import config from '../config';
+import { config } from '../config';
 
 const { logs } = config;
 

@@ -1,4 +1,4 @@
-import * as assert from 'assert';
+import assert from 'assert';
 import PermissionModel from './model';
 import { CheckAuthorizationBody, IPermission } from './interface';
 import { ServiceError } from '../error';
