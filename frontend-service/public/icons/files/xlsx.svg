@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <path d="M 128.824 0 L 307.164 0 L 448.176 125 L 448.176 447 C 448.176 482.899 419.075 512 383.176 512 L 128.824 512 C 92.925 512 63.824 482.899 63.824 447 L 63.824 65 C 63.824 29.101 92.925 0 128.824 0 Z" style="stroke: rgb(0, 0, 0); stroke-width: 0px; fill: rgb(15, 157, 88);"/>
+  <path d="M 307.163 0 L 448.175 0 L 448.175 125 L 307.163 0 Z" style="stroke: rgb(0, 0, 0); stroke-width: 0px; fill: rgb(171, 209, 191);" transform="matrix(-1, 0, 0, -1, 755.337952, 125)"/>
+  <rect x="113" y="250.393" width="250" height="36" rx="3" ry="3" style="stroke: rgb(0, 0, 0); stroke-width: 0px; fill: rgb(255, 255, 255);"/>
+  <rect y="332.51" width="208" height="36" rx="3" ry="3" style="stroke: rgb(0, 0, 0); stroke-width: 0px; fill: rgb(255, 255, 255);" transform="matrix(0, 1, -1, 0, 517.510193, 214.5)"/>
+  <rect x="221" y="374.859" width="124" height="29.641" rx="3" ry="3" style="stroke: rgb(0, 0, 0); stroke-width: 0px; fill: rgb(255, 255, 255);"/>
+  <rect x="221" y="316.034" width="124" height="29.641" rx="3" ry="3" style="stroke: rgb(0, 0, 0); stroke-width: 0px; fill: rgb(255, 255, 255);"/>
+</svg>

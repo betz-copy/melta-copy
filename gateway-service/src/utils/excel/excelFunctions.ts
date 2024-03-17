@@ -104,7 +104,7 @@ const styleAWorksheet = (worksheet: Excel.Worksheet) => {
                 const date = new Date(String(cell.value)).toLocaleString(excelConfig.DATE_LOCALES, {
                     timeZone: excelConfig.DATE_TIMEZONE,
                 });
-                cell.value = new Date(date);
+                cell.value = date;
             }
         });
     });

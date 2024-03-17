@@ -46,7 +46,7 @@ export const RuleCard: React.FC<{
             title={
                 <Grid item container gap="10px" paddingLeft="5px" direction="column">
                     <Grid item container alignItems="center" justifyContent="space-between" direction="row" flexWrap="nowrap">
-                        <Grid item flexBasis="90%" height="30px">
+                        <Grid item flexBasis="95%" height="30px">
                             <Typography
                                 style={{
                                     fontSize: environment.mainFontSizes.headlineSubTitleFontSize,
@@ -57,7 +57,7 @@ export const RuleCard: React.FC<{
                                 {rule.name}
                             </Typography>
                         </Grid>
-                        <Grid item flexBasis="10%">
+                        <Grid item flexBasis="5%">
                             {isHoverOnCard && (
                                 <CardMenu
                                     onEditClick={() => {
@@ -77,10 +77,9 @@ export const RuleCard: React.FC<{
                             )}
                         </Grid>
                     </Grid>
-                    <Grid item container alignItems="center" gap="10px" direction="row" flexWrap="nowrap">
+                    <Grid item container alignItems="center" direction="row" flexWrap="nowrap">
                         <RelationshipTitle style={{ width: 'fit-content' }} relationshipTemplate={populatedRelationshipTemplate} />
-                        {isHoverOnCard &&
-                            (rule.actionOnFail === 'WARNING' ? <img src="/icons/warning-rule.svg" /> : <img src="/icons/force-rule.svg" />)}
+                        {rule.actionOnFail === 'WARNING' ? <img src="/icons/warning-rule.svg" /> : <img src="/icons/force-rule.svg" />}
                     </Grid>
                 </Grid>
             }

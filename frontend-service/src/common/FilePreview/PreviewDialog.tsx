@@ -7,12 +7,12 @@ import ReactPlayer from 'react-player';
 import i18next from 'i18next';
 import ZoomInIcon from '@mui/icons-material/ZoomIn';
 import ZoomOutIcon from '@mui/icons-material/ZoomOut';
-import { RootState } from '../store';
-import FlexBox from './FlexBox';
-import { getFileExtension, getPreviewContentType } from '../utils/getFileType';
+import { RootState } from '../../store';
+import FlexBox from '../FlexBox';
+import { getFileExtension, getPreviewContentType } from '../../utils/getFileType';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
-import { DownloadButton } from './DownloadButton';
+import { DownloadButton } from '../DownloadButton';
 
 pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.js';
 
@@ -105,15 +105,39 @@ const Preview: React.FC<PreviewProps> = ({ open, fileId, data, setOpen, loading,
     let previewContent;
     if (isImage(contentType)) {
         previewContent = (
-            <img
-                src={data}
+            <div
                 style={{
-                    maxHeight: '100%',
-                    maxWidth: '100%',
-                    transform: `scale(${zoomLevel})`,
-                    transformOrigin: 'center center',
+                    overflow: 'auto',
+                    height: '95vh',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
                 }}
-            />
+            >
+                <img
+                    src={data}
+                    onLoad={(event) => {
+                        const img = event.target as HTMLImageElement;
+                        const aspectRatio = img.naturalWidth / img.naturalHeight;
+                        const containerHeight = window.innerHeight * 0.95;
+                        const containerWidth = containerHeight * aspectRatio;
+
+                        if (containerWidth > window.innerWidth) {
+                            img.style.width = '100%';
+                            img.style.height = 'auto';
+                        } else {
+                            img.style.height = '95vh';
+                            img.style.width = 'auto';
+                        }
+                    }}
+                    style={{
+                        maxWidth: '100%',
+                        maxHeight: '95vh',
+                        transform: `scale(${zoomLevel})`,
+                        transformOrigin: 'center center',
+                    }}
+                />
+            </div>
         );
     } else if (isVideoOrAudio(contentType)) {
         previewContent = <ReactPlayer style={{ marginTop: '65px' }} url={data} controls playing />;

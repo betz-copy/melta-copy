@@ -1,8 +1,10 @@
 import React, { MouseEventHandler, useEffect, useRef, useState } from 'react';
 import { IconButton, Grid, useTheme, Typography } from '@mui/material';
-import { CloseOutlined as DeleteIcon, FilePresent as FileIcon } from '@mui/icons-material';
+import { CloseOutlined as DeleteIcon, FilePresent as FileIcon, CameraAltOutlined as CameraIcon } from '@mui/icons-material';
 import { Accept, useDropzone } from 'react-dropzone';
 import i18next from 'i18next';
+import { toast } from 'react-toastify';
+import Camera from '../dialogs/Camera';
 
 interface FileInputProps {
     fileName: string | undefined;
@@ -16,6 +18,9 @@ interface FileInputProps {
 
 const FileInput: React.FC<FileInputProps> = ({ fileName, onDeleteFile, onDropFile, inputText, acceptedFilesTypes, errorText }) => {
     const theme = useTheme();
+
+    const [stream, setStream] = useState<MediaStream | null>(null);
+    const [open, setOpen] = useState(false);
 
     const errorStyle = {
         color: '#d32f2f',
@@ -46,10 +51,22 @@ const FileInput: React.FC<FileInputProps> = ({ fileName, onDeleteFile, onDropFil
     useEffect(() => {
         updateInputWidth();
         window.addEventListener('resize', updateInputWidth);
+
         return () => {
             window.removeEventListener('resize', updateInputWidth);
         };
     }, []);
+
+    const onCameraClick = async (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+        event.stopPropagation();
+        try {
+            const userStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+            setStream(userStream);
+            setOpen(true);
+        } catch {
+            toast(i18next.t('camera.cameraNotFound'));
+        }
+    };
 
     const inputStyle = {
         border: isDragActive ? `2px dashed ${theme.palette.primary.main}` : '1px solid #c4c4c4',
@@ -65,75 +82,92 @@ const FileInput: React.FC<FileInputProps> = ({ fileName, onDeleteFile, onDropFil
     };
 
     return (
-        <Grid container flexDirection="column" justifyContent="space-around" width="100%" ref={inputRef}>
-            <Grid item>
-                <Typography style={{ color: '#9398C2' }}>{inputText}</Typography>
-            </Grid>
+        <>
+            <Grid container flexDirection="column" justifyContent="space-around" width="100%" ref={inputRef}>
+                <Grid item>
+                    <Typography style={{ color: '#9398C2' }}>{inputText}</Typography>
+                </Grid>
 
-            <Grid item container>
-                {fileName ? (
-                    <Grid item container style={inputStyle} {...getRootProps()}>
-                        <input {...getInputProps()} />
-                        <Grid container item flexDirection="row" alignItems="center" flexWrap="nowrap">
-                            <Grid item container xs={1} justifyContent="center" paddingTop="5px">
-                                <Grid item>
-                                    <FileIcon fontSize="medium" />
+                <Grid item container>
+                    {fileName ? (
+                        <Grid item container style={inputStyle} {...getRootProps()}>
+                            <input {...getInputProps()} />
+                            <Grid container item flexDirection="row" alignItems="center" flexWrap="nowrap">
+                                <Grid item container xs={1} justifyContent="center" paddingTop="5px">
+                                    <Grid item>
+                                        <FileIcon fontSize="medium" />
+                                    </Grid>
                                 </Grid>
-                            </Grid>
-                            <Grid item xs={10}>
-                                <Typography
-                                    style={{
-                                        overflow: 'hidden',
-                                        whiteSpace: 'nowrap',
-                                        textOverflow: 'ellipsis',
-                                        maxWidth: inputWidth * 0.7,
-                                    }}
-                                >
-                                    {fileName}
-                                </Typography>
-                            </Grid>
-                            <Grid item container xs={1} justifyContent="flex-end">
-                                <Grid item justifySelf="flex-end">
-                                    <IconButton
-                                        onClick={(e) => {
-                                            e.preventDefault();
-                                            e.stopPropagation();
-                                            onDeleteFile(e);
+                                <Grid item xs={10}>
+                                    <Typography
+                                        style={{
+                                            overflow: 'hidden',
+                                            whiteSpace: 'nowrap',
+                                            textOverflow: 'ellipsis',
+                                            maxWidth: inputWidth * 0.7,
                                         }}
-                                        size="small"
                                     >
-                                        <DeleteIcon fontSize="small" />
-                                    </IconButton>
+                                        {fileName}
+                                    </Typography>
+                                </Grid>
+                                <Grid item container xs={1} justifyContent="flex-end">
+                                    <Grid item justifySelf="flex-end">
+                                        <IconButton
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                onDeleteFile(e);
+                                            }}
+                                            size="small"
+                                        >
+                                            <DeleteIcon fontSize="small" />
+                                        </IconButton>
+                                    </Grid>
                                 </Grid>
                             </Grid>
                         </Grid>
-                    </Grid>
-                ) : (
-                    <Grid style={inputStyle} {...getRootProps()}>
-                        <input {...getInputProps()} placeholder="aa" />
-                        <img src="\icons\Choose-File.svg" height="25px" width="120px" />
-                        <Typography>|</Typography>
-                        <img src="\icons\File-Drag-Icon.svg" height="25px" style={{ marginRight: '10px' }} />
-                        <Typography
-                            style={{
-                                marginRight: '30px',
-                                overflow: 'hidden',
-                                whiteSpace: 'nowrap',
-                                textOverflow: 'ellipsis',
-                                maxWidth: inputWidth * 0.7 - 150,
-                            }}
-                        >
-                            {i18next.t('input.imagePicker.dragFile')}
-                        </Typography>
-                    </Grid>
-                )}
-                {errorText && (
-                    <p id="error" style={errorStyle}>
-                        {errorText}
-                    </p>
-                )}
+                    ) : (
+                        <Grid style={inputStyle} {...getRootProps()}>
+                            <input {...getInputProps()} placeholder="aa" />
+                            <img src="\icons\Choose-File.svg" height="25px" width="120px" />
+                            <IconButton
+                                style={{
+                                    background: '#CCCFE5',
+                                    height: '25px',
+                                    width: '25px',
+                                    borderRadius: '7px',
+                                    marginLeft: '5px',
+                                }}
+                                onClick={(event) => {
+                                    onCameraClick(event);
+                                }}
+                            >
+                                <CameraIcon style={{ color: '#1E2775', width: '20px', height: '20px' }} />
+                            </IconButton>
+                            <Typography>|</Typography>
+                            <img src="\icons\File-Drag-Icon.svg" height="25px" style={{ marginRight: '10px' }} />
+                            <Typography
+                                style={{
+                                    marginRight: '30px',
+                                    overflow: 'hidden',
+                                    whiteSpace: 'nowrap',
+                                    textOverflow: 'ellipsis',
+                                    maxWidth: inputWidth * 0.7 - 150,
+                                }}
+                            >
+                                {i18next.t('input.imagePicker.dragFile')}
+                            </Typography>
+                        </Grid>
+                    )}
+                    {errorText && (
+                        <p id="error" style={errorStyle}>
+                            {errorText}
+                        </p>
+                    )}
+                </Grid>
             </Grid>
-        </Grid>
+            {open && <Camera stream={stream!} setStream={setStream} open={open} setOpen={setOpen} onPictureTaken={onDropFile} />}
+        </>
     );
 };
 
