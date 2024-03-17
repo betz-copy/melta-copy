@@ -14,18 +14,8 @@ export const getMyNotificationsRequest = async (query: {
     startDate?: Date;
     endDate?: Date;
 }) => {
-    // const v = query.startDate && new Date(query.startDate?.toLocaleDateString());
-    // console.log(query.startDate?.toLocaleDateString(), typeof v);
-
-    // const startDate = query.startDate && new Date(query.startDate);
-    const startDate = query.startDate && query.startDate;
-    // new Date(moment(query.startDate).format('YYYY-MM-DDTHH:mm:ss'));
-    //
-    console.log(query.startDate);
-
-    // parse('2019-11-27 09:45:00', 'yyyy-MM-dd', new Date());
-    const endDate = query.endDate && new Date(query.endDate.toDateString());
-    console.log({ startDate }, { endDate }, typeof startDate);
+    const startDate = query.startDate && query.startDate.toDateString();
+    const endDate = query.endDate && query.endDate.toDateString();
 
     const { data } = await axios.get<INotificationPopulated[]>(`${notifications}/my`, {
         params: { ...query, startDate, endDate },

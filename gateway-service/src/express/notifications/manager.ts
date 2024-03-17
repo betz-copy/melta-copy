@@ -39,15 +39,14 @@ import { InstanceManagerService } from '../../externalServices/instanceService';
 
 export class NotificationsManager {
     static async getMyNotifications(user: Express.User, query): Promise<INotificationPopulated[]> {
-        console.log({ query });
-        // const startDateFilter = query.startDate && new Date(new Date(query.startDate)).setDate(new Date(query.startDate).getDate() + 1);
-        // console.log('1: ', { startDateFilter });
+        const startDate = query.startDate && new Date(query.startDate);
+        const endDate = query.endDate && new Date(query.endDate);
 
         const notifications = await NotificationService.getNotifications({
             ...query,
             viewerId: user.id,
-            // startDate: startDateFilter,
-            // endDate: query.endDate && new Date().setDate(query.endDate.getDate() + 1),
+            startDate,
+            endDate,
         });
 
         return this.populateNotifications(notifications, user.id);

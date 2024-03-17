@@ -72,7 +72,6 @@ export class NotificationsManager {
 
     private static handleQuery({ viewerId, types, startDate, endDate, ...rest }: IBasicNotificationQuery) {
         const query: FilterQuery<INotificationDocument> = { ...rest };
-        console.log({ startDate }, { endDate });
 
         if (viewerId) query.viewers = viewerId;
 
@@ -80,14 +79,11 @@ export class NotificationsManager {
 
         if (startDate || endDate) {
             query.createdAt = {};
-            if (startDate) {
-                query.createdAt.$gte = startDate;
-            }
+            if (startDate) query.createdAt.$gte = startDate;
 
-            if (endDate) {
-                query.createdAt.$lte = endDate;
-            }
+            if (endDate) query.createdAt.$lte = new Date(endDate.setUTCHours(23, 59, 59, 999));
         }
+
         return query;
     }
 }
