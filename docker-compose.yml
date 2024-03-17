@@ -29,6 +29,7 @@ services:
       MINIO_BUCKET_NAME: ${MINIO_BUCKET_NAME}
       MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
       MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
+      MAX_FILE_BYTE_SIZE: ${MAX_FILE_BYTE_SIZE}
 
   relationship-template-service:
     build: ./relationship-template-service
@@ -111,6 +112,7 @@ services:
       MINIO_BUCKET_NAME: ${MINIO_BUCKET_NAME}
       MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
       MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
+      MAX_FILE_BYTE_SIZE: ${MAX_FILE_BYTE_SIZE}
 
   gateway-service:
     build: ./gateway-service
@@ -137,6 +139,7 @@ services:
       PREVIEW_SERVICE_URL: ${PREVIEW_SERVICE_URL}
       STORAGE_SERVICE_FILE_HYPER_LINK: ${STORAGE_SERVICE_FILE_HYPER_LINK}
       BASIC_AUTHENTICATION_USERS: ${BASIC_AUTHENTICATION_USERS}
+      MAX_FILE_BYTE_SIZE: ${MAX_FILE_BYTE_SIZE}
       
 
   # frontend-service:
