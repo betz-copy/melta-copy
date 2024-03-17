@@ -24,8 +24,8 @@ const main = async () => {
 
     await checkForDateNotifications();
 
-    axios.defaults.maxBodyLength = service.maxFileSize;
-    axios.defaults.maxContentLength = service.maxFileSize;
+    axios.defaults.maxBodyLength = service.maxRequestSize;
+    axios.defaults.maxContentLength = service.maxRequestSize;
 
     const server = new Server(service.port);
 

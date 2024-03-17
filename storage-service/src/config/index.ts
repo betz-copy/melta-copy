@@ -9,6 +9,7 @@ export const config = {
     service: {
         port: env.get('PORT').default(8000).asPortNumber(),
         maxFileSize: env.get('MAX_FILE_BYTE_SIZE').required().asInt(),
+        maxRequestSize: env.get('MAX_REQUEST_BYTE_SIZE').required().asInt(),
     },
     minio: {
         url: env.get('MINIO_ENDPOINT').default('localhost').asString(),

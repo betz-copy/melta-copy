@@ -27,8 +27,8 @@ class Server {
         const app = express();
 
         app.use(helmet());
-        app.use(express.json({ limit: config.service.maxFileSize }));
-        app.use(express.urlencoded({ extended: true, limit: config.service.maxFileSize }));
+        app.use(express.json({ limit: config.service.maxRequestSize }));
+        app.use(express.urlencoded({ extended: true, limit: config.service.maxRequestSize }));
         app.use(cookieParser());
 
         app.use(['/isAlive', '/isalive', '/health'], (_req, res) => {
