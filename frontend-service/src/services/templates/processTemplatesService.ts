@@ -86,6 +86,7 @@ const processTemplateObjectToProcessTemplateForm = (
 
         stepsForm.push({
             _id: step._id,
+            draggableId: step._id,
             properties: stepsPropertiesArray,
             attachmentProperties: stepsAttachmentProperties,
             name: step.name,

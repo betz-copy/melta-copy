@@ -29,6 +29,7 @@ export interface ProcessTemplateWizardValues extends Omit<IMongoProcessTemplateP
     detailsAttachmentProperties: ProcessTemplateFormInputProperties[];
     steps: Array<{
         _id?: string;
+        draggableId: string;
         name: string;
         displayName: string;
         properties: ProcessTemplateFormInputProperties[];

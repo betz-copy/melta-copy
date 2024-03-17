@@ -92,12 +92,12 @@ class ProcessTemplateManager {
         updatedSteps.forEach((step, index) => {
             const currStep = currTemplate.steps.find((currTemplateStep) => step._id.toString() === currTemplateStep._id.toString());
             if (!currStep) throw new ServiceError(400, `can not add new step id ${step._id})`);
-            if (step.name !== currStep!.name) throw new ServiceError(400, `can not change step[${index}] name`);
+            if (step.name !== currStep.name) throw new ServiceError(400, `can not change step[${index}] name`);
             this.validateProperties(
                 step.properties.properties,
-                currStep!.properties.properties,
+                currStep.properties.properties,
                 step.properties.required,
-                currStep!.properties.required,
+                currStep.properties.required,
             );
         });
     }

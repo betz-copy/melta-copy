@@ -78,11 +78,8 @@ const AddStepsFields: React.FC<StepComponentProps<ProcessTemplateWizardValues, '
 
     const errorsOfSteps = errors.steps as FormikErrors<ProcessTemplateWizardValues['steps'][number]> | undefined;
 
-    const [expandedIndex, setExpandedIndex] = useState<number | false>(false);
+    const [expandedId, setExpandedId] = useState<string | null>(null);
 
-    const handleChange = (index: number) => {
-        setExpandedIndex((prevIndex) => (prevIndex === index ? false : index));
-    };
     const isFieldBlockTouched = touched?.steps;
 
     const theme = useTheme();
@@ -90,11 +87,6 @@ const AddStepsFields: React.FC<StepComponentProps<ProcessTemplateWizardValues, '
     const onDragEnd = (result: DropResult) => {
         const { destination, source } = result;
         if (!destination) return;
-
-        setExpandedIndex((prevExpandedIndex) => {
-            if (prevExpandedIndex === source.index) return destination.index;
-            return prevExpandedIndex;
-        });
 
         const newValuesOrder = Array.from(values.steps);
         const [movedOption] = newValuesOrder.splice(source.index, 1);
@@ -128,7 +120,7 @@ const AddStepsFields: React.FC<StepComponentProps<ProcessTemplateWizardValues, '
                                         disabled={isEditMode && areThereAnyInstances}
                                         onClick={() =>
                                             push({
-                                                _id: uuid(),
+                                                draggableId: uuid(),
                                                 name: '',
                                                 displayName: '',
                                                 properties: [],
@@ -149,14 +141,14 @@ const AddStepsFields: React.FC<StepComponentProps<ProcessTemplateWizardValues, '
                                 {(provided) => (
                                     <Grid ref={provided.innerRef} {...provided.droppableProps}>
                                         {values.steps.map((step, index) => (
-                                            <Draggable draggableId={step._id!} index={index} key={step._id}>
+                                            <Draggable draggableId={step.draggableId} index={index} key={step.draggableId}>
                                                 {(draggableProvided) => (
                                                     <FieldBlockAccordion
                                                         ref={draggableProvided.innerRef}
                                                         {...draggableProvided.draggableProps}
                                                         {...draggableProvided.dragHandleProps}
-                                                        expanded={expandedIndex === index}
-                                                        onChange={() => handleChange(index)}
+                                                        expanded={expandedId === step.draggableId}
+                                                        onChange={(_e, expanded) => setExpandedId(expanded ? step.draggableId : null)}
                                                         style={{
                                                             ...draggableProvided.draggableProps.style,
                                                             border: isFieldBlockTouched && errors.steps?.[index] ? '1px solid red' : '',
