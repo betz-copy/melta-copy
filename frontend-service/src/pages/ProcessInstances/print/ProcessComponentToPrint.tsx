@@ -25,9 +25,7 @@ const ProcessComponentToPrint: React.FC<{
                 <GeneralDetails detailsFormikData={process} processInstance={processTemplate} />
             </Box>
 
-            <EntityDisableCheckbox isEntityDisabled={entity.properties.disabled}> </EntityDisableCheckbox>
-
-            {options.showDates && <EntityDates createdAt={process.createdAt} updatedAt={process.updatedAt} />}
+            <EntityDates createdAt={process.createdAt} updatedAt={process.updatedAt} />
         </Box>
     );
 };

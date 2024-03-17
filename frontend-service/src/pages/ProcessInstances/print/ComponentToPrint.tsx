@@ -6,11 +6,12 @@ import { BlueTitle } from '../../../common/BlueTitle';
 import { IFile } from '../../../interfaces/entities';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { useFilePreview } from '../../../utils/useFilePreview';
-import { IMongoProcessInstanceWithSteps } from '../../../interfaces/processes/processInstance';
+import { IMongoProcessInstancePopulated } from '../../../interfaces/processes/processInstance';
 import { IMongoProcessTemplatePopulated } from '../../../interfaces/processes/processTemplate';
 import { getColor } from '../../../common/wizards/processInstance/ProcessSummaryStep/ProcessStatus';
 import GeneralDetails from '../../../common/wizards/processInstance/ProcessDetails/GeneralDetails';
 import { FileToPrint } from '../../Entity/components/print/FileToPrint';
+import ProcessSummary from '../../../common/wizards/processInstance/ProcessSummaryStep';
 
 const FileData: React.FC<{
     file: IFile;
@@ -46,7 +47,7 @@ const ComponentToPrint = React.forwardRef<
     HTMLDivElement,
     {
         processTemplate: IMongoProcessTemplatePopulated;
-        expandedProcess: IMongoProcessInstanceWithSteps;
+        expandedProcess: IMongoProcessInstancePopulated;
         isFilesLoading: Set<number> | undefined;
         setIsFilesLoading: React.Dispatch<React.SetStateAction<Set<number> | undefined>>;
         setIsFilesError: React.Dispatch<React.SetStateAction<boolean>>;
@@ -59,11 +60,9 @@ const ComponentToPrint = React.forwardRef<
 >(({ processTemplate, expandedProcess, options, filesToPrint, isFilesLoading, setIsFilesLoading, setIsFilesError }, ref) => {
     const theme = useTheme();
 
-    const queryClient = useQueryClient();
-    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-
     return (
         <Box ref={ref} margin="20px" style={{ direction: 'rtl' }}>
+            {options.showSummary && <ProcessSummary ref={ref} isPrinting processInstance={expandedProcess} processTemplate={} />}
             <Box paddingBottom="0.4rem" display="flex" justifyContent="space-between" alignItems="center">
                 <Box display="flex" alignItems="center">
                     <Typography component="h4" variant="h4" color={theme.palette.primary.main} fontWeight="800">

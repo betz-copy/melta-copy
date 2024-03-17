@@ -1,19 +1,21 @@
 import i18next from 'i18next';
 import React from 'react';
 import { useReactToPrint } from 'react-to-print';
-import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
+import { IconButton } from '@mui/material';
+import { Print as PrintIcon } from '@mui/icons-material';
 import { IFile } from '../../../interfaces/entities';
 import { ComponentToPrint } from './ComponentToPrint';
 import { PrintOptionsDialog } from './PrintOptionsDialog';
 import { getFileName } from '../../../utils/getFileName';
 import { getFileExtension, getPreviewContentType } from '../../../utils/getFileType';
 import { isUnsupported, isVideoOrAudio } from '../../../common/FilePreview/PreviewDialog';
+import { IMongoProcessInstancePopulated } from '../../../interfaces/processes/processInstance';
+import { MeltaTooltip } from '../../../common/MeltaTooltip';
 import { IMongoProcessTemplatePopulated } from '../../../interfaces/processes/processTemplate';
-import { IMongoProcessInstanceWithSteps } from '../../../interfaces/processes/processInstance';
 
 const Print: React.FC<{
     processTemplate: IMongoProcessTemplatePopulated;
-    expandedProcess: IMongoProcessInstanceWithSteps;
+    expandedProcess: IMongoProcessInstancePopulated;
 }> = ({ processTemplate, expandedProcess }) => {
     const [openModal, setOpenModal] = React.useState(false);
     const handleOpen = () => setOpenModal(true);
@@ -25,11 +27,26 @@ const Print: React.FC<{
         documentTitle: `${processTemplate.displayName}-${expandedProcess.name}-${new Date().toLocaleDateString('en-uk')}`,
     });
 
+    // const handlePrint = useReactToPrint({
+    //     content: () => componentRef.current,
+    //     documentTitle: `${processInstance.name}-${new Date().toLocaleDateString('en-uk')}`,
+    //     onBeforeGetContent: () => {
+    //         return new Promise((resolve) => {
+    //             promiseResolveRef.current = resolve as () => void;
+    //             setIsPrinting(true);
+    //         });
+    //     },
+    //     onAfterPrint: () => {
+    //         promiseResolveRef.current = null;
+    //         setIsPrinting(false);
+    //     },
+    // });
+
     const getProcessFiles = (): IFile[] => {
-        return processTemplate.steps
+        return processTemplate.details
             .map((propertyKey) => {
-                const propertySchema = processTemplate.steps.details[propertyKey];
-                const propertyValue = expandedProcess.steps.details[propertyKey];
+                const propertySchema = processTemplate.details[propertyKey];
+                const propertyValue = expandedProcess.details[propertyKey];
                 if (propertyValue && propertySchema.format === 'fileId') {
                     const name = getFileName(propertyValue);
                     return {
@@ -62,9 +79,16 @@ const Print: React.FC<{
 
     return (
         <>
-            <IconButtonWithPopover popoverText={i18next.t('entityPage.print.header')} iconButtonProps={{ onClick: handleOpen }}>
-                <img src="/icons/print.svg" />
-            </IconButtonWithPopover>
+            <MeltaTooltip title={i18next.t('actions.print')}>
+                <IconButton
+                    onClick={() => {
+                        handlePrint();
+                        handleOpen();
+                    }}
+                >
+                    <PrintIcon color="primary" />
+                </IconButton>
+            </MeltaTooltip>
             <div style={{ display: 'none' }}>
                 <style>{getPageMargins()}</style>
 

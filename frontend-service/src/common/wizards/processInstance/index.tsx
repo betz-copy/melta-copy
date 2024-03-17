@@ -12,7 +12,6 @@ import _ from 'lodash';
 import DeleteIcon from '@mui/icons-material/Delete';
 import UnarchiveIcon from '@mui/icons-material/Unarchive';
 import ArchiveIcon from '@mui/icons-material/Archive';
-import PrintIcon from '@mui/icons-material/Print';
 import { useReactToPrint } from 'react-to-print';
 import { ProcessSideStepper } from './ProcessSideStepper';
 import { BlueTitle } from '../../BlueTitle';
@@ -28,6 +27,7 @@ import { IPermissionsOfUser } from '../../../services/permissionsService';
 import { IMongoStepTemplatePopulated } from '../../../interfaces/processes/stepTemplate';
 import { AreYouSureDialog } from '../../dialogs/AreYouSureDialog';
 import { MeltaTooltip } from '../../MeltaTooltip';
+import { Print } from '../../../pages/ProcessInstances/print';
 
 interface IProcessInstanceWizard {
     open: boolean;
@@ -256,18 +256,18 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({ open, onClose
                         )}
                         <Grid>
                             {activeStep === 2 && (
-                                <MeltaTooltip title={i18next.t('actions.print')}>
-                                    <IconButton
-                                        onClick={() => {
-                                            handlePrint();
-                                        }}
-                                    >
-                                        <PrintIcon color="primary" />
-                                    </IconButton>
-                                </MeltaTooltip>
+                                // <MeltaTooltip title={i18next.t('actions.print')}>
+                                //     <IconButton
+                                //         onClick={() => {
+                                //             handlePrint();
+                                //         }}
+                                //     >
+                                //         <PrintIcon color="primary" />
+                                //     </IconButton>
+                                // </MeltaTooltip>
+                                <Print expandedProcess={processInstance} processTemplate={processTemplatesMap.get(currProcessInstance.templateId)!} />
                             )}
                         </Grid>
-
                         <Grid>
                             {!isEditMode && hasPermissionsToEditDetails && (
                                 <>
