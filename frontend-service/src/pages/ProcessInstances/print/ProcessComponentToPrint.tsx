@@ -1,13 +1,11 @@
 import React from 'react';
 import { Box, useTheme } from '@mui/material';
 import { useSelector } from 'react-redux';
-import { EntityPropertiesInternal } from '../../../common/EntityProperties';
 import { IFile } from '../../../interfaces/entities';
-import { EntityDisableCheckbox } from '../EntityDisableCheckbox';
-import { EntityDates } from '../EntityDates';
 import { RootState } from '../../../store';
 import { IMongoProcessInstance, IMongoProcessInstancePopulated, IProcessInstance } from '../../../interfaces/processes/processInstance';
 import GeneralDetails from '../../../common/wizards/processInstance/ProcessDetails/GeneralDetails';
+import { EntityDates } from '../../Entity/components/EntityDates';
 
 const ProcessComponentToPrint: React.FC<{
     processTemplate: IMongoProcessInstancePopulated;

@@ -1,15 +1,12 @@
 import React from 'react';
 import { Box, Grid, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
-import { useQueryClient } from 'react-query';
 import { BlueTitle } from '../../../common/BlueTitle';
 import { IFile } from '../../../interfaces/entities';
-import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { useFilePreview } from '../../../utils/useFilePreview';
 import { IMongoProcessInstancePopulated } from '../../../interfaces/processes/processInstance';
 import { IMongoProcessTemplatePopulated } from '../../../interfaces/processes/processTemplate';
 import { getColor } from '../../../common/wizards/processInstance/ProcessSummaryStep/ProcessStatus';
-import GeneralDetails from '../../../common/wizards/processInstance/ProcessDetails/GeneralDetails';
 import { FileToPrint } from '../../Entity/components/print/FileToPrint';
 import ProcessSummary from '../../../common/wizards/processInstance/ProcessSummaryStep';
 
@@ -61,45 +58,47 @@ const ComponentToPrint = React.forwardRef<
     const theme = useTheme();
 
     return (
-        <Box ref={ref} margin="20px" style={{ direction: 'rtl' }}>
-            {options.showSummary && <ProcessSummary ref={ref} isPrinting processInstance={expandedProcess} processTemplate={} />}
-            <Box paddingBottom="0.4rem" display="flex" justifyContent="space-between" alignItems="center">
-                <Box display="flex" alignItems="center">
-                    <Typography component="h4" variant="h4" color={theme.palette.primary.main} fontWeight="800">
-                        {expandedProcess.name}
-                    </Typography>
+        <>
+            {options.showSummary && <ProcessSummary ref={ref} isPrinting processInstance={expandedProcess} processTemplate={processTemplate} />}
+            <Box ref={ref} margin="20px" style={{ direction: 'rtl' }}>
+                <Box paddingBottom="0.4rem" display="flex" justifyContent="space-between" alignItems="center">
+                    <Box display="flex" alignItems="center">
+                        <Typography component="h4" variant="h4" color={theme.palette.primary.main} fontWeight="800">
+                            {expandedProcess.name}
+                        </Typography>
 
-                    <Typography variant="h4" fontSize="30px" color="#d3d8df" marginLeft="5px" marginRight="5px">
-                        /
-                    </Typography>
+                        <Typography variant="h4" fontSize="30px" color="#d3d8df" marginLeft="5px" marginRight="5px">
+                            /
+                        </Typography>
 
-                    <Typography paddingBottom="2px" variant="h4" fontSize="28px" color={theme.palette.primary.main}>
-                        {processTemplate.displayName}
-                    </Typography>
+                        <Typography paddingBottom="2px" variant="h4" fontSize="28px" color={theme.palette.primary.main}>
+                            {processTemplate.displayName}
+                        </Typography>
+                    </Box>
+                    <Box color={getColor(expandedProcess.status)}> {expandedProcess.status}</Box>
                 </Box>
-                <Box color={getColor(expandedProcess.status)}> {expandedProcess.status}</Box>
+                <BlueTitle title={i18next.t('processInstance.processDetails')} component="h4" variant="h4" style={{ marginTop: '2rem' }} />
+                {options.showFiles && (
+                    <>
+                        <Grid sx={{ width: '100%', height: '100%', paddingY: '55%', paddingX: '37.5%' }}>
+                            <BlueTitle title={i18next.t('entityPage.print.appendices')} component="h2" variant="h2" style={{ marginTop: '2rem' }} />
+                        </Grid>
+                        {filesToPrint.map((file, index) => {
+                            return (
+                                <FileData
+                                    file={file}
+                                    key={file.id}
+                                    isFilesLoading={isFilesLoading}
+                                    setIsFilesLoading={setIsFilesLoading}
+                                    index={index}
+                                    setIsFilesError={setIsFilesError}
+                                />
+                            );
+                        })}
+                    </>
+                )}
             </Box>
-            <BlueTitle title={i18next.t('processInstance.processDetails')} component="h4" variant="h4" style={{ marginTop: '2rem' }} />
-            {options.showFiles && (
-                <>
-                    <Grid sx={{ width: '100%', height: '100%', paddingY: '55%', paddingX: '37.5%' }}>
-                        <BlueTitle title={i18next.t('entityPage.print.appendices')} component="h2" variant="h2" style={{ marginTop: '2rem' }} />
-                    </Grid>
-                    {filesToPrint.map((file, index) => {
-                        return (
-                            <FileData
-                                file={file}
-                                key={file.id}
-                                isFilesLoading={isFilesLoading}
-                                setIsFilesLoading={setIsFilesLoading}
-                                index={index}
-                                setIsFilesError={setIsFilesError}
-                            />
-                        );
-                    })}
-                </>
-            )}
-        </Box>
+        </>
     );
 });
 

@@ -42,24 +42,51 @@ const Print: React.FC<{
     //     },
     // });
 
+    // const getProcessFiles = (): IFile[] => {
+    //     return processTemplate.steps
+    //         .map((propertyKey) => {
+    //             const propertySchema = processTemplate.details[propertyKey];
+    //             const propertyValue = expandedProcess.details[propertyKey];
+    //             if (propertyValue && propertySchema.format === 'fileId') {
+    //                 const name = getFileName(propertyValue);
+    //                 return {
+    //                     id: propertyValue,
+    //                     name,
+    //                     type: getPreviewContentType(name),
+    //                     key: propertyKey,
+    //                     extension: getFileExtension(name),
+    //                 } as IFile;
+    //             }
+    //             return undefined;
+    //         })
+    //         .filter((file) => file !== undefined) as IFile[];
+    // };
+
     const getProcessFiles = (): IFile[] => {
-        return processTemplate.details
-            .map((propertyKey) => {
-                const propertySchema = processTemplate.details[propertyKey];
-                const propertyValue = expandedProcess.details[propertyKey];
-                if (propertyValue && propertySchema.format === 'fileId') {
-                    const name = getFileName(propertyValue);
-                    return {
-                        id: propertyValue,
-                        name,
-                        type: getPreviewContentType(name),
-                        key: propertyKey,
-                        extension: getFileExtension(name),
-                    } as IFile;
-                }
-                return undefined;
-            })
-            .filter((file) => file !== undefined) as IFile[];
+        const files: IFile[] = [];
+        processTemplate.steps.forEach((stepKey) => {
+            const stepSchema = processTemplate.details[stepKey];
+            const stepInstance = expandedProcess.steps.find((step) => step.stepTemplateId === stepKey);
+            if (stepInstance && stepSchema) {
+                Object.entries(stepSchema.properties).forEach(([propertyKey, propertySchema]) => {
+                    if (propertySchema.format === 'fileId') {
+                        const propertyValue = stepInstance.details[propertyKey];
+                        if (propertyValue) {
+                            const name = getFileName(propertyValue);
+                            files.push({
+                                id: propertyValue,
+                                name,
+                                type: getPreviewContentType(name),
+                                key: propertyKey,
+                                extension: getFileExtension(name),
+                            } as IFile);
+                        }
+                    }
+                });
+            }
+        });
+
+        return files;
     };
 
     const files = getProcessFiles().filter(
