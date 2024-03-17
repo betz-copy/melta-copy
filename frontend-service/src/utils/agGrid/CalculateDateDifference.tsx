@@ -67,10 +67,10 @@ const CalculateDateDifference: React.FC<{ date: string }> = ({ date }) => {
     };
 
     return (
-        <div>
-            {showTimeIndicator && (isFuture(parsedDate) ? i18next.t('agGridTimes.future') : i18next.t('agGridTimes.ago'))}
+        <>
+            {showTimeIndicator && isFuture(parsedDate) && i18next.t('agGridTimes.future')}
             {` ${displayValue()} (${date})`}
-        </div>
+        </>
     );
 };
 

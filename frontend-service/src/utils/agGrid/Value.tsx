@@ -75,7 +75,7 @@ const Value: React.FC<{
                         fontSize: '15px',
                     }}
                 >
-                    {value}
+                    {calculateTime ? <CalculateDateDifference date={value} /> : value}
                 </div>
             </Popover>
 

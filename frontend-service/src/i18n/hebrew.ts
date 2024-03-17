@@ -34,7 +34,6 @@ export default {
         years: 'שנים',
         minutes: 'דקות',
         future: 'בעוד',
-        ago: 'לפני',
         today: 'היום',
         yesterday: 'אתמול',
         tomorrow: 'מחר',

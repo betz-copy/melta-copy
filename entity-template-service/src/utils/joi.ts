@@ -65,7 +65,9 @@ const propertiesArraySchema = Joi.array()
                 .valid('day', 'week', 'twoWeeks')
                 .when('format', { not: Joi.valid('date', 'date-time'), then: Joi.forbidden() })
                 .when('type', { not: 'string', then: Joi.forbidden() }),
-            calculateTime: Joi.boolean(),
+            calculateTime: Joi.boolean()
+                .when('format', { not: Joi.valid('date', 'date-time'), then: Joi.forbidden() })
+                .when('type', { not: 'string', then: Joi.forbidden() }),
             serialStarter: Joi.number().when('type', { not: 'number', then: Joi.forbidden() }),
             serialCurrent: Joi.number().when('type', { not: 'number', then: Joi.forbidden() }),
         }).nand('pattern', 'enum'),
