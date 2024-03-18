@@ -272,8 +272,6 @@ const ProcessCard: React.FC<{
                             <Grid item container justifyContent="center" spacing={4}>
                                 {processInstance.steps.map((step, index) => {
                                     const stepTemplate = processTemplate.steps[index];
-                                    console.log({ stepTemplate });
-
                                     return (
                                         <Grid item key={stepTemplate.name}>
                                             <StepIcon

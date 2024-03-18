@@ -10,7 +10,6 @@ import {
 } from '@mui/icons-material';
 import { FormikProps } from 'formik';
 import { useSelector } from 'react-redux';
-import { useQueryClient } from 'react-query';
 import { IMongoProcessInstancePopulated, Status } from '../../../../interfaces/processes/processInstance';
 import { getLongDate } from '../../../../utils/date';
 import { BlueTitle } from '../../../BlueTitle';
@@ -19,7 +18,6 @@ import { IMongoStepInstancePopulated } from '../../../../interfaces/processes/st
 import { ProcessStepValues } from '../ProcessSteps/index';
 import { IUser } from '../../../../services/kartoffelService';
 import { StatusColorsNames } from '../../../../pages/ProcessInstances/ProcessCard';
-import { IPermissionsOfUser } from '../../../../services/permissionsService';
 
 interface StatusDisplayProps {
     status: Status;
@@ -63,7 +61,7 @@ const StatusButton: React.FC<StatusButtonProps> = ({ status, currentStatus, hand
     );
 };
 
-const StatusDisplay: React.FC<StatusDisplayProps> = ({ status, Icon, text, fontSize = 40 }) => {
+export const StatusDisplay: React.FC<StatusDisplayProps> = ({ status, Icon, text, fontSize = 40 }) => {
     const color = getColor(status);
     return (
         <Grid item>
@@ -94,8 +92,6 @@ interface ProcessStatusProps {
 
 const ProcessStatus: React.FC<ProcessStatusProps> = ({ title, instance, editStatus, isPrinting }) => {
     const currentUser = useSelector((state: RootState) => state.user) as IUser;
-    const queryClient = useQueryClient();
-    const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
 
     const handleSetStatus = (newStatus: Status) => {
         const newStatusToSet = newStatus !== editStatus!.values.status ? newStatus : Status.Pending;
@@ -104,17 +100,6 @@ const ProcessStatus: React.FC<ProcessStatusProps> = ({ title, instance, editStat
     return (
         <Grid container flexDirection="column" alignItems="stretch" spacing={2}>
             <Grid item container flexDirection="row">
-                <Grid
-                    item
-                    container
-                    flexDirection="column"
-                    alignItems="flex-end"
-                    style={{ display: isPrinting ? 'inherit' : 'none', paddingRight: '475px' }}
-                >
-                    <Typography>{`${i18next.t('wizard.processInstance.summary.printedAt')} : ${new Date().toLocaleDateString('en-UK')}`}</Typography>
-                    <Typography>{`${i18next.t('wizard.processInstance.summary.printedBy')} : ${myPermissions.user.fullName}`}</Typography>
-                </Grid>
-
                 <Grid item container flexDirection="column" alignItems="center">
                     <Grid item>
                         <BlueTitle

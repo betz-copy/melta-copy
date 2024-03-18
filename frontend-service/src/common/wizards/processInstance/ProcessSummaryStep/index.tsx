@@ -12,15 +12,13 @@ export interface ProcessSummaryProp {
     isPrinting: boolean;
 }
 
-const ProcessSummary = React.forwardRef<HTMLDivElement, ProcessSummaryProp>(({ processInstance, processTemplate, isPrinting }, ref) => {
+const ProcessSummary = React.forwardRef<HTMLDivElement, ProcessSummaryProp>(({ processInstance, processTemplate, isPrinting }) => {
     return (
         <Box
-            ref={ref}
             sx={{
                 width: '100%',
-                paddingRight: '60px',
-                paddingLeft: '60px',
-                paddingTop: isPrinting ? '60px' : undefined,
+                paddingX: '30px',
+                paddingTop: isPrinting ? '30px' : undefined,
                 overflowY: isPrinting ? 'visible' : 'auto',
             }}
             style={{ direction: 'rtl' }}

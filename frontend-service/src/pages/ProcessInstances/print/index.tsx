@@ -3,6 +3,8 @@ import React from 'react';
 import { useReactToPrint } from 'react-to-print';
 import { IconButton } from '@mui/material';
 import { Print as PrintIcon } from '@mui/icons-material';
+import { AxiosError } from 'axios';
+import { UseMutateAsyncFunction } from 'react-query';
 import { IFile } from '../../../interfaces/entities';
 import { ComponentToPrint } from './ComponentToPrint';
 import { PrintOptionsDialog } from './PrintOptionsDialog';
@@ -12,11 +14,16 @@ import { isUnsupported, isVideoOrAudio } from '../../../common/FilePreview/Previ
 import { IMongoProcessInstancePopulated } from '../../../interfaces/processes/processInstance';
 import { MeltaTooltip } from '../../../common/MeltaTooltip';
 import { IMongoProcessTemplatePopulated } from '../../../interfaces/processes/processTemplate';
+import { ProcessDetailsValues } from '../../../common/wizards/processInstance/ProcessDetails';
 
 const Print: React.FC<{
     processTemplate: IMongoProcessTemplatePopulated;
-    expandedProcess: IMongoProcessInstancePopulated;
-}> = ({ processTemplate, expandedProcess }) => {
+    processInstance: IMongoProcessInstancePopulated;
+    mutateAsync: UseMutateAsyncFunction<IMongoProcessInstancePopulated, AxiosError<any, any>, ProcessDetailsValues, unknown>;
+    setCurrProcessInstance: React.Dispatch<React.SetStateAction<IMongoProcessInstancePopulated>>;
+    setIsProcessChanged: React.Dispatch<React.SetStateAction<boolean>>;
+    isLoading: boolean;
+}> = ({ processTemplate, processInstance, mutateAsync, setCurrProcessInstance, setIsProcessChanged, isLoading }) => {
     const [openModal, setOpenModal] = React.useState(false);
     const handleOpen = () => setOpenModal(true);
     const handleClose = () => setOpenModal(false);
@@ -24,74 +31,65 @@ const Print: React.FC<{
     const componentRef = React.useRef(null);
     const handlePrint = useReactToPrint({
         content: () => componentRef.current,
-        documentTitle: `${processTemplate.displayName}-${expandedProcess.name}-${new Date().toLocaleDateString('en-uk')}`,
+        documentTitle: `${processTemplate.displayName}-${processInstance.name}-${new Date().toLocaleDateString('en-uk')}`,
     });
 
-    // const handlePrint = useReactToPrint({
-    //     content: () => componentRef.current,
-    //     documentTitle: `${processInstance.name}-${new Date().toLocaleDateString('en-uk')}`,
-    //     onBeforeGetContent: () => {
-    //         return new Promise((resolve) => {
-    //             promiseResolveRef.current = resolve as () => void;
-    //             setIsPrinting(true);
-    //         });
-    //     },
-    //     onAfterPrint: () => {
-    //         promiseResolveRef.current = null;
-    //         setIsPrinting(false);
-    //     },
-    // });
+    console.log({ processTemplate });
+    console.log({ processInstance });
 
-    // const getProcessFiles = (): IFile[] => {
-    //     return processTemplate.steps
-    //         .map((propertyKey) => {
-    //             const propertySchema = processTemplate.details[propertyKey];
-    //             const propertyValue = expandedProcess.details[propertyKey];
-    //             if (propertyValue && propertySchema.format === 'fileId') {
-    //                 const name = getFileName(propertyValue);
-    //                 return {
-    //                     id: propertyValue,
-    //                     name,
-    //                     type: getPreviewContentType(name),
-    //                     key: propertyKey,
-    //                     extension: getFileExtension(name),
-    //                 } as IFile;
-    //             }
-    //             return undefined;
-    //         })
-    //         .filter((file) => file !== undefined) as IFile[];
-    // };
+    const getProcessPropertiesFiles = (): IFile[] => {
+        return processTemplate.details.propertiesOrder
+            .map((propertyKey) => {
+                const propertySchema = processTemplate.details.properties.properties[propertyKey];
+                const propertyValue = processInstance.details[propertyKey];
+                if (propertyValue && propertySchema.format === 'fileId') {
+                    const name = getFileName(propertyValue);
+                    return {
+                        id: propertyValue,
+                        name,
+                        type: getPreviewContentType(name),
+                        key: propertyKey,
+                        extension: getFileExtension(name),
+                    } as IFile;
+                }
+                return undefined;
+            })
+            .filter((file) => file !== undefined) as IFile[];
+    };
 
-    const getProcessFiles = (): IFile[] => {
+    const getProcessStepsFiles = (): IFile[] => {
         const files: IFile[] = [];
-        processTemplate.steps.forEach((stepKey) => {
-            const stepSchema = processTemplate.details[stepKey];
-            const stepInstance = expandedProcess.steps.find((step) => step.stepTemplateId === stepKey);
-            if (stepInstance && stepSchema) {
-                Object.entries(stepSchema.properties).forEach(([propertyKey, propertySchema]) => {
-                    if (propertySchema.format === 'fileId') {
-                        const propertyValue = stepInstance.details[propertyKey];
-                        if (propertyValue) {
+        processTemplate.steps.forEach((stepTemplate) => {
+            processInstance.steps.forEach((step) => {
+                stepTemplate.propertiesOrder.forEach((propertyKey) => {
+                    if (step.properties) {
+                        const propertySchema = stepTemplate.properties.properties[propertyKey];
+                        const propertyValue = step.properties[propertyKey];
+                        if (propertyValue && propertySchema.format === 'fileId') {
                             const name = getFileName(propertyValue);
                             files.push({
                                 id: propertyValue,
                                 name,
                                 type: getPreviewContentType(name),
-                                key: propertyKey,
                                 extension: getFileExtension(name),
-                            } as IFile);
+                            });
                         }
                     }
                 });
-            }
+            });
         });
-
         return files;
     };
 
-    const files = getProcessFiles().filter(
-        (file) => !isVideoOrAudio(file.type) && !isUnsupported(file.type) && file.extension !== 'pptx' && !file.name.includes('txt'),
-    );
+    const files = getProcessPropertiesFiles()
+        .filter((file) => !isVideoOrAudio(file.type) && !isUnsupported(file.type) && file.extension !== 'pptx' && !file.name.includes('txt'))
+        .concat(
+            getProcessStepsFiles().filter(
+                (file) => !isVideoOrAudio(file.type) && !isUnsupported(file.type) && file.extension !== 'pptx' && !file.name.includes('txt'),
+            ),
+        );
+
+    console.log({ files });
 
     const [showSummary, setShowSummary] = React.useState(true);
     const [showFiles, setShowFiles] = React.useState(false);
@@ -107,34 +105,31 @@ const Print: React.FC<{
     return (
         <>
             <MeltaTooltip title={i18next.t('actions.print')}>
-                <IconButton
-                    onClick={() => {
-                        handlePrint();
-                        handleOpen();
-                    }}
-                >
+                <IconButton onClick={() => handleOpen()}>
                     <PrintIcon color="primary" />
                 </IconButton>
             </MeltaTooltip>
             <div style={{ display: 'none' }}>
                 <style>{getPageMargins()}</style>
-
                 <ComponentToPrint
                     ref={componentRef}
                     processTemplate={processTemplate}
-                    expandedProcess={expandedProcess}
+                    processInstance={processInstance}
                     options={{ showSummary, showFiles }}
                     filesToPrint={files}
                     isFilesLoading={isFilesLoading}
                     setIsFilesLoading={setIsFilesLoading}
                     setIsFilesError={setIsFilesError}
+                    mutateAsync={mutateAsync}
+                    setCurrProcessInstance={setCurrProcessInstance}
+                    setIsProcessChanged={setIsProcessChanged}
                 />
             </div>
             <PrintOptionsDialog
                 open={openModal}
                 handleClose={handleClose}
                 files={files}
-                isFilesLoading={isFilesLoading}
+                isLoading={(isFilesLoading && isFilesLoading.size > 0) || isLoading}
                 isFilesError={isFilesError}
                 onClick={handlePrint}
                 options={{

@@ -47,6 +47,7 @@ type FileAttachmentsProps = {
     required?: string[];
     touched: FormikProps<ProcessDetailsValues>['touched'];
     setFieldTouched: FormikProps<ProcessFormikProps>['setFieldTouched'];
+    toPrint?: boolean;
 };
 
 const FileAttachmentsEdit: React.FC<FileAttachmentsProps> = ({
@@ -78,7 +79,7 @@ const FileAttachmentsEdit: React.FC<FileAttachmentsProps> = ({
     </>
 );
 
-const FileAttachmentsView: React.FC<FileAttachmentsProps> = ({ templateFileProperties, values }) => (
+const FileAttachmentsView: React.FC<FileAttachmentsProps> = ({ templateFileProperties, values, toPrint }) => (
     <>
         {Object.entries(templateFileProperties).map(([fieldName, { title }]) => (
             <Grid container spacing={1} alignItems="center" key={fieldName}>
@@ -89,7 +90,7 @@ const FileAttachmentsView: React.FC<FileAttachmentsProps> = ({ templateFilePrope
                 </Grid>
                 <Grid item>
                     {values.detailsAttachments[fieldName] ? (
-                        <OpenPreviewButton fileId={values.detailsAttachments[fieldName].name} />
+                        <OpenPreviewButton fileId={values.detailsAttachments[fieldName].name} download={toPrint} />
                     ) : (
                         <Typography display="inline" variant="h6">
                             -
@@ -101,7 +102,7 @@ const FileAttachmentsView: React.FC<FileAttachmentsProps> = ({ templateFilePrope
     </>
 );
 
-const FileAttachments = ({ viewMode, templateFileProperties, values, errors, touched, setFieldValue, required, setFieldTouched }) => {
+const FileAttachments = ({ viewMode, templateFileProperties, values, errors, touched, setFieldValue, required, setFieldTouched, toPrint }) => {
     return (
         <Box>
             <BlueTitle title={i18next.t('wizard.entityTemplate.attachments')} component="h6" variant="h6" style={{ marginBottom: '22px' }} />
@@ -121,13 +122,14 @@ const FileAttachments = ({ viewMode, templateFileProperties, values, errors, tou
                     values={values}
                     touched={touched}
                     setFieldTouched={setFieldTouched}
+                    toPrint={toPrint}
                 />
             )}
         </Box>
     );
 };
 
-const GeneralDetails: React.FC<IDetailsStepProp> = ({ detailsFormikData, onNext, processInstance, isEditMode }) => {
+const GeneralDetails: React.FC<IDetailsStepProp> = ({ detailsFormikData, onNext, processInstance, isEditMode, toPrint }) => {
     const { values, touched, errors, setFieldValue, setFieldTouched, handleBlur, resetForm } = detailsFormikData;
     const queryClient = useQueryClient();
     const processTemplatesMap = queryClient.getQueryData<IProcessTemplateMap>('getProcessTemplates')!;
@@ -167,7 +169,7 @@ const GeneralDetails: React.FC<IDetailsStepProp> = ({ detailsFormikData, onNext,
 
     return (
         <Card sx={{ border: 'none', boxShadow: 'none', background: 'transparent' }}>
-            <CardContent sx={{ height: '56vh', overflowY: 'auto' }}>
+            <CardContent sx={{ height: toPrint ? undefined : '56vh', overflowY: 'auto' }}>
                 <Grid container direction="column" paddingLeft={4} justifyContent="space-around">
                     <Grid item>
                         <FormikProvider value={detailsFormikData}>
@@ -194,6 +196,7 @@ const GeneralDetails: React.FC<IDetailsStepProp> = ({ detailsFormikData, onNext,
                                                 renderInput={(params) => (
                                                     <TextField
                                                         {...params}
+                                                        multiline
                                                         size="small"
                                                         sx={{
                                                             '& .MuiInputBase-root': {
@@ -364,6 +367,7 @@ const GeneralDetails: React.FC<IDetailsStepProp> = ({ detailsFormikData, onNext,
                                                     touched,
                                                     handleBlur,
                                                     setFieldTouched,
+                                                    toPrint,
                                                 }}
                                             />
                                         )}
@@ -411,22 +415,24 @@ const GeneralDetails: React.FC<IDetailsStepProp> = ({ detailsFormikData, onNext,
                     </Grid>
                 </Grid>
             </CardContent>
-            <CardActions dir="ltr">
-                <Grid item>
-                    {values.template && (
-                        <Fab
-                            onClick={() => {
-                                onNext();
-                            }}
-                            variant="extended"
-                            color="primary"
-                        >
-                            <NavigateBeforeIcon />
-                            {i18next.t(viewMode ? 'wizard.processInstance.showStepsReviewers' : 'wizard.processInstance.moveToStepsReviewers')}
-                        </Fab>
-                    )}
-                </Grid>
-            </CardActions>
+            {!toPrint && (
+                <CardActions dir="ltr">
+                    <Grid item>
+                        {values.template && (
+                            <Fab
+                                onClick={() => {
+                                    onNext();
+                                }}
+                                variant="extended"
+                                color="primary"
+                            >
+                                <NavigateBeforeIcon />
+                                {i18next.t(viewMode ? 'wizard.processInstance.showStepsReviewers' : 'wizard.processInstance.moveToStepsReviewers')}
+                            </Fab>
+                        )}
+                    </Grid>
+                </CardActions>
+            )}
         </Card>
     );
 };

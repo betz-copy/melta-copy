@@ -29,6 +29,7 @@ export interface IDetailsStepProp extends IStepProps {
     detailsFormikData: FormikProps<ProcessDetailsValues>;
     isEditMode: boolean | undefined;
     processInstance: IMongoProcessInstancePopulated | undefined;
+    toPrint?: boolean;
 }
 
 interface RenderFormStepProps extends IDetailsStepProp {

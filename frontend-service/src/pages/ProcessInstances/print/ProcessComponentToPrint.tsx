@@ -1,31 +1,87 @@
-import React from 'react';
-import { Box, useTheme } from '@mui/material';
-import { useSelector } from 'react-redux';
-import { IFile } from '../../../interfaces/entities';
-import { RootState } from '../../../store';
-import { IMongoProcessInstance, IMongoProcessInstancePopulated, IProcessInstance } from '../../../interfaces/processes/processInstance';
+import React, { useState } from 'react';
+import { Box, Typography, useTheme } from '@mui/material';
+import i18next from 'i18next';
+import { AxiosError } from 'axios';
+import { UseMutateAsyncFunction, useQueryClient } from 'react-query';
+import { IMongoProcessInstancePopulated } from '../../../interfaces/processes/processInstance';
 import GeneralDetails from '../../../common/wizards/processInstance/ProcessDetails/GeneralDetails';
 import { EntityDates } from '../../Entity/components/EntityDates';
+import { ProcessStep } from '../../../common/wizards/processInstance/ProcessSteps/processStep';
+import { IMongoStepInstancePopulated } from '../../../interfaces/processes/stepInstance';
+import { IMongoStepTemplatePopulated } from '../../../interfaces/processes/stepTemplate';
+import { BlueTitle } from '../../../common/BlueTitle';
+import { IProcessTemplateMap } from '../../../interfaces/processes/processTemplate';
+import { getInitialDetailsValues, useProcessDetailsFormik } from '../../../common/wizards/processInstance/ProcessDetails/detailsFormik';
+import { ProcessDetailsValues } from '../../../common/wizards/processInstance/ProcessDetails';
+import { getStepInstanceByStepTemplateId } from '../../../utils/processWizard/steps';
 
 const ProcessComponentToPrint: React.FC<{
-    processTemplate: IMongoProcessInstancePopulated;
-    process: IMongoProcessInstance;
-    options?: { showFiles?: boolean };
-    files?: IFile[];
-}> = ({ processTemplate, process, options = { showFiles: true }, files }) => {
+    processInstance: IMongoProcessInstancePopulated;
+    mutateAsync: UseMutateAsyncFunction<IMongoProcessInstancePopulated, AxiosError<any, any>, ProcessDetailsValues, unknown>;
+}> = ({ processInstance, mutateAsync }) => {
     const theme = useTheme();
 
-    const darkMode = useSelector((state: RootState) => state.darkMode);
+    const queryClient = useQueryClient();
+    const processTemplatesMap = queryClient.getQueryData<IProcessTemplateMap>('getProcessTemplates')!;
+
+    const detailsFormikData = useProcessDetailsFormik(processInstance, processTemplatesMap, mutateAsync);
 
     return (
         <Box border={`2px solid ${theme.palette.primary.main}`} borderRadius="20px" padding="1rem" style={{ pageBreakInside: 'avoid' }}>
             <Box padding="0.2rem">
-                <GeneralDetails detailsFormikData={process} processInstance={processTemplate} />
+                <GeneralDetails detailsFormikData={detailsFormikData} processInstance={processInstance} toPrint />
             </Box>
-
-            <EntityDates createdAt={process.createdAt} updatedAt={process.updatedAt} />
+            <EntityDates createdAt={processInstance.createdAt.toString()} updatedAt={processInstance.updatedAt.toString()} />
         </Box>
     );
 };
 
-export { ProcessComponentToPrint };
+const StepComponentToPrint: React.FC<{
+    stepInstance: IMongoStepInstancePopulated;
+    stepTemplate: IMongoStepTemplatePopulated;
+    processInstance: IMongoProcessInstancePopulated;
+    onStepUpdateSuccess: (stepInstance: IMongoStepInstancePopulated) => void;
+}> = ({ stepInstance, stepTemplate, processInstance, onStepUpdateSuccess }) => {
+    const theme = useTheme();
+    const [isStepEditMode, setIsStepEditMode] = useState(false);
+
+    const queryClient = useQueryClient();
+    const processTemplatesMap = queryClient.getQueryData<IProcessTemplateMap>('getProcessTemplates')!;
+
+    const values = getInitialDetailsValues(processInstance, processTemplatesMap);
+    const reviewers = values.steps[getStepInstanceByStepTemplateId(stepTemplate._id, processInstance)!._id];
+
+    return (
+        <Box border={`2px solid ${theme.palette.primary.main}`} borderRadius="20px" padding="1rem" style={{ pageBreakInside: 'avoid' }}>
+            <Box padding="0.2rem">
+                <ProcessStep
+                    stepInstance={stepInstance}
+                    stepTemplate={stepTemplate}
+                    processInstance={processInstance}
+                    isStepEditMode={isStepEditMode}
+                    setIsStepEditMode={setIsStepEditMode}
+                    onStepUpdateSuccess={onStepUpdateSuccess}
+                    toPrint
+                />
+            </Box>
+            <Box sx={{ paddingRight: '50px' }}>
+                <BlueTitle title={i18next.t('wizard.processInstance.stepReviewers')} component="h6" variant="h6" />
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', minHeight: '25px', width: '100%' }}>
+                    {stepTemplate.reviewers.map((reviewer) => (
+                        <Typography variant="body1" key={reviewer.id} sx={{ paddingY: '5px', paddingX: '10px' }}>
+                            {`- ${reviewer.firstName}`}
+                        </Typography>
+                    ))}
+                    {reviewers.map((reviewer) => (
+                        <Typography variant="body1" key={reviewer.id} sx={{ paddingY: '5px', paddingX: '10px' }}>
+                            {`- ${reviewer.firstName}`}
+                        </Typography>
+                    ))}
+                </Box>
+            </Box>
+            <EntityDates createdAt={stepInstance.createdAt.toString()} updatedAt={stepInstance.updatedAt.toString()} />
+        </Box>
+    );
+};
+
+export { ProcessComponentToPrint, StepComponentToPrint };

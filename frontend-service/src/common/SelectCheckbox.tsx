@@ -79,6 +79,7 @@ export type SelectCheckboxProps<Option extends any, Group extends any = any> = P
     setOptions?: Dispatch<SetStateAction<Option[]>>;
     size?: 'small' | 'medium';
     toTopBar?: boolean;
+    process?: boolean;
 }>;
 
 const groupByWithInitial = <T extends any>(collection: T[], keys: PropertyKey[], func: (value: T) => PropertyKey) => {
@@ -434,6 +435,7 @@ const SelectCheckbox = <Option extends any, Group extends any>({
     setOptions,
     size = 'medium',
     toTopBar,
+    process,
 }: SelectCheckboxProps<Option, Group>) => {
     const [miniFilterValue, setMiniFilterValue] = useState('');
     const [isOpen, setIsOpen] = useState(false);
@@ -448,7 +450,9 @@ const SelectCheckbox = <Option extends any, Group extends any>({
     });
 
     let horizontalOrigin = 172;
-    if (title === i18next.t('systemManagement.destinationTemplates') || title === i18next.t('categories')) {
+    if (process) {
+        horizontalOrigin = 178;
+    } else if (title === i18next.t('systemManagement.destinationTemplates') || title === i18next.t('categories')) {
         horizontalOrigin = 181;
     } else if (title === i18next.t('systemManagement.sourceTemplates')) {
         horizontalOrigin = 177;

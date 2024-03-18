@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useState } from 'react';
 import { Button, Dialog, DialogTitle, DialogContent, DialogActions, Grid, CircularProgress, IconButton } from '@mui/material';
 import { Done as DoneIcon, Clear as ClearIcon } from '@mui/icons-material';
 import i18next from 'i18next';
@@ -12,7 +12,6 @@ import _ from 'lodash';
 import DeleteIcon from '@mui/icons-material/Delete';
 import UnarchiveIcon from '@mui/icons-material/Unarchive';
 import ArchiveIcon from '@mui/icons-material/Archive';
-import { useReactToPrint } from 'react-to-print';
 import { ProcessSideStepper } from './ProcessSideStepper';
 import { BlueTitle } from '../../BlueTitle';
 import ProcessDetails, { ProcessDetailsValues } from './ProcessDetails';
@@ -59,31 +58,6 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({ open, onClose
     const queryClient = useQueryClient();
     const processTemplatesMap = queryClient.getQueryData<IProcessTemplateMap>('getProcessTemplates')!;
     const [currProcessInstance, setCurrProcessInstance] = useState<IMongoProcessInstancePopulated>(processInstance);
-    const [isPrinting, setIsPrinting] = useState(false);
-
-    const componentRef = useRef(null);
-    const promiseResolveRef = React.useRef<(() => void) | null>(null);
-
-    useEffect(() => {
-        if (isPrinting && promiseResolveRef.current) {
-            promiseResolveRef.current();
-        }
-    }, [isPrinting]);
-
-    const handlePrint = useReactToPrint({
-        content: () => componentRef.current,
-        documentTitle: `${processInstance.name}-${new Date().toLocaleDateString('en-uk')}`,
-        onBeforeGetContent: () => {
-            return new Promise((resolve) => {
-                promiseResolveRef.current = resolve as () => void;
-                setIsPrinting(true);
-            });
-        },
-        onAfterPrint: () => {
-            promiseResolveRef.current = null;
-            setIsPrinting(false);
-        },
-    });
 
     const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
     const hasPermissionsToEditDetails = Boolean(myPermissions.processesManagementId);
@@ -145,8 +119,7 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({ open, onClose
             label: i18next.t('wizard.processInstance.processSummary'),
             component: (
                 <ProcessSummary
-                    ref={componentRef}
-                    isPrinting={isPrinting}
+                    isPrinting={false}
                     processInstance={currProcessInstance}
                     processTemplate={processTemplatesMap.get(currProcessInstance.templateId)!}
                 />
@@ -219,7 +192,6 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({ open, onClose
                     overflowY: 'visible',
                 },
             }}
-            style={{ display: isPrinting ? 'none' : 'block' }}
         >
             <DialogTitle height="8vh" margin={0} display="flex" justifyContent="space-between" alignItems="center">
                 <BlueTitle title={detailsFormikData.values.name} variant="h4" component="p" />
@@ -256,16 +228,14 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({ open, onClose
                         )}
                         <Grid>
                             {activeStep === 2 && (
-                                // <MeltaTooltip title={i18next.t('actions.print')}>
-                                //     <IconButton
-                                //         onClick={() => {
-                                //             handlePrint();
-                                //         }}
-                                //     >
-                                //         <PrintIcon color="primary" />
-                                //     </IconButton>
-                                // </MeltaTooltip>
-                                <Print expandedProcess={processInstance} processTemplate={processTemplatesMap.get(currProcessInstance.templateId)!} />
+                                <Print
+                                    processInstance={processInstance}
+                                    processTemplate={processTemplatesMap.get(currProcessInstance.templateId)!}
+                                    mutateAsync={mutateAsync}
+                                    setCurrProcessInstance={setCurrProcessInstance}
+                                    setIsProcessChanged={setIsProcessChanged}
+                                    isLoading={isLoading}
+                                />
                             )}
                         </Grid>
                         <Grid>

@@ -19,6 +19,7 @@ const ProcessTemplatesSelectCheckbox: React.FC<{
             size="small"
             toTopBar
             isDraggableDisabled
+            process
         />
     );
 };

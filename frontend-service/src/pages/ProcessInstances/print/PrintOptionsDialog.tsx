@@ -10,7 +10,7 @@ const PrintOptionsDialog: React.FC<{
     open: boolean;
     handleClose: () => void;
     files: IFile[];
-    isFilesLoading: Set<number> | undefined;
+    isLoading: boolean;
     isFilesError: boolean;
     options: {
         showSummary: boolean;
@@ -38,14 +38,14 @@ const PrintOptionsDialog: React.FC<{
                         <Grid>
                             <FormControlLabel
                                 control={<MeltaCheckbox checked={options.showSummary} onChange={() => options.setShowSummary((cur) => !cur)} />}
-                                label={i18next.t('processInstance.print.showSummary')}
+                                label={i18next.t('wizard.processInstance.print.showSummary')}
                             />
                         </Grid>
                         {files && (
                             <Grid>
                                 <FormControlLabel
                                     control={<MeltaCheckbox checked={options.showFiles} onChange={() => options.setShowFiles((cur) => !cur)} />}
-                                    label={i18next.t('processInstance.print.showFiles')}
+                                    label={i18next.t('wizard.processInstance.print.showFiles')}
                                 />
                             </Grid>
                         )}
@@ -63,10 +63,10 @@ const PrintOptionsDialog: React.FC<{
                         }
                     }}
                     endIcon={<PrintOutlined />}
-                    disabled={isFilesLoading && isFilesLoading.size > 0}
+                    disabled={isFilesLoading}
                 >
                     {i18next.t('entityPage.print.continue')}
-                    {isFilesLoading && isFilesLoading.size > 0 && <CircularProgress size={20} />}
+                    {isFilesLoading && <CircularProgress size={20} />}
                 </Button>
             </DialogActions>
         </Dialog>

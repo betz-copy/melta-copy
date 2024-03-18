@@ -30,6 +30,7 @@ interface ProcessStepProps {
     isStepEditMode: boolean;
     setIsStepEditMode: React.Dispatch<React.SetStateAction<boolean>>;
     onStepUpdateSuccess: (stepInstance: IMongoStepInstancePopulated) => void;
+    toPrint?: boolean;
 }
 export const ProcessStep: FC<ProcessStepProps> = ({
     stepInstance,
@@ -38,6 +39,7 @@ export const ProcessStep: FC<ProcessStepProps> = ({
     isStepEditMode,
     setIsStepEditMode,
     onStepUpdateSuccess,
+    toPrint,
 }) => {
     const queryClient = useQueryClient();
     const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
@@ -95,8 +97,8 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                 return (
                     <Form>
                         <Grid container direction="column">
-                            {hasPermissionsToEditStep && (
-                                <Grid container spacing={1}>
+                            {hasPermissionsToEditStep && !toPrint && (
+                                <Grid container spacing={1} marginBottom={1}>
                                     {isStepEditMode ? (
                                         <>
                                             <Grid item>
@@ -143,7 +145,7 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                 </Grid>
                             )}
 
-                            <Grid container spacing={2} marginTop={1} justifyContent="space-between">
+                            <Grid container spacing={2} justifyContent="space-between">
                                 <Grid
                                     item
                                     xs={7}
@@ -211,7 +213,10 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                                                 </Grid>
                                                                 <Grid item>
                                                                     {values.attachmentsProperties[fieldName] ? (
-                                                                        <OpenPreviewButton fileId={values.attachmentsProperties[fieldName].name} />
+                                                                        <OpenPreviewButton
+                                                                            fileId={values.attachmentsProperties[fieldName].name}
+                                                                            download={toPrint}
+                                                                        />
                                                                     ) : (
                                                                         <Typography display="inline" variant="h6">
                                                                             -
@@ -284,6 +289,9 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                                     setFieldValue('comments', e.target.value);
                                                 }}
                                                 style={{ width: '100%' }}
+                                                InputProps={{
+                                                    style: { whiteSpace: 'pre-line', overflowWrap: 'break-word' },
+                                                }}
                                             />
                                         ) : (
                                             values.comments && (
