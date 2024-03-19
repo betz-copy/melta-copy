@@ -16,10 +16,6 @@ import { MeltaTooltip } from '../../../common/MeltaTooltip';
 import { IMongoProcessTemplatePopulated } from '../../../interfaces/processes/processTemplate';
 import { ProcessDetailsValues } from '../../../common/wizards/processInstance/ProcessDetails';
 
-window.addEventListener('beforeprint', (event) => {
-    console.log('Before print', event.target);
-});
-
 const Print: React.FC<{
     processTemplate: IMongoProcessTemplatePopulated;
     processInstance: IMongoProcessInstancePopulated;
@@ -37,9 +33,6 @@ const Print: React.FC<{
         content: () => componentRef.current,
         documentTitle: `${processTemplate.displayName}-${processInstance.name}-${new Date().toLocaleDateString('en-uk')}`,
     });
-
-    console.log({ processTemplate });
-    console.log({ processInstance });
 
     const getProcessPropertiesFiles = (): IFile[] => {
         return processTemplate.details.propertiesOrder
@@ -92,8 +85,6 @@ const Print: React.FC<{
                 (file) => !isVideoOrAudio(file.type) && !isUnsupported(file.type) && file.extension !== 'pptx' && !file.name.includes('txt'),
             ),
         );
-
-    console.log({ files });
 
     const [showSummary, setShowSummary] = React.useState(true);
     const [showFiles, setShowFiles] = React.useState(false);

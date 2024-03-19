@@ -45,10 +45,10 @@
     src: local('OpenSans'), url(../assets/OpenSans/OpenSans-VariableFont_wdthwght.ttf) format('woff');
 }
 
-/* @media print {
+@media print {
     .MuiInputBase-root textarea {
         height: auto !important;
         width: auto !important;
         overflow: visible !important;
     }
-} */
+}

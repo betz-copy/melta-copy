@@ -44,7 +44,6 @@ const RjsfTextWidget = ({
             {...textFieldProps}
             color="primary"
             variant={variant}
-            // multiline
             fullWidth
             id={id}
             placeholder={placeholder}

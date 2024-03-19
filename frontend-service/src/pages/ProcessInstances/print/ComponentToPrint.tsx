@@ -1,8 +1,7 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Box, Grid, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
-import { UseMutateAsyncFunction, useMutation, useQueryClient } from 'react-query';
-import { toast } from 'react-toastify';
+import { UseMutateAsyncFunction, useQueryClient } from 'react-query';
 import { AxiosError } from 'axios';
 import { AccessTimeFilled as AccessTimeFilledIcon, Cancel as CancelIcon, CheckCircle as CheckCircleIcon } from '@mui/icons-material';
 import { BlueTitle } from '../../../common/BlueTitle';
@@ -16,8 +15,7 @@ import ProcessSummary from '../../../common/wizards/processInstance/ProcessSumma
 import { ProcessComponentToPrint, StepComponentToPrint } from './ProcessComponentToPrint';
 import { IPermissionsOfUser } from '../../../services/permissionsService';
 import { getStepTemplateByStepInstance } from '../../../utils/processWizard/steps';
-import { getProcessByIdRequest, updateProcessRequest } from '../../../services/processesService';
-import { ErrorToast } from '../../../common/ErrorToast';
+import { getProcessByIdRequest } from '../../../services/processesService';
 import { ProcessDetailsValues } from '../../../common/wizards/processInstance/ProcessDetails';
 
 const FileData: React.FC<{

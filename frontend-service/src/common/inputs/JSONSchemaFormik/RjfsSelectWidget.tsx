@@ -89,7 +89,6 @@ const RjfsSelectWidget = ({
                 <TextField
                     {...textFieldProps}
                     {...params}
-                    // sx={{ '@media print': { overflowInline: 'visible', textOverflow: 'ellipsis',  } }}
                     sx={{
                         '@media print textarea': {
                             height: 'auto !important',
@@ -97,7 +96,6 @@ const RjfsSelectWidget = ({
                             overflow: 'visible !important',
                         },
                     }}
-                    // multiline
                     required={required}
                     autoFocus={autofocus}
                     onBlur={_onBlur}
@@ -112,12 +110,6 @@ const RjfsSelectWidget = ({
                         style: {
                             ...params.inputProps,
                             textOverflow: 'ellipsis',
-                            // height: '50px',
-                            // ['@media print']: {
-                            //     height: 'auto !important',
-                            //     maxHeight: 'auto !important',
-                            //     overflow: 'visible !important',
-                            // },
                         },
                     }}
                     error={rawErrors.length > 0}
