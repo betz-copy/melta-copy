@@ -175,10 +175,10 @@ const ProcessStatus: React.FC<ProcessStatusProps> = ({ title, instance, editStat
             {instance.reviewedAt && (
                 <Grid item container justifyContent="center">
                     <Grid item>
-                        <span>{i18next.t('wizard.processInstance.summary.statusChangedBy')}</span>
-                        <span style={{ margin: '0px' }}>{` ${i18next.t('wizard.processInstance.summary.onDate')}: ${getLongDate(
-                            instance.reviewedAt,
-                        )} `}</span>
+                        <Typography fontSize="14px" style={{ textAlign: 'center' }}>
+                            {`${i18next.t('wizard.processInstance.summary.statusChangedBy')} ${i18next.t('wizard.processInstance.summary.onDate')}:`}
+                        </Typography>
+                        <Typography fontSize="16px">{getLongDate(instance.reviewedAt)} </Typography>
                     </Grid>
                     {(instance as IMongoStepInstancePopulated).reviewer && (
                         <Grid item container justifyContent="center" alignItems="center" style={{ margin: '0px' }}>

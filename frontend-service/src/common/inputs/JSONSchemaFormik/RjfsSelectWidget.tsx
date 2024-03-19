@@ -2,6 +2,7 @@
 import React from 'react';
 import { WidgetProps, asNumber, guessType } from '@rjsf/utils';
 import { Autocomplete, TextField, TextFieldProps } from '@mui/material';
+import './form.css';
 
 const nums = new Set(['number', 'integer']);
 
@@ -88,6 +89,15 @@ const RjfsSelectWidget = ({
                 <TextField
                     {...textFieldProps}
                     {...params}
+                    // sx={{ '@media print': { overflowInline: 'visible', textOverflow: 'ellipsis',  } }}
+                    sx={{
+                        '@media print textarea': {
+                            height: 'auto !important',
+                            maxHeight: 'auto !important',
+                            overflow: 'visible !important',
+                        },
+                    }}
+                    // multiline
                     required={required}
                     autoFocus={autofocus}
                     onBlur={_onBlur}
@@ -96,7 +106,20 @@ const RjfsSelectWidget = ({
                     InputLabelProps={{
                         shrink: readonly || undefined,
                     }}
-                    inputProps={{ ...params.inputProps, required: multiple ? required && value.length === 0 : required }}
+                    inputProps={{
+                        ...params.inputProps,
+                        required: multiple ? required && value.length === 0 : required,
+                        style: {
+                            ...params.inputProps,
+                            textOverflow: 'ellipsis',
+                            // height: '50px',
+                            // ['@media print']: {
+                            //     height: 'auto !important',
+                            //     maxHeight: 'auto !important',
+                            //     overflow: 'visible !important',
+                            // },
+                        },
+                    }}
                     error={rawErrors.length > 0}
                     color={color as TextFieldProps['color']}
                     label={label || schema.title}

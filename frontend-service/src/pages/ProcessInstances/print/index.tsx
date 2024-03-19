@@ -16,6 +16,10 @@ import { MeltaTooltip } from '../../../common/MeltaTooltip';
 import { IMongoProcessTemplatePopulated } from '../../../interfaces/processes/processTemplate';
 import { ProcessDetailsValues } from '../../../common/wizards/processInstance/ProcessDetails';
 
+window.addEventListener('beforeprint', (event) => {
+    console.log('Before print', event.target);
+});
+
 const Print: React.FC<{
     processTemplate: IMongoProcessTemplatePopulated;
     processInstance: IMongoProcessInstancePopulated;

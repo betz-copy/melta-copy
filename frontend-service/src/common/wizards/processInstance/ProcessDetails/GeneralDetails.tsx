@@ -196,7 +196,6 @@ const GeneralDetails: React.FC<IDetailsStepProp> = ({ detailsFormikData, onNext,
                                                 renderInput={(params) => (
                                                     <TextField
                                                         {...params}
-                                                        multiline
                                                         size="small"
                                                         sx={{
                                                             '& .MuiInputBase-root': {
