@@ -59,7 +59,7 @@ export const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
                                     <DragHandleIcon fontSize="large" />
                                 </Box>
 
-                                <Grid container direction="column">
+                                <Grid container direction="column" >
                                     <Grid container wrap="nowrap">
                                         <TextField
                                             label={i18next.t('wizard.entityTemplate.attachmentName')}
@@ -70,7 +70,7 @@ export const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
                                             error={touchedName && Boolean(errorName)}
                                             helperText={touchedName && errorName}
                                             disabled={isDisabled}
-                                            sx={{ width: '50%', marginRight: '5px' }}
+                                            sx={{ width: '70%', marginRight: '5px' }}
                                         />
                                         <TextField
                                             label={i18next.t('wizard.entityTemplate.attachmentDisplayName')}
@@ -80,7 +80,7 @@ export const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
                                             onChange={onChange}
                                             error={touchedTitle && Boolean(errorTitle)}
                                             helperText={touchedTitle && errorTitle}
-                                            sx={{ width: '50%', marginRight: '5px' }}
+                                            sx={{ width: '70%', marginRight: '5px' }}
                                         />
                                         <TextField
                                             select

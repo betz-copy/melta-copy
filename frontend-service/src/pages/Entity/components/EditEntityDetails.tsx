@@ -103,8 +103,8 @@ const EditEntityDetails: React.FC<{
                             <Card>
                                 <CardContent>
                                     <Grid container justifyContent="center">
-                                        <Grid container flexDirection="row" width="100%">
-                                            <Grid xs={8}>
+                                        <Grid container>
+                                            <Grid item xs={12} sm={8}>
                                                 <BlueTitle
                                                     title={`${i18next.t('actions.editment')} ${entityTemplate.displayName}`}
                                                     component="h6"
@@ -122,12 +122,12 @@ const EditEntityDetails: React.FC<{
                                                 />
                                             </Grid>
                                             {templateFileKeys.length > 0 && (
-                                                <Grid container xs={4}>
-                                                    <Grid item container flexDirection="row">
-                                                        <Grid item>
+                                                <Grid item xs={12} sm={4}>
+                                                    <Grid container >
+                                                        <Grid item xs={1}>
                                                             <Divider orientation="vertical" style={{ height: '100%', width: '5px' }} />
                                                         </Grid>
-                                                        <Grid item flex={1} paddingLeft="20px" marginTop="20px" marginBottom="20px">
+                                                        <Grid item xs={10}>
                                                             <BlueTitle
                                                                 title={i18next.t('wizard.entityTemplate.attachments')}
                                                                 component="h6"
@@ -135,32 +135,32 @@ const EditEntityDetails: React.FC<{
                                                                 style={{ marginBottom: '12px', fontSize: '16px', fontWeight: '600' }}
                                                             />
                                                             <>
-                                                            {Object.entries(templateFilesProperties).map(([key, value], index) => (
-                                                            <Grid item key={key} marginTop={index > 0 ? 5 : 0}>
-                                                                {value.items === undefined ? (
-                                                                    <InstanceSingleFileInput
-                                                                        fileFieldName={`attachmentsProperties.${key}`}
-                                                                        fieldTemplateTitle={value.title}
-                                                                        setFieldValue={setFieldValue}
-                                                                        required={requiredFilesNames.includes(key)}
-                                                                        value={values.attachmentsProperties[key]}
-                                                                        error={errors.attachmentsProperties?.[key] as string}
-                                                                        setFieldTouched={setFieldTouched}
-                                                                    />
-                                                                ) : (
-                                                                    <InstanceFileInput
-                                                                        fileFieldName={`attachmentsProperties.${key}`}
-                                                                        fieldTemplateTitle={value.title}
-                                                                        setFieldValue={setFieldValue}
-                                                                        required={requiredFilesNames.includes(key)}
-                                                                        value={values.attachmentsProperties[key]}
-                                                                        error={errors.attachmentsProperties?.[key] as string}
-                                                                        setFieldTouched={setFieldTouched}
-                                                                        multiple
-                                                                    />
-                                                                )}
-                                                            </Grid>
-                                                        ))}
+                                                                {Object.entries(templateFilesProperties).map(([key, value], index) => (
+                                                                    <Grid item key={key} marginTop={index > 0 ? 5 : 0}>
+                                                                        {value.items === undefined ? (
+                                                                            <InstanceSingleFileInput
+                                                                                fileFieldName={`attachmentsProperties.${key}`}
+                                                                                fieldTemplateTitle={value.title}
+                                                                                setFieldValue={setFieldValue}
+                                                                                required={requiredFilesNames.includes(key)}
+                                                                                value={values.attachmentsProperties[key]}
+                                                                                error={errors.attachmentsProperties?.[key] as string}
+                                                                                setFieldTouched={setFieldTouched}
+                                                                            />
+                                                                        ) : (
+                                                                            <InstanceFileInput
+                                                                                fileFieldName={`attachmentsProperties.${key}`}
+                                                                                fieldTemplateTitle={value.title}
+                                                                                setFieldValue={setFieldValue}
+                                                                                required={requiredFilesNames.includes(key)}
+                                                                                value={values.attachmentsProperties[key]}
+                                                                                error={errors.attachmentsProperties?.[key] as string}
+                                                                                setFieldTouched={setFieldTouched}
+                                                                                multiple
+                                                                            />
+                                                                        )}
+                                                                    </Grid>
+                                                                ))}
                                                             </>
                                                         </Grid>
                                                     </Grid>

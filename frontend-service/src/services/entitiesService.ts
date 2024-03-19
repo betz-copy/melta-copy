@@ -127,19 +127,30 @@ export const duplicateEntityRequest = async (entityId: string, newEntityData: En
     const unchangedFiles: any = [];
 
     Object.entries(newEntityData.attachmentsProperties).forEach(([key, value]: [string, any]) => {
-        value.forEach((file, index) => {
-            if (file instanceof File && newEntityData.template.properties.properties[key].items) {
-                filesToUpload.push([`${key}.${index}`, file]);
-            } else if (file instanceof File) {
-                filesToUpload.push([`${key}`, file]);
+        if (Array.isArray(value) && value) {
+            value.forEach((file, index) => {
+                if (file instanceof File && newEntityData.template.properties.properties[key].items) {
+                    filesToUpload.push([`${key}.${index}`, file]);
+                } else if (file instanceof File) {
+                    filesToUpload.push([`${key}`, file]);
+                } else {
+                    unchangedFiles.push([`${key}`, file]);
+                }
+            });
+        } else if (value) {
+            if (value instanceof File) {
+                filesToUpload.push([`${key}`, value]);
             } else {
-                unchangedFiles.push([`${key}`, file]);
+                unchangedFiles.push([`${key}`, value]);
             }
-        });
+        }
     });
 
     filesToUpload.forEach(([key, value]) => {
         formData.append(key, value as Blob);
+    });
+    unchangedFiles.forEach(([key, _value]) => {
+        newEntityData.properties[key] = [];
     });
     unchangedFiles.forEach(([key, value]) => {
         if (!newEntityData.template.properties.properties[key].items) {

@@ -275,7 +275,6 @@ export class InstancesManager {
             },
             ignoredRules,
         ).catch(InstancesManager.handleBrokenRulesError);
-
         await InstancesManager.deleteUnusedFiles(currentEntity, updatedInstanceData, files).catch(() =>
             console.log(`failed to delete files of instanceId ${id}`),
         );
@@ -331,7 +330,6 @@ export class InstancesManager {
             timestamp: new Date(),
             userId,
         });
-
         return updatedInstance;
     }
 

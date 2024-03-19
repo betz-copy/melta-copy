@@ -133,7 +133,6 @@ const CreateOrEditEntityDetails: React.FC<{
                 const { templateFilesProperties, templateFileKeys, requiredFilesNames } = getEntityTemplateFilesFieldsInfo(
                     values.template || entityTemplate,
                 );
-
                 const isPropertiesFirst = values.template?.propertiesTypeOrder[0] === 'properties';
                 const schema = filterAttachmentsAndEntitiesRefFromPropertiesSchema(values.template.properties);
 
@@ -141,7 +140,6 @@ const CreateOrEditEntityDetails: React.FC<{
                     schema.required.forEach((field) => {
                         const fieldProperties = schema.properties[field].enum;
                         const itemFieldProperties = schema.properties[field]?.items?.enum;
-
                         if (fieldProperties?.length === 1 && fieldProperties[0] !== undefined) {
                             setFieldValue(`properties.${field}`, fieldProperties[0]);
                         }

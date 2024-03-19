@@ -15,7 +15,7 @@ export const filterAttachmentsAndEntitiesRefFromPropertiesSchema = (
             (requiredKey) =>
                 schema.properties[requiredKey].format !== 'fileId' &&
                 schema.properties[requiredKey].format !== 'entityReference' &&
-                schema.properties[requiredKey].format !== 'fileId',
+                schema.properties[requiredKey].items?.format !== 'fileId',
         ),
     };
 };
