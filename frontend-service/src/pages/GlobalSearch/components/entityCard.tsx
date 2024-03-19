@@ -1,7 +1,7 @@
 import { AppRegistration as AppRegistrationIcon } from '@mui/icons-material';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
-import { Box, Card, CardContent, CardHeader, Dialog, Divider, Grid, IconButton, Typography } from '@mui/material';
+import { Box, Card, CardContent, CardHeader, Dialog, Divider, Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -41,10 +41,10 @@ interface EntityCardProps {
 
 const EntityCard: React.FC<EntityCardProps> = ({
     entity,
+    entityTemplate,
     expandCard = false,
     onExpand,
     customActionButton,
-    entityTemplate,
     userHavePermission = true,
     customCardStyle,
     variant = 'outlined',
@@ -62,9 +62,9 @@ const EntityCard: React.FC<EntityCardProps> = ({
                 if (!shouldDisplayFilePreview) {
                     setShouldDisplayFilePreview(true);
                 }
-
                 return entity.properties[propertyName];
             }
+            return false;
         });
 
         if (filePropertyNames.length) {
@@ -86,7 +86,12 @@ const EntityCard: React.FC<EntityCardProps> = ({
 
     const onOpen = () => {
         if (onExpand) onExpand(entity.properties._id);
-        if (!open) cardRef.current?.scrollIntoView({ behavior: 'smooth' });
+        if (!open && cardRef.current) {
+            cardRef.current.scrollIntoView({ behavior: 'smooth' });
+        }
+        if (open && cardRef.current) {
+            cardRef.current.scrollIntoView({ behavior: 'smooth' });
+        }
         setOpen(!open);
     };
 
@@ -107,12 +112,12 @@ const EntityCard: React.FC<EntityCardProps> = ({
     ];
 
     return (
-        <Card raised variant={variant} ref={cardRef} sx={{ borderRadius: '15px', overflow: 'hidden', minHeight: '18rem', ...customCardStyle }}>
+        <Card raised variant={variant} ref={cardRef} sx={{ borderRadius: '15px', overflow: 'hidden', minHeight: '16rem', ...customCardStyle }}>
             <CardHeader
-                style={{ height: '36px', padding: '0px 27px 0px 0px', marginTop: '7px' }}
+                sx={{ padding: '6px 10px 0px 10px' }}
                 title={
-                    <Grid container alignItems="center" flexDirection="row" gap="20px">
-                        <Grid container alignItems="center" justifyContent="center" width="42px" height="42px">
+                    <Grid container alignItems="center" display="flex" flexDirection="row" gap={1}>
+                        <Grid container alignItems="center" maxWidth="fit-content">
                             {entityTemplate.iconFileId ? (
                                 <CustomIcon
                                     color={entityTemplateColor}
@@ -124,55 +129,56 @@ const EntityCard: React.FC<EntityCardProps> = ({
                                 <AppRegistrationIcon sx={{ fontSize: environment.mainFontSizes.headlineTitleFontSize, color: entityTemplateColor }} />
                             )}
                         </Grid>
-                        <BlueTitle style={{ width: 'fit-content' }} title={entityTemplate.displayName} component="h6" variant="h6" />
+                        <BlueTitle title={entityTemplate.displayName} component="h4" variant="h6" style={{ fontWeight: 400 }} />
                     </Grid>
                 }
                 action={
                     <Grid container alignContent="center" alignItems="center">
-                        <Grid container item alignContent="center" alignItems="center">
-                            <Grid
-                                item
-                                onClick={(e) => {
-                                    if (!userHavePermission) e.preventDefault();
+                        {[
+                            {
+                                icon: '/icons/read-more-icon.svg',
+                                action: () => {
+                                    if (!userHavePermission) return;
                                     navigate(`/entity/${entity.properties._id}`);
-                                }}
-                            >
-                                <IconButtonWithPopover popoverText={i18next.t('wizard.entity.readMore')}>
-                                    <img src="/icons/read-more-icon.svg" />
-                                </IconButtonWithPopover>
-                            </Grid>
-                            <Grid
-                                item
-                                onClick={() => {
-                                    setEditDialog({
-                                        isOpen: true,
-                                        entity,
-                                    });
-                                }}
-                            >
-                                <IconButtonWithPopover popoverText={i18next.t('actions.edit')}>
-                                    <img src="/icons/edit-icon.svg" />
-                                </IconButtonWithPopover>
-                            </Grid>
-                            <Grid
-                                item
-                                onClick={() => {
+                                },
+                                popoverText: i18next.t('wizard.entity.readMore'),
+                            },
+                            {
+                                icon: '/icons/edit-icon.svg',
+                                action: () => {
+                                    if (!userHavePermission) return;
+                                    setEditDialog({ isOpen: true, entity });
+                                },
+                                popoverText: i18next.t('actions.edit'),
+                            },
+                            {
+                                icon: '/icons/graph-icon.svg',
+                                action: () => {
                                     navigate(`/entity/${entity.properties._id}/graph`);
-                                }}
-                            >
-                                <IconButtonWithPopover popoverText={i18next.t('actions.graph')}>
-                                    <img src="/icons/graph-icon.svg" />
+                                },
+                                popoverText: i18next.t('actions.graph'),
+                            },
+                            { icon: open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />, action: onOpen },
+                        ].map((item) => (
+                            <Grid item key={item.popoverText}>
+                                <IconButtonWithPopover
+                                    popoverText={item.popoverText || ''}
+                                    iconButtonProps={{
+                                        size: 'large',
+                                        onClick: (event) => {
+                                            event.stopPropagation();
+                                            item.action();
+                                        },
+                                    }}
+                                >
+                                    {typeof item.icon === 'string' ? <img src={item.icon || ''} alt="" /> : item.icon}
                                 </IconButtonWithPopover>
                             </Grid>
-                            <IconButton size="large" onClick={onOpen}>
-                                {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
-                            </IconButton>
-                        </Grid>
-
-                        {customActionButton &&
-                            (customActionButton.popoverText ? (
+                        ))}
+                        {customActionButton && (
+                            <Grid item>
                                 <IconButtonWithPopover
-                                    popoverText={customActionButton.popoverText!}
+                                    popoverText={customActionButton.popoverText || ''}
                                     iconButtonProps={{
                                         size: 'large',
                                         onClick: (event) => {
@@ -183,23 +189,13 @@ const EntityCard: React.FC<EntityCardProps> = ({
                                 >
                                     {customActionButton.icon}
                                 </IconButtonWithPopover>
-                            ) : (
-                                <IconButton
-                                    onClick={(event) => {
-                                        event.stopPropagation();
-                                        customActionButton.onClick(event);
-                                    }}
-                                    size="large"
-                                >
-                                    {customActionButton.icon}
-                                </IconButton>
-                            ))}
+                            </Grid>
+                        )}
                     </Grid>
                 }
-                sx={{ '& .MuiCardHeader-action': { marginRight: '0px' } }} // default is -8px
             />
 
-            <Divider style={{ border: '1px solid #EBEFFA', margin: '8px' }} />
+            <Divider style={{ border: '1px solid #EBEFFA', margin: '6px' }} />
 
             {!open && (
                 <Grid container>
@@ -221,7 +217,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
                                 display: 'flex',
                                 flexDirection: 'row',
                                 flexWrap: 'wrap',
-                                rowGap: '10px',
+                                rowGap: '14px',
                                 marginRight: '1rem',
                                 paddingTop: '10px',
                                 alignItems: 'center',
@@ -230,9 +226,15 @@ const EntityCard: React.FC<EntityCardProps> = ({
                         />
                     </Grid>
                     {shouldDisplayFilePreview && (
-                        <Grid item xs={4}>
+                        <Grid item xs={3.8}>
                             {files.length ? (
-                                <Box sx={{ height: '20vh', marginBottom: '14px', marginLeft: '1rem', marginRight: '1rem', zIndex: 2 }}>
+                                <Box
+                                    sx={{
+                                        height: '17vh',
+                                        margin: '0.3rem 1rem 1rem 1rem',
+                                        zIndex: 2,
+                                    }}
+                                >
                                     <OpenSmallPreview
                                         files={files}
                                         currentIndex={previewImageIndex}
@@ -243,13 +245,11 @@ const EntityCard: React.FC<EntityCardProps> = ({
                                         container
                                         sx={{
                                             position: 'relative',
-                                            bottom: '30px',
+                                            bottom: '22px',
                                             backgroundColor: '#101440',
-                                            height: '30px',
                                             width: '100%',
-                                            borderBottomLeftRadius: '1rem',
-                                            borderBottomRightRadius: '1rem',
                                             display: 'flex',
+                                            borderRadius: '0 0 1rem 1rem',
                                             alignItems: 'center',
                                         }}
                                     >
@@ -257,8 +257,8 @@ const EntityCard: React.FC<EntityCardProps> = ({
                                             <MeltaTooltip title={files[previewImageIndex].name}>
                                                 <Typography
                                                     sx={{
-                                                        marginLeft: '6px',
-                                                        fontSize: environment.mainFontSizes.headlineSubTitleFontSize,
+                                                        marginLeft: '7px',
+                                                        fontSize: '0.8rem',
                                                         textOverflow: 'ellipsis',
                                                         overflow: 'hidden',
                                                         whiteSpace: 'nowrap',
@@ -273,14 +273,14 @@ const EntityCard: React.FC<EntityCardProps> = ({
                                         <Grid item xs={3} sx={{ display: 'flex', justifyContent: 'flex-end' }}>
                                             <OpenPreview
                                                 fileId={files[previewImageIndex].id}
-                                                img={<img src="/icons/expand-preview-file.svg" style={{ height: '14px' }} />}
+                                                img={<img src="/icons/expand-preview-file.svg" style={{ height: '11px' }} />}
                                                 showText={false}
                                             />
                                         </Grid>
                                     </Grid>
                                 </Box>
                             ) : (
-                                <img src="/icons/no-file.svg" style={{ height: '20vh', width: '8.2vw', marginBottom: '2px' }} />
+                                <img src="/icons/no-file.svg" style={{ height: '18.3vh' }} />
                             )}
                         </Grid>
                     )}
@@ -291,7 +291,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
                     {open && (
                         <CardContent
                             style={{
-                                padding: '40px 90px 20px 50px',
+                                padding: '13px 50px 8px 20px',
                             }}
                         >
                             <EntityProperties
@@ -309,36 +309,39 @@ const EntityCard: React.FC<EntityCardProps> = ({
                                 innerStyle={{ flexBasis: '33.33%' }}
                                 mode="normal"
                             />
-                            <Grid container marginTop="20px">
+                            <Grid container marginTop="30px">
                                 <EntityDisableCheckbox isEntityDisabled={entity.properties.disabled} />
                             </Grid>
-                            <Grid marginTop="6.5vh">
+                            <Grid marginTop="4vh" width="76.5%">
                                 <EntityDates createdAt={entity.properties.createdAt} updatedAt={entity.properties.updatedAt} />
                             </Grid>
                         </CardContent>
                     )}
                 </Grid>
-                <Grid item xs={1.5}>
+                <Grid item xs={1.3}>
                     {open &&
                         (files.length ? (
-                            <Box sx={{ marginBottom: '14px', marginRight: '1rem' }}>
+                            <Box
+                                sx={{
+                                    height: '17vh',
+                                    margin: '0.3rem 1rem 1rem 1rem',
+                                    zIndex: 2,
+                                }}
+                            >
                                 <OpenSmallPreview
                                     files={files}
                                     currentIndex={previewImageIndex}
                                     increaseIndex={increaseIndex}
                                     decreaseIndex={decreaseIndex}
-                                    maxHeight="24vh"
                                 />
                                 <Grid
                                     container
                                     sx={{
                                         position: 'relative',
-                                        bottom: '34px',
+                                        bottom: '22px',
                                         backgroundColor: '#101440',
-                                        height: '34px',
                                         width: '100%',
-                                        borderBottomLeftRadius: '1rem',
-                                        borderBottomRightRadius: '1rem',
+                                        borderRadius: '0 0 1rem 1rem',
                                         display: 'flex',
                                         alignItems: 'center',
                                     }}
@@ -347,8 +350,8 @@ const EntityCard: React.FC<EntityCardProps> = ({
                                         <MeltaTooltip title={files[previewImageIndex].name}>
                                             <Typography
                                                 sx={{
-                                                    marginLeft: '6px',
-                                                    fontSize: environment.mainFontSizes.headlineSubTitleFontSize,
+                                                    marginLeft: '7px',
+                                                    fontSize: '0.8rem',
                                                     textOverflow: 'ellipsis',
                                                     overflow: 'hidden',
                                                     whiteSpace: 'nowrap',
@@ -363,20 +366,18 @@ const EntityCard: React.FC<EntityCardProps> = ({
                                     <Grid item xs={3} sx={{ display: 'flex', justifyContent: 'flex-end' }}>
                                         <OpenPreview
                                             fileId={files[previewImageIndex].id}
-                                            img={<img src="/icons/expand-preview-file.svg" style={{ height: '18px' }} />}
+                                            img={<img src="/icons/expand-preview-file.svg" style={{ height: '11px' }} />}
                                             showText={false}
                                         />
                                     </Grid>
                                 </Grid>
                             </Box>
                         ) : (
-                            shouldDisplayFilePreview && (
-                                <img src="/icons/no-file.svg" style={{ height: '24vh', width: '10vw', marginBottom: '2px' }} />
-                            )
+                            shouldDisplayFilePreview && <img src="/icons/no-file.svg" />
                         ))}
                 </Grid>
             </Grid>
-            <Dialog open={editDialog.isOpen} maxWidth="md">
+            <Dialog open={editDialog.isOpen}>
                 <CreateOrEditEntityDetails
                     isEditMode
                     entityTemplate={entityTemplate}

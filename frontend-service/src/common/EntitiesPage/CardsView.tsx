@@ -1,4 +1,4 @@
-import { Box, Grid } from '@mui/material';
+import { Divider, Grid } from '@mui/material';
 import i18next from 'i18next';
 import React, { forwardRef, useImperativeHandle, useState } from 'react';
 import { useQueryClient } from 'react-query';
@@ -85,17 +85,15 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
                         const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates');
                         const entityTemplate = entityTemplates?.get(entity.templateId)!;
                         return (
-                            <Box sx={{ marginBottom: '0.5rem' }}>
-                                <EntityCard
-                                    entity={entity}
-                                    entityTemplate={entityTemplate}
-                                    expandCard={openCardsMap.has(entity.properties._id)}
-                                    onExpand={(entityId) => {
-                                        setOpenCardsMap((map) => new Map(map.set(entityId, !openCardsMap.get(entityId))));
-                                    }}
-                                    refetchQuery={refetch}
-                                />
-                            </Box>
+                            <EntityCard
+                                entity={entity}
+                                entityTemplate={entityTemplate}
+                                expandCard={openCardsMap.has(entity.properties._id)}
+                                onExpand={(entityId) => {
+                                    setOpenCardsMap((map) => new Map(map.set(entityId, !openCardsMap.get(entityId))));
+                                }}
+                                refetchQuery={refetch}
+                            />
                         );
                     }}
                 </InfiniteScroll>

@@ -1,7 +1,7 @@
 import { Box, Card, CircularProgress, Grid, Skeleton, SxProps, Typography } from '@mui/material';
 import i18next from 'i18next';
 import React, { CSSProperties, useMemo } from 'react';
-import { pdfjs } from 'react-pdf';
+import { Document, Page, pdfjs } from 'react-pdf';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
 import { environment } from '../../globals';
@@ -29,8 +29,10 @@ const SmallPreview: React.FC<IPreviewProps> = ({
     height = `${environment.smallPreviewHeight.number}${environment.smallPreviewHeight.unit}`,
     sx,
 }) => {
-    const shouldDisplayImage = (type: string) => ['image', 'document', 'pdf'].includes(type);
+    const shouldDisplayImage = (type: string) => ['document', 'image'].includes(type);
     const shouldDisplayVideoOrAudio = (type: string) => ['video', 'audio'].includes(type);
+    const shouldDisplayDocument = (type: string) => ['pdf'].includes(type);
+
     const isUnsupported = (type: string) => type === 'unsupported';
 
     const previewContent = useMemo(() => {
@@ -76,6 +78,15 @@ const SmallPreview: React.FC<IPreviewProps> = ({
                 </Box>
             );
 
+        if (shouldDisplayDocument(contentType))
+            return (
+                <Document file={data} onLoadError={() => null}>
+                    <Document key={data} file={data} loading={null}>
+                        <Page width={150} pageNumber={1} renderTextLayer={false} renderAnnotationLayer={false} />
+                    </Document>
+                </Document>
+            );
+
         return (
             <Box sx={{ width, height, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <Skeleton variant="rectangular" sx={{ borderRadius: '1rem' }} />
@@ -84,7 +95,7 @@ const SmallPreview: React.FC<IPreviewProps> = ({
     }, [loading, data]);
 
     return (
-        <Grid container sx={{ overflowY: 'hidden', overflowX: 'hidden' }} justifyContent="center">
+        <Grid container sx={{ overflowY: 'hidden', overflowX: 'hidden', fontSize: 'small' }} justifyContent="center">
             <Grid item sx={sx}>
                 {previewContent}
             </Grid>
