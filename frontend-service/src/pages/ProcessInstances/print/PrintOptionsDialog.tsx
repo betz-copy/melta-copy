@@ -19,7 +19,7 @@ const PrintOptionsDialog: React.FC<{
         setShowFiles: React.Dispatch<React.SetStateAction<boolean>>;
     };
     onClick: React.MouseEventHandler<HTMLButtonElement>;
-}> = ({ open, handleClose, files, isFilesLoading, isFilesError, onClick, options }) => {
+}> = ({ open, handleClose, files, isLoading, isFilesError, onClick, options }) => {
     return (
         <Dialog open={open} onClose={handleClose}>
             <DialogTitle paddingLeft="4px">
@@ -63,10 +63,10 @@ const PrintOptionsDialog: React.FC<{
                         }
                     }}
                     endIcon={<PrintOutlined />}
-                    disabled={isFilesLoading}
+                    disabled={isLoading}
                 >
                     {i18next.t('entityPage.print.continue')}
-                    {isFilesLoading && <CircularProgress size={20} />}
+                    {isLoading && <CircularProgress size={20} />}
                 </Button>
             </DialogActions>
         </Dialog>
