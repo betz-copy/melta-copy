@@ -33,6 +33,7 @@ const SmallPreview: React.FC<IPreviewProps> = ({
     const shouldDisplayVideoOrAudio = (type: string) => ['video', 'audio'].includes(type);
     const shouldDisplayDocument = (type: string) => ['pdf'].includes(type);
 
+    const shouldDisplayPdf = (type: string) => ['pdf'].includes(type);
     const isUnsupported = (type: string) => type === 'unsupported';
 
     const previewContent = useMemo(() => {
@@ -43,7 +44,7 @@ const SmallPreview: React.FC<IPreviewProps> = ({
                 </Box>
             );
 
-        if (isUnsupported(contentType) || error || !data) {
+        if (isUnsupported(contentType) || error || !data)
             return (
                 <Card sx={{ borderRadius: '1rem', bgcolor: '#4c494c', display: 'grid', height, width }} elevation={10}>
                     <Typography variant="body1" sx={{ color: 'white', marginTop: '10px', fontSize: '20px' }}>
@@ -51,7 +52,6 @@ const SmallPreview: React.FC<IPreviewProps> = ({
                     </Typography>
                 </Card>
             );
-        }
 
         if (shouldDisplayImage(contentType))
             return (
@@ -69,6 +69,13 @@ const SmallPreview: React.FC<IPreviewProps> = ({
                         }}
                     />
                 </Box>
+            );
+
+        if (shouldDisplayPdf(contentType))
+            return (
+                <Document file={data}>
+                    <Page width={window.innerHeight * 0.145} pageNumber={1} renderTextLayer={false} />
+                </Document>
             );
 
         if (shouldDisplayVideoOrAudio(contentType))
