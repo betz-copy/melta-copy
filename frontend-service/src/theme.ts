@@ -27,6 +27,16 @@ export const lightTheme = createTheme({
         primary: { main: '#1E2775' },
     },
     components: {
+        MuiInputBase: {
+            styleOverrides: {
+                input: {
+                    backgroundColor: '#EBEFFA',
+                },
+                root: {
+                    backgroundColor: '#EBEFFA',
+                },
+            },
+        },
         MuiCssBaseline: {
             styleOverrides: {
                 fontFamily: 'Rubik',

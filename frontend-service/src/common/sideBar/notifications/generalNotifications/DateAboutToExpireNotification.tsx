@@ -13,9 +13,6 @@ export const DateAboutToExpireNotification: React.FC<IDateAboutToExpireMetadataP
     return (
         <Grid container direction="column" spacing={1}>
             <Grid item>
-                <Typography>{i18next.t('dateAboutToExpireNotification.dateAboutToExpireHeadline')}</Typography>
-            </Grid>
-            <Grid item>
                 <Typography display="inline">{`${i18next.t('dateAboutToExpireNotification.propertyValue')} `}</Typography>
                 <Typography display="inline" fontWeight="bold">
                     {new Date(datePropertyValue).toLocaleDateString('he-IL')}

@@ -791,8 +791,6 @@ describe('e2e search entities batch tests', () => {
             };
             const res = await request(app).post('/api/instances/entities/search/batch').send(searchBody);
 
-            console.log({ res });
-
             expect(res.statusCode).toBe(200);
             expect(res.body.count).toBe(3);
             expect(res.body.entities).toHaveLength(3);
