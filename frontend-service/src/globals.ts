@@ -127,22 +127,22 @@ export const environment = {
                     displayName: () => i18next.t('notifications.displayNames.ruleBreachResponse'),
                 },
                 {
-                    color: '#F5DEB3',
+                    color: '#8FBC8F',
                     type: NotificationType.archivedProcess,
                     displayName: () => i18next.t('notifications.displayNames.archivedProcess'),
                 },
                 {
-                    color: '#8FBC8F',
+                    color: '#FF6347',
                     type: NotificationType.deleteProcess,
                     displayName: () => i18next.t('notifications.displayNames.deleteProcess'),
                 },
                 {
-                    color: '#EE82EE',
+                    color: '#DA70D6',
                     type: NotificationType.newProcess,
                     displayName: () => i18next.t('notifications.displayNames.newProcess'),
                 },
                 {
-                    color: '#6A5ACD',
+                    color: '#FFC0CB',
                     type: NotificationType.processReviewerUpdate,
                     displayName: () => i18next.t('notifications.displayNames.processReviewerUpdate'),
                 },
