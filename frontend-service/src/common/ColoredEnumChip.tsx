@@ -4,24 +4,28 @@ import { colorWithOpacity } from '../utils/colorUtils';
 
 interface ColoredEnumChipProps {
     label: string;
-    color: string;
+    color?: string | 'default';
     style?: CSSProperties;
 }
 
-export const ColoredEnumChip: React.FC<ColoredEnumChipProps> = ({ label, color, style }) => (
-    <Chip
-        label={label}
-        variant="outlined"
-        sx={{
-            height: '25px',
-            borderRadius: '6px',
-            border: 0,
-            fontWeight: '700',
-            color,
-            backgroundColor: colorWithOpacity(color, 0.16),
-            fontFamily: 'Rubik',
-            borderColor: color,
-            ...style,
-        }}
-    />
-);
+export const ColoredEnumChip: React.FC<ColoredEnumChipProps> = ({ label, color, style }) => {
+    const backgroundColor = color !== 'default' && color ? colorWithOpacity(color, 0.1) : '#F7F7F7';
+    const textColor = color === 'default' ? '#000' : color;
+    return (
+        <Chip
+            label={label}
+            variant="outlined"
+            sx={{
+                height: '25px',
+                borderRadius: '6px',
+                border: 0,
+                fontWeight: '500',
+                color: textColor,
+                backgroundColor,
+                fontFamily: 'Rubik',
+                borderColor: color,
+                ...style,
+            }}
+        />
+    );
+};

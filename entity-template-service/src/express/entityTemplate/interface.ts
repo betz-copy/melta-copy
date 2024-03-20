@@ -1,6 +1,6 @@
 export interface IEntitySingleProperty {
     title: string;
-    type: 'string' | 'number' | 'boolean';
+    type: 'string' | 'number' | 'boolean' | 'array';
     format?: 'date' | 'date-time' | 'email' | 'fileId';
     enum?: string[];
     pattern?: string;
@@ -8,6 +8,13 @@ export interface IEntitySingleProperty {
     dateNotification?: 'day' | 'week' | 'twoWeeks';
     serialStarter?: number;
     serialCurrent?: number;
+    items?: {
+        type: 'string';
+        enum?: string[];
+        format?: 'fileId';
+    };
+    minItems?: 1;
+    uniqueItems?: true;
 }
 
 export interface IProperties {
@@ -24,6 +31,7 @@ export interface IEntityTemplate {
     category: string;
     properties: IProperties;
     propertiesOrder: string[];
+    propertiesTypeOrder: ('properties' | 'attachmentProperties')[];
     propertiesPreview: string[];
     enumPropertiesColors?: IEnumPropertiesColors;
     disabled: boolean;

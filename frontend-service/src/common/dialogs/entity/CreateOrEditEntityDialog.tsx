@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Grid, Card, CardContent, CircularProgress, Box, Divider, Button, IconButton } from '@mui/material';
 import { Done as DoneIcon, Clear as ClearIcon, Close as CloseIcon } from '@mui/icons-material';
 import { useMutation } from 'react-query';
@@ -103,7 +103,6 @@ const CreateOrEditEntityDetails: React.FC<{
             },
         },
     );
-
     return (
         <Formik
             initialValues={{ properties: fieldProperties, attachmentsProperties: fileProperties, template: entityTemplate }}
@@ -125,6 +124,65 @@ const CreateOrEditEntityDetails: React.FC<{
                     values.template || entityTemplate,
                 );
 
+                const isPropertiesFirst = values.template?.propertiesTypeOrder[0] === 'properties';
+                const schema = filterAttachmentsAndEntitiesRefFromPropertiesSchema(values.template.properties);
+
+                useEffect(() => {
+                    schema.required.forEach((field) => {
+                        const fieldProperties = schema.properties[field].enum;
+                        const itemFieldProperties = schema.properties[field]?.items?.enum;
+
+                        if (fieldProperties?.length === 1 && fieldProperties[0] !== undefined) {
+                            setFieldValue(`properties.${field}`, fieldProperties[0]);
+                        }
+                        if (itemFieldProperties?.length === 1 && itemFieldProperties[0] !== undefined) {
+                            setFieldValue(`properties.${field}`, [itemFieldProperties[0]]);
+                        }
+                    });
+
+                    if (!isEditMode) {
+                        Object.entries<object>(schema.properties).forEach(([propertyName, propertyValues]) => {
+                            if (propertyValues.hasOwnProperty('serialCurrent')) {
+                                setFieldValue(`properties.${propertyName}`, propertyValues['serialCurrent']);
+                            }
+                        });
+                    }
+                }, [values.template]);
+
+                const propertiesComp = values.template?._id && (
+                    <JSONSchemaFormik
+                        schema={schema}
+                        values={values}
+                        setValues={(propertiesValues) => setFieldValue('properties', propertiesValues)}
+                        errors={errors.properties ?? {}}
+                        touched={touched.properties ?? {}}
+                        setFieldTouched={(field) => setFieldTouched(`properties.${field}`)}
+                        isEditMode={isEditMode}
+                    />
+                );
+
+                const propertiesFilesComp = templateFileKeys.length > 0 && (
+                    <>
+                        <BlueTitle
+                            title={i18next.t('wizard.entityTemplate.attachments')}
+                            component="h6"
+                            variant="h6"
+                            style={{ marginBottom: '12px', fontSize: '16px', fontWeight: '600' }}
+                        />
+                        {Object.entries(templateFilesProperties).map(([key, value]) => (
+                            <InstanceFileInput
+                                key={key}
+                                fileFieldName={`attachmentsProperties.${key}`}
+                                fieldTemplateTitle={value.title}
+                                setFieldValue={setFieldValue}
+                                required={requiredFilesNames.includes(key)}
+                                value={values.attachmentsProperties[key]}
+                                error={errors.attachmentsProperties?.[key] as string}
+                                setFieldTouched={setFieldTouched}
+                            />
+                        ))}
+                    </>
+                );
                 return (
                     <>
                         <Form>
@@ -166,50 +224,23 @@ const CreateOrEditEntityDetails: React.FC<{
                                                             />
                                                         </Grid>
                                                     )}
-
-                                                    {values.template?._id && (
-                                                        <JSONSchemaFormik
-                                                            schema={filterAttachmentsAndEntitiesRefFromPropertiesSchema(values.template.properties)}
-                                                            values={values}
-                                                            setValues={(propertiesValues) => setFieldValue('properties', propertiesValues)}
-                                                            errors={errors.properties ?? {}}
-                                                            touched={touched.properties ?? {}}
-                                                            setFieldTouched={(field) => setFieldTouched(`properties.${field}`)}
-                                                            isEditMode
-                                                        />
-                                                    )}
                                                 </Box>
-                                                {templateFileKeys.length > 0 && (
-                                                    <Box width="95%" maxWidth="95%">
+                                                <Box width="95%" maxWidth="95%" paddingLeft="20px">
+                                                    <Grid marginTop="20px" marginBottom="20px">
+                                                        {isPropertiesFirst ? propertiesComp : propertiesFilesComp}
+                                                    </Grid>
+                                                    {templateFileKeys.length > 0 && (
                                                         <Grid item container flexDirection="column">
                                                             <Grid marginTop="20px" alignSelf="stretch">
                                                                 <Divider orientation="horizontal" style={{ alignSelf: 'stretch', width: '100%' }} />
                                                             </Grid>
-                                                            <Grid paddingLeft="20px" marginTop="20px" marginBottom="20px">
-                                                                <BlueTitle
-                                                                    title={i18next.t('wizard.entityTemplate.attachments')}
-                                                                    component="h6"
-                                                                    variant="h6"
-                                                                    style={{ marginBottom: '12px', fontSize: '16px', fontWeight: '600' }}
-                                                                />
-                                                                <>
-                                                                    {Object.entries(templateFilesProperties).map(([key, value]) => (
-                                                                        <InstanceFileInput
-                                                                            key={key}
-                                                                            fileFieldName={`attachmentsProperties.${key}`}
-                                                                            fieldTemplateTitle={value.title}
-                                                                            setFieldValue={setFieldValue}
-                                                                            required={requiredFilesNames.includes(key)}
-                                                                            value={values.attachmentsProperties[key]}
-                                                                            error={errors.attachmentsProperties?.[key] as string}
-                                                                            setFieldTouched={setFieldTouched}
-                                                                        />
-                                                                    ))}
-                                                                </>
-                                                            </Grid>
                                                         </Grid>
-                                                    </Box>
-                                                )}
+                                                    )}
+
+                                                    <Grid marginTop="20px" marginBottom="20px">
+                                                        {isPropertiesFirst ? propertiesFilesComp : propertiesComp}
+                                                    </Grid>
+                                                </Box>
                                             </Grid>
                                         </Grid>
                                         <Grid

@@ -1,7 +1,13 @@
 import React, { MouseEventHandler } from 'react';
 import { Grid, IconButton, Menu } from '@mui/material';
 import i18next from 'i18next';
-import { Edit as EditIcon, Delete as DeleteIcon, MoreVertOutlined as OptionsIcon, DoDisturbAlt as DisabledIcon } from '@mui/icons-material';
+import {
+    Edit as EditIcon,
+    Delete as DeleteIcon,
+    MoreVertOutlined as OptionsIcon,
+    DoDisturbAlt as DisabledIcon,
+    ContentCopy as DuplicateIcon,
+} from '@mui/icons-material';
 import { MenuButton } from '../../../common/MenuButton';
 import { MeltaTooltip } from '../../../common/MeltaTooltip';
 import { environment } from '../../../globals';
@@ -11,7 +17,8 @@ export const CardMenu: React.FC<{
     onDeleteClick?: MouseEventHandler;
     disabledProps?: { isDisabled: boolean; canEdit: boolean; tooltipTitle: string };
     onDisableClick?: MouseEventHandler;
-}> = ({ onEditClick, onDeleteClick, disabledProps, onDisableClick }) => {
+    onDuplicateClick?: MouseEventHandler;
+}> = ({ onEditClick, onDeleteClick, disabledProps, onDisableClick, onDuplicateClick }) => {
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
     const open = Boolean(anchorEl);
 
@@ -47,6 +54,17 @@ export const CardMenu: React.FC<{
                         />
                     </Grid>
                 </MeltaTooltip>
+
+                {onDuplicateClick && (
+                    <MenuButton
+                        onClick={(e) => {
+                            onDuplicateClick(e);
+                            handleClose(e);
+                        }}
+                        text={i18next.t('actions.duplicate')}
+                        icon={<DuplicateIcon color="action" />}
+                    />
+                )}
 
                 {onDeleteClick && (
                     <MenuButton

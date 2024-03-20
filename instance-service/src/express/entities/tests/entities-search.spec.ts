@@ -36,6 +36,7 @@ const {
 const entityTemplate: IMongoEntityTemplate = {
     _id: defaultTemplateId,
     propertiesOrder: ['testProp', 'name', 'lastName', 'age', 'salary', 'bDate', 'timeOfDeath', 'doesWork', 'num'],
+    propertiesTypeOrder: ['properties', 'attachmentProperties'],
     propertiesPreview: ['testProp'],
     name: 'template',
     displayName: 'template',

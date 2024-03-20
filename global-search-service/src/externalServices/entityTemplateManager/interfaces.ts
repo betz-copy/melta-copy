@@ -22,6 +22,7 @@ export interface IEntityTemplate {
     properties: IJSONSchema;
     category: string;
     propertiesOrder: string[];
+    propertiesTypeOrder: ('properties' | 'attachmentProperties')[];
     propertiesPreview: string[];
     disabled: boolean;
 }

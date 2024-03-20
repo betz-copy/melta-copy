@@ -1,4 +1,5 @@
 import * as minio from 'minio';
+import * as http from 'http';
 import { Readable } from 'stream';
 
 export class MinIOClient {
@@ -6,8 +7,16 @@ export class MinIOClient {
 
     bucketName: string;
 
-    async initialize(endPoint: string, port: number, accessKey: string, secretKey: string, bucketName = 'defaultbucket', useSSL = false) {
-        this.minioClient = new minio.Client({ endPoint, port, useSSL, accessKey, secretKey });
+    async initialize(
+        endPoint: string,
+        port: number,
+        accessKey: string,
+        secretKey: string,
+        transportAgent: { timeout: number; maxSockets: number; keepAlive: boolean; keepAliveMsecs: number },
+        bucketName = 'defaultbucket',
+        useSSL = false,
+    ) {
+        this.minioClient = new minio.Client({ endPoint, port, useSSL, accessKey, secretKey, transportAgent: new http.Agent(transportAgent) });
         this.bucketName = bucketName;
 
         if (!(await this.minioClient.bucketExists(this.bucketName))) {

@@ -31,6 +31,7 @@ export default {
         downloadOneTable: 'הורד טבלה',
         expandMore: 'הרחב כמות שורות',
         expandLess: 'צמצם כמות שורות',
+        totalLines: 'סה"כ שורות',
         addRelationship: 'הוסף קשר',
         addEntity: 'הוסף ישות',
         deleteEntity: 'מחק ישות',
@@ -133,7 +134,7 @@ export default {
         unknownEntity: 'לא ידוע',
         noOptions: 'אין תוצאות',
     },
-    searchLabel: 'חיפוש...',
+    searchLabel: 'חיפוש שם תבנית',
     booleanOptions: { yes: 'כן', no: 'לא' },
     graph: {
         navigateToEntityPage: 'עבור לעמוד הפרט',
@@ -316,12 +317,13 @@ export default {
             failedToUpdateRequiredConstraintsBecauseOfEntitiesWithMissing: 'נכשל לעדכן שדות חובה בגלל שקיימות ישיות שלא מוזן להם שדה',
             failedToUpdateUniqueConstraintsBecauseOfEntitiesWithDuplicates: 'נכשל לעדכן שדות יחודיים בגלל שקיימות ישויות עם שכפולים בשדות',
             propertyName: 'שם שדה באנגלית',
-            attachmentName: 'שם קובץ באנגלית',
+            attachmentName: 'שם באנגלית',
             propertyDisplayName: 'שם שדה לתצוגה',
-            attachmentDisplayName: 'שם קובץ לתצוגה',
+            attachmentDisplayName: 'שם לתצוגה',
+            filesArrayOption: 'ריבוי קבצים',
             propertyType: 'סוג שדה',
             customErrorMessage: 'הודעת שגיאה בכישלון תבנית',
-            customErrorMessageHelperText: 'לדוגמא: "יש להזין בפורמט מס טלפון בלבד (050-1234-123)"',
+            customErrorMessageHelperText: 'לדוגמה: "יש להזין בפורמט מס טלפון בלבד (050-1234-123)"',
             propertyPreview: 'תצוגה מצומצמת',
             addProperty: 'הוסף שדה',
             addAttachment: 'הוסף קובץ',
@@ -495,7 +497,7 @@ export default {
         hide: 'הסתר',
         unique: 'ייחודי',
         uniqueTooltipTitle:
-            '* שדות יחודיים צריכים להיות גם חובה.\n* סימון מספר שדות כיחודיים, הופך אותם לייחודים ביחד. לדוגמא, סימון "שם פרטי" ו"שם משפחה" כיחודיים, אומר שתהיה חסימת שכפולים רק עבור שני השדות ביחד כלומר אסור פעמיים "נעם כהן", אבל מותר "נעם כהן" וגם "נעם לוי", למרות שיש פעמיים אותו שם פרטי',
+            '* שדות יחודיים צריכים להיות גם חובה.\n* סימון מספר שדות כיחודיים, הופך אותם לייחודים ביחד. לדוגמה, סימון "שם פרטי" ו"שם משפחה" כיחודיים, אומר שתהיה חסימת שכפולים רק עבור שני השדות ביחד כלומר אסור פעמיים "נעם כהן", אבל מותר "נעם כהן" וגם "נעם לוי", למרות שיש פעמיים אותו שם פרטי',
         invalidPropertyType: 'סוג שדה לא תקין',
         mustBeOneOfList: 'בחר באחת מתוך האפשרויות הנתונות',
         invalidNumberField: 'חייב להיות מספר',
@@ -530,6 +532,8 @@ export default {
         dateNotification: 'התראה לפני סיום',
         entityReference: 'שיוך לישות',
         serialNumber: 'מספר סידורי',
+        enumArray: 'רשימה מרובה',
+        array: 'מערך',
     },
     input: {
         imagePicker: {
@@ -709,6 +713,7 @@ export default {
         noInstancesFound: 'לא נמצאו תהליכים',
         openProcessesTitle: 'תהליכים פתוחים',
         closedProcessesTitle: 'תהליכים סגורים',
+        someStepIsApprovedAreYouSureEditProcessDetails: 'קיים שלב שכבר אושר. האם אתה בטוח רוצה לשנות את פרטי התהליך?',
         stepStatus: {
             pending: 'ממתין',
             approved: 'בוצע',
@@ -897,5 +902,12 @@ export default {
             TimelineMonth: 'חודש פרוס',
             TimelineYear: 'שנה פרוסה',
         },
+    },
+    camera: {
+        cameraNotFound: 'מצלמה לא נמצאה',
+        somethingWentWrong: 'משהו השתבש, אנא נסה שנית',
+        imgName: 'שם התמונה',
+        browserNotSupported: 'דפדפן לא תומך',
+        takePicture: 'צלם תמונה',
     },
 };

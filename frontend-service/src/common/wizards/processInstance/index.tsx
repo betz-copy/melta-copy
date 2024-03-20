@@ -8,7 +8,7 @@ import { toast } from 'react-toastify';
 import { AxiosError } from 'axios';
 import EditIcon from '@mui/icons-material/Edit';
 // eslint-disable-next-line import/no-extraneous-dependencies
-import _ from 'lodash';
+import lodashIsEqual from 'lodash.isequal';
 import DeleteIcon from '@mui/icons-material/Delete';
 import UnarchiveIcon from '@mui/icons-material/Unarchive';
 import ArchiveIcon from '@mui/icons-material/Archive';
@@ -135,6 +135,7 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({ open, onClose
     };
 
     const [deleteDialogState, setDeleteDialogState] = useState<boolean>(false);
+    const [areYouSureUpdateDetailsDialog, setAreYouSureUpdateDetailsDialog] = useState<boolean>(false);
 
     const { mutateAsync: deleteProcessMutate, isLoading: isDeleteProcessLoading } = useMutation(
         (processId: string) => {
@@ -201,7 +202,26 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({ open, onClose
                                     <Button
                                         size="large"
                                         variant="contained"
-                                        onClick={() => handleSubmit()}
+                                        onClick={() => {
+                                            const { steps: _unusedInitialSteps, ...processInitialDetailsWithoutApprovers } = getInitialDetailsValues(
+                                                currProcessInstance,
+                                                processTemplatesMap,
+                                            );
+                                            const { steps: _unusedValuesSteps, ...detailsFormikDataWithoutApprovers } = detailsFormikData.values;
+
+                                            const isProcessDetailsChanged = !lodashIsEqual(
+                                                processInitialDetailsWithoutApprovers,
+                                                detailsFormikDataWithoutApprovers,
+                                            );
+
+                                            const isSomeStepApproved = currProcessInstance.steps.some((step) => step.status === Status.Approved);
+
+                                            if (isProcessDetailsChanged && isSomeStepApproved) {
+                                                setAreYouSureUpdateDetailsDialog(true);
+                                            } else {
+                                                handleSubmit();
+                                            }
+                                        }}
                                         disabled={!detailsFormikData.dirty || isLoading}
                                         startIcon={isLoading ? <CircularProgress sx={{ color: 'white' }} size={20} /> : <DoneIcon />}
                                     >
@@ -289,6 +309,15 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({ open, onClose
                     await deleteProcessMutate(processInstance._id);
                     setDeleteDialogState(false);
                     onClose(true);
+                }}
+            />
+            <AreYouSureDialog
+                open={areYouSureUpdateDetailsDialog}
+                handleClose={() => setAreYouSureUpdateDetailsDialog(false)}
+                body={i18next.t('processInstancesPage.someStepIsApprovedAreYouSureEditProcessDetails')}
+                onYes={() => {
+                    setAreYouSureUpdateDetailsDialog(false);
+                    handleSubmit();
                 }}
             />
         </Dialog>

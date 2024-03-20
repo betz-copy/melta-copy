@@ -156,7 +156,8 @@ export const environment = {
     },
     agGrid: {
         rowCount: 5,
-        expandedRowCount: 10,
+        defaultExpandedRowCount: 13,
+        defaultRowHeight: 50,
     },
     activityLog: {
         infiniteScrollPageCount: 10,
@@ -166,7 +167,7 @@ export const environment = {
     },
     createdRelationshipIdInBrokenRules: 'created-relationship-id',
     accessTokenName: 'rabaz-access-token',
-    minimumSupportedChromeVersion: 80,
+    minimumSupportedChromeVersion: 85,
     fileIdLength: 32,
     maxDateTimestamp: 8640000000000000,
     errorCodes: {

@@ -3,8 +3,8 @@ import { config } from './config';
 import { minioClient } from './utils/minio';
 
 const main = async () => {
-    const { url: endPoint, port, accessKey, secretKey, bucketName, useSSL } = config.minio;
-    await minioClient.initialize(endPoint, port, accessKey, secretKey, bucketName, useSSL);
+    const { url: endPoint, port, accessKey, secretKey, bucketName, useSSL, transportAgent } = config.minio;
+    await minioClient.initialize(endPoint, port, accessKey, secretKey, transportAgent, bucketName, useSSL);
 
     console.log(`Storage connection established!`);
 

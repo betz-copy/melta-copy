@@ -24,6 +24,8 @@ const EntityComponentToPrint: React.FC<{
                     entityTemplate={entityTemplate}
                     darkMode={darkMode}
                     showPreviewPropertiesOnly
+                    mode="normal"
+                    textWrap
                 />
             </Box>
 

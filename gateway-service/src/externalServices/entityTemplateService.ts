@@ -18,14 +18,21 @@ export interface IMongoCategory extends ICategory {
     updatedAt: string;
 }
 
-interface IEntitySingleProperty {
+export interface IEntitySingleProperty {
     title: string;
-    type: 'string' | 'number' | 'boolean';
+    type: 'string' | 'number' | 'boolean' | 'array';
     format?: 'date' | 'date-time' | 'email' | 'fileId';
     enum?: string[];
+    items?: {
+        type: 'string';
+        enum?: string[];
+        format?: 'fileId';
+    };
+    minItems?: 1;
+    uniqueItems?: true;
     pattern?: string;
     patternCustomErrorMessage?: string;
-    dateNotification?: string;
+    dateNotification?: 'day' | 'week' | 'twoWeeks';
     serialStarter?: number;
     serialCurrent?: number;
 }
@@ -40,6 +47,7 @@ export interface IEntityTemplate {
         hide: string[];
     };
     propertiesOrder: string[];
+    propertiesTypeOrder: ('properties' | 'attachmentProperties')[];
     propertiesPreview: string[];
     enumPropertiesColors?: Record<string, Record<string, string>>; // { [fieldName]: { [enumOption1]: [color1], [enumOption2]: [color2] } }
     disabled: boolean;
