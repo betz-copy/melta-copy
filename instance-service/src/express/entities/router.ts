@@ -57,6 +57,7 @@ entityRouter.put(
     wrapMiddleware(validateEntity),
     wrapController(EntityController.updateEntityById),
 );
+entityRouter.patch('/deletePropertyOfTemplate/:templateId', wrapController(EntityController.deletePropertyOfTemplate));
 entityRouter.patch('/:id/status', ValidateRequest(updateEntityStatusByIdRequestSchema), wrapController(EntityController.updateStatusById));
 
 export default entityRouter;

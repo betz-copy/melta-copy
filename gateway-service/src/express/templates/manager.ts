@@ -372,6 +372,7 @@ export class TemplatesManager {
         const currTemplate = await EntityTemplateManagerService.getEntityTemplateById(id);
 
         if (currTemplate.disabled === true) throw new ServiceError(400, 'can not update disabled template');
+        const removedProperties: string[] = [];
 
         if (count > 0) {
             if (updatedTemplateData.name !== currTemplate.name) throw new ServiceError(400, 'can not change template name');
@@ -381,21 +382,30 @@ export class TemplatesManager {
                     throw new ServiceError(400, 'can not add serialField');
                 }
             });
-
             Object.entries(currTemplate.properties.properties).forEach(([key, value]) => {
+                console.log('🚀 ~ TemplatesManager ~ Object.entries ~ value:', value);
+                console.log('🚀 ~ TemplatesManager ~ Object.entries ~ key:', key);
                 const newValue = updatedTemplateData.properties.properties[key];
-                if (!newValue) throw new ServiceError(400, 'can not remove property');
-
-                if (value.serialCurrent !== undefined) {
-                    // eslint-disable-next-line no-param-reassign
-                    updatedTemplateData.properties.properties[key].serialCurrent = value.serialCurrent;
+                if (!newValue) {
+                    console.log('hiiiiii');
+                    removedProperties.push(key);
+                } else {
+                    if (value.serialCurrent !== undefined) {
+                        // eslint-disable-next-line no-param-reassign
+                        updatedTemplateData.properties.properties[key].serialCurrent = value.serialCurrent;
+                    }
+                    if (value.type !== newValue.type) throw new ServiceError(400, 'can not change property type');
+                    if (value.format !== newValue.format) throw new ServiceError(400, 'can not change property format');
+                    if (value.enum && !value.enum?.every((val) => newValue.enum?.includes(val)))
+                        throw new ServiceError(400, 'can not remove options from enum');
+                    if (value.serialStarter !== newValue.serialStarter) throw new ServiceError(400, 'can not change property serial starter');
                 }
-                if (value.type !== newValue.type) throw new ServiceError(400, 'can not change property type');
-                if (value.format !== newValue.format) throw new ServiceError(400, 'can not change property format');
-                if (value.enum && !value.enum?.every((val) => newValue.enum?.includes(val)))
-                    throw new ServiceError(400, 'can not remove options from enum');
-                if (value.serialStarter !== newValue.serialStarter) throw new ServiceError(400, 'can not change property serial starter');
             });
+        }
+        if (removedProperties.length > 0) {
+            console.log('removedProperties', removedProperties);
+
+            await InstanceManagerService.deletePropertyOfTemplate(id, removedProperties);
         }
 
         let iconFileId: string | null;

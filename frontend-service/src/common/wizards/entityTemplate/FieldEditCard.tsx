@@ -422,8 +422,8 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                 </MeltaTooltip>
                                             )}
                                         </Box>
-
-                                        <IconButton disabled={isDisabled} onClick={() => remove(index)}>
+                                        {/* disabled={isDisabled} */}
+                                        <IconButton onClick={() => remove(index)}>
                                             <DeleteIcon />
                                         </IconButton>
                                     </Grid>

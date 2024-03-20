@@ -97,6 +97,18 @@ export class EntityManager {
         ).catch(EntityManager.throwServiceErrorIfFailedConstraintsValidation);
     }
 
+    static async deletePropertyOfTemplate(templateId: string, body: { properties: string[] }) {
+        const propertiesAsArray = body.properties.map((property) => `'${property}'`).join(', ');
+
+        return Neo4jClient.writeTransaction(
+            `MATCH (e: \`${templateId}\`)
+            WITH collect(e) AS nodes
+            CALL apoc.create.removeProperties(nodes, ${propertiesAsArray}) YIELD node
+            RETURN node`,
+            normalizeReturnedEntity('multipleResponses'),
+        );
+    }
+
     static async searchEntitiesOfTemplate(searchBody: ISearchEntitiesOfTemplateBody, entityTemplate: IMongoEntityTemplate) {
         let latestIndex: string | null = null;
 

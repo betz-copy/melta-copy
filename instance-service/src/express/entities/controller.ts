@@ -61,6 +61,12 @@ class EntityController {
     static async updateConstraintsOfTemplate(req: Request, res: Response) {
         res.json(await EntityManager.updateConstraintsOfTemplate(req.params.templateId, req.body));
     }
+
+    static async deletePropertyOfTemplate(req: Request, res: Response) {
+        console.log('controller instance', req.params.templateId, req.body.property);
+
+        res.json(await EntityManager.deletePropertyOfTemplate(req.params.templateId, req.body));
+    }
 }
 
 export default EntityController;
