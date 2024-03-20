@@ -30,9 +30,7 @@ const FileInput: React.FC<FileInputProps> = ({ fileName, onDeleteFile, onDropFil
 
     const onDrop = (acceptedFiles: File[]) => {
         const file = acceptedFiles[0];
-        if (file.type) {
-            onDropFile(file);
-        }
+        onDropFile(file);
     };
     const { getRootProps, getInputProps, isDragActive } = useDropzone({
         onDrop,

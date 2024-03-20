@@ -4,7 +4,6 @@ import { CloseOutlined as DeleteIcon } from '@mui/icons-material';
 import { Accept, useDropzone } from 'react-dropzone';
 import FileIcon from '../FilePreview/FileIcon';
 import { getFileExtension } from '../../utils/getFileType';
-import i18next from 'i18next';
 
 interface FilesInputProps {
     files: string[];
