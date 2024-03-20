@@ -103,14 +103,10 @@ export class InstanceManagerService {
         return data;
     }
 
-    static async deletePropertyOfTemplate(templateId: string, properties: string[]) {
-        // console.log('property:', property);
-
-        const { data } = await this.InstanceManagerApi.patch<IEntity[]>(`${baseEntitiesRoute}/deletePropertyOfTemplate/${templateId}`, {
+    static async deletePropertiesOfTemplate(templateId: string, properties: string[]) {
+        const { data } = await this.InstanceManagerApi.patch<IEntity[]>(`${baseEntitiesRoute}/deletePropertiesOfTemplate/${templateId}`, {
             properties,
         });
-        console.log('res in gateway', data);
-
         return data;
     }
 }

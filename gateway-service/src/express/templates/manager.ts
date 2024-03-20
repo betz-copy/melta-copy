@@ -403,9 +403,7 @@ export class TemplatesManager {
             });
         }
         if (removedProperties.length > 0) {
-            console.log('removedProperties', removedProperties);
-
-            await InstanceManagerService.deletePropertyOfTemplate(id, removedProperties);
+            await InstanceManagerService.deletePropertiesOfTemplate(id, removedProperties);
         }
 
         let iconFileId: string | null;

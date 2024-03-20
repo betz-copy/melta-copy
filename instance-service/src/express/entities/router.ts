@@ -16,6 +16,7 @@ import {
     getExpandedEntityByIdRequestSchema,
     searchEntitiesBatchRequestSchema,
     searchEntitiesOfTemplateRequestSchema,
+    deletePropertiesOfTemplate,
 } from './validator.schema';
 
 const entityRouter: Router = Router();
@@ -57,7 +58,11 @@ entityRouter.put(
     wrapMiddleware(validateEntity),
     wrapController(EntityController.updateEntityById),
 );
-entityRouter.patch('/deletePropertyOfTemplate/:templateId', wrapController(EntityController.deletePropertyOfTemplate));
+entityRouter.patch(
+    '/deletePropertiesOfTemplate/:templateId',
+    ValidateRequest(deletePropertiesOfTemplate),
+    wrapController(EntityController.deletePropertiesOfTemplate),
+);
 entityRouter.patch('/:id/status', ValidateRequest(updateEntityStatusByIdRequestSchema), wrapController(EntityController.updateStatusById));
 
 export default entityRouter;

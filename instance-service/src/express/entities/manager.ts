@@ -97,13 +97,13 @@ export class EntityManager {
         ).catch(EntityManager.throwServiceErrorIfFailedConstraintsValidation);
     }
 
-    static async deletePropertyOfTemplate(templateId: string, body: { properties: string[] }) {
-        const propertiesAsArray = body.properties.map((property) => `'${property}'`).join(', ');
+    static async deletePropertiesOfTemplate(templateId: string, body: { properties: string[] }) {
+        const propertiesAsArray = body.properties.map((property) => `'${property}'`);
 
         return Neo4jClient.writeTransaction(
             `MATCH (e: \`${templateId}\`)
             WITH collect(e) AS nodes
-            CALL apoc.create.removeProperties(nodes, ${propertiesAsArray}) YIELD node
+            CALL apoc.create.removeProperties(nodes, [${propertiesAsArray.join(', ')}]) YIELD node
             RETURN node`,
             normalizeReturnedEntity('multipleResponses'),
         );

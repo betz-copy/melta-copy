@@ -201,3 +201,13 @@ export const updateConstraintsOfTemplateRequestSchema = Joi.object({
         templateId: Joi.string().required(),
     },
 });
+
+export const deletePropertiesOfTemplate = Joi.object({
+    body: {
+        properties: Joi.array().items(Joi.string()),
+    },
+    query: {},
+    params: {
+        templateId: Joi.string().required(),
+    },
+});
