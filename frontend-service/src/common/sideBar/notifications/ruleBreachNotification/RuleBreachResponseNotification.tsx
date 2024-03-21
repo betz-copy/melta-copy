@@ -3,13 +3,19 @@ import { Box, Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
 import RuleBreachInfo from '../../../ruleBreanchInfo/RuleBreachInfo';
 import { RuleBreachRequestStatus } from '../../../../interfaces/ruleBreaches/ruleBreachRequest';
-import { IRuleBreachResponseNotificationMetadataPopulated } from '../../../../interfaces/notifications';
+import { IRuleBreachResponseNotificationMetadataPopulated, NotificationType } from '../../../../interfaces/notifications';
+import { environment } from '../../../../globals';
+import { NotificationColor } from '../../../notificationColor';
 
-export const RuleBreachResponseNotification: React.FC<IRuleBreachResponseNotificationMetadataPopulated> = ({ request }) => {
+export const RuleBreachResponseNotification: React.FC<IRuleBreachResponseNotificationMetadataPopulated> = ({ request, titleColor }) => {
+    const { notificationsMoreData } = environment.notifications;
+    const color = notificationsMoreData.general.find((notificationData) => notificationData.type === NotificationType.ruleBreachResponse)?.color;
+
     return (
         <Grid container direction="column" spacing={1}>
-            <Grid item>
-                <Typography component="p" variant="body1">
+            <Grid container>
+                <NotificationColor color={color!} />
+                <Typography component="p" variant="body1" color={titleColor} paddingLeft="10px">
                     {i18next.t('ruleBreachResponseNotification.theRequestOfExecutingTheAction')}
                 </Typography>
             </Grid>

@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Grid, IconButton } from '@mui/material';
-import { Search as SearchIcon } from '@mui/icons-material';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import i18next from 'i18next';
@@ -55,12 +54,7 @@ const ProcessTemplatesRow: React.FC = () => {
         <Grid item container marginBottom="30px" gap="30px">
             <Grid container spacing={1} alignItems="center">
                 <Grid item>
-                    <SearchInput
-                        onChange={setSearchText}
-                        borderRadius="7px"
-                        placeholder={i18next.t('globalSearch.searchProcesses')}
-                        endAdornmentChildren={<SearchIcon />}
-                    />
+                    <SearchInput onChange={setSearchText} borderRadius="7px" placeholder={i18next.t('globalSearch.searchProcesses')} />
                 </Grid>
                 <Grid item>
                     <IconButton

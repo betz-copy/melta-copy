@@ -49,7 +49,7 @@ const StepNameTypography = styled(Typography)<{ type: 'currentStep' | 'finishedS
 
 const DashedHorizontalLine = styled('div')(({ theme }) => ({
     flexGrow: 1,
-    margin: '30px',
+    margin: '15px',
     borderBottom: `2px solid ${theme.palette.mode === 'dark' ? 'rgb(200, 200, 200, 0.2)' : '#e4e6ef'}`,
 }));
 
