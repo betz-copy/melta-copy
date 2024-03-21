@@ -204,7 +204,17 @@ export const updateConstraintsOfTemplateRequestSchema = Joi.object({
 
 export const deletePropertiesOfTemplate = Joi.object({
     body: {
-        properties: Joi.array().items(Joi.string()),
+        properties: Joi.array().items(Joi.string()).required(),
+    },
+    query: {},
+    params: {
+        templateId: Joi.string().required(),
+    },
+});
+
+export const getFilePathsOfTemplate = Joi.object({
+    body: {
+        filesProperties: Joi.array().items(Joi.string()).required(),
     },
     query: {},
     params: {

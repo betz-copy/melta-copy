@@ -17,6 +17,7 @@ import {
     searchEntitiesBatchRequestSchema,
     searchEntitiesOfTemplateRequestSchema,
     deletePropertiesOfTemplate,
+    getFilePathsOfTemplate,
 } from './validator.schema';
 
 const entityRouter: Router = Router();
@@ -27,7 +28,11 @@ entityRouter.get(
     wrapController(EntityController.getConstraintsOfTemplate),
 );
 entityRouter.get('/constraints', ValidateRequest(getAllConstraintsRequestSchema), wrapController(EntityController.getAllConstraints));
-entityRouter.post('/getFilePathsOfTemplate/:templateId', wrapController(EntityController.getFilePathsOfTemplate));
+entityRouter.post(
+    '/getFilePathsOfTemplate/:templateId',
+    ValidateRequest(getFilePathsOfTemplate),
+    wrapController(EntityController.getFilePathsOfTemplate),
+);
 entityRouter.put(
     '/constraints/:templateId',
     ValidateRequest(updateConstraintsOfTemplateRequestSchema),
