@@ -9,7 +9,7 @@ const DateRange: React.FC<{
     startDateInput: Date | null;
     endDateInput: Date | null;
     overrideSx?: object;
-    isNotificationFilter: boolean;
+    isNotificationFilter?: boolean;
 }> = ({ onStartDateChange, onEndDateChange, startDateInput, endDateInput, overrideSx, isNotificationFilter = false }) => {
     // const darkMode = useSelector((state: RootState) => state.darkMode);
 

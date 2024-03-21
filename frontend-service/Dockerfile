@@ -6,6 +6,7 @@ COPY . .
 
 RUN NODE_OPTIONS=--max-old-space-size=4096 npm run build --prod
 
+
 FROM nginx:alpine
 
 COPY --from=build /usr/src/app/dist /usr/share/nginx/html

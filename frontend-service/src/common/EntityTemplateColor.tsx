@@ -1,6 +1,5 @@
 import { Grid } from '@mui/material';
 import React, { CSSProperties } from 'react';
-import { environment } from '../globals';
 
 interface EntityTemplateColorProps {
     entityTemplateColor: string;
