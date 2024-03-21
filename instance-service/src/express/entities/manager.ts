@@ -14,6 +14,7 @@ import {
     normalizeGetDbConstraints,
     runInTransactionAndNormalize,
     normalizeSearchWithRelationships,
+    normalizeReturnedStringArray,
 } from '../../utils/neo4j/lib';
 import {
     IConstraint,
@@ -95,18 +96,6 @@ export class EntityManager {
                 },
             },
         ).catch(EntityManager.throwServiceErrorIfFailedConstraintsValidation);
-    }
-
-    static async deletePropertiesOfTemplate(templateId: string, body: { properties: string[] }) {
-        const propertiesAsArray = body.properties.map((property) => `'${property}'`);
-
-        return Neo4jClient.writeTransaction(
-            `MATCH (e: \`${templateId}\`)
-            WITH collect(e) AS nodes
-            CALL apoc.create.removeProperties(nodes, [${propertiesAsArray.join(', ')}]) YIELD node
-            RETURN node`,
-            normalizeReturnedEntity('multipleResponses'),
-        );
     }
 
     static async searchEntitiesOfTemplate(searchBody: ISearchEntitiesOfTemplateBody, entityTemplate: IMongoEntityTemplate) {
@@ -614,6 +603,30 @@ export class EntityManager {
 
             await Promise.all(updateConstraintsPromises);
         });
+    }
+
+    static async deletePropertiesOfTemplate(templateId: string, propertiesToRemove: { properties: string[] }) {
+        return Neo4jClient.writeTransaction(
+            `MATCH (e: \`${templateId}\`)
+            WITH collect(e) AS nodes
+            CALL apoc.create.removeProperties(nodes, $properties) YIELD node
+            RETURN node`,
+            normalizeReturnedEntity('multipleResponses'),
+            {
+                properties: propertiesToRemove.properties,
+            },
+        );
+    }
+
+    static async getFilePathsOfTemplate(templateId: string, filesProperties: { filesProperties: string[] }) {
+        const propertiesAsString = filesProperties.filesProperties.map((property) => `e.${property}`).join(', ');
+
+        return Neo4jClient.readTransaction(
+            `MATCH (e: \`${templateId}\`)
+             WHERE ${propertiesAsString} IS NOT NULL
+             RETURN ${propertiesAsString}`,
+            normalizeReturnedStringArray,
+        );
     }
 }
 

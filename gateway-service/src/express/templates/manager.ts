@@ -9,7 +9,7 @@ import {
 } from '../../externalServices/entityTemplateService';
 import { InstanceManagerService } from '../../externalServices/instanceService';
 import { IRelationshipTemplate, RelationshipsTemplateManagerService } from '../../externalServices/relationshipsTemplateService';
-import { deleteFile, uploadFile } from '../../externalServices/storageService';
+import { deleteFile, deleteFiles, uploadFile } from '../../externalServices/storageService';
 import { trycatch } from '../../utils';
 import { removeTmpFile } from '../../utils/fs';
 import { ServiceError } from '../error';
@@ -373,6 +373,7 @@ export class TemplatesManager {
 
         if (currTemplate.disabled === true) throw new ServiceError(400, 'can not update disabled template');
         const removedProperties: string[] = [];
+        const removedFilesProperties: string[] = [];
 
         if (count > 0) {
             if (updatedTemplateData.name !== currTemplate.name) throw new ServiceError(400, 'can not change template name');
@@ -383,12 +384,10 @@ export class TemplatesManager {
                 }
             });
             Object.entries(currTemplate.properties.properties).forEach(([key, value]) => {
-                console.log('🚀 ~ TemplatesManager ~ Object.entries ~ value:', value);
-                console.log('🚀 ~ TemplatesManager ~ Object.entries ~ key:', key);
                 const newValue = updatedTemplateData.properties.properties[key];
                 if (!newValue) {
-                    console.log('hiiiiii');
                     removedProperties.push(key);
+                    if (value.format === 'fileId') removedFilesProperties.push(key);
                 } else {
                     if (value.serialCurrent !== undefined) {
                         // eslint-disable-next-line no-param-reassign
@@ -401,9 +400,6 @@ export class TemplatesManager {
                     if (value.serialStarter !== newValue.serialStarter) throw new ServiceError(400, 'can not change property serial starter');
                 }
             });
-        }
-        if (removedProperties.length > 0) {
-            await InstanceManagerService.deletePropertiesOfTemplate(id, removedProperties);
         }
 
         let iconFileId: string | null;
@@ -420,6 +416,15 @@ export class TemplatesManager {
             iconFileId = null;
         } else {
             iconFileId = currTemplate.iconFileId;
+        }
+
+        if (removedFilesProperties.length > 0) {
+            const filePaths = await InstanceManagerService.getFilePathsOfTemplate(id, removedFilesProperties);
+            await deleteFiles(filePaths);
+        }
+
+        if (removedProperties.length > 0) {
+            await InstanceManagerService.deletePropertiesOfTemplate(id, removedProperties);
         }
 
         const { uniqueConstraints, properties, ...restOfTemplateData } = updatedTemplateData;

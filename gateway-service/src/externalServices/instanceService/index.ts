@@ -103,6 +103,13 @@ export class InstanceManagerService {
         return data;
     }
 
+    static async getFilePathsOfTemplate(templateId: string, filesProperties: string[]) {
+        const { data } = await this.InstanceManagerApi.post<string[]>(`${baseEntitiesRoute}/getFilePathsOfTemplate/${templateId}`, {
+            filesProperties,
+        });
+        return data;
+    }
+
     static async deletePropertiesOfTemplate(templateId: string, properties: string[]) {
         const { data } = await this.InstanceManagerApi.patch<IEntity[]>(`${baseEntitiesRoute}/deletePropertiesOfTemplate/${templateId}`, {
             properties,

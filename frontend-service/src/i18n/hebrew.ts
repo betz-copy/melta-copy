@@ -176,6 +176,8 @@ export default {
         disabledEntityTemplate: 'תבנית לא פעילה',
         disabledRule: 'חוק לא פעיל',
         defaultCantEdit: 'לא ניתן לערוך ',
+        deleteField: 'מחיקת שדה',
+        warningOnDeleteField: 'שים לב! מחיקת שדה זה תגרום למחיקת שדה זה אצל כל הישיות בעלות תבנית זו',
     },
     error: {
         config: 'שגיאה בתקשורת לשרת',

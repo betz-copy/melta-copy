@@ -73,6 +73,13 @@ export const normalizeResponseCount = (result: QueryResult): number => {
     return result.records[0].get(0).toNumber();
 };
 
+export const normalizeReturnedStringArray = (result: QueryResult): string[] => {
+    return result.records.map((record) => {
+        // eslint-disable-next-line no-underscore-dangle
+        return String((record as any)._fields[0]);
+    });
+};
+
 export const normalizeRuleResultAgainstPair = (result: QueryResult): boolean => {
     return result.records[0].get('doesRuleStillApply');
 };

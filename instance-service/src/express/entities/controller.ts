@@ -65,6 +65,10 @@ class EntityController {
     static async deletePropertiesOfTemplate(req: Request, res: Response) {
         res.json(await EntityManager.deletePropertiesOfTemplate(req.params.templateId, req.body));
     }
+
+    static async getFilePathsOfTemplate(req: Request, res: Response) {
+        res.json(await EntityManager.getFilePathsOfTemplate(req.params.templateId, req.body));
+    }
 }
 
 export default EntityController;
