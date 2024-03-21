@@ -1,7 +1,7 @@
 import { AppRegistration as AppRegistrationIcon } from '@mui/icons-material';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
-import { Box, Card, CardContent, CardHeader, Dialog, Divider, Grid, Typography } from '@mui/material';
+import { Box, Card, CardContent, CardHeader, Dialog, Divider, Grid, Typography, styled } from '@mui/material';
 import i18next from 'i18next';
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -22,6 +22,16 @@ import { getFileName } from '../../../utils/getFileName';
 import { getPreviewContentType } from '../../../utils/getFileType';
 import { EntityDates } from '../../Entity/components/EntityDates';
 import { EntityDisableCheckbox } from '../../Entity/components/EntityDisableCheckbox';
+
+export const StyledCard = styled(Card)(({ theme }) => ({
+    background: theme.palette.mode === 'light' ? '#FFFFFF 0% 0% no-repeat padding-box' : undefined,
+    boxShadow: '0px 3px 6px #00000029',
+    border: theme.palette.mode === 'light' ? '1px solid #DBDBDB' : undefined,
+    borderRadius: '8px',
+    opacity: '1',
+    ':hover': { transform: 'scale(1.02)' },
+    cursor: 'pointer',
+}));
 
 interface EntityCardProps {
     entity: IEntity;
@@ -112,7 +122,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
     ];
 
     return (
-        <Card raised variant={variant} ref={cardRef} sx={{ borderRadius: '15px', overflow: 'hidden', minHeight: '16rem', ...customCardStyle }}>
+        <Card raised variant={variant} ref={cardRef} sx={{ borderRadius: '15px', overflow: 'hidden', minHeight: '15rem', ...customCardStyle }}>
             <CardHeader
                 sx={{ padding: '6px 10px 0px 10px' }}
                 title={
@@ -195,7 +205,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
                 }
             />
 
-            <Divider style={{ border: '1px solid #EBEFFA', margin: '6px' }} />
+            <Divider style={{ border: '1px solid #EBEFFA', margin: '0 1% 2% 1%' }} />
 
             {!open && (
                 <Grid container>
@@ -228,9 +238,10 @@ const EntityCard: React.FC<EntityCardProps> = ({
                     {shouldDisplayFilePreview && (
                         <Grid item xs={3.8}>
                             {files.length ? (
-                                <Box
+                                <Grid
+                                    item
                                     sx={{
-                                        height: '17vh',
+                                        height: '150px',
                                         margin: '0.3rem 1rem 1rem 1rem',
                                         zIndex: 2,
                                     }}
@@ -278,9 +289,18 @@ const EntityCard: React.FC<EntityCardProps> = ({
                                             />
                                         </Grid>
                                     </Grid>
-                                </Box>
+                                </Grid>
                             ) : (
-                                <img src="/icons/no-file.svg" style={{ height: '18.3vh' }} />
+                                <Grid item sx={{ display: 'flex', flexDirection: 'row' }}>
+                                    <img
+                                        src="/icons/no-file.svg"
+                                        style={{
+                                            height: '150px',
+                                            margin: '0.3rem 1rem 1rem 1rem',
+                                            zIndex: 2,
+                                        }}
+                                    />
+                                </Grid>
                             )}
                         </Grid>
                     )}
@@ -312,7 +332,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
                             <Grid container marginTop="30px">
                                 <EntityDisableCheckbox isEntityDisabled={entity.properties.disabled} />
                             </Grid>
-                            <Grid marginTop="4vh" width="76.5%">
+                            <Grid marginTop="30px" width="80%">
                                 <EntityDates createdAt={entity.properties.createdAt} updatedAt={entity.properties.updatedAt} />
                             </Grid>
                         </CardContent>

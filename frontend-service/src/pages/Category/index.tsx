@@ -66,21 +66,19 @@ const Category: React.FC = () => {
     }, [entityTemplates.size, category._id]);
 
     return (
-        <Grid container marginLeft="0" marginRight="0">
-            <EntitiesPage
-                key={category._id}
-                templates={categoryTemplates}
-                setTemplates={(newTemplates) => {
-                    const ids = (newTemplates as IMongoEntityTemplatePopulated[]).map((template) => template._id);
-                    setCategoryTemplatesId(ids);
-                }}
-                templatesToShowCheckbox={templatesToShowCheckbox}
-                setTemplatesToShowCheckbox={setTemplatesToShowCheckbox}
-                excelExportAllTablesFileName={`${category.displayName}.xlsx`}
-                pageType="category"
-                pageTitle={category.displayName}
-            />
-        </Grid>
+        <EntitiesPage
+            key={category._id}
+            templates={categoryTemplates}
+            setTemplates={(newTemplates) => {
+                const ids = (newTemplates as IMongoEntityTemplatePopulated[]).map((template) => template._id);
+                setCategoryTemplatesId(ids);
+            }}
+            templatesToShowCheckbox={templatesToShowCheckbox}
+            setTemplatesToShowCheckbox={setTemplatesToShowCheckbox}
+            excelExportAllTablesFileName={`${category.displayName}.xlsx`}
+            pageType="category"
+            pageTitle={category.displayName}
+        />
     );
 };
 
