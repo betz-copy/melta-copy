@@ -1,4 +1,4 @@
-import React, { SetStateAction, useCallback, useRef } from 'react';
+import React, { SetStateAction, useCallback, useRef, useState } from 'react';
 import { Accordion, AccordionDetails, AccordionSummary, Box, Button, Grid, styled, Typography } from '@mui/material';
 import { DragDropContext, DraggableProvided, Droppable } from 'react-beautiful-dnd';
 import { v4 as uuid } from 'uuid';
@@ -10,6 +10,7 @@ import { FieldEditCardProps, MemoFieldEditCard } from './FieldEditCard';
 import { MemoAttachmentEditCard } from './AttachmentEditCard';
 import { StepComponentHelpers } from '..';
 import { CommonFormInputProperties } from './commonInterfaces';
+import { AreYouSureDialog } from '../../dialogs/AreYouSureDialog';
 
 export const FieldBlockAccordion = styled(Accordion)({
     width: '100%',
@@ -72,6 +73,9 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
 }: React.PropsWithChildren<FieldBlockProps<PropertiesType, Values>>) => {
     // copy of values of formik in order to show changes on inputs fast (formik rerenders are slow)
     const [displayValues, setDisplayValues] = React.useState(values[propertiesType]);
+    const [showAreUSureDialogForRemoveProperty, setShowAreUSureDialogForRemoveProperty] = useState(false);
+    const [selectedIndexToRemove, setSelectedIndexForRemove] = useState(-1);
+
     // using displayValues ref because update functions (push/remove/...) are not updated for the field cards on
     // every re-render and if displayValues changes, it does not update in the functions of the field cards.
     // therefore using a reference for them to always use the current displayValues.
@@ -97,10 +101,17 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
     };
 
     const remove = (index: number) => {
+        if (areThereAnyInstances) {
+            setShowAreUSureDialogForRemoveProperty(true);
+            setSelectedIndexForRemove(index);
+        }
+    };
+
+    const onDeleteSure = () => {
+        setShowAreUSureDialogForRemoveProperty(false);
         const displayValuesCopy = [...displayValuesRef.current] as Values[PropertiesType];
 
-        displayValuesCopy.splice(index, 1);
-
+        displayValuesCopy.splice(selectedIndexToRemove, 1);
         setDisplayValues(displayValuesCopy);
         updateFormik();
     };
@@ -229,6 +240,13 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
                     )}
                 </FieldArray>
             </AccordionDetails>
+            <AreYouSureDialog
+                open={showAreUSureDialogForRemoveProperty}
+                handleClose={() => setShowAreUSureDialogForRemoveProperty(false)}
+                title={i18next.t('systemManagement.deleteField')}
+                body={<Typography>{i18next.t('systemManagement.warningOnDeleteField')}</Typography>}
+                onYes={onDeleteSure}
+            />
         </FieldBlockAccordion>
     );
 };

@@ -94,11 +94,13 @@ export const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
                                                             name={required}
                                                             onChange={onChange}
                                                             checked={value.required}
-                                                            disabled={(supportChangeToRequiredWithInstances
-                                                                ? false
-                                                                : isEditMode &&
-                                                                  areThereAnyInstances &&
-                                                                  (isNewProperty || (!isNewProperty && !initialValue?.required)))}
+                                                            disabled={
+                                                                supportChangeToRequiredWithInstances
+                                                                    ? false
+                                                                    : isEditMode &&
+                                                                      areThereAnyInstances &&
+                                                                      (isNewProperty || (!isNewProperty && !initialValue?.required))
+                                                            }
                                                         />
                                                     }
                                                     label={i18next.t('validation.required')}
@@ -106,7 +108,7 @@ export const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
                                             )}
                                         </Box>
 
-                                        <IconButton disabled={isDisabled} onClick={() => remove(index)}>
+                                        <IconButton onClick={() => remove(index)}>
                                             <DeleteIcon />
                                         </IconButton>
                                     </Grid>
