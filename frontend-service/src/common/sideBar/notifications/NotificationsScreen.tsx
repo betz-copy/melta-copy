@@ -249,7 +249,17 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                         )}
                     </InfiniteScroll>
 
-                    <Grid container sx={{ position: 'absolute', bottom: 0, justifyContent: 'flex-end', padding: '8px', backgroundColor: 'white' }}>
+                    <Grid
+                        container
+                        sx={{
+                            position: 'absolute',
+                            bottom: 0,
+                            justifyContent: 'flex-end',
+                            padding: '8px',
+                            backgroundColor: 'white',
+                            borderRadius: '15px',
+                        }}
+                    >
                         <LoadingButton
                             onClick={() => {
                                 if (!notificationCountDetails.groups[selectedGroup]) return;
