@@ -6,9 +6,11 @@ import { Description } from './Description';
 import { environment } from '../../../../../globals';
 import { NotificationColor } from '../../../../notificationColor';
 
-export const ProcessReviewerUpdateNotification: React.FC<IProcessReviewerUpdateNotificationMetadataPopulated> = (metadata) => {
+export const ProcessReviewerUpdateNotification: React.FC<{
+    notificationMetadata: IProcessReviewerUpdateNotificationMetadataPopulated;
+    titleColor: string;
+}> = ({ notificationMetadata, titleColor }) => {
     const { notificationsMoreData } = environment.notifications;
-    const { titleColor } = metadata;
     const color = notificationsMoreData.general.find((notificationData) => notificationData.type === NotificationType.processReviewerUpdate)?.color;
 
     return (
@@ -19,7 +21,7 @@ export const ProcessReviewerUpdateNotification: React.FC<IProcessReviewerUpdateN
                     {i18next.t('processReviewerUpdateNotification.reviewerUpdate')}
                 </Typography>
             </Grid>
-            <Description {...metadata} />
+            <Description {...notificationMetadata} />
         </Grid>
     );
 };

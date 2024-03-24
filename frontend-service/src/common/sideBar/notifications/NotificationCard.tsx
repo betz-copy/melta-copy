@@ -73,24 +73,32 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({ notification
                     )}
                     <Grid item sx={{ padding: '10px' }}>
                         {isRuleBreachAlertNotification(notification) && (
-                            <RuleBreachAlertNotification {...notification.metadata} titleColor="#4752B6" />
+                            <RuleBreachAlertNotification notificationMetadata={notification.metadata} titleColor="#4752B6" />
                         )}
                         {isRuleBreachRequestNotification(notification) && (
-                            <RuleBreachRequestNotification {...notification.metadata} titleColor="#4752B6" />
+                            <RuleBreachRequestNotification notificationMetadata={notification.metadata} titleColor="#4752B6" />
                         )}
                         {isRuleBreachResponseNotification(notification) && (
-                            <RuleBreachResponseNotification {...notification.metadata} titleColor="#4752B6" />
+                            <RuleBreachResponseNotification notificationMetadata={notification.metadata} titleColor="#4752B6" />
                         )}
-                        {isNewProcessNotification(notification) && <NewProcessNotification {...notification.metadata} titleColor="#4752B6" />}
+                        {isNewProcessNotification(notification) && (
+                            <NewProcessNotification notificationMetadata={notification.metadata} titleColor="#4752B6" />
+                        )}
                         {isProcessStatusUpdateNotification(notification) && (
-                            <ProcessStatusUpdateNotification {...notification.metadata} titleColor="#4752B6" />
+                            <ProcessStatusUpdateNotification notificationMetadata={notification.metadata} titleColor="#4752B6" />
                         )}
                         {isProcessReviewerUpdateNotification(notification) && (
-                            <ProcessReviewerUpdateNotification {...notification.metadata} titleColor="#4752B6" />
+                            <ProcessReviewerUpdateNotification notificationMetadata={notification.metadata} titleColor="#4752B6" />
                         )}
-                        {isDateAboutToExpireNotification(notification) && <DateAboutToExpireNotification {...notification.metadata} />}
-                        {isDeleteProcessNotification(notification) && <DeleteProcessNotification {...notification.metadata} titleColor="#4752B6" />}
-                        {isArchiveProcessNotification(notification) && <ArchiveProcessNotification {...notification.metadata} titleColor="#4752B6" />}
+                        {isDateAboutToExpireNotification(notification) && (
+                            <DateAboutToExpireNotification notificationMetadata={notification.metadata} />
+                        )}
+                        {isDeleteProcessNotification(notification) && (
+                            <DeleteProcessNotification notificationMetadata={notification.metadata} titleColor="#4752B6" />
+                        )}
+                        {isArchiveProcessNotification(notification) && (
+                            <ArchiveProcessNotification notificationMetadata={notification.metadata} titleColor="#4752B6" />
+                        )}
                     </Grid>
                     <Grid container wrap="nowrap" margin="-5px">
                         {isDateAboutToExpireNotification(notification) && (

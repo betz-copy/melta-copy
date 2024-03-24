@@ -5,7 +5,10 @@ import { IDeleteProcessNotificationMetadataPopulated, NotificationType } from '.
 import { environment } from '../../../../globals';
 import { NotificationColor } from '../../../notificationColor';
 
-export const DeleteProcessNotification: React.FC<IDeleteProcessNotificationMetadataPopulated> = ({ processName, titleColor }) => {
+export const DeleteProcessNotification: React.FC<{ notificationMetadata: IDeleteProcessNotificationMetadataPopulated; titleColor: string }> = ({
+    notificationMetadata: { processName },
+    titleColor,
+}) => {
     const { notificationsMoreData } = environment.notifications;
     const color = notificationsMoreData.general.find((notificationData) => notificationData.type === NotificationType.deleteProcess)?.color;
 
