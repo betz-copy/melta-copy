@@ -6,7 +6,10 @@ import { IRuleBreachRequestNotificationMetadataPopulated, NotificationType } fro
 import { environment } from '../../../../globals';
 import { NotificationColor } from '../../../notificationColor';
 
-export const RuleBreachRequestNotification: React.FC<IRuleBreachRequestNotificationMetadataPopulated> = ({ request, titleColor }) => {
+export const RuleBreachRequestNotification: React.FC<{
+    notificationMetadata: IRuleBreachRequestNotificationMetadataPopulated;
+    titleColor: string;
+}> = ({ notificationMetadata: { request }, titleColor }) => {
     const { notificationsMoreData } = environment.notifications;
     const color = notificationsMoreData.requests.find((notificationData) => notificationData.type === NotificationType.ruleBreachRequest)?.color;
 

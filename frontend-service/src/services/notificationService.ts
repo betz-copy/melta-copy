@@ -1,6 +1,3 @@
-// import { parse } from 'date-fns';
-// eslint-disable-next-line import/no-unresolved, import/no-extraneous-dependencies
-import moment from 'moment';
 import axios from '../axios';
 import { environment } from '../globals';
 import { INotificationCountGroups, INotificationGroupCountDetails, INotificationPopulated, NotificationType } from '../interfaces/notifications';

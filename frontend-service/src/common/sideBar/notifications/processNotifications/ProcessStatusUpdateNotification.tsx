@@ -8,12 +8,10 @@ import '../../../../css/index.css';
 import { environment } from '../../../../globals';
 import { NotificationColor } from '../../../notificationColor';
 
-export const ProcessStatusUpdateNotification: React.FC<IProcessStatusUpdateNotificationMetadataPopulated> = ({
-    process,
-    step,
-    status,
-    titleColor,
-}) => {
+export const ProcessStatusUpdateNotification: React.FC<{
+    notificationMetadata: IProcessStatusUpdateNotificationMetadataPopulated;
+    titleColor: string;
+}> = ({ notificationMetadata: { process, step, status }, titleColor }) => {
     const { notificationsMoreData } = environment.notifications;
     const color = notificationsMoreData.general.find((notificationData) => notificationData.type === NotificationType.processStatusUpdate)?.color;
 

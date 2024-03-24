@@ -6,7 +6,9 @@ import { IDateAboutToExpireMetadataPopulated } from '../../../../interfaces/noti
 import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
 import { EntityLink } from '../../../EntityLink';
 
-export const DateAboutToExpireNotification: React.FC<IDateAboutToExpireMetadataPopulated> = ({ entity, propertyName, datePropertyValue }) => {
+export const DateAboutToExpireNotification: React.FC<{ notificationMetadata: IDateAboutToExpireMetadataPopulated }> = ({
+    notificationMetadata: { entity, propertyName, datePropertyValue },
+}) => {
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const entityTemplate = entity ? entityTemplates.get(entity.templateId)! : null;
