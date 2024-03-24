@@ -207,7 +207,6 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                                         },
                                     },
                                 }}
-                                isNotificationFilter
                             />
 
                             <IconButtonWithPopover
