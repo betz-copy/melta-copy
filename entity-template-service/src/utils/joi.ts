@@ -13,6 +13,7 @@ ajv.addKeyword({
     keyword: 'dateNotification',
     type: 'string',
 });
+ajv.addKeyword({ keyword: 'calculateTime', type: 'boolean' });
 const stringFormats = ['date', 'date-time', 'email', 'fileId'];
 const allowedJSONSchemaTypes = ['string', 'number', 'boolean', 'array'];
 ajv.addKeyword({
@@ -69,6 +70,9 @@ const propertiesArraySchema = Joi.array()
             }),
             dateNotification: Joi.string()
                 .valid('day', 'week', 'twoWeeks')
+                .when('format', { not: Joi.valid('date', 'date-time'), then: Joi.forbidden() })
+                .when('type', { not: 'string', then: Joi.forbidden() }),
+            calculateTime: Joi.boolean()
                 .when('format', { not: Joi.valid('date', 'date-time'), then: Joi.forbidden() })
                 .when('type', { not: 'string', then: Joi.forbidden() }),
             serialStarter: Joi.number().when('type', { not: 'number', then: Joi.forbidden() }),

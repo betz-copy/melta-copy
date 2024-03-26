@@ -25,7 +25,7 @@ ajv.addKeyword({
     keyword: 'dateNotification',
     type: 'string',
 });
-
+ajv.addKeyword({ keyword: 'calculateTime', type: 'boolean' });
 ajv.addKeyword({
     keyword: 'serialStarter',
     type: 'number',

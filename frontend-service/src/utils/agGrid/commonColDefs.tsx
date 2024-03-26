@@ -248,6 +248,7 @@ export const dateColDef = <Data extends any = IEntity>(
     hardcodedWidth?: number,
     hideColumn = false,
     hideValue = false,
+    calculateTime = false,
 ): ColDef<Data> => {
     const { format } = value;
 
@@ -279,7 +280,9 @@ export const dateColDef = <Data extends any = IEntity>(
         field,
         headerName: value.title,
         valueGetter,
-        cellRenderer: (props: ICellRendererParams<Data, string | undefined>) => <Value hideValue={hideValue} value={formatDate(props.value)} />,
+        cellRenderer: (props: ICellRendererParams<Data, string | undefined>) => (
+            <Value hideValue={hideValue} value={formatDate(props.value)} calculateTime={calculateTime} />
+        ),
         filter: 'agDateColumnFilter',
         filterParams,
         minWidth: format === 'date-time' ? 220 : undefined,

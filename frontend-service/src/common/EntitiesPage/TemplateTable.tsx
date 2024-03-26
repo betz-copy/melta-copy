@@ -1,6 +1,7 @@
 import React, { forwardRef, useImperativeHandle, useRef, useState } from 'react';
 import { Grid, Box, CircularProgress, Dialog, useTheme } from '@mui/material';
 import i18next from 'i18next';
+import { AppRegistration as DefaultEntityTemplateIcon } from '@mui/icons-material';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import fileDownload from 'js-file-download';
@@ -89,16 +90,25 @@ const TemplateTable = forwardRef<
     return (
         <Grid container minWidth="fit-content">
             <Grid container justifyContent="space-between" width="fit-content" minWidth="fit-content">
-                <Grid item container xs={5} alignItems="center" minWidth="fit-content">
+                <Grid item container xs={5} alignItems="center" minWidth="fit-content" gap="10px">
                     <Grid item minWidth="fit-content">
                         <EntityTemplateColor entityTemplateColor={entityTemplateColor} />
                     </Grid>
-                    <Grid item minWidth="fit-content">
-                        {template.iconFileId && (
-                            <CustomIcon iconUrl={template.iconFileId} height="30px" width="30px" color={theme.palette.primary.main} />
+                    <Grid item minWidth="fit-content" sx={{ display: 'flex', justifyContent: 'center', alignContent: 'center' }}>
+                        {template.iconFileId ? (
+                            <CustomIcon
+                                iconUrl={template.iconFileId}
+                                height={environment.iconSize.height}
+                                width={environment.iconSize.width}
+                                color={theme.palette.primary.main}
+                            />
+                        ) : (
+                            <DefaultEntityTemplateIcon
+                                sx={{ color: theme.palette.primary.main, height: environment.iconSize.height, width: environment.iconSize.width }}
+                            />
                         )}
                     </Grid>
-                    <Grid item paddingLeft="10px" minWidth="fit-content" style={{ whiteSpace: 'nowrap', overflow: 'hidden' }}>
+                    <Grid item minWidth="fit-content" style={{ whiteSpace: 'nowrap', overflow: 'hidden' }}>
                         <BlueTitle
                             style={{ minWidth: 'fit-content', whiteSpace: 'nowrap', overflow: 'hidden', fontWeight: '500', fontSize: '20px' }}
                             title={template.displayName}

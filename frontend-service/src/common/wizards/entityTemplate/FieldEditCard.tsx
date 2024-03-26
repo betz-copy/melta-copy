@@ -100,6 +100,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     const errorOptions = errors?.options;
 
     const dateNotification = `properties[${index}].dateNotification`;
+    const calculateTime = `properties[${index}].calculateTime`;
     const touchedDateNotification = touched?.dateNotification;
     const errorDateNotification = errors?.dateNotification;
 
@@ -421,6 +422,19 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                         label={i18next.t('validation.unique')}
                                                     />
                                                 </MeltaTooltip>
+                                            )}
+                                            {(value.type === 'date' || value.type === 'date-time') && 'calculateTime' in value && (
+                                                <FormControlLabel
+                                                    control={
+                                                        <Switch
+                                                            id={calculateTime}
+                                                            name={calculateTime}
+                                                            onChange={onChange}
+                                                            checked={value.calculateTime ?? false}
+                                                        />
+                                                    }
+                                                    label={i18next.t('validation.calculateTime')}
+                                                />
                                             )}
                                         </Box>
 

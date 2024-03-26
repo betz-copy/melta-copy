@@ -67,6 +67,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
         pattern: '',
         patternCustomErrorMessage: '',
         dateNotification: undefined,
+        calculateTime: false,
         serialStarter: 0,
     },
 }: React.PropsWithChildren<FieldBlockProps<PropertiesType, Values>>) => {

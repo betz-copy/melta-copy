@@ -58,7 +58,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, setDeleteCategory
                             <EntityTemplateColor entityTemplateColor={category.color} style={{ height: '18px' }} />
                         </Grid>
 
-                        <Grid item>
+                        <Grid item sx={{ display: 'flex', justifyContent: 'center', alignContent: 'center' }}>
                             {category.iconFileId ? (
                                 <CustomIcon color={theme.palette.primary.main} iconUrl={category.iconFileId} height="24px" width="24px" />
                             ) : (

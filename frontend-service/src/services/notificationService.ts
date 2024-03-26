@@ -4,8 +4,19 @@ import { INotificationCountGroups, INotificationGroupCountDetails, INotification
 
 const { notifications } = environment.api;
 
-export const getMyNotificationsRequest = async (query: { limit: number; step?: number; types?: NotificationType[] }) => {
-    const { data } = await axios.get<INotificationPopulated[]>(`${notifications}/my`, { params: query });
+export const getMyNotificationsRequest = async (query: {
+    limit: number;
+    step?: number;
+    types?: NotificationType[];
+    startDate?: Date;
+    endDate?: Date;
+}) => {
+    const startDate = query.startDate && query.startDate.toDateString();
+    const endDate = query.endDate && query.endDate.toDateString();
+
+    const { data } = await axios.get<INotificationPopulated[]>(`${notifications}/my`, {
+        params: { ...query, startDate, endDate },
+    });
     return data;
 };
 

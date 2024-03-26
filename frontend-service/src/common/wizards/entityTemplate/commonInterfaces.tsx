@@ -8,6 +8,7 @@ export interface CommonFormInputProperties {
     pattern: string;
     patternCustomErrorMessage: string;
     dateNotification?: string | null;
+    calculateTime?: boolean | null;
     serialStarter?: number;
     required?: boolean;
     preview?: boolean;
