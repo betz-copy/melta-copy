@@ -255,7 +255,7 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                             justifyContent: 'flex-end',
                             padding: '8px',
                             backgroundColor: 'white',
-                            borderRadius: '15px',
+                            borderRadius: '0px 0px 15px 15px',
                         }}
                     >
                         <LoadingButton
