@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
-import { EntityWizardValues } from './index';
 import { StepComponentProps, StepsType } from '../../wizards/index';
 import { JSONSchemaFormik, ajvValidate } from '../../inputs/JSONSchemaFormik';
 import { filterAttachmentsAndEntitiesRefFromPropertiesSchema } from '../../../utils/pickFieldsPropertiesSchema';
+import { EntityWizardValues } from '.';
 
 const fillFieldsValidate: StepsType<EntityWizardValues>[number]['validate'] = (values) => {
     const schema = filterAttachmentsAndEntitiesRefFromPropertiesSchema(values.template.properties);

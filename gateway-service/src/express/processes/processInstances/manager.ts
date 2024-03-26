@@ -120,7 +120,6 @@ export default class ProcessesInstancesManager {
 
     static async createProcessInstance(processData: IProcessInstance, files: Express.Multer.File[], userId: string) {
         const processTemplate = await ProcessManagerService.getProcessTemplateById(processData.templateId);
-
         this.checkEntityReferenceFields(processData.details, processTemplate.details.properties);
         if (!files.length) {
             const process = await ProcessManagerService.createProcessInstance(processData);
@@ -131,23 +130,20 @@ export default class ProcessesInstancesManager {
             ]);
             return this.getPopulatedProcess(process, userId);
         }
-        const filesProperties = await InstancesManager.uploadInstanceFiles(files);
-        const processDetails = { ...processData.details, ...filesProperties };
-
+        const { props: processDetails, files: filesToUpload } = await InstancesManager.uploadInstanceFiles(files, processData.details);
         await Promise.all(
             files.map((file) => {
                 return removeTmpFile(file.path);
             }),
         );
-
+        //delete isnt correct
         const process = await ProcessManagerService.createProcessInstance({ ...processData, details: processDetails }).catch(async (error) => {
-            await deleteFiles(Object.values(filesProperties)).catch(() => {
+            await deleteFiles(Object.values(filesToUpload).flat(1) as string[]).catch(() => {
                 // eslint-disable-next-line no-console
                 console.log('failed to delete process unused files');
             });
             throw error;
         });
-
         await Promise.allSettled([
             this.sendNewProcessNotification(process._id),
             this.sendProcessReviewerUpdateNotifications([process._id], process.steps),
@@ -181,14 +177,14 @@ export default class ProcessesInstancesManager {
             return this.getPopulatedProcess(updatedProcess, userId);
         }
 
-        const filesProperties = await InstancesManager.uploadInstanceFiles(files);
+        const { props, files: filesToUpload } = await InstancesManager.uploadInstanceFiles(files, processData.details);
 
         const updatedProcessInstance = {
             ...processData,
-            details: { ...processData.details, ...filesProperties },
+            details: props,
         };
 
-        if (filesProperties) {
+        if (props) {
             await this.removeUnusedFileIds(processTemplate.details.properties, currProcessInstance.details, updatedProcessInstance.details);
         }
 
@@ -199,7 +195,7 @@ export default class ProcessesInstancesManager {
         );
 
         const updatedProcess = await ProcessManagerService.updateProcessInstance(processId, updatedProcessInstance).catch(async (error) => {
-            await deleteFiles(Object.values(filesProperties)).catch(() => {
+            await deleteFiles(Object.values(filesToUpload).flat(1) as string[]).catch(() => {
                 // eslint-disable-next-line no-console
                 console.log('failed to delete process unused files');
             });
@@ -251,6 +247,8 @@ export default class ProcessesInstancesManager {
         Object.entries(templateProperties.properties).forEach(([key, value]) => {
             if (value.format === PropertyFormats.FileId && instanceProperties[key]) {
                 fileIds.push(instanceProperties[key]);
+            } else if (value.items?.format === PropertyFormats.FileId && instanceProperties[key]) {
+                fileIds.push(...instanceProperties[key]);
             }
         });
         return fileIds;

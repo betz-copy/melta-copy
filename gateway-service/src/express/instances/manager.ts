@@ -28,17 +28,43 @@ import { cerateWorksheet, createWorkbook, fixFileProperties, styleAWorksheet } f
 const { errorCodes } = config;
 
 export class InstancesManager {
-    static async uploadInstanceFiles(files: Express.Multer.File[]): Promise<Record<string, string>> {
+    static async uploadInstanceFiles(files: Express.Multer.File[], props: any): Promise<any> {
         if (files.length === 0) {
-            return {};
+            return { props, files };
         }
 
         const fileIds = await uploadFiles(files);
-
         const filePropertiesEntries = files.map((file, index) => {
             return [file.fieldname, fileIds[index]];
         });
-        return Object.fromEntries(filePropertiesEntries);
+
+        const filesToUpload: any = {};
+        //not for image picker
+        Object.entries(Object.fromEntries(filePropertiesEntries)).forEach(([key, value]) => {
+            const [group, _index] = key.split('.');
+            if (group === key) {
+                //for single files
+                filesToUpload[key] = value;
+            } else {
+                if (!filesToUpload[group]) {
+                    filesToUpload[group] = [];
+                }
+                filesToUpload[group].push(value);
+            }
+        });
+
+        Object.keys(filesToUpload).forEach((key) => {
+            if (props?.[key] != undefined) {
+                if (Array.isArray(props[key])) {
+                    props[key] = [...props[key], ...filesToUpload[key]];
+                } else {
+                    props[key] = [props[key], ...filesToUpload[key]];
+                }
+            } else if (props) {
+                props[key] = filesToUpload[key];
+            }
+        });
+        return { props, files: filesToUpload };
     }
 
     static async exportEntities(exportEntitiesBody: IExportEntitiesBody) {
@@ -84,7 +110,7 @@ export class InstancesManager {
                 filter,
                 sort,
             });
-            const rows = fixFileProperties(
+            const rows = await fixFileProperties(
                 chunk.map((row) => row.entity.properties),
                 template,
             );
@@ -107,14 +133,14 @@ export class InstancesManager {
     }
 
     static async createEntityInstance(instanceData: IEntity, files: Express.Multer.File[], user: Express.User) {
-        const fileProperties = await InstancesManager.uploadInstanceFiles(files);
+        const { props: fileProperties } = await InstancesManager.uploadInstanceFiles(files, instanceData.properties);
         const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(instanceData.templateId);
         let templateUpdated = false;
 
         const updatedProperties = {
             ...entityTemplate.properties.properties,
         };
-        const newInstanceData: IEntity = { templateId: instanceData.templateId, properties: { ...fileProperties, ...instanceData.properties } };
+        const newInstanceData: IEntity = { templateId: instanceData.templateId, properties: { ...fileProperties } };
 
         Object.keys(entityTemplate.properties.properties).forEach((key) => {
             if (entityTemplate.properties.properties[key].serialCurrent !== undefined) {
@@ -228,7 +254,7 @@ export class InstancesManager {
         userId: string,
         createAlert: boolean = true,
     ) {
-        const uploadedFilesProperties = await InstancesManager.uploadInstanceFiles(files);
+        const { props: uploadedFilesAndProperties } = await InstancesManager.uploadInstanceFiles(files, updatedInstanceData.properties);
         const currentEntity = await InstanceManagerService.getEntityInstanceById(id);
 
         const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(currentEntity.templateId);
@@ -245,11 +271,10 @@ export class InstancesManager {
             id,
             {
                 templateId: updatedInstanceData.templateId,
-                properties: { ...uploadedFilesProperties, ...updatedInstanceData.properties },
+                properties: { ...uploadedFilesAndProperties },
             },
             ignoredRules,
         ).catch(InstancesManager.handleBrokenRulesError);
-
         await InstancesManager.deleteUnusedFiles(currentEntity, updatedInstanceData, files).catch(() =>
             console.log(`failed to delete files of instanceId ${id}`),
         );
@@ -263,14 +288,19 @@ export class InstancesManager {
             const propertyTemplate = entityTemplate.properties.properties[field];
 
             let newValue: any;
-            if (propertyTemplate.format === 'fileId') {
-                newValue = uploadedFilesProperties[field] ?? updatedInstance.properties[field];
+            if (propertyTemplate?.format === 'fileId' || propertyTemplate?.items?.format === 'fileId') {
+                newValue = uploadedFilesAndProperties[field] ?? updatedInstance.properties[field];
             } else {
                 newValue = updatedInstance.properties[field];
             }
-
+            if (
+                newValue !== undefined &&
+                Array.isArray(currentEntity.properties[field]) &&
+                newValue.length === currentEntity.properties[field].length &&
+                newValue.every((element, index) => element === currentEntity.properties[field][index])
+            )
+                continue;
             if (currentEntity.properties[field] === newValue) continue;
-
             updatedFields[field] = newValue ?? null;
             activityLogUpdatedFields.push({
                 fieldName: field,
@@ -293,7 +323,6 @@ export class InstancesManager {
                 userId,
             );
         }
-
         await ActivityLogManagerService.createActivityLog({
             action: 'UPDATE_ENTITY',
             metadata: { updatedFields: activityLogUpdatedFields },
@@ -301,7 +330,6 @@ export class InstancesManager {
             timestamp: new Date(),
             userId,
         });
-
         return updatedInstance;
     }
 

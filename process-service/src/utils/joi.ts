@@ -6,7 +6,7 @@ import { ProcessPropertyFormats } from '../express/templates/processes/interface
 import ajv from './ajv';
 
 const stringFormats = Object.values(ProcessPropertyFormats);
-const allowedJSONSchemaTypes = ['string', 'number', 'boolean'];
+const allowedJSONSchemaTypes = ['string', 'number', 'boolean', 'array'];
 
 const defaultValidationOptions: Joi.ValidationOptions = {
     abortEarly: false,
@@ -67,6 +67,20 @@ const propertiesArraySchema = Joi.array()
             enum: Joi.array().items(Joi.string()).when('type', { not: 'string', then: Joi.forbidden() }),
             pattern: Joi.string().when('type', { not: 'string', then: Joi.forbidden() }),
             patternCustomErrorMessage: Joi.string().when('pattern', { is: Joi.exist(), then: Joi.required(), otherwise: Joi.forbidden() }),
+            items: Joi.object({
+                type: Joi.string().valid('string').required(),
+                format: Joi.string().valid('fileId'),
+                enum: Joi.when('format', {
+                    is: 'fileId',
+                    then: Joi.array().items(Joi.string()).max(0), // If format is fileId, enum can be empty
+                    otherwise: Joi.array().items(Joi.string()).min(1), // If format is not fileId, enum must have minimum length of 1
+                }).when('type', {
+                    is: 'array',
+                    then: Joi.required(), // If type is array, enum must be included
+                    otherwise: Joi.forbidden(), // If type is not array, enum is forbidden
+                }),
+            })
+            .xor('format', 'enum'),    
         }).nand('pattern', 'enum'),
     )
     .unique((a, b) => a.title === b.title);

@@ -1,6 +1,7 @@
 import * as express from 'express';
 import { getFileName } from '../../utils/generatePath';
 import { FilesManager } from './manager';
+import * as archiver from 'archiver';
 
 export class FilesController {
     static async downloadFile(req: express.Request, res: express.Response) {
@@ -14,6 +15,34 @@ export class FilesController {
         stream.pipe(res);
     }
 
+    static async downloadZip(req: express.Request, res: express.Response) {
+        try {
+            const { path } = req.params;
+            const fileIds = path.split('?');
+            const filesData = await FilesManager.getFilesData(fileIds);
+
+            const archive = archiver('zip', {
+                zlib: { level: 9 },
+            });
+
+            res.setHeader('Content-Type', 'application/zip');
+            res.setHeader('Content-Disposition', `attachment; filename="filesZip${Date.now()}.zip"`);
+
+            archive.pipe(res);
+
+            for (let i = 0; i < fileIds.length; i++) {
+                const fileId = fileIds[i];
+                const fileData = filesData[i];
+                const fileName = fileId.toString().slice(32);
+                archive.append(fileData, { name: fileName });
+            }
+
+            archive.finalize();
+        } catch (error) {
+            console.error('Error downloading zip:', error);
+            res.status(500).send('Internal Server Error');
+        }
+    }
     static async uploadFile(req: express.Request, res: express.Response) {
         res.json(FilesManager.uploadFile(req.file));
     }
