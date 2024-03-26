@@ -29,6 +29,6 @@ export const errorMiddleware = (error: Error, _req: express.Request, res: expres
 
     // TODO: add some logging
     console.error('Request failed with error: ', error); // eslint-disable-line no-console
-    
+
     next();
 };

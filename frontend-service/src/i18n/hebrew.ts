@@ -101,6 +101,8 @@ export default {
             withEntity: 'עם ישות מסוג',
             failedToGetActivities: 'נכשל לטעון היסטוריה',
             undefined: 'לא ידוע',
+            viewers: 'צפיות',
+            actions: 'פעולות',
         },
         print: {
             header: 'הדפס ישות',

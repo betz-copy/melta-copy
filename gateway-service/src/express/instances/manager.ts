@@ -39,11 +39,11 @@ export class InstancesManager {
         });
 
         const filesToUpload: any = {};
-        //not for image picker
+        // not for image picker
         Object.entries(Object.fromEntries(filePropertiesEntries)).forEach(([key, value]) => {
             const [group, _index] = key.split('.');
             if (group === key) {
-                //for single files
+                // for single files
                 filesToUpload[key] = value;
             } else {
                 if (!filesToUpload[group]) {
@@ -246,6 +246,16 @@ export class InstancesManager {
         return this.createEntityInstance(duplicatedInstanceData, files, user);
     }
 
+    static async viewEntityInstance(id: string, userId: string) {
+        await ActivityLogManagerService.createActivityLog({
+            action: 'VIEW_ENTITY',
+            entityId: id,
+            metadata: {},
+            timestamp: new Date(),
+            userId,
+        });
+    }
+
     static async updateEntityInstance(
         id: string,
         updatedInstanceData: IEntity,
@@ -301,6 +311,7 @@ export class InstancesManager {
             )
                 continue;
             if (currentEntity.properties[field] === newValue) continue;
+
             updatedFields[field] = newValue ?? null;
             activityLogUpdatedFields.push({
                 fieldName: field,
@@ -323,6 +334,7 @@ export class InstancesManager {
                 userId,
             );
         }
+
         await ActivityLogManagerService.createActivityLog({
             action: 'UPDATE_ENTITY',
             metadata: { updatedFields: activityLogUpdatedFields },
