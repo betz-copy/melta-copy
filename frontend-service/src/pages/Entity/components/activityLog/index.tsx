@@ -2,6 +2,8 @@ import React, { useEffect } from 'react';
 import i18next from 'i18next';
 import { toast } from 'react-toastify';
 import { Box, Divider } from '@mui/material';
+import Tab from '@mui/material/Tab';
+import { TabContext, TabList, TabPanel } from '@mui/lab';
 import IconButtonWithPopover from '../../../../common/IconButtonWithPopover';
 import { IEntityExpanded } from '../../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
@@ -10,9 +12,6 @@ import { InfiniteScroll } from '../../../../common/InfiniteScroll';
 import { getActivityLogRequest, IActivityLog } from '../../../../services/activityLogService';
 import ActivityLogRow from './ActivityLogRow';
 import { environment } from '../../../../globals';
-
-import Tab from '@mui/material/Tab';
-import { TabContext, TabList, TabPanel } from '@mui/lab';
 
 const { infiniteScrollPageCount } = environment.activityLog;
 
@@ -47,7 +46,16 @@ const ActivityLog: React.FC<{ expandedEntity: IEntityExpanded; entityTemplate: I
                     </Box>
                     <TabPanel value={i18next.t('entityPage.activityLog.actions')}><InfiniteScroll<IActivityLog>
                         queryKey={['getActivityLogRequest', entityId]}
-                        queryFunction={({ pageParam }) => getActivityLogRequest(entityId, infiniteScrollPageCount, pageParam)}
+                            queryFunction={({ pageParam }) =>
+                                getActivityLogRequest(entityId, infiniteScrollPageCount, pageParam, [
+                                    'DELETE_RELATIONSHIP',
+                                    'CREATE_RELATIONSHIP',
+                                    'UPDATE_ENTITY',
+                                    'CREATE_ENTITY',
+                                    'DISABLE_ENTITY',
+                                    'ACTIVATE_ENTITY',
+                                ])
+                            }
                         onQueryError={(error) => {
                             // eslint-disable-next-line no-console
                             console.log('failed to get activities. error:', error);
@@ -69,7 +77,7 @@ const ActivityLog: React.FC<{ expandedEntity: IEntityExpanded; entityTemplate: I
                     <TabPanel value={i18next.t('entityPage.activityLog.viewers')}>
                         <InfiniteScroll<IActivityLog>
                         queryKey={['getActivityLogRequest', entityId]}
-                        queryFunction={({ pageParam }) => getActivityLogRequest(entityId, infiniteScrollPageCount, pageParam, 'VIEW_ENTITY')}
+                        queryFunction={({ pageParam }) => getActivityLogRequest(entityId, infiniteScrollPageCount, pageParam, ['VIEW_ENTITY'])}
 
                         onQueryError={(error) => {
                             // eslint-disable-next-line no-console

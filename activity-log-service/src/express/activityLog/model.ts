@@ -1,10 +1,8 @@
 import * as mongoose from 'mongoose';
 
-import { IActivityLog } from './interface';
+import { Action, IActivityLog } from './interface';
 import config from '../../config';
-export enum action{
-    'DELETE_RELATIONSHIP', 'CREATE_RELATIONSHIP', 'UPDATE_ENTITY', 'CREATE_ENTITY', 'DISABLE_ENTITY', 'ACTIVATE_ENTITY', 'VIEW_ENTITY'
-}
+
 const ActivityLogSchema = new mongoose.Schema({
     timestamp: {
         type: Date,
@@ -19,7 +17,7 @@ const ActivityLogSchema = new mongoose.Schema({
         required: true,
     },
     action: {
-        type: action,
+        type: Action,
         required: true,
     },
     metadata: {
@@ -30,7 +28,7 @@ const ActivityLogSchema = new mongoose.Schema({
 
 ActivityLogSchema.index({ entityId: 1, timestamp: -1 });
 
-ActivityLogSchema.index({ entityId:1, userId: 1 }, { unique : true, partialFilterExpression: { action: { $eq: 'VIEW_ENTITY'}}})
+ActivityLogSchema.index({ entityId: 1, userId: 1 }, { unique: true, partialFilterExpression: { action: { $eq: 'VIEW_ENTITY' } } });
 
 const ActivityLogModel = mongoose.model<IActivityLog & mongoose.Document>(config.mongo.activitiesCollectionName, ActivityLogSchema);
 

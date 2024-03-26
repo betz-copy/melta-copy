@@ -311,7 +311,6 @@ export class InstancesManager {
             timestamp: new Date(),
             userId,
         });
-
         return updatedInstance;
     }
 
