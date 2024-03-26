@@ -13,9 +13,6 @@ import { IRuleBreach } from '../interfaces/ruleBreaches/ruleBreach';
 
 const { entities, relationships } = environment.api;
 
-// TODO handle creation and update of entities with big files properly
-axios.defaults.timeout = 60000;
-
 export const exportEntitiesRequest = async (body: IExportEntitiesBody) => {
     const { data } = await axios.post(`${entities}/export`, body, { responseType: 'blob', timeout: 120000 });
     return data;
