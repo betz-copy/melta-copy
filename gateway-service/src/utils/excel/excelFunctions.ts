@@ -5,7 +5,6 @@ import { IEntityTemplatePopulated } from '../../externalServices/entityTemplateS
 import { IEntity } from '../../externalServices/instanceService/interfaces/entities';
 import config from '../../config/index';
 import { excelConfig } from './excelConfig';
-
 interface IExcelStyle {
     columnHeader: {
         font: Partial<Excel.Font>;
@@ -72,9 +71,8 @@ export const getFileName = (fileId: string) => {
 
 const fixFileProperties = (rows: IEntity['properties'][], template: IEntityTemplatePopulated) => {
     const { properties } = template.properties;
-    Object.entries(properties)
-        .filter(([_key, value]) => value.format === 'fileId')
-        .forEach(([key]) => {
+    Object.entries(properties).forEach(([key, value]) => {
+        if (value.format === 'fileId') {
             rows.forEach((row) => {
                 if (row[key]) {
                     row[key] = {
@@ -83,7 +81,19 @@ const fixFileProperties = (rows: IEntity['properties'][], template: IEntityTempl
                     };
                 }
             });
-        });
+        } else if (value?.items?.format === 'fileId') {
+            rows.forEach((row, index) => {
+                if (row[key]) {
+                    const files = row[key].join('?');
+                    row[key] = {
+                        text: `attachmentZip${index}`,
+                        hyperlink: `${config.storageService.fileHyperLink}/zip/${encodeURIComponent(files)}`,
+                    };
+                }
+            });
+        }
+    });
+
     return rows;
 };
 

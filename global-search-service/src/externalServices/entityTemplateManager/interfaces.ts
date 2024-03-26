@@ -6,6 +6,7 @@ interface IEntitySingleProperty {
     pattern?: string;
     patternCustomErrorMessage?: string;
     dateNotification?: string;
+    calculateTime?: boolean;
 }
 
 interface IJSONSchema {

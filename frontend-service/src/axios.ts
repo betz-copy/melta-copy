@@ -4,7 +4,7 @@ import { AuthService } from './services/authService';
 
 const axios = axiosInstance.create({
     withCredentials: true,
-    timeout: 10000,
+    timeout: 1800000,
     baseURL: '/api',
 });
 

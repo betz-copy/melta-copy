@@ -193,7 +193,6 @@ const ProcessCard: React.FC<{
             },
         },
     );
-
     const { mutateAsync: archiveProcessMutate, isLoading: isLodingArchiveProcess } = useMutation(
         (process: IMongoProcessInstancePopulated) => {
             return archiveProcessRequest(process._id, !process.archived);
@@ -214,6 +213,7 @@ const ProcessCard: React.FC<{
             },
         },
     );
+
     return (
         <div>
             <StyledCard onClick={() => setOpen({ isOpen: true })}>

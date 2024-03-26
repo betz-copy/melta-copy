@@ -83,10 +83,8 @@ export class ProcessTemplatesManager {
 
     static async updateProcessTemplate(templateId: string, templateData: IProcessTemplateWithSteps, icons: Express.Multer.File[]) {
         const currProcessTemplate = await ProcessManagerService.getProcessTemplateById(templateId);
-
         const updatedSteps = await this.handleIcons(icons, templateData.steps);
         await ProcessTemplatesManager.removeUnusedIconFileIds(currProcessTemplate.steps, updatedSteps);
-
         const processTemplate = await ProcessManagerService.updateProcessTemplate(templateId, { ...templateData, steps: updatedSteps });
 
         this.sendProcessReviewerUpdateNotifications(processTemplate, currProcessTemplate);

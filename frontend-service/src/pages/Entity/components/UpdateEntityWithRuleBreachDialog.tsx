@@ -18,26 +18,36 @@ import { environment } from '../../../globals';
 const { errorCodes } = environment;
 
 const getUpdateEntityActionMetadata = (currEntity: IEntity, updateEntityFormData: EntityWizardValues): IUpdateEntityMetadataPopulated => {
-    const templatePropertiesUpdated = pickBy(updateEntityFormData.template.properties.properties, ({ format }, propertyKey) => {
-        if (format === 'fileId') {
+    const templatePropertiesUpdated = pickBy(updateEntityFormData.template.properties.properties, ({ format, items }, propertyKey) => {
+        if (format === 'fileId' || (items && items.format === "fileId")) {
             const attachmentProperty = updateEntityFormData.attachmentsProperties[propertyKey];
-            if (attachmentProperty instanceof File) return true;
-            return currEntity.properties[propertyKey] !== updateEntityFormData.attachmentsProperties[propertyKey]?.name;
+            if (attachmentProperty instanceof File) return true; //for single file the options as new File or undefined
+            if (updateEntityFormData.template.properties.properties[propertyKey].items && attachmentProperty && Array.isArray(attachmentProperty)) { //if its array
+                const attachmentFileName = attachmentProperty?.map(file => file.name);
+                if(attachmentFileName.length !== currEntity.properties[propertyKey].length) return true;
+                return !attachmentFileName.every((file, index) => file === currEntity.properties[propertyKey][index])
+            }
+            return currEntity.properties[propertyKey] !== attachmentProperty?.name; //for single file the options as new File or undefined
         }
         return currEntity.properties[propertyKey] !== updateEntityFormData.properties[propertyKey];
     });
-    const updatedFields = mapValues(templatePropertiesUpdated, ({ format }, propertyKey) => {
+    const updatedFields = mapValues(templatePropertiesUpdated, ({ format, items }, propertyKey) => {
         if (format === 'fileId') {
             return updateEntityFormData.attachmentsProperties[propertyKey] ?? null;
         }
+        if((items && items.format === "fileId" && Array.isArray(updateEntityFormData.attachmentsProperties[propertyKey]))){
+            const filesArray = updateEntityFormData.attachmentsProperties[propertyKey] as File[];
+            if (filesArray.length === 0) return null; 
+            return filesArray.map((file : File | {name: string}) => file instanceof File ? file : file.name);        
+        }
         return updateEntityFormData.properties[propertyKey] ?? null;
     });
-
     return {
         entity: currEntity,
         updatedFields,
     };
 };
+
 
 const UpdateEntityWithRuleBreachDialog: React.FC<{
     isLoadingUpdateEntity: boolean;
@@ -51,7 +61,6 @@ const UpdateEntityWithRuleBreachDialog: React.FC<{
 }> = ({ isLoadingUpdateEntity, handleClose, onUpdateEntity, brokenRules, rawBrokenRules, currEntity, updateEntityFormData, onUpdatedRuleBlock }) => {
     const queryClient = useQueryClient();
     const rules = queryClient.getQueryData<IRuleMap>('getRules')!;
-
     const actionMetadata = getUpdateEntityActionMetadata(currEntity, updateEntityFormData);
     const { mutateAsync: createRuleBreachRequest, isLoading: isLoadingCreateRuleBreachRequest } = useMutation(
         () => {
@@ -83,7 +92,6 @@ const UpdateEntityWithRuleBreachDialog: React.FC<{
             },
         },
     );
-
     return (
         <ExecWithRuleBreachDialog
             isSubmitting={isLoadingUpdateEntity || isLoadingCreateRuleBreachRequest}

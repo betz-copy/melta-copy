@@ -11,9 +11,9 @@ interface RuleIconProps {
 
 export const RuleIcon: React.FC<RuleIconProps> = ({ ruleType }) => {
     return (
-        <MeltaTooltip title={String(ruleType === 'WARNING' ? i18next.t('ruleBreachInfo.warning') : i18next.t('ruleBreachInfo.enforcement'))}>
+        <MeltaTooltip title={ruleType === 'WARNING' ? i18next.t('ruleBreachInfo.warning') : i18next.t('ruleBreachInfo.enforcement')}>
             <Icon>
-                <GavelIcon color={ruleType === 'WARNING' ? 'warning' : 'error'} />;
+                <GavelIcon style={{ color: ruleType === 'WARNING' ? '#FFAC2F' : '#DD3500' }} />
             </Icon>
         </MeltaTooltip>
     );

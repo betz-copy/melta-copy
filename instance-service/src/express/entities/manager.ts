@@ -387,9 +387,7 @@ export class EntityManager {
                 { templateId: entity.templateId, properties: { ...entityProperties, updatedAt: new Date().toISOString() } },
                 entityTemplate,
             );
-
             const ruleFailuresBeforeAction = await EntityManager.runRulesDependOnEntityUpdate(transaction, entity, updatedProperties);
-
             const updatedEntity = await runInTransactionAndNormalize(
                 transaction,
                 `MATCH (e {_id: $props._id})
@@ -407,11 +405,8 @@ export class EntityManager {
                     },
                 },
             );
-
             const ruleFailuresAfterAction = await EntityManager.runRulesDependOnEntityUpdate(transaction, updatedEntity, updatedProperties);
-
             throwIfActionCausedBrokenRules(ignoredRules, ruleFailuresBeforeAction, ruleFailuresAfterAction);
-
             return updatedEntity;
         }).catch(EntityManager.throwServiceErrorIfFailedConstraintsValidation); // constraint validation is performed on end of transaction
     }

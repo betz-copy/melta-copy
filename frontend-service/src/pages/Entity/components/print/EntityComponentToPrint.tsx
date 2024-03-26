@@ -8,11 +8,11 @@ import { EntityDisableCheckbox } from '../EntityDisableCheckbox';
 import { EntityDates } from '../EntityDates';
 import { RootState } from '../../../../store';
 
-const EntityComponentToPrint: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; entity: IEntity; options?: { showDates?: boolean } }> = ({
-    entityTemplate,
-    entity,
-    options = { showDates: true },
-}) => {
+const EntityComponentToPrint: React.FC<{
+    entityTemplate: IMongoEntityTemplatePopulated;
+    entity: IEntity;
+    options?: { showDates?: boolean };
+}> = ({ entityTemplate, entity, options = { showDates: true } }) => {
     const theme = useTheme();
 
     const darkMode = useSelector((state: RootState) => state.darkMode);
@@ -35,5 +35,4 @@ const EntityComponentToPrint: React.FC<{ entityTemplate: IMongoEntityTemplatePop
         </Box>
     );
 };
-
 export { EntityComponentToPrint };
