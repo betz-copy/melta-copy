@@ -10,6 +10,7 @@ import { RootState } from '../store';
 import { ColoredEnumChip } from './ColoredEnumChip';
 import { MeltaTooltip } from './MeltaTooltip';
 import { OpenPreviewButton } from './FilePreview/OpenPreviewButton';
+import { CalculateDateDifference } from '../utils/agGrid/CalculateDateDifference';
 
 pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.js';
 
@@ -85,6 +86,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                     propertySchema.format,
                     (propertySchema.enum || propertySchema.items?.enum) && entityTemplate.enumPropertiesColors?.[propertyKey],
                 );
+                const calculateTime = 'calculateTime' in propertySchema && propertySchema.calculateTime;
                 return (
                     <Grid key={propertyKey} item container flexDirection="row" style={innerStyle} alignItems={textWrap ? 'flex-start' : 'center'}>
                         <Grid item container width="100%" flexWrap="nowrap" gap="15px" alignItems={textWrap ? 'flex-start' : 'center'}>
@@ -132,7 +134,14 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                                             overflow: 'hidden',
                                         }}
                                     >
-                                        {hideFieldsToDisplay.includes(propertyKey) ? <>••••••••</> : stringFormatValue}
+                                        {/* eslint-disable-next-line no-nested-ternary */}
+                                        {hideFieldsToDisplay.includes(propertyKey) ? (
+                                            <>••••••••</>
+                                        ) : propertyValue && calculateTime ? (
+                                            <CalculateDateDifference date={stringFormatValue} />
+                                        ) : (
+                                            stringFormatValue
+                                        )}
                                     </Typography>
                                 </MeltaTooltip>
                                 <Grid item>

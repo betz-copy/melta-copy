@@ -26,6 +26,18 @@ export default {
     successfullyCopied: 'הקישור הועתק בהצלחה',
     soon: 'בקרוב...',
     general: 'כללי',
+    agGridTimes: {
+        hours: 'שעות',
+        days: 'ימים',
+        weeks: 'שבועות',
+        months: 'חודשים',
+        years: 'שנים',
+        minutes: 'דקות',
+        future: 'בעוד',
+        today: 'היום',
+        yesterday: 'אתמול',
+        tomorrow: 'מחר',
+    },
     entitiesTableOfTemplate: {
         resetFilters: 'איפוס סינונים',
         downloadOneTable: 'הורד טבלה',
@@ -496,6 +508,7 @@ export default {
         preview: 'תצוגה מצומצמת',
         hide: 'הסתר',
         unique: 'ייחודי',
+        calculateTime: 'הצגת הפרש זמן',
         uniqueTooltipTitle:
             '* שדות יחודיים צריכים להיות גם חובה.\n* סימון מספר שדות כיחודיים, הופך אותם לייחודים ביחד. לדוגמה, סימון "שם פרטי" ו"שם משפחה" כיחודיים, אומר שתהיה חסימת שכפולים רק עבור שני השדות ביחד כלומר אסור פעמיים "נעם כהן", אבל מותר "נעם כהן" וגם "נעם לוי", למרות שיש פעמיים אותו שם פרטי',
         invalidPropertyType: 'סוג שדה לא תקין',
