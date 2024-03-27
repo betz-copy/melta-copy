@@ -25,6 +25,10 @@ class RuleController {
     static async searchRules(req: Request, res: Response) {
         res.json(await RuleManager.searchRules(req.body));
     }
+
+    static async getAllRules(_req: Request, res: Response) {
+        res.json(await RuleManager.getAllRules());
+    }
 }
 
 export default RuleController;

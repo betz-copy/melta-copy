@@ -14,6 +14,7 @@ import { validateRuleFormulaMiddleware } from './validator';
 
 const RuleRouter: Router = Router();
 
+RuleRouter.get('/', wrapController(RuleController.getAllRules));
 RuleRouter.get('/:ruleId', ValidateRequest(getRuleByIdRequestSchema), wrapController(RuleController.getRuleById));
 RuleRouter.put('/:ruleId', ValidateRequest(updateRuleByIdRequestSchema), wrapController(RuleController.updateRuleById));
 RuleRouter.patch('/:ruleId/status', ValidateRequest(updateRuleStatusByIdRequestSchema), wrapController(RuleController.updateRuleStatusById));

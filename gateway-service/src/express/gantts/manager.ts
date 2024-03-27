@@ -230,6 +230,14 @@ export class GanttManager {
         await this.validateTemplatesDataOfGantt(gantt);
         return GanttsService.updateGantt(ganttId, gantt);
     }
+
+    static getAllGantts() {
+        return GanttsService.getAllGantts();
+    }
+
+    static async isPropertyOfTemplateInUsed(templateId: string, properties: string[]) {
+        return GanttsService.isPropertyOfTemplateInUsed(templateId, properties);
+    }
 }
 
 export default GanttManager;

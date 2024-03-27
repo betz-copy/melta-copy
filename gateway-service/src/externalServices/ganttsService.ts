@@ -67,4 +67,14 @@ export class GanttsService {
         const { data } = await this.ganttsServiceApi.put<IMongoGantt>(`${baseRoute}/${ganttId}`, gantt);
         return data;
     }
+
+    static async getAllGantts() {
+        const { data } = await this.ganttsServiceApi.get<IMongoGantt>(`${baseRoute}`);
+        return data;
+    }
+
+    static async isPropertyOfTemplateInUsed(templateId: string, properties: string[]) {
+        const { data } = await this.ganttsServiceApi.post<number>(`${baseRoute}/countOfUsedTemplate/${templateId}`, { properties });
+        return data;
+    }
 }

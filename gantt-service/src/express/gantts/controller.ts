@@ -21,6 +21,14 @@ class GanttController {
     static async updateGantt(req: Request, res: Response) {
         res.json(await GanttManager.updateGantt(req.params.ganttId, req.body));
     }
+
+    static async getAllGantts(_req: Request, res: Response) {
+        res.json(await GanttManager.getAllGantts());
+    }
+
+    static async isPropertyOfTemplateInUsed(req: Request, res: Response) {
+        res.json(await GanttManager.isPropertyOfTemplateInUsed(req.params.templateId, req.body));
+    }
 }
 
 export default GanttController;

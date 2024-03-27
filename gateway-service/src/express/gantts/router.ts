@@ -8,12 +8,15 @@ import { validateUserCanCreateGantt, validateUserCanDeleteGantt, validateUserCan
 
 const GanttsRouter: Router = Router();
 
+GanttsRouter.get('/', wrapController(GanttsController.getAllGantts));
+
 GanttsRouter.get(
     '/:ganttId',
     ValidateRequest(getGanttByIdSchema),
     wrapMiddleware(validateUserHasAtLeastSomePermissions),
     wrapController(GanttsController.getGanttById),
 );
+GanttsRouter.post('/countOfUsedTemplate/:templateId', wrapController(GanttsController.isPropertyOfTemplateInUsed));
 GanttsRouter.post('/', ValidateRequest(createGanttSchema), wrapMiddleware(validateUserCanCreateGantt), wrapController(GanttsController.createGantt));
 GanttsRouter.delete(
     '/:ganttId',

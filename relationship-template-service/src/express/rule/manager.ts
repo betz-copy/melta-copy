@@ -30,6 +30,10 @@ export class RuleManager {
         return RuleModel.create({ ...rule, disabled: false });
     }
 
+    static async getAllRules() {
+        return RuleModel.find();
+    }
+
     static searchRules(searchBody: {
         search?: string;
         relationshipTemplateIds?: string[];

@@ -24,6 +24,7 @@ import { ProcessManagerService } from '../../externalServices/processService';
 import ProcessTemplatesManager from '../processes/processTemplates/manager';
 import { isProcessManager } from '../../externalServices/permissionsService';
 import { IPermissionsOfUser } from '../permissions/interfaces';
+import { GanttsService } from '../../externalServices/ganttsService';
 
 const {
     categoryHasTemplates,
@@ -417,6 +418,8 @@ export class TemplatesManager {
         } else {
             iconFileId = currTemplate.iconFileId;
         }
+        const count1 = await GanttsService.isPropertyOfTemplateInUsed(id, removedProperties);
+        console.log(count1);
 
         if (removedFilesProperties.length > 0) {
             const filePaths = await InstanceManagerService.getFilePathsOfTemplate(id, removedFilesProperties);

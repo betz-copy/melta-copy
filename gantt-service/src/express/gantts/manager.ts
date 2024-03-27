@@ -27,6 +27,10 @@ export class GanttManager {
         return FolderModel.create(gantt);
     }
 
+    static async getAllGantts() {
+        return FolderModel.find();
+    }
+
     static deleteGantt(ganttId: string) {
         return FolderModel.findByIdAndDelete(ganttId).orFail(new ServiceError(404, 'Gantt not found')).lean().exec();
     }
@@ -34,6 +38,16 @@ export class GanttManager {
     static async updateGantt(ganttId: string, gantt: IGantt) {
         return FolderModel.findByIdAndUpdate(ganttId, gantt, { new: true, overwrite: true })
             .orFail(new ServiceError(404, 'Gantt not found'))
+            .lean()
+            .exec();
+    }
+
+    static async isPropertyOfTemplateInUsed(templateId: string, properties: { properties: string[] }) {
+        return FolderModel.find({
+            'items.entityTemplate.id': templateId,
+            'items.entityTemplate.fieldsToShow': { $elemMatch: { $in: properties.properties } },
+        })
+            .countDocuments()
             .lean()
             .exec();
     }
