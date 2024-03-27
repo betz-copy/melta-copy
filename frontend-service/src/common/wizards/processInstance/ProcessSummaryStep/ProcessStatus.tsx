@@ -113,7 +113,7 @@ const ProcessStatus: React.FC<ProcessStatusProps> = ({ title, instance, editStat
                     {isPrinting && (
                         <Grid item>
                             <BlueTitle
-                                title={'name' in instance ? instance.name : ''}
+                                title={instance.name || ''}
                                 component="h4"
                                 variant="h4"
                                 style={{ fontWeight: 600, opacity: 0.9, marginBottom: 7 }}

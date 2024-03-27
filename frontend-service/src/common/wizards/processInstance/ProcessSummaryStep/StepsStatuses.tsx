@@ -80,7 +80,16 @@ const StepStatus: React.FC<{
                                 <Grid item>
                                     {stepInstance.comments && (
                                         <>
-                                            {!isPrinting && (
+                                            {isPrinting ? (
+                                                <div style={{ textAlign: 'center' }}>
+                                                    <BlueTitle
+                                                        title={i18next.t('wizard.processInstance.step.comment')}
+                                                        component="h6"
+                                                        variant="body1"
+                                                    />
+                                                    <Typography fontSize="14px">{stepInstance.comments}</Typography>
+                                                </div>
+                                            ) : (
                                                 <>
                                                     <div
                                                         style={{
@@ -105,17 +114,6 @@ const StepStatus: React.FC<{
                                                         {!open && i18next.t('wizard.processInstance.step.comment')}
                                                     </Button>
                                                 </>
-                                            )}
-
-                                            {isPrinting && (
-                                                <div style={{ textAlign: 'center' }}>
-                                                    <BlueTitle
-                                                        title={i18next.t('wizard.processInstance.step.comment')}
-                                                        component="h6"
-                                                        variant="body1"
-                                                    />
-                                                    <Typography fontSize="14px">{stepInstance.comments}</Typography>
-                                                </div>
                                             )}
                                         </>
                                     )}
