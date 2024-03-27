@@ -56,7 +56,7 @@ const CreateOrDeleteRelActionInfo: React.FC<{
             <Box component="span">
                 {actionType === ActionTypes.CreateRelationship && i18next.t('ruleBreachInfo.relActionInfo.creation')}
                 {actionType === ActionTypes.DeleteRelationship && i18next.t('ruleBreachInfo.relActionInfo.deletion')}
-            </Box>{' '}
+            </Box>
             <RelationshipInfo
                 relationshipTemplatePopulated={relationshipTemplatePopulated}
                 sourceEntity={sourceEntity}

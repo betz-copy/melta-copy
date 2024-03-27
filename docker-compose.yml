@@ -1,4 +1,4 @@
-version: '3.4'
+version: "3.4"
 
 services:
   entity-template-service:
@@ -26,7 +26,7 @@ services:
 
   storage-service:
     build: ./storage-service
-    environment: 
+    environment:
       MINIO_ENDPOINT: ${MINIO_ENDPOINT}
       MINIO_BUCKET_NAME: ${MINIO_BUCKET_NAME}
       MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
@@ -117,7 +117,7 @@ services:
 
   preview-service:
     build: ./preview-service
-    environment: 
+    environment:
       PORT: 8000
       MINIO_ENDPOINT: ${MINIO_ENDPOINT}
       MINIO_BUCKET_NAME: ${MINIO_BUCKET_NAME}
@@ -149,16 +149,27 @@ services:
       NODE_TLS_REJECT_UNAUTHORIZED: 0
       RABBIT_URL: ${RABBIT_URL}
       PREVIEW_SERVICE_URL: ${PREVIEW_SERVICE_URL}
-      STORAGE_SERVICE_FILE_HYPER_LINK: ${STORAGE_SERVICE_FILE_HYPER_LINK}
+      SYSTEM_MELTA_BASE_URL: ${SYSTEM_MELTA_BASE_URL}
       BASIC_AUTHENTICATION_USERS: ${BASIC_AUTHENTICATION_USERS}
+      NOTIFICATIONS_MAIL_FROM: ${MAIL_USER}
       MAX_FILE_BYTE_SIZE: ${MAX_FILE_BYTE_SIZE}
       MAX_REQUEST_BYTE_SIZE: ${MAX_REQUEST_BYTE_SIZE}
       
-
   # frontend-service:
-    # build: ./frontend-service
-  
+  # build: ./frontend-service
+
   nginx:
     image: nginx:alpine
     volumes:
       - ./nginx:/etc/nginx/conf.d
+
+  mailer-service:
+    image: registry.gitlab.com/yesodot/rnd/terminal-rabaz/dropbox/microservices/mailer-service:latest
+    environment:
+      PORT: 8000
+      MAIL_HOSTS: ${MAIL_HOSTS}
+      MAIL_USER: ${MAIL_USER}
+      MAIL_PASS: ${MAIL_PASS}
+      USE_AUTH: "true"
+      RABBIT_URI: ${RABBIT_URL}
+      REDIS_CONNECTION_URI: ${REDIS_HOST}

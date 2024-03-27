@@ -16,6 +16,8 @@ const initializeRabbit = async () => {
 
     await menash.declareQueue(rabbit.notificationQueue);
 
+    await menash.declareQueue(rabbit.mailNotificationQueue);
+
     console.log('Rabbit initialized');
 };
 
