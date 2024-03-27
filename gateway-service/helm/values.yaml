@@ -54,8 +54,6 @@ config:
           value: http://rule-breach-service:8000
         - name: RABBIT_URL
           value: amqp://jaws:jawsAreTheBest@20.105.9.117:5672/jaws
-        - name: STORAGE_SERVICE_FILE_HYPER_LINK
-          value: http://localhost/api/files
         - name: DATE_ALERT_TIME
           value: '0 0 * * *'
         - name: BASIC_AUTHENTICATION_USERS

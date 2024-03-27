@@ -52,7 +52,7 @@ export interface IMongoProcessTemplateWithSteps extends IProcessTemplateWithStep
     updatedAt: string;
 }
 
-export interface IMongoProcessTemplatePopulated extends Omit<IProcessTemplateWithSteps, 'steps'> {
+export interface IMongoProcessTemplatePopulated extends Omit<IMongoProcessTemplateWithSteps, 'steps'> {
     steps: IMongoStepTemplatePopulated[];
 }
 

@@ -50,9 +50,12 @@ export class ProcessTemplatesManager {
         return this.getTemplateWithPopulatedStepReviewers(processTemplate);
     }
 
-    private static async removeUnusedIconFileIds(oldSteps: IStepTemplate[], newSteps: IStepTemplate[]) {
-        const oldFileIds = new Set(oldSteps.map((step) => step.iconFileId).filter((id) => id !== null) as string[]);
-        const newFileIds = new Set(newSteps.map((step) => step.iconFileId).filter((id) => id !== null) as string[]);
+    private static async removeUnusedIconFileIds(
+        oldStepsIconFileIds: IStepTemplate['iconFileId'][],
+        newStepsIconFileIds: IStepTemplate['iconFileId'][],
+    ) {
+        const oldFileIds = new Set(oldStepsIconFileIds.filter((id) => id !== null) as string[]);
+        const newFileIds = new Set(newStepsIconFileIds.filter((id) => id !== null) as string[]);
 
         const idsToDelete = Array.from(oldFileIds).filter((id) => !newFileIds.has(id));
         if (idsToDelete.length) await deleteFiles(idsToDelete).catch(() => console.log(`failed to delete unused icons: ${idsToDelete}`)); // eslint-disable-line no-console
@@ -81,15 +84,21 @@ export class ProcessTemplatesManager {
         return this.getTemplateWithPopulatedStepReviewers(processTemplate);
     }
 
-    static async updateProcessTemplate(templateId: string, templateData: IProcessTemplateWithSteps, icons: Express.Multer.File[]) {
-        const currProcessTemplate = await ProcessManagerService.getProcessTemplateById(templateId);
+    static async updateProcessTemplate(templateId: string, templateData: IProcessTemplateWithSteps, icons: Express.Multer.File[], userId: string) {
+        const currProcessTemplate = await ProcessTemplatesManager.getProcessTemplate(templateId, userId);
+
         const updatedSteps = await this.handleIcons(icons, templateData.steps);
-        await ProcessTemplatesManager.removeUnusedIconFileIds(currProcessTemplate.steps, updatedSteps);
+        await ProcessTemplatesManager.removeUnusedIconFileIds(
+            currProcessTemplate.steps.map((step) => step.iconFileId),
+            updatedSteps.map((step) => step.iconFileId),
+        );
+
         const processTemplate = await ProcessManagerService.updateProcessTemplate(templateId, { ...templateData, steps: updatedSteps });
+        const populatedProcessTemplate = await this.getTemplateWithPopulatedStepReviewers(processTemplate);
 
-        this.sendProcessReviewerUpdateNotifications(processTemplate, currProcessTemplate);
+        this.sendProcessReviewerUpdateNotifications(populatedProcessTemplate, currProcessTemplate);
 
-        return this.getTemplateWithPopulatedStepReviewers(processTemplate);
+        return populatedProcessTemplate;
     }
 
     static async deleteProcessTemplate(templateId: string) {
@@ -138,12 +147,12 @@ export class ProcessTemplatesManager {
     }
 
     private static async sendProcessReviewerUpdateNotifications(
-        processTemplate: IMongoProcessTemplateWithSteps,
-        previousProcessTemplate: IMongoProcessTemplateWithSteps,
+        processTemplate: IMongoProcessTemplatePopulated,
+        previousProcessTemplate: IMongoProcessTemplatePopulated,
     ) {
         const processes = await this.getInstancesOfTemplate(processTemplate._id, { status: [Status.Pending] });
 
-        ProcessesInstancesManager.sendProcessReviewerUpdateNotifications(
+        ProcessesInstancesManager.sendProcessReviewerUpdateNotification(
             processes.map((process) => process._id),
             processTemplate.steps,
             previousProcessTemplate.steps,

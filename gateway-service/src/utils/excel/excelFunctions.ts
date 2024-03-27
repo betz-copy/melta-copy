@@ -5,6 +5,7 @@ import { IEntityTemplatePopulated } from '../../externalServices/entityTemplateS
 import { IEntity } from '../../externalServices/instanceService/interfaces/entities';
 import config from '../../config/index';
 import { excelConfig } from './excelConfig';
+
 interface IExcelStyle {
     columnHeader: {
         font: Partial<Excel.Font>;
@@ -77,7 +78,7 @@ const fixFileProperties = (rows: IEntity['properties'][], template: IEntityTempl
                 if (row[key]) {
                     row[key] = {
                         text: getFileName(row[key]),
-                        hyperlink: `${config.storageService.fileHyperLink}/${encodeURIComponent(row[key])}`,
+                        hyperlink: `${config.service.meltaBaseUrl}/api/files/${encodeURIComponent(row[key])}`,
                     };
                 }
             });
@@ -87,7 +88,7 @@ const fixFileProperties = (rows: IEntity['properties'][], template: IEntityTempl
                     const files = row[key].join('?');
                     row[key] = {
                         text: `attachmentZip${index}`,
-                        hyperlink: `${config.storageService.fileHyperLink}/zip/${encodeURIComponent(files)}`,
+                        hyperlink: `${config.service.meltaBaseUrl}/api/files/zip/${encodeURIComponent(files)}`,
                     };
                 }
             });

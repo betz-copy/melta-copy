@@ -5,7 +5,6 @@ import helmet from 'helmet';
 import logger from 'morgan';
 import passport from 'passport';
 import cookieParser from 'cookie-parser';
-
 import { initPassport } from '../utils/express/passport';
 import { errorMiddleware } from './error';
 import appRouter from './router';

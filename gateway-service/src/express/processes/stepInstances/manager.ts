@@ -1,5 +1,5 @@
 import { ProcessManagerService } from '../../../externalServices/processService';
-import { IMongoProcessInstanceWithSteps } from '../../../externalServices/processService/interfaces/processInstance';
+import { IMongoProcessInstancePopulated, IMongoProcessInstanceWithSteps } from '../../../externalServices/processService/interfaces/processInstance';
 import {
     IMongoStepInstance,
     IMongoStepInstancePopulated,
@@ -14,7 +14,7 @@ import ProcessesInstancesManager from '../processInstances/manager';
 
 export default class StepsInstancesManager {
     private static async handleNotificationsOnUpdateStepInstance(
-        process: IMongoProcessInstanceWithSteps,
+        process: IMongoProcessInstancePopulated,
         previousProcess: IMongoProcessInstanceWithSteps,
         updatedStep: IMongoStepInstance,
     ) {
@@ -61,7 +61,7 @@ export default class StepsInstancesManager {
         if (!files.length) {
             //add remove old files
             const updatedStep = await ProcessManagerService.updateStepInstance(stepId, processServiceUpdateData);
-            const updatedProcess = await ProcessManagerService.getProcessInstanceById(processId);
+            const updatedProcess = await ProcessesInstancesManager.getProcessInstance(processId, userId);
             if (updatedStepStatus) this.handleNotificationsOnUpdateStepInstance(updatedProcess, process, updatedStep);
             return this.getStepInstanceWithEntitesAndReviewers(updatedStep, userId);
         }
@@ -85,7 +85,7 @@ export default class StepsInstancesManager {
             }),
         );
         if (updatedData.status) {
-            const updatedProcess = await ProcessManagerService.getProcessInstanceById(processId);
+            const updatedProcess = await ProcessesInstancesManager.getProcessInstance(processId, userId);
             this.handleNotificationsOnUpdateStepInstance(updatedProcess, process, updatedStep);
         }
         return this.getStepInstanceWithEntitesAndReviewers(updatedStep, userId);

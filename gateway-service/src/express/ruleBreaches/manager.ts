@@ -11,6 +11,7 @@ import { ServiceError } from '../error';
 import { InstancesManager } from '../instances/manager';
 
 import {
+    INotificationMetadata,
     IRuleBreachAlertNotificationMetadata,
     IRuleBreachRequestNotificationMetadata,
     IRuleBreachResponseNotificationMetadata,
@@ -46,7 +47,13 @@ import {
 import { RuleBreachService } from '../../externalServices/ruleBreachService';
 import UsersManager from '../users/manager';
 import { IAgGridRequest, IAgGridResult } from '../../utils/agGrid/interface';
-import { NotificationService } from '../../externalServices/notificationService';
+import { rabbitCreateNotification } from '../../utils/createNotification';
+import {
+    INotificationMetadataPopulated,
+    IRuleBreachAlertNotificationMetadataPopulated,
+    IRuleBreachRequestNotificationMetadataPopulated,
+    IRuleBreachResponseNotificationMetadataPopulated,
+} from '../../externalServices/notificationService/interfaces/populated';
 
 const { errorCodes } = config;
 
@@ -55,18 +62,24 @@ export class RuleBreachesManager {
         ruleBreachRequestData: Omit<IRuleBreachRequest<T>, '_id' | 'createdAt' | 'originUserId'>,
         userId: string,
         files: Express.Multer.File[] = [],
-    ): Promise<IRuleBreachRequest<T>> {
+    ): Promise<IRuleBreachRequestPopulated<IActionMetadataPopulated>> {
         await RuleBreachesManager.uploadRuleBreachFiles(ruleBreachRequestData as unknown as Partial<IRuleBreach>, files);
 
         const { result, err } = await trycatch(async () => {
-            const ruleBreachRequest = await RuleBreachService.createRuleBreachRequest<T>({ ...ruleBreachRequestData, originUserId: userId });
-            await RuleBreachesManager.sendNotification<IRuleBreachRequestNotificationMetadata>(
+            const ruleBreachRequest = await RuleBreachService.createRuleBreachRequest<T>({
+                ...ruleBreachRequestData,
+                originUserId: userId,
+            });
+            const request = await RuleBreachesManager.getRuleBreachRequestById(ruleBreachRequest._id);
+
+            await RuleBreachesManager.sendNotification<IRuleBreachRequestNotificationMetadata, IRuleBreachRequestNotificationMetadataPopulated>(
                 NotificationType.ruleBreachRequest,
                 { requestId: ruleBreachRequest._id },
+                { request },
                 [userId],
             );
 
-            return ruleBreachRequest;
+            return request;
         });
 
         if (err || !result) {
@@ -81,18 +94,21 @@ export class RuleBreachesManager {
         ruleBreachAlertData: Omit<IRuleBreachAlert<T>, '_id' | 'createdAt' | 'originUserId'>,
         userId: string,
         files: Express.Multer.File[] = [],
-    ): Promise<IRuleBreachAlert<T>> {
+    ): Promise<IRuleBreachAlertPopulated<IActionMetadataPopulated>> {
         await RuleBreachesManager.uploadRuleBreachFiles(ruleBreachAlertData as unknown as Partial<IRuleBreach>, files);
 
         const { result, err } = await trycatch(async () => {
             const rulesBreachAlert = await RuleBreachService.createRuleBreachAlert<T>({ ...ruleBreachAlertData, originUserId: userId });
-            await RuleBreachesManager.sendNotification<IRuleBreachAlertNotificationMetadata>(
+            const alert = await RuleBreachesManager.getRuleBreachAlertsById(rulesBreachAlert._id);
+
+            await RuleBreachesManager.sendNotification<IRuleBreachAlertNotificationMetadata, IRuleBreachAlertNotificationMetadataPopulated>(
                 NotificationType.ruleBreachAlert,
                 { alertId: rulesBreachAlert._id },
+                { alert },
                 [userId],
             );
 
-            return rulesBreachAlert;
+            return alert;
         });
 
         if (err || !result) {
@@ -111,7 +127,6 @@ export class RuleBreachesManager {
 
     static async approveRuleBreachRequest(ruleBreachRequestId: string, user: Express.User): Promise<IRuleBreachRequestPopulated> {
         const ruleBreachRequest = await RuleBreachService.getRuleBreachRequestById(ruleBreachRequestId);
-
         RuleBreachesManager.checkIfRuleBreachRequestIsReviewable(ruleBreachRequest);
 
         try {
@@ -132,25 +147,32 @@ export class RuleBreachesManager {
             user.id,
             RuleBreachRequestStatus.Approved,
         );
-        await RuleBreachesManager.sendNotification<IRuleBreachResponseNotificationMetadata>(
+
+        const ruleBreachRequestPopulated = await RuleBreachesManager.populateRuleBreachRequest(updatedRuleBreachRequest);
+
+        await RuleBreachesManager.sendNotification<IRuleBreachResponseNotificationMetadata, IRuleBreachResponseNotificationMetadataPopulated>(
             NotificationType.ruleBreachResponse,
             {
                 requestId: ruleBreachRequest._id,
             },
+            { request: ruleBreachRequestPopulated },
             [ruleBreachRequest.originUserId],
         );
 
-        return RuleBreachesManager.populateRuleBreachRequest(updatedRuleBreachRequest);
+        return ruleBreachRequestPopulated;
     }
 
-    private static async sendNotification<T>(type: NotificationType, metadata: T, extraViewers: string[] = []) {
+    private static async sendNotification<
+        NotificationMetadata extends INotificationMetadata,
+        NotificationMetadataPopulated extends INotificationMetadataPopulated,
+    >(type: NotificationType, metadata: NotificationMetadata, populatedMetaData: NotificationMetadataPopulated, extraViewers: string[] = []) {
         const rulesPermissions = await getPermissions({ resourceType: 'Rules' });
         const viewers = new Set<string>();
 
         rulesPermissions.forEach((rulesPermission) => viewers.add(rulesPermission.userId));
         extraViewers.forEach((extraViewer) => viewers.add(extraViewer));
 
-        await NotificationService.rabbitCreateNotification<T>(Array.from(viewers), type, metadata);
+        await rabbitCreateNotification(Array.from(viewers), type, metadata, populatedMetaData);
     }
 
     private static async createRelationship(ruleBreachRequest: IRuleBreachRequest<ICreateRelationshipMetadata>) {
@@ -213,6 +235,7 @@ export class RuleBreachesManager {
         type: RuleBreachRequestStatus,
     ): Promise<IRuleBreachRequestPopulated> {
         RuleBreachesManager.checkIfRuleBreachRequestIsReviewable(ruleBreachRequest);
+
         RuleBreachesManager.deleteRuleBreachFiles(ruleBreachRequest);
 
         const [updatedRuleBreachRequest, { actionMetadata: updatedMetadata }] = await Promise.all([
@@ -227,16 +250,20 @@ export class RuleBreachesManager {
                   )
                 : { actionMetadata: ruleBreachRequest.actionMetadata },
         ]);
-
-        await RuleBreachesManager.sendNotification<IRuleBreachResponseNotificationMetadata>(
+        const ruleBreachRequestPopulated = await RuleBreachesManager.populateRuleBreachRequest({
+            ...updatedRuleBreachRequest,
+            actionMetadata: updatedMetadata,
+        });
+        await RuleBreachesManager.sendNotification<IRuleBreachResponseNotificationMetadata, IRuleBreachResponseNotificationMetadataPopulated>(
             NotificationType.ruleBreachResponse,
             {
                 requestId: ruleBreachRequest._id,
             },
+            { request: ruleBreachRequestPopulated },
             [ruleBreachRequest.originUserId],
         );
 
-        return RuleBreachesManager.populateRuleBreachRequest({ ...updatedRuleBreachRequest, actionMetadata: updatedMetadata });
+        return ruleBreachRequestPopulated;
     }
 
     static async denyRuleBreachRequest(ruleBreachRequestId: string, user: Express.User): Promise<IRuleBreachRequestPopulated> {
