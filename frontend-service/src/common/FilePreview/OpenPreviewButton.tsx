@@ -7,9 +7,9 @@ import { useFilePreview } from '../../utils/useFilePreview';
 import { environment } from '../../globals';
 import FileIcon from './FileIcon';
 
-const PreviewButtonContent: React.FC<{ fileName: string }> = ({ fileName }) => (
+const PreviewButtonContent: React.FC<{ fileName: string; onClick?: () => Promise<void> }> = ({ fileName, onClick }) => (
     <Grid style={{ overflow: 'hidden', whiteSpace: 'nowrap', maxWidth: '100%' }}>
-        <IconButton sx={{ borderRadius: 10, maxWidth: '100%' }}>
+        <IconButton sx={{ borderRadius: 10, maxWidth: '100%' }} onClick={onClick}>
             <FileIcon extension={getFileExtension(fileName)} style={{ height: '18px' }} />
             <Typography
                 style={{
@@ -47,8 +47,8 @@ const OpenPreviewButton: React.FC<{ fileId: string; download?: boolean }> = ({ f
                     <PreviewButtonContent fileName={fileName} />
                 </Link>
             ) : (
-                <Box onClick={handleButtonClick}>
-                    <PreviewButtonContent fileName={fileName} />
+                <Box>
+                    <PreviewButtonContent fileName={fileName} onClick={handleButtonClick} />
                     <Preview data={data} fileId={fileId} setOpen={setOpen} open={open} loading={isLoading} fileName={fileName} error={isError} />
                 </Box>
             )}

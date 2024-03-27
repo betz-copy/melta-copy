@@ -207,11 +207,7 @@ const Preview: React.FC<PreviewProps> = ({ open, fileId, data, setOpen, loading,
                             },
                         }}
                     >
-                        <IconButton
-                            onClick={() => {
-                                setOpen(false);
-                            }}
-                        >
+                        <IconButton onClick={() => setOpen(false)}>
                             <CloseIcon />
                         </IconButton>
 

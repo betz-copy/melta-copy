@@ -51,9 +51,7 @@ const Print: React.FC<{
             .filter((file) => file !== undefined) as IFile[];
     };
 
-    const files = getEntityFiles().filter(
-        (file) => !isVideoOrAudio(file.type) && !isUnsupported(file.type) && file.extension !== 'pptx' && !file.name.includes('txt'),
-    );
+    const files = getEntityFiles().filter((file) => !isVideoOrAudio(file.type) && !isUnsupported(file.type) && !file.name.includes('txt'));
 
     const [selected, setSelected] = React.useState(connectionsTemplates);
     const [selectedFiles, setSelectedFiles] = React.useState(files);

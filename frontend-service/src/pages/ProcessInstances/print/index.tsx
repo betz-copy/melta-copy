@@ -79,12 +79,8 @@ const Print: React.FC<{
     };
 
     const files = getProcessPropertiesFiles()
-        .filter((file) => !isVideoOrAudio(file.type) && !isUnsupported(file.type) && file.extension !== 'pptx' && !file.name.includes('txt'))
-        .concat(
-            getProcessStepsFiles().filter(
-                (file) => !isVideoOrAudio(file.type) && !isUnsupported(file.type) && file.extension !== 'pptx' && !file.name.includes('txt'),
-            ),
-        );
+        .filter((file) => !isVideoOrAudio(file.type) && !isUnsupported(file.type) && !file.name.includes('txt'))
+        .concat(getProcessStepsFiles().filter((file) => !isVideoOrAudio(file.type) && !isUnsupported(file.type) && !file.name.includes('txt')));
 
     const [showSummary, setShowSummary] = React.useState(true);
     const [showFiles, setShowFiles] = React.useState(false);
