@@ -33,19 +33,9 @@ export const getExpandedEntityByIdRequestSchema = Joi.object({
 
 const commonFormInputSchema = Joi.object({
     name: Joi.string().required(),
-    title: Joi.string().required(),
     type: Joi.string().required(),
-    id: Joi.string().required(),
     options: Joi.array().items(Joi.string()).required(),
     optionColors: Joi.object().pattern(Joi.string(), Joi.string()),
-    pattern: Joi.string().allow(""),
-    patternCustomErrorMessage: Joi.string().allow(""),
-    dateNotification: Joi.string().allow(null).optional(),
-    serialStarter: Joi.number().optional(),
-    required: Joi.boolean().optional(),
-    preview: Joi.boolean().optional(),
-    hide: Joi.boolean().optional(),
-    unique: Joi.boolean().optional(),
 });
 
 /**

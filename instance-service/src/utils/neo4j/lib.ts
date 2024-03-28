@@ -138,7 +138,6 @@ const doesPathContainDisabledNode = (path: (Node | Relationship)[], disabled: bo
 export const normalizeReturnedRelAndEntities =
     (disabled: boolean | null) =>
     (result: QueryResult): IEntityExpanded | null => {
-        console.log('RESUALT:', result);
         if (!result.records.length) {
             return null;
         }

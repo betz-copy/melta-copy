@@ -21,9 +21,9 @@ export class InstanceManagerService {
     static async getIfValuefieldIsUsed(id: string, fieldValue: string, fieldName: string, type: string) {
         const { data } = await this.InstanceManagerApi.get<IEntity>(`${baseEntitiesRoute}/get-is-field-used/${id}`, {
             params: {
-                fieldValue: fieldValue,
-                fieldName: fieldName,
-                type: type,
+                fieldValue,
+                fieldName,
+                type,
             },
         });
         return data;

@@ -60,7 +60,12 @@ export const createEntityTemplateSchema = Joi.object({
 export const updateFieldValueSchema = Joi.object({
     body: {
         fieldValue: Joi.string().required(),
-        values: commonFormInputSchema,
+        partialInput: Joi.object({
+            name: Joi.string().required(),
+            type: Joi.string().required(),
+            options: Joi.array().items(Joi.string()).required(),
+            optionColors: Joi.object().pattern(Joi.string(), Joi.string()),
+        }),
         field: Joi.string().required(),
     },
 });
@@ -69,7 +74,12 @@ export const updateFieldValueSchema = Joi.object({
 export const deleteFieldValueSchema = Joi.object({
     body: {
         fieldValue: Joi.string().required(),
-        field: commonFormInputSchema,
+        partialInput: Joi.object({
+            name: Joi.string().required(),
+            type: Joi.string().required(),
+            options: Joi.array().items(Joi.string()).required(),
+            optionColors: Joi.object().pattern(Joi.string(), Joi.string()),
+        }),
     },
 });
 

@@ -25,19 +25,9 @@ export interface IMongoEntityTemplateWithConstraintsPopulated extends IMongoEnti
     properties: IEntityTemplate['properties'] & { required: string[] };
 }
 
-export interface CommonFormInputProperties {
+export interface IUpdateOrDeleteEnumFieldReqData {
     name: string;
-    title: string;
     type: string;
-    id: string;
     options: string[];
     optionColors?: Record<string, string>;
-    pattern: string;
-    patternCustomErrorMessage: string;
-    dateNotification?: string | null;
-    serialStarter?: number;
-    required?: boolean;
-    preview?: boolean;
-    hide?: boolean;
-    unique?: boolean;
 }

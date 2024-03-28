@@ -116,6 +116,7 @@ export default {
         fileDownloadError: 'נכשל להוריד קובץ, נסה שנית או פנה לתמיכה',
         duplicateValue: 'ערך זה כבר קיים',
         deleteFieldValue: 'לא ניתן למחוק ערך בשימוש',
+        updateEnumField: 'לא ניתן לעדכן ערך זה',
     },
     addRelationshipDialog: {
         title: 'הוסף קשר',
@@ -193,7 +194,7 @@ export default {
         title: 'האם אתה בטוח?',
         yes: 'אשר',
         no: 'ביטול',
-        disclaimer: 'שים לב! פעולה זו תגרור לשינוי הערך בכלל הישויות מסוג  ',
+        disclaimer: 'שים לב! פעולה זו תגרור לשינוי הערך והצבע בכלל הישויות מסוג  ',
     },
     userAutocomplete: {
         label: 'משתמש',

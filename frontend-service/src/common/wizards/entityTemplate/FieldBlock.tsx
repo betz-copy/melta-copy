@@ -10,8 +10,6 @@ import { FieldEditCardProps, MemoFieldEditCard } from './FieldEditCard';
 import { MemoAttachmentEditCard } from './AttachmentEditCard';
 import { StepComponentHelpers } from '..';
 import { CommonFormInputProperties } from './commonInterfaces';
-import { EntityTemplateWizardValues } from '.';
-import { IMongoEntityTemplate } from '../../../interfaces/entityTemplates';
 
 export const FieldBlockAccordion = styled(Accordion)({
     width: '100%',
@@ -148,13 +146,10 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
         const inputValue = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
         setFieldDisplayValue(index, inputName as keyof Values, inputValue);
     };
-
     const onChangeWrapper = (index: number) => (event: React.ChangeEvent<HTMLInputElement>) => onChange(index, event);
     const setFieldDisplayValueWrapper = (index: number) => (field: keyof Values, value: any) => setFieldDisplayValue(index, field, value);
     const setDisplayValueWrapper = (index: number) => (value: SetStateAction<CommonFormInputProperties>) => setDisplayValue(index, value);
-
     const isFieldBlockError = Boolean(touched?.[propertiesType]) && Boolean(errors?.[propertiesType]);
-    console.log(values)
     return (
         <FieldBlockAccordion style={{ border: isFieldBlockError ? '1px solid red' : '' }}>
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
@@ -183,6 +178,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
                                     >
                                         {displayValues.map((property, index) => {
                                             const props = {
+                                                entity: (values as any).displayName,
                                                 value: property,
                                                 index,
                                                 isEditMode,

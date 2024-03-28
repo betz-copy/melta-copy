@@ -457,11 +457,7 @@ export class EntityManager {
                 normalizeReturnedEntity('singleResponse'),
             );}
 
-            if (!node) {
-                throw new NotFoundError(`[NEO4J] entity not found`);
-            }
-
-            return id;
+            return node;
         } catch (error) {
             // catch all errors here. no need if.
             if (error instanceof NotFoundError) {

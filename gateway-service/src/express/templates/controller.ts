@@ -44,12 +44,12 @@ export default class TemplatesController {
     }
 
     static async updateEntityFieldValue(req: Request, res: Response) {
-        const { field, values, fieldValue } = req.body;
+        const { field, partialInput: values, fieldValue } = req.body;
         res.json(await TemplatesManager.updateEntityFieldValue(req.params.id, field, values, fieldValue));
     }
 
     static async deleteEntityFieldValue(req: Request, res: Response) {
-        const { fieldValue, field } = req.body;
+        const { fieldValue, partialInput: field } = req.body;
         res.json(await TemplatesManager.deleteEntityFieldValue(req.params.id, field, fieldValue));
     }
 

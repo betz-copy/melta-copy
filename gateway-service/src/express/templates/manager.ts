@@ -23,10 +23,10 @@ import { getParametersOfFormula } from './rules';
 import { IFormula } from './rules/interfaces/formula';
 import { RuleBreachService } from '../../externalServices/ruleBreachService';
 import {
-    CommonFormInputProperties,
     IEntityTemplateWithConstraints,
     IMongoEntityTemplateWithConstraints,
     IMongoEntityTemplateWithConstraintsPopulated,
+    IUpdateOrDeleteEnumFieldReqData,
 } from './interfaces';
 import { ProcessManagerService } from '../../externalServices/processService';
 import ProcessTemplatesManager from '../processes/processTemplates/manager';
@@ -453,7 +453,7 @@ export class TemplatesManager {
 
     static async prepareUpdateOrDelete(
         id: string,
-        values: CommonFormInputProperties,
+        values: IUpdateOrDeleteEnumFieldReqData,
         fieldValue: string,
         template: IMongoEntityTemplatePopulated,
         update: boolean,
@@ -466,101 +466,119 @@ export class TemplatesManager {
         if (index === -1) {
             throw new ServiceError(404, 'Field value not found in options array');
         }
-
         const templateEnumFieldValues = [...values.options];
         if (update) templateEnumFieldValues[index] = field;
         const templateWithoutProperties = Object.keys(template).reduce((newTemplate, key) => {
             if (propertiesToKeep.includes(key)) {
                 newTemplate[key] = template[key];
             }
-            // chnage only the fieldName not to the new color
-            if (key === 'enumPropertiesColors' && values.optionColors?.[fieldValue] !== undefined) {
-                let newFieldName;
+
+            if (key === 'enumPropertiesColors' && template.enumPropertiesColors?.[values.name]?.[fieldValue] !== undefined) {
+                let newFieldName: Record<string, string>;
                 if (update)
                     newFieldName = {
-                        ...values.optionColors,
-                        [field]: values.optionColors[fieldValue],
+                        ...template.enumPropertiesColors[values.name],
+                        [field]: template.enumPropertiesColors[values.name][fieldValue],
                     };
-                else
-                    newFieldName = {
-                        ...values.optionColors,
-                    };
+                else newFieldName = template.enumPropertiesColors[values.name];
                 delete newFieldName[fieldValue];
-                if (update) newTemplate[key] = { [values.name]: { ...newFieldName } };
+
+                newTemplate[key] = { ...template[key], [values.name]: { ...newFieldName } };
             }
             return newTemplate;
         }, {} as IEntityTemplatePopulated);
         if (!templateWithoutProperties.properties.properties[values.name].items)
             templateWithoutProperties.properties.properties[values.name].enum = templateEnumFieldValues;
         try {
-            await EntityTemplateManagerService.updateEntityTemplate(id, {
+            const updatedEntityTemplate = await EntityTemplateManagerService.updateEntityTemplate(id, {
                 ...templateWithoutProperties,
                 category: templateWithoutProperties.category._id,
             } as Omit<IEntityTemplate, 'disabled'>);
             console.log('Initial mongoDB update worked');
-            return templateWithoutProperties;
+            return updatedEntityTemplate;
         } catch (error) {
             console.error('Initial mongoDB update failed', error);
             throw error;
         }
     }
 
-    static async updateEntityFieldValue(id: string, field: string, values: CommonFormInputProperties, fieldValue: string) {
-        const template = await EntityTemplateManagerService.getEntityTemplateById(id);
-        const templateWithoutProperties = await TemplatesManager.prepareUpdateOrDelete(id, values, fieldValue, template, false, '');
-        const index = values.options.indexOf(fieldValue);
+    static async neoRollBack(
+        id: string,
+        values: IUpdateOrDeleteEnumFieldReqData,
+        index: number,
+        templateWithoutProperties: IEntityTemplatePopulated,
+        fieldValue: string,
+        template: IMongoEntityTemplatePopulated,
+        _field: string,
+    ) {
+        const templateEnumFieldValuesRB = [...values.options];
+        templateEnumFieldValuesRB[index] = fieldValue;
+        if (!templateWithoutProperties.properties.properties[values.name].items)
+            template.properties.properties[values.name].enum = templateEnumFieldValuesRB;
+        const rollBackTemplateWithoutProperties = Object.keys(template).reduce((newTemplate, key) => {
+            if (propertiesToKeep.includes(key)) {
+                // eslint-disable-next-line no-param-reassign
+                newTemplate[key] = template[key];
+            }
+            // if (key === 'enumPropertiesColors' && values.optionColors?.[field] !== undefined) {
+            //     newTemplate[key] = { ...template.enumPropertiesColors, [values.name]: { ...template?.enumPropertiesColors?.[values.name] } };
+            // }
+            if (key === 'enumPropertiesColors' && template[key]) {
+                newTemplate[key] = template[key];
+            }
+            return newTemplate;
+        }, {} as IEntityTemplatePopulated);
+        try {
+            const rolledBackEntityTemplate = await EntityTemplateManagerService.updateEntityTemplate(id, {
+                ...rollBackTemplateWithoutProperties,
+                category: templateWithoutProperties.category._id,
+            } as Omit<IEntityTemplate, 'disabled'>);
+            console.log('RollBack mongoDB succeeded', rollBackTemplateWithoutProperties);
+            return rolledBackEntityTemplate;
+        } catch (error) {
+            console.error('RollBack mongoDB update failed', error);
+            throw error;
+        }
+    }
 
+    static async updateEntityFieldValue(
+        id: string,
+        field: string,
+        values: IUpdateOrDeleteEnumFieldReqData,
+        fieldValue: string,
+    ): Promise<IMongoEntityTemplatePopulated> {
+        const template = await EntityTemplateManagerService.getEntityTemplateById(id);
+        const templateWithoutProperties = await TemplatesManager.prepareUpdateOrDelete(id, values, fieldValue, template, true, field);
+        const index = values.options.indexOf(fieldValue);
         try {
             await InstanceManagerService.updateEnumFieldOfEntity(id, field, fieldValue, values);
         } catch (neoError: any) {
-            if (neoError.response.status === 404) {
+            if (neoError.response?.status === 404) {
                 console.error('Neo4j update failed: Node not found');
-                // if not found, its not an error.
-                return field;
+                // if not found, it's not an error.
+                return templateWithoutProperties;
             }
-            console.warn('Neo4j update failed: starting roll-back', neoError.message, neoError.response.status);
-
-            const templateEnumFieldValuesRB = [...values.options];
-            templateEnumFieldValuesRB[index] = fieldValue;
-            if (!templateWithoutProperties.properties.properties[values.name].items)
-                template.properties.properties[values.name].enum = templateEnumFieldValuesRB;
-            const rollBackTemplateWithoutProperties = Object.keys(template).reduce((newTemplate, key) => {
-                if (propertiesToKeep.includes(key)) {
-                    // eslint-disable-next-line no-param-reassign
-                    newTemplate[key] = template[key];
-                }
-                if (key === 'enumPropertiesColors' && values.optionColors?.[field] !== undefined) {
-                    newTemplate[key] = { [values.name]: { ...values.optionColors } };
-                }
-                return newTemplate;
-            }, {} as IEntityTemplatePopulated);
-            try {
-                await EntityTemplateManagerService.updateEntityTemplate(id, {
-                    ...rollBackTemplateWithoutProperties,
-                    category: templateWithoutProperties.category._id,
-                } as Omit<IEntityTemplate, 'disabled'>);
-                return rollBackTemplateWithoutProperties;
-            } catch (error) {
-                console.error('RollBack mongoDB update failed');
-                throw error;
-            }
+            console.warn('Neo4j update failed: starting roll-back', neoError.message, neoError.response?.status);
+            await TemplatesManager.neoRollBack(id, values, index, templateWithoutProperties, fieldValue, template, field);
+            throw neoError;
         }
-        return field;
+
+        const { requiredConstraints, uniqueConstraints } = await InstanceManagerService.getConstraintsOfTemplate(id);
+        return TemplatesManager.populateTemplateConstraints(templateWithoutProperties, requiredConstraints, uniqueConstraints);
     }
 
-    static async deleteEntityFieldValue(id: string, values: CommonFormInputProperties, fieldValue: string) {
-        try {
-            const data = await InstanceManagerService.getIfValuefieldIsUsed(id, fieldValue, values.name, values.type);
-            const canDeleteFieldValue = data ? false : true;
+    static async deleteEntityFieldValue(id: string, values: IUpdateOrDeleteEnumFieldReqData, fieldValue: string) {
+        const data = await InstanceManagerService.getIfValuefieldIsUsed(id, fieldValue, values.name, values.type);
+        const cantDeleteFieldValue = Boolean(data);
 
-            if (!canDeleteFieldValue) {
-                throw new ServiceError(400, 'cant remove used values');
-            }
-            const template = await EntityTemplateManagerService.getEntityTemplateById(id);
-            TemplatesManager.prepareUpdateOrDelete(id, values, fieldValue, template, false, '');
-        } catch (e) {
-            throw e;
+        if (cantDeleteFieldValue) {
+            throw new ServiceError(400, 'cant remove used values');
         }
+        const template = await EntityTemplateManagerService.getEntityTemplateById(id);
+        const updatedEntityTemplate = await TemplatesManager.prepareUpdateOrDelete(id, values, fieldValue, template, false, '');
+
+        const { requiredConstraints, uniqueConstraints } = await InstanceManagerService.getConstraintsOfTemplate(id);
+        return TemplatesManager.populateTemplateConstraints(updatedEntityTemplate, requiredConstraints, uniqueConstraints);
     }
 
     // relationship templates

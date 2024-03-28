@@ -1,5 +1,5 @@
 import React, { MouseEventHandler } from 'react';
-import { Button, CircularProgress, Dialog, DialogActions, DialogTitle, Typography } from '@mui/material';
+import { Backdrop, Button, CircularProgress, Dialog, DialogActions, DialogTitle, Typography } from '@mui/material';
 import i18next from 'i18next';
 
 const AreYouSureDialog: React.FC<{
@@ -7,14 +7,20 @@ const AreYouSureDialog: React.FC<{
     handleClose: () => void;
     title?: string;
     isLoading?: boolean;
-    fromDeletion?: string;
+    message?: string;
     onYes: MouseEventHandler;
     onNo?: MouseEventHandler;
-}> = ({ open, handleClose, title = i18next.t('areYouSureDialog.title'), isLoading = false, onYes, onNo, fromDeletion }) => {
+}> = ({ open, handleClose, title = i18next.t('areYouSureDialog.title'), isLoading = false, onYes, onNo, message }) => {
     return (
         <Dialog open={open} onClose={handleClose}>
-            <DialogTitle><div>{title}</div>
-                    <Typography variant="caption" color="textSecondary">{fromDeletion || ""}</Typography>
+            <Backdrop open={isLoading} style={{ zIndex: 999, backgroundColor: 'transparent' }} />
+            <DialogTitle>
+                <div>{title}</div>
+                {message && (
+                    <Typography variant="caption" color="textSecondary" width="100%">
+                        {message}
+                    </Typography>
+                )}
             </DialogTitle>
             <DialogActions>
                 <Button onClick={onNo ?? handleClose}>{i18next.t('areYouSureDialog.no')}</Button>

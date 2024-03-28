@@ -129,8 +129,6 @@ const CreateOrEditEntityDetails: React.FC<{
                 const schema = filterAttachmentsAndEntitiesRefFromPropertiesSchema(values.template.properties);
 
                 useEffect(() => {
-                    console.log(schema);
-
                     Object.entries<object>(schema.properties).forEach(([propertyName, propertyValues]) => {
                         if (propertyValues.hasOwnProperty('serialCurrent')) {
                             setFieldValue(`properties.${propertyName}`, propertyValues['serialCurrent']);

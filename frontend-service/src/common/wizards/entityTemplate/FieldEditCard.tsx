@@ -14,6 +14,8 @@ import {
     Autocomplete,
     Typography,
     Popover,
+    Backdrop,
+    CircularProgress,
 } from '@mui/material';
 import {
     Delete as DeleteIcon,
@@ -45,6 +47,7 @@ const UniqueCheckboxTooltipTitle = (
 );
 
 export interface FieldEditCardProps {
+    entity: string;
     value: CommonFormInputProperties;
     index: number;
     isEditMode?: boolean;
@@ -65,6 +68,7 @@ export interface FieldEditCardProps {
 }
 
 export const FieldEditCard: React.FC<FieldEditCardProps> = ({
+    entity,
     value,
     index,
     isEditMode,
@@ -131,16 +135,19 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     const [localOption, setLocalOption] = useState<string>('');
     const [duplicate, setDuplicate] = useState<boolean>(false);
 
+    const chipRefs = useRef<(HTMLDivElement | null)[]>([]);
+    const [open, setOpen] = useState<boolean>(false);
+    const MemoizedIconButton = React.memo(IconButton);
+
     const handleEditChange = (e, _tagIndex) => {
         e.preventDefault();
         setLocalOption(e.target.value);
-        setDuplicate(false)
+        setDuplicate(false);
     };
-
     const { mutate: updateEnumField, isLoading } = useMutation(
-        (mutationArgs: { templateId: string; tagIndex: number; localOption: string; value: any }) => {
-            const { templateId, tagIndex, localOption, value } = mutationArgs;
-            return updateEnumFieldRequest(templateId, value.options[tagIndex], value, localOption);
+        (mutationArgs: { id: string; tagIndex: number; option: string; fieldValue: any }) => {
+            const { id, tagIndex, option, fieldValue } = mutationArgs;
+            return updateEnumFieldRequest(id, fieldValue.options[tagIndex], fieldValue, option);
         },
         {
             onError: () => {
@@ -149,39 +156,37 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                     setEditIndex(null);
                 }
                 toast.error(<div>{i18next.t('errorPage.updateEnumField')}</div>);
+                setOpen(!open);
             },
-            onSuccess: (_resultOfMutation, { tagIndex }) => {
+            onSuccess: (resultOfMutation, { id, option, fieldValue }) => {
+                const newOptions = resultOfMutation.properties.properties[fieldValue.name].enum!;
                 queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) => {
-                    const prevEntityTemplate = entityTemplateMap!.get(templateId)!;
-                    const newOptions = value.options.map((option, i) => tagIndex === i ? localOption : option);
-                    const newOptionColors = { ...value.optionColors };
-                    if (value.optionColors && Object.keys(value.optionColors).length > 0 && editIndex != null) {
-                        const color = value.optionColors[value.options[editIndex]];
-                        delete newOptionColors[value.options[editIndex]];
-                        newOptionColors[localOption] = color;
-                        if (prevEntityTemplate?.enumPropertiesColors?.[value.name]) {
-                            prevEntityTemplate.enumPropertiesColors[value.name] = newOptionColors;
-                        }
+                    const newOptionColors = { ...fieldValue.optionColors };
+                    if (fieldValue.optionColors && Object.keys(fieldValue.optionColors).length > 0 && editIndex != null) {
+                        const color = fieldValue.optionColors[fieldValue.options[editIndex]];
+                        delete newOptionColors[fieldValue.options[editIndex]];
+                        newOptionColors[option] = color;
                     }
                     setValues?.((prev) => ({
                         ...prev,
                         options: newOptions,
                         optionColors: newOptionColors,
                     }));
-                    prevEntityTemplate.properties.properties[value.name].enum = newOptions;
-                    entityTemplateMap!.set(templateId, prevEntityTemplate);
+
+                    entityTemplateMap!.set(id, resultOfMutation);
                     return entityTemplateMap!;
                 });
                 setEditIndex(null);
                 toast.success(<div>{i18next.t('entityPage.updatedEnumFieldSuccessfully')}</div>);
+                setOpen(!open);
             },
         },
     );
-    
+
     const { mutate: deleteEnumField, isLoading: isDeleteLoading } = useMutation(
-        (mutationArgs: { templateId: string; tagIndex: number; value: any }) => {
-            const { templateId, tagIndex, value } = mutationArgs;
-            return deleteEnumFieldRequest(templateId, value.options[tagIndex], value);
+        (mutationArgs: { id: string; tagIndex: number; fieldValue: any }) => {
+            const { id, tagIndex, fieldValue } = mutationArgs;
+            return deleteEnumFieldRequest(id, fieldValue.options[tagIndex], fieldValue);
         },
         {
             onError: () => {
@@ -191,21 +196,19 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                 }
                 toast.error(<div>{i18next.t('errorPage.deleteFieldValue')}</div>);
             },
-            onSuccess: (_resultOfMutation, { tagIndex }) => {
+            onSuccess: (resultOfMutation, { id, fieldValue }) => {
                 queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) => {
-                    const prevEntityTemplate = entityTemplateMap!.get(templateId)!;
-                    const newOptions = value.options.filter((_option, i) => i !== tagIndex);
-                    const newOptionColors = { ...value.optionColors };
-                    if (value.optionColors && Object.keys(value.optionColors).length > 0 && editIndex != null) {
-                        delete newOptionColors[value.options[editIndex]];
+                    const newOptions = resultOfMutation.properties.properties[fieldValue.name].enum!;
+                    const newOptionColors = { ...fieldValue.optionColors };
+                    if (fieldValue.optionColors && Object.keys(fieldValue.optionColors).length > 0 && editIndex != null) {
+                        delete newOptionColors[fieldValue.options[editIndex]];
                     }
                     setValues?.((prev) => ({
                         ...prev,
                         options: newOptions,
                         optionColors: newOptionColors,
                     }));
-                    prevEntityTemplate.properties.properties[value.name].enum = newOptions;
-                    entityTemplateMap!.set(templateId, prevEntityTemplate);
+                    entityTemplateMap!.set(id, resultOfMutation);
                     return entityTemplateMap!;
                 });
                 setEditIndex(null);
@@ -213,33 +216,32 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
             },
         },
     );
-    
-    const handleUpdateEnumField = (templateId: string, tagIndex: number, localOption: string, value: any) => {
-        updateEnumField({ templateId, tagIndex, localOption, value });
+    const handleUpdateEnumField = (id: string, tagIndex: number, option: string, fieldValue: any) => {
+        updateEnumField({ id, tagIndex, option, fieldValue });
     };
-    
-    const handleDeleteEnumField = (templateId: string, tagIndex: number, value: any) => {
-        deleteEnumField({ templateId, tagIndex, value });
+    const handleDeleteEnumField = (id: string, tagIndex: number, fieldValue: any) => {
+        deleteEnumField({ id, tagIndex, fieldValue });
     };
 
-    useEffect(()=>{
-        if(!editIndex) setDuplicate(false)
-    }, [editIndex])
+    useEffect(() => {
+        if (!editIndex) setDuplicate(false);
+    }, [editIndex]);
 
     const handleSaveEdit = (tagIndex: number) => {
         const checkIfOldEnumValue = initialEnumOptions.length > tagIndex && isDisabled;
         setDuplicate(false);
-        if (value.options[tagIndex]===localOption) setEditIndex(null);
+        if (value.options[tagIndex] === localOption) setEditIndex(null);
         else if (value.options.includes(localOption)) {
             setDuplicate(true);
         } else if (checkIfOldEnumValue) {
-            handleUpdateEnumField(templateId, tagIndex, localOption, value)
+            handleUpdateEnumField(templateId, tagIndex, localOption, value);
+            return;
         } else {
             const oldColor = value.optionColors?.[value.options[tagIndex]];
-            const newOptions = value.options.map((option, index) => index === tagIndex ? localOption : option);
+            const newOptions = value.options.map((option, valIndex) => (valIndex === tagIndex ? localOption : option));
 
             if (oldColor) {
-                const newOptionColors = {...value.optionColors!};
+                const newOptionColors = { ...value.optionColors! };
                 delete newOptionColors[value.options[tagIndex]];
                 setValues?.((prev) => ({ ...prev, optionColors: { ...newOptionColors, [localOption]: oldColor }, options: newOptions }));
             } else {
@@ -247,58 +249,32 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
             }
             setEditIndex(null);
         }
+        setOpen(!open);
     };
 
     const handleDelete = (tagIndex: number) => {
         handleDeleteEnumField(templateId, tagIndex, value);
-    }
-    
-    const theme = createTheme({
-        components: {
-            MuiBackdrop: {
-                styleOverrides: {
-                    root: {
-                        backgroundColor: 'rgba(0,0,0,0.1)',
-                    },
-                },
-            },
-            MuiDialog: {
-                styleOverrides: {
-                    paper: {
-                        boxShadow: '0 4px 8px rgba(0, 0, 0, 0.05)',
-                        border: '1px solid #bdbdbd',
-                    },
-                },
-            },
-        },
-    });
+    };
 
     const updateOldDisabledEnumVals = (currValue: string[]) => {
         const newValues = currValue.filter((_option, pos) => pos >= initialEnumOptions.length);
         const initialOptions = value.options.slice(0, initialEnumOptions.length);
 
-        const newOptions = [
-            ...initialOptions,
-            ...newValues,
-        ]
+        const newOptions = [...initialOptions, ...newValues];
 
-        const tempColors = Object.keys({...value.optionColors}).reduce((acc, key) => {
-        if (newOptions.includes(key) && value.optionColors) {
-            acc[key] = value.optionColors[key];
-        }
-        return acc;}, {});
+        const tempColors = Object.keys({ ...value.optionColors }).reduce((acc, key) => {
+            if (newOptions.includes(key) && value.optionColors) {
+                // eslint-disable-next-line no-param-reassign
+                acc[key] = value.optionColors[key];
+            }
+            return acc;
+        }, {});
         setValues?.((prev) => ({
             ...prev,
-            options: [
-                ...value.options.slice(0, initialEnumOptions.length),
-                ...newValues,],
+            options: [...value.options.slice(0, initialEnumOptions.length), ...newValues],
             optionColors: tempColors,
         }));
-    }
-
-    const chipRefs = useRef<(HTMLDivElement | null)[]>([]);
-    const [open, setOpen] = useState<boolean>(false);
-    const MemoizedIconButton = React.memo(IconButton);
+    };
 
     return (
         <Draggable draggableId={value.id} index={index}>
@@ -385,7 +361,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                 value={value.options}
                                                 onChange={(_e, currValue) => {
                                                     if (isDisabled) {
-                                                       updateOldDisabledEnumVals(currValue);
+                                                        updateOldDisabledEnumVals(currValue);
                                                     } else {
                                                         setValues?.((prev) => ({
                                                             ...prev,
@@ -399,22 +375,30 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                         return (
                                                             <Box position="relative" key={option}>
                                                                 <>
-                                                                    {chipDisabled ? (<Chip
-                                                                        variant="outlined"
-                                                                        label={option}
-                                                                        {...getTagProps({ index: tagIndex })}
-                                                                        onDelete={undefined}
-                                                                        icon={value.optionColors && <Box width="1.3rem" />}
-                                                                        sx={{ position: 'relative', pr: supportEditEnum ? '22px' : '3px' }}
-                                                                        ref={(ref) => (chipRefs.current[tagIndex] = ref)}
-                                                                    />) : (<Chip
-                                                                        variant="outlined"
-                                                                        label={option}
-                                                                        {...getTagProps({ index: tagIndex })}
-                                                                        icon={value.optionColors && <Box width="1.3rem" />}
-                                                                        sx={{ position: 'relative', pr: supportEditEnum ? '32px' : '3px' }}
-                                                                        ref={(ref) => (chipRefs.current[tagIndex] = ref)}
-                                                                    />)}
+                                                                    {chipDisabled ? (
+                                                                        <Chip
+                                                                            variant="outlined"
+                                                                            label={option}
+                                                                            {...getTagProps({ index: tagIndex })}
+                                                                            onDelete={undefined}
+                                                                            icon={value.optionColors && <Box width="1.3rem" />}
+                                                                            sx={{ position: 'relative', pr: supportEditEnum ? '22px' : '3px' }}
+                                                                            ref={(ref) => {
+                                                                                chipRefs.current[tagIndex] = ref;
+                                                                            }}
+                                                                        />
+                                                                    ) : (
+                                                                        <Chip
+                                                                            variant="outlined"
+                                                                            label={option}
+                                                                            {...getTagProps({ index: tagIndex })}
+                                                                            icon={value.optionColors && <Box width="1.3rem" />}
+                                                                            sx={{ position: 'relative', pr: supportEditEnum ? '32px' : '3px' }}
+                                                                            ref={(ref) => {
+                                                                                chipRefs.current[tagIndex] = ref;
+                                                                            }}
+                                                                        />
+                                                                    )}
                                                                     {value.optionColors && (
                                                                         <MinimizedColorPicker
                                                                             color={value.optionColors[option]}
@@ -476,7 +460,19 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                         },
                                                                     }}
                                                                 >
-                                                                <   Box p={2} style={{ display: 'flex', alignItems: 'center', borderColor: duplicate ? 'red' : 'inherit', borderStyle: duplicate? 'solid' : "inherit" }}>
+                                                                    <Box
+                                                                        p={2}
+                                                                        style={{
+                                                                            display: 'flex',
+                                                                            alignItems: 'center',
+                                                                            borderColor: duplicate ? 'red' : 'inherit',
+                                                                            borderStyle: duplicate ? 'solid' : 'inherit',
+                                                                        }}
+                                                                    >
+                                                                        <Backdrop
+                                                                            open={isDeleteLoading}
+                                                                            style={{ zIndex: 999, backgroundColor: 'transparent' }}
+                                                                        />
                                                                         <TextField
                                                                             key={editIndex}
                                                                             fullWidth
@@ -486,24 +482,36 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                                 e.stopPropagation();
                                                                                 if (e.key === 'Enter') {
                                                                                     e.preventDefault();
-                                                                                    if (tagIndex > initialEnumOptions.length - 1 || value.options[tagIndex]===localOption || value.options.includes(localOption)) {
+                                                                                    if (
+                                                                                        tagIndex > initialEnumOptions.length - 1 ||
+                                                                                        value.options[tagIndex] === localOption ||
+                                                                                        value.options.includes(localOption)
+                                                                                    ) {
                                                                                         setOpen(false);
                                                                                         handleSaveEdit(editIndex!);
                                                                                     } else setOpen(true);
                                                                                 }
                                                                             }}
                                                                         />
-                                                                        <IconButton size="small" onClick={() => {
-                                                                            if (!isDeleteLoading) { 
-                                                                                handleDelete(tagIndex);}}} disabled={isDeleteLoading}>
-                                                                            <DeleteIcon />
+                                                                        <IconButton
+                                                                            size="small"
+                                                                            onClick={() => {
+                                                                                if (!isDeleteLoading) {
+                                                                                    handleDelete(tagIndex);
+                                                                                }
+                                                                            }}
+                                                                            disabled={isDeleteLoading}
+                                                                        >
+                                                                            {isDeleteLoading ? <CircularProgress size={20} /> : <DeleteIcon />}
                                                                         </IconButton>
-                                                                        {duplicate && <Typography variant="body2" color="error">{i18next.t('errorPage.duplicateValue')}</Typography>}
-
+                                                                        {duplicate && (
+                                                                            <Typography variant="body2" color="error">
+                                                                                {i18next.t('errorPage.duplicateValue')}
+                                                                            </Typography>
+                                                                        )}
                                                                     </Box>
                                                                 </Popover>
-                                                            
-                                                                <ThemeProvider theme={theme}>
+                                                                <ThemeProvider theme={areYouSure}>
                                                                     <AreYouSureDialog
                                                                         open={open}
                                                                         handleClose={() => {
@@ -511,10 +519,9 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                         }}
                                                                         onYes={() => {
                                                                             handleSaveEdit(editIndex!);
-                                                                            setOpen(!open);
                                                                         }}
                                                                         isLoading={isLoading}
-                                                                        fromDeletion={`${i18next.t('areYouSureDialog.disclaimer')} ${option}`}
+                                                                        message={`${i18next.t('areYouSureDialog.disclaimer')} ${entity}`}
                                                                     />
                                                                 </ThemeProvider>
                                                             </Box>
