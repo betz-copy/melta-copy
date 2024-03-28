@@ -83,6 +83,8 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
     setFieldTouched,
     isEditMode = false,
 }) => {
+    console.log({ values });
+
     const rjsfExtraErrors = formikErrorsToRjsfExtraErrors(errors as Record<string, string>);
     const ajvExtraErrorsOnlyTouched: ErrorSchema<{}> = pickBy(rjsfExtraErrors, (_value, key) => touched[key]);
     return (
@@ -130,7 +132,7 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
                 EmailWidget: RjsfTextWidget,
             }}
         >
-            <div /> {/* remove the built in submit button */}
+            <div />
         </JSONSchemaForm>
     );
 };

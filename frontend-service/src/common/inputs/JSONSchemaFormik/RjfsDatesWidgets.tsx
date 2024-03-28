@@ -1,7 +1,7 @@
-/* eslint-disable import/no-extraneous-dependencies */
+/* eslint-disable consistent-return */
 /* eslint-disable no-underscore-dangle */
 import React from 'react';
-import { styled, TextField, TextFieldProps } from '@mui/material';
+import { styled, TextField, TextFieldProps, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import { WidgetProps, getDisplayLabel } from '@rjsf/utils';
 import validator from '@rjsf/validator-ajv8';
@@ -11,13 +11,12 @@ import format from 'date-fns/format';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { DateTimePickerToolbar } from '@mui/x-date-pickers/DateTimePicker/DateTimePickerToolbar';
 import { BaseToolbarProps } from '@mui/x-date-pickers/internals';
-import { useTheme } from '@mui/material/styles';
 
 const CustomDateTimePickerToolbar = styled(DateTimePickerToolbar)({
     [`& .${dateTimePickerToolbarClasses.timeContainer}`]: {
-        display: 'flex',
-        flexDirection: 'row-reverse', // support rtl! see issue https://github.com/mui/mui-x/issues/5561
+        direction: 'rtl',
     },
+    '& .MuiPickersArrowSwitcher-button': { direction: 'ltr' },
 }) as (props: BaseToolbarProps<Date, Date | null>) => JSX.Element;
 
 const getRjfsDateOrDateTimeWidget =
@@ -44,7 +43,7 @@ const getRjfsDateOrDateTimeWidget =
         const _onBlur = ({ target: { value: newValue } }: React.FocusEvent<HTMLInputElement>) => onBlur(id, newValue);
         const _onFocus = ({ target: { value: newValue } }: React.FocusEvent<HTMLInputElement>) => onFocus(id, newValue);
 
-        const [currDate, setCurrDate] = React.useState<Date | null>(value);
+        const [currDate, setCurrDate] = React.useState<Date | null>(value || null);
 
         const { rootSchema } = registry;
         const displayLabel = getDisplayLabel(validator, schema, uiSchema, rootSchema);
@@ -65,23 +64,20 @@ const getRjfsDateOrDateTimeWidget =
             return onChange(dateString);
         };
 
-        const handleOpenDatePicker = () => {
+        const onFormChangeFunction = dateOrDateTime === 'date' ? onChangeDateWidget : onChangeDateTimeWidget;
+
+        const handleOpenDateOrDateTimePicker = () => {
             if (currDate) return;
 
             const currentDate = new Date();
             setCurrDate(currentDate);
 
-            if (dateOrDateTime === 'dateTime') {
-                onChange(currentDate.toISOString());
-            }
-
-            onChange(format(currentDate, 'yyyy-MM-dd'));
+            onFormChangeFunction(currentDate);
         };
 
         const theme = useTheme();
         theme.direction = 'ltr';
 
-        const onFormChangeFunction = dateOrDateTime === 'date' ? onChangeDateWidget : onChangeDateTimeWidget;
         const variant = readonly ? 'standard' : 'outlined';
         return (
             <LocalizationProvider
@@ -90,7 +86,7 @@ const getRjfsDateOrDateTimeWidget =
                 localeText={i18next.t('muiDatePickersLocaleText', { returnObjects: true })}
             >
                 <MuiDatePicker<Date, Date>
-                    value={currDate || null}
+                    value={currDate}
                     onChange={(val) => {
                         setCurrDate(val);
                         onFormChangeFunction(val);
@@ -119,8 +115,7 @@ const getRjfsDateOrDateTimeWidget =
                     disabled={disabled}
                     autoFocus={autofocus}
                     toolbarFormat="dd/MM"
-                    ampm={false}
-                    onOpen={handleOpenDatePicker}
+                    onOpen={handleOpenDateOrDateTimePicker}
                     ToolbarComponent={CustomDateTimePickerToolbar}
                 />
             </LocalizationProvider>
