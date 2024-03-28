@@ -1,10 +1,12 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Box, Grid } from '@mui/material';
-import { Document, Page } from 'react-pdf';
+import { Document, Page, pdfjs } from 'react-pdf';
 import { UseQueryResult } from 'react-query';
 import { isImage } from '../../../../common/FilePreview/PreviewDialog';
 import FlexBox from '../../../../common/FlexBox';
 import { IFile } from '../../../../interfaces/entities';
+
+pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.js';
 
 const FileToPrint: React.FC<{
     file: IFile;
@@ -13,11 +15,40 @@ const FileToPrint: React.FC<{
     const { data, refetch } = filePreview;
 
     const [numOfPages, setNumOfPages] = useState(1);
-    const fileRef = useRef(null);
+    const fileRef = useRef<HTMLDivElement>(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const currentPageRef = useRef(currentPage);
 
     const onLoadSuccess = ({ numPages }: { numPages: number }) => {
         setNumOfPages(numPages);
     };
+
+    useEffect(() => {
+        const handleScroll = async () => {
+            if (fileRef.current) {
+                const pageHeight = fileRef.current.scrollHeight / numOfPages;
+                const scrolledPage = Math.floor(fileRef.current.scrollTop / pageHeight) + 1;
+                currentPageRef.current = scrolledPage;
+                // setJumpToPage(scrolledPage.toString());
+            }
+        };
+
+        const container = fileRef.current;
+        container?.addEventListener('scroll', handleScroll);
+        return () => container?.removeEventListener('scroll', handleScroll);
+    }, [numOfPages]);
+
+    useEffect(() => {
+        if (file) {
+            setCurrentPage(1);
+            currentPageRef.current = 1;
+        }
+        setNumOfPages(0);
+    }, [file]);
+
+    useEffect(() => {
+        currentPageRef.current = currentPage;
+    }, [currentPage]);
 
     return (
         <Grid item ref={fileRef}>
@@ -49,7 +80,7 @@ const FileToPrint: React.FC<{
                 <Document file={data} onLoadSuccess={onLoadSuccess} onLoadError={() => null}>
                     <FlexBox direction="column" gap={5}>
                         {Array.from({ length: numOfPages }, (_, i) => (
-                            <div key={`page-${i + 1}`} style={{ width: '100%', height: '100%' }}>
+                            <div key={`page-${i + 1}`} style={{ marginBottom: '20px', background: 'white', position: 'relative' }}>
                                 <Page width={750} pageNumber={i + 1} renderTextLayer={false} />
                             </div>
                         ))}

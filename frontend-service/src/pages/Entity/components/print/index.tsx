@@ -1,6 +1,7 @@
 import i18next from 'i18next';
-import React from 'react';
+import React, { useRef } from 'react';
 import { useReactToPrint } from 'react-to-print';
+import { Box } from '@mui/material';
 import IconButtonWithPopover from '../../../../common/IconButtonWithPopover';
 import { IMongoCategory } from '../../../../interfaces/categories';
 import { IEntityExpanded, IFile } from '../../../../interfaces/entities';
@@ -11,6 +12,38 @@ import { IConnectionTemplateOfExpandedEntity } from '../..';
 import { getFileName } from '../../../../utils/getFileName';
 import { getFileExtension, getPreviewContentType } from '../../../../utils/getFileType';
 import { isUnsupported, isVideoOrAudio } from '../../../../common/FilePreview/PreviewDialog';
+import { useFilePreview } from '../../../../utils/useFilePreview';
+
+const FileData: React.FC<{
+    file: IFile;
+    isFilesLoading: Set<number> | undefined;
+    setIsFilesLoading: React.Dispatch<React.SetStateAction<Set<number> | undefined>>;
+    index: number;
+    setIsFilesError: React.Dispatch<React.SetStateAction<boolean>>;
+}> = ({ file, isFilesLoading, setIsFilesLoading, index, setIsFilesError }) => {
+    const filePreview = useFilePreview(file.id, file.type);
+    const { data, refetch, isLoading, isError } = filePreview;
+    if (!data) {
+        refetch();
+    }
+
+    if (isError) {
+        setIsFilesError(true);
+    }
+
+    if (isLoading && !isFilesLoading?.has(index)) {
+        const newLoadingSet = new Set(isFilesLoading);
+        newLoadingSet.add(index);
+        setIsFilesLoading(newLoadingSet);
+    }
+    if (!isLoading && isFilesLoading?.has(index)) {
+        const newLoadingSet = new Set(isFilesLoading);
+        newLoadingSet.delete(index);
+        setIsFilesLoading(newLoadingSet);
+    }
+    // return <FileToPrint file={file} key={`${file.id}${file.name}`} filePreview={filePreview} />;
+    return <Box key={`${file.id}${file.name}`}>{data}</Box>; // Render the file content inside a <div>
+};
 
 const Print: React.FC<{
     entityTemplate: IMongoEntityTemplatePopulated;
@@ -26,10 +59,6 @@ const Print: React.FC<{
     const handleClose = () => setOpenModal(false);
 
     const componentRef = React.useRef(null);
-    const handlePrint = useReactToPrint({
-        content: () => componentRef.current,
-        documentTitle: `${entityTemplate.category.displayName}-${entityTemplate.displayName}-${new Date().toLocaleDateString('en-uk')}`,
-    });
 
     const getEntityFiles = (): IFile[] => {
         return entityTemplate.propertiesOrder
@@ -62,6 +91,41 @@ const Print: React.FC<{
 
     const [isFilesLoading, setIsFilesLoading] = React.useState<Set<number>>();
     const [isFilesError, setIsFilesError] = React.useState(false);
+
+    const documentToPrint = async () => {
+        if (selectedFiles.length === 0) {
+            return componentRef.current;
+        }
+        const currentComponent = componentRef.current;
+        const document: React.ReactNode[] = [];
+
+        if (currentComponent) {
+            document.push(currentComponent);
+        }
+
+        selectedFiles.forEach((file, index) => {
+            document.push(
+                <FileData
+                    file={file}
+                    isFilesLoading={isFilesLoading}
+                    setIsFilesLoading={setIsFilesLoading}
+                    index={index}
+                    setIsFilesError={setIsFilesError}
+                />,
+            );
+        });
+        console.log({ document });
+
+        componentRef.current = document;
+
+        return document;
+    };
+
+    const handlePrint = useReactToPrint({
+        content: () => componentRef.current,
+        onBeforePrint: documentToPrint,
+        documentTitle: `${entityTemplate.category.displayName}-${entityTemplate.displayName}-${new Date().toLocaleDateString('en-uk')}`,
+    });
 
     const getPageMargins = () => {
         // eslint-disable-next-line quotes

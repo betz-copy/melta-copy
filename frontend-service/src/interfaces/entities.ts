@@ -116,8 +116,8 @@ export interface IExportEntitiesBody {
 }
 
 export interface IFile {
-    name: string;
     id: string;
+    name: string;
     type: string;
     extension: string;
 }

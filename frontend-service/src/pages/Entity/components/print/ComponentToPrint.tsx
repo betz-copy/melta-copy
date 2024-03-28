@@ -170,7 +170,7 @@ const ComponentToPrint = React.forwardRef<
                         )}
                     </>
                 )}
-                {options.showEntityFiles && (
+                {/* {options.showEntityFiles && (
                     <>
                         <Grid sx={{ width: '100%', height: '100%', paddingY: '55%', paddingX: '37.5%' }}>
                             <BlueTitle title={i18next.t('entityPage.print.appendices')} component="h2" variant="h2" style={{ marginTop: '2rem' }} />
@@ -188,7 +188,7 @@ const ComponentToPrint = React.forwardRef<
                             );
                         })}
                     </>
-                )}
+                )} */}
             </Box>
         );
     },
