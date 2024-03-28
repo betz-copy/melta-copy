@@ -122,7 +122,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
     ];
 
     return (
-        <Card raised variant={variant} ref={cardRef} sx={{ borderRadius: '15px', overflow: 'hidden', minHeight: '15rem', ...customCardStyle }}>
+        <Card raised variant={variant} ref={cardRef} sx={{ borderRadius: '15px', overflow: 'hidden', minHeight: '16rem', ...customCardStyle }}>
             <CardHeader
                 sx={{ padding: '6px 10px 0px 10px' }}
                 title={
@@ -214,6 +214,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
                         xs={shouldDisplayFilePreview ? 8 : 12}
                         container
                         paddingLeft="4px"
+                        paddingBottom="14px"
                         height="fit-content"
                         minHeight="37px"
                         alignItems="center"

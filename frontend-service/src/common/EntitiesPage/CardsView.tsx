@@ -1,4 +1,4 @@
-import { Box, Grid } from '@mui/material';
+import { Grid } from '@mui/material';
 import i18next from 'i18next';
 import React, { forwardRef, useImperativeHandle, useState } from 'react';
 import { useQueryClient } from 'react-query';
@@ -44,8 +44,8 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
                     )}
                 </Grid>
             </Grid>
-            <Grid item>
-                <ViewingBox minHeight="80vh">
+            <Grid item style={{ flexWrap: 'wrap', minWidth: '80rem' }}>
+                <ViewingBox minHeight="84vh">
                     <InfiniteScroll<IEntity>
                         queryKey={['searchEntities', templateIds, searchInput]}
                         queryFunction={async ({ pageParam: startRow = 0 }) => {
