@@ -173,11 +173,11 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                             {validPropertyTypes
                                                 .filter((validPropertyType) => {
                                                     if (validPropertyType === 'entityReference') return supportEntityReferenceType;
-                                                    // if (validPropertyType === 'serialNumber') {
-                                                    //     if (!supportSerialNumberType) return false;
+                                                    if (validPropertyType === 'serialNumber') {
+                                                        if (!supportSerialNumberType) return false;
 
-                                                    //     return !areThereAnyInstances;
-                                                    // }
+                                                        // return !areThereAnyInstances;
+                                                    }
                                                     if (validPropertyType === 'enumArray') return supportArrayFields;
                                                     if (validPropertyType === 'fileId' || validPropertyType === 'fileIdArray') return false; // TODO: support file inputs
                                                     return true;

@@ -241,6 +241,8 @@ const updateEntityTemplateRequest = async (entityTemplateId: string, updatedEnti
     formData.append('uniqueConstraints', JSON.stringify(entityTemplate.uniqueConstraints));
 
     const { data } = await axios.put<IMongoEntityTemplatePopulated>(`${entityTemplates}/${entityTemplateId}`, formData);
+    console.log({ data });
+
     return data;
 };
 

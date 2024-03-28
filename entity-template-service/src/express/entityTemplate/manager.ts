@@ -87,6 +87,7 @@ export class EntityTemplateManager {
             Object.keys(currentEntityTemplate.properties.properties).length !== Object.keys(newEntityTemplate.properties.properties).length;
 
         if (isNewPropertyAdded) {
+            //  אולי פה להוסיף את הטיפול בשדות  מספר סידורי עבור תבניות שכבר יש להן מופעים
             await sendUpdateIndexesOnUpdateTemplate(id);
         }
 

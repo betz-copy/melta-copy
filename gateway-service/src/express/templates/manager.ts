@@ -366,25 +366,39 @@ export class TemplatesManager {
         updatedTemplateData: Omit<IEntityTemplateWithConstraints, 'disabled'> & { file?: string },
         file?: Express.Multer.File,
     ): Promise<IMongoEntityTemplateWithConstraintsPopulated> {
-        await EntityTemplateManagerService.getCategoryById(updatedTemplateData.category);
+        const c = await EntityTemplateManagerService.getCategoryById(updatedTemplateData.category);
+        console.log({ c });
 
         const { count } = await InstanceManagerService.searchEntitiesOfTemplateRequest(id, { limit: 1 });
+        console.log('1!', { count });
+
         const currTemplate = await EntityTemplateManagerService.getEntityTemplateById(id);
+        console.log(
+            '2!',
+            '{ currTemplate }: ',
+            currTemplate.properties.properties,
+            '{ updatedTemplateData }: ',
+            updatedTemplateData.properties.properties,
+        );
 
         if (currTemplate.disabled === true) throw new ServiceError(400, 'can not update disabled template');
 
         if (count > 0) {
             if (updatedTemplateData.name !== currTemplate.name) throw new ServiceError(400, 'can not change template name');
 
-            Object.entries(updatedTemplateData.properties.properties).forEach(([key, value]) => {
-                if (value.serialCurrent !== undefined && !currTemplate.properties.properties[key]) {
-                    throw new ServiceError(400, 'can not add serialField');
-                }
-            });
+            console.log('3!');
+
+            // Object.entries(updatedTemplateData.properties.properties).forEach(([key, value]) => {
+            //     if (value.serialCurrent !== undefined && !currTemplate.properties.properties[key]) {
+            //         throw new ServiceError(400, 'can not add serialField');
+            //     }
+            // });
+            console.log('4!');
 
             Object.entries(currTemplate.properties.properties).forEach(([key, value]) => {
                 const newValue = updatedTemplateData.properties.properties[key];
                 if (!newValue) throw new ServiceError(400, 'can not remove property');
+                console.log('shirel: ', value.serialCurrent);
 
                 if (value.serialCurrent !== undefined) {
                     // eslint-disable-next-line no-param-reassign
