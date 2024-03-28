@@ -1,7 +1,7 @@
 /* eslint-disable consistent-return */
 /* eslint-disable no-underscore-dangle */
 import React from 'react';
-import { styled, TextField, TextFieldProps, useTheme } from '@mui/material';
+import { styled, TextField, TextFieldProps } from '@mui/material';
 import i18next from 'i18next';
 import { WidgetProps, getDisplayLabel } from '@rjsf/utils';
 import validator from '@rjsf/validator-ajv8';
@@ -16,7 +16,6 @@ const CustomDateTimePickerToolbar = styled(DateTimePickerToolbar)({
     [`& .${dateTimePickerToolbarClasses.timeContainer}`]: {
         direction: 'rtl',
     },
-    '& .MuiPickersArrowSwitcher-button': { direction: 'ltr' },
 }) as (props: BaseToolbarProps<Date, Date | null>) => JSX.Element;
 
 const getRjfsDateOrDateTimeWidget =
@@ -74,9 +73,6 @@ const getRjfsDateOrDateTimeWidget =
 
             onFormChangeFunction(currentDate);
         };
-
-        const theme = useTheme();
-        theme.direction = 'ltr';
 
         const variant = readonly ? 'standard' : 'outlined';
         return (
