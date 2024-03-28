@@ -520,9 +520,6 @@ export class TemplatesManager {
                 // eslint-disable-next-line no-param-reassign
                 newTemplate[key] = template[key];
             }
-            // if (key === 'enumPropertiesColors' && values.optionColors?.[field] !== undefined) {
-            //     newTemplate[key] = { ...template.enumPropertiesColors, [values.name]: { ...template?.enumPropertiesColors?.[values.name] } };
-            // }
             if (key === 'enumPropertiesColors' && template[key]) {
                 newTemplate[key] = template[key];
             }
