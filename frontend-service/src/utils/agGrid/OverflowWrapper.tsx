@@ -78,7 +78,7 @@ const OverflowWrapper = <T extends any>({ items, renderItem, getItemKey, contain
                             container
                             alignItems="center"
                             justifyContent="center"
-                            // sx={{ borderRadius: '30px', height: '24px', width: '24px', background: 'var(--Gray-Medium, #9398C2)' }}
+                            sx={{ borderRadius: '30px', height: '24px', width: '24px', background: 'var(--Gray-Medium, #9398C2)' }}
                         >
                             <Typography color="white" fontWeight={500} fontSize="12px">
                                 +{overflowItems.length}
