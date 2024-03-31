@@ -230,13 +230,14 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                                             if (values.attachmentsProperties[fieldName] !== undefined) {
                                                                 if (Array.isArray(values.attachmentsProperties[fieldName])) {
                                                                     attachments = values.attachmentsProperties[fieldName].map((file) => (
-                                                                        <OpenPreviewButton fileId={file.name} key={file.name} />
+                                                                        <OpenPreviewButton fileId={file.name} key={file.name} download={toPrint} />
                                                                     ));
                                                                 } else {
                                                                     attachments = (
                                                                         <OpenPreviewButton
                                                                             fileId={values.attachmentsProperties[fieldName].name}
                                                                             key={fieldName}
+                                                                            download={toPrint}
                                                                         />
                                                                     );
                                                                 }
@@ -251,16 +252,6 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                                                     </Grid>
                                                                     <Grid item sx={{ overflowY: 'auto', maxHeight: '90px' }}>
                                                                         {attachments}
-                                                                        {values.attachmentsProperties[fieldName] ? (
-                                                                            <OpenPreviewButton
-                                                                                fileId={values.attachmentsProperties[fieldName].name}
-                                                                                download={toPrint}
-                                                                            />
-                                                                        ) : (
-                                                                            <Typography display="inline" variant="h6">
-                                                                                -
-                                                                            </Typography>
-                                                                        )}
                                                                     </Grid>
                                                                 </Grid>
                                                             );

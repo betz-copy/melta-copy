@@ -111,9 +111,11 @@ export const FileAttachmentsView: React.FC<FileAttachmentsProps> = ({ templateFi
                 );
                 if (values.detailsAttachments[fieldName]) {
                     if (Array.isArray(values.detailsAttachments[fieldName])) {
-                        attachments = values.detailsAttachments[fieldName].map((v) => <OpenPreviewButton fileId={v.name} key={v.name} />);
+                        attachments = values.detailsAttachments[fieldName].map((v) => (
+                            <OpenPreviewButton fileId={v.name} key={v.name} download={toPrint} />
+                        ));
                     } else {
-                        attachments = <OpenPreviewButton fileId={values.detailsAttachments[fieldName].name} />;
+                        attachments = <OpenPreviewButton fileId={values.detailsAttachments[fieldName].name} download={toPrint} />;
                     }
                 }
                 return (
@@ -125,13 +127,6 @@ export const FileAttachmentsView: React.FC<FileAttachmentsProps> = ({ templateFi
                         </Grid>
                         <Grid item sx={{ overflowY: 'auto', maxHeight: '90px' }}>
                             {attachments}
-                            {values.detailsAttachments[fieldName] ? (
-                                <OpenPreviewButton fileId={values.detailsAttachments[fieldName].name} download={toPrint} />
-                            ) : (
-                                <Typography display="inline" variant="h6">
-                                    -
-                                </Typography>
-                            )}
                         </Grid>
                     </Grid>
                 );
