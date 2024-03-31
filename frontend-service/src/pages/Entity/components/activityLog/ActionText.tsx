@@ -16,7 +16,7 @@ const StyledTypography = styled(Typography)(({ theme }) => ({
 })) as typeof Typography;
 
 const EmptyMetadataActionText: React.FC<{
-    action: 'CREATE_ENTITY' | 'DISABLE_ENTITY' | 'ACTIVATE_ENTITY';
+    action: 'CREATE_ENTITY' | 'DISABLE_ENTITY' | 'ACTIVATE_ENTITY' | 'VIEW_ENTITY';
 }> = ({ action }) => {
     const logTexts = {
         ACTIVATE_ENTITY: i18next.t('entityPage.activityLog.activateEntity'),
