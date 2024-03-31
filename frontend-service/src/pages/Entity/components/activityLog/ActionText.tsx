@@ -87,7 +87,6 @@ const UpdateEntityMetadataActionText: React.FC<{
     entityTemplate: IMongoEntityTemplatePopulated;
 }> = ({ actionMetadata, entityTemplate }) => {
     const theme = useTheme();
-
     const ellipsisStyle: React.CSSProperties = {
         marginLeft: '10px',
         overflow: 'hidden',

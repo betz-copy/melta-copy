@@ -1,7 +1,6 @@
 import {
     IDateAboutToExpireNotificationMetadata,
     INewProcessNotificationMetadata,
-    INotification,
     IProcessReviewerUpdateNotificationMetadata,
     IProcessStatusUpdateNotificationMetadata,
     IRuleBreachAlertNotificationMetadata,
@@ -18,6 +17,7 @@ import {
     IDeleteProcessNotificationMetadata,
     IArchiveProcessNotificationMetadata,
     isArchiveProcessNotification,
+    INotification,
 } from '../../externalServices/notificationService/interfaces';
 import {
     IArchiveProcessNotificationMetadataPopulated,

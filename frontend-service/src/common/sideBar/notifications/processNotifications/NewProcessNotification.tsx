@@ -6,7 +6,10 @@ import { ProcessName } from './ProcessName';
 import { environment } from '../../../../globals';
 import { NotificationColor } from '../../../notificationColor';
 
-export const NewProcessNotification: React.FC<INewProcessNotificationMetadataPopulated> = ({ process, titleColor }) => {
+export const NewProcessNotification: React.FC<{ notificationMetadata: INewProcessNotificationMetadataPopulated; titleColor: string }> = ({
+    notificationMetadata: { process },
+    titleColor,
+}) => {
     const { notificationsMoreData } = environment.notifications;
     const color = notificationsMoreData.general.find(({ type }) => type === NotificationType.newProcess)?.color;
 

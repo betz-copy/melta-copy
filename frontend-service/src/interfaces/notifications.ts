@@ -20,15 +20,12 @@ export enum NotificationType {
 
 export interface IRuleBreachAlertNotificationMetadataPopulated {
     alert: IRuleBreachAlertPopulated;
-    titleColor: string;
 }
 export interface IRuleBreachRequestNotificationMetadataPopulated {
     request: IRuleBreachRequestPopulated;
-    titleColor: string;
 }
 export interface IRuleBreachResponseNotificationMetadataPopulated {
     request: IRuleBreachRequestPopulated;
-    titleColor: string;
 }
 
 export interface IProcessReviewerUpdateNotificationMetadataPopulated {
@@ -36,26 +33,21 @@ export interface IProcessReviewerUpdateNotificationMetadataPopulated {
     addedSteps: (IMongoStepInstancePopulated | null)[];
     deletedSteps: (IMongoStepInstancePopulated | null)[];
     unchangedSteps: (IMongoStepInstancePopulated | null)[];
-    titleColor: string;
 }
 export interface IProcessStatusUpdateNotificationMetadataPopulated {
     process: IMongoProcessInstancePopulated | null;
     step?: IMongoStepInstancePopulated | null;
     status: Status;
-    titleColor: string;
 }
 export interface INewProcessNotificationMetadataPopulated {
     process: IMongoProcessInstancePopulated | null;
-    titleColor: string;
 }
 export interface IDeleteProcessNotificationMetadataPopulated {
     processName: string;
-    titleColor: string;
 }
 export interface IArchiveProcessNotificationMetadataPopulated {
     process: IMongoProcessInstancePopulated | null;
     isArchived?: boolean;
-    titleColor: string;
 }
 export interface IDateAboutToExpireMetadataPopulated {
     entity: IEntity | null;

@@ -1,5 +1,4 @@
 import { get } from 'lodash';
-import mapValues from 'lodash.mapvalues';
 import pickBy from 'lodash.pickby';
 import { IMongoProcessTemplatePopulated } from '../../interfaces/processes/processTemplate';
 import { IMongoProcessInstancePopulated, InstanceProperties } from '../../interfaces/processes/processInstance';
@@ -21,7 +20,7 @@ export const splitSpacialProperties = (
 ) => {
     const templateProperties = get(template, pathToProperties);
     const templateEntityProperties = pickBy(templateProperties, (value) => value.format === 'entityReference');
-    const templateFilesProperties = pickBy(templateProperties, (value) => value.format === 'fileId');
+    const templateFilesProperties = pickBy(templateProperties, (value) => value.format === 'fileId' || value.items?.format === 'fileId');
     const templateFileKeys = new Set(Object.keys(templateFilesProperties));
     const templateEntityKeys = new Set(Object.keys(templateEntityProperties));
     const processProperties = get(process, pathToProperties.split('.')[0]);
@@ -31,7 +30,15 @@ export const splitSpacialProperties = (
     ) as InstanceProperties;
     const fileIdsProperties = pickBy(processProperties, (_value, key) => templateFileKeys.has(key));
     const entityProperties = pickBy(processProperties, (_value, key) => templateEntityKeys.has(key));
-    const fileProperties = mapValues(fileIdsProperties, (value) => ({ name: value })) as Record<string, File>;
-
+    Object.entries(fileIdsProperties).forEach(([key, value]) => {
+        if (Array.isArray(value)) {
+            fileIdsProperties[key] = value?.map((item) => {
+                return { name: item };
+            });
+        } else {
+            fileIdsProperties[key] = { name: value };
+        }
+    });
+    const fileProperties = fileIdsProperties;
     return { fieldProperties, fileProperties, entityProperties };
 };

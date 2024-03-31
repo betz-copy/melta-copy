@@ -139,7 +139,7 @@ const Main = () => {
                                     }
                                 />
                                 <Route
-                                    path="/rule-management"
+                                    path="/rule-management/*"
                                     element={
                                         <>
                                             <TopBar title={title} />

@@ -6,7 +6,10 @@ import { ProcessName } from './ProcessName';
 import { environment } from '../../../../globals';
 import { NotificationColor } from '../../../notificationColor';
 
-export const ArchiveProcessNotification: React.FC<IArchiveProcessNotificationMetadataPopulated> = ({ process, isArchived, titleColor }) => {
+export const ArchiveProcessNotification: React.FC<{ notificationMetadata: IArchiveProcessNotificationMetadataPopulated; titleColor: string }> = ({
+    notificationMetadata: { process, isArchived },
+    titleColor,
+}) => {
     const { notificationsMoreData } = environment.notifications;
     const color = notificationsMoreData.general.find((notificationData) => notificationData.type === NotificationType.archivedProcess)?.color;
 

@@ -149,7 +149,6 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                                     '& .MuiSelect-select': {
                                         backgroundColor: '#FFFF',
                                         color: '#9398C2',
-                                        borderRadius: '12px',
                                         boxShadow: '-2px 2px 6px 0px #1E277540',
                                         border: 0,
                                         width: openCalenders ? '17rem' : '13rem',
@@ -208,7 +207,6 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                                         },
                                     },
                                 }}
-                                isNotificationFilter
                             />
 
                             <IconButtonWithPopover
@@ -249,7 +247,17 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                         )}
                     </InfiniteScroll>
 
-                    <Grid container sx={{ position: 'absolute', bottom: 0, justifyContent: 'flex-end', padding: '8px', backgroundColor: 'white' }}>
+                    <Grid
+                        container
+                        sx={{
+                            position: 'absolute',
+                            bottom: 0,
+                            justifyContent: 'flex-end',
+                            padding: '8px',
+                            backgroundColor: 'white',
+                            borderRadius: '0px 0px 15px 15px',
+                        }}
+                    >
                         <LoadingButton
                             onClick={() => {
                                 if (!notificationCountDetails.groups[selectedGroup]) return;

@@ -1,5 +1,4 @@
 import pickBy from 'lodash.pickby';
-import mapValues from 'lodash.mapvalues';
 import { IReferencedEntityForProcess, InstanceProperties } from '../../../../interfaces/processes/processInstance';
 import { ProcessStepValues } from './index';
 import { IMongoStepInstancePopulated } from '../../../../interfaces/processes/stepInstance';
@@ -9,11 +8,15 @@ const splitStepProperties = (stepInstance: IMongoStepInstancePopulated, stepTemp
     const newProperties = {};
 
     Object.keys(stepTemplate.properties.properties).forEach((key) => {
-        if (!stepInstance.properties?.[key]) newProperties[key] = undefined;
-        else newProperties[key] = stepInstance.properties?.[key];
+        if (stepInstance.properties && stepInstance.properties[key]) {
+            newProperties[key] = stepInstance.properties[key];
+        }
     });
 
-    const templateFilesProperties = pickBy(stepTemplate.properties.properties, (value) => value.format === 'fileId');
+    const templateFilesProperties = pickBy(
+        stepTemplate.properties.properties,
+        (value) => (value.type === 'array' && value.items?.format === 'fileId') || value.format === 'fileId',
+    );
     const templateFileKeys = Object.keys(templateFilesProperties);
 
     const templateEntityProperties = pickBy(stepTemplate.properties.properties, (value) => value.format === 'entityReference');
@@ -25,7 +28,16 @@ const splitStepProperties = (stepInstance: IMongoStepInstancePopulated, stepTemp
         (_value, key) => !templateFileKeys.includes(key) && !Object.keys(templateEntityProperties).includes(key),
     ) as InstanceProperties;
     const fileIdsProperties = pickBy(newProperties, (_value, key) => templateFileKeys.includes(key));
-    const attachmentsProperties = mapValues(fileIdsProperties, (value) => (value ? { name: value } : undefined)) as Record<string, File>;
+    Object.entries(fileIdsProperties)?.forEach(([key, value]) => {
+        if (Array.isArray(value)) {
+            fileIdsProperties[key] = value?.map((item) => {
+                if (item !== undefined) return { name: item };
+            });
+        } else if (value) {
+            fileIdsProperties[key] = { name: value };
+        }
+    });
+    const attachmentsProperties = fileIdsProperties;
     return { properties, attachmentsProperties, entitiesData };
 };
 
