@@ -59,7 +59,7 @@ export const getColumnDefs = <Data extends any = IEntity>({
             defaultVisibleColumns[property] !== undefined
                 ? !defaultVisibleColumns[property]
                 : hideNonPreview && !template.propertiesPreview.includes(property);
-                
+
         if (type === 'number') return numberColDef(property, valueGetter, propertyTemplate, defaultColumnWidths[property], hideColumn, hideField);
         if (type === 'boolean') return booleanColDef(property, valueGetter, propertyTemplate, defaultColumnWidths[property], hideColumn, hideField);
         if (format === 'date' || format === 'date-time')
@@ -90,14 +90,8 @@ export const getColumnDefs = <Data extends any = IEntity>({
                 hideColumn,
                 hideField,
             );
-        if (propertyTemplate.items){
-            return enumFilesColDef(
-                property,
-                valueGetter,
-                {title: propertyTemplate.title},
-                defaultColumnWidths[property],
-                rowHeight,
-            )
+        if (propertyTemplate.items) {
+            return enumFilesColDef(property, valueGetter, { title: propertyTemplate.title }, defaultColumnWidths[property], rowHeight);
         }
         return stringColDef(property, valueGetter, propertyTemplate, defaultColumnWidths[property], hideColumn, hideField);
     });

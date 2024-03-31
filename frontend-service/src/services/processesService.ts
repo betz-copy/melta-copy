@@ -1,5 +1,4 @@
 /* eslint-disable no-param-reassign */
-import partition from 'lodash.partition';
 import mapValues from 'lodash.mapvalues';
 import { IMongoStepInstancePopulated } from '../interfaces/processes/stepInstance';
 import axios from '../axios';
@@ -92,10 +91,8 @@ const handleAttachmentProperties = (attachments: object, template: any) => {
     unchangedFiles.forEach(([key, value]) => {
         if (!template[key].items) {
             fileProperties[key] = value.name;
-        } else {
-            if (value) {
-                fileProperties[key].push(value.name);
-            }
+        } else if (value) {
+            fileProperties[key].push(value.name);
         }
     });
     return { formData, fileProperties };
