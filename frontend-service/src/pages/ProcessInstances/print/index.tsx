@@ -34,7 +34,7 @@ const Print: React.FC<{
         documentTitle: `${processTemplate.displayName}-${processInstance.name}-${new Date().toLocaleDateString('en-uk')}`,
     });
 
-    const getProcessPropertiesFiles = (): IFile[] => {
+    const getProcessPropertiesFiles = React.useCallback((): IFile[] => {
         return processTemplate.details.propertiesOrder
             .map((propertyKey) => {
                 const propertySchema = processTemplate.details.properties.properties[propertyKey];
@@ -52,9 +52,9 @@ const Print: React.FC<{
                 return undefined;
             })
             .filter((file) => file !== undefined) as IFile[];
-    };
+    }, [processTemplate, processInstance]);
 
-    const getProcessStepsFiles = (): IFile[] => {
+    const getProcessStepsFiles = React.useCallback((): IFile[] => {
         const files: IFile[] = [];
         processTemplate.steps.forEach((stepTemplate) => {
             processInstance.steps.forEach((step) => {
@@ -76,11 +76,23 @@ const Print: React.FC<{
             });
         });
         return files;
-    };
+    }, [processTemplate, processInstance]);
 
-    const files = getProcessPropertiesFiles()
-        .filter((file) => !isVideoOrAudio(file.type) && !isUnsupported(file.type) && !file.name.includes('txt'))
-        .concat(getProcessStepsFiles().filter((file) => !isVideoOrAudio(file.type) && !isUnsupported(file.type) && !file.name.includes('txt')));
+    const [files, setFiles] = React.useState(
+        getProcessPropertiesFiles()
+            .filter((file) => !isVideoOrAudio(file.type) && !isUnsupported(file.type) && !file.name.includes('txt'))
+            .concat(getProcessStepsFiles().filter((file) => !isVideoOrAudio(file.type) && !isUnsupported(file.type) && !file.name.includes('txt'))),
+    );
+
+    React.useEffect(() => {
+        setFiles(
+            getProcessPropertiesFiles()
+                .filter((file) => !isVideoOrAudio(file.type) && !isUnsupported(file.type) && !file.name.includes('txt'))
+                .concat(
+                    getProcessStepsFiles().filter((file) => !isVideoOrAudio(file.type) && !isUnsupported(file.type) && !file.name.includes('txt')),
+                ),
+        );
+    }, [getProcessPropertiesFiles, getProcessStepsFiles]);
 
     const [showSummary, setShowSummary] = React.useState(true);
     const [showFiles, setShowFiles] = React.useState(false);

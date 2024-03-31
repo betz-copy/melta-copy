@@ -88,7 +88,7 @@ const ComponentToPrint = React.forwardRef<
         return (
             <Box ref={ref} margin="20px" style={{ direction: 'rtl' }}>
                 {options.showSummary && (
-                    <Box sx={{ minHeight: '1000px' }}>
+                    <Box sx={{ minHeight: '1050px' }}>
                         <ProcessSummary isPrinting processInstance={processInstance} processTemplate={processTemplate} />
                     </Box>
                 )}
