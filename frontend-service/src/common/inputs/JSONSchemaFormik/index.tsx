@@ -131,7 +131,7 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
                 EmailWidget: RjsfTextWidget,
             }}
         >
-            <div /> {/* remove the built in submit button */}
+            <div />
         </JSONSchemaForm>
     );
 };
