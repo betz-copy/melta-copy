@@ -20,6 +20,7 @@ export interface IEntitySingleProperty {
     pattern?: string;
     patternCustomErrorMessage?: string;
     dateNotification?: 'day' | 'week' | 'twoWeeks';
+    calculateTime?: boolean;
 }
 
 export interface IProperties {

@@ -1,10 +1,12 @@
 import React, { MouseEventHandler, useEffect, useRef, useState } from 'react';
 import { IconButton, Grid, useTheme, Typography } from '@mui/material';
-import { CloseOutlined as DeleteIcon, FilePresent as FileIcon, CameraAltOutlined as CameraIcon } from '@mui/icons-material';
+import { CloseOutlined as DeleteIcon, CameraAltOutlined as CameraIcon } from '@mui/icons-material';
 import { Accept, useDropzone } from 'react-dropzone';
 import i18next from 'i18next';
 import { toast } from 'react-toastify';
 import Camera from '../dialogs/Camera';
+import { getFileExtension } from '../../utils/getFileType';
+import FileIcon from '../FilePreview/FileIcon';
 
 interface FileInputProps {
     fileName: string | undefined;
@@ -30,13 +32,12 @@ const FileInput: React.FC<FileInputProps> = ({ fileName, onDeleteFile, onDropFil
 
     const onDrop = (acceptedFiles: File[]) => {
         const file = acceptedFiles[0];
-        if (file.type) {
-            onDropFile(file);
-        }
+        onDropFile(file);
     };
     const { getRootProps, getInputProps, isDragActive } = useDropzone({
         onDrop,
         accept: acceptedFilesTypes,
+        multiple: false,
     });
 
     const [inputWidth, setInputWidth] = useState<number>(200);
@@ -95,7 +96,7 @@ const FileInput: React.FC<FileInputProps> = ({ fileName, onDeleteFile, onDropFil
                             <Grid container item flexDirection="row" alignItems="center" flexWrap="nowrap">
                                 <Grid item container xs={1} justifyContent="center" paddingTop="5px">
                                     <Grid item>
-                                        <FileIcon fontSize="medium" />
+                                        <FileIcon extension={getFileExtension(fileName)} style={{ height: '20px' }} />
                                     </Grid>
                                 </Grid>
                                 <Grid item xs={10}>

@@ -12,6 +12,8 @@ export const getNotificationsRequestSchema = joi.object({
     query: basicNotificationSearchSchema.keys({
         limit: joi.number().integer().min(1).max(maxFindLimit).required(),
         step: joi.number().integer().min(0).default(0),
+        startDate: joi.date(),
+        endDate: joi.date(),
     }),
     body: {},
     params: {},

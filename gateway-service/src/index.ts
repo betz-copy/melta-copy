@@ -1,5 +1,6 @@
 /* eslint-disable no-console */
 import menash from 'menashmq';
+import axios from 'axios';
 import Server from './express/server';
 import config from './config';
 import { checkForDateNotifications } from './dateNotificationsCheck';
@@ -15,6 +16,8 @@ const initializeRabbit = async () => {
 
     await menash.declareQueue(rabbit.notificationQueue);
 
+    await menash.declareQueue(rabbit.mailNotificationQueue);
+
     console.log('Rabbit initialized');
 };
 
@@ -22,6 +25,9 @@ const main = async () => {
     await initializeRabbit();
 
     await checkForDateNotifications();
+
+    axios.defaults.maxBodyLength = service.maxRequestSize;
+    axios.defaults.maxContentLength = service.maxRequestSize;
 
     const server = new Server(service.port);
 

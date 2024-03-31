@@ -68,9 +68,8 @@ const ProcessDetails: React.FC<ProcessDetailsProps> = ({ detailsFormikData, isEd
         const currentTouched: Record<string, any> = getAllFieldsTouched(detailsFormikData.values);
 
         const templateFileProperties = detailsFormikData.values.template
-            ? pickBy(detailsFormikData.values.template.details.properties.properties, (value) => value.format === 'fileId')
+            ? pickBy(detailsFormikData.values.template.details.properties.properties, (value) => (value.type === 'array' && value.items?.format==="fileId") || value.format === "fileId")
             : undefined;
-
         const templateEntityReferenceProperties = detailsFormikData.values.template
             ? pickBy(detailsFormikData.values.template.details.properties.properties, (value) => value.format === 'entityReference')
             : undefined;

@@ -6,10 +6,13 @@ import { pdfjs } from 'react-pdf';
 import { Visibility as VisibilityIcon, VisibilityOff as VisibilityOffIcon } from '@mui/icons-material';
 import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { IEntity, IFile } from '../interfaces/entities';
+import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
+import { IEntity } from '../interfaces/entities';
 import { RootState } from '../store';
 import { ColoredEnumChip } from './ColoredEnumChip';
 import { MeltaTooltip } from './MeltaTooltip';
 import { OpenPreviewButton } from './FilePreview/OpenPreviewButton';
+import { CalculateDateDifference } from '../utils/agGrid/CalculateDateDifference';
 
 pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.js';
 
@@ -19,6 +22,7 @@ export const formatToString = (
     format?: string,
     keyEnumColors?: Record<string, string>,
     download?: boolean,
+    propertySchema?: IEntitySingleProperty,
 ) => {
     if (value === null || value === undefined) return '-';
 
@@ -33,6 +37,9 @@ export const formatToString = (
     }
     if (keyEnumColors?.[value] && valueType === 'string') return <ColoredEnumChip label={value} color={keyEnumColors[value]} />;
     if (valueType === 'array') {
+        if (propertySchema?.items?.format === 'fileId') {
+            return value.map((val) => <OpenPreviewButton fileId={val} key={val} />);
+        }
         return value.map((val) => (
             <ColoredEnumChip key={val} label={val} color={keyEnumColors?.[val] || 'default'} style={{ margin: '5px 0px 0px 5px' }} />
         ));
@@ -82,7 +89,6 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
     } else {
         propertiesOrderedToShow = entityTemplate.propertiesOrder;
     }
-
     const [hideFieldsToDisplay, setHideFieldsToDisplay] = React.useState(entityTemplate.properties.hide);
 
     return (
@@ -97,8 +103,9 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                     propertySchema.format,
                     (propertySchema.enum || propertySchema.items?.enum) && entityTemplate.enumPropertiesColors?.[propertyKey],
                     download,
+                    propertySchema,
                 );
-
+                const calculateTime = 'calculateTime' in propertySchema && propertySchema.calculateTime;
                 return (
                     <Grid key={propertyKey} item container flexDirection="row" style={innerStyle} alignItems={textWrap ? 'flex-start' : 'center'}>
                         <Grid item container width="100%" flexWrap="nowrap" gap="15px" alignItems={textWrap ? 'flex-start' : 'center'}>
@@ -143,10 +150,18 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                                         style={{
                                             textOverflow: 'ellipsis',
                                             whiteSpace: textWrap ? undefined : 'nowrap',
-                                            overflow: 'hidden',
+                                            overflowY: 'auto',
+                                            maxHeight: '111px',
                                         }}
                                     >
-                                        {hideFieldsToDisplay.includes(propertyKey) ? <>••••••••</> : stringFormatValue}
+                                        {/* eslint-disable-next-line no-nested-ternary */}
+                                        {hideFieldsToDisplay.includes(propertyKey) ? (
+                                            <>••••••••</>
+                                        ) : propertyValue && calculateTime ? (
+                                            <CalculateDateDifference date={stringFormatValue} />
+                                        ) : (
+                                            stringFormatValue
+                                        )}
                                     </Typography>
                                 </MeltaTooltip>
                                 <Grid item>

@@ -78,8 +78,11 @@ export type SelectCheckboxProps<Option extends any, Group extends any = any> = P
     isDraggableDisabled?: boolean;
     setOptions?: Dispatch<SetStateAction<Option[]>>;
     size?: 'small' | 'medium';
+    overrideSx?: object;
     toTopBar?: boolean;
     process?: boolean;
+    horizontalOriginProp?: number;
+    handleCheckboxClick?: (value: boolean) => void;
 }>;
 
 const groupByWithInitial = <T extends any>(collection: T[], keys: PropertyKey[], func: (value: T) => PropertyKey) => {
@@ -287,7 +290,7 @@ const getOptionsAndGroupsMiniFiltered = <Option extends any, Group extends any>(
     getOptionLabel: SelectCheckboxProps<Option, Group>['getOptionLabel'],
     groupsProps: NonNullable<SelectCheckboxProps<Option, Group>['groupsProps']>,
 ) => {
-    const optionsFilteredByLabel = options.filter((option) => getOptionLabel(option).includes(miniFilterValue));
+    const optionsFilteredByLabel = options.filter((option) => getOptionLabel(option)?.includes(miniFilterValue));
     if (!groupsProps.useGroups) return { optionsFiltered: optionsFilteredByLabel, groupsFiltered: undefined };
 
     const { groups, getGroupOfOption, getGroupId, getGroupLabel } = groupsProps;
@@ -434,8 +437,11 @@ const SelectCheckbox = <Option extends any, Group extends any>({
     isDraggableDisabled = false,
     setOptions,
     size = 'medium',
+    overrideSx,
     toTopBar,
     process,
+    horizontalOriginProp,
+    handleCheckboxClick = () => {},
 }: SelectCheckboxProps<Option, Group>) => {
     const [miniFilterValue, setMiniFilterValue] = useState('');
     const [isOpen, setIsOpen] = useState(false);
@@ -457,24 +463,21 @@ const SelectCheckbox = <Option extends any, Group extends any>({
     } else if (title === i18next.t('systemManagement.sourceTemplates')) {
         horizontalOrigin = 177;
     }
+    // eslint-disable-next-line no-nested-ternary
+    const borderRadiusStyle = overrideSx ? (isOpen ? '12px 12px 12px 0' : '12px') : isOpen ? '7px 7px 0 0' : '7px';
 
     return (
         <FormControl style={{ background: darkMode ? '#242424' : 'white', borderRadius: isOpen ? '7px 7px 0 0' : '7px' }}>
             <Select
                 displayEmpty
                 renderValue={() => title}
-                onOpen={() => {
-                    setMiniFilterValue('');
-                    setIsOpen(true);
-                }}
-                onClose={() => setIsOpen(false)}
                 MenuProps={{
                     PaperProps: {
                         style: {
                             height: toTopBar ? '180px' : '333px',
                             minWidth: '219px',
                             backgroundColor: toTopBar ? '#EBEFFA' : '#FFFFFF',
-                            borderRadius: '20px 0px 20px 20px',
+                            borderRadius: overrideSx ? '0px 0px 20px 20px' : '20px 0px 20px 20px',
                             padding: toTopBar ? '5px, 10px' : '10px, 10px, 5px, 10px',
                             boxShadow: '-2px 2px 4px 0px #1E27754D',
                             top: '39px',
@@ -496,17 +499,31 @@ const SelectCheckbox = <Option extends any, Group extends any>({
                     },
                 }}
                 size={size}
+                onOpen={() => {
+                    setMiniFilterValue('');
+                    setIsOpen(true);
+                    handleCheckboxClick(true);
+                }}
+                onClose={() => {
+                    setIsOpen(false);
+                    handleCheckboxClick(false);
+                }}
                 sx={{
+                    ...overrideSx,
+                    '& .MuiSelect-select ': {
+                        borderRadius: borderRadiusStyle,
+                    },
                     fontFamily: 'Rubik',
                     fontSize: '14px',
                     fontWeight: 400,
                     boxShadow: 'none',
-                    borderRadius: isOpen ? '7px 7px 0 0' : '7px',
+                    // eslint-disable-next-line no-nested-ternary
                     '& .MuiOutlinedInput-notchedOutline': {
                         display: 'none',
                     },
                     background: toTopBar ? '#EBEFFA' : '#FFFFFF',
-                    maxWidth: toTopBar ? '130px' : '131px',
+                    // eslint-disable-next-line no-nested-ternary
+                    maxWidth: !overrideSx ? (toTopBar ? '130px' : '131px') : undefined,
                     maxHeight: toTopBar ? '35px' : '34px',
                     color: toTopBar ? '#1E2775' : '#787C9E',
                     padding: toTopBar ? '6.99px, 13.98px' : '0px, 8px',

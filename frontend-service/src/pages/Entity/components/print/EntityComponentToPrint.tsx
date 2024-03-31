@@ -40,5 +40,4 @@ const EntityComponentToPrint: React.FC<{
         </Box>
     );
 };
-
 export { EntityComponentToPrint };

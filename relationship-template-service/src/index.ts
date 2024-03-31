@@ -1,5 +1,6 @@
 /* eslint-disable no-console */
 import * as mongoose from 'mongoose';
+import axios from 'axios';
 import Server from './express/server';
 import config from './config';
 
@@ -15,6 +16,9 @@ const initializeMongo = async () => {
 
 const main = async () => {
     await initializeMongo();
+
+    axios.defaults.maxBodyLength = service.maxRequestSize;
+    axios.defaults.maxContentLength = service.maxRequestSize;
 
     const server = new Server(service.port);
 

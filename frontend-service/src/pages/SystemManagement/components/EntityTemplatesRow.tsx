@@ -101,7 +101,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                             <EntityTemplateColor entityTemplateColor={getEntityTemplateColor(entityTemplate)} style={{ height: '18px' }} />
                         </Grid>
 
-                        <Grid item>
+                        <Grid item sx={{ display: 'flex', justifyContent: 'center', alignContent: 'center' }}>
                             {entityTemplate.iconFileId ? (
                                 <CustomIcon iconUrl={entityTemplate.iconFileId} height="24px" width="24px" />
                             ) : (

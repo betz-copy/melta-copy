@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Grid, ToggleButtonGroup, ToggleButton } from '@mui/material';
 import i18next from 'i18next';
-import FileInput from './FileInput';
+import FileInput from './ImageFileInput';
 import IconPicker from './IconPicker';
 import fileDetails from '../../interfaces/fileDetails';
 
@@ -74,7 +74,6 @@ const ImagePicker: React.FC<ImagePickerProps> = ({ image, onPick, onDelete, defa
                         fileFieldName="icon"
                         onDropFile={(acceptedFile) => {
                             const detailedFile = { file: acceptedFile, name: acceptedFile.name };
-
                             setFileInputValue(detailedFile);
                             onPick(detailedFile);
                         }}

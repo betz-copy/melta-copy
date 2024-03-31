@@ -67,6 +67,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
         pattern: '',
         patternCustomErrorMessage: '',
         dateNotification: undefined,
+        calculateTime: false,
         serialStarter: 0,
     },
 }: React.PropsWithChildren<FieldBlockProps<PropertiesType, Values>>) => {
@@ -118,7 +119,6 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
         const displayValuesCopy = [...displayValuesRef.current] as Values[PropertiesType];
 
         displayValuesCopy[index] = { ...displayValuesCopy[index], [field]: value };
-
         setDisplayValues(displayValuesCopy);
         updateFormik();
     };
