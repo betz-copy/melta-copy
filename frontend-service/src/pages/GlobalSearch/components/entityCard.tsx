@@ -3,8 +3,9 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import { Box, Card, CardContent, CardHeader, Dialog, Divider, Grid, Typography, styled } from '@mui/material';
 import i18next from 'i18next';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQueryClient } from 'react-query';
 import { BlueTitle } from '../../../common/BlueTitle';
 import { CustomIcon } from '../../../common/CustomIcon';
 import { EntityProperties } from '../../../common/EntityProperties';
@@ -22,6 +23,9 @@ import { getFileName } from '../../../utils/getFileName';
 import { getPreviewContentType } from '../../../utils/getFileType';
 import { EntityDates } from '../../Entity/components/EntityDates';
 import { EntityDisableCheckbox } from '../../Entity/components/EntityDisableCheckbox';
+import { canUserWriteInstanceOfCategory } from '../../../utils/permissions/instancePermissions';
+import { IPermissionsOfUser } from '../../../services/permissionsService';
+import { ImageWithDisable } from '../../../common/ImageWithDisable';
 
 export const StyledCard = styled(Card)(({ theme }) => ({
     background: theme.palette.mode === 'light' ? '#FFFFFF 0% 0% no-repeat padding-box' : undefined,
@@ -43,7 +47,6 @@ interface EntityCardProps {
         onClick: (event) => void;
         popoverText?: string;
     };
-    userHavePermission?: boolean;
     customCardStyle?: React.CSSProperties;
     variant?: 'outlined' | 'elevation';
     refetchQuery?: () => void;
@@ -55,31 +58,32 @@ const EntityCard: React.FC<EntityCardProps> = ({
     expandCard = false,
     onExpand,
     customActionButton,
-    userHavePermission = true,
     customCardStyle,
     variant = 'outlined',
     refetchQuery,
 }) => {
     const [open, setOpen] = useState<boolean>(expandCard);
-    const [shouldDisplayFilePreview, setShouldDisplayFilePreview] = useState(false);
-    const [files, setFiles] = useState<IFile[]>([]);
     const [previewImageIndex, setPreviewImageIndex] = useState(0);
     const cardRef = useRef<HTMLDivElement>(null);
+    const queryClient = useQueryClient();
+    const { instancesPermissions } = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
+    const userHasWritePermissions = canUserWriteInstanceOfCategory(instancesPermissions, entityTemplate.category);
 
-    useEffect(() => {
-        const filePropertyNames = entityTemplate.propertiesOrder.filter((propertyName) => {
-            if (entityTemplate.properties.properties[propertyName].format === 'fileId') {
-                if (!shouldDisplayFilePreview) {
-                    setShouldDisplayFilePreview(true);
-                }
-                return entity.properties[propertyName];
-            }
-            return false;
+    const shouldDisplayFilePreview = useMemo(() => {
+        return entityTemplate.propertiesOrder.some((propertyName) => {
+            return entityTemplate.properties.properties[propertyName].format === 'fileId' && entity.properties[propertyName];
         });
+    }, [entityTemplate, entity]);
 
-        if (filePropertyNames.length) {
-            setFiles(
-                filePropertyNames.map((filePropertyName) => {
+    const hasSomeFileIdPropertyTemplate = entityTemplate.propertiesOrder.some((propertyName) => {
+        return entityTemplate.properties.properties[propertyName].format === 'fileId';
+    });
+
+    const files: IFile[] = useMemo(
+        () =>
+            entityTemplate.propertiesOrder
+                .filter((propertyName) => entityTemplate.properties.properties[propertyName].format === 'fileId' && entity.properties[propertyName])
+                .map((filePropertyName) => {
                     const fileId = entity.properties[filePropertyName];
                     const contentType = getPreviewContentType(fileId);
 
@@ -90,9 +94,8 @@ const EntityCard: React.FC<EntityCardProps> = ({
                         targetExtension: contentType === 'video' || contentType === 'audio' ? undefined : FileExtensions.png,
                     } as IFile;
                 }),
-            );
-        }
-    }, [entityTemplate, entity]);
+        [entityTemplate, entity],
+    );
 
     const onOpen = () => {
         if (onExpand) onExpand(entity.properties._id);
@@ -148,7 +151,6 @@ const EntityCard: React.FC<EntityCardProps> = ({
                             {
                                 icon: '/icons/read-more-icon.svg',
                                 action: () => {
-                                    if (!userHavePermission) return;
                                     navigate(`/entity/${entity.properties._id}`);
                                 },
                                 popoverText: i18next.t('wizard.entity.readMore'),
@@ -156,10 +158,13 @@ const EntityCard: React.FC<EntityCardProps> = ({
                             {
                                 icon: '/icons/edit-icon.svg',
                                 action: () => {
-                                    if (!userHavePermission) return;
+                                    if (!userHasWritePermissions) return;
                                     setEditDialog({ isOpen: true, entity });
                                 },
-                                popoverText: i18next.t('actions.edit'),
+                                popoverText: i18next.t(
+                                    !userHasWritePermissions ? 'permissions.dontHaveWritePermissions' : 'entitiesTableOfTemplate.editEntity',
+                                ),
+                                disabled: !userHasWritePermissions,
                             },
                             {
                                 icon: '/icons/graph-icon.svg',
@@ -180,8 +185,9 @@ const EntityCard: React.FC<EntityCardProps> = ({
                                             item.action();
                                         },
                                     }}
+                                    disabled={item.disabled}
                                 >
-                                    {typeof item.icon === 'string' ? <img src={item.icon || ''} alt="" /> : item.icon}
+                                    {typeof item.icon === 'string' ? <ImageWithDisable srcPath={item.icon} disabled={item.disabled} /> : item.icon}
                                 </IconButtonWithPopover>
                             </Grid>
                         ))}
@@ -209,16 +215,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
 
             {!open && (
                 <Grid container>
-                    <Grid
-                        item
-                        xs={shouldDisplayFilePreview ? 8 : 12}
-                        container
-                        paddingLeft="4px"
-                        paddingBottom="14px"
-                        height="fit-content"
-                        minHeight="37px"
-                        alignItems="center"
-                    >
+                    <Grid item xs={8} container paddingLeft="4px" paddingBottom="14px" height="fit-content" minHeight="37px" alignItems="center">
                         <EntityProperties
                             entityTemplate={entityTemplate}
                             properties={entity.properties}
@@ -238,71 +235,71 @@ const EntityCard: React.FC<EntityCardProps> = ({
                     </Grid>
                     {shouldDisplayFilePreview && (
                         <Grid item xs={3.8}>
-                            {files.length ? (
+                            <Grid
+                                item
+                                sx={{
+                                    height: '167px',
+                                    margin: '0.3rem 1rem 1rem 1rem',
+                                    zIndex: 2,
+                                }}
+                            >
+                                <OpenSmallPreview
+                                    files={files}
+                                    currentIndex={previewImageIndex}
+                                    increaseIndex={increaseIndex}
+                                    decreaseIndex={decreaseIndex}
+                                />
                                 <Grid
-                                    item
+                                    container
                                     sx={{
-                                        height: '150px',
-                                        margin: '0.3rem 1rem 1rem 1rem',
-                                        zIndex: 2,
+                                        position: 'relative',
+                                        bottom: '22px',
+                                        backgroundColor: '#101440',
+                                        width: '100%',
+                                        display: 'flex',
+                                        borderRadius: '0 0 1rem 1rem',
+                                        alignItems: 'center',
                                     }}
                                 >
-                                    <OpenSmallPreview
-                                        files={files}
-                                        currentIndex={previewImageIndex}
-                                        increaseIndex={increaseIndex}
-                                        decreaseIndex={decreaseIndex}
-                                    />
-                                    <Grid
-                                        container
-                                        sx={{
-                                            position: 'relative',
-                                            bottom: '22px',
-                                            backgroundColor: '#101440',
-                                            width: '100%',
-                                            display: 'flex',
-                                            borderRadius: '0 0 1rem 1rem',
-                                            alignItems: 'center',
-                                        }}
-                                    >
-                                        <Grid item xs={9}>
-                                            <MeltaTooltip title={files[previewImageIndex].name}>
-                                                <Typography
-                                                    sx={{
-                                                        marginLeft: '7px',
-                                                        fontSize: '0.8rem',
-                                                        textOverflow: 'ellipsis',
-                                                        overflow: 'hidden',
-                                                        whiteSpace: 'nowrap',
-                                                        maxWidth: '100%',
-                                                        color: 'white',
-                                                    }}
-                                                >
-                                                    {files[previewImageIndex].name}
-                                                </Typography>
-                                            </MeltaTooltip>
-                                        </Grid>
-                                        <Grid item xs={3} sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-                                            <OpenPreview
-                                                fileId={files[previewImageIndex].id}
-                                                img={<img src="/icons/expand-preview-file.svg" style={{ height: '11px' }} />}
-                                                showText={false}
-                                            />
-                                        </Grid>
+                                    <Grid item xs={9}>
+                                        <MeltaTooltip title={files[previewImageIndex].name}>
+                                            <Typography
+                                                sx={{
+                                                    marginLeft: '7px',
+                                                    fontSize: '0.8rem',
+                                                    textOverflow: 'ellipsis',
+                                                    overflow: 'hidden',
+                                                    whiteSpace: 'nowrap',
+                                                    maxWidth: '100%',
+                                                    color: 'white',
+                                                }}
+                                            >
+                                                {files[previewImageIndex].name}
+                                            </Typography>
+                                        </MeltaTooltip>
+                                    </Grid>
+                                    <Grid item xs={3} sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                                        <OpenPreview
+                                            fileId={files[previewImageIndex].id}
+                                            img={<img src="/icons/expand-preview-file.svg" style={{ height: '11px' }} />}
+                                            showText={false}
+                                        />
                                     </Grid>
                                 </Grid>
-                            ) : (
-                                <Grid item sx={{ display: 'flex', flexDirection: 'row' }}>
-                                    <img
-                                        src="/icons/no-file.svg"
-                                        style={{
-                                            height: '150px',
-                                            margin: '0.3rem 1rem 1rem 1rem',
-                                            zIndex: 2,
-                                        }}
-                                    />
-                                </Grid>
-                            )}
+                            </Grid>
+                        </Grid>
+                    )}
+
+                    {hasSomeFileIdPropertyTemplate && files.length === 0 && (
+                        <Grid item sx={{ display: 'flex', flexDirection: 'row' }}>
+                            <img
+                                src="/icons/no-file.svg"
+                                style={{
+                                    height: '167px',
+                                    margin: '0.3rem 1rem 1rem 1rem',
+                                    zIndex: 2,
+                                }}
+                            />
                         </Grid>
                     )}
                 </Grid>
@@ -330,7 +327,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
                                 innerStyle={{ flexBasis: '33.33%' }}
                                 mode="normal"
                             />
-                            <Grid container marginTop="30px">
+                            <Grid container marginTop="40px">
                                 <EntityDisableCheckbox isEntityDisabled={entity.properties.disabled} />
                             </Grid>
                             <Grid marginTop="30px" width="80%">
@@ -345,7 +342,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
                             <Box
                                 sx={{
                                     height: '17vh',
-                                    margin: '0.3rem 1rem 1rem 1rem',
+                                    margin: '0.3rem 1rem 1.3rem 1rem',
                                     zIndex: 2,
                                 }}
                             >
@@ -394,11 +391,11 @@ const EntityCard: React.FC<EntityCardProps> = ({
                                 </Grid>
                             </Box>
                         ) : (
-                            shouldDisplayFilePreview && <img src="/icons/no-file.svg" />
+                            hasSomeFileIdPropertyTemplate && files.length === 0 && <img src="/icons/no-file.svg" />
                         ))}
                 </Grid>
             </Grid>
-            <Dialog open={editDialog.isOpen}>
+            <Dialog open={editDialog.isOpen} maxWidth="md">
                 <CreateOrEditEntityDetails
                     isEditMode
                     entityTemplate={entityTemplate}

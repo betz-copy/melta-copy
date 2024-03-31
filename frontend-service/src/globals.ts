@@ -128,8 +128,8 @@ export const environment = {
         headlineSubTitleFontSize: '14px',
     },
     smallPreviewHeight: {
-        number: '20',
-        unit: 'vh',
+        number: '150',
+        unit: 'px',
     },
     iconSize: {
         width: '24px',

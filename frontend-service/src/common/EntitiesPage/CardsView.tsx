@@ -1,4 +1,4 @@
-import { Grid } from '@mui/material';
+import { Box, Grid } from '@mui/material';
 import i18next from 'i18next';
 import React, { forwardRef, useImperativeHandle, useState } from 'react';
 import { useQueryClient } from 'react-query';
@@ -9,7 +9,6 @@ import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
 import EntityCard from '../../pages/GlobalSearch/components/entityCard';
 import { getEntitiesWithDirectConnections } from '../../services/entitiesService';
 import { InfiniteScroll } from '../InfiniteScroll';
-import { ViewingBox } from '../../pages/SystemManagement/components/ViewingBox';
 
 const { infiniteScrollPageCount } = environment.entitiesCardsView;
 
@@ -28,12 +27,12 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
 
     const queryClient = useQueryClient();
 
-    const refetch = () => queryClient.resetQueries({ queryKey: ['searchEntities', templateIds, searchInput], exact: true });
+    const refetch = () => queryClient.invalidateQueries({ queryKey: ['searchEntities', templateIds, searchInput], exact: true });
 
     useImperativeHandle(ref, () => ({ refetch }));
 
     return (
-        <Grid container direction="column" spacing={2}>
+        <Grid container direction="column" spacing={3}>
             <Grid item>
                 <Grid container direction="column" spacing={1}>
                     {entitiesCount !== null && (
@@ -44,8 +43,8 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
                     )}
                 </Grid>
             </Grid>
-            <Grid item style={{ flexWrap: 'wrap', minWidth: '80rem' }}>
-                <ViewingBox minHeight="84vh">
+            <Grid item>
+                <Grid container>
                     <InfiniteScroll<IEntity>
                         queryKey={['searchEntities', templateIds, searchInput]}
                         queryFunction={async ({ pageParam: startRow = 0 }) => {
@@ -87,19 +86,21 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
                             const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates');
                             const entityTemplate = entityTemplates?.get(entity.templateId)!;
                             return (
-                                <EntityCard
-                                    entity={entity}
-                                    entityTemplate={entityTemplate}
-                                    expandCard={openCardsMap.has(entity.properties._id)}
-                                    onExpand={(entityId) => {
-                                        setOpenCardsMap((map) => new Map(map.set(entityId, !openCardsMap.get(entityId))));
-                                    }}
-                                    refetchQuery={refetch}
-                                />
+                                <Box sx={{ margin: '0.6rem' }}>
+                                    <EntityCard
+                                        entity={entity}
+                                        entityTemplate={entityTemplate}
+                                        expandCard={openCardsMap.has(entity.properties._id)}
+                                        onExpand={(entityId) => {
+                                            setOpenCardsMap((map) => new Map(map.set(entityId, !openCardsMap.get(entityId))));
+                                        }}
+                                        refetchQuery={refetch}
+                                    />
+                                </Box>
                             );
                         }}
                     </InfiniteScroll>
-                </ViewingBox>
+                </Grid>
             </Grid>
         </Grid>
     );

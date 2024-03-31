@@ -93,8 +93,8 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                 );
                 return (
                     <Grid key={propertyKey} item container flexDirection="row" style={innerStyle} alignItems={textWrap ? 'flex-start' : 'center'}>
-                        <Grid item container width="100%" flexWrap="nowrap" gap="15px" alignItems={textWrap ? 'flex-start' : 'center'}>
-                            <Grid item>
+                        <Grid item container width="100%" flexWrap="nowrap" alignItems={textWrap ? 'flex-start' : 'center'}>
+                            <Grid item width="30%">
                                 <MeltaTooltip disableHoverListener={textWrap} placement="bottom" title={propertySchema.title}>
                                     <Typography
                                         style={{
@@ -118,7 +118,6 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                                 flexDirection="row"
                                 alignItems={textWrap ? 'flex-start' : 'center'}
                                 flexWrap="nowrap"
-                                gap={2}
                                 style={{
                                     direction: 'rtl',
                                     textAlign: 'right',

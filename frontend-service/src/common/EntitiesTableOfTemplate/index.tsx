@@ -235,7 +235,6 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             hideNonPreview,
             editRowButtonProps,
             hasPermissionToCategory,
-
             defaultVisibleColumns,
             defaultColumnsOrder,
             defaultColumnWidths,
