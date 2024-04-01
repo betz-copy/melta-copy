@@ -57,7 +57,12 @@ export const PureInfiniteScroll = <T extends any>({
         <>
             {data?.pages.map((page) =>
                 page.map((item) => (
-                    <Grid item key={getItemId(item)} {...(openIds ? { xs: openIds?.get(getItemId(item) as string) ? 12 : 4 } : {})}>
+                    <Grid
+                        justifyContent="space-between"
+                        item
+                        key={getItemId(item)}
+                        {...(openIds ? { xs: openIds?.get(getItemId(item) as string) && 12 } : {})}
+                    >
                         {children(item)}
                     </Grid>
                 )),

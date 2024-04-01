@@ -127,7 +127,12 @@ const EntityCard: React.FC<EntityCardProps> = ({
     ];
 
     return (
-        <Card raised variant={variant} ref={cardRef} sx={{ borderRadius: '15px', overflow: 'hidden', minHeight: '16rem', ...customCardStyle }}>
+        <Card
+            raised
+            variant={variant}
+            ref={cardRef}
+            sx={{ margin: '0.6rem', width: open ? 0.987 : '547px', borderRadius: '15px', overflow: 'hidden', minHeight: '16rem', ...customCardStyle }}
+        >
             <CardHeader
                 sx={{ padding: '6px 10px 0px 10px' }}
                 title={
@@ -294,7 +299,6 @@ const EntityCard: React.FC<EntityCardProps> = ({
                                 src="/icons/no-file.svg"
                                 style={{
                                     height: '167px',
-                                    margin: '0.3rem 1rem 1rem 1rem',
                                     zIndex: 2,
                                 }}
                             />

@@ -77,26 +77,21 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
                         }}
                         endText={i18next.t('entitiesCardView.noSearchLeft')}
                         openIds={openCardsMap}
-                        direction="row"
-                        wrap="wrap"
-                        spacing={2}
                         useContainer={false}
                     >
                         {(entity) => {
                             const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates');
                             const entityTemplate = entityTemplates?.get(entity.templateId)!;
                             return (
-                                <Box sx={{ margin: '0.6rem' }}>
-                                    <EntityCard
-                                        entity={entity}
-                                        entityTemplate={entityTemplate}
-                                        expandCard={openCardsMap.has(entity.properties._id)}
-                                        onExpand={(entityId) => {
-                                            setOpenCardsMap((map) => new Map(map.set(entityId, !openCardsMap.get(entityId))));
-                                        }}
-                                        refetchQuery={refetch}
-                                    />
-                                </Box>
+                                <EntityCard
+                                    entity={entity}
+                                    entityTemplate={entityTemplate}
+                                    expandCard={openCardsMap.has(entity.properties._id)}
+                                    onExpand={(entityId) => {
+                                        setOpenCardsMap((map) => new Map(map.set(entityId, !openCardsMap.get(entityId))));
+                                    }}
+                                    refetchQuery={refetch}
+                                />
                             );
                         }}
                     </InfiniteScroll>
