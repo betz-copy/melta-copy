@@ -12,8 +12,8 @@ import {
 } from '../../interfaces/processes/processTemplate';
 
 const { processTemplates } = environment.api;
-export const basePropertyTypes = ['string', 'number', 'boolean'];
-export const stringFormats = ['date', 'date-time', 'email', 'entityReference'];
+export const basePropertyTypes = ['string', 'number', 'boolean', 'array'];
+export const stringFormats = ['date', 'date-time', 'email', 'entityReference', 'fileId'];
 
 const processTemplateObjectToProcessTemplateForm = (
     processTemplate: IMongoProcessTemplatePopulated | null,
@@ -86,6 +86,7 @@ const processTemplateObjectToProcessTemplateForm = (
 
         stepsForm.push({
             _id: step._id,
+            draggableId: step._id,
             properties: stepsPropertiesArray,
             attachmentProperties: stepsAttachmentProperties,
             name: step.name,
@@ -105,9 +106,43 @@ const processTemplateObjectToProcessTemplateForm = (
         steps: stepsForm,
     };
 };
+
+const createFileAttachmentProperty = (type: string, required: boolean): any => {
+    if (type === 'multipleFiles') {
+        return {
+            type: 'array',
+            items: {
+                type: 'string',
+                format: 'fileId',
+            },
+            ...(required && { required: true }),
+        };
+    } else {
+        return {
+            type: 'string',
+            format: 'fileId',
+            ...(required && { required: true }),
+        };
+    }
+};
+
+const addAttachmentProperties = (
+    properties: Record<string, IProcessSingleProperty>,
+    propertiesOrder: string[],
+    attachmentProperties: ProcessTemplateFormInputProperties[],
+) => {
+    attachmentProperties.forEach(({ name, title, type, required }) => {
+        const attachmentProperty = createFileAttachmentProperty(type, required);
+        properties[name] = {
+            title,
+            ...attachmentProperty,
+        };
+        propertiesOrder.push(name);
+    });
+};
+
 const formToJSONSchema = (values: ProcessTemplateWizardValues): ICreateProcessTemplateBody | IUpdateProcessTemplateBody => {
     const { detailsProperties, detailsAttachmentProperties, steps, ...restOfProperties } = values;
-
     const detailsPropertiesOrder: string[] = [];
     const stepTemplates: ICreateProcessTemplateBody['steps'] | IUpdateProcessTemplateBody['steps'] = [];
 
@@ -132,17 +167,7 @@ const formToJSONSchema = (values: ProcessTemplateWizardValues): ICreateProcessTe
         if (required) detailsSchema.required.push(name);
     });
 
-    detailsAttachmentProperties.forEach(({ name, title, required }) => {
-        detailsSchema.properties[name] = {
-            title,
-            type: 'string',
-            format: 'fileId',
-        };
-
-        if (required) detailsSchema.required.push(name);
-
-        detailsPropertiesOrder.push(name);
-    });
+    addAttachmentProperties(detailsSchema.properties, detailsPropertiesOrder, detailsAttachmentProperties);
 
     steps.forEach((step) => {
         const stepPropertiesOrder: string[] = [];
@@ -166,17 +191,8 @@ const formToJSONSchema = (values: ProcessTemplateWizardValues): ICreateProcessTe
             if (required) stepSchema.required.push(name);
         });
 
-        step.attachmentProperties.forEach(({ name, title, required }) => {
-            stepSchema.properties[name] = {
-                title,
-                type: 'string',
-                format: 'fileId',
-            };
+        addAttachmentProperties(stepSchema.properties, stepPropertiesOrder, step.attachmentProperties);
 
-            if (required) stepSchema.required.push(name);
-
-            stepPropertiesOrder.push(name);
-        });
         const reviewersIds: string[] = step.reviewers.map((reviewer) => reviewer.id);
         stepTemplates.push({
             _id: step._id!,
@@ -199,6 +215,7 @@ const createProcessTemplateRequest = async (newProcessTemplate: ProcessTemplateW
     const formData = new FormData();
     newProcessTemplate.steps.map((step, index) => formData.append(String(index), step.icon!.file as File));
     const processTemplate = formToJSONSchema(newProcessTemplate);
+
     formData.append('displayName', processTemplate.displayName);
     formData.append('name', processTemplate.name);
     formData.append('details', JSON.stringify(processTemplate.details));
@@ -215,13 +232,13 @@ const updateProcessTemplateRequest = async (processTemplateId: string, updatedPr
             formData.append(String(index), step.icon!.file as File);
         }
     });
-
     const processTemplate = formToJSONSchema(updatedProcessTemplate);
     formData.append('name', processTemplate.name);
     formData.append('displayName', processTemplate.displayName);
     formData.append('details', JSON.stringify(processTemplate.details));
     formData.append('steps', JSON.stringify(processTemplate.steps));
     const { data } = await axios.put<IMongoProcessTemplatePopulated>(`${processTemplates}/${processTemplateId}`, formData);
+
     return data;
 };
 

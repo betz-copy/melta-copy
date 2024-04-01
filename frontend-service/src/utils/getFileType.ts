@@ -4,6 +4,12 @@ export const getFileExtension = (name: string) => {
     return name.match(/\.([^.]*)$/)?.pop() || '';
 };
 
+export const getFileNameWithoutExtension = (name: string) => {
+    const lastDotIndex = name.lastIndexOf('.');
+    const fileNameWithoutExtension = lastDotIndex !== -1 ? name.slice(0, lastDotIndex) : name;
+    return fileNameWithoutExtension.trim();
+};
+
 export const getPreviewContentType = (name: string) => {
     const { video, audio, image, document } = environment.fileExtensions;
     const extension = getFileExtension(name).toLowerCase();

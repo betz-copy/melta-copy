@@ -57,7 +57,7 @@ const AddEntityButton: React.FC<{
                                 hide: [],
                             },
                             propertiesOrder: [],
-                            propertiesTypeOrder: [],
+                            propertiesTypeOrder: ['properties', 'attachmentProperties'],
                             propertiesPreview: [],
                             uniqueConstraints: [],
                             disabled: false,

@@ -5,4 +5,5 @@ export interface IUser {
     firstName?: string;
     lastName?: string;
     fullName: string;
+    mail?: string;
 }

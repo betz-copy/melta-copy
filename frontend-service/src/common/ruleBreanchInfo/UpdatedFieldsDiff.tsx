@@ -1,32 +1,53 @@
+import { Typography } from '@mui/material';
+import i18next from 'i18next';
+import pickBy from 'lodash.pickby';
 import React from 'react';
 import ReactDiffViewer from 'react-diff-viewer';
-import i18next from 'i18next';
-import { Typography } from '@mui/material';
-import pickBy from 'lodash.pickby';
-import { IUpdateEntityMetadataPopulated } from '../../interfaces/ruleBreaches/actionMetadata';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
-import { formatToString } from '../EntityProperties';
-import { getFileName } from '../../utils/getFileName';
+import { IUpdateEntityMetadataPopulated } from '../../interfaces/ruleBreaches/actionMetadata';
 import { useDarkModeStore } from '../../stores/darkMode';
+import { getFileName } from '../../utils/getFileName';
+import { formatToString } from '../EntityProperties';
 
-const getEntityPropertyString = (value: any, type: 'string' | 'number' | 'boolean' | 'array', format: string | undefined, oldValue: any) => {
+const getEntityPropertyString = (
+    value: any,
+    type: 'string' | 'number' | 'boolean' | 'array',
+    format: string | undefined,
+    oldValue: any,
+    items?: any,
+) => {
     if (value === null || value === undefined) {
         return '-';
     }
 
-    if (format !== 'fileId') {
+    if (format !== 'fileId' && !items) {
         return formatToString(value, type, format);
     }
 
-    const oldFileName = oldValue ? getFileName(oldValue) : undefined;
-    const fileName = value instanceof File ? value.name : getFileName(value);
-
-    const fileContentChanged = value instanceof File || value !== oldValue;
-
-    if (oldFileName === fileName && fileContentChanged) {
-        return `${fileName} (${i18next.t('ruleBreachInfo.updateEntityActionInfo.fileContentUpdated')})`;
+    // single
+    if (format === 'fileId') {
+        const oldFileName = oldValue ? getFileName(oldValue) : undefined;
+        const fileName = value instanceof File ? value.name : getFileName(value);
+        const fileContentChanged = value instanceof File || value !== oldValue;
+        if (oldFileName === fileName && fileContentChanged) {
+            return `${fileName} (${i18next.t('ruleBreachInfo.updateEntityActionInfo.fileContentUpdated')})`;
+        }
+        return fileName;
     }
-    return fileName;
+
+    // multiple
+    const updatedFiles = value.map((file, index: number) => {
+        const oldFile = oldValue ? oldValue[index] : undefined;
+        const oldFileName = oldFile ? getFileName(oldFile) : undefined;
+        const fileName = file instanceof File ? file.name : getFileName(file);
+        const fileContentChanged = file instanceof File || !oldValue || !oldValue.includes(file);
+        if (oldFileName === fileName && fileContentChanged) {
+            return `${fileName} (${i18next.t('ruleBreachInfo.updateEntityActionInfo.fileContentUpdated')})`;
+        }
+        return fileName;
+    });
+
+    return updatedFiles.join('\n');
 };
 
 const getEntityPropertiesString = (
@@ -37,8 +58,7 @@ const getEntityPropertiesString = (
     const fieldPropertiesStrings = Object.entries(entityTemplate.properties.properties).map(([propertyKey, propertyTemplate]) => {
         const oldValue = oldEntityProperties?.[propertyKey];
         const value = entityProperties[propertyKey];
-        const valueFormatted = getEntityPropertyString(value, propertyTemplate.type, propertyTemplate.format, oldValue);
-
+        const valueFormatted = getEntityPropertyString(value, propertyTemplate.type, propertyTemplate.format, oldValue, propertyTemplate.items);
         return `${propertyTemplate.title}: ${valueFormatted}`;
     });
     return fieldPropertiesStrings.join('\n');
@@ -56,7 +76,6 @@ export const UpdatedFieldsDiff: React.FC<{
     const newPropertiesWithNulls = { ...oldProperties, ...updatedFields };
     // updatedFields specifies fields to remove w/ nulls. but shouldn't be in the IEntity properties
     const newProperties = pickBy(newPropertiesWithNulls, (property) => property !== null);
-
     return (
         <ReactDiffViewer
             oldValue={

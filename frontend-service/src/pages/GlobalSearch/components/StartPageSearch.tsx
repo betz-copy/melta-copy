@@ -21,7 +21,14 @@ const StartPageSearch: React.FC<{
                 />
             </Grid>
             <Grid item width="800px">
-                <GlobalSearchBar onSearch={onSearch} placeholder={i18next.t('globalSearch.searchLabel')} size="medium" borderRadius="30px" />
+                <GlobalSearchBar
+                    onSearch={onSearch}
+                    placeholder={i18next.t('globalSearch.searchLabel')}
+                    size="medium"
+                    borderRadius="30px"
+                    height="56px"
+                    width="768px"
+                />
             </Grid>
         </Grid>
     );

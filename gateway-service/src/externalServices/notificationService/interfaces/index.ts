@@ -1,4 +1,5 @@
 import { Status } from '../../processService/interfaces/processInstance';
+import { INotificationMetadataPopulated } from './populated';
 
 export enum NotificationType {
     ruleBreachAlert = 'ruleBreachAlert',
@@ -50,7 +51,7 @@ export interface IDateAboutToExpireNotificationMetadata {
     datePropertyValue: Date;
 }
 
-type INotificationMetadata =
+export type INotificationMetadata =
     | IRuleBreachAlertNotificationMetadata
     | IRuleBreachRequestNotificationMetadata
     | IRuleBreachResponseNotificationMetadata
@@ -66,6 +67,11 @@ export interface INotification<T = INotificationMetadata> {
     type: NotificationType;
     metadata: T;
     createdAt: Date;
+}
+export interface IMailNotification {
+    viewers: string[];
+    type: NotificationType;
+    populatedMetaData: INotificationMetadataPopulated;
 }
 
 export const isRuleBreachAlertNotification = (

@@ -11,6 +11,7 @@ import {
     dateColDef,
     enumArrayColDef,
     enumColDef,
+    enumFilesColDef,
     fileColDef,
     numberColDef,
     regexColDef,
@@ -48,7 +49,7 @@ export const getColumnDefs = <Data extends any = IEntity>({
 }: IGetColumnDefsOptions<Data>): ColDef[] => {
     const columnDefs = template.propertiesOrder.map((property) => {
         const propertyTemplate = template.properties.properties[property];
-        const { type, format } = propertyTemplate;
+        const { type, format, calculateTime } = propertyTemplate;
 
         const hideField = template.properties.hide.includes(property);
 
@@ -62,7 +63,7 @@ export const getColumnDefs = <Data extends any = IEntity>({
         if (type === 'number') return numberColDef(property, valueGetter, propertyTemplate, defaultColumnWidths[property], hideColumn, hideField);
         if (type === 'boolean') return booleanColDef(property, valueGetter, propertyTemplate, defaultColumnWidths[property], hideColumn, hideField);
         if (format === 'date' || format === 'date-time')
-            return dateColDef(property, valueGetter, propertyTemplate, defaultColumnWidths[property], hideColumn, hideField);
+            return dateColDef(property, valueGetter, propertyTemplate, defaultColumnWidths[property], hideColumn, hideField, calculateTime);
         if (format === 'fileId') return fileColDef(property, valueGetter, propertyTemplate, defaultColumnWidths[property], hideColumn);
         if (propertyTemplate.enum)
             return enumColDef(
@@ -89,6 +90,9 @@ export const getColumnDefs = <Data extends any = IEntity>({
                 hideColumn,
                 hideField,
             );
+        if (propertyTemplate.items) {
+            return enumFilesColDef(property, valueGetter, { title: propertyTemplate.title }, defaultColumnWidths[property], rowHeight);
+        }
         return stringColDef(property, valueGetter, propertyTemplate, defaultColumnWidths[property], hideColumn, hideField);
     });
     columnDefs.push(

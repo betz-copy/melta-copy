@@ -27,11 +27,24 @@ export default {
     successfullyCopied: 'הקישור הועתק בהצלחה',
     soon: 'בקרוב...',
     general: 'כללי',
+    agGridTimes: {
+        hours: 'שעות',
+        days: 'ימים',
+        weeks: 'שבועות',
+        months: 'חודשים',
+        years: 'שנים',
+        minutes: 'דקות',
+        future: 'בעוד',
+        today: 'היום',
+        yesterday: 'אתמול',
+        tomorrow: 'מחר',
+    },
     entitiesTableOfTemplate: {
         resetFilters: 'איפוס סינונים',
         downloadOneTable: 'הורד טבלה',
         expandMore: 'הרחב כמות שורות',
         expandLess: 'צמצם כמות שורות',
+        totalLines: 'סה"כ שורות',
         addRelationship: 'הוסף קשר',
         addEntity: 'הוסף ישות',
         deleteEntity: 'מחק ישות',
@@ -89,6 +102,8 @@ export default {
             withEntity: 'עם ישות מסוג',
             failedToGetActivities: 'נכשל לטעון היסטוריה',
             undefined: 'לא ידוע',
+            viewers: 'צפיות',
+            actions: 'פעולות',
         },
         print: {
             header: 'הדפס ישות',
@@ -134,7 +149,7 @@ export default {
         unknownEntity: 'לא ידוע',
         noOptions: 'אין תוצאות',
     },
-    searchLabel: 'חיפוש...',
+    searchLabel: 'חיפוש שם תבנית',
     booleanOptions: { yes: 'כן', no: 'לא' },
     graph: {
         navigateToEntityPage: 'עבור לעמוד הפרט',
@@ -198,10 +213,12 @@ export default {
         noOptions: 'אין תוצאות',
     },
     notifications: {
+        notificationType: 'סוג התראה',
         title: 'התראות',
         failedToGetNotifications: 'נכשל לטעון התראות',
         noNotificationsLeft: 'אין עוד התראות',
         setAsSeen: 'סמן כנקרא',
+        setAllSeen: 'סמן הכל כנקרא',
         failedSetAsSeen: 'נכשל לסמן כנקרא',
         setAllAsSeen: 'סמן את כל ההתראות ב"{{group}}" כנקרא',
         allSeen: 'כל ההתראות סומנו כנקרא בהצלחה',
@@ -214,6 +231,17 @@ export default {
         processDeleted: 'תהליך זה נמחק',
         stepDeleted: 'שלב זה נמחק',
         unknown: 'לא ידוע',
+        displayNames: {
+            ruleBreachRequest: 'בקשה לחריגת חוקה',
+            ruleBreachAlert: 'התראת חוקה',
+            archivedProcess: 'תהליך ארכיון',
+            dateAboutToExpire: 'תאריך מתקרב',
+            deleteProcess: 'מחיקת תהליך',
+            newProcess: 'יצירת תהליך חדש',
+            processReviewerUpdate: 'עדכון הרשאות תהליך',
+            processStatusUpdate: 'עדכון סטטוס תהליך',
+            ruleBreachResponse: 'מענה לחריגת חוקה ',
+        },
     },
     permissions: {
         failedToLoadMyPermissions: 'נכשל לטעון הרשאות',
@@ -495,6 +523,7 @@ export default {
         preview: 'תצוגה מצומצמת',
         hide: 'הסתר',
         unique: 'ייחודי',
+        calculateTime: 'הצגת הפרש זמן',
         uniqueTooltipTitle:
             '* שדות יחודיים צריכים להיות גם חובה.\n* סימון מספר שדות כיחודיים, הופך אותם לייחודים ביחד. לדוגמה, סימון "שם פרטי" ו"שם משפחה" כיחודיים, אומר שתהיה חסימת שכפולים רק עבור שני השדות ביחד כלומר אסור פעמיים "נעם כהן", אבל מותר "נעם כהן" וגם "נעם לוי", למרות שיש פעמיים אותו שם פרטי',
         invalidPropertyType: 'סוג שדה לא תקין',
@@ -533,6 +562,8 @@ export default {
         serialNumber: 'מספר סידורי',
         enumArray: 'רשימה מרובה',
         array: 'מערך',
+        fileId: 'קובץ יחיד',
+        multipleFiles: 'קבצים מרובים',
     },
     input: {
         imagePicker: {
@@ -540,6 +571,7 @@ export default {
             chooseFromOptions: 'בחירה מאפשרויות',
             chooseFile: 'בחירת קובץ',
             dragFile: 'גרור את הקובץ לכאן',
+            dragFiles: 'גרור את הקבצים לכאן',
         },
     },
     errorCodes: {
@@ -600,6 +632,7 @@ export default {
         enforcement: 'אכיפה',
     },
     ruleBreachAlertNotification: {
+        breach: 'הפרת חוק',
         payAttention: 'שים לב,',
         by: 'ע"י',
     },
@@ -617,14 +650,13 @@ export default {
         processName: 'תהליך חדש בשם',
     },
     dateAboutToExpireNotification: {
-        dateAboutToExpireHeadline: 'שים לב\n',
         propertyValue: 'התאריך',
         entityTemplateName: 'בישות',
         aboutToExpire: 'מתקרב',
     },
     processStatusUpdateNotification: {
-        statusUpdate: 'עדכון סטטוס',
-        process: 'תהליך',
+        statusUpdate: ' עדכון סטטוס',
+        process: 'תהליך ',
         step: 'שלב',
         processStatus: 'הסטטוס של התהליך',
         stepStatusPart1: 'הסטטוס של השלב',
@@ -712,6 +744,7 @@ export default {
         noInstancesFound: 'לא נמצאו תהליכים',
         openProcessesTitle: 'תהליכים פתוחים',
         closedProcessesTitle: 'תהליכים סגורים',
+        someStepIsApprovedAreYouSureEditProcessDetails: 'קיים שלב שכבר אושר. האם אתה בטוח רוצה לשנות את פרטי התהליך?',
         stepStatus: {
             pending: 'ממתין',
             approved: 'בוצע',
@@ -916,5 +949,12 @@ export default {
             TimelineMonth: 'חודש פרוס',
             TimelineYear: 'שנה פרוסה',
         },
+    },
+    camera: {
+        cameraNotFound: 'מצלמה לא נמצאה',
+        somethingWentWrong: 'משהו השתבש, אנא נסה שנית',
+        imgName: 'שם התמונה',
+        browserNotSupported: 'דפדפן לא תומך',
+        takePicture: 'צלם תמונה',
     },
 };

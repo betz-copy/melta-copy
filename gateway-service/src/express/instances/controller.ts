@@ -19,7 +19,6 @@ class InstancesController {
 
     static async updateEntityInstance(req: Request, res: Response) {
         const { ignoredRules, ...instanceData } = req.body;
-
         res.json(
             await InstancesManager.updateEntityInstance(req.params.id, instanceData, req.files as Express.Multer.File[], ignoredRules, req.user!.id),
         );
@@ -27,6 +26,10 @@ class InstancesController {
 
     static async duplicateEntityInstance(req: Request, res: Response) {
         res.json(await InstancesManager.duplicateEntityInstance(req.params.id, req.body, req.files as Express.Multer.File[], req.user!));
+    }
+
+    static async viewEntityInstance(req: Request) {
+        await InstancesManager.viewEntityInstance(req.params.id, req.user!.id);
     }
 
     static async deleteEntityInstance(req: Request, res: Response) {

@@ -1,6 +1,6 @@
 import React, { memo } from 'react';
 import { FormikErrors, FormikTouched } from 'formik';
-import { TextField, Box, Grid, Card, CardContent, Switch, FormControlLabel, IconButton } from '@mui/material';
+import { TextField, Box, Grid, Card, CardContent, Switch, FormControlLabel, IconButton, MenuItem } from '@mui/material';
 import { Delete as DeleteIcon, DragHandle as DragHandleIcon } from '@mui/icons-material';
 import { Draggable } from 'react-beautiful-dnd';
 import i18next from 'i18next';
@@ -17,6 +17,7 @@ interface AttachmentEditCardProps {
     errors?: FormikErrors<CommonFormInputProperties>;
     onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
     remove: (index: number) => any;
+    supportChangeToRequiredWithInstances: boolean;
 }
 
 export const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
@@ -29,6 +30,7 @@ export const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
     errors,
     onChange,
     remove,
+    supportChangeToRequiredWithInstances,
 }) => {
     const name = `attachmentProperties[${index}].name`;
     const touchedName = touched?.name;
@@ -37,10 +39,9 @@ export const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
     const title = `attachmentProperties[${index}].title`;
     const touchedTitle = touched?.title;
     const errorTitle = errors?.title;
+    const type = `properties[${index}].type`;
 
-    // TODO: implement array field on files
-    // const type = `attachmentProperties[${index}].type`;
-
+    const validPropertyTypes = ["fileId", "multipleFiles"];
     const required = `attachmentProperties[${index}].required`;
 
     const isNewProperty = !initialValue;
@@ -58,7 +59,7 @@ export const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
                                     <DragHandleIcon fontSize="large" />
                                 </Box>
 
-                                <Grid container direction="column">
+                                <Grid container direction="column" >
                                     <Grid container wrap="nowrap">
                                         <TextField
                                             label={i18next.t('wizard.entityTemplate.attachmentName')}
@@ -69,7 +70,7 @@ export const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
                                             error={touchedName && Boolean(errorName)}
                                             helperText={touchedName && errorName}
                                             disabled={isDisabled}
-                                            sx={{ width: '50%', marginRight: '5px' }}
+                                            sx={{ width: '70%', marginRight: '5px' }}
                                         />
                                         <TextField
                                             label={i18next.t('wizard.entityTemplate.attachmentDisplayName')}
@@ -79,8 +80,28 @@ export const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
                                             onChange={onChange}
                                             error={touchedTitle && Boolean(errorTitle)}
                                             helperText={touchedTitle && errorTitle}
-                                            sx={{ width: '50%', marginRight: '5px' }}
+                                            sx={{ width: '70%', marginRight: '5px' }}
                                         />
+                                        <TextField
+                                            select
+                                            type="text"
+                                            label={i18next.t('wizard.entityTemplate.propertyType')}
+                                            id={type}
+                                            name={type}
+                                            value={value.type}
+                                            onChange={onChange}
+                                            disabled={isDisabled}
+                                            sx={{ marginRight: '5px' }}
+                                            fullWidth
+                                        >
+                                            {validPropertyTypes
+                                                .map((validType) => {
+                                                    return(
+                                                    <MenuItem key={validType} value={validType}>
+                                                        {i18next.t(`propertyTypes.${validType}`)}
+                                                    </MenuItem>
+                                                )})}
+                                        </TextField>
                                     </Grid>
                                     <Grid container justifyContent="space-between">
                                         <Box>
@@ -92,7 +113,11 @@ export const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
                                                             name={required}
                                                             onChange={onChange}
                                                             checked={value.required}
-                                                            disabled={isEditMode && areThereAnyInstances}
+                                                            disabled={(supportChangeToRequiredWithInstances
+                                                                ? false
+                                                                : isEditMode &&
+                                                                  areThereAnyInstances &&
+                                                                  (isNewProperty || (!isNewProperty && !initialValue?.required)))}
                                                         />
                                                     }
                                                     label={i18next.t('validation.required')}

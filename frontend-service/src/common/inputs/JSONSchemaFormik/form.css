@@ -15,3 +15,8 @@
 #json-schema {
     width: 100%;
 }
+
+.MuiPickersToolbar-penIconButton
+{
+    right: 265px !important;
+}

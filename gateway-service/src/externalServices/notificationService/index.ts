@@ -1,10 +1,8 @@
 import axios from 'axios';
-import { menash } from 'menashmq';
+import { INotification } from './interfaces';
 import config from '../../config';
-import { INotification, NotificationType } from './interfaces';
 
 const {
-    rabbit,
     notificationService: { url, baseRoute, requestTimeout },
 } = config;
 
@@ -37,10 +35,5 @@ export class NotificationService {
     static async manyNotificationsSeen(query: object): Promise<INotification[]> {
         const { data } = await this.notificationService.post<INotification[]>(`/seen`, query);
         return data;
-    }
-
-    static async rabbitCreateNotification<T>(viewers: string[], type: NotificationType, metadata: T) {
-        if (!viewers.length) return;
-        await menash.send(rabbit.notificationQueue, { viewers, type, metadata });
     }
 }

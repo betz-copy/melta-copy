@@ -73,6 +73,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
                             height="42px"
                             marginTop="27px"
                             style={{ backgroundColor: entityTemplateColor, borderRadius: '100%' }}
+                            sx={{ display: 'flex', justifyContent: 'center', alignContent: 'center' }}
                         >
                             {entityTemplate.iconFileId ? (
                                 <CustomIcon color="white" iconUrl={entityTemplate.iconFileId} height="24px" width="24px" />

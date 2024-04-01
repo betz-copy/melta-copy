@@ -21,6 +21,7 @@ import { getMyNotificationGroupCountRequest } from '../../services/notificationS
 import { IPermissionsOfUser } from '../../services/permissionsService';
 import { useMeltaPlusStore } from '../../stores/meltaPlus';
 import { useWorkspaceStore } from '../../stores/workspace';
+import { sideBarTransition } from '../../theme';
 import { CustomIcon, CustomImage } from '../CustomIcon';
 import { GlobalSearchBar } from '../EntitiesPage/Headline';
 import IconButtonWithPopover from '../IconButtonWithPopover';
@@ -69,6 +70,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
             refetchOnWindowFocus: true,
         },
     );
+
     const notificationCountDetails = notificationCountDetailsResponse || { total: 0, groups: {} };
 
     const meltaPlus = useMeltaPlusStore((state) => state.meltaPlus);
@@ -178,7 +180,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
 
                     <Grid
                         style={{
-                            width: isDrawerOpen ? '90%' : '',
+                            width: isDrawerOpen ? '199px' : '',
                             borderRadius: '15px',
                             display: 'flex',
                             alignContent: 'center',
@@ -194,6 +196,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                                 placeholder={i18next.t('pages.globalSearch')}
                                 size="small"
                                 borderRadius="30px"
+                                width="199px"
                             />
                         ) : (
                             <Grid onClick={() => toggleDrawer()}>
@@ -232,6 +235,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                         '::-webkit-scrollbar': { width: 4 },
                         '::-webkit-scrollbar-track': { background: 'transparent' },
                         '::-webkit-scrollbar-thumb': { background: 'lightgray' },
+                        marginTop: '17px',
                     }}
                 >
                     {Array.from(
@@ -368,6 +372,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                             marginRight: isDrawerOpen ? '219px' : '73px',
                             marginTop: '-4.25rem',
                             backgroundColor: 'transparent',
+                            transition: sideBarTransition,
                         }}
                     >
                         <img src={`/icons/${isDrawerOpen ? 'close-menu' : 'open-menu'}.svg`} />

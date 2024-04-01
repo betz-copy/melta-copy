@@ -1,17 +1,17 @@
-import React, { useState, useRef, useEffect } from 'react';
 import { Close as CloseIcon } from '@mui/icons-material';
-import { Button, Card, CircularProgress, Dialog, DialogContent, Grid, IconButton, TextField, Typography } from '@mui/material';
-import { Document, Page, pdfjs } from 'react-pdf';
-import ReactPlayer from 'react-player';
-import i18next from 'i18next';
 import ZoomInIcon from '@mui/icons-material/ZoomIn';
 import ZoomOutIcon from '@mui/icons-material/ZoomOut';
-import FlexBox from './FlexBox';
-import { getFileExtension, getPreviewContentType } from '../utils/getFileType';
-import 'react-pdf/dist/esm/Page/TextLayer.css';
+import { Button, Card, CircularProgress, Dialog, DialogContent, Grid, IconButton, TextField, Typography } from '@mui/material';
+import i18next from 'i18next';
+import React, { useEffect, useRef, useState } from 'react';
+import { Document, Page, pdfjs } from 'react-pdf';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
-import { DownloadButton } from './DownloadButton';
-import { useDarkModeStore } from '../stores/darkMode';
+import 'react-pdf/dist/esm/Page/TextLayer.css';
+import ReactPlayer from 'react-player';
+import { useDarkModeStore } from '../../stores/darkMode';
+import { getFileExtension, getPreviewContentType } from '../../utils/getFileType';
+import { DownloadButton } from '../DownloadButton';
+import FlexBox from '../FlexBox';
 
 pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.js';
 
@@ -95,24 +95,48 @@ const Preview: React.FC<PreviewProps> = ({ open, fileId, data, setOpen, loading,
         }
     };
 
-    const handleEnterKeyPress = (e) => {
+    const handleEnterKeyPress = (e: React.KeyboardEvent) => {
         if (e.key === 'Enter') {
             handleJumpToPage();
         }
     };
 
-    let previewContent;
+    let previewContent: React.ReactNode;
     if (isImage(contentType)) {
         previewContent = (
-            <img
-                src={data}
+            <div
                 style={{
-                    maxHeight: '100%',
-                    maxWidth: '100%',
-                    transform: `scale(${zoomLevel})`,
-                    transformOrigin: 'center center',
+                    overflow: 'auto',
+                    height: '95vh',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
                 }}
-            />
+            >
+                <img
+                    src={data}
+                    onLoad={(event) => {
+                        const img = event.target as HTMLImageElement;
+                        const aspectRatio = img.naturalWidth / img.naturalHeight;
+                        const containerHeight = window.innerHeight * 0.95;
+                        const containerWidth = containerHeight * aspectRatio;
+
+                        if (containerWidth > window.innerWidth) {
+                            img.style.width = '100%';
+                            img.style.height = 'auto';
+                        } else {
+                            img.style.height = '95vh';
+                            img.style.width = 'auto';
+                        }
+                    }}
+                    style={{
+                        maxWidth: '100%',
+                        maxHeight: '95vh',
+                        transform: `scale(${zoomLevel})`,
+                        transformOrigin: 'center center',
+                    }}
+                />
+            </div>
         );
     } else if (isVideoOrAudio(contentType)) {
         previewContent = <ReactPlayer style={{ marginTop: '65px' }} url={data} controls playing />;

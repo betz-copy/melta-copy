@@ -109,7 +109,7 @@ export const MeltaRoutesInner: React.FC = () => {
                                 </PermissionsManagementProtectedRoute>
                             </Route>
 
-                            <Route path="/rule-management">
+                            <Route path="/rule-management/:breachType/:ruleBreachId">
                                 <TopBar title={title} />
                                 <RuleManagement setTitle={setTitle} />
                             </Route>

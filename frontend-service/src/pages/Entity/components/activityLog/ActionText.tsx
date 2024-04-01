@@ -16,7 +16,7 @@ const StyledTypography = styled(Typography)(({ theme }) => ({
 })) as typeof Typography;
 
 const EmptyMetadataActionText: React.FC<{
-    action: 'CREATE_ENTITY' | 'DISABLE_ENTITY' | 'ACTIVATE_ENTITY';
+    action: 'CREATE_ENTITY' | 'DISABLE_ENTITY' | 'ACTIVATE_ENTITY' | 'VIEW_ENTITY';
 }> = ({ action }) => {
     const logTexts = {
         ACTIVATE_ENTITY: i18next.t('entityPage.activityLog.activateEntity'),
@@ -45,9 +45,12 @@ const RelationshipMetadataActionText: React.FC<{
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
 
     const relationshipTemplate = relationshipTemplates.get(actionMetadata.relationshipTemplateId);
-    const sourceAndDestinationTemplate = Array.from(entityTemplates.values()).filter(
-        (template) => template._id === relationshipTemplate?.sourceEntityId || template._id === relationshipTemplate?.destinationEntityId,
-    );
+
+    const otherEntityTemplateId =
+        relationshipTemplate?.sourceEntityId !== entityTemplate._id
+            ? relationshipTemplate?.sourceEntityId
+            : relationshipTemplate?.destinationEntityId;
+    const otherEntityTemplate = otherEntityTemplateId ? entityTemplates.get(otherEntityTemplateId) : undefined;
 
     return (
         <Grid item container>
@@ -70,9 +73,7 @@ const RelationshipMetadataActionText: React.FC<{
                             style={{ color: theme.palette.primary.main, cursor: 'pointer' }}
                             borderBottom="1px solid"
                         >
-                            {sourceAndDestinationTemplate[0]._id === entityTemplate._id
-                                ? sourceAndDestinationTemplate[1].displayName
-                                : sourceAndDestinationTemplate[0].displayName}
+                            {otherEntityTemplate?.displayName}
                         </StyledTypography>
                     </>
                 )}
@@ -86,7 +87,6 @@ const UpdateEntityMetadataActionText: React.FC<{
     entityTemplate: IMongoEntityTemplatePopulated;
 }> = ({ actionMetadata, entityTemplate }) => {
     const theme = useTheme();
-
     const ellipsisStyle: React.CSSProperties = {
         marginLeft: '10px',
         overflow: 'hidden',

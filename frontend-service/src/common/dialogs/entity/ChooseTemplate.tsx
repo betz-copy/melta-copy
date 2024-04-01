@@ -5,10 +5,10 @@ import React, { useState } from 'react';
 import { useQueryClient } from 'react-query';
 import { useParams } from 'wouter';
 import * as Yup from 'yup';
+import { EntityWizardValues } from '.';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IPermissionsOfUser } from '../../../services/permissionsService';
 import { canUserWriteInstanceOfCategory } from '../../../utils/permissions/instancePermissions';
-import { EntityWizardValues } from './index';
 
 const chooseTemplateSchema = Yup.object({
     template: Yup.object({

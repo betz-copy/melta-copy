@@ -1,4 +1,5 @@
-import { styled, Drawer as MuiDrawer, Toolbar as MuiToolbar, Divider } from '@mui/material';
+import { Divider, Drawer as MuiDrawer, styled, Toolbar as MuiToolbar } from '@mui/material';
+import { sideBarTransition } from '../../theme';
 
 const drawerWidth = 240;
 
@@ -7,17 +8,11 @@ export const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 
     width: drawerWidth,
     whiteSpace: 'nowrap',
     boxSizing: 'border-box',
-    transition: theme.transitions.create('width', {
-        easing: theme.transitions.easing.sharp,
-        duration: theme.transitions.duration.leavingScreen,
-    }),
+    transition: sideBarTransition,
     '& .MuiDrawer-paper': {
         width: drawerWidth,
         overflowX: 'hidden',
-        transition: theme.transitions.create('width', {
-            easing: theme.transitions.easing.sharp,
-            duration: theme.transitions.duration.leavingScreen,
-        }),
+        transition: sideBarTransition,
     },
     ...(!open && {
         ...{
@@ -25,10 +20,7 @@ export const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 
         },
         '& .MuiDrawer-paper': {
             width: `calc(${theme.spacing(10)} + 1px)`,
-            transition: theme.transitions.create('width', {
-                easing: theme.transitions.easing.sharp,
-                duration: theme.transitions.duration.leavingScreen,
-            }),
+            transition: sideBarTransition,
         },
     }),
 }));

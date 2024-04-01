@@ -1,12 +1,12 @@
 import { Box, Grid, Typography, useTheme } from '@mui/material';
 import React from 'react';
 import { Link } from 'wouter';
+import { IConnectionTemplateOfExpandedEntity } from '..';
 import { CustomIcon } from '../../../common/CustomIcon';
 import { EntityTemplateColor } from '../../../common/EntityTemplateColor';
 import { IMongoCategory } from '../../../interfaces/categories';
 import { IEntityExpanded } from '../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { IMongoRelationshipTemplatePopulated } from '../../../interfaces/relationshipTemplates';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { getEntityTemplateColor } from '../../../utils/colors';
 import { ActivityLog } from './activityLog';
@@ -15,11 +15,12 @@ import { Print } from './print';
 const EntityTopBar: React.FC<{
     entityTemplate: IMongoEntityTemplatePopulated;
     expandedEntity: IEntityExpanded;
-    relevantRelationshipTemplates: IMongoRelationshipTemplatePopulated[];
-    categoriesWithRelationshipTemplates: (IMongoCategory & {
-        relationshipTemplates: IMongoRelationshipTemplatePopulated[];
-    })[];
-}> = ({ entityTemplate, expandedEntity, categoriesWithRelationshipTemplates, relevantRelationshipTemplates }) => {
+    connectionsTemplates: IConnectionTemplateOfExpandedEntity[];
+    categoriesWithConnectionsTemplates: {
+        category: IMongoCategory;
+        connectionsTemplates: IConnectionTemplateOfExpandedEntity[];
+    }[];
+}> = ({ entityTemplate, expandedEntity, categoriesWithConnectionsTemplates, connectionsTemplates }) => {
     const theme = useTheme();
 
     const darkMode = useDarkModeStore((state) => state.darkMode);
@@ -44,7 +45,7 @@ const EntityTopBar: React.FC<{
                 <Grid item>
                     <EntityTemplateColor entityTemplateColor={entityTemplateColor} />
                 </Grid>
-                <Grid item>
+                <Grid item sx={{ display: 'flex', justifyContent: 'center', alignContent: 'center' }}>
                     {entityTemplate.iconFileId && (
                         <CustomIcon iconUrl={entityTemplate.iconFileId || ''} height="30px" width="30px" color={theme.palette.primary.main} />
                     )}
@@ -71,8 +72,8 @@ const EntityTopBar: React.FC<{
                 <Print
                     entityTemplate={entityTemplate}
                     expandedEntity={expandedEntity}
-                    categoriesWithRelationshipTemplates={categoriesWithRelationshipTemplates}
-                    relevantRelationshipTemplates={relevantRelationshipTemplates}
+                    categoriesWithConnectionsTemplates={categoriesWithConnectionsTemplates}
+                    connectionsTemplates={connectionsTemplates}
                 />
                 <ActivityLog entityTemplate={entityTemplate} expandedEntity={expandedEntity} />
             </Box>

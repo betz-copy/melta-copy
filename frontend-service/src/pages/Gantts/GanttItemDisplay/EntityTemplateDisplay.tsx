@@ -45,7 +45,14 @@ export const EntityTemplateDisplay: React.FC<IEntityTemplateDisplayProps> = ({
                 </Typography>
             )}
 
-            <Grid item container alignItems="center" justifyContent="center" flexWrap="nowrap">
+            <Grid
+                item
+                container
+                alignItems="center"
+                justifyContent="center"
+                flexWrap="nowrap"
+                sx={{ display: 'flex', justifyContent: 'center', alignContent: 'center' }}
+            >
                 {entityTemplate.iconFileId ? (
                     <CustomIcon iconUrl={entityTemplate.iconFileId} height={iconSize} width={iconSize} color={displayColor} />
                 ) : (

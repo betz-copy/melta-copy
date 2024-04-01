@@ -92,6 +92,5 @@ export const useProcessDetailsFormik = (
         validate: getValidationErrors,
         validateOnMount: true,
     });
-
     return formik;
 };

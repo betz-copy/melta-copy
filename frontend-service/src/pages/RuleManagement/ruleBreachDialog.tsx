@@ -71,8 +71,9 @@ const RuleBreachDialog: React.FC<{
                     }
                 }
             },
-            onSuccess: (_data, status) => {
+            onSuccess: (data, status) => {
                 refreshBreaches();
+                onUpdatedRuleBreach(data);
                 handleClose();
                 if (status === RuleBreachRequestStatus.Approved) {
                     toast.success(i18next.t('ruleManagement.succeededToApprove'));
