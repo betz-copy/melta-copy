@@ -60,69 +60,77 @@ const FileAttachmentsEdit: React.FC<FileAttachmentsProps> = ({
     required = [],
 }) => (
     <>
-        {Object.entries(templateFileProperties).map(([key, value], index) => 
-        <Grid item key={key} marginTop={index > 0 ? 5 : 0}>
-                    {value.items === undefined ? (
-                        <InstanceSingleFileInput
-                                    key={key}
-                                    fileFieldName={`detailsAttachments.${key}`}
-                                    fieldTemplateTitle={value.title}
-                                    setFieldValue={setFieldValue}
-                                    required={required.includes(key)} // file error
-                                    value={values.detailsAttachments[key]}
-                                    error={
-                                        errors.detailsAttachments?.[key] && touched.detailsAttachments?.[key]
-                                            ? JSON.stringify(errors.detailsAttachments?.[key])
-                                            : undefined
-                                    }                    setFieldTouched={setFieldTouched}
-                                />
-                    ) : (
-                        <InstanceFileInput
-                                key={key}
-                                fileFieldName={`detailsAttachments.${key}`}
-                                fieldTemplateTitle={value.title}
-                                setFieldValue={setFieldValue}
-                                required={required.includes(key)} 
-                                value={values.detailsAttachments[key]}
-                                error={
-                                    errors.detailsAttachments?.[key] && touched.detailsAttachments?.[key]
-                                        ? JSON.stringify(errors.detailsAttachments?.[key])
-                                        : undefined
-                                }                setFieldTouched={setFieldTouched}
-                                multiple={!!value.items}
-                            />
-                    )}
-                </Grid>
-        )}
+        {Object.entries(templateFileProperties).map(([key, value], index) => (
+            <Grid item key={key} marginTop={index > 0 ? 5 : 0}>
+                {value.items === undefined ? (
+                    <InstanceSingleFileInput
+                        key={key}
+                        fileFieldName={`detailsAttachments.${key}`}
+                        fieldTemplateTitle={value.title}
+                        setFieldValue={setFieldValue}
+                        required={required.includes(key)} // file error
+                        value={values.detailsAttachments[key]}
+                        error={
+                            errors.detailsAttachments?.[key] && touched.detailsAttachments?.[key]
+                                ? JSON.stringify(errors.detailsAttachments?.[key])
+                                : undefined
+                        }
+                        setFieldTouched={setFieldTouched}
+                    />
+                ) : (
+                    <InstanceFileInput
+                        key={key}
+                        fileFieldName={`detailsAttachments.${key}`}
+                        fieldTemplateTitle={value.title}
+                        setFieldValue={setFieldValue}
+                        required={required.includes(key)}
+                        value={values.detailsAttachments[key]}
+                        error={
+                            errors.detailsAttachments?.[key] && touched.detailsAttachments?.[key]
+                                ? JSON.stringify(errors.detailsAttachments?.[key])
+                                : undefined
+                        }
+                        setFieldTouched={setFieldTouched}
+                        multiple={!!value.items}
+                    />
+                )}
+            </Grid>
+        ))}
     </>
 );
 
 export const FileAttachmentsView: React.FC<FileAttachmentsProps> = ({ templateFileProperties, values }) => {
     return (
-    <>
-        {Object.entries(templateFileProperties).map(([fieldName, { title }]) => {
-             let attachments = <Typography display="inline" variant="h6">-</Typography>;;
-             if (values.detailsAttachments[fieldName]) {
-                 if (Array.isArray(values.detailsAttachments[fieldName])) {
-                     attachments = values.detailsAttachments[fieldName].map(v => <OpenPreviewButton fileId={v.name}/>);
-                 } else {
-                     attachments = <OpenPreviewButton fileId={values.detailsAttachments[fieldName].name} />;
-                 }
-             } 
-            return(
-            <Grid container spacing={1} display='flex' flexDirection="column" key={fieldName}>
-                <Grid item>
-                    <Typography display="inline" variant="body1">
-                        {title}:
+        <>
+            {Object.entries(templateFileProperties).map(([fieldName, { title }]) => {
+                let attachments = (
+                    <Typography display="inline" variant="h6">
+                        -
                     </Typography>
-                </Grid>
-                <Grid item sx={{overflowY:"auto", maxHeight: "90px"}}>
-                   {attachments}
-                </Grid>
-            </Grid>
-        )})}
-    </>
-)};
+                );
+                if (values.detailsAttachments[fieldName]) {
+                    if (Array.isArray(values.detailsAttachments[fieldName])) {
+                        attachments = values.detailsAttachments[fieldName].map((v) => <OpenPreviewButton fileId={v.name} />);
+                    } else {
+                        attachments = <OpenPreviewButton fileId={values.detailsAttachments[fieldName].name} />;
+                    }
+                }
+                return (
+                    <Grid container spacing={1} display="flex" flexDirection="column" key={fieldName}>
+                        <Grid item>
+                            <Typography display="inline" variant="body1">
+                                {title}:
+                            </Typography>
+                        </Grid>
+                        <Grid item sx={{ overflowY: 'auto', maxHeight: '90px' }}>
+                            {attachments}
+                        </Grid>
+                    </Grid>
+                );
+            })}
+        </>
+    );
+};
 
 const FileAttachments = ({ viewMode, templateFileProperties, values, errors, touched, setFieldValue, required, setFieldTouched }) => {
     return (
@@ -158,7 +166,10 @@ const GeneralDetails: React.FC<IDetailsStepProp> = ({ detailsFormikData, onNext,
     const viewMode = Boolean(processInstance && !isEditMode);
     const variant = viewMode ? 'standard' : 'outlined';
     const templateFileProperties = values.template
-        ? pickBy(values.template.details.properties.properties, (value) => (value.type === 'array' && value.items?.format==="fileId") || value.format === "fileId")
+        ? pickBy(
+              values.template.details.properties.properties,
+              (value) => (value.type === 'array' && value.items?.format === 'fileId') || value.format === 'fileId',
+          )
         : undefined;
 
     const templateEntityReferenceProperties = values.template

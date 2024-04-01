@@ -17,18 +17,26 @@ import { environment } from '../../../globals';
 
 const { errorCodes } = environment;
 
+interface UploadedFile {
+    name: string;
+}
+
 const getUpdateEntityActionMetadata = (currEntity: IEntity, updateEntityFormData: EntityWizardValues): IUpdateEntityMetadataPopulated => {
     const templatePropertiesUpdated = pickBy(updateEntityFormData.template.properties.properties, ({ format, items }, propertyKey) => {
         if (format === 'fileId' || (items && items.format === 'fileId')) {
             const attachmentProperty = updateEntityFormData.attachmentsProperties[propertyKey];
             if (attachmentProperty instanceof File) return true; // for single file the options as new File or undefined
-            if (updateEntityFormData.template.properties.properties[propertyKey].items && attachmentProperty && Array.isArray(attachmentProperty)) {
+            if (Array.isArray(attachmentProperty)) {
                 // if its array
                 const attachmentFileName = attachmentProperty?.map((file) => file.name);
+                if (!currEntity.properties[propertyKey]) return true;
                 if (attachmentFileName.length !== currEntity.properties[propertyKey].length) return true;
                 return !attachmentFileName.every((file, index) => file === currEntity.properties[propertyKey][index]);
             }
-            return currEntity.properties[propertyKey] !== attachmentProperty?.name; // for single file the options as new File or undefined
+            if (attachmentProperty === undefined) {
+                return false;
+            }
+            return currEntity.properties[propertyKey] !== (attachmentProperty as UploadedFile)?.name; // for single file the options as new File or undefined
         }
         return currEntity.properties[propertyKey] !== updateEntityFormData.properties[propertyKey];
     });
