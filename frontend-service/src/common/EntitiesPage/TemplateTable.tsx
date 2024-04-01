@@ -62,8 +62,7 @@ const TemplateTable = forwardRef<
             });
         },
         {
-            onError(error) {
-                console.log('Failed to export table', error);
+            onError() {
                 toast.error(i18next.t('failedToExportTable'));
             },
             onSuccess(data) {
@@ -144,10 +143,6 @@ const TemplateTable = forwardRef<
                 </Grid>
 
                 <Grid container item flexGrow={1} width={0} justifyContent="flex-end" alignItems="center">
-                    <IconButtonWithPopover popoverText={i18next.t('soon')} style={{ borderRadius: '5px', cursor: 'default' }}>
-                        <ImageWithDisable srcPath="/icons/load-file.svg" disabled />
-                    </IconButtonWithPopover>
-
                     <AddEntityButton
                         initialStep={1}
                         disabled={!userHasWritePermissions}

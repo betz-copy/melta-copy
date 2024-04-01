@@ -137,12 +137,13 @@ const CreateOrEditEntityDetails: React.FC<{
                 const isPropertiesFirst = values.template?.propertiesTypeOrder[0] === 'properties';
                 const schema = filterAttachmentsAndEntitiesRefFromPropertiesSchema(values.template.properties);
 
+                // eslint-disable-next-line react-hooks/rules-of-hooks
                 useEffect(() => {
                     schema.required.forEach((field) => {
-                        const fieldPropertiesEnum = schema.properties[field].enum;
+                        const properties = schema.properties[field].enum;
                         const itemFieldProperties = schema.properties[field]?.items?.enum;
-                        if (fieldPropertiesEnum?.length === 1 && fieldPropertiesEnum[0] !== undefined) {
-                            setFieldValue(`properties.${field}`, fieldPropertiesEnum[0]);
+                        if (properties?.length === 1 && properties[0] !== undefined) {
+                            setFieldValue(`properties.${field}`, properties[0]);
                         }
                         if (itemFieldProperties?.length === 1 && itemFieldProperties[0] !== undefined) {
                             setFieldValue(`properties.${field}`, [itemFieldProperties[0]]);
@@ -150,11 +151,9 @@ const CreateOrEditEntityDetails: React.FC<{
                     });
 
                     if (!isEditMode) {
-                        Object.entries<object>(schema.properties).forEach(([propertyName, propertyValues]) => {
-                            // eslint-disable-next-line no-prototype-builtins
-                            if (propertyValues.hasOwnProperty('serialCurrent')) {
-                                // eslint-disable-next-line dot-notation
-                                setFieldValue(`properties.${propertyName}`, propertyValues['serialCurrent']);
+                        Object.entries(schema.properties).forEach(([propertyName, propertyValues]) => {
+                            if (propertyValues.serialCurrent !== undefined) {
+                                setFieldValue(`properties.${propertyName}`, propertyValues.serialCurrent);
                             }
                         });
                     }
@@ -181,8 +180,8 @@ const CreateOrEditEntityDetails: React.FC<{
                             style={{ marginBottom: '12px', fontSize: '16px', fontWeight: '600' }}
                         />
                         {Object.entries(templateFilesProperties).map(([key, value], index) => (
-                            <Grid item key={key} marginTop={index > 0 ? 5 : 0}>
-                                {!!value.items ? (
+                            <Grid item key={key} marginTop={index > 0 ? 2 : 0}>
+                                {value.items ? (
                                     <InstanceFileInput
                                         key={key}
                                         fileFieldName={`attachmentsProperties.${key}`}
@@ -192,7 +191,6 @@ const CreateOrEditEntityDetails: React.FC<{
                                         value={values.attachmentsProperties[key]}
                                         error={errors.attachmentsProperties?.[key] as string}
                                         setFieldTouched={setFieldTouched}
-                                        multiple={!!value.items}
                                     />
                                 ) : (
                                     <InstanceSingleFileInput

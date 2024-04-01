@@ -110,7 +110,7 @@ export const FileAttachmentsView: React.FC<FileAttachmentsProps> = ({ templateFi
                 );
                 if (values.detailsAttachments[fieldName]) {
                     if (Array.isArray(values.detailsAttachments[fieldName])) {
-                        attachments = values.detailsAttachments[fieldName].map((v) => <OpenPreview fileId={v.name} key={v._id} />);
+                        attachments = values.detailsAttachments[fieldName].map((v) => <OpenPreview fileId={v.name} />);
                     } else {
                         attachments = <OpenPreview fileId={values.detailsAttachments[fieldName].name} />;
                     }

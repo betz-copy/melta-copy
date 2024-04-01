@@ -36,27 +36,28 @@ const EditEntityDetails: React.FC<{
         updateEntityFormData?: EntityWizardValues;
     }>({ isOpen: false });
 
-    const templateFilesProperties = pickBy(entityTemplate.properties.properties, (value) => (value.type === 'array' && value.items?.format==="fileId") || value.format === "fileId");
+    const templateFilesProperties = pickBy(
+        entityTemplate.properties.properties,
+        (value) => (value.type === 'array' && value.items?.format === 'fileId') || value.format === 'fileId',
+    );
     const templateFileKeys = Object.keys(templateFilesProperties);
     const requiredFilesNames = entityTemplate.properties.required.filter((name) => templateFileKeys.includes(name));
 
     const fieldProperties = pickBy(entity.properties, (_value, key) => !templateFileKeys.includes(key)) as IEntity['properties'];
     const fileIdsProperties = pickBy(entity.properties, (_value, key) => templateFileKeys.includes(key));
     Object.entries(fileIdsProperties).forEach(([key, value]) => {
-        if(Array.isArray(value)){
+        if (Array.isArray(value)) {
             fileIdsProperties[key] = value?.map((item) => {
-                return {name: item}
+                return { name: item };
             });
+        } else {
+            fileIdsProperties[key] = { name: value };
         }
-        else {
-            fileIdsProperties[key] =  {name: value};
-        }
-        
     });
     const fileProperties = fileIdsProperties;
     const { isLoading: isUpdateLoading, mutateAsync: updateMutation } = useMutation(
         ({ newEntityData, ignoredRules }: { newEntityData: EntityWizardValues; ignoredRules?: IRuleBreach['brokenRules'] }) =>
-        updateEntityRequestForMultiple(entity.properties._id, newEntityData, ignoredRules),
+            updateEntityRequestForMultiple(entity.properties._id, newEntityData, ignoredRules),
         {
             onSuccess: (data) => {
                 toast.success(i18next.t('wizard.entity.editedSuccefully'));
@@ -123,7 +124,7 @@ const EditEntityDetails: React.FC<{
                                             </Grid>
                                             {templateFileKeys.length > 0 && (
                                                 <Grid item xs={12} sm={4}>
-                                                    <Grid container >
+                                                    <Grid container>
                                                         <Grid item xs={1}>
                                                             <Divider orientation="vertical" style={{ height: '100%', width: '5px' }} />
                                                         </Grid>
