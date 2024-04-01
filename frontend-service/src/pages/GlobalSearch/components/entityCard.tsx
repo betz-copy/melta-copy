@@ -41,12 +41,13 @@ interface EntityCardProps {
     entity: IEntity;
     entityTemplate: IMongoEntityTemplatePopulated;
     expandCard?: boolean;
+    enableEdit?: boolean;
     onExpand?: (entityId: string) => void;
-    customActionButton?: {
-        icon: React.ReactNode;
-        onClick: (event) => void;
-        popoverText?: string;
-    };
+    // customActionButton?: {
+    //     icon: React.ReactNode;
+    //     onClick: (event) => void;
+    //     popoverText?: string;
+    // };
     customCardStyle?: React.CSSProperties;
     variant?: 'outlined' | 'elevation';
     refetchQuery?: () => void;
@@ -56,8 +57,9 @@ const EntityCard: React.FC<EntityCardProps> = ({
     entity,
     entityTemplate,
     expandCard = false,
+    enableEdit = true,
     onExpand,
-    customActionButton,
+    // customActionButton,
     customCardStyle,
     variant = 'outlined',
     refetchQuery,
@@ -155,7 +157,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
                                 },
                                 popoverText: i18next.t('wizard.entity.readMore'),
                             },
-                            {
+                            enableEdit && {
                                 icon: '/icons/edit-icon.svg',
                                 action: () => {
                                     if (!userHasWritePermissions) return;
@@ -174,38 +176,34 @@ const EntityCard: React.FC<EntityCardProps> = ({
                                 popoverText: i18next.t('actions.graph'),
                             },
                             { icon: open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />, action: onOpen },
-                        ].map((item) => (
-                            <Grid item key={item.popoverText}>
-                                <IconButtonWithPopover
-                                    popoverText={item.popoverText || ''}
-                                    iconButtonProps={{
-                                        size: 'large',
-                                        onClick: (event) => {
-                                            event.stopPropagation();
-                                            item.action();
-                                        },
-                                    }}
-                                    disabled={item.disabled}
-                                >
-                                    {typeof item.icon === 'string' ? <ImageWithDisable srcPath={item.icon} disabled={item.disabled} /> : item.icon}
-                                </IconButtonWithPopover>
-                            </Grid>
-                        ))}
-                        {customActionButton && (
-                            <Grid item>
-                                <IconButtonWithPopover
-                                    popoverText={customActionButton.popoverText || ''}
-                                    iconButtonProps={{
-                                        size: 'large',
-                                        onClick: (event) => {
-                                            event.stopPropagation();
-                                            customActionButton.onClick(event);
-                                        },
-                                    }}
-                                >
-                                    {customActionButton.icon}
-                                </IconButtonWithPopover>
-                            </Grid>
+                        ].map(
+                            (item) =>
+                                item && (
+                                    <Grid item key={item.popoverText}>
+                                        <IconButtonWithPopover
+                                            popoverText={(typeof item === 'object' && item.popoverText) || ''}
+                                            iconButtonProps={{
+                                                size: 'large',
+                                                onClick: (event) => {
+                                                    event.stopPropagation();
+                                                    if (typeof item === 'object' && item.action) {
+                                                        item.action();
+                                                    }
+                                                },
+                                            }}
+                                            disabled={(typeof item === 'object' && item.disabled) || false}
+                                        >
+                                            {typeof item === 'object' && typeof item.icon === 'string' ? (
+                                                <ImageWithDisable
+                                                    srcPath={item.icon}
+                                                    disabled={(typeof item === 'object' && item.disabled) || false}
+                                                />
+                                            ) : (
+                                                typeof item === 'object' && item.icon
+                                            )}
+                                        </IconButtonWithPopover>
+                                    </Grid>
+                                ),
                         )}
                     </Grid>
                 }

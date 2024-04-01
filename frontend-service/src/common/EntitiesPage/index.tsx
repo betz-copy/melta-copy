@@ -89,7 +89,7 @@ const EntitiesPage: React.FC<{
     };
 
     return (
-        <Grid>
+        <>
             <Box marginBottom="3vh" position="sticky" style={{ top: 0, right: 0, zIndex: 1 }}>
                 <EntitiesPageHeadline
                     searchInput={searchInput}
@@ -117,6 +117,7 @@ const EntitiesPage: React.FC<{
                     pageTitle={pageTitle}
                 />
             </Box>
+
             <Grid container padding="0 4rem" direction="column" marginBottom="2.5rem">
                 {urlSearchParams.get('viewMode') === 'templates-tables-view' && (
                     <TemplateTablesView
@@ -134,7 +135,7 @@ const EntitiesPage: React.FC<{
                     />
                 )}
             </Grid>
-        </Grid>
+        </>
     );
 };
 

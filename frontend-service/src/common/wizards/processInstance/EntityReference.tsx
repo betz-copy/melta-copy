@@ -203,6 +203,7 @@ export const EntityReference: React.FC<ChooseEntityReferenceProps> = ({
                             entity={referencedEntityData.entity}
                             entityTemplate={referencedEntityData.entityTemplate}
                             expandCard={false}
+                            enableEdit={false}
                             customActionButton={
                                 isViewMode
                                     ? undefined
@@ -212,7 +213,6 @@ export const EntityReference: React.FC<ChooseEntityReferenceProps> = ({
                                           popoverText: i18next.t('wizard.processInstance.changeEntity'),
                                       }
                             }
-                            userHavePermission={referencedEntityData.userHavePermission}
                             customCardStyle={{
                                 background: 'transparent',
                             }}

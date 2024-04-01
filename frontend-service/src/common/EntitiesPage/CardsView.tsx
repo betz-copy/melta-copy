@@ -32,7 +32,7 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
     useImperativeHandle(ref, () => ({ refetch }));
 
     return (
-        <Grid container direction="column" spacing={3}>
+        <Grid container direction="column" spacing={4}>
             <Grid item>
                 <Grid container direction="column" spacing={1}>
                     {entitiesCount !== null && (
