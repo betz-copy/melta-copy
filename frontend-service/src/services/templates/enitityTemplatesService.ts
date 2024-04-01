@@ -36,7 +36,7 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
             preview: propertiesPreview.includes(key),
             hide: properties.hide.includes(key),
             unique: type !== 'serialNumber' && uniqueConstraints.filter((constraints) => constraints.includes(key)).length > 0, // serials cant be marked unique
-            calculateTime: value.calculateTime,
+            calculateTime: value.calculateTime ?? undefined,
             type,
             options: value.enum || value.items?.enum || [],
             optionColors: enumPropertiesColors?.[key] ? enumPropertiesColors[key] : {},
@@ -129,7 +129,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTem
                 pattern: type === 'pattern' ? pattern : undefined,
                 patternCustomErrorMessage: type === 'pattern' ? patternCustomErrorMessage : undefined,
                 dateNotification: dateNotification as string | undefined,
-                calculateTime: calculateTime as boolean | undefined,
+                calculateTime: calculateTime ?? undefined,
                 serialStarter: type === 'serialNumber' ? serialStarter : undefined,
                 serialCurrent: type === 'serialNumber' ? serialStarter : undefined,
             };
