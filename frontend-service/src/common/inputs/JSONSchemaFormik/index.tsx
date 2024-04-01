@@ -118,6 +118,9 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
                 const [_, field] = id.split('root_');
                 setFieldTouched(field);
             }}
+            experimental_defaultFormStateBehavior={{
+                emptyObjectFields: 'skipEmptyDefaults', // library has for array a default empty array ([]). disable this
+            }}
             noValidate
             validator={validator}
             extraErrors={ajvExtraErrorsOnlyTouched}
