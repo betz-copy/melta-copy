@@ -17,7 +17,6 @@ interface InstanceFileInputProps {
     value: File[] | undefined;
     error: string | undefined;
     setFieldTouched: FormikProps<ProcessFormikProps>['setFieldTouched'];
-    multiple: boolean;
 }
 
 export const InstanceFileInput: React.FC<InstanceFileInputProps> = ({
@@ -28,7 +27,6 @@ export const InstanceFileInput: React.FC<InstanceFileInputProps> = ({
     value,
     error,
     setFieldTouched,
-    multiple,
 }) => {
     const [filesName, setFilesName] = useState<string[]>(value ? value.map((file) => getFileName(file.name)) : []);
     return (
@@ -43,9 +41,9 @@ export const InstanceFileInput: React.FC<InstanceFileInputProps> = ({
         >
             <Field
                 validate={(changedValue) => {
-                    return required && (!changedValue || changedValue.length === 0) && i18next.t('validation.requiredFile');
+                    return required && (!changedValue || changedValue.length === 0) && i18next.t('validation.requiredFiles');
                 }}
-                name={filesName}
+                name={fileFieldName}
                 component={FilesInput}
                 fileFieldName={fileFieldName}
                 inputText={`${fieldTemplateTitle} ${required ? '*' : ''}`}
@@ -65,7 +63,7 @@ export const InstanceFileInput: React.FC<InstanceFileInputProps> = ({
                     setFieldTouched(fileFieldName, true, false);
                 }}
                 errorText={error}
-                multiple={multiple}
+                multiple
             />
         </Box>
     );
