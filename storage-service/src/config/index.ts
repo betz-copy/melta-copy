@@ -8,7 +8,8 @@ export const config = {
     },
     service: {
         port: env.get('PORT').default(8000).asPortNumber(),
-        maxFileSize: env.get('MAX_FILE_SIZE').default(50000000).asInt(),
+        maxFileSize: env.get('MAX_FILE_BYTE_SIZE').required().asInt(),
+        maxRequestSize: env.get('MAX_REQUEST_BYTE_SIZE').required().asInt(),
     },
     minio: {
         url: env.get('MINIO_ENDPOINT').default('localhost').asString(),
@@ -17,5 +18,11 @@ export const config = {
         secretKey: env.get('MINIO_SECRET_KEY').default('minioadmin').asString(),
         bucketName: env.get('MINIO_BUCKET_NAME').default('bucket').asString(),
         useSSL: false,
+        transportAgent: {
+            timeout: env.get('TRANSPORT_AGENT_TIMEOUT').default(60000).asIntPositive(),
+            maxSockets: env.get('TRANSPORT_AGENT_MAX_SOCKETS').default(1000).asIntPositive(),
+            keepAlive: env.get('TRANSPORT_AGENT_KEEP_ALIVE').default(1).asBool(),
+            keepAliveMsecs: env.get('TRANSPORT_AGENT_KEEP_ALIVE_MSECS').default(1000).asIntPositive(),
+        },
     },
 };

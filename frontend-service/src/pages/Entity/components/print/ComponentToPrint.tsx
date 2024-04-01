@@ -5,22 +5,22 @@ import { useQueryClient } from 'react-query';
 import { BlueTitle } from '../../../../common/BlueTitle';
 import { IEntityExpanded } from '../../../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
-import { IMongoRelationshipTemplatePopulated } from '../../../../interfaces/relationshipTemplates';
 import { EntityComponentToPrint } from './EntityComponentToPrint';
+import { IConnectionTemplateOfExpandedEntity } from '../..';
 
 const ComponentToPrint = React.forwardRef<
     HTMLDivElement,
     {
         entityTemplate: IMongoEntityTemplatePopulated;
         expandedEntity: IEntityExpanded;
-        relationshipTemplatesToPrint: IMongoRelationshipTemplatePopulated[];
+        connectionsTemplatesToPrint: IConnectionTemplateOfExpandedEntity[];
         options: {
             showDate: boolean;
             showDisabled: boolean;
             showEntityDates: boolean;
         };
     }
->(({ entityTemplate, expandedEntity, relationshipTemplatesToPrint, options }, ref) => {
+>(({ entityTemplate, expandedEntity, connectionsTemplatesToPrint, options }, ref) => {
     const theme = useTheme();
 
     const queryClient = useQueryClient();
@@ -45,56 +45,81 @@ const ComponentToPrint = React.forwardRef<
                 {options.showDate && <Box> {new Date().toLocaleDateString('en-uk')}</Box>}
             </Box>
             <EntityComponentToPrint entityTemplate={entityTemplate} entity={expandedEntity.entity} />
-            {relationshipTemplatesToPrint.length !== 0 && (
+            {connectionsTemplatesToPrint.length !== 0 && (
                 <>
                     <BlueTitle title={i18next.t('entityPage.relationshipTitle')} component="h4" variant="h4" style={{ marginTop: '2rem' }} />
 
-                    {relationshipTemplatesToPrint.map(({ _id, destinationEntity, sourceEntity, displayName }) => {
-                        const relevantConnections = expandedEntity.connections.filter((connection) => connection.relationship.templateId === _id);
-                        let entities =
-                            destinationEntity._id === entityTemplate._id
-                                ? relevantConnections.map((connection) => connection.sourceEntity)
-                                : relevantConnections.map((connection) => connection.destinationEntity);
+                    {connectionsTemplatesToPrint.map(
+                        ({ relationshipTemplate: { _id, destinationEntity, sourceEntity, displayName }, isExpandedEntityRelationshipSource }) => {
+                            const relevantConnections = expandedEntity.connections.filter((connection) => {
+                                if (isExpandedEntityRelationshipSource) {
+                                    return (
+                                        connection.relationship.templateId === _id &&
+                                        connection.sourceEntity.properties._id === expandedEntity.entity.properties._id
+                                    );
+                                }
 
-                        if (!options.showDisabled) entities = entities.filter((entity) => !entity.properties.disabled);
+                                return (
+                                    connection.relationship.templateId === _id &&
+                                    connection.destinationEntity.properties._id === expandedEntity.entity.properties._id
+                                );
+                            });
+                            let entities = relevantConnections.map((connection) => {
+                                return connection.sourceEntity.properties._id === expandedEntity.entity.properties._id
+                                    ? connection.destinationEntity
+                                    : connection.sourceEntity;
+                            });
 
-                        if (entities.length !== 0)
-                            return (
-                                <div key={_id}>
-                                    <Box display="flex" alignItems="center" marginTop="2rem" marginBottom="0.5rem">
-                                        <Typography variant="h4" fontSize="26px" color="gray">
-                                            {sourceEntity.displayName}
-                                        </Typography>
+                            if (!options.showDisabled) entities = entities.filter((entity) => !entity.properties.disabled);
 
-                                        <Typography
-                                            paddingRight="7px"
-                                            paddingLeft="7px"
-                                            fontWeight="800"
-                                            color={theme.palette.primary.main}
-                                            component="h5"
-                                            variant="h5"
-                                        >
-                                            {displayName}
-                                        </Typography>
+                            if (entities.length !== 0)
+                                return (
+                                    <div key={_id}>
+                                        <Box display="flex" alignItems="center" marginTop="2rem" marginBottom="0.5rem">
+                                            <Typography
+                                                variant="h4"
+                                                fontSize="26px"
+                                                color="gray"
+                                                fontWeight={isExpandedEntityRelationshipSource ? '900' : undefined}
+                                            >
+                                                {sourceEntity.displayName}
+                                            </Typography>
 
-                                        <Typography variant="h4" fontSize="26px" color="gray">
-                                            {destinationEntity.displayName}
-                                        </Typography>
-                                    </Box>
+                                            <Typography
+                                                paddingRight="7px"
+                                                paddingLeft="7px"
+                                                fontWeight="800"
+                                                color={theme.palette.primary.main}
+                                                component="h5"
+                                                variant="h5"
+                                            >
+                                                {displayName}
+                                            </Typography>
 
-                                    {entities.map((entity) => (
-                                        <div key={entity.properties._id} style={{ marginBottom: '0.5rem' }}>
-                                            <EntityComponentToPrint
-                                                entityTemplate={entityTemplates.get(entity.templateId)!}
-                                                entity={entity}
-                                                options={{ showDates: options.showEntityDates }}
-                                            />
-                                        </div>
-                                    ))}
-                                </div>
-                            );
-                        return <div key={_id}> </div>;
-                    })}
+                                            <Typography
+                                                variant="h4"
+                                                fontSize="26px"
+                                                color="gray"
+                                                fontWeight={isExpandedEntityRelationshipSource ? undefined : '900'}
+                                            >
+                                                {destinationEntity.displayName}
+                                            </Typography>
+                                        </Box>
+
+                                        {entities.map((entity) => (
+                                            <div key={entity.properties._id} style={{ marginBottom: '0.5rem' }}>
+                                                <EntityComponentToPrint
+                                                    entityTemplate={entityTemplates.get(entity.templateId)!}
+                                                    entity={entity}
+                                                    options={{ showDates: options.showEntityDates }}
+                                                />
+                                            </div>
+                                        ))}
+                                    </div>
+                                );
+                            return <div key={_id}> </div>;
+                        },
+                    )}
                 </>
             )}
         </Box>

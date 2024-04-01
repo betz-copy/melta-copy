@@ -4,9 +4,11 @@ import './dotenv';
 const config = {
     service: {
         port: env.get('PORT').required().asPortNumber(),
+        meltaBaseUrl: env.get('SYSTEM_MELTA_BASE_URL').required().asString(),
         systemUnavailableURL: env.get('SYSTEM_UNAVAILABLE_URL').required().asString(),
         uploadsFolderPath: env.get('UPLOADS_FOLDER_PATH').default('public/uploads/').asString(),
-        maxFileSize: env.get('MAX_FILE_SIZE').default(50000000).asInt(),
+        maxFileSize: env.get('MAX_FILE_BYTE_SIZE').required().asInt(),
+        maxRequestSize: env.get('MAX_REQUEST_BYTE_SIZE').required().asInt(),
         searchEntitiesChunkSize: env.get('SEARCH_ENTITIES_CHUNK_SIZE').default(50).asIntPositive(),
         excelFilePath: env.get('EXCEL_FILE_PATH').default('/usr/src/app').asString(),
         dateAlertTime: env.get('DATE_ALERT_TIME').default('0 0 * * *').asString(),
@@ -49,7 +51,6 @@ const config = {
         deleteFileRoute: env.get('STORAGE_SERVICE_DELETE_FILE_ROUTE').default('api/files').asString(),
         deleteFilesRoute: env.get('STORAGE_SERVICE_DELETE_FILES_ROUTE').default('api/files/delete-bulk').asString(),
         duplicateFilesRoute: env.get('STORAGE_SERVICE_DUPLICATE_FILES_ROUTE').default('api/files/duplicate-bulk').asString(),
-        fileHyperLink: env.get('STORAGE_SERVICE_FILE_HYPER_LINK').required().asString(),
         fileIdLength: env.get('STORAGE_SERVICE_FILE_ID_LENGTH').default(32).asIntPositive(),
     },
     instanceService: {
@@ -126,6 +127,10 @@ const config = {
             factor: env.get('RABBIT_RETRY_FACTOR').default(1.8).asFloatPositive(),
         },
         notificationQueue: env.get('NOTIFICATION_QUEUE_NAME').default('notifications-queue').asString(),
+        mailNotificationQueue: env.get('MAIL_NOTIFICATION_QUEUE_NAME').default('mail-notifications-queue').asString(),
+    },
+    mailerService: {
+        mailUser: env.get('NOTIFICATIONS_MAIL_FROM').default('hope39@ethereal.email').asString(),
     },
 };
 

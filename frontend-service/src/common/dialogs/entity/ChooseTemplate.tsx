@@ -5,10 +5,10 @@ import i18next from 'i18next';
 import { useQueryClient } from 'react-query';
 import { useParams } from 'react-router-dom';
 import { FormikErrors, FormikTouched } from 'formik';
-import { EntityWizardValues } from './index';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IPermissionsOfUser } from '../../../services/permissionsService';
 import { canUserWriteInstanceOfCategory } from '../../../utils/permissions/instancePermissions';
+import { EntityWizardValues } from '.';
 
 const chooseTemplateSchema = Yup.object({
     template: Yup.object({

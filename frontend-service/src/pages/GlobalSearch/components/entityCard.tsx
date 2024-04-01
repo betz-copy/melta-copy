@@ -136,8 +136,17 @@ const EntityCard: React.FC<EntityCardProps> = ({
             <CardHeader
                 sx={{ padding: '6px 10px 0px 10px' }}
                 title={
-                    <Grid container alignItems="center" display="flex" flexDirection="row" gap={1}>
-                        <Grid container alignItems="center" maxWidth="fit-content">
+                    <Grid container alignItems="center" flexDirection="row" gap="20px">
+                        <Grid
+                            container
+                            alignItems="center"
+                            justifyContent="center"
+                            width="42px"
+                            height="42px"
+                            marginTop="27px"
+                            style={{ backgroundColor: entityTemplateColor, borderRadius: '100%' }}
+                            sx={{ display: 'flex', justifyContent: 'center', alignContent: 'center' }}
+                        >
                             {entityTemplate.iconFileId ? (
                                 <CustomIcon
                                     color={entityTemplateColor}

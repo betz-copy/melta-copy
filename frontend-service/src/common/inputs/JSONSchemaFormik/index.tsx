@@ -42,6 +42,7 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
         keyword: 'dateNotification',
         type: 'string',
     });
+    ajv.addKeyword({ keyword: 'calculateTime', type: 'boolean' });
     ajv.addKeyword({
         keyword: 'serialStarter',
     });
@@ -130,7 +131,7 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
                 EmailWidget: RjsfTextWidget,
             }}
         >
-            <div /> {/* remove the built in submit button */}
+            <div />
         </JSONSchemaForm>
     );
 };

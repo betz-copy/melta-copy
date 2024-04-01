@@ -1,4 +1,3 @@
-/* eslint-disable jsx-a11y/img-redundant-alt */
 import React, { CSSProperties } from 'react';
 import FilePresentIcon from '@mui/icons-material/FilePresent';
 
@@ -11,29 +10,30 @@ const FileIcon: React.FC<FileIconProps> = ({ extension, style }) => {
     switch (extension.toLowerCase()) {
         case 'docx':
         case 'doc':
-            return <img src="/icons/files/docx.svg" style={style} alt="DOCX/DOC File" />;
+            return <img src="/icons/files/docx.svg" style={style} alt="DOCX/DOC Icon" />;
         case 'pdf':
-            return <img src="/icons/files/pdf.svg" style={style} alt="PDF File" />;
+            return <img src="/icons/files/pdf.svg" style={style} alt="PDF Icon" />;
         case 'jpg':
         case 'jpeg':
         case 'png':
         case 'gif':
-            return <img src="/icons/files/image.svg" style={style} alt="Image File" />;
+            // eslint-disable-next-line jsx-a11y/img-redundant-alt
+            return <img src="/icons/files/image.svg" style={style} alt="Image Icon" />;
         case 'mp4':
         case 'avi':
         case 'mov':
         case 'wmv':
-            return <img src="/icons/files/video.svg" style={style} alt="Video File" />;
+            return <img src="/icons/files/video.svg" style={style} alt="Video Icon" />;
         case 'pptx':
         case 'ppt':
-            return <img src="/icons/files/pptx.svg" style={style} alt="PPTX/PPT File" />;
+            return <img src="/icons/files/pptx.svg" style={style} alt="PPTX/PPT Icon" />;
         case 'xlsx':
         case 'xls':
-            return <img src="/icons/files/xlsx.svg" style={style} alt="XLSX/XLS File" />;
+            return <img src="/icons/files/xlsx.svg" style={style} alt="XLSX/XLS Icon" />;
         case 'zip':
         case 'rar':
         case '7z':
-            return <img src="/icons/files/zip.svg" style={style} alt="Archive File" />;
+            return <img src="/icons/files/zip.svg" style={style} alt="Archive Icon" />;
         default:
             return <FilePresentIcon style={style} />;
     }
