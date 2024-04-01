@@ -26,7 +26,10 @@ import { InstanceSingleFileInput } from '../../inputs/InstanceFilesInput/Instanc
 const { errorCodes } = environment;
 
 const getEntityTemplateFilesFieldsInfo = (entityTemplate: IMongoEntityTemplatePopulated) => {
-    const templateFilesProperties = pickBy(entityTemplate.properties.properties, (value) => (value.type === 'array' && value.items?.format==="fileId") || value.format === "fileId");
+    const templateFilesProperties = pickBy(
+        entityTemplate.properties.properties,
+        (value) => (value.type === 'array' && value.items?.format === 'fileId') || value.format === 'fileId',
+    );
     const templateFileKeys = Object.keys(templateFilesProperties);
     const requiredFilesNames = entityTemplate.properties.required.filter((name) => templateFileKeys.includes(name));
 
@@ -53,17 +56,15 @@ const CreateOrEditEntityDetails: React.FC<{
     const fieldProperties = pickBy(entity.properties, (_value, key) => !initialTemplateFileKeys.includes(key)) as IEntity['properties'];
     const fileIdsProperties = pickBy(entity.properties, (_value, key) => initialTemplateFileKeys.includes(key));
     Object.entries(fileIdsProperties)?.forEach(([key, value]) => {
-        if(Array.isArray(value)){
+        if (Array.isArray(value)) {
             fileIdsProperties[key] = value?.map((item) => {
-                return {name: item}
+                return { name: item };
             });
+        } else {
+            fileIdsProperties[key] = { name: value };
         }
-        else {
-            fileIdsProperties[key] =  {name: value};
-        }
-        
     });
-    const fileProperties = fileIdsProperties; 
+    const fileProperties = fileIdsProperties;
     const { isLoading: isUpdateLoading, mutateAsync: updateMutation } = useMutation(
         ({ newEntityData, ignoredRules }: { newEntityData: EntityWizardValues; ignoredRules?: IRuleBreach['brokenRules'] }) =>
             updateEntityRequestForMultiple(entity.properties._id, newEntityData, ignoredRules),
@@ -136,12 +137,13 @@ const CreateOrEditEntityDetails: React.FC<{
                 const isPropertiesFirst = values.template?.propertiesTypeOrder[0] === 'properties';
                 const schema = filterAttachmentsAndEntitiesRefFromPropertiesSchema(values.template.properties);
 
+                // eslint-disable-next-line react-hooks/rules-of-hooks
                 useEffect(() => {
                     schema.required.forEach((field) => {
-                        const fieldProperties = schema.properties[field].enum;
+                        const properties = schema.properties[field].enum;
                         const itemFieldProperties = schema.properties[field]?.items?.enum;
-                        if (fieldProperties?.length === 1 && fieldProperties[0] !== undefined) {
-                            setFieldValue(`properties.${field}`, fieldProperties[0]);
+                        if (properties?.length === 1 && properties[0] !== undefined) {
+                            setFieldValue(`properties.${field}`, properties[0]);
                         }
                         if (itemFieldProperties?.length === 1 && itemFieldProperties[0] !== undefined) {
                             setFieldValue(`properties.${field}`, [itemFieldProperties[0]]);
@@ -149,9 +151,9 @@ const CreateOrEditEntityDetails: React.FC<{
                     });
 
                     if (!isEditMode) {
-                        Object.entries<object>(schema.properties).forEach(([propertyName, propertyValues]) => {
-                            if (propertyValues.hasOwnProperty('serialCurrent')) {
-                                setFieldValue(`properties.${propertyName}`, propertyValues['serialCurrent']);
+                        Object.entries(schema.properties).forEach(([propertyName, propertyValues]) => {
+                            if (propertyValues.serialCurrent !== undefined) {
+                                setFieldValue(`properties.${propertyName}`, propertyValues.serialCurrent);
                             }
                         });
                     }
@@ -177,34 +179,33 @@ const CreateOrEditEntityDetails: React.FC<{
                             variant="h6"
                             style={{ marginBottom: '12px', fontSize: '16px', fontWeight: '600' }}
                         />
-                        {Object.entries(templateFilesProperties).map(([key, value], index) => 
-                    <Grid item key={key} marginTop={index > 0 ? 5 : 0}>
-                    { !!value.items ? (
-                        <InstanceFileInput
-                            key={key}
-                            fileFieldName={`attachmentsProperties.${key}`}
-                            fieldTemplateTitle={value.title}
-                            setFieldValue={setFieldValue}
-                            required={requiredFilesNames.includes(key)}
-                            value={values.attachmentsProperties[key]}
-                            error={errors.attachmentsProperties?.[key] as string}
-                            setFieldTouched={setFieldTouched}
-                            multiple={!!value.items}
-                        />
-                    ) : (
-                        <InstanceSingleFileInput
-                                    key={key}
-                                    fileFieldName={`attachmentsProperties.${key}`}
-                                    fieldTemplateTitle={value.title}
-                                    setFieldValue={setFieldValue}
-                                    required={requiredFilesNames.includes(key)}
-                                    value={values.attachmentsProperties[key]}
-                                    error={errors.attachmentsProperties?.[key] as string}
-                                    setFieldTouched={setFieldTouched}
-                                />
-                    ) }
-                </Grid>
-                    )}
+                        {Object.entries(templateFilesProperties).map(([key, value], index) => (
+                            <Grid item key={key} marginTop={index > 0 ? 2 : 0}>
+                                {value.items ? (
+                                    <InstanceFileInput
+                                        key={key}
+                                        fileFieldName={`attachmentsProperties.${key}`}
+                                        fieldTemplateTitle={value.title}
+                                        setFieldValue={setFieldValue}
+                                        required={requiredFilesNames.includes(key)}
+                                        value={values.attachmentsProperties[key]}
+                                        error={errors.attachmentsProperties?.[key] as string}
+                                        setFieldTouched={setFieldTouched}
+                                    />
+                                ) : (
+                                    <InstanceSingleFileInput
+                                        key={key}
+                                        fileFieldName={`attachmentsProperties.${key}`}
+                                        fieldTemplateTitle={value.title}
+                                        setFieldValue={setFieldValue}
+                                        required={requiredFilesNames.includes(key)}
+                                        value={values.attachmentsProperties[key]}
+                                        error={errors.attachmentsProperties?.[key] as string}
+                                        setFieldTouched={setFieldTouched}
+                                    />
+                                )}
+                            </Grid>
+                        ))}
                     </>
                 );
                 return (
