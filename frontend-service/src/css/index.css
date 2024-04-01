@@ -52,7 +52,6 @@
         overflow: visible !important;
     }
     .Page {
-        /* height: 100vh; */
         height: auto !important;
         width: auto !important;
         margin: 0 !important;
@@ -65,7 +64,3 @@
         page-break-before: avoid !important;
     }
 }
-
-/* .print:last-child {
-    page-break-after: avoid;
-} */

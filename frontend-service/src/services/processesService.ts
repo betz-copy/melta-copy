@@ -92,10 +92,8 @@ const handleAttachmentProperties = (attachments: object, template: any) => {
     unchangedFiles.forEach(([key, value]) => {
         if (!template[key].items) {
             fileProperties[key] = value.name;
-        } else {
-            if (value) {
-                fileProperties[key].push(value.name);
-            }
+        } else if (value) {
+            fileProperties[key].push(value.name);
         }
     });
     return { formData, fileProperties };
@@ -128,8 +126,6 @@ export const archiveProcessRequest = async (processId: string, archived: Boolean
 };
 export const searchProcessesRequest = async (searchBody: ISearchProcessInstancesBody) => {
     const updatedSearchBody = { ...searchBody, name: searchBody.name !== '' ? searchBody.name : undefined };
-    console.log({ updatedSearchBody });
-
     const { data } = await axios.post<IMongoProcessInstancePopulated[]>(`${processes}/search`, updatedSearchBody);
     return data;
 };

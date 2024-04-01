@@ -92,7 +92,7 @@ const Print: React.FC<{
                     getProcessStepsFiles().filter((file) => !isVideoOrAudio(file.type) && !isUnsupported(file.type) && !file.name.includes('txt')),
                 ),
         );
-    }, [getProcessPropertiesFiles, getProcessStepsFiles]);
+    }, [processTemplate, processInstance, getProcessPropertiesFiles, getProcessStepsFiles]);
 
     const [showSummary, setShowSummary] = React.useState(true);
     const [showFiles, setShowFiles] = React.useState(false);
