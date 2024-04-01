@@ -16,9 +16,18 @@ interface FileInputProps {
     acceptedFilesTypes?: Accept;
     fileFieldName?: string;
     errorText?: string;
+    disableCamera?: boolean;
 }
 
-const FileInput: React.FC<FileInputProps> = ({ fileName, onDeleteFile, onDropFile, inputText, acceptedFilesTypes, errorText }) => {
+const FileInput: React.FC<FileInputProps> = ({
+    fileName,
+    onDeleteFile,
+    onDropFile,
+    inputText,
+    acceptedFilesTypes,
+    errorText,
+    disableCamera = false,
+}) => {
     const theme = useTheme();
 
     const [stream, setStream] = useState<MediaStream | null>(null);
@@ -131,20 +140,22 @@ const FileInput: React.FC<FileInputProps> = ({ fileName, onDeleteFile, onDropFil
                         <Grid style={inputStyle} {...getRootProps()}>
                             <input {...getInputProps()} placeholder="aa" />
                             <img src="\icons\Choose-File.svg" height="25px" width="120px" />
-                            <IconButton
-                                style={{
-                                    background: '#CCCFE5',
-                                    height: '25px',
-                                    width: '25px',
-                                    borderRadius: '7px',
-                                    marginLeft: '5px',
-                                }}
-                                onClick={(event) => {
-                                    onCameraClick(event);
-                                }}
-                            >
-                                <CameraIcon style={{ color: '#1E2775', width: '20px', height: '20px' }} />
-                            </IconButton>
+                            {!disableCamera && (
+                                <IconButton
+                                    style={{
+                                        background: '#CCCFE5',
+                                        height: '25px',
+                                        width: '25px',
+                                        borderRadius: '7px',
+                                        marginLeft: '5px',
+                                    }}
+                                    onClick={(event) => {
+                                        onCameraClick(event);
+                                    }}
+                                >
+                                    <CameraIcon style={{ color: '#1E2775', width: '20px', height: '20px' }} />
+                                </IconButton>
+                            )}
                             <Typography>|</Typography>
                             <img src="\icons\File-Drag-Icon.svg" height="25px" style={{ marginRight: '10px' }} />
                             <Typography

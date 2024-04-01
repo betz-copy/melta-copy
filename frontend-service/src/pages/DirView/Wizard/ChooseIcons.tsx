@@ -1,7 +1,7 @@
 import { Grid } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
-import FileInput from '../../../common/inputs/FileInput';
+import FileInput from '../../../common/inputs/ImageFileInput';
 import { StepComponentProps } from '../../../common/wizards/index';
 import { WorkspaceWizardValues } from './index';
 
@@ -15,6 +15,7 @@ export const ChooseIcons: React.FC<StepComponentProps<WorkspaceWizardValues>> = 
                 fileName={values.icon?.name}
                 inputText={i18next.t('wizard.workspace.icon')}
                 acceptedFilesTypes={{ 'image/svg': ['.svg'] }}
+                disableCamera
             />
         </Grid>
 
@@ -26,6 +27,7 @@ export const ChooseIcons: React.FC<StepComponentProps<WorkspaceWizardValues>> = 
                 fileName={values.logo?.name}
                 inputText={i18next.t('wizard.workspace.logo')}
                 acceptedFilesTypes={{ 'image/svg': ['.svg'] }}
+                disableCamera
             />
         </Grid>
     </Grid>
