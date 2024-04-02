@@ -61,7 +61,7 @@ export const PureInfiniteScroll = <T extends any>({
                         justifyContent="space-between"
                         item
                         key={getItemId(item)}
-                        {...(openIds ? { xs: openIds?.get(getItemId(it1em) as string) && 12 } : {})}
+                        {...(openIds ? { xs: openIds?.get(getItemId(item) as string) && 12 } : {})}
                     >
                         {children(item)}
                     </Grid>

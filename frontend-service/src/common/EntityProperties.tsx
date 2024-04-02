@@ -8,8 +8,8 @@ import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../interfa
 import { IEntity } from '../interfaces/entities';
 import { RootState } from '../store';
 import { ColoredEnumChip } from './ColoredEnumChip';
-import { MeltaTooltip } from './MeltaTooltip';
 import OpenPreview from './FilePreview/OpenPreview';
+import { MeltaTooltip } from './MeltaTooltip';
 import { CalculateDateDifference } from '../utils/agGrid/CalculateDateDifference';
 
 pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.js';
@@ -76,7 +76,9 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
         propertiesOrderedToShow = entityTemplate.propertiesOrder.filter((propertyKey) => entityTemplate.propertiesPreview!.includes(propertyKey));
     } else if (removeFiles) {
         propertiesOrderedToShow = entityTemplate.propertiesOrder.filter(
-            (propertyKey) => entityTemplate.properties.properties[propertyKey].format !== 'fileId',
+            (propertyKey) =>
+                entityTemplate.properties.properties[propertyKey].format !== 'fileId' &&
+                entityTemplate.properties.properties[propertyKey].items?.format !== 'fileId',
         );
     } else {
         propertiesOrderedToShow = entityTemplate.propertiesOrder;
@@ -132,7 +134,13 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                                 <MeltaTooltip
                                     disableHoverListener={textWrap}
                                     placement="bottom"
-                                    title={hideFieldsToDisplay.includes(propertyKey) || propertySchema.format === 'fileId' ? '' : stringFormatValue}
+                                    title={
+                                        hideFieldsToDisplay.includes(propertyKey) ||
+                                        propertySchema.format === 'fileId' ||
+                                        propertySchema.items?.format === 'fileId'
+                                            ? ''
+                                            : stringFormatValue
+                                    }
                                 >
                                     <Typography
                                         fontSize="14px"
@@ -141,9 +149,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                                             textOverflow: 'ellipsis',
                                             whiteSpace: textWrap ? undefined : 'nowrap',
                                             overflow: 'hidden',
-                                            paddingLeft: '1rem',
-                                            overflowY: 'auto',
-                                            maxHeight: '111px',
+                                            maxHeight: '120px',
                                         }}
                                     >
                                         {/* eslint-disable-next-line no-nested-ternary */}

@@ -43,11 +43,6 @@ interface EntityCardProps {
     expandCard?: boolean;
     enableEdit?: boolean;
     onExpand?: (entityId: string) => void;
-    // customActionButton?: {
-    //     icon: React.ReactNode;
-    //     onClick: (event) => void;
-    //     popoverText?: string;
-    // };
     customCardStyle?: React.CSSProperties;
     variant?: 'outlined' | 'elevation';
     refetchQuery?: () => void;
@@ -59,7 +54,6 @@ const EntityCard: React.FC<EntityCardProps> = ({
     expandCard = false,
     enableEdit = true,
     onExpand,
-    // customActionButton,
     customCardStyle,
     variant = 'outlined',
     refetchQuery,
@@ -73,29 +67,47 @@ const EntityCard: React.FC<EntityCardProps> = ({
 
     const shouldDisplayFilePreview = useMemo(() => {
         return entityTemplate.propertiesOrder.some((propertyName) => {
-            return entityTemplate.properties.properties[propertyName].format === 'fileId' && entity.properties[propertyName];
+            const property = entityTemplate.properties.properties[propertyName];
+            return (property.format === 'fileId' || (property.items && property.items.format === 'fileId')) && entity.properties[propertyName];
         });
     }, [entityTemplate, entity]);
 
     const hasSomeFileIdPropertyTemplate = entityTemplate.propertiesOrder.some((propertyName) => {
-        return entityTemplate.properties.properties[propertyName].format === 'fileId';
+        const property = entityTemplate.properties.properties[propertyName];
+        return property.format === 'fileId' || (property.items && property.items.format === 'fileId');
     });
 
     const files: IFile[] = useMemo(
         () =>
-            entityTemplate.propertiesOrder
-                .filter((propertyName) => entityTemplate.properties.properties[propertyName].format === 'fileId' && entity.properties[propertyName])
-                .map((filePropertyName) => {
-                    const fileId = entity.properties[filePropertyName];
-                    const contentType = getPreviewContentType(fileId);
-
-                    return {
-                        id: fileId,
-                        name: getFileName(fileId),
-                        contentType,
-                        targetExtension: contentType === 'video' || contentType === 'audio' ? undefined : FileExtensions.png,
-                    } as IFile;
-                }),
+            entityTemplate.propertiesOrder.flatMap((propertyName) => {
+                const property = entityTemplate.properties.properties[propertyName];
+                if (property.format === 'fileId') {
+                    const fileId = entity.properties[propertyName];
+                    if (fileId) {
+                        const contentType = getPreviewContentType(fileId);
+                        return [
+                            {
+                                id: fileId,
+                                name: getFileName(fileId),
+                                contentType,
+                                targetExtension: contentType === 'video' || contentType === 'audio' ? undefined : FileExtensions.png,
+                            },
+                        ];
+                    }
+                } else if (property.type === 'array' && property.items?.format === 'fileId') {
+                    const fileIds = entity.properties[propertyName] || [];
+                    return fileIds.map((fileId: string) => {
+                        const contentType = getPreviewContentType(fileId);
+                        return {
+                            id: fileId,
+                            name: getFileName(fileId),
+                            contentType,
+                            targetExtension: contentType === 'video' || contentType === 'audio' ? undefined : FileExtensions.png,
+                        };
+                    });
+                }
+                return [];
+            }),
         [entityTemplate, entity],
     );
 
@@ -121,7 +133,9 @@ const EntityCard: React.FC<EntityCardProps> = ({
         ...entityTemplate.propertiesOrder
             .filter(
                 (property) =>
-                    !entityTemplate.propertiesPreview.includes(property) && entityTemplate.properties.properties[property].format !== 'fileId',
+                    !entityTemplate.propertiesPreview.includes(property) &&
+                    entityTemplate.properties.properties[property].format !== 'fileId' &&
+                    entityTemplate.properties.properties[property].items?.format !== 'fileId',
             )
             .slice(0, 5 - entityTemplate.propertiesPreview.length),
     ];
@@ -131,22 +145,20 @@ const EntityCard: React.FC<EntityCardProps> = ({
             raised
             variant={variant}
             ref={cardRef}
-            sx={{ margin: '0.6rem', width: open ? 0.987 : '547px', borderRadius: '15px', overflow: 'hidden', minHeight: '16rem', ...customCardStyle }}
+            sx={{
+                margin: '0.6rem',
+                width: open ? 0.987 : '547px',
+                borderRadius: '15px',
+                overflow: 'hidden',
+                minHeight: '16rem',
+                ...customCardStyle,
+            }}
         >
             <CardHeader
                 sx={{ padding: '6px 10px 0px 10px' }}
                 title={
-                    <Grid container alignItems="center" flexDirection="row" gap="20px">
-                        <Grid
-                            container
-                            alignItems="center"
-                            justifyContent="center"
-                            width="42px"
-                            height="42px"
-                            marginTop="27px"
-                            style={{ backgroundColor: entityTemplateColor, borderRadius: '100%' }}
-                            sx={{ display: 'flex', justifyContent: 'center', alignContent: 'center' }}
-                        >
+                    <Grid container alignItems="center" flexDirection="row" gap="15px">
+                        <Grid item minWidth="fit-content" sx={{ display: 'flex', justifyContent: 'center', alignContent: 'center' }}>
                             {entityTemplate.iconFileId ? (
                                 <CustomIcon
                                     color={entityTemplateColor}
@@ -226,7 +238,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
             <Divider style={{ border: '1px solid #EBEFFA', margin: '0 1% 2% 1%' }} />
 
             {!open && (
-                <Grid container>
+                <Grid container sx={{ display: 'flex', justifyContent: 'space-between' }}>
                     <Grid item xs={8} container paddingLeft="4px" paddingBottom="14px" height="fit-content" minHeight="37px" alignItems="center">
                         <EntityProperties
                             entityTemplate={entityTemplate}
@@ -268,13 +280,13 @@ const EntityCard: React.FC<EntityCardProps> = ({
                                         bottom: '22px',
                                         backgroundColor: '#101440',
                                         width: '100%',
-                                        display: 'flex',
                                         borderRadius: '0 0 1rem 1rem',
+                                        display: 'flex',
                                         alignItems: 'center',
                                     }}
                                 >
                                     <Grid item xs={9}>
-                                        <MeltaTooltip title={files[previewImageIndex].name}>
+                                        <MeltaTooltip title={files[previewImageIndex]?.name || ''}>
                                             <Typography
                                                 sx={{
                                                     marginLeft: '7px',
@@ -286,16 +298,18 @@ const EntityCard: React.FC<EntityCardProps> = ({
                                                     color: 'white',
                                                 }}
                                             >
-                                                {files[previewImageIndex].name}
+                                                {files[previewImageIndex]?.name || ''}
                                             </Typography>
                                         </MeltaTooltip>
                                     </Grid>
                                     <Grid item xs={3} sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-                                        <OpenPreview
-                                            fileId={files[previewImageIndex].id}
-                                            img={<img src="/icons/expand-preview-file.svg" style={{ height: '11px' }} />}
-                                            showText={false}
-                                        />
+                                        {files[previewImageIndex] && (
+                                            <OpenPreview
+                                                fileId={files[previewImageIndex].id}
+                                                img={<img src="/icons/expand-preview-file.svg" style={{ height: '11px' }} />}
+                                                showText={false}
+                                            />
+                                        )}
                                     </Grid>
                                 </Grid>
                             </Grid>
@@ -315,12 +329,13 @@ const EntityCard: React.FC<EntityCardProps> = ({
                     )}
                 </Grid>
             )}
-            <Grid container>
+            <Grid container sx={{ display: 'flex', justifyContent: 'space-between' }}>
                 <Grid item xs={10.5}>
                     {open && (
                         <CardContent
                             style={{
                                 padding: '13px 50px 8px 20px',
+                                maxHeight: '300px',
                             }}
                         >
                             <EntityProperties
