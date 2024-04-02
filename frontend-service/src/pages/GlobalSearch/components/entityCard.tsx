@@ -1,7 +1,7 @@
 import { AppRegistration as AppRegistrationIcon } from '@mui/icons-material';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
-import { Box, Card, CardContent, CardHeader, Dialog, Divider, Grid, Typography, styled } from '@mui/material';
+import { Box, Card, CardContent, CardHeader, Dialog, Divider, Grid, IconButton, Typography, styled } from '@mui/material';
 import i18next from 'i18next';
 import React, { useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -42,6 +42,11 @@ interface EntityCardProps {
     entityTemplate: IMongoEntityTemplatePopulated;
     expandCard?: boolean;
     enableEdit?: boolean;
+    customActionButton?: {
+        icon: React.ReactNode;
+        onClick: (event) => void;
+        popoverText?: string;
+    };
     onExpand?: (entityId: string) => void;
     customCardStyle?: React.CSSProperties;
     variant?: 'outlined' | 'elevation';
@@ -53,6 +58,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
     entityTemplate,
     expandCard = false,
     enableEdit = true,
+    customActionButton,
     onExpand,
     customCardStyle,
     variant = 'outlined',
@@ -231,6 +237,31 @@ const EntityCard: React.FC<EntityCardProps> = ({
                                     </Grid>
                                 ),
                         )}
+                        {customActionButton &&
+                            (customActionButton.popoverText ? (
+                                <IconButtonWithPopover
+                                    popoverText={customActionButton.popoverText!}
+                                    iconButtonProps={{
+                                        size: 'large',
+                                        onClick: (event) => {
+                                            event.stopPropagation();
+                                            customActionButton.onClick(event);
+                                        },
+                                    }}
+                                >
+                                    {customActionButton.icon}
+                                </IconButtonWithPopover>
+                            ) : (
+                                <IconButton
+                                    onClick={(event) => {
+                                        event.stopPropagation();
+                                        customActionButton.onClick(event);
+                                    }}
+                                    size="large"
+                                >
+                                    {customActionButton.icon}
+                                </IconButton>
+                            ))}
                     </Grid>
                 }
             />
