@@ -157,7 +157,6 @@ const EditEntityDetails: React.FC<{
                                                                                 value={values.attachmentsProperties[key]}
                                                                                 error={errors.attachmentsProperties?.[key] as string}
                                                                                 setFieldTouched={setFieldTouched}
-                                                                                multiple
                                                                             />
                                                                         )}
                                                                     </Grid>

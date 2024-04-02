@@ -29,7 +29,7 @@ import { canUserWriteInstanceOfCategory } from '../../utils/permissions/instance
 import { EntityLink } from '../../common/EntityLink';
 import { environment } from '../../globals';
 
-const { defaultRowHeight } = environment.agGrid;
+const { defaultRowHeight, defaultFontSize } = environment.agGrid;
 
 export const getButtonState = (
     isEntityDisabled: boolean,
@@ -155,6 +155,8 @@ const ConnectionsTable: React.FC<{
         );
     };
 
+    console.log({ expandedEntity });
+
     return (
         <Grid>
             <Grid container item justifyContent="space-between" marginBottom="10px">
@@ -199,7 +201,7 @@ const ConnectionsTable: React.FC<{
             >
                 <EntitiesTableOfTemplate
                     ref={entitiesTableRef}
-                    template={isExpandedEntityRelationshipSource ? relationshipTemplate.sourceEntity : relationshipTemplate.destinationEntity}
+                    template={isExpandedEntityRelationshipSource ? relationshipTemplate.destinationEntity : relationshipTemplate.sourceEntity}
                     showNavigateToRowButton
                     deleteRowButtonProps={{
                         popoverText: isEditButtonsDisabled ? disabledButtonText : i18next.t('entityPage.deleteRelationshipPopoverText'),
@@ -212,8 +214,9 @@ const ConnectionsTable: React.FC<{
                         return connection.relationship.properties._id;
                     }}
                     getEntityPropertiesData={(connection) => {
-                        if (expandedEntity.entity.properties._id === connection.destinationEntity.properties._id)
+                        if (expandedEntity.entity.properties._id === connection.destinationEntity.properties._id) {
                             return connection.sourceEntity.properties;
+                        }
                         return connection.destinationEntity.properties;
                     }}
                     rowModelType="clientSide"
@@ -232,7 +235,7 @@ const ConnectionsTable: React.FC<{
                         return false;
                     })}
                     rowHeight={defaultRowHeight}
-                    fontSize="16px"
+                    fontSize={`${defaultFontSize}px`}
                     saveStorageProps={{
                         shouldSaveFilter: false,
                         shouldSaveWidth: false,

@@ -169,6 +169,7 @@ export const environment = {
         rowCount: 5,
         defaultExpandedRowCount: 13,
         defaultRowHeight: 50,
+        defaultFontSize: 14,
     },
     activityLog: {
         infiniteScrollPageCount: 10,

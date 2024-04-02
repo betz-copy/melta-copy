@@ -189,7 +189,7 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                                     {Object.entries(templateFileProperties).map(([key, value], index) => {
                                                         return (
                                                             <Grid item key={key} marginTop={index > 0 ? 5 : 0}>
-                                                                {!!value.items ? (
+                                                                {value.items ? (
                                                                     <InstanceFileInput
                                                                         key={key}
                                                                         fileFieldName={`attachmentsProperties.${key}`}
@@ -199,7 +199,6 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                                                         value={values.attachmentsProperties[key]}
                                                                         error={errors.properties?.[key] as string}
                                                                         setFieldTouched={setFieldTouched}
-                                                                        multiple={!!value.items}
                                                                     />
                                                                 ) : (
                                                                     <InstanceSingleFileInput

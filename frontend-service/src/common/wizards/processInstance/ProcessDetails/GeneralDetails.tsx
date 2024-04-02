@@ -91,7 +91,6 @@ const FileAttachmentsEdit: React.FC<FileAttachmentsProps> = ({
                                 : undefined
                         }
                         setFieldTouched={setFieldTouched}
-                        multiple={!!value.items}
                     />
                 )}
             </Grid>
@@ -110,7 +109,7 @@ export const FileAttachmentsView: React.FC<FileAttachmentsProps> = ({ templateFi
                 );
                 if (values.detailsAttachments[fieldName]) {
                     if (Array.isArray(values.detailsAttachments[fieldName])) {
-                        attachments = values.detailsAttachments[fieldName].map((v) => <OpenPreview fileId={v.name} />);
+                        attachments = values.detailsAttachments[fieldName].map((v) => <OpenPreview key={v} fileId={v.name} />);
                     } else {
                         attachments = <OpenPreview fileId={values.detailsAttachments[fieldName].name} />;
                     }

@@ -153,7 +153,6 @@ const DuplicateEntity: React.FC<{}> = () => {
                                                                                     value={values.attachmentsProperties[key]}
                                                                                     error={errors.attachmentsProperties?.[key] as string}
                                                                                     setFieldTouched={setFieldTouched}
-                                                                                    multiple={!!value.items}
                                                                                 />
                                                                             )}
                                                                         </Grid>
