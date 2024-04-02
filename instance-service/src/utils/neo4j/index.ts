@@ -42,11 +42,20 @@ class Neo4jClient {
         return this.performTransaction('writeTransaction', normalizeResultFunction, cypherQuery, parameters);
     }
 
-    async performComplexTransaction<T>(transactionType: TransactionType, transactionWork: TransactionWork<T>) {
-        const session = this.driver.session({ database: this.database });
+    async performComplexTransaction<T>(transactionType: TransactionType, transactionWork: TransactionWork<T>, dryRun = false) {
+        const session = this.driver.session({
+            database: this.database,
+            defaultAccessMode: transactionType === 'readTransaction' ? 'READ' : 'WRITE',
+        });
+        const trx = session.beginTransaction();
+        // TODO -
+        // const trx = session.beginTransaction({ timeout });
+        console.log('begin transaction');
 
         try {
-            const result = await session[transactionType](transactionWork);
+            const result = await transactionWork(trx);
+            if (dryRun) await trx.rollback();
+            else await trx.commit();
 
             return result;
         } finally {

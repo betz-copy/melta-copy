@@ -29,6 +29,10 @@ class RelationshipController {
     static async updateRelationshipPropertiesById(req: Request, res: Response) {
         res.json(await RelationshipManager.updateRelationshipPropertiesById(req.params.id, req.body.properties));
     }
+
+    static async runBulkOfActionsInMultipleTransactions(req: Request, res: Response) {
+        res.json(await RelationshipManager.runBulkOfActionsInMultipleTransactions(req.body, req.query.dryRun as unknown as boolean));
+    }
 }
 
 export default RelationshipController;

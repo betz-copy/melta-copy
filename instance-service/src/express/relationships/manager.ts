@@ -1,3 +1,4 @@
+/* eslint-disable no-await-in-loop */
 import { Transaction } from 'neo4j-driver';
 import Neo4jClient from '../../utils/neo4j';
 import {
@@ -9,13 +10,16 @@ import {
     normalizeRelAndEntitiesForRule,
     runInTransactionAndNormalize,
 } from '../../utils/neo4j/lib';
-import { IRelationship } from './interface';
+import { ActionType, IAction, IRelationship } from './interface';
 import { NotFoundError, ServiceError } from '../error';
 import { runRulesOnRelationshipsOfPinnedEntity, runRulesOnRelationship, throwIfActionCausedBrokenRules } from '../rules/lib';
 import { IBrokenRule, IRuleFailureWithCauses } from '../rules/interfaces';
 import { filterDependentRulesViaAggregation } from '../rules/getParametersOfFormula';
 import config from '../../config';
 import { IMongoRelationshipTemplate, RelationshipsTemplateManagerService } from '../../externalServices/relationshipTemplateManager';
+import EntityManager from '../entities/manager';
+import { IEntity } from '../entities/interface';
+import { EntityTemplateManagerService } from '../../externalServices/entityTemplateManager';
 
 export class RelationshipManager {
     static async getRelationshipById(id: string) {
@@ -126,55 +130,131 @@ export class RelationshipManager {
         return ruleFailures.flat();
     }
 
-    static async createRelationshipByEntityIds(
+    static async runCreateRelationshipByEntityIdsOnTransaction(
+        transaction: Transaction,
         relationship: IRelationship,
         relationshipTemplate: IMongoRelationshipTemplate,
         ignoredRules: IBrokenRule[],
     ) {
         const { templateId, properties, sourceEntityId, destinationEntityId } = relationship;
 
+        const countOfExistingRelationships = await runInTransactionAndNormalize(
+            transaction,
+            `MATCH ({_id: '${sourceEntityId}'})-[r: \`${templateId}\`]->({_id: '${destinationEntityId}'}) return count(r)`,
+            normalizeResponseCount,
+        );
+
+        if (countOfExistingRelationships > 0) {
+            throw new ServiceError(400, `[NEO4J] relationship already exists between requested entities.`, {
+                errorCode: config.errorCodes.relationshipAlreadyExists,
+            });
+        }
+
+        const ruleFailuresBeforeAction = await RelationshipManager.runRulesDependOnRelationship(
+            transaction,
+            relationshipTemplate,
+            sourceEntityId,
+            destinationEntityId,
+        );
+
+        const createdRelationship = await runInTransactionAndNormalize(
+            transaction,
+            `MATCH (s {_id: '${sourceEntityId}'}),(d {_id: '${destinationEntityId}'})
+         MERGE (s)-[r: \`${templateId}\`]->(d)
+         ON CREATE SET r = $relProps
+         RETURN r, s, d`,
+            normalizeReturnedRelationship('singleResponseNotNullable'),
+            { relProps: { ...properties, ...generateDefaultProperties() } },
+        );
+
+        const ruleFailuresAfterAction = await RelationshipManager.runRulesDependOnRelationship(
+            transaction,
+            relationshipTemplate,
+            sourceEntityId,
+            destinationEntityId,
+            createdRelationship.properties._id,
+        );
+
+        throwIfActionCausedBrokenRules(ignoredRules, ruleFailuresBeforeAction, ruleFailuresAfterAction, createdRelationship.properties._id);
+
+        return createdRelationship;
+    }
+
+    static async createRelationshipByEntityIds(
+        relationship: IRelationship,
+        relationshipTemplate: IMongoRelationshipTemplate,
+        ignoredRules: IBrokenRule[],
+    ) {
         return Neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
-            const countOfExistingRelationships = await runInTransactionAndNormalize(
-                transaction,
-                `MATCH ({_id: '${sourceEntityId}'})-[r: \`${templateId}\`]->({_id: '${destinationEntityId}'}) return count(r)`,
-                normalizeResponseCount,
-            );
-
-            if (countOfExistingRelationships > 0) {
-                throw new ServiceError(400, `[NEO4J] relationship already exists between requested entities.`, {
-                    errorCode: config.errorCodes.relationshipAlreadyExists,
-                });
-            }
-
-            const ruleFailuresBeforeAction = await RelationshipManager.runRulesDependOnRelationship(
-                transaction,
-                relationshipTemplate,
-                sourceEntityId,
-                destinationEntityId,
-            );
-
-            const createdRelationship = await runInTransactionAndNormalize(
-                transaction,
-                `MATCH (s {_id: '${sourceEntityId}'}),(d {_id: '${destinationEntityId}'})
-                 MERGE (s)-[r: \`${templateId}\`]->(d)
-                 ON CREATE SET r = $relProps
-                 RETURN r, s, d`,
-                normalizeReturnedRelationship('singleResponseNotNullable'),
-                { relProps: { ...properties, ...generateDefaultProperties() } },
-            );
-
-            const ruleFailuresAfterAction = await RelationshipManager.runRulesDependOnRelationship(
-                transaction,
-                relationshipTemplate,
-                sourceEntityId,
-                destinationEntityId,
-                createdRelationship.properties._id,
-            );
-
-            throwIfActionCausedBrokenRules(ignoredRules, ruleFailuresBeforeAction, ruleFailuresAfterAction, createdRelationship.properties._id);
-
-            return createdRelationship;
+            return RelationshipManager.runCreateRelationshipByEntityIdsOnTransaction(transaction, relationship, relationshipTemplate, ignoredRules);
         });
+    }
+
+    static getRelationshipByResults(relationship: IRelationship, results: (IEntity | IRelationship | IBrokenRule[])[]) {
+        const relationshipToReturn: IRelationship = relationship;
+        if (relationship.destinationEntityId.startsWith('$')) {
+            relationshipToReturn.destinationEntityId = (results[relationship.destinationEntityId[1]] as IEntity).properties._id;
+        }
+        if (relationship.sourceEntityId.startsWith('$')) {
+            relationshipToReturn.sourceEntityId = (results[relationship.sourceEntityId[1]] as IEntity).properties._id;
+        }
+
+        return relationshipToReturn;
+    }
+
+    static async runBulkOfActionsInTransaction(actions: IAction[], transaction: Transaction) {
+        const results: (IEntity | IRelationship | IBrokenRule[])[] = [];
+        const brokenRules: IBrokenRule[] = [];
+
+        for (let i = 0; i < actions.length; i += 1) {
+            const action = actions[i];
+            if (action.actionType === ActionType.CREATE_ENTITY) {
+                const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById((action.metadata.entity as IEntity).templateId);
+                try {
+                    results.push(await EntityManager.createEntityOnTransaction(transaction, action.metadata.entity as IEntity, entityTemplate));
+                } catch (error) {
+                    if (error instanceof ServiceError && (error.metadata as any).errorCode === config.errorCodes.ruleBlock) {
+                        results.push((error.metadata as any).brokenRules as IBrokenRule[]);
+                        brokenRules.push(...((error.metadata as any).brokenRules as IBrokenRule[]));
+                    }
+                }
+            } else {
+                const relationshipTemplate = await RelationshipsTemplateManagerService.getRelationshipTemplateById(
+                    (action.metadata.relationship as IRelationship).templateId,
+                );
+                try {
+                    results.push(
+                        await RelationshipManager.runCreateRelationshipByEntityIdsOnTransaction(
+                            transaction,
+                            RelationshipManager.getRelationshipByResults(action.metadata.relationship as IRelationship, results),
+                            relationshipTemplate,
+                            [],
+                        ),
+                    );
+                } catch (error) {
+                    if (error instanceof ServiceError && (error.metadata as any).errorCode === config.errorCodes.ruleBlock) {
+                        results.push((error.metadata as any).brokenRules as IBrokenRule[]);
+                        brokenRules.push(...((error.metadata as any).brokenRules as IBrokenRule[]));
+                    }
+                }
+            }
+        }
+
+        return brokenRules;
+    }
+
+    static async runBulkOfActionsInMultipleTransactions(actionsGroups: IAction[][], dryRun: boolean) {
+        const transactionsPromises = actionsGroups.map((actionsGroup) =>
+            Neo4jClient.performComplexTransaction(
+                'writeTransaction',
+                async (transaction) => {
+                    return RelationshipManager.runBulkOfActionsInTransaction(actionsGroup, transaction);
+                },
+                dryRun,
+            ),
+        );
+
+        return Promise.all(transactionsPromises);
     }
 
     static async deleteRelationshipById(id: string, ignoredRules: IBrokenRule[]) {

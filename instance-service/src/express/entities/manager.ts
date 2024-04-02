@@ -82,10 +82,11 @@ export class EntityManager {
         }
     }
 
-    static async createEntity(entity: IEntity, entityTemplate: IMongoEntityTemplate) {
+    static async createEntityOnTransaction(transaction: Transaction, entity: IEntity, entityTemplate: IMongoEntityTemplate) {
         const { templateId, properties } = entity;
 
-        return Neo4jClient.writeTransaction(
+        return runInTransactionAndNormalize(
+            transaction,
             `CREATE (e: \`${templateId}\` $properties) RETURN e`,
             normalizeReturnedEntity('singleResponseNotNullable'),
             {
@@ -95,6 +96,12 @@ export class EntityManager {
                 },
             },
         ).catch(EntityManager.throwServiceErrorIfFailedConstraintsValidation);
+    }
+
+    static async createEntity(entity: IEntity, entityTemplate: IMongoEntityTemplate) {
+        return Neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
+            return EntityManager.createEntityOnTransaction(transaction, entity, entityTemplate);
+        });
     }
 
     static async searchEntitiesOfTemplate(searchBody: ISearchEntitiesOfTemplateBody, entityTemplate: IMongoEntityTemplate) {
