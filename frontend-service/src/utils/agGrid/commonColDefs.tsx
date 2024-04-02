@@ -209,7 +209,7 @@ export const enumFilesColDef = <Data extends any = IEntity>(
         suppressMiniFilter: true,
         values: [], // You may need to fetch enum values dynamically or provide them here
     };
-    
+
     return {
         field,
         headerName: value.title,
@@ -220,18 +220,15 @@ export const enumFilesColDef = <Data extends any = IEntity>(
                 const items = enumArray.map((file) => getFileName(file));
                 return (
                     <OverflowWrapper
-                        items={enumArray} 
-                        getItemKey={(item) => item} 
-                        renderItem={(item) => (
-                            <OpenPreviewButton fileId={item} />
-                            )} 
+                        items={enumArray}
+                        getItemKey={(item) => item}
+                        renderItem={(item) => <OpenPreviewButton fileId={item} />}
                         containerStyle={{ height: `${rowHeight}px` }}
-                        files = {items}
+                        files={items}
                     />
                 );
-            } else {
-                return null;
             }
+            return null;
         },
         filter: 'agSetColumnFilter',
         filterParams,
