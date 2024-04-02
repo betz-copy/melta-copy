@@ -22,6 +22,7 @@ import { IMongoProcessInstancePopulated } from '../../../../interfaces/processes
 import { EntityReference } from '../EntityReference';
 import { BlueTitle } from '../../../BlueTitle';
 import { OpenPreviewButton } from '../../../FilePreview/OpenPreviewButton';
+import { InstanceSingleFileInput } from '../../../inputs/InstanceFilesInput/InstanceSingleFileInput';
 
 interface ProcessStepProps {
     stepInstance: IMongoStepInstancePopulated;
@@ -48,10 +49,13 @@ export const ProcessStep: FC<ProcessStepProps> = ({
             stepInstance.reviewers.some((reviewer) => reviewer.id === myPermissions.user.id)) &&
         !processInstance.archived;
 
-    const templateFileProperties = pickBy(stepTemplate.properties.properties, (value) => value.format === 'fileId');
+    const templateFileProperties = pickBy(
+        stepTemplate.properties.properties,
+        (value) => (value.type === 'array' && value.items?.format === 'fileId') || value.format === 'fileId',
+    );
     const templateEntityReferenceProperties = pickBy(stepTemplate.properties.properties, (value) => value.format === 'entityReference');
     const { isLoading: editStepIsLoading, mutateAsync: editStepMutateAsync } = useMutation(
-        (stepData: ProcessStepValues) => updateStepRequest(stepInstance._id, stepData, processInstance._id, stepInstance),
+        (stepData: ProcessStepValues) => updateStepRequest(stepInstance._id, stepData, processInstance._id, stepInstance, templateFileProperties),
         {
             onSuccess: (updatedStepInstance) => {
                 toast.success(i18next.t('wizard.processInstance.step.editedSuccessfully'));
@@ -63,7 +67,6 @@ export const ProcessStep: FC<ProcessStepProps> = ({
             },
         },
     );
-
     return (
         <Formik
             initialValues={getStepValuesFromStepInstance(stepInstance, stepTemplate)}
@@ -182,44 +185,73 @@ export const ProcessStep: FC<ProcessStepProps> = ({
 
                                             {templateFileProperties && isStepEditMode ? (
                                                 <Box>
-                                                    {Object.entries(templateFileProperties).map(([key, value]) => (
-                                                        <InstanceFileInput
-                                                            key={key}
-                                                            fileFieldName={`attachmentsProperties.${key}`}
-                                                            fieldTemplateTitle={value.title}
-                                                            setFieldValue={setFieldValue}
-                                                            required={required.includes(key)}
-                                                            value={values.attachmentsProperties?.[key]}
-                                                            error={
-                                                                errors.attachmentsProperties?.[key] && touched.attachmentsProperties?.[key]
-                                                                    ? JSON.stringify(errors.attachmentsProperties?.[key])
-                                                                    : undefined
-                                                            }
-                                                            setFieldTouched={setFieldTouched}
-                                                        />
-                                                    ))}
+                                                    {Object.entries(templateFileProperties).map(([key, value], index) => {
+                                                        return (
+                                                            <Grid item key={key} marginTop={index > 0 ? 5 : 0}>
+                                                                {value.items ? (
+                                                                    <InstanceFileInput
+                                                                        key={key}
+                                                                        fileFieldName={`attachmentsProperties.${key}`}
+                                                                        fieldTemplateTitle={value.title}
+                                                                        setFieldValue={setFieldValue}
+                                                                        required={required.includes(key)}
+                                                                        value={values.attachmentsProperties[key]}
+                                                                        error={errors.properties?.[key] as string}
+                                                                        setFieldTouched={setFieldTouched}
+                                                                    />
+                                                                ) : (
+                                                                    <InstanceSingleFileInput
+                                                                        key={key}
+                                                                        fileFieldName={`attachmentsProperties.${key}`}
+                                                                        fieldTemplateTitle={value.title}
+                                                                        setFieldValue={setFieldValue}
+                                                                        required={required.includes(key)}
+                                                                        value={values.attachmentsProperties[key]}
+                                                                        error={errors.properties?.[key] as string}
+                                                                        setFieldTouched={setFieldTouched}
+                                                                    />
+                                                                )}
+                                                            </Grid>
+                                                        );
+                                                    })}
                                                 </Box>
                                             ) : (
                                                 templateFileProperties && (
                                                     <>
-                                                        {Object.entries(templateFileProperties).map(([fieldName, { title }]) => (
-                                                            <Grid container spacing={1} alignItems="center" key={fieldName}>
-                                                                <Grid item>
-                                                                    <Typography display="inline" variant="body1">
-                                                                        {title}:
-                                                                    </Typography>
-                                                                </Grid>
-                                                                <Grid item>
-                                                                    {values.attachmentsProperties[fieldName] ? (
-                                                                        <OpenPreviewButton fileId={values.attachmentsProperties[fieldName].name} />
-                                                                    ) : (
-                                                                        <Typography display="inline" variant="h6">
-                                                                            -
+                                                        {Object.entries(templateFileProperties).map(([fieldName, { title }]) => {
+                                                            let attachments = (
+                                                                <Typography display="inline" variant="h6">
+                                                                    -
+                                                                </Typography>
+                                                            );
+                                                            if (values.attachmentsProperties[fieldName] !== undefined) {
+                                                                if (Array.isArray(values.attachmentsProperties[fieldName])) {
+                                                                    attachments = values.attachmentsProperties[fieldName].map((file) => (
+                                                                        <OpenPreviewButton fileId={file.name} key={file.name} />
+                                                                    ));
+                                                                } else {
+                                                                    attachments = (
+                                                                        <OpenPreviewButton
+                                                                            fileId={values.attachmentsProperties[fieldName].name}
+                                                                            key={fieldName}
+                                                                        />
+                                                                    );
+                                                                }
+                                                            }
+
+                                                            return (
+                                                                <Grid container spacing={1} key={fieldName} display="flex" flexDirection="column">
+                                                                    <Grid item>
+                                                                        <Typography display="inline" variant="body1">
+                                                                            {title}:
                                                                         </Typography>
-                                                                    )}
+                                                                    </Grid>
+                                                                    <Grid item sx={{ overflowY: 'auto', maxHeight: '90px' }}>
+                                                                        {attachments}
+                                                                    </Grid>
                                                                 </Grid>
-                                                            </Grid>
-                                                        ))}
+                                                            );
+                                                        })}
                                                     </>
                                                 )
                                             )}

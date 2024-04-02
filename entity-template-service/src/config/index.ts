@@ -4,6 +4,7 @@ import './dotenv';
 const config = {
     service: {
         port: env.get('PORT').required().asPortNumber(),
+        maxRequestSize: env.get('MAX_REQUEST_BYTE_SIZE').required().asInt(),
     },
     mongo: {
         url: env.get('MONGO_URL').required().asString(),

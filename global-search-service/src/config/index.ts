@@ -2,6 +2,9 @@ import * as env from 'env-var';
 import './dotenv';
 
 const config = {
+    service: {
+        maxRequestSize: env.get('MAX_REQUEST_BYTE_SIZE').required().asInt(),
+    },
     rabbit: {
         url: env.get('RABBIT_URL').required().asString(),
         retryOptions: {

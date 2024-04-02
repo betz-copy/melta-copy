@@ -4,6 +4,7 @@ import './dotenv';
 const config = {
     service: {
         port: env.get('PORT').required().asPortNumber(),
+        maxRequestSize: env.get('MAX_REQUEST_BYTE_SIZE').required().asInt(),
     },
     neo4j: {
         url: env.get('NEO4J_URL').default('neo4j://localhost').asUrlString(),

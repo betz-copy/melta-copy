@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
-import { EntityWizardValues } from './index';
 import { StepComponentProps, StepsType } from '../../wizards/index';
 import { JSONSchemaFormik, ajvValidate } from '../../inputs/JSONSchemaFormik';
 import { filterAttachmentsAndEntitiesRefFromPropertiesSchema } from '../../../utils/pickFieldsPropertiesSchema';
+import { EntityWizardValues } from '.';
 
 const fillFieldsValidate: StepsType<EntityWizardValues>[number]['validate'] = (values) => {
     const schema = filterAttachmentsAndEntitiesRefFromPropertiesSchema(values.template.properties);
@@ -17,9 +17,9 @@ const fillFieldsValidate: StepsType<EntityWizardValues>[number]['validate'] = (v
 const FillFields: React.FC<StepComponentProps<EntityWizardValues>> = ({ values, setFieldValue, touched, setFieldTouched, errors }) => {
     const schema = filterAttachmentsAndEntitiesRefFromPropertiesSchema(values?.template?.properties || {});
     useEffect(() => {
-        Object.entries<object>(schema.properties).forEach(([propertyName, propertyValues]) => {
-            if (propertyValues.hasOwnProperty('serialCurrent')) {
-                setFieldValue(`properties.${propertyName}`, propertyValues['serialCurrent']);
+        Object.entries(schema.properties).forEach(([propertyName, propertyValues]) => {
+            if (propertyValues.serialCurrent !== undefined) {
+                setFieldValue(`properties.${propertyName}`, propertyValues.serialCurrent);
             }
         });
     }, []);

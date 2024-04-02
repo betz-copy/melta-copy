@@ -128,6 +128,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                             entity: data,
                         };
                     });
+                
                 }}
                 onCancelUpdate={() => setIsEditMode(false)}
             />
@@ -136,7 +137,6 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
 
     const canWriteInstance = canUserWriteInstanceOfCategory(myPermissions.instancesPermissions, entityTemplate.category);
     const isEntityDisabled = expandedEntity.entity.properties.disabled;
-
     return (
         <>
             <Card
@@ -294,6 +294,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                     handleClose={closeDeleteDialog}
                     onYes={() => deleteMutation()}
                     isLoading={isDeleteLoading}
+
                 />
             </Card>
             {updateStatusWithRuleBreachDialogState.isOpen && (

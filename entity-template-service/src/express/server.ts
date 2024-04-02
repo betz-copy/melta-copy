@@ -7,6 +7,7 @@ import { once } from 'events';
 import { errorMiddleware } from './error';
 import appRouter from './router';
 import morganMiddleware from '../utils/express/morgan.middleware';
+import config from '../config';
 
 const loggerMiddleware = (req: express.Request, res: express.Response, next: express.NextFunction) => {
     if (req.headers['logging-id']) {
@@ -36,8 +37,8 @@ class Server {
 
         app.use(helmet());
         app.use(loggerMiddleware);
-        app.use(express.json());
-        app.use(express.urlencoded({ extended: true }));
+        app.use(express.json({ limit: config.service.maxRequestSize }));
+        app.use(express.urlencoded({ extended: true, limit: config.service.maxRequestSize }));
 
         app.use(morganMiddleware);
 

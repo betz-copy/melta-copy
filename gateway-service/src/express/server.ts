@@ -44,8 +44,8 @@ class Server {
 
         app.use(helmet());
         app.use(loggerMiddleware);
-        app.use(express.json({ limit: config.service.maxFileSize }));
-        app.use(express.urlencoded({ extended: true, limit: config.service.maxFileSize }));
+        app.use(express.json({ limit: config.service.maxRequestSize }));
+        app.use(express.urlencoded({ extended: true, limit: config.service.maxRequestSize }));
         app.use(cookieParser());
 
         app.use(['/isAlive', '/isalive', '/health'], (_req, res) => {
