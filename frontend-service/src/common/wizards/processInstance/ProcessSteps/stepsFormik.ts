@@ -32,6 +32,7 @@ const splitStepProperties = (stepInstance: IMongoStepInstancePopulated, stepTemp
         if (Array.isArray(value)) {
             fileIdsProperties[key] = value?.map((item) => {
                 if (item !== undefined) return { name: item };
+                return undefined;
             });
         } else if (value) {
             fileIdsProperties[key] = { name: value };

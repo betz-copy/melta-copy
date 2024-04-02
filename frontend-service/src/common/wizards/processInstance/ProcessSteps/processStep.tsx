@@ -200,7 +200,6 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                                                         value={values.attachmentsProperties[key]}
                                                                         error={errors.properties?.[key] as string}
                                                                         setFieldTouched={setFieldTouched}
-                                                                        multiple={!!value.items}
                                                                     />
                                                                 ) : (
                                                                     <InstanceSingleFileInput

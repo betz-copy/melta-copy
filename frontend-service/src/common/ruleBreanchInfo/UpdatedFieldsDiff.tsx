@@ -10,26 +10,30 @@ import { formatToString } from '../EntityProperties';
 import { getFileName } from '../../utils/getFileName';
 import { RootState } from '../../store';
 
-
-const getEntityPropertyString = (value: any, type: 'string' | 'number' | 'boolean' | 'array', format: string | undefined, oldValue: any, items?: any) => {
+const getEntityPropertyString = (
+    value: any,
+    type: 'string' | 'number' | 'boolean' | 'array',
+    format: string | undefined,
+    oldValue: any,
+    items?: any,
+) => {
     if (value === null || value === undefined) {
         return '-';
     }
     if (format !== 'fileId' && !items) {
         return formatToString(value, type, format);
     }
-    //single
-    if(format === 'fileId'){
+    // single
+    if (format === 'fileId') {
         const oldFileName = oldValue ? getFileName(oldValue) : undefined;
-        const fileName = value[0] instanceof File ? value[0].name : getFileName(value);
+        const fileName = value instanceof File ? value.name : getFileName(value);
         const fileContentChanged = value instanceof File || value !== oldValue;
-
         if (oldFileName === fileName && fileContentChanged) {
             return `${fileName} (${i18next.t('ruleBreachInfo.updateEntityActionInfo.fileContentUpdated')})`;
         }
         return fileName;
     }
-    //multiple
+    // multiple
     else {
         const updatedFiles = value.map((file, index) => {
             const oldFile = oldValue ? oldValue[index] : undefined;

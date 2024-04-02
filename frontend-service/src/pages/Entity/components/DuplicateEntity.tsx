@@ -55,24 +55,25 @@ const DuplicateEntity: React.FC<{}> = () => {
         },
     );
 
-    const templateFilesProperties = pickBy(entityTemplate.properties.properties, (value) => (value.type === 'array' && value.items?.format==="fileId") || value.format === "fileId");
+    const templateFilesProperties = pickBy(
+        entityTemplate.properties.properties,
+        (value) => (value.type === 'array' && value.items?.format === 'fileId') || value.format === 'fileId',
+    );
     const templateFileKeys = Object.keys(templateFilesProperties);
     const requiredFilesNames = entityTemplate.properties.required.filter((name) => templateFileKeys.includes(name));
 
     const fieldProperties = pickBy(entity.properties, (_value, key) => !templateFileKeys.includes(key)) as IEntity['properties'];
     const fileIdsProperties = pickBy(entity.properties, (_value, key) => templateFileKeys.includes(key));
     Object.entries(fileIdsProperties).forEach(([key, value]) => {
-        if(Array.isArray(value)){
+        if (Array.isArray(value)) {
             fileIdsProperties[key] = value?.map((item) => {
-                return {name: item}
+                return { name: item };
             });
+        } else {
+            fileIdsProperties[key] = { name: value };
         }
-        else {
-            fileIdsProperties[key] =  {name: value};
-        }
-        
     });
-       const fileProperties = fileIdsProperties;
+    const fileProperties = fileIdsProperties;
     return (
         <Formik
             initialValues={{ properties: fieldProperties, attachmentsProperties: fileProperties }}
@@ -95,7 +96,7 @@ const DuplicateEntity: React.FC<{}> = () => {
                         <Form>
                             <Grid className="pageMargin">
                                 <Grid item marginTop="20px">
-                                    <Card style={{ marginTop: '20px'}}>
+                                    <Card style={{ marginTop: '20px' }}>
                                         <CardContent>
                                             <Grid container justifyContent="center">
                                                 <Grid item xs={12}>
@@ -129,34 +130,33 @@ const DuplicateEntity: React.FC<{}> = () => {
                                                                     {i18next.t('wizard.entityTemplate.dragAndDropFile')}
                                                                 </div>
                                                                 <>
-                                                                {Object.entries(templateFilesProperties).map(([key, value], index) =>
-                                                                <Grid item key={key} marginTop={index > 0 ? 5 : 0}>
-                                                                {value.items === undefined ? (
-                                                                    <InstanceSingleFileInput
-                                                                                key={key}
-                                                                                fileFieldName={`attachmentsProperties.${key}`}
-                                                                                fieldTemplateTitle={value.title}
-                                                                                setFieldValue={setFieldValue}
-                                                                                required={requiredFilesNames.includes(key)}
-                                                                                value={values.attachmentsProperties[key]}
-                                                                                error={errors.attachmentsProperties?.[key] as string}
-                                                                                setFieldTouched={setFieldTouched}
-                                                                            />
-                                                                ) : (
-                                                                    <InstanceFileInput
-                                                                    key={key}
-                                                                            fileFieldName={`attachmentsProperties.${key}`}
-                                                                            fieldTemplateTitle={value.title}
-                                                                            setFieldValue={setFieldValue}
-                                                                            required={requiredFilesNames.includes(key)}
-                                                                            value={values.attachmentsProperties[key]}
-                                                                            error={errors.attachmentsProperties?.[key] as string}
-                                                                            setFieldTouched={setFieldTouched}
-                                                                            multiple={value.items ? true : false}
-                                                                    />
-                                                                )}
-                                                            </Grid> 
-                                                                )}
+                                                                    {Object.entries(templateFilesProperties).map(([key, value], index) => (
+                                                                        <Grid item key={key} marginTop={index > 0 ? 5 : 0}>
+                                                                            {value.items === undefined ? (
+                                                                                <InstanceSingleFileInput
+                                                                                    key={key}
+                                                                                    fileFieldName={`attachmentsProperties.${key}`}
+                                                                                    fieldTemplateTitle={value.title}
+                                                                                    setFieldValue={setFieldValue}
+                                                                                    required={requiredFilesNames.includes(key)}
+                                                                                    value={values.attachmentsProperties[key]}
+                                                                                    error={errors.attachmentsProperties?.[key] as string}
+                                                                                    setFieldTouched={setFieldTouched}
+                                                                                />
+                                                                            ) : (
+                                                                                <InstanceFileInput
+                                                                                    key={key}
+                                                                                    fileFieldName={`attachmentsProperties.${key}`}
+                                                                                    fieldTemplateTitle={value.title}
+                                                                                    setFieldValue={setFieldValue}
+                                                                                    required={requiredFilesNames.includes(key)}
+                                                                                    value={values.attachmentsProperties[key]}
+                                                                                    error={errors.attachmentsProperties?.[key] as string}
+                                                                                    setFieldTouched={setFieldTouched}
+                                                                                />
+                                                                            )}
+                                                                        </Grid>
+                                                                    ))}
                                                                 </>
                                                             </Box>
                                                         )}

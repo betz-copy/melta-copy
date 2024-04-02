@@ -45,15 +45,10 @@ const propertiesArraySchema = Joi.array()
                 format: Joi.string().valid('fileId'),
                 enum: Joi.when('format', {
                     is: 'fileId',
-                    then: Joi.array().items(Joi.string()).max(0), // If format is fileId, enum can be empty
+                    then: Joi.forbidden(), // If format is fileId, enum is not allowed
                     otherwise: Joi.array().items(Joi.string()).min(1), // If format is not fileId, enum must have minimum length of 1
-                }).when('type', {
-                    is: 'array',
-                    then: Joi.required(), // If type is array, enum must be included
-                    otherwise: Joi.forbidden(), // If type is not array, enum is forbidden
                 }),
-            })
-            .xor('format', 'enum'),            
+            }),
             minItems: Joi.valid(1).when('type', {
                 is: 'array',
                 then: Joi.required(),
@@ -61,7 +56,7 @@ const propertiesArraySchema = Joi.array()
             }),
             uniqueItems: Joi.when(Joi.ref('items.format'), {
                 is: 'fileId',
-                then: Joi.forbidden(), // If format of items is fileId, uniqueItems is forbidden
+                then: Joi.forbidden(),
                 otherwise: Joi.valid(true).when('type', {
                     is: 'array',
                     then: Joi.required(),
@@ -72,9 +67,7 @@ const propertiesArraySchema = Joi.array()
                 .valid('day', 'week', 'twoWeeks')
                 .when('format', { not: Joi.valid('date', 'date-time'), then: Joi.forbidden() })
                 .when('type', { not: 'string', then: Joi.forbidden() }),
-            calculateTime: Joi.boolean()
-                .when('format', { not: Joi.valid('date', 'date-time'), then: Joi.forbidden() })
-                .when('type', { not: 'string', then: Joi.forbidden() }),
+            calculateTime: Joi.boolean().when('format', { not: Joi.valid('date', 'date-time'), then: Joi.forbidden() }),
             serialStarter: Joi.number().when('type', { not: 'number', then: Joi.forbidden() }),
             serialCurrent: Joi.number().when('type', { not: 'number', then: Joi.forbidden() }),
         }).nand('pattern', 'enum'),

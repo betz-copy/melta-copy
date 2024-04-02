@@ -90,6 +90,7 @@ export const environment = {
     notifications: {
         updateInterval: 1000 * 60 * 10,
         infiniteScrollPageCount: 10,
+        titleColor: '#4752B6',
         groups: {
             requests: [NotificationType.ruleBreachRequest],
             general: [
@@ -102,6 +103,16 @@ export const environment = {
                 NotificationType.deleteProcess,
                 NotificationType.archivedProcess,
             ],
+            // colors: {
+            //     RuleBreachAlertNotification: '#4752B6',
+            //     RuleBreachRequestNotification: '#4752B6',
+            //     RuleBreachResponseNotification: '#4752B6',
+            //     NewProcessNotification: '#4752B6',
+            //     ProcessStatusUpdateNotification: '#4752B6',
+            //     ProcessReviewerUpdateNotification: '#4752B6',
+            //     DeleteProcessNotification: '#4752B6',
+            //     ArchiveProcessNotification: '#4752B6',
+            // },
         },
         notificationsMoreData: {
             requests: [

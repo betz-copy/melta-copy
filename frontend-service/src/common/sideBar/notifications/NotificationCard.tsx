@@ -31,6 +31,7 @@ import { ProcessReviewerUpdateNotification } from './processNotifications/Proces
 import { DeleteProcessNotification } from './processNotifications/DeleteProcessNotification';
 import { DateAboutToExpireNotification } from './generalNotifications/DateAboutToExpireNotification';
 import { ArchiveProcessNotification } from './processNotifications/ArchiveProcessNotification';
+import { environment } from '../../../globals';
 
 interface NotificationCardProps {
     notification: INotificationPopulated;
@@ -48,6 +49,7 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({ notification
     });
     const [isHovered, setIsHovered] = useState(false);
     const darkMode = useSelector((state: RootState) => state.darkMode);
+    const { titleColor } = environment.notifications;
 
     return (
         <Card
@@ -73,31 +75,31 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({ notification
                     )}
                     <Grid item sx={{ padding: '10px' }}>
                         {isRuleBreachAlertNotification(notification) && (
-                            <RuleBreachAlertNotification notificationMetadata={notification.metadata} titleColor="#4752B6" />
+                            <RuleBreachAlertNotification notificationMetadata={notification.metadata} titleColor={titleColor} />
                         )}
                         {isRuleBreachRequestNotification(notification) && (
-                            <RuleBreachRequestNotification notificationMetadata={notification.metadata} titleColor="#4752B6" />
+                            <RuleBreachRequestNotification notificationMetadata={notification.metadata} titleColor={titleColor} />
                         )}
                         {isRuleBreachResponseNotification(notification) && (
-                            <RuleBreachResponseNotification notificationMetadata={notification.metadata} titleColor="#4752B6" />
+                            <RuleBreachResponseNotification notificationMetadata={notification.metadata} titleColor={titleColor} />
                         )}
                         {isNewProcessNotification(notification) && (
-                            <NewProcessNotification notificationMetadata={notification.metadata} titleColor="#4752B6" />
+                            <NewProcessNotification notificationMetadata={notification.metadata} titleColor={titleColor} />
                         )}
                         {isProcessStatusUpdateNotification(notification) && (
-                            <ProcessStatusUpdateNotification notificationMetadata={notification.metadata} titleColor="#4752B6" />
+                            <ProcessStatusUpdateNotification notificationMetadata={notification.metadata} titleColor={titleColor} />
                         )}
                         {isProcessReviewerUpdateNotification(notification) && (
-                            <ProcessReviewerUpdateNotification notificationMetadata={notification.metadata} titleColor="#4752B6" />
+                            <ProcessReviewerUpdateNotification notificationMetadata={notification.metadata} titleColor={titleColor} />
                         )}
                         {isDateAboutToExpireNotification(notification) && (
                             <DateAboutToExpireNotification notificationMetadata={notification.metadata} />
                         )}
                         {isDeleteProcessNotification(notification) && (
-                            <DeleteProcessNotification notificationMetadata={notification.metadata} titleColor="#4752B6" />
+                            <DeleteProcessNotification notificationMetadata={notification.metadata} titleColor={titleColor} />
                         )}
                         {isArchiveProcessNotification(notification) && (
-                            <ArchiveProcessNotification notificationMetadata={notification.metadata} titleColor="#4752B6" />
+                            <ArchiveProcessNotification notificationMetadata={notification.metadata} titleColor={titleColor} />
                         )}
                     </Grid>
                     <Grid container wrap="nowrap" margin="-5px">
