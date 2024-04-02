@@ -2,7 +2,6 @@ import React, { useEffect } from 'react';
 import { useQueryClient } from 'react-query';
 import { useParams } from 'react-router-dom';
 import _debounce from 'lodash.debounce';
-import { Grid } from '@mui/material';
 import { ICategoryMap } from '../../interfaces/categories';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import '../../css/pages.css';
