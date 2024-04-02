@@ -149,6 +149,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                                             textOverflow: 'ellipsis',
                                             whiteSpace: textWrap ? undefined : 'nowrap',
                                             overflow: 'hidden',
+                                            paddingLeft: '1rem',
                                             maxHeight: '120px',
                                         }}
                                     >
