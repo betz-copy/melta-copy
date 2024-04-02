@@ -295,7 +295,7 @@ const ProcessCard: React.FC<{
                                     <Skeleton variant="circular" width={15} height={15} />
                                 </Grid>
                                 <Grid item>
-                                    <Skeleton variant="rectangular" width="10vh" height={20} />
+                                    <Skeleton variant="rectangular" height={20} />
                                 </Grid>
                             </Grid>
 

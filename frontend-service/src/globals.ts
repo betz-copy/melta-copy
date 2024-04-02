@@ -85,7 +85,7 @@ export const environment = {
         },
     },
     entitiesCardsView: {
-        infiniteScrollPageCount: 10,
+        infiniteScrollPageCount: 12,
     },
     notifications: {
         updateInterval: 1000 * 60 * 10,
@@ -190,6 +190,10 @@ export const environment = {
     mainFontSizes: {
         headlineTitleFontSize: '24px',
         headlineSubTitleFontSize: '14px',
+    },
+    smallPreviewHeight: {
+        number: '150',
+        unit: 'px',
     },
     iconSize: {
         width: '24px',
