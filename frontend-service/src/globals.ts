@@ -125,11 +125,12 @@ export const environment = {
             ],
             general: [
                 {
+                    color: undefined,
                     type: NotificationType.dateAboutToExpire,
                     displayName: () => i18next.t('notifications.displayNames.dateAboutToExpire'),
                 },
                 {
-                    color: ' #FFAC2F',
+                    color: '#FFAC2F',
                     type: NotificationType.ruleBreachAlert,
                     displayName: () => i18next.t('notifications.displayNames.ruleBreachAlert'),
                 },
