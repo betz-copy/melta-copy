@@ -7,6 +7,7 @@ import { IEntityWithDirectRelationships } from './externalServices/instanceServi
 import { InstanceManagerService } from './externalServices/instanceService';
 import { EntityTemplateManagerService } from './externalServices/entityTemplateService';
 import { getPermissions } from './externalServices/permissionsService';
+import logger from './utils/logger';
 
 enum dateNotificationOptions {
     day = 1,
@@ -31,7 +32,7 @@ const getAllInstances = async (entityTemplateId: string) => {
 
 export const checkForDateNotifications = async () => {
     schedule.scheduleJob(config.service.dateAlertTime, async () => {
-        console.log('Checking for Date Notifications...');
+        logger.info('Checking for Date Notifications...');
         const allEntityTemplates = await EntityTemplateManagerService.searchEntityTemplates();
 
         for (const entityTemplate of allEntityTemplates) {

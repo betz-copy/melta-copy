@@ -3,6 +3,7 @@ import { deleteTemplateSearchIndex, upsertChangedTemplateSearchIndex, upsertGlob
 import { basicValidateRequest } from '../utils/joi';
 import { Action, IUpdateIndexRequest } from './interfaces';
 import { requestSchema } from './validator.schema';
+import logger from '../utils/logger';
 
 export const updateIndexConsumeFunction = async (msg: ConsumerMessage) => {
     const msgContent = msg.getContent();
@@ -11,19 +12,19 @@ export const updateIndexConsumeFunction = async (msg: ConsumerMessage) => {
     try {
         switch (action) {
             case Action.upsertGlobalIndex: {
-                console.log('Upserting global search index...');
+                logger.info('Upserting global search index...');
                 await upsertGlobalSearchIndex();
                 break;
             }
 
             case Action.upsertTemplateIndex: {
-                console.log(`Upserting search index of template "${templateId}"...`);
+                logger.info(`Upserting search index of template "${templateId}"...`);
                 await upsertChangedTemplateSearchIndex(templateId!);
                 break;
             }
 
             case Action.deleteTemplateIndex: {
-                console.log(`Deleting search index of template "${templateId}"...`);
+                logger.info(`Deleting search index of template "${templateId}"...`);
                 await deleteTemplateSearchIndex(templateId!);
                 break;
             }
@@ -32,12 +33,12 @@ export const updateIndexConsumeFunction = async (msg: ConsumerMessage) => {
                 throw new Error('invalid action type (should be caught in joi valiton)');
         }
     } catch (err) {
-        console.log('Failed to update search index', err);
+        logger.error('Failed to update search index', err);
         msg.nack(false);
 
         return;
     }
 
-    console.log(`Successfully updated search index!`);
+    logger.info(`Successfully updated search index!`);
     msg.ack();
 };

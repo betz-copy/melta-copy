@@ -1,6 +1,7 @@
 import { ClientSession, startSession, Types } from 'mongoose';
 import * as _forEach from 'lodash.foreach';
 import { trycatch } from '.';
+import logger from './logger';
 
 export const withTransaction = async <Func extends (session: ClientSession) => Promise<any>>(func: Func): Promise<Awaited<ReturnType<Func>>> => {
     const session = await startSession();
@@ -14,7 +15,7 @@ export const withTransaction = async <Func extends (session: ClientSession) => P
     } finally {
         const { err: endSessionErr } = await trycatch(() => session.endSession());
         if (endSessionErr) {
-            console.log('failed to end session. possible resource leak', endSessionErr);
+            logger.error('failed to end session. possible resource leak', endSessionErr);
         }
     }
 };

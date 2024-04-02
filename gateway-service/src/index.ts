@@ -1,24 +1,24 @@
-/* eslint-disable no-console */
 import menash from 'menashmq';
 import axios from 'axios';
 import Server from './express/server';
 import config from './config';
 import { checkForDateNotifications } from './dateNotificationsCheck';
+import logger from './utils/logger';
 
 const { service, rabbit } = config;
 
 const initializeRabbit = async () => {
-    console.log('Connecting to Rabbit...');
+    logger.info('Connecting to Rabbit...');
 
     await menash.connect(rabbit.url, rabbit.retryOptions);
 
-    console.log('Rabbit connected');
+    logger.info('Rabbit connected');
 
     await menash.declareQueue(rabbit.notificationQueue);
 
     await menash.declareQueue(rabbit.mailNotificationQueue);
 
-    console.log('Rabbit initialized');
+    logger.info('Rabbit initialized');
 };
 
 const main = async () => {
@@ -33,7 +33,7 @@ const main = async () => {
 
     await server.start();
 
-    console.log(`Server started on port: ${service.port}`);
+    logger.info(`Server started on port: ${service.port}`);
 };
 
-main().catch((err) => console.error(err));
+main().catch((err) => logger.error(err));

@@ -1,4 +1,5 @@
 import * as express from 'express';
+import logger from '../utils/logger';
 
 export class ServiceError extends Error {
     constructor(public code: number, message: string) {
@@ -24,7 +25,7 @@ export const errorMiddleware = (error: Error, req: express.Request, res: express
         });
     }
 
-    console.error(
+    logger.error(
         'error for handling new request',
         req.method,
         req.url,

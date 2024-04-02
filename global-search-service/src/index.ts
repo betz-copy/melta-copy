@@ -5,30 +5,31 @@ import Neo4jClient from './utils/neo4j';
 import RedisClient from './utils/redis';
 import config from './config';
 import { updateIndexConsumeFunction } from './rabbit/consumer';
+import logger from './utils/logger';
 
 const { rabbit, neo4j, redis, service } = config;
 
 const initializeRabbit = async () => {
-    console.log('Connecting to Rabbit...');
+    logger.info('Connecting to Rabbit...');
 
     await menash.connect(rabbit.url, rabbit.retryOptions);
 
-    console.log('Rabbit connected');
+    logger.info('Rabbit connected');
 
     await menash.declareTopology({
         queues: [{ name: rabbit.queueName, options: { durable: true, prefetch: 1 } }],
         consumers: [{ queueName: rabbit.queueName, onMessage: updateIndexConsumeFunction }],
     });
 
-    console.log('Rabbit initialized');
+    logger.info('Rabbit initialized');
 };
 
 const initializeRedis = async () => {
-    console.log('Connecting to Redis...');
+    logger.info('Connecting to Redis...');
 
     await RedisClient.initialize(redis.url);
 
-    console.log('Redis connection established');
+    logger.info('Redis connection established');
 };
 
 const main = async () => {
