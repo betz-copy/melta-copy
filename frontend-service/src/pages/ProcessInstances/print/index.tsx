@@ -49,8 +49,20 @@ const Print: React.FC<{
                         extension: getFileExtension(name),
                     } as IFile;
                 }
+                if (propertyValue && propertySchema.type === 'array' && propertySchema.items?.format === 'fileId') {
+                    return propertyValue.map((file) => {
+                        const name = getFileName(file);
+                        return {
+                            id: file,
+                            name,
+                            type: getPreviewContentType(name),
+                            extension: getFileExtension(name),
+                        } as IFile;
+                    });
+                }
                 return undefined;
             })
+            .flat()
             .filter((file) => file !== undefined) as IFile[];
     }, [processTemplate, processInstance]);
 
@@ -69,6 +81,17 @@ const Print: React.FC<{
                                 name,
                                 type: getPreviewContentType(name),
                                 extension: getFileExtension(name),
+                            });
+                        }
+                        if (propertyValue && propertySchema.type === 'array' && propertySchema.items?.format === 'fileId') {
+                            propertyValue.forEach((file) => {
+                                const name = getFileName(file);
+                                files.push({
+                                    id: file,
+                                    name,
+                                    type: getPreviewContentType(name),
+                                    extension: getFileExtension(name),
+                                });
                             });
                         }
                     }

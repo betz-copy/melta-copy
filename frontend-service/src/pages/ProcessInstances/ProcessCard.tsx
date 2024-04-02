@@ -331,6 +331,7 @@ const ProcessCard: React.FC<{
                     onClose={handleClose}
                     processInstance={processInstance}
                     stepTemplate={open.defaultStepTemplate}
+                    processTemplate={processTemplate}
                 />
             )}
         </div>
