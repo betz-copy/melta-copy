@@ -1,5 +1,4 @@
-import { deleteFiles } from '../../externalServices/storageService';
-import { InstancesManager } from '../instances/manager';
+import { deleteFiles, uploadFiles } from '../../externalServices/storageService';
 import { IWorkspace } from './interface';
 import { WorkspaceService } from './service';
 
@@ -16,8 +15,19 @@ export class WorkspaceManager {
         return WorkspaceService.getById(id);
     }
 
+    private static async uploadFilesWrapper(files: Express.Multer.File[]) {
+        if (!files.length) return {};
+
+        const fileIds = await uploadFiles(files);
+
+        return files.reduce(
+            (acc, { fieldname }, index) => ({ ...acc, [fieldname]: fileIds[index] }),
+            {} as Pick<IWorkspace, 'iconFileId' | 'logoFileId'>,
+        );
+    }
+
     static async createOne(workspace: Omit<IWorkspace, '_id'>, files: Express.Multer.File[]) {
-        const fileProperties = await InstancesManager.uploadInstanceFiles(files);
+        const fileProperties = await WorkspaceManager.uploadFilesWrapper(files);
 
         return WorkspaceService.createOne({ ...workspace, ...fileProperties });
     }
@@ -41,7 +51,7 @@ export class WorkspaceManager {
     }
 
     static async updateOne(id: string, workspace: Omit<IWorkspace, '_id'>, files: Express.Multer.File[]) {
-        const [oldWorkspace, fileProperties] = await Promise.all([WorkspaceService.getById(id), InstancesManager.uploadInstanceFiles(files)]);
+        const [oldWorkspace, fileProperties] = await Promise.all([WorkspaceService.getById(id), WorkspaceManager.uploadFilesWrapper(files)]);
 
         const updatedWorkspace = await WorkspaceService.updateOne(id, { ...workspace, ...fileProperties });
 
