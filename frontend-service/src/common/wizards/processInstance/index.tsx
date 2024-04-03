@@ -16,7 +16,7 @@ import { ProcessSideStepper } from './ProcessSideStepper';
 import { BlueTitle } from '../../BlueTitle';
 import ProcessDetails, { ProcessDetailsValues } from './ProcessDetails';
 import { IMongoProcessInstancePopulated, Status } from '../../../interfaces/processes/processInstance';
-import { IProcessTemplateMap } from '../../../interfaces/processes/processTemplate';
+import { IMongoProcessTemplatePopulated, IProcessTemplateMap } from '../../../interfaces/processes/processTemplate';
 import { getInitialDetailsValues, useProcessDetailsFormik } from './ProcessDetails/detailsFormik';
 import { getProcessByIdRequest, updateProcessRequest, deleteProcessRequest, archiveProcessRequest } from '../../../services/processesService';
 import { ErrorToast } from '../../ErrorToast';
@@ -32,6 +32,7 @@ interface IProcessInstanceWizard {
     onClose: (wasProcessChanged: boolean) => void;
     processInstance: IMongoProcessInstancePopulated;
     stepTemplate?: IMongoStepTemplatePopulated;
+    processTemplate: IMongoProcessTemplatePopulated;
 }
 
 const wizardContentStyles = makeStyles(() => ({
@@ -53,7 +54,7 @@ const wizardContentStyles = makeStyles(() => ({
     },
 }));
 
-const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({ open, onClose, processInstance, stepTemplate }) => {
+const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({ open, onClose, processInstance, stepTemplate, processTemplate }) => {
     const queryClient = useQueryClient();
     const processTemplatesMap = queryClient.getQueryData<IProcessTemplateMap>('getProcessTemplates')!;
     const [currProcessInstance, setCurrProcessInstance] = useState<IMongoProcessInstancePopulated>(processInstance);
@@ -65,18 +66,21 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({ open, onClose
     const [isStepEditMode, setIsStepEditMode] = useState(false);
 
     const [isProcessChanged, setIsProcessChanged] = useState<boolean>(false);
-    const { isLoading, mutateAsync } = useMutation((processData: ProcessDetailsValues) => updateProcessRequest(processInstance._id, processData, stepTemplate), {
-        onSuccess: (processNewData) => {
-            toast.success(i18next.t('wizard.processInstance.editedSuccessfully'));
-            setIsProcessChanged(true);
-            setIsEditMode(false);
-            setCurrProcessInstance(processNewData);
+    const { isLoading, mutateAsync } = useMutation(
+        (processData: ProcessDetailsValues) => updateProcessRequest(processInstance._id, processData, processTemplate),
+        {
+            onSuccess: (processNewData) => {
+                toast.success(i18next.t('wizard.processInstance.editedSuccessfully'));
+                setIsProcessChanged(true);
+                setIsEditMode(false);
+                setCurrProcessInstance(processNewData);
+            },
+            onError: (error: AxiosError) => {
+                toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.processInstance.failedToEdit')} />);
+                console.log('failed to update process instance. error', error);
+            },
         },
-        onError: (error: AxiosError) => {
-            toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.processInstance.failedToEdit')} />);
-            console.log('failed to update process instance. error', error);
-        },
-    });
+    );
     const detailsFormikData = useProcessDetailsFormik(processInstance, processTemplatesMap, mutateAsync);
     const [activeStep, setActiveStep] = React.useState(stepTemplate ? 1 : 0);
 

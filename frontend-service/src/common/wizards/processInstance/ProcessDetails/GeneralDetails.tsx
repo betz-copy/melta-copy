@@ -1,24 +1,24 @@
-import { Autocomplete, Box, Card, CardActions, CardContent, Fab, Grid, TextField, Typography } from '@mui/material';
-import React, { useEffect, useState } from 'react';
-import i18next from 'i18next';
-import { useQueryClient } from 'react-query';
-import { Field, FormikProps, FormikProvider } from 'formik';
-import pickBy from 'lodash.pickby';
 import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { Autocomplete, Box, Card, CardActions, CardContent, Fab, Grid, TextField, Typography } from '@mui/material';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { IMongoProcessTemplatePopulated, IProcessTemplateMap, IProcessSingleProperty } from '../../../../interfaces/processes/processTemplate';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { Field, FormikProps, FormikProvider } from 'formik';
+import i18next from 'i18next';
+import pickBy from 'lodash.pickby';
+import React, { useEffect, useState } from 'react';
+import { useQueryClient } from 'react-query';
 import { IDetailsStepProp, ProcessDetailsValues } from '.';
-import { JSONSchemaFormik } from '../../../inputs/JSONSchemaFormik';
-import { BlueTitle } from '../../../BlueTitle';
+import { IMongoProcessTemplatePopulated, IProcessSingleProperty, IProcessTemplateMap } from '../../../../interfaces/processes/processTemplate';
 import { pickProcessFieldsPropertiesSchema } from '../../../../utils/pickFieldsPropertiesSchema';
-import { InstanceFileInput } from '../../../inputs/InstanceFilesInput/InstanceFileInput';
 import { setInitialStepsObject } from '../../../../utils/processWizard/steps';
+import { BlueTitle } from '../../../BlueTitle';
+import OpenPreview from '../../../FilePreview/OpenPreview';
+import { InstanceFileInput } from '../../../inputs/InstanceFilesInput/InstanceFileInput';
+import { JSONSchemaFormik } from '../../../inputs/JSONSchemaFormik';
 import { EntityReference } from '../EntityReference';
 import { ProcessStepValues } from '../ProcessSteps';
 import { initDetailsValues } from './detailsFormik';
-import { OpenPreviewButton } from '../../../FilePreview/OpenPreviewButton';
 import { InstanceSingleFileInput } from '../../../inputs/InstanceFilesInput/InstanceSingleFileInput';
 
 export const SchemaForm = ({ viewMode, values, errors, touched, setFieldValue, setFieldTouched }) => {
@@ -109,9 +109,9 @@ export const FileAttachmentsView: React.FC<FileAttachmentsProps> = ({ templateFi
                 );
                 if (values.detailsAttachments[fieldName]) {
                     if (Array.isArray(values.detailsAttachments[fieldName])) {
-                        attachments = values.detailsAttachments[fieldName].map((v) => <OpenPreviewButton key={v} fileId={v.name} />);
+                        attachments = values.detailsAttachments[fieldName].map((v) => <OpenPreview key={v} fileId={v.name} />);
                     } else {
-                        attachments = <OpenPreviewButton fileId={values.detailsAttachments[fieldName].name} />;
+                        attachments = <OpenPreview fileId={values.detailsAttachments[fieldName].name} />;
                     }
                 }
                 return (
