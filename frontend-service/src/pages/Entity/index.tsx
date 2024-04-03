@@ -155,8 +155,6 @@ const ConnectionsTable: React.FC<{
         );
     };
 
-    console.log({ expandedEntity });
-
     return (
         <Grid>
             <Grid container item justifyContent="space-between" marginBottom="10px">
@@ -326,8 +324,8 @@ const Entity: React.FC = () => {
             category,
             connectionsTemplates: connectionsTemplates.filter(({ relationshipTemplate, isExpandedEntityRelationshipSource }) => {
                 const otherEntityTemplate = isExpandedEntityRelationshipSource
-                    ? relationshipTemplate.sourceEntity
-                    : relationshipTemplate.destinationEntity;
+                    ? relationshipTemplate.destinationEntity
+                    : relationshipTemplate.sourceEntity;
                 return otherEntityTemplate.category._id === category._id;
             }),
         };
