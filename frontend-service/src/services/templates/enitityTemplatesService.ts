@@ -132,11 +132,11 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTem
 
             propertiesOrder.push(name);
 
-            if (required) schema.required.push(name);
+            if (required && type !== 'serialNumber') schema.required.push(name);
             if (hide) schema.hide.push(name);
             if (unique) uniqueConstraint.push(name);
             if (preview) propertiesPreview.push(name);
-            if (type === 'serialNumber') serialsUniqueConstraints.push([name]);
+            // if (type === 'serialNumber') serialsUniqueConstraints.push([name]);
 
             if (type === 'enum' || type === 'enumArray') {
                 Object.entries(optionColors).forEach(([option, color]) => {
@@ -241,8 +241,6 @@ const updateEntityTemplateRequest = async (entityTemplateId: string, updatedEnti
     formData.append('uniqueConstraints', JSON.stringify(entityTemplate.uniqueConstraints));
 
     const { data } = await axios.put<IMongoEntityTemplatePopulated>(`${entityTemplates}/${entityTemplateId}`, formData);
-    console.log({ data });
-
     return data;
 };
 

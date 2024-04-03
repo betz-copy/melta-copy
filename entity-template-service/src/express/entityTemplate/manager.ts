@@ -62,6 +62,7 @@ export class EntityTemplateManager {
             .orFail(new ServiceError(404, 'Entity Template not found'))
             .lean()
             .exec();
+        console.log({ updatedTemplate }, newEntityTemplate.properties.properties);
 
         const propertyTypeWithToString = ['number', 'boolean', 'date', 'date-time'];
         const isPropertyWithToString = (property: IEntitySingleProperty) => {
@@ -87,7 +88,19 @@ export class EntityTemplateManager {
             Object.keys(currentEntityTemplate.properties.properties).length !== Object.keys(newEntityTemplate.properties.properties).length;
 
         if (isNewPropertyAdded) {
-            //  אולי פה להוסיף את הטיפול בשדות  מספר סידורי עבור תבניות שכבר יש להן מופעים
+            console.log('helloooooo');
+
+            const serialNumberKeys = Object.keys(newEntityTemplate.properties.properties).filter((key) => {
+                return newEntityTemplate.properties.properties[key].serialCurrent !== undefined;
+            });
+            const newSerialNumberKeys = serialNumberKeys.filter((key) => {
+                return !Object.keys(currentEntityTemplate.properties.properties).includes(key);
+            });
+
+            console.log({ newSerialNumberKeys });
+            if (newSerialNumberKeys.length) {
+                console.log('take care about new serial number4 field');
+            }
             await sendUpdateIndexesOnUpdateTemplate(id);
         }
 
