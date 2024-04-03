@@ -362,52 +362,63 @@ const Entity: React.FC = () => {
                         <TabContext value={value}>
                             <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                                 <TabList style={{ height: '60px' }} onChange={(_event, newValue) => setValue(newValue)}>
-                                    {categoriesWithConnectionsTemplates?.map(
-                                        (
-                                            { category: { _id, displayName, iconFileId }, connectionsTemplates: connectionsTemplatesOfCategory },
-                                            index,
-                                        ) => (
-                                            <Tab
-                                                style={{
-                                                    display: 'flex',
-                                                    flexDirection: 'row',
-                                                    gap: '15px',
-                                                    height: '20px',
-                                                    alignItems: 'center',
-                                                }}
-                                                key={_id}
-                                                label={
-                                                    <Grid container flexDirection="row" alignItems="center" flexWrap="nowrap" gap="10px">
-                                                        <Typography
-                                                            color={value === String(index) ? theme.palette.primary.main : '#787C9E'}
-                                                            style={{ fontWeight: '500', fontSize: '16px' }}
-                                                        >
-                                                            {displayName}
-                                                        </Typography>
-                                                        <Typography color="#787C9E">{connectionsTemplatesOfCategory.length}</Typography>
-                                                    </Grid>
-                                                }
-                                                value={String(index)}
-                                                icon={
-                                                    iconFileId ? (
-                                                        <CustomIcon
-                                                            iconUrl={iconFileId}
-                                                            height="24px"
-                                                            width="24px"
-                                                            color={value === String(index) ? theme.palette.primary.main : '#787C9E'}
-                                                        />
-                                                    ) : (
-                                                        <HiveIcon
-                                                            fontSize="medium"
-                                                            sx={{
-                                                                color: value === String(index) ? theme.palette.primary.main : '#787C9E',
-                                                            }}
-                                                        />
-                                                    )
-                                                }
-                                            />
-                                        ),
-                                    )}
+                                    {categoriesWithConnectionsTemplates?.map(({ category: { _id, displayName, iconFileId } }, index) => (
+                                        <Tab
+                                            style={{
+                                                display: 'flex',
+                                                flexDirection: 'row',
+                                                gap: '15px',
+                                                height: '20px',
+                                                alignItems: 'center',
+                                            }}
+                                            key={_id}
+                                            label={
+                                                <Grid container flexDirection="row" alignItems="center" flexWrap="nowrap" gap="10px">
+                                                    <Typography
+                                                        color={value === String(index) ? theme.palette.primary.main : '#787C9E'}
+                                                        style={{ fontWeight: '500', fontSize: '16px' }}
+                                                    >
+                                                        {displayName}
+                                                    </Typography>
+                                                    <Typography color="#787C9E">
+                                                        {
+                                                            // calculate the amount of the related connections of each entity
+                                                            expandedEntity.connections.filter((connection) => {
+                                                                if (
+                                                                    expandedEntity.entity.properties._id ===
+                                                                    connection.destinationEntity.properties._id
+                                                                )
+                                                                    return (
+                                                                        entityTemplates.get(connection.sourceEntity.templateId)!.category._id === _id
+                                                                    );
+                                                                return (
+                                                                    entityTemplates.get(connection.destinationEntity.templateId)!.category._id === _id
+                                                                );
+                                                            }).length
+                                                        }
+                                                    </Typography>
+                                                </Grid>
+                                            }
+                                            value={String(index)}
+                                            icon={
+                                                iconFileId ? (
+                                                    <CustomIcon
+                                                        iconUrl={iconFileId}
+                                                        height="24px"
+                                                        width="24px"
+                                                        color={value === String(index) ? theme.palette.primary.main : '#787C9E'}
+                                                    />
+                                                ) : (
+                                                    <HiveIcon
+                                                        fontSize="medium"
+                                                        sx={{
+                                                            color: value === String(index) ? theme.palette.primary.main : '#787C9E',
+                                                        }}
+                                                    />
+                                                )
+                                            }
+                                        />
+                                    ))}
                                 </TabList>
                             </Box>
                             {categoriesWithConnectionsTemplates?.map(
