@@ -7,7 +7,6 @@ import { once } from 'events';
 import { errorMiddleware } from './error';
 import { appRouter } from './router';
 import { config } from '../config';
-import morganMiddleware from '../utils/express/morgan.middleware';
 
 export class Server {
     private app: express.Application;
@@ -23,7 +22,6 @@ export class Server {
         const app = express();
 
         app.use(helmet());
-        app.use(morganMiddleware);
         app.use(bodyParser.json({ limit: config.service.maxFileSize }));
         app.use(
             bodyParser.urlencoded({

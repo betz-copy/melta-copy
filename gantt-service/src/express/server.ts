@@ -5,7 +5,6 @@ import * as helmet from 'helmet';
 import { once } from 'events';
 import { errorMiddleware } from './error';
 import appRouter from './router';
-import morganMiddleware from '../utils/express/morgan.middleware';
 import config from '../config';
 
 class Server {
@@ -27,7 +26,6 @@ class Server {
         app.use(express.json({ limit: config.service.maxRequestSize }));
         app.use(express.urlencoded({ extended: true, limit: config.service.maxRequestSize }));
 
-        app.use(morganMiddleware);
         app.use(appRouter);
 
         app.use(errorMiddleware);
