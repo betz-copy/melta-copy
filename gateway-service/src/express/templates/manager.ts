@@ -383,6 +383,8 @@ export class TemplatesManager {
 
             Object.entries(currTemplate.properties.properties).forEach(([key, value]) => {
                 const newValue = updatedTemplateData.properties.properties[key];
+                console.log(newValue);
+
                 if (!newValue) throw new ServiceError(400, 'can not remove property');
                 if (value.serialCurrent !== undefined) {
                     // eslint-disable-next-line no-param-reassign
@@ -425,6 +427,8 @@ export class TemplatesManager {
             uniqueConstraints,
             requiredConstraints,
         });
+        
+        const newSerialNumberFields =
 
         return TemplatesManager.populateTemplateConstraints(updatedTemplate, requiredConstraints, uniqueConstraints);
     }

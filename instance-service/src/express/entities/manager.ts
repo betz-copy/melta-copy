@@ -393,7 +393,7 @@ export class EntityManager {
 
             const updatedEntity = await runInTransactionAndNormalize(
                 transaction,
-                `MATCH (e {_id: $props._id})
+                `MATCH (e {_id: '${id}'})
                  WITH e.createdAt AS createdAt, e.disabled AS disabled, e AS e
                  SET e = $props 
                  SET e.createdAt = createdAt
@@ -601,6 +601,39 @@ export class EntityManager {
             updateConstraintsPromises.push(updateUniqueConstraintsPromise);
 
             await Promise.all(updateConstraintsPromises);
+        });
+    }
+
+    static async updateNewSerialNumberFields(templateId: string, { serialNumberFieldsToAdd }: any) {
+        // Retrieve all instances of the template sorted by creation date
+        console.log({ serialNumberFieldsToAdd });
+
+        return Neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
+            const query = `
+                MATCH (e: \`${templateId}\`) 
+                RETURN e
+                ORDER BY e.createdAt
+            `;
+            const result = await transaction.run(query, { templateId });
+
+            // eslint-disable-next-line no-restricted-syntax
+            Object.entries(serialNumberFieldsToAdd).map(async ([key, value]) => {
+                // eslint-disable-next-line no-restricted-syntax
+                let serialCurrent: number = value as number;
+                for (const record of result.records) {
+                    const entity = record.get('e');
+                    console.log({ entity });
+
+                    const entityId = entity.properties._id;
+                    console.log({ entityId });
+
+                    // Update the serial number for the instance
+                    const updateQuery = `MATCH (e {_id: '${entityId}'}) SET e.${key} = ${++serialCurrent}`;
+
+                    // ??
+                    await transaction.run(updateQuery, { entityId, serialCurrent });
+                }
+            });
         });
     }
 }

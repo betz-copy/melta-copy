@@ -201,3 +201,13 @@ export const updateConstraintsOfTemplateRequestSchema = Joi.object({
         templateId: Joi.string().required(),
     },
 });
+
+export const updateNewSerialNumberFieldsRequestSchema = Joi.object({
+    body: Joi.object({
+        newSerialNumberFields: Joi.array().items(Joi.string()).required(),
+    }),
+    query: {},
+    params: {
+        templateId: Joi.string().required(),
+    },
+});
