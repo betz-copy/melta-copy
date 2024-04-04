@@ -2,11 +2,12 @@ import { Request, Response } from 'express';
 import { fetchPropertyFromRequest } from '../../utils/express';
 import { IMongoEntityTemplate } from '../../externalServices/entityTemplateManager';
 import { EntityManager } from './manager';
+import logger from '../../utils/logger';
 
 class EntityController {
-    static async createEntity(req: Request, res: Response) {
+    static async createEntity(req: any, res: Response) {
         const entityTemplate = fetchPropertyFromRequest<IMongoEntityTemplate>(req, 'entityTemplate');
-
+        logger.info('create-entity', { userId: req?.user?.id, templateId: req.body.templateId, properties: req.body.properties });
         res.json(await EntityManager.createEntity(req.body, entityTemplate));
     }
 
@@ -32,7 +33,8 @@ class EntityController {
         res.json(await EntityManager.getExpandedEntityById(req.params.id, disabled as unknown as boolean, templateIds, numberOfConnections));
     }
 
-    static async deleteEntityById(req: Request, res: Response) {
+    static async deleteEntityById(req: any, res: Response) {
+        logger.info('delete-entity', { userId: req?.user?.id, templateId: req.body.templateId, properties: req.body.properties });
         res.json(await EntityManager.deleteEntityById(req.params.id, req.query.deleteAllRelationships as unknown as boolean));
     }
 

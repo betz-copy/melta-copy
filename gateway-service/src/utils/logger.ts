@@ -29,7 +29,10 @@ const initializeLogger = () => {
         }),
         format.printf(({ timestamp, level, message, metadata }) => {
             const extra: IExtra = { ...logs.extraDefault };
-            const printData: IPrintData = { timestamp, level, extra, message, ...metadata };
+            let printData: IPrintData;
+
+            if (typeof message === 'object') printData = { timestamp, level, extra, ...message, ...metadata };
+            else printData = { timestamp, level, extra, message, ...metadata };
 
             return JSON.stringify(printData);
         }),

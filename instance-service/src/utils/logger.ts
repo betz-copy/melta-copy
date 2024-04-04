@@ -6,6 +6,18 @@ const { logs } = config;
 
 type IWinstonFormat = Logform.Format;
 
+interface IPrintData {
+    timestamp: string;
+    level: string;
+    message: string;
+    extra: object;
+}
+
+interface IExtra {
+    serviceName: string;
+    environment: string;
+}
+
 const initializeLogger = () => {
     const customFormat: IWinstonFormat = format.combine(
         format.splat(),
@@ -16,16 +28,13 @@ const initializeLogger = () => {
             format: logs.format,
         }),
         format.printf(({ timestamp, level, message, metadata }) => {
-            const extra = {
-                ...logs.extraDefault,
-                ...metadata,
-            };
-            return JSON.stringify({
-                timestamp,
-                level,
-                message,
-                extra,
-            });
+            const extra: IExtra = { ...logs.extraDefault };
+            let printData: IPrintData;
+
+            if (typeof message === 'object') printData = { timestamp, level, extra, ...message, ...metadata };
+            else printData = { timestamp, level, extra, message, ...metadata };
+
+            return JSON.stringify(printData);
         }),
     );
 
