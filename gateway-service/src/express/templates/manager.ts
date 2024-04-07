@@ -422,14 +422,32 @@ export class TemplatesManager {
             properties: restOfTemplatePropertiesObject,
             iconFileId,
         });
+        console.log({ restOfTemplatePropertiesObject });
 
         await InstanceManagerService.updateConstraintsOfTemplate(id, {
             uniqueConstraints,
             requiredConstraints,
         });
-        
-        const newSerialNumberFields =
 
+        const serialNumberKeys = Object.keys(updatedTemplate.properties.properties).filter((key) => {
+            return updatedTemplate.properties.properties[key].serialCurrent !== undefined;
+        });
+        const newSerialNumberKeys = serialNumberKeys.filter((key) => {
+            return !Object.keys(currTemplate.properties.properties).includes(key);
+        });
+        console.log({ newSerialNumberKeys });
+
+        if (newSerialNumberKeys.length) {
+            console.log('take care about new serial number4 field');
+            const newSerialNumberFields = {};
+            newSerialNumberKeys.forEach((key) => {
+                newSerialNumberFields[key] = updatedTemplate.properties.properties[key].serialCurrent;
+            });
+            console.log({ newSerialNumberFields });
+
+            // const updatesCurrentSerialNumbers =
+            await InstanceManagerService.updateNewSerialNumberFields(id, newSerialNumberFields);
+        }
         return TemplatesManager.populateTemplateConstraints(updatedTemplate, requiredConstraints, uniqueConstraints);
     }
 

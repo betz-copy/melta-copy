@@ -604,22 +604,22 @@ export class EntityManager {
         });
     }
 
-    static async updateNewSerialNumberFields(templateId: string, { serialNumberFieldsToAdd }: any) {
+    static async updateNewSerialNumberFields(templateId: string, { newSerialNumberFields }: any) {
         // Retrieve all instances of the template sorted by creation date
-        console.log({ serialNumberFieldsToAdd });
-
-        return Neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
+        console.log({ newSerialNumberFields }, { templateId });
+        const updatedSerialCurrents = {};
+        await Neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
             const query = `
-                MATCH (e: \`${templateId}\`) 
-                RETURN e
-                ORDER BY e.createdAt
-            `;
+            MATCH (e: \`${templateId}\`) 
+            RETURN e
+            ORDER BY e.createdAt
+        `;
             const result = await transaction.run(query, { templateId });
 
             // eslint-disable-next-line no-restricted-syntax
-            Object.entries(serialNumberFieldsToAdd).map(async ([key, value]) => {
-                // eslint-disable-next-line no-restricted-syntax
+            for (const [key, value] of Object.entries(newSerialNumberFields)) {
                 let serialCurrent: number = value as number;
+                // eslint-disable-next-line no-restricted-syntax
                 for (const record of result.records) {
                     const entity = record.get('e');
                     console.log({ entity });
@@ -627,14 +627,18 @@ export class EntityManager {
                     const entityId = entity.properties._id;
                     console.log({ entityId });
 
-                    // Update the serial number for the instance
-                    const updateQuery = `MATCH (e {_id: '${entityId}'}) SET e.${key} = ${++serialCurrent}`;
+                    // eslint-disable-next-line no-plusplus
+                    const updateQuery = `MATCH (e {_id: '${entityId}'}) SET e.${key} = toInteger(${++serialCurrent})`;
 
-                    // ??
-                    await transaction.run(updateQuery, { entityId, serialCurrent });
+                    // eslint-disable-next-line no-await-in-loop
+                    await transaction.run(updateQuery);
                 }
-            });
+                updatedSerialCurrents[key] = serialCurrent;
+            }
         });
+        console.log({ updatedSerialCurrents }, { templateId });
+
+        return updatedSerialCurrents;
     }
 }
 

@@ -89,18 +89,6 @@ export class EntityTemplateManager {
 
         if (isNewPropertyAdded) {
             console.log('helloooooo');
-
-            const serialNumberKeys = Object.keys(newEntityTemplate.properties.properties).filter((key) => {
-                return newEntityTemplate.properties.properties[key].serialCurrent !== undefined;
-            });
-            const newSerialNumberKeys = serialNumberKeys.filter((key) => {
-                return !Object.keys(currentEntityTemplate.properties.properties).includes(key);
-            });
-
-            console.log({ newSerialNumberKeys });
-            if (newSerialNumberKeys.length) {
-                console.log('take care about new serial number4 field');
-            }
             await sendUpdateIndexesOnUpdateTemplate(id);
         }
 
