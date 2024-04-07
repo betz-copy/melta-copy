@@ -3,7 +3,7 @@ import Server from './express/server';
 import Neo4jClient from './utils/neo4j';
 import RedisClient from './utils/redis';
 import config from './config';
-import logger from './utils/logger';
+import logger from './utils/logger/logsLogger';
 
 const { service, neo4j, redis } = config;
 

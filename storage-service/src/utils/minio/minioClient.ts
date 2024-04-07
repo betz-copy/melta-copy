@@ -1,7 +1,7 @@
 import * as minio from 'minio';
 import * as http from 'http';
 import { Readable } from 'stream';
-import logger from '../logger';
+import logger from '../logger/logsLogger';
 
 export class MinIOClient {
     minioClient: minio.Client;

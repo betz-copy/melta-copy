@@ -1,6 +1,6 @@
 /* eslint-disable max-classes-per-file */
 import express from 'express';
-import logger from '../utils/logger';
+import logger from '../utils/logger/logsLogger';
 
 export class ServiceError extends Error {
     constructor(public code: number, message: string, public metadata: object = {}) {

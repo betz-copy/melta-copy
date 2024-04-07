@@ -3,6 +3,25 @@ filebeat.inputs:
     enabled: true
     paths:
       - /var/log/test/*.log
-    
+
+# processors:
+#   - decode_json_fields:
+#       fields: ['message']
+#       target: ''
+#       overwrite_keys: true
+#   - script:
+#       lang: javascript
+#       id: set_custom_index
+#       source: |
+#         function process(event) {
+#             console.log(event.Get("action"));
+#             var logType = event.Get("label");
+#             if (logType) {
+#                 event.Meta["index"] = logType + "-index";
+#             } else {
+#                 event.Meta["index"] = "default-index";
+#             }
+#         }
+
 output.logstash:
   hosts: ['logstash:5044']

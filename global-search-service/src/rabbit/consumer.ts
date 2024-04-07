@@ -3,7 +3,7 @@ import { deleteTemplateSearchIndex, upsertChangedTemplateSearchIndex, upsertGlob
 import { basicValidateRequest } from '../utils/joi';
 import { Action, IUpdateIndexRequest } from './interfaces';
 import { requestSchema } from './validator.schema';
-import logger from '../utils/logger';
+import logger from '../utils/logger/logsLogger';
 
 export const updateIndexConsumeFunction = async (msg: ConsumerMessage) => {
     const msgContent = msg.getContent();

@@ -3,7 +3,7 @@ import axios from 'axios';
 import Server from './express/server';
 import config from './config';
 import { checkForDateNotifications } from './dateNotificationsCheck';
-import logger from './utils/logger';
+import logger from './utils/logger/logsLogger';
 
 const { service, rabbit } = config;
 

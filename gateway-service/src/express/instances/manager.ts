@@ -24,7 +24,7 @@ import RuleBreachesManager from '../ruleBreaches/manager';
 import config from '../../config';
 import { ServiceError } from '../error';
 import { cerateWorksheet, createWorkbook, fixFileProperties, styleAWorksheet } from '../../utils/excel/excelFunctions';
-import logger from '../../utils/logger';
+import logger from '../../utils/logger/logsLogger';
 
 const { errorCodes } = config;
 

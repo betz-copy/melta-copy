@@ -3,7 +3,7 @@ import { retry } from 'ts-retry-promise';
 
 import { trycatch } from '../lib';
 import config from '../../config';
-import logger from '../logger';
+import logger from '../logger/logsLogger';
 
 interface Neo4jAuth {
     username: string;

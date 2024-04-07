@@ -8,7 +8,7 @@ import {
 } from '../../../externalServices/processService/interfaces/stepInstance';
 import { deleteFiles } from '../../../externalServices/storageService';
 import { removeTmpFile } from '../../../utils/fs';
-import logger from '../../../utils/logger';
+import logger from '../../../utils/logger/logsLogger';
 import { InstancesManager } from '../../instances/manager';
 import UsersManager from '../../users/manager';
 import ProcessesInstancesManager from '../processInstances/manager';

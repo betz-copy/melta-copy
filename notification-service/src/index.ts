@@ -3,7 +3,7 @@ import menash from 'menashmq';
 import Server from './express/server';
 import config from './config';
 import NotificationsConsumer from './rabbit/consumer';
-import logger from './utils/logger';
+import logger from './utils/logger/logsLogger';
 
 const { mongo, rabbit, service } = config;
 

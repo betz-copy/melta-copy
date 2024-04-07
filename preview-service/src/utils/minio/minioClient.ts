@@ -1,5 +1,5 @@
 import * as minio from 'minio';
-import logger from '../logger';
+import logger from '../logger/logsLogger';
 
 export class MinIOClient {
     minioClient: minio.Client;

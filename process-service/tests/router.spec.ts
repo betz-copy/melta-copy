@@ -14,7 +14,7 @@ import {
 import processInstanceExample1, { errStepsPropertiesExample1, stepsPropertiesExample1 } from './mock/instances';
 import { IMongoStepInstance, UpdateStepReqBody } from '../src/express/instances/steps/interface';
 import StepInstanceManager from '../src/express/instances/steps/manager';
-import logger from '../src/utils/logger';
+import logger from '../src/utils/logger/logsLogger';
 
 const testUrl = 'mongodb://localhost:27017/test';
 const randomMongoId = () => {

@@ -2,7 +2,7 @@ import * as mongoose from 'mongoose';
 import menash from 'menashmq';
 import Server from './express/server';
 import config from './config';
-import logger from './utils/logger';
+import logger from './utils/logger/logsLogger';
 
 const { mongo, service, rabbit } = config;
 

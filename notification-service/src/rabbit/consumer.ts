@@ -2,7 +2,7 @@ import { ConsumerMessage } from 'menashmq';
 import NotificationsManager from '../express/notifications/manager';
 import { basicValidateRequest } from '../utils/joi';
 import { notificationSchema } from '../utils/joi/schemas/notification';
-import logger from '../utils/logger';
+import logger from '../utils/logger/logsLogger';
 
 class NotificationsConsumer {
     static async createNotification(msg: ConsumerMessage) {

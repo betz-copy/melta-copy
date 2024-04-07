@@ -7,7 +7,7 @@ import { IEntityWithDirectRelationships } from './externalServices/instanceServi
 import { InstanceManagerService } from './externalServices/instanceService';
 import { EntityTemplateManagerService } from './externalServices/entityTemplateService';
 import { getPermissions } from './externalServices/permissionsService';
-import logger from './utils/logger';
+import logger from './utils/logger/logsLogger';
 
 enum dateNotificationOptions {
     day = 1,

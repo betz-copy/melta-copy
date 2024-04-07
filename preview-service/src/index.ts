@@ -1,7 +1,7 @@
 import { Server } from './express/server';
 import { config } from './config';
 import { minioClient } from './utils/minio/minioClient';
-import logger from './utils/logger';
+import logger from './utils/logger/logsLogger';
 
 const main = async () => {
     const { url: endPoint, port, accessKey, secretKey, bucketName, useSSL } = config.minio;

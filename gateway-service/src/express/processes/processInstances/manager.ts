@@ -40,7 +40,7 @@ import {
     IProcessStatusUpdateNotificationMetadataPopulated,
 } from '../../../externalServices/notificationService/interfaces/populated';
 import { IProcessReviewerUpdateMailNotificationMetadataPopulated } from '../../../utils/mailNotifications/interfaces';
-import logger from '../../../utils/logger';
+import logger from '../../../utils/logger/logsLogger';
 
 export default class ProcessesInstancesManager {
     static async getPropertiesWithEntities(properties: InstanceProperties, template: IProcessDetails['properties'], userId: string) {

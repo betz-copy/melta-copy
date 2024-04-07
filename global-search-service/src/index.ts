@@ -5,7 +5,7 @@ import Neo4jClient from './utils/neo4j';
 import RedisClient from './utils/redis';
 import config from './config';
 import { updateIndexConsumeFunction } from './rabbit/consumer';
-import logger from './utils/logger';
+import logger from './utils/logger/logsLogger';
 
 const { rabbit, neo4j, redis, service } = config;
 

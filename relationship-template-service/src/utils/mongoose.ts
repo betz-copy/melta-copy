@@ -1,7 +1,7 @@
 import { ClientSession, startSession, Types } from 'mongoose';
 import * as _forEach from 'lodash.foreach';
 import { trycatch } from '.';
-import logger from './logger';
+import logger from './logger/logsLogger';
 
 export const withTransaction = async <Func extends (session: ClientSession) => Promise<any>>(func: Func): Promise<Awaited<ReturnType<Func>>> => {
     const session = await startSession();
