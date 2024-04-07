@@ -1,6 +1,6 @@
 import { Box } from '@mui/material';
 import i18next from 'i18next';
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useQuery } from 'react-query';
 import { IWorkspace } from '../../interfaces/workspaces';
 import { MainBox } from '../../Main.styled';
@@ -14,6 +14,7 @@ import { Workspace } from './Workspace';
 export enum Mode {
     view = 'view',
     edit = 'edit',
+    move = 'move',
 }
 
 const DirView: React.FC<{ params: { '*': string } }> = ({ params }) => {
@@ -23,11 +24,17 @@ const DirView: React.FC<{ params: { '*': string } }> = ({ params }) => {
         workspace: null,
     });
 
+    const [movedWorkspace, setMovedWorkspace] = useState<IWorkspace | null>(null);
+
     const location = useMemo(() => `/${params['*']}`, [params]);
     const { data, isLoading, isError } = useQuery({
         queryKey: ['getDir', location],
         queryFn: () => getDir(location),
     });
+
+    useEffect(() => {
+        if (mode !== Mode.move) setMovedWorkspace(null);
+    }, [mode]);
 
     if (isError) return <ErrorPage errorText={i18next.t('workspaces.requestedWorkspaceDoesntExist')} />;
 
@@ -38,18 +45,34 @@ const DirView: React.FC<{ params: { '*': string } }> = ({ params }) => {
                 openWizard={() => setWizardDialogState({ isWizardOpen: true, workspace: null })}
                 mode={mode}
                 setMode={setMode}
+                movedWorkspace={movedWorkspace}
+                setMovedWorkspace={setMovedWorkspace}
             />
 
             <MainBox scrollBarMarginTop="0" style={{ overflowY: 'auto', overflowAnchor: 'none' }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap', padding: '1rem' }}>
-                    {data?.map((workspace) => (
+                    {data?.map((workspace) =>
+                        workspace._id === movedWorkspace?._id ? null : (
+                            <Workspace
+                                key={workspace._id}
+                                workspace={workspace}
+                                mode={mode}
+                                openWizard={(selectedWorkspace) => setWizardDialogState({ isWizardOpen: true, workspace: selectedWorkspace })}
+                                setMovedWorkspace={setMovedWorkspace}
+                                hasMovedWorkspace={Boolean(movedWorkspace)}
+                            />
+                        ),
+                    )}
+
+                    {movedWorkspace && (
                         <Workspace
-                            key={workspace._id}
-                            workspace={workspace}
+                            workspace={movedWorkspace}
                             mode={mode}
                             openWizard={(selectedWorkspace) => setWizardDialogState({ isWizardOpen: true, workspace: selectedWorkspace })}
+                            setMovedWorkspace={setMovedWorkspace}
+                            isMoved
                         />
-                    ))}
+                    )}
                 </Box>
 
                 <Waves />

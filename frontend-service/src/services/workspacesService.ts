@@ -46,7 +46,7 @@ export const createOne = async (workspaceValues: WorkspaceWizardValues) => {
     return data;
 };
 
-export const updateOne = async (id: string, workspaceValues: WorkspaceWizardValues) => {
+export const updateOne = async (id: string, workspaceValues: WorkspaceWizardValues & { path: string }) => {
     const { icon, logo, ...workspace } = workspaceValues;
 
     const formData = generateFormData(workspace, (currentFormData) => {

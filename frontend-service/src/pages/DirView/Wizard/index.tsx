@@ -42,7 +42,7 @@ export const workspaceObjectToWorkspaceForm = (workspace: IWorkspace | null): Wo
     const { iconFileId, logoFileId, ...workspaceValues } = workspace as IWorkspace & WorkspaceWizardValues;
 
     if (iconFileId) workspaceValues.icon = { file: { name: iconFileId }, name: getFileName(iconFileId) };
-    if (logoFileId) workspaceValues.logo = { file: { name: iconFileId }, name: getFileName(logoFileId) };
+    if (logoFileId) workspaceValues.logo = { file: { name: logoFileId }, name: getFileName(logoFileId) };
 
     return workspaceValues;
 };

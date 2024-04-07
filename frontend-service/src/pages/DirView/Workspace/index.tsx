@@ -13,9 +13,19 @@ interface IWorkspaceProps {
     workspace: IWorkspace;
     mode: Mode;
     openWizard: (workspace: IWorkspace) => void;
+    setMovedWorkspace: (workspace: IWorkspace | null) => void;
+    isMoved?: boolean;
+    hasMovedWorkspace?: boolean;
 }
 
-export const Workspace: React.FC<IWorkspaceProps> = ({ workspace: { name, path, type, colors, iconFileId, logoFileId, _id }, mode, openWizard }) => {
+export const Workspace: React.FC<IWorkspaceProps> = ({
+    workspace: { name, path, type, colors, iconFileId, logoFileId, _id },
+    mode,
+    openWizard,
+    setMovedWorkspace,
+    isMoved,
+    hasMovedWorkspace,
+}) => {
     const setWorkspace = useWorkspaceStore((state) => state.setWorkspace);
 
     const workspaceIcon = useMemo(() => {
@@ -56,14 +66,20 @@ export const Workspace: React.FC<IWorkspaceProps> = ({ workspace: { name, path, 
         }
     }, [type, iconFileId, colors]);
 
+    const allowNavigation = useMemo(
+        () => mode === Mode.view || (mode === Mode.move && hasMovedWorkspace && !isMoved),
+        [mode, isMoved, hasMovedWorkspace],
+    );
+
     return (
         <MeltaTooltip title={name} placement="bottom">
             <Link
-                href={mode === Mode.edit ? '' : `${path}${path === '/' ? '' : '/'}${name}${type}`}
-                replace={mode === Mode.edit}
+                href={allowNavigation ? `${path}${path === '/' ? '' : '/'}${name}${type}` : ''}
+                replace={!allowNavigation}
                 style={{
                     textDecoration: 'none',
                     ...(mode === Mode.edit ? { cursor: 'url(/icons/edit-icon.svg), pointer' } : {}),
+                    ...(isMoved ? { cursor: 'default' } : {}),
                 }}
             >
                 <Card
@@ -73,10 +89,22 @@ export const Workspace: React.FC<IWorkspaceProps> = ({ workspace: { name, path, 
                         flexDirection: 'column',
                         alignItems: 'center',
                         '&:hover': { backgroundColor: 'rgba(0, 0, 0, 0.1)' },
+                        ...(isMoved ? { opacity: 0.8, backgroundColor: 'rgba(0, 0, 0, 0.1)' } : {}),
                     }}
                     onClick={() => {
-                        if (mode === Mode.edit) openWizard({ name, path, type, colors, iconFileId, logoFileId, _id });
-                        else setWorkspace({ name, path, type, colors, iconFileId, logoFileId, _id });
+                        const workspace = { name, path, type, colors, iconFileId, logoFileId, _id };
+
+                        switch (mode) {
+                            case Mode.edit:
+                                openWizard(workspace);
+                                break;
+                            case Mode.move:
+                                if (!hasMovedWorkspace) setMovedWorkspace(workspace);
+                                break;
+                            default:
+                                setWorkspace(workspace);
+                                break;
+                        }
                     }}
                 >
                     {workspaceIcon}

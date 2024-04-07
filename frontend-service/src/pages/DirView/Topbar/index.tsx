@@ -1,11 +1,18 @@
-import { Add, ArrowForward, Edit, EditOff } from '@mui/icons-material';
-import { Grid, SxProps } from '@mui/material';
+import { Add, ArrowForward, Check, Clear, DriveFileMove, Edit, EditOff, FolderOff } from '@mui/icons-material';
+import { Fade, Grid, Slide, SxProps } from '@mui/material';
+import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React from 'react';
+import { useMutation, useQueryClient } from 'react-query';
+import { toast } from 'react-toastify';
 import { useLocation } from 'wouter';
 import { Mode } from '..';
+import { ErrorToast } from '../../../common/ErrorToast';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
+import { IWorkspace } from '../../../interfaces/workspaces';
+import { updateOne } from '../../../services/workspacesService';
 import { useDarkModeStore } from '../../../stores/darkMode';
+import { workspaceObjectToWorkspaceForm, WorkspaceWizardValues } from '../Wizard';
 import { Loading } from './Loading';
 import { Navigation } from './Navigation';
 
@@ -14,14 +21,37 @@ interface ITopbarProps {
     openWizard: () => void;
     mode: Mode;
     setMode: (mode: Mode) => void;
+    movedWorkspace: IWorkspace | null;
+    setMovedWorkspace: (workspace: IWorkspace | null) => void;
 }
 
-export const Topbar: React.FC<ITopbarProps> = ({ loading, openWizard, mode, setMode }) => {
+export const Topbar: React.FC<ITopbarProps> = ({ loading, openWizard, mode, setMode, movedWorkspace, setMovedWorkspace }) => {
     const [location, setLocation] = useLocation();
+
+    const queryClient = useQueryClient();
 
     const darkMode = useDarkModeStore((state) => state.darkMode);
 
+    const moveButtonRef = React.useRef<HTMLButtonElement>(null);
+
     const iconStyle: SxProps = { fontSize: '2rem' };
+
+    const { isLoading: isMoveWorkspaceLoading, mutateAsync: moveWorkspace } = useMutation(
+        (workspace: IWorkspace) => {
+            const { _id, ...workspaceValues } = workspaceObjectToWorkspaceForm(workspace) as WorkspaceWizardValues & { _id: string };
+            return updateOne(workspace._id, { ...workspaceValues, path: location });
+        },
+        {
+            onSuccess: () => {
+                queryClient.invalidateQueries({ queryKey: ['getDir', location] });
+                setMode(Mode.view);
+                toast.success(i18next.t('workspaces.movedSuccessfully'));
+            },
+            onError: (error: AxiosError) => {
+                toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('workspaces.failedToMove')} />);
+            },
+        },
+    );
 
     return (
         <Grid
@@ -57,17 +87,58 @@ export const Topbar: React.FC<ITopbarProps> = ({ loading, openWizard, mode, setM
                 </Grid>
 
                 <Grid container item justifyContent="flex-end" alignItems="center" flexWrap="nowrap" xs={3}>
+                    <Grid container item justifyContent="flex-end" alignItems="center" flexWrap="nowrap">
+                        <Slide in={mode === Mode.move} direction="left" container={moveButtonRef.current}>
+                            <Grid item>
+                                <IconButtonWithPopover
+                                    popoverText={i18next.t('workspaces.cancelCurrentMove')}
+                                    iconButtonProps={{ onClick: () => setMovedWorkspace(null) }}
+                                    disabled={!movedWorkspace || isMoveWorkspaceLoading}
+                                >
+                                    <Clear sx={iconStyle} />
+                                </IconButtonWithPopover>
+                            </Grid>
+                        </Slide>
+
+                        <Fade in={mode === Mode.move}>
+                            <Grid item>
+                                <IconButtonWithPopover
+                                    popoverText={i18next.t(movedWorkspace ? 'workspaces.approveMove' : 'workspaces.selectWorkspaceToMove')}
+                                    iconButtonProps={{ onClick: () => moveWorkspace(movedWorkspace!) }}
+                                    disabled={!movedWorkspace || isMoveWorkspaceLoading || movedWorkspace.path === location}
+                                >
+                                    <Check sx={iconStyle} />
+                                </IconButtonWithPopover>
+                            </Grid>
+                        </Fade>
+
+                        <Grid item>
+                            <IconButtonWithPopover
+                                popoverText={i18next.t(mode === Mode.move ? 'workspaces.cancelMove' : 'workspaces.move')}
+                                iconButtonProps={{ onClick: () => setMode(mode === Mode.move ? Mode.view : Mode.move), ref: moveButtonRef }}
+                                disabled={isMoveWorkspaceLoading}
+                            >
+                                {mode === Mode.move ? <FolderOff sx={iconStyle} /> : <DriveFileMove sx={iconStyle} />}
+                            </IconButtonWithPopover>
+                        </Grid>
+                    </Grid>
+
                     <Grid item>
                         <IconButtonWithPopover
                             popoverText={i18next.t(mode === Mode.edit ? 'workspaces.cancelEdit' : 'workspaces.edit')}
                             iconButtonProps={{ onClick: () => setMode(mode === Mode.edit ? Mode.view : Mode.edit) }}
+                            disabled={isMoveWorkspaceLoading}
                         >
                             {mode === Mode.edit ? <EditOff sx={iconStyle} /> : <Edit sx={iconStyle} />}
                         </IconButtonWithPopover>
                     </Grid>
 
                     <Grid item>
-                        <IconButtonWithPopover popoverText={i18next.t('workspaces.createNew')} iconButtonProps={{ onClick: openWizard }}>
+                        <IconButtonWithPopover
+                            popoverText={i18next.t('workspaces.createNew')}
+                            iconButtonProps={{ onClick: openWizard }}
+                            disabled={isMoveWorkspaceLoading}
+                        >
                             <Add sx={iconStyle} />
                         </IconButtonWithPopover>
                     </Grid>

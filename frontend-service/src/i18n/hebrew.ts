@@ -817,6 +817,13 @@ export default {
         createNew: 'צור חדש',
         edit: 'ערוך',
         cancelEdit: 'בטל מצב עריכה',
+        move: 'העבר',
+        cancelMove: 'בטל מצב העברה',
+        cancelCurrentMove: 'בטל העברה נוכחית',
+        approveMove: 'אשר העברה',
+        selectWorkspaceToMove: 'בחר סביבת עבודה להעברה',
+        movedSuccessfully: 'העברה בוצעה בהצלחה',
+        failedToMove: 'נכשל בהעברה',
         requestedWorkspaceDoesntExist: 'סביבת העבודה המבוקשת אינה קיימת',
         type: 'סוג',
         types: {
