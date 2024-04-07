@@ -1,5 +1,5 @@
 import { Logger, format } from 'winston';
-import config from '../../config';
+import { config } from '../../config';
 import initializeLogger from './loggerFactory';
 
 const { logs } = config;

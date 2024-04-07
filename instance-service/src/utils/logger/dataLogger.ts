@@ -1,6 +1,6 @@
 import { Logger, format } from 'winston';
 import config from '../../config';
-import initializeLogger from './loggerFactory';
+import initializeLogger, { IExtra } from './loggerFactory';
 
 const { logs } = config;
 
@@ -14,7 +14,8 @@ const customFormat = format.combine(
         format: logs.format,
     }),
     format.printf(({ timestamp, level, message, metadata }) => {
-        return JSON.stringify({ timestamp, level, ...logs.extraDefault, message, ...metadata });
+        const extra: IExtra = { ...logs.extraDefault };
+        return JSON.stringify({ timestamp, level, extra, message, ...metadata });
     }),
 );
 
