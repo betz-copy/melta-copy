@@ -9,6 +9,7 @@ import { IMongoCategory } from '../../../../interfaces/categories';
 import { IEntityExpanded, IFile } from '../../../../interfaces/entities';
 import { IConnectionTemplateOfExpandedEntity } from '../..';
 import { MeltaCheckbox } from '../../../../common/MeltaCheckbox';
+import { log } from 'console';
 
 const PrintOptionsDialog: React.FC<{
     open: boolean;
@@ -18,6 +19,7 @@ const PrintOptionsDialog: React.FC<{
     selected: IConnectionTemplateOfExpandedEntity[];
     setSelected: React.Dispatch<React.SetStateAction<IConnectionTemplateOfExpandedEntity[]>>;
     files: IFile[];
+    setFiles: React.Dispatch<React.SetStateAction<IFile[]>>;
     selectedFiles: IFile[];
     setSelectedFiles: React.Dispatch<React.SetStateAction<IFile[]>>;
     isFilesLoading: Set<number> | undefined;
@@ -48,6 +50,7 @@ const PrintOptionsDialog: React.FC<{
     selected,
     setSelected,
     files,
+    setFiles,
     selectedFiles,
     setSelectedFiles,
     isFilesLoading,
@@ -56,6 +59,24 @@ const PrintOptionsDialog: React.FC<{
     onClick,
     options,
 }) => {
+    // const memoizedIsFilesLoading = React.useMemo(() => isFilesLoading, [isFilesLoading]);
+
+    // React.useEffect(() => {
+    //     let timeoutId;
+    //     if (memoizedIsFilesLoading && memoizedIsFilesLoading.size > 0) {
+    //         console.log('loading...');
+    //         timeoutId = setTimeout(() => {
+    //             console.log('hiiii');
+    //             toast.error(i18next.t('errorPage.filePrintError'));
+    //             setFiles([]);
+    //         }, 3000);
+    //     }
+
+    //     return () => {
+    //         clearTimeout(timeoutId);
+    //     };
+    // }, [memoizedIsFilesLoading, setFiles]);
+
     return (
         <Dialog open={open} onClose={handleClose}>
             <DialogTitle paddingLeft="4px">

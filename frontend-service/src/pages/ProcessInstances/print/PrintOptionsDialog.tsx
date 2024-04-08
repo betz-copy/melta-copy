@@ -10,6 +10,7 @@ const PrintOptionsDialog: React.FC<{
     open: boolean;
     handleClose: () => void;
     files: IFile[];
+    setFiles: React.Dispatch<React.SetStateAction<IFile[]>>;
     isLoading: boolean;
     isFilesError: boolean;
     options: {
@@ -19,7 +20,21 @@ const PrintOptionsDialog: React.FC<{
         setShowFiles: React.Dispatch<React.SetStateAction<boolean>>;
     };
     onClick: React.MouseEventHandler<HTMLButtonElement>;
-}> = ({ open, handleClose, files, isLoading, isFilesError, onClick, options }) => {
+}> = ({ open, handleClose, files, setFiles, isLoading, isFilesError, onClick, options }) => {
+    // React.useEffect(() => {
+    //     let timeoutId;
+    //     if (isLoading) {
+    //         timeoutId = setTimeout(() => {
+    //             toast.error(i18next.t('errorPage.filePrintError'));
+    //             setFiles([]);
+    //         }, 60000);
+    //     }
+
+    //     return () => {
+    //         clearTimeout(timeoutId);
+    //     };
+    // }, [isLoading, setFiles]);
+
     return (
         <Dialog open={open} onClose={handleClose}>
             <DialogTitle paddingLeft="4px">
