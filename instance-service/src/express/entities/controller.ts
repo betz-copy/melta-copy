@@ -5,9 +5,14 @@ import { EntityManager } from './manager';
 import dataLogger from '../../utils/logger/dataLogger';
 
 class EntityController {
-    static async createEntity(req: any, res: Response) {
+    static async createEntity(req: Request, res: Response) {
         const entityTemplate = fetchPropertyFromRequest<IMongoEntityTemplate>(req, 'entityTemplate');
-        dataLogger.info('entities', { userId: req?.user?.id, templateId: req.body.templateId, properties: req.body.properties, action: 'create' });
+        dataLogger.info('entities', {
+            userId: req.headers['user-id'],
+            templateId: req.body.templateId,
+            properties: req.body.properties,
+            action: 'create',
+        });
         res.json(await EntityManager.createEntity(req.body, entityTemplate));
     }
 
@@ -33,19 +38,19 @@ class EntityController {
         res.json(await EntityManager.getExpandedEntityById(req.params.id, disabled as unknown as boolean, templateIds, numberOfConnections));
     }
 
-    static async deleteEntityById(req: any, res: Response) {
-        dataLogger.info('entities', { userId: req?.user?.id, entityId: req.params.id, action: 'delete' });
+    static async deleteEntityById(req: Request, res: Response) {
+        dataLogger.info('entities', { userId: req.headers['user-id'], entityId: req.params.id, action: 'delete' });
         res.json(await EntityManager.deleteEntityById(req.params.id, req.query.deleteAllRelationships as unknown as boolean));
     }
 
-    static async deleteEntitiesByTemplateId(req: any, res: Response) {
-        dataLogger.info('entities', { userId: req?.user?.id, templateId: req.query.templateId, action: 'delete' });
+    static async deleteEntitiesByTemplateId(req: Request, res: Response) {
+        dataLogger.info('entities', { userId: req.headers['user-id'], templateId: req.query.templateId, action: 'delete' });
         res.json(await EntityManager.deleteByTemplateId(req.query.templateId as unknown as string));
     }
 
-    static async updateStatusById(req: any, res: Response) {
+    static async updateStatusById(req: Request, res: Response) {
         dataLogger.info('entities', {
-            userId: req?.user?.id,
+            userId: req.headers['user-id'],
             entityId: req.params.id,
             disabled: req.body.disabled,
             ignoredRules: req.body.ignoredRules,
@@ -54,10 +59,10 @@ class EntityController {
         res.json(await EntityManager.updateStatusById(req.params.id, req.body.disabled, req.body.ignoredRules));
     }
 
-    static async updateEntityById(req: any, res: Response) {
+    static async updateEntityById(req: Request, res: Response) {
         const entityTemplate = fetchPropertyFromRequest<IMongoEntityTemplate>(req, 'entityTemplate');
         dataLogger.info('entities', {
-            userId: req?.user?.id,
+            userId: req.headers['user-id'],
             entityId: req.params.id,
             templateId: entityTemplate._id,
             properties: req.body.properties,

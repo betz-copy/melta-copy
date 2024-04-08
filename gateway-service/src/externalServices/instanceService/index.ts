@@ -12,14 +12,29 @@ const {
 export class InstanceManagerService {
     private static InstanceManagerApi = axios.create({ baseURL: url, timeout: requestTimeout });
 
+    static setUserId(userId: string) {
+        this.InstanceManagerApi.defaults.headers.common['user-id'] = userId;
+        this.InstanceManagerApi.interceptors.request.use(
+            // eslint-disable-next-line @typescript-eslint/no-shadow
+            (config) => {
+                if (config.headers) {
+                    // eslint-disable-next-line no-param-reassign
+                    config.headers['user-id'] = userId;
+                }
+                return config;
+            },
+            (error) => Promise.reject(error),
+        );
+    }
+
     // entity instances
     static async getEntityInstanceById(id: string) {
         const { data } = await this.InstanceManagerApi.get<IEntity>(`${baseEntitiesRoute}/${id}`);
         return data;
     }
 
-    static async createEntityInstance(entity: IEntity, userId?: string) {
-        const { data } = await this.InstanceManagerApi.post<IEntity>(`${baseEntitiesRoute}`, entity, { user: { userId } });
+    static async createEntityInstance(entity: IEntity) {
+        const { data } = await this.InstanceManagerApi.post<IEntity>(`${baseEntitiesRoute}`, entity);
 
         return data;
     }
