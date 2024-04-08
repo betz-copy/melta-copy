@@ -370,7 +370,10 @@ export class TemplatesManager {
         await EntityTemplateManagerService.getCategoryById(updatedTemplateData.category);
 
         const { count } = await InstanceManagerService.searchEntitiesOfTemplateRequest(id, { limit: 1 });
+
         const currTemplate = await EntityTemplateManagerService.getEntityTemplateById(id);
+        const constraints = await InstanceManagerService.getConstraintsOfTemplate(id);
+        const flatedConstraints = constraints.uniqueConstraints.flat();
 
         if (currTemplate.disabled === true) throw new ServiceError(400, 'can not update disabled template');
         const removedProperties: string[] = [];
@@ -386,7 +389,11 @@ export class TemplatesManager {
             });
             Object.entries(currTemplate.properties.properties).forEach(([key, value]) => {
                 const newValue = updatedTemplateData.properties.properties[key];
+
                 if (!newValue) {
+                    if (flatedConstraints.includes(key)) {
+                        throw new ServiceError(400, 'can not delete unique field');
+                    }
                     removedProperties.push(key);
                     if (value.format === 'fileId') removedFilesProperties.push(key);
                 } else {
@@ -420,6 +427,8 @@ export class TemplatesManager {
         }
         const count1 = await GanttsService.isPropertyOfTemplateInUsed(id, removedProperties);
         console.log(count1);
+
+        await RelationshipsTemplateManagerService.isPropertyOfTemplateInUsed(id, removedProperties);
 
         if (removedFilesProperties.length > 0) {
             const filePaths = await InstanceManagerService.getFilePathsOfTemplate(id, removedFilesProperties);

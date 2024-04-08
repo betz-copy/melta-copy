@@ -26,8 +26,8 @@ class RuleController {
         res.json(await RuleManager.searchRules(req.body));
     }
 
-    static async getAllRules(_req: Request, res: Response) {
-        res.json(await RuleManager.getAllRules());
+    static async isPropertyOfTemplateInUsed(req: Request, res: Response) {
+        res.json(await RuleManager.isPropertyOfTemplateInUsed(req.params.entityId, req.body));
     }
 }
 

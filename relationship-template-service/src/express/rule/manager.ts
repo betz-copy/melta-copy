@@ -3,6 +3,7 @@ import RuleModel from './model';
 import { IRule } from './interfaces';
 import { ServiceError } from '../error';
 import { escapeRegExp } from '../../utils';
+import { checkPropertyInUsedFromFormula } from '../../utils/rules/checkIfPropertyInUsed';
 
 export class RuleManager {
     static getRuleById(templateId: string) {
@@ -28,10 +29,6 @@ export class RuleManager {
     static async createRule(rule: Omit<IRule, 'disabled'>) {
         // todo: (extra feature) ignoring possible breaches in existing entities. make sure client know (popup)
         return RuleModel.create({ ...rule, disabled: false });
-    }
-
-    static async getAllRules() {
-        return RuleModel.find();
     }
 
     static searchRules(searchBody: {
@@ -67,5 +64,10 @@ export class RuleManager {
         }
 
         return RuleModel.find(query).limit(limit).skip(skip).lean().exec();
+    }
+
+    static async isPropertyOfTemplateInUsed(id: string, properties: { properties: string[] }) {
+        const allRules = (await RuleModel.find()) as unknown as IRule[];
+        return allRules.forEach((rule) => checkPropertyInUsedFromFormula(rule.formula, id, properties.properties));
     }
 }

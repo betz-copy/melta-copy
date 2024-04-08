@@ -14,7 +14,6 @@ import { validateRuleFormulaMiddleware } from './validator';
 
 const RuleRouter: Router = Router();
 
-RuleRouter.get('/', wrapController(RuleController.getAllRules));
 RuleRouter.get('/:ruleId', ValidateRequest(getRuleByIdRequestSchema), wrapController(RuleController.getRuleById));
 RuleRouter.put('/:ruleId', ValidateRequest(updateRuleByIdRequestSchema), wrapController(RuleController.updateRuleById));
 RuleRouter.patch('/:ruleId/status', ValidateRequest(updateRuleStatusByIdRequestSchema), wrapController(RuleController.updateRuleStatusById));
@@ -26,5 +25,6 @@ RuleRouter.post(
     wrapController(RuleController.createRule),
 );
 RuleRouter.post('/search', ValidateRequest(searchRulesRequestSchema), wrapController(RuleController.searchRules));
+RuleRouter.post('/isPropertyOfTemplateInUsed/:entityId', wrapController(RuleController.isPropertyOfTemplateInUsed));
 
 export default RuleRouter;
