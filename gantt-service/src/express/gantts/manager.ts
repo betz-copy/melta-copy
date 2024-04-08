@@ -27,10 +27,6 @@ export class GanttManager {
         return FolderModel.create(gantt);
     }
 
-    static async getAllGantts() {
-        return FolderModel.find();
-    }
-
     static deleteGantt(ganttId: string) {
         return FolderModel.findByIdAndDelete(ganttId).orFail(new ServiceError(404, 'Gantt not found')).lean().exec();
     }

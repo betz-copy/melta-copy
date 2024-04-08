@@ -8,8 +8,6 @@ import { validateUserCanCreateGantt, validateUserCanDeleteGantt, validateUserCan
 
 const GanttsRouter: Router = Router();
 
-GanttsRouter.get('/', wrapController(GanttsController.getAllGantts));
-
 GanttsRouter.get(
     '/:ganttId',
     ValidateRequest(getGanttByIdSchema),

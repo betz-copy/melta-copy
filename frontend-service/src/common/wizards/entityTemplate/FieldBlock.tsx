@@ -100,13 +100,6 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
         updateFormik();
     };
 
-    const remove = (index: number) => {
-        if (areThereAnyInstances) {
-            setShowAreUSureDialogForRemoveProperty(true);
-            setSelectedIndexForRemove(index);
-        }
-    };
-
     const onDeleteSure = () => {
         setShowAreUSureDialogForRemoveProperty(false);
         const displayValuesCopy = [...displayValuesRef.current] as Values[PropertiesType];
@@ -114,6 +107,13 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
         displayValuesCopy.splice(selectedIndexToRemove, 1);
         setDisplayValues(displayValuesCopy);
         updateFormik();
+    };
+
+    const remove = (index: number) => {
+        if (areThereAnyInstances) {
+            setShowAreUSureDialogForRemoveProperty(true);
+            setSelectedIndexForRemove(index);
+        } else onDeleteSure();
     };
 
     const move = (src: number, dst: number) => {

@@ -6,7 +6,6 @@ import { createGanttSchema, deleteGanttSchema, getGanttByIdSchema, searchGanttsS
 
 const ganttsRouter: Router = Router();
 
-ganttsRouter.get('/', wrapController(GanttsController.getAllGantts));
 ganttsRouter.get('/:ganttId', ValidateRequest(getGanttByIdSchema), wrapController(GanttsController.getGanttById));
 ganttsRouter.post('/', ValidateRequest(createGanttSchema), wrapController(GanttsController.createGantt));
 ganttsRouter.post('/countOfUsedTemplate/:templateId', wrapController(GanttsController.isPropertyOfTemplateInUsed));
