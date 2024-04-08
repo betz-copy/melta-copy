@@ -104,10 +104,9 @@ export class InstanceManagerService {
     }
 
     static async updateNewSerialNumberFields(templateId: string, newSerialNumberFields: object) {
-        const { data } = await this.InstanceManagerApi.put<object>(`${baseConstraintsRoute}/newSerialNumberFields/${templateId}`, {
+        const { data } = await this.InstanceManagerApi.put<number>(`${baseConstraintsRoute}/newSerialNumberFields/${templateId}`, {
             newSerialNumberFields,
         });
-        console.log({ data });
         return data;
     }
 }

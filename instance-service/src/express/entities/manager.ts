@@ -604,41 +604,38 @@ export class EntityManager {
         });
     }
 
+    static async updateEntityProperties(transaction: Transaction, entityId: string, key: string, serialCurrent: number) {
+        const updateQuery = `
+        MATCH (e {_id: '${entityId}'}) 
+        SET e.${key} = toFloat(${serialCurrent})
+        RETURN count(e)`;
+        return runInTransactionAndNormalize(transaction, updateQuery, normalizeResponseCount);
+    }
+
     static async updateNewSerialNumberFields(templateId: string, { newSerialNumberFields }: any) {
-        // Retrieve all instances of the template sorted by creation date
-        console.log({ newSerialNumberFields }, { templateId });
-        const updatedSerialCurrents = {};
+        const updatePromises: Promise<number>[] = [];
         await Neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
-            const query = `
+            const getAllInstancesByTemplateIdQuery = `
             MATCH (e: \`${templateId}\`) 
             RETURN e
-            ORDER BY e.createdAt
-        `;
-            const result = await transaction.run(query, { templateId });
+            ORDER BY e.createdAt`;
+            const result = await transaction.run(getAllInstancesByTemplateIdQuery, { templateId });
 
             // eslint-disable-next-line no-restricted-syntax
             for (const [key, value] of Object.entries(newSerialNumberFields)) {
-                let serialCurrent: number = value as number;
-                // eslint-disable-next-line no-restricted-syntax
-                for (const record of result.records) {
-                    const entity = record.get('e');
-                    console.log({ entity });
+                let serialCurrent = value as number;
 
-                    const entityId = entity.properties._id;
-                    console.log({ entityId });
+                // eslint-disable-next-line no-loop-func
+                result.records.forEach((record) => {
+                    const entityId: string = record.get('e').properties._id;
 
                     // eslint-disable-next-line no-plusplus
-                    const updateQuery = `MATCH (e {_id: '${entityId}'}) SET e.${key} = toInteger(${++serialCurrent})`;
-
-                    // eslint-disable-next-line no-await-in-loop
-                    await transaction.run(updateQuery);
-                }
-                updatedSerialCurrents[key] = serialCurrent;
+                    updatePromises.push(this.updateEntityProperties(transaction, entityId, key, serialCurrent++));
+                });
             }
         });
-        console.log({ updatedSerialCurrents }, { templateId });
 
-        return updatedSerialCurrents;
+        return (await Promise.all(updatePromises)).length;
     }
 }
 

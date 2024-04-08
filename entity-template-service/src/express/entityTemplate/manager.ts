@@ -62,7 +62,6 @@ export class EntityTemplateManager {
             .orFail(new ServiceError(404, 'Entity Template not found'))
             .lean()
             .exec();
-        console.log({ updatedTemplate }, newEntityTemplate.properties.properties);
 
         const propertyTypeWithToString = ['number', 'boolean', 'date', 'date-time'];
         const isPropertyWithToString = (property: IEntitySingleProperty) => {
@@ -88,7 +87,6 @@ export class EntityTemplateManager {
             Object.keys(currentEntityTemplate.properties.properties).length !== Object.keys(newEntityTemplate.properties.properties).length;
 
         if (isNewPropertyAdded) {
-            console.log('helloooooo');
             await sendUpdateIndexesOnUpdateTemplate(id);
         }
 
