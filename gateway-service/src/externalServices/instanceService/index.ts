@@ -13,15 +13,13 @@ export class InstanceManagerService {
     private static InstanceManagerApi = axios.create({ baseURL: url, timeout: requestTimeout });
 
     static setUserId(userId: string) {
-        this.InstanceManagerApi.defaults.headers.common['user-id'] = userId;
         this.InstanceManagerApi.interceptors.request.use(
-            // eslint-disable-next-line @typescript-eslint/no-shadow
-            (config) => {
-                if (config.headers) {
+            (axiosConfig) => {
+                if (axiosConfig.headers) {
                     // eslint-disable-next-line no-param-reassign
-                    config.headers['user-id'] = userId;
+                    axiosConfig.headers['user-id'] = userId;
                 }
-                return config;
+                return axiosConfig;
             },
             (error) => Promise.reject(error),
         );

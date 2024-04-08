@@ -27,6 +27,19 @@ const permissionsAxios = axios.create({
     timeout: permissionApi.requestTimeout,
 });
 
+export const setUserIdOnPermissionsApi = (userId: string) => {
+    permissionsAxios.interceptors.request.use(
+        (axiosConfig) => {
+            if (axiosConfig.headers) {
+                // eslint-disable-next-line no-param-reassign
+                axiosConfig.headers['user-id'] = userId;
+            }
+            return axiosConfig;
+        },
+        (error) => Promise.reject(error),
+    );
+};
+
 export const getPermissions = async (query: Partial<Pick<IPermission, 'userId' | 'resourceType' | 'category'>> = {}) => {
     const { data } = await permissionsAxios.get<IPermission[]>(permissionApi.baseRoute, { params: query });
 

@@ -4,6 +4,8 @@ import authenticationRouter from './authentication/router';
 import config from '../config';
 import apiRouter from './apiRouter';
 import { InstanceManagerService } from '../externalServices/instanceService';
+import { EntityTemplateManagerService } from '../externalServices/entityTemplateService';
+import { setUserIdOnPermissionsApi } from '../externalServices/permissionsService';
 
 const appRouter = Router();
 
@@ -21,6 +23,8 @@ if (config.authentication.isRequired) {
 
 appRouter.use((req, _res, next) => {
     InstanceManagerService.setUserId(req.user!.id);
+    EntityTemplateManagerService.setUserId(req.user!.id);
+    setUserIdOnPermissionsApi(req.user!.id);
     next();
 });
 

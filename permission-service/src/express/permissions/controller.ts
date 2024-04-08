@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { CheckAuthorizationBody } from './interface';
 import { PermissionsManager } from './manager';
+import dataLogger from '../../utils/logger/dataLogger';
 
 class PermissionsController {
     static async getPermissions(req: Request, res: Response) {
@@ -14,12 +15,22 @@ class PermissionsController {
     }
 
     static async createPermission(req: Request, res: Response) {
+        dataLogger.info('permissions', {
+            userId: req.headers['user-id'],
+            data: req.body,
+            action: 'create',
+        });
         res.json(await PermissionsManager.createPermission(req.body));
     }
 
     static async updatePermission(req: Request, res: Response) {
         const { id } = req.params;
-
+        dataLogger.info('permissions', {
+            userId: req.headers['user-id'],
+            data: req.body,
+            permissionId: id,
+            action: 'update',
+        });
         res.json(await PermissionsManager.updatePermission(id, req.body));
     }
 
@@ -31,11 +42,20 @@ class PermissionsController {
 
     static async deletePermission(req: Request, res: Response) {
         const { id } = req.params;
-
+        dataLogger.info('permissions', {
+            userId: req.headers['user-id'],
+            permissionId: id,
+            action: 'delete',
+        });
         res.json(await PermissionsManager.deletePermission(id));
     }
 
     static async deletePermissions(req: Request, res: Response) {
+        dataLogger.info('permissions', {
+            userId: req.headers['user-id'],
+            query: req.query,
+            action: 'delete',
+        });
         res.json(await PermissionsManager.deletePermissions(req.query));
     }
 }
