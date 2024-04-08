@@ -425,8 +425,8 @@ export class TemplatesManager {
         } else {
             iconFileId = currTemplate.iconFileId;
         }
-        const count1 = await GanttsService.isPropertyOfTemplateInUsed(id, removedProperties);
-        console.log(count1);
+        const isPropertyInUsed = await GanttsService.isPropertyOfTemplateInUsed(id, removedProperties);
+        console.log(isPropertyInUsed);
 
         await RelationshipsTemplateManagerService.isPropertyOfTemplateInUsed(id, removedProperties);
 

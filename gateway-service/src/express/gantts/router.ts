@@ -2,7 +2,14 @@ import { Router } from 'express';
 import GanttsController from './controller';
 import { wrapController, wrapMiddleware } from '../../utils/express';
 import ValidateRequest from '../../utils/joi';
-import { createGanttSchema, deleteGanttSchema, getGanttByIdSchema, searchGanttsSchema, updateGanttSchema } from './validator.schema';
+import {
+    createGanttSchema,
+    deleteGanttSchema,
+    getGanttByIdSchema,
+    isPropertyOfTemplateInUsedSchema,
+    searchGanttsSchema,
+    updateGanttSchema,
+} from './validator.schema';
 import { validateUserHasAtLeastSomePermissions } from '../permissions/validateAuthorizationMiddleware';
 import { validateUserCanCreateGantt, validateUserCanDeleteGantt, validateUserCanUpdateGantt } from './middlewares';
 
@@ -14,7 +21,11 @@ GanttsRouter.get(
     wrapMiddleware(validateUserHasAtLeastSomePermissions),
     wrapController(GanttsController.getGanttById),
 );
-GanttsRouter.post('/countOfUsedTemplate/:templateId', wrapController(GanttsController.isPropertyOfTemplateInUsed));
+GanttsRouter.post(
+    '/isPropertyOfTemplateInUsed/:templateId',
+    ValidateRequest(isPropertyOfTemplateInUsedSchema),
+    wrapController(GanttsController.isPropertyOfTemplateInUsed),
+);
 GanttsRouter.post('/', ValidateRequest(createGanttSchema), wrapMiddleware(validateUserCanCreateGantt), wrapController(GanttsController.createGantt));
 GanttsRouter.delete(
     '/:ganttId',

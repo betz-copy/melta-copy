@@ -69,7 +69,7 @@ export class GanttsService {
     }
 
     static async isPropertyOfTemplateInUsed(templateId: string, properties: string[]) {
-        const { data } = await this.ganttsServiceApi.post<number>(`${baseRoute}/countOfUsedTemplate/${templateId}`, { properties });
+        const { data } = await this.ganttsServiceApi.post<number>(`${baseRoute}/isPropertyOfTemplateInUsed/${templateId}`, { properties });
         return data;
     }
 }

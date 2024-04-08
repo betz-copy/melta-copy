@@ -38,14 +38,17 @@ export class GanttManager {
             .exec();
     }
 
-    static async isPropertyOfTemplateInUsed(templateId: string, properties: { properties: string[] }) {
-        return FolderModel.find({
+    static async isPropertyOfTemplateInUsed(templateId: string, propertiesToRemove: { properties: string[] }) {
+        const { properties } = propertiesToRemove;
+
+        return FolderModel.exists({
             'items.entityTemplate.id': templateId,
-            'items.entityTemplate.fieldsToShow': { $elemMatch: { $in: properties.properties } },
-        })
-            .countDocuments()
-            .lean()
-            .exec();
+            $or: [
+                { 'items.entityTemplate.fieldsToShow': { $elemMatch: { $in: properties } } },
+                { 'items.entityTemplate.startDateField': { $in: properties } },
+                { 'items.entityTemplate.endDateField': { $in: properties } },
+            ],
+        });
     }
 }
 

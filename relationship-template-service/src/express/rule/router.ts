@@ -9,6 +9,7 @@ import {
     deleteRuleByIdRequestSchema,
     createRuleRequestSchema,
     searchRulesRequestSchema,
+    isPropertyOfTemplateInUsedSchema,
 } from './validator.schema';
 import { validateRuleFormulaMiddleware } from './validator';
 
@@ -25,6 +26,10 @@ RuleRouter.post(
     wrapController(RuleController.createRule),
 );
 RuleRouter.post('/search', ValidateRequest(searchRulesRequestSchema), wrapController(RuleController.searchRules));
-RuleRouter.post('/isPropertyOfTemplateInUsed/:entityId', wrapController(RuleController.isPropertyOfTemplateInUsed));
+RuleRouter.post(
+    '/isPropertyOfTemplateInUsed/:entityId',
+    ValidateRequest(isPropertyOfTemplateInUsedSchema),
+    wrapController(RuleController.isPropertyOfTemplateInUsed),
+);
 
 export default RuleRouter;
