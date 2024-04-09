@@ -612,7 +612,7 @@ export class EntityManager {
         return runInTransactionAndNormalize(transaction, updateQuery, normalizeResponseCount);
     }
 
-    static async updateNewSerialNumberFields(templateId: string, { newSerialNumberFields }: any) {
+    static async updateNewSerialNumberFields(templateId: string, { newSerialNumberFields }) {
         const updatePromises: Promise<number>[] = [];
         await Neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
             const getAllInstancesByTemplateIdQuery = `
@@ -625,7 +625,6 @@ export class EntityManager {
             for (const [key, value] of Object.entries(newSerialNumberFields)) {
                 let serialCurrent = value as number;
 
-                // eslint-disable-next-line no-loop-func
                 result.records.forEach((record) => {
                     const entityId: string = record.get('e').properties._id;
 
@@ -634,8 +633,9 @@ export class EntityManager {
                 });
             }
         });
+        const updatedEntitiesResult = await Promise.all(updatePromises);
 
-        return (await Promise.all(updatePromises)).length;
+        return updatedEntitiesResult.length / Object.keys(newSerialNumberFields).length;
     }
 }
 

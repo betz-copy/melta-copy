@@ -381,7 +381,6 @@ export class TemplatesManager {
             });
 
             const numOfInstancesUpdated: number = await InstanceManagerService.updateNewSerialNumberFields(id, newSerialNumberFields);
-            console.log({ numOfInstancesUpdated }, { allNewSerialNumberKeys });
 
             allNewSerialNumberKeys.forEach((key) => {
                 // eslint-disable-next-line no-param-reassign
@@ -439,12 +438,11 @@ export class TemplatesManager {
         }
 
         let updatedDataOfTemplate;
-        // eslint-disable-next-line no-useless-catch
         try {
             updatedDataOfTemplate = await this.updateNewSerialNumberFields(id, updatedTemplateData, currTemplate);
-            console.log(updatedDataOfTemplate.properties.properties);
         } catch (error) {
-            throw error;
+            console.log(`Failed to create serial number fields for existing entities`);
+            throw new ServiceError(400, `Failed to create serial number fields for existing entities: ${error}`);
         }
 
         const { uniqueConstraints, properties, ...restOfTemplateData } = updatedDataOfTemplate;
@@ -458,7 +456,6 @@ export class TemplatesManager {
             uniqueConstraints,
             requiredConstraints,
         });
-        // await this.updateNewSerialNumberFields(id, updatedTemplate, currTemplate);
         return TemplatesManager.populateTemplateConstraints(updatedTemplate, requiredConstraints, uniqueConstraints);
     }
 
