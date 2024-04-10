@@ -1,148 +1,127 @@
-import { Add, ArrowForward, Check, Clear, DriveFileMove, Edit, EditOff, FolderOff } from '@mui/icons-material';
-import { Fade, Grid, Slide, SxProps } from '@mui/material';
-import { AxiosError } from 'axios';
+import { Add, ArrowForward, ManageAccounts } from '@mui/icons-material';
+import { Box, Grid, Slide, SxProps, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
-import { useMutation, useQueryClient } from 'react-query';
-import { toast } from 'react-toastify';
+import { useQueryClient } from 'react-query';
 import { useLocation } from 'wouter';
-import { Mode } from '..';
-import { ErrorToast } from '../../../common/ErrorToast';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
-import { IWorkspace } from '../../../interfaces/workspaces';
-import { updateOne } from '../../../services/workspacesService';
+import { MeltaIcon } from '../../../common/MeltaIcon';
+import { ProfileButton } from '../../../common/sideBar/ProfileButton';
+import { IPermissionsOfUser } from '../../../services/permissionsService';
 import { useDarkModeStore } from '../../../stores/darkMode';
-import { workspaceObjectToWorkspaceForm, WorkspaceWizardValues } from '../Wizard';
+import { useMeltaPlusStore } from '../../../stores/meltaPlus';
 import { Loading } from './Loading';
 import { Navigation } from './Navigation';
 
 interface ITopbarProps {
     loading: boolean;
     openWizard: () => void;
-    mode: Mode;
-    setMode: (mode: Mode) => void;
-    movedWorkspace: IWorkspace | null;
-    setMovedWorkspace: (workspace: IWorkspace | null) => void;
+    openPermissionsDialog: () => void;
 }
 
-export const Topbar: React.FC<ITopbarProps> = ({ loading, openWizard, mode, setMode, movedWorkspace, setMovedWorkspace }) => {
+export const Topbar: React.FC<ITopbarProps> = ({ loading, openWizard, openPermissionsDialog }) => {
     const [location, setLocation] = useLocation();
 
     const queryClient = useQueryClient();
+    const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
 
     const darkMode = useDarkModeStore((state) => state.darkMode);
+    const meltaPlus = useMeltaPlusStore((state) => state.meltaPlus);
+    const toggleMeltaPlus = useMeltaPlusStore((state) => state.toggleMeltaPlus);
 
-    const moveButtonRef = React.useRef<HTMLButtonElement>(null);
+    const theme = useTheme();
 
-    const iconStyle: SxProps = { fontSize: '2rem' };
-
-    const { isLoading: isMoveWorkspaceLoading, mutateAsync: moveWorkspace } = useMutation(
-        (workspace: IWorkspace) => {
-            const { _id, ...workspaceValues } = workspaceObjectToWorkspaceForm(workspace) as WorkspaceWizardValues & { _id: string };
-            return updateOne(workspace._id, { ...workspaceValues, path: location });
-        },
-        {
-            onSuccess: () => {
-                queryClient.invalidateQueries({ queryKey: ['getDir', location] });
-                setMode(Mode.view);
-                toast.success(i18next.t('workspaces.movedSuccessfully'));
-            },
-            onError: (error: AxiosError) => {
-                toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('workspaces.failedToMove')} />);
-            },
-        },
-    );
+    const iconStyle: SxProps = { fontSize: '2rem', color: 'white' };
+    const iconButtonStyle: SxProps = { '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.2)' } };
 
     return (
         <Grid
             container
-            direction="column"
-            px="1rem"
+            px="0.5rem"
             py="0.5rem"
-            sx={{ backgroundColor: darkMode ? '#131313' : '#fcfeff', boxShadow: '0px 4px 4px #0000000D' }}
+            flexWrap="nowrap"
+            sx={{
+                position: 'relative',
+                backgroundColor: darkMode ? '#131313' : theme.palette.primary.main,
+                boxShadow: '0px 2px 2px #333',
+                zIndex: 10,
+            }}
         >
-            {/* <Grid container item justifyContent="flex-end">
+            <Grid container item alignItems="center" flexWrap="nowrap" spacing={1} xs={3}>
                 <Grid item>
-                    <img src="/icons/Melta_Logo.svg" width="300px" />
-                </Grid>
-            </Grid> */}
-
-            <Grid container item alignItems="center" flexWrap="nowrap">
-                <Grid container item alignItems="center" flexWrap="nowrap" spacing={2} xs={3}>
-                    <Grid item>
-                        <IconButtonWithPopover
-                            popoverText={i18next.t('workspaces.goBack')}
-                            iconButtonProps={{ onClick: () => setLocation(location.slice(0, location.lastIndexOf('/')) || '/') }}
-                            disabled={location === '/'}
-                        >
-                            <ArrowForward sx={iconStyle} />
-                        </IconButtonWithPopover>
-                    </Grid>
-
-                    <Grid item>{loading && <Loading />}</Grid>
+                    <ProfileButton
+                        currentUser={myPermissions?.user || { user: { firstName: '', lastName: '' } }}
+                        text={i18next.t('permissions.permissionsOfUserDialog.readTitle')}
+                        isDrawerOpen
+                        onClick={() => {}}
+                    />
                 </Grid>
 
-                <Grid item xs={9}>
+                <Grid item>
+                    <IconButtonWithPopover
+                        popoverText={i18next.t('permissions.permissionsManagmentPageTitle')}
+                        iconButtonProps={{ onClick: openPermissionsDialog, sx: iconButtonStyle }}
+                    >
+                        <ManageAccounts sx={iconStyle} />
+                    </IconButtonWithPopover>
+                </Grid>
+
+                <Grid item>
+                    <IconButtonWithPopover
+                        popoverText={i18next.t('workspaces.createNew')}
+                        iconButtonProps={{
+                            onClick: openWizard,
+                            sx: iconButtonStyle,
+                        }}
+                        disabled={loading}
+                    >
+                        <Add sx={iconStyle} />
+                    </IconButtonWithPopover>
+                </Grid>
+
+                <Grid item>{loading && <Loading />}</Grid>
+            </Grid>
+
+            <Grid container item alignItems="center" xs={9}>
+                <Grid item>
+                    <IconButtonWithPopover
+                        popoverText={i18next.t('workspaces.goBack')}
+                        iconButtonProps={{ onClick: () => setLocation(location.slice(0, location.lastIndexOf('/')) || '/'), sx: iconButtonStyle }}
+                        disabled={location === '/'}
+                    >
+                        <ArrowForward sx={{ ...iconStyle, ...(location === '/' ? { color: 'gray', opacity: 0.5 } : {}) }} />
+                    </IconButtonWithPopover>
+                </Grid>
+
+                <Grid item xs>
                     <Navigation />
                 </Grid>
+            </Grid>
 
-                <Grid container item justifyContent="flex-end" alignItems="center" flexWrap="nowrap" xs={3}>
-                    <Grid container item justifyContent="flex-end" alignItems="center" flexWrap="nowrap">
-                        <Slide in={mode === Mode.move} direction="left" container={moveButtonRef.current}>
-                            <Grid item>
-                                <IconButtonWithPopover
-                                    popoverText={i18next.t('workspaces.cancelCurrentMove')}
-                                    iconButtonProps={{ onClick: () => setMovedWorkspace(null) }}
-                                    disabled={!movedWorkspace || isMoveWorkspaceLoading}
-                                >
-                                    <Clear sx={iconStyle} />
-                                </IconButtonWithPopover>
-                            </Grid>
-                        </Slide>
+            <Grid container item xs={3} justifyContent="flex-end">
+                <Box
+                    position="relative"
+                    onClick={(event) => {
+                        if (event.detail >= 3) toggleMeltaPlus();
+                    }}
+                >
+                    <Slide in={meltaPlus} direction="down">
+                        <Add
+                            sx={{
+                                position: 'absolute',
+                                left: '-1%',
+                                top: '-3%',
+                                fontSize: 60,
+                                color: 'white',
+                                zIndex: 1,
+                                stroke: '#000',
+                                strokeWidth: '0.1px',
+                            }}
+                        />
+                    </Slide>
 
-                        <Fade in={mode === Mode.move}>
-                            <Grid item>
-                                <IconButtonWithPopover
-                                    popoverText={i18next.t(movedWorkspace ? 'workspaces.approveMove' : 'workspaces.selectWorkspaceToMove')}
-                                    iconButtonProps={{ onClick: () => moveWorkspace(movedWorkspace!) }}
-                                    disabled={!movedWorkspace || isMoveWorkspaceLoading || movedWorkspace.path === location}
-                                >
-                                    <Check sx={iconStyle} />
-                                </IconButtonWithPopover>
-                            </Grid>
-                        </Fade>
-
-                        <Grid item>
-                            <IconButtonWithPopover
-                                popoverText={i18next.t(mode === Mode.move ? 'workspaces.cancelMove' : 'workspaces.move')}
-                                iconButtonProps={{ onClick: () => setMode(mode === Mode.move ? Mode.view : Mode.move), ref: moveButtonRef }}
-                                disabled={isMoveWorkspaceLoading}
-                            >
-                                {mode === Mode.move ? <FolderOff sx={iconStyle} /> : <DriveFileMove sx={iconStyle} />}
-                            </IconButtonWithPopover>
-                        </Grid>
-                    </Grid>
-
-                    <Grid item>
-                        <IconButtonWithPopover
-                            popoverText={i18next.t(mode === Mode.edit ? 'workspaces.cancelEdit' : 'workspaces.edit')}
-                            iconButtonProps={{ onClick: () => setMode(mode === Mode.edit ? Mode.view : Mode.edit) }}
-                            disabled={isMoveWorkspaceLoading}
-                        >
-                            {mode === Mode.edit ? <EditOff sx={iconStyle} /> : <Edit sx={iconStyle} />}
-                        </IconButtonWithPopover>
-                    </Grid>
-
-                    <Grid item>
-                        <IconButtonWithPopover
-                            popoverText={i18next.t('workspaces.createNew')}
-                            iconButtonProps={{ onClick: openWizard }}
-                            disabled={isMoveWorkspaceLoading}
-                        >
-                            <Add sx={iconStyle} />
-                        </IconButtonWithPopover>
-                    </Grid>
-                </Grid>
+                    <MeltaIcon width="300px" height="60px" expanded />
+                </Box>
             </Grid>
         </Grid>
     );

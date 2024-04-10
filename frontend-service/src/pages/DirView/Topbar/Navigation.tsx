@@ -1,5 +1,5 @@
 import { Home } from '@mui/icons-material';
-import { Breadcrumbs, Button } from '@mui/material';
+import { Breadcrumbs, Button, Typography } from '@mui/material';
 import React, { useMemo } from 'react';
 import ScrollContainer from 'react-indiana-drag-scroll';
 import { useLocation } from 'wouter';
@@ -10,11 +10,11 @@ export const Navigation: React.FC = () => {
 
     const darkMode = useDarkModeStore((state) => state.darkMode);
 
-    const iconColor = useMemo(() => (darkMode ? '#fff' : '#000'), [darkMode]);
+    const iconColor = useMemo(() => (darkMode ? '#000' : '#fff'), [darkMode]);
 
     return (
-        <ScrollContainer style={{ display: 'flex', borderRadius: '0.25rem', backgroundColor: darkMode ? '#252525' : 'lightgray' }}>
-            <Breadcrumbs sx={{ '.MuiBreadcrumbs-ol': { flexWrap: 'nowrap' } }}>
+        <ScrollContainer style={{ display: 'flex', borderRadius: '0.25rem', backgroundColor: darkMode ? '#252525' : '#101440' }}>
+            <Breadcrumbs sx={{ '.MuiBreadcrumbs-ol': { flexWrap: 'nowrap' }, '.MuiBreadcrumbs-separator': { color: 'white' } }}>
                 <Button onClick={() => setLocation('/')} sx={{ color: iconColor }}>
                     <Home />
                 </Button>
@@ -36,7 +36,7 @@ export const Navigation: React.FC = () => {
                                 )
                             }
                         >
-                            {segment}
+                            <Typography>{segment}</Typography>
                         </Button>
                     ))}
             </Breadcrumbs>
