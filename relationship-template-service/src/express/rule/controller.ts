@@ -27,7 +27,7 @@ class RuleController {
     }
 
     static async isPropertyOfTemplateInUsed(req: Request, res: Response) {
-        res.json(await RuleManager.isPropertyOfTemplateInUsed(req.params.entityId, req.body));
+        res.json(await RuleManager.isPropertyOfTemplateInUsed(req.params.templateId, req.body));
     }
 }
 

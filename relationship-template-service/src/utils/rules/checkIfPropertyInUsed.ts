@@ -26,12 +26,14 @@ const checkPropertyInUsedFromArgument = (argument: IArgument, entityId: string, 
     }
 
     if (isRegularFunction(argument)) {
-        return argument.arguments.map((argument) => checkPropertyInUsedFromArgument(argument, entityId, properties));
+        return argument.arguments.forEach((arg) => checkPropertyInUsedFromArgument(arg, entityId, properties));
     }
 
     if (!isConstant(argument) && !isCountAggFunction(argument)) {
         throw new Error('unexpected argument, must be constant/propertyOfVariable/countAggFunction/sumAggFunction/regularSumFunction');
     }
+
+    return undefined;
 };
 
 const checkPropertyInUsedFromEquation = (formula: IEquation, entityId: string, properties: string[]) => {

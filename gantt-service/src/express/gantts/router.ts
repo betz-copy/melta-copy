@@ -2,7 +2,14 @@ import { Router } from 'express';
 import GanttsController from './controller';
 import { wrapController } from '../../utils/express';
 import ValidateRequest from '../../utils/joi';
-import { createGanttSchema, deleteGanttSchema, getGanttByIdSchema, isPropertyOfTemplateInUsedSchema, searchGanttsSchema, updateGanttSchema } from './validator.schema';
+import {
+    createGanttSchema,
+    deleteGanttSchema,
+    getGanttByIdSchema,
+    isPropertyOfTemplateInUsedSchema,
+    searchGanttsSchema,
+    updateGanttSchema,
+} from './validator.schema';
 
 const ganttsRouter: Router = Router();
 

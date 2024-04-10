@@ -27,7 +27,7 @@ RuleRouter.post(
 );
 RuleRouter.post('/search', ValidateRequest(searchRulesRequestSchema), wrapController(RuleController.searchRules));
 RuleRouter.post(
-    '/isPropertyOfTemplateInUsed/:entityId',
+    '/isPropertyOfTemplateInUsed/:templateId',
     ValidateRequest(isPropertyOfTemplateInUsedSchema),
     wrapController(RuleController.isPropertyOfTemplateInUsed),
 );

@@ -25,6 +25,7 @@ import ProcessTemplatesManager from '../processes/processTemplates/manager';
 import { isProcessManager } from '../../externalServices/permissionsService';
 import { IPermissionsOfUser } from '../permissions/interfaces';
 import { GanttsService } from '../../externalServices/ganttsService';
+// import { ActivityLogManagerService } from '../../externalServices/activityLogService';
 
 const {
     categoryHasTemplates,
@@ -437,10 +438,13 @@ export class TemplatesManager {
 
         if (removedProperties.length > 0) {
             await InstanceManagerService.deletePropertiesOfTemplate(id, removedProperties);
+            // await ActivityLogManagerService.deletePropertiesOfTemplate(id, removedProperties);
         }
 
         const { uniqueConstraints, properties, ...restOfTemplateData } = updatedTemplateData;
         const { required: requiredConstraints, ...restOfTemplatePropertiesObject } = properties;
+        console.log({ restOfTemplatePropertiesObject });
+
         const updatedTemplate = await EntityTemplateManagerService.updateEntityTemplate(id, {
             ...restOfTemplateData,
             properties: restOfTemplatePropertiesObject,

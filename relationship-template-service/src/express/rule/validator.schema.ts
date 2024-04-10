@@ -86,6 +86,6 @@ export const isPropertyOfTemplateInUsedSchema = Joi.object({
     },
     query: {},
     params: {
-        entityId: Joi.string().required(),
+        templateId: Joi.string().required(),
     },
 });

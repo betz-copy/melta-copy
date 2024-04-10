@@ -42,4 +42,9 @@ export class ActivityLogManagerService {
         const { data } = await this.ActivityLogManagerApi.post(baseRoute, activityLog);
         return data;
     }
+
+    static async deletePropertiesOfTemplate(entityId: string, properties: string[]) {
+        const { data } = await this.ActivityLogManagerApi.put(`${baseRoute}/deletePropertiesOfTemplate/${entityId}`, { properties });
+        return data;
+    }
 }
