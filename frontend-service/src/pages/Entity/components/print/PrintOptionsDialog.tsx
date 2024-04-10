@@ -9,7 +9,6 @@ import { IMongoCategory } from '../../../../interfaces/categories';
 import { IEntityExpanded, IFile } from '../../../../interfaces/entities';
 import { IConnectionTemplateOfExpandedEntity } from '../..';
 import { MeltaCheckbox } from '../../../../common/MeltaCheckbox';
-import { log } from 'console';
 
 const PrintOptionsDialog: React.FC<{
     open: boolean;
@@ -19,11 +18,12 @@ const PrintOptionsDialog: React.FC<{
     selected: IConnectionTemplateOfExpandedEntity[];
     setSelected: React.Dispatch<React.SetStateAction<IConnectionTemplateOfExpandedEntity[]>>;
     files: IFile[];
-    setFiles: React.Dispatch<React.SetStateAction<IFile[]>>;
     selectedFiles: IFile[];
     setSelectedFiles: React.Dispatch<React.SetStateAction<IFile[]>>;
     isFilesLoading: Set<number> | undefined;
+    setIsFilesLoading: React.Dispatch<React.SetStateAction<Set<number> | undefined>>;
     isFilesError: boolean;
+    setIsFilesError: React.Dispatch<React.SetStateAction<boolean>>;
     categoriesWithConnectionsTemplates: {
         category: IMongoCategory;
         connectionsTemplates: {
@@ -50,32 +50,29 @@ const PrintOptionsDialog: React.FC<{
     selected,
     setSelected,
     files,
-    setFiles,
     selectedFiles,
     setSelectedFiles,
     isFilesLoading,
+    setIsFilesLoading,
     isFilesError,
+    setIsFilesError,
     categoriesWithConnectionsTemplates,
     onClick,
     options,
 }) => {
-    // const memoizedIsFilesLoading = React.useMemo(() => isFilesLoading, [isFilesLoading]);
+    // const timer = React.useRef<ReturnType<typeof setTimeout>>();
 
     // React.useEffect(() => {
-    //     let timeoutId;
-    //     if (memoizedIsFilesLoading && memoizedIsFilesLoading.size > 0) {
-    //         console.log('loading...');
-    //         timeoutId = setTimeout(() => {
-    //             console.log('hiiii');
-    //             toast.error(i18next.t('errorPage.filePrintError'));
-    //             setFiles([]);
-    //         }, 3000);
-    //     }
-
+    //     timer.current = setTimeout(() => {
+    //         toast.error(i18next.t('errorPage.filePrintError'));
+    //         setSelectedFiles([]);
+    //         setIsFilesError(false);
+    //         setIsFilesLoading(undefined);
+    //     }, 5000);
     //     return () => {
-    //         clearTimeout(timeoutId);
+    //         clearTimeout(timer.current);
     //     };
-    // }, [memoizedIsFilesLoading, setFiles]);
+    // }, [setIsFilesError, setIsFilesLoading, setSelectedFiles, selectedFiles]);
 
     return (
         <Dialog open={open} onClose={handleClose}>
@@ -181,6 +178,9 @@ const PrintOptionsDialog: React.FC<{
                     onClick={(ev) => {
                         if (isFilesError) {
                             toast.error(i18next.t('errorPage.filePrintError'));
+                            setSelectedFiles([]);
+                            setIsFilesError(false);
+                            setIsFilesLoading(undefined);
                         } else {
                             handleClose();
                             onClick(ev);

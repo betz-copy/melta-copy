@@ -22,6 +22,7 @@ const Print: React.FC<{
     }[];
 }> = ({ entityTemplate, expandedEntity, categoriesWithConnectionsTemplates, connectionsTemplates }) => {
     const [openModal, setOpenModal] = React.useState(false);
+
     const handleOpen = () => setOpenModal(true);
     const handleClose = () => setOpenModal(false);
 
@@ -116,11 +117,12 @@ const Print: React.FC<{
                 selected={selected}
                 setSelected={setSelected}
                 files={files}
-                setFiles={setFiles}
                 selectedFiles={selectedFiles}
                 setSelectedFiles={setSelectedFiles}
                 isFilesLoading={isFilesLoading}
+                setIsFilesLoading={setIsFilesLoading}
                 isFilesError={isFilesError}
+                setIsFilesError={setIsFilesError}
                 categoriesWithConnectionsTemplates={categoriesWithConnectionsTemplates}
                 onClick={handlePrint}
                 options={{

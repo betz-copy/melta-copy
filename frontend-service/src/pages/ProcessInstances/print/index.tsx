@@ -155,9 +155,11 @@ const Print: React.FC<{
                 open={openModal}
                 handleClose={handleClose}
                 files={files}
-                setFiles={setFiles}
                 isLoading={(isFilesLoading && isFilesLoading.size > 0) || isLoading}
+                setIsLoading={setIsFilesLoading}
                 isFilesError={isFilesError}
+                setIsFilesError={setIsFilesError}
+                setShowFiles={setShowFiles}
                 onClick={handlePrint}
                 options={{
                     showSummary,

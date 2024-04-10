@@ -10,9 +10,11 @@ const PrintOptionsDialog: React.FC<{
     open: boolean;
     handleClose: () => void;
     files: IFile[];
-    setFiles: React.Dispatch<React.SetStateAction<IFile[]>>;
     isLoading: boolean;
+    setIsLoading: React.Dispatch<React.SetStateAction<Set<number> | undefined>>;
     isFilesError: boolean;
+    setIsFilesError: React.Dispatch<React.SetStateAction<boolean>>;
+    setShowFiles: React.Dispatch<React.SetStateAction<boolean>>;
     options: {
         showSummary: boolean;
         setShowSummary: React.Dispatch<React.SetStateAction<boolean>>;
@@ -20,20 +22,20 @@ const PrintOptionsDialog: React.FC<{
         setShowFiles: React.Dispatch<React.SetStateAction<boolean>>;
     };
     onClick: React.MouseEventHandler<HTMLButtonElement>;
-}> = ({ open, handleClose, files, setFiles, isLoading, isFilesError, onClick, options }) => {
-    // React.useEffect(() => {
-    //     let timeoutId;
-    //     if (isLoading) {
-    //         timeoutId = setTimeout(() => {
-    //             toast.error(i18next.t('errorPage.filePrintError'));
-    //             setFiles([]);
-    //         }, 60000);
-    //     }
+}> = ({ open, handleClose, files, isLoading, setIsLoading, isFilesError, setIsFilesError, setShowFiles, onClick, options }) => {
+    // const timer = React.useRef<ReturnType<typeof setTimeout>>();
 
+    // React.useEffect(() => {
+    //     timer.current = setTimeout(() => {
+    //         toast.error(i18next.t('errorPage.filePrintError'));
+    //         setShowFiles(false);
+    //         setIsLoading(undefined);
+    //         setIsFilesError(false);
+    //     }, 5000);
     //     return () => {
-    //         clearTimeout(timeoutId);
+    //         clearTimeout(timer.current);
     //     };
-    // }, [isLoading, setFiles]);
+    // }, [setIsFilesError, setIsLoading, setShowFiles, options.setShowFiles]);
 
     return (
         <Dialog open={open} onClose={handleClose}>
