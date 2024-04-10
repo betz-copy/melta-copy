@@ -604,38 +604,22 @@ export class EntityManager {
         });
     }
 
-    static async updateEntityProperties(transaction: Transaction, entityId: string, key: string, serialCurrent: number) {
-        const updateQuery = `
-        MATCH (e {_id: '${entityId}'}) 
-        SET e.${key} = toFloat(${serialCurrent})
-        RETURN count(e)`;
-        return runInTransactionAndNormalize(transaction, updateQuery, normalizeResponseCount);
-    }
-
     static async updateNewSerialNumberFields(templateId: string, { newSerialNumberFields }) {
-        const updatePromises: Promise<number>[] = [];
-        await Neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
-            const getAllInstancesByTemplateIdQuery = `
-            MATCH (e: \`${templateId}\`) 
-            RETURN e
-            ORDER BY e.createdAt`;
-            const result = await transaction.run(getAllInstancesByTemplateIdQuery, { templateId });
+        return Neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
+            const numOfEntitiesUpdated = `
+            MATCH (n: \`${templateId}\`) 
+            WITH n
+            ORDER BY n.createdAt
+            WITH collect(n) AS entities
+            UNWIND range(0, size(entities)-1) AS index
+            WITH entities[index] AS currentEntity,  index AS currentIndex
+            SET ${Object.entries(newSerialNumberFields)
+                .map(([key, value]) => `\`currentEntity\`.${key} = toFloat(currentIndex + ${value})`)
+                .join(', ')}
+            RETURN count(currentEntity) AS numEntitiesUpdated`;
 
-            // eslint-disable-next-line no-restricted-syntax
-            for (const [key, value] of Object.entries(newSerialNumberFields)) {
-                let serialCurrent = value as number;
-
-                result.records.forEach((record) => {
-                    const entityId: string = record.get('e').properties._id;
-
-                    // eslint-disable-next-line no-plusplus
-                    updatePromises.push(this.updateEntityProperties(transaction, entityId, key, serialCurrent++));
-                });
-            }
+            return runInTransactionAndNormalize(transaction, numOfEntitiesUpdated, normalizeResponseCount);
         });
-        const updatedEntitiesResult = await Promise.all(updatePromises);
-
-        return updatedEntitiesResult.length / Object.keys(newSerialNumberFields).length;
     }
 }
 
