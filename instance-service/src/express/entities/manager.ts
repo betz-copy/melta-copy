@@ -617,7 +617,6 @@ export class EntityManager {
                 .map(([key, value]) => `\`currentEntity\`.${key} = toFloat(currentIndex + ${value})`)
                 .join(', ')}
             RETURN count(currentEntity) AS numEntitiesUpdated`;
-
             return runInTransactionAndNormalize(transaction, numOfEntitiesUpdated, normalizeResponseCount);
         });
     }
