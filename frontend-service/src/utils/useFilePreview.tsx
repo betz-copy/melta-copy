@@ -16,9 +16,6 @@ export const useFilePreview = (fileId: string, contentType: string) => {
             refetchOnMount: false,
             retry: false,
             enabled: false,
-            // onError: () => {
-            //     toast.error(i18next.t('errorPage.filePrintError'));
-            // },
         },
     );
 };

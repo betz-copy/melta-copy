@@ -131,7 +131,7 @@ export default {
         activeEntity: ' פעיל',
         preview: 'תצוגה מקדימה אינה זמינה',
         fileDownloadError: 'נכשל להוריד קובץ, נסה שנית או פנה לתמיכה',
-        filePrintError: 'נכשל לפתוח קובץ להדפסה, נסה שנית או פנה לתמיכה',
+        filePrintError: 'נכשל לפתוח קובץ להדפסה, נסה שנית ללא קבצים',
     },
     addRelationshipDialog: {
         title: 'הוסף קשר',

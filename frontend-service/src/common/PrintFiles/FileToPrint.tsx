@@ -2,9 +2,9 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Box, Grid } from '@mui/material';
 import { Document, Page, pdfjs } from 'react-pdf';
 import { UseQueryResult } from 'react-query';
-import { isImage } from '../../../../common/FilePreview/PreviewDialog';
-import FlexBox from '../../../../common/FlexBox';
-import { IFile } from '../../../../interfaces/entities';
+import { isImage } from '../FilePreview/PreviewDialog';
+import FlexBox from '../FlexBox';
+import { IFile } from '../../interfaces/entities';
 
 pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.js';
 

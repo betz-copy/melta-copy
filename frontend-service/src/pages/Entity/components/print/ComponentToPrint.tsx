@@ -7,38 +7,7 @@ import { IEntityExpanded, IFile } from '../../../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { EntityComponentToPrint } from './EntityComponentToPrint';
 import { IConnectionTemplateOfExpandedEntity } from '../..';
-import { FileToPrint } from './FileToPrint';
-import { useFilePreview } from '../../../../utils/useFilePreview';
-
-const FileData: React.FC<{
-    file: IFile;
-    isFilesLoading: Set<number> | undefined;
-    setIsFilesLoading: React.Dispatch<React.SetStateAction<Set<number> | undefined>>;
-    index: number;
-    setIsFilesError: React.Dispatch<React.SetStateAction<boolean>>;
-}> = ({ file, isFilesLoading, setIsFilesLoading, index, setIsFilesError }) => {
-    const filePreview = useFilePreview(file.id, file.type);
-    const { data, refetch, isLoading, isError } = filePreview;
-    if (!data) {
-        refetch();
-    }
-
-    if (isError) {
-        setIsFilesError(true);
-    }
-
-    if (isLoading && !isFilesLoading?.has(index)) {
-        const newLoadingSet = new Set(isFilesLoading);
-        newLoadingSet.add(index);
-        setIsFilesLoading(newLoadingSet);
-    }
-    if (!isLoading && isFilesLoading?.has(index)) {
-        const newLoadingSet = new Set(isFilesLoading);
-        newLoadingSet.delete(index);
-        setIsFilesLoading(newLoadingSet);
-    }
-    return <FileToPrint file={file} key={`${file.id}${file.name}`} filePreview={filePreview} />;
-};
+import { FileData } from '../../../../common/PrintFiles/FileData';
 
 const ComponentToPrint = React.forwardRef<
     HTMLDivElement,

@@ -10,43 +10,14 @@ import { useFilePreview } from '../../../utils/useFilePreview';
 import { IMongoProcessInstancePopulated, Status } from '../../../interfaces/processes/processInstance';
 import { IMongoProcessTemplatePopulated } from '../../../interfaces/processes/processTemplate';
 import { StatusDisplay } from '../../../common/wizards/processInstance/ProcessSummaryStep/ProcessStatus';
-import { FileToPrint } from '../../Entity/components/print/FileToPrint';
+import { FileToPrint } from '../../../common/PrintFiles/FileToPrint';
 import ProcessSummary from '../../../common/wizards/processInstance/ProcessSummaryStep';
 import { ProcessComponentToPrint, StepComponentToPrint } from './ProcessComponentToPrint';
 import { IPermissionsOfUser } from '../../../services/permissionsService';
 import { getStepTemplateByStepInstance } from '../../../utils/processWizard/steps';
 import { getProcessByIdRequest } from '../../../services/processesService';
 import { ProcessDetailsValues } from '../../../common/wizards/processInstance/ProcessDetails';
-
-const FileData: React.FC<{
-    file: IFile;
-    isFilesLoading: Set<number> | undefined;
-    setIsFilesLoading: React.Dispatch<React.SetStateAction<Set<number> | undefined>>;
-    index: number;
-    setIsFilesError: React.Dispatch<React.SetStateAction<boolean>>;
-}> = ({ file, isFilesLoading, setIsFilesLoading, index, setIsFilesError }) => {
-    const filePreview = useFilePreview(file.id, file.type);
-    const { data, refetch, isLoading, isError } = filePreview;
-    if (!data) {
-        refetch();
-    }
-
-    if (isError) {
-        setIsFilesError(true);
-    }
-
-    if (isLoading && !isFilesLoading?.has(index)) {
-        const newLoadingSet = new Set(isFilesLoading);
-        newLoadingSet.add(index);
-        setIsFilesLoading(newLoadingSet);
-    }
-    if (!isLoading && isFilesLoading?.has(index)) {
-        const newLoadingSet = new Set(isFilesLoading);
-        newLoadingSet.delete(index);
-        setIsFilesLoading(newLoadingSet);
-    }
-    return <FileToPrint file={file} key={`${file.id}${file.name}`} filePreview={filePreview} />;
-};
+import { FileData } from '../../../common/PrintFiles/FileData';
 
 const ComponentToPrint = React.forwardRef<
     HTMLDivElement,

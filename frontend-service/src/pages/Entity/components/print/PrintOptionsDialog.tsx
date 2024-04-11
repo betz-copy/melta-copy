@@ -60,20 +60,6 @@ const PrintOptionsDialog: React.FC<{
     onClick,
     options,
 }) => {
-    // const timer = React.useRef<ReturnType<typeof setTimeout>>();
-
-    // React.useEffect(() => {
-    //     timer.current = setTimeout(() => {
-    //         toast.error(i18next.t('errorPage.filePrintError'));
-    //         setSelectedFiles([]);
-    //         setIsFilesError(false);
-    //         setIsFilesLoading(undefined);
-    //     }, 5000);
-    //     return () => {
-    //         clearTimeout(timer.current);
-    //     };
-    // }, [setIsFilesError, setIsFilesLoading, setSelectedFiles, selectedFiles]);
-
     return (
         <Dialog open={open} onClose={handleClose}>
             <DialogTitle paddingLeft="4px">
@@ -177,10 +163,10 @@ const PrintOptionsDialog: React.FC<{
                 <Button
                     onClick={(ev) => {
                         if (isFilesError) {
-                            toast.error(i18next.t('errorPage.filePrintError'));
                             setSelectedFiles([]);
                             setIsFilesError(false);
                             setIsFilesLoading(undefined);
+                            toast.error(i18next.t('errorPage.filePrintError'));
                         } else {
                             handleClose();
                             onClick(ev);

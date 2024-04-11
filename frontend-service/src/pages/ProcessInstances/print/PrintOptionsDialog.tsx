@@ -23,20 +23,6 @@ const PrintOptionsDialog: React.FC<{
     };
     onClick: React.MouseEventHandler<HTMLButtonElement>;
 }> = ({ open, handleClose, files, isLoading, setIsLoading, isFilesError, setIsFilesError, setShowFiles, onClick, options }) => {
-    // const timer = React.useRef<ReturnType<typeof setTimeout>>();
-
-    // React.useEffect(() => {
-    //     timer.current = setTimeout(() => {
-    //         toast.error(i18next.t('errorPage.filePrintError'));
-    //         setShowFiles(false);
-    //         setIsLoading(undefined);
-    //         setIsFilesError(false);
-    //     }, 5000);
-    //     return () => {
-    //         clearTimeout(timer.current);
-    //     };
-    // }, [setIsFilesError, setIsLoading, setShowFiles, options.setShowFiles]);
-
     return (
         <Dialog open={open} onClose={handleClose}>
             <DialogTitle paddingLeft="4px">
@@ -73,6 +59,9 @@ const PrintOptionsDialog: React.FC<{
                 <Button
                     onClick={(ev) => {
                         if (isFilesError) {
+                            setShowFiles(false);
+                            setIsLoading(undefined);
+                            setIsFilesError(false);
                             toast.error(i18next.t('errorPage.filePrintError'));
                         } else {
                             handleClose();
