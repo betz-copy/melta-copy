@@ -66,6 +66,7 @@ export default {
         deleteOrArcivhed: 'מחיקה או שליחה לארכיון',
         unArchived: 'הוצא מארכיון',
         archived: 'הכנס לארכיון',
+        loading: 'טוען',
     },
     entityPage: {
         deleteRelationshipPopoverText: 'מחק קשר',
@@ -84,6 +85,7 @@ export default {
         disabledSuccessfully: 'ישות הושבתה בהצלחה',
         activatedSuccessfully: 'ישות הופעלה בהצלחה',
         disabledEntity: 'ישות לא פעילה',
+        linkToEntityPage: 'למידע נוסף',
         activityLog: {
             deleteRelationship: 'מחק קשר מסוג',
             createRelationship: 'יצר קשר מסוג ',

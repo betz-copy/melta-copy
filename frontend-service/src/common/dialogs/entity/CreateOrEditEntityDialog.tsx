@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Grid, Card, CardContent, CircularProgress, Box, Divider, Button, IconButton } from '@mui/material';
+import { Grid, Card, CardContent, CircularProgress, Box, Divider, Button, IconButton, Link } from '@mui/material';
 import { Done as DoneIcon, Clear as ClearIcon, Close as CloseIcon } from '@mui/icons-material';
 import { useMutation } from 'react-query';
 import i18next from 'i18next';
@@ -70,7 +70,7 @@ const CreateOrEditEntityDetails: React.FC<{
             updateEntityRequestForMultiple(entity.properties._id, newEntityData, ignoredRules),
         {
             onSuccess: (data) => {
-                toast.success(i18next.t('wizard.entity.editedSuccefully'));
+                // toast.success(i18next.t('wizard.entity.editedSuccefully'));
                 onSuccessUpdate(data);
                 onCancelUpdate();
             },
@@ -89,7 +89,7 @@ const CreateOrEditEntityDetails: React.FC<{
                         updateEntityFormData: newEntityDate,
                     });
                 }
-                toast.error(i18next.t('wizard.entity.failedToEdit'));
+                // toast.error(i18next.t('wizard.entity.failedToEdit'));
             },
         },
     );
@@ -99,18 +99,17 @@ const CreateOrEditEntityDetails: React.FC<{
         (entityToCreate: EntityWizardValues) => createEntityRequest(entityToCreate),
         {
             onSuccess: (newEntity) => {
-                toast.success(i18next.t('wizard.entity.createdSuccessfully'));
+                // toast.success(i18next.t('wizard.entity.createdSuccessfully'));
                 onCancelUpdate();
-                navigate(`/entity/${newEntity.properties._id}`);
+                // navigate(`/entity/${newEntity.properties._id}`);
             },
             onError: (err: AxiosError, { template }: EntityWizardValues) => {
                 const errorMetadata = err.response?.data?.metadata;
                 if (errorMetadata?.errorCode === errorCodes.failedConstraintsValidation) {
                     toastConstraintValidationError(errorMetadata, template);
-                    return;
                 }
 
-                toast.error(i18next.t('wizard.entity.failedToCreate'));
+                // toast.error(i18next.t('wizard.entity.failedToCreate'));
             },
         },
     );
@@ -118,8 +117,42 @@ const CreateOrEditEntityDetails: React.FC<{
         <Formik
             initialValues={{ properties: fieldProperties, attachmentsProperties: fileProperties, template: entityTemplate }}
             onSubmit={async (values) => {
-                if (isEditMode) updateMutation({ newEntityData: values });
-                else createMutation(values);
+                let mutationPromise;
+                if (isEditMode) {
+                    mutationPromise = updateMutation({ newEntityData: values });
+                } else {
+                    mutationPromise = createMutation(values);
+                }
+
+                console.log({ values });
+                // let sumFilesSizes = 0;
+                // values.attachmentsProperties.forEach((data) => {
+                //     if (data.type === 'array') {
+                //         data.forEach((file) => {
+                //             sumFilesSizes += file.size;
+                //         });
+                //     } else sumFilesSizes += data.size;
+                // });
+
+                // if (sumFilesSizes > MAX_FILE_BYTE_SIZE)
+                const loadingToastPromise = new Promise<void>((resolve) => {
+                    toast.promise(
+                        mutationPromise,
+                        {
+                            pending: `${values.properties.name} ${i18next.t('actions.loading')}`,
+                            success: isEditMode
+                                ? i18next.t('wizard.entity.editedSuccefully')
+                                : `${i18next.t('wizard.entity.createdSuccessfully')}
+                                ${(<Link href={`/entity/${values.properties._id}`}>{i18next.t('entityPage.linkToEntityPage')}</Link>)}`,
+                            error: isEditMode ? i18next.t('wizard.entity.failedToEdit') : i18next.t('wizard.entity.failedToCreate'),
+                        },
+                        { autoClose: false },
+                    );
+                    mutationPromise.finally(() => {
+                        resolve();
+                    });
+                });
+                await loadingToastPromise;
             }}
             validate={(values) => {
                 const nonAttachmentsSchema = filterAttachmentsAndEntitiesRefFromPropertiesSchema(values.template.properties);
@@ -291,14 +324,16 @@ const CreateOrEditEntityDetails: React.FC<{
                                                     style={{ borderRadius: '7px' }}
                                                     type="submit"
                                                     variant="contained"
+                                                    onClick={() => onCancelUpdate()}
                                                     startIcon={
-                                                        isUpdateLoading || isCreateLoading ? (
-                                                            <CircularProgress sx={{ color: 'white' }} size={20} />
-                                                        ) : (
-                                                            <DoneIcon />
-                                                        )
+                                                        // isUpdateLoading || isCreateLoading ? (
+                                                        //     <CircularProgress sx={{ color: 'white' }} size={20} />
+                                                        // ) : (
+                                                        <DoneIcon />
+                                                        // )
                                                     }
-                                                    disabled={!dirty || isUpdateLoading || isCreateLoading}
+                                                    // disabled={!dirty || isUpdateLoading || isCreateLoading}
+                                                    disabled={!dirty}
                                                 >
                                                     {i18next.t('entityPage.save')}
                                                 </Button>

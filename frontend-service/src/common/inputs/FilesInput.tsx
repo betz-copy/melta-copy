@@ -46,6 +46,8 @@ const FilesInput: React.FC<FilesInputProps> = ({ files, onDropFiles, onDeleteFil
         };
     }, []);
 
+    console.log({ files });
+
     const inputStyle = {
         border: isDragActive ? `2px dashed ${theme.palette.primary.main}` : '1px solid #c4c4c4',
         borderRadius: '10px',
