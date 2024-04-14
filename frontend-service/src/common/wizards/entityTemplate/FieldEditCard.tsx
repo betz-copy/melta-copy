@@ -27,7 +27,7 @@ import { Draggable } from 'react-beautiful-dnd';
 import i18next from 'i18next';
 import isEqual from 'lodash.isequal';
 import EditIcon from '@mui/icons-material/Edit';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
+import {  ThemeProvider } from '@mui/material/styles';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { dateNotificationTypes, validPropertyTypes } from './AddFields';
@@ -38,7 +38,7 @@ import { deleteEnumFieldRequest, updateEnumFieldRequest } from '../../../service
 import { AreYouSureDialog } from '../../dialogs/AreYouSureDialog';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { MeltaTooltip } from '../../MeltaTooltip';
-import { areYouSure } from '../../../theme';
+import { areYouSureTheme } from '../../../theme';
 
 const UniqueCheckboxTooltipTitle = (
     <Box sx={{ whiteSpace: 'pre-wrap' }}>
@@ -511,7 +511,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                         )}
                                                                     </Box>
                                                                 </Popover>
-                                                                <ThemeProvider theme={areYouSure}>
+                                                                <ThemeProvider theme={areYouSureTheme}>
                                                                     <AreYouSureDialog
                                                                         open={open}
                                                                         handleClose={() => {
@@ -521,7 +521,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                             handleSaveEdit(editIndex!);
                                                                         }}
                                                                         isLoading={isLoading}
-                                                                        message={`${i18next.t('areYouSureDialog.disclaimer')} ${entity}`}
+                                                                        message={`${i18next.t('areYouSureDialog.enumChangeDisclaimer')} ${entity}`}
                                                                     />
                                                                 </ThemeProvider>
                                                             </Box>

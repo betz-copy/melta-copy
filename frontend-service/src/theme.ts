@@ -18,7 +18,7 @@ const basicTheme: ThemeOptions = {
 //     height: '24px',
 // };
 
-export const areYouSure = createTheme({
+export const areYouSureTheme = createTheme({
     ...basicTheme,
     components: {
         MuiBackdrop: {

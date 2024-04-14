@@ -451,7 +451,7 @@ export class TemplatesManager {
         return EntityTemplateManagerService.updateEntityTemplateStatus(id, disabledStatus);
     }
 
-    static async prepareUpdateOrDelete(
+    static async prepareUpdateOrDeleteEnumFieldValue(
         id: string,
         values: IUpdateOrDeleteEnumFieldReqData,
         fieldValue: string,
@@ -538,14 +538,14 @@ export class TemplatesManager {
         }
     }
 
-    static async updateEntityFieldValue(
+    static async updateEntityEnumFieldValue(
         id: string,
         field: string,
         values: IUpdateOrDeleteEnumFieldReqData,
         fieldValue: string,
     ): Promise<IMongoEntityTemplatePopulated> {
         const template = await EntityTemplateManagerService.getEntityTemplateById(id);
-        const templateWithoutProperties = await TemplatesManager.prepareUpdateOrDelete(id, values, fieldValue, template, true, field);
+        const templateWithoutProperties = await TemplatesManager.prepareUpdateOrDeleteEnumFieldValue(id, values, fieldValue, template, true, field);
         const index = values.options.indexOf(fieldValue);
         try {
             await InstanceManagerService.updateEnumFieldOfEntity(id, field, fieldValue, values);
@@ -564,15 +564,20 @@ export class TemplatesManager {
         return TemplatesManager.populateTemplateConstraints(templateWithoutProperties, requiredConstraints, uniqueConstraints);
     }
 
-    static async deleteEntityFieldValue(id: string, values: IUpdateOrDeleteEnumFieldReqData, fieldValue: string) {
-        const data = await InstanceManagerService.getIfValuefieldIsUsed(id, fieldValue, values.name, values.type);
+    private static async checkFieldValueUsage(id: string, fieldValue: string, fieldName: string, fieldType: string): Promise<void> {
+        const data = await InstanceManagerService.getIfValuefieldIsUsed(id, fieldValue, fieldName, fieldType);
         const cantDeleteFieldValue = Boolean(data);
 
         if (cantDeleteFieldValue) {
             throw new ServiceError(400, 'cant remove used values');
         }
+    }
+            
+        
+    static async deleteEntityEnumFieldValue(id: string, values: IUpdateOrDeleteEnumFieldReqData, fieldValue: string) {
+        await this.checkFieldValueUsage(id, fieldValue, values.name, values.type);
         const template = await EntityTemplateManagerService.getEntityTemplateById(id);
-        const updatedEntityTemplate = await TemplatesManager.prepareUpdateOrDelete(id, values, fieldValue, template, false, '');
+        const updatedEntityTemplate = await TemplatesManager.prepareUpdateOrDeleteEnumFieldValue(id, values, fieldValue, template, false, '');
 
         const { requiredConstraints, uniqueConstraints } = await InstanceManagerService.getConstraintsOfTemplate(id);
         return TemplatesManager.populateTemplateConstraints(updatedEntityTemplate, requiredConstraints, uniqueConstraints);

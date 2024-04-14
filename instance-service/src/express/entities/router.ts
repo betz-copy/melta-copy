@@ -48,7 +48,7 @@ entityRouter.post(
     wrapController(EntityController.searchEntitiesBatch),
 );
 
-entityRouter.put('/update-enum-field/:id', ValidateRequest(updateEnumFieldRequestSchema), wrapController(EntityController.updateEnumField));
+entityRouter.put('/update-enum-field/:id', ValidateRequest(updateEnumFieldRequestSchema), wrapController(EntityController.updateEnumFieldValue));
 entityRouter.get('/get-is-field-used/:id', ValidateRequest(getIfValuefieldIsUsedRequestSchema), wrapController(EntityController.getIsFieldUsed));
 
 

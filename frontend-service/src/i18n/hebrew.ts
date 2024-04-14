@@ -194,7 +194,7 @@ export default {
         title: 'האם אתה בטוח?',
         yes: 'אשר',
         no: 'ביטול',
-        disclaimer: 'שים לב! פעולה זו תגרור לשינוי הערך והצבע בכלל הישויות מסוג  ',
+        enumChangeDisclaimer: 'שים לב! פעולה זו תגרור לשינוי הערך בכלל הישויות מסוג  ',
     },
     userAutocomplete: {
         label: 'משתמש',

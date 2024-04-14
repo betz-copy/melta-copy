@@ -43,14 +43,14 @@ export default class TemplatesController {
         res.json(await TemplatesManager.updateEntityTemplateStatus(req.params.id, req.body.disabled));
     }
 
-    static async updateEntityFieldValue(req: Request, res: Response) {
+    static async updateEntityEnumFieldValue(req: Request, res: Response) {
         const { field, partialInput: values, fieldValue } = req.body;
-        res.json(await TemplatesManager.updateEntityFieldValue(req.params.id, field, values, fieldValue));
+        res.json(await TemplatesManager.updateEntityEnumFieldValue(req.params.id, field, values, fieldValue));
     }
 
-    static async deleteEntityFieldValue(req: Request, res: Response) {
+    static async deleteEntityEnumFieldValue(req: Request, res: Response) {
         const { fieldValue, partialInput: field } = req.body;
-        res.json(await TemplatesManager.deleteEntityFieldValue(req.params.id, field, fieldValue));
+        res.json(await TemplatesManager.deleteEntityEnumFieldValue(req.params.id, field, fieldValue));
     }
 
     // relationshipTemplates

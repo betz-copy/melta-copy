@@ -1,5 +1,5 @@
 import Joi from 'joi';
-import { MongoIdSchema, ColorSchema, ExtendedJoi, iconFileSchema, commonFormInputSchema } from '../../utils/joi';
+import { MongoIdSchema, ColorSchema, ExtendedJoi, iconFileSchema } from '../../utils/joi';
 
 // POST /api/templates/categories
 export const createCategorySchema = Joi.object({

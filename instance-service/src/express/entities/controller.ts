@@ -50,9 +50,9 @@ class EntityController {
         res.json(await EntityManager.updateEntityById(req.params.id, req.body.properties, entityTemplate, req.body.ignoredRules));
     }
 
-    static async updateEnumField(req: Request, res: Response) {
+    static async updateEnumFieldValue(req: Request, res: Response) {
         const { newValue, oldValue, field } = req.body;
-        res.json(await EntityManager.updateEnumField(req.params.id, newValue, oldValue, field));
+        res.json(await EntityManager.updateEnumFieldValue(req.params.id, newValue, oldValue, field));
     }
 
     static async getIsFieldUsed(req: Request, res: Response) {

@@ -84,13 +84,13 @@ templatesRouter.put(
     '/entities/update-enum-field/:id',
     ValidateRequest(updateFieldValueSchema),
     wrapMiddleware(validateUserCanUpdateOrDeleteEntityTemplate),
-    wrapController(TemplatesController.updateEntityFieldValue),
+    wrapController(TemplatesController.updateEntityEnumFieldValue),
 );
 templatesRouter.patch(
     '/entities/delete-enum-field/:id',
     ValidateRequest(deleteFieldValueSchema),
     wrapMiddleware(validateUserCanUpdateOrDeleteEntityTemplate),
-    wrapController(TemplatesController.deleteEntityFieldValue),
+    wrapController(TemplatesController.deleteEntityEnumFieldValue),
 );
 templatesRouter.post(
     '/entities',

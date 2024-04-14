@@ -15,7 +15,7 @@ const AreYouSureDialog: React.FC<{
         <Dialog open={open} onClose={handleClose}>
             <Backdrop open={isLoading} style={{ zIndex: 999, backgroundColor: 'transparent' }} />
             <DialogTitle>
-                <div>{title}</div>
+                {title}
                 {message && (
                     <Typography variant="caption" color="textSecondary" width="100%">
                         {message}

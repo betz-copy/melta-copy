@@ -213,23 +213,18 @@ export class EntityManager {
     }
 
     static async getIsFieldUsed(id: string, fieldValue: string, fieldName: string, type: string){
-        try {
-            let node;
-            if(type === "enumArray"){
-                node = await Neo4jClient.readTransaction(
-                    `MATCH (n: \`${id}\`) WHERE '${fieldValue}' IN n.${fieldName} RETURN n`,
-                    normalizeReturnedEntity('singleResponse'),
-                );       
-            }
-            else {node = await Neo4jClient.readTransaction(
-                `MATCH (n: \`${id}\`) WHERE n.${fieldName} = '${fieldValue}' RETURN n`,
+        let node;
+        if(type === "enumArray"){
+            node = await Neo4jClient.readTransaction(
+                `MATCH (e: \`${id}\`) WHERE '${fieldValue}' IN e.${fieldName} RETURN e`,
                 normalizeReturnedEntity('singleResponse'),
-            );    }    
-
-            return node;
-        } catch (error) {
-            throw error;
+            );       
         }
+        else {node = await Neo4jClient.readTransaction(
+            `MATCH (e: \`${id}\`) WHERE e.${fieldName} = '${fieldValue}' RETURN e`,
+            normalizeReturnedEntity('singleResponse'),
+        );    }    
+        return node;
     }
 
     static async deleteByTemplateId(templateId: string) {
@@ -437,23 +432,23 @@ export class EntityManager {
         }).catch(EntityManager.throwServiceErrorIfFailedConstraintsValidation); // constraint validation is performed on end of transaction
     }
 
-    static async updateEnumField(id: string, newValue: string, oldValue: string, field: any) {
+    static async updateEnumFieldValue(id: string, newValue: string, oldValue: string, field: any) {
         let node;
         try {
             if(field.type === "enumArray"){
                 node = await Neo4jClient.writeTransaction(
-                    `MATCH (p: \`${id}\`)
-                    SET p.${field.name} = [val IN p.${field.name} WHERE val <> '${oldValue}'] + ['${newValue}']
-                    RETURN p`,
+                    `MATCH (e: \`${id}\`)
+                    SET e.${field.name} = [val IN e.${field.name} WHERE val <> '${oldValue}'] + ['${newValue}']
+                    RETURN e`,
                     normalizeReturnedEntity('singleResponse')
                 );
                                
             }
             else { node = await Neo4jClient.writeTransaction(
-                `MATCH (p: \`${id}\`)
-                WHERE p.${field.name} = '${oldValue}'
-                SET p.${field.name} = '${newValue}'
-                RETURN p`,
+                `MATCH (e: \`${id}\`)
+                WHERE e.${field.name} = '${oldValue}'
+                SET e.${field.name} = '${newValue}'
+                RETURN e`,
                 normalizeReturnedEntity('singleResponse'),
             );}
 
