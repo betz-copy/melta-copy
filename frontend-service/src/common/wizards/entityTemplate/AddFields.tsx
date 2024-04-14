@@ -65,7 +65,7 @@ const addFieldsSchema = Yup.object({
     ),
 }).test('uniqueProperties', entityTemplateUniqueProperties);
 
-const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEditMode' | 'setBlock'>> = ({
+const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEditMode' | 'setBlock' | 'isError' | 'setIsError'>> = ({
     values,
     touched,
     errors,
@@ -73,6 +73,8 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
     initialValues,
     isEditMode,
     setBlock,
+    isError,
+    setIsError,
 }) => {
     const { data: areThereInstancesByTemplateIdResponse } = useQuery(
         ['areThereInstancesByTemplateId', (values as EntityTemplateWizardValues & { _id: string })._id],
@@ -135,6 +137,8 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
                                             areThereAnyInstances={areThereAnyInstances}
                                             isEditMode={isEditMode}
                                             setBlock={setBlock}
+                                            isError={isError}
+                                            setIsError={setIsError}
                                             title={
                                                 itemId === 'properties'
                                                     ? i18next.t('wizard.entityTemplate.properties')

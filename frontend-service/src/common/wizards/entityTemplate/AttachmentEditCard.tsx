@@ -16,7 +16,7 @@ interface AttachmentEditCardProps {
     touched?: FormikTouched<CommonFormInputProperties>;
     errors?: FormikErrors<CommonFormInputProperties>;
     onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-    remove: (index: number) => any;
+    remove: (index: number, isNewProperty: boolean) => any;
     supportChangeToRequiredWithInstances: boolean;
 }
 
@@ -108,7 +108,7 @@ export const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
                                             )}
                                         </Box>
 
-                                        <IconButton onClick={() => remove(index)}>
+                                        <IconButton onClick={() => remove(index, isNewProperty)}>
                                             <DeleteIcon />
                                         </IconButton>
                                     </Grid>

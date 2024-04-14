@@ -47,7 +47,7 @@ export interface FieldEditCardProps {
     errors?: FormikErrors<CommonFormInputProperties>;
     setFieldValue: (field: keyof CommonFormInputProperties, value: any) => void;
     onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-    remove: (index: number) => any;
+    remove: (index: number, isnewProperty: boolean) => any;
     supportSerialNumberType: boolean;
     supportEntityReferenceType: boolean;
     supportChangeToRequiredWithInstances: boolean;
@@ -422,7 +422,8 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                 </MeltaTooltip>
                                             )}
                                         </Box>
-                                        <IconButton onClick={() => remove(index)} disabled={value.unique}>
+                                        disabled={isDisabled && value.unique}
+                                        <IconButton onClick={() => remove(index, isNewProperty)}>
                                             <DeleteIcon />
                                         </IconButton>
                                     </Grid>

@@ -1,4 +1,4 @@
-import React, { SetStateAction, useCallback, useRef, useState } from 'react';
+import React, { SetStateAction, useCallback, useEffect, useRef, useState } from 'react';
 import { Accordion, AccordionDetails, AccordionSummary, Box, Button, Grid, styled, Typography } from '@mui/material';
 import { DragDropContext, DraggableProvided, Droppable } from 'react-beautiful-dnd';
 import { v4 as uuid } from 'uuid';
@@ -11,12 +11,18 @@ import { MemoAttachmentEditCard } from './AttachmentEditCard';
 import { StepComponentHelpers } from '..';
 import { CommonFormInputProperties } from './commonInterfaces';
 import { AreYouSureDialog } from '../../dialogs/AreYouSureDialog';
+import { EntityTemplateWizardValues } from '.';
 
 export const FieldBlockAccordion = styled(Accordion)({
     width: '100%',
     boxShadow: '1px 1px 10px 2px rgb(0 0 0 / 20%), 0px 1px 1px 0px rgb(0 0 0 / 14%), 0px 1px 3px 0px rgb(0 0 0 / 12%)',
     marginBottom: '10px',
 });
+
+interface FormInputWithIndex {
+    index: number;
+    properties: CommonFormInputProperties;
+}
 
 interface FieldBlockProps<PropertiesType extends string, Values extends Record<PropertiesType, CommonFormInputProperties[]>> {
     propertiesType: PropertiesType;
@@ -26,6 +32,8 @@ interface FieldBlockProps<PropertiesType extends string, Values extends Record<P
     areThereAnyInstances: boolean;
     isEditMode: boolean;
     setBlock: StepComponentHelpers['setBlock'];
+    isError: StepComponentHelpers['isError'];
+    setIsError: StepComponentHelpers['setIsError'];
     title: string;
     addPropertyButtonLabel: string;
     touched: FormikTouched<Values> | undefined;
@@ -46,6 +54,8 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
     areThereAnyInstances,
     isEditMode,
     setBlock,
+    isError,
+    setIsError,
     title,
     addPropertyButtonLabel,
     touched,
@@ -73,6 +83,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
 }: React.PropsWithChildren<FieldBlockProps<PropertiesType, Values>>) => {
     // copy of values of formik in order to show changes on inputs fast (formik rerenders are slow)
     const [displayValues, setDisplayValues] = React.useState(values[propertiesType]);
+    const [removedProperties, setRemovedProperties] = useState<FormInputWithIndex[]>([]);
     const [showAreUSureDialogForRemoveProperty, setShowAreUSureDialogForRemoveProperty] = useState(false);
     const [selectedIndexToRemove, setSelectedIndexForRemove] = useState(-1);
 
@@ -109,21 +120,35 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
         updateFormik();
     };
 
-    const remove = (index: number) => {
-        if (areThereAnyInstances) {
+    const remove = (index: number, isNewProperty: Boolean) => {
+        if (areThereAnyInstances && !isNewProperty) {
             setShowAreUSureDialogForRemoveProperty(true);
             setSelectedIndexForRemove(index);
+            const displayValuesCopy = [...displayValuesRef.current] as Values[PropertiesType];
+
+            setRemovedProperties((prevRemovedProperties) => {
+                // Clone the previous array of properties and add the new value to it
+                const updatedProperties = [...prevRemovedProperties, { index, properties: displayValuesCopy[index] }];
+                return updatedProperties;
+            });
         } else onDeleteSure();
     };
 
-    const move = (src: number, dst: number) => {
+    const move = (dst: number, src?: number, prop?: CommonFormInputProperties) => {
         const displayValuesCopy = [...displayValuesRef.current] as Values[PropertiesType];
 
-        displayValuesCopy.splice(dst, 0, displayValuesCopy.splice(src, 1)[0]);
+        displayValuesCopy.splice(dst, 0, prop || displayValuesCopy.splice(src || 0, 1)[0]);
 
         setDisplayValues(displayValuesCopy);
         updateFormik();
     };
+
+    useEffect(() => {
+        if (isError) {
+            setIsError?.(false);
+            if (removedProperties.length > 0) removedProperties.forEach((prop, index) => move(prop.index + index, undefined, prop.properties));
+        }
+    }, [isError]);
 
     const setFieldDisplayValue = (index: number, field: keyof Values, value: any) => {
         const displayValuesCopy = [...displayValuesRef.current] as Values[PropertiesType];
@@ -244,7 +269,13 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
                 open={showAreUSureDialogForRemoveProperty}
                 handleClose={() => setShowAreUSureDialogForRemoveProperty(false)}
                 title={i18next.t('systemManagement.deleteField')}
-                body={<Typography>{i18next.t('systemManagement.warningOnDeleteField')}</Typography>}
+                // ${selectedIndexToRemove > -1 && displayValues[selectedIndexToRemove].title}
+                body={
+                    <Typography>{`${i18next.t('systemManagement.warningOnDeleteField')}
+                    ${i18next.t('systemManagement.continueWarningOnDeleteField')} ${
+                        (values as unknown as EntityTemplateWizardValues & { _id: string })._id
+                    }`}</Typography>
+                }
                 onYes={onDeleteSure}
             />
         </FieldBlockAccordion>

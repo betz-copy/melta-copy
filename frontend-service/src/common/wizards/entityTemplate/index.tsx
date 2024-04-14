@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { toast } from 'react-toastify';
 import i18next from 'i18next';
 import { useMutation, useQueryClient } from 'react-query';
@@ -63,7 +63,9 @@ const steps: StepsType<EntityTemplateWizardValues> = [
     },
     {
         label: i18next.t('wizard.entityTemplate.properties'),
-        component: (props, { isEditMode, setBlock }) => <AddFields {...props} isEditMode={isEditMode} setBlock={setBlock} />,
+        component: (props, { isEditMode, setBlock, isError, setIsError }) => (
+            <AddFields {...props} isEditMode={isEditMode} setBlock={setBlock} isError={isError} setIsError={setIsError} />
+        ),
         validationSchema: addFieldsSchema,
     },
 ];
@@ -84,6 +86,7 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
     },
     isEditMode = false,
 }) => {
+    const [isError, setIsError] = useState(false);
     const queryClient = useQueryClient();
     const { isLoading, mutateAsync } = useMutation(
         (enitiyTemplate: EntityTemplateWizardValues) =>
@@ -101,6 +104,7 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
                 handleClose();
             },
             onError: (error: AxiosError, enitiyTemplateValues) => {
+                setIsError(true);
                 const errorMetadata = error.response?.data?.metadata;
                 if (isEditMode && errorMetadata?.errorCode === errorCodes.failedToCreateConstraints) {
                     const { constraint }: { constraint: IConstraint } = errorMetadata;
@@ -147,7 +151,9 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
             initialValues={initialValues}
             initalStep={initalStep}
             isEditMode={isEditMode}
-            title={i18next.t('wizard.entityTemplate.title')}
+            isError={isError}
+            setIsError={setIsError}
+            title={isEditMode ? i18next.t('wizard.entityTemplate.editTitle') : i18next.t('wizard.entityTemplate.title')}
             steps={steps}
             isLoading={isLoading}
             submitFucntion={(values) => mutateAsync(values)}

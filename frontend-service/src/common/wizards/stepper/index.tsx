@@ -12,6 +12,8 @@ const Stepper = <T extends object>({
     isLoading,
     formikProps,
     isEditMode,
+    isError,
+    setIsError,
 }: {
     activeStep: number;
     handleBack: () => void;
@@ -19,6 +21,8 @@ const Stepper = <T extends object>({
     isLoading: boolean;
     formikProps: FormikProps<T>;
     isEditMode: boolean;
+    isError?: boolean;
+    setIsError?: React.Dispatch<React.SetStateAction<boolean>>;
 }): JSX.Element | null => {
     const [block, setBlock] = useState(false);
 
@@ -38,7 +42,7 @@ const Stepper = <T extends object>({
                 marginBottom="0.5rem"
                 marginTop="1rem"
             >
-                {steps[activeStep].component(formikProps, { isEditMode, setBlock })}
+                {steps[activeStep].component(formikProps, { isEditMode, setBlock, isError, setIsError })}
             </Grid>
             <StepperActions
                 handleBack={handleBack}
