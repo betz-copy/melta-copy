@@ -18,7 +18,12 @@ const permissionsRouter: Router = Router();
 const extractResponseLogData = (permissions: IPermission[]) => {
     return {
         performedOn: permissions[0].userId,
-        permissionsIds: permissions.map((permission) => permission._id),
+        permissionsData: permissions.map((permission) => ({
+            _id: permission._id,
+            category: permission.category,
+            resourceType: permission.resourceType,
+            scopes: permission.scopes,
+        })),
     };
 };
 
@@ -38,13 +43,7 @@ permissionsRouter.post(
     '/bulk',
     ValidateRequest(createPermissionsBulkRequestSchema),
     wrapMiddleware(validateUserIsPermissionsManager),
-    wrapController(
-        PermissionsController.createPermissionsBulk,
-        true,
-        [{ key: 'permissionsTocreate', path: 'body' }],
-        extractResponseLogData,
-        'permissions',
-    ),
+    wrapController(PermissionsController.createPermissionsBulk, true, [], extractResponseLogData, 'permissions'),
 );
 permissionsRouter.put(
     '/bulk',
