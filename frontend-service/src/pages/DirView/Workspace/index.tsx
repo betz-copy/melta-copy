@@ -12,7 +12,7 @@ import './actionMenu.css';
 
 interface IWorkspaceProps {
     workspace: IWorkspace;
-    openWizard: (workspace: IWorkspace) => void;
+    openWizard?: (workspace: IWorkspace) => void;
     setMovedWorkspace: (workspace: IWorkspace | null) => void;
     isMovedWorkspace?: boolean;
 }
@@ -105,7 +105,7 @@ export const Workspace: React.FC<IWorkspaceProps> = ({
 
                     <ActionMenu
                         workspace={minimalWorkspace}
-                        openEditWizard={() => openWizard(minimalWorkspace)}
+                        openEditWizard={() => openWizard?.(minimalWorkspace)}
                         setMovedWorkspace={setMovedWorkspace}
                         isMovedWorkspace={isMovedWorkspace ?? false}
                     />

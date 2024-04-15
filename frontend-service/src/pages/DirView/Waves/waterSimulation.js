@@ -176,7 +176,7 @@ export const waterSimulation = () => {
             grid = [];
             textures = [];
 
-            ctx = canvas.getContext('2d', { willReadFrequently: true });
+            ctx = canvas.getContext('2d');
             canvas.width = canvas.clientWidth;
             canvas.height = canvas.clientHeight;
             width = canvas.width;

@@ -58,14 +58,7 @@ const DirView: React.FC<{ params: { '*': string } }> = ({ params }) => {
                                 ),
                             )}
 
-                            {movedWorkspace && (
-                                <Workspace
-                                    workspace={movedWorkspace}
-                                    openWizard={(selectedWorkspace) => setWizardDialogState({ isWizardOpen: true, workspace: selectedWorkspace })}
-                                    setMovedWorkspace={setMovedWorkspace}
-                                    isMovedWorkspace
-                                />
-                            )}
+                            {movedWorkspace && <Workspace workspace={movedWorkspace} setMovedWorkspace={setMovedWorkspace} isMovedWorkspace />}
                         </Box>
                     </Grid>
                 </Grid>

@@ -1,4 +1,5 @@
 import { environment } from '../globals';
+import { ActionTypes } from '../interfaces/ruleBreaches/actionMetadata';
 import { WorkspaceTypes } from '../interfaces/workspaces';
 import { agGridLocaleText } from '../utils/agGrid/agGridLocaleText';
 import { muiDatePickersLocaleText } from '../utils/datePickers';
@@ -603,8 +604,8 @@ export default {
     },
     ruleBreachInfo: {
         relActionInfo: {
-            creation: 'יצירת',
-            deletion: 'מחיקת',
+            [ActionTypes.CreateRelationship]: 'יצירת',
+            [ActionTypes.DeleteRelationship]: 'מחיקת',
             relationship: 'קשר',
             fromEntity: 'מישות',
             toEntity: 'לישות',

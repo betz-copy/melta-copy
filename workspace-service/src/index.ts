@@ -10,7 +10,7 @@ const { mongo, service } = config;
 const handleRootDocument = async () => {
     console.log('Checking if root document exists...');
 
-    if ((await WorkspacesModel.find({}).limit(1)).length) {
+    if (await WorkspacesModel.findOne({})) {
         console.log('Root document exists, skipping...');
         return;
     }

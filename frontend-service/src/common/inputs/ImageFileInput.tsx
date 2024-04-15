@@ -149,9 +149,7 @@ const FileInput: React.FC<FileInputProps> = ({
                                         borderRadius: '7px',
                                         marginLeft: '5px',
                                     }}
-                                    onClick={(event) => {
-                                        onCameraClick(event);
-                                    }}
+                                    onClick={onCameraClick}
                                 >
                                     <CameraIcon style={{ color: '#1E2775', width: '20px', height: '20px' }} />
                                 </IconButton>

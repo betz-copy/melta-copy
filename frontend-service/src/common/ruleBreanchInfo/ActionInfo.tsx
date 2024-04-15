@@ -51,20 +51,9 @@ const CreateOrDeleteRelActionInfo: React.FC<{
     const relationshipTemplate = relationshipTemplates.get(relationshipTemplateId)!;
     const relationshipTemplatePopulated = populateRelationshipTemplate(relationshipTemplate, entityTemplates);
 
-    const translationKey = useMemo(() => {
-        switch (actionType) {
-            case ActionTypes.CreateRelationship:
-                return 'creation';
-            case ActionTypes.DeleteRelationship:
-                return 'deletion';
-            default:
-                return undefined;
-        }
-    }, [actionType]);
-
     return (
         <Typography component="p" variant="body1">
-            <Box component="span">{translationKey && `${i18next.t(`ruleBreachInfo.relActionInfo.${translationKey}`)} `}</Box>
+            <Box component="span">{`${i18next.t(`ruleBreachInfo.relActionInfo.${actionType}`)} `}</Box>
             <RelationshipInfo
                 relationshipTemplatePopulated={relationshipTemplatePopulated}
                 sourceEntity={sourceEntity}

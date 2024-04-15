@@ -41,11 +41,11 @@ export class WorkspacesManager {
     }
 
     static async updateOne(id: string, workspace: Omit<IWorkspace, '_id'>) {
-        return transaction(async (session) => {
-            await Promise.all([WorkspacesManager.handleDirExists(workspace.path), WorkspacesManager.validateRoot(workspace.path, workspace.type)]);
+        await Promise.all([WorkspacesManager.handleDirExists(workspace.path), WorkspacesManager.validateRoot(workspace.path, workspace.type)]);
 
+        return transaction(async (session) => {
             if (workspace.type === WorkspaceTypes.dir) {
-                const currentWorkspace = await WorkspacesModel.findById(id).orFail(new DocumentNotFoundError(id)).lean().exec();
+                const currentWorkspace = await WorkspacesModel.findById(id, {}, { session }).orFail(new DocumentNotFoundError(id)).lean().exec();
                 const oldPath = `${currentWorkspace.path}/${currentWorkspace.name}`;
 
                 await WorkspacesModel.updateMany(
@@ -76,7 +76,7 @@ export class WorkspacesManager {
 
     static async deleteOne(id: string) {
         return transaction(async (session) => {
-            const workspace = await WorkspacesModel.findById(id).orFail(new DocumentNotFoundError(id)).lean().exec();
+            const workspace = await WorkspacesModel.findById(id, {}, { session }).orFail(new DocumentNotFoundError(id)).lean().exec();
 
             if (workspace.type === WorkspaceTypes.dir) {
                 await WorkspacesModel.deleteMany({ path: { $regex: `^${workspace.path}/${workspace.name}` } }, { session });
