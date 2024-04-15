@@ -1,61 +1,66 @@
+export interface IKartoffelUserRole {
+    roleId?: string;
+    jobTitle?: string;
+    directGroup?: string;
+    clearance?: string;
+    hierarchy?: string;
+    hierarchyIds?: string[];
+    source?: string;
+    displayName?: string;
+}
+
 export interface IKartoffelUserDigitalIdentity {
-    createdAt: string;
-    entityId: string;
-    isRoleAttachable: boolean;
-    mail: string;
-    source: string;
-    type: string;
-    uniqueId: string;
-    updatedAt: string;
-    role: {
-        clearance?: string;
-        createdAt?: string;
-        digitalIdentityUniqueId: string;
-        directGroup: string;
-        hierarchy: string;
-        hierarchyIds: string[];
-        jobTitle: string;
-        roleId: string;
-        source: string;
-        updatedAt?: string;
-    };
+    _id: string;
+    entityId?: string;
+    uniqueId?: string;
+    source?: string;
+    isRoleAttachable?: boolean;
+    mail?: string;
+    upn?: string;
+    type?: string;
+    role?: IKartoffelUserRole;
 }
 
 export interface IKartoffelUser {
-    address: string;
-    akaUnit: string;
-    birthDate: string;
-    clearance: string;
-    createdAt?: string;
-    directGroup: string;
-    dischargeDay: string;
-    displayName: string;
-    entityType: string;
-    firstName: string;
+    _id: string;
+    displayName?: string;
+    entityType?: string;
+    identityCard?: string;
+    personalNumber?: string;
+    goalUserId?: string;
+    employeeNumber?: string;
+    employeeId?: string;
+    organization?: string;
+    serviceType?: string;
+    firstName?: string;
+    lastName?: string;
     fullName?: string;
-    goalUserId: string;
-    hierarchy: string;
-    id: string;
-    identityCard: string;
-    jobTitle: string;
-    lastName: string;
-    mail: string;
-    mobilePhone: string[];
-    personalNumber: string;
-    phone: string[];
-    pictures: {
-        profile: {
-            meta: {
-                format: string;
-                updatedAt: string;
+    akaUnit?: string;
+    dischargeDay?: Date;
+    rank?: string;
+    mail?: string;
+    jobTitle?: string;
+    phone?: string[];
+    mobilePhone?: string[];
+    address?: string;
+    clearance?: string;
+    fullClearance?: string;
+    sex?: string;
+    birthDate?: Date;
+    directGroup?: string;
+    commanderOf?: string[];
+    hierarchy?: string;
+    hierarchyIds?: string[];
+    pictures?: {
+        profile?: {
+            url?: string;
+            meta?: {
+                path?: string;
+                format?: string;
+                takenAt?: Date;
+                updatedAt?: Date;
             };
-            url: string;
         };
     };
-    rank: string;
-    serviceType: string;
-    sex: string;
-    status?: string;
-    updatedAt: string;
-    digitalIdentities: IKartoffelUserDigitalIdentity[];
+    digitalIdentities?: IKartoffelUserDigitalIdentity[];
 }
