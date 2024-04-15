@@ -65,12 +65,21 @@ const FileInput: React.FC<FileInputProps> = ({ fileName, onDeleteFile, onDropFil
             setStream(userStream);
             setOpen(true);
         } catch {
-            toast(i18next.t('camera.cameraNotFound'));
+            toast.error(i18next.t('camera.cameraNotFound'));
         }
     };
 
+    let borderStyle: string;
+    if (errorText) {
+        borderStyle = '1px solid red';
+    } else if (isDragActive) {
+        borderStyle = `2px dashed ${theme.palette.primary.main}`;
+    } else {
+        borderStyle = '1px solid #c4c4c4';
+    }
+
     const inputStyle = {
-        border: isDragActive ? `2px dashed ${theme.palette.primary.main}` : '1px solid #c4c4c4',
+        border: borderStyle,
         borderRadius: '10px',
         borderColor: '#CCCFE5',
         color: '#9398C2',

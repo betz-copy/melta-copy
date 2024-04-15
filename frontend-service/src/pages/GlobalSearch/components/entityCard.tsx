@@ -213,6 +213,12 @@ const EntityCard: React.FC<EntityCardProps> = ({
                         setEditDialog((prev) => ({ ...prev, isOpen: false }));
                     }}
                     onCancelUpdate={() => setEditDialog((prev) => ({ ...prev, isOpen: false }))}
+                    onError={(currEntity) => {
+                        setEditDialog({
+                            isOpen: true,
+                            entity: currEntity,
+                        });
+                    }}
                 />
             </Dialog>
         </Card>

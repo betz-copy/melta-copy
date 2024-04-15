@@ -196,6 +196,12 @@ const TemplateTable = forwardRef<
                     isEditMode
                     entityTemplate={template}
                     entity={editDialog.entity!}
+                    onError={(currEntity) =>
+                        setEditDialog({
+                            isOpen: true,
+                            entity: currEntity,
+                        })
+                    }
                     onSuccessUpdate={(entity) => {
                         entitiesTableRef.current?.updateRowDataClientSide(entity);
                         setEditDialog((prev) => ({ ...prev, isOpen: false }));

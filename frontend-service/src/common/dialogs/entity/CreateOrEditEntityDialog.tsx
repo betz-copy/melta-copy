@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Grid, Card, CardContent, CircularProgress, Box, Divider, Button, IconButton, Link } from '@mui/material';
+import { Grid, Card, CardContent, Box, Divider, Button, IconButton, Link, Typography } from '@mui/material';
 import { Done as DoneIcon, Clear as ClearIcon, Close as CloseIcon } from '@mui/icons-material';
 import { useMutation } from 'react-query';
 import i18next from 'i18next';
@@ -42,7 +42,8 @@ const CreateOrEditEntityDetails: React.FC<{
     entity: IEntity;
     onSuccessUpdate: (data: IEntity) => void;
     onCancelUpdate: () => void;
-}> = ({ isEditMode = false, entityTemplate, entity, onSuccessUpdate, onCancelUpdate }) => {
+    onError: (entity: IEntity | EntityWizardValues) => void;
+}> = ({ isEditMode = false, entityTemplate, entity, onSuccessUpdate, onCancelUpdate, onError }) => {
     const [updateWithRuleBreachDialogState, setUpdateWithRuleBreachDialogState] = useState<{
         isOpen: boolean;
         brokenRules?: IRuleBreachPopulated['brokenRules'];
@@ -95,28 +96,39 @@ const CreateOrEditEntityDetails: React.FC<{
     );
     const navigate = useNavigate();
 
-    const { isLoading: isCreateLoading, mutateAsync: createMutation } = useMutation(
-        (entityToCreate: EntityWizardValues) => createEntityRequest(entityToCreate),
-        {
-            onSuccess: (newEntity) => {
-                // toast.success(i18next.t('wizard.entity.createdSuccessfully'));
-                onCancelUpdate();
-                // navigate(`/entity/${newEntity.properties._id}`);
-            },
-            onError: (err: AxiosError, { template }: EntityWizardValues) => {
-                const errorMetadata = err.response?.data?.metadata;
-                if (errorMetadata?.errorCode === errorCodes.failedConstraintsValidation) {
-                    toastConstraintValidationError(errorMetadata, template);
-                }
-
-                // toast.error(i18next.t('wizard.entity.failedToCreate'));
-            },
+    const { mutateAsync: createMutation } = useMutation((entityToCreate: EntityWizardValues) => createEntityRequest(entityToCreate), {
+        onSuccess: () => {
+            // toast.success(i18next.t('wizard.entity.createdSuccessfully'));
+            onCancelUpdate();
+            // navigate(`/entity/${newEntity.properties._id}`);
         },
-    );
+        onError: (err: AxiosError, { template }: EntityWizardValues) => {
+            const errorMetadata = err.response?.data?.metadata;
+            if (errorMetadata?.errorCode === errorCodes.failedConstraintsValidation) {
+                toastConstraintValidationError(errorMetadata, template);
+            }
+
+            // toast.error(i18next.t('wizard.entity.failedToCreate'));
+        },
+    });
+
+    const [totalFileSize, setTotalFileSize] = useState(0);
+
     return (
         <Formik
             initialValues={{ properties: fieldProperties, attachmentsProperties: fileProperties, template: entityTemplate }}
             onSubmit={async (values) => {
+                // console.log({ values });
+                // let sum = 0;
+                // Object.values(values.attachmentsProperties).forEach((value) => {
+                //     if (value.type === 'array') {
+                //         value.forEach((file) => {
+                //             sum += file.size;
+                //         });
+                //     } else sum += value.size;
+                // });
+                // setTotalFileSize(sum);
+
                 let mutationPromise;
                 if (isEditMode) {
                     mutationPromise = updateMutation({ newEntityData: values });
@@ -124,35 +136,36 @@ const CreateOrEditEntityDetails: React.FC<{
                     mutationPromise = createMutation(values);
                 }
 
-                console.log({ values });
-                // let sumFilesSizes = 0;
-                // values.attachmentsProperties.forEach((data) => {
-                //     if (data.type === 'array') {
-                //         data.forEach((file) => {
-                //             sumFilesSizes += file.size;
-                //         });
-                //     } else sumFilesSizes += data.size;
-                // });
-
-                // if (sumFilesSizes > MAX_FILE_BYTE_SIZE)
                 const loadingToastPromise = new Promise<void>((resolve) => {
                     toast.promise(
                         mutationPromise,
                         {
                             pending: `${values.properties.name} ${i18next.t('actions.loading')}`,
                             success: isEditMode
-                                ? i18next.t('wizard.entity.editedSuccefully')
-                                : `${i18next.t('wizard.entity.createdSuccessfully')}
-                                ${(<Link href={`/entity/${values.properties._id}`}>{i18next.t('entityPage.linkToEntityPage')}</Link>)}`,
-                            error: isEditMode ? i18next.t('wizard.entity.failedToEdit') : i18next.t('wizard.entity.failedToCreate'),
+                                ? `${i18next.t('wizard.entity.editedSuccefully')}. ${i18next.t('entityPage.linkToEntityPage')}`
+                                : `${i18next.t('wizard.entity.createdSuccessfully')}. ${i18next.t('entityPage.linkToEntityPage')}`,
+                            error: isEditMode
+                                ? `${i18next.t('wizard.entity.failedToEdit')}. ${i18next.t('entityPage.error')}`
+                                : `${i18next.t('wizard.entity.failedToCreate')}. ${i18next.t('entityPage.error')}`,
                         },
-                        { autoClose: false },
+                        {
+                            autoClose: false,
+                            onClick: (event) => {
+                                if ((event.target as HTMLDivElement).innerText.includes(i18next.t('wizard.entity.failedToCreate'))) {
+                                    onError(values);
+                                } else if ((event.target as HTMLDivElement).innerText.includes(i18next.t('wizard.entity.failedToEdit'))) {
+                                    onError({ templateId: values.template._id, properties: values.properties });
+                                } else navigate(`/entity/${values.properties._id}`);
+                            },
+                        },
                     );
                     mutationPromise.finally(() => {
                         resolve();
                     });
                 });
+                // if (sum <= 9000000000) {
                 await loadingToastPromise;
+                // }
             }}
             validate={(values) => {
                 const nonAttachmentsSchema = filterAttachmentsAndEntitiesRefFromPropertiesSchema(values.template.properties);
@@ -160,6 +173,17 @@ const CreateOrEditEntityDetails: React.FC<{
                 if (Object.keys(propertiesErrors).length === 0) {
                     return {};
                 }
+
+                let sum = 0;
+                Object.values(values.attachmentsProperties).forEach((value) => {
+                    if (value.type === 'array') {
+                        value.forEach((file) => {
+                            sum += file.size;
+                        });
+                    } else sum += value.size;
+                });
+                setTotalFileSize(sum);
+
                 return { properties: propertiesErrors };
             }}
         >
@@ -333,7 +357,7 @@ const CreateOrEditEntityDetails: React.FC<{
                                                         // )
                                                     }
                                                     // disabled={!dirty || isUpdateLoading || isCreateLoading}
-                                                    disabled={!dirty}
+                                                    disabled={!dirty && totalFileSize > 9000000000}
                                                 >
                                                     {i18next.t('entityPage.save')}
                                                 </Button>

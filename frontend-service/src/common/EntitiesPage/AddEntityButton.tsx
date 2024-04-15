@@ -73,6 +73,12 @@ const AddEntityButton: React.FC<{
                             isOpen: false,
                         })
                     }
+                    onError={(currEntity) =>
+                        setAddEntityWizardState({
+                            isOpen: true,
+                            initialValues: currEntity,
+                        })
+                    }
                 />
             </Dialog>
         </>

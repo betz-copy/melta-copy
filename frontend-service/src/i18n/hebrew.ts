@@ -85,7 +85,8 @@ export default {
         disabledSuccessfully: 'ישות הושבתה בהצלחה',
         activatedSuccessfully: 'ישות הופעלה בהצלחה',
         disabledEntity: 'ישות לא פעילה',
-        linkToEntityPage: 'למידע נוסף',
+        linkToEntityPage: 'לחץ למידע נוסף',
+        error: 'לחץ לניסיון נוסף',
         activityLog: {
             deleteRelationship: 'מחק קשר מסוג',
             createRelationship: 'יצר קשר מסוג ',
@@ -535,6 +536,7 @@ export default {
         attachmentFieldTitleExists: 'קיים שם קובץ לתצוגה זהה',
         stepNameExists: 'קיים שלב עם שם באנגלית זהה',
         stepDisplayNameExists: 'קיים שלב עם שם לתצוגה זהה',
+        filesSizesTooBig: 'קבצים גדולים מדי',
     },
     propertyTypes: {
         string: 'מחרוזת',
