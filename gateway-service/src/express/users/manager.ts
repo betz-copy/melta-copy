@@ -4,7 +4,7 @@ import { UserService } from '../../externalServices/userService';
 import { ICompactPermissions } from '../../externalServices/userService/interfaces/permissions/permissions';
 import { IBaseUser, IUser, IUserSearchBody } from '../../externalServices/userService/interfaces/users';
 import { objectContains } from '../../utils';
-import { DigitalIdentitySourceDoesNotExistsError } from './error';
+import { DigitalIdentitySourceDoesNotExistsError, KartoffelUserMissingDataError } from './error';
 import { IExternalUser, IExternalUserDigitalIdentity } from './interfaces';
 
 export class UsersManager {
@@ -62,17 +62,29 @@ export class UsersManager {
     private static kartoffelUserToExternalUserData(kartoffelUser: IKartoffelUser): IExternalUser {
         const digitalIdentities: IExternalUser['digitalIdentities'] = {};
 
+        if (!kartoffelUser.digitalIdentities) throw new KartoffelUserMissingDataError(kartoffelUser._id);
+
+        let completedDigitalIdentities = 0;
+
         kartoffelUser.digitalIdentities.forEach((kartoffelDigitalIdentity) => {
-            digitalIdentities[kartoffelDigitalIdentity.source] = {
-                fullName: kartoffelUser.fullName || `${kartoffelUser.firstName} ${kartoffelUser.lastName}`,
-                hierarchy: kartoffelDigitalIdentity.role.hierarchy,
-                jobTitle: kartoffelDigitalIdentity.role.jobTitle,
-                mail: kartoffelDigitalIdentity.mail,
-            };
+            if (!kartoffelDigitalIdentity.source) return;
+
+            try {
+                digitalIdentities[kartoffelDigitalIdentity.source] = this.kartoffelUserDigitalIdentityToExternalUserDigitalIdentity(
+                    kartoffelDigitalIdentity,
+                    kartoffelUser,
+                );
+            } catch {
+                return;
+            }
+
+            completedDigitalIdentities++;
         });
 
+        if (!completedDigitalIdentities) throw new KartoffelUserMissingDataError(kartoffelUser._id);
+
         return {
-            kartoffelId: kartoffelUser.id,
+            kartoffelId: kartoffelUser._id,
             digitalIdentities,
         };
     }
@@ -80,8 +92,8 @@ export class UsersManager {
     private static async getExternalUserDigitalIdentity(kartoffelId: string, digitalIdentitySource: string): Promise<IExternalUserDigitalIdentity> {
         const kartoffelUser = await Kartoffel.getUserById(kartoffelId);
 
-        const kartoffelDigitalIdentity = kartoffelUser.digitalIdentities.find((digitalIdentity) => digitalIdentity.source === digitalIdentitySource);
-        if (!kartoffelDigitalIdentity) throw new DigitalIdentitySourceDoesNotExistsError(digitalIdentitySource, kartoffelUser.id);
+        const kartoffelDigitalIdentity = kartoffelUser.digitalIdentities?.find((digitalIdentity) => digitalIdentity.source === digitalIdentitySource);
+        if (!kartoffelDigitalIdentity) throw new DigitalIdentitySourceDoesNotExistsError(digitalIdentitySource, kartoffelUser._id);
 
         return this.kartoffelUserDigitalIdentityToExternalUserDigitalIdentity(kartoffelDigitalIdentity, kartoffelUser);
     }
@@ -90,11 +102,23 @@ export class UsersManager {
         digitalIdentity: IKartoffelUserDigitalIdentity,
         kartoffelUser: IKartoffelUser,
     ): IExternalUserDigitalIdentity {
+        const fullName =
+            kartoffelUser.fullName || (kartoffelUser.firstName && kartoffelUser.lastName)
+                ? `${kartoffelUser.firstName} ${kartoffelUser.lastName}`
+                : undefined;
+        const hierarchy = digitalIdentity.role?.hierarchy || kartoffelUser.hierarchy;
+        const jobTitle = digitalIdentity.role?.jobTitle || kartoffelUser.jobTitle;
+        const mail = digitalIdentity.mail || kartoffelUser.mail;
+
+        if (!fullName || !hierarchy || !jobTitle || !mail) {
+            throw new KartoffelUserMissingDataError(kartoffelUser._id);
+        }
+
         return {
-            fullName: kartoffelUser.fullName || `${kartoffelUser.firstName} ${kartoffelUser.lastName}`,
-            hierarchy: digitalIdentity.role.hierarchy,
-            jobTitle: digitalIdentity.role.jobTitle,
-            mail: digitalIdentity.mail,
+            fullName,
+            hierarchy,
+            jobTitle,
+            mail,
         };
     }
 }
