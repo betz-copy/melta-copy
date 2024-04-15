@@ -77,7 +77,6 @@ export const deleteFieldValueSchema = Joi.object({
             name: Joi.string().required(),
             type: Joi.string().required(),
             options: Joi.array().items(Joi.string()).required(),
-            optionColors: Joi.object().pattern(Joi.string(), Joi.string()),
         }),
     },
 });

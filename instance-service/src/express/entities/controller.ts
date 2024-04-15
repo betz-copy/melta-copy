@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { fetchPropertyFromRequest } from '../../utils/express';
+import { RequestWithQuery, fetchPropertyFromRequest } from '../../utils/express';
 import { IMongoEntityTemplate } from '../../externalServices/entityTemplateManager';
 import { EntityManager } from './manager';
 
@@ -55,9 +55,9 @@ class EntityController {
         res.json(await EntityManager.updateEnumFieldValue(req.params.id, newValue, oldValue, field));
     }
 
-    static async getIsFieldUsed(req: Request, res: Response) {
+    static async getIsFieldUsed(req:  RequestWithQuery<{ fieldValue: string, fieldName: string, type: string}>, res: Response) {
         const { fieldValue, fieldName, type } = req.query; 
-        res.json(await EntityManager.getIsFieldUsed(req.params.id, fieldValue as string, fieldName as string, type as string));
+        res.json(await EntityManager.getIsFieldUsed(req.params.id, fieldValue, fieldName, type));
 
     }
 

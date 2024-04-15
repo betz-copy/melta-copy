@@ -250,8 +250,8 @@ const deleteEntityTemplateRequest = async (entityTemplateId: string) => {
 };
 
 const updateEnumFieldRequest = async (id: string, fieldValue: string, values: CommonFormInputProperties, field: string) => {
-    const { name, type, options, optionColors } = values;
-    const partialInput = { name, type, options, optionColors };
+    const { name, type, options } = values;
+    const partialInput = { name, type, options };
     const { data } = await axios.put<IMongoEntityTemplatePopulated>(`${entityTemplates}/update-enum-field/${id}`, {
         fieldValue,
         partialInput,
@@ -261,8 +261,8 @@ const updateEnumFieldRequest = async (id: string, fieldValue: string, values: Co
 };
 
 const deleteEnumFieldRequest = async (id: string, fieldValue: string, field: CommonFormInputProperties) => {
-    const { name, type, options, optionColors } = field;
-    const partialInput = { name, type, options, optionColors };
+    const { name, type, options } = field;
+    const partialInput = { name, type, options };
     const { data } = await axios.patch<IMongoEntityTemplatePopulated>(`${entityTemplates}/delete-enum-field/${id}`, { fieldValue, partialInput });
     return data;
 };

@@ -1,6 +1,7 @@
 import React, { MouseEventHandler } from 'react';
-import { Backdrop, Button, CircularProgress, Dialog, DialogActions, DialogTitle, Typography } from '@mui/material';
+import { Backdrop, Button, CircularProgress, Dialog, DialogActions, DialogTitle, ThemeProvider, Typography } from '@mui/material';
 import i18next from 'i18next';
+import { areYouSureTheme } from '../../theme';
 
 const AreYouSureDialog: React.FC<{
     open: boolean;
@@ -14,7 +15,7 @@ const AreYouSureDialog: React.FC<{
     return (
         <Dialog open={open} onClose={handleClose}>
             <Backdrop open={isLoading} style={{ zIndex: 999, backgroundColor: 'transparent' }} />
-            <DialogTitle>
+            <DialogTitle sx={{ display: 'flex', flexDirection: 'column' }}>
                 {title}
                 {message && (
                     <Typography variant="caption" color="textSecondary" width="100%">

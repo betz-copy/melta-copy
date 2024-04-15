@@ -20,6 +20,10 @@ const basicTheme: ThemeOptions = {
 
 export const areYouSureTheme = createTheme({
     ...basicTheme,
+    palette: {
+        mode: 'light',
+        primary: { main: '#1E2775' },
+    },
     components: {
         MuiBackdrop: {
             styleOverrides: {
@@ -33,6 +37,7 @@ export const areYouSureTheme = createTheme({
                 paper: {
                     boxShadow: '0 4px 8px rgba(0, 0, 0, 0.05)',
                     border: '1px solid #bdbdbd',
+                    borderRadius: '10px',
                 },
             },
         },
@@ -42,7 +47,6 @@ export const areYouSureTheme = createTheme({
 export const lightTheme = createTheme({
     ...basicTheme,
     palette: {
-        mode: 'light',
         primary: { main: '#1E2775' },
     },
     components: {

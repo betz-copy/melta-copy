@@ -214,7 +214,7 @@ export class EntityManager {
 
     static async getIsFieldUsed(id: string, fieldValue: string, fieldName: string, type: string){
         let node;
-        if(type === "enumArray"){
+        if(type === "array"){
             node = await Neo4jClient.readTransaction(
                 `MATCH (e: \`${id}\`) WHERE '${fieldValue}' IN e.${fieldName} RETURN e`,
                 normalizeReturnedEntity('singleResponse'),
@@ -435,7 +435,7 @@ export class EntityManager {
     static async updateEnumFieldValue(id: string, newValue: string, oldValue: string, field: any) {
         let node;
         try {
-            if(field.type === "enumArray"){
+            if(field.type === "array"){
                 node = await Neo4jClient.writeTransaction(
                     `MATCH (e: \`${id}\`)
                     SET e.${field.name} = [val IN e.${field.name} WHERE val <> '${oldValue}'] + ['${newValue}']
@@ -451,10 +451,8 @@ export class EntityManager {
                 RETURN e`,
                 normalizeReturnedEntity('singleResponse'),
             );}
-
             return node;
         } catch (error) {
-            // catch all errors here. no need if.
             if (error instanceof NotFoundError) {
                 throw new NotFoundError(`[NEO4J] entity not found`);
             } else {

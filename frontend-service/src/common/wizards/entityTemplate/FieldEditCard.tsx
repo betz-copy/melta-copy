@@ -27,7 +27,7 @@ import { Draggable } from 'react-beautiful-dnd';
 import i18next from 'i18next';
 import isEqual from 'lodash.isequal';
 import EditIcon from '@mui/icons-material/Edit';
-import {  ThemeProvider } from '@mui/material/styles';
+import { ThemeProvider } from '@mui/material/styles';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { dateNotificationTypes, validPropertyTypes } from './AddFields';
@@ -159,7 +159,8 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                 setOpen(!open);
             },
             onSuccess: (resultOfMutation, { id, option, fieldValue }) => {
-                const newOptions = resultOfMutation.properties.properties[fieldValue.name].enum!;
+                const fieldProps = resultOfMutation.properties.properties[fieldValue.name];
+                const newOptions = fieldProps.type === 'array' ? fieldProps.items!.enum! : fieldProps.enum!;
                 queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) => {
                     const newOptionColors = { ...fieldValue.optionColors };
                     if (fieldValue.optionColors && Object.keys(fieldValue.optionColors).length > 0 && editIndex != null) {
@@ -198,7 +199,8 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
             },
             onSuccess: (resultOfMutation, { id, fieldValue }) => {
                 queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) => {
-                    const newOptions = resultOfMutation.properties.properties[fieldValue.name].enum!;
+                    const fieldProps = resultOfMutation.properties.properties[fieldValue.name];
+                    const newOptions = fieldProps.type === 'array' ? fieldProps.items!.enum! : fieldProps.enum!;
                     const newOptionColors = { ...fieldValue.optionColors };
                     if (fieldValue.optionColors && Object.keys(fieldValue.optionColors).length > 0 && editIndex != null) {
                         delete newOptionColors[fieldValue.options[editIndex]];
@@ -249,7 +251,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
             }
             setEditIndex(null);
         }
-        setOpen(!open);
+        setOpen(false);
     };
 
     const handleDelete = (tagIndex: number) => {

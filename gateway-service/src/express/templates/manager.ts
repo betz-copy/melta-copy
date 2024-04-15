@@ -43,17 +43,6 @@ const {
     ruleHasAlertsOrRequests,
 } = config.errorCodes;
 
-const propertiesToKeep = [
-    'name',
-    'displayName',
-    'category',
-    'properties',
-    'iconFileId',
-    'propertiesOrder',
-    'propertiesPreview',
-    'propertiesTypeOrder',
-];
-
 export class TemplatesManager {
     // get all entityTemplates that are one relationship (step) away  from the original users permissions
     private static getAllEntityTemplateThatAreOneRelationshipAwayFromUsersPermissions(
@@ -451,6 +440,11 @@ export class TemplatesManager {
         return EntityTemplateManagerService.updateEntityTemplateStatus(id, disabledStatus);
     }
 
+    static removeBasicFields(template: IMongoEntityTemplatePopulated) {
+        const { createdAt, updatedAt, _id, ...rest } = template;
+        return rest;
+    }
+
     static async prepareUpdateOrDeleteEnumFieldValue(
         id: string,
         values: IUpdateOrDeleteEnumFieldReqData,
@@ -462,33 +456,35 @@ export class TemplatesManager {
         if (!values.options) {
             throw new ServiceError(404, 'No options array');
         }
-        const index = values.options.indexOf(fieldValue);
-        if (index === -1) {
+        const valueIndex = values.options.indexOf(fieldValue);
+        if (valueIndex === -1) {
             throw new ServiceError(404, 'Field value not found in options array');
         }
-        const templateEnumFieldValues = [...values.options];
-        if (update) templateEnumFieldValues[index] = field;
-        const templateWithoutProperties = Object.keys(template).reduce((newTemplate, key) => {
-            if (propertiesToKeep.includes(key)) {
-                newTemplate[key] = template[key];
-            }
+        let templateEnumFieldValues = [...values.options];
+        if (update) templateEnumFieldValues[valueIndex] = field;
+        else templateEnumFieldValues = templateEnumFieldValues.filter((_, index) => valueIndex !== index);
+        const templateWithoutProperties: IEntityTemplatePopulated = this.removeBasicFields(template);
+        if (template.enumPropertiesColors?.[values.name]?.[fieldValue] !== undefined) {
+            let newFieldName: Record<string, string>;
+            if (update)
+                newFieldName = {
+                    ...template.enumPropertiesColors[values.name],
+                    [field]: template.enumPropertiesColors[values.name][fieldValue],
+                };
+            else newFieldName = template.enumPropertiesColors[values.name];
+            delete newFieldName[fieldValue];
+            templateWithoutProperties.enumPropertiesColors = {
+                ...templateWithoutProperties.enumPropertiesColors,
+                [values.name]: { ...newFieldName },
+            };
+        }
 
-            if (key === 'enumPropertiesColors' && template.enumPropertiesColors?.[values.name]?.[fieldValue] !== undefined) {
-                let newFieldName: Record<string, string>;
-                if (update)
-                    newFieldName = {
-                        ...template.enumPropertiesColors[values.name],
-                        [field]: template.enumPropertiesColors[values.name][fieldValue],
-                    };
-                else newFieldName = template.enumPropertiesColors[values.name];
-                delete newFieldName[fieldValue];
-
-                newTemplate[key] = { ...template[key], [values.name]: { ...newFieldName } };
-            }
-            return newTemplate;
-        }, {} as IEntityTemplatePopulated);
         if (!templateWithoutProperties.properties.properties[values.name].items)
             templateWithoutProperties.properties.properties[values.name].enum = templateEnumFieldValues;
+        const { items } = templateWithoutProperties.properties.properties[values.name];
+        if (items && items.enum) {
+            items.enum = templateEnumFieldValues;
+        }
         try {
             const updatedEntityTemplate = await EntityTemplateManagerService.updateEntityTemplate(id, {
                 ...templateWithoutProperties,
@@ -515,16 +511,7 @@ export class TemplatesManager {
         templateEnumFieldValuesRB[index] = fieldValue;
         if (!templateWithoutProperties.properties.properties[values.name].items)
             template.properties.properties[values.name].enum = templateEnumFieldValuesRB;
-        const rollBackTemplateWithoutProperties = Object.keys(template).reduce((newTemplate, key) => {
-            if (propertiesToKeep.includes(key)) {
-                // eslint-disable-next-line no-param-reassign
-                newTemplate[key] = template[key];
-            }
-            if (key === 'enumPropertiesColors' && template[key]) {
-                newTemplate[key] = template[key];
-            }
-            return newTemplate;
-        }, {} as IEntityTemplatePopulated);
+        const rollBackTemplateWithoutProperties: IEntityTemplatePopulated = this.removeBasicFields(template);
         try {
             const rolledBackEntityTemplate = await EntityTemplateManagerService.updateEntityTemplate(id, {
                 ...rollBackTemplateWithoutProperties,
@@ -548,7 +535,7 @@ export class TemplatesManager {
         const templateWithoutProperties = await TemplatesManager.prepareUpdateOrDeleteEnumFieldValue(id, values, fieldValue, template, true, field);
         const index = values.options.indexOf(fieldValue);
         try {
-            await InstanceManagerService.updateEnumFieldOfEntity(id, field, fieldValue, values);
+            await InstanceManagerService.updateEnumFieldOfEntity(id, field, fieldValue, { name: values.name, type: values.type });
         } catch (neoError: any) {
             if (neoError.response?.status === 404) {
                 console.error('Neo4j update failed: Node not found');
@@ -572,8 +559,7 @@ export class TemplatesManager {
             throw new ServiceError(400, 'cant remove used values');
         }
     }
-            
-        
+
     static async deleteEntityEnumFieldValue(id: string, values: IUpdateOrDeleteEnumFieldReqData, fieldValue: string) {
         await this.checkFieldValueUsage(id, fieldValue, values.name, values.type);
         const template = await EntityTemplateManagerService.getEntityTemplateById(id);
