@@ -1,4 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { get } from 'lodash';
+import dataLogger from '../logger/dataLogger';
 
 export const wrapMiddleware = (func: (req: Request, res?: Response) => Promise<void>) => {
     return (req: Request, res: Response, next: NextFunction) => {
@@ -12,9 +15,43 @@ export const wrapValidator = wrapMiddleware;
 
 export const wrapController = <ExtendedRequest extends Request<any, any, any, any> = Request, ExtendedResponse extends Response = Response>(
     func: (req: ExtendedRequest, res: ExtendedResponse, next?: NextFunction) => Promise<void>,
+    toLog: boolean = false,
+    logRequestFields: Array<{ key: string; path: string }> = [],
+    responseDataExtractor: (body: any) => any = () => ({}),
+    indexName: string = 'gateway',
 ) => {
     return (req: ExtendedRequest, res: ExtendedResponse, next: NextFunction) => {
-        func(req, res, next).catch(next);
+        if (!toLog) {
+            func(req, res, next).catch(next);
+            return;
+        }
+
+        const originalJson = res.json.bind(res);
+        const loggedRequestData: Record<string, any> = {};
+
+        // Process request fields to log
+        logRequestFields.forEach(({ key, path }) => {
+            loggedRequestData[key] = get(req, path);
+        });
+
+        res.json = (body: any) => {
+            // Process response fields to log
+            const loggedResponseData = responseDataExtractor(body);
+
+            dataLogger.info(indexName, {
+                userId: req.user?.id,
+                path: req.path,
+                method: req.method,
+                ...loggedRequestData,
+                ...loggedResponseData,
+            });
+
+            return originalJson(body);
+        };
+        func(req, res, next).catch((error) => {
+            res.json = originalJson;
+            next(error);
+        });
     };
 };
 

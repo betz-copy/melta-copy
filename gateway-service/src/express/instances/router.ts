@@ -28,6 +28,7 @@ import {
     updateEntityStatusSchema,
 } from './validator.schema';
 import ValidateRequest from '../../utils/joi';
+import { IEntity } from '../../externalServices/instanceService/interfaces/entities';
 
 const { instanceService } = config;
 const InstanceManagerProxy = createProxyMiddleware({
@@ -37,6 +38,10 @@ const InstanceManagerProxy = createProxyMiddleware({
 });
 
 const InstancesRouter: Router = Router();
+
+const extractResponseLogData = (entities: IEntity[]) => {
+    return {};
+};
 
 // entities (Instances)
 InstancesRouter.post(
@@ -65,7 +70,7 @@ InstancesRouter.post(
     multer({ dest: config.service.uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).any(),
     ValidateRequest(createEntityInstanceSchema),
     wrapMiddleware(validateUserCanCreateEntityInstance),
-    wrapController(InstancesController.createEntityInstance),
+    wrapController(InstancesController.createEntityInstance, true, [], extractResponseLogData, 'entities'),
 );
 InstancesRouter.put(
     '/entities/:id',
