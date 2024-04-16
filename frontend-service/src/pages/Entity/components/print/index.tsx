@@ -67,8 +67,9 @@ const Print: React.FC<{
     const [selectedFiles, setSelectedFiles] = React.useState(files);
 
     React.useEffect(() => {
-        setFiles(getEntityFiles().filter((file) => !isVideoOrAudio(file.type) && !isUnsupported(file.type) && !file.name.includes('txt')));
-        setSelectedFiles(getEntityFiles().filter((file) => !isVideoOrAudio(file.type) && !isUnsupported(file.type) && !file.name.includes('txt')));
+        const currFiles = getEntityFiles().filter((file) => !isVideoOrAudio(file.type) && !isUnsupported(file.type) && !file.name.includes('txt'));
+        setFiles(currFiles);
+        setSelectedFiles(currFiles);
     }, [getEntityFiles]);
 
     const [selected, setSelected] = React.useState(connectionsTemplates);
