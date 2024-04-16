@@ -184,6 +184,8 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
         },
     );
 
+    const [atLeastOneItem, setAtLeastOneItem] = useState<string | null>(null);
+
     const { mutate: deleteEnumField, isLoading: isDeleteLoading } = useMutation(
         (mutationArgs: { id: string; tagIndex: number; fieldValue: any }) => {
             const { id, tagIndex, fieldValue } = mutationArgs;
@@ -222,6 +224,14 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
         updateEnumField({ id, tagIndex, option, fieldValue });
     };
     const handleDeleteEnumField = (id: string, tagIndex: number, fieldValue: any) => {
+        if (fieldValue.options.length <= 1) {
+            setAtLeastOneItem(i18next.t('entityPage.atLeastOneItem'));
+            setEditIndex(null);
+            setTimeout(() => {
+                setAtLeastOneItem(null);
+            }, 2000);
+            return;
+        }
         deleteEnumField({ id, tagIndex, fieldValue });
     };
 
@@ -535,8 +545,8 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                     <TextField
                                                         {...params}
                                                         label={i18next.t('propertyTypes.enum')}
-                                                        error={touchedOptions && Boolean(errorOptions)}
-                                                        helperText={touchedOptions && errorOptions}
+                                                        error={(touchedOptions && Boolean(errorOptions)) || Boolean(atLeastOneItem)}
+                                                        helperText={(touchedOptions && errorOptions) || atLeastOneItem}
                                                     />
                                                 )}
                                                 sx={{ marginRight: '5px' }}

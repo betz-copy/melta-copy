@@ -73,6 +73,7 @@ export default {
         disabledEntity: 'ישות לא פעילה',
         deleteEnumFieldSuccessfully: 'ערך נמחק בהצלחה',
         updatedEnumFieldSuccessfully: 'ערך נוסף בהצלחה',
+        atLeastOneItem: 'חייב להיות ערך אחד לפחות',
         activityLog: {
             deleteRelationship: 'מחק קשר מסוג',
             createRelationship: 'יצר קשר מסוג ',
