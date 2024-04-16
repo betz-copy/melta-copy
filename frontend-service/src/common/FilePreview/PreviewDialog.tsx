@@ -31,7 +31,7 @@ export const isVideoOrAudio = (type: string) => ['video', 'audio'].includes(type
 export const isUnsupported = (type: string) => type === 'unsupported';
 export const isSpecial = (type: string) => !(isImage(type) || isVideoOrAudio(type) || isUnsupported(type));
 
-const Preview: React.FC<PreviewProps> = ({ open, fileId, data, setOpen, loading, fileName, error }) => {
+const PreviewDialog: React.FC<PreviewProps> = ({ open, fileId, data, setOpen, loading, fileName, error }) => {
     const darkMode = useSelector((state: RootState) => state.darkMode);
     const [numOfPages, setNumOfPages] = useState(1);
     const [currentPage, setCurrentPage] = useState(1);
@@ -105,15 +105,7 @@ const Preview: React.FC<PreviewProps> = ({ open, fileId, data, setOpen, loading,
     let previewContent;
     if (isImage(contentType)) {
         previewContent = (
-            <div
-                style={{
-                    overflow: 'auto',
-                    height: '95vh',
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                }}
-            >
+            <div style={{ overflow: 'auto', height: '95vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                 <img
                     src={data}
                     onLoad={(event) => {
@@ -130,12 +122,7 @@ const Preview: React.FC<PreviewProps> = ({ open, fileId, data, setOpen, loading,
                             img.style.width = 'auto';
                         }
                     }}
-                    style={{
-                        maxWidth: '100%',
-                        maxHeight: '95vh',
-                        transform: `scale(${zoomLevel})`,
-                        transformOrigin: 'center center',
-                    }}
+                    style={{ maxWidth: '100%', maxHeight: '95vh', transform: `scale(${zoomLevel})`, transformOrigin: 'center center' }}
                 />
             </div>
         );
@@ -143,16 +130,7 @@ const Preview: React.FC<PreviewProps> = ({ open, fileId, data, setOpen, loading,
         previewContent = <ReactPlayer style={{ marginTop: '65px' }} url={data} controls playing />;
     } else if (isUnsupported(contentType) || error) {
         previewContent = (
-            <Card
-                sx={{
-                    borderRadius: 2,
-                    bgcolor: '#4c494c',
-                    display: 'grid',
-                    height: 150,
-                    padding: 3,
-                }}
-                elevation={10}
-            >
+            <Card sx={{ borderRadius: 2, bgcolor: '#4c494c', display: 'grid', height: 150, padding: 3 }} elevation={10}>
                 <Typography variant="body1" style={{ color: 'white', marginTop: '10px', fontSize: '20px' }}>
                     {i18next.t('errorPage.preview')}
                 </Typography>
@@ -188,15 +166,7 @@ const Preview: React.FC<PreviewProps> = ({ open, fileId, data, setOpen, loading,
             <DialogContent sx={{ height: '100vh', position: 'relative', overflow: 'hidden' }}>
                 <FlexBox
                     direction="row"
-                    style={{
-                        paddingBottom: '10px',
-                        justifyContent: 'space-between',
-                        position: 'sticky',
-                        top: 5,
-                        left: 10,
-                        zIndex: 1,
-                        gap: '10px',
-                    }}
+                    sx={{ paddingBottom: '10px', justifyContent: 'space-between', position: 'sticky', top: 5, left: 10, zIndex: 1, gap: '10px' }}
                 >
                     <FlexBox
                         direction="row"
@@ -220,7 +190,7 @@ const Preview: React.FC<PreviewProps> = ({ open, fileId, data, setOpen, loading,
                         </IconButton>
                     </FlexBox>
                     {isSpecial(contentType) && extension !== 'pptx' && (
-                        <FlexBox direction="row" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <FlexBox direction="row" sx={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                             <TextField
                                 type="number"
                                 value={jumpToPage}
@@ -249,10 +219,7 @@ const Preview: React.FC<PreviewProps> = ({ open, fileId, data, setOpen, loading,
 
                 <Grid
                     ref={containerRef}
-                    style={{
-                        height: '95%',
-                        overflowY: isImage(contentType) || isVideoOrAudio(contentType) ? 'hidden' : 'scroll',
-                    }}
+                    sx={{ height: '95%', overflowY: isImage(contentType) || isVideoOrAudio(contentType) ? 'hidden' : 'scroll' }}
                     container
                     justifyContent="center"
                     alignItems="center"
@@ -264,4 +231,4 @@ const Preview: React.FC<PreviewProps> = ({ open, fileId, data, setOpen, loading,
     );
 };
 
-export { Preview };
+export { PreviewDialog };

@@ -3,11 +3,12 @@ import { Box, Grid, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import { useQueryClient } from 'react-query';
 import { BlueTitle } from '../../../../common/BlueTitle';
-import { IEntityExpanded, IFile } from '../../../../interfaces/entities';
+import { IEntityExpanded } from '../../../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { EntityComponentToPrint } from './EntityComponentToPrint';
 import { IConnectionTemplateOfExpandedEntity } from '../..';
 import { FileData } from '../../../../common/PrintFiles/FileData';
+import { IFile } from '../../../../interfaces/preview';
 
 const ComponentToPrint = React.forwardRef<
     HTMLDivElement,
@@ -15,8 +16,8 @@ const ComponentToPrint = React.forwardRef<
         entityTemplate: IMongoEntityTemplatePopulated;
         expandedEntity: IEntityExpanded;
         connectionsTemplatesToPrint: IConnectionTemplateOfExpandedEntity[];
-        isFilesLoading: Set<number> | undefined;
-        setIsFilesLoading: React.Dispatch<React.SetStateAction<Set<number> | undefined>>;
+        isFilesLoading: Set<string> | undefined;
+        setIsFilesLoading: React.Dispatch<React.SetStateAction<Set<string> | undefined>>;
         setIsFilesError: React.Dispatch<React.SetStateAction<boolean>>;
         filesToPrint: IFile[];
         options: {
@@ -148,7 +149,7 @@ const ComponentToPrint = React.forwardRef<
                             return (
                                 <FileData
                                     file={file}
-                                    key={file.id}
+                                    key={`${file.id} - ${file.contentType}`}
                                     isFilesLoading={isFilesLoading}
                                     setIsFilesLoading={setIsFilesLoading}
                                     index={index}

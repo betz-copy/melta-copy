@@ -1,16 +1,17 @@
-import React, { CSSProperties } from 'react';
+import { Visibility as VisibilityIcon, VisibilityOff as VisibilityOffIcon } from '@mui/icons-material';
 import { Grid, IconButton, Typography } from '@mui/material';
 import i18next from 'i18next';
-import { useSelector } from 'react-redux';
+import React, { CSSProperties } from 'react';
 import { pdfjs } from 'react-pdf';
-import { Visibility as VisibilityIcon, VisibilityOff as VisibilityOffIcon } from '@mui/icons-material';
-import { IMongoEntityTemplatePopulated, IEntitySingleProperty } from '../interfaces/entityTemplates';
-import { IEntity, IFile } from '../interfaces/entities';
+import { useSelector } from 'react-redux';
+import { IEntity } from '../interfaces/entities';
+import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { RootState } from '../store';
 import { ColoredEnumChip } from './ColoredEnumChip';
+import OpenPreview from './FilePreview/OpenPreview';
 import { MeltaTooltip } from './MeltaTooltip';
-import { OpenPreviewButton } from './FilePreview/OpenPreviewButton';
 import { CalculateDateDifference } from '../utils/agGrid/CalculateDateDifference';
+import { IFile } from '../interfaces/preview';
 
 pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.js';
 
@@ -31,12 +32,12 @@ export const formatToString = (
     if (valueType === 'string') {
         if (format === 'date') return new Date(value).toLocaleDateString('en-uk');
         if (format === 'date-time') return new Date(value).toLocaleString('en-uk');
-        if (format === 'fileId') return <OpenPreviewButton fileId={value} download={download} />;
+        if (format === 'fileId') return <OpenPreview fileId={value} download={download} />;
     }
     if (keyEnumColors?.[value] && valueType === 'string') return <ColoredEnumChip label={value} color={keyEnumColors[value]} />;
     if (valueType === 'array') {
         if (propertySchema?.items?.format === 'fileId') {
-            return value.map((val) => <OpenPreviewButton fileId={val} key={val} />);
+            return value.map((val) => <OpenPreview fileId={val} key={val} />);
         }
         return value.map((val) => (
             <ColoredEnumChip key={val} label={val} color={keyEnumColors?.[val] || 'default'} style={{ margin: '5px 0px 0px 5px' }} />
@@ -54,6 +55,7 @@ interface IEntityPropertiesProps {
     showPreviewPropertiesOnly?: boolean;
     files?: IFile[];
     overridePropertiesToShow?: string[];
+    removeFiles?: boolean;
     style?: CSSProperties;
     innerStyle?: CSSProperties;
     textWrap?: boolean;
@@ -67,6 +69,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
     showPreviewPropertiesOnly = false,
     files,
     overridePropertiesToShow,
+    removeFiles = false,
     style,
     innerStyle,
     textWrap = false,
@@ -84,6 +87,12 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
         } else {
             propertiesOrderedToShow = entityTemplate.propertiesOrder.filter((propertyKey) => entityTemplate.propertiesPreview!.includes(propertyKey));
         }
+    } else if (removeFiles) {
+        propertiesOrderedToShow = entityTemplate.propertiesOrder.filter(
+            (propertyKey) =>
+                entityTemplate.properties.properties[propertyKey].format !== 'fileId' &&
+                entityTemplate.properties.properties[propertyKey].items?.format !== 'fileId',
+        );
     } else {
         propertiesOrderedToShow = entityTemplate.propertiesOrder;
     }
@@ -106,7 +115,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                 const calculateTime = 'calculateTime' in propertySchema && propertySchema.calculateTime;
                 return (
                     <Grid key={propertyKey} item container flexDirection="row" style={innerStyle} alignItems={textWrap ? 'flex-start' : 'center'}>
-                        <Grid item container width="100%" flexWrap="nowrap" gap="15px" alignItems={textWrap ? 'flex-start' : 'center'}>
+                        <Grid item container width="100%" flexWrap="nowrap" alignItems={textWrap ? 'flex-start' : 'center'}>
                             <Grid item width="30%">
                                 <MeltaTooltip disableHoverListener={textWrap} placement="bottom" title={propertySchema.title}>
                                     <Typography
@@ -131,7 +140,6 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                                 flexDirection="row"
                                 alignItems={textWrap ? 'flex-start' : 'center'}
                                 flexWrap="nowrap"
-                                justifyContent="space-between"
                                 style={{
                                     direction: 'rtl',
                                     textAlign: 'right',
@@ -140,7 +148,13 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                                 <MeltaTooltip
                                     disableHoverListener={textWrap}
                                     placement="bottom"
-                                    title={hideFieldsToDisplay.includes(propertyKey) || propertySchema.format === 'fileId' ? '' : stringFormatValue}
+                                    title={
+                                        hideFieldsToDisplay.includes(propertyKey) ||
+                                        propertySchema.format === 'fileId' ||
+                                        propertySchema.items?.format === 'fileId'
+                                            ? ''
+                                            : stringFormatValue
+                                    }
                                 >
                                     <Typography
                                         fontSize="14px"

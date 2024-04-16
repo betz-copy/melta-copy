@@ -5,7 +5,7 @@ import { IconButton } from '@mui/material';
 import { Print as PrintIcon } from '@mui/icons-material';
 import { AxiosError } from 'axios';
 import { UseMutateAsyncFunction } from 'react-query';
-import { IFile } from '../../../interfaces/entities';
+import { IFile } from '../../../interfaces/preview';
 import { ComponentToPrint } from './ComponentToPrint';
 import { PrintOptionsDialog } from './PrintOptionsDialog';
 import { getFileName } from '../../../utils/getFileName';
@@ -44,9 +44,9 @@ const Print: React.FC<{
                     return {
                         id: propertyValue,
                         name,
-                        type: getPreviewContentType(name),
+                        contentType: getPreviewContentType(name),
                         key: propertyKey,
-                        extension: getFileExtension(name),
+                        targetExtension: getFileExtension(name),
                     } as IFile;
                 }
                 if (propertyValue && propertySchema.type === 'array' && propertySchema.items?.format === 'fileId') {
@@ -55,8 +55,8 @@ const Print: React.FC<{
                         return {
                             id: file,
                             name,
-                            type: getPreviewContentType(name),
-                            extension: getFileExtension(name),
+                            contentType: getPreviewContentType(name),
+                            targetExtension: getFileExtension(name),
                         } as IFile;
                     });
                 }
@@ -79,9 +79,9 @@ const Print: React.FC<{
                             files.push({
                                 id: propertyValue,
                                 name,
-                                type: getPreviewContentType(name),
-                                extension: getFileExtension(name),
-                            });
+                                contentType: getPreviewContentType(name),
+                                targetExtension: getFileExtension(name),
+                            } as IFile);
                         }
                         if (propertyValue && propertySchema.type === 'array' && propertySchema.items?.format === 'fileId') {
                             propertyValue.forEach((file) => {
@@ -89,9 +89,9 @@ const Print: React.FC<{
                                 files.push({
                                     id: file,
                                     name,
-                                    type: getPreviewContentType(name),
-                                    extension: getFileExtension(name),
-                                });
+                                    contentType: getPreviewContentType(name),
+                                    targetExtension: getFileExtension(name),
+                                } as IFile);
                             });
                         }
                     }
@@ -103,16 +103,22 @@ const Print: React.FC<{
 
     const [files, setFiles] = React.useState(
         getProcessPropertiesFiles()
-            .filter((file) => !isVideoOrAudio(file.type) && !isUnsupported(file.type) && !file.name.includes('txt'))
-            .concat(getProcessStepsFiles().filter((file) => !isVideoOrAudio(file.type) && !isUnsupported(file.type) && !file.name.includes('txt'))),
+            .filter((file) => !isVideoOrAudio(file.contentType) && !isUnsupported(file.contentType) && !file.name.includes('txt'))
+            .concat(
+                getProcessStepsFiles().filter(
+                    (file) => !isVideoOrAudio(file.contentType) && !isUnsupported(file.contentType) && !file.name.includes('txt'),
+                ),
+            ),
     );
 
     React.useEffect(() => {
         setFiles(
             getProcessPropertiesFiles()
-                .filter((file) => !isVideoOrAudio(file.type) && !isUnsupported(file.type) && !file.name.includes('txt'))
+                .filter((file) => !isVideoOrAudio(file.contentType) && !isUnsupported(file.contentType) && !file.name.includes('txt'))
                 .concat(
-                    getProcessStepsFiles().filter((file) => !isVideoOrAudio(file.type) && !isUnsupported(file.type) && !file.name.includes('txt')),
+                    getProcessStepsFiles().filter(
+                        (file) => !isVideoOrAudio(file.contentType) && !isUnsupported(file.contentType) && !file.name.includes('txt'),
+                    ),
                 ),
         );
     }, [processTemplate, processInstance, getProcessPropertiesFiles, getProcessStepsFiles]);
@@ -120,7 +126,7 @@ const Print: React.FC<{
     const [showSummary, setShowSummary] = React.useState(true);
     const [showFiles, setShowFiles] = React.useState(false);
 
-    const [isFilesLoading, setIsFilesLoading] = React.useState<Set<number>>();
+    const [isFilesLoading, setIsFilesLoading] = React.useState<Set<string>>();
     const [isFilesError, setIsFilesError] = React.useState(false);
 
     const getPageMargins = () => {

@@ -5,12 +5,10 @@ import { UseMutateAsyncFunction, useQueryClient } from 'react-query';
 import { AxiosError } from 'axios';
 import { AccessTimeFilled as AccessTimeFilledIcon, Cancel as CancelIcon, CheckCircle as CheckCircleIcon } from '@mui/icons-material';
 import { BlueTitle } from '../../../common/BlueTitle';
-import { IFile } from '../../../interfaces/entities';
-import { useFilePreview } from '../../../utils/useFilePreview';
+import { IFile } from '../../../interfaces/preview';
 import { IMongoProcessInstancePopulated, Status } from '../../../interfaces/processes/processInstance';
 import { IMongoProcessTemplatePopulated } from '../../../interfaces/processes/processTemplate';
 import { StatusDisplay } from '../../../common/wizards/processInstance/ProcessSummaryStep/ProcessStatus';
-import { FileToPrint } from '../../../common/PrintFiles/FileToPrint';
 import ProcessSummary from '../../../common/wizards/processInstance/ProcessSummaryStep';
 import { ProcessComponentToPrint, StepComponentToPrint } from './ProcessComponentToPrint';
 import { IPermissionsOfUser } from '../../../services/permissionsService';
@@ -24,8 +22,8 @@ const ComponentToPrint = React.forwardRef<
     {
         processTemplate: IMongoProcessTemplatePopulated;
         processInstance: IMongoProcessInstancePopulated;
-        isFilesLoading: Set<number> | undefined;
-        setIsFilesLoading: React.Dispatch<React.SetStateAction<Set<number> | undefined>>;
+        isFilesLoading: Set<string> | undefined;
+        setIsFilesLoading: React.Dispatch<React.SetStateAction<Set<string> | undefined>>;
         setIsFilesError: React.Dispatch<React.SetStateAction<boolean>>;
         mutateAsync: UseMutateAsyncFunction<IMongoProcessInstancePopulated, AxiosError<any, any>, ProcessDetailsValues, unknown>;
         setCurrProcessInstance: React.Dispatch<React.SetStateAction<IMongoProcessInstancePopulated>>;
@@ -114,7 +112,7 @@ const ComponentToPrint = React.forwardRef<
                 {processInstance.steps.map((stepInstance, index) => {
                     const stepTemplate = getStepTemplateByStepInstance(stepInstance, processTemplate);
                     return (
-                        <>
+                        <Grid style={{ pageBreakInside: 'avoid' }} key={`${stepInstance._id}-${stepTemplate._id}`}>
                             <Box paddingBottom="0.4rem" display="flex" justifyContent="flex-start" alignItems="center" marginTop={5} marginBottom={1}>
                                 <Typography component="h4" variant="h4" color={theme.palette.primary.main} fontWeight="800">
                                     {stepTemplate.displayName}
@@ -145,7 +143,7 @@ const ComponentToPrint = React.forwardRef<
                                     setIsProcessChanged(true);
                                 }}
                             />
-                        </>
+                        </Grid>
                     );
                 })}
                 {options.showFiles && (

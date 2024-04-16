@@ -3,7 +3,7 @@ import React from 'react';
 import { useReactToPrint } from 'react-to-print';
 import IconButtonWithPopover from '../../../../common/IconButtonWithPopover';
 import { IMongoCategory } from '../../../../interfaces/categories';
-import { IEntityExpanded, IFile } from '../../../../interfaces/entities';
+import { IEntityExpanded } from '../../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { ComponentToPrint } from './ComponentToPrint';
 import { PrintOptionsDialog } from './PrintOptionsDialog';
@@ -11,6 +11,7 @@ import { IConnectionTemplateOfExpandedEntity } from '../..';
 import { getFileName } from '../../../../utils/getFileName';
 import { getFileExtension, getPreviewContentType } from '../../../../utils/getFileType';
 import { isUnsupported, isVideoOrAudio } from '../../../../common/FilePreview/PreviewDialog';
+import { IFile } from '../../../../interfaces/preview';
 
 const Print: React.FC<{
     entityTemplate: IMongoEntityTemplatePopulated;
@@ -38,9 +39,9 @@ const Print: React.FC<{
                     return {
                         id: propertyValue,
                         name,
-                        type: getPreviewContentType(name),
+                        contentType: getPreviewContentType(name),
                         key: propertyKey,
-                        extension: getFileExtension(name),
+                        targetExtension: getFileExtension(name),
                     } as IFile;
                 }
 
@@ -50,8 +51,8 @@ const Print: React.FC<{
                         return {
                             id: file,
                             name,
-                            type: getPreviewContentType(name),
-                            extension: getFileExtension(name),
+                            contentType: getPreviewContentType(name),
+                            targetExtension: getFileExtension(name),
                         } as IFile;
                     });
                 }
@@ -62,12 +63,14 @@ const Print: React.FC<{
     }, [entityTemplate, expandedEntity]);
 
     const [files, setFiles] = React.useState(
-        getEntityFiles().filter((file) => !isVideoOrAudio(file.type) && !isUnsupported(file.type) && !file.name.includes('txt')),
+        getEntityFiles().filter((file) => !isVideoOrAudio(file.contentType) && !isUnsupported(file.contentType) && !file.name.includes('txt')),
     );
     const [selectedFiles, setSelectedFiles] = React.useState(files);
 
     React.useEffect(() => {
-        const currFiles = getEntityFiles().filter((file) => !isVideoOrAudio(file.type) && !isUnsupported(file.type) && !file.name.includes('txt'));
+        const currFiles = getEntityFiles().filter(
+            (file) => !isVideoOrAudio(file.contentType) && !isUnsupported(file.contentType) && !file.name.includes('txt'),
+        );
         setFiles(currFiles);
         setSelectedFiles(currFiles);
     }, [getEntityFiles]);
@@ -78,7 +81,7 @@ const Print: React.FC<{
     const [showEntityDates, setShowEntityDates] = React.useState(true);
     const [showPreviewPropertiesOnly, setShowPreviewPropertiesOnly] = React.useState(false);
 
-    const [isFilesLoading, setIsFilesLoading] = React.useState<Set<number>>();
+    const [isFilesLoading, setIsFilesLoading] = React.useState<Set<string>>();
     const [isFilesError, setIsFilesError] = React.useState(false);
 
     const handlePrint = useReactToPrint({

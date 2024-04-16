@@ -4,7 +4,7 @@ import { Document, Page, pdfjs } from 'react-pdf';
 import { UseQueryResult } from 'react-query';
 import { isImage } from '../FilePreview/PreviewDialog';
 import FlexBox from '../FlexBox';
-import { IFile } from '../../interfaces/entities';
+import { IFile } from '../../interfaces/preview';
 
 pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.js';
 
@@ -29,7 +29,6 @@ const FileToPrint: React.FC<{
                 const pageHeight = fileRef.current.scrollHeight / numOfPages;
                 const scrolledPage = Math.floor(fileRef.current.scrollTop / pageHeight) + 1;
                 currentPageRef.current = scrolledPage;
-                // setJumpToPage(scrolledPage.toString());
             }
         };
 
@@ -52,7 +51,7 @@ const FileToPrint: React.FC<{
 
     return (
         <Grid item ref={fileRef}>
-            {isImage(file.type) ? (
+            {isImage(file.contentType) ? (
                 <Box
                     sx={{
                         overflow: 'auto',

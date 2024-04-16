@@ -1,24 +1,24 @@
-import { Autocomplete, Box, Card, CardActions, CardContent, Fab, Grid, TextField, Typography } from '@mui/material';
-import React, { useEffect, useState } from 'react';
-import i18next from 'i18next';
-import { useQueryClient } from 'react-query';
-import { Field, FormikProps, FormikProvider } from 'formik';
-import pickBy from 'lodash.pickby';
 import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { Autocomplete, Box, Card, CardActions, CardContent, Fab, Grid, TextField, Typography } from '@mui/material';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { IMongoProcessTemplatePopulated, IProcessTemplateMap, IProcessSingleProperty } from '../../../../interfaces/processes/processTemplate';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { Field, FormikProps, FormikProvider } from 'formik';
+import i18next from 'i18next';
+import pickBy from 'lodash.pickby';
+import React, { useEffect, useState } from 'react';
+import { useQueryClient } from 'react-query';
 import { IDetailsStepProp, ProcessDetailsValues } from '.';
-import { JSONSchemaFormik } from '../../../inputs/JSONSchemaFormik';
-import { BlueTitle } from '../../../BlueTitle';
+import { IMongoProcessTemplatePopulated, IProcessSingleProperty, IProcessTemplateMap } from '../../../../interfaces/processes/processTemplate';
 import { pickProcessFieldsPropertiesSchema } from '../../../../utils/pickFieldsPropertiesSchema';
-import { InstanceFileInput } from '../../../inputs/InstanceFilesInput/InstanceFileInput';
 import { setInitialStepsObject } from '../../../../utils/processWizard/steps';
+import { BlueTitle } from '../../../BlueTitle';
+import OpenPreview from '../../../FilePreview/OpenPreview';
+import { InstanceFileInput } from '../../../inputs/InstanceFilesInput/InstanceFileInput';
+import { JSONSchemaFormik } from '../../../inputs/JSONSchemaFormik';
 import { EntityReference } from '../EntityReference';
 import { ProcessStepValues } from '../ProcessSteps';
 import { initDetailsValues } from './detailsFormik';
-import { OpenPreviewButton } from '../../../FilePreview/OpenPreviewButton';
 import { InstanceSingleFileInput } from '../../../inputs/InstanceFilesInput/InstanceSingleFileInput';
 
 export const SchemaForm = ({ viewMode, values, errors, touched, setFieldValue, setFieldTouched }) => {
@@ -65,7 +65,7 @@ const FileAttachmentsEdit: React.FC<FileAttachmentsProps> = ({
             <Grid item key={key} marginTop={index > 0 ? 5 : 0}>
                 {value.items === undefined ? (
                     <InstanceSingleFileInput
-                        key={key}
+                        key={`${key}-${value.title}`}
                         fileFieldName={`detailsAttachments.${key}`}
                         fieldTemplateTitle={value.title}
                         setFieldValue={setFieldValue}
@@ -80,7 +80,7 @@ const FileAttachmentsEdit: React.FC<FileAttachmentsProps> = ({
                     />
                 ) : (
                     <InstanceFileInput
-                        key={key}
+                        key={`${key}-${value.title}`}
                         fileFieldName={`detailsAttachments.${key}`}
                         fieldTemplateTitle={value.title}
                         setFieldValue={setFieldValue}
@@ -110,11 +110,9 @@ export const FileAttachmentsView: React.FC<FileAttachmentsProps> = ({ templateFi
                 );
                 if (values.detailsAttachments[fieldName]) {
                     if (Array.isArray(values.detailsAttachments[fieldName])) {
-                        attachments = values.detailsAttachments[fieldName].map((v) => (
-                            <OpenPreviewButton fileId={v.name} key={v} download={toPrint} />
-                        ));
+                        attachments = values.detailsAttachments[fieldName].map((v) => <OpenPreview key={v} fileId={v.name} download={toPrint} />);
                     } else {
-                        attachments = <OpenPreviewButton fileId={values.detailsAttachments[fieldName].name} download={toPrint} />;
+                        attachments = <OpenPreview fileId={values.detailsAttachments[fieldName].name} download={toPrint} />;
                     }
                 }
                 return (
@@ -155,6 +153,7 @@ const FileAttachments = ({ viewMode, templateFileProperties, values, errors, tou
                     touched={touched}
                     setFieldTouched={setFieldTouched}
                     toPrint={toPrint}
+                    key={`${values.startDate}${values.endDate}`}
                 />
             )}
         </Box>
@@ -204,7 +203,7 @@ const GeneralDetails: React.FC<IDetailsStepProp> = ({ detailsFormikData, onNext,
 
     return (
         <Card sx={{ border: 'none', boxShadow: 'none', background: 'transparent' }}>
-            <CardContent sx={{ height: toPrint ? undefined : '56vh', overflowY: 'auto' }}>
+            <CardContent sx={{ height: toPrint ? undefined : '56vh', overflowY: 'auto' }} key={`${values.name} - ${values.template?._id}`}>
                 <Grid container direction="column" paddingLeft={4} justifyContent="space-around">
                     <Grid item>
                         <FormikProvider value={detailsFormikData}>
@@ -403,6 +402,7 @@ const GeneralDetails: React.FC<IDetailsStepProp> = ({ detailsFormikData, onNext,
                                                     setFieldTouched,
                                                     toPrint,
                                                 }}
+                                                key={`${values.endDate}${values.startDate}`}
                                             />
                                         )}
                                         {Object.keys(templateEntityReferenceProperties!).length !== 0 && (
@@ -415,7 +415,7 @@ const GeneralDetails: React.FC<IDetailsStepProp> = ({ detailsFormikData, onNext,
                                                 />
                                                 {Object.entries(templateEntityReferenceProperties!).map(([fieldName, { title }]) => (
                                                     <Field
-                                                        key={fieldName}
+                                                        key={`${fieldName}-1`}
                                                         validate={(changedValue) => {
                                                             return (
                                                                 values.template?.details.properties.required.includes(fieldName) &&

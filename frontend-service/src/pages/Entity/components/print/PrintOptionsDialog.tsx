@@ -6,9 +6,10 @@ import { toast } from 'react-toastify';
 import { SelectCheckbox } from '../../../../common/SelectCheckbox';
 import { IMongoRelationshipTemplatePopulated } from '../../../../interfaces/relationshipTemplates';
 import { IMongoCategory } from '../../../../interfaces/categories';
-import { IEntityExpanded, IFile } from '../../../../interfaces/entities';
+import { IEntityExpanded } from '../../../../interfaces/entities';
 import { IConnectionTemplateOfExpandedEntity } from '../..';
 import { MeltaCheckbox } from '../../../../common/MeltaCheckbox';
+import { IFile } from '../../../../interfaces/preview';
 
 const PrintOptionsDialog: React.FC<{
     open: boolean;
@@ -20,8 +21,8 @@ const PrintOptionsDialog: React.FC<{
     files: IFile[];
     selectedFiles: IFile[];
     setSelectedFiles: React.Dispatch<React.SetStateAction<IFile[]>>;
-    isFilesLoading: Set<number> | undefined;
-    setIsFilesLoading: React.Dispatch<React.SetStateAction<Set<number> | undefined>>;
+    isFilesLoading: Set<string> | undefined;
+    setIsFilesLoading: React.Dispatch<React.SetStateAction<Set<string> | undefined>>;
     isFilesError: boolean;
     setIsFilesError: React.Dispatch<React.SetStateAction<boolean>>;
     categoriesWithConnectionsTemplates: {

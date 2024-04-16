@@ -4,14 +4,14 @@ import { PrintOutlined, CloseOutlined } from '@mui/icons-material';
 import i18next from 'i18next';
 import { toast } from 'react-toastify';
 import { MeltaCheckbox } from '../../../common/MeltaCheckbox';
-import { IFile } from '../../../interfaces/entities';
+import { IFile } from '../../../interfaces/preview';
 
 const PrintOptionsDialog: React.FC<{
     open: boolean;
     handleClose: () => void;
     files: IFile[];
     isLoading: boolean;
-    setIsLoading: React.Dispatch<React.SetStateAction<Set<number> | undefined>>;
+    setIsLoading: React.Dispatch<React.SetStateAction<Set<string> | undefined>>;
     isFilesError: boolean;
     setIsFilesError: React.Dispatch<React.SetStateAction<boolean>>;
     setShowFiles: React.Dispatch<React.SetStateAction<boolean>>;
@@ -44,7 +44,7 @@ const PrintOptionsDialog: React.FC<{
                                 label={i18next.t('wizard.processInstance.print.showSummary')}
                             />
                         </Grid>
-                        {files && (
+                        {files && files.length > 0 && (
                             <Grid>
                                 <FormControlLabel
                                     control={<MeltaCheckbox checked={options.showFiles} onChange={() => options.setShowFiles((cur) => !cur)} />}

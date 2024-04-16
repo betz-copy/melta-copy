@@ -29,7 +29,14 @@ const ProcessComponentToPrint: React.FC<{
     return (
         <Box border={`2px solid ${theme.palette.primary.main}`} borderRadius="20px" padding="1rem" style={{ pageBreakInside: 'avoid' }}>
             <Box padding="0.2rem">
-                <GeneralDetails detailsFormikData={detailsFormikData} processInstance={processInstance} toPrint onNext={() => {}} onBack={() => {}} />{' '}
+                <GeneralDetails
+                    detailsFormikData={detailsFormikData}
+                    processInstance={processInstance}
+                    toPrint
+                    onNext={() => {}}
+                    onBack={() => {}}
+                    key={`${processInstance._id}${processInstance.name}`}
+                />
             </Box>
             <EntityDates createdAt={processInstance.createdAt.toString()} updatedAt={processInstance.updatedAt.toString()} />
         </Box>

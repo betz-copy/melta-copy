@@ -114,10 +114,3 @@ export interface IExportEntitiesBody {
         };
     };
 }
-
-export interface IFile {
-    id: string;
-    name: string;
-    type: string;
-    extension: string;
-}

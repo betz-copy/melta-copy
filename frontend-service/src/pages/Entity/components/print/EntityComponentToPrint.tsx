@@ -2,11 +2,12 @@ import React from 'react';
 import { Box, useTheme } from '@mui/material';
 import { useSelector } from 'react-redux';
 import { EntityPropertiesInternal } from '../../../../common/EntityProperties';
-import { IEntity, IFile } from '../../../../interfaces/entities';
+import { IEntity } from '../../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { EntityDisableCheckbox } from '../EntityDisableCheckbox';
 import { EntityDates } from '../EntityDates';
 import { RootState } from '../../../../store';
+import { IFile } from '../../../../interfaces/preview';
 
 const EntityComponentToPrint: React.FC<{
     entityTemplate: IMongoEntityTemplatePopulated;

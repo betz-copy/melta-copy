@@ -1,27 +1,28 @@
-import { Grid, Button, CircularProgress, Box, Typography, TextField } from '@mui/material';
-import { Formik, Form, Field } from 'formik';
+/* eslint-disable no-extra-boolean-cast */
+import { Clear as ClearIcon, Done as DoneIcon, Edit as EditIcon } from '@mui/icons-material';
+import { Box, Button, CircularProgress, Grid, TextField, Typography } from '@mui/material';
+import { AxiosError } from 'axios';
+import { Field, Form, Formik } from 'formik';
 import i18next from 'i18next';
 import pickBy from 'lodash.pickby';
 import React, { FC } from 'react';
-import { Done as DoneIcon, Clear as ClearIcon, Edit as EditIcon } from '@mui/icons-material';
-import { AxiosError } from 'axios';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import { IMongoStepInstancePopulated } from '../../../../interfaces/processes/stepInstance';
-import { pickProcessFieldsPropertiesSchema } from '../../../../utils/pickFieldsPropertiesSchema';
-import { InstanceFileInput } from '../../../inputs/InstanceFilesInput/InstanceFileInput';
-import { ajvValidate, JSONSchemaFormik } from '../../../inputs/JSONSchemaFormik';
-import { getStepValuesFromStepInstance } from './stepsFormik';
-import { updateStepRequest } from '../../../../services/processesService';
-import { ErrorToast } from '../../../ErrorToast';
-import ProcessStatus from '../ProcessSummaryStep/ProcessStatus';
-import { IMongoStepTemplatePopulated } from '../../../../interfaces/processes/stepTemplate';
 import { ProcessStepValues } from '.';
-import { IPermissionsOfUser } from '../../../../services/permissionsService';
 import { IMongoProcessInstancePopulated } from '../../../../interfaces/processes/processInstance';
-import { EntityReference } from '../EntityReference';
+import { IMongoStepInstancePopulated } from '../../../../interfaces/processes/stepInstance';
+import { IMongoStepTemplatePopulated } from '../../../../interfaces/processes/stepTemplate';
+import { IPermissionsOfUser } from '../../../../services/permissionsService';
+import { updateStepRequest } from '../../../../services/processesService';
+import { pickProcessFieldsPropertiesSchema } from '../../../../utils/pickFieldsPropertiesSchema';
 import { BlueTitle } from '../../../BlueTitle';
-import { OpenPreviewButton } from '../../../FilePreview/OpenPreviewButton';
+import { ErrorToast } from '../../../ErrorToast';
+import { InstanceFileInput } from '../../../inputs/InstanceFilesInput/InstanceFileInput';
+import { JSONSchemaFormik, ajvValidate } from '../../../inputs/JSONSchemaFormik';
+import { EntityReference } from '../EntityReference';
+import ProcessStatus from '../ProcessSummaryStep/ProcessStatus';
+import { getStepValuesFromStepInstance } from './stepsFormik';
+import OpenPreview from '../../../FilePreview/OpenPreview';
 import { InstanceSingleFileInput } from '../../../inputs/InstanceFilesInput/InstanceSingleFileInput';
 
 interface ProcessStepProps {
@@ -192,7 +193,7 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                                             <Grid item key={key} marginTop={index > 0 ? 5 : 0}>
                                                                 {value.items ? (
                                                                     <InstanceFileInput
-                                                                        key={key}
+                                                                        key={`${key} - ${value}`}
                                                                         fileFieldName={`attachmentsProperties.${key}`}
                                                                         fieldTemplateTitle={value.title}
                                                                         setFieldValue={setFieldValue}
@@ -203,7 +204,7 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                                                     />
                                                                 ) : (
                                                                     <InstanceSingleFileInput
-                                                                        key={key}
+                                                                        key={`${key} : ${value}`}
                                                                         fileFieldName={`attachmentsProperties.${key}`}
                                                                         fieldTemplateTitle={value.title}
                                                                         setFieldValue={setFieldValue}
@@ -229,13 +230,13 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                                             if (values.attachmentsProperties[fieldName] !== undefined) {
                                                                 if (Array.isArray(values.attachmentsProperties[fieldName])) {
                                                                     attachments = values.attachmentsProperties[fieldName].map((file) => (
-                                                                        <OpenPreviewButton fileId={file.name} key={file.name} download={toPrint} />
+                                                                        <OpenPreview fileId={file.name} key={file.name} download={toPrint} />
                                                                     ));
                                                                 } else {
                                                                     attachments = (
-                                                                        <OpenPreviewButton
+                                                                        <OpenPreview
                                                                             fileId={values.attachmentsProperties[fieldName].name}
-                                                                            key={fieldName}
+                                                                            key={`${fieldName} - 1`}
                                                                             download={toPrint}
                                                                         />
                                                                     );
@@ -243,7 +244,13 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                                             }
 
                                                             return (
-                                                                <Grid container spacing={1} key={fieldName} display="flex" flexDirection="column">
+                                                                <Grid
+                                                                    container
+                                                                    spacing={1}
+                                                                    key={`${fieldName} - 2`}
+                                                                    display="flex"
+                                                                    flexDirection="column"
+                                                                >
                                                                     <Grid item>
                                                                         <Typography display="inline" variant="body1">
                                                                             {title}:
@@ -279,7 +286,7 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                                             i18next.t('validation.requiredEntity')
                                                         );
                                                     }}
-                                                    key={fieldName}
+                                                    key={`${fieldName} - 3`}
                                                     field={fieldName}
                                                     values={values}
                                                     errors={errors}
