@@ -1,10 +1,19 @@
 import * as mongoose from 'mongoose';
 import axios from 'axios';
+import * as apm from 'elastic-apm-node';
 import Server from './express/server';
 import config from './config';
 import logger from './utils/logger/logsLogger';
 
-const { mongo, service } = config;
+const { mongo, service, logs } = config;
+
+if (logs.enableApm) {
+    apm.start({
+        serviceName: logs.extraDefault.serviceName,
+        serverUrl: logs.apmServerUrl,
+        environment: logs.extraDefault.environment,
+    });
+}
 
 const initializeMongo = async () => {
     logger.info('Connecting to Mongo...');

@@ -1,4 +1,5 @@
 import menash from 'menashmq';
+import apm from 'elastic-apm-node';
 
 import axios from 'axios';
 import Neo4jClient from './utils/neo4j';
@@ -7,7 +8,15 @@ import config from './config';
 import { updateIndexConsumeFunction } from './rabbit/consumer';
 import logger from './utils/logger/logsLogger';
 
-const { rabbit, neo4j, redis, service } = config;
+const { rabbit, neo4j, redis, service, logs } = config;
+
+if (logs.enableApm) {
+    apm.start({
+        serviceName: logs.extraDefault.serviceName,
+        serverUrl: logs.apmServerUrl,
+        environment: logs.extraDefault.environment,
+    });
+}
 
 const initializeRabbit = async () => {
     logger.info('Connecting to Rabbit...');

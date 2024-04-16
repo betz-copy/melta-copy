@@ -13,6 +13,8 @@ const config = {
     },
     logs: {
         format: env.get('LOGGING_DATE_FORMAT').default('YYYY-MM-DD HH:mm:ss').asString(),
+        enableApm: env.get('ENABLE_APM').default('true').asBool(),
+        apmServerUrl: env.get('APM_SERVER_URL').default('http://apm-server:8200').asString(),
         enableFile: env.get('ENABLE_FILE_LOGGING').default('false').asBool(),
         enableRotateFile: env.get('ENABLE_ROTATE_FILE_LOGGING').default('true').asBool(),
         extraDefault: {
