@@ -1,18 +1,17 @@
 import React, { CSSProperties, useEffect } from 'react';
 import { Grid, IconButton } from '@mui/material';
-import { SliderPicker } from 'react-color';
+import { ChromePicker } from 'react-color';
 import { CloseOutlined as DeleteIcon } from '@mui/icons-material';
 
 export interface IColorPickerProps {
     color?: string;
     onColorChange: (color?: string) => void;
-    width: CSSProperties['width'];
     initialColor?: boolean;
     allowDelete?: boolean;
     style?: CSSProperties;
 }
 
-export const ColorPicker: React.FC<IColorPickerProps> = ({ color, onColorChange, width, initialColor = true, allowDelete = true, style }) => {
+export const ColorPicker: React.FC<IColorPickerProps> = ({ color, onColorChange, initialColor = true, allowDelete = true, style }) => {
     useEffect(() => {
         if (initialColor && !color) {
             onColorChange('#40bfbc');
@@ -21,8 +20,9 @@ export const ColorPicker: React.FC<IColorPickerProps> = ({ color, onColorChange,
 
     return (
         <Grid container direction="column" alignItems="center" sx={style}>
-            <SliderPicker color={color} onChange={({ hex }) => onColorChange(hex)} styles={{ default: { hue: { width } } }} />
-
+            <Grid style={{ direction: 'ltr' }}>
+                <ChromePicker disableAlpha color={color} onChange={({ hex }) => onColorChange(hex)} />
+            </Grid>
             {allowDelete && (
                 <Grid item marginTop="0.8rem">
                     <IconButton onClick={() => onColorChange()} sx={{ padding: '0.4rem' }}>
