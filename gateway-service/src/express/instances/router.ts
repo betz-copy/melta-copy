@@ -86,7 +86,7 @@ InstancesRouter.delete(
     '/entities/:id',
     ValidateRequest(deleteEntityInstanceSchema),
     wrapMiddleware(validateUserCanWriteEntityInstance),
-    wrapController(InstancesController.deleteEntityInstance, true, [], 'entities'),
+    wrapController(InstancesController.deleteEntityInstance, true, [], 'entities', (id: string) => ({ deletedId: id })),
 );
 InstancesRouter.patch(
     '/entities/:id/status',

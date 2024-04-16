@@ -34,7 +34,13 @@ export const wrapController = <ExtendedRequest extends Request<any, any, any, an
         });
 
         res.json = (body: any) => {
-            const loggedResponseData = responseDataExtractor ? responseDataExtractor(body) : body;
+            const loggedResponseData = JSON.parse(JSON.stringify(responseDataExtractor ? responseDataExtractor(body) : body));
+
+            if (loggedResponseData?._id) {
+                const docId = loggedResponseData._id;
+                delete loggedResponseData._id;
+                loggedResponseData.docId = docId;
+            }
 
             dataLogger.info(indexName, {
                 userId: req.user?.id,
