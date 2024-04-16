@@ -17,8 +17,8 @@ export const wrapController = <ExtendedRequest extends Request<any, any, any, an
     func: (req: ExtendedRequest, res: ExtendedResponse, next?: NextFunction) => Promise<void>,
     toLog: boolean = false,
     logRequestFields: Array<{ key: string; path: string }> = [],
-    responseDataExtractor: (body: any) => any = () => ({}),
     indexName: string = 'gateway',
+    responseDataExtractor: ((body: any) => any) | undefined = undefined,
 ) => {
     return (req: ExtendedRequest, res: ExtendedResponse, next: NextFunction) => {
         if (!toLog) {
@@ -29,14 +29,12 @@ export const wrapController = <ExtendedRequest extends Request<any, any, any, an
         const originalJson = res.json.bind(res);
         const loggedRequestData: Record<string, any> = {};
 
-        // Process request fields to log
         logRequestFields.forEach(({ key, path }) => {
             loggedRequestData[key] = get(req, path);
         });
 
         res.json = (body: any) => {
-            // Process response fields to log
-            const loggedResponseData = responseDataExtractor(body);
+            const loggedResponseData = responseDataExtractor ? responseDataExtractor(body) : body;
 
             dataLogger.info(indexName, {
                 userId: req.user?.id,

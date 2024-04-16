@@ -43,7 +43,7 @@ permissionsRouter.post(
     '/bulk',
     ValidateRequest(createPermissionsBulkRequestSchema),
     wrapMiddleware(validateUserIsPermissionsManager),
-    wrapController(PermissionsController.createPermissionsBulk, true, [], extractResponseLogData, 'permissions'),
+    wrapController(PermissionsController.createPermissionsBulk, true, [], 'permissions', extractResponseLogData),
 );
 permissionsRouter.put(
     '/bulk',
@@ -53,8 +53,8 @@ permissionsRouter.put(
         PermissionsController.updatePermissionsBulk,
         true,
         [{ key: 'permissionsToUpdate', path: 'body' }],
-        extractResponseLogData,
         'permissions',
+        extractResponseLogData,
     ),
 );
 
@@ -62,7 +62,7 @@ permissionsRouter.delete(
     '/',
     ValidateRequest(deletePermissionsRequestSchema),
     wrapMiddleware(validateUserIsPermissionsManager),
-    wrapController(PermissionsController.deletePermissions, true, [{ key: 'idsToDelete', path: 'query.ids' }], extractResponseLogData, 'permissions'),
+    wrapController(PermissionsController.deletePermissions, true, [{ key: 'idsToDelete', path: 'query.ids' }], 'permissions', extractResponseLogData),
 );
 
 export default permissionsRouter;

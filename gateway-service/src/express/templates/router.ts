@@ -31,6 +31,7 @@ import {
     updateRelationshipTemplateSchema,
     updateRuleStatusByIdRequestSchema,
 } from './validator.schema';
+import { IMongoEntityTemplateWithConstraints } from './interfaces';
 
 const {
     entityTemplateService: entityTemplateManager,
@@ -38,16 +39,9 @@ const {
     service: { uploadsFolderPath },
 } = config;
 
-const addLoggingIdToProxyRequest = (proxyReq: any, req: any) => {
-    if (req.headers['logging-id']) {
-        proxyReq.setHeader('logging-id', req.headers['logging-id']);
-    }
-};
-
 const EntityTemplatesManagerProxy = createProxyMiddleware({
     target: entityTemplateManager.url,
     onProxyReq: (proxyReq, req, _res) => {
-        addLoggingIdToProxyRequest(proxyReq, req);
         fixRequestBody(proxyReq, req);
     },
     proxyTimeout: entityTemplateManager.requestTimeout,
@@ -56,11 +50,16 @@ const EntityTemplatesManagerProxy = createProxyMiddleware({
 const RelationshipTemplatesManagerProxy = createProxyMiddleware({
     target: relationshipTemplateManager.url,
     onProxyReq: (proxyReq, req, _res) => {
-        addLoggingIdToProxyRequest(proxyReq, req);
         fixRequestBody(proxyReq, req);
     },
     proxyTimeout: relationshipTemplateManager.requestTimeout,
 });
+
+const fixDeleteResponseData = (data: IMongoEntityTemplateWithConstraints) => {
+    const logData = JSON.parse(JSON.stringify(data));
+    logData.category = { _id: data.category };
+    return logData;
+};
 
 const templatesRouter: Router = Router();
 
@@ -96,25 +95,25 @@ templatesRouter.post(
     multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).single('file'),
     ValidateRequest(createEntityTemplateSchema),
     wrapMiddleware(validateUserCanCreateEntityTemplateUnderCategory),
-    wrapController(TemplatesController.createEntityTemplate),
+    wrapController(TemplatesController.createEntityTemplate, true, [], 'templates-entities'),
 );
 templatesRouter.put(
     '/entities/:id',
     multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).single('file'),
     ValidateRequest(updateEntityTemplateSchema),
     wrapMiddleware(validateUserCanUpdateOrDeleteEntityTemplate),
-    wrapController(TemplatesController.updateEntityTemplate),
+    wrapController(TemplatesController.updateEntityTemplate, true, [], 'templates-entities'),
 );
 templatesRouter.patch(
     '/entities/:id/status',
     ValidateRequest(updateEntityTemplateStatusSchema),
-    wrapController(TemplatesController.updateEntityTemplateStatus),
+    wrapController(TemplatesController.updateEntityTemplateStatus, true, [], 'templates-entities'),
 );
 templatesRouter.delete(
     '/entities/:id',
     ValidateRequest(deleteEntityTemplateSchema),
     wrapMiddleware(validateUserCanUpdateOrDeleteEntityTemplate),
-    wrapController(TemplatesController.deleteEntityTemplate),
+    wrapController(TemplatesController.deleteEntityTemplate, true, [], 'templates-entities', fixDeleteResponseData),
 );
 
 // relationships (templates)
@@ -122,19 +121,19 @@ templatesRouter.post(
     '/relationships',
     ValidateRequest(createRelationshipTemplateSchema),
     wrapMiddleware(validateUserCanCreateRelationshipTemplateUnderCategory),
-    wrapController(TemplatesController.createRelationshipTemplate),
+    wrapController(TemplatesController.createRelationshipTemplate, true, [], 'templates-relationships'),
 );
 templatesRouter.put(
     '/relationships/:id',
     ValidateRequest(updateRelationshipTemplateSchema),
     wrapMiddleware(validateUserCanUpdateOrDeleteRelationshipTemplate),
-    wrapController(TemplatesController.updateRelationshipTemplate),
+    wrapController(TemplatesController.updateRelationshipTemplate, true, [], 'templates-relationships'),
 );
 templatesRouter.delete(
     '/relationships/:id',
     ValidateRequest(deleteRelationshipTemplateSchema),
     wrapMiddleware(validateUserCanUpdateOrDeleteRelationshipTemplate),
-    wrapController(TemplatesController.deleteRelationshipTemplate),
+    wrapController(TemplatesController.deleteRelationshipTemplate, true, [], 'templates-relationships'),
 );
 
 // rules (templates)

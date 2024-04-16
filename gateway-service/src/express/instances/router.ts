@@ -28,7 +28,6 @@ import {
     updateEntityStatusSchema,
 } from './validator.schema';
 import ValidateRequest from '../../utils/joi';
-import { IEntity } from '../../externalServices/instanceService/interfaces/entities';
 
 const { instanceService } = config;
 const InstanceManagerProxy = createProxyMiddleware({
@@ -38,14 +37,6 @@ const InstanceManagerProxy = createProxyMiddleware({
 });
 
 const InstancesRouter: Router = Router();
-
-const extractResponseLogData = (entity: IEntity) => {
-    return { templateId: entity.templateId, properties: entity.properties };
-};
-
-const extractDeleteLogData = (id: string) => {
-    return { deletedId: id };
-};
 
 // entities (Instances)
 InstancesRouter.post(
@@ -74,7 +65,7 @@ InstancesRouter.post(
     multer({ dest: config.service.uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).any(),
     ValidateRequest(createEntityInstanceSchema),
     wrapMiddleware(validateUserCanCreateEntityInstance),
-    wrapController(InstancesController.createEntityInstance, true, [], extractResponseLogData, 'entitiess'),
+    wrapController(InstancesController.createEntityInstance, true, [], 'entities'),
 );
 InstancesRouter.put(
     '/entities/:id',
@@ -82,7 +73,7 @@ InstancesRouter.put(
     ValidateRequest(updateEntityInstanceSchema),
     wrapMiddleware(validateUserCanWriteEntityInstance),
     wrapMiddleware(validateUserCanIgnoreRules),
-    wrapController(InstancesController.updateEntityInstance, true, [], extractResponseLogData, 'entitiess'),
+    wrapController(InstancesController.updateEntityInstance, true, [], 'entities'),
 );
 InstancesRouter.post(
     '/entities/:id/duplicate',
@@ -95,13 +86,13 @@ InstancesRouter.delete(
     '/entities/:id',
     ValidateRequest(deleteEntityInstanceSchema),
     wrapMiddleware(validateUserCanWriteEntityInstance),
-    wrapController(InstancesController.deleteEntityInstance, true, [], extractDeleteLogData, 'entitiess'),
+    wrapController(InstancesController.deleteEntityInstance, true, [], 'entities'),
 );
 InstancesRouter.patch(
     '/entities/:id/status',
     ValidateRequest(updateEntityStatusSchema),
     wrapMiddleware(validateUserCanWriteEntityInstance),
-    wrapController(InstancesController.updateEntityStatus, true, [], extractResponseLogData, 'entitiess'),
+    wrapController(InstancesController.updateEntityStatus, true, [], 'entities'),
 );
 
 // relationships (Instances)
