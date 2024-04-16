@@ -571,6 +571,8 @@ export class EntityManager {
     }
 
     static async updateConstraintsOfTemplate(templateId: string, constraints: { requiredConstraints: string[]; uniqueConstraints: string[][] }) {
+        console.log('kkk ', constraints.uniqueConstraints);
+
         return Neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
             const existingNeo4jConstraints = await runInTransactionAndNormalize(transaction, 'call db.constraints', normalizeGetDbConstraints);
 
@@ -604,7 +606,7 @@ export class EntityManager {
         });
     }
 
-    static async updateNewSerialNumberFields(templateId: string, { newSerialNumberFields }) {
+    static async enumerateNewSerialNumberFields(templateId: string, newSerialNumberFields: object) {
         return Neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
             const numOfEntitiesUpdated = `
             MATCH (n: \`${templateId}\`) 

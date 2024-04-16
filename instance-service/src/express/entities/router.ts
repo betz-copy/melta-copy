@@ -33,10 +33,10 @@ entityRouter.put(
     wrapMiddleware(validateConstraintsOfTemplate),
     wrapController(EntityController.updateConstraintsOfTemplate),
 );
-entityRouter.put(
-    '/constraints/newSerialNumberFields/:templateId',
+entityRouter.post(
+    '/constraints/new-serial-number-fields/:templateId',
     ValidateRequest(updateNewSerialNumberFieldsRequestSchema),
-    wrapController(EntityController.updateNewSerialNumberFields),
+    wrapController(EntityController.enumerateNewSerialNumberFields),
 );
 
 entityRouter.post(

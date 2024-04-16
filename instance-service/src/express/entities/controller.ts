@@ -62,8 +62,8 @@ class EntityController {
         res.json(await EntityManager.updateConstraintsOfTemplate(req.params.templateId, req.body));
     }
 
-    static async updateNewSerialNumberFields(req: Request, res: Response) {
-        res.json(await EntityManager.updateNewSerialNumberFields(req.params.templateId, req.body));
+    static async enumerateNewSerialNumberFields(req: Request, res: Response) {
+        res.json(await EntityManager.enumerateNewSerialNumberFields(req.params.templateId, req.body.newSerialNumberFields));
     }
 }
 

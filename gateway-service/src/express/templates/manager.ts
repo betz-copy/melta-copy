@@ -366,23 +366,22 @@ export class TemplatesManager {
         updatedTemplateData: Omit<IEntityTemplateWithConstraints, 'disabled'>,
         currTemplate: IMongoEntityTemplatePopulated,
     ) {
-        const serialNumberKeys = Object.keys(updatedTemplateData.properties.properties).filter(
+        const updatedSerialNumberFields = Object.keys(updatedTemplateData.properties.properties).filter(
             (key) => updatedTemplateData.properties.properties[key].serialCurrent !== undefined,
         );
 
-        const allNewSerialNumberKeys = serialNumberKeys.filter(
-            (key) => !Object.prototype.hasOwnProperty.call(currTemplate.properties.properties, key),
-        );
+        // eslint-disable-next-line no-prototype-builtins
+        const newSerialNumberFields = updatedSerialNumberFields.filter((key) => !currTemplate.properties.properties.hasOwnProperty(key));
 
-        if (allNewSerialNumberKeys.length) {
-            const newSerialNumberFields = {};
-            allNewSerialNumberKeys.forEach((key) => {
-                newSerialNumberFields[key] = updatedTemplateData.properties.properties[key].serialCurrent;
+        if (newSerialNumberFields.length) {
+            const newSerialNumberValues = {};
+            newSerialNumberFields.forEach((key) => {
+                newSerialNumberValues[key] = updatedTemplateData.properties.properties[key].serialCurrent;
             });
 
-            const numOfInstancesUpdated: number = await InstanceManagerService.updateNewSerialNumberFields(id, newSerialNumberFields);
+            const numOfInstancesUpdated: number = await InstanceManagerService.enumerateNewSerialNumberFields(id, newSerialNumberValues);
 
-            allNewSerialNumberKeys.forEach((key) => {
+            newSerialNumberFields.forEach((key) => {
                 // eslint-disable-next-line no-param-reassign
                 updatedTemplateData.properties.properties[key].serialCurrent! += numOfInstancesUpdated;
             });
@@ -396,8 +395,9 @@ export class TemplatesManager {
         updatedTemplateData: Omit<IEntityTemplateWithConstraints, 'disabled'> & { file?: string },
         file?: Express.Multer.File,
     ): Promise<IMongoEntityTemplateWithConstraintsPopulated> {
-        const { count } = await InstanceManagerService.searchEntitiesOfTemplateRequest(id, { limit: 1 });
+        await EntityTemplateManagerService.getCategoryById(updatedTemplateData.category);
 
+        const { count } = await InstanceManagerService.searchEntitiesOfTemplateRequest(id, { limit: 1 });
         const currTemplate = await EntityTemplateManagerService.getEntityTemplateById(id);
 
         if (currTemplate.disabled === true) throw new ServiceError(400, 'can not update disabled template');
@@ -437,15 +437,13 @@ export class TemplatesManager {
             iconFileId = currTemplate.iconFileId;
         }
 
-        let updatedDataOfTemplate;
-        try {
-            updatedDataOfTemplate = await this.updateNewSerialNumberFields(id, updatedTemplateData, currTemplate);
-        } catch (error) {
-            console.log(`Failed to create serial number fields for existing entities`);
+        const { uniqueConstraints, properties, ...restOfTemplateData } = await this.updateNewSerialNumberFields(
+            id,
+            updatedTemplateData,
+            currTemplate,
+        ).catch((error) => {
             throw new ServiceError(400, `Failed to create serial number fields for existing entities: ${error}`);
-        }
-
-        const { uniqueConstraints, properties, ...restOfTemplateData } = updatedDataOfTemplate;
+        });
         const { required: requiredConstraints, ...restOfTemplatePropertiesObject } = properties;
         const updatedTemplate = await EntityTemplateManagerService.updateEntityTemplate(id, {
             ...restOfTemplateData,
