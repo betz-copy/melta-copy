@@ -80,11 +80,8 @@ export const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
                                             onChange={onChange}
                                             error={touchedName && Boolean(errorName)}
                                             helperText={touchedName && errorName}
-                                            disabled={isDisabled}
+                                            disabled={isDisabled || value.deleted}
                                             sx={{ width: '50%', marginRight: '5px' }}
-                                            InputProps={{
-                                                readOnly: value.deleted,
-                                            }}
                                         />
                                         <TextField
                                             label={i18next.t('wizard.entityTemplate.attachmentDisplayName')}
@@ -95,9 +92,7 @@ export const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
                                             error={touchedTitle && Boolean(errorTitle)}
                                             helperText={touchedTitle && errorTitle}
                                             sx={{ width: '50%', marginRight: '5px' }}
-                                            InputProps={{
-                                                readOnly: value.deleted,
-                                            }}
+                                            disabled={value.deleted}
                                         />
                                     </Grid>
                                     <Grid container justifyContent="space-between">
@@ -111,12 +106,11 @@ export const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
                                                             onChange={onChange}
                                                             checked={value.required}
                                                             disabled={
-                                                                supportChangeToRequiredWithInstances
+                                                                (supportChangeToRequiredWithInstances
                                                                     ? false
-                                                                    : (isEditMode &&
-                                                                          areThereAnyInstances &&
-                                                                          (isNewProperty || (!isNewProperty && !initialValue?.required))) ||
-                                                                      value.deleted
+                                                                    : isEditMode &&
+                                                                      areThereAnyInstances &&
+                                                                      (isNewProperty || (!isNewProperty && !initialValue?.required))) || value.deleted
                                                             }
                                                         />
                                                     }
