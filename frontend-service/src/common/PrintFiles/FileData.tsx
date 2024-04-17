@@ -5,47 +5,53 @@ import { IFile } from '../../interfaces/preview';
 
 const FileData: React.FC<{
     file: IFile;
-    isFilesLoading: Set<string> | undefined;
-    setIsFilesLoading: React.Dispatch<React.SetStateAction<Set<string> | undefined>>;
-    index: number;
-    setIsFilesError: React.Dispatch<React.SetStateAction<boolean>>;
-}> = ({ file, isFilesLoading, setIsFilesLoading, index, setIsFilesError }) => {
-    const filePreview = useFilePreview(file.id, file.contentType);
-    const { data, refetch, isLoading, isError } = filePreview;
+    filesSettings: {
+        isLoading: Set<string> | undefined;
+        setIsLoading: React.Dispatch<React.SetStateAction<Set<string> | undefined>>;
+        setIsError: React.Dispatch<React.SetStateAction<boolean>>;
+    };
+}> = ({ file, filesSettings }) => {
+    const { data, refetch, isLoading, isError } = useFilePreview(file.id, file.contentType);
+    console.log({ file });
+    console.log({ data });
+
+    console.log({ isError });
 
     React.useEffect(() => {
         const fetchData = async () => {
             try {
                 await refetch();
             } catch (error) {
-                setIsFilesError(true);
+                filesSettings.setIsError(true);
             }
         };
 
         if (!data) {
             fetchData();
         }
-    }, [data, refetch, setIsFilesError]);
+    }, [data, refetch, filesSettings.setIsError, filesSettings]);
 
     React.useEffect(() => {
         if (isError) {
-            setIsFilesError(true);
+            filesSettings.setIsError(true);
+            console.log('errorrrrrrrrrrr!!!!!!');
         }
-    }, [isError, setIsFilesError]);
+    }, [isError, filesSettings.setIsError, filesSettings]);
 
     React.useEffect(() => {
-        if (isLoading && !isFilesLoading?.has(file.id)) {
-            const newLoadingSet = new Set(isFilesLoading);
+        if (isLoading && !filesSettings.isLoading?.has(file.id)) {
+            const newLoadingSet = new Set(filesSettings.isLoading);
             newLoadingSet.add(file.id);
-            setIsFilesLoading(newLoadingSet);
-        } else if (!isLoading && isFilesLoading?.has(file.id)) {
-            const newLoadingSet = new Set(isFilesLoading);
+            filesSettings.setIsLoading(newLoadingSet);
+        } else if (!isLoading && filesSettings.isLoading?.has(file.id)) {
+            const newLoadingSet = new Set(filesSettings.isLoading);
             newLoadingSet.delete(file.id);
-            setIsFilesLoading(newLoadingSet);
+            filesSettings.setIsLoading(newLoadingSet);
         }
-    }, [isLoading, isFilesLoading, index, setIsFilesLoading, file.id]);
+    }, [isLoading, filesSettings.isLoading, filesSettings.setIsLoading, file.id, filesSettings]);
+    console.log({ filesSettings });
 
-    return <FileToPrint file={file} key={`${file.id}${file.name}`} filePreview={filePreview} />;
+    return <FileToPrint file={file} key={`${file.id}${file.name}`} data={data} />;
 };
 
 export { FileData };

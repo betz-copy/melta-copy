@@ -10,21 +10,29 @@ import { IEntityExpanded } from '../../../../interfaces/entities';
 import { IConnectionTemplateOfExpandedEntity } from '../..';
 import { MeltaCheckbox } from '../../../../common/MeltaCheckbox';
 import { IFile } from '../../../../interfaces/preview';
+import { getFileName } from '../../../../utils/getFileName';
+import { getFileExtension, getPreviewContentType } from '../../../../utils/getFileType';
+import { isUnsupported, isVideoOrAudio } from '../../../../common/FilePreview/PreviewDialog';
+import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 
 const PrintOptionsDialog: React.FC<{
     open: boolean;
     handleClose: () => void;
     expandedEntity: IEntityExpanded;
+    entityTemplate: IMongoEntityTemplatePopulated;
     connectionsTemplates: IConnectionTemplateOfExpandedEntity[];
     selected: IConnectionTemplateOfExpandedEntity[];
     setSelected: React.Dispatch<React.SetStateAction<IConnectionTemplateOfExpandedEntity[]>>;
     files: IFile[];
+    setFiles: React.Dispatch<React.SetStateAction<IFile[]>>;
     selectedFiles: IFile[];
     setSelectedFiles: React.Dispatch<React.SetStateAction<IFile[]>>;
-    isFilesLoading: Set<string> | undefined;
-    setIsFilesLoading: React.Dispatch<React.SetStateAction<Set<string> | undefined>>;
-    isFilesError: boolean;
-    setIsFilesError: React.Dispatch<React.SetStateAction<boolean>>;
+    filesSettings: {
+        isLoading: boolean | undefined;
+        setIsLoading: React.Dispatch<React.SetStateAction<Set<string> | undefined>>;
+        isError: boolean;
+        setIsError: React.Dispatch<React.SetStateAction<boolean>>;
+    };
     categoriesWithConnectionsTemplates: {
         category: IMongoCategory;
         connectionsTemplates: {
@@ -47,20 +55,70 @@ const PrintOptionsDialog: React.FC<{
     open,
     handleClose,
     expandedEntity,
+    entityTemplate,
     connectionsTemplates,
     selected,
     setSelected,
     files,
+    setFiles,
     selectedFiles,
     setSelectedFiles,
-    isFilesLoading,
-    setIsFilesLoading,
-    isFilesError,
-    setIsFilesError,
+    filesSettings,
     categoriesWithConnectionsTemplates,
     onClick,
     options,
 }) => {
+    console.log({ filesSettings });
+
+    const getEntityFiles = React.useCallback((): IFile[] => {
+        return entityTemplate.propertiesOrder
+            .map((propertyKey) => {
+                const propertySchema = entityTemplate.properties.properties[propertyKey];
+                const propertyValue = expandedEntity.entity.properties[propertyKey];
+                if (propertyValue && propertySchema.format === 'fileId') {
+                    const name = getFileName(propertyValue);
+                    return {
+                        id: propertyValue,
+                        name,
+                        contentType: getPreviewContentType(name),
+                        key: propertyKey,
+                        targetExtension: getFileExtension(name),
+                    } as IFile;
+                }
+
+                if (propertyValue && propertySchema.type === 'array' && propertySchema.items?.format === 'fileId') {
+                    return propertyValue.map((file) => {
+                        const name = getFileName(file);
+                        return {
+                            id: file,
+                            name,
+                            contentType: getPreviewContentType(name),
+                            targetExtension: getFileExtension(name),
+                        } as IFile;
+                    });
+                }
+                return undefined;
+            })
+            .flat()
+            .filter((file) => file !== undefined) as IFile[];
+    }, [entityTemplate, expandedEntity]);
+
+    React.useEffect(() => {
+        const currFiles = getEntityFiles().filter((file) => !isVideoOrAudio(file.contentType) && !isUnsupported(file.contentType));
+        setFiles(currFiles);
+        setSelectedFiles(currFiles);
+        console.log({ currFiles });
+    }, [getEntityFiles, setFiles, setSelectedFiles]);
+
+    React.useEffect(() => {
+        if (filesSettings.isError) {
+            setSelectedFiles([]);
+            filesSettings.setIsError(false);
+            filesSettings.setIsLoading(undefined);
+            toast.error(i18next.t('errorPage.filePrintError'));
+        }
+    }, [filesSettings, filesSettings.isError, filesSettings.setIsError, filesSettings.setIsLoading, setSelectedFiles]);
+
     return (
         <Dialog open={open} onClose={handleClose}>
             <DialogTitle paddingLeft="4px">
@@ -163,21 +221,14 @@ const PrintOptionsDialog: React.FC<{
             <DialogActions style={{ paddingLeft: '24px' }}>
                 <Button
                     onClick={(ev) => {
-                        if (isFilesError) {
-                            setSelectedFiles([]);
-                            setIsFilesError(false);
-                            setIsFilesLoading(undefined);
-                            toast.error(i18next.t('errorPage.filePrintError'));
-                        } else {
-                            handleClose();
-                            onClick(ev);
-                        }
+                        handleClose();
+                        onClick(ev);
                     }}
                     endIcon={<PrintOutlined />}
-                    disabled={isFilesLoading && isFilesLoading.size > 0}
+                    disabled={filesSettings.isLoading}
                 >
                     {i18next.t('entityPage.print.continue')}
-                    {isFilesLoading && isFilesLoading.size > 0 && <CircularProgress size={20} />}
+                    {filesSettings.isLoading && <CircularProgress size={20} />}
                 </Button>
             </DialogActions>
         </Dialog>

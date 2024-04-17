@@ -5,16 +5,13 @@ import { IconButton } from '@mui/material';
 import { Print as PrintIcon } from '@mui/icons-material';
 import { AxiosError } from 'axios';
 import { UseMutateAsyncFunction } from 'react-query';
-import { IFile } from '../../../interfaces/preview';
 import { ComponentToPrint } from './ComponentToPrint';
 import { PrintOptionsDialog } from './PrintOptionsDialog';
-import { getFileName } from '../../../utils/getFileName';
-import { getFileExtension, getPreviewContentType } from '../../../utils/getFileType';
-import { isUnsupported, isVideoOrAudio } from '../../../common/FilePreview/PreviewDialog';
 import { IMongoProcessInstancePopulated } from '../../../interfaces/processes/processInstance';
 import { MeltaTooltip } from '../../../common/MeltaTooltip';
 import { IMongoProcessTemplatePopulated } from '../../../interfaces/processes/processTemplate';
 import { ProcessDetailsValues } from '../../../common/wizards/processInstance/ProcessDetails';
+import { IFile } from '../../../interfaces/preview';
 
 const Print: React.FC<{
     processTemplate: IMongoProcessTemplatePopulated;
@@ -34,94 +31,9 @@ const Print: React.FC<{
         documentTitle: `${processTemplate.displayName}-${processInstance.name}-${new Date().toLocaleDateString('en-uk')}`,
     });
 
-    const getProcessPropertiesFiles = React.useCallback((): IFile[] => {
-        return processTemplate.details.propertiesOrder
-            .map((propertyKey) => {
-                const propertySchema = processTemplate.details.properties.properties[propertyKey];
-                const propertyValue = processInstance.details[propertyKey];
-                if (propertyValue && propertySchema.format === 'fileId') {
-                    const name = getFileName(propertyValue);
-                    return {
-                        id: propertyValue,
-                        name,
-                        contentType: getPreviewContentType(name),
-                        key: propertyKey,
-                        targetExtension: getFileExtension(name),
-                    } as IFile;
-                }
-                if (propertyValue && propertySchema.type === 'array' && propertySchema.items?.format === 'fileId') {
-                    return propertyValue.map((file) => {
-                        const name = getFileName(file);
-                        return {
-                            id: file,
-                            name,
-                            contentType: getPreviewContentType(name),
-                            targetExtension: getFileExtension(name),
-                        } as IFile;
-                    });
-                }
-                return undefined;
-            })
-            .flat()
-            .filter((file) => file !== undefined) as IFile[];
-    }, [processTemplate, processInstance]);
+    const [files, setFiles] = React.useState<IFile[]>([]);
 
-    const getProcessStepsFiles = React.useCallback((): IFile[] => {
-        const files: IFile[] = [];
-        processTemplate.steps.forEach((stepTemplate) => {
-            processInstance.steps.forEach((step) => {
-                stepTemplate.propertiesOrder.forEach((propertyKey) => {
-                    if (step.properties) {
-                        const propertySchema = stepTemplate.properties.properties[propertyKey];
-                        const propertyValue = step.properties[propertyKey];
-                        if (propertyValue && propertySchema.format === 'fileId') {
-                            const name = getFileName(propertyValue);
-                            files.push({
-                                id: propertyValue,
-                                name,
-                                contentType: getPreviewContentType(name),
-                                targetExtension: getFileExtension(name),
-                            } as IFile);
-                        }
-                        if (propertyValue && propertySchema.type === 'array' && propertySchema.items?.format === 'fileId') {
-                            propertyValue.forEach((file) => {
-                                const name = getFileName(file);
-                                files.push({
-                                    id: file,
-                                    name,
-                                    contentType: getPreviewContentType(name),
-                                    targetExtension: getFileExtension(name),
-                                } as IFile);
-                            });
-                        }
-                    }
-                });
-            });
-        });
-        return files;
-    }, [processTemplate, processInstance]);
-
-    const [files, setFiles] = React.useState(
-        getProcessPropertiesFiles()
-            .filter((file) => !isVideoOrAudio(file.contentType) && !isUnsupported(file.contentType) && !file.name.includes('txt'))
-            .concat(
-                getProcessStepsFiles().filter(
-                    (file) => !isVideoOrAudio(file.contentType) && !isUnsupported(file.contentType) && !file.name.includes('txt'),
-                ),
-            ),
-    );
-
-    React.useEffect(() => {
-        setFiles(
-            getProcessPropertiesFiles()
-                .filter((file) => !isVideoOrAudio(file.contentType) && !isUnsupported(file.contentType) && !file.name.includes('txt'))
-                .concat(
-                    getProcessStepsFiles().filter(
-                        (file) => !isVideoOrAudio(file.contentType) && !isUnsupported(file.contentType) && !file.name.includes('txt'),
-                    ),
-                ),
-        );
-    }, [processTemplate, processInstance, getProcessPropertiesFiles, getProcessStepsFiles]);
+    console.log({ files });
 
     const [showSummary, setShowSummary] = React.useState(true);
     const [showFiles, setShowFiles] = React.useState(false);
@@ -149,31 +61,35 @@ const Print: React.FC<{
                     processInstance={processInstance}
                     options={{ showSummary, showFiles }}
                     filesToPrint={files}
-                    isFilesLoading={isFilesLoading}
-                    setIsFilesLoading={setIsFilesLoading}
-                    setIsFilesError={setIsFilesError}
+                    filesSettings={{ isLoading: isFilesLoading, setIsLoading: setIsFilesLoading, setIsError: setIsFilesError }}
                     mutateAsync={mutateAsync}
                     setCurrProcessInstance={setCurrProcessInstance}
                     setIsProcessChanged={setIsProcessChanged}
                 />
             </div>
-            <PrintOptionsDialog
-                open={openModal}
-                handleClose={handleClose}
-                files={files}
-                isLoading={(isFilesLoading && isFilesLoading.size > 0) || isLoading}
-                setIsLoading={setIsFilesLoading}
-                isFilesError={isFilesError}
-                setIsFilesError={setIsFilesError}
-                setShowFiles={setShowFiles}
-                onClick={handlePrint}
-                options={{
-                    showSummary,
-                    setShowSummary,
-                    showFiles,
-                    setShowFiles,
-                }}
-            />
+            {openModal && (
+                <PrintOptionsDialog
+                    open={openModal}
+                    handleClose={handleClose}
+                    processInstance={processInstance}
+                    processTemplate={processTemplate}
+                    files={files}
+                    setFiles={setFiles}
+                    filesSettings={{
+                        isLoading: (isFilesLoading && isFilesLoading.size > 0) || isLoading,
+                        setIsLoading: setIsFilesLoading,
+                        isError: isFilesError,
+                        setIsError: setIsFilesError,
+                    }}
+                    onClick={handlePrint}
+                    options={{
+                        showSummary,
+                        setShowSummary,
+                        showFiles,
+                        setShowFiles,
+                    }}
+                />
+            )}
         </>
     );
 };

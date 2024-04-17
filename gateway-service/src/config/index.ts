@@ -65,7 +65,7 @@ const config = {
         baseUrl: env.get('PERMISSION_SERVICE_BASE_URL').required().asString(),
         baseRoute: env.get('PERMISSION_SERVICE_BASE_ROUTE').default('/api/permissions').asString(),
         checkAuthorizationRoute: env.get('PERMISSION_SERVICE_CHECK_AUTHERIZATION_ROUTE').default('authorization').asString(),
-        requestTimeout: env.get('PERMISSION_SERVICE_REQUEST_TIMEOUT').default(10000).asIntPositive(),
+        requestTimeout: env.get('PERMISSION_SERVICE_REQUEST_TIMEOUT').default(100000).asIntPositive(),
     },
     activityLogService: {
         url: env.get('ACTIVITY_LOG_SERVICE_URL').required().asString(),

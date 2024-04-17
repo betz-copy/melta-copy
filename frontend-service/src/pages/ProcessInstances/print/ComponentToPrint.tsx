@@ -22,152 +22,129 @@ const ComponentToPrint = React.forwardRef<
     {
         processTemplate: IMongoProcessTemplatePopulated;
         processInstance: IMongoProcessInstancePopulated;
-        isFilesLoading: Set<string> | undefined;
-        setIsFilesLoading: React.Dispatch<React.SetStateAction<Set<string> | undefined>>;
-        setIsFilesError: React.Dispatch<React.SetStateAction<boolean>>;
         mutateAsync: UseMutateAsyncFunction<IMongoProcessInstancePopulated, AxiosError<any, any>, ProcessDetailsValues, unknown>;
         setCurrProcessInstance: React.Dispatch<React.SetStateAction<IMongoProcessInstancePopulated>>;
         setIsProcessChanged: React.Dispatch<React.SetStateAction<boolean>>;
         filesToPrint: IFile[];
+        filesSettings: {
+            isLoading: Set<string> | undefined;
+            setIsLoading: React.Dispatch<React.SetStateAction<Set<string> | undefined>>;
+            setIsError: React.Dispatch<React.SetStateAction<boolean>>;
+        };
         options: {
             showSummary: boolean;
             showFiles: boolean;
         };
     }
->(
-    (
-        {
-            processTemplate,
-            processInstance,
-            options,
-            filesToPrint,
-            isFilesLoading,
-            setIsFilesLoading,
-            setIsFilesError,
-            mutateAsync,
-            setCurrProcessInstance,
-            setIsProcessChanged,
-        },
-        ref,
-    ) => {
-        const theme = useTheme();
-        const queryClient = useQueryClient();
-        const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
+>(({ processTemplate, processInstance, options, filesToPrint, filesSettings, mutateAsync, setCurrProcessInstance, setIsProcessChanged }, ref) => {
+    const theme = useTheme();
+    const queryClient = useQueryClient();
+    const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
 
-        return (
-            <Box ref={ref} margin="20px" style={{ direction: 'rtl' }}>
-                {options.showSummary && (
-                    <Box sx={{ minHeight: '1050px' }}>
-                        <ProcessSummary isPrinting processInstance={processInstance} processTemplate={processTemplate} />
-                    </Box>
-                )}
-                <Box paddingBottom="0.4rem" display="flex" justifyContent="space-between" alignItems="center" marginBottom={1}>
-                    <Box display="flex" alignItems="center">
-                        <Typography component="h4" variant="h4" color={theme.palette.primary.main} fontWeight="800">
-                            {processInstance.name}
-                        </Typography>
-
-                        <Typography variant="h4" fontSize="30px" color="#d3d8df" marginLeft="5px" marginRight="5px">
-                            /
-                        </Typography>
-
-                        <Typography paddingBottom="2px" variant="h4" fontSize="28px" color={theme.palette.primary.main}>
-                            {processTemplate.displayName}
-                        </Typography>
-                    </Box>
-                    <Box display="flex" alignItems="center" sx={{ gap: '20px' }}>
-                        <Grid style={{ textAlign: 'left', width: '95%' }}>
-                            <Typography>{`${i18next.t('wizard.processInstance.summary.printedAt')} : ${new Date().toLocaleDateString(
-                                'en-UK',
-                            )}`}</Typography>
-                            <Typography>{`${i18next.t('wizard.processInstance.summary.printedBy')} : ${myPermissions.user.fullName}`}</Typography>
-                        </Grid>
-                        {processInstance.status === Status.Approved && (
-                            <StatusDisplay
-                                Icon={CheckCircleIcon}
-                                text={i18next.t('wizard.processInstance.summary.processCompleted')}
-                                status={processInstance.status}
-                                fontSize={55}
-                            />
-                        )}
-                        {processInstance.status === Status.Rejected && (
-                            <StatusDisplay
-                                Icon={CancelIcon}
-                                text={i18next.t('wizard.processInstance.summary.processRejected')}
-                                status={processInstance.status}
-                                fontSize={55}
-                            />
-                        )}
-                        {processInstance.status === Status.Pending && (
-                            <StatusDisplay
-                                Icon={AccessTimeFilledIcon}
-                                text={i18next.t('wizard.processInstance.summary.processPending')}
-                                status={processInstance.status}
-                                fontSize={55}
-                            />
-                        )}
-                    </Box>
+    return (
+        <Box ref={ref} margin="20px" style={{ direction: 'rtl' }}>
+            {options.showSummary && (
+                <Box sx={{ minHeight: '1050px' }}>
+                    <ProcessSummary isPrinting processInstance={processInstance} processTemplate={processTemplate} />
                 </Box>
-                <ProcessComponentToPrint processInstance={processInstance} mutateAsync={mutateAsync} />
-                {processInstance.steps.map((stepInstance, index) => {
-                    const stepTemplate = getStepTemplateByStepInstance(stepInstance, processTemplate);
-                    return (
-                        <Grid style={{ pageBreakInside: 'avoid' }} key={`${stepInstance._id}-${stepTemplate._id}`}>
-                            <Box paddingBottom="0.4rem" display="flex" justifyContent="flex-start" alignItems="center" marginTop={5} marginBottom={1}>
-                                <Typography component="h4" variant="h4" color={theme.palette.primary.main} fontWeight="800">
-                                    {stepTemplate.displayName}
-                                </Typography>
+            )}
+            <Box paddingBottom="0.4rem" display="flex" justifyContent="space-between" alignItems="center" marginBottom={1}>
+                <Box display="flex" alignItems="center">
+                    <Typography component="h4" variant="h4" color={theme.palette.primary.main} fontWeight="800">
+                        {processInstance.name}
+                    </Typography>
 
-                                <Typography variant="h4" fontSize="30px" color="#d3d8df" marginLeft="5px" marginRight="5px">
-                                    /
-                                </Typography>
+                    <Typography variant="h4" fontSize="30px" color="#d3d8df" marginLeft="5px" marginRight="5px">
+                        /
+                    </Typography>
 
-                                <Typography paddingBottom="2px" variant="h4" fontSize="28px" color={theme.palette.primary.main}>
-                                    {`${i18next.t('wizard.processTemplate.level')} ${index + 1}`}
-                                </Typography>
-                            </Box>
-                            <StepComponentToPrint
-                                stepInstance={stepInstance}
-                                stepTemplate={stepTemplate}
-                                processInstance={processInstance}
-                                onStepUpdateSuccess={async (stepInstanceUpdate) => {
-                                    setCurrProcessInstance((prev) => {
-                                        const newSteps = prev.steps;
-                                        const updatedStepIndex = newSteps.findIndex((step) => step._id === stepInstanceUpdate._id);
-                                        newSteps[updatedStepIndex] = stepInstanceUpdate;
-                                        return { ...prev, steps: newSteps };
-                                    });
-
-                                    const newProcess = await getProcessByIdRequest(processInstance._id);
-                                    setCurrProcessInstance(newProcess);
-                                    setIsProcessChanged(true);
-                                }}
-                            />
-                        </Grid>
-                    );
-                })}
-                {options.showFiles && (
-                    <>
-                        <Grid sx={{ width: '100%', height: '100%', paddingY: '55%', paddingX: '37.5%' }}>
-                            <BlueTitle title={i18next.t('entityPage.print.appendices')} component="h2" variant="h2" style={{ marginTop: '2rem' }} />
-                        </Grid>
-                        {filesToPrint.map((file, index) => {
-                            return (
-                                <FileData
-                                    file={file}
-                                    key={file.id}
-                                    isFilesLoading={isFilesLoading}
-                                    setIsFilesLoading={setIsFilesLoading}
-                                    index={index}
-                                    setIsFilesError={setIsFilesError}
-                                />
-                            );
-                        })}
-                    </>
-                )}
+                    <Typography paddingBottom="2px" variant="h4" fontSize="28px" color={theme.palette.primary.main}>
+                        {processTemplate.displayName}
+                    </Typography>
+                </Box>
+                <Box display="flex" alignItems="center" sx={{ gap: '20px' }}>
+                    <Grid style={{ textAlign: 'left', width: '95%' }}>
+                        <Typography>{`${i18next.t('wizard.processInstance.summary.printedAt')} : ${new Date().toLocaleDateString(
+                            'en-UK',
+                        )}`}</Typography>
+                        <Typography>{`${i18next.t('wizard.processInstance.summary.printedBy')} : ${myPermissions.user.fullName}`}</Typography>
+                    </Grid>
+                    {processInstance.status === Status.Approved && (
+                        <StatusDisplay
+                            Icon={CheckCircleIcon}
+                            text={i18next.t('wizard.processInstance.summary.processCompleted')}
+                            status={processInstance.status}
+                            fontSize={55}
+                        />
+                    )}
+                    {processInstance.status === Status.Rejected && (
+                        <StatusDisplay
+                            Icon={CancelIcon}
+                            text={i18next.t('wizard.processInstance.summary.processRejected')}
+                            status={processInstance.status}
+                            fontSize={55}
+                        />
+                    )}
+                    {processInstance.status === Status.Pending && (
+                        <StatusDisplay
+                            Icon={AccessTimeFilledIcon}
+                            text={i18next.t('wizard.processInstance.summary.processPending')}
+                            status={processInstance.status}
+                            fontSize={55}
+                        />
+                    )}
+                </Box>
             </Box>
-        );
-    },
-);
+            <ProcessComponentToPrint processInstance={processInstance} mutateAsync={mutateAsync} />
+            {processInstance.steps.map((stepInstance, index) => {
+                const stepTemplate = getStepTemplateByStepInstance(stepInstance, processTemplate);
+                return (
+                    <Grid style={{ pageBreakInside: 'avoid' }} key={`${stepInstance._id}-${stepTemplate._id}`}>
+                        <Box paddingBottom="0.4rem" display="flex" justifyContent="flex-start" alignItems="center" marginTop={5} marginBottom={1}>
+                            <Typography component="h4" variant="h4" color={theme.palette.primary.main} fontWeight="800">
+                                {stepTemplate.displayName}
+                            </Typography>
+
+                            <Typography variant="h4" fontSize="30px" color="#d3d8df" marginLeft="5px" marginRight="5px">
+                                /
+                            </Typography>
+
+                            <Typography paddingBottom="2px" variant="h4" fontSize="28px" color={theme.palette.primary.main}>
+                                {`${i18next.t('wizard.processTemplate.level')} ${index + 1}`}
+                            </Typography>
+                        </Box>
+                        <StepComponentToPrint
+                            stepInstance={stepInstance}
+                            stepTemplate={stepTemplate}
+                            processInstance={processInstance}
+                            onStepUpdateSuccess={async (stepInstanceUpdate) => {
+                                setCurrProcessInstance((prev) => {
+                                    const newSteps = prev.steps;
+                                    const updatedStepIndex = newSteps.findIndex((step) => step._id === stepInstanceUpdate._id);
+                                    newSteps[updatedStepIndex] = stepInstanceUpdate;
+                                    return { ...prev, steps: newSteps };
+                                });
+
+                                const newProcess = await getProcessByIdRequest(processInstance._id);
+                                setCurrProcessInstance(newProcess);
+                                setIsProcessChanged(true);
+                            }}
+                        />
+                    </Grid>
+                );
+            })}
+            {options.showFiles && (
+                <>
+                    <Grid sx={{ width: '100%', height: '100%', paddingY: '55%', paddingX: '37.5%' }}>
+                        <BlueTitle title={i18next.t('entityPage.print.appendices')} component="h2" variant="h2" style={{ marginTop: '2rem' }} />
+                    </Grid>
+                    {filesToPrint.map((file) => {
+                        return <FileData file={file} key={file.id} filesSettings={filesSettings} />;
+                    })}
+                </>
+            )}
+        </Box>
+    );
+});
 
 export { ComponentToPrint };

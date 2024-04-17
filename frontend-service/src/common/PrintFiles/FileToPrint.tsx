@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Box, Grid } from '@mui/material';
 import { Document, Page, pdfjs } from 'react-pdf';
-import { UseQueryResult } from 'react-query';
 import { isImage } from '../FilePreview/PreviewDialog';
 import FlexBox from '../FlexBox';
 import { IFile } from '../../interfaces/preview';
@@ -10,10 +9,8 @@ pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.js';
 
 const FileToPrint: React.FC<{
     file: IFile;
-    filePreview: UseQueryResult<string, unknown>;
-}> = ({ file, filePreview }) => {
-    const { data, refetch } = filePreview;
-
+    data: string | undefined;
+}> = ({ file, data }) => {
     const [numOfPages, setNumOfPages] = useState(1);
     const fileRef = useRef<HTMLDivElement>(null);
     const [currentPage, setCurrentPage] = useState(1);
@@ -63,17 +60,7 @@ const FileToPrint: React.FC<{
                         alignItems: 'center',
                     }}
                 >
-                    <img
-                        src={data}
-                        onError={async () => {
-                            await refetch();
-                        }}
-                        onLoad={async () => {
-                            await refetch();
-                        }}
-                        alt={file.name}
-                        style={{ maxWidth: '100%', maxHeight: '100%' }}
-                    />
+                    <img src={data} alt={file.name} style={{ maxWidth: '100%', maxHeight: '100%' }} />
                 </Box>
             ) : (
                 <Document file={data} onLoadSuccess={onLoadSuccess} onLoadError={() => null}>

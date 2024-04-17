@@ -203,7 +203,7 @@ const GeneralDetails: React.FC<IDetailsStepProp> = ({ detailsFormikData, onNext,
 
     return (
         <Card sx={{ border: 'none', boxShadow: 'none', background: 'transparent' }}>
-            <CardContent sx={{ height: toPrint ? undefined : '56vh', overflowY: 'auto' }} key={`${values.name} - ${values.template?._id}`}>
+            <CardContent sx={{ height: toPrint ? undefined : '56vh', overflowY: 'auto' }} key={`${values.name} - ${values.template?.name}`}>
                 <Grid container direction="column" paddingLeft={4} justifyContent="space-around">
                     <Grid item>
                         <FormikProvider value={detailsFormikData}>

@@ -8,9 +8,6 @@ import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemp
 import { ComponentToPrint } from './ComponentToPrint';
 import { PrintOptionsDialog } from './PrintOptionsDialog';
 import { IConnectionTemplateOfExpandedEntity } from '../..';
-import { getFileName } from '../../../../utils/getFileName';
-import { getFileExtension, getPreviewContentType } from '../../../../utils/getFileType';
-import { isUnsupported, isVideoOrAudio } from '../../../../common/FilePreview/PreviewDialog';
 import { IFile } from '../../../../interfaces/preview';
 
 const Print: React.FC<{
@@ -29,51 +26,9 @@ const Print: React.FC<{
 
     const componentRef = React.useRef(null);
 
-    const getEntityFiles = React.useCallback((): IFile[] => {
-        return entityTemplate.propertiesOrder
-            .map((propertyKey) => {
-                const propertySchema = entityTemplate.properties.properties[propertyKey];
-                const propertyValue = expandedEntity.entity.properties[propertyKey];
-                if (propertyValue && propertySchema.format === 'fileId') {
-                    const name = getFileName(propertyValue);
-                    return {
-                        id: propertyValue,
-                        name,
-                        contentType: getPreviewContentType(name),
-                        key: propertyKey,
-                        targetExtension: getFileExtension(name),
-                    } as IFile;
-                }
-
-                if (propertyValue && propertySchema.type === 'array' && propertySchema.items?.format === 'fileId') {
-                    return propertyValue.map((file) => {
-                        const name = getFileName(file);
-                        return {
-                            id: file,
-                            name,
-                            contentType: getPreviewContentType(name),
-                            targetExtension: getFileExtension(name),
-                        } as IFile;
-                    });
-                }
-                return undefined;
-            })
-            .flat()
-            .filter((file) => file !== undefined) as IFile[];
-    }, [entityTemplate, expandedEntity]);
-
-    const [files, setFiles] = React.useState(
-        getEntityFiles().filter((file) => !isVideoOrAudio(file.contentType) && !isUnsupported(file.contentType) && !file.name.includes('txt')),
-    );
+    const [files, setFiles] = React.useState<IFile[]>([]);
     const [selectedFiles, setSelectedFiles] = React.useState(files);
-
-    React.useEffect(() => {
-        const currFiles = getEntityFiles().filter(
-            (file) => !isVideoOrAudio(file.contentType) && !isUnsupported(file.contentType) && !file.name.includes('txt'),
-        );
-        setFiles(currFiles);
-        setSelectedFiles(currFiles);
-    }, [getEntityFiles]);
+    console.log({ selectedFiles });
 
     const [selected, setSelected] = React.useState(connectionsTemplates);
     const [showDate, setShowDate] = React.useState(true);
@@ -81,8 +36,8 @@ const Print: React.FC<{
     const [showEntityDates, setShowEntityDates] = React.useState(true);
     const [showPreviewPropertiesOnly, setShowPreviewPropertiesOnly] = React.useState(false);
 
-    const [isFilesLoading, setIsFilesLoading] = React.useState<Set<string>>();
-    const [isFilesError, setIsFilesError] = React.useState(false);
+    const [isLoading, setIsLoading] = React.useState<Set<string>>();
+    const [isError, setIsError] = React.useState(false);
 
     const handlePrint = useReactToPrint({
         content: () => componentRef.current,
@@ -107,39 +62,43 @@ const Print: React.FC<{
                     expandedEntity={expandedEntity}
                     connectionsTemplatesToPrint={selected}
                     filesToPrint={selectedFiles}
-                    isFilesLoading={isFilesLoading}
-                    setIsFilesLoading={setIsFilesLoading}
-                    setIsFilesError={setIsFilesError}
+                    filesSettings={{ isLoading, setIsLoading, setIsError }}
                     options={{ showDate, showDisabled, showEntityDates, showEntityFiles: selectedFiles.length !== 0, showPreviewPropertiesOnly }}
                 />
             </div>
-            <PrintOptionsDialog
-                open={openModal}
-                expandedEntity={expandedEntity}
-                connectionsTemplates={connectionsTemplates}
-                handleClose={handleClose}
-                selected={selected}
-                setSelected={setSelected}
-                files={files}
-                selectedFiles={selectedFiles}
-                setSelectedFiles={setSelectedFiles}
-                isFilesLoading={isFilesLoading}
-                setIsFilesLoading={setIsFilesLoading}
-                isFilesError={isFilesError}
-                setIsFilesError={setIsFilesError}
-                categoriesWithConnectionsTemplates={categoriesWithConnectionsTemplates}
-                onClick={handlePrint}
-                options={{
-                    setShowDate,
-                    showDate,
-                    showDisabled,
-                    setShowDisabled,
-                    showEntityDates,
-                    setShowEntityDates,
-                    showPreviewPropertiesOnly,
-                    setShowPreviewPropertiesOnly,
-                }}
-            />
+            {openModal && (
+                <PrintOptionsDialog
+                    open={openModal}
+                    expandedEntity={expandedEntity}
+                    entityTemplate={entityTemplate}
+                    connectionsTemplates={connectionsTemplates}
+                    handleClose={handleClose}
+                    selected={selected}
+                    setSelected={setSelected}
+                    files={files}
+                    setFiles={setFiles}
+                    selectedFiles={selectedFiles}
+                    setSelectedFiles={setSelectedFiles}
+                    filesSettings={{
+                        isLoading: isLoading && isLoading.size > 0,
+                        setIsLoading,
+                        isError,
+                        setIsError,
+                    }}
+                    categoriesWithConnectionsTemplates={categoriesWithConnectionsTemplates}
+                    onClick={handlePrint}
+                    options={{
+                        setShowDate,
+                        showDate,
+                        showDisabled,
+                        setShowDisabled,
+                        showEntityDates,
+                        setShowEntityDates,
+                        showPreviewPropertiesOnly,
+                        setShowPreviewPropertiesOnly,
+                    }}
+                />
+            )}
         </>
     );
 };
