@@ -60,14 +60,3 @@ export const createActivityRequestSchema = Joi.object({
 // CREATE_ENTITY        metadata: {}
 // DISABLE_ENTITY       metadata: {}
 // ACTIVATE_ENTITY      metadata: {}
-
-// POST /api/activityLog/isPropertyOfTemplateInUsed/:entityId
-export const isPropertyOfTemplateInUsedSchema = Joi.object({
-    body: {
-        properties: Joi.array().items(Joi.string()).required(),
-    },
-    query: {},
-    params: {
-        entityId: Joi.string().required(),
-    },
-});

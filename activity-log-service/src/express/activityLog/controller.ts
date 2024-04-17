@@ -10,10 +10,6 @@ class ActivityLogController {
     static async createActivity(req: Request, res: Response) {
         res.json(await ActivityLogManager.createActivity(req.body));
     }
-
-    static async deletePropertiesOfTemplate(req: Request, res: Response) {
-        res.json(await ActivityLogManager.deletePropertiesOfTemplate(req.params.entityId, req.body));
-    }
 }
 
 export default ActivityLogController;
