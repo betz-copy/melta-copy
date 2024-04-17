@@ -123,8 +123,9 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                         elevation={3}
                         sx={{
                             padding: '0.5rem',
-                            backgroundColor: value.deleted ? '#E0E1ED' : 'inherit',
-                            opacity: value.deleted ? 0.7 : 1,
+                            ...(value.deleted && {
+                                backgroundColor: 'rgb(224, 225, 237,0.4)',
+                            }),
                         }}
                     >
                         <CardContent sx={{ '&:last-child': { padding: 0 } }}>
@@ -143,12 +144,9 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                             onChange={onChange}
                                             error={touchedName && Boolean(errorName)}
                                             helperText={touchedName && errorName}
-                                            disabled={isDisabled}
+                                            disabled={isDisabled || value.deleted}
                                             sx={{ marginRight: '5px' }}
                                             fullWidth
-                                            InputProps={{
-                                                readOnly: value.deleted,
-                                            }}
                                         />
                                         <TextField
                                             label={i18next.t('wizard.entityTemplate.propertyDisplayName')}
@@ -160,9 +158,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                             helperText={touchedTitle && errorTitle}
                                             sx={{ marginRight: '5px' }}
                                             fullWidth
-                                            InputProps={{
-                                                readOnly: value.deleted,
-                                            }}
+                                            disabled={value.deleted}
                                         />
                                         <TextField
                                             select
@@ -182,12 +178,9 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                             }}
                                             error={touchedType && Boolean(errorType)}
                                             helperText={touchedType && errorType}
-                                            disabled={isDisabled}
+                                            disabled={isDisabled || value.deleted}
                                             sx={{ marginRight: '5px' }}
                                             fullWidth
-                                            InputProps={{
-                                                readOnly: value.deleted,
-                                            }}
                                         >
                                             {validPropertyTypes
                                                 .filter((validPropertyType) => {
@@ -272,7 +265,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                 )}
                                                 sx={{ marginRight: '5px' }}
                                                 fullWidth
-                                                readOnly={value.deleted}
+                                                disabled={value.deleted}
                                             />
                                         )}
                                         {value.type === 'pattern' && (
@@ -285,13 +278,10 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                     onChange={onChange}
                                                     error={touchedPattern && Boolean(errorPattern)}
                                                     helperText={touchedPattern && errorPattern}
-                                                    disabled={isDisabled}
+                                                    disabled={isDisabled || value.deleted}
                                                     dir="ltr"
                                                     sx={{ marginRight: '5px' }}
                                                     fullWidth
-                                                    InputProps={{
-                                                        readOnly: value.deleted,
-                                                    }}
                                                 />
                                                 <TextField
                                                     label={i18next.t('wizard.entityTemplate.customErrorMessage')}
@@ -307,9 +297,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                     }
                                                     sx={{ marginRight: '5px' }}
                                                     fullWidth
-                                                    InputProps={{
-                                                        readOnly: value.deleted,
-                                                    }}
+                                                    disabled={value.deleted}
                                                 />
                                             </>
                                         )}
@@ -325,13 +313,10 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                 type="number"
                                                 error={touchedSerialStarter && Boolean(errorSerialStarter)}
                                                 helperText={touchedSerialStarter && errorSerialStarter}
-                                                disabled={isDisabled}
+                                                disabled={isDisabled || value.deleted}
                                                 dir="ltr"
                                                 sx={{ marginRight: '5px' }}
                                                 fullWidth
-                                                InputProps={{
-                                                    readOnly: value.deleted,
-                                                }}
                                             />
                                         )}
                                         {(value.type === 'date' || value.type === 'date-time') &&
@@ -356,9 +341,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                         helperText={touchedDateNotification && errorDateNotification}
                                                         sx={{ marginRight: '5px' }}
                                                         fullWidth
-                                                        InputProps={{
-                                                            readOnly: value.deleted,
-                                                        }}
+                                                        disabled={value.deleted}
                                                     >
                                                         {dateNotificationTypes.map((notificationType) => (
                                                             <MenuItem key={notificationType} value={notificationType}>

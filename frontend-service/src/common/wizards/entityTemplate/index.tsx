@@ -109,8 +109,8 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
 
                     const errorMessage =
                         type === 'rules'
-                            ? `${i18next.t('wizard.entityTemplate.failedToDeleteFieldThatUsedInRules')} ${property}`
-                            : `${i18next.t('wizard.entityTemplate.failedToDeleteFieldThatUsedInGantts')} ${property}`;
+                            ? `${i18next.t('wizard.entityTemplate.failedToDeleteFieldThatUsedInRules')} - ${property}`
+                            : `${i18next.t('wizard.entityTemplate.failedToDeleteFieldThatUsedInGantts')} - ${property}`;
                     toast.error(errorMessage);
                     return;
                 }

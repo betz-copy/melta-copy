@@ -18,6 +18,7 @@ interface AttachmentEditCardProps {
     onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
     remove: (index: number, isNewProperty: boolean) => any;
     supportChangeToRequiredWithInstances: boolean;
+    supportDeleteForExistingInstances: boolean;
 }
 
 export const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
@@ -31,6 +32,7 @@ export const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
     onChange,
     remove,
     supportChangeToRequiredWithInstances,
+    supportDeleteForExistingInstances,
 }) => {
     const name = `attachmentProperties[${index}].name`;
     const touchedName = touched?.name;
@@ -53,7 +55,15 @@ export const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
         <Draggable draggableId={value.id} index={index}>
             {(draggableProvided) => (
                 <Grid item ref={draggableProvided.innerRef} {...draggableProvided.draggableProps} alignSelf="stretch" marginBottom="1rem">
-                    <Card elevation={3} sx={{ padding: '0.5rem', backgroundColor: value.deleted ? '#E0E1ED' : 'inherit' }}>
+                    <Card
+                        elevation={3}
+                        sx={{
+                            padding: '0.5rem',
+                            ...(value.deleted && {
+                                backgroundColor: 'rgb(224, 225, 237,0.4)',
+                            }),
+                        }}
+                    >
                         <CardContent sx={{ '&:last-child': { padding: 0 } }}>
                             <Grid container justifyContent="space-between" wrap="nowrap" alignItems="center">
                                 <Box {...draggableProvided.dragHandleProps}>
@@ -115,7 +125,7 @@ export const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
                                             )}
                                         </Box>
 
-                                        <IconButton onClick={() => remove(index, isNewProperty)}>
+                                        <IconButton onClick={() => remove(index, isNewProperty)} disabled={!supportDeleteForExistingInstances}>
                                             {value.deleted ? <DeleteOff /> : <DeleteIcon />}
                                         </IconButton>
                                     </Grid>

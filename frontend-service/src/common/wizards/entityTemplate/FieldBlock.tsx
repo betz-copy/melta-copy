@@ -1,4 +1,4 @@
-import React, { SetStateAction, useCallback, useEffect, useRef, useState } from 'react';
+import React, { SetStateAction, useCallback, useRef, useState } from 'react';
 import { Accordion, AccordionDetails, AccordionSummary, Box, Button, Grid, styled, Typography } from '@mui/material';
 import { DragDropContext, DraggableProvided, Droppable } from 'react-beautiful-dnd';
 import { v4 as uuid } from 'uuid';
@@ -11,7 +11,7 @@ import { MemoAttachmentEditCard } from './AttachmentEditCard';
 import { StepComponentHelpers } from '..';
 import { CommonFormInputProperties } from './commonInterfaces';
 import { AreYouSureDialog } from '../../dialogs/AreYouSureDialog';
-import { EntityTemplateWizardValues } from '.';
+import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 
 export const FieldBlockAccordion = styled(Accordion)({
     width: '100%',
@@ -132,32 +132,14 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
         }
     };
 
-    const move = (dst: number, src?: number, prop?: CommonFormInputProperties) => {
+    const move = (src: number, dst: number) => {
         const displayValuesCopy = [...displayValuesRef.current] as Values[PropertiesType];
 
-        displayValuesCopy.splice(dst, 0, prop || displayValuesCopy.splice(src || 0, 1)[0]);
+        displayValuesCopy.splice(dst, 0, displayValuesCopy.splice(src, 1)[0]);
 
         setDisplayValues(displayValuesCopy);
         updateFormik();
     };
-
-    // useEffect(() => {
-    //     const fetchData = async () => {
-    //         const promises: any[] = [];
-    //         if (isError) {
-    //             setIsError?.(false);
-    //             if (removedProperties.length > 0) {
-    //                 removedProperties.map(async (propToRemove) => {
-    //                     const propertyIndex = initialValues?.[propertiesType].findIndex((property) => property.id === propToRemove.properties.id);
-    //                     promises.push(move(propertyIndex || 0, undefined, propToRemove.properties));
-    //                 });
-    //                 await Promise.all(promises);
-    //             }
-    //         }
-    //     };
-
-    //     fetchData();
-    // }, [isError]);
 
     const setDisplayValue = (index: number, valueOrFunc: SetStateAction<CommonFormInputProperties>) => {
         const displayValuesCopy = [...displayValuesRef.current] as Values[PropertiesType];
@@ -270,11 +252,11 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
                 open={showAreUSureDialogForRemoveProperty}
                 handleClose={() => setShowAreUSureDialogForRemoveProperty(false)}
                 title={i18next.t('systemManagement.deleteField')}
-                // ${selectedIndexToRemove > -1 && displayValues[selectedIndexToRemove].title}
                 body={
                     <Typography>{`${i18next.t('systemManagement.warningOnDeleteField')}
+                    ${selectedIndexToRemove > -1 && displayValuesRef.current[selectedIndexToRemove].title}
                     ${i18next.t('systemManagement.continueWarningOnDeleteField')} ${
-                        (values as unknown as EntityTemplateWizardValues & { _id: string })._id
+                        (initialValues as unknown as IMongoEntityTemplatePopulated).displayName
                     }`}</Typography>
                 }
                 onYes={onDeleteSure}

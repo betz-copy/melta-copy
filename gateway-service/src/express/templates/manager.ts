@@ -372,9 +372,6 @@ export class TemplatesManager {
         const { count } = await InstanceManagerService.searchEntitiesOfTemplateRequest(id, { limit: 1 });
         const currTemplate = await EntityTemplateManagerService.getEntityTemplateById(id);
 
-        const { uniqueConstraints, properties, ...restOfTemplateData } = updatedTemplateData;
-        const { required: requiredConstraints, ...restOfTemplatePropertiesObject } = properties;
-
         if (currTemplate.disabled === true) throw new ServiceError(400, 'can not update disabled template');
 
         const removedProperties: string[] = [];
@@ -426,6 +423,9 @@ export class TemplatesManager {
         await GanttsService.isPropertyOfTemplateInUsed(id, removedProperties);
 
         await RelationshipsTemplateManagerService.isPropertyOfTemplateInUsed(id, removedProperties);
+
+        const { uniqueConstraints, properties, ...restOfTemplateData } = updatedTemplateData;
+        const { required: requiredConstraints, ...restOfTemplatePropertiesObject } = properties;
 
         await InstanceManagerService.updateConstraintsOfTemplate(id, {
             uniqueConstraints,
