@@ -57,7 +57,11 @@ const addFieldsSchema = Yup.object({
                     }),
             }),
         )
-        .min(1, i18next.t('validation.oneField')),
+        .min(1, i18next.t('validation.oneField'))
+        .test(i18next.t('validation.oneField'), i18next.t('validation.oneField'), (value) => {
+            return value?.some((obj) => !('deleted' in obj) || obj.deleted === false);
+        }),
+
     attachmentProperties: Yup.array().of(
         attachmentPropertiesBaseSchema.shape({
             required: Yup.boolean().required(i18next.t('validation.required')),
@@ -65,7 +69,7 @@ const addFieldsSchema = Yup.object({
     ),
 }).test('uniqueProperties', entityTemplateUniqueProperties);
 
-const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEditMode' | 'setBlock' | 'isError' | 'setIsError'>> = ({
+const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEditMode' | 'setBlock'>> = ({
     values,
     touched,
     errors,
@@ -73,8 +77,6 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
     initialValues,
     isEditMode,
     setBlock,
-    isError,
-    setIsError,
 }) => {
     const { data: areThereInstancesByTemplateIdResponse } = useQuery(
         ['areThereInstancesByTemplateId', (values as EntityTemplateWizardValues & { _id: string })._id],
@@ -137,8 +139,6 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
                                             areThereAnyInstances={areThereAnyInstances}
                                             isEditMode={isEditMode}
                                             setBlock={setBlock}
-                                            isError={isError}
-                                            setIsError={setIsError}
                                             title={
                                                 itemId === 'properties'
                                                     ? i18next.t('wizard.entityTemplate.properties')

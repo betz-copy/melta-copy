@@ -13,4 +13,5 @@ export interface CommonFormInputProperties {
     preview?: boolean;
     hide?: boolean;
     unique?: boolean;
+    deleted?: boolean;
 }

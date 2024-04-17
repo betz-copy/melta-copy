@@ -12,8 +12,6 @@ import { RootState } from '../../store';
 export interface StepComponentHelpers {
     isEditMode: boolean;
     setBlock: React.Dispatch<React.SetStateAction<boolean>>;
-    isError?: boolean;
-    setIsError?: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export type StepComponentProps<T extends object, helpers extends keyof StepComponentHelpers = never> = FormikProps<T> &
@@ -25,8 +23,6 @@ export type WizardBaseType<T extends object> = {
     initialValues?: T;
     initalStep?: number;
     isEditMode?: boolean;
-    isError?: boolean;
-    setIsError?: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 export type StepsType<T extends object> = {
@@ -46,8 +42,6 @@ const Wizard = <T extends object>({
     isLoading,
     submitFucntion,
     isEditMode,
-    isError,
-    setIsError,
 }: PropsWithChildren<
     WizardBaseType<T> & {
         initialValues: T;
@@ -123,8 +117,6 @@ const Wizard = <T extends object>({
                                 isLoading={isLoading}
                                 formikProps={formikProps}
                                 isEditMode={!!isEditMode}
-                                isError={isError}
-                                setIsError={setIsError}
                             />
                         </Form>
                     )}

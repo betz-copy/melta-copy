@@ -19,11 +19,6 @@ export const FieldBlockAccordion = styled(Accordion)({
     marginBottom: '10px',
 });
 
-interface FormInputWithIndex {
-    index: number;
-    properties: CommonFormInputProperties;
-}
-
 interface FieldBlockProps<PropertiesType extends string, Values extends Record<PropertiesType, CommonFormInputProperties[]>> {
     propertiesType: PropertiesType;
     values: Values;
@@ -32,8 +27,6 @@ interface FieldBlockProps<PropertiesType extends string, Values extends Record<P
     areThereAnyInstances: boolean;
     isEditMode: boolean;
     setBlock: StepComponentHelpers['setBlock'];
-    isError: StepComponentHelpers['isError'];
-    setIsError: StepComponentHelpers['setIsError'];
     title: string;
     addPropertyButtonLabel: string;
     touched: FormikTouched<Values> | undefined;
@@ -54,8 +47,6 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
     areThereAnyInstances,
     isEditMode,
     setBlock,
-    isError,
-    setIsError,
     title,
     addPropertyButtonLabel,
     touched,
@@ -83,7 +74,6 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
 }: React.PropsWithChildren<FieldBlockProps<PropertiesType, Values>>) => {
     // copy of values of formik in order to show changes on inputs fast (formik rerenders are slow)
     const [displayValues, setDisplayValues] = React.useState(values[propertiesType]);
-    const [removedProperties, setRemovedProperties] = useState<FormInputWithIndex[]>([]);
     const [showAreUSureDialogForRemoveProperty, setShowAreUSureDialogForRemoveProperty] = useState(false);
     const [selectedIndexToRemove, setSelectedIndexForRemove] = useState(-1);
 
@@ -111,27 +101,33 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
         updateFormik();
     };
 
-    const onDeleteSure = () => {
-        setShowAreUSureDialogForRemoveProperty(false);
+    const setFieldDisplayValue = (index: number, field: keyof Values, value: any) => {
         const displayValuesCopy = [...displayValuesRef.current] as Values[PropertiesType];
 
-        displayValuesCopy.splice(selectedIndexToRemove, 1);
+        displayValuesCopy[index] = { ...displayValuesCopy[index], [field]: value };
+
         setDisplayValues(displayValuesCopy);
         updateFormik();
     };
 
+    const onDeleteSure = () => {
+        setShowAreUSureDialogForRemoveProperty(false);
+        setFieldDisplayValue(selectedIndexToRemove, 'deleted' as keyof Values, true);
+    };
+
     const remove = (index: number, isNewProperty: Boolean) => {
-        if (areThereAnyInstances && !isNewProperty) {
+        const displayValuesCopy = [...displayValuesRef.current] as Values[PropertiesType];
+        const isDeleted = displayValuesCopy[index].deleted;
+        if (isDeleted) {
+            setFieldDisplayValue(index, 'deleted' as keyof Values, false);
+        } else if (areThereAnyInstances && !isNewProperty) {
             setShowAreUSureDialogForRemoveProperty(true);
             setSelectedIndexForRemove(index);
-            const displayValuesCopy = [...displayValuesRef.current] as Values[PropertiesType];
-
-            setRemovedProperties((prevRemovedProperties) => {
-                // Clone the previous array of properties and add the new value to it
-                const updatedProperties = [...prevRemovedProperties, { index, properties: displayValuesCopy[index] }];
-                return updatedProperties;
-            });
-        } else onDeleteSure();
+        } else {
+            displayValuesCopy.splice(index, 1);
+            setDisplayValues(displayValuesCopy);
+            updateFormik();
+        }
     };
 
     const move = (dst: number, src?: number, prop?: CommonFormInputProperties) => {
@@ -143,21 +139,24 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
         updateFormik();
     };
 
-    useEffect(() => {
-        if (isError) {
-            setIsError?.(false);
-            if (removedProperties.length > 0) removedProperties.forEach((prop, index) => move(prop.index + index, undefined, prop.properties));
-        }
-    }, [isError]);
+    // useEffect(() => {
+    //     const fetchData = async () => {
+    //         const promises: any[] = [];
+    //         if (isError) {
+    //             setIsError?.(false);
+    //             if (removedProperties.length > 0) {
+    //                 removedProperties.map(async (propToRemove) => {
+    //                     const propertyIndex = initialValues?.[propertiesType].findIndex((property) => property.id === propToRemove.properties.id);
+    //                     promises.push(move(propertyIndex || 0, undefined, propToRemove.properties));
+    //                 });
+    //                 await Promise.all(promises);
+    //             }
+    //         }
+    //     };
 
-    const setFieldDisplayValue = (index: number, field: keyof Values, value: any) => {
-        const displayValuesCopy = [...displayValuesRef.current] as Values[PropertiesType];
+    //     fetchData();
+    // }, [isError]);
 
-        displayValuesCopy[index] = { ...displayValuesCopy[index], [field]: value };
-
-        setDisplayValues(displayValuesCopy);
-        updateFormik();
-    };
 
     const setDisplayValue = (index: number, valueOrFunc: SetStateAction<CommonFormInputProperties>) => {
         const displayValuesCopy = [...displayValuesRef.current] as Values[PropertiesType];

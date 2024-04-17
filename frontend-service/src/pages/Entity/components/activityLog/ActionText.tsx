@@ -115,11 +115,20 @@ const UpdateEntityMetadataActionText: React.FC<{
             </StyledTypography>
 
             {actionMetadata.updatedFields.map((field) => {
+                const deleted = entityTemplate.properties.properties[field.fieldName];
+                const isDeleted = deleted === undefined;
+
                 return (
                     <Grid key={field.fieldName} style={{ marginBottom: '10px' }}>
-                        <StyledTypography variant="body2" style={{ ...ellipsisStyle, color: theme.palette.primary.main }}>
-                            {entityTemplate.properties.properties[field.fieldName].title}
-                        </StyledTypography>
+                        {isDeleted ? (
+                            <StyledTypography key={field.fieldName} variant="body2" style={{ ...ellipsisStyle, color: theme.palette.primary.main }}>
+                                {`${field.fieldName} (${i18next.t('entityPage.activityLog.wasDeleted')})`}
+                            </StyledTypography>
+                        ) : (
+                            <StyledTypography variant="body2" style={{ ...ellipsisStyle, color: theme.palette.primary.main }}>
+                                {entityTemplate.properties.properties[field.fieldName].title}
+                            </StyledTypography>
+                        )}
                         <MeltaTooltip
                             PopperProps={popperProps}
                             title={field.oldValue ? field.oldValue : i18next.t('entityPage.activityLog.emptyField')}

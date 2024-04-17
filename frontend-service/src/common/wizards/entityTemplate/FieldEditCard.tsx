@@ -16,6 +16,7 @@ import {
 } from '@mui/material';
 import {
     Delete as DeleteIcon,
+    DeleteForever as DeleteOff,
     DragHandle as DragHandleIcon,
     NotificationsActive as NotificationsActiveIcon,
     NotificationsOff as NotificationsOffIcon,
@@ -116,7 +117,14 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
         <Draggable draggableId={value.id} index={index}>
             {(draggableProvided) => (
                 <Grid item ref={draggableProvided.innerRef} {...draggableProvided.draggableProps} alignSelf="stretch" marginBottom="1rem">
-                    <Card elevation={3} sx={{ padding: '0.5rem' }}>
+                    <Card
+                        elevation={3}
+                        sx={{
+                            padding: '0.5rem',
+                            backgroundColor: value.deleted ? '#E0E1ED' : 'inherit',
+                            opacity: value.deleted ? 0.7 : 1,
+                        }}
+                    >
                         <CardContent sx={{ '&:last-child': { padding: 0 } }}>
                             <Grid container justifyContent="space-between" wrap="nowrap" alignItems="center">
                                 <Box {...draggableProvided.dragHandleProps}>
@@ -136,6 +144,9 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                             disabled={isDisabled}
                                             sx={{ marginRight: '5px' }}
                                             fullWidth
+                                            InputProps={{
+                                                readOnly: value.deleted,
+                                            }}
                                         />
                                         <TextField
                                             label={i18next.t('wizard.entityTemplate.propertyDisplayName')}
@@ -147,6 +158,9 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                             helperText={touchedTitle && errorTitle}
                                             sx={{ marginRight: '5px' }}
                                             fullWidth
+                                            InputProps={{
+                                                readOnly: value.deleted,
+                                            }}
                                         />
                                         <TextField
                                             select
@@ -169,6 +183,9 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                             disabled={isDisabled}
                                             sx={{ marginRight: '5px' }}
                                             fullWidth
+                                            InputProps={{
+                                                readOnly: value.deleted,
+                                            }}
                                         >
                                             {validPropertyTypes
                                                 .filter((validPropertyType) => {
@@ -249,6 +266,9 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                         label={i18next.t('propertyTypes.enum')}
                                                         error={touchedOptions && Boolean(errorOptions)}
                                                         helperText={touchedOptions && errorOptions}
+                                                        InputProps={{
+                                                            readOnly: value.deleted,
+                                                        }}
                                                     />
                                                 )}
                                                 sx={{ marginRight: '5px' }}
@@ -269,6 +289,9 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                     dir="ltr"
                                                     sx={{ marginRight: '5px' }}
                                                     fullWidth
+                                                    InputProps={{
+                                                        readOnly: value.deleted,
+                                                    }}
                                                 />
                                                 <TextField
                                                     label={i18next.t('wizard.entityTemplate.customErrorMessage')}
@@ -284,6 +307,9 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                     }
                                                     sx={{ marginRight: '5px' }}
                                                     fullWidth
+                                                    InputProps={{
+                                                        readOnly: value.deleted,
+                                                    }}
                                                 />
                                             </>
                                         )}
@@ -303,6 +329,9 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                 dir="ltr"
                                                 sx={{ marginRight: '5px' }}
                                                 fullWidth
+                                                InputProps={{
+                                                    readOnly: value.deleted,
+                                                }}
                                             />
                                         )}
                                         {(value.type === 'date' || value.type === 'date-time') &&
@@ -312,6 +341,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                     <IconButton
                                                         onClick={() => setFieldValue('dateNotification', undefined)}
                                                         sx={{ borderRadius: 10 }}
+                                                        disabled={value.deleted}
                                                     >
                                                         <NotificationsActiveIcon />
                                                     </IconButton>
@@ -326,6 +356,9 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                         helperText={touchedDateNotification && errorDateNotification}
                                                         sx={{ marginRight: '5px' }}
                                                         fullWidth
+                                                        InputProps={{
+                                                            readOnly: value.deleted,
+                                                        }}
                                                     >
                                                         {dateNotificationTypes.map((notificationType) => (
                                                             <MenuItem key={notificationType} value={notificationType}>
@@ -335,7 +368,11 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                     </TextField>
                                                 </Grid>
                                             ) : (
-                                                <IconButton onClick={() => setFieldValue('dateNotification', null)} sx={{ borderRadius: 10 }}>
+                                                <IconButton
+                                                    onClick={() => setFieldValue('dateNotification', null)}
+                                                    sx={{ borderRadius: 10 }}
+                                                    disabled={value.deleted}
+                                                >
                                                     <NotificationsOffIcon />
                                                 </IconButton>
                                             ))}
@@ -363,7 +400,8 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                     ? false
                                                                     : isEditMode &&
                                                                       areThereAnyInstances &&
-                                                                      (isNewProperty || (!isNewProperty && !initialValue?.required)))
+                                                                      (isNewProperty || (!isNewProperty && !initialValue?.required))) ||
+                                                                value.deleted
                                                             }
                                                             checked={value.required}
                                                         />
@@ -378,7 +416,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                             id={preview}
                                                             name={preview}
                                                             onChange={onChange}
-                                                            disabled={value.hide}
+                                                            disabled={value.hide || value.deleted}
                                                             checked={value.preview}
                                                         />
                                                     }
@@ -392,7 +430,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                             id={hide}
                                                             name={hide}
                                                             onChange={onChange}
-                                                            disabled={value.preview}
+                                                            disabled={value.preview || value.deleted}
                                                             checked={value.hide}
                                                         />
                                                     }
@@ -415,6 +453,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                     }));
                                                                 }}
                                                                 checked={value.unique}
+                                                                disabled={value.deleted}
                                                             />
                                                         }
                                                         label={i18next.t('validation.unique')}
@@ -422,9 +461,8 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                 </MeltaTooltip>
                                             )}
                                         </Box>
-                                        disabled={isDisabled && value.unique}
-                                        <IconButton onClick={() => remove(index, isNewProperty)}>
-                                            <DeleteIcon />
+                                        <IconButton onClick={() => remove(index, isNewProperty)} disabled={isDisabled && value.unique}>
+                                            {value.deleted ? <DeleteOff /> : <DeleteIcon />}
                                         </IconButton>
                                     </Grid>
                                 </Grid>

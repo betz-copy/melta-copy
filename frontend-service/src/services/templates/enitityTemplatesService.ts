@@ -97,70 +97,74 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTem
             serialStarter,
             hide,
             unique,
+            deleted,
         }) => {
-            let propertyType: IEntitySingleProperty['type'];
-            switch (type) {
-                case 'string':
-                case 'number':
-                case 'boolean':
-                    propertyType = type;
-                    break;
-                case 'serialNumber':
-                    propertyType = 'number';
-                    break;
-                case 'enumArray':
-                    propertyType = 'array';
-                    break;
-                default:
-                    propertyType = 'string';
-            }
+            if (!deleted) {
+                let propertyType: IEntitySingleProperty['type'];
+                switch (type) {
+                    case 'string':
+                    case 'number':
+                    case 'boolean':
+                        propertyType = type;
+                        break;
+                    case 'serialNumber':
+                        propertyType = 'number';
+                        break;
+                    case 'enumArray':
+                        propertyType = 'array';
+                        break;
+                    default:
+                        propertyType = 'string';
+                }
+                schema.properties[name] = {
+                    title,
+                    type: propertyType,
+                    format: stringFormats.includes(type) ? type : undefined,
+                    enum: type === 'enum' ? options : undefined,
+                    items: type === 'enumArray' ? { type: 'string', enum: options } : undefined,
+                    minItems: type === 'enumArray' ? 1 : undefined,
+                    uniqueItems: type === 'enumArray' ? true : undefined,
+                    pattern: type === 'pattern' ? pattern : undefined,
+                    patternCustomErrorMessage: type === 'pattern' ? patternCustomErrorMessage : undefined,
+                    dateNotification: dateNotification as string | undefined,
+                    serialStarter: type === 'serialNumber' ? serialStarter : undefined,
+                    serialCurrent: type === 'serialNumber' ? serialStarter : undefined,
+                };
 
-            schema.properties[name] = {
-                title,
-                type: propertyType,
-                format: stringFormats.includes(type) ? type : undefined,
-                enum: type === 'enum' ? options : undefined,
-                items: type === 'enumArray' ? { type: 'string', enum: options } : undefined,
-                minItems: type === 'enumArray' ? 1 : undefined,
-                uniqueItems: type === 'enumArray' ? true : undefined,
-                pattern: type === 'pattern' ? pattern : undefined,
-                patternCustomErrorMessage: type === 'pattern' ? patternCustomErrorMessage : undefined,
-                dateNotification: dateNotification as string | undefined,
-                serialStarter: type === 'serialNumber' ? serialStarter : undefined,
-                serialCurrent: type === 'serialNumber' ? serialStarter : undefined,
-            };
+                propertiesOrder.push(name);
 
-            propertiesOrder.push(name);
+                if (required) schema.required.push(name);
+                if (hide) schema.hide.push(name);
+                if (unique) uniqueConstraint.push(name);
+                if (preview) propertiesPreview.push(name);
+                if (type === 'serialNumber') serialsUniqueConstraints.push([name]);
 
-            if (required) schema.required.push(name);
-            if (hide) schema.hide.push(name);
-            if (unique) uniqueConstraint.push(name);
-            if (preview) propertiesPreview.push(name);
-            if (type === 'serialNumber') serialsUniqueConstraints.push([name]);
+                if (type === 'enum' || type === 'enumArray') {
+                    Object.entries(optionColors).forEach(([option, color]) => {
+                        if (!color) return;
 
-            if (type === 'enum' || type === 'enumArray') {
-                Object.entries(optionColors).forEach(([option, color]) => {
-                    if (!color) return;
+                        if (!enumPropertiesColors) enumPropertiesColors = {};
+                        if (!enumPropertiesColors[name]) enumPropertiesColors[name] = {};
 
-                    if (!enumPropertiesColors) enumPropertiesColors = {};
-                    if (!enumPropertiesColors[name]) enumPropertiesColors[name] = {};
-
-                    enumPropertiesColors[name][option] = color;
-                });
+                        enumPropertiesColors[name][option] = color;
+                    });
+                }
             }
         },
     );
 
-    attachmentProperties.forEach(({ name, title, required }) => {
-        schema.properties[name] = {
-            title,
-            type: 'string',
-            format: 'fileId',
-        };
+    attachmentProperties.forEach(({ name, title, required, deleted }) => {
+        if (!deleted) {
+            schema.properties[name] = {
+                title,
+                type: 'string',
+                format: 'fileId',
+            };
 
-        attachmentPropertiesOrder.push(name);
+            attachmentPropertiesOrder.push(name);
 
-        if (required) schema.required.push(name);
+            if (required) schema.required.push(name);
+        }
     });
     const uniqueConstraints = uniqueConstraint.length > 0 ? [uniqueConstraint, ...serialsUniqueConstraints] : serialsUniqueConstraints;
 
@@ -213,6 +217,8 @@ const updateEntityTemplateStatusRequest = async (entityTemplateId: string, disab
 };
 
 const updateEntityTemplateRequest = async (entityTemplateId: string, updatedEntityTemplate: IEntityTemplate | EntityTemplateWizardValues) => {
+    console.log(updatedEntityTemplate);
+
     const formData = new FormData();
 
     const entityTemplate: IEntityTemplate =

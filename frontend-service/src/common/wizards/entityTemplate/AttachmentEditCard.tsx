@@ -1,7 +1,7 @@
 import React, { memo } from 'react';
 import { FormikErrors, FormikTouched } from 'formik';
 import { TextField, Box, Grid, Card, CardContent, Switch, FormControlLabel, IconButton } from '@mui/material';
-import { Delete as DeleteIcon, DragHandle as DragHandleIcon } from '@mui/icons-material';
+import { Delete as DeleteIcon, DeleteForever as DeleteOff, DragHandle as DragHandleIcon } from '@mui/icons-material';
 import { Draggable } from 'react-beautiful-dnd';
 import i18next from 'i18next';
 import isEqual from 'lodash.isequal';
@@ -53,7 +53,7 @@ export const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
         <Draggable draggableId={value.id} index={index}>
             {(draggableProvided) => (
                 <Grid item ref={draggableProvided.innerRef} {...draggableProvided.draggableProps} alignSelf="stretch" marginBottom="1rem">
-                    <Card elevation={3} sx={{ padding: '0.5rem' }}>
+                    <Card elevation={3} sx={{ padding: '0.5rem', backgroundColor: value.deleted ? '#E0E1ED' : 'inherit' }}>
                         <CardContent sx={{ '&:last-child': { padding: 0 } }}>
                             <Grid container justifyContent="space-between" wrap="nowrap" alignItems="center">
                                 <Box {...draggableProvided.dragHandleProps}>
@@ -72,6 +72,9 @@ export const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
                                             helperText={touchedName && errorName}
                                             disabled={isDisabled}
                                             sx={{ width: '50%', marginRight: '5px' }}
+                                            InputProps={{
+                                                readOnly: value.deleted,
+                                            }}
                                         />
                                         <TextField
                                             label={i18next.t('wizard.entityTemplate.attachmentDisplayName')}
@@ -82,6 +85,9 @@ export const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
                                             error={touchedTitle && Boolean(errorTitle)}
                                             helperText={touchedTitle && errorTitle}
                                             sx={{ width: '50%', marginRight: '5px' }}
+                                            InputProps={{
+                                                readOnly: value.deleted,
+                                            }}
                                         />
                                     </Grid>
                                     <Grid container justifyContent="space-between">
@@ -97,9 +103,10 @@ export const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
                                                             disabled={
                                                                 supportChangeToRequiredWithInstances
                                                                     ? false
-                                                                    : isEditMode &&
-                                                                      areThereAnyInstances &&
-                                                                      (isNewProperty || (!isNewProperty && !initialValue?.required))
+                                                                    : (isEditMode &&
+                                                                          areThereAnyInstances &&
+                                                                          (isNewProperty || (!isNewProperty && !initialValue?.required))) ||
+                                                                      value.deleted
                                                             }
                                                         />
                                                     }
@@ -109,7 +116,7 @@ export const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
                                         </Box>
 
                                         <IconButton onClick={() => remove(index, isNewProperty)}>
-                                            <DeleteIcon />
+                                            {value.deleted ? <DeleteOff /> : <DeleteIcon />}
                                         </IconButton>
                                     </Grid>
                                 </Grid>
