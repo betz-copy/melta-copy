@@ -53,6 +53,7 @@ export interface FieldEditCardProps {
     supportEntityReferenceType: boolean;
     supportChangeToRequiredWithInstances: boolean;
     supportArrayFields: boolean;
+    supportDeleteForExistingInstances: boolean;
 }
 
 export const FieldEditCard: React.FC<FieldEditCardProps> = ({
@@ -71,6 +72,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     supportEntityReferenceType,
     supportChangeToRequiredWithInstances,
     supportArrayFields,
+    supportDeleteForExistingInstances,
 }) => {
     const name = `properties[${index}].name`;
     const touchedName = touched?.name;
@@ -266,13 +268,11 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                         label={i18next.t('propertyTypes.enum')}
                                                         error={touchedOptions && Boolean(errorOptions)}
                                                         helperText={touchedOptions && errorOptions}
-                                                        InputProps={{
-                                                            readOnly: value.deleted,
-                                                        }}
                                                     />
                                                 )}
                                                 sx={{ marginRight: '5px' }}
                                                 fullWidth
+                                                readOnly={value.deleted}
                                             />
                                         )}
                                         {value.type === 'pattern' && (
@@ -461,7 +461,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                 </MeltaTooltip>
                                             )}
                                         </Box>
-                                        <IconButton onClick={() => remove(index, isNewProperty)} disabled={isDisabled && value.unique}>
+                                        <IconButton onClick={() => remove(index, isNewProperty)} disabled={!supportDeleteForExistingInstances}>
                                             {value.deleted ? <DeleteOff /> : <DeleteIcon />}
                                         </IconButton>
                                     </Grid>

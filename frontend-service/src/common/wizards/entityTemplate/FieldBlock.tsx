@@ -36,6 +36,7 @@ interface FieldBlockProps<PropertiesType extends string, Values extends Record<P
     supportEntityReferenceType: boolean;
     supportChangeToRequiredWithInstances: boolean;
     supportArrayFields: boolean;
+    supportDeleteForExistingInstances: boolean;
     draggable?: { isDraggable: false } | { isDraggable: true; dragHandleProps: DraggableProvided['dragHandleProps'] };
 }
 
@@ -55,6 +56,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
     supportEntityReferenceType,
     supportChangeToRequiredWithInstances,
     supportArrayFields,
+    supportDeleteForExistingInstances,
     draggable = { isDraggable: false },
     initialFieldCardDataOnAdd = {
         name: '',
@@ -157,7 +159,6 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
     //     fetchData();
     // }, [isError]);
 
-
     const setDisplayValue = (index: number, valueOrFunc: SetStateAction<CommonFormInputProperties>) => {
         const displayValuesCopy = [...displayValuesRef.current] as Values[PropertiesType];
 
@@ -227,6 +228,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
                                                 supportEntityReferenceType,
                                                 supportChangeToRequiredWithInstances,
                                                 supportArrayFields,
+                                                supportDeleteForExistingInstances,
                                             };
 
                                             if (propertiesType === 'properties' || propertiesType === 'detailsProperties') {

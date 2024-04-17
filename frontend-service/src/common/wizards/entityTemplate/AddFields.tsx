@@ -155,6 +155,7 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
                                             supportEntityReferenceType={false}
                                             supportChangeToRequiredWithInstances
                                             supportArrayFields
+                                            supportDeleteForExistingInstances
                                             draggable={{ isDraggable: true, dragHandleProps: draggableProvided.dragHandleProps }}
                                         />
                                     </Grid>
