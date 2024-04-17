@@ -123,6 +123,7 @@ export const environment = {
         ruleBlock: 'RULE_BLOCK',
         failedToCreateConstraints: 'FAILED_TO_CREATE_CONSTRAINTS',
         failedConstraintsValidation: 'FAILED_CONSTRAINTS_VALIDATION',
+        failedToDeleteField: 'FAILED_DELETE_FIELD',
     },
     mainFontSizes: {
         headlineTitleFontSize: '24px',

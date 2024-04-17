@@ -1,3 +1,4 @@
+import config from '../../config';
 import { ServiceError } from '../../express/error';
 import {
     IEquation,
@@ -16,7 +17,11 @@ const checkPropertyInUsed = (propertyOfVariable: IPropertyOfVariable | ISumAggFu
     const variable = propertyOfVariable.variableName.split('.');
     const id = variable.length > 1 ? variable[2] : propertyOfVariable.variableName;
     if (id === entityId && properties.includes(propertyOfVariable.property)) {
-        throw new ServiceError(400, 'cant delete property that used in rules');
+        throw new ServiceError(400, 'can not delete field that used in rules', {
+            errorCode: config.errorCodes.failedToDeleteField,
+            type: 'rules',
+            property: propertyOfVariable.property,
+        });
     }
 };
 

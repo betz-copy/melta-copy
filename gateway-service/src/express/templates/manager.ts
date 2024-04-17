@@ -25,7 +25,6 @@ import ProcessTemplatesManager from '../processes/processTemplates/manager';
 import { isProcessManager } from '../../externalServices/permissionsService';
 import { IPermissionsOfUser } from '../permissions/interfaces';
 import { GanttsService } from '../../externalServices/ganttsService';
-// import { ActivityLogManagerService } from '../../externalServices/activityLogService';
 
 const {
     categoryHasTemplates,
@@ -371,12 +370,13 @@ export class TemplatesManager {
         await EntityTemplateManagerService.getCategoryById(updatedTemplateData.category);
 
         const { count } = await InstanceManagerService.searchEntitiesOfTemplateRequest(id, { limit: 1 });
-
         const currTemplate = await EntityTemplateManagerService.getEntityTemplateById(id);
-        const constraints = await InstanceManagerService.getConstraintsOfTemplate(id);
-        const flatedConstraints = constraints.uniqueConstraints.flat();
+
+        const { uniqueConstraints, properties, ...restOfTemplateData } = updatedTemplateData;
+        const { required: requiredConstraints, ...restOfTemplatePropertiesObject } = properties;
 
         if (currTemplate.disabled === true) throw new ServiceError(400, 'can not update disabled template');
+
         const removedProperties: string[] = [];
         const removedFilesProperties: string[] = [];
 
@@ -390,11 +390,7 @@ export class TemplatesManager {
             });
             Object.entries(currTemplate.properties.properties).forEach(([key, value]) => {
                 const newValue = updatedTemplateData.properties.properties[key];
-
                 if (!newValue) {
-                    if (flatedConstraints.includes(key)) {
-                        throw new ServiceError(400, 'can not delete unique field');
-                    }
                     removedProperties.push(key);
                     if (value.format === 'fileId') removedFilesProperties.push(key);
                 } else {
@@ -426,10 +422,15 @@ export class TemplatesManager {
         } else {
             iconFileId = currTemplate.iconFileId;
         }
-        const isPropertyInUsed = await GanttsService.isPropertyOfTemplateInUsed(id, removedProperties);
-        console.log(isPropertyInUsed);
+
+        await GanttsService.isPropertyOfTemplateInUsed(id, removedProperties);
 
         await RelationshipsTemplateManagerService.isPropertyOfTemplateInUsed(id, removedProperties);
+
+        await InstanceManagerService.updateConstraintsOfTemplate(id, {
+            uniqueConstraints,
+            requiredConstraints,
+        });
 
         if (removedFilesProperties.length > 0) {
             const filePaths = await InstanceManagerService.getFilePathsOfTemplate(id, removedFilesProperties);
@@ -438,22 +439,12 @@ export class TemplatesManager {
 
         if (removedProperties.length > 0) {
             await InstanceManagerService.deletePropertiesOfTemplate(id, removedProperties);
-            // await ActivityLogManagerService.deletePropertiesOfTemplate(id, removedProperties);
         }
-
-        const { uniqueConstraints, properties, ...restOfTemplateData } = updatedTemplateData;
-        const { required: requiredConstraints, ...restOfTemplatePropertiesObject } = properties;
-        console.log({ restOfTemplatePropertiesObject });
 
         const updatedTemplate = await EntityTemplateManagerService.updateEntityTemplate(id, {
             ...restOfTemplateData,
             properties: restOfTemplatePropertiesObject,
             iconFileId,
-        });
-
-        await InstanceManagerService.updateConstraintsOfTemplate(id, {
-            uniqueConstraints,
-            requiredConstraints,
         });
 
         return TemplatesManager.populateTemplateConstraints(updatedTemplate, requiredConstraints, uniqueConstraints);

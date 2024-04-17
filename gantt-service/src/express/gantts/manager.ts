@@ -3,6 +3,7 @@ import FolderModel from './model';
 import { IGantt, IGanttDocument, ISearchGanttsBody } from './interface';
 import { ServiceError } from '../error';
 import { escapeRegExp } from '../../utils';
+import config from '../../config';
 
 export class GanttManager {
     static searchGantts({ search, limit, step }: ISearchGanttsBody) {
@@ -41,14 +42,26 @@ export class GanttManager {
     static async isPropertyOfTemplateInUsed(templateId: string, propertiesToRemove: { properties: string[] }) {
         const { properties } = propertiesToRemove;
 
-        return FolderModel.exists({
-            'items.entityTemplate.id': templateId,
-            $or: [
-                { 'items.entityTemplate.fieldsToShow': { $elemMatch: { $in: properties } } },
-                { 'items.entityTemplate.startDateField': { $in: properties } },
-                { 'items.entityTemplate.endDateField': { $in: properties } },
-            ],
+        const propertyChecks = properties.map(async (property) => {
+            const propertyInUsed = await FolderModel.exists({
+                'items.entityTemplate.id': templateId,
+                $or: [
+                    { 'items.entityTemplate.fieldsToShow': property },
+                    { 'items.entityTemplate.startDateField': property },
+                    { 'items.entityTemplate.endDateField': property },
+                ],
+            });
+
+            if (propertyInUsed) {
+                throw new ServiceError(400, 'can not delete field that used in gantts', {
+                    errorCode: config.errorCodes.failedToDeleteField,
+                    type: 'gantss',
+                    property,
+                });
+            }
         });
+
+        await Promise.all(propertyChecks);
     }
 }
 

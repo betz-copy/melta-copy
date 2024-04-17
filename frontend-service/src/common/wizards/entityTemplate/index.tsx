@@ -35,6 +35,7 @@ export interface EntityTemplateFormInputProperties extends IBaseFormInputPropert
     optionColors: Record<string, string>;
     dateNotification: string | null | undefined;
     serialStarter: number | undefined;
+    deleted?: boolean | undefined;
 }
 export interface EntityTemplateWizardValues
     extends Omit<
@@ -63,9 +64,7 @@ const steps: StepsType<EntityTemplateWizardValues> = [
     },
     {
         label: i18next.t('wizard.entityTemplate.properties'),
-        component: (props, { isEditMode, setBlock, isError, setIsError }) => (
-            <AddFields {...props} isEditMode={isEditMode} setBlock={setBlock} isError={isError} setIsError={setIsError} />
-        ),
+        component: (props, { isEditMode, setBlock }) => <AddFields {...props} isEditMode={isEditMode} setBlock={setBlock} />,
         validationSchema: addFieldsSchema,
     },
 ];
@@ -86,7 +85,6 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
     },
     isEditMode = false,
 }) => {
-    const [isError, setIsError] = useState(false);
     const queryClient = useQueryClient();
     const { isLoading, mutateAsync } = useMutation(
         (enitiyTemplate: EntityTemplateWizardValues) =>
@@ -104,8 +102,18 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
                 handleClose();
             },
             onError: (error: AxiosError, enitiyTemplateValues) => {
-                setIsError(true);
                 const errorMetadata = error.response?.data?.metadata;
+
+                if (isEditMode && errorMetadata?.errorCode === errorCodes.failedToDeleteField) {
+                    const { type, property } = errorMetadata;
+
+                    const errorMessage =
+                        type === 'rules'
+                            ? `${i18next.t('wizard.entityTemplate.failedToDeleteFieldThatUsedInRules')} ${property}`
+                            : `${i18next.t('wizard.entityTemplate.failedToDeleteFieldThatUsedInGantts')} ${property}`;
+                    toast.error(errorMessage);
+                    return;
+                }
                 if (isEditMode && errorMetadata?.errorCode === errorCodes.failedToCreateConstraints) {
                     const { constraint }: { constraint: IConstraint } = errorMetadata;
 
@@ -151,8 +159,6 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
             initialValues={initialValues}
             initalStep={initalStep}
             isEditMode={isEditMode}
-            isError={isError}
-            setIsError={setIsError}
             title={isEditMode ? i18next.t('wizard.entityTemplate.editTitle') : i18next.t('wizard.entityTemplate.title')}
             steps={steps}
             isLoading={isLoading}

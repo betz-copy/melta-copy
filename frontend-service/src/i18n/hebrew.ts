@@ -89,6 +89,7 @@ export default {
             withEntity: 'עם ישות מסוג',
             failedToGetActivities: 'נכשל לטעון היסטוריה',
             undefined: 'לא ידוע',
+            wasDeleted: 'נמחק',
         },
         print: {
             header: 'הדפס ישות',
@@ -177,7 +178,8 @@ export default {
         disabledRule: 'חוק לא פעיל',
         defaultCantEdit: 'לא ניתן לערוך ',
         deleteField: 'מחיקת שדה',
-        warningOnDeleteField: 'שים לב! מחיקת שדה זה תגרום למחיקת שדה זה אצל כל הישיות בעלות תבנית זו',
+        warningOnDeleteField: 'שים לב! מחיקת שדה',
+        continueWarningOnDeleteField: 'תגרום למחיקת כל הערכים והיסטוריית השינויים תחת שדה זה בישויות מסוג תבנית',
     },
     error: {
         config: 'שגיאה בתקשורת לשרת',
@@ -293,6 +295,7 @@ export default {
         },
         entityTemplate: {
             title: 'יצירת תבנית ישות',
+            editTitle: 'עריכת תבנית ישות',
             createdSuccessfully: 'תבנית ישות נוצרה בהצלחה',
             editedSuccefully: 'תבנית ישות עודכנה בהצלחה',
             failedToCreate: 'נכשל ליצור תבנית ישות',
@@ -305,6 +308,8 @@ export default {
             failedToEdit: 'נכשל בעריכת תבנית ישות',
             failedToUpdateRequiredConstraintsBecauseOfEntitiesWithMissing: 'נכשל לעדכן שדות חובה בגלל שקיימות ישיות שלא מוזן להם שדה',
             failedToUpdateUniqueConstraintsBecauseOfEntitiesWithDuplicates: 'נכשל לעדכן שדות יחודיים בגלל שקיימות ישויות עם שכפולים בשדות',
+            failedToDeleteFieldThatUsedInRules: 'נכשל למחוק שדה אשר בשימוש בחוקים',
+            failedToDeleteFieldThatUsedInGantts: 'נכשל למחוק שדה אשר בשימוש במפת חום',
             propertyName: 'שם שדה באנגלית',
             attachmentName: 'שם באנגלית',
             propertyDisplayName: 'שם שדה לתצוגה',
