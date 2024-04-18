@@ -434,7 +434,9 @@ export class TemplatesManager {
 
         if (removedFilesProperties.length > 0) {
             const filePaths = await InstanceManagerService.getFilePathsOfTemplate(id, removedFilesProperties);
-            await deleteFiles(filePaths);
+            await deleteFiles(filePaths).catch((error) => {
+                console.log('failed to delete files', filePaths, error);
+            });
         }
 
         if (removedProperties.length > 0) {

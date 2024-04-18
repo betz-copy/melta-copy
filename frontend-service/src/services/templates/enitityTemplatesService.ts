@@ -217,8 +217,6 @@ const updateEntityTemplateStatusRequest = async (entityTemplateId: string, disab
 };
 
 const updateEntityTemplateRequest = async (entityTemplateId: string, updatedEntityTemplate: IEntityTemplate | EntityTemplateWizardValues) => {
-    console.log(updatedEntityTemplate);
-
     const formData = new FormData();
 
     const entityTemplate: IEntityTemplate =
