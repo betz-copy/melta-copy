@@ -444,9 +444,19 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                 </MeltaTooltip>
                                             )}
                                         </Box>
-                                        <IconButton onClick={() => remove(index, isNewProperty)} disabled={!supportDeleteForExistingInstances}>
-                                            {value.deleted ? <DeleteOff /> : <DeleteIcon />}
-                                        </IconButton>
+                                        <MeltaTooltip
+                                            disableHoverListener={!initialValue?.unique || !initialValue?.required}
+                                            title={i18next.t('wizard.entityTemplate.cantDeleteUniqueOrRequiredFields')}
+                                        >
+                                            <Grid>
+                                                <IconButton
+                                                    onClick={() => remove(index, isNewProperty)}
+                                                    disabled={!supportDeleteForExistingInstances || initialValue?.unique || initialValue?.required}
+                                                >
+                                                    {value.deleted ? <DeleteOff /> : <DeleteIcon />}
+                                                </IconButton>
+                                            </Grid>
+                                        </MeltaTooltip>
                                     </Grid>
                                 </Grid>
                             </Grid>

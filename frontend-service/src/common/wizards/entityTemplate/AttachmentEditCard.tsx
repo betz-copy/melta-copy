@@ -6,6 +6,7 @@ import { Draggable } from 'react-beautiful-dnd';
 import i18next from 'i18next';
 import isEqual from 'lodash.isequal';
 import { CommonFormInputProperties } from './commonInterfaces';
+import { MeltaTooltip } from '../../MeltaTooltip';
 
 interface AttachmentEditCardProps {
     value: CommonFormInputProperties;
@@ -119,9 +120,19 @@ export const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
                                             )}
                                         </Box>
 
-                                        <IconButton onClick={() => remove(index, isNewProperty)} disabled={!supportDeleteForExistingInstances}>
-                                            {value.deleted ? <DeleteOff /> : <DeleteIcon />}
-                                        </IconButton>
+                                        <MeltaTooltip
+                                            disableHoverListener={!initialValue?.required}
+                                            title={i18next.t('wizard.entityTemplate.cantDeleteUniqueOrRequiredFields')}
+                                        >
+                                            <Grid>
+                                                <IconButton
+                                                    onClick={() => remove(index, isNewProperty)}
+                                                    disabled={!supportDeleteForExistingInstances || initialValue?.required}
+                                                >
+                                                    {value.deleted ? <DeleteOff /> : <DeleteIcon />}
+                                                </IconButton>
+                                            </Grid>
+                                        </MeltaTooltip>
                                     </Grid>
                                 </Grid>
                             </Grid>
