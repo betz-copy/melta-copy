@@ -390,7 +390,7 @@ export class EntityManager {
             const ruleFailuresBeforeAction = await EntityManager.runRulesDependOnEntityUpdate(transaction, entity, updatedProperties);
             const updatedEntity = await runInTransactionAndNormalize(
                 transaction,
-                `MATCH (e {_id: $props._id})
+                `MATCH (e {_id: '${id}'})
                  WITH e.createdAt AS createdAt, e.disabled AS disabled, e AS e
                  SET e = $props 
                  SET e.createdAt = createdAt
@@ -595,6 +595,23 @@ export class EntityManager {
             updateConstraintsPromises.push(updateUniqueConstraintsPromise);
 
             await Promise.all(updateConstraintsPromises);
+        });
+    }
+
+    static async enumerateNewSerialNumberFields(templateId: string, newSerialNumberFields: object) {
+        return Neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
+            const numOfEntitiesUpdated = `
+            MATCH (n: \`${templateId}\`) 
+            WITH n
+            ORDER BY n.createdAt
+            WITH collect(n) AS entities
+            UNWIND range(0, size(entities)-1) AS index
+            WITH entities[index] AS currentEntity,  index AS currentIndex
+            SET ${Object.entries(newSerialNumberFields)
+                .map(([key, value]) => `\`currentEntity\`.${key} = toFloat(currentIndex + ${value})`)
+                .join(', ')}
+            RETURN count(currentEntity) AS numEntitiesUpdated`;
+            return runInTransactionAndNormalize(transaction, numOfEntitiesUpdated, normalizeResponseCount);
         });
     }
 }
