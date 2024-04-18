@@ -16,7 +16,7 @@ import {
     getExpandedEntityByIdRequestSchema,
     searchEntitiesBatchRequestSchema,
     searchEntitiesOfTemplateRequestSchema,
-    updateNewSerialNumberFieldsRequestSchema,
+    enumerateNewSerialNumberFieldsRequestSchema,
 } from './validator.schema';
 
 const entityRouter: Router = Router();
@@ -34,8 +34,8 @@ entityRouter.put(
     wrapController(EntityController.updateConstraintsOfTemplate),
 );
 entityRouter.post(
-    '/constraints/new-serial-number-fields/:templateId',
-    ValidateRequest(updateNewSerialNumberFieldsRequestSchema),
+    '/constraints/enumerate-new-serial-number-fields/:templateId',
+    ValidateRequest(enumerateNewSerialNumberFieldsRequestSchema),
     wrapController(EntityController.enumerateNewSerialNumberFields),
 );
 

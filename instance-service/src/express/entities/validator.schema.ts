@@ -202,7 +202,7 @@ export const updateConstraintsOfTemplateRequestSchema = Joi.object({
     },
 });
 
-export const updateNewSerialNumberFieldsRequestSchema = Joi.object({
+export const enumerateNewSerialNumberFieldsRequestSchema = Joi.object({
     body: Joi.object({
         newSerialNumberFields: Joi.object().required(),
     }),
