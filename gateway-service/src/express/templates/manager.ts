@@ -387,7 +387,8 @@ export class TemplatesManager {
             });
             Object.entries(currTemplate.properties.properties).forEach(([key, value]) => {
                 const newValue = updatedTemplateData.properties.properties[key];
-                if (!newValue) {
+                // updatedTemplateData.properties.properties.includes()
+                if (newValue.deleted) {
                     removedProperties.push(key);
                     if (value.format === 'fileId') removedFilesProperties.push(key);
                 } else {
@@ -403,6 +404,8 @@ export class TemplatesManager {
                 }
             });
         }
+        console.log(removedProperties);
+        console.log(updatedTemplateData);
 
         let iconFileId: string | null;
         if (file) {
