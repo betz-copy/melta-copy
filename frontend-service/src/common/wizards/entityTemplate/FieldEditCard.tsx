@@ -100,6 +100,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     const errorOptions = errors?.options;
 
     const dateNotification = `properties[${index}].dateNotification`;
+    const calculateTime = `properties[${index}].calculateTime`;
     const touchedDateNotification = touched?.dateNotification;
     const errorDateNotification = errors?.dateNotification;
 
@@ -177,14 +178,15 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                         if (!supportSerialNumberType) return false;
                                                     }
                                                     if (validPropertyType === 'enumArray') return supportArrayFields;
-                                                    if (validPropertyType === 'fileId' || validPropertyType === 'fileIdArray') return false; // TODO: support file inputs
+                                                    if (validPropertyType === 'fileId' || validPropertyType === 'multipleFiles') return false; // TODO: support file inputs
                                                     return true;
                                                 })
-                                                .map((validType) => (
+                                                .map((validType) => {
+                                                    return(
                                                     <MenuItem key={validType} value={validType}>
                                                         {i18next.t(`propertyTypes.${validType}`)}
                                                     </MenuItem>
-                                                ))}
+                                                )})}
                                         </TextField>
                                     </Grid>
                                     <Grid item container justifyContent="space-between" flexWrap="nowrap">
@@ -418,6 +420,19 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                         label={i18next.t('validation.unique')}
                                                     />
                                                 </MeltaTooltip>
+                                            )}
+                                            {(value.type === 'date' || value.type === 'date-time') && 'calculateTime' in value && (
+                                                <FormControlLabel
+                                                    control={
+                                                        <Switch
+                                                            id={calculateTime}
+                                                            name={calculateTime}
+                                                            onChange={onChange}
+                                                            checked={value.calculateTime ?? false}
+                                                        />
+                                                    }
+                                                    label={i18next.t('validation.calculateTime')}
+                                                />
                                             )}
                                         </Box>
 

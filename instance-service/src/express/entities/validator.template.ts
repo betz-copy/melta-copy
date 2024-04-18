@@ -25,7 +25,7 @@ ajv.addKeyword({
     keyword: 'dateNotification',
     type: 'string',
 });
-
+ajv.addKeyword({ keyword: 'calculateTime', type: 'boolean' });
 ajv.addKeyword({
     keyword: 'serialStarter',
     type: 'number',
@@ -53,7 +53,6 @@ const getEntityTemplateByIdOrThrowValidationError = async (templateId: string) =
 
 export const validateEntity = async (req: Request) => {
     const entityTemplate = await getEntityTemplateByIdOrThrowValidationError(req.body.templateId);
-
     const validateFunction = ajv.compile(entityTemplate.properties);
     const valid = validateFunction(req.body.properties);
 

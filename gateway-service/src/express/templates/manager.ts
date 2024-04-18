@@ -293,7 +293,6 @@ export class TemplatesManager {
         file?: Express.Multer.File,
     ): Promise<IMongoEntityTemplateWithConstraintsPopulated> {
         await EntityTemplateManagerService.getCategoryById(templateData.category);
-
         let iconFileId: string | null;
         if (file) {
             iconFileId = await uploadFile(file);

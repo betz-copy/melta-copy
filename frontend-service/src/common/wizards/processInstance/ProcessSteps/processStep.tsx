@@ -1,27 +1,29 @@
-import { Grid, Button, CircularProgress, Box, Typography, TextField } from '@mui/material';
-import { Formik, Form, Field } from 'formik';
+/* eslint-disable no-extra-boolean-cast */
+import { Clear as ClearIcon, Done as DoneIcon, Edit as EditIcon } from '@mui/icons-material';
+import { Box, Button, CircularProgress, Grid, TextField, Typography } from '@mui/material';
+import { AxiosError } from 'axios';
+import { Field, Form, Formik } from 'formik';
 import i18next from 'i18next';
 import pickBy from 'lodash.pickby';
 import React, { FC } from 'react';
-import { Done as DoneIcon, Clear as ClearIcon, Edit as EditIcon } from '@mui/icons-material';
-import { AxiosError } from 'axios';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import { IMongoStepInstancePopulated } from '../../../../interfaces/processes/stepInstance';
-import { pickProcessFieldsPropertiesSchema } from '../../../../utils/pickFieldsPropertiesSchema';
-import { InstanceFileInput } from '../../../inputs/InstanceFilesInput/InstanceFileInput';
-import { ajvValidate, JSONSchemaFormik } from '../../../inputs/JSONSchemaFormik';
-import { getStepValuesFromStepInstance } from './stepsFormik';
-import { updateStepRequest } from '../../../../services/processesService';
-import { ErrorToast } from '../../../ErrorToast';
-import ProcessStatus from '../ProcessSummaryStep/ProcessStatus';
-import { IMongoStepTemplatePopulated } from '../../../../interfaces/processes/stepTemplate';
 import { ProcessStepValues } from '.';
-import { IPermissionsOfUser } from '../../../../services/permissionsService';
 import { IMongoProcessInstancePopulated } from '../../../../interfaces/processes/processInstance';
-import { EntityReference } from '../EntityReference';
+import { IMongoStepInstancePopulated } from '../../../../interfaces/processes/stepInstance';
+import { IMongoStepTemplatePopulated } from '../../../../interfaces/processes/stepTemplate';
+import { IPermissionsOfUser } from '../../../../services/permissionsService';
+import { updateStepRequest } from '../../../../services/processesService';
+import { pickProcessFieldsPropertiesSchema } from '../../../../utils/pickFieldsPropertiesSchema';
 import { BlueTitle } from '../../../BlueTitle';
-import { OpenPreviewButton } from '../../../FilePreview/OpenPreviewButton';
+import { ErrorToast } from '../../../ErrorToast';
+import { InstanceFileInput } from '../../../inputs/InstanceFilesInput/InstanceFileInput';
+import { JSONSchemaFormik, ajvValidate } from '../../../inputs/JSONSchemaFormik';
+import { EntityReference } from '../EntityReference';
+import ProcessStatus from '../ProcessSummaryStep/ProcessStatus';
+import { getStepValuesFromStepInstance } from './stepsFormik';
+import OpenPreview from '../../../FilePreview/OpenPreview';
+import { InstanceSingleFileInput } from '../../../inputs/InstanceFilesInput/InstanceSingleFileInput';
 
 interface ProcessStepProps {
     stepInstance: IMongoStepInstancePopulated;
@@ -48,10 +50,13 @@ export const ProcessStep: FC<ProcessStepProps> = ({
             stepInstance.reviewers.some((reviewer) => reviewer.id === myPermissions.user.id)) &&
         !processInstance.archived;
 
-    const templateFileProperties = pickBy(stepTemplate.properties.properties, (value) => value.format === 'fileId');
+    const templateFileProperties = pickBy(
+        stepTemplate.properties.properties,
+        (value) => (value.type === 'array' && value.items?.format === 'fileId') || value.format === 'fileId',
+    );
     const templateEntityReferenceProperties = pickBy(stepTemplate.properties.properties, (value) => value.format === 'entityReference');
     const { isLoading: editStepIsLoading, mutateAsync: editStepMutateAsync } = useMutation(
-        (stepData: ProcessStepValues) => updateStepRequest(stepInstance._id, stepData, processInstance._id, stepInstance),
+        (stepData: ProcessStepValues) => updateStepRequest(stepInstance._id, stepData, processInstance._id, stepInstance, templateFileProperties),
         {
             onSuccess: (updatedStepInstance) => {
                 toast.success(i18next.t('wizard.processInstance.step.editedSuccessfully'));
@@ -63,7 +68,6 @@ export const ProcessStep: FC<ProcessStepProps> = ({
             },
         },
     );
-
     return (
         <Formik
             initialValues={getStepValuesFromStepInstance(stepInstance, stepTemplate)}
@@ -182,44 +186,73 @@ export const ProcessStep: FC<ProcessStepProps> = ({
 
                                             {templateFileProperties && isStepEditMode ? (
                                                 <Box>
-                                                    {Object.entries(templateFileProperties).map(([key, value]) => (
-                                                        <InstanceFileInput
-                                                            key={key}
-                                                            fileFieldName={`attachmentsProperties.${key}`}
-                                                            fieldTemplateTitle={value.title}
-                                                            setFieldValue={setFieldValue}
-                                                            required={required.includes(key)}
-                                                            value={values.attachmentsProperties?.[key]}
-                                                            error={
-                                                                errors.attachmentsProperties?.[key] && touched.attachmentsProperties?.[key]
-                                                                    ? JSON.stringify(errors.attachmentsProperties?.[key])
-                                                                    : undefined
-                                                            }
-                                                            setFieldTouched={setFieldTouched}
-                                                        />
-                                                    ))}
+                                                    {Object.entries(templateFileProperties).map(([key, value], index) => {
+                                                        return (
+                                                            <Grid item key={key} marginTop={index > 0 ? 5 : 0}>
+                                                                {value.items ? (
+                                                                    <InstanceFileInput
+                                                                        key={key}
+                                                                        fileFieldName={`attachmentsProperties.${key}`}
+                                                                        fieldTemplateTitle={value.title}
+                                                                        setFieldValue={setFieldValue}
+                                                                        required={required.includes(key)}
+                                                                        value={values.attachmentsProperties[key]}
+                                                                        error={errors.properties?.[key] as string}
+                                                                        setFieldTouched={setFieldTouched}
+                                                                    />
+                                                                ) : (
+                                                                    <InstanceSingleFileInput
+                                                                        key={key}
+                                                                        fileFieldName={`attachmentsProperties.${key}`}
+                                                                        fieldTemplateTitle={value.title}
+                                                                        setFieldValue={setFieldValue}
+                                                                        required={required.includes(key)}
+                                                                        value={values.attachmentsProperties[key]}
+                                                                        error={errors.properties?.[key] as string}
+                                                                        setFieldTouched={setFieldTouched}
+                                                                    />
+                                                                )}
+                                                            </Grid>
+                                                        );
+                                                    })}
                                                 </Box>
                                             ) : (
                                                 templateFileProperties && (
                                                     <>
-                                                        {Object.entries(templateFileProperties).map(([fieldName, { title }]) => (
-                                                            <Grid container spacing={1} alignItems="center" key={fieldName}>
-                                                                <Grid item>
-                                                                    <Typography display="inline" variant="body1">
-                                                                        {title}:
-                                                                    </Typography>
-                                                                </Grid>
-                                                                <Grid item>
-                                                                    {values.attachmentsProperties[fieldName] ? (
-                                                                        <OpenPreviewButton fileId={values.attachmentsProperties[fieldName].name} />
-                                                                    ) : (
-                                                                        <Typography display="inline" variant="h6">
-                                                                            -
+                                                        {Object.entries(templateFileProperties).map(([fieldName, { title }]) => {
+                                                            let attachments = (
+                                                                <Typography display="inline" variant="h6">
+                                                                    -
+                                                                </Typography>
+                                                            );
+                                                            if (values.attachmentsProperties[fieldName] !== undefined) {
+                                                                if (Array.isArray(values.attachmentsProperties[fieldName])) {
+                                                                    attachments = values.attachmentsProperties[fieldName].map((file) => (
+                                                                        <OpenPreview fileId={file.name} key={file.name} />
+                                                                    ));
+                                                                } else {
+                                                                    attachments = (
+                                                                        <OpenPreview
+                                                                            fileId={values.attachmentsProperties[fieldName].name}
+                                                                            key={fieldName}
+                                                                        />
+                                                                    );
+                                                                }
+                                                            }
+
+                                                            return (
+                                                                <Grid container spacing={1} key={fieldName} display="flex" flexDirection="column">
+                                                                    <Grid item>
+                                                                        <Typography display="inline" variant="body1">
+                                                                            {title}:
                                                                         </Typography>
-                                                                    )}
+                                                                    </Grid>
+                                                                    <Grid item sx={{ overflowY: 'auto', maxHeight: '90px' }}>
+                                                                        {attachments}
+                                                                    </Grid>
                                                                 </Grid>
-                                                            </Grid>
-                                                        ))}
+                                                            );
+                                                        })}
                                                     </>
                                                 )
                                             )}

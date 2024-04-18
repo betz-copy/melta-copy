@@ -219,7 +219,7 @@ const RelationshipTemplatesRow: React.FC = () => {
                             </IconButton>
                         )}
                     </Grid>
-                    <Grid item>
+                    <Grid item sx={{ display: 'flex', justifyContent: 'center', alignContent: 'center' }}>
                         <IconButton
                             style={{ borderRadius: '5px' }}
                             onClick={() => setRelationshipTemplateWizardDialogState({ isWizardOpen: true, relationshipTemplate: null })}
@@ -272,6 +272,7 @@ const RelationshipTemplatesRow: React.FC = () => {
                                 alignItems="center"
                                 gap="10px"
                                 padding="0px 15px"
+                                sx={{ display: 'flex', justifyContent: 'center', alignContent: 'center' }}
                             >
                                 {relationshipTemplateWithEntity.entityTemplate.iconFileId ? (
                                     <CustomIcon

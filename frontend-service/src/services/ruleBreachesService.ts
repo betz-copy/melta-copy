@@ -55,3 +55,13 @@ export const cancelRuleBreachRequestRequest = async (breachId: string) => {
     const { data } = await axios.post<IRuleBreachRequestPopulated>(`${ruleBreachesRequests}/${breachId}/cancel`);
     return data;
 };
+
+export const getBreachAlertById = async (breachId: string) => {
+    const { data } = await axios.get<IRuleBreachAlertPopulated>(`${ruleBreachesAlerts}/${breachId}`);
+    return data;
+};
+
+export const getBreachRequestById = async (breachId: string) => {
+    const { data } = await axios.get<IRuleBreachRequestPopulated>(`${ruleBreachesRequests}/${breachId}`);
+    return data;
+};

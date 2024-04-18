@@ -15,6 +15,8 @@ filesRouter.get('/', wrapController(FilesController.listFiles));
 filesRouter.get('/:path', ValidateRequest(defaultSchema), wrapController(FilesController.downloadFile));
 filesRouter.get('/:path/stats', ValidateRequest(defaultSchema), wrapController(FilesController.fileStat));
 
+filesRouter.get('/zip/:path', ValidateRequest(defaultSchema), wrapController(FilesController.downloadZip));
+
 filesRouter.post('/delete-bulk', ValidateRequest(bulkFilesRequestSchema), wrapController(FilesController.deleteFiles));
 filesRouter.delete('/:path', ValidateRequest(defaultSchema), wrapController(FilesController.deleteFile));
 

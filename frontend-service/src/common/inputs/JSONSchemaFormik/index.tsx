@@ -42,6 +42,7 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
         keyword: 'dateNotification',
         type: 'string',
     });
+    ajv.addKeyword({ keyword: 'calculateTime' });
     ajv.addKeyword({
         keyword: 'serialStarter',
     });
@@ -117,6 +118,9 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
                 const [_, field] = id.split('root_');
                 setFieldTouched(field);
             }}
+            experimental_defaultFormStateBehavior={{
+                emptyObjectFields: 'skipEmptyDefaults', // library has for array a default empty array ([]). disable this
+            }}
             noValidate
             validator={validator}
             extraErrors={ajvExtraErrorsOnlyTouched}
@@ -130,7 +134,7 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
                 EmailWidget: RjsfTextWidget,
             }}
         >
-            <div /> {/* remove the built in submit button */}
+            <div />
         </JSONSchemaForm>
     );
 };
