@@ -351,6 +351,12 @@ export default {
             dateNotificationTypes: { day: 'יום לפני', week: 'שבוע לפני', twoWeeks: 'שבועיים לפני' },
             dateNotification: 'התראה לפני סיום',
             serialStarter: 'מספר סידורי התחלתי',
+            createNewUniqueGroup: 'צור קבוצת ייחודיים חדשה',
+            addUniqueGroupName: 'שם קבוצת ייחודיים',
+            selectExistingUniqueGroup: 'הוסף לקבוצת ייחודיים קיימת',
+            createOrAddUniqueGroup: 'הוסף או צור קבוצת יחודיים',
+            uniqueGroupName: 'שם קבוצה',
+            addUniqueGrouptoList: 'צור',
         },
         relationshipTemplate: {
             title: 'יצירת תבנית קשר',

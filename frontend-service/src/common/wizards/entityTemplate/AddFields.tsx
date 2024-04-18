@@ -49,6 +49,8 @@ const addFieldsSchema = Yup.object({
                 required: Yup.boolean().required(i18next.t('validation.required')),
                 preview: Yup.boolean().required(i18next.t('validation.required')),
                 dateNotification: Yup.string().nullable().oneOf(dateNotificationTypes, i18next.t('validation.mustBeOneOfList')),
+                // uniqueNameNotification: Yup.string().nullable().oneOf([], i18next.t('validation.mustBeOneOfList')),
+
                 serialStarter: Yup.number()
                     .typeError(i18next.t('validation.invalidNumberField'))
                     .when('type', {
@@ -104,7 +106,7 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
 
         setFieldValue('propertiesTypeOrder', newPropertiesTypeOrder);
     };
-
+    // console.log('AddField:', values.uniqueConstraints);
     return (
         <DragDropContext onDragEnd={onDragEnd}>
             <Droppable droppableId="propertiesArea">
@@ -130,6 +132,7 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
                                         <FieldBlock
                                             propertiesType={itemId}
                                             values={values}
+                                            uniqueConstraints={values.uniqueConstraints}
                                             initialValues={initialValues}
                                             setFieldValue={setFieldValue}
                                             areThereAnyInstances={areThereAnyInstances}

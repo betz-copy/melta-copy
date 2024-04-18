@@ -35,7 +35,7 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
             required: properties.required.includes(key),
             preview: propertiesPreview.includes(key),
             hide: properties.hide.includes(key),
-            unique: type !== 'serialNumber' && uniqueConstraints.filter((constraints) => constraints.includes(key)).length > 0, // serials cant be marked unique
+            unique: type !== 'serialNumber' && uniqueConstraints.filter((constraints) => constraints.properties.includes(key)).length > 0, // serials cant be marked unique
             calculateTime: value.calculateTime ?? undefined,
             type,
             options: value.enum || value.items?.enum || [],
@@ -60,17 +60,17 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
             icon: { file, name: getFileName(iconFileId) },
             properties: propertiesArray,
             attachmentProperties,
+            uniqueConstraints,
         };
     }
 
-    return { ...restOfEntityTemplate, properties: propertiesArray, attachmentProperties };
+    return { ...restOfEntityTemplate, properties: propertiesArray, attachmentProperties, uniqueConstraints };
 };
 
 export const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTemplate => {
     // change to support file types
     const { properties, attachmentProperties, propertiesTypeOrder, ...restOfProperties } = values;
     const serialsUniqueConstraints: string[][] = [];
-
     const propertiesOrder: string[] = [];
     const attachmentPropertiesOrder: string[] = [];
     const propertiesPreview: string[] = [];
@@ -177,7 +177,9 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTem
 
         if (required) schema.required.push(name);
     });
-    const uniqueConstraints = uniqueConstraint.length > 0 ? [uniqueConstraint, ...serialsUniqueConstraints] : serialsUniqueConstraints;
+
+    // const uniqueConstraints = uniqueConstraint.length > 0 ? [uniqueConstraint, ...serialsUniqueConstraints] : serialsUniqueConstraints;
+    const uniqueConstraints = uniqueConstraint.length > 0 ? [{ groupName: 'uniqueGroup', properties: uniqueConstraint }] : [];
 
     return {
         ...restOfProperties,

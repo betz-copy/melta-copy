@@ -20,6 +20,7 @@ export const FieldBlockAccordion = styled(Accordion)({
 interface FieldBlockProps<PropertiesType extends string, Values extends Record<PropertiesType, CommonFormInputProperties[]>> {
     propertiesType: PropertiesType;
     values: Values;
+    uniqueConstraints?: { groupName: string; properties: string[] }[];
     initialValues: Values | undefined;
     setFieldValue: FormikHelpers<Values>['setFieldValue'];
     areThereAnyInstances: boolean;
@@ -40,6 +41,7 @@ interface FieldBlockProps<PropertiesType extends string, Values extends Record<P
 const FieldBlock = <PropertiesType extends string, Values extends Record<PropertiesType, CommonFormInputProperties[]>>({
     propertiesType,
     values,
+    uniqueConstraints,
     initialValues,
     setFieldValue,
     areThereAnyInstances,
@@ -150,6 +152,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
     const setDisplayValueWrapper = (index: number) => (value: SetStateAction<CommonFormInputProperties>) => setDisplayValue(index, value);
 
     const isFieldBlockError = Boolean(touched?.[propertiesType]) && Boolean(errors?.[propertiesType]);
+    // console.log('FieldBLock:', uniqueConstraints);
 
     return (
         <FieldBlockAccordion style={{ border: isFieldBlockError ? '1px solid red' : '' }}>
@@ -201,6 +204,10 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
                                                         key={property.id}
                                                         setFieldValue={setFieldDisplayValueWrapper(index) as FieldEditCardProps['setFieldValue']}
                                                         setValues={setDisplayValueWrapper(index)}
+                                                        uniqueConstraints={uniqueConstraints}
+                                                        setUniqueConstraints={(newUniqueConstraints) => {
+                                                            setFieldValue('uniqueConstraints', newUniqueConstraints);
+                                                        }}
                                                     />
                                                 );
                                             }

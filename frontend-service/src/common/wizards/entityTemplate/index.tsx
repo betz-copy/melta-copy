@@ -44,6 +44,7 @@ export interface EntityTemplateWizardValues
     > {
     properties: EntityTemplateFormInputProperties[];
     attachmentProperties: EntityTemplateFormInputProperties[];
+    uniqueConstraints?: { groupName: string; properties: string[] }[];
     icon?: fileDetails;
 }
 
@@ -82,6 +83,7 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
         properties: [],
         attachmentProperties: [],
         propertiesTypeOrder: ['properties', 'attachmentProperties'],
+        uniqueConstraints: [],
     },
     isEditMode = false,
 }) => {
@@ -140,6 +142,7 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
             },
         },
     );
+    console.log('uniqueIndexxxxxx:', initialValues.uniqueConstraints);
 
     return (
         <Wizard

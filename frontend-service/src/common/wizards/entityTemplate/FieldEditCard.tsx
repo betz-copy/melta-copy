@@ -1,4 +1,4 @@
-import React, { memo, SetStateAction } from 'react';
+import React, { memo, SetStateAction, useState } from 'react';
 import { FormikErrors, FormikTouched } from 'formik';
 import {
     TextField,
@@ -13,28 +13,25 @@ import {
     Chip,
     Autocomplete,
     Typography,
+    Button,
+    Checkbox,
 } from '@mui/material';
 import {
     Delete as DeleteIcon,
+    Close as CloseIcon,
     DragHandle as DragHandleIcon,
     NotificationsActive as NotificationsActiveIcon,
     NotificationsOff as NotificationsOffIcon,
+    AddCircle as AddCircleOutline,
 } from '@mui/icons-material';
 import { Draggable } from 'react-beautiful-dnd';
 import i18next from 'i18next';
 import isEqual from 'lodash.isequal';
 import pickBy from 'lodash.pickby';
 import { dateNotificationTypes, validPropertyTypes } from './AddFields';
-
 import { CommonFormInputProperties } from './commonInterfaces';
 import { MinimizedColorPicker } from '../../inputs/MinimizedColorPicker';
-import { MeltaTooltip } from '../../MeltaTooltip';
-
-const UniqueCheckboxTooltipTitle = (
-    <Box sx={{ whiteSpace: 'pre-wrap' }}>
-        <Typography>{i18next.t('validation.uniqueTooltipTitle')}</Typography>
-    </Box>
-);
+import IconButtonWithPopover from '../../IconButtonWithPopover';
 
 export interface FieldEditCardProps {
     value: CommonFormInputProperties;
@@ -52,6 +49,8 @@ export interface FieldEditCardProps {
     supportEntityReferenceType: boolean;
     supportChangeToRequiredWithInstances: boolean;
     supportArrayFields: boolean;
+    uniqueConstraints?: { groupName: string; properties: string[] }[];
+    setUniqueConstraints?: (uniqueConstraints: { groupName: string; properties: string[] }[]) => void;
 }
 
 export const FieldEditCard: React.FC<FieldEditCardProps> = ({
@@ -62,6 +61,8 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     areThereAnyInstances,
     touched,
     errors,
+    uniqueConstraints,
+    setUniqueConstraints,
     setFieldValue,
     setValues,
     onChange,
@@ -110,6 +111,72 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     const unique = `properties[${index}].unique`;
 
     const initialEnumOptions = initialValue?.options || [];
+    const [addUniqueGroupCheckBox, setAddUniqueGroupCheckBox] = useState(false);
+    const [createUniqueGroup, setCreateUniqueGroup] = useState(false);
+    const [uniqueGroupName, setUniqueGroupName] = useState('');
+    const [isProcessing, setIsProcessing] = useState(false);
+
+    const createNewUniqueGroup = () => {
+        if (uniqueGroupName) {
+            const existingGroup = uniqueConstraints?.find((group) => group.groupName === uniqueGroupName);
+            if (!existingGroup) {
+                const newGroup = { groupName: uniqueGroupName, properties: [value.name] };
+                const updatedConstraints = uniqueConstraints ? [...uniqueConstraints, newGroup] : [newGroup];
+                setUniqueConstraints!(updatedConstraints);
+                setIsProcessing(true);
+                setAddUniqueGroupCheckBox(true);
+                setCreateUniqueGroup(true);
+            }
+        }
+    };
+
+    const addToProperties = (selectedGroupName) => {
+        const existingGroup = uniqueConstraints?.find((group) => group.groupName === uniqueGroupName);
+        const propertyExists = uniqueConstraints?.some((group) => group.properties.includes(value.name));
+
+        if (!existingGroup && !propertyExists) {
+            const updatedConstraints = uniqueConstraints!.map((group) => {
+                if (group.groupName === selectedGroupName) {
+                    return {
+                        ...group,
+                        properties: [...group.properties, value.name],
+                    };
+                }
+                return group;
+            });
+            setUniqueConstraints!(updatedConstraints);
+        }
+    };
+
+    const deleteUniqueGroup = (groupName) => {
+        const updatedConstraints = uniqueConstraints!
+            .map((group) => ({
+                ...group,
+                properties: group.properties.filter((prop) => prop !== groupName),
+            }))
+            .filter((group) => group.groupName !== groupName);
+
+        setUniqueConstraints!(updatedConstraints);
+        setUniqueGroupName('');
+        setCreateUniqueGroup(false);
+        setIsProcessing(false);
+    };
+
+    const deletePropFromUniqueConstraints = (groupName, fieldName) => {
+        const updatedConstraints = uniqueConstraints!.map((group) => {
+            if (group.groupName === groupName) {
+                return {
+                    ...group,
+                    properties: group.properties.filter((prop) => prop !== fieldName),
+                };
+            }
+            return group;
+        });
+        setUniqueGroupName('');
+        setUniqueConstraints!(updatedConstraints);
+    };
+
+    console.log({ uniqueConstraints });
 
     const isNewProperty = !initialValue;
     const isDisabled = Boolean(isEditMode && !isNewProperty && areThereAnyInstances);
@@ -184,11 +251,12 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                     return true;
                                                 })
                                                 .map((validType) => {
-                                                    return(
-                                                    <MenuItem key={validType} value={validType}>
-                                                        {i18next.t(`propertyTypes.${validType}`)}
-                                                    </MenuItem>
-                                                )})}
+                                                    return (
+                                                        <MenuItem key={validType} value={validType}>
+                                                            {i18next.t(`propertyTypes.${validType}`)}
+                                                        </MenuItem>
+                                                    );
+                                                })}
                                         </TextField>
                                     </Grid>
                                     <Grid item container justifyContent="space-between" flexWrap="nowrap">
@@ -402,26 +470,26 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                 />
                                             )}
                                             {value.type !== 'serialNumber' && value.unique !== undefined && setValues && (
-                                                <MeltaTooltip title={UniqueCheckboxTooltipTitle}>
-                                                    <FormControlLabel
-                                                        control={
-                                                            <Switch
-                                                                id={unique}
-                                                                name={unique}
-                                                                onChange={(_e, checked) => {
-                                                                    setValues((prevValue) => ({
-                                                                        ...prevValue,
-                                                                        unique: checked,
-                                                                        // unique is allowed only if required=true, automatic check 'required' too
-                                                                        required: checked ? true : prevValue.required,
-                                                                    }));
-                                                                }}
-                                                                checked={value.unique}
-                                                            />
-                                                        }
-                                                        label={i18next.t('validation.unique')}
-                                                    />
-                                                </MeltaTooltip>
+                                                // <MeltaTooltip title={UniqueCheckboxTooltipTitle}>
+                                                <FormControlLabel
+                                                    control={
+                                                        <Switch
+                                                            id={unique}
+                                                            name={unique}
+                                                            onChange={(_e, checked) => {
+                                                                setValues((prevValue) => ({
+                                                                    ...prevValue,
+                                                                    unique: checked,
+                                                                    // unique is allowed only if required=true, automatic check 'required' too
+                                                                    required: checked ? true : prevValue.required,
+                                                                }));
+                                                            }}
+                                                            checked={value.unique}
+                                                        />
+                                                    }
+                                                    label={i18next.t('validation.unique')}
+                                                />
+                                                // </MeltaTooltip>
                                             )}
                                             {(value.type === 'date' || value.type === 'date-time') && 'calculateTime' in value && (
                                                 <FormControlLabel
@@ -442,6 +510,131 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                             <DeleteIcon />
                                         </IconButton>
                                     </Grid>
+                                    <Grid item container justifyContent="space-between" alignItems="center" flexWrap="nowrap">
+                                        {value.unique && (
+                                            <Grid container direction="row">
+                                                <Grid item container alignItems="center" flexWrap="nowrap">
+                                                    <FormControlLabel
+                                                        control={
+                                                            <Checkbox
+                                                                checked={addUniqueGroupCheckBox}
+                                                                onChange={(e) => setAddUniqueGroupCheckBox(e.target.checked)}
+                                                                name="addUniqueGroupCheckbox"
+                                                            />
+                                                        }
+                                                        label={i18next.t('wizard.entityTemplate.createOrAddUniqueGroup')}
+                                                    />
+                                                </Grid>
+                                                {addUniqueGroupCheckBox && (
+                                                    <>
+                                                        <Grid container direction="row" paddingBottom="10px">
+                                                            {createUniqueGroup ? (
+                                                                <>
+                                                                    <IconButton
+                                                                        aria-label="close"
+                                                                        onClick={() => deleteUniqueGroup(uniqueGroupName)}
+                                                                        disabled={
+                                                                            !uniqueConstraints?.some(
+                                                                                (group) =>
+                                                                                    group.groupName === uniqueGroupName &&
+                                                                                    group.properties.includes(value.name),
+                                                                            )
+                                                                        }
+                                                                    >
+                                                                        <CloseIcon />
+                                                                    </IconButton>
+
+                                                                    <TextField
+                                                                        label={i18next.t('wizard.entityTemplate.uniqueGroupName')}
+                                                                        value={uniqueGroupName}
+                                                                        onChange={(e) => setUniqueGroupName(e.target.value)}
+                                                                        sx={{ marginRight: '5px' }}
+                                                                        error={touchedName && Boolean(errorName)}
+                                                                        helperText={touchedName && errorName}
+                                                                        disabled={isProcessing}
+                                                                    />
+                                                                    <Button
+                                                                        type="button"
+                                                                        variant="contained"
+                                                                        style={{
+                                                                            height: 'min-content',
+                                                                            marginTop: '4px',
+                                                                            marginRight: '5px',
+                                                                        }}
+                                                                        onClick={createNewUniqueGroup}
+                                                                        disabled={isProcessing}
+                                                                    >
+                                                                        <Typography sx={{ fontSize: 'small' }}>
+                                                                            {i18next.t('wizard.entityTemplate.addUniqueGrouptoList')}
+                                                                        </Typography>
+                                                                    </Button>
+                                                                </>
+                                                            ) : (
+                                                                <IconButtonWithPopover
+                                                                    iconButtonProps={{ onClick: () => setCreateUniqueGroup(true) }}
+                                                                    popoverText={i18next.t('wizard.entityTemplate.createNewUniqueGroup')}
+                                                                    placement="left"
+                                                                    style={{ fontSize: 'small' }}
+                                                                >
+                                                                    <AddCircleOutline />
+                                                                </IconButtonWithPopover>
+                                                            )}
+                                                        </Grid>
+                                                        <Grid container direction="row">
+                                                            <TextField
+                                                                select
+                                                                label={i18next.t('wizard.entityTemplate.selectExistingUniqueGroup')}
+                                                                name={uniqueGroupName}
+                                                                value={uniqueGroupName}
+                                                                onChange={(e) => setUniqueGroupName(e.target.value)}
+                                                                sx={{ marginRight: '5px' }}
+                                                                fullWidth
+                                                                SelectProps={{
+                                                                    endAdornment: uniqueConstraints?.some(
+                                                                        (group) => group.groupName === uniqueGroupName,
+                                                                    ) && (
+                                                                        <IconButton
+                                                                            aria-label="delete"
+                                                                            onClick={() => {
+                                                                                deletePropFromUniqueConstraints(uniqueGroupName, value.name);
+                                                                                setUniqueGroupName('');
+                                                                            }}
+                                                                        >
+                                                                            <DeleteIcon />
+                                                                        </IconButton>
+                                                                    ),
+                                                                }}
+                                                            >
+                                                                {uniqueConstraints?.map((group) => (
+                                                                    <MenuItem
+                                                                        key={group.groupName}
+                                                                        value={group.groupName}
+                                                                        onClick={() => addToProperties(group.groupName)}
+                                                                    >
+                                                                        <Grid container alignItems="center" justifyContent="space-between">
+                                                                            <Grid item>{group.groupName}</Grid>
+                                                                        </Grid>
+                                                                    </MenuItem>
+                                                                ))}
+                                                            </TextField>
+                                                        </Grid>
+                                                    </>
+                                                )}
+
+                                                {/* {!addUniqueGroupCheckBox &&
+                                                    setUniqueConstraints!((prevConstraints) => {
+                                                        const newConstraints = [
+                                                            ...prevConstraints,
+                                                            {
+                                                                groupName: value.name,
+                                                                properties: [value.name],
+                                                            },
+                                                        ];
+                                                        return newConstraints;
+                                                    })} */}
+                                            </Grid>
+                                        )}
+                                    </Grid>
                                 </Grid>
                             </Grid>
                         </CardContent>
@@ -459,5 +652,6 @@ export const MemoFieldEditCard = memo(
         prev.areThereAnyInstances === next.areThereAnyInstances &&
         isEqual(prev.value, next.value) &&
         isEqual(prev.touched, next.touched) &&
-        isEqual(prev.errors, next.errors),
+        isEqual(prev.errors, next.errors) &&
+        isEqual(prev.uniqueConstraints, next.uniqueConstraints),
 );
