@@ -87,10 +87,10 @@ const PrintOptionsDialog: React.FC<{
                 }
 
                 if (propertyValue && propertySchema.type === 'array' && propertySchema.items?.format === 'fileId') {
-                    return propertyValue.map((file) => {
-                        const name = getFileName(file);
+                    return propertyValue.map((id: string) => {
+                        const name = getFileName(id);
                         return {
-                            id: file,
+                            id,
                             name,
                             contentType: getPreviewContentType(name),
                             targetExtension: getFileExtension(name),

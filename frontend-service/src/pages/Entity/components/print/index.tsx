@@ -19,6 +19,8 @@ const Print: React.FC<{
         connectionsTemplates: IConnectionTemplateOfExpandedEntity[];
     }[];
 }> = ({ entityTemplate, expandedEntity, categoriesWithConnectionsTemplates, connectionsTemplates }) => {
+    console.log({ expandedEntity });
+
     const [openModal, setOpenModal] = React.useState(false);
 
     const handleOpen = () => setOpenModal(true);

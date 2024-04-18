@@ -50,10 +50,10 @@ const PrintOptionsDialog: React.FC<{
                     } as IFile;
                 }
                 if (propertyValue && propertySchema.type === 'array' && propertySchema.items?.format === 'fileId') {
-                    return propertyValue.map((file) => {
-                        const name = getFileName(file);
+                    return propertyValue.map((id: string) => {
+                        const name = getFileName(id);
                         return {
-                            id: file,
+                            id,
                             name,
                             contentType: getPreviewContentType(name),
                             targetExtension: getFileExtension(name),
@@ -67,7 +67,7 @@ const PrintOptionsDialog: React.FC<{
     }, [processTemplate, processInstance]);
 
     const getProcessStepsFiles = React.useCallback((): IFile[] => {
-        const currFiles: IFile[] = [];
+        const stepsFiles: IFile[] = [];
         processTemplate.steps.forEach((stepTemplate) => {
             processInstance.steps.forEach((step) => {
                 stepTemplate.propertiesOrder.forEach((propertyKey) => {
@@ -76,7 +76,7 @@ const PrintOptionsDialog: React.FC<{
                         const propertyValue = step.properties[propertyKey];
                         if (propertyValue && propertySchema.format === 'fileId') {
                             const name = getFileName(propertyValue);
-                            currFiles.push({
+                            stepsFiles.push({
                                 id: propertyValue,
                                 name,
                                 contentType: getPreviewContentType(name),
@@ -84,10 +84,10 @@ const PrintOptionsDialog: React.FC<{
                             } as IFile);
                         }
                         if (propertyValue && propertySchema.type === 'array' && propertySchema.items?.format === 'fileId') {
-                            propertyValue.forEach((file) => {
-                                const name = getFileName(file);
-                                currFiles.push({
-                                    id: file,
+                            propertyValue.forEach((id: string) => {
+                                const name = getFileName(id);
+                                stepsFiles.push({
+                                    id,
                                     name,
                                     contentType: getPreviewContentType(name),
                                     targetExtension: getFileExtension(name),
@@ -98,7 +98,7 @@ const PrintOptionsDialog: React.FC<{
                 });
             });
         });
-        return currFiles;
+        return stepsFiles;
     }, [processTemplate.steps, processInstance.steps]);
 
     React.useEffect(() => {
