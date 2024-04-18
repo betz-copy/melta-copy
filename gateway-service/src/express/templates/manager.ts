@@ -1,4 +1,4 @@
-import { AxiosError } from 'axios';
+import { AxiosError, AxiosResponse } from 'axios';
 import lodashUniqby from 'lodash.uniqby';
 import _isEqual from 'lodash.isequal';
 import {
@@ -427,26 +427,44 @@ export class TemplatesManager {
         const { uniqueConstraints, properties, ...restOfTemplateData } = updatedTemplateData;
         const { required: requiredConstraints, ...restOfTemplatePropertiesObject } = properties;
 
-        await InstanceManagerService.updateConstraintsOfTemplate(id, {
-            uniqueConstraints,
-            requiredConstraints,
-        });
-
         if (removedFilesProperties.length > 0) {
-            const filePaths = await InstanceManagerService.getFilePathsOfTemplate(id, removedFilesProperties);
-            await deleteFiles(filePaths).catch((error) => {
-                console.log('failed to delete files', filePaths, error);
-            });
+            const promises: Promise<void | AxiosResponse>[] = [];
+            const { searchEntitiesChunkSize } = config.service;
+
+            for (let fileIndex = 0; count - fileIndex > 0; fileIndex += searchEntitiesChunkSize) {
+                promises.push(
+                    (async () => {
+                        const filePaths = await InstanceManagerService.getFilePathsOfTemplate(id, {
+                            limit: searchEntitiesChunkSize,
+                            skip: fileIndex,
+                            properties: removedFilesProperties,
+                        });
+
+                        deleteFiles(filePaths).catch((error) => {
+                            console.log('Failed to delete files', filePaths, error);
+                        });
+                    })(),
+                );
+            }
+
+            await Promise.all(promises);
         }
 
         if (removedProperties.length > 0) {
-            await InstanceManagerService.deletePropertiesOfTemplate(id, removedProperties);
+            await InstanceManagerService.deletePropertiesOfTemplate(id, removedProperties).catch((error) => {
+                throw new ServiceError(400, `failed to delete properties ${error}`);
+            });
         }
 
         const updatedTemplate = await EntityTemplateManagerService.updateEntityTemplate(id, {
             ...restOfTemplateData,
             properties: restOfTemplatePropertiesObject,
             iconFileId,
+        });
+
+        await InstanceManagerService.updateConstraintsOfTemplate(id, {
+            uniqueConstraints,
+            requiredConstraints,
         });
 
         return TemplatesManager.populateTemplateConstraints(updatedTemplate, requiredConstraints, uniqueConstraints);

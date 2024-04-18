@@ -205,7 +205,7 @@ export const updateConstraintsOfTemplateRequestSchema = Joi.object({
 /*
  * PATCH /api/instances/entities/deletePropertiesOfTemplate/:templateId
  */
-export const deletePropertiesOfTemplate = Joi.object({
+export const deletePropertiesOfTemplateRequestSchema = Joi.object({
     body: {
         properties: Joi.array().items(Joi.string()).required(),
     },
@@ -218,9 +218,11 @@ export const deletePropertiesOfTemplate = Joi.object({
 /**
  * POST /api/instances/entities/getFilePathsOfTemplate/:templateId
  */
-export const getFilePathsOfTemplate = Joi.object({
+export const getFilePathsOfTemplateRequestSchema = Joi.object({
     body: {
-        filesProperties: Joi.array().items(Joi.string()).required(),
+        skip: Joi.number().integer().min(0).default(0),
+        limit: Joi.number().integer().min(1).max(searchEntitiesMaxLimit).required(),
+        properties: Joi.array().items(Joi.string()).required(),
     },
     query: {},
     params: {

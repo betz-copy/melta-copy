@@ -20,6 +20,7 @@ import {
     IConstraint,
     IConstraintsOfTemplate,
     IEntity,
+    IGetFilePathsOfProperty,
     IRequiredConstraint,
     ISearchBatchBody,
     ISearchEntitiesOfTemplateBody,
@@ -618,14 +619,21 @@ export class EntityManager {
         );
     }
 
-    static async getFilePathsOfTemplate(templateId: string, filesProperties: { filesProperties: string[] }) {
-        const propertiesAsString = filesProperties.filesProperties.map((property) => `e.${property}`).join(', ');
+    static async getFilePathsOfFilesPropertiesOfTemplate(templateId: string, body: IGetFilePathsOfProperty) {
+        const { properties, skip, limit } = body;
+        const propertiesAsString = properties.map((property) => `e.${property}`).join(', ');
 
         return Neo4jClient.readTransaction(
             `MATCH (e: \`${templateId}\`)
              WHERE ${propertiesAsString} IS NOT NULL
-             RETURN ${propertiesAsString}`,
+             RETURN ${propertiesAsString} 
+             SKIP toInteger($skip)
+             LIMIT toInteger($limit)`,
             normalizeReturnedStringArray,
+            {
+                skip,
+                limit,
+            },
         );
     }
 }

@@ -16,8 +16,8 @@ import {
     getExpandedEntityByIdRequestSchema,
     searchEntitiesBatchRequestSchema,
     searchEntitiesOfTemplateRequestSchema,
-    deletePropertiesOfTemplate,
-    getFilePathsOfTemplate,
+    deletePropertiesOfTemplateRequestSchema,
+    getFilePathsOfTemplateRequestSchema,
 } from './validator.schema';
 
 const entityRouter: Router = Router();
@@ -30,8 +30,8 @@ entityRouter.get(
 entityRouter.get('/constraints', ValidateRequest(getAllConstraintsRequestSchema), wrapController(EntityController.getAllConstraints));
 entityRouter.post(
     '/getFilePathsOfTemplate/:templateId',
-    ValidateRequest(getFilePathsOfTemplate),
-    wrapController(EntityController.getFilePathsOfTemplate),
+    ValidateRequest(getFilePathsOfTemplateRequestSchema),
+    wrapController(EntityController.getFilePathsOfFilesPropertiesOfTemplate),
 );
 entityRouter.put(
     '/constraints/:templateId',
@@ -66,7 +66,7 @@ entityRouter.put(
 );
 entityRouter.patch(
     '/deletePropertiesOfTemplate/:templateId',
-    ValidateRequest(deletePropertiesOfTemplate),
+    ValidateRequest(deletePropertiesOfTemplateRequestSchema),
     wrapController(EntityController.deletePropertiesOfTemplate),
 );
 entityRouter.patch('/:id/status', ValidateRequest(updateEntityStatusByIdRequestSchema), wrapController(EntityController.updateStatusById));

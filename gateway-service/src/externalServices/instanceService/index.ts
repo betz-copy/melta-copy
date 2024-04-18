@@ -1,7 +1,7 @@
 import axios from 'axios';
 import config from '../../config';
 import { IBrokenRule } from '../ruleBreachService/interfaces';
-import { IConstraintsOfTemplate, IEntity, ISearchEntitiesOfTemplateBody, ISearchResult } from './interfaces/entities';
+import { IConstraintsOfTemplate, IEntity, IGetFilePathsOfProperty, ISearchEntitiesOfTemplateBody, ISearchResult } from './interfaces/entities';
 import { IRelationship } from './interfaces/relationships';
 import { IConnection } from './interfaces/rules';
 
@@ -103,10 +103,9 @@ export class InstanceManagerService {
         return data;
     }
 
-    static async getFilePathsOfTemplate(templateId: string, filesProperties: string[]) {
-        const { data } = await this.InstanceManagerApi.post<string[]>(`${baseEntitiesRoute}/getFilePathsOfTemplate/${templateId}`, {
-            filesProperties,
-        });
+    static async getFilePathsOfTemplate(templateId: string, body: IGetFilePathsOfProperty) {
+        const { data } = await this.InstanceManagerApi.post<string[]>(`${baseEntitiesRoute}/getFilePathsOfTemplate/${templateId}`, body);
+
         return data;
     }
 
@@ -114,6 +113,7 @@ export class InstanceManagerService {
         const { data } = await this.InstanceManagerApi.patch<IEntity[]>(`${baseEntitiesRoute}/deletePropertiesOfTemplate/${templateId}`, {
             properties,
         });
+
         return data;
     }
 }
