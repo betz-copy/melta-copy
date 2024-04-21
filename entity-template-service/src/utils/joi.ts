@@ -66,7 +66,7 @@ const propertiesArraySchema = Joi.array()
                 .when('type', { not: 'string', then: Joi.forbidden() }),
             serialStarter: Joi.number().when('type', { not: 'number', then: Joi.forbidden() }),
             serialCurrent: Joi.number().when('type', { not: 'number', then: Joi.forbidden() }),
-            deleted: Joi.boolean(),
+            newPropertyWithDeletedName: Joi.boolean(),
         }).nand('pattern', 'enum'),
     )
     .unique((a, b) => a.title === b.title);

@@ -65,9 +65,8 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
     return { ...restOfEntityTemplate, properties: propertiesArray, attachmentProperties };
 };
 
-export const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTemplate => {
+export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode: boolean): IEntityTemplate => {
     const { properties, attachmentProperties, propertiesTypeOrder, ...restOfProperties } = values;
-    console.log(properties);
 
     const serialsUniqueConstraints: string[][] = [];
 
@@ -83,7 +82,6 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTem
     };
 
     let enumPropertiesColors: IEntityTemplate['enumPropertiesColors'];
-    properties.map((prop) => console.log(prop.name));
     properties.forEach(
         ({
             id,
@@ -103,14 +101,6 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTem
             deleted,
         }) => {
             if (!deleted) {
-                // console.log(
-                //     'hi',
-                //     name,
-                //     id,
-                //     properties.some((property) => property.id !== id && property.name === name),
-                //     properties[5].id !== id && properties[5].name === name,
-                //     properties[5],
-                // );
                 let propertyType: IEntitySingleProperty['type'];
                 switch (type) {
                     case 'string':
@@ -140,8 +130,14 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTem
                     dateNotification: dateNotification as string | undefined,
                     serialStarter: type === 'serialNumber' ? serialStarter : undefined,
                     serialCurrent: type === 'serialNumber' ? serialStarter : undefined,
-                    deleted: properties.some((property) => property.id !== id && property.name === name),
                 };
+
+                if (isEditMode) {
+                    schema.properties[name] = {
+                        ...schema.properties[name],
+                        newPropertyWithDeletedName: properties.some((property) => property.id !== id && property.name === name),
+                    };
+                }
 
                 propertiesOrder.push(name);
 
@@ -164,15 +160,21 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTem
             }
         },
     );
-    console.log(schema.properties);
 
-    attachmentProperties.forEach(({ name, title, required, deleted }) => {
+    attachmentProperties.forEach(({ id, name, title, required, deleted }) => {
         if (!deleted) {
             schema.properties[name] = {
                 title,
                 type: 'string',
                 format: 'fileId',
             };
+
+            if (isEditMode) {
+                schema.properties[name] = {
+                    ...schema.properties[name],
+                    newPropertyWithDeletedName: attachmentProperties.some((property) => property.id !== id && property.name === name),
+                };
+            }
 
             attachmentPropertiesOrder.push(name);
 
@@ -199,7 +201,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTem
 const createEntityTemplateRequest = async (newEntityTemplate: EntityTemplateWizardValues) => {
     const formData = new FormData();
 
-    const entityTemplate = formToJSONSchema(newEntityTemplate);
+    const entityTemplate = formToJSONSchema(newEntityTemplate, false);
 
     if (newEntityTemplate.icon) {
         formData.append('file', newEntityTemplate.icon.file as File);
@@ -234,7 +236,7 @@ const updateEntityTemplateRequest = async (entityTemplateId: string, updatedEnti
 
     const entityTemplate: IEntityTemplate =
         'attachmentProperties' in updatedEntityTemplate // its type is - EntityTemplateWizardValues
-            ? formToJSONSchema(updatedEntityTemplate as EntityTemplateWizardValues)
+            ? formToJSONSchema(updatedEntityTemplate as EntityTemplateWizardValues, true)
             : updatedEntityTemplate;
 
     if ('attachmentProperties' in updatedEntityTemplate && updatedEntityTemplate.icon) {

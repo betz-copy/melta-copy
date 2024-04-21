@@ -17,7 +17,7 @@ export interface IEntitySingleProperty {
     dateNotification?: string;
     serialStarter?: number;
     serialCurrent?: number;
-    deleted?: boolean;
+    newPropertyWithDeletedName?: boolean;
 }
 
 export interface IEntityTemplate {

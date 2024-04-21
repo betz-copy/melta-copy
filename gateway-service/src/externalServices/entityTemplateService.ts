@@ -35,7 +35,7 @@ export interface IEntitySingleProperty {
     dateNotification?: 'day' | 'week' | 'twoWeeks';
     serialStarter?: number;
     serialCurrent?: number;
-    deleted?: boolean;
+    newPropertyWithDeletedName?: boolean;
 }
 
 export interface IEntityTemplate {

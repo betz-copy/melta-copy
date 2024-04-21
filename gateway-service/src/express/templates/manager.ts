@@ -387,8 +387,7 @@ export class TemplatesManager {
             });
             Object.entries(currTemplate.properties.properties).forEach(([key, value]) => {
                 const newValue = updatedTemplateData.properties.properties[key];
-                // updatedTemplateData.properties.properties.includes()
-                if (newValue.deleted) {
+                if (!newValue || ('newPropertyWithDeletedName' in newValue && newValue.newPropertyWithDeletedName)) {
                     removedProperties.push(key);
                     if (value.format === 'fileId') removedFilesProperties.push(key);
                 } else {
@@ -404,8 +403,6 @@ export class TemplatesManager {
                 }
             });
         }
-        console.log(removedProperties);
-        console.log(updatedTemplateData);
 
         let iconFileId: string | null;
         if (file) {
@@ -429,6 +426,14 @@ export class TemplatesManager {
 
         const { uniqueConstraints, properties, ...restOfTemplateData } = updatedTemplateData;
         const { required: requiredConstraints, ...restOfTemplatePropertiesObject } = properties;
+
+        Object.entries(restOfTemplatePropertiesObject.properties).forEach(([key, value]) => {
+            if ('newPropertyWithDeletedName' in value) {
+                const updatedProperty = { ...value };
+                delete updatedProperty.newPropertyWithDeletedName;
+                restOfTemplatePropertiesObject[key] = updatedProperty;
+            }
+        });
 
         if (removedFilesProperties.length > 0) {
             const promises: Promise<void | AxiosResponse>[] = [];
