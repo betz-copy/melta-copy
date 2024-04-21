@@ -18,7 +18,6 @@ export class Server {
         this.app = this.createExpressApp();
     }
 
-    // eslint-disable-next-line class-methods-use-this
     createExpressApp() {
         const app = express();
 

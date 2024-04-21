@@ -38,5 +38,6 @@ module.exports = {
         'arrow-body-style': 'off',
         'import/prefer-default-export': 'off',
         'no-console': 'off',
+        'class-methods-use-this': 'off',
     },
 };

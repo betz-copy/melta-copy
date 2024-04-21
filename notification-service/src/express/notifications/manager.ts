@@ -76,7 +76,6 @@ export class NotificationsManager extends DefaultManager<INotification> {
         });
     }
 
-    // eslint-disable-next-line class-methods-use-this
     private handleQuery({ viewerId, types, startDate, endDate, ...rest }: IBasicNotificationQuery) {
         const query: FilterQuery<INotification> = { ...rest };
 
