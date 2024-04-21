@@ -6,7 +6,7 @@ import { createGanttSchema, deleteGanttSchema, getGanttByIdSchema, searchGanttsS
 
 const ganttsRouter: Router = Router();
 
-const controller = createController(GanttsController)<GanttsController>;
+const controller = createController(GanttsController);
 
 ganttsRouter.get('/:ganttId', ValidateRequest(getGanttByIdSchema), controller('getGanttById'));
 ganttsRouter.post('/', ValidateRequest(createGanttSchema), controller('createGantt'));

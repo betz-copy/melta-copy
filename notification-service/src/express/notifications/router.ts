@@ -14,7 +14,7 @@ import {
 
 const notificationsRouter: Router = Router();
 
-const controller = createController(NotificationsController)<NotificationsController>;
+const controller = createController(NotificationsController);
 
 notificationsRouter.get('/', ValidateRequest(getNotificationsRequestSchema), controller('getNotifications'));
 notificationsRouter.get('/count', ValidateRequest(getNotificationCountRequestSchema), controller('getNotificationCount'));

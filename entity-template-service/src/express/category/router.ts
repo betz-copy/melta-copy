@@ -6,7 +6,7 @@ import { createCategorySchema, deleteCategorySchema, getCategoriesSchema, getCat
 
 const categoryRouter: Router = Router();
 
-const controller = createController(CategoriesController)<CategoriesController>;
+const controller = createController(CategoriesController);
 
 categoryRouter.get('/', ValidateRequest(getCategoriesSchema), controller('getCategories'));
 

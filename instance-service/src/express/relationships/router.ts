@@ -14,8 +14,8 @@ import RelationshipValidator from './validator.template';
 
 const relationshipRouter: Router = Router();
 
-const relationshipController = createController(RelationshipController)<RelationshipController>;
-const relationshipValidatorController = createController(RelationshipValidator)<RelationshipValidator>;
+const relationshipController = createController(RelationshipController);
+const relationshipValidatorController = createController(RelationshipValidator);
 
 relationshipRouter.post(
     '/connections',

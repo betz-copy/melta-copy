@@ -6,7 +6,7 @@ import { createActivityRequestSchema, getActivitySchema } from './validator.sche
 
 const activityLogRouter: Router = Router();
 
-const controller = createController(ActivityLogController)<ActivityLogController>;
+const controller = createController(ActivityLogController);
 
 activityLogRouter.get('/:entityId', ValidateRequest(getActivitySchema), controller('getActivity'));
 activityLogRouter.post('/', ValidateRequest(createActivityRequestSchema), controller('createActivity'));

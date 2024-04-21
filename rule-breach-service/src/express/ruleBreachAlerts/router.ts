@@ -11,7 +11,7 @@ import {
 
 const RuleBreachAlertsRouter: Router = Router();
 
-const controller = createController(RuleBreachAlertsController)<RuleBreachAlertsController>;
+const controller = createController(RuleBreachAlertsController);
 
 RuleBreachAlertsRouter.post('/search', ValidateRequest(searchRuleBreachAlertsRequestSchema), controller('searchRuleBreachAlerts'));
 

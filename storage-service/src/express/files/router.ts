@@ -7,8 +7,8 @@ import { bulkFilesRequestSchema, defaultSchema, uploadFileRequestSchema, uploadF
 
 const filesRouter: Router = Router();
 
-const filesController = createController(FilesController)<FilesController>;
-const multerController = createController(MinioMulter)<MinioMulter>;
+const filesController = createController(FilesController);
+const multerController = createController(MinioMulter);
 
 filesRouter.get('/', filesController('listFiles'));
 filesRouter.get('/:path', ValidateRequest(defaultSchema), filesController('downloadFile'));

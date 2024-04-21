@@ -13,7 +13,7 @@ import {
 
 const entityTemplateRouter: Router = Router();
 
-const controller = createController(EntityTemplateController)<EntityTemplateController>;
+const controller = createController(EntityTemplateController);
 
 entityTemplateRouter.post('/search', ValidateRequest(searchEntityTemplatesSchema), controller('searchEntityTemplates'));
 

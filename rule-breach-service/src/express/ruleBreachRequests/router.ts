@@ -14,7 +14,7 @@ import {
 
 const RuleBreachRequestsRouter: Router = Router();
 
-const controller = createController(RuleBreachRequestsController)<RuleBreachRequestsController>;
+const controller = createController(RuleBreachRequestsController);
 
 RuleBreachRequestsRouter.post('/search', ValidateRequest(searchRuleBreachRequestsRequestSchema), controller('searchRuleBreachRequests'));
 

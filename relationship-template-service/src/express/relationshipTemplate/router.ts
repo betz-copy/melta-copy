@@ -12,7 +12,7 @@ import {
 
 const relationshipTemplateRouter: Router = Router();
 
-const controller = createController(RelationshipTemplateController)<RelationshipTemplateController>;
+const controller = createController(RelationshipTemplateController);
 
 relationshipTemplateRouter.get('/:templateId', ValidateRequest(getTemplateByIdRequestSchema), controller('getTemplateById'));
 relationshipTemplateRouter.put('/:templateId', ValidateRequest(updateTemplateByIdRequestSchema), controller('updateTemplateById'));

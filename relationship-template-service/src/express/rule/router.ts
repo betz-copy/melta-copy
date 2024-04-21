@@ -14,8 +14,8 @@ import {
 
 const RuleRouter: Router = Router();
 
-const controller = createController(RuleController)<RuleController>;
-const validateRuleFormulaController = createController(RuleValidator)<RuleValidator>;
+const controller = createController(RuleController);
+const validateRuleFormulaController = createController(RuleValidator);
 
 RuleRouter.get('/:ruleId', ValidateRequest(getRuleByIdRequestSchema), controller('getRuleById'));
 RuleRouter.put('/:ruleId', ValidateRequest(updateRuleByIdRequestSchema), controller('updateRuleById'));

@@ -12,7 +12,7 @@ import {
 
 const processTemplateRouter: Router = Router();
 
-const controller = createController(ProcessTemplateController)<ProcessTemplateController>;
+const controller = createController(ProcessTemplateController);
 
 processTemplateRouter.get('/:id', ValidateRequest(getTemplateByIdRequestSchema), controller('getTemplateById'));
 processTemplateRouter.post('/', ValidateRequest(createTemplateRequestSchema), controller('createTemplate'));
