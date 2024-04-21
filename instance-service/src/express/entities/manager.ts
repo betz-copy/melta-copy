@@ -606,7 +606,14 @@ export class EntityManager {
         });
     }
 
-    static async deletePropertiesOfTemplate(templateId: string, propertiesToRemove: { properties: string[] }) {
+    static async deletePropertiesOfTemplate(templateId: string, properties: Record<string, boolean>) {
+        const propertiesToRemove: string[] = [];
+
+        Object.entries(properties).forEach(([key, value]) => {
+            if (!value) propertiesToRemove.push(key, `${key}${config.neo4j.stringPropertySuffix}`);
+            else propertiesToRemove.push(key);
+        });
+
         return Neo4jClient.writeTransaction(
             `MATCH (e: \`${templateId}\`)
             WITH collect(e) AS nodes
@@ -614,7 +621,7 @@ export class EntityManager {
             RETURN node`,
             normalizeReturnedEntity('multipleResponses'),
             {
-                properties: propertiesToRemove.properties,
+                properties: propertiesToRemove,
             },
         );
     }

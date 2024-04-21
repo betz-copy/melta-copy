@@ -374,7 +374,7 @@ export class TemplatesManager {
 
         if (currTemplate.disabled === true) throw new ServiceError(400, 'can not update disabled template');
 
-        const removedProperties: string[] = [];
+        const removedProperties: Record<string, boolean> = {};
         const removedFilesProperties: string[] = [];
 
         if (count > 0) {
@@ -388,7 +388,7 @@ export class TemplatesManager {
             Object.entries(currTemplate.properties.properties).forEach(([key, value]) => {
                 const newValue = updatedTemplateData.properties.properties[key];
                 if (!newValue || ('newPropertyWithDeletedName' in newValue && newValue.newPropertyWithDeletedName)) {
-                    removedProperties.push(key);
+                    removedProperties[key] = value.type === 'string';
                     if (value.format === 'fileId') removedFilesProperties.push(key);
                 } else {
                     if (value.serialCurrent !== undefined) {
@@ -420,9 +420,9 @@ export class TemplatesManager {
             iconFileId = currTemplate.iconFileId;
         }
 
-        await GanttsService.isPropertyOfTemplateInUsed(id, removedProperties);
+        await GanttsService.isPropertyOfTemplateInUsed(id, Object.keys(removedProperties));
 
-        await RelationshipsTemplateManagerService.isPropertyOfTemplateInUsed(id, removedProperties);
+        await RelationshipsTemplateManagerService.isPropertyOfTemplateInUsed(id, Object.keys(removedProperties));
 
         const { uniqueConstraints, properties, ...restOfTemplateData } = updatedTemplateData;
         const { required: requiredConstraints, ...restOfTemplatePropertiesObject } = properties;
@@ -458,7 +458,7 @@ export class TemplatesManager {
             await Promise.all(promises);
         }
 
-        if (removedProperties.length > 0) {
+        if (Object.keys(removedProperties).length > 0) {
             await InstanceManagerService.deletePropertiesOfTemplate(id, removedProperties).catch((error) => {
                 throw new ServiceError(400, `failed to delete properties ${error}`);
             });

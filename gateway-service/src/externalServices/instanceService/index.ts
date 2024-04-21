@@ -109,7 +109,7 @@ export class InstanceManagerService {
         return data;
     }
 
-    static async deletePropertiesOfTemplate(templateId: string, properties: string[]) {
+    static async deletePropertiesOfTemplate(templateId: string, properties: Record<string, boolean>) {
         const { data } = await this.InstanceManagerApi.patch<IEntity[]>(`${baseEntitiesRoute}/deletePropertiesOfTemplate/${templateId}`, {
             properties,
         });
