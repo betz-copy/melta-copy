@@ -28,19 +28,16 @@ export class MinIOClient {
             return await func();
         } catch (err: any) {
             // Check if the error is caused by non-existing bucket
-            if (err.code === 'NoSuchBucket') {
-                // Create the bucket if it doesn't exist
-                if (!(await MinIOClient.minioClient.bucketExists(this.bucketName))) {
-                    await MinIOClient.minioClient.makeBucket(this.bucketName, '');
-                    console.log(`Bucket with name "${this.bucketName}" created successfully`);
-                }
+            if (err.code !== 'NoSuchBucket') throw err;
 
-                // Retry
-                return func();
+            // Create the bucket if it doesn't exist
+            if (!(await MinIOClient.minioClient.bucketExists(this.bucketName))) {
+                await MinIOClient.minioClient.makeBucket(this.bucketName, '');
+                console.log(`Bucket with name "${this.bucketName}" created successfully`);
             }
 
-            // Throw the error if it's not caused by non-existing bucket
-            throw err;
+            // Retry
+            return func();
         }
     }
 
