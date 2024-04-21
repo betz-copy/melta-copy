@@ -66,7 +66,6 @@ const propertiesArraySchema = Joi.array()
                 .when('type', { not: 'string', then: Joi.forbidden() }),
             serialStarter: Joi.number().when('type', { not: 'number', then: Joi.forbidden() }),
             serialCurrent: Joi.number().when('type', { not: 'number', then: Joi.forbidden() }),
-            newPropertyWithDeletedName: Joi.boolean(),
         }).nand('pattern', 'enum'),
     )
     .unique((a, b) => a.title === b.title);
@@ -111,8 +110,6 @@ export const innerPropertiesSchema = Joi.object()
         type: Joi.string().valid('object').required(),
         properties: Joi.object()
             .custom((value) => {
-                console.log({ value });
-
                 const { error: propertiesError } = propertiesArraySchema.validate(Object.values(value), { convert: false }); // titles are unique
                 const { error: keyError } = propertiesKeysArraySchema.validate(Object.keys(value), { convert: false });
 

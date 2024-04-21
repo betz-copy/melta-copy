@@ -431,7 +431,7 @@ export class TemplatesManager {
             if ('newPropertyWithDeletedName' in value) {
                 const updatedProperty = { ...value };
                 delete updatedProperty.newPropertyWithDeletedName;
-                restOfTemplatePropertiesObject[key] = updatedProperty;
+                restOfTemplatePropertiesObject.properties[key] = updatedProperty;
             }
         });
 
