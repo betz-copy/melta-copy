@@ -1,4 +1,3 @@
-/* eslint-disable max-classes-per-file */
 import { Request } from 'express';
 import * as Multer from 'multer';
 import { callbackify } from 'util';
