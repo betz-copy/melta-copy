@@ -1,5 +1,5 @@
 /* eslint-disable no-underscore-dangle */
-import * as mongoose from 'mongoose';
+import mongoose from 'mongoose';
 import * as request from 'supertest';
 import { Express } from 'express';
 import Server from '../src/express/server';

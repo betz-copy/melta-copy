@@ -19,7 +19,6 @@ class PermissionsController {
 
     static async updatePermission(req: Request, res: Response) {
         const { id } = req.params;
-
         res.json(await PermissionsManager.updatePermission(id, req.body));
     }
 
@@ -31,7 +30,6 @@ class PermissionsController {
 
     static async deletePermission(req: Request, res: Response) {
         const { id } = req.params;
-
         res.json(await PermissionsManager.deletePermission(id));
     }
 

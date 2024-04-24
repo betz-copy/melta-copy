@@ -24,6 +24,7 @@ import RuleBreachesManager from '../ruleBreaches/manager';
 import config from '../../config';
 import { ServiceError } from '../error';
 import { cerateWorksheet, createWorkbook, fixFileProperties, styleAWorksheet } from '../../utils/excel/excelFunctions';
+import logger from '../../utils/logger/logsLogger';
 
 const { errorCodes } = config;
 
@@ -286,7 +287,7 @@ export class InstancesManager {
             ignoredRules,
         ).catch(InstancesManager.handleBrokenRulesError);
         await InstancesManager.deleteUnusedFiles(currentEntity, updatedInstanceData, files).catch(() =>
-            console.log(`failed to delete files of instanceId ${id}`),
+            logger.error(`failed to delete files of instanceId ${id}`),
         );
 
         const updatedFields: Record<string, any> = {};
@@ -366,8 +367,7 @@ export class InstancesManager {
         const { err } = await trycatch(() => InstancesManager.deleteAllEntityFiles(currentEntity));
 
         if (err) {
-            // eslint-disable-next-line no-console
-            console.log(`failed to delete files of instanceId ${id}`);
+            logger.error(`failed to delete files of instanceId ${id}`);
         }
 
         return deletedInstance;

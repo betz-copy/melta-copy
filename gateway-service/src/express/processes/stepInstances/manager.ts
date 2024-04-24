@@ -8,6 +8,7 @@ import {
 } from '../../../externalServices/processService/interfaces/stepInstance';
 import { deleteFiles } from '../../../externalServices/storageService';
 import { removeTmpFile } from '../../../utils/fs';
+import logger from '../../../utils/logger/logsLogger';
 import { InstancesManager } from '../../instances/manager';
 import UsersManager from '../../users/manager';
 import ProcessesInstancesManager from '../processInstances/manager';
@@ -72,8 +73,7 @@ export default class StepsInstancesManager {
             properties: props,
         }).catch((processServiceError) => {
             deleteFiles(Object.values(filesToUpload).flat(1) as string[]).catch((deleteFilesError) => {
-                // eslint-disable-next-line no-console
-                console.log(`failed to delete files ${deleteFilesError}`);
+                logger.error(`failed to delete files ${deleteFilesError}`);
                 throw processServiceError;
             });
             throw processServiceError;
