@@ -12,19 +12,6 @@ const {
 export class InstanceManagerService {
     private static InstanceManagerApi = axios.create({ baseURL: url, timeout: requestTimeout });
 
-    static setUserId(userId: string) {
-        this.InstanceManagerApi.interceptors.request.use(
-            (axiosConfig) => {
-                if (axiosConfig.headers) {
-                    // eslint-disable-next-line no-param-reassign
-                    axiosConfig.headers['user-id'] = userId;
-                }
-                return axiosConfig;
-            },
-            (error) => Promise.reject(error),
-        );
-    }
-
     // entity instances
     static async getEntityInstanceById(id: string) {
         const { data } = await this.InstanceManagerApi.get<IEntity>(`${baseEntitiesRoute}/${id}`);

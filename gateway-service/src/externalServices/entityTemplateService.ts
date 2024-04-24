@@ -82,19 +82,6 @@ export interface ISearchEntityTemplatesBody {
 export class EntityTemplateManagerService {
     private static EntityTemplateManagerApi = axios.create({ baseURL: url, timeout: requestTimeout });
 
-    static setUserId(userId: string) {
-        this.EntityTemplateManagerApi.interceptors.request.use(
-            (axiosConfig) => {
-                if (axiosConfig.headers) {
-                    // eslint-disable-next-line no-param-reassign
-                    axiosConfig.headers['user-id'] = userId;
-                }
-                return axiosConfig;
-            },
-            (error) => Promise.reject(error),
-        );
-    }
-
     // categories
     static async getAllCategories() {
         const { data } = await this.EntityTemplateManagerApi.get<IMongoCategory[]>(baseCategoriesRoute);
