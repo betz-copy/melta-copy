@@ -1,8 +1,8 @@
 /* eslint-disable class-methods-use-this */
-import DefaultManager from '../../utils/express/manager';
 import { generatePath } from '../../utils/generatePath';
+import DefaultManagerMinio from '../../utils/minio/manager';
 
-export class FilesManager extends DefaultManager {
+export class FilesManager extends DefaultManagerMinio {
     uploadFile(file?: Express.Multer.File) {
         return file;
     }

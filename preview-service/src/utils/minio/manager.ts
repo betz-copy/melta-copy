@@ -1,6 +1,6 @@
-import { MinIOClient } from '../minio/minioClient';
+import { MinIOClient } from './minioClient';
 
-export default abstract class DefaultManager {
+export default abstract class DefaultManagerMinio {
     public minioClient: MinIOClient;
 
     constructor(dbName: string) {

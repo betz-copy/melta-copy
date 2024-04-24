@@ -1,13 +1,13 @@
 import { translateAgGridFilterModel, translateAgGridSortModel } from '../../utils/agGrid';
-import DefaultManager from '../../utils/express/manager';
 import { ActionTypes, IActionMetadata } from '../../utils/interfaces/actionMetadata';
 import { IAgGridRequest } from '../../utils/interfaces/agGrid';
 import { IBrokenRule, IRuleBreach } from '../../utils/interfaces/ruleBreach';
+import DefaultManagerMongo from '../../utils/mongo/manager';
 import { RuleBreachDoesNotExistError } from '../error';
 import { IRuleBreachRequest, RuleBreachRequestStatus } from './interface';
 import RuleBreachRequestsModel from './model';
 
-export default class RuleBreachRequestsManager extends DefaultManager<IRuleBreachRequest> {
+export default class RuleBreachRequestsManager extends DefaultManagerMongo<IRuleBreachRequest> {
     constructor(dbName: string) {
         super(dbName, RuleBreachRequestsModel);
     }

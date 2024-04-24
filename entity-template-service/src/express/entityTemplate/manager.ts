@@ -1,12 +1,12 @@
 import { Document, FilterQuery } from 'mongoose';
 import GlobalSearchIndexCreator from '../../externalServices/globalSearchIndexCreator';
 import { escapeRegExp } from '../../utils';
-import DefaultManager from '../../utils/express/manager';
+import DefaultManagerMongo from '../../utils/mongo/manager';
 import { ServiceError } from '../error';
 import { IEntitySingleProperty, IEntityTemplate } from './interface';
 import EntityTemplateModel from './model';
 
-export class EntityTemplateManager extends DefaultManager<IEntityTemplate> {
+export class EntityTemplateManager extends DefaultManagerMongo<IEntityTemplate> {
     private globalSearchIndexCreator: GlobalSearchIndexCreator;
 
     constructor(dbName: string) {

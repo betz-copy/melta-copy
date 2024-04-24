@@ -1,11 +1,11 @@
 /* eslint-disable class-methods-use-this */
 import { ClientSession } from 'mongoose';
-import DefaultManager from '../../../utils/express/manager';
+import DefaultManagerMongo from '../../../utils/mongo/manager';
 import { NoMatchingStepsError, ServiceError, TemplateNotFoundError, ValidationError } from '../../error';
 import { IMongoStepTemplate, IStepTemplate, StepTemplateDocument } from './interface';
 import StepTemplateModel from './model';
 
-export default class StepTemplateManager extends DefaultManager<IStepTemplate> {
+export default class StepTemplateManager extends DefaultManagerMongo<IStepTemplate> {
     constructor(dbName: string) {
         super(dbName, StepTemplateModel);
     }

@@ -19,7 +19,7 @@ import {
     normalizeSearchWithRelationships,
     runInTransactionAndNormalize,
 } from '../../utils/neo4j/lib';
-import DefaultManager from '../../utils/neo4j/manager';
+import DefaultManagerNeo4j from '../../utils/neo4j/manager';
 import { searchWithRelationshipsToNeoQuery } from '../../utils/neo4j/searchBodyToNeoQuery';
 import { getLatestGlobalSearchIndex, getLatestTemplateSearchIndex } from '../../utils/redis/getLatestIndex';
 import { NotFoundError, ServiceError } from '../error';
@@ -37,7 +37,7 @@ import {
 } from './interface';
 import EntityValidator from './validator.template';
 
-export default class EntityManager extends DefaultManager {
+export default class EntityManager extends DefaultManagerNeo4j {
     private entityTemplateManagerService: EntityTemplateManagerService;
 
     private relationshipsTemplateManagerService: RelationshipsTemplateManagerService;

@@ -2,8 +2,8 @@
 import { Document, FilterQuery, Types } from 'mongoose';
 import config from '../../../config';
 import { escapeRegExp } from '../../../utils';
-import DefaultManager from '../../../utils/express/manager';
-import { getProcessTemplatesByReviewerIdAggregation, transaction } from '../../../utils/mongoose';
+import { getProcessTemplatesByReviewerIdAggregation, transaction } from '../../../utils/mongo';
+import DefaultManagerMongo from '../../../utils/mongo/manager';
 import { ServiceError, TemplateNotFoundError } from '../../error';
 import ProcessInstanceManager from '../../instances/processes/manager';
 import StepTemplateManager from '../steps/manager';
@@ -20,7 +20,7 @@ import ProcessTemplateModel from './model';
 
 type ProcessTemplateType<T extends boolean> = T extends true ? IMongoProcessTemplatePopulated & Document : IMongoProcessTemplate & Document;
 
-export default class ProcessTemplateManager extends DefaultManager<IProcessTemplate> {
+export default class ProcessTemplateManager extends DefaultManagerMongo<IProcessTemplate> {
     private processInstanceManager: ProcessInstanceManager;
 
     private stepTemplateManager: StepTemplateManager;

@@ -4,8 +4,8 @@ import { ClientSession, Document, FilterQuery, Types } from 'mongoose';
 import config from '../../../config';
 import { escapeRegExp } from '../../../utils';
 import ajv from '../../../utils/ajv';
-import DefaultManager from '../../../utils/express/manager';
-import { getTemplateAggregation, searchAllowedProcessInstanceForReviewerAggregation, transaction } from '../../../utils/mongoose';
+import { getTemplateAggregation, searchAllowedProcessInstanceForReviewerAggregation, transaction } from '../../../utils/mongo';
+import DefaultManagerMongo from '../../../utils/mongo/manager';
 import { InstancePropertiesValidationError, NotFoundError, ServiceError, ValidationError } from '../../error';
 import { IMongoProcessTemplate, IProcessDetails } from '../../templates/processes/interface';
 import ProcessTemplateManager from '../../templates/processes/manager';
@@ -27,7 +27,7 @@ import {
 import ProcessInstanceModel from './model';
 
 type ProcessInstanceType<T extends boolean> = T extends true ? IMongoProcessInstancePopulated & Document : IMongoProcessInstance & Document;
-class ProcessInstanceManager extends DefaultManager<IProcessInstance> {
+class ProcessInstanceManager extends DefaultManagerMongo<IProcessInstance> {
     private stepInstanceManager: StepInstanceManager;
 
     private processTemplateManager: ProcessTemplateManager;

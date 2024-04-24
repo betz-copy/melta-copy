@@ -1,8 +1,8 @@
-import DefaultManager from '../../utils/express/manager';
+import DefaultManagerMongo from '../../utils/mongo/manager';
 import { IActivityLog } from './interface';
 import ActivityLogModel from './model';
 
-export default class ActivityLogManager extends DefaultManager<IActivityLog> {
+export default class ActivityLogManager extends DefaultManagerMongo<IActivityLog> {
     constructor(dbName: string) {
         super(dbName, ActivityLogModel);
     }

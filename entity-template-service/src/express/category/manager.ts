@@ -1,9 +1,9 @@
-import DefaultManager from '../../utils/express/manager';
+import DefaultManagerMongo from '../../utils/mongo/manager';
 import { ServiceError } from '../error';
 import { ICategory } from './interface';
 import CategoryModel from './model';
 
-class CategoryManager extends DefaultManager<ICategory> {
+class CategoryManager extends DefaultManagerMongo<ICategory> {
     constructor(dbName: string) {
         super(dbName, CategoryModel);
     }

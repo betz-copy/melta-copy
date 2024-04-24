@@ -1,11 +1,11 @@
 import { FilterQuery } from 'mongoose';
 import { escapeRegExp } from '../../utils';
-import DefaultManager from '../../utils/express/manager';
+import DefaultManagerMongo from '../../utils/mongo/manager';
 import { ServiceError } from '../error';
 import { IGantt, ISearchGanttsBody } from './interface';
 import FolderModel from './model';
 
-export default class GanttManager extends DefaultManager<IGantt> {
+export default class GanttManager extends DefaultManagerMongo<IGantt> {
     constructor(dbName: string) {
         super(dbName, FolderModel);
     }

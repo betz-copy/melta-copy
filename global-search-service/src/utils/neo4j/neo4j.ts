@@ -1,6 +1,6 @@
 import neo4j, { Driver, Neo4jError, QueryResult, Session, Transaction } from 'neo4j-driver';
 import { retry } from 'ts-retry-promise';
-import config from '../config';
+import config from '../../config';
 
 const { url, auth, connectionRetries, connectionRetryDelay } = config.neo4j;
 

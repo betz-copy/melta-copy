@@ -10,14 +10,14 @@ import {
     normalizeReturnedRelationship,
     runInTransactionAndNormalize,
 } from '../../utils/neo4j/lib';
-import DefaultManager from '../../utils/neo4j/manager';
+import DefaultManagerNeo4j from '../../utils/neo4j/manager';
 import { NotFoundError, ServiceError } from '../error';
 import { filterDependentRulesViaAggregation } from '../rules/getParametersOfFormula';
 import { IBrokenRule, IRuleFailureWithCauses } from '../rules/interfaces';
 import RulesManager from '../rules/lib';
 import { IRelationship } from './interface';
 
-export class RelationshipManager extends DefaultManager {
+export class RelationshipManager extends DefaultManagerNeo4j {
     private relationshipsTemplateManagerService: RelationshipsTemplateManagerService;
 
     private rulesManager: RulesManager;

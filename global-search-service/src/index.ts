@@ -1,7 +1,7 @@
 import menash from 'menashmq';
 import config from './config';
 import { updateIndexConsumeFunction } from './rabbit/consumer';
-import Neo4jClient from './utils/neo4j';
+import Neo4jClient from './utils/neo4j/neo4j';
 import RedisClient from './utils/redis';
 
 const { rabbit } = config;

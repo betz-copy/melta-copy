@@ -1,6 +1,6 @@
 import * as mongoose from 'mongoose';
 import config from '../../config';
-import { defaultSchemaOptions, ruleBreachSchemaDefinition } from '../../utils/mongoose/schemas/ruleBreach';
+import { defaultSchemaOptions, ruleBreachSchemaDefinition } from '../../utils/mongo/schemas/ruleBreach';
 import { IRuleBreachRequest } from './interface';
 
 const RuleBreachRequestsSchema = new mongoose.Schema(

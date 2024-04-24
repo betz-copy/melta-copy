@@ -1,11 +1,11 @@
 import { FilterQuery } from 'mongoose';
-import DefaultManager from '../../utils/express/manager';
-import transaction from '../../utils/mongoose';
+import transaction from '../../utils/mongo';
+import DefaultManagerMongo from '../../utils/mongo/manager';
 import { NotificationDoesNotExistError } from '../error';
 import { IBasicNotificationQuery, INotification, INotificationCountGroups, INotificationGroupCountDetails } from './interface';
 import NotificationModel from './model';
 
-export class NotificationsManager extends DefaultManager<INotification> {
+export class NotificationsManager extends DefaultManagerMongo<INotification> {
     constructor(dbName: string) {
         super(dbName, NotificationModel);
     }

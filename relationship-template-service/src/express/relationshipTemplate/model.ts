@@ -1,7 +1,7 @@
 import * as mongoose from 'mongoose';
 
 import config from '../../config';
-import { transformResultDocsObjectIdKeysToString } from '../../utils/mongoose';
+import { transformResultDocsObjectIdKeysToString } from '../../utils/mongo/mongoose';
 import { IRelationshipTemplate } from './interface';
 
 const RelationshipTemplateSchema = new mongoose.Schema(

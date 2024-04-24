@@ -1,11 +1,11 @@
 import { Document, FilterQuery } from 'mongoose';
 import { escapeRegExp } from '../../utils';
-import DefaultManager from '../../utils/express/manager';
+import DefaultManagerMongo from '../../utils/mongo/manager';
 import { ServiceError } from '../error';
 import { IRule } from './interfaces';
 import RuleModel from './model';
 
-export class RuleManager extends DefaultManager<IRule> {
+export class RuleManager extends DefaultManagerMongo<IRule> {
     constructor(dbName: string) {
         super(dbName, RuleModel);
     }

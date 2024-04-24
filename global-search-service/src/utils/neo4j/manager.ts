@@ -1,6 +1,6 @@
 import Neo4jClient from './neo4j';
 
-export default abstract class DefaultManager {
+export default abstract class DefaultManagerNeo4j {
     public neo4jClient: Neo4jClient;
 
     constructor(dbName: string) {

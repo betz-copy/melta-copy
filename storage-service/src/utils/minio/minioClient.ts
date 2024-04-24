@@ -7,13 +7,16 @@ const { url: endPoint, port, accessKey, secretKey, useSSL } = config.minio;
 export class MinIOClient {
     private static minioClient: Client;
 
+    private static isInitialized: boolean = false;
+
     private bucketName: string;
 
     constructor(bucketName: string) {
         this.bucketName = bucketName;
+        if (!MinIOClient.isInitialized) MinIOClient.initialize();
     }
 
-    static async initialize() {
+    static initialize() {
         MinIOClient.minioClient = new Client({
             endPoint,
             port,
@@ -21,6 +24,7 @@ export class MinIOClient {
             accessKey,
             secretKey,
         });
+        MinIOClient.isInitialized = true;
     }
 
     private async wrapDBNotExistsError(func: () => Promise<any>) {

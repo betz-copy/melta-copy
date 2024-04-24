@@ -1,11 +1,11 @@
 import { Document, FilterQuery } from 'mongoose';
 import { escapeRegExp } from '../../utils';
-import DefaultManager from '../../utils/express/manager';
+import DefaultManagerMongo from '../../utils/mongo/manager';
 import { ServiceError } from '../error';
 import { IRelationshipTemplate } from './interface';
 import RelationshipTemplateModel from './model';
 
-export class RelationshipTemplateManager extends DefaultManager<IRelationshipTemplate> {
+export class RelationshipTemplateManager extends DefaultManagerMongo<IRelationshipTemplate> {
     constructor(dbName: string) {
         super(dbName, RelationshipTemplateModel);
     }

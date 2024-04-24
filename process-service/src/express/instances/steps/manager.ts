@@ -1,15 +1,15 @@
 /* eslint-disable class-methods-use-this */
 import { ClientSession } from 'mongoose';
 import config from '../../../config';
-import DefaultManager from '../../../utils/express/manager';
-import { getTemplateAggregation, transaction } from '../../../utils/mongoose';
+import { getTemplateAggregation, transaction } from '../../../utils/mongo';
+import DefaultManagerMongo from '../../../utils/mongo/manager';
 import { NotFoundError, ServiceError, StepNotPartOfProcessError, ValidationError } from '../../error';
 import { IMongoStepTemplate } from '../../templates/steps/interface';
 import ProcessInstanceManager from '../processes/manager';
 import { IMongoStepInstance, IStepInstance, StepInstanceDocument, UpdateStepReqBody } from './interface';
 import StepInstanceModel from './model';
 
-export default class StepInstanceManager extends DefaultManager<IStepInstance> {
+export default class StepInstanceManager extends DefaultManagerMongo<IStepInstance> {
     private processInstanceManager: ProcessInstanceManager;
 
     private stepInstanceManager: StepInstanceManager;

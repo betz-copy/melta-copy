@@ -1,12 +1,12 @@
 import { translateAgGridFilterModel, translateAgGridSortModel } from '../../utils/agGrid';
-import DefaultManager from '../../utils/express/manager';
 import { IAgGridRequest } from '../../utils/interfaces/agGrid';
 import { IRuleBreach } from '../../utils/interfaces/ruleBreach';
+import DefaultManagerMongo from '../../utils/mongo/manager';
 import { RuleBreachDoesNotExistError } from '../error';
 import { IRuleBreachAlert } from './interface';
 import RuleBreachAlertsModel from './model';
 
-export default class RuleBreachAlertsManager extends DefaultManager<IRuleBreachAlert> {
+export default class RuleBreachAlertsManager extends DefaultManagerMongo<IRuleBreachAlert> {
     constructor(dbName: string) {
         super(dbName, RuleBreachAlertsModel);
     }

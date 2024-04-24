@@ -1,6 +1,6 @@
 import { Model, Schema, connection } from 'mongoose';
 
-export default abstract class DefaultManager<T> {
+export default abstract class DefaultManagerMongo<T> {
     private dbName: string;
 
     private modelName: string;

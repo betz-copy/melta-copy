@@ -2,7 +2,7 @@
 import config from '../config';
 import { EntityTemplateManagerService } from '../externalServices/entityTemplateManager';
 import { IEntityTemplate } from '../externalServices/entityTemplateManager/interfaces';
-import DefaultManager from '../utils/manager';
+import DefaultManagerNeo4j from '../utils/neo4j/manager';
 import RedisClient from '../utils/redis';
 
 const {
@@ -14,7 +14,7 @@ const {
     redis: { globalSearchKeyName, templateSearchKeyNamePrefix },
 } = config;
 
-export default class Manager extends DefaultManager {
+export default class Manager extends DefaultManagerNeo4j {
     private entityTemplateManagerService: EntityTemplateManagerService;
 
     private redisClient: RedisClient;

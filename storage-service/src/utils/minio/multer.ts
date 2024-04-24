@@ -3,12 +3,12 @@ import * as Multer from 'multer';
 import { callbackify } from 'util';
 import { config } from '../../config';
 import DefaultController from '../express/controller';
-import DefaultManager from '../express/manager';
 import { generatePath } from '../generatePath';
+import DefaultManagerMinio from './manager';
 
 const { fileKeyName, filesKeyName } = config.multer;
 
-class MinioStorage extends DefaultManager {
+class MinioStorage extends DefaultManagerMinio {
     async handleFile(_req: Request, file: Express.Multer.File) {
         const path = generatePath(file.originalname);
 
