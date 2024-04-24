@@ -1,5 +1,5 @@
 import axios from 'axios';
-import commentsapm from 'elastic-apm-node';
+import apm from 'elastic-apm-node';
 
 import Server from './express/server';
 import Neo4jClient from './utils/neo4j';
