@@ -59,6 +59,10 @@ class EntityController {
     static async updateConstraintsOfTemplate(req: Request, res: Response) {
         res.json(await EntityManager.updateConstraintsOfTemplate(req.params.templateId, req.body));
     }
+
+    static async enumerateNewSerialNumberFields(req: Request, res: Response) {
+        res.json(await EntityManager.enumerateNewSerialNumberFields(req.params.templateId, req.body.newSerialNumberFields));
+    }
 }
 
 export default EntityController;

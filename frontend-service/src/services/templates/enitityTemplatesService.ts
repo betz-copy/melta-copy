@@ -141,7 +141,6 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTem
             if (unique) uniqueConstraint.push(name);
             if (preview) propertiesPreview.push(name);
             if (type === 'serialNumber') serialsUniqueConstraints.push([name]);
-
             if (type === 'enum' || type === 'enumArray') {
                 Object.entries(optionColors).forEach(([option, color]) => {
                     if (!color) return;

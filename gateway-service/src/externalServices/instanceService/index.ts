@@ -115,4 +115,11 @@ export class InstanceManagerService {
 
         return data;
     }
+
+    static async enumerateNewSerialNumberFields(templateId: string, newSerialNumberFields: object) {
+        const { data } = await this.InstanceManagerApi.post<number>(`${baseConstraintsRoute}/enumerate-new-serial-number-fields/${templateId}`, {
+            newSerialNumberFields,
+        });
+        return data;
+    }
 }
