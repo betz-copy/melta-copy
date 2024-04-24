@@ -95,25 +95,45 @@ templatesRouter.post(
     multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).single('file'),
     ValidateRequest(createEntityTemplateSchema),
     wrapMiddleware(validateUserCanCreateEntityTemplateUnderCategory),
-    wrapController(TemplatesController.createEntityTemplate, true, [], 'templates-entities'),
+    wrapController(TemplatesController.createEntityTemplate, {
+        toLog: true,
+        logRequestFields: [],
+        indexName: 'templates-entities',
+        responseDataExtractor: undefined,
+    }),
 );
 templatesRouter.put(
     '/entities/:id',
     multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).single('file'),
     ValidateRequest(updateEntityTemplateSchema),
     wrapMiddleware(validateUserCanUpdateOrDeleteEntityTemplate),
-    wrapController(TemplatesController.updateEntityTemplate, true, [], 'templates-entities'),
+    wrapController(TemplatesController.updateEntityTemplate, {
+        toLog: true,
+        logRequestFields: [],
+        indexName: 'templates-entities',
+        responseDataExtractor: undefined,
+    }),
 );
 templatesRouter.patch(
     '/entities/:id/status',
     ValidateRequest(updateEntityTemplateStatusSchema),
-    wrapController(TemplatesController.updateEntityTemplateStatus, true, [], 'templates-entities'),
+    wrapController(TemplatesController.updateEntityTemplateStatus, {
+        toLog: true,
+        logRequestFields: [],
+        indexName: 'templates-entities',
+        responseDataExtractor: undefined,
+    }),
 );
 templatesRouter.delete(
     '/entities/:id',
     ValidateRequest(deleteEntityTemplateSchema),
     wrapMiddleware(validateUserCanUpdateOrDeleteEntityTemplate),
-    wrapController(TemplatesController.deleteEntityTemplate, true, [], 'templates-entities', fixDeleteResponseData),
+    wrapController(TemplatesController.deleteEntityTemplate, {
+        toLog: true,
+        logRequestFields: [],
+        indexName: 'templates-entities',
+        responseDataExtractor: fixDeleteResponseData,
+    }),
 );
 
 // relationships (templates)
@@ -121,19 +141,34 @@ templatesRouter.post(
     '/relationships',
     ValidateRequest(createRelationshipTemplateSchema),
     wrapMiddleware(validateUserCanCreateRelationshipTemplateUnderCategory),
-    wrapController(TemplatesController.createRelationshipTemplate, true, [], 'templates-relationships'),
+    wrapController(TemplatesController.createRelationshipTemplate, {
+        toLog: true,
+        logRequestFields: [],
+        indexName: 'templates-relationships',
+        responseDataExtractor: undefined,
+    }),
 );
 templatesRouter.put(
     '/relationships/:id',
     ValidateRequest(updateRelationshipTemplateSchema),
     wrapMiddleware(validateUserCanUpdateOrDeleteRelationshipTemplate),
-    wrapController(TemplatesController.updateRelationshipTemplate, true, [], 'templates-relationships'),
+    wrapController(TemplatesController.updateRelationshipTemplate, {
+        toLog: true,
+        logRequestFields: [],
+        indexName: 'templates-relationships',
+        responseDataExtractor: undefined,
+    }),
 );
 templatesRouter.delete(
     '/relationships/:id',
     ValidateRequest(deleteRelationshipTemplateSchema),
     wrapMiddleware(validateUserCanUpdateOrDeleteRelationshipTemplate),
-    wrapController(TemplatesController.deleteRelationshipTemplate, true, [], 'templates-relationships'),
+    wrapController(TemplatesController.deleteRelationshipTemplate, {
+        toLog: true,
+        logRequestFields: [],
+        indexName: 'templates-relationships',
+        responseDataExtractor: undefined,
+    }),
 );
 
 // rules (templates)

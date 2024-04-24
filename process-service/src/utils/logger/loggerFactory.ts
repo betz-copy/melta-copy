@@ -6,16 +6,16 @@ const { logs } = config;
 
 type IWinstonFormat = Logform.Format;
 
+export interface IExtra {
+    serviceName: string;
+    environment: string;
+}
+
 export interface IPrintData {
     timestamp: string;
     level: string;
     message: string;
-    extra: object;
-}
-
-export interface IExtra {
-    serviceName: string;
-    environment: string;
+    extra: IExtra;
 }
 
 const initializeLogger = (
@@ -27,12 +27,12 @@ const initializeLogger = (
 ): Logger => {
     const transportsList: transport[] = [];
 
-    if (enableConsole) {
-        const consoleTransport = new transports.Console({
-            format: customFormat,
-        });
-        transportsList.push(consoleTransport);
-    }
+    if (enableConsole)
+        transportsList.push(
+            new transports.Console({
+                format: customFormat,
+            }),
+        );
 
     if (enableFile) {
         const fileTransportSettings = { ...logs.fileSettings, format: customFormat };
@@ -49,13 +49,11 @@ const initializeLogger = (
         transportsList.push(fileRotateTransport);
     }
 
-    const logger = createLogger({
+    return createLogger({
         format: customFormat,
         transports: transportsList,
         exitOnError: false,
     });
-
-    return logger;
 };
 
 export default initializeLogger;

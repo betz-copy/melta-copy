@@ -65,7 +65,12 @@ InstancesRouter.post(
     multer({ dest: config.service.uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).any(),
     ValidateRequest(createEntityInstanceSchema),
     wrapMiddleware(validateUserCanCreateEntityInstance),
-    wrapController(InstancesController.createEntityInstance, true, [], 'entities'),
+    wrapController(InstancesController.createEntityInstance, {
+        toLog: true,
+        logRequestFields: [],
+        indexName: 'entities',
+        responseDataExtractor: undefined,
+    }),
 );
 InstancesRouter.put(
     '/entities/:id',
@@ -73,7 +78,12 @@ InstancesRouter.put(
     ValidateRequest(updateEntityInstanceSchema),
     wrapMiddleware(validateUserCanWriteEntityInstance),
     wrapMiddleware(validateUserCanIgnoreRules),
-    wrapController(InstancesController.updateEntityInstance, true, [], 'entities'),
+    wrapController(InstancesController.updateEntityInstance, {
+        toLog: true,
+        logRequestFields: [],
+        indexName: 'entities',
+        responseDataExtractor: undefined,
+    }),
 );
 InstancesRouter.post(
     '/entities/:id/duplicate',
@@ -86,13 +96,23 @@ InstancesRouter.delete(
     '/entities/:id',
     ValidateRequest(deleteEntityInstanceSchema),
     wrapMiddleware(validateUserCanWriteEntityInstance),
-    wrapController(InstancesController.deleteEntityInstance, true, [], 'entities', (id: string) => ({ deletedId: id })),
+    wrapController(InstancesController.deleteEntityInstance, {
+        toLog: true,
+        logRequestFields: [],
+        indexName: 'entities',
+        responseDataExtractor: (id: string) => ({ deletedId: id }),
+    }),
 );
 InstancesRouter.patch(
     '/entities/:id/status',
     ValidateRequest(updateEntityStatusSchema),
     wrapMiddleware(validateUserCanWriteEntityInstance),
-    wrapController(InstancesController.updateEntityStatus, true, [], 'entities'),
+    wrapController(InstancesController.updateEntityStatus, {
+        toLog: true,
+        logRequestFields: [],
+        indexName: 'entities',
+        responseDataExtractor: undefined,
+    }),
 );
 
 // relationships (Instances)

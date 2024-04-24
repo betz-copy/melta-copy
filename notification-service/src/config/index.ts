@@ -26,9 +26,10 @@ const config = {
         apmServerUrl: env.get('APM_SERVER_URL').default('http://apm-server:8200').asString(),
         enableFile: env.get('ENABLE_FILE_LOGGING').default('false').asBool(),
         enableRotateFile: env.get('ENABLE_ROTATE_FILE_LOGGING').default('true').asBool(),
+        label: env.get('LOG_LABEL').default('notification').asString(),
         extraDefault: {
             serviceName: env.get('LOG_SERVICE_NAME').default('notification-service').asString(),
-            environment: env.get('LOG_ENVIRONMENT').default('dev').asString(),
+            environment: env.get('LOG_ENVIRONMENT').default('dev').required().asString(),
         },
         fileSettings: {
             datePattern: env.get('FILE_LOG_DATE_PATTERN').default('YYYY-MM-DD').asString(),

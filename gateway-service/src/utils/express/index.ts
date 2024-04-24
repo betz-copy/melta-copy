@@ -13,13 +13,25 @@ export const wrapMiddleware = (func: (req: Request, res?: Response) => Promise<v
 
 export const wrapValidator = wrapMiddleware;
 
+interface IWrapControllerOptions {
+    toLog: boolean;
+    logRequestFields: Array<{ key: string; path: string }>;
+    indexName: string;
+    responseDataExtractor: ((body: any) => any) | undefined;
+}
+
+const defaultWrapControllerOptions: IWrapControllerOptions = {
+    toLog: false,
+    logRequestFields: [],
+    indexName: 'gateway',
+    responseDataExtractor: undefined,
+};
+
 export const wrapController = <ExtendedRequest extends Request<any, any, any, any> = Request, ExtendedResponse extends Response = Response>(
     func: (req: ExtendedRequest, res: ExtendedResponse, next?: NextFunction) => Promise<void>,
-    toLog: boolean = false,
-    logRequestFields: Array<{ key: string; path: string }> = [],
-    indexName: string = 'gateway',
-    responseDataExtractor: ((body: any) => any) | undefined = undefined,
+    options: IWrapControllerOptions = defaultWrapControllerOptions,
 ) => {
+    const { toLog, logRequestFields, indexName, responseDataExtractor } = { ...options };
     return (req: ExtendedRequest, res: ExtendedResponse, next: NextFunction) => {
         if (!toLog) {
             func(req, res, next).catch(next);

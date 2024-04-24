@@ -5,7 +5,7 @@ import initializeLogger from './loggerFactory';
 const { logs } = config;
 
 const customFormat = format.combine(
-    format.label({ label: 'entities' }),
+    format.label({ label: logs.label }),
     format.splat(),
     format.metadata({
         fillExcept: ['timestamp', 'level', 'message', 'metadata'],
@@ -18,6 +18,6 @@ const customFormat = format.combine(
     }),
 );
 
-const dataLogger: Logger = initializeLogger(logs.enableFile, false, logs.enableRotateFile, customFormat, 'entities');
+const dataLogger: Logger = initializeLogger(logs.enableFile, false, logs.enableRotateFile, customFormat, logs.label);
 
 export default dataLogger;
