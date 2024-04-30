@@ -33,9 +33,9 @@ export const MinimizedColorPicker: React.FC<IMinimizedColorPickerProps> = ({
                 <ColorPicker
                     color={color}
                     onColorChange={(newColor) => {
-                        if (!newColor) setOpen(false);
                         onColorChange(newColor);
                     }}
+                    onClose={() => setOpen(false)}
                     {...restOfColorPickerProps}
                     style={{ padding: '1rem' }}
                 />
