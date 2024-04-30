@@ -137,6 +137,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
 
     const chipRefs = useRef<(HTMLDivElement | null)[]>([]);
     const [open, setOpen] = useState<boolean>(false);
+    const [openDelete, setOpenDelete] = useState<boolean>(false);
     const MemoizedIconButton = React.memo(IconButton);
 
     const handleEditChange = (e, _tagIndex) => {
@@ -266,6 +267,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
 
     const handleDelete = (tagIndex: number) => {
         handleDeleteEnumField(templateId, tagIndex, value);
+        setOpenDelete(false);
     };
 
     const updateOldDisabledEnumVals = (currValue: string[]) => {
@@ -509,7 +511,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                             size="small"
                                                                             onClick={() => {
                                                                                 if (!isDeleteLoading) {
-                                                                                    handleDelete(tagIndex);
+                                                                                    setOpenDelete(true);
                                                                                 }
                                                                             }}
                                                                             disabled={isDeleteLoading}
@@ -525,12 +527,16 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                 </Popover>
                                                                 <ThemeProvider theme={areYouSureTheme}>
                                                                     <AreYouSureDialog
-                                                                        open={open}
+                                                                        open={open || openDelete}
                                                                         handleClose={() => {
+                                                                            setOpenDelete(false);
                                                                             setOpen(false);
                                                                         }}
                                                                         onYes={() => {
-                                                                            handleSaveEdit(editIndex!);
+                                                                            if (openDelete) handleDelete(tagIndex);
+                                                                            else {
+                                                                                handleSaveEdit(editIndex!);
+                                                                            }
                                                                         }}
                                                                         isLoading={isLoading}
                                                                         message={`${i18next.t('areYouSureDialog.enumChangeDisclaimer')} ${entity}`}

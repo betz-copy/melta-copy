@@ -441,7 +441,7 @@ export class TemplatesManager {
     }
 
     static removeBasicFields(template: IMongoEntityTemplatePopulated) {
-        const { createdAt, updatedAt, _id, ...rest } = template;
+        const { createdAt, updatedAt, _id, disabled, ...rest } = template;
         return rest;
     }
 
@@ -463,7 +463,7 @@ export class TemplatesManager {
         let templateEnumFieldValues = [...values.options];
         if (update) templateEnumFieldValues[valueIndex] = field;
         else templateEnumFieldValues = templateEnumFieldValues.filter((_, index) => valueIndex !== index);
-        const templateWithoutProperties: IEntityTemplatePopulated = this.removeBasicFields(template);
+        const templateWithoutProperties: Omit<IEntityTemplatePopulated, 'disabled'> = this.removeBasicFields(template);
         if (template.enumPropertiesColors?.[values.name]?.[fieldValue] !== undefined) {
             let newFieldName: Record<string, string>;
             if (update)
@@ -511,7 +511,7 @@ export class TemplatesManager {
         templateEnumFieldValuesRB[index] = fieldValue;
         if (!templateWithoutProperties.properties.properties[values.name].items)
             template.properties.properties[values.name].enum = templateEnumFieldValuesRB;
-        const rollBackTemplateWithoutProperties: IEntityTemplatePopulated = this.removeBasicFields(template);
+        const rollBackTemplateWithoutProperties: Omit<IEntityTemplatePopulated, 'disabled'> = this.removeBasicFields(template);
         try {
             const rolledBackEntityTemplate = await EntityTemplateManagerService.updateEntityTemplate(id, {
                 ...rollBackTemplateWithoutProperties,

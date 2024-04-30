@@ -1,31 +1,23 @@
 import React, { MouseEventHandler } from 'react';
-import { Backdrop, Button, CircularProgress, Dialog, DialogActions, DialogTitle, ThemeProvider, Typography } from '@mui/material';
+import { Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Typography } from '@mui/material';
 import i18next from 'i18next';
-import { areYouSureTheme } from '../../theme';
 
 const AreYouSureDialog: React.FC<{
     open: boolean;
     handleClose: () => void;
     title?: string;
+    message?: React.ReactNode;
     isLoading?: boolean;
-    message?: string;
     onYes: MouseEventHandler;
     onNo?: MouseEventHandler;
-}> = ({ open, handleClose, title = i18next.t('areYouSureDialog.title'), isLoading = false, onYes, onNo, message }) => {
+}> = ({ open, handleClose, title = i18next.t('areYouSureDialog.title'), message, isLoading = false, onYes, onNo }) => {
     return (
         <Dialog open={open} onClose={handleClose}>
-            <Backdrop open={isLoading} style={{ zIndex: 999, backgroundColor: 'transparent' }} />
-            <DialogTitle sx={{ display: 'flex', flexDirection: 'column' }}>
-                {title}
-                {message && (
-                    <Typography variant="caption" color="textSecondary" width="100%">
-                        {message}
-                    </Typography>
-                )}
-            </DialogTitle>
+            <DialogTitle>{title}</DialogTitle>
+            {message && <DialogContent>{message}</DialogContent>}
             <DialogActions>
                 <Button onClick={onNo ?? handleClose}>{i18next.t('areYouSureDialog.no')}</Button>
-                <Button onClick={onYes} disabled={isLoading}>
+                <Button onClick={onYes} autoFocus disabled={isLoading}>
                     {i18next.t('areYouSureDialog.yes')}
                     {isLoading && <CircularProgress size={20} />}
                 </Button>
