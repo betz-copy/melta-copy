@@ -4,17 +4,35 @@ import { Document, Page, pdfjs } from 'react-pdf';
 import { isImage } from '../FilePreview/PreviewDialog';
 import FlexBox from '../FlexBox';
 import { IFile } from '../../interfaces/preview';
+import { useFilePreview } from '../../utils/useFilePreview';
 
 pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.js';
 
 const FileToPrint: React.FC<{
     file: IFile;
-    data: string | undefined;
-}> = ({ file, data }) => {
+    setSelectedFiles: React.Dispatch<React.SetStateAction<IFile[]>>;
+}> = ({ file, setSelectedFiles }) => {
     const [numOfPages, setNumOfPages] = useState(1);
     const fileRef = useRef<HTMLDivElement>(null);
     const [currentPage, setCurrentPage] = useState(1);
     const currentPageRef = useRef(currentPage);
+
+    const { data, refetch } = useFilePreview(file.id, file.contentType);
+
+    React.useEffect(() => {
+        setSelectedFiles((prevFilesToPrint) => {
+            return prevFilesToPrint.map((currFile) => {
+                if (currFile.id === file.id) {
+                    return {
+                        ...currFile,
+                        data,
+                        refetch,
+                    };
+                }
+                return currFile;
+            });
+        });
+    }, []);
 
     const onLoadSuccess = ({ numPages }: { numPages: number }) => {
         setNumOfPages(numPages);

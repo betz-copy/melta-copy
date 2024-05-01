@@ -19,8 +19,6 @@ const Print: React.FC<{
         connectionsTemplates: IConnectionTemplateOfExpandedEntity[];
     }[];
 }> = ({ entityTemplate, expandedEntity, categoriesWithConnectionsTemplates, connectionsTemplates }) => {
-    console.log({ expandedEntity });
-
     const [openModal, setOpenModal] = React.useState(false);
 
     const handleOpen = () => setOpenModal(true);
@@ -30,16 +28,12 @@ const Print: React.FC<{
 
     const [files, setFiles] = React.useState<IFile[]>([]);
     const [selectedFiles, setSelectedFiles] = React.useState(files);
-    console.log({ selectedFiles });
 
     const [selected, setSelected] = React.useState(connectionsTemplates);
     const [showDate, setShowDate] = React.useState(true);
     const [showDisabled, setShowDisabled] = React.useState(true);
     const [showEntityDates, setShowEntityDates] = React.useState(true);
     const [showPreviewPropertiesOnly, setShowPreviewPropertiesOnly] = React.useState(false);
-
-    const [isLoading, setIsLoading] = React.useState<Set<string>>();
-    const [isError, setIsError] = React.useState(false);
 
     const handlePrint = useReactToPrint({
         content: () => componentRef.current,
@@ -64,7 +58,7 @@ const Print: React.FC<{
                     expandedEntity={expandedEntity}
                     connectionsTemplatesToPrint={selected}
                     filesToPrint={selectedFiles}
-                    filesSettings={{ isLoading, setIsLoading, setIsError }}
+                    setSelectedFiles={setSelectedFiles}
                     options={{ showDate, showDisabled, showEntityDates, showEntityFiles: selectedFiles.length !== 0, showPreviewPropertiesOnly }}
                 />
             </div>
@@ -81,12 +75,6 @@ const Print: React.FC<{
                     setFiles={setFiles}
                     selectedFiles={selectedFiles}
                     setSelectedFiles={setSelectedFiles}
-                    filesSettings={{
-                        isLoading: isLoading && isLoading.size > 0,
-                        setIsLoading,
-                        isError,
-                        setIsError,
-                    }}
                     categoriesWithConnectionsTemplates={categoriesWithConnectionsTemplates}
                     onClick={handlePrint}
                     options={{

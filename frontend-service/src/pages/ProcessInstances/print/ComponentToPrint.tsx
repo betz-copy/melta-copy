@@ -15,7 +15,7 @@ import { IPermissionsOfUser } from '../../../services/permissionsService';
 import { getStepTemplateByStepInstance } from '../../../utils/processWizard/steps';
 import { getProcessByIdRequest } from '../../../services/processesService';
 import { ProcessDetailsValues } from '../../../common/wizards/processInstance/ProcessDetails';
-import { FileData } from '../../../common/PrintFiles/FileData';
+import { FileToPrint } from '../../../common/PrintFiles/FileToPrint';
 
 const ComponentToPrint = React.forwardRef<
     HTMLDivElement,
@@ -26,17 +26,13 @@ const ComponentToPrint = React.forwardRef<
         setCurrProcessInstance: React.Dispatch<React.SetStateAction<IMongoProcessInstancePopulated>>;
         setIsProcessChanged: React.Dispatch<React.SetStateAction<boolean>>;
         filesToPrint: IFile[];
-        filesSettings: {
-            isLoading: Set<string> | undefined;
-            setIsLoading: React.Dispatch<React.SetStateAction<Set<string> | undefined>>;
-            setIsError: React.Dispatch<React.SetStateAction<boolean>>;
-        };
+        setFiles: React.Dispatch<React.SetStateAction<IFile[]>>;
         options: {
             showSummary: boolean;
             showFiles: boolean;
         };
     }
->(({ processTemplate, processInstance, options, filesToPrint, filesSettings, mutateAsync, setCurrProcessInstance, setIsProcessChanged }, ref) => {
+>(({ processTemplate, processInstance, options, filesToPrint, setFiles, mutateAsync, setCurrProcessInstance, setIsProcessChanged }, ref) => {
     const theme = useTheme();
     const queryClient = useQueryClient();
     const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
@@ -139,7 +135,7 @@ const ComponentToPrint = React.forwardRef<
                         <BlueTitle title={i18next.t('entityPage.print.appendices')} component="h2" variant="h2" style={{ marginTop: '2rem' }} />
                     </Grid>
                     {filesToPrint.map((file) => {
-                        return <FileData file={file} key={file.id} filesSettings={filesSettings} />;
+                        return <FileToPrint file={file} key={`${file.id}-${file.contentType}`} setSelectedFiles={setFiles} />;
                     })}
                 </>
             )}

@@ -27,12 +27,6 @@ const PrintOptionsDialog: React.FC<{
     setFiles: React.Dispatch<React.SetStateAction<IFile[]>>;
     selectedFiles: IFile[];
     setSelectedFiles: React.Dispatch<React.SetStateAction<IFile[]>>;
-    filesSettings: {
-        isLoading: boolean | undefined;
-        setIsLoading: React.Dispatch<React.SetStateAction<Set<string> | undefined>>;
-        isError: boolean;
-        setIsError: React.Dispatch<React.SetStateAction<boolean>>;
-    };
     categoriesWithConnectionsTemplates: {
         category: IMongoCategory;
         connectionsTemplates: {
@@ -63,13 +57,10 @@ const PrintOptionsDialog: React.FC<{
     setFiles,
     selectedFiles,
     setSelectedFiles,
-    filesSettings,
     categoriesWithConnectionsTemplates,
     onClick,
     options,
 }) => {
-    console.log({ filesSettings });
-
     const getEntityFiles = React.useCallback((): IFile[] => {
         return entityTemplate.propertiesOrder
             .map((propertyKey) => {
@@ -106,18 +97,59 @@ const PrintOptionsDialog: React.FC<{
     React.useEffect(() => {
         const currFiles = getEntityFiles().filter((file) => !isVideoOrAudio(file.contentType) && !isUnsupported(file.contentType));
         setFiles(currFiles);
-        setSelectedFiles(currFiles);
-        console.log({ currFiles });
+        setSelectedFiles([]);
     }, [getEntityFiles, setFiles, setSelectedFiles]);
 
+    // React.useEffect(() => {
+    //     if (isError) {
+    //         setSelectedFiles([]);
+    //         // filesSettings.setIsError(false);
+    //         // filesSettings.setIsLoading(undefined);
+    //         toast.error(i18next.t('errorPage.filePrintError'));
+    //     }
+    // }, [isError, setSelectedFiles]);
+
+    let isLoading = false;
+    const handlePrint = async () => {
+        const refetchPromises = selectedFiles.map((file) => {
+            if (file.refetch) return file.refetch();
+            return undefined;
+        });
+        console.log({ selectedFiles });
+        console.log({ refetchPromises });
+
+        Promise.all(refetchPromises)
+            .then((arrRefetch) => {
+                console.log({ arrRefetch });
+                arrRefetch.forEach((refetch) => {
+                    if (!refetch) return;
+                    if (refetch.isError) {
+                        setSelectedFiles([]);
+                        toast.error(i18next.t('errorPage.filePrintError'));
+                        console.log('error');
+                    } else if (refetch.isLoading) {
+                        isLoading = true;
+                        console.log('loading');
+                    }
+                });
+
+                // else if (refetch.isSuccess) {
+                //     onClick(ev);
+                //     console.log('loading');
+                // }
+            })
+            .catch((error) => {
+                console.log('At least one promise rejected:', error);
+                setSelectedFiles([]);
+                toast.error(i18next.t('errorPage.filePrintError'));
+            });
+        // .finally(() => {
+        //     handleClose();
+        // });
+    };
     React.useEffect(() => {
-        if (filesSettings.isError) {
-            setSelectedFiles([]);
-            filesSettings.setIsError(false);
-            filesSettings.setIsLoading(undefined);
-            toast.error(i18next.t('errorPage.filePrintError'));
-        }
-    }, [filesSettings, filesSettings.isError, filesSettings.setIsError, filesSettings.setIsLoading, setSelectedFiles]);
+        handlePrint();
+    }, [selectedFiles]);
 
     return (
         <Dialog open={open} onClose={handleClose}>
@@ -221,14 +253,21 @@ const PrintOptionsDialog: React.FC<{
             <DialogActions style={{ paddingLeft: '24px' }}>
                 <Button
                     onClick={(ev) => {
+                        // if (isError) {
+                        //     setSelectedFiles([]);
+                        //     // filesSettings.setIsError(false);
+                        //     // filesSettings.setIsLoading(undefined);
+                        //     toast.error(i18next.t('errorPage.filePrintError'));
+                        // } else {
                         handleClose();
                         onClick(ev);
+                        // }
                     }}
                     endIcon={<PrintOutlined />}
-                    disabled={filesSettings.isLoading}
+                    disabled={isLoading}
                 >
                     {i18next.t('entityPage.print.continue')}
-                    {filesSettings.isLoading && <CircularProgress size={20} />}
+                    {isLoading && <CircularProgress size={20} />}
                 </Button>
             </DialogActions>
         </Dialog>

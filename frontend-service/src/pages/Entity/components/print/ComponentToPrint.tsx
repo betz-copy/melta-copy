@@ -7,8 +7,8 @@ import { IEntityExpanded } from '../../../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { EntityComponentToPrint } from './EntityComponentToPrint';
 import { IConnectionTemplateOfExpandedEntity } from '../..';
-import { FileData } from '../../../../common/PrintFiles/FileData';
 import { IFile } from '../../../../interfaces/preview';
+import { FileToPrint } from '../../../../common/PrintFiles/FileToPrint';
 
 const ComponentToPrint = React.forwardRef<
     HTMLDivElement,
@@ -17,11 +17,7 @@ const ComponentToPrint = React.forwardRef<
         expandedEntity: IEntityExpanded;
         connectionsTemplatesToPrint: IConnectionTemplateOfExpandedEntity[];
         filesToPrint: IFile[];
-        filesSettings: {
-            isLoading: Set<string> | undefined;
-            setIsLoading: React.Dispatch<React.SetStateAction<Set<string> | undefined>>;
-            setIsError: React.Dispatch<React.SetStateAction<boolean>>;
-        };
+        setSelectedFiles: React.Dispatch<React.SetStateAction<IFile[]>>;
         options: {
             showDate: boolean;
             showDisabled: boolean;
@@ -30,9 +26,7 @@ const ComponentToPrint = React.forwardRef<
             showPreviewPropertiesOnly: boolean;
         };
     }
->(({ entityTemplate, expandedEntity, connectionsTemplatesToPrint, options, filesToPrint, filesSettings }, ref) => {
-    console.log({ filesToPrint });
-
+>(({ entityTemplate, expandedEntity, connectionsTemplatesToPrint, options, filesToPrint, setSelectedFiles }, ref) => {
     const theme = useTheme();
 
     const queryClient = useQueryClient();
@@ -146,7 +140,7 @@ const ComponentToPrint = React.forwardRef<
                         <BlueTitle title={i18next.t('entityPage.print.appendices')} component="h2" variant="h2" style={{ marginTop: '2rem' }} />
                     </Grid>
                     {filesToPrint.map((file) => {
-                        return <FileData file={file} key={`${file.id} - ${file.contentType}`} filesSettings={filesSettings} />;
+                        return <FileToPrint file={file} key={`${file.id}-${file.contentType}`} setSelectedFiles={setSelectedFiles} />;
                     })}
                 </>
             )}

@@ -2,7 +2,6 @@ import React from 'react';
 import { Dialog, DialogTitle, DialogContent, Grid, Button, FormControlLabel, DialogActions, IconButton, CircularProgress } from '@mui/material';
 import { PrintOutlined, CloseOutlined } from '@mui/icons-material';
 import i18next from 'i18next';
-import { toast } from 'react-toastify';
 import { MeltaCheckbox } from '../../../common/MeltaCheckbox';
 import { IFile } from '../../../interfaces/preview';
 import { getFileExtension, getPreviewContentType } from '../../../utils/getFileType';
@@ -18,12 +17,6 @@ const PrintOptionsDialog: React.FC<{
     processTemplate: IMongoProcessTemplatePopulated;
     files: IFile[];
     setFiles: React.Dispatch<React.SetStateAction<IFile[]>>;
-    filesSettings: {
-        isLoading: boolean;
-        setIsLoading: React.Dispatch<React.SetStateAction<Set<string> | undefined>>;
-        isError: boolean;
-        setIsError: React.Dispatch<React.SetStateAction<boolean>>;
-    };
     options: {
         showSummary: boolean;
         setShowSummary: React.Dispatch<React.SetStateAction<boolean>>;
@@ -31,9 +24,7 @@ const PrintOptionsDialog: React.FC<{
         setShowFiles: React.Dispatch<React.SetStateAction<boolean>>;
     };
     onClick: React.MouseEventHandler<HTMLButtonElement>;
-}> = ({ open, handleClose, processInstance, processTemplate, files, setFiles, filesSettings, onClick, options }) => {
-    console.log({ filesSettings });
-
+}> = ({ open, handleClose, processInstance, processTemplate, files, setFiles, onClick, options }) => {
     const getProcessPropertiesFiles = React.useCallback((): IFile[] => {
         return processTemplate.details.propertiesOrder
             .map((propertyKey) => {
@@ -111,14 +102,14 @@ const PrintOptionsDialog: React.FC<{
         }
     }, [processTemplate, processInstance, getProcessPropertiesFiles, getProcessStepsFiles, setFiles, options.showFiles]);
 
-    React.useEffect(() => {
-        if (filesSettings.isError) {
-            options.setShowFiles(false);
-            filesSettings.setIsLoading(undefined);
-            filesSettings.setIsError(false);
-            toast.error(i18next.t('errorPage.filePrintError'));
-        }
-    }, [filesSettings, filesSettings.isError, filesSettings.setIsError, filesSettings.setIsLoading, options, options.setShowFiles]);
+    // React.useEffect(() => {
+    //     if (isError) {
+    //         options.setShowFiles(false);
+    //         setIsLoading(undefined);
+    //         setIsError(false);
+    //         toast.error(i18next.t('errorPage.filePrintError'));
+    //     }
+    // }, [options, options.setShowFiles]);
 
     return (
         <Dialog open={open} onClose={handleClose}>
@@ -155,14 +146,21 @@ const PrintOptionsDialog: React.FC<{
             <DialogActions style={{ paddingLeft: '24px' }}>
                 <Button
                     onClick={(ev) => {
+                        // if (isError) {
+                        //     options.setShowFiles(false);
+                        //     setIsLoading(undefined);
+                        //     setIsError(false);
+                        //     toast.error(i18next.t('errorPage.filePrintError'));
+                        // } else {
                         handleClose();
                         onClick(ev);
+                        // }
                     }}
                     endIcon={<PrintOutlined />}
-                    disabled={filesSettings.isLoading}
+                    disabled={isLoading}
                 >
                     {i18next.t('entityPage.print.continue')}
-                    {filesSettings.isLoading && <CircularProgress size={20} />}
+                    {isLoading && <CircularProgress size={20} />}
                 </Button>
             </DialogActions>
         </Dialog>

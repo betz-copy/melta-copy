@@ -61,7 +61,7 @@ const Print: React.FC<{
                     processInstance={processInstance}
                     options={{ showSummary, showFiles }}
                     filesToPrint={files}
-                    filesSettings={{ isLoading: isFilesLoading, setIsLoading: setIsFilesLoading, setIsError: setIsFilesError }}
+                    setFiles={setFiles}
                     mutateAsync={mutateAsync}
                     setCurrProcessInstance={setCurrProcessInstance}
                     setIsProcessChanged={setIsProcessChanged}
@@ -75,12 +75,6 @@ const Print: React.FC<{
                     processTemplate={processTemplate}
                     files={files}
                     setFiles={setFiles}
-                    filesSettings={{
-                        isLoading: (isFilesLoading && isFilesLoading.size > 0) || isLoading,
-                        setIsLoading: setIsFilesLoading,
-                        isError: isFilesError,
-                        setIsError: setIsFilesError,
-                    }}
                     onClick={handlePrint}
                     options={{
                         showSummary,
