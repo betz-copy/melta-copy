@@ -151,6 +151,7 @@ export default {
     searchLabel: 'חיפוש שם תבנית',
     booleanOptions: { yes: 'כן', no: 'לא' },
     graph: {
+        filterEntity: 'סינון ישות',
         navigateToEntityPage: 'עבור לעמוד הפרט',
         navigateToGraph: 'עבור לגרף',
         center: 'מרכז',
@@ -162,7 +163,7 @@ export default {
         cancelHighlight: 'ביטול סימון',
         cancelAllHighlights: 'ביטול את כל הסימונים',
         reset: 'אפס גרף',
-        filterTemplates: 'סינון תבניות',
+        filter: 'סינון',
         noPreviewProperties: 'לא נבחרו שדות לתצוגה מצומצמת',
         '3DViewOff': 'השבת תצוגה בתלת מימד',
         '3DViewOn': 'הפעל תצוגה בתלת מימד',
@@ -172,6 +173,7 @@ export default {
             [environment.graphSettings.labelIcons.mainHighlighted.icon]: 'ישות מסומנת',
             [environment.graphSettings.labelIcons.highlighted.icon]: 'ישות מחוברת לישות מסומנת',
         },
+        filterField: 'סינון שדה',
     },
     pages: {
         globalSearch: 'חיפוש גלובלי',

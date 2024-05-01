@@ -7,9 +7,11 @@ import {
     ISearchResult,
     ISearchEntitiesOfTemplateBody,
     IExportEntitiesBody,
+    IGraphFilterBodyBatch,
 } from '../interfaces/entities';
 import { EntityWizardValues } from '../common/dialogs/entity';
 import { IRuleBreach } from '../interfaces/ruleBreaches/ruleBreach';
+import { filterModelToFilterOfGraph } from '../pages/Graph/GraphFilterToBackend';
 
 const { entities, relationships } = environment.api;
 
@@ -20,10 +22,22 @@ export const exportEntitiesRequest = async (body: IExportEntitiesBody) => {
 
 export const getExpandedEntityByIdRequest = async (
     entityId: string,
-    options?: { disabled?: boolean; templateIds: string[]; numberOfConnections?: number },
+    expandedParams: { [key: string]: number },
+    options?: {
+        disabled?: boolean;
+        templateIds: string[];
+    },
+    filterRecord: IGraphFilterBodyBatch = {},
 ) => {
-    const { data } = await axios.post<IEntityExpanded>(`${entities}/expanded/${entityId}`, options);
-    return data;
+    const filters = filterModelToFilterOfGraph(filterRecord);
+    const batch = (
+        await axios.post<IEntityExpanded>(`${entities}/expanded/${entityId}`, {
+            ...options,
+            expandedParams,
+            filters,
+        })
+    ).data;
+    return batch;
 };
 
 export const getRelationshipInstancesCountByTemplateIdRequest = async (templateId: string) => {

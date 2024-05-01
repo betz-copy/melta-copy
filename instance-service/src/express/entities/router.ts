@@ -2,7 +2,13 @@ import { Router } from 'express';
 import EntityController from './controller';
 import { wrapController, wrapMiddleware } from '../../utils/express';
 import ValidateRequest from '../../utils/joi';
-import { validateEntity, validateConstraintsOfTemplate, validateSearchBatchBody, validateSearchEntitiesOfTemplateBody } from './validator.template';
+import {
+    validateEntity,
+    validateConstraintsOfTemplate,
+    validateSearchBatchBody,
+    validateSearchEntitiesOfTemplateBody,
+    validateFilterBatchBody,
+} from './validator.template';
 import {
     deleteEntityByIdRequestSchema,
     deleteEntitiesByTemplateIdRequestSchema,
@@ -13,9 +19,9 @@ import {
     getAllConstraintsRequestSchema,
     updateEntityStatusByIdRequestSchema,
     updateConstraintsOfTemplateRequestSchema,
-    getExpandedEntityByIdRequestSchema,
     searchEntitiesBatchRequestSchema,
     searchEntitiesOfTemplateRequestSchema,
+    getExpandedGraphByIdRequestSchema,
     enumerateNewSerialNumberFieldsRequestSchema,
 } from './validator.schema';
 
@@ -52,7 +58,13 @@ entityRouter.post(
     wrapController(EntityController.searchEntitiesBatch),
 );
 
-entityRouter.post('/expanded/:id', ValidateRequest(getExpandedEntityByIdRequestSchema), wrapController(EntityController.getExpandedEntityById));
+entityRouter.post(
+    '/expanded/:id',
+    ValidateRequest(getExpandedGraphByIdRequestSchema),
+    wrapMiddleware(validateFilterBatchBody),
+    wrapController(EntityController.getExpandedGraphById),
+);
+
 entityRouter.post('/', ValidateRequest(createEntityRequestSchema), wrapMiddleware(validateEntity), wrapController(EntityController.createEntity));
 entityRouter.get('/:id', ValidateRequest(getEntityByIdRequestSchema), wrapController(EntityController.getEntityById));
 entityRouter.delete('/:id', ValidateRequest(deleteEntityByIdRequestSchema), wrapController(EntityController.deleteEntityById));
