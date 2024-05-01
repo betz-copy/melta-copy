@@ -74,7 +74,6 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTem
     const propertiesOrder: string[] = [];
     const attachmentPropertiesOrder: string[] = [];
     const propertiesPreview: string[] = [];
-    const uniqueConstraint: string[] = []; // UI supports only single unique constraint
     const schema: IEntityTemplate['properties'] = {
         type: 'object',
         properties: {},
@@ -99,7 +98,6 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTem
             calculateTime,
             serialStarter,
             hide,
-            unique,
         }) => {
             let propertyType: IEntitySingleProperty['type'];
             switch (type) {
@@ -138,7 +136,6 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTem
 
             if (required) schema.required.push(name);
             if (hide) schema.hide.push(name);
-            if (unique) uniqueConstraint.push(name);
             if (preview) propertiesPreview.push(name);
             if (type === 'serialNumber') serialsUniqueConstraints.push([name]);
 
@@ -178,9 +175,6 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTem
         if (required) schema.required.push(name);
     });
 
-    // const uniqueConstraints = uniqueConstraint.length > 0 ? [uniqueConstraint, ...serialsUniqueConstraints] : serialsUniqueConstraints;
-    const uniqueConstraints = uniqueConstraint.length > 0 ? [{ groupName: 'uniqueGroup', properties: uniqueConstraint }] : [];
-
     return {
         ...restOfProperties,
         properties: schema,
@@ -192,7 +186,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTem
         propertiesTypeOrder,
         propertiesPreview,
         enumPropertiesColors,
-        uniqueConstraints,
+        uniqueConstraints: restOfProperties.uniqueConstraints || [],
     };
 };
 
@@ -216,7 +210,11 @@ const createEntityTemplateRequest = async (newEntityTemplate: EntityTemplateWiza
     formData.append('propertiesOrder', JSON.stringify(entityTemplate.propertiesOrder));
     formData.append('propertiesTypeOrder', JSON.stringify(entityTemplate.propertiesTypeOrder));
     formData.append('propertiesPreview', JSON.stringify(entityTemplate.propertiesPreview));
-    formData.append('uniqueConstraints', JSON.stringify(entityTemplate.uniqueConstraints));
+    const uniqueConstraints = entityTemplate.uniqueConstraints.map((constraint) => ({
+        groupName: constraint.groupName,
+        properties: constraint.properties,
+    }));
+    formData.append('uniqueConstraints', JSON.stringify(uniqueConstraints));
 
     const { data } = await axios.post<IMongoEntityTemplatePopulated>(entityTemplates, formData);
     return data;
@@ -254,7 +252,11 @@ const updateEntityTemplateRequest = async (entityTemplateId: string, updatedEnti
     formData.append('propertiesOrder', JSON.stringify(entityTemplate.propertiesOrder));
     formData.append('propertiesTypeOrder', JSON.stringify(entityTemplate.propertiesTypeOrder));
     formData.append('propertiesPreview', JSON.stringify(entityTemplate.propertiesPreview));
-    formData.append('uniqueConstraints', JSON.stringify(entityTemplate.uniqueConstraints));
+    const uniqueConstraints = entityTemplate.uniqueConstraints.map((constraint) => ({
+        groupName: constraint.groupName,
+        properties: constraint.properties,
+    }));
+    formData.append('uniqueConstraints', JSON.stringify(uniqueConstraints));
 
     const { data } = await axios.put<IMongoEntityTemplatePopulated>(`${entityTemplates}/${entityTemplateId}`, formData);
     return data;

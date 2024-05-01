@@ -121,7 +121,11 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
             const existingGroup = uniqueConstraints?.find((group) => group.groupName === uniqueGroupName);
             if (!existingGroup) {
                 const newGroup = { groupName: uniqueGroupName, properties: [value.name] };
-                const updatedConstraints = uniqueConstraints ? [...uniqueConstraints, newGroup] : [newGroup];
+                const updatedConstraints = uniqueConstraints!.map((group) => ({
+                    ...group,
+                    properties: group.properties.filter((prop) => prop !== value.name),
+                }));
+                updatedConstraints.push(newGroup);
                 setUniqueConstraints!(updatedConstraints);
                 setIsProcessing(true);
                 setAddUniqueGroupCheckBox(true);
@@ -131,15 +135,28 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     };
 
     const addToProperties = (selectedGroupName) => {
-        const existingGroup = uniqueConstraints?.find((group) => group.groupName === uniqueGroupName);
-        const propertyExists = uniqueConstraints?.some((group) => group.properties.includes(value.name));
+        const existingGroup = uniqueConstraints?.find((group) => group.groupName === selectedGroupName);
+        const propertyExists = existingGroup?.properties.includes(value.name);
 
-        if (!existingGroup && !propertyExists) {
+        if (!existingGroup) {
+            const newGroup = {
+                groupName: selectedGroupName,
+                properties: [value.name],
+            };
+            const updatedConstraints = uniqueConstraints ? [...uniqueConstraints, newGroup] : [newGroup];
+            setUniqueConstraints!(updatedConstraints);
+        } else if (!propertyExists) {
             const updatedConstraints = uniqueConstraints!.map((group) => {
                 if (group.groupName === selectedGroupName) {
                     return {
                         ...group,
                         properties: [...group.properties, value.name],
+                    };
+                }
+                if (group.properties.includes(value.name)) {
+                    return {
+                        ...group,
+                        properties: group.properties.filter((prop) => prop !== value.name),
                     };
                 }
                 return group;
@@ -174,6 +191,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
         });
         setUniqueGroupName('');
         setUniqueConstraints!(updatedConstraints);
+        setIsProcessing(false);
     };
 
     console.log({ uniqueConstraints });
@@ -518,7 +536,12 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                         control={
                                                             <Checkbox
                                                                 checked={addUniqueGroupCheckBox}
-                                                                onChange={(e) => setAddUniqueGroupCheckBox(e.target.checked)}
+                                                                onChange={(e) => {
+                                                                    setAddUniqueGroupCheckBox(e.target.checked);
+                                                                    if (!e.target.checked) {
+                                                                        deletePropFromUniqueConstraints(uniqueGroupName, value.name);
+                                                                    }
+                                                                }}
                                                                 name="addUniqueGroupCheckbox"
                                                             />
                                                         }
@@ -530,20 +553,6 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                         <Grid container direction="row" paddingBottom="10px">
                                                             {createUniqueGroup ? (
                                                                 <>
-                                                                    <IconButton
-                                                                        aria-label="close"
-                                                                        onClick={() => deleteUniqueGroup(uniqueGroupName)}
-                                                                        disabled={
-                                                                            !uniqueConstraints?.some(
-                                                                                (group) =>
-                                                                                    group.groupName === uniqueGroupName &&
-                                                                                    group.properties.includes(value.name),
-                                                                            )
-                                                                        }
-                                                                    >
-                                                                        <CloseIcon />
-                                                                    </IconButton>
-
                                                                     <TextField
                                                                         label={i18next.t('wizard.entityTemplate.uniqueGroupName')}
                                                                         value={uniqueGroupName}
@@ -595,10 +604,8 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                     ) && (
                                                                         <IconButton
                                                                             aria-label="delete"
-                                                                            onClick={() => {
-                                                                                deletePropFromUniqueConstraints(uniqueGroupName, value.name);
-                                                                                setUniqueGroupName('');
-                                                                            }}
+                                                                            onClick={() => deleteUniqueGroup(uniqueGroupName)}
+                                                                            style={{ marginLeft: '10px' }}
                                                                         >
                                                                             <DeleteIcon />
                                                                         </IconButton>
@@ -620,18 +627,6 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                         </Grid>
                                                     </>
                                                 )}
-
-                                                {/* {!addUniqueGroupCheckBox &&
-                                                    setUniqueConstraints!((prevConstraints) => {
-                                                        const newConstraints = [
-                                                            ...prevConstraints,
-                                                            {
-                                                                groupName: value.name,
-                                                                properties: [value.name],
-                                                            },
-                                                        ];
-                                                        return newConstraints;
-                                                    })} */}
                                             </Grid>
                                         )}
                                     </Grid>

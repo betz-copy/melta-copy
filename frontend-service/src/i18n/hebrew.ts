@@ -357,6 +357,7 @@ export default {
             createOrAddUniqueGroup: 'הוסף או צור קבוצת יחודיים',
             uniqueGroupName: 'שם קבוצה',
             addUniqueGrouptoList: 'צור',
+            deleteUniqueGrouptoList: 'מחק',
         },
         relationshipTemplate: {
             title: 'יצירת תבנית קשר',

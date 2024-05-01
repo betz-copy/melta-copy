@@ -142,7 +142,6 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
             },
         },
     );
-    console.log('uniqueIndexxxxxx:', initialValues.uniqueConstraints);
 
     return (
         <Wizard

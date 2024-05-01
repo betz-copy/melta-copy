@@ -106,7 +106,6 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
 
         setFieldValue('propertiesTypeOrder', newPropertiesTypeOrder);
     };
-    // console.log('AddField:', values.uniqueConstraints);
     return (
         <DragDropContext onDragEnd={onDragEnd}>
             <Droppable droppableId="propertiesArea">
