@@ -182,11 +182,12 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                     return true;
                                                 })
                                                 .map((validType) => {
-                                                    return(
-                                                    <MenuItem key={validType} value={validType}>
-                                                        {i18next.t(`propertyTypes.${validType}`)}
-                                                    </MenuItem>
-                                                )})}
+                                                    return (
+                                                        <MenuItem key={validType} value={validType}>
+                                                            {i18next.t(`propertyTypes.${validType}`)}
+                                                        </MenuItem>
+                                                    );
+                                                })}
                                         </TextField>
                                     </Grid>
                                     <Grid item container justifyContent="space-between" flexWrap="nowrap">
@@ -234,7 +235,6 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                             });
                                                                         }}
                                                                         circleSize="1.6rem"
-                                                                        width="30rem"
                                                                         style={{ position: 'absolute', top: 4.5, left: 4.2, zIndex: 2000 }}
                                                                     />
                                                                 )}
