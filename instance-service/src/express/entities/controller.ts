@@ -25,10 +25,15 @@ class EntityController {
         res.json(await EntityManager.getEntityById(req.params.id));
     }
 
-    static async getExpandedEntityById(req: Request, res: Response) {
-        const { disabled, numberOfConnections, templateIds } = req.body;
-
-        res.json(await EntityManager.getExpandedEntityById(req.params.id, disabled as unknown as boolean, templateIds, numberOfConnections));
+    static async getExpandedGraphById(req: Request, res: Response) {
+        const entityTemplatesMap = fetchPropertyFromRequest<Map<string, IMongoEntityTemplate>>(req, 'entityTemplatesMap');
+        res.json(
+            await EntityManager.getExpandedGraphById(
+                req.params.id,
+                req.body,
+                entityTemplatesMap,
+            ),
+        );
     }
 
     static async deleteEntityById(req: Request, res: Response) {

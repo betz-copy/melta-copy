@@ -53,6 +53,7 @@ InstancesRouter.post(
     wrapController(InstancesController.exportEntities),
 );
 InstancesRouter.get('/entities/:id', wrapMiddleware(validateUserCanReadEntityInstance), InstanceManagerProxy);
+
 InstancesRouter.post(
     '/entities/expanded/:id',
     wrapMiddleware(validateUserCanReadEntityInstance),
@@ -60,6 +61,7 @@ InstancesRouter.post(
     wrapMiddleware(InstancesController.viewEntityInstance),
     InstanceManagerProxy,
 );
+
 InstancesRouter.post(
     '/entities',
     multer({ dest: config.service.uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).any(),
