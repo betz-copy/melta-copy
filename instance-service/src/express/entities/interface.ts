@@ -93,3 +93,11 @@ export interface ISearchBatchBody {
     };
     sort: ISearchSort;
 }
+
+
+export interface IGetExpandedEntityBody {
+    disabled: boolean | null;
+    templateIds: string[];
+    expandedParams: { [entityId: string]: number };
+    filters: {[templateId: string]: { filter?: ISearchFilter<Record<string, any>>; showRelationships: boolean };}
+}

@@ -120,7 +120,7 @@ const ConnectionsTable: React.FC<{
             return;
         }
         queryClient.setQueryData<IEntityExpanded>(
-            ['getExpandedEntity', expandedEntity.entity.properties._id, { templateIds, numberOfConnections: 1 }],
+            ['getExpandedEntity', expandedEntity.entity.properties._id, { templateIds }, { [expandedEntity.entity.properties._id]: 1 }],
             (prevEntityExpanded) => {
                 return {
                     ...prevEntityExpanded!,
@@ -286,8 +286,9 @@ const Entity: React.FC = () => {
 
     const templateIds = Array.from(entityTemplates.keys());
 
-    const { data: expandedEntity } = useQuery(['getExpandedEntity', entityId, { templateIds, numberOfConnections: 1 }], () =>
-        getExpandedEntityByIdRequest(entityId!, { templateIds, numberOfConnections: 1 }),
+    const expanded = entityId ? { [entityId]: 1 } : {};
+    const { data: expandedEntity } = useQuery(['getExpandedEntity', entityId, expanded, { templateIds }], () =>
+        getExpandedEntityByIdRequest(entityId!, expanded, { templateIds }),
     );
 
     const [value, setValue] = useState('0');

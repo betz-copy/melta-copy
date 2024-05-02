@@ -140,10 +140,11 @@ const CreateOrEditEntityDetails: React.FC<{
                 // eslint-disable-next-line react-hooks/rules-of-hooks
                 useEffect(() => {
                     schema.required.forEach((field) => {
-                        const properties = schema.properties[field].enum;
+                        const fieldPropertiesEnum = schema.properties[field].enum;
                         const itemFieldProperties = schema.properties[field]?.items?.enum;
-                        if (properties?.length === 1 && properties[0] !== undefined) {
-                            setFieldValue(`properties.${field}`, properties[0]);
+
+                        if (fieldPropertiesEnum?.length === 1 && fieldPropertiesEnum[0] !== undefined) {
+                            setFieldValue(`properties.${field}`, fieldPropertiesEnum[0]);
                         }
                         if (itemFieldProperties?.length === 1 && itemFieldProperties[0] !== undefined) {
                             setFieldValue(`properties.${field}`, [itemFieldProperties[0]]);

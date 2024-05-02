@@ -130,10 +130,10 @@ export const normalizeReturnedDeletedRelationship = (result: QueryResult) => {
 const doesPathContainDisabledNode = (path: (Node | Relationship)[], disabled: boolean) => {
     return path.slice(1).some((pathPart) => {
         const isNode = 'labels' in pathPart;
-
         return isNode && !pathPart.properties.disabled === disabled;
     });
 };
+
 
 export const normalizeReturnedRelAndEntities =
     (disabled: boolean | null) =>

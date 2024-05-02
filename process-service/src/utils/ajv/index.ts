@@ -5,6 +5,7 @@ import { ProcessPropertyFormats } from '../../express/templates/processes/interf
 const ajv = new Ajv();
 ajv.addFormat(ProcessPropertyFormats.FileId, /.*/);
 ajv.addFormat(ProcessPropertyFormats.EntityReference, /.*/);
+ajv.addFormat('text-area', /.*/);
 addFormats(ajv);
 ajv.addVocabulary(['patternCustomErrorMessage']);
 

@@ -66,6 +66,7 @@ export default {
         deleteOrArcivhed: 'מחיקה או שליחה לארכיון',
         unArchived: 'הוצא מארכיון',
         archived: 'הכנס לארכיון',
+        viewMore: 'הצג עוד...',
     },
     entityPage: {
         deleteRelationshipPopoverText: 'מחק קשר',
@@ -151,6 +152,7 @@ export default {
     searchLabel: 'חיפוש שם תבנית',
     booleanOptions: { yes: 'כן', no: 'לא' },
     graph: {
+        filterEntity: 'סינון ישות',
         navigateToEntityPage: 'עבור לעמוד הפרט',
         navigateToGraph: 'עבור לגרף',
         center: 'מרכז',
@@ -162,7 +164,7 @@ export default {
         cancelHighlight: 'ביטול סימון',
         cancelAllHighlights: 'ביטול את כל הסימונים',
         reset: 'אפס גרף',
-        filterTemplates: 'סינון תבניות',
+        filter: 'סינון',
         noPreviewProperties: 'לא נבחרו שדות לתצוגה מצומצמת',
         '3DViewOff': 'השבת תצוגה בתלת מימד',
         '3DViewOn': 'הפעל תצוגה בתלת מימד',
@@ -172,6 +174,7 @@ export default {
             [environment.graphSettings.labelIcons.mainHighlighted.icon]: 'ישות מסומנת',
             [environment.graphSettings.labelIcons.highlighted.icon]: 'ישות מחוברת לישות מסומנת',
         },
+        filterField: 'סינון שדה',
     },
     pages: {
         globalSearch: 'חיפוש גלובלי',
@@ -507,6 +510,7 @@ export default {
     },
     validation: {
         required: 'חובה',
+        mustBeEqualToFormat: 'חייב להיות בפורמט',
         preview: 'תצוגה מצומצמת',
         hide: 'הסתר',
         unique: 'ייחודי',
@@ -535,7 +539,7 @@ export default {
         stepDisplayNameExists: 'קיים שלב עם שם לתצוגה זהה',
     },
     propertyTypes: {
-        string: 'מחרוזת',
+        string: 'טקסט',
         number: 'מספר',
         boolean: 'בולאני',
         date: 'תאריך',
@@ -549,6 +553,7 @@ export default {
         serialNumber: 'מספר סידורי',
         enumArray: 'רשימה מרובה',
         array: 'מערך',
+        'text-area': 'טקסט ארוך',
         fileId: 'קובץ יחיד',
         multipleFiles: 'קבצים מרובים',
     },

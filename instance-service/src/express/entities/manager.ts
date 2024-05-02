@@ -1,3 +1,4 @@
+/* eslint-disable no-await-in-loop */
 import { Neo4jError, Transaction } from 'neo4j-driver';
 import pickBy from 'lodash.pickby';
 import differenceWith from 'lodash.differencewith';
@@ -19,6 +20,7 @@ import {
     IConstraint,
     IConstraintsOfTemplate,
     IEntity,
+    IGetExpandedEntityBody,
     IRequiredConstraint,
     ISearchBatchBody,
     ISearchEntitiesOfTemplateBody,
@@ -35,6 +37,7 @@ import { RelationshipsTemplateManagerService } from '../../externalServices/rela
 import { addStringFieldsAndNormalizeDateValues } from './validator.template';
 import { arraysEqualsNonOrdered } from '../../utils/lib';
 import { searchWithRelationshipsToNeoQuery } from '../../utils/neo4j/searchBodyToNeoQuery';
+import { getExpandedFilteredGraphRecursively, expandEntityToNeoQuery } from '../../utils/neo4j/getExpandedEntityByIdRecursive';
 
 export class EntityManager {
     private static throwServiceErrorIfFailedConstraintsValidation(err: unknown): never {
@@ -168,24 +171,36 @@ export class EntityManager {
 
         return node;
     }
-    static async getExpandedEntityById(id: string, disabled: boolean | null, templateIds: string[], numOfConnections: number) {
-        const nodeAndConnections = await Neo4jClient.readTransaction(
-            `MATCH (p {_id:'${id}'})
-             CALL apoc.path.expandConfig(p, {
-                labelFilter: '${templateIds.join('|')}',
-                minLevel: 0,
-                maxLevel: ${numOfConnections}
-             })
-             YIELD path
-             RETURN apoc.path.elements(path)`,
-            normalizeReturnedRelAndEntities(disabled),
-        );
 
-        if (!nodeAndConnections) {
+    static async getExpandedGraphById(
+        id: string,
+        reqBody: IGetExpandedEntityBody,
+        entityTemplatesMap: Map<string, IMongoEntityTemplate>,
+    ) {
+        const { disabled, templateIds, expandedParams, filters } = reqBody;
+        const fixSearchBody = filters ?? {};
+        const initialCypherQuery = await expandEntityToNeoQuery(fixSearchBody, id, templateIds, expandedParams, entityTemplatesMap, id);
+        const initialExpandedEntity = await Neo4jClient.readTransaction(
+            initialCypherQuery.cypherQuery,
+            normalizeReturnedRelAndEntities(disabled),
+            initialCypherQuery.parameters,
+        );
+        if (!initialExpandedEntity) {
             throw new NotFoundError(`[NEO4J] entity "${id}" not found`);
         }
+        if (JSON.stringify(expandedParams) === '{}') {
+            return initialExpandedEntity;
+        }
 
-        return nodeAndConnections;
+        const filterRes = await getExpandedFilteredGraphRecursively(
+            disabled || null,
+            initialExpandedEntity,
+            fixSearchBody,
+            templateIds,
+            expandedParams,
+            entityTemplatesMap,
+        );
+        return filterRes;
     }
 
     static async deleteEntityById(id: string, deleteAllRelationships: boolean) {

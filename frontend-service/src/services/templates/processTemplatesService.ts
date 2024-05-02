@@ -13,7 +13,7 @@ import {
 
 const { processTemplates } = environment.api;
 export const basePropertyTypes = ['string', 'number', 'boolean', 'array'];
-export const stringFormats = ['date', 'date-time', 'email', 'entityReference', 'fileId'];
+export const stringFormats = ['date', 'date-time', 'email', 'entityReference', 'fileId', 'text-area'];
 
 const processTemplateObjectToProcessTemplateForm = (
     processTemplate: IMongoProcessTemplatePopulated | null,
@@ -117,13 +117,12 @@ const createFileAttachmentProperty = (type: string, required: boolean): any => {
             },
             ...(required && { required: true }),
         };
-    } else {
-        return {
-            type: 'string',
-            format: 'fileId',
-            ...(required && { required: true }),
-        };
     }
+    return {
+        type: 'string',
+        format: 'fileId',
+        ...(required && { required: true }),
+    };
 };
 
 const addAttachmentProperties = (
