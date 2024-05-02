@@ -1,7 +1,10 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
-import { IconButton, Grid, Popover } from '@mui/material';
+import { IconButton, Grid, Popover, Typography } from '@mui/material';
+import i18next from 'i18next';
 import { ColoredEnumChip } from '../../common/ColoredEnumChip';
+import { VerifyLink } from '../../common/VerifyLink';
+import { getFirstLine, getNumLines, containsHTMLTags, renderHTML } from '../HtmlTagsStringValue';
 import { CalculateDateDifference } from './CalculateDateDifference';
 
 const Value: React.FC<{
@@ -11,14 +14,23 @@ const Value: React.FC<{
     isNumberField?: boolean;
     calculateTime?: boolean;
 }> = ({ hideValue, value, color, isNumberField, calculateTime }) => {
+    const containsHtmlTags = containsHTMLTags(value);
     const [hideField, setHideField] = React.useState(true);
-    const [anchorEl, setAnchorEl] = React.useState<HTMLDivElement | null>(null);
+    const [anchorEl, setAnchorEl] = React.useState<HTMLDivElement | HTMLButtonElement | null>(null);
+    const [numLines, setNumLines] = useState(0);
+
+    useEffect(() => {
+        if (containsHtmlTags) {
+            const totalNumLines = getNumLines(value);
+            setNumLines(totalNumLines);
+        }
+    }, [containsHtmlTags, value]);
 
     const handleClick = () => {
         setHideField((curr) => !curr);
     };
 
-    const handleDoubleClick = (event: React.MouseEvent<HTMLDivElement>) => {
+    const handleDoubleClick = (event: React.MouseEvent<HTMLDivElement | HTMLButtonElement>) => {
         setAnchorEl(event.currentTarget);
     };
 
@@ -31,8 +43,14 @@ const Value: React.FC<{
     let innerContent;
     if (hideValue && hideField) innerContent = <>••••••••</>;
     else if (color || color === 'default') innerContent = <ColoredEnumChip label={value} color={color} />;
+    else if (containsHtmlTags) innerContent = getFirstLine(value);
     else if (calculateTime && value) innerContent = <CalculateDateDifference date={value} />;
-    else innerContent = value;
+    else innerContent = <VerifyLink>{value} </VerifyLink>;
+
+    let popoverText;
+    if (containsHtmlTags) popoverText = renderHTML(value);
+    else if (calculateTime) popoverText = <CalculateDateDifference date={value} />;
+    else popoverText = <VerifyLink>{value} </VerifyLink>;
 
     return (
         <Grid container justifyContent="space-between" alignItems="center">
@@ -49,6 +67,11 @@ const Value: React.FC<{
                 onDoubleClick={handleDoubleClick}
             >
                 {innerContent}
+                {(!hideValue || !hideField) && numLines > 1 && (
+                    <IconButton onClick={handleDoubleClick} disableRipple>
+                        <Typography style={{ color: '#9398C2', fontSize: '13px', lineHeight: '11.85px' }}>{i18next.t('actions.viewMore')}</Typography>
+                    </IconButton>
+                )}
             </Grid>
 
             <Popover
@@ -70,12 +93,12 @@ const Value: React.FC<{
                         maxWidth: '350px',
                         maxHeight: '200px',
                         overflow: 'auto',
-                        whiteSpace: 'pre-wrap',
+                        whiteSpace: containsHtmlTags ? 'normal' : 'pre-wrap',
                         fontWeight: 200,
                         fontSize: '15px',
                     }}
                 >
-                    {calculateTime ? <CalculateDateDifference date={value} /> : value}
+                    {popoverText}
                 </div>
             </Popover>
 

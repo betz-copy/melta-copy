@@ -66,6 +66,7 @@ export default {
         deleteOrArcivhed: 'מחיקה או שליחה לארכיון',
         unArchived: 'הוצא מארכיון',
         archived: 'הכנס לארכיון',
+        viewMore: 'הצג עוד...',
     },
     entityPage: {
         deleteRelationshipPopoverText: 'מחק קשר',
@@ -509,6 +510,7 @@ export default {
     },
     validation: {
         required: 'חובה',
+        mustBeEqualToFormat: 'חייב להיות בפורמט',
         preview: 'תצוגה מצומצמת',
         hide: 'הסתר',
         unique: 'ייחודי',
@@ -537,7 +539,7 @@ export default {
         stepDisplayNameExists: 'קיים שלב עם שם לתצוגה זהה',
     },
     propertyTypes: {
-        string: 'מחרוזת',
+        string: 'טקסט',
         number: 'מספר',
         boolean: 'בולאני',
         date: 'תאריך',
@@ -551,6 +553,7 @@ export default {
         serialNumber: 'מספר סידורי',
         enumArray: 'רשימה מרובה',
         array: 'מערך',
+        'text-area': 'טקסט ארוך',
         fileId: 'קובץ יחיד',
         multipleFiles: 'קבצים מרובים',
     },
