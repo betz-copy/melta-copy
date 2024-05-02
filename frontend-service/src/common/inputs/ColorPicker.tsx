@@ -1,31 +1,57 @@
-import React, { CSSProperties, useEffect } from 'react';
+import React, { CSSProperties, useEffect, useState } from 'react';
 import { Grid, IconButton } from '@mui/material';
-import { SliderPicker } from 'react-color';
+import { ChromePicker } from 'react-color';
 import { CloseOutlined as DeleteIcon } from '@mui/icons-material';
+import DoneIcon from '@mui/icons-material/Done';
 
 export interface IColorPickerProps {
     color?: string;
     onColorChange: (color?: string) => void;
-    width: CSSProperties['width'];
     initialColor?: boolean;
-    allowDelete?: boolean;
+    deleteAndDoneIcons?: boolean;
     style?: CSSProperties;
+    onClose?: () => void;
 }
 
-export const ColorPicker: React.FC<IColorPickerProps> = ({ color, onColorChange, width, initialColor = true, allowDelete = true, style }) => {
+export const ColorPicker: React.FC<IColorPickerProps> = ({
+    color,
+    onColorChange,
+    initialColor = true,
+    deleteAndDoneIcons = true,
+    style,
+    onClose,
+}) => {
+    const [selectedColor, setSelectedColor] = useState(color || '#40bfbc');
+
     useEffect(() => {
         if (initialColor && !color) {
             onColorChange('#40bfbc');
         }
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+    const handleChangeColor = (hex: string) => {
+        setSelectedColor(hex);
+        onColorChange(hex);
+    };
+
     return (
         <Grid container direction="column" alignItems="center" sx={style}>
-            <SliderPicker color={color} onChange={({ hex }) => onColorChange(hex)} styles={{ default: { hue: { width } } }} />
+            <Grid style={{ direction: 'ltr' }}>
+                <ChromePicker disableAlpha color={color} onChange={({ hex }) => handleChangeColor(hex)} />
+            </Grid>
 
-            {allowDelete && (
+            {deleteAndDoneIcons && (
                 <Grid item marginTop="0.8rem">
-                    <IconButton onClick={() => onColorChange()} sx={{ padding: '0.4rem' }}>
+                    <IconButton
+                        onClick={() => {
+                            onColorChange(selectedColor);
+                            onClose!();
+                        }}
+                        sx={{ padding: '0.4rem' }}
+                    >
+                        <DoneIcon />
+                    </IconButton>
+                    <IconButton onClick={() => onClose!()} sx={{ padding: '0.4rem' }}>
                         <DeleteIcon />
                     </IconButton>
                 </Grid>

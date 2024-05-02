@@ -1,3 +1,4 @@
+import i18next from 'i18next';
 import { ILabelIcon } from './utils/graph/helperTypes';
 import { NotificationType } from './interfaces/notifications';
 
@@ -84,11 +85,12 @@ export const environment = {
         },
     },
     entitiesCardsView: {
-        infiniteScrollPageCount: 10,
+        infiniteScrollPageCount: 12,
     },
     notifications: {
         updateInterval: 1000 * 60 * 10,
         infiniteScrollPageCount: 10,
+        titleColor: '#4752B6',
         groups: {
             requests: [NotificationType.ruleBreachRequest],
             general: [
@@ -101,11 +103,73 @@ export const environment = {
                 NotificationType.deleteProcess,
                 NotificationType.archivedProcess,
             ],
+            // colors: {
+            //     RuleBreachAlertNotification: '#4752B6',
+            //     RuleBreachRequestNotification: '#4752B6',
+            //     RuleBreachResponseNotification: '#4752B6',
+            //     NewProcessNotification: '#4752B6',
+            //     ProcessStatusUpdateNotification: '#4752B6',
+            //     ProcessReviewerUpdateNotification: '#4752B6',
+            //     DeleteProcessNotification: '#4752B6',
+            //     ArchiveProcessNotification: '#4752B6',
+            // },
+        },
+        notificationsMoreData: {
+            requests: [
+                {
+                    color: '#DD3500',
+                    type: NotificationType.ruleBreachRequest,
+                    displayName: () => i18next?.t('notifications.displayNames.ruleBreachRequest'),
+                },
+            ],
+            general: [
+                {
+                    type: NotificationType.dateAboutToExpire,
+                    displayName: () => i18next.t('notifications.displayNames.dateAboutToExpire'),
+                },
+                {
+                    color: ' #FFAC2F',
+                    type: NotificationType.ruleBreachAlert,
+                    displayName: () => i18next.t('notifications.displayNames.ruleBreachAlert'),
+                },
+                {
+                    color: '#DD3500',
+                    type: NotificationType.ruleBreachResponse,
+                    displayName: () => i18next.t('notifications.displayNames.ruleBreachResponse'),
+                },
+                {
+                    color: '#8FBC8F',
+                    type: NotificationType.archivedProcess,
+                    displayName: () => i18next.t('notifications.displayNames.archivedProcess'),
+                },
+                {
+                    color: '#FF6347',
+                    type: NotificationType.deleteProcess,
+                    displayName: () => i18next.t('notifications.displayNames.deleteProcess'),
+                },
+                {
+                    color: '#DA70D6',
+                    type: NotificationType.newProcess,
+                    displayName: () => i18next.t('notifications.displayNames.newProcess'),
+                },
+                {
+                    color: '#FFC0CB',
+                    type: NotificationType.processReviewerUpdate,
+                    displayName: () => i18next.t('notifications.displayNames.processReviewerUpdate'),
+                },
+                {
+                    color: '#7BE7FF',
+                    type: NotificationType.processStatusUpdate,
+                    displayName: () => i18next.t('notifications.displayNames.processStatusUpdate'),
+                },
+            ],
         },
     },
     agGrid: {
         rowCount: 5,
-        expandedRowCount: 10,
+        defaultExpandedRowCount: 13,
+        defaultRowHeight: 50,
+        defaultFontSize: 14,
     },
     activityLog: {
         infiniteScrollPageCount: 10,
@@ -126,6 +190,10 @@ export const environment = {
     mainFontSizes: {
         headlineTitleFontSize: '24px',
         headlineSubTitleFontSize: '14px',
+    },
+    smallPreviewHeight: {
+        number: '150',
+        unit: 'px',
     },
     iconSize: {
         width: '24px',

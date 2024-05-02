@@ -27,7 +27,6 @@ import { Draggable } from 'react-beautiful-dnd';
 import i18next from 'i18next';
 import isEqual from 'lodash.isequal';
 import EditIcon from '@mui/icons-material/Edit';
-import { ThemeProvider } from '@mui/material/styles';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { dateNotificationTypes, validPropertyTypes } from './AddFields';
@@ -38,7 +37,6 @@ import { deleteEnumFieldRequest, updateEnumFieldRequest } from '../../../service
 import { AreYouSureDialog } from '../../dialogs/AreYouSureDialog';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { MeltaTooltip } from '../../MeltaTooltip';
-import { areYouSureTheme } from '../../../theme';
 
 const UniqueCheckboxTooltipTitle = (
     <Box sx={{ whiteSpace: 'pre-wrap' }}>
@@ -116,6 +114,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     const errorOptions = errors?.options;
 
     const dateNotification = `properties[${index}].dateNotification`;
+    const calculateTime = `properties[${index}].calculateTime`;
     const touchedDateNotification = touched?.dateNotification;
     const errorDateNotification = errors?.dateNotification;
 
@@ -351,18 +350,18 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                     if (validPropertyType === 'entityReference') return supportEntityReferenceType;
                                                     if (validPropertyType === 'serialNumber') {
                                                         if (!supportSerialNumberType) return false;
-
-                                                        return !areThereAnyInstances;
                                                     }
                                                     if (validPropertyType === 'enumArray') return supportArrayFields;
-                                                    if (validPropertyType === 'fileId' || validPropertyType === 'fileIdArray') return false; // TODO: support file inputs
+                                                    if (validPropertyType === 'fileId' || validPropertyType === 'multipleFiles') return false; // TODO: support file inputs
                                                     return true;
                                                 })
-                                                .map((validType) => (
-                                                    <MenuItem key={validType} value={validType}>
-                                                        {i18next.t(`propertyTypes.${validType}`)}
-                                                    </MenuItem>
-                                                ))}
+                                                .map((validType) => {
+                                                    return (
+                                                        <MenuItem key={validType} value={validType}>
+                                                            {i18next.t(`propertyTypes.${validType}`)}
+                                                        </MenuItem>
+                                                    );
+                                                })}
                                         </TextField>
                                     </Grid>
                                     <Grid item container justifyContent="space-between" flexWrap="nowrap">
@@ -423,7 +422,6 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                                 });
                                                                             }}
                                                                             circleSize="1.6rem"
-                                                                            width="30rem"
                                                                             style={{
                                                                                 position: 'absolute',
                                                                                 top: 4.5,
@@ -471,6 +469,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                     PaperProps={{
                                                                         style: {
                                                                             zIndex: 10000,
+                                                                            borderRadius: '10px',
                                                                         },
                                                                     }}
                                                                 >
@@ -525,23 +524,6 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                         )}
                                                                     </Box>
                                                                 </Popover>
-                                                                <ThemeProvider theme={areYouSureTheme}>
-                                                                    <AreYouSureDialog
-                                                                        open={open || openDelete}
-                                                                        handleClose={() => {
-                                                                            setOpenDelete(false);
-                                                                            setOpen(false);
-                                                                        }}
-                                                                        onYes={() => {
-                                                                            if (openDelete) handleDelete(tagIndex);
-                                                                            else {
-                                                                                handleSaveEdit(editIndex!);
-                                                                            }
-                                                                        }}
-                                                                        isLoading={isLoading}
-                                                                        message={`${i18next.t('areYouSureDialog.enumChangeDisclaimer')} ${entity}`}
-                                                                    />
-                                                                </ThemeProvider>
                                                             </Box>
                                                         );
                                                     })
@@ -644,6 +626,21 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                     <NotificationsOffIcon />
                                                 </IconButton>
                                             ))}
+                                        <AreYouSureDialog
+                                            open={open || openDelete}
+                                            handleClose={() => {
+                                                setOpenDelete(false);
+                                                setOpen(false);
+                                            }}
+                                            onYes={() => {
+                                                if (openDelete && editIndex) handleDelete(editIndex);
+                                                else {
+                                                    handleSaveEdit(editIndex!);
+                                                }
+                                            }}
+                                            isLoading={isLoading}
+                                            body={`${i18next.t('areYouSureDialog.enumChangeDisclaimer')} ${entity}`}
+                                        />
                                     </Grid>
                                     <Grid item container justifyContent="space-between">
                                         <Box>
@@ -725,6 +722,19 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                         label={i18next.t('validation.unique')}
                                                     />
                                                 </MeltaTooltip>
+                                            )}
+                                            {(value.type === 'date' || value.type === 'date-time') && 'calculateTime' in value && (
+                                                <FormControlLabel
+                                                    control={
+                                                        <Switch
+                                                            id={calculateTime}
+                                                            name={calculateTime}
+                                                            onChange={onChange}
+                                                            checked={value.calculateTime ?? false}
+                                                        />
+                                                    }
+                                                    label={i18next.t('validation.calculateTime')}
+                                                />
                                             )}
                                         </Box>
 

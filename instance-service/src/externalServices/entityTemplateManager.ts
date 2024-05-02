@@ -19,6 +19,7 @@ export interface IEntitySingleProperty {
     pattern?: string;
     patternCustomErrorMessage?: string;
     dateNotification?: string;
+    calculateTime?: boolean;
     serialStarter?: number;
     serialCurrent?: number;
 }

@@ -3,7 +3,6 @@ import { Dialog, DialogTitle, DialogContent, IconButton } from '@mui/material';
 import { Close as CloseIcon } from '@mui/icons-material';
 import { Formik, Form, FormikProps, FormikConfig } from 'formik';
 import * as Yup from 'yup';
-// eslint-disable-next-line import/no-unresolved
 import { ObjectShape } from 'yup/lib/object';
 
 import { useSelector } from 'react-redux';

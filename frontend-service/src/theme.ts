@@ -7,6 +7,8 @@ const basicTheme: ThemeOptions = {
     },
 };
 
+export const sideBarTransition = 'all 0.3s linear';
+
 // // TODO - move to globals file
 // export const mainFontSizes = {
 //     headlineTitleFontSize: '24px',
@@ -18,32 +20,6 @@ const basicTheme: ThemeOptions = {
 //     height: '24px',
 // };
 
-export const areYouSureTheme = createTheme({
-    ...basicTheme,
-    palette: {
-        mode: 'light',
-        primary: { main: '#1E2775' },
-    },
-    components: {
-        MuiBackdrop: {
-            styleOverrides: {
-                root: {
-                    backgroundColor: 'rgba(0,0,0,0.1)',
-                },
-            },
-        },
-        MuiDialog: {
-            styleOverrides: {
-                paper: {
-                    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.05)',
-                    border: '1px solid #bdbdbd',
-                    borderRadius: '10px',
-                },
-            },
-        },
-    },
-});
-
 export const lightTheme = createTheme({
     ...basicTheme,
     palette: {
@@ -54,7 +30,7 @@ export const lightTheme = createTheme({
             styleOverrides: {
                 fontFamily: 'Rubik',
                 '::-webkit-scrollbar': { background: 'transparent', width: 6, height: 6 },
-                '::-webkit-scrollbar-thumb': { background: 'gray', borderRadius: 20 },
+                '::-webkit-scrollbar-thumb': { background: '#787C9E', borderRadius: 20 },
                 '::-webkit-scrollbar-track': { background: 'lightgray', borderRadius: 20 },
 
                 '.ag-theme-material': {

@@ -24,7 +24,7 @@ const normalizeFields = (properties: Record<string, any>): Record<string, any> =
         }
 
         if (value instanceof neo4j.types.LocalDateTime) {
-            props[key] = zonedTimeToUtc(new Date(value.toString()), 'Asia/Jerusalem');
+            props[key] = zonedTimeToUtc(new Date(value.toString()), 'Asia/Jerusalem').toISOString();
 
             return;
         }
@@ -130,10 +130,10 @@ export const normalizeReturnedDeletedRelationship = (result: QueryResult) => {
 const doesPathContainDisabledNode = (path: (Node | Relationship)[], disabled: boolean) => {
     return path.slice(1).some((pathPart) => {
         const isNode = 'labels' in pathPart;
-
         return isNode && !pathPart.properties.disabled === disabled;
     });
 };
+
 
 export const normalizeReturnedRelAndEntities =
     (disabled: boolean | null) =>

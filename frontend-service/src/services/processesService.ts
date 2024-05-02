@@ -1,5 +1,4 @@
 /* eslint-disable no-param-reassign */
-import partition from 'lodash.partition';
 import mapValues from 'lodash.mapvalues';
 import { IMongoStepInstancePopulated } from '../interfaces/processes/stepInstance';
 import axios from '../axios';
@@ -7,6 +6,7 @@ import { ProcessDetailsValues } from '../common/wizards/processInstance/ProcessD
 import { environment } from '../globals';
 import { IMongoProcessInstancePopulated, IReferencedEntityForProcess, ISearchProcessInstancesBody } from '../interfaces/processes/processInstance';
 import { ProcessStepValues } from '../common/wizards/processInstance/ProcessSteps';
+import { IMongoProcessTemplatePopulated } from '../interfaces/processes/processTemplate';
 
 const { processes } = environment.api;
 export const getProcessByIdRequest = async (processId: string) => {
@@ -24,7 +24,25 @@ const referencedEntityToEntityId = (entityReferences: Record<string, IReferenced
 };
 export const createProcessRequest = async (process: ProcessDetailsValues) => {
     const formData = new FormData();
-    Object.entries(process.detailsAttachments).forEach(([key, value]) => formData.append(key, value as Blob));
+    // Object.entries(process.detailsAttachments).forEach(([key, value]) => formData.append(key, value as Blob));
+
+    const filesToUpload: any = [];
+    Object.entries(process.detailsAttachments).forEach(([key, value]: [string, any]) => {
+        if (Array.isArray(value)) {
+            value.forEach((file, index) => {
+                if (file instanceof File && process?.template?.details.properties.properties[key].items) {
+                    filesToUpload.push([`${key}.${index}`, file]);
+                } else if (file instanceof File) {
+                    filesToUpload.push([`${key}`, file]);
+                }
+            });
+        } else {
+            filesToUpload.push([`${key}`, value]);
+        }
+    });
+    filesToUpload.forEach(([key, value]) => {
+        formData.append(key, value as Blob);
+    });
     const entityReferences = referencedEntityToEntityId(process.entityReferences);
     formData.append('name', process.name);
     formData.append('details', JSON.stringify({ ...process.details, ...entityReferences }));
@@ -44,25 +62,46 @@ export const deleteProcessRequest = async (processId: string) => {
     return data;
 };
 
-const handleAttachmentProperties = (attachments: object) => {
+const handleAttachmentProperties = (attachments: object, template: any) => {
     const formData = new FormData();
-    const [filesToUpload, unchangedFiles] = partition(Object.entries(attachments), ([_key, value]) => value instanceof File);
-
-    filesToUpload.forEach(([key, value]) => formData.append(key, value as Blob));
-
-    const fileProperties: { [key: string]: string } = {};
-    unchangedFiles.forEach(([key, value]) => {
-        if (value) {
-            fileProperties[key] = (value as { name: string }).name;
+    const filesToUpload: any = [];
+    const unchangedFiles: any = [];
+    Object.entries(attachments).forEach(([key, value]: [string, any]) => {
+        if (Array.isArray(value) && value) {
+            value.forEach((file, index) => {
+                if (file instanceof File) {
+                    filesToUpload.push([`${key}.${index}`, file]);
+                } else {
+                    unchangedFiles.push([`${key}`, file]);
+                }
+            });
+        } else if (value) {
+            if (value instanceof File) {
+                filesToUpload.push([`${key}`, value]);
+            } else {
+                unchangedFiles.push([`${key}`, value]);
+            }
         }
     });
+    filesToUpload.forEach(([key, value]) => formData.append(key, value as Blob));
 
+    const fileProperties: { [key: string]: any } = {};
+    unchangedFiles.forEach(([key, _value]) => {
+        fileProperties[key] = [];
+    });
+    unchangedFiles.forEach(([key, value]) => {
+        if (!template[key].items) {
+            fileProperties[key] = value.name;
+        } else if (value) {
+            fileProperties[key].push(value.name);
+        }
+    });
     return { formData, fileProperties };
 };
 
-export const updateProcessRequest = async (processId: string, updatedData: ProcessDetailsValues) => {
+export const updateProcessRequest = async (processId: string, updatedData: ProcessDetailsValues, template: IMongoProcessTemplatePopulated) => {
     const entityReferences = referencedEntityToEntityId(updatedData.entityReferences);
-    const { formData, fileProperties } = handleAttachmentProperties(updatedData.detailsAttachments);
+    const { formData, fileProperties } = handleAttachmentProperties(updatedData.detailsAttachments, template.details.properties.properties);
     const transformedStepsObj = mapValues(updatedData.steps, (reviewers) => reviewers.map(({ id }) => id));
     formData.append(
         'details',
@@ -87,13 +126,20 @@ export const archiveProcessRequest = async (processId: string, archived: Boolean
 };
 export const searchProcessesRequest = async (searchBody: ISearchProcessInstancesBody) => {
     const updatedSearchBody = { ...searchBody, name: searchBody.name !== '' ? searchBody.name : undefined };
+    console.log({ updatedSearchBody });
+
     const { data } = await axios.post<IMongoProcessInstancePopulated[]>(`${processes}/search`, updatedSearchBody);
     return data;
 };
 
-export const updateStepRequest = async (stepId: string, values: ProcessStepValues, processId: string, currStep: IMongoStepInstancePopulated) => {
-    const { formData, fileProperties } = handleAttachmentProperties(values.attachmentsProperties);
-
+export const updateStepRequest = async (
+    stepId: string,
+    values: ProcessStepValues,
+    processId: string,
+    currStep: IMongoStepInstancePopulated,
+    template: any,
+) => {
+    const { formData, fileProperties } = handleAttachmentProperties(values.attachmentsProperties, template);
     const entityReferences = referencedEntityToEntityId(values.entityReferences);
 
     formData.append(

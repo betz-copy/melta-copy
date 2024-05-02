@@ -1,20 +1,20 @@
 import React, { MouseEventHandler } from 'react';
-import { Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Typography } from '@mui/material';
+import { Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
 import i18next from 'i18next';
 
 const AreYouSureDialog: React.FC<{
     open: boolean;
     handleClose: () => void;
     title?: string;
-    message?: React.ReactNode;
+    body?: React.ReactNode;
     isLoading?: boolean;
     onYes: MouseEventHandler;
     onNo?: MouseEventHandler;
-}> = ({ open, handleClose, title = i18next.t('areYouSureDialog.title'), message, isLoading = false, onYes, onNo }) => {
+}> = ({ open, handleClose, title = i18next.t('areYouSureDialog.title'), body, isLoading = false, onYes, onNo }) => {
     return (
         <Dialog open={open} onClose={handleClose}>
             <DialogTitle>{title}</DialogTitle>
-            {message && <DialogContent>{message}</DialogContent>}
+            {body && <DialogContent>{body}</DialogContent>}
             <DialogActions>
                 <Button onClick={onNo ?? handleClose}>{i18next.t('areYouSureDialog.no')}</Button>
                 <Button onClick={onYes} autoFocus disabled={isLoading}>

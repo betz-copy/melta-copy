@@ -8,7 +8,8 @@ export const config = {
     },
     service: {
         port: env.get('PORT').default(8000).asPortNumber(),
-        maxFileSize: env.get('MAX_FILE_SIZE').default(50000000).asInt(),
+        maxFileSize: env.get('MAX_FILE_BYTE_SIZE').required().asInt(),
+        maxRequestSize: env.get('MAX_REQUEST_BYTE_SIZE').required().asInt(),
     },
     minio: {
         url: env.get('MINIO_ENDPOINT').default('localhost').asString(),
@@ -17,5 +18,36 @@ export const config = {
         secretKey: env.get('MINIO_SECRET_KEY').default('minioadmin').asString(),
         bucketName: env.get('MINIO_BUCKET_NAME').default('bucket').asString(),
         useSSL: false,
+        transportAgent: {
+            timeout: env.get('TRANSPORT_AGENT_TIMEOUT').default(60000).asIntPositive(),
+            maxSockets: env.get('TRANSPORT_AGENT_MAX_SOCKETS').default(1000).asIntPositive(),
+            keepAlive: env.get('TRANSPORT_AGENT_KEEP_ALIVE').default(1).asBool(),
+            keepAliveMsecs: env.get('TRANSPORT_AGENT_KEEP_ALIVE_MSECS').default(1000).asIntPositive(),
+        },
+    },
+    logs: {
+        format: env.get('LOGGING_DATE_FORMAT').default('YYYY-MM-DD HH:mm:ss').asString(),
+        enableApm: env.get('ENABLE_APM').default('true').asBool(),
+        apmServerUrl: env.get('APM_SERVER_URL').default('http://apm-server:8200').asString(),
+        enableFile: env.get('ENABLE_FILE_LOGGING').default('false').asBool(),
+        enableRotateFile: env.get('ENABLE_ROTATE_FILE_LOGGING').default('true').asBool(),
+        label: env.get('LOG_LABEL').default('storage').asString(),
+        extraDefault: {
+            serviceName: env.get('LOG_SERVICE_NAME').default('storage-service').asString(),
+            environment: env.get('LOG_ENVIRONMENT').default('dev').required().asString(),
+        },
+        fileSettings: {
+            datePattern: env.get('FILE_LOG_DATE_PATTERN').default('YYYY-MM-DD').asString(),
+            maxSize: env.get('FILE_LOG_MAX_SIZE').default('3g').asString(),
+            maxFiles: env.get('FILE_LOG_MAX_FILES').default(3).asIntPositive(),
+            filename: env.get('FILE_LOG_FILENAME').default('log_file.log').asString(),
+            dirname: env.get('FILE_LOG_DIRNAME').default('./logs').asString(),
+        },
+        fileRotateSettings: {
+            datePattern: env.get('ROTATE_FILE_LOG_DATE_PATTERN').default('YYYY-MM-DD').asString(),
+            maxSize: env.get('ROTATE_FILE_LOG_MAX_SIZE').default('20m').asString(),
+            maxFiles: env.get('ROTATE_FILE_LOG_MAX_FILES').default('14d').asString(),
+            dirname: env.get('ROTATE_FILE_LOG_DIRNAME').default('./logs').asString(),
+        },
     },
 };

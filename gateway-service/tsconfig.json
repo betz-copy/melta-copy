@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "jsx": "react",
     "target": "ES2019",
     "module": "CommonJS",
     "allowJs": false,
@@ -19,12 +20,7 @@
     "forceConsistentCasingInFileNames": true,
     "esModuleInterop": true,
     "outDir": "./dist/",
-    "lib": [
-      // "dom",
-      "ES2020.Promise"
-    ]
+    "lib": ["ES2020.Promise"]
   },
-  "include": [
-    "src/**/*"
-  ]
+  "include": ["src/**/*"]
 }

@@ -10,7 +10,7 @@ import { addPropertyToRequest } from '../../utils/express';
 import config from '../../config';
 import { EntityTemplateManagerService, IEntitySingleProperty, IMongoEntityTemplate } from '../../externalServices/entityTemplateManager';
 import { trycatch } from '../../utils/lib';
-import { IFilterOfField, IFilterOfTemplate, ISearchFilter, ISearchBatchBody, ISearchEntitiesOfTemplateBody } from './interface';
+import { IFilterOfField, IFilterOfTemplate, ISearchFilter, ISearchBatchBody, ISearchEntitiesOfTemplateBody, IGetExpandedEntityBody } from './interface';
 import { IMongoRelationshipTemplate, RelationshipsTemplateManagerService } from '../../externalServices/relationshipTemplateManager';
 import { addDefaultFieldsToTemplate } from '../../utils/addDefaultsFieldsToEntityTemplate';
 
@@ -25,7 +25,7 @@ ajv.addKeyword({
     keyword: 'dateNotification',
     type: 'string',
 });
-
+ajv.addKeyword({ keyword: 'calculateTime', type: 'boolean' });
 ajv.addKeyword({
     keyword: 'serialStarter',
     type: 'number',
@@ -35,11 +35,10 @@ ajv.addKeyword({
     type: 'number',
 });
 
-const getEntityTemplateByIdOrThrowValidationError = async (templateId: string) => {
+export const getEntityTemplateByIdOrThrowValidationError = async (templateId: string) => {
     const { result: entityTemplate, err: getEntityTemplateByIdErr } = await trycatch(() =>
         EntityTemplateManagerService.getEntityTemplateById(templateId),
     );
-
     if (getEntityTemplateByIdErr || !entityTemplate) {
         if (axios.isAxiosError(getEntityTemplateByIdErr) && getEntityTemplateByIdErr.response?.status === 404) {
             throw new ValidationError(`Entity template doesnt exist (id: "${templateId}")`);
@@ -53,7 +52,6 @@ const getEntityTemplateByIdOrThrowValidationError = async (templateId: string) =
 
 export const validateEntity = async (req: Request) => {
     const entityTemplate = await getEntityTemplateByIdOrThrowValidationError(req.body.templateId);
-
     const validateFunction = ajv.compile(entityTemplate.properties);
     const valid = validateFunction(req.body.properties);
 
@@ -153,7 +151,6 @@ const validateSimplePartFilterOfField = (rhs: boolean | string | number | null, 
     if (rhs === null) return;
 
     const { type, format } = templateOfField;
-
     if (type === 'string' && format === 'date-time') {
         const isValid = strictIsValidDateString(rhs as string, "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
         if (!isValid) throw new ValidationError(`filter on field ${path} should be of date-time format (isostring)`);
@@ -325,7 +322,8 @@ export const validateSearchBatchBody = async (req: Request) => {
         throw new ValidationError(`some of the templates in search doesnt exist. found only [${entityTemplates.map(({ _id }) => _id)}]`);
     }
     const entityTemplatesMap = new Map(entityTemplates.map((entityTemplate) => [entityTemplate._id, entityTemplate]));
-    const entityTemplatesForValidationMap = new Map(
+
+    const entityTemplatesForValidationMap: Map<string, IMongoEntityTemplate> = new Map(
         entityTemplates.map((entityTemplate) => [entityTemplate._id, addDefaultFieldsToTemplate(entityTemplate)]),
     );
 
@@ -339,5 +337,25 @@ export const validateSearchBatchBody = async (req: Request) => {
 
     validateSortOfSearchBatch(searchBody, entityTemplatesForValidationMap);
 
+    addPropertyToRequest(req, 'entityTemplatesMap', entityTemplatesMap);
+};
+
+export const validateFilterBatchBody = async (req: Request) => {
+    const searchBody: IGetExpandedEntityBody['filters'] = req.body.filters;
+    const templateIds = Object.keys(searchBody);
+    const entityTemplates = await EntityTemplateManagerService.searchEntityTemplates({ ids: templateIds });
+    if (entityTemplates.length < templateIds.length) {
+        throw new ValidationError(`some of the templates in search doesnt exist. found only [${entityTemplates.map(({ _id }) => _id)}]`);
+    }
+    const entityTemplatesMap = new Map(entityTemplates.map((entityTemplate) => [entityTemplate._id, entityTemplate]));
+
+    const entityTemplatesForValidationMap: Map<string, IMongoEntityTemplate> = new Map(
+        entityTemplates.map((entityTemplate) => [entityTemplate._id, addDefaultFieldsToTemplate(entityTemplate)]),
+    );
+    Object.entries(searchBody).forEach(([templateId, {filter}]) => {
+        if(filter){
+            validateFilter(filter, entityTemplatesForValidationMap.get(templateId)!, `filters.${templateId}.filter` )
+        }
+    });
     addPropertyToRequest(req, 'entityTemplatesMap', entityTemplatesMap);
 };

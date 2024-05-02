@@ -2,7 +2,6 @@ import React, { useEffect } from 'react';
 import { useQueryClient } from 'react-query';
 import { useParams } from 'react-router-dom';
 import _debounce from 'lodash.debounce';
-import { Grid } from '@mui/material';
 import { ICategoryMap } from '../../interfaces/categories';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import '../../css/pages.css';
@@ -66,21 +65,19 @@ const Category: React.FC = () => {
     }, [entityTemplates.size, category._id]);
 
     return (
-        <Grid container marginLeft="0" marginRight="0">
-            <EntitiesPage
-                key={category._id}
-                templates={categoryTemplates}
-                setTemplates={(newTemplates) => {
-                    const ids = (newTemplates as IMongoEntityTemplatePopulated[]).map((template) => template._id);
-                    setCategoryTemplatesId(ids);
-                }}
-                templatesToShowCheckbox={templatesToShowCheckbox}
-                setTemplatesToShowCheckbox={setTemplatesToShowCheckbox}
-                excelExportAllTablesFileName={`${category.displayName}.xlsx`}
-                pageType="category"
-                pageTitle={category.displayName}
-            />
-        </Grid>
+        <EntitiesPage
+            key={category._id}
+            templates={categoryTemplates}
+            setTemplates={(newTemplates) => {
+                const ids = (newTemplates as IMongoEntityTemplatePopulated[]).map((template) => template._id);
+                setCategoryTemplatesId(ids);
+            }}
+            templatesToShowCheckbox={templatesToShowCheckbox}
+            setTemplatesToShowCheckbox={setTemplatesToShowCheckbox}
+            excelExportAllTablesFileName={`${category.displayName}.xlsx`}
+            pageType="category"
+            pageTitle={category.displayName}
+        />
     );
 };
 

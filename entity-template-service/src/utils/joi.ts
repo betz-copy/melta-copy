@@ -13,6 +13,7 @@ ajv.addKeyword({
     keyword: 'dateNotification',
     type: 'string',
 });
+ajv.addKeyword({ keyword: 'calculateTime', type: 'boolean' });
 const stringFormats = ['date', 'date-time', 'email', 'fileId'];
 const allowedJSONSchemaTypes = ['string', 'number', 'boolean', 'array'];
 ajv.addKeyword({
@@ -42,28 +43,31 @@ const propertiesArraySchema = Joi.array()
             items: Joi.object({
                 type: Joi.string().valid('string').required(),
                 format: Joi.string().valid('fileId'),
-                enum: Joi.array().items(Joi.string()).min(1),
-            })
-                .xor('format', 'enum')
-                .when('type', {
-                    is: 'array',
-                    then: Joi.required(),
-                    otherwise: Joi.forbidden(),
+                enum: Joi.when('format', {
+                    is: 'fileId',
+                    then: Joi.forbidden(), // If format is fileId, enum is not allowed
+                    otherwise: Joi.array().items(Joi.string()).min(1), // If format is not fileId, enum must have minimum length of 1
                 }),
+            }),
             minItems: Joi.valid(1).when('type', {
                 is: 'array',
                 then: Joi.required(),
                 otherwise: Joi.forbidden(),
             }),
-            uniqueItems: Joi.valid(true).when('type', {
-                is: 'array',
-                then: Joi.required(),
-                otherwise: Joi.forbidden(),
+            uniqueItems: Joi.when(Joi.ref('items.format'), {
+                is: 'fileId',
+                then: Joi.forbidden(),
+                otherwise: Joi.valid(true).when('type', {
+                    is: 'array',
+                    then: Joi.required(),
+                    otherwise: Joi.forbidden(),
+                }),
             }),
             dateNotification: Joi.string()
                 .valid('day', 'week', 'twoWeeks')
                 .when('format', { not: Joi.valid('date', 'date-time'), then: Joi.forbidden() })
                 .when('type', { not: 'string', then: Joi.forbidden() }),
+            calculateTime: Joi.boolean().when('format', { not: Joi.valid('date', 'date-time'), then: Joi.forbidden() }),
             serialStarter: Joi.number().when('type', { not: 'number', then: Joi.forbidden() }),
             serialCurrent: Joi.number().when('type', { not: 'number', then: Joi.forbidden() }),
         }).nand('pattern', 'enum'),

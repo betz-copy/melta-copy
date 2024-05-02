@@ -193,7 +193,6 @@ const ProcessCard: React.FC<{
             },
         },
     );
-
     const { mutateAsync: archiveProcessMutate, isLoading: isLodingArchiveProcess } = useMutation(
         (process: IMongoProcessInstancePopulated) => {
             return archiveProcessRequest(process._id, !process.archived);
@@ -214,6 +213,7 @@ const ProcessCard: React.FC<{
             },
         },
     );
+
     return (
         <div>
             <StyledCard onClick={() => setOpen({ isOpen: true })}>
@@ -295,7 +295,7 @@ const ProcessCard: React.FC<{
                                     <Skeleton variant="circular" width={15} height={15} />
                                 </Grid>
                                 <Grid item>
-                                    <Skeleton variant="rectangular" width="10vh" height={20} />
+                                    <Skeleton variant="rectangular" height={20} />
                                 </Grid>
                             </Grid>
 
@@ -331,6 +331,7 @@ const ProcessCard: React.FC<{
                     onClose={handleClose}
                     processInstance={processInstance}
                     stepTemplate={open.defaultStepTemplate}
+                    processTemplate={processTemplate}
                 />
             )}
         </div>

@@ -1,11 +1,11 @@
 import * as http from 'http';
 import * as express from 'express';
 import * as helmet from 'helmet';
-import * as logger from 'morgan';
 
 import { once } from 'events';
 import { errorMiddleware } from './error';
 import appRouter from './router';
+import config from '../config';
 
 class Server {
     private app: express.Application;
@@ -24,10 +24,9 @@ class Server {
         const app = express();
 
         app.use(helmet());
-        app.use(express.json());
-        app.use(express.urlencoded({ extended: true }));
+        app.use(express.json({ limit: config.service.maxRequestSize }));
+        app.use(express.urlencoded({ extended: true, limit: config.service.maxRequestSize }));
 
-        app.use(logger('dev'));
         app.use(appRouter);
 
         app.use(errorMiddleware);

@@ -1,5 +1,5 @@
-import React, { useMemo, useState } from 'react';
-import i18next from 'i18next';
+import AddIcon from '@mui/icons-material/Add';
+import RemoveIcon from '@mui/icons-material/Close';
 import {
     Autocomplete,
     Box,
@@ -16,17 +16,17 @@ import {
     Typography,
     styled,
 } from '@mui/material';
-import { useQueryClient } from 'react-query';
-import RemoveIcon from '@mui/icons-material/Close';
-import AddIcon from '@mui/icons-material/Add';
 import { FormikProps } from 'formik';
-import TemplateTableSelect from '../../inputs/TemplateTableSelect';
+import i18next from 'i18next';
+import React, { useMemo, useState } from 'react';
+import { useQueryClient } from 'react-query';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { IPermissionsOfUser } from '../../../services/permissionsService';
+import { IReferencedEntityForProcess } from '../../../interfaces/processes/processInstance';
 import EntityCard from '../../../pages/GlobalSearch/components/entityCard';
+import { IPermissionsOfUser } from '../../../services/permissionsService';
+import TemplateTableSelect from '../../inputs/TemplateTableSelect';
 import { ProcessDetailsValues } from './ProcessDetails';
 import { ProcessStepValues } from './ProcessSteps';
-import { IReferencedEntityForProcess } from '../../../interfaces/processes/processInstance';
 import UnknownEntityCard from './UnknownEntityCard';
 
 type ProcessFormikProps = ProcessStepValues | ProcessDetailsValues;
@@ -202,7 +202,8 @@ export const EntityReference: React.FC<ChooseEntityReferenceProps> = ({
                         <EntityCard
                             entity={referencedEntityData.entity}
                             entityTemplate={referencedEntityData.entityTemplate}
-                            openCard={false}
+                            expandCard={false}
+                            enableEdit={false}
                             customActionButton={
                                 isViewMode
                                     ? undefined
@@ -212,7 +213,6 @@ export const EntityReference: React.FC<ChooseEntityReferenceProps> = ({
                                           popoverText: i18next.t('wizard.processInstance.changeEntity'),
                                       }
                             }
-                            userHavePermission={referencedEntityData.userHavePermission}
                             customCardStyle={{
                                 background: 'transparent',
                             }}

@@ -1,7 +1,6 @@
 import {
     IDateAboutToExpireNotificationMetadata,
     INewProcessNotificationMetadata,
-    INotification,
     IProcessReviewerUpdateNotificationMetadata,
     IProcessStatusUpdateNotificationMetadata,
     IRuleBreachAlertNotificationMetadata,
@@ -18,6 +17,7 @@ import {
     IDeleteProcessNotificationMetadata,
     IArchiveProcessNotificationMetadata,
     isArchiveProcessNotification,
+    INotification,
 } from '../../externalServices/notificationService/interfaces';
 import {
     IArchiveProcessNotificationMetadataPopulated,
@@ -38,8 +38,16 @@ import ProcessesInstancesManager from '../processes/processInstances/manager';
 import { InstanceManagerService } from '../../externalServices/instanceService';
 
 export class NotificationsManager {
-    static async getMyNotifications(user: Express.User, query: object): Promise<INotificationPopulated[]> {
-        const notifications = await NotificationService.getNotifications({ ...query, viewerId: user.id });
+    static async getMyNotifications(user: Express.User, query): Promise<INotificationPopulated[]> {
+        const startDate = query.startDate && new Date(query.startDate);
+        const endDate = query.endDate && new Date(query.endDate);
+
+        const notifications = await NotificationService.getNotifications({
+            ...query,
+            viewerId: user.id,
+            startDate,
+            endDate,
+        });
 
         return this.populateNotifications(notifications, user.id);
     }

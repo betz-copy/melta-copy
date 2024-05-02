@@ -6,9 +6,11 @@ import transaction from '../../utils/mongoose';
 
 export class NotificationsManager {
     public static async getNotifications(limit: number, step: number, query: IBasicNotificationQuery): Promise<INotification[]> {
-        return NotificationModel.find(this.handleQuery(query), {}, { limit, skip: step * limit })
-            .sort({ createdAt: -1 })
-            .lean();
+        if (query.types && query.types.length > 0)
+            return NotificationModel.find(this.handleQuery(query), {}, { limit, skip: step * limit })
+                .sort({ createdAt: -1 })
+                .lean();
+        return [];
     }
 
     public static async getNotificationCount(query: IBasicNotificationQuery) {
@@ -20,7 +22,6 @@ export class NotificationsManager {
         query: Omit<IBasicNotificationQuery, 'types'>,
     ): Promise<INotificationGroupCountDetails> {
         const notificationCountDetails: INotificationGroupCountDetails = { total: 0, groups: {} };
-
         const [totalCount] = await Promise.all([
             this.getNotificationCount(query),
 
@@ -72,11 +73,17 @@ export class NotificationsManager {
     private static handleQuery({ viewerId, types, startDate, endDate, ...rest }: IBasicNotificationQuery) {
         const query: FilterQuery<INotificationDocument> = { ...rest };
 
-        if (types) query.type = { $in: types };
         if (viewerId) query.viewers = viewerId;
-        if (startDate && endDate) {
-            query.createdAt = { $gte: startDate, $lte: endDate };
+
+        if (types) query.type = { $in: types };
+
+        if (startDate || endDate) {
+            query.createdAt = {};
+            if (startDate) query.createdAt.$gte = startDate;
+
+            if (endDate) query.createdAt.$lte = new Date(endDate.setUTCHours(23, 59, 59, 999));
         }
+
         return query;
     }
 }

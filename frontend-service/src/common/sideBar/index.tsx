@@ -29,6 +29,7 @@ import { NotificationsScreen } from './notifications/NotificationsScreen';
 import { getMyNotificationGroupCountRequest } from '../../services/notificationService';
 import { GlobalSearchBar } from '../EntitiesPage/Headline';
 import IconButtonWithPopover from '../IconButtonWithPopover';
+import { sideBarTransition } from '../../theme';
 
 type SideBarProps = {
     toggleDrawer: () => any;
@@ -66,6 +67,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
             refetchOnWindowFocus: true,
         },
     );
+
     const notificationCountDetails = notificationCountDetailsResponse || { total: 0, groups: {} };
 
     const { meltaPlus } = useSelector((state: RootState) => state);
@@ -87,7 +89,11 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                 wrap="nowrap"
                 height="100%"
                 bgcolor={theme.palette.primary.main}
-                style={{ backgroundImage: 'url(/icons/sideNav-bg.png)', backgroundRepeat: 'no-repeat' }}
+                style={{
+                    backgroundImage: 'url(/icons/sideNav-bg.png)',
+                    backgroundRepeat: 'no-repeat',
+                    backgroundPositionY: isDrawerOpen ? '-23px' : '',
+                }}
             >
                 <Grid item container direction="column" alignItems="center" marginTop="15px" marginBottom="10px">
                     <Box
@@ -159,7 +165,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
 
                     <Grid
                         style={{
-                            width: isDrawerOpen ? '90%' : '',
+                            width: isDrawerOpen ? '199px' : '',
                             borderRadius: '15px',
                             display: 'flex',
                             alignContent: 'center',
@@ -175,6 +181,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                                 placeholder={i18next.t('pages.globalSearch')}
                                 size="small"
                                 borderRadius="30px"
+                                width="199px"
                             />
                         ) : (
                             <Grid onClick={() => toggleDrawer()}>
@@ -215,6 +222,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                         '::-webkit-scrollbar': { width: 4 },
                         '::-webkit-scrollbar-track': { background: 'transparent' },
                         '::-webkit-scrollbar-thumb': { background: 'lightgray' },
+                        marginTop: '17px',
                     }}
                 >
                     {Array.from(
@@ -351,6 +359,9 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                             <IconButton
                                 onClick={toggleDrawer}
                                 size="large"
+                                sx={{
+                                    transition: sideBarTransition,
+                                }}
                                 style={{
                                     height: '50px',
                                     width: '30px',
@@ -365,6 +376,9 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                         ) : (
                             <IconButton
                                 onClick={toggleDrawer}
+                                sx={{
+                                    transition: sideBarTransition,
+                                }}
                                 style={{
                                     height: '50px',
                                     width: '30px',

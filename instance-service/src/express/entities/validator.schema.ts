@@ -15,21 +15,6 @@ export const getEntityByIdRequestSchema = Joi.object({
     },
 });
 
-/**
- * POST /api/instances/entities/expanded/:id
- */
-export const getExpandedEntityByIdRequestSchema = Joi.object({
-    query: {},
-    body: {
-        disabled: Joi.boolean().default(null),
-        templateIds: Joi.array().items(Joi.string()).required(),
-        numberOfConnections: Joi.number().default(0),
-    },
-    params: {
-        id: Joi.string().required(),
-    },
-});
-
 
 const commonFormInputSchema = Joi.object({
     name: Joi.string().required(),
@@ -133,6 +118,26 @@ const searchFilterSchema = Joi.object({
     $or: Joi.array().items(filterOfTemplateSchema).min(1),
 }).min(1);
 
+
+/**
+ * POST /api/instances/entities/expanded/:id
+ */
+export const getExpandedGraphByIdRequestSchema = Joi.object({
+    query: {},
+    body: {
+        disabled: Joi.boolean().default(null),
+        templateIds: Joi.array().items(Joi.string()).required(),
+        numberOfConnections: Joi.number().default(0),
+        expandedParams: Joi.object().pattern(Joi.string(), Joi.number().min(1)).default({}),        
+        filters: Joi.object().pattern(Joi.string(), {
+            filter: searchFilterSchema,
+        }).default({}),
+    },
+    params: {
+        id: Joi.string().required(),
+    },
+});
+
 /*
  * POST /api/instances/entities/search/template/:templateId
  */
@@ -232,6 +237,16 @@ export const updateConstraintsOfTemplateRequestSchema = Joi.object({
     body: Joi.object({
         requiredConstraints: Joi.array().items(Joi.string()).required(),
         uniqueConstraints: Joi.array().items(Joi.array().items(Joi.string())).required(),
+    }),
+    query: {},
+    params: {
+        templateId: Joi.string().required(),
+    },
+});
+
+export const enumerateNewSerialNumberFieldsRequestSchema = Joi.object({
+    body: Joi.object({
+        newSerialNumberFields: Joi.object().required(),
     }),
     query: {},
     params: {

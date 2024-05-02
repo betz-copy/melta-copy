@@ -1,10 +1,11 @@
 import React from 'react';
-import { Card, CardContent, Typography, Grid, Checkbox, Divider, CheckboxProps, FormControlLabel } from '@mui/material';
+import { Card, CardContent, Typography, Grid, Divider, CheckboxProps, FormControlLabel } from '@mui/material';
 import { useSelector } from 'react-redux';
 import i18next from 'i18next';
 import { RootState } from '../../store';
 import { Scope } from '../../services/permissionsService';
 import PermissionViewIcon from './PermissionViewIcon';
+import { MeltaCheckbox } from '../MeltaCheckbox';
 
 type checkboxControlProps = {
     onChange: CheckboxProps['onChange'];
@@ -53,11 +54,10 @@ const InstancesPermissionsCard: React.FC<{
                                 <FormControlLabel
                                     label={i18next.t('permissions.permissionsOfUserDialog.chooseAll') as string}
                                     control={
-                                        <Checkbox
+                                        <MeltaCheckbox
                                             checked={checkboxAllProps?.permissionType.read.checked || checkboxAllProps?.permissionType.write.checked}
                                             disabled={checkboxAllProps?.permissionType.write.checked}
                                             onChange={checkboxAllProps?.permissionType.read.onChange}
-                                            size="small"
                                         />
                                     }
                                 />
@@ -69,10 +69,9 @@ const InstancesPermissionsCard: React.FC<{
                                 <FormControlLabel
                                     label={i18next.t('permissions.permissionsOfUserDialog.chooseAll') as string}
                                     control={
-                                        <Checkbox
+                                        <MeltaCheckbox
                                             checked={checkboxAllProps?.permissionType.write.checked}
                                             onChange={checkboxAllProps?.permissionType.write.onChange}
-                                            size="small"
                                         />
                                     }
                                 />
@@ -91,8 +90,7 @@ const InstancesPermissionsCard: React.FC<{
                                 {viewMode ? (
                                     <PermissionViewIcon checked={permissionType.read.checked} />
                                 ) : (
-                                    <Checkbox
-                                        size="small"
+                                    <MeltaCheckbox
                                         checked={permissionType.read.checked}
                                         onChange={permissionType.read.onChange}
                                         disabled={disabled || permissionType.write.checked}
@@ -103,8 +101,7 @@ const InstancesPermissionsCard: React.FC<{
                                 {viewMode ? (
                                     <PermissionViewIcon checked={permissionType.write.checked} />
                                 ) : (
-                                    <Checkbox
-                                        size="small"
+                                    <MeltaCheckbox
                                         checked={permissionType.write.checked}
                                         onChange={permissionType.write.onChange}
                                         disabled={disabled}
