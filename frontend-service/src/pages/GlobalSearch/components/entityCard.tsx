@@ -294,6 +294,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
                                 alignItems: 'center',
                                 width: '100%',
                             }}
+                            viewFirstLineOfLongText
                         />
                     </Grid>
                     {shouldDisplayFilePreview && (

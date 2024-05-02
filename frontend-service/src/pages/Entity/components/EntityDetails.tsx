@@ -128,7 +128,6 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                             entity: data,
                         };
                     });
-                
                 }}
                 onCancelUpdate={() => setIsEditMode(false)}
             />
@@ -294,7 +293,6 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                     handleClose={closeDeleteDialog}
                     onYes={() => deleteMutation()}
                     isLoading={isDeleteLoading}
-
                 />
             </Card>
             {updateStatusWithRuleBreachDialogState.isOpen && (
