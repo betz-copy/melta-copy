@@ -23,9 +23,9 @@ import { getFileName } from '../../../utils/getFileName';
 import { getPreviewContentType } from '../../../utils/getFileType';
 import { EntityDates } from '../../Entity/components/EntityDates';
 import { EntityDisableCheckbox } from '../../Entity/components/EntityDisableCheckbox';
-import { canUserWriteInstanceOfCategory } from '../../../utils/permissions/instancePermissions';
 import { IPermissionsOfUser } from '../../../services/permissionsService';
 import { ImageWithDisable } from '../../../common/ImageWithDisable';
+import { checkUserInstanceOfCategoryPermission } from '../../../utils/permissions/instancePermissions';
 
 export const StyledCard = styled(Card)(({ theme }) => ({
     background: theme.palette.mode === 'light' ? '#FFFFFF 0% 0% no-repeat padding-box' : undefined,
@@ -69,7 +69,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
     const cardRef = useRef<HTMLDivElement>(null);
     const queryClient = useQueryClient();
     const { instancesPermissions } = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
-    const userHasWritePermissions = canUserWriteInstanceOfCategory(instancesPermissions, entityTemplate.category);
+    const userHasWritePermissions = checkUserInstanceOfCategoryPermission(instancesPermissions, entityTemplate.category, 'Write');
 
     const shouldDisplayFilePreview = useMemo(() => {
         return entityTemplate.propertiesOrder.some((propertyName) => {

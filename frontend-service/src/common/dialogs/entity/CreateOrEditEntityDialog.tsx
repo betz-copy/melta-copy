@@ -40,9 +40,10 @@ const CreateOrEditEntityDetails: React.FC<{
     isEditMode?: boolean;
     entityTemplate: IMongoEntityTemplatePopulated;
     entity: IEntity;
-    onSuccessUpdate: (data: IEntity) => void;
+    onSuccessUpdate?: (data: IEntity) => void;
     onCancelUpdate: () => void;
-}> = ({ isEditMode = false, entityTemplate, entity, onSuccessUpdate, onCancelUpdate }) => {
+    onSuccessCreate?: (entity: IEntity) => void;
+}> = ({ isEditMode = false, entityTemplate, entity, onSuccessUpdate, onCancelUpdate, onSuccessCreate }) => {
     const [updateWithRuleBreachDialogState, setUpdateWithRuleBreachDialogState] = useState<{
         isOpen: boolean;
         brokenRules?: IRuleBreachPopulated['brokenRules'];
@@ -71,7 +72,7 @@ const CreateOrEditEntityDetails: React.FC<{
         {
             onSuccess: (data) => {
                 toast.success(i18next.t('wizard.entity.editedSuccefully'));
-                onSuccessUpdate(data);
+                if (onSuccessUpdate) onSuccessUpdate(data);
                 onCancelUpdate();
             },
             onError: (err: AxiosError, { newEntityData: newEntityDate }) => {
@@ -101,7 +102,8 @@ const CreateOrEditEntityDetails: React.FC<{
             onSuccess: (newEntity) => {
                 toast.success(i18next.t('wizard.entity.createdSuccessfully'));
                 onCancelUpdate();
-                navigate(`/entity/${newEntity.properties._id}`);
+                if (onSuccessCreate) onSuccessCreate(newEntity);
+                else navigate(`/entity/${newEntity.properties._id}`);
             },
             onError: (err: AxiosError, { template }: EntityWizardValues) => {
                 const errorMetadata = err.response?.data?.metadata;

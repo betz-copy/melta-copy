@@ -190,6 +190,7 @@ export const EntityReference: React.FC<ChooseEntityReferenceProps> = ({
                             label={i18next.t('wizard.processInstance.chooseRefEntity')}
                             autoLoad
                             hideNonPreview
+                            checkUsersPermissions="Read"
                         />
                     </CardContent>
                 </Card>
