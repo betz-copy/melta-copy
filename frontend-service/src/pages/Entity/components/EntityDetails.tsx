@@ -28,10 +28,10 @@ import { EntityDates } from './EntityDates';
 import { RootState } from '../../../store';
 import { IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
 import UpdateStatusWithRuleBreachDialog from './UpdateStatusWithRuleBreachDialog';
-import { canUserWriteInstanceOfCategory } from '../../../utils/permissions/instancePermissions';
 import TooltipMenuButton from './TooltipMenuButton';
 import { ImageWithDisable } from '../../../common/ImageWithDisable';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
+import { checkUserInstanceOfCategoryPermission } from '../../../utils/permissions/instancePermissions';
 
 const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; expandedEntity: IEntityExpanded }> = ({
     entityTemplate,
@@ -134,7 +134,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
         );
     }
 
-    const canWriteInstance = canUserWriteInstanceOfCategory(myPermissions.instancesPermissions, entityTemplate.category);
+    const canWriteInstance = checkUserInstanceOfCategoryPermission(myPermissions.instancesPermissions, entityTemplate.category, 'Write');
     const isEntityDisabled = expandedEntity.entity.properties.disabled;
     return (
         <>

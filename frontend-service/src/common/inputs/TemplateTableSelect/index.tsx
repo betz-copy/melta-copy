@@ -1,11 +1,11 @@
 import { Box, FormControl, FormHelperText, FormLabel } from '@mui/material';
-import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';
 import { IEntity } from '../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import DashedSelectBox from './dashedSelectBox';
 import DeletableEntityViewerCard from './deletableEntityViewerCard';
 import EntitiesTableOfTemplateWithQuickFilter from './EntitiesTableOfTemplateWithQuickFilter';
+import { Scope } from '../../../services/permissionsService';
 
 const TemplateTableSelect: React.FC<{
     entityTemplate?: IMongoEntityTemplatePopulated;
@@ -17,7 +17,21 @@ const TemplateTableSelect: React.FC<{
     helperText?: string;
     hideNonPreview?: boolean;
     autoLoad?: boolean;
-}> = ({ entityTemplate, value, onChange, onBlur, label, error, helperText, hideNonPreview, autoLoad = false }) => {
+    addNewEntityLabel?: string;
+    checkUsersPermissions: Scope;
+}> = ({
+    entityTemplate,
+    value,
+    onChange,
+    onBlur,
+    label,
+    error,
+    helperText,
+    hideNonPreview,
+    autoLoad = false,
+    addNewEntityLabel,
+    checkUsersPermissions,
+}) => {
     const [isSelectBoxEntityClicked, setIsSelectBoxEntityClicked] = useState(autoLoad);
 
     useEffect(() => {
@@ -66,11 +80,12 @@ const TemplateTableSelect: React.FC<{
                 {shouldShowDashedSelectBox && (
                     <DashedSelectBox
                         text={label}
+                        addNewEntityLabel={addNewEntityLabel}
+                        checkUsersPermissions={checkUsersPermissions}
                         onClick={() => setIsSelectBoxEntityClicked(true)}
-                        disabled={!entityTemplate}
-                        disabledReason={i18next.t('templateTableSelect.disabledReasonMustChooseTemplate')}
-                        error={error}
                         minHeight="100%"
+                        entityTemplate={entityTemplate!}
+                        onSuccessCreate={onChange}
                     />
                 )}
                 {!value && isSelectBoxEntityClicked && entityTemplate && (
