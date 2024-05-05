@@ -6,9 +6,7 @@ import { CategoryWizardValues } from './index';
 import { StepComponentProps } from '../index';
 import { ColorPicker } from '../../inputs/ColorPicker';
 
-const chooseColorSchema = Yup.object().shape({
-    color: Yup.string().required(i18next.t('validation.colorRequired')),
-});
+const chooseColorSchema = { color: Yup.string().required(i18next.t('validation.colorRequired')) };
 
 const ChooseColor: React.FC<StepComponentProps<CategoryWizardValues>> = ({ values, setFieldValue, touched, errors }) => {
     return (
