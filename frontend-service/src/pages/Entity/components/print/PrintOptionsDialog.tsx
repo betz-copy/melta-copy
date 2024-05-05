@@ -27,6 +27,8 @@ const PrintOptionsDialog: React.FC<{
     setFiles: React.Dispatch<React.SetStateAction<IFile[]>>;
     selectedFiles: IFile[];
     setSelectedFiles: React.Dispatch<React.SetStateAction<IFile[]>>;
+    filesLoadingStatus: {};
+    setFilesLoadingStatus: React.Dispatch<React.SetStateAction<{}>>;
     categoriesWithConnectionsTemplates: {
         category: IMongoCategory;
         connectionsTemplates: {
@@ -57,6 +59,8 @@ const PrintOptionsDialog: React.FC<{
     setFiles,
     selectedFiles,
     setSelectedFiles,
+    filesLoadingStatus,
+    setFilesLoadingStatus,
     categoriesWithConnectionsTemplates,
     onClick,
     options,
@@ -100,56 +104,49 @@ const PrintOptionsDialog: React.FC<{
         setSelectedFiles([]);
     }, [getEntityFiles, setFiles, setSelectedFiles]);
 
-    // React.useEffect(() => {
-    //     if (isError) {
-    //         setSelectedFiles([]);
-    //         // filesSettings.setIsError(false);
-    //         // filesSettings.setIsLoading(undefined);
-    //         toast.error(i18next.t('errorPage.filePrintError'));
-    //     }
-    // }, [isError, setSelectedFiles]);
+    React.useEffect(() => {
+        setFilesLoadingStatus(
+            selectedFiles.reduce((acc, file) => {
+                return { ...acc, [file.id]: true };
+            }, {}),
+        );
+    }, [selectedFiles, setFilesLoadingStatus]);
 
-    let isLoading = false;
-    const handlePrint = async () => {
+    const handlePrintError = async () => {
         const refetchPromises = selectedFiles.map((file) => {
             if (file.refetch) return file.refetch();
             return undefined;
         });
-        console.log({ selectedFiles });
-        console.log({ refetchPromises });
 
-        Promise.all(refetchPromises)
+        await Promise.all(refetchPromises)
             .then((arrRefetch) => {
-                console.log({ arrRefetch });
                 arrRefetch.forEach((refetch) => {
                     if (!refetch) return;
+
                     if (refetch.isError) {
                         setSelectedFiles([]);
                         toast.error(i18next.t('errorPage.filePrintError'));
-                        console.log('error');
-                    } else if (refetch.isLoading) {
-                        isLoading = true;
-                        console.log('loading');
                     }
                 });
-
-                // else if (refetch.isSuccess) {
-                //     onClick(ev);
-                //     console.log('loading');
-                // }
             })
-            .catch((error) => {
-                console.log('At least one promise rejected:', error);
+            .catch(() => {
                 setSelectedFiles([]);
                 toast.error(i18next.t('errorPage.filePrintError'));
             });
-        // .finally(() => {
-        //     handleClose();
-        // });
     };
+
     React.useEffect(() => {
-        handlePrint();
+        handlePrintError();
     }, [selectedFiles]);
+
+    const [isLoading, setIsLoading] = React.useState(false);
+    React.useEffect(() => {
+        if (Object.keys(filesLoadingStatus).length === 0) {
+            setIsLoading(false);
+            return;
+        }
+        setIsLoading(Object.values(filesLoadingStatus).some((loading) => loading));
+    }, [filesLoadingStatus]);
 
     return (
         <Dialog open={open} onClose={handleClose}>
@@ -253,15 +250,8 @@ const PrintOptionsDialog: React.FC<{
             <DialogActions style={{ paddingLeft: '24px' }}>
                 <Button
                     onClick={(ev) => {
-                        // if (isError) {
-                        //     setSelectedFiles([]);
-                        //     // filesSettings.setIsError(false);
-                        //     // filesSettings.setIsLoading(undefined);
-                        //     toast.error(i18next.t('errorPage.filePrintError'));
-                        // } else {
                         handleClose();
                         onClick(ev);
-                        // }
                     }}
                     endIcon={<PrintOutlined />}
                     disabled={isLoading}

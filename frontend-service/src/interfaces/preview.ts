@@ -16,4 +16,5 @@ export interface IFile {
     targetExtension: FileExtensions;
     data?: string;
     refetch?: IRefetch;
+    isLoading?: boolean;
 }

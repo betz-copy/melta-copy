@@ -32,14 +32,9 @@ const Print: React.FC<{
     });
 
     const [files, setFiles] = React.useState<IFile[]>([]);
-
-    console.log({ files });
-
     const [showSummary, setShowSummary] = React.useState(true);
     const [showFiles, setShowFiles] = React.useState(false);
-
-    const [isFilesLoading, setIsFilesLoading] = React.useState<Set<string>>();
-    const [isFilesError, setIsFilesError] = React.useState(false);
+    const [filesLoadingStatus, setFilesLoadingStatus] = React.useState({});
 
     const getPageMargins = () => {
         // eslint-disable-next-line quotes
@@ -63,6 +58,7 @@ const Print: React.FC<{
                     filesToPrint={files}
                     setFiles={setFiles}
                     mutateAsync={mutateAsync}
+                    setFilesLoadingStatus={setFilesLoadingStatus}
                     setCurrProcessInstance={setCurrProcessInstance}
                     setIsProcessChanged={setIsProcessChanged}
                 />
@@ -75,6 +71,8 @@ const Print: React.FC<{
                     processTemplate={processTemplate}
                     files={files}
                     setFiles={setFiles}
+                    filesLoadingStatus={filesLoadingStatus}
+                    setFilesLoadingStatus={setFilesLoadingStatus}
                     onClick={handlePrint}
                     options={{
                         showSummary,

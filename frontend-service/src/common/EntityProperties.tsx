@@ -163,7 +163,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                                             textOverflow: 'ellipsis',
                                             whiteSpace: textWrap ? undefined : 'nowrap',
                                             overflowY: 'auto',
-                                            maxHeight: '111px',
+                                            maxHeight: download ? '' : '111px',
                                         }}
                                     >
                                         {/* eslint-disable-next-line no-nested-ternary */}

@@ -2,6 +2,7 @@ import React from 'react';
 import { Dialog, DialogTitle, DialogContent, Grid, Button, FormControlLabel, DialogActions, IconButton, CircularProgress } from '@mui/material';
 import { PrintOutlined, CloseOutlined } from '@mui/icons-material';
 import i18next from 'i18next';
+import { toast } from 'react-toastify';
 import { MeltaCheckbox } from '../../../common/MeltaCheckbox';
 import { IFile } from '../../../interfaces/preview';
 import { getFileExtension, getPreviewContentType } from '../../../utils/getFileType';
@@ -17,6 +18,8 @@ const PrintOptionsDialog: React.FC<{
     processTemplate: IMongoProcessTemplatePopulated;
     files: IFile[];
     setFiles: React.Dispatch<React.SetStateAction<IFile[]>>;
+    filesLoadingStatus: {};
+    setFilesLoadingStatus: React.Dispatch<React.SetStateAction<{}>>;
     options: {
         showSummary: boolean;
         setShowSummary: React.Dispatch<React.SetStateAction<boolean>>;
@@ -24,7 +27,7 @@ const PrintOptionsDialog: React.FC<{
         setShowFiles: React.Dispatch<React.SetStateAction<boolean>>;
     };
     onClick: React.MouseEventHandler<HTMLButtonElement>;
-}> = ({ open, handleClose, processInstance, processTemplate, files, setFiles, onClick, options }) => {
+}> = ({ open, handleClose, processInstance, processTemplate, files, setFiles, filesLoadingStatus, setFilesLoadingStatus, onClick, options }) => {
     const getProcessPropertiesFiles = React.useCallback((): IFile[] => {
         return processTemplate.details.propertiesOrder
             .map((propertyKey) => {
@@ -93,23 +96,54 @@ const PrintOptionsDialog: React.FC<{
     }, [processTemplate.steps, processInstance.steps]);
 
     React.useEffect(() => {
+        const currFiles = getProcessPropertiesFiles()
+            .filter((file) => !isVideoOrAudio(file.contentType) && !isUnsupported(file.contentType))
+            .concat(getProcessStepsFiles().filter((file) => !isVideoOrAudio(file.contentType) && !isUnsupported(file.contentType)));
+        setFiles(currFiles);
         if (options.showFiles) {
-            const currFiles = getProcessPropertiesFiles()
-                .filter((file) => !isVideoOrAudio(file.contentType) && !isUnsupported(file.contentType))
-                .concat(getProcessStepsFiles().filter((file) => !isVideoOrAudio(file.contentType) && !isUnsupported(file.contentType)));
-            setFiles(currFiles);
-            console.log({ currFiles });
+            setFilesLoadingStatus(
+                currFiles.reduce((acc, file) => {
+                    return { ...acc, [file.id]: true };
+                }, {}),
+            );
         }
-    }, [processTemplate, processInstance, getProcessPropertiesFiles, getProcessStepsFiles, setFiles, options.showFiles]);
+    }, [processTemplate, processInstance, getProcessPropertiesFiles, getProcessStepsFiles, setFiles, options.showFiles, setFilesLoadingStatus]);
 
-    // React.useEffect(() => {
-    //     if (isError) {
-    //         options.setShowFiles(false);
-    //         setIsLoading(undefined);
-    //         setIsError(false);
-    //         toast.error(i18next.t('errorPage.filePrintError'));
-    //     }
-    // }, [options, options.setShowFiles]);
+    const handlePrintError = async () => {
+        const refetchPromises = files.map((file) => {
+            if (file.refetch) return file.refetch();
+            return undefined;
+        });
+
+        await Promise.all(refetchPromises)
+            .then((arrRefetch) => {
+                arrRefetch.forEach((refetch) => {
+                    if (!refetch) return;
+
+                    if (refetch.isError) {
+                        options.setShowFiles(false);
+                        toast.error(i18next.t('errorPage.filePrintError'));
+                    }
+                });
+            })
+            .catch((error) => {
+                options.setShowFiles(false);
+                toast.error(i18next.t('errorPage.filePrintError'));
+            });
+    };
+
+    React.useEffect(() => {
+        handlePrintError();
+    }, [files]);
+
+    const [isLoading, setIsLoading] = React.useState(false);
+    React.useEffect(() => {
+        if (Object.keys(filesLoadingStatus).length === 0) {
+            setIsLoading(false);
+            return;
+        }
+        setIsLoading(Object.values(filesLoadingStatus).some((loading) => loading));
+    }, [filesLoadingStatus]);
 
     return (
         <Dialog open={open} onClose={handleClose}>
@@ -146,15 +180,8 @@ const PrintOptionsDialog: React.FC<{
             <DialogActions style={{ paddingLeft: '24px' }}>
                 <Button
                     onClick={(ev) => {
-                        // if (isError) {
-                        //     options.setShowFiles(false);
-                        //     setIsLoading(undefined);
-                        //     setIsError(false);
-                        //     toast.error(i18next.t('errorPage.filePrintError'));
-                        // } else {
                         handleClose();
                         onClick(ev);
-                        // }
                     }}
                     endIcon={<PrintOutlined />}
                     disabled={isLoading}

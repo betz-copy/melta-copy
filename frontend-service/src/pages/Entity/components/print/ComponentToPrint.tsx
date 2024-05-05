@@ -18,6 +18,7 @@ const ComponentToPrint = React.forwardRef<
         connectionsTemplatesToPrint: IConnectionTemplateOfExpandedEntity[];
         filesToPrint: IFile[];
         setSelectedFiles: React.Dispatch<React.SetStateAction<IFile[]>>;
+        setFilesLoadingStatus: React.Dispatch<React.SetStateAction<{}>>;
         options: {
             showDate: boolean;
             showDisabled: boolean;
@@ -26,7 +27,7 @@ const ComponentToPrint = React.forwardRef<
             showPreviewPropertiesOnly: boolean;
         };
     }
->(({ entityTemplate, expandedEntity, connectionsTemplatesToPrint, options, filesToPrint, setSelectedFiles }, ref) => {
+>(({ entityTemplate, expandedEntity, connectionsTemplatesToPrint, options, filesToPrint, setSelectedFiles, setFilesLoadingStatus }, ref) => {
     const theme = useTheme();
 
     const queryClient = useQueryClient();
@@ -140,7 +141,16 @@ const ComponentToPrint = React.forwardRef<
                         <BlueTitle title={i18next.t('entityPage.print.appendices')} component="h2" variant="h2" style={{ marginTop: '2rem' }} />
                     </Grid>
                     {filesToPrint.map((file) => {
-                        return <FileToPrint file={file} key={`${file.id}-${file.contentType}`} setSelectedFiles={setSelectedFiles} />;
+                        return (
+                            <FileToPrint
+                                file={file}
+                                key={`${file.id}-${file.contentType}`}
+                                setSelectedFiles={setSelectedFiles}
+                                onPreviewLoadingFinished={() => {
+                                    setFilesLoadingStatus((prev) => ({ ...prev, [file.id]: false }));
+                                }}
+                            />
+                        );
                     })}
                 </>
             )}

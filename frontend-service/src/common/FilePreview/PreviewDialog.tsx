@@ -211,7 +211,7 @@ const PreviewDialog: React.FC<PreviewProps> = ({ open, fileId, data, setOpen, lo
                             />
 
                             <div style={{ color: 'white' }}>
-                                {numOfPages} / {currentPageRef.current}{' '}
+                                {numOfPages} / {currentPageRef.current}
                             </div>
                         </FlexBox>
                     )}

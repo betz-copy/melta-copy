@@ -11,13 +11,14 @@ pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.js';
 const FileToPrint: React.FC<{
     file: IFile;
     setSelectedFiles: React.Dispatch<React.SetStateAction<IFile[]>>;
-}> = ({ file, setSelectedFiles }) => {
-    const [numOfPages, setNumOfPages] = useState(1);
+    onPreviewLoadingFinished: () => void;
+}> = ({ file, setSelectedFiles, onPreviewLoadingFinished }) => {
+    const [numOfPages, setNumOfPages] = useState(0);
     const fileRef = useRef<HTMLDivElement>(null);
     const [currentPage, setCurrentPage] = useState(1);
     const currentPageRef = useRef(currentPage);
 
-    const { data, refetch } = useFilePreview(file.id, file.contentType);
+    const { data, refetch, isFetching: isPreviewLoading } = useFilePreview(file.id, file.contentType);
 
     React.useEffect(() => {
         setSelectedFiles((prevFilesToPrint) => {
@@ -85,7 +86,14 @@ const FileToPrint: React.FC<{
                     <FlexBox direction="column" gap={5}>
                         {Array.from({ length: numOfPages }, (_, i) => (
                             <div key={`page-${i + 1}`} style={{ marginBottom: '20px', background: 'white', position: 'relative' }}>
-                                <Page width={750} pageNumber={i + 1} renderTextLayer={false} />
+                                <Page
+                                    width={750}
+                                    pageNumber={i + 1}
+                                    onRenderSuccess={() => {
+                                        if (numOfPages !== 0 && i + 1 === numOfPages && isPreviewLoading === false) onPreviewLoadingFinished();
+                                    }}
+                                    renderTextLayer={false}
+                                />
                             </div>
                         ))}
                     </FlexBox>

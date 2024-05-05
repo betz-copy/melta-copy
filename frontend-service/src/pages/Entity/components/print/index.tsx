@@ -34,6 +34,7 @@ const Print: React.FC<{
     const [showDisabled, setShowDisabled] = React.useState(true);
     const [showEntityDates, setShowEntityDates] = React.useState(true);
     const [showPreviewPropertiesOnly, setShowPreviewPropertiesOnly] = React.useState(false);
+    const [filesLoadingStatus, setFilesLoadingStatus] = React.useState({});
 
     const handlePrint = useReactToPrint({
         content: () => componentRef.current,
@@ -59,6 +60,7 @@ const Print: React.FC<{
                     connectionsTemplatesToPrint={selected}
                     filesToPrint={selectedFiles}
                     setSelectedFiles={setSelectedFiles}
+                    setFilesLoadingStatus={setFilesLoadingStatus}
                     options={{ showDate, showDisabled, showEntityDates, showEntityFiles: selectedFiles.length !== 0, showPreviewPropertiesOnly }}
                 />
             </div>
@@ -75,6 +77,8 @@ const Print: React.FC<{
                     setFiles={setFiles}
                     selectedFiles={selectedFiles}
                     setSelectedFiles={setSelectedFiles}
+                    filesLoadingStatus={filesLoadingStatus}
+                    setFilesLoadingStatus={setFilesLoadingStatus}
                     categoriesWithConnectionsTemplates={categoriesWithConnectionsTemplates}
                     onClick={handlePrint}
                     options={{
