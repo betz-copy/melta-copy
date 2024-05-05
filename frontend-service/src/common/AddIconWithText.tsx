@@ -3,12 +3,12 @@ import React, { forwardRef } from 'react';
 import { ImageWithDisable } from './ImageWithDisable';
 
 interface AddIconWithTextProps {
-    textStyle: object;
-    onClick?: React.MouseEventHandler<HTMLDivElement> | (() => void);
+    textStyle: React.CSSProperties;
+    onClick?: React.MouseEventHandler<HTMLDivElement>;
     ref?: React.RefObject<HTMLParagraphElement>;
     text?: string;
     disabled: boolean;
-    iconStyle: object;
+    iconStyle: React.CSSProperties;
 }
 export const AddIconWithText = forwardRef<HTMLDivElement, AddIconWithTextProps>(({ textStyle, onClick, text, disabled, iconStyle }, ref) => {
     return (

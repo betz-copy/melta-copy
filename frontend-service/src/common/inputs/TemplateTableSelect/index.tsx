@@ -84,7 +84,7 @@ const TemplateTableSelect: React.FC<{
                         checkUsersPermissions={checkUsersPermissions}
                         onClick={() => setIsSelectBoxEntityClicked(true)}
                         minHeight="100%"
-                        entityTemplate={entityTemplate!}
+                        entityTemplate={entityTemplate}
                         onSuccessCreate={onChange}
                     />
                 )}
