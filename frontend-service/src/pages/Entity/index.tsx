@@ -25,7 +25,7 @@ import { ResetFilterButton } from '../../common/EntitiesPage/ResetFilterButton';
 import { EntityTopBar } from './components/TopBar';
 import { populateRelationshipTemplate } from '../../utils/templates';
 import { CustomIcon } from '../../common/CustomIcon';
-import { canUserWriteInstanceOfCategory } from '../../utils/permissions/instancePermissions';
+import { checkUserInstanceOfCategoryPermission } from '../../utils/permissions/instancePermissions';
 import { EntityLink } from '../../common/EntityLink';
 import { environment } from '../../globals';
 
@@ -305,7 +305,7 @@ const Entity: React.FC = () => {
     const isEntityDisabled = expandedEntity.entity.properties.disabled;
     const currentEntityTemplate = entityTemplates.get(expandedEntity.entity.templateId)!;
 
-    const hasWritePermissionToCurrCategory = canUserWriteInstanceOfCategory(instancesPermissions, currentEntityTemplate.category);
+    const hasWritePermissionToCurrCategory = checkUserInstanceOfCategoryPermission(instancesPermissions, currentEntityTemplate.category, 'Write');
     const populatedRelationshipTemplates = Array.from(relationshipTemplates.values(), (currRelationshipTemplate) =>
         populateRelationshipTemplate(currRelationshipTemplate, entityTemplates),
     );
