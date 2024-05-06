@@ -71,12 +71,12 @@ const CreateOrEditEntityDetails: React.FC<{
             updateEntityRequestForMultiple(entity.properties._id, newEntityData, ignoredRules),
         {
             onSuccess: (data) => {
-                // toast.success(i18next.t('wizard.entity.editedSuccefully'));
                 onSuccessUpdate(data);
                 onCancelUpdate();
             },
             onError: (err: AxiosError, { newEntityData: newEntityDate }) => {
                 const errorMetadata = err.response?.data?.metadata;
+
                 if (errorMetadata?.errorCode === errorCodes.failedConstraintsValidation) {
                     toastConstraintValidationError(errorMetadata, entityTemplate);
                     return;
@@ -90,7 +90,10 @@ const CreateOrEditEntityDetails: React.FC<{
                         updateEntityFormData: newEntityDate,
                     });
                 }
-                // toast.error(i18next.t('wizard.entity.failedToEdit'));
+
+                if (err.response?.status === 413) {
+                    toast.error(`${i18next.t('wizard.entity.failedToEdit')} ${i18next.t('wizard.entity.entityTooLargeError')}`);
+                }
             },
         },
     );
@@ -98,37 +101,24 @@ const CreateOrEditEntityDetails: React.FC<{
 
     const { mutateAsync: createMutation } = useMutation((entityToCreate: EntityWizardValues) => createEntityRequest(entityToCreate), {
         onSuccess: () => {
-            // toast.success(i18next.t('wizard.entity.createdSuccessfully'));
             onCancelUpdate();
-            // navigate(`/entity/${newEntity.properties._id}`);
         },
         onError: (err: AxiosError, { template }: EntityWizardValues) => {
             const errorMetadata = err.response?.data?.metadata;
+
             if (errorMetadata?.errorCode === errorCodes.failedConstraintsValidation) {
                 toastConstraintValidationError(errorMetadata, template);
             }
-
-            // toast.error(i18next.t('wizard.entity.failedToCreate'));
+            if (err.response?.status === 413) {
+                toast.error(`${i18next.t('wizard.entity.failedToCreate')} ${i18next.t('wizard.entity.entityTooLargeError')}`);
+            }
         },
     });
-
-    const [totalFileSize, setTotalFileSize] = useState(0);
 
     return (
         <Formik
             initialValues={{ properties: fieldProperties, attachmentsProperties: fileProperties, template: entityTemplate }}
             onSubmit={async (values) => {
-                // console.log({ values });
-                // let sum = 0;
-                // Object.values(values.attachmentsProperties).forEach((value) => {
-                //     if (value.type === 'array') {
-                //         value.forEach((file) => {
-                //             sum += file.size;
-                //         });
-                //     } else sum += value.size;
-                // });
-                // setTotalFileSize(sum);
-
                 let mutationPromise;
                 if (isEditMode) {
                     mutationPromise = updateMutation({ newEntityData: values });
@@ -140,7 +130,7 @@ const CreateOrEditEntityDetails: React.FC<{
                     toast.promise(
                         mutationPromise,
                         {
-                            pending: `${values.properties.name} ${i18next.t('actions.loading')}`,
+                            pending: i18next.t('entityPage.loading'),
                             success: isEditMode
                                 ? `${i18next.t('wizard.entity.editedSuccefully')}. ${i18next.t('entityPage.linkToEntityPage')}`
                                 : `${i18next.t('wizard.entity.createdSuccessfully')}. ${i18next.t('entityPage.linkToEntityPage')}`,
@@ -163,9 +153,7 @@ const CreateOrEditEntityDetails: React.FC<{
                         resolve();
                     });
                 });
-                // if (sum <= 9000000000) {
                 await loadingToastPromise;
-                // }
             }}
             validate={(values) => {
                 const nonAttachmentsSchema = filterAttachmentsAndEntitiesRefFromPropertiesSchema(values.template.properties);
@@ -173,17 +161,6 @@ const CreateOrEditEntityDetails: React.FC<{
                 if (Object.keys(propertiesErrors).length === 0) {
                     return {};
                 }
-
-                let sum = 0;
-                Object.values(values.attachmentsProperties).forEach((value) => {
-                    if (value.type === 'array') {
-                        value.forEach((file) => {
-                            sum += file.size;
-                        });
-                    } else sum += value.size;
-                });
-                setTotalFileSize(sum);
-
                 return { properties: propertiesErrors };
             }}
         >
@@ -349,15 +326,8 @@ const CreateOrEditEntityDetails: React.FC<{
                                                     type="submit"
                                                     variant="contained"
                                                     onClick={() => onCancelUpdate()}
-                                                    startIcon={
-                                                        // isUpdateLoading || isCreateLoading ? (
-                                                        //     <CircularProgress sx={{ color: 'white' }} size={20} />
-                                                        // ) : (
-                                                        <DoneIcon />
-                                                        // )
-                                                    }
-                                                    // disabled={!dirty || isUpdateLoading || isCreateLoading}
-                                                    disabled={!dirty && totalFileSize > 9000000000}
+                                                    startIcon={<DoneIcon />}
+                                                    disabled={!dirty}
                                                 >
                                                     {i18next.t('entityPage.save')}
                                                 </Button>

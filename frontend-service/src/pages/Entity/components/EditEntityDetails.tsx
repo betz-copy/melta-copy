@@ -78,7 +78,11 @@ const EditEntityDetails: React.FC<{
                         updateEntityFormData: newEntityDate,
                     });
                 }
-                toast.error(i18next.t('wizard.entity.failedToEdit'));
+                if (err.response?.status === 413) {
+                    toast.error(`${i18next.t('wizard.entity.failedToEdit')} ${i18next.t('wizard.entity.entityTooLargeError')}`);
+                } else {
+                    toast.error(i18next.t('wizard.entity.failedToEdit'));
+                }
             },
         },
     );
