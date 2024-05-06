@@ -53,6 +53,7 @@ InstancesRouter.post(
     wrapController(InstancesController.exportEntities),
 );
 InstancesRouter.get('/entities/:id', wrapMiddleware(validateUserCanReadEntityInstance), InstanceManagerProxy);
+
 InstancesRouter.post(
     '/entities/expanded/:id',
     wrapMiddleware(validateUserCanReadEntityInstance),
@@ -60,12 +61,18 @@ InstancesRouter.post(
     wrapMiddleware(InstancesController.viewEntityInstance),
     InstanceManagerProxy,
 );
+
 InstancesRouter.post(
     '/entities',
     multer({ dest: config.service.uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).any(),
     ValidateRequest(createEntityInstanceSchema),
     wrapMiddleware(validateUserCanCreateEntityInstance),
-    wrapController(InstancesController.createEntityInstance),
+    wrapController(InstancesController.createEntityInstance, {
+        toLog: true,
+        logRequestFields: [],
+        indexName: 'entities',
+        responseDataExtractor: undefined,
+    }),
 );
 InstancesRouter.put(
     '/entities/:id',
@@ -73,7 +80,12 @@ InstancesRouter.put(
     ValidateRequest(updateEntityInstanceSchema),
     wrapMiddleware(validateUserCanWriteEntityInstance),
     wrapMiddleware(validateUserCanIgnoreRules),
-    wrapController(InstancesController.updateEntityInstance),
+    wrapController(InstancesController.updateEntityInstance, {
+        toLog: true,
+        logRequestFields: [],
+        indexName: 'entities',
+        responseDataExtractor: undefined,
+    }),
 );
 InstancesRouter.post(
     '/entities/:id/duplicate',
@@ -86,13 +98,23 @@ InstancesRouter.delete(
     '/entities/:id',
     ValidateRequest(deleteEntityInstanceSchema),
     wrapMiddleware(validateUserCanWriteEntityInstance),
-    wrapController(InstancesController.deleteEntityInstance),
+    wrapController(InstancesController.deleteEntityInstance, {
+        toLog: true,
+        logRequestFields: [],
+        indexName: 'entities',
+        responseDataExtractor: (id: string) => ({ deletedId: id }),
+    }),
 );
 InstancesRouter.patch(
     '/entities/:id/status',
     ValidateRequest(updateEntityStatusSchema),
     wrapMiddleware(validateUserCanWriteEntityInstance),
-    wrapController(InstancesController.updateEntityStatus),
+    wrapController(InstancesController.updateEntityStatus, {
+        toLog: true,
+        logRequestFields: [],
+        indexName: 'entities',
+        responseDataExtractor: undefined,
+    }),
 );
 
 // relationships (Instances)

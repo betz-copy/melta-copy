@@ -87,6 +87,9 @@ export const environment = {
     entitiesCardsView: {
         infiniteScrollPageCount: 12,
     },
+    entitiesProperties: {
+        maxNumOfCharactersNotInFullWidth: 700,
+    },
     notifications: {
         updateInterval: 1000 * 60 * 10,
         infiniteScrollPageCount: 10,

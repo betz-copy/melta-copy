@@ -360,6 +360,35 @@ export class TemplatesManager {
         };
     }
 
+    static async updateNewSerialNumberFields(
+        id: string,
+        updatedTemplateData: Omit<IEntityTemplateWithConstraints, 'disabled'>,
+        currTemplate: IMongoEntityTemplatePopulated,
+    ) {
+        const updatedSerialNumberFields = Object.keys(updatedTemplateData.properties.properties).filter(
+            (key) => updatedTemplateData.properties.properties[key].serialCurrent !== undefined,
+        );
+
+        // eslint-disable-next-line no-prototype-builtins
+        const newSerialNumberFields = updatedSerialNumberFields.filter((key) => !currTemplate.properties.properties.hasOwnProperty(key));
+
+        if (newSerialNumberFields.length) {
+            const newSerialNumberValues = {};
+            newSerialNumberFields.forEach((key) => {
+                newSerialNumberValues[key] = updatedTemplateData.properties.properties[key].serialCurrent;
+            });
+
+            const numOfInstancesUpdated: number = await InstanceManagerService.enumerateNewSerialNumberFields(id, newSerialNumberValues);
+
+            newSerialNumberFields.forEach((key) => {
+                // eslint-disable-next-line no-param-reassign
+                updatedTemplateData.properties.properties[key].serialCurrent! += numOfInstancesUpdated;
+            });
+        }
+
+        return updatedTemplateData;
+    }
+
     static async updateEntityTemplate(
         id: string,
         updatedTemplateData: Omit<IEntityTemplateWithConstraints, 'disabled'> & { file?: string },
@@ -375,22 +404,23 @@ export class TemplatesManager {
         if (count > 0) {
             if (updatedTemplateData.name !== currTemplate.name) throw new ServiceError(400, 'can not change template name');
 
-            Object.entries(updatedTemplateData.properties.properties).forEach(([key, value]) => {
-                if (value.serialCurrent !== undefined && !currTemplate.properties.properties[key]) {
-                    throw new ServiceError(400, 'can not add serialField');
-                }
-            });
-
             Object.entries(currTemplate.properties.properties).forEach(([key, value]) => {
                 const newValue = updatedTemplateData.properties.properties[key];
-                if (!newValue) throw new ServiceError(400, 'can not remove property');
 
+                if (!newValue) throw new ServiceError(400, 'can not remove property');
                 if (value.serialCurrent !== undefined) {
                     // eslint-disable-next-line no-param-reassign
                     updatedTemplateData.properties.properties[key].serialCurrent = value.serialCurrent;
                 }
                 if (value.type !== newValue.type) throw new ServiceError(400, 'can not change property type');
-                if (value.format !== newValue.format) throw new ServiceError(400, 'can not change property format');
+                if (
+                    !(
+                        (value.format === 'text-area' && !newValue.format && newValue.type === 'string') ||
+                        (!value.format && value.type === 'string' && newValue.format === 'text-area') ||
+                        value.format === newValue.format
+                    )
+                )
+                    throw new ServiceError(400, 'can not change property format');
                 if (value.enum && !value.enum?.every((val) => newValue.enum?.includes(val)))
                     throw new ServiceError(400, 'can not remove options from enum');
                 if (value.serialStarter !== newValue.serialStarter) throw new ServiceError(400, 'can not change property serial starter');
@@ -413,19 +443,23 @@ export class TemplatesManager {
             iconFileId = currTemplate.iconFileId;
         }
 
-        const { uniqueConstraints, properties, ...restOfTemplateData } = updatedTemplateData;
+        const { uniqueConstraints, properties, ...restOfTemplateData } = await this.updateNewSerialNumberFields(
+            id,
+            updatedTemplateData,
+            currTemplate,
+        ).catch((error) => {
+            throw new ServiceError(400, `Failed to create serial number fields for existing entities: ${error}`);
+        });
         const { required: requiredConstraints, ...restOfTemplatePropertiesObject } = properties;
         const updatedTemplate = await EntityTemplateManagerService.updateEntityTemplate(id, {
             ...restOfTemplateData,
             properties: restOfTemplatePropertiesObject,
             iconFileId,
         });
-
         await InstanceManagerService.updateConstraintsOfTemplate(id, {
             uniqueConstraints,
             requiredConstraints,
         });
-
         return TemplatesManager.populateTemplateConstraints(updatedTemplate, requiredConstraints, uniqueConstraints);
     }
 

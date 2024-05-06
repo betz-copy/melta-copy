@@ -71,6 +71,8 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     supportChangeToRequiredWithInstances,
     supportArrayFields,
 }) => {
+    const isText = value.type === 'string' || value.type === 'text-area';
+
     const name = `properties[${index}].name`;
     const touchedName = touched?.name;
     const errorName = errors?.name;
@@ -155,7 +157,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                             label={i18next.t('wizard.entityTemplate.propertyType')}
                                             id={type}
                                             name={type}
-                                            value={value.type}
+                                            value={value.type === 'text-area' ? 'string' : value.type}
                                             onChange={(e) => {
                                                 setValues?.((prevValue) => ({
                                                     ...prevValue,
@@ -176,19 +178,19 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                     if (validPropertyType === 'entityReference') return supportEntityReferenceType;
                                                     if (validPropertyType === 'serialNumber') {
                                                         if (!supportSerialNumberType) return false;
-
-                                                        return !areThereAnyInstances;
                                                     }
+                                                    if (validPropertyType === 'text-area') return false;
                                                     if (validPropertyType === 'enumArray') return supportArrayFields;
                                                     if (validPropertyType === 'fileId' || validPropertyType === 'multipleFiles') return false; // TODO: support file inputs
                                                     return true;
                                                 })
                                                 .map((validType) => {
-                                                    return(
-                                                    <MenuItem key={validType} value={validType}>
-                                                        {i18next.t(`propertyTypes.${validType}`)}
-                                                    </MenuItem>
-                                                )})}
+                                                    return (
+                                                        <MenuItem key={validType} value={validType}>
+                                                            {i18next.t(`propertyTypes.${validType}`)}
+                                                        </MenuItem>
+                                                    );
+                                                })}
                                         </TextField>
                                     </Grid>
                                     <Grid item container justifyContent="space-between" flexWrap="nowrap">
@@ -236,7 +238,6 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                             });
                                                                         }}
                                                                         circleSize="1.6rem"
-                                                                        width="30rem"
                                                                         style={{ position: 'absolute', top: 4.5, left: 4.2, zIndex: 2000 }}
                                                                     />
                                                                 )}
@@ -434,6 +435,25 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                         />
                                                     }
                                                     label={i18next.t('validation.calculateTime')}
+                                                />
+                                            )}
+                                            {isText && (
+                                                <FormControlLabel
+                                                    control={
+                                                        <Switch
+                                                            id={type}
+                                                            name={type}
+                                                            onChange={(e) => {
+                                                                const newFormatToText = e.target.checked ? 'text-area' : 'string';
+                                                                setValues?.((prevValue) => ({
+                                                                    ...prevValue,
+                                                                    type: newFormatToText,
+                                                                }));
+                                                            }}
+                                                            checked={value.type === 'text-area'}
+                                                        />
+                                                    }
+                                                    label={i18next.t('propertyTypes.text-area')}
                                                 />
                                             )}
                                         </Box>

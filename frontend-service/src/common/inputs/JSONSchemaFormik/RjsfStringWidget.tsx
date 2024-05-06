@@ -4,6 +4,7 @@ import React from 'react';
 import { getDisplayLabel, WidgetProps } from '@rjsf/utils';
 import validator from '@rjsf/validator-ajv8';
 import { TextField } from '@mui/material';
+import { convertToPlainText, containsHTMLTags } from '../../../utils/HtmlTagsStringValue';
 
 const RjsfTextWidget = ({
     id,
@@ -38,6 +39,12 @@ const RjsfTextWidget = ({
     const inputType = (type || schema.type) === 'string' ? 'text' : `${type || schema.type}`;
 
     const isLTR = schema.serialCurrent === undefined ? schema.type === 'number' || Boolean(schema.pattern) : false;
+    const isTextArea = containsHTMLTags(value);
+    let finalValue;
+
+    if (options.hardCodedValue) finalValue = options.hardCodedValue;
+    else if (isTextArea) finalValue = convertToPlainText(value);
+    else finalValue = value ?? '';
 
     return (
         <TextField
@@ -61,7 +68,7 @@ const RjsfTextWidget = ({
                 },
             }}
             type={(options.inputType ?? inputType) as string}
-            value={options.hardCodedValue ?? value ?? ''}
+            value={finalValue}
             error={rawErrors.length > 0}
             onChange={_onChange}
             onBlur={_onBlur}

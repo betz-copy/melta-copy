@@ -7,7 +7,7 @@ import { getFileName } from '../../utils/getFileName';
 
 const { entityTemplates } = environment.api;
 export const basePropertyTypes = ['string', 'number', 'boolean'];
-export const stringFormats = ['date', 'date-time', 'email', 'fileId'];
+export const stringFormats = ['date', 'date-time', 'email', 'fileId', 'text-area'];
 export const arrayTypes = ['multipleFiles', 'enumArray'];
 
 const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTemplatePopulated | null): EntityTemplateWizardValues | undefined => {
@@ -27,6 +27,7 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
         else if (value.pattern) type = 'pattern';
         else if (value.items?.enum) type = 'enumArray';
         else if (value.items?.format === 'fileId') type = 'multipleFiles';
+        else if (value.items?.format === 'text-area') type = 'text-area';
 
         const property: EntityTemplateFormInputProperties = {
             id: uuid(),
@@ -141,7 +142,6 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTem
             if (unique) uniqueConstraint.push(name);
             if (preview) propertiesPreview.push(name);
             if (type === 'serialNumber') serialsUniqueConstraints.push([name]);
-
             if (type === 'enum' || type === 'enumArray') {
                 Object.entries(optionColors).forEach(([option, color]) => {
                     if (!color) return;

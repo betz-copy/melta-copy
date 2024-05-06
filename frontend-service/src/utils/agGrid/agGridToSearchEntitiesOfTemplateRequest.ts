@@ -21,7 +21,6 @@ export const textFilterToFilterOfTemplate = (field: string, { type, filter }: IA
     const escapeRegExp = (string: string) => {
         return string.replace(/[.*+\-?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
     };
-
     switch (type) {
         case 'equals':
             return { [field]: { $eq: filter } };

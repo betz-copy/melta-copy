@@ -145,15 +145,18 @@ describe('Entity manager', () => {
     describe('Get entity by id (expanded mode)', () => {
         let firstEntity: IEntity;
         let id: string;
+        let mapTemplate = new Map<string, IMongoEntityTemplate>();
+        mapTemplate.set(defaultTemplateId, entityTemplate);
 
         beforeEach(async () => {
             firstEntity = await EntityManager.createEntity(defaultEntity, entityTemplate);
-
+            
             id = firstEntity.properties._id;
         });
+        
 
-        it('Should get an entity by id (expanded mode - without connections)', async () => {
-            const res = await EntityManager.getExpandedEntityById(id, false, [defaultTemplateId], 1);
+            it('Should get an entity by id (expanded mode - without connections)', async () => {
+            const res = await EntityManager.getExpandedGraphById(id, {disabled: false, templateIds: [defaultTemplateId], expandedParams: {[id] : 1 }, filters: {}}, mapTemplate);
 
             expect(res.entity.templateId).toBe(defaultTemplateId);
             expect(res.entity.properties).toEqual(expect.objectContaining(defaultProperties));
@@ -163,7 +166,7 @@ describe('Entity manager', () => {
         it('Should fail to get an entity (expanded mode - without connections)', async () => {
             const unknownId = 'unknown_id';
 
-            await expect(() => EntityManager.getExpandedEntityById(unknownId, false, [defaultTemplateId], 1)).rejects.toThrowError(
+            await expect(() => EntityManager.getExpandedGraphById(unknownId, {disabled: false, templateIds: [defaultTemplateId], expandedParams: {[unknownId] : 1 }, filters: {}}, mapTemplate)).rejects.toThrowError(
                 `[NEO4J] entity "${unknownId}" not found`,
             );
         });
@@ -192,7 +195,7 @@ describe('Entity manager', () => {
             });
 
             it('Should get an entity by id (without connections)', async () => {
-                const res = await EntityManager.getExpandedEntityById(id, true, [defaultTemplateId], 1);
+                const res = await EntityManager.getExpandedGraphById(id, {disabled: true, templateIds: [defaultTemplateId], expandedParams: {[id] : 1 }, filters: {}}, mapTemplate);
 
                 expect(res.entity.templateId).toBe(defaultTemplateId);
                 expect(res.entity.properties).toEqual(expect.objectContaining(defaultProperties));
@@ -200,7 +203,7 @@ describe('Entity manager', () => {
             });
 
             it('Get entity and its connections', async () => {
-                const res = await EntityManager.getExpandedEntityById(id, false, [defaultTemplateId], 1);
+                const res = await EntityManager.getExpandedGraphById(id, {disabled: false, templateIds: [defaultTemplateId], expandedParams: {[id] : 1 }, filters: {}}, mapTemplate);
 
                 expect(res).toBeDefined();
                 expect(res.entity.templateId).toBe(defaultTemplateId);
@@ -262,7 +265,7 @@ describe('Entity manager', () => {
             });
 
             it('Get entity and its connections', async () => {
-                const res = await EntityManager.getExpandedEntityById(id, false, [defaultTemplateId], 2);
+                const res = await EntityManager.getExpandedGraphById(id, {disabled: false, templateIds: [defaultTemplateId], expandedParams:{[id] : 2}, filters: {}}, mapTemplate);
 
                 expect(res).toBeDefined();
                 expect(res.entity.templateId).toBe(defaultTemplateId);

@@ -1,4 +1,5 @@
 import * as minio from 'minio';
+import logger from '../logger/logsLogger';
 
 export class MinIOClient {
     minioClient: minio.Client;
@@ -17,7 +18,7 @@ export class MinIOClient {
 
         if (!(await this.minioClient.bucketExists(this.bucketName))) {
             await this.minioClient.makeBucket(this.bucketName, '');
-            console.log(`Bucket with name "${this.bucketName}" created successfully`);
+            logger.info(`Bucket with name "${this.bucketName}" created successfully`);
         }
     }
 

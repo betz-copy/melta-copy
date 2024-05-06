@@ -25,9 +25,9 @@ import { ResetFilterButton } from '../../common/EntitiesPage/ResetFilterButton';
 import { EntityTopBar } from './components/TopBar';
 import { populateRelationshipTemplate } from '../../utils/templates';
 import { CustomIcon } from '../../common/CustomIcon';
-import { canUserWriteInstanceOfCategory } from '../../utils/permissions/instancePermissions';
 import { EntityLink } from '../../common/EntityLink';
 import { environment } from '../../globals';
+import { checkUserInstanceOfCategoryPermission } from '../../utils/permissions/instancePermissions';
 
 const { defaultRowHeight, defaultFontSize } = environment.agGrid;
 
@@ -120,7 +120,7 @@ const ConnectionsTable: React.FC<{
             return;
         }
         queryClient.setQueryData<IEntityExpanded>(
-            ['getExpandedEntity', expandedEntity.entity.properties._id, { templateIds, numberOfConnections: 1 }],
+            ['getExpandedEntity', expandedEntity.entity.properties._id, { templateIds }, { [expandedEntity.entity.properties._id]: 1 }],
             (prevEntityExpanded) => {
                 return {
                     ...prevEntityExpanded!,
@@ -286,8 +286,9 @@ const Entity: React.FC = () => {
 
     const templateIds = Array.from(entityTemplates.keys());
 
-    const { data: expandedEntity } = useQuery(['getExpandedEntity', entityId, { templateIds, numberOfConnections: 1 }], () =>
-        getExpandedEntityByIdRequest(entityId!, { templateIds, numberOfConnections: 1 }),
+    const expanded = entityId ? { [entityId]: 1 } : {};
+    const { data: expandedEntity } = useQuery(['getExpandedEntity', entityId, expanded, { templateIds }], () =>
+        getExpandedEntityByIdRequest(entityId!, expanded, { templateIds }),
     );
 
     const [value, setValue] = useState('0');
@@ -304,7 +305,7 @@ const Entity: React.FC = () => {
     const isEntityDisabled = expandedEntity.entity.properties.disabled;
     const currentEntityTemplate = entityTemplates.get(expandedEntity.entity.templateId)!;
 
-    const hasWritePermissionToCurrCategory = canUserWriteInstanceOfCategory(instancesPermissions, currentEntityTemplate.category);
+    const hasWritePermissionToCurrCategory = checkUserInstanceOfCategoryPermission(instancesPermissions, currentEntityTemplate.category, 'Write');
     const populatedRelationshipTemplates = Array.from(relationshipTemplates.values(), (currRelationshipTemplate) =>
         populateRelationshipTemplate(currRelationshipTemplate, entityTemplates),
     );

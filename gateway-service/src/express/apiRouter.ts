@@ -34,7 +34,7 @@ apiRouter.use(
 apiRouter.use(
     '/preview',
     wrapMiddleware(validateUserHasAtLeastSomePermissions),
-    createProxyMiddleware({ target: config.previewService.url, onProxyReq: fixRequestBody }),
+    createProxyMiddleware({ target: config.previewService.url, onProxyReq: fixRequestBody, proxyTimeout: config.previewService.requestTimeout }),
 );
 
 apiRouter.use('/processes', processesRouter);
