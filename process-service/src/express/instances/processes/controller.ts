@@ -6,6 +6,10 @@ class ProcessInstanceController {
         res.json(await ProcessInstanceManager.getProcessById(req.params.id));
     }
 
+    static async getAllProcesses(_req: Request, res: Response) {
+        res.json(await ProcessInstanceManager.getAllProcesses());
+    }
+
     static async createProcess(req: Request, res: Response) {
         res.json(await ProcessInstanceManager.createProcess(req.body));
     }

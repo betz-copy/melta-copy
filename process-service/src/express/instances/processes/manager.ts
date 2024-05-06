@@ -26,8 +26,53 @@ class ProcessInstanceManager {
         return (shouldPopulate ? query.populate(config.processFields.steps) : query).exec() as Promise<ProcessInstanceType<T>>;
     }
 
+    static async getAllProcesses(): Promise<ProcessInstanceDocument[]> {
+        const query = ProcessInstanceModel.find({}); // .orFail(new ('')).lean();
+        return query.populate(config.processFields.steps); // : query).exec() as Promise<ProcessInstanceType<T>>;
+    }
+
     static async getProcessesByTemplateId(id: string) {
         return ProcessInstanceModel.find({ templateId: id }).orFail(new NotFoundError('process', id)).lean().exec();
+    }
+
+    static traverse(process) {
+        let values = '';
+        for (const [key, value] of Object.entries(process)) {
+            if (key !== '_id' && key !== 'templateId' && key !== 'reviewers') {
+                if (typeof value === 'object' && !Array.isArray(value)) {
+                    values += this.traverse(value);
+                } else if (Array.isArray(value)) {
+                    value.forEach((item) => {
+                        values += this.traverse(item);
+                    });
+                } else {
+                    values += `${value} `;
+                }
+            }
+        }
+        console.log('gggg', { values });
+
+        return values;
+    }
+    static async createDocumentOnElastic(process: IMongoProcessInstancePopulated) {
+        const valuesString = this.traverse(process);
+        console.log({ valuesString }, valuesString.trim());
+        // return POST processes/_doc/processId {searchString: valuesString.trim()}
+    }
+    static async updateDocumentOnElastic(process) {
+        // check if id already exist in elastic
+        // es.exists(index = "processes", id = process.processId)
+        //// es.get((index = 'processes'), (id = process.processId));
+        console.log('insideeee');
+
+        const valuesString = this.traverse(process);
+        const c = valuesString.trim();
+        console.log({ valuesString }, { c });
+        // return PUT processes/_doc/processId {searchString: valuesString.trim()}
+    }
+    static deleteDocumentOnElastic(processId: string) {
+        console.log({ processId });
+        // return DELETE processes/_doc/processId
     }
 
     static async getProcessTemplateByProcessId(id: string): Promise<IMongoProcessTemplate> {
@@ -54,7 +99,11 @@ class ProcessInstanceManager {
             const [{ _id }] = await ProcessInstanceModel.insertMany([{ ...process, steps: stepIds }], { session });
             return _id;
         });
-        return this.getProcessById(processId);
+
+        const populatedProcess = await this.getProcessById(processId);
+        console.log({ populatedProcess });
+        await this.createDocumentOnElastic(populatedProcess);
+        return populatedProcess;
     }
 
     static async deleteProcess(id: string): Promise<IMongoProcessInstancePopulated> {
@@ -87,11 +136,13 @@ class ProcessInstanceManager {
 
         validateStepIds(currProcess.steps, Object.keys(updatedData.steps));
 
-        return transaction(async (session) => {
+        const process = await transaction(async (session) => {
             await StepInstanceManager.updateStepsReviewers(stepsReviewers, session);
 
             const { steps, ...updatedProcess } = updatedData;
-            return ProcessInstanceModel.findByIdAndUpdate(id, updatedProcess, {
+            console.log('1111');
+
+            return await ProcessInstanceModel.findByIdAndUpdate(id, updatedProcess, {
                 new: true,
                 session,
             })
@@ -99,6 +150,12 @@ class ProcessInstanceManager {
                 .orFail(new NotFoundError('process', id))
                 .lean();
         });
+        console.log('hello', { process }, typeof process);
+
+        // // await this.updateDocumentOnElastic(process);
+        // console.log('after');
+
+        return await process;
     }
 
     static getProcessStatus(process: IMongoProcessInstancePopulated, updatedStep?: IMongoStepInstance) {

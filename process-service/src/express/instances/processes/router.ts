@@ -16,6 +16,7 @@ import { validateCreateProcessInstance, validateUpdateProcessInstance } from './
 const processInstanceRouter: Router = Router();
 
 processInstanceRouter.get('/:id', ValidateRequest(getInstanceByIdRequestSchema), wrapController(ProcessInstance.getProcessById));
+processInstanceRouter.get('/', wrapController(ProcessInstance.getAllProcesses));
 processInstanceRouter.post(
     '/',
     ValidateRequest(createInstanceRequestSchema),
