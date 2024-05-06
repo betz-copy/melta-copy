@@ -27,7 +27,6 @@ import { IPermissionsOfUser } from '../../../services/permissionsService';
 import { ImageWithDisable } from '../../../common/ImageWithDisable';
 import { checkUserInstanceOfCategoryPermission } from '../../../utils/permissions/instancePermissions';
 
-
 export const StyledCard = styled(Card)(({ theme }) => ({
     background: theme.palette.mode === 'light' ? '#FFFFFF 0% 0% no-repeat padding-box' : undefined,
     boxShadow: '0px 3px 6px #00000029',
