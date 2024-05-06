@@ -200,8 +200,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                                             whiteSpace: textWrap ? undefined : 'nowrap',
                                             overflowY: 'auto',
                                             maxHeight: download ? '' : '111px',
-                                            // overflow: 'hidden',
-                                            // paddingLeft: '1rem',
+                                            paddingLeft: '1rem',
                                         }}
                                     >
                                         {innerContent}

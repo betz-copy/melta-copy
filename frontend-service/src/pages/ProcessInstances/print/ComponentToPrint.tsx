@@ -26,7 +26,7 @@ const ComponentToPrint = React.forwardRef<
         setCurrProcessInstance: React.Dispatch<React.SetStateAction<IMongoProcessInstancePopulated>>;
         setIsProcessChanged: React.Dispatch<React.SetStateAction<boolean>>;
         filesToPrint: IFile[];
-        setFiles: React.Dispatch<React.SetStateAction<IFile[]>>;
+        setSelectedFiles: React.Dispatch<React.SetStateAction<IFile[]>>;
         setFilesLoadingStatus: React.Dispatch<React.SetStateAction<{}>>;
         options: {
             showSummary: boolean;
@@ -40,7 +40,7 @@ const ComponentToPrint = React.forwardRef<
             processInstance,
             options,
             filesToPrint,
-            setFiles,
+            setSelectedFiles,
             mutateAsync,
             setCurrProcessInstance,
             setIsProcessChanged,
@@ -154,9 +154,8 @@ const ComponentToPrint = React.forwardRef<
                                 <FileToPrint
                                     file={file}
                                     key={`${file.id}-${file.contentType}`}
-                                    setSelectedFiles={setFiles}
+                                    setSelectedFiles={setSelectedFiles}
                                     onPreviewLoadingFinished={() => {
-                                        console.log('finished');
                                         setFilesLoadingStatus((prev) => ({ ...prev, [file.id]: false }));
                                     }}
                                 />

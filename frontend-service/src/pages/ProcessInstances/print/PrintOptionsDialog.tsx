@@ -10,6 +10,7 @@ import { getFileName } from '../../../utils/getFileName';
 import { IMongoProcessInstancePopulated } from '../../../interfaces/processes/processInstance';
 import { IMongoProcessTemplatePopulated } from '../../../interfaces/processes/processTemplate';
 import { isUnsupported, isVideoOrAudio } from '../../../common/FilePreview/PreviewDialog';
+import { SelectCheckbox } from '../../../common/SelectCheckbox';
 
 const PrintOptionsDialog: React.FC<{
     open: boolean;
@@ -18,16 +19,29 @@ const PrintOptionsDialog: React.FC<{
     processTemplate: IMongoProcessTemplatePopulated;
     files: IFile[];
     setFiles: React.Dispatch<React.SetStateAction<IFile[]>>;
+    selectedFiles: IFile[];
+    setSelectedFiles: React.Dispatch<React.SetStateAction<IFile[]>>;
     filesLoadingStatus: {};
     setFilesLoadingStatus: React.Dispatch<React.SetStateAction<{}>>;
     options: {
         showSummary: boolean;
         setShowSummary: React.Dispatch<React.SetStateAction<boolean>>;
-        showFiles: boolean;
-        setShowFiles: React.Dispatch<React.SetStateAction<boolean>>;
     };
     onClick: React.MouseEventHandler<HTMLButtonElement>;
-}> = ({ open, handleClose, processInstance, processTemplate, files, setFiles, filesLoadingStatus, setFilesLoadingStatus, onClick, options }) => {
+}> = ({
+    open,
+    handleClose,
+    processInstance,
+    processTemplate,
+    files,
+    setFiles,
+    selectedFiles,
+    setSelectedFiles,
+    filesLoadingStatus,
+    setFilesLoadingStatus,
+    onClick,
+    options,
+}) => {
     const getProcessPropertiesFiles = React.useCallback((): IFile[] => {
         return processTemplate.details.propertiesOrder
             .map((propertyKey) => {
@@ -100,14 +114,16 @@ const PrintOptionsDialog: React.FC<{
             .filter((file) => !isVideoOrAudio(file.contentType) && !isUnsupported(file.contentType))
             .concat(getProcessStepsFiles().filter((file) => !isVideoOrAudio(file.contentType) && !isUnsupported(file.contentType)));
         setFiles(currFiles);
-        if (options.showFiles) {
-            setFilesLoadingStatus(
-                currFiles.reduce((acc, file) => {
-                    return { ...acc, [file.id]: true };
-                }, {}),
-            );
-        }
-    }, [processTemplate, processInstance, getProcessPropertiesFiles, getProcessStepsFiles, setFiles, options.showFiles, setFilesLoadingStatus]);
+        setSelectedFiles([]);
+    }, [getProcessPropertiesFiles, getProcessStepsFiles, setFiles, setSelectedFiles]);
+
+    React.useEffect(() => {
+        setFilesLoadingStatus(
+            selectedFiles.reduce((acc, file) => {
+                return { ...acc, [file.id]: true };
+            }, {}),
+        );
+    }, [selectedFiles, setFilesLoadingStatus]);
 
     const handlePrintError = async () => {
         const refetchPromises = files.map((file) => {
@@ -116,19 +132,18 @@ const PrintOptionsDialog: React.FC<{
         });
 
         const arrRefetch = await Promise.all(refetchPromises);
-        console.log({ arrRefetch });
 
         try {
             arrRefetch.forEach((refetch) => {
                 if (!refetch) return;
 
                 if (refetch.isError) {
-                    options.setShowFiles(false);
+                    setSelectedFiles([]);
                     toast.error(i18next.t('errorPage.filePrintError'));
                 }
             });
         } catch {
-            options.setShowFiles(false);
+            setSelectedFiles([]);
             toast.error(i18next.t('errorPage.filePrintError'));
         }
     };
@@ -146,9 +161,6 @@ const PrintOptionsDialog: React.FC<{
         setIsLoading(Object.values(filesLoadingStatus).some((loading) => loading));
     }, [filesLoadingStatus]);
 
-    console.log({ files });
-    console.log({ filesLoadingStatus });
-
     return (
         <Dialog open={open} onClose={handleClose}>
             <DialogTitle paddingLeft="4px">
@@ -164,20 +176,25 @@ const PrintOptionsDialog: React.FC<{
             <DialogContent style={{ width: '500px', height: '240px' }}>
                 <Grid container direction="column" spacing={1} alignItems="center">
                     <Grid paddingTop="25px">
-                        <Grid>
+                        <Grid item>
+                            {files.length !== 0 && (
+                                <SelectCheckbox
+                                    title={i18next.t('entityPage.print.chooseFiles')}
+                                    options={files}
+                                    isDraggableDisabled
+                                    selectedOptions={selectedFiles}
+                                    setSelectedOptions={setSelectedFiles}
+                                    getOptionId={(file) => file.id}
+                                    getOptionLabel={(file) => file.name}
+                                />
+                            )}
+                        </Grid>
+                        <Grid paddingTop="25px">
                             <FormControlLabel
                                 control={<MeltaCheckbox checked={options.showSummary} onChange={() => options.setShowSummary((cur) => !cur)} />}
                                 label={i18next.t('wizard.processInstance.print.showSummary')}
                             />
                         </Grid>
-                        {files && files.length > 0 && (
-                            <Grid>
-                                <FormControlLabel
-                                    control={<MeltaCheckbox checked={options.showFiles} onChange={() => options.setShowFiles((cur) => !cur)} />}
-                                    label={i18next.t('wizard.processInstance.print.showFiles')}
-                                />
-                            </Grid>
-                        )}
                     </Grid>
                 </Grid>
             </DialogContent>
@@ -185,7 +202,6 @@ const PrintOptionsDialog: React.FC<{
                 <Button
                     onClick={(ev) => {
                         handleClose();
-                        options.setShowFiles(false);
                         onClick(ev);
                     }}
                     endIcon={<PrintOutlined />}

@@ -31,6 +31,8 @@ const Print: React.FC<{
     });
 
     const [files, setFiles] = React.useState<IFile[]>([]);
+    const [selectedFiles, setSelectedFiles] = React.useState(files);
+
     const [showSummary, setShowSummary] = React.useState(true);
     const [showFiles, setShowFiles] = React.useState(false);
     const [filesLoadingStatus, setFilesLoadingStatus] = React.useState({});
@@ -53,9 +55,9 @@ const Print: React.FC<{
                     ref={componentRef}
                     processTemplate={processTemplate}
                     processInstance={processInstance}
-                    options={{ showSummary, showFiles }}
-                    filesToPrint={files}
-                    setFiles={setFiles}
+                    options={{ showSummary, showFiles: selectedFiles.length !== 0 }}
+                    filesToPrint={selectedFiles}
+                    setSelectedFiles={setSelectedFiles}
                     mutateAsync={mutateAsync}
                     setFilesLoadingStatus={setFilesLoadingStatus}
                     setCurrProcessInstance={setCurrProcessInstance}
@@ -70,14 +72,14 @@ const Print: React.FC<{
                     processTemplate={processTemplate}
                     files={files}
                     setFiles={setFiles}
+                    selectedFiles={selectedFiles}
+                    setSelectedFiles={setSelectedFiles}
                     filesLoadingStatus={filesLoadingStatus}
                     setFilesLoadingStatus={setFilesLoadingStatus}
                     onClick={handlePrint}
                     options={{
                         showSummary,
                         setShowSummary,
-                        showFiles,
-                        setShowFiles,
                     }}
                 />
             )}
