@@ -118,21 +118,20 @@ const PrintOptionsDialog: React.FC<{
             return undefined;
         });
 
-        await Promise.all(refetchPromises)
-            .then((arrRefetch) => {
-                arrRefetch.forEach((refetch) => {
-                    if (!refetch) return;
+        const arrRefetch = await Promise.all(refetchPromises);
+        try {
+            arrRefetch.forEach((refetch) => {
+                if (!refetch) return;
 
-                    if (refetch.isError) {
-                        setSelectedFiles([]);
-                        toast.error(i18next.t('errorPage.filePrintError'));
-                    }
-                });
-            })
-            .catch(() => {
-                setSelectedFiles([]);
-                toast.error(i18next.t('errorPage.filePrintError'));
+                if (refetch.isError) {
+                    setSelectedFiles([]);
+                    toast.error(i18next.t('errorPage.filePrintError'));
+                }
             });
+        } catch {
+            setSelectedFiles([]);
+            toast.error(i18next.t('errorPage.filePrintError'));
+        }
     };
 
     React.useEffect(() => {
@@ -147,6 +146,8 @@ const PrintOptionsDialog: React.FC<{
         }
         setIsLoading(Object.values(filesLoadingStatus).some((loading) => loading));
     }, [filesLoadingStatus]);
+
+    console.log({ selectedFiles });
 
     return (
         <Dialog open={open} onClose={handleClose}>

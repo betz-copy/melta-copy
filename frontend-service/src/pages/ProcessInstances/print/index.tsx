@@ -19,8 +19,7 @@ const Print: React.FC<{
     mutateAsync: UseMutateAsyncFunction<IMongoProcessInstancePopulated, AxiosError<any, any>, ProcessDetailsValues, unknown>;
     setCurrProcessInstance: React.Dispatch<React.SetStateAction<IMongoProcessInstancePopulated>>;
     setIsProcessChanged: React.Dispatch<React.SetStateAction<boolean>>;
-    isLoading: boolean;
-}> = ({ processTemplate, processInstance, mutateAsync, setCurrProcessInstance, setIsProcessChanged, isLoading }) => {
+}> = ({ processTemplate, processInstance, mutateAsync, setCurrProcessInstance, setIsProcessChanged }) => {
     const [openModal, setOpenModal] = React.useState(false);
     const handleOpen = () => setOpenModal(true);
     const handleClose = () => setOpenModal(false);

@@ -35,7 +35,7 @@ const ProcessComponentToPrint: React.FC<{
                     toPrint
                     onNext={() => {}}
                     onBack={() => {}}
-                    key={`${processInstance._id}${processInstance.name}`}
+                    key={`${processInstance._id}//${processInstance.name}`}
                 />
             </Box>
             <EntityDates createdAt={processInstance.createdAt.toString()} updatedAt={processInstance.updatedAt.toString()} />

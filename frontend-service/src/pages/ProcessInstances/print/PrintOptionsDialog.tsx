@@ -115,21 +115,22 @@ const PrintOptionsDialog: React.FC<{
             return undefined;
         });
 
-        await Promise.all(refetchPromises)
-            .then((arrRefetch) => {
-                arrRefetch.forEach((refetch) => {
-                    if (!refetch) return;
+        const arrRefetch = await Promise.all(refetchPromises);
+        console.log({ arrRefetch });
 
-                    if (refetch.isError) {
-                        options.setShowFiles(false);
-                        toast.error(i18next.t('errorPage.filePrintError'));
-                    }
-                });
-            })
-            .catch((error) => {
-                options.setShowFiles(false);
-                toast.error(i18next.t('errorPage.filePrintError'));
+        try {
+            arrRefetch.forEach((refetch) => {
+                if (!refetch) return;
+
+                if (refetch.isError) {
+                    options.setShowFiles(false);
+                    toast.error(i18next.t('errorPage.filePrintError'));
+                }
             });
+        } catch {
+            options.setShowFiles(false);
+            toast.error(i18next.t('errorPage.filePrintError'));
+        }
     };
 
     React.useEffect(() => {
@@ -144,6 +145,9 @@ const PrintOptionsDialog: React.FC<{
         }
         setIsLoading(Object.values(filesLoadingStatus).some((loading) => loading));
     }, [filesLoadingStatus]);
+
+    console.log({ files });
+    console.log({ filesLoadingStatus });
 
     return (
         <Dialog open={open} onClose={handleClose}>
@@ -181,6 +185,7 @@ const PrintOptionsDialog: React.FC<{
                 <Button
                     onClick={(ev) => {
                         handleClose();
+                        options.setShowFiles(false);
                         onClick(ev);
                     }}
                     endIcon={<PrintOutlined />}

@@ -20,13 +20,19 @@ const FileToPrint: React.FC<{
 
     const { data, refetch, isFetching: isPreviewLoading } = useFilePreview(file.id, file.contentType);
 
+    console.log({ file });
+    console.log({ data });
+    console.log({ refetch });
+    console.log({ isPreviewLoading });
+
     React.useEffect(() => {
+        console.log('refetchhhh');
+
         setSelectedFiles((prevFilesToPrint) => {
             return prevFilesToPrint.map((currFile) => {
                 if (currFile.id === file.id) {
                     return {
                         ...currFile,
-                        data,
                         refetch,
                     };
                 }
@@ -35,7 +41,12 @@ const FileToPrint: React.FC<{
         });
     }, []);
 
+    React.useEffect(() => {
+        if (isImage(file.contentType) && isPreviewLoading === false) onPreviewLoadingFinished();
+    }, [onPreviewLoadingFinished]);
+
     const onLoadSuccess = ({ numPages }: { numPages: number }) => {
+        console.log({ numPages });
         setNumOfPages(numPages);
     };
 
@@ -90,6 +101,7 @@ const FileToPrint: React.FC<{
                                     width={750}
                                     pageNumber={i + 1}
                                     onRenderSuccess={() => {
+                                        console.log({ i });
                                         if (numOfPages !== 0 && i + 1 === numOfPages && isPreviewLoading === false) onPreviewLoadingFinished();
                                     }}
                                     renderTextLayer={false}

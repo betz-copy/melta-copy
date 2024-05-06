@@ -257,7 +257,6 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({ open, onClose
                                     mutateAsync={mutateAsync}
                                     setCurrProcessInstance={setCurrProcessInstance}
                                     setIsProcessChanged={setIsProcessChanged}
-                                    isLoading={isLoading}
                                 />
                             )}
                         </Grid>

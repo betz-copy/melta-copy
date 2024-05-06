@@ -116,7 +116,7 @@ export const FileAttachmentsView: React.FC<FileAttachmentsProps> = ({ templateFi
                     }
                 }
                 return (
-                    <Grid container spacing={1} display="flex" flexDirection="column" key={fieldName}>
+                    <Grid container spacing={1} display="flex" flexDirection="column" key={`${fieldName}-${title}`}>
                         <Grid item>
                             <Typography display="inline" variant="body1">
                                 {title}:
@@ -153,7 +153,7 @@ const FileAttachments = ({ viewMode, templateFileProperties, values, errors, tou
                     touched={touched}
                     setFieldTouched={setFieldTouched}
                     toPrint={toPrint}
-                    key={`${values.startDate}${values.endDate}`}
+                    key={`${values.id}${values.startDate}`}
                 />
             )}
         </Box>
@@ -402,7 +402,7 @@ const GeneralDetails: React.FC<IDetailsStepProp> = ({ detailsFormikData, onNext,
                                                     setFieldTouched,
                                                     toPrint,
                                                 }}
-                                                key={`${values.endDate}${values.startDate}`}
+                                                key={`${values.name}${values.endDate}`}
                                             />
                                         )}
                                         {Object.keys(templateEntityReferenceProperties!).length !== 0 && (

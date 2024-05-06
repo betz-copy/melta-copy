@@ -14,7 +14,5 @@ export interface IFile {
     name: string;
     contentType: 'pdf' | 'video' | 'audio' | 'image' | 'document' | 'unsupported';
     targetExtension: FileExtensions;
-    data?: string;
     refetch?: IRefetch;
-    isLoading?: boolean;
 }

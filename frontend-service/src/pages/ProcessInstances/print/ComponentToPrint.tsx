@@ -156,6 +156,7 @@ const ComponentToPrint = React.forwardRef<
                                     key={`${file.id}-${file.contentType}`}
                                     setSelectedFiles={setFiles}
                                     onPreviewLoadingFinished={() => {
+                                        console.log('finished');
                                         setFilesLoadingStatus((prev) => ({ ...prev, [file.id]: false }));
                                     }}
                                 />
