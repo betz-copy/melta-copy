@@ -23,11 +23,7 @@ import { ICategoryMap } from '../../interfaces/categories';
 import ManagementPermissionsCard from './managementPermissionsCard';
 import InstancesPermissionsCard from './instancesPermissionsCard';
 import { RootState } from '../../store';
-import {
-    canUserReadInstanceOfCategory,
-    canUserWriteInstanceOfCategory,
-    getUserPermissionScopeOfCategory,
-} from '../../utils/permissions/instancePermissions';
+import { checkUserInstanceOfCategoryPermission, getUserPermissionScopeOfCategory } from '../../utils/permissions/instancePermissions';
 import { IFormPermissionsOfUser } from './permissionsTypes';
 import {
     doesUserHaveNoPermissions,
@@ -286,9 +282,10 @@ const PermissionsOfUserDialog: React.FC<{
                                         ),
                                         permissionType: {
                                             read: {
-                                                checked: canUserReadInstanceOfCategory(
+                                                checked: checkUserInstanceOfCategoryPermission(
                                                     formikProps.values.instancesPermissions as IPermissionsOfUser['instancesPermissions'],
                                                     currCategory,
+                                                    'Read',
                                                 ),
                                                 onChange:
                                                     mode === 'view'
@@ -310,9 +307,10 @@ const PermissionsOfUserDialog: React.FC<{
                                                           },
                                             },
                                             write: {
-                                                checked: canUserWriteInstanceOfCategory(
+                                                checked: checkUserInstanceOfCategoryPermission(
                                                     formikProps.values.instancesPermissions as IPermissionsOfUser['instancesPermissions'],
                                                     currCategory,
+                                                    'Write',
                                                 ),
                                                 onChange:
                                                     mode === 'view'

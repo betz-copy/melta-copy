@@ -4,6 +4,7 @@ import { Dialog } from '@mui/material';
 import { EntityWizardValues } from '../dialogs/entity';
 import IconButtonWithPopover from '../IconButtonWithPopover';
 import { CreateOrEditEntityDetails } from '../dialogs/entity/CreateOrEditEntityDialog';
+import { IEntity } from '../../interfaces/entities';
 
 const AddEntityButton: React.FC<{
     style?: CSSProperties;
@@ -12,7 +13,8 @@ const AddEntityButton: React.FC<{
     initialValues?: EntityWizardValues;
     disabledToolTip?: boolean;
     popoverText?: string;
-}> = ({ style, children, disabled, initialStep, initialValues, popoverText, disabledToolTip = false }) => {
+    onSuccessCreate?: (entity: IEntity) => void;
+}> = ({ style, children, disabled, initialStep, initialValues, popoverText, disabledToolTip = false, onSuccessCreate }) => {
     const [addEntityWizardState, setAddEntityWizardState] = useState<{ isOpen: boolean; initialStep?: number; initialValues?: EntityWizardValues }>({
         isOpen: false,
     });
@@ -21,7 +23,7 @@ const AddEntityButton: React.FC<{
         <>
             <IconButtonWithPopover
                 popoverText={
-                    popoverText || disabled ? i18next.t('permissions.dontHaveWritePermissions') : i18next.t('entitiesTableOfTemplate.addEntity')
+                    popoverText ?? (disabled ? i18next.t('permissions.dontHaveWritePermissions') : i18next.t('entitiesTableOfTemplate.addEntity'))
                 }
                 disabledToolTip={disabledToolTip}
                 iconButtonProps={{
@@ -73,6 +75,7 @@ const AddEntityButton: React.FC<{
                             isOpen: false,
                         })
                     }
+                    onSuccessCreate={onSuccessCreate}
                 />
             </Dialog>
         </>

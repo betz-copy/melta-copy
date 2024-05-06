@@ -1,7 +1,7 @@
 export interface IEntitySingleProperty {
     title: string;
     type: 'string' | 'number' | 'boolean' | 'array';
-    format?: 'date' | 'date-time' | 'email' | 'fileId';
+    format?: 'date' | 'date-time' | 'email' | 'fileId' | 'text-area';
     enum?: string[];
     pattern?: string;
     patternCustomErrorMessage?: string;

@@ -10,7 +10,12 @@ import { RootState } from '../store';
 import { ColoredEnumChip } from './ColoredEnumChip';
 import OpenPreview from './FilePreview/OpenPreview';
 import { MeltaTooltip } from './MeltaTooltip';
+import { VerifyLink } from './VerifyLink';
+import { getFirstLine, getNumLines, containsHTMLTags, renderHTML } from '../utils/HtmlTagsStringValue';
 import { CalculateDateDifference } from '../utils/agGrid/CalculateDateDifference';
+import { environment } from '../globals';
+
+const { maxNumOfCharactersNotInFullWidth } = environment.entitiesProperties;
 
 pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.js';
 
@@ -56,6 +61,7 @@ interface IEntityPropertiesProps {
     style?: CSSProperties;
     innerStyle?: CSSProperties;
     textWrap?: boolean;
+    viewFirstLineOfLongText?: boolean;
 }
 
 export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkMode?: boolean }> = ({
@@ -68,6 +74,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
     style,
     innerStyle,
     textWrap = false,
+    viewFirstLineOfLongText = false,
 }) => {
     let propertiesOrderedToShow: string[];
     if (overridePropertiesToShow) {
@@ -91,6 +98,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                 const propertySchema = entityTemplate.properties.properties[propertyKey];
                 const propertyValue = properties[propertyKey];
                 const hideField = entityTemplate.properties.hide.includes(propertyKey);
+                const containsHtmlTags = containsHTMLTags(propertyValue);
                 const stringFormatValue = formatToString(
                     propertyValue,
                     propertySchema.type,
@@ -98,11 +106,45 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                     (propertySchema.enum || propertySchema.items?.enum) && entityTemplate.enumPropertiesColors?.[propertyKey],
                     propertySchema,
                 );
-                const calculateTime = 'calculateTime' in propertySchema && propertySchema.calculateTime;
+
+                let innerContent;
+                if (hideFieldsToDisplay.includes(propertyKey)) innerContent = <>••••••••</>;
+                else if (containsHtmlTags)
+                    innerContent = viewFirstLineOfLongText
+                        ? `${getFirstLine(stringFormatValue)}${getNumLines(stringFormatValue) > 1 ? '...' : ''}`
+                        : renderHTML(stringFormatValue);
+                else if (propertyValue && 'calculateTime' in propertySchema && propertySchema.calculateTime)
+                    innerContent = <CalculateDateDifference date={stringFormatValue} />;
+                else innerContent = <VerifyLink>{stringFormatValue}</VerifyLink>;
+
+                let titleContent;
+                if (hideFieldsToDisplay.includes(propertyKey) || propertySchema.format === 'fileId') titleContent = '';
+                else if (containsHtmlTags) titleContent = renderHTML(stringFormatValue);
+                else titleContent = innerContent;
+
+                const overrideStyle =
+                    containsHtmlTags &&
+                    !viewFirstLineOfLongText &&
+                    propertyValue &&
+                    getNumLines(stringFormatValue) > 1 &&
+                    stringFormatValue.length >= maxNumOfCharactersNotInFullWidth;
+
                 return (
-                    <Grid key={propertyKey} item container flexDirection="row" style={innerStyle} alignItems={textWrap ? 'flex-start' : 'center'}>
+                    <Grid
+                        key={propertyKey}
+                        item
+                        container
+                        flexDirection="row"
+                        style={overrideStyle ? { width: '100%' } : innerStyle}
+                        alignItems={textWrap ? 'flex-start' : 'center'}
+                    >
                         <Grid item container width="100%" flexWrap="nowrap" alignItems={textWrap ? 'flex-start' : 'center'}>
-                            <Grid item width="30%">
+                            <Grid
+                                item
+                                style={{
+                                    width: overrideStyle ? '10%' : '30%',
+                                }}
+                            >
                                 <MeltaTooltip disableHoverListener={textWrap} placement="bottom" title={propertySchema.title}>
                                     <Typography
                                         style={{
@@ -122,25 +164,19 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                             <Grid
                                 item
                                 container
-                                width="70%"
                                 flexDirection="row"
                                 alignItems={textWrap ? 'flex-start' : 'center'}
                                 flexWrap="nowrap"
                                 style={{
                                     direction: 'rtl',
                                     textAlign: 'right',
+                                    width: overrideStyle ? '90%' : '70%',
                                 }}
                             >
                                 <MeltaTooltip
                                     disableHoverListener={textWrap}
                                     placement="bottom"
-                                    title={
-                                        hideFieldsToDisplay.includes(propertyKey) ||
-                                        propertySchema.format === 'fileId' ||
-                                        propertySchema.items?.format === 'fileId'
-                                            ? ''
-                                            : stringFormatValue
-                                    }
+                                    title={<Grid style={{ maxHeight: '500px', overflowY: 'auto' }}>{titleContent}</Grid>}
                                 >
                                     <Typography
                                         fontSize="14px"
@@ -150,17 +186,9 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                                             whiteSpace: textWrap ? undefined : 'nowrap',
                                             overflow: 'hidden',
                                             paddingLeft: '1rem',
-                                            maxHeight: '120px',
                                         }}
                                     >
-                                        {/* eslint-disable-next-line no-nested-ternary */}
-                                        {hideFieldsToDisplay.includes(propertyKey) ? (
-                                            <>••••••••</>
-                                        ) : propertyValue && calculateTime ? (
-                                            <CalculateDateDifference date={stringFormatValue} />
-                                        ) : (
-                                            stringFormatValue
-                                        )}
+                                        {innerContent}
                                     </Typography>
                                 </MeltaTooltip>
                                 <Grid item>

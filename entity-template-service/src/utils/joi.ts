@@ -7,15 +7,13 @@ import { IEntityTemplate, IEnumPropertiesColors, IProperties } from '../express/
 
 const ajv = new Ajv();
 ajv.addFormat('fileId', /.*/);
+ajv.addFormat('text-area', /.*/);
 addFormats(ajv);
 ajv.addVocabulary(['patternCustomErrorMessage', 'hide']);
 ajv.addKeyword({
     keyword: 'dateNotification',
     type: 'string',
 });
-ajv.addKeyword({ keyword: 'calculateTime', type: 'boolean' });
-const stringFormats = ['date', 'date-time', 'email', 'fileId'];
-const allowedJSONSchemaTypes = ['string', 'number', 'boolean', 'array'];
 ajv.addKeyword({
     keyword: 'serialStarter',
     type: 'number',
@@ -24,6 +22,10 @@ ajv.addKeyword({
     keyword: 'serialCurrent',
     type: 'number',
 });
+ajv.addKeyword({ keyword: 'calculateTime', type: 'boolean' });
+
+const stringFormats = ['date', 'date-time', 'email', 'fileId', 'text-area'];
+const allowedJSONSchemaTypes = ['string', 'number', 'boolean', 'array'];
 
 const propertiesArraySchema = Joi.array()
     .items(

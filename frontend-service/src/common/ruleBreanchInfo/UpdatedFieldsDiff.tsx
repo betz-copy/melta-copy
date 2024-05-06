@@ -9,6 +9,7 @@ import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates'
 import { formatToString } from '../EntityProperties';
 import { getFileName } from '../../utils/getFileName';
 import { RootState } from '../../store';
+import { containsHTMLTags } from '../../utils/HtmlTagsStringValue';
 
 const getEntityPropertyString = (
     value: any,
@@ -20,6 +21,11 @@ const getEntityPropertyString = (
     if (value === null || value === undefined) {
         return '-';
     }
+
+    if (containsHTMLTags(value)) {
+        return new DOMParser().parseFromString(value, 'text/html').body.innerText;
+    }
+
     if (format !== 'fileId' && !items) {
         return formatToString(value, type, format);
     }
