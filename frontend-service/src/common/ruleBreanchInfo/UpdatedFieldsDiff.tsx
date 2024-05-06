@@ -34,19 +34,17 @@ const getEntityPropertyString = (
         return fileName;
     }
     // multiple
-    else {
-        const updatedFiles = value.map((file, index) => {
-            const oldFile = oldValue ? oldValue[index] : undefined;
-            const oldFileName = oldFile ? getFileName(oldFile) : undefined;
-            const fileName = file instanceof File ? file.name : getFileName(file);
-            const fileContentChanged = file instanceof File || !oldValue || !oldValue.includes(file);
-            if (oldFileName === fileName && fileContentChanged) {
-                return `${fileName} (${i18next.t('ruleBreachInfo.updateEntityActionInfo.fileContentUpdated')})`;
-            }
-            return fileName;
-        });
-        return updatedFiles.join('\n');
-    }
+    const updatedFiles = value.map((file, index) => {
+        const oldFile = oldValue ? oldValue[index] : undefined;
+        const oldFileName = oldFile ? getFileName(oldFile) : undefined;
+        const fileName = file instanceof File ? file.name : getFileName(file);
+        const fileContentChanged = file instanceof File || !oldValue || !oldValue.includes(file);
+        if (oldFileName === fileName && fileContentChanged) {
+            return `${fileName} (${i18next.t('ruleBreachInfo.updateEntityActionInfo.fileContentUpdated')})`;
+        }
+        return fileName;
+    });
+    return updatedFiles.join('\n');
 };
 
 const getEntityPropertiesString = (

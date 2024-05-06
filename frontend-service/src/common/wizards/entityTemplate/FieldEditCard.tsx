@@ -267,6 +267,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     const handleDelete = (tagIndex: number) => {
         handleDeleteEnumField(templateId, tagIndex, value);
         setOpenDelete(false);
+        setOpen(false);
     };
 
     const updateOldDisabledEnumVals = (currValue: string[]) => {
@@ -433,6 +434,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                     {supportEditEnum && (
                                                                         <MemoizedIconButton
                                                                             onClick={() => {
+                                                                                setDuplicate(false);
                                                                                 setEditIndex(tagIndex);
                                                                                 setLocalOption(value.options[tagIndex]);
                                                                             }}
@@ -633,7 +635,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                 setOpen(false);
                                             }}
                                             onYes={() => {
-                                                if (openDelete && editIndex) handleDelete(editIndex);
+                                                if (openDelete) handleDelete(editIndex!);
                                                 else {
                                                     handleSaveEdit(editIndex!);
                                                 }
