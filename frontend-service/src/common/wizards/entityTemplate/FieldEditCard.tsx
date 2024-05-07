@@ -96,12 +96,19 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     const initialEnumOptions = initialValue?.options || [];
 
     const initialCheckboxValue = useMemo(() => {
-        return uniqueConstraints?.some((group) => group.properties.includes(value.name));
+        return uniqueConstraints?.some((group) => {
+            if (group.groupName.trim() === '') {
+                return false;
+            }
+            return group.properties.includes(value.name);
+        });
     }, [uniqueConstraints, value.name]);
 
     const [addUniqueGroupCheckBox, setAddUniqueGroupCheckBox] = useState(initialCheckboxValue);
     const uniqueGroupName = uniqueConstraints?.find((uniqueGroup) => uniqueGroup.properties.includes(value.name))?.groupName || '';
     const createNewUniqueGroup = (groupName) => {
+        console.log('in here 1');
+
         if (groupName) {
             const existingGroup = uniqueConstraints?.find((group) => group.groupName === groupName);
             if (!existingGroup) {
@@ -112,12 +119,13 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                 }));
                 updatedConstraints.push(newGroup);
                 setUniqueConstraints!(updatedConstraints);
-                setAddUniqueGroupCheckBox(true);
             }
         }
     };
 
     const addToProperties = (selectedGroupName) => {
+        console.log('in here 2');
+
         const existingGroup = uniqueConstraints?.find((group) => group.groupName === selectedGroupName);
         const propertyExists = existingGroup?.properties.includes(value.name);
 
@@ -129,26 +137,37 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
             const updatedConstraints = uniqueConstraints ? [...uniqueConstraints, newGroup] : [newGroup];
             setUniqueConstraints!(updatedConstraints);
         } else if (!propertyExists) {
-            const updatedConstraints = uniqueConstraints!.map((group) => {
-                if (group.groupName === selectedGroupName) {
-                    return {
-                        ...group,
-                        properties: [...group.properties, value.name],
-                    };
-                }
-                if (group.properties.includes(value.name)) {
-                    return {
-                        ...group,
-                        properties: group.properties.filter((prop) => prop !== value.name),
-                    };
-                }
-                return group;
-            });
+            const updatedConstraints = uniqueConstraints!
+                .map((group) => {
+                    if (group.groupName === selectedGroupName) {
+                        return {
+                            ...group,
+                            properties: [...group.properties, value.name],
+                        };
+                    }
+                    if (group.properties.includes(value.name)) {
+                        const updatedGroup = {
+                            ...group,
+                            properties: group.properties.filter((prop) => prop !== value.name),
+                        };
+                        console.log({ updatedGroup });
+
+                        if (!updatedGroup.properties.length) {
+                            console.log('empty');
+                            return null;
+                        }
+                        return updatedGroup;
+                    }
+                    return group;
+                })
+                .filter((group) => group !== null) as { groupName: string; properties: string[] }[];
             setUniqueConstraints!(updatedConstraints);
         }
     };
 
     const deleteUniqueGroup = (groupName) => {
+        console.log('in here 3');
+
         const updatedConstraints = uniqueConstraints!
             .map((group) => ({
                 ...group,
@@ -160,24 +179,42 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     };
 
     const deletePropFromUniqueConstraints = (groupName, fieldName) => {
-        const updatedConstraints = uniqueConstraints!.map((group) => {
-            if (group.groupName === groupName) {
-                return {
-                    ...group,
-                    properties: group.properties.filter((prop) => prop !== fieldName),
-                };
-            }
-            return group;
-        });
+        console.log('in here 3');
+
+        const updatedConstraints = uniqueConstraints!
+            .map((group) => {
+                if (group.groupName === groupName) {
+                    const updatedProperties = group.properties.filter((prop) => prop !== fieldName);
+                    if (updatedProperties.length === 0) {
+                        console.log('Empty properties array');
+                        return null; // or any other action you want to take when properties array becomes empty
+                    }
+                    return {
+                        ...group,
+                        properties: updatedProperties,
+                    };
+                }
+                return group;
+            })
+            .filter(Boolean) as { groupName: string; properties: string[] }[]; // Filter out null values and specify the correct type
+
         setUniqueConstraints!(updatedConstraints);
     };
 
     const handleCheckboxChange = (e) => {
-        setAddUniqueGroupCheckBox(e.target.checked);
-        if (!e.target.checked) {
+        console.log('in here 4');
+        const isChecked = e.target.checked;
+
+        setAddUniqueGroupCheckBox(isChecked);
+
+        if (!isChecked) {
             deletePropFromUniqueConstraints(uniqueGroupName, value.name);
         }
+        if (isChecked && value.unique !== undefined && !addUniqueGroupCheckBox) {
+            addToProperties('');
+        }
     };
+
     console.log({ uniqueConstraints });
 
     const isNewProperty = !initialValue;
@@ -470,7 +507,6 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                 />
                                             )}
                                             {value.type !== 'serialNumber' && value.unique !== undefined && setValues && (
-                                                // <MeltaTooltip title={UniqueCheckboxTooltipTitle}>
                                                 <FormControlLabel
                                                     control={
                                                         <Switch
@@ -483,7 +519,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                     required: checked ? true : prevValue.required,
                                                                 }));
 
-                                                                if (checked) {
+                                                                if (checked && !addUniqueGroupCheckBox) {
                                                                     const newGroup = {
                                                                         groupName: '',
                                                                         properties: [value.name],
@@ -588,7 +624,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                         <IconButton
                                                                             aria-label="create"
                                                                             onClick={() => {
-                                                                                createNewUniqueGroup(params.inputProps.value); // Pass the input value to the function
+                                                                                createNewUniqueGroup(params.inputProps.value);
                                                                             }}
                                                                             style={{
                                                                                 position: 'absolute',
