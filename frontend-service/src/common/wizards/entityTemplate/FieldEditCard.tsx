@@ -295,8 +295,8 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     };
 
     const updateOldDisabledEnumVals = (currValue: string[]) => {
-        const newValues = currValue.filter((_option, pos) => pos >= initialEnumOptions.length);
-        const initialOptions = value.options.slice(0, initialEnumOptions.length);
+        const newValues = currValue.filter((_option, pos) => pos >= initialOptionArray.length);
+        const initialOptions = value.options.slice(0, initialOptionArray.length);
 
         const newOptions = [...initialOptions, ...newValues];
 
@@ -309,7 +309,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
         }, {});
         setValues?.((prev) => ({
             ...prev,
-            options: [...value.options.slice(0, initialEnumOptions.length), ...newValues],
+            options: [...value.options.slice(0, initialOptionArray.length), ...newValues],
             optionColors: tempColors,
         }));
     };
@@ -525,11 +525,13 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                                 e.stopPropagation();
                                                                                 if (e.key === 'Enter') {
                                                                                     e.preventDefault();
+
                                                                                     if (
-                                                                                        tagIndex > initialEnumOptions.length - 1 ||
+                                                                                        tagIndex > initialOptionArray.length - 1 ||
                                                                                         value.options[tagIndex] === localOption ||
                                                                                         value.options.includes(localOption)
                                                                                     ) {
+                                                                                        console.log('IN HERE FOR NEW');
                                                                                         setOpen(false);
                                                                                         handleSaveEdit(editIndex!);
                                                                                     } else setOpen(true);
