@@ -168,6 +168,7 @@ export class EntityManager {
 
         return node;
     }
+
     static async getExpandedEntityById(id: string, disabled: boolean | null, templateIds: string[], numOfConnections: number) {
         const nodeAndConnections = await Neo4jClient.readTransaction(
             `MATCH (p {_id:'${id}'})
@@ -431,7 +432,8 @@ export class EntityManager {
             (acc, curr) => ({
                 ...acc,
                 requiredConstraints: curr.type === 'REQUIRED' ? [...acc.requiredConstraints, curr.property] : acc.requiredConstraints,
-                uniqueConstraints: curr.type === 'UNIQUE' ? [...acc.uniqueConstraints, curr.properties] : acc.uniqueConstraints,
+                uniqueConstraints:
+                    curr.type === 'UNIQUE' ? [...acc.uniqueConstraints, { groupName: '', properties: curr.properties }] : acc.uniqueConstraints,
             }),
             {
                 templateId,
@@ -525,19 +527,19 @@ export class EntityManager {
     private static async updateUniqueConstraintsOfTemplate(
         transaction: Transaction,
         templateId: string,
-        uniqueConstraintsProps: string[][],
+        uniqueConstraints: { groupName: string; properties: string[] }[],
         existingUniqueConstraints: IUniqueConstraint[],
     ) {
         const existingUniqueConstraintsOfTemplate = existingUniqueConstraints.filter((constraint) => constraint.templateId === templateId);
 
-        const newUniqueConstraints: IUniqueConstraint[] = uniqueConstraintsProps.map((uniqueConstraintProps) => ({
-            type: 'UNIQUE',
-            constraintName: `${config.uniqueConstraintsPrefixName}${config.constraintsNameDelimiter}${templateId}${
-                config.constraintsNameDelimiter
-            }${uniqueConstraintProps.join(config.constraintsNameDelimiter)}`,
-            templateId,
-            properties: uniqueConstraintProps,
-        }));
+        const newUniqueConstraints: IUniqueConstraint[] = uniqueConstraints.flatMap((constraintGroup) =>
+            constraintGroup.properties.map((properties) => ({
+                type: 'UNIQUE',
+                constraintName: `${config.uniqueConstraintsPrefixName}${config.constraintsNameDelimiter}${templateId}${config.constraintsNameDelimiter}${properties}`,
+                templateId,
+                properties: [properties],
+            })),
+        );
 
         const uniqueConstraintsToCreate = differenceWith(newUniqueConstraints, existingUniqueConstraintsOfTemplate, (constraintA, constraintB) =>
             arraysEqualsNonOrdered(constraintA.properties, constraintB.properties),
@@ -564,7 +566,10 @@ export class EntityManager {
         await Promise.all([...createUniqueConstraintsPromises, ...deleteConstraintsPromises]);
     }
 
-    static async updateConstraintsOfTemplate(templateId: string, constraints: { requiredConstraints: string[]; uniqueConstraints: string[][] }) {
+    static async updateConstraintsOfTemplate(
+        templateId: string,
+        constraints: { requiredConstraints: string[]; uniqueConstraints: { groupName: string; properties: string[] }[] },
+    ) {
         return Neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
             const existingNeo4jConstraints = await runInTransactionAndNormalize(transaction, 'call db.constraints', normalizeGetDbConstraints);
 

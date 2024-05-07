@@ -261,7 +261,7 @@ export class TemplatesManager {
     private static populateTemplateConstraints(
         entityTemplate: IMongoEntityTemplatePopulated,
         requiredConstraints: string[],
-        uniqueConstraints: string[][],
+        uniqueConstraints: { groupName: string; properties: string[] }[],
     ): IMongoEntityTemplateWithConstraintsPopulated {
         return {
             ...entityTemplate,

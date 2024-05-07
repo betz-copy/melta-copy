@@ -156,7 +156,7 @@ services:
       MAX_REQUEST_BYTE_SIZE: ${MAX_REQUEST_BYTE_SIZE}
       
   # frontend-service:
-  # build: ./frontend-service
+  #   build: ./frontend-service
 
   nginx:
     image: nginx:alpine

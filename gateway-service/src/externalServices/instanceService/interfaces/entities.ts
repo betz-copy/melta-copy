@@ -34,7 +34,7 @@ export type IConstraint = IRequiredConstraint | IUniqueConstraint;
 export interface IConstraintsOfTemplate {
     templateId: string;
     requiredConstraints: string[];
-    uniqueConstraints: string[][];
+    uniqueConstraints: { groupName: string; properties: string[] }[];
 }
 
 export interface IEntityWithDirectRelationships {

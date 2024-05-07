@@ -6,21 +6,21 @@ import {
 } from '../../externalServices/entityTemplateService';
 
 export interface IEntityTemplateWithConstraints extends IEntityTemplate {
-    uniqueConstraints: string[][];
+    uniqueConstraints: { groupName: string; properties: string[] }[];
     properties: IEntityTemplate['properties'] & { required: string[] };
 }
 
 export interface IMongoEntityTemplateWithConstraints extends IMongoEntityTemplate {
-    uniqueConstraints: string[][];
+    uniqueConstraints: { groupName: string; properties: string[] }[];
     properties: IEntityTemplate['properties'] & { required: string[] };
 }
 
 export interface IEntityTemplateWithConstraintsPopulated extends IEntityTemplatePopulated {
-    uniqueConstraints: string[][];
+    uniqueConstraints: { groupName: string; properties: string[] }[];
     properties: IEntityTemplate['properties'] & { required: string[] };
 }
 
 export interface IMongoEntityTemplateWithConstraintsPopulated extends IMongoEntityTemplatePopulated {
-    uniqueConstraints: string[][];
+    uniqueConstraints: { groupName: string; properties: string[] }[];
     properties: IEntityTemplate['properties'] & { required: string[] };
 }
