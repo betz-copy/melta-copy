@@ -111,6 +111,12 @@ const ConnectionsTable: React.FC<{
         connectionToDelete?: IEntityExpanded['connections'][number];
     }>({ open: false });
 
+    const setQueryDataKey = [
+        'getExpandedEntity',
+        expandedEntity.entity.properties._id,
+        { [expandedEntity.entity.properties._id]: 1 },
+        { templateIds },
+    ];
     const onCreateRelationship = (createdRelationship: IRelationship, sourceEntity: IEntity, destinationEntity: IEntity) => {
         const doesCreatedRelationshipWithCurrEntity = [createdRelationship.sourceEntityId, createdRelationship.destinationEntityId].includes(
             expandedEntity.entity.properties._id!,
@@ -119,40 +125,40 @@ const ConnectionsTable: React.FC<{
         if (!doesCreatedRelationshipWithCurrEntity) {
             return;
         }
-        queryClient.setQueryData<IEntityExpanded>(
-            ['getExpandedEntity', expandedEntity.entity.properties._id, { templateIds }, { [expandedEntity.entity.properties._id]: 1 }],
-            (prevEntityExpanded) => {
-                return {
-                    ...prevEntityExpanded!,
-                    connections: [
-                        ...prevEntityExpanded!.connections,
-                        {
-                            sourceEntity,
-                            destinationEntity,
-                            relationship: {
-                                templateId: createdRelationship.templateId,
-                                properties: createdRelationship.properties,
-                            },
+        queryClient.setQueryData<IEntityExpanded>(setQueryDataKey, (prevEntityExpanded) => {
+            return {
+                ...prevEntityExpanded!,
+                connections: [
+                    ...prevEntityExpanded!.connections,
+                    {
+                        sourceEntity,
+                        destinationEntity,
+                        relationship: {
+                            templateId: createdRelationship.templateId,
+                            properties: createdRelationship.properties,
                         },
-                    ],
-                };
-            },
-        );
+                    },
+                ],
+            };
+        });
     };
 
     const onDeleteRelationship = (deletedRelationshipId: string) => {
-        queryClient.setQueryData<IEntityExpanded>(
-            ['getExpandedEntity', expandedEntity.entity.properties._id, { templateIds, numberOfConnections: 1 }],
-            (prevEntityExpanded) => {
-                const connections = prevEntityExpanded!.connections.filter(
-                    ({ relationship }) => relationship.properties._id !== deletedRelationshipId,
-                );
+        queryClient.setQueryData<IEntityExpanded>(setQueryDataKey, (prevEntityExpanded) => {
+            if (!prevEntityExpanded) {
                 return {
-                    ...prevEntityExpanded!,
-                    connections,
+                    entity: expandedEntity.entity,
+                    connections: [],
                 };
-            },
-        );
+            }
+
+            const updatedEntityExpanded = { ...prevEntityExpanded };
+            updatedEntityExpanded.connections = updatedEntityExpanded.connections.filter(
+                ({ relationship }) => relationship.properties._id !== deletedRelationshipId,
+            );
+
+            return updatedEntityExpanded;
+        });
     };
 
     return (
