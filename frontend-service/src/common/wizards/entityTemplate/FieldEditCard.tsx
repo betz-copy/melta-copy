@@ -141,6 +141,8 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     const [openDelete, setOpenDelete] = useState<boolean>(false);
     const MemoizedIconButton = React.memo(IconButton);
 
+    const [initialOptionArray, setInitialOptionArray] = useState<string[]>(initialEnumOptions);
+
     const handleEditChange = (e, _tagIndex) => {
         e.preventDefault();
         setLocalOption(e.target.value);
@@ -161,6 +163,16 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                 setOpen(!open);
             },
             onSuccess: (resultOfMutation, { id, option, fieldValue }) => {
+                if (editIndex !== null && editIndex < initialOptionArray.length) {
+                    const indexValue = initialOptionArray.indexOf(fieldValue.options[editIndex]);
+                    console.log(fieldValue.options[editIndex], initialOptionArray, indexValue);
+                    if (indexValue !== -1) {
+                        const temp = [...initialOptionArray];
+                        temp[indexValue] = option;
+                        console.log(indexValue, temp[indexValue]);
+                        setInitialOptionArray(temp);
+                    }
+                }
                 const fieldProps = resultOfMutation.properties.properties[fieldValue.name];
                 const newOptions = fieldProps.type === 'array' ? fieldProps.items!.enum! : fieldProps.enum!;
                 queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) => {
@@ -202,6 +214,15 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                 toast.error(<div>{i18next.t('errorPage.deleteFieldValue')}</div>);
             },
             onSuccess: (resultOfMutation, { id, fieldValue }) => {
+                if (editIndex !== null && editIndex < initialOptionArray.length) {
+                    const indexValue = initialOptionArray.indexOf(fieldValue.options[editIndex]);
+                    console.log(fieldValue.options[editIndex], initialOptionArray, indexValue);
+                    if (indexValue !== -1) {
+                        const temp = [...initialOptionArray];
+                        temp.splice(indexValue, 1);
+                        setInitialOptionArray(temp);
+                    }
+                }
                 queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) => {
                     const fieldProps = resultOfMutation.properties.properties[fieldValue.name];
                     const newOptions = fieldProps.type === 'array' ? fieldProps.items!.enum! : fieldProps.enum!;
@@ -242,7 +263,8 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     }, [editIndex]);
 
     const handleSaveEdit = (tagIndex: number) => {
-        const checkIfOldEnumValue = initialEnumOptions.length > tagIndex && isDisabled;
+        const checkIfOldEnumValue = initialOptionArray.length > tagIndex && isDisabled;
+        console.log(checkIfOldEnumValue);
         setDuplicate(false);
         if (value.options[tagIndex] === localOption) setEditIndex(null);
         else if (value.options.includes(localOption)) {
@@ -388,7 +410,8 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                 }}
                                                 renderTags={(tagValue, getTagProps) =>
                                                     tagValue.map((option, tagIndex) => {
-                                                        const chipDisabled = isDisabled && initialEnumOptions.length > tagIndex;
+                                                        console.log('LLLLLLLLLLLLLLLLLLLLL', initialOptionArray);
+                                                        const chipDisabled = isDisabled && initialOptionArray.length > tagIndex;
                                                         return (
                                                             <Box position="relative" key={option}>
                                                                 <>
@@ -513,17 +536,19 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                                 }
                                                                             }}
                                                                         />
-                                                                        <IconButton
-                                                                            size="small"
-                                                                            onClick={() => {
-                                                                                if (!isDeleteLoading) {
-                                                                                    setOpenDelete(true);
-                                                                                }
-                                                                            }}
-                                                                            disabled={isDeleteLoading}
-                                                                        >
-                                                                            {isDeleteLoading ? <CircularProgress size={20} /> : <DeleteIcon />}
-                                                                        </IconButton>
+                                                                        {chipDisabled && (
+                                                                            <IconButton
+                                                                                size="small"
+                                                                                onClick={() => {
+                                                                                    if (!isDeleteLoading) {
+                                                                                        setOpenDelete(true);
+                                                                                    }
+                                                                                }}
+                                                                                disabled={isDeleteLoading}
+                                                                            >
+                                                                                {isDeleteLoading ? <CircularProgress size={20} /> : <DeleteIcon />}
+                                                                            </IconButton>
+                                                                        )}
                                                                         {duplicate && (
                                                                             <Typography variant="body2" color="error">
                                                                                 {i18next.t('errorPage.duplicateValue')}
