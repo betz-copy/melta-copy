@@ -88,6 +88,7 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
     isEditMode = false,
 }) => {
     const queryClient = useQueryClient();
+
     const { isLoading, mutateAsync } = useMutation(
         (enitiyTemplate: EntityTemplateWizardValues) =>
             isEditMode
