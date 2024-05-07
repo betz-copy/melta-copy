@@ -485,6 +485,8 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                             alignItems: 'center',
                                                                             borderColor: duplicate ? 'red' : 'inherit',
                                                                             borderStyle: duplicate ? 'solid' : 'inherit',
+                                                                            borderWidth: '1px',
+                                                                            borderRadius: '10px',
                                                                         }}
                                                                     >
                                                                         <Backdrop
