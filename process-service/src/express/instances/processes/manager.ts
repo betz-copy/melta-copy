@@ -18,6 +18,7 @@ import { validateStepIds } from './validator.template';
 import { escapeRegExp } from '../../../utils';
 import { IMongoProcessTemplate } from '../../templates/processes/interface';
 import { IMongoStepInstance } from '../steps/interface';
+// import elasticClient from '../../../utils/elastic';
 
 type ProcessInstanceType<T extends boolean> = T extends true ? IMongoProcessInstancePopulated & Document : IMongoProcessInstance & Document;
 class ProcessInstanceManager {
@@ -37,11 +38,13 @@ class ProcessInstanceManager {
 
     static traverse(process) {
         let values = '';
+        // eslint-disable-next-line no-restricted-syntax
         for (const [key, value] of Object.entries(process)) {
             if (key !== '_id' && key !== 'templateId' && key !== 'reviewers') {
                 if (typeof value === 'object' && !Array.isArray(value)) {
                     values += this.traverse(value);
                 } else if (Array.isArray(value)) {
+                    // eslint-disable-next-line no-loop-func
                     value.forEach((item) => {
                         values += this.traverse(item);
                     });
@@ -50,26 +53,39 @@ class ProcessInstanceManager {
                 }
             }
         }
-        console.log('gggg', { values });
 
         return values;
     }
+
     static async createDocumentOnElastic(process: IMongoProcessInstancePopulated) {
         const valuesString = this.traverse(process);
-        console.log({ valuesString }, valuesString.trim());
+        console.log('hello ', valuesString.trim());
+        // await elasticClient.index({
+        //     index: 'processSearch',
+        //     body: {
+        //         id: process._id,
+        //         searchValues: valuesString.trim(),
+        //     },
+        //     // id: process._id,
+        //     // document: {
+        //     //     searchValues: valuesString.trim(),
+        //     // },
+        // });
         // return POST processes/_doc/processId {searchString: valuesString.trim()}
     }
-    static async updateDocumentOnElastic(process) {
-        // check if id already exist in elastic
-        // es.exists(index = "processes", id = process.processId)
-        //// es.get((index = 'processes'), (id = process.processId));
-        console.log('insideeee');
 
-        const valuesString = this.traverse(process);
-        const c = valuesString.trim();
-        console.log({ valuesString }, { c });
-        // return PUT processes/_doc/processId {searchString: valuesString.trim()}
-    }
+    // static async updateDocumentOnElastic(process) {
+    //     // check if id already exist in elastic
+    //     // es.exists(index = "processes", id = process.processId)
+    //     // es.get((index = 'processes'), (id = process.processId));
+    //     console.log('insideeee');
+
+    //     const valuesString = this.traverse(process);
+    //     const c = valuesString.trim();
+    //     console.log({ valuesString }, { c });
+    //     // return PUT processes/_doc/processId {searchString: valuesString.trim()}
+    // }
+
     static deleteDocumentOnElastic(processId: string) {
         console.log({ processId });
         // return DELETE processes/_doc/processId
@@ -136,13 +152,12 @@ class ProcessInstanceManager {
 
         validateStepIds(currProcess.steps, Object.keys(updatedData.steps));
 
-        const process = await transaction(async (session) => {
+        return transaction(async (session) => {
             await StepInstanceManager.updateStepsReviewers(stepsReviewers, session);
 
             const { steps, ...updatedProcess } = updatedData;
-            console.log('1111');
 
-            return await ProcessInstanceModel.findByIdAndUpdate(id, updatedProcess, {
+            return ProcessInstanceModel.findByIdAndUpdate(id, updatedProcess, {
                 new: true,
                 session,
             })
@@ -150,12 +165,6 @@ class ProcessInstanceManager {
                 .orFail(new NotFoundError('process', id))
                 .lean();
         });
-        console.log('hello', { process }, typeof process);
-
-        // // await this.updateDocumentOnElastic(process);
-        // console.log('after');
-
-        return await process;
     }
 
     static getProcessStatus(process: IMongoProcessInstancePopulated, updatedStep?: IMongoStepInstance) {
