@@ -184,7 +184,9 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                                         style={{
                                             textOverflow: 'ellipsis',
                                             whiteSpace: textWrap ? undefined : 'nowrap',
-                                            overflow: 'hidden',
+                                            wordBreak: 'break-all',
+                                            overflowX: 'hidden',
+                                            overflowY: 'auto',
                                             paddingLeft: '1rem',
                                         }}
                                     >
