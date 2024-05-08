@@ -234,7 +234,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                         onColorChange={(color) => {
                                                                             setFieldValue('optionColors', {
                                                                                 ...value.optionColors,
-                                                                                [option]: color,
+                                                                                [option]: color ?? '',
                                                                             });
                                                                         }}
                                                                         circleSize="1.6rem"
