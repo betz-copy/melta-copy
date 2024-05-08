@@ -527,7 +527,6 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                                         value.options[tagIndex] === localOption ||
                                                                                         value.options.includes(localOption)
                                                                                     ) {
-                                                                                        console.log('IN HERE FOR NEW');
                                                                                         setOpen(false);
                                                                                         handleSaveEdit(editIndex!);
                                                                                     } else setOpen(true);

@@ -538,6 +538,7 @@ export default {
         requiredFile: 'קובץ חובה',
         requiredEntity: 'ישות חובה',
         iconRequired: 'אייקון חובה',
+        colorRequired: 'חובה לבחור צבע',
         requiredFiles: 'קבצים חובה',
         variableName: 'פורמט שם משתנה',
         fieldNameExists: 'קיים שם שדה באנגלית זהה',

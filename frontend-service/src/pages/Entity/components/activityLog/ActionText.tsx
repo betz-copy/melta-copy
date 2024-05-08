@@ -104,7 +104,7 @@ const popperProps = {
 
 const UpdateTextValue: React.FC<{ value: any; old: boolean }> = ({ value, old }) => {
     const containsHtmlTags = containsHTMLTags(value);
-    const innerContent = containsHtmlTags ? `"${getFirstLine(value)}${getNumLines(value) > 0 && '...'}"` : `"${value}"`;
+    const innerContent = containsHtmlTags ? `"${getFirstLine(value)}${getNumLines(value) > 1 ? '...' : ''}"` : `"${value}"`;
     const titleContent = containsHtmlTags ? renderHTML(value) : value;
 
     return (

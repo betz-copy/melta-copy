@@ -188,7 +188,6 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                                             overflowX: 'hidden',
                                             overflowY: 'auto',
                                             paddingLeft: '1rem',
-                                            maxHeight: '250px',
                                         }}
                                     >
                                         {innerContent}
