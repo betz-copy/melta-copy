@@ -125,7 +125,6 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     const hide = `properties[${index}].hide`;
     const unique = `properties[${index}].unique`;
 
-    const initialEnumOptions = initialValue?.options || [];
     const isNewProperty = !initialValue;
     const isDisabled = Boolean(isEditMode && !isNewProperty && areThereAnyInstances);
 
@@ -141,7 +140,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     const [openDelete, setOpenDelete] = useState<boolean>(false);
     const MemoizedIconButton = React.memo(IconButton);
 
-    const [initialOptionArray, setInitialOptionArray] = useState<string[]>(initialEnumOptions);
+    const [initialOptionArray, setInitialOptionArray] = useState<string[]>(initialValue?.options || []);
 
     const handleEditChange = (e, _tagIndex) => {
         e.preventDefault();
@@ -163,16 +162,15 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                 setOpen(!open);
             },
             onSuccess: (resultOfMutation, { id, option, fieldValue }) => {
-                if (editIndex !== null && editIndex < initialOptionArray.length) {
+                if (editIndex !== null) {
                     const indexValue = initialOptionArray.indexOf(fieldValue.options[editIndex]);
-                    console.log(fieldValue.options[editIndex], initialOptionArray, indexValue);
                     if (indexValue !== -1) {
-                        const temp = [...initialOptionArray];
-                        temp[indexValue] = option;
-                        console.log(indexValue, temp[indexValue]);
-                        setInitialOptionArray(temp);
+                        const tempInitialOptionArray = [...initialOptionArray];
+                        tempInitialOptionArray[indexValue] = option;
+                        setInitialOptionArray(tempInitialOptionArray);
                     }
                 }
+                const frontEndEnumValues = value.options.slice(initialOptionArray.length);
                 const fieldProps = resultOfMutation.properties.properties[fieldValue.name];
                 const newOptions = fieldProps.type === 'array' ? fieldProps.items!.enum! : fieldProps.enum!;
                 queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) => {
@@ -184,7 +182,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                     }
                     setValues?.((prev) => ({
                         ...prev,
-                        options: newOptions,
+                        options: newOptions.concat(frontEndEnumValues),
                         optionColors: newOptionColors,
                     }));
 
@@ -214,25 +212,25 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                 toast.error(<div>{i18next.t('errorPage.deleteFieldValue')}</div>);
             },
             onSuccess: (resultOfMutation, { id, fieldValue }) => {
-                if (editIndex !== null && editIndex < initialOptionArray.length) {
+                if (editIndex !== null) {
                     const indexValue = initialOptionArray.indexOf(fieldValue.options[editIndex]);
-                    console.log(fieldValue.options[editIndex], initialOptionArray, indexValue);
                     if (indexValue !== -1) {
-                        const temp = [...initialOptionArray];
-                        temp.splice(indexValue, 1);
-                        setInitialOptionArray(temp);
+                        const tempInitialOptionArray = [...initialOptionArray];
+                        tempInitialOptionArray.splice(indexValue, 1);
+                        setInitialOptionArray(tempInitialOptionArray);
                     }
                 }
                 queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) => {
                     const fieldProps = resultOfMutation.properties.properties[fieldValue.name];
                     const newOptions = fieldProps.type === 'array' ? fieldProps.items!.enum! : fieldProps.enum!;
+                    const frontEndEnumValues = value.options.slice(newOptions.length + 1);
                     const newOptionColors = { ...fieldValue.optionColors };
                     if (fieldValue.optionColors && Object.keys(fieldValue.optionColors).length > 0 && editIndex != null) {
                         delete newOptionColors[fieldValue.options[editIndex]];
                     }
                     setValues?.((prev) => ({
                         ...prev,
-                        options: newOptions,
+                        options: newOptions.concat(frontEndEnumValues),
                         optionColors: newOptionColors,
                     }));
                     entityTemplateMap!.set(id, resultOfMutation);
@@ -247,7 +245,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
         updateEnumField({ id, tagIndex, option, fieldValue });
     };
     const handleDeleteEnumField = (id: string, tagIndex: number, fieldValue: any) => {
-        if (fieldValue.options.length <= 1) {
+        if (fieldValue.options.length <= 1 || initialOptionArray.length <= 1) {
             setAtLeastOneItem(i18next.t('entityPage.atLeastOneItem'));
             setEditIndex(null);
             setTimeout(() => {
@@ -264,7 +262,6 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
 
     const handleSaveEdit = (tagIndex: number) => {
         const checkIfOldEnumValue = initialOptionArray.length > tagIndex && isDisabled;
-        console.log(checkIfOldEnumValue);
         setDuplicate(false);
         if (value.options[tagIndex] === localOption) setEditIndex(null);
         else if (value.options.includes(localOption)) {
@@ -410,7 +407,6 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                 }}
                                                 renderTags={(tagValue, getTagProps) =>
                                                     tagValue.map((option, tagIndex) => {
-                                                        console.log('LLLLLLLLLLLLLLLLLLLLL', initialOptionArray);
                                                         const chipDisabled = isDisabled && initialOptionArray.length > tagIndex;
                                                         return (
                                                             <Box position="relative" key={option}>

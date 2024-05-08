@@ -109,7 +109,6 @@ export class InstanceManagerService {
 
     static async getConstraintsOfTemplate(templateId: string) {
         const { data } = await this.InstanceManagerApi.get<IConstraintsOfTemplate>(`${baseConstraintsRoute}/${templateId}`);
-
         return data;
     }
 

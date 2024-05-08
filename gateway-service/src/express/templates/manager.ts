@@ -495,7 +495,8 @@ export class TemplatesManager {
         if (valueIndex === -1) {
             throw new ServiceError(404, 'Field value not found in options array');
         }
-        let templateEnumFieldValues = [...values.options];
+        const curentTemplateEnum = template.properties.properties[values.name].enum || values.options;
+        let templateEnumFieldValues = [...curentTemplateEnum];
         if (update) templateEnumFieldValues[valueIndex] = field;
         else templateEnumFieldValues = templateEnumFieldValues.filter((_, index) => valueIndex !== index);
         const templateWithoutProperties: Omit<IEntityTemplatePopulated, 'disabled'> = this.removeBasicFields(template);
@@ -589,7 +590,6 @@ export class TemplatesManager {
     private static async checkFieldValueUsage(id: string, fieldValue: string, fieldName: string, fieldType: string): Promise<void> {
         const data = await InstanceManagerService.getIfValuefieldIsUsed(id, fieldValue, fieldName, fieldType);
         const cantDeleteFieldValue = Boolean(data);
-
         if (cantDeleteFieldValue) {
             throw new ServiceError(400, 'cant remove used values');
         }
@@ -599,7 +599,6 @@ export class TemplatesManager {
         await this.checkFieldValueUsage(id, fieldValue, values.name, values.type);
         const template = await EntityTemplateManagerService.getEntityTemplateById(id);
         const updatedEntityTemplate = await TemplatesManager.prepareUpdateOrDeleteEnumFieldValue(id, values, fieldValue, template, false, '');
-
         const { requiredConstraints, uniqueConstraints } = await InstanceManagerService.getConstraintsOfTemplate(id);
         return TemplatesManager.populateTemplateConstraints(updatedEntityTemplate, requiredConstraints, uniqueConstraints);
     }
