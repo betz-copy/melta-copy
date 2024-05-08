@@ -6,7 +6,6 @@ import { pdfjs } from 'react-pdf';
 import { useSelector } from 'react-redux';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { IEntity } from '../interfaces/entities';
-import { RootState } from '../store';
 import { ColoredEnumChip } from './ColoredEnumChip';
 import OpenPreview from './FilePreview/OpenPreview';
 import { MeltaTooltip } from './MeltaTooltip';
@@ -14,6 +13,7 @@ import { VerifyLink } from './VerifyLink';
 import { getFirstLine, getNumLines, containsHTMLTags, renderHTML } from '../utils/HtmlTagsStringValue';
 import { CalculateDateDifference } from '../utils/agGrid/CalculateDateDifference';
 import { environment } from '../globals';
+import { RootState } from '../store';
 
 const { maxNumOfCharactersNotInFullWidth } = environment.entitiesProperties;
 

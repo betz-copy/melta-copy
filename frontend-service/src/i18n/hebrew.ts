@@ -86,6 +86,9 @@ export default {
         disabledSuccessfully: 'ישות הושבתה בהצלחה',
         activatedSuccessfully: 'ישות הופעלה בהצלחה',
         disabledEntity: 'ישות לא פעילה',
+        deleteEnumFieldSuccessfully: 'ערך נמחק בהצלחה',
+        updatedEnumFieldSuccessfully: 'ערך נוסף בהצלחה',
+        atLeastOneItem: 'חייב להיות ערך אחד לפחות',
         activityLog: {
             deleteRelationship: 'מחק קשר מסוג',
             createRelationship: 'יצר קשר מסוג ',
@@ -129,6 +132,9 @@ export default {
         activeEntity: ' פעיל',
         preview: 'תצוגה מקדימה אינה זמינה',
         fileDownloadError: 'נכשל להוריד קובץ, נסה שנית או פנה לתמיכה',
+        duplicateValue: 'ערך זה כבר קיים',
+        deleteFieldValue: 'לא ניתן למחוק ערך בשימוש',
+        updateEnumField: 'לא ניתן לעדכן ערך זה',
     },
     addRelationshipDialog: {
         title: 'הוסף קשר',
@@ -210,6 +216,7 @@ export default {
         title: 'האם אתה בטוח?',
         yes: 'אשר',
         no: 'ביטול',
+        enumChangeDisclaimer: 'שים לב! פעולה זו תגרור לשינוי הערך בכלל הישויות מסוג  ',
     },
     userAutocomplete: {
         label: 'משתמש',

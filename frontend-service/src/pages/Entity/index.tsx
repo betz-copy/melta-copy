@@ -25,9 +25,9 @@ import { ResetFilterButton } from '../../common/EntitiesPage/ResetFilterButton';
 import { EntityTopBar } from './components/TopBar';
 import { populateRelationshipTemplate } from '../../utils/templates';
 import { CustomIcon } from '../../common/CustomIcon';
+import { checkUserInstanceOfCategoryPermission } from '../../utils/permissions/instancePermissions';
 import { EntityLink } from '../../common/EntityLink';
 import { environment } from '../../globals';
-import { checkUserInstanceOfCategoryPermission } from '../../utils/permissions/instancePermissions';
 
 const { defaultRowHeight, defaultFontSize } = environment.agGrid;
 
