@@ -5,6 +5,7 @@ import { muiDatePickersLocaleText } from '../utils/datePickers';
 export default {
     category: 'קטגוריה',
     categories: 'קטגוריות',
+    entity: 'ישות',
     entityTemplate: 'תבנית ישות',
     entityTemplates: 'תבניות ישות',
     relationshipTemplate: 'תבנית קשר',
@@ -66,6 +67,8 @@ export default {
         deleteOrArcivhed: 'מחיקה או שליחה לארכיון',
         unArchived: 'הוצא מארכיון',
         archived: 'הכנס לארכיון',
+        create: 'יוצר',
+        update: 'מעדכן',
     },
     entityPage: {
         deleteRelationshipPopoverText: 'מחק קשר',
@@ -84,9 +87,10 @@ export default {
         disabledSuccessfully: 'ישות הושבתה בהצלחה',
         activatedSuccessfully: 'ישות הופעלה בהצלחה',
         disabledEntity: 'ישות לא פעילה',
-        loading: 'טוען יישות',
         linkToEntityPage: 'לחץ למידע נוסף',
         error: 'לחץ לניסיון נוסף',
+        create: 'יוצר ישות',
+        update: 'מעדכן ישות',
         activityLog: {
             deleteRelationship: 'מחק קשר מסוג',
             createRelationship: 'יצר קשר מסוג ',
@@ -537,7 +541,6 @@ export default {
         attachmentFieldTitleExists: 'קיים שם קובץ לתצוגה זהה',
         stepNameExists: 'קיים שלב עם שם באנגלית זהה',
         stepDisplayNameExists: 'קיים שלב עם שם לתצוגה זהה',
-        filesSizesTooBig: 'קבצים גדולים מדי',
     },
     propertyTypes: {
         string: 'מחרוזת',
@@ -578,6 +581,7 @@ export default {
         RELATIONSHIP_TEMPLATE_HAS_RULES: 'קיימים חוקים לתבנית קשר',
         RULE_BLOCK: 'עבר על חוקים',
         RULE_HAS_ALERTS_OR_REQUESTS: 'לחוק קיימים התראות/בקשות. ניתן רק להשבית אותו',
+        FILES_TOO_BIG: 'סך גודל הקבצים גדול מדי',
     },
     tourText: {
         sideBar: 'סרגל הניווט הראשי של המערכת למעבר בין עולמות התוכן והעמודים השונים',

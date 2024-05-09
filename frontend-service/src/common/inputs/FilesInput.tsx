@@ -46,17 +46,8 @@ const FilesInput: React.FC<FilesInputProps> = ({ files, onDropFiles, onDeleteFil
         };
     }, []);
 
-    let borderStyle: string;
-    if (errorText) {
-        borderStyle = '1px solid red';
-    } else if (isDragActive) {
-        borderStyle = `2px dashed ${theme.palette.primary.main}`;
-    } else {
-        borderStyle = '1px solid #c4c4c4';
-    }
-
     const inputStyle = {
-        border: borderStyle,
+        border: isDragActive ? `2px dashed ${theme.palette.primary.main}` : '1px solid #c4c4c4',
         borderRadius: '10px',
         borderColor: '#CCCFE5',
         color: '#9398C2',

@@ -31,10 +31,6 @@ export const InstanceSingleFileInput: React.FC<InstanceFileInputProps> = ({
     const fileId = value?.name;
     const initialFileName = fileId && !(value instanceof File) ? getFileName(fileId) : fileId;
     const [fileName, setFileName] = useState<string | undefined>(initialFileName);
-    const [sizeError, setSizeError] = useState<boolean | undefined>(false);
-    if (value?.size && value?.size > 9000000000) {
-        setSizeError(true);
-    }
 
     return (
         <Box
@@ -49,10 +45,7 @@ export const InstanceSingleFileInput: React.FC<InstanceFileInputProps> = ({
         >
             <Field
                 validate={(changedValue) => {
-                    return (
-                        (required && !changedValue && i18next.t('validation.requiredFile')) ||
-                        (value?.size && value?.size > 9000000000 && i18next.t('validation.filesSizesTooBig'))
-                    );
+                    return required && !changedValue && i18next.t('validation.requiredFile');
                 }}
                 name={fileFieldName}
                 component={FileInput}
@@ -70,7 +63,7 @@ export const InstanceSingleFileInput: React.FC<InstanceFileInputProps> = ({
                     setFieldValue(fileFieldName, undefined);
                     setFieldTouched(fileFieldName, true, false);
                 }}
-                errorText={error || sizeError ? i18next.t('validation.filesSizesTooBig') : undefined}
+                errorText={error}
             />
         </Box>
     );

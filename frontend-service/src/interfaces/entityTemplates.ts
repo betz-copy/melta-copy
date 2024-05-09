@@ -1,6 +1,7 @@
 import { IMongoCategory } from './categories';
 
 export interface IEntitySingleProperty {
+    unique: any;
     title: string;
     type: 'string' | 'number' | 'boolean' | 'array';
     format?: string;

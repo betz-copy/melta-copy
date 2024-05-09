@@ -216,7 +216,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
                     onError={(currEntity) => {
                         setEditDialog({
                             isOpen: true,
-                            entity: currEntity,
+                            entity: currEntity as IEntity,
                         });
                     }}
                 />

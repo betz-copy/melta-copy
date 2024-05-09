@@ -9,7 +9,7 @@ import pickBy from 'lodash.pickby';
 import { AxiosError } from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { IEntity } from '../../../interfaces/entities';
+import { IEntity, IUniqueConstraint } from '../../../interfaces/entities';
 import { createEntityRequest, updateEntityRequestForMultiple } from '../../../services/entitiesService';
 import { EntityWizardValues } from '.';
 import { JSONSchemaFormik, ajvValidate } from '../../inputs/JSONSchemaFormik';
@@ -52,6 +52,10 @@ const CreateOrEditEntityDetails: React.FC<{
     }>({ isOpen: false });
 
     const { templateFileKeys: initialTemplateFileKeys } = getEntityTemplateFilesFieldsInfo(entityTemplate);
+    let newEntity = entity;
+    const [filesTooBigError, setFilesTooBigError] = useState(false);
+    // let filesTooBigError = false;
+    console.log({ entityTemplate });
 
     // for initial values
     const fieldProperties = pickBy(entity.properties, (_value, key) => !initialTemplateFileKeys.includes(key)) as IEntity['properties'];
@@ -76,6 +80,9 @@ const CreateOrEditEntityDetails: React.FC<{
             },
             onError: (err: AxiosError, { newEntityData: newEntityDate }) => {
                 const errorMetadata = err.response?.data?.metadata;
+                console.log({ err });
+
+                console.log({ errorMetadata });
 
                 if (errorMetadata?.errorCode === errorCodes.failedConstraintsValidation) {
                     toastConstraintValidationError(errorMetadata, entityTemplate);
@@ -92,6 +99,10 @@ const CreateOrEditEntityDetails: React.FC<{
                 }
 
                 if (err.response?.status === 413) {
+                    console.log('hereeee');
+
+                    setFilesTooBigError(true);
+                    // filesTooBigError = true;
                     toast.error(`${i18next.t('wizard.entity.failedToEdit')} ${i18next.t('wizard.entity.entityTooLargeError')}`);
                 }
             },
@@ -100,60 +111,95 @@ const CreateOrEditEntityDetails: React.FC<{
     const navigate = useNavigate();
 
     const { mutateAsync: createMutation } = useMutation((entityToCreate: EntityWizardValues) => createEntityRequest(entityToCreate), {
-        onSuccess: () => {
+        onSuccess: (currEntity: IEntity) => {
             onCancelUpdate();
+            newEntity = currEntity;
         },
         onError: (err: AxiosError, { template }: EntityWizardValues) => {
             const errorMetadata = err.response?.data?.metadata;
+            console.log({ errorMetadata });
+            if (errorMetadata.constraint.type === 'UNIQUE') {
+                console.log('unique!!');
 
+                const { properties } = errorMetadata.constraint as Omit<IUniqueConstraint, 'constraintName'>;
+                console.log({ properties });
+
+                const constraintPropsDisplayNames = properties.map((prop) => entityTemplate.properties.properties[prop].title);
+                console.log({ constraintPropsDisplayNames });
+            }
             if (errorMetadata?.errorCode === errorCodes.failedConstraintsValidation) {
                 toastConstraintValidationError(errorMetadata, template);
             }
             if (err.response?.status === 413) {
+                setFilesTooBigError(true);
+                // filesTooBigError = true;
                 toast.error(`${i18next.t('wizard.entity.failedToCreate')} ${i18next.t('wizard.entity.entityTooLargeError')}`);
             }
         },
     });
 
+    console.log({ filesTooBigError });
+    console.log({ entityTemplate });
+
     return (
         <Formik
             initialValues={{ properties: fieldProperties, attachmentsProperties: fileProperties, template: entityTemplate }}
             onSubmit={async (values) => {
-                let mutationPromise;
-                if (isEditMode) {
-                    mutationPromise = updateMutation({ newEntityData: values });
-                } else {
-                    mutationPromise = createMutation(values);
-                }
+                const mutationPromise = isEditMode ? updateMutation({ newEntityData: values }) : createMutation(values);
 
-                const loadingToastPromise = new Promise<void>((resolve) => {
+                await new Promise<void>((resolve) => {
                     toast.promise(
                         mutationPromise,
                         {
-                            pending: i18next.t('entityPage.loading'),
-                            success: isEditMode
-                                ? `${i18next.t('wizard.entity.editedSuccefully')}. ${i18next.t('entityPage.linkToEntityPage')}`
-                                : `${i18next.t('wizard.entity.createdSuccessfully')}. ${i18next.t('entityPage.linkToEntityPage')}`,
-                            error: isEditMode
-                                ? `${i18next.t('wizard.entity.failedToEdit')}. ${i18next.t('entityPage.error')}`
-                                : `${i18next.t('wizard.entity.failedToCreate')}. ${i18next.t('entityPage.error')}`,
+                            pending: `${i18next.t(`actions.${isEditMode ? 'update' : 'create'}`)} ${
+                                entityTemplate.displayName.length > 0 ? entityTemplate.displayName : i18next.t('entity')
+                            }`,
+                            success: {
+                                render() {
+                                    return (
+                                        <>
+                                            <span>
+                                                {`${i18next.t(`'wizard.entity.${isEditMode ? 'editedSuccessfully' : 'createdSuccessfully'}`)}. `}
+                                            </span>
+                                            <a
+                                                href={
+                                                    !values.properties._id || values.properties._id.length === 0
+                                                        ? `/entity/${newEntity.properties._id}`
+                                                        : `/entity/${values.properties._id}`
+                                                }
+                                            >
+                                                {i18next.t('entityPage.linkToEntityPage')}
+                                            </a>
+                                        </>
+                                    );
+                                },
+                            },
+                            error: {
+                                render() {
+                                    return (
+                                        <>
+                                            <span>{i18next.t(`wizard.entity.${isEditMode ? 'failedToEdit' : 'failedToCreate'}`)}</span>
+                                            <Button
+                                                variant="text"
+                                                onClick={() => {
+                                                    if (isEditMode) onError({ templateId: values.template._id, properties: values.properties });
+                                                    else onError(values);
+                                                }}
+                                                sx={{ marginRight: '10px' }}
+                                            >
+                                                {i18next.t('entityPage.error')}
+                                            </Button>
+                                        </>
+                                    );
+                                },
+                            },
                         },
                         {
                             autoClose: false,
-                            onClick: (event) => {
-                                if ((event.target as HTMLDivElement).innerText.includes(i18next.t('wizard.entity.failedToCreate'))) {
-                                    onError(values);
-                                } else if ((event.target as HTMLDivElement).innerText.includes(i18next.t('wizard.entity.failedToEdit'))) {
-                                    onError({ templateId: values.template._id, properties: values.properties });
-                                } else navigate(`/entity/${values.properties._id}`);
-                            },
                         },
                     );
-                    mutationPromise.finally(() => {
-                        resolve();
-                    });
+                    mutationPromise.finally(resolve);
                 });
-                await loadingToastPromise;
             }}
             validate={(values) => {
                 const nonAttachmentsSchema = filterAttachmentsAndEntitiesRefFromPropertiesSchema(values.template.properties);
@@ -165,6 +211,8 @@ const CreateOrEditEntityDetails: React.FC<{
             }}
         >
             {({ setFieldValue, values, errors, touched, setFieldTouched, dirty }) => {
+                console.log({ errors });
+
                 const { templateFilesProperties, templateFileKeys, requiredFilesNames } = getEntityTemplateFilesFieldsInfo(
                     values.template || entityTemplate,
                 );
@@ -192,6 +240,7 @@ const CreateOrEditEntityDetails: React.FC<{
                         });
                     }
                 }, [values.template]);
+                console.log({ dirty });
 
                 const propertiesComp = values.template?._id && (
                     <JSONSchemaFormik
@@ -213,6 +262,11 @@ const CreateOrEditEntityDetails: React.FC<{
                             variant="h6"
                             style={{ marginBottom: '12px', fontSize: '16px', fontWeight: '600' }}
                         />
+                        {filesTooBigError && (
+                            <p id="error" style={{ color: '#d32f2f', margin: 0, padding: 0 }}>
+                                {i18next.t('errorCodes.FILES_TOO_BIG')}
+                            </p>
+                        )}
                         {Object.entries(templateFilesProperties).map(([key, value], index) => (
                             <Grid item key={key} marginTop={index > 0 ? 2 : 0}>
                                 {value.items ? (
@@ -325,7 +379,7 @@ const CreateOrEditEntityDetails: React.FC<{
                                                     style={{ borderRadius: '7px' }}
                                                     type="submit"
                                                     variant="contained"
-                                                    onClick={() => onCancelUpdate()}
+                                                    onClick={() => (Object.keys(errors || {}).length > 0 ? '' : onCancelUpdate())}
                                                     startIcon={<DoneIcon />}
                                                     disabled={!dirty}
                                                 >

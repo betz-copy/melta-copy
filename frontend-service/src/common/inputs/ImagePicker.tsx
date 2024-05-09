@@ -19,11 +19,6 @@ const ImagePicker: React.FC<ImagePickerProps> = ({ image, onPick, onDelete, defa
 
     const [fileInputValue, setFileInputValue] = useState<fileDetails | undefined>(image);
     const [iconPickerValue, setIconPickerValue] = useState<fileDetails>();
-    const [sizeError, setSizeError] = useState<boolean | undefined>(false);
-
-    if (image?.file.size && image?.file.size > 9000000000) {
-        setSizeError(true);
-    }
 
     const onToggle = (_event: React.MouseEvent<HTMLElement>, selected: InputSelectType | null) => {
         if (!selected) return;
@@ -89,7 +84,6 @@ const ImagePicker: React.FC<ImagePickerProps> = ({ image, onPick, onDelete, defa
                         fileName={image?.name}
                         inputText={i18next.t('wizard.file')}
                         acceptedFilesTypes={{ 'image/png': ['.svg', '.png'] }}
-                        errorText={sizeError ? 'file too big' : undefined}
                     />
                 </Grid>
             )}

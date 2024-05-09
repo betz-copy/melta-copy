@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import i18next from 'i18next';
 import { Box } from '@mui/material';
 import { Field, FormikProps } from 'formik';
@@ -29,23 +29,6 @@ export const InstanceFileInput: React.FC<InstanceFileInputProps> = ({
     setFieldTouched,
 }) => {
     const [filesName, setFilesName] = useState<string[]>(value ? value.map((file) => getFileName(file.name)) : []);
-    const [sizeError, setSizeError] = useState<boolean | undefined>(false);
-
-    let sum = 0;
-
-    useEffect(() => {
-        if (value) {
-            value.forEach((file) => {
-                sum += file.size;
-            });
-
-            if (sum > 9000000000) {
-                setSizeError(true);
-            } else {
-                setSizeError(false);
-            }
-        }
-    }, [value]);
 
     return (
         <Box
@@ -59,14 +42,7 @@ export const InstanceFileInput: React.FC<InstanceFileInputProps> = ({
         >
             <Field
                 validate={(changedValue) => {
-                    // changedValue.forEach((file) => {
-                    //     sum += file.size;
-                    // });
-                    return (
-                        required && (!changedValue || changedValue.length === 0) && i18next.t('validation.requiredFiles')
-                        // ||
-                        // (sum > 9000000000 && i18next.t('validation.filesSizesTooBig'))
-                    );
+                    return required && (!changedValue || changedValue.length === 0) && i18next.t('validation.requiredFiles');
                 }}
                 name={fileFieldName}
                 component={FilesInput}
@@ -87,7 +63,7 @@ export const InstanceFileInput: React.FC<InstanceFileInputProps> = ({
                     setFilesName(updatedFiles.map((file: File | { name: string }) => (file instanceof File ? file.name : getFileName(file.name))));
                     setFieldTouched(fileFieldName, true, false);
                 }}
-                errorText={error || sizeError ? i18next.t('validation.filesSizesTooBig') : undefined}
+                errorText={error}
                 multiple
             />
         </Box>

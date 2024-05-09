@@ -199,7 +199,7 @@ const TemplateTable = forwardRef<
                     onError={(currEntity) =>
                         setEditDialog({
                             isOpen: true,
-                            entity: currEntity,
+                            entity: currEntity as IEntity,
                         })
                     }
                     onSuccessUpdate={(entity) => {
