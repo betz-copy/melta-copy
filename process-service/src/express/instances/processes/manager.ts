@@ -57,48 +57,43 @@ class ProcessInstanceManager {
         return values;
     }
 
-    // static async createDocumentOnElastic(process: IMongoProcessInstancePopulated) {
-    //     try {
-    //         // const response2 = await elasticClient.indices.exists({
-    //         //     index: 'process-search',
-    //         // });
-    //         // console.log({ response2 });
-    //         const valuesString = this.traverse(process);
-    //         console.log('hello ', valuesString.trim());
-    //         // const response = await elasticClient.index({
-    //         //     index: 'process-search',
-    //         //     id: process._id,
-    //         //     body: { searchValues: valuesString.trim() },
-    //         // });
-    //         // console.log('Data indexed successfully:', response);
-    //     } catch (error) {
-    //         console.error('Error indexing data:', error);
-    //     }
-    //     // await elasticClient.index({
-    //     //     index 'processSearch',
-    //     //     body: {
-    //     //         id: process._id,
-    //     //         searchValues: valuesString.trim(),
-    //     //     },
-    //     //     // id: process._id,
-    //     //     // document: {
-    //     //     //     searchValues: valuesString.trim(),
-    //     //     // },
-    //     // });
-    //     // return POST processes/_doc/processId {searchString: valuesString.trim()}
-    // }
+    static async createDocumentOnElastic(process) {
+        try {
+            const elasticClient = ElasticClient.getClient();
+            const valuesString = this.traverse(process);
+            console.log({ valuesString });
+            await elasticClient
+                .index({
+                    index: 'process-search',
+                    id: process._id,
+                    document: {
+                        searchString: valuesString.trim(),
+                    },
+                })
+                .catch((error) => console.log(error));
+        } catch (error) {
+            console.error('Error indexing data:', error);
+        }
+    }
 
-    // static async updateDocumentOnElastic(process) {
-    //     // check if id already exist in elastic
-    //     // es.exists(index = "processes", id = process.processId)
-    //     // es.get((index = 'processes'), (id = process.processId));
-    //     console.log('insideeee');
-
-    //     const valuesString = this.traverse(process);
-    //     const c = valuesString.trim();
-    //     console.log({ valuesString }, { c });
-    //     // return PUT processes/_doc/processId {searchString: valuesString.trim()}
-    // }
+    static async updateDocumentOnElastic(process) {
+        try {
+            const elasticClient = ElasticClient.getClient();
+            const valuesString = this.traverse(process);
+            console.log({ valuesString });
+            await elasticClient
+                .update({
+                    index: 'process-search',
+                    id: process._id,
+                    doc: {
+                        searchString: valuesString.trim(),
+                    },
+                })
+                .catch((error) => console.log(error));
+        } catch (error) {
+            console.error('Error indexing data:', error);
+        }
+    }
 
     static deleteDocumentOnElastic(processId: string) {
         console.log({ processId });
@@ -127,22 +122,10 @@ class ProcessInstanceManager {
             // mongoose create doesn't work well with sessions,the first argument must be an array
             // so use insertMany instead and pass array of one process.
             const [{ _id }] = await ProcessInstanceModel.insertMany([{ ...process, steps: stepIds }], { session });
-            const elasticClient = ElasticClient.getClient();
-            const valuesString = this.traverse(process);
-            await elasticClient
-                .index({
-                    index: 'process-search',
-                    body: {
-                        processId: _id,
-                        searchString: valuesString.trim(),
-                    },
-                })
-                .catch((error) => console.log(error));
+
             return _id;
         });
-
         // const populatedProcess = await this.getProcessById(processId);
-        // console.log({ populatedProcess });
         // await this.createDocumentOnElastic(populatedProcess);
         // return populatedProcess;
         return this.getProcessById(processId);
@@ -183,13 +166,17 @@ class ProcessInstanceManager {
 
             const { steps, ...updatedProcess } = updatedData;
 
-            return ProcessInstanceModel.findByIdAndUpdate(id, updatedProcess, {
+            const process = await ProcessInstanceModel.findByIdAndUpdate(id, updatedProcess, {
                 new: true,
                 session,
             })
                 .populate(config.processFields.steps)
                 .orFail(new NotFoundError('process', id))
                 .lean();
+
+            // this.updateDocumentOnElastic(process);
+
+            return process;
         });
     }
 

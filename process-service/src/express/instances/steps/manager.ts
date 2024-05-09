@@ -48,28 +48,48 @@ export default class StepInstanceManager {
         if (currProcess.archived) throw new ServiceError(500, "Can`t edit an archived process's step");
 
         if (!statusReview) {
-            return StepInstanceModel.findByIdAndUpdate(
+            const updatedStep = await StepInstanceModel.findByIdAndUpdate(
                 id,
                 { properties, comments },
                 {
                     new: true,
                 },
             );
+
+            // const updatedProcess = await ProcessInstanceManager.getProcessById(processId, true);
+            // await ProcessInstanceManager.updateDocumentOnElastic(updatedProcess);
+
+            return updatedStep;
         }
 
         const currStep = await StepInstanceManager.getStepById(id);
         const updatedProcessStatus = ProcessInstanceManager.getProcessStatus(currProcess, { ...currStep, status: statusReview.status });
 
-        if (currProcess.status === updatedProcessStatus)
-            return StepInstanceModel.findByIdAndUpdate(id, { properties, comments, ...statusReview, reviewedAt: new Date() }, { new: true })
+        if (currProcess.status === updatedProcessStatus) {
+            const updatedStep = await StepInstanceModel.findByIdAndUpdate(
+                id,
+                { properties, comments, ...statusReview, reviewedAt: new Date() },
+                { new: true },
+            )
                 .orFail(new NotFoundError('step', id))
                 .lean();
+            // const updatedProcess = await ProcessInstanceManager.getProcessById(processId, true);
+            // await ProcessInstanceManager.updateDocumentOnElastic(updatedProcess);
+            return updatedStep;
+        }
 
         return transaction(async (session) => {
             await ProcessInstanceManager.updateStatus(processId, updatedProcessStatus, session);
-            return StepInstanceModel.findByIdAndUpdate(id, { properties, comments, ...statusReview, reviewedAt: new Date() }, { new: true, session })
+            const updatedStep = await StepInstanceModel.findByIdAndUpdate(
+                id,
+                { properties, comments, ...statusReview, reviewedAt: new Date() },
+                { new: true, session },
+            )
                 .orFail(new NotFoundError('step', id))
                 .lean();
+            // const updatedProcess = await ProcessInstanceManager.getProcessById(processId, true);
+            // await ProcessInstanceManager.updateDocumentOnElastic(updatedProcess);
+            return updatedStep;
         });
     }
 
