@@ -27,11 +27,11 @@ const createIndex = async () => {
     try {
         const client = ElasticClient.getClient();
         console.log(await client.info());
-        const isIndexExists = await client.indices.exists({ index: 'process-search' });
-        console.log({ isIndexExists });
+        // const isIndexExists = await client.indices.exists({ index: 'process-search' });
+        // console.log({ isIndexExists });
 
-        if (!isIndexExists) await client.indices.create({ index: 'process-search' });
-        else console.log('Index already exists');
+        // if (!isIndexExists)
+        await client.indices.create({ index: 'process-search' });
     } catch (error) {
         console.error('Error checking or creating index:', error);
     }

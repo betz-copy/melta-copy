@@ -13,11 +13,9 @@ class ElasticClient {
             //     },
             // },
         });
-        
     }
 
     getClient() {
-        console.log('the client: ', this.elasticClient);
         return this.elasticClient;
     }
 }
