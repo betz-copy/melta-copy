@@ -62,6 +62,7 @@ interface IEntityPropertiesProps {
     innerStyle?: CSSProperties;
     textWrap?: boolean;
     viewFirstLineOfLongText?: boolean;
+    isPrintingMode?: boolean;
 }
 
 export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkMode?: boolean }> = ({
@@ -75,6 +76,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
     innerStyle,
     textWrap = false,
     viewFirstLineOfLongText = false,
+    isPrintingMode = false,
 }) => {
     let propertiesOrderedToShow: string[];
     if (overridePropertiesToShow) {
@@ -113,16 +115,15 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                     innerContent = viewFirstLineOfLongText
                         ? `${getFirstLine(stringFormatValue)}${getNumLines(stringFormatValue) > 1 ? '...' : ''}`
                         : renderHTML(stringFormatValue);
-                else if (propertyValue && 'calculateTime' in propertySchema && propertySchema.calculateTime)
-                    innerContent = <CalculateDateDifference date={stringFormatValue} />;
-                else innerContent = <VerifyLink>{stringFormatValue}</VerifyLink>;
+                else if (propertyValue && propertySchema.calculateTime) innerContent = <CalculateDateDifference date={stringFormatValue} />;
+                else innerContent = stringFormatValue;
 
                 let titleContent;
                 if (hideFieldsToDisplay.includes(propertyKey) || propertySchema.format === 'fileId') titleContent = '';
                 else if (containsHtmlTags) titleContent = renderHTML(stringFormatValue);
                 else titleContent = innerContent;
 
-                const overrideStyle =
+                const overrideStyleInLongText =
                     containsHtmlTags &&
                     !viewFirstLineOfLongText &&
                     propertyValue &&
@@ -135,14 +136,14 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                         item
                         container
                         flexDirection="row"
-                        style={overrideStyle ? { width: '100%' } : innerStyle}
+                        style={overrideStyleInLongText ? { width: '100%' } : innerStyle}
                         alignItems={textWrap ? 'flex-start' : 'center'}
                     >
                         <Grid item container width="100%" flexWrap="nowrap" alignItems={textWrap ? 'flex-start' : 'center'}>
                             <Grid
                                 item
                                 style={{
-                                    width: overrideStyle ? '10%' : '30%',
+                                    width: overrideStyleInLongText ? '10%' : '30%',
                                 }}
                             >
                                 <MeltaTooltip disableHoverListener={textWrap} placement="bottom" title={propertySchema.title}>
@@ -170,7 +171,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                                 style={{
                                     direction: 'rtl',
                                     textAlign: 'right',
-                                    width: overrideStyle ? '90%' : '70%',
+                                    width: overrideStyleInLongText ? '90%' : '70%',
                                 }}
                             >
                                 <MeltaTooltip
@@ -184,13 +185,13 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                                         style={{
                                             textOverflow: 'ellipsis',
                                             whiteSpace: textWrap ? undefined : 'nowrap',
-                                            wordBreak: 'break-all',
                                             overflowX: 'hidden',
                                             overflowY: 'auto',
                                             paddingLeft: '1rem',
+                                            maxHeight: isPrintingMode ? undefined : '350px',
                                         }}
                                     >
-                                        {innerContent}
+                                        <VerifyLink>{innerContent}</VerifyLink>
                                     </Typography>
                                 </MeltaTooltip>
                                 <Grid item>
