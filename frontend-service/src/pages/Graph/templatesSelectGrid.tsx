@@ -62,7 +62,9 @@ const TemplatesSelectGrid: React.FC<{
 
     const [miniFilterValue, setMiniFilterValue] = useState('');
 
-    const groupsProps = getCategoriesSelectCheckboxGroupProps(categories) as { useGroups: true } & SelectCheckboxGroupProps<
+    const categoriesWithTemplates = categories?.filter((category) => templates.some((template) => template.category._id === category._id));
+
+    const groupsProps = getCategoriesSelectCheckboxGroupProps(categoriesWithTemplates) as { useGroups: true } & SelectCheckboxGroupProps<
         IMongoEntityTemplatePopulated,
         IMongoCategory
     >;
@@ -82,7 +84,6 @@ const TemplatesSelectGrid: React.FC<{
 
     const first3CategoriesFiltered = categoriesFiltered!.slice(0, 3);
     const extendedCategoriesFiltered = categoriesFiltered!.slice(3);
-
     return (
         <Grid container gap="10px">
             <Grid item>
@@ -148,7 +149,7 @@ const TemplatesSelectGrid: React.FC<{
                         >
                             <div style={{ width: '100%', maxHeight: '28rem', overflowY: 'auto', paddingBottom: '4px' }}>
                                 <SelectOptionsMenuItemsGrouped
-                                    options={selectedTemplates}
+                                    options={templates}
                                     optionsFiltered={templatesFiltered}
                                     selectedOptions={selectedTemplatesFiltered}
                                     setSelectedOptions={setSelectedTemplates}
