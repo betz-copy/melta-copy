@@ -218,20 +218,24 @@ export const SelectOptionsMenuItemsGrouped = <Option extends any, Group extends 
     const selectedOptionsByGroups = groupByWithInitial(selectedOptions, groups.map(getGroupId), (option) =>
         getGroupId(getGroupOfOption(option, groups)),
     );
+    const [openMap, setOpenMap] = useState<{ [groupId: string]: boolean }>({});
 
     return (
         <>
             {groups.map((group, index) => {
                 // eslint-disable-next-line react-hooks/rules-of-hooks
-                const [open, setOpen] = useState<boolean>(false);
+                // const [open, setOpen] = useState<boolean>(false);
+                const groupId = getGroupId(group);
+                const isOpen = openMap[groupId] || false;
+
                 const optionsOfGroup = optionsByGroups[getGroupId(group)];
                 const filteredOptionsOfGroup = filteredOptionsByGroups[getGroupId(group)];
                 const selectedOptionsOfGroup = selectedOptionsByGroups[getGroupId(group)];
                 return (
-                    <Fragment key={getGroupId(group)}>
+                    <Fragment key={groupId}>
                         <Box display="flex" flex="row">
-                            <Button style={{ width: '10px' }} onClick={() => setOpen(!open)}>
-                                {open ? <IoIosArrowDown /> : <IoIosArrowBack />}
+                            <Button style={{ width: '10px' }} onClick={() => setOpenMap((prev) => ({ ...prev, [groupId]: !isOpen }))}>
+                                {isOpen ? <IoIosArrowDown /> : <IoIosArrowBack />}
                             </Button>
                             <MenuItem
                                 sx={{ width: '100%', height: '24px', padding: '0px', my: '5px' }}
@@ -270,7 +274,7 @@ export const SelectOptionsMenuItemsGrouped = <Option extends any, Group extends 
                                 />
                             </MenuItem>
                         </Box>
-                        {open && (
+                        {isOpen && (
                             <SelectOptionsMenuItems
                                 options={filteredOptionsOfGroup}
                                 selectedOptions={selectedOptions}
