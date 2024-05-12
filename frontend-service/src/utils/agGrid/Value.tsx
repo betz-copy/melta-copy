@@ -45,7 +45,7 @@ const Value: React.FC<{
     else if (color || color === 'default') innerContent = <ColoredEnumChip label={value} color={color} />;
     else if (containsHtmlTags) innerContent = getFirstLine(value);
     else if (calculateTime && value) innerContent = <CalculateDateDifference date={value} />;
-    else innerContent = <VerifyLink>{value} </VerifyLink>;
+    else innerContent = value;
 
     let popoverText;
     if (containsHtmlTags) popoverText = renderHTML(value);
@@ -66,7 +66,7 @@ const Value: React.FC<{
                 }}
                 onDoubleClick={handleDoubleClick}
             >
-                {innerContent}
+                <VerifyLink>{innerContent}</VerifyLink>
                 {(!hideValue || !hideField) && numLines > 1 && (
                     <IconButton onClick={handleDoubleClick} disableRipple>
                         <Typography style={{ color: '#9398C2', fontSize: '13px', lineHeight: '11.85px' }}>{i18next.t('actions.viewMore')}</Typography>
