@@ -83,6 +83,7 @@ const TemplatesSelectGrid: React.FC<{
 
     const first3CategoriesFiltered = categoriesFiltered!.slice(0, 3);
     const extendedCategoriesFiltered = categoriesFiltered!.slice(3);
+    const [openMap, setOpenMap] = useState<{ [groupId: string]: boolean }>({});
 
     return (
         <Grid container gap="10px">
@@ -124,6 +125,8 @@ const TemplatesSelectGrid: React.FC<{
                                 groupsProps={{ ...groupsProps, groups: first3CategoriesFiltered }}
                                 isDraggableDisabled
                                 setOptions={setTemplates}
+                                setOpenMap={setOpenMap}
+                                openMap={openMap}
                             />
                         </Box>
                         <Button
@@ -158,6 +161,8 @@ const TemplatesSelectGrid: React.FC<{
                                     groupsProps={{ ...groupsProps, groups: extendedCategoriesFiltered }}
                                     isDraggableDisabled
                                     setOptions={setTemplates}
+                                    setOpenMap={setOpenMap}
+                                    openMap={openMap}
                                 />
                             </div>
                         </Paper>

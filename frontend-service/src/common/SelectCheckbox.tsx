@@ -200,6 +200,8 @@ export const SelectOptionsMenuItemsGrouped = <Option extends any, Group extends 
     isDraggableDisabled,
     setOptions,
     groupsProps: { groups, getGroupOfOption, getGroupId, getGroupLabel },
+    openMap,
+    setOpenMap,
 }: {
     options: Option[];
     optionsFiltered: SelectCheckboxProps<Option, Group>['options'];
@@ -210,6 +212,8 @@ export const SelectOptionsMenuItemsGrouped = <Option extends any, Group extends 
     groupsProps: SelectCheckboxGroupProps<Option, Group>;
     isDraggableDisabled: boolean;
     setOptions?: Dispatch<SetStateAction<Option[]>>;
+    openMap: any;
+    setOpenMap: any;
 }) => {
     const optionsByGroups = groupByWithInitial(options, groups.map(getGroupId), (option) => getGroupId(getGroupOfOption(option, groups)));
     const filteredOptionsByGroups = groupByWithInitial(optionsFiltered, groups.map(getGroupId), (option) =>
@@ -218,13 +222,10 @@ export const SelectOptionsMenuItemsGrouped = <Option extends any, Group extends 
     const selectedOptionsByGroups = groupByWithInitial(selectedOptions, groups.map(getGroupId), (option) =>
         getGroupId(getGroupOfOption(option, groups)),
     );
-    const [openMap, setOpenMap] = useState<{ [groupId: string]: boolean }>({});
-
     return (
         <>
             {groups.map((group, index) => {
                 // eslint-disable-next-line react-hooks/rules-of-hooks
-                // const [open, setOpen] = useState<boolean>(false);
                 const groupId = getGroupId(group);
                 const isOpen = openMap[groupId] || false;
 
@@ -476,6 +477,7 @@ const SelectCheckbox = <Option extends any, Group extends any>({
     }
     // eslint-disable-next-line no-nested-ternary
     const borderRadiusStyle = overrideSx ? (isOpen ? '12px 12px 12px 0' : '12px') : isOpen ? '7px 7px 0 0' : '7px';
+    const [openMap, setOpenMap] = useState<{ [groupId: string]: boolean }>({});
 
     return (
         <FormControl style={{ background: darkMode ? '#242424' : 'white', borderRadius: isOpen ? '7px 7px 0 0' : '7px' }}>
@@ -561,6 +563,8 @@ const SelectCheckbox = <Option extends any, Group extends any>({
                         groupsProps={{ ...groupsProps, groups: groupsFiltered! }}
                         isDraggableDisabled={isDraggableDisabled}
                         setOptions={setOptions}
+                        openMap={openMap}
+                        setOpenMap={setOpenMap}
                     />
                 ) : (
                     <SelectOptionsMenuItems
