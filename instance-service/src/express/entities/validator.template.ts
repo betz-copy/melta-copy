@@ -19,6 +19,7 @@ const { neo4j } = config;
 const ajv = new Ajv();
 
 ajv.addFormat('fileId', /.*/);
+ajv.addFormat('text-area', /.*/);
 addFormats(ajv);
 ajv.addVocabulary(['patternCustomErrorMessage', 'hide']);
 ajv.addKeyword({

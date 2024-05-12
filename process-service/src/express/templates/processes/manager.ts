@@ -66,7 +66,14 @@ class ProcessTemplateManager {
             const newValue = updatedProperties[key];
             if (!newValue) throw new ServiceError(400, 'can not remove property');
             if (value.type !== newValue.type) throw new ServiceError(400, 'can not change property type');
-            if (value.format !== newValue.format) throw new ServiceError(400, 'can not change property format');
+            if (
+                !(
+                    (value.format === 'text-area' && !newValue.format && newValue.type === 'string') ||
+                    (!value.format && value.type === 'string' && newValue.format === 'text-area') ||
+                    value.format === newValue.format
+                )
+            )
+                throw new ServiceError(400, 'can not change property format');
             if (value.enum && !value.enum?.every((val) => newValue.enum?.includes(val)))
                 throw new ServiceError(400, 'can not remove options from enum');
         });

@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from '@emotion/styled';
-import { StepConnector, stepConnectorClasses, StepIconProps } from '@mui/material';
+import { StepConnector, StepIconProps, stepConnectorClasses } from '@mui/material';
 import { lightTheme } from '../../../../theme';
 
 const StyleStepIconRoot = styled('div')<{ ownerState: { active?: boolean } }>(() => ({
@@ -27,15 +27,15 @@ const StyleStepIconRoot = styled('div')<{ ownerState: { active?: boolean } }>(()
     },
 }));
 
-export const StyleStepperConnector: React.FC = styled(StepConnector)(() => ({
+export const StyleStepperConnector = styled(StepConnector)(({ theme }) => ({
     [`&.${stepConnectorClasses.active}`]: {
         [`& .${stepConnectorClasses.line}`]: {
-            backgroundColor: lightTheme.palette.primary.main,
+            backgroundColor: (theme as typeof lightTheme).palette.primary.main,
         },
     },
     [`&.${stepConnectorClasses.completed}`]: {
         [`& .${stepConnectorClasses.line}`]: {
-            backgroundColor: lightTheme.palette.primary.main,
+            backgroundColor: (theme as typeof lightTheme).palette.primary.main,
         },
     },
     [`& .${stepConnectorClasses.lineVertical}`]: {

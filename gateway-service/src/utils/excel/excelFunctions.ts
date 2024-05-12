@@ -117,6 +117,11 @@ const styleAWorksheet = (worksheet: Excel.Worksheet) => {
                 });
                 cell.value = date;
             }
+            // Check if value is html tags when format is text area
+            if (excelConfig.regexOfTextAreaFormat.test(String(cell.value))) {
+                cell.value = String(cell.value).replace(/<[^>]*>/g, '');
+                cell.alignment = { vertical: 'top' };
+            }
         });
     });
 };

@@ -1,62 +1,98 @@
 import React from 'react';
-import { Grid, Typography, Popover } from '@mui/material';
+import { Grid } from '@mui/material';
+import i18next from 'i18next';
+import { useQueryClient } from 'react-query';
+import { AddEntityButton } from '../../EntitiesPage/AddEntityButton';
+import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { IEntity } from '../../../interfaces/entities';
+import { AddIconWithText } from '../../AddIconWithText';
+import IconButtonWithPopover from '../../IconButtonWithPopover';
+import { IPermissionsOfUser, Scope } from '../../../services/permissionsService';
+import { checkUserInstanceOfCategoryPermission } from '../../../utils/permissions/instancePermissions';
 
 const DashedSelectBox: React.FC<{
     text: string;
+    checkUsersPermissions: Scope;
     onClick: React.MouseEventHandler<HTMLDivElement>;
-    disabled?: boolean;
-    disabledReason?: string;
     error?: boolean;
+    entityTemplate?: IMongoEntityTemplatePopulated;
     minHeight: React.CSSProperties['minHeight'];
-}> = ({ text, onClick, disabled = false, disabledReason, error, minHeight }) => {
-    const [disabledReasonIsOpen, setDisabledReasonIsOpen] = React.useState(false);
+    onSuccessCreate: (entity: IEntity) => void;
+    addNewEntityLabel?: string;
+}> = ({ text, checkUsersPermissions, onClick, error, minHeight, entityTemplate, onSuccessCreate, addNewEntityLabel }) => {
     const disabledReasonAnchorRef = React.useRef<HTMLParagraphElement>(null);
-
     const borderColorTheme = error ? 'error' : 'primary';
+    const queryClient = useQueryClient();
+    const { instancesPermissions } = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
 
-    const disabledModeOnClick: React.MouseEventHandler<HTMLDivElement> = () => {
-        setDisabledReasonIsOpen(true);
-    };
+    const userHasPermissions = !entityTemplate
+        ? undefined
+        : checkUserInstanceOfCategoryPermission(instancesPermissions, entityTemplate.category, checkUsersPermissions);
+
+    const disabled = !entityTemplate || userHasPermissions === false;
+
+    let popoverText: string;
+    if (!entityTemplate) {
+        popoverText = i18next.t('templateTableSelect.disabledReasonMustChooseTemplate');
+    } else if (!userHasPermissions) {
+        popoverText = i18next.t('permissions.dontHaveWritePermissions');
+    } else {
+        popoverText = i18next.t('entitiesTableOfTemplate.selectEntity');
+    }
 
     return (
         <div>
             <Grid
                 container
-                onClick={disabled ? disabledModeOnClick : onClick}
                 justifyContent="center"
                 alignItems="center"
                 sx={{
                     border: 'dashed',
-                    ':hover': { borderColor: disabled ? undefined : `${borderColorTheme}.main` }, // if disabled, dont change borderColor on hover
+                    ':hover': { borderColor: `${borderColorTheme}.main` },
                     borderColor: `${borderColorTheme}.light`,
                     cursor: 'pointer',
                     minHeight,
                 }}
             >
-                <Grid item>
-                    <Typography ref={disabledReasonAnchorRef} component="p" variant="h4" color={disabled ? 'gray' : 'primary'}>
-                        {text}
-                    </Typography>
+                <Grid container item justifyContent="center" alignItems="center" spacing={2}>
+                    <Grid xs={12} container item display="flex" justifyContent="center">
+                        <IconButtonWithPopover popoverText={popoverText} disabled={disabled} style={{ borderRadius: '5px' }}>
+                            <AddIconWithText
+                                textStyle={{ display: 'flex', alignItems: 'center', fontSize: '19px', fontVariant: 'h4' }}
+                                iconStyle={{ marginLeft: '11px' }}
+                                text={text}
+                                disabled={disabled}
+                                ref={disabledReasonAnchorRef}
+                                onClick={onClick}
+                            />
+                        </IconButtonWithPopover>
+                    </Grid>
+
+                    {addNewEntityLabel && (
+                        <Grid xs={12} container item display="flex" justifyContent="center">
+                            <AddEntityButton
+                                initialStep={1}
+                                disabled={disabled}
+                                popoverText={popoverText}
+                                initialValues={
+                                    entityTemplate
+                                        ? { template: entityTemplate, properties: { disabled: false }, attachmentsProperties: {} }
+                                        : undefined
+                                }
+                                style={{ borderRadius: '5px' }}
+                                onSuccessCreate={onSuccessCreate}
+                            >
+                                <AddIconWithText
+                                    textStyle={{ display: 'flex', alignItems: 'center', fontSize: '19px', fontVariant: 'h4' }}
+                                    iconStyle={{ marginLeft: '11px' }}
+                                    text={addNewEntityLabel}
+                                    disabled={disabled}
+                                />
+                            </AddEntityButton>
+                        </Grid>
+                    )}
                 </Grid>
             </Grid>
-            <Popover
-                open={disabledReasonIsOpen}
-                onClose={() => setDisabledReasonIsOpen(false)}
-                anchorEl={disabledReasonAnchorRef.current}
-                anchorOrigin={{
-                    vertical: 'bottom',
-                    horizontal: 'center',
-                }}
-                transformOrigin={{
-                    vertical: 'top',
-                    horizontal: 'center',
-                }}
-                disableRestoreFocus
-            >
-                <Typography variant="body1" textAlign="center" padding="5px">
-                    {disabledReason}
-                </Typography>
-            </Popover>
         </div>
     );
 };
