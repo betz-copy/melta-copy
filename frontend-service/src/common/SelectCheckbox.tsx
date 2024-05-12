@@ -212,8 +212,12 @@ export const SelectOptionsMenuItemsGrouped = <Option extends any, Group extends 
     groupsProps: SelectCheckboxGroupProps<Option, Group>;
     isDraggableDisabled: boolean;
     setOptions?: Dispatch<SetStateAction<Option[]>>;
-    openMap: any;
-    setOpenMap: any;
+    openMap: { [groupId: string]: boolean };
+    setOpenMap: React.Dispatch<
+        React.SetStateAction<{
+            [groupId: string]: boolean;
+        }>
+    >;
 }) => {
     const optionsByGroups = groupByWithInitial(options, groups.map(getGroupId), (option) => getGroupId(getGroupOfOption(option, groups)));
     const filteredOptionsByGroups = groupByWithInitial(optionsFiltered, groups.map(getGroupId), (option) =>
