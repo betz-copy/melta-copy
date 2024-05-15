@@ -6,6 +6,7 @@ import config from '../../../config';
 import { IMongoStepTemplate } from '../../templates/steps/interface';
 import { getTemplateAggregation, transaction } from '../../../utils/mongoose';
 import ProcessInstanceManager from '../processes/manager';
+import { updateDocumentOnElastic } from '../../../utils/elastic/documentsOnElastic';
 
 export default class StepInstanceManager {
     static async getStepById(id: string): Promise<IMongoStepInstance> {
@@ -56,8 +57,8 @@ export default class StepInstanceManager {
                 },
             );
 
-            // const updatedProcess = await ProcessInstanceManager.getProcessById(processId, true);
-            // await ProcessInstanceManager.updateDocumentOnElastic(updatedProcess);
+            const updatedProcess = await ProcessInstanceManager.getProcessById(processId, true);
+            await updateDocumentOnElastic(updatedProcess);
 
             return updatedStep;
         }
@@ -73,8 +74,8 @@ export default class StepInstanceManager {
             )
                 .orFail(new NotFoundError('step', id))
                 .lean();
-            // const updatedProcess = await ProcessInstanceManager.getProcessById(processId, true);
-            // await ProcessInstanceManager.updateDocumentOnElastic(updatedProcess);
+            const updatedProcess = await ProcessInstanceManager.getProcessById(processId, true);
+            await updateDocumentOnElastic(updatedProcess);
             return updatedStep;
         }
 
@@ -87,8 +88,8 @@ export default class StepInstanceManager {
             )
                 .orFail(new NotFoundError('step', id))
                 .lean();
-            // const updatedProcess = await ProcessInstanceManager.getProcessById(processId, true);
-            // await ProcessInstanceManager.updateDocumentOnElastic(updatedProcess);
+            const updatedProcess = await ProcessInstanceManager.getProcessById(processId, true);
+            await updateDocumentOnElastic(updatedProcess);
             return updatedStep;
         });
     }

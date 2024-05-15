@@ -70,13 +70,15 @@ services:
       - http.host=0.0.0.0
       - transport.host=0.0.0.0
       - xpack.security.enabled=false
-      # - xpack.monitoring.enabled=false
       - cluster.name=elasticsearch
       - bootstrap.memory_lock=true
-      # - xpack.monitoring.collection.enabled=false
     ports:
       - 9200:9200
     restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 1024m
 
   apm-server:
     image: docker.elastic.co/apm/apm-server:8.11.2
@@ -111,8 +113,9 @@ services:
     volumes:
       - ./elk/kibana.yml:/usr/share/kibana/config/kibana.yml
       - kibana_data:/usr/share/kibana/data
-    # environment: 
-      # - xpack.monitoring.collection.enabled=false
+    environment:
+      - ELASTICSEARCH_URL=http://elastic:9200
+      - ELASTICSEARCH_SSL_CERTIFICATE_VERIFICATION=false
     ports:
       - 5601:5601
     depends_on:

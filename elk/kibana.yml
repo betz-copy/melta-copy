@@ -2,9 +2,4 @@
 server.name: kibana
 server.host: '0.0.0.0'
 elasticsearch.hosts: ['http://elastic:9200']
-# monitoring.ui.container.elasticsearch.enabled: true
-# xpack.monitoring.collection.enabled: true
-
-# monitoring.kibana.collection.enabled: true
-# elasticsearch.username: "elastic"
-# elasticsearch.password: "password"
+monitoring.ui.container.elasticsearch.enabled: true

@@ -1,4 +1,2 @@
 cluster.name: 'elasticsearch'
 network.host: localhost
-# xpack.security.enabled: true
-# xpack.monitoring.collection.enabled

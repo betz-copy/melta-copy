@@ -18,7 +18,7 @@ import { validateStepIds } from './validator.template';
 import { escapeRegExp } from '../../../utils';
 import { IMongoProcessTemplate } from '../../templates/processes/interface';
 import { IMongoStepInstance } from '../steps/interface';
-import ElasticClient from '../../../utils/elastic/index';
+import { createDocumentOnElastic, deleteDocumentOnElastic, updateDocumentOnElastic } from '../../../utils/elastic/documentsOnElastic';
 
 type ProcessInstanceType<T extends boolean> = T extends true ? IMongoProcessInstancePopulated & Document : IMongoProcessInstance & Document;
 class ProcessInstanceManager {
@@ -34,70 +34,6 @@ class ProcessInstanceManager {
 
     static async getProcessesByTemplateId(id: string) {
         return ProcessInstanceModel.find({ templateId: id }).orFail(new NotFoundError('process', id)).lean().exec();
-    }
-
-    static traverse(process) {
-        let values = '';
-        // eslint-disable-next-line no-restricted-syntax
-        for (const [key, value] of Object.entries(process)) {
-            if (key !== '_id' && key !== 'templateId' && key !== 'reviewers') {
-                if (typeof value === 'object' && !Array.isArray(value)) {
-                    values += this.traverse(value);
-                } else if (Array.isArray(value)) {
-                    // eslint-disable-next-line no-loop-func
-                    value.forEach((item) => {
-                        values += this.traverse(item);
-                    });
-                } else {
-                    values += `${value} `;
-                }
-            }
-        }
-
-        return values;
-    }
-
-    static async createDocumentOnElastic(process) {
-        try {
-            const elasticClient = ElasticClient.getClient();
-            const valuesString = this.traverse(process);
-            console.log({ valuesString });
-            await elasticClient
-                .index({
-                    index: 'process-search',
-                    id: process._id,
-                    document: {
-                        searchString: valuesString.trim(),
-                    },
-                })
-                .catch((error) => console.log(error));
-        } catch (error) {
-            console.error('Error indexing data:', error);
-        }
-    }
-
-    static async updateDocumentOnElastic(process) {
-        try {
-            const elasticClient = ElasticClient.getClient();
-            const valuesString = this.traverse(process);
-            console.log({ valuesString });
-            await elasticClient
-                .update({
-                    index: 'process-search',
-                    id: process._id,
-                    doc: {
-                        searchString: valuesString.trim(),
-                    },
-                })
-                .catch((error) => console.log(error));
-        } catch (error) {
-            console.error('Error indexing data:', error);
-        }
-    }
-
-    static deleteDocumentOnElastic(processId: string) {
-        console.log({ processId });
-        // return DELETE processes/_doc/processId
     }
 
     static async getProcessTemplateByProcessId(id: string): Promise<IMongoProcessTemplate> {
@@ -122,13 +58,12 @@ class ProcessInstanceManager {
             // mongoose create doesn't work well with sessions,the first argument must be an array
             // so use insertMany instead and pass array of one process.
             const [{ _id }] = await ProcessInstanceModel.insertMany([{ ...process, steps: stepIds }], { session });
-
             return _id;
         });
-        // const populatedProcess = await this.getProcessById(processId);
-        // await this.createDocumentOnElastic(populatedProcess);
-        // return populatedProcess;
-        return this.getProcessById(processId);
+
+        const populatedProcess: IMongoProcessInstancePopulated = await this.getProcessById(processId);
+        await createDocumentOnElastic(populatedProcess);
+        return populatedProcess;
     }
 
     static async deleteProcess(id: string): Promise<IMongoProcessInstancePopulated> {
@@ -138,6 +73,7 @@ class ProcessInstanceManager {
             await StepInstanceManager.deleteStepsByIds(stepsIds, session);
             return ProcessInstanceModel.findByIdAndDelete(id, { session }).orFail(new NotFoundError('process', id)).lean();
         });
+        await deleteDocumentOnElastic(deletedProcess._id);
         return { ...deletedProcess, steps: processSteps };
     }
 
@@ -174,7 +110,7 @@ class ProcessInstanceManager {
                 .orFail(new NotFoundError('process', id))
                 .lean();
 
-            // this.updateDocumentOnElastic(process);
+            await updateDocumentOnElastic(process);
 
             return process;
         });
