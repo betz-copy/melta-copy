@@ -52,21 +52,22 @@ const TemplatesSelectGrid: React.FC<{
     templates: IMongoEntityTemplatePopulated[];
     selectedTemplates: IMongoEntityTemplatePopulated[];
     setSelectedTemplates: React.Dispatch<React.SetStateAction<IMongoEntityTemplatePopulated[]>>;
-    categories?: any[];
+    categories?: IMongoCategory[];
     setTemplates?: Dispatch<React.SetStateAction<IMongoEntityTemplatePopulated[]>>;
-    setOpenFilter: any;
-    openFilter: any;
+    setOpenFilter: React.Dispatch<React.SetStateAction<boolean>>;
+    openFilter: boolean;
 }> = ({ templates, selectedTemplates, setSelectedTemplates, categories, setTemplates, setOpenFilter, openFilter }) => {
     const classes = useStyles();
     const [showAll, setShowAll] = useState<boolean>(false);
 
     const [miniFilterValue, setMiniFilterValue] = useState('');
 
-    const groupsProps = getCategoriesSelectCheckboxGroupProps(categories) as { useGroups: true } & SelectCheckboxGroupProps<
+    const filteredCategories = categories?.filter((category) => templates.some((template) => template.category._id === category._id));
+
+    const groupsProps = getCategoriesSelectCheckboxGroupProps(filteredCategories) as { useGroups: true } & SelectCheckboxGroupProps<
         IMongoEntityTemplatePopulated,
         IMongoCategory
     >;
-
     const { optionsFiltered: templatesFiltered, groupsFiltered: categoriesFiltered } = getOptionsAndGroupsMiniFiltered(
         miniFilterValue,
         templates,
@@ -82,6 +83,7 @@ const TemplatesSelectGrid: React.FC<{
 
     const first3CategoriesFiltered = categoriesFiltered!.slice(0, 3);
     const extendedCategoriesFiltered = categoriesFiltered!.slice(3);
+    const [openMap, setOpenMap] = useState<{ [groupId: string]: boolean }>({});
 
     return (
         <Grid container gap="10px">
@@ -123,6 +125,8 @@ const TemplatesSelectGrid: React.FC<{
                                 groupsProps={{ ...groupsProps, groups: first3CategoriesFiltered }}
                                 isDraggableDisabled
                                 setOptions={setTemplates}
+                                setOpenMap={setOpenMap}
+                                openMap={openMap}
                             />
                         </Box>
                         <Button
@@ -148,7 +152,7 @@ const TemplatesSelectGrid: React.FC<{
                         >
                             <div style={{ width: '100%', maxHeight: '28rem', overflowY: 'auto', paddingBottom: '4px' }}>
                                 <SelectOptionsMenuItemsGrouped
-                                    options={selectedTemplates}
+                                    options={templates}
                                     optionsFiltered={templatesFiltered}
                                     selectedOptions={selectedTemplatesFiltered}
                                     setSelectedOptions={setSelectedTemplates}
@@ -157,6 +161,8 @@ const TemplatesSelectGrid: React.FC<{
                                     groupsProps={{ ...groupsProps, groups: extendedCategoriesFiltered }}
                                     isDraggableDisabled
                                     setOptions={setTemplates}
+                                    setOpenMap={setOpenMap}
+                                    openMap={openMap}
                                 />
                             </div>
                         </Paper>

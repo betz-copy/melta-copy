@@ -56,6 +56,31 @@ export const createEntityTemplateSchema = Joi.object({
     file: iconFileSchema,
 });
 
+// PUT /api/templates/entities/update-enum-field/:id
+export const updateFieldValueSchema = Joi.object({
+    body: {
+        fieldValue: Joi.string().required(),
+        partialInput: Joi.object({
+            name: Joi.string().required(),
+            type: Joi.string().required(),
+            options: Joi.array().items(Joi.string()).required(),
+        }),
+        field: Joi.string().required(),
+    },
+});
+
+// DELETE /api/templates/entities/delete-enum-field/:id
+export const deleteFieldValueSchema = Joi.object({
+    body: {
+        fieldValue: Joi.string().required(),
+        partialInput: Joi.object({
+            name: Joi.string().required(),
+            type: Joi.string().required(),
+            options: Joi.array().items(Joi.string()).required(),
+        }),
+    },
+});
+
 // PUT /api/templates/entities/:id
 export const updateEntityTemplateSchema = Joi.object({
     body: {

@@ -78,7 +78,9 @@ const Wizard = <T extends object>({
                 {title}
                 <IconButton
                     aria-label="close"
-                    onClick={handleClose}
+                    onClick={async () => {
+                        handleClose();
+                    }}
                     sx={{
                         position: 'absolute',
                         right: 12,

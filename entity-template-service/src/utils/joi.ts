@@ -7,15 +7,13 @@ import { IEntityTemplate, IEnumPropertiesColors, IProperties } from '../express/
 
 const ajv = new Ajv();
 ajv.addFormat('fileId', /.*/);
+ajv.addFormat('text-area', /.*/);
 addFormats(ajv);
 ajv.addVocabulary(['patternCustomErrorMessage', 'hide']);
 ajv.addKeyword({
     keyword: 'dateNotification',
     type: 'string',
 });
-ajv.addKeyword({ keyword: 'calculateTime', type: 'boolean' });
-const stringFormats = ['date', 'date-time', 'email', 'fileId'];
-const allowedJSONSchemaTypes = ['string', 'number', 'boolean', 'array'];
 ajv.addKeyword({
     keyword: 'serialStarter',
     type: 'number',
@@ -24,6 +22,10 @@ ajv.addKeyword({
     keyword: 'serialCurrent',
     type: 'number',
 });
+ajv.addKeyword({ keyword: 'calculateTime', type: 'boolean' });
+
+const stringFormats = ['date', 'date-time', 'email', 'fileId', 'text-area'];
+const allowedJSONSchemaTypes = ['string', 'number', 'boolean', 'array'];
 
 const propertiesArraySchema = Joi.array()
     .items(
@@ -158,7 +160,6 @@ export const previewPropertiesSchema = Joi.array().unique().items(Joi.string()).
 
 const customEnumPropertiesColorsSchemaValidation: Joi.CustomValidator = (enumPropertiesColors: IEnumPropertiesColors, helpers) => {
     const { properties }: IEntityTemplate['properties'] = helpers.state.ancestors[0].properties;
-
     Object.entries(enumPropertiesColors).forEach(([key, value]) => {
         const property = properties[key];
 
@@ -173,6 +174,7 @@ const customEnumPropertiesColorsSchemaValidation: Joi.CustomValidator = (enumPro
 
     return enumPropertiesColors;
 };
+
 export const enumPropertiesColorsSchema = Joi.object()
     .pattern(Joi.string(), Joi.object().pattern(Joi.string(), ColorSchema))
     .custom(customEnumPropertiesColorsSchemaValidation);

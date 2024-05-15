@@ -7,6 +7,7 @@ import { IActivityLog } from '../../../../services/activityLogService';
 import { IRelationshipTemplateMap } from '../../../../interfaces/relationshipTemplates';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { MeltaTooltip } from '../../../../common/MeltaTooltip';
+import { getFirstLine, getNumLines, containsHTMLTags, renderHTML } from '../../../../utils/HtmlTagsStringValue';
 
 const StyledTypography = styled(Typography)(({ theme }) => ({
     fontFamily: 'Rubik',
@@ -82,29 +83,53 @@ const RelationshipMetadataActionText: React.FC<{
     );
 };
 
+const ellipsisStyle: React.CSSProperties = {
+    marginLeft: '10px',
+    overflow: 'hidden',
+    whiteSpace: 'nowrap',
+    textOverflow: 'ellipsis',
+    maxWidth: '300px',
+};
+
+const popperProps = {
+    modifiers: [
+        {
+            name: 'offset',
+            options: {
+                offset: [0, -10],
+            },
+        },
+    ],
+};
+
+const UpdateTextValue: React.FC<{ value: any; old: boolean }> = ({ value, old }) => {
+    const containsHtmlTags = containsHTMLTags(value);
+    const innerContent = containsHtmlTags ? `"${getFirstLine(value)}${getNumLines(value) > 1 ? '...' : ''}"` : `"${value}"`;
+    const titleContent = containsHtmlTags ? renderHTML(value) : value;
+
+    return (
+        <MeltaTooltip
+            PopperProps={popperProps}
+            title={
+                <Grid style={{ maxHeight: '500px', overflowY: 'auto' }}>{value ? titleContent : i18next.t('entityPage.activityLog.emptyField')}</Grid>
+            }
+            placement="top-start"
+        >
+            <Grid>
+                <StyledTypography variant="body2" style={ellipsisStyle}>
+                    {old ? i18next.t('entityPage.activityLog.from') : i18next.t('entityPage.activityLog.to')}{' '}
+                    {value ? innerContent : i18next.t('entityPage.activityLog.emptyField')}
+                </StyledTypography>
+            </Grid>
+        </MeltaTooltip>
+    );
+};
+
 const UpdateEntityMetadataActionText: React.FC<{
     actionMetadata: { updatedFields: [{ fieldName: string; oldValue: any; newValue: any }] };
     entityTemplate: IMongoEntityTemplatePopulated;
 }> = ({ actionMetadata, entityTemplate }) => {
     const theme = useTheme();
-    const ellipsisStyle: React.CSSProperties = {
-        marginLeft: '10px',
-        overflow: 'hidden',
-        whiteSpace: 'nowrap',
-        textOverflow: 'ellipsis',
-        maxWidth: '300px',
-    };
-
-    const popperProps = {
-        modifiers: [
-            {
-                name: 'offset',
-                options: {
-                    offset: [0, -10],
-                },
-            },
-        ],
-    };
     return (
         <Grid item minWidth="190px">
             <StyledTypography variant="body2" marginBottom="5px">
@@ -114,35 +139,16 @@ const UpdateEntityMetadataActionText: React.FC<{
             </StyledTypography>
 
             {actionMetadata.updatedFields.map((field) => {
+                const { oldValue, newValue } = field;
+
                 return (
                     <Grid key={field.fieldName} style={{ marginBottom: '10px' }}>
                         <StyledTypography variant="body2" style={{ ...ellipsisStyle, color: theme.palette.primary.main }}>
                             {entityTemplate.properties.properties[field.fieldName].title}
                         </StyledTypography>
-                        <MeltaTooltip
-                            PopperProps={popperProps}
-                            title={field.oldValue ? field.oldValue : i18next.t('entityPage.activityLog.emptyField')}
-                            placement="top-start"
-                        >
-                            <Grid>
-                                <StyledTypography variant="body2" style={ellipsisStyle}>
-                                    {i18next.t('entityPage.activityLog.from')}{' '}
-                                    {field.oldValue ? `"${field.oldValue}"` : i18next.t('entityPage.activityLog.emptyField')}
-                                </StyledTypography>
-                            </Grid>
-                        </MeltaTooltip>
-                        <MeltaTooltip
-                            placement="bottom-start"
-                            PopperProps={popperProps}
-                            title={field.newValue ? field.newValue : i18next.t('entityPage.activityLog.emptyField')}
-                        >
-                            <Grid>
-                                <StyledTypography variant="body2" style={ellipsisStyle}>
-                                    {i18next.t('entityPage.activityLog.to')}{' '}
-                                    {field.newValue ? `"${field.newValue}"` : i18next.t('entityPage.activityLog.emptyField')}
-                                </StyledTypography>
-                            </Grid>
-                        </MeltaTooltip>
+                        {[oldValue, newValue].map((value, index) => (
+                            <UpdateTextValue key={value} value={value} old={index === 0} />
+                        ))}
                     </Grid>
                 );
             })}

@@ -7,6 +7,7 @@ export enum ProcessPropertyFormats {
     Email = 'email',
     FileId = 'fileId',
     EntityReference = 'entityReference',
+    TextArea = 'text-area',
 }
 
 export interface IProcessSingleProperty {

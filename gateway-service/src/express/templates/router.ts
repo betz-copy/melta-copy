@@ -14,7 +14,6 @@ import {
     validateUserCanUpdateOrDeleteEntityTemplate,
     validateUserCanUpdateOrDeleteRelationshipTemplate,
 } from './middlewares';
-
 import config from '../../config';
 import ValidateRequest from '../../utils/joi';
 import {
@@ -23,11 +22,13 @@ import {
     createRelationshipTemplateSchema,
     deleteCategorySchema,
     deleteEntityTemplateSchema,
+    deleteFieldValueSchema,
     deleteRelationshipTemplateSchema,
     deleteRuleByIdRequestSchema,
     updateCategorySchema,
     updateEntityTemplateSchema,
     updateEntityTemplateStatusSchema,
+    updateFieldValueSchema,
     updateRelationshipTemplateSchema,
     updateRuleStatusByIdRequestSchema,
 } from './validator.schema';
@@ -90,6 +91,18 @@ templatesRouter.delete(
 );
 
 // entities (templates)
+templatesRouter.put(
+    '/entities/update-enum-field/:id',
+    ValidateRequest(updateFieldValueSchema),
+    wrapMiddleware(validateUserCanUpdateOrDeleteEntityTemplate),
+    wrapController(TemplatesController.updateEntityEnumFieldValue),
+);
+templatesRouter.patch(
+    '/entities/delete-enum-field/:id',
+    ValidateRequest(deleteFieldValueSchema),
+    wrapMiddleware(validateUserCanUpdateOrDeleteEntityTemplate),
+    wrapController(TemplatesController.deleteEntityEnumFieldValue),
+);
 templatesRouter.post(
     '/entities',
     multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).single('file'),
