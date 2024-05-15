@@ -276,7 +276,6 @@ const Graph: React.FC = () => {
     const addNewFilter = () => {
         setFilters((prevFilters) => [...prevFilters, Date.now()]);
     };
-
     return (
         <Box ref={ref} position="relative">
             <GraphTopBar
