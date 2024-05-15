@@ -69,6 +69,7 @@ const addFieldsSchema = Yup.object({
 
 const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEditMode' | 'setBlock'>> = ({
     values,
+    setValues,
     touched,
     errors,
     setFieldValue,
@@ -132,6 +133,15 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
                                             propertiesType={itemId}
                                             values={values}
                                             uniqueConstraints={values.uniqueConstraints}
+                                            setUniqueConstraints={(newUniqueConstraints) => {
+                                                setValues((prev) => ({
+                                                    ...prev,
+                                                    uniqueConstraints:
+                                                        typeof newUniqueConstraints === 'function'
+                                                            ? newUniqueConstraints(prev.uniqueConstraints!)
+                                                            : newUniqueConstraints,
+                                                }));
+                                            }}
                                             initialValues={initialValues}
                                             setFieldValue={setFieldValue}
                                             areThereAnyInstances={areThereAnyInstances}

@@ -14,5 +14,6 @@ export interface CommonFormInputProperties {
     preview?: boolean;
     hide?: boolean;
     unique?: boolean;
+    uniqueCheckBox?: boolean;
     uniqueConstraints?: { groupName: string; properties: string[] }[];
 }

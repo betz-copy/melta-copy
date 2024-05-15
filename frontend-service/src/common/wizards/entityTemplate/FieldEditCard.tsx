@@ -1,4 +1,4 @@
-import React, { memo, SetStateAction, useMemo, useState } from 'react';
+import React, { memo, SetStateAction } from 'react';
 import { FormikErrors, FormikTouched } from 'formik';
 import { TextField, Box, MenuItem, Grid, Card, CardContent, Switch, FormControlLabel, IconButton, Chip, Autocomplete, Checkbox } from '@mui/material';
 import {
@@ -33,7 +33,7 @@ export interface FieldEditCardProps {
     supportChangeToRequiredWithInstances: boolean;
     supportArrayFields: boolean;
     uniqueConstraints?: { groupName: string; properties: string[] }[];
-    setUniqueConstraints?: (uniqueConstraints: { groupName: string; properties: string[] }[]) => void;
+    setUniqueConstraints?: (uniqueConstraints: SetStateAction<{ groupName: string; properties: string[] }[]>) => void;
 }
 
 export const FieldEditCard: React.FC<FieldEditCardProps> = ({
@@ -92,130 +92,138 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     const preview = `properties[${index}].preview`;
     const hide = `properties[${index}].hide`;
     const unique = `properties[${index}].unique`;
+    const uniqueCheckBox = `properties[${index}].uniqueCheckBox`;
 
     const initialEnumOptions = initialValue?.options || [];
 
-    const initialCheckboxValue = useMemo(() => {
-        return uniqueConstraints?.some((group) => {
-            if (group.groupName.trim() === '') {
-                return false;
-            }
-            return group.properties.includes(value.name);
-        });
-    }, [uniqueConstraints, value.name]);
+    const uniqueGroupName = value.uniqueConstraints?.find((uniqueGroup) => uniqueGroup.properties.includes(value.name))?.groupName ?? '';
 
-    const [addUniqueGroupCheckBox, setAddUniqueGroupCheckBox] = useState(initialCheckboxValue);
-    const uniqueGroupName = uniqueConstraints?.find((uniqueGroup) => uniqueGroup.properties.includes(value.name))?.groupName || '';
     const createNewUniqueGroup = (groupName) => {
-        console.log('in here 1');
+        console.log('in here createNewUniqueGroup');
 
         if (groupName) {
-            const existingGroup = uniqueConstraints?.find((group) => group.groupName === groupName);
-            if (!existingGroup) {
-                const newGroup = { groupName, properties: [value.name] };
-                const updatedConstraints = uniqueConstraints!.map((group) => ({
-                    ...group,
-                    properties: group.properties.filter((prop) => prop !== value.name),
-                }));
-                updatedConstraints.push(newGroup);
-                setUniqueConstraints!(updatedConstraints);
-            }
+            setUniqueConstraints!((prev) => {
+                const existingGroup = prev?.find((group) => group.groupName === groupName);
+                if (!existingGroup) {
+                    const newGroup = { groupName, properties: [value.name] };
+                    const updatedConstraints = (prev || []).map((group) => ({
+                        ...group,
+                        properties: group.properties.filter((prop) => prop !== value.name),
+                    }));
+                    updatedConstraints.push(newGroup);
+
+                    const updatedConstraintsWithoutEmptyGroups = updatedConstraints.filter((group) => group.properties.length > 0);
+                    return updatedConstraintsWithoutEmptyGroups;
+                }
+                return prev;
+            });
         }
     };
 
     const addToProperties = (selectedGroupName) => {
-        console.log('in here 2');
+        console.log('in here addToProperties');
 
-        const existingGroup = uniqueConstraints?.find((group) => group.groupName === selectedGroupName);
-        const propertyExists = existingGroup?.properties.includes(value.name);
+        setUniqueConstraints!((prev) => {
+            const existingGroup = prev?.find((group) => group.groupName === selectedGroupName);
+            const propertyExists = existingGroup?.properties.includes(value.name);
 
-        if (!existingGroup) {
-            const newGroup = {
-                groupName: selectedGroupName,
-                properties: [value.name],
-            };
-            const updatedConstraints = uniqueConstraints ? [...uniqueConstraints, newGroup] : [newGroup];
-            setUniqueConstraints!(updatedConstraints);
-        } else if (!propertyExists) {
-            const updatedConstraints = uniqueConstraints!
+            if (!propertyExists) {
+                const updatedConstraints = (prev || [])
+                    .map((group) => {
+                        if (group.groupName === selectedGroupName) {
+                            return {
+                                ...group,
+                                properties: [...group.properties, value.name],
+                            };
+                        }
+                        if (group.properties.includes(value.name)) {
+                            const updatedGroup = {
+                                ...group,
+                                properties: group.properties.filter((prop) => prop !== value.name),
+                            };
+
+                            if (!updatedGroup.properties.length) {
+                                console.log('empty');
+                                return null;
+                            }
+                            return updatedGroup;
+                        }
+                        return group;
+                    })
+                    .filter((group) => group !== null) as { groupName: string; properties: string[] }[];
+                return updatedConstraints;
+            }
+            return prev;
+        });
+    };
+
+    const createEmptyGroup = (fieldName) => {
+        console.log('in here createEmptyGroup');
+
+        setUniqueConstraints!((prev) => {
+            const existingGroup = prev?.find((group) => group.groupName === '' && group.properties.includes(fieldName));
+
+            if (!existingGroup) {
+                const newGroup = {
+                    groupName: '',
+                    properties: [fieldName],
+                };
+                const updatedConstraints = prev ? [...prev, newGroup] : [newGroup];
+                return updatedConstraints;
+            }
+            return prev;
+        });
+    };
+
+    const deleteUniqueGroup = (groupName) => {
+        console.log('in here deleteUniqueGroup');
+        setUniqueConstraints!((prev) => {
+            const updatedConstraints = (prev || []).filter((group) => group.groupName !== groupName);
+
+            return updatedConstraints;
+        });
+    };
+    // console.log(uniqueGroupName);
+
+    const deletePropFromUniqueConstraints = (groupName, fieldName) => {
+        console.log(groupName);
+
+        console.log('in here deletePropFromUniqueConstraints');
+        setUniqueConstraints!((prev) => {
+            const updatedConstraints = (prev || [])
                 .map((group) => {
-                    if (group.groupName === selectedGroupName) {
-                        return {
-                            ...group,
-                            properties: [...group.properties, value.name],
-                        };
-                    }
-                    if (group.properties.includes(value.name)) {
-                        const updatedGroup = {
-                            ...group,
-                            properties: group.properties.filter((prop) => prop !== value.name),
-                        };
-                        console.log({ updatedGroup });
+                    if (group.groupName === groupName) {
+                        console.log('hello');
 
-                        if (!updatedGroup.properties.length) {
-                            console.log('empty');
+                        const updatedProperties = group.properties.filter((prop) => prop !== fieldName);
+                        if (updatedProperties.length === 0) {
+                            console.log('Empty properties array, removing group');
                             return null;
                         }
-                        return updatedGroup;
+                        return {
+                            ...group,
+                            properties: updatedProperties,
+                        };
                     }
                     return group;
                 })
                 .filter((group) => group !== null) as { groupName: string; properties: string[] }[];
-            setUniqueConstraints!(updatedConstraints);
-        }
+            return updatedConstraints;
+        });
     };
 
-    const deleteUniqueGroup = (groupName) => {
-        console.log('in here 3');
-
-        const updatedConstraints = uniqueConstraints!
-            .map((group) => ({
-                ...group,
-                properties: group.properties.filter((prop) => prop !== groupName),
-            }))
-            .filter((group) => group.groupName !== groupName);
-
-        setUniqueConstraints!(updatedConstraints);
-    };
-
-    const deletePropFromUniqueConstraints = (groupName, fieldName) => {
-        console.log('in here 3');
-
-        const updatedConstraints = uniqueConstraints!
-            .map((group) => {
-                if (group.groupName === groupName) {
-                    const updatedProperties = group.properties.filter((prop) => prop !== fieldName);
-                    if (updatedProperties.length === 0) {
-                        console.log('Empty properties array');
-                        return null; // or any other action you want to take when properties array becomes empty
-                    }
-                    return {
-                        ...group,
-                        properties: updatedProperties,
-                    };
-                }
-                return group;
-            })
-            .filter(Boolean) as { groupName: string; properties: string[] }[]; // Filter out null values and specify the correct type
-
-        setUniqueConstraints!(updatedConstraints);
-    };
-
-    const handleCheckboxChange = (e) => {
-        console.log('in here 4');
-        const isChecked = e.target.checked;
-
-        setAddUniqueGroupCheckBox(isChecked);
-
+    const handleCheckboxChange = (isChecked) => {
+        console.log('in here handleCheckboxChange');
+        const fieldName = value.name;
         if (!isChecked) {
-            deletePropFromUniqueConstraints(uniqueGroupName, value.name);
-        }
-        if (isChecked && value.unique !== undefined && !addUniqueGroupCheckBox) {
-            addToProperties('');
+            createEmptyGroup(fieldName);
+            deletePropFromUniqueConstraints(uniqueGroupName, fieldName);
         }
     };
 
-    console.log({ uniqueConstraints });
+    console.log(uniqueConstraints);
+
+    // console.log(value);
 
     const isNewProperty = !initialValue;
     const isDisabled = Boolean(isEditMode && !isNewProperty && areThereAnyInstances);
@@ -519,15 +527,15 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                     required: checked ? true : prevValue.required,
                                                                 }));
 
-                                                                if (checked && !addUniqueGroupCheckBox) {
-                                                                    const newGroup = {
-                                                                        groupName: '',
-                                                                        properties: [value.name],
-                                                                    };
-                                                                    const updatedConstraints = uniqueConstraints
-                                                                        ? [...uniqueConstraints, newGroup]
-                                                                        : [newGroup];
-                                                                    setUniqueConstraints!(updatedConstraints);
+                                                                if (checked && !value.uniqueCheckBox) {
+                                                                    console.log('1');
+                                                                    createEmptyGroup(value.name);
+                                                                } else if (checked && value.uniqueCheckBox) {
+                                                                    console.log('2');
+                                                                    deletePropFromUniqueConstraints(uniqueGroupName, value.name);
+                                                                } else if (!checked) {
+                                                                    console.log('3');
+                                                                    deletePropFromUniqueConstraints(uniqueGroupName, value.name);
                                                                 }
                                                             }}
                                                             checked={value.unique}
@@ -563,21 +571,29 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                     <FormControlLabel
                                                         control={
                                                             <Checkbox
-                                                                checked={addUniqueGroupCheckBox}
-                                                                onChange={handleCheckboxChange}
+                                                                checked={value.uniqueCheckBox}
+                                                                onChange={(_e, checked) => {
+                                                                    // const isChecked = event.target.checked;
+
+                                                                    setValues!((prevValue) => ({
+                                                                        ...prevValue,
+                                                                        uniqueCheckBox: checked,
+                                                                    }));
+                                                                    handleCheckboxChange(checked);
+                                                                }}
                                                                 name="addUniqueGroupCheckbox"
                                                             />
                                                         }
                                                         label={i18next.t('wizard.entityTemplate.createOrAddUniqueGroup')}
                                                     />
                                                 </Grid>
-                                                {addUniqueGroupCheckBox && (
+                                                {value.uniqueCheckBox && (
                                                     <Autocomplete
                                                         fullWidth
                                                         freeSolo
                                                         disableClearable
                                                         options={
-                                                            uniqueConstraints
+                                                            Array.isArray(uniqueConstraints)
                                                                 ? uniqueConstraints
                                                                       .filter((group) => group.groupName !== '')
                                                                       ?.map((group) => group.groupName)
@@ -587,6 +603,13 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                         onChange={(_event, newValue) => {
                                                             if (newValue !== null) {
                                                                 addToProperties(newValue);
+                                                                setValues!((prevValue) => ({
+                                                                    ...prevValue,
+                                                                    uniqueConstraints: [
+                                                                        ...(prevValue.uniqueConstraints || []),
+                                                                        { groupName: newValue, properties: [value.name] },
+                                                                    ],
+                                                                }));
                                                             }
                                                         }}
                                                         renderInput={(params) => (
@@ -603,21 +626,25 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                         endAdornment: (
                                                                             <>
                                                                                 {params.InputProps.endAdornment}
-                                                                                {uniqueConstraints?.some(
-                                                                                    (group) => group.groupName === uniqueGroupName,
-                                                                                ) && (
-                                                                                    <IconButton
-                                                                                        aria-label="delete"
-                                                                                        onClick={() => deleteUniqueGroup(uniqueGroupName)}
-                                                                                    >
-                                                                                        <DeleteIcon />
-                                                                                    </IconButton>
-                                                                                )}
+                                                                                {uniqueGroupName &&
+                                                                                    Array.isArray(uniqueConstraints) &&
+                                                                                    uniqueConstraints?.some(
+                                                                                        (group) => group.groupName === uniqueGroupName,
+                                                                                    ) && (
+                                                                                        <IconButton
+                                                                                            aria-label="delete"
+                                                                                            onClick={() => deleteUniqueGroup(uniqueGroupName)}
+                                                                                        >
+                                                                                            <DeleteIcon />
+                                                                                        </IconButton>
+                                                                                    )}
                                                                             </>
                                                                         ),
                                                                     }}
                                                                 />
+
                                                                 {params.inputProps.value &&
+                                                                    Array.isArray(uniqueConstraints) &&
                                                                     !uniqueConstraints?.some(
                                                                         (group) => group.groupName === params.inputProps.value,
                                                                     ) && (

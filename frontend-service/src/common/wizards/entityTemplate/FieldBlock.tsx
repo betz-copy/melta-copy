@@ -21,6 +21,7 @@ interface FieldBlockProps<PropertiesType extends string, Values extends Record<P
     propertiesType: PropertiesType;
     values: Values;
     uniqueConstraints?: { groupName: string; properties: string[] }[];
+    setUniqueConstraints?: (uniqueConstraints: SetStateAction<{ groupName: string; properties: string[] }[]>) => void;
     initialValues: Values | undefined;
     setFieldValue: FormikHelpers<Values>['setFieldValue'];
     areThereAnyInstances: boolean;
@@ -42,6 +43,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
     propertiesType,
     values,
     uniqueConstraints,
+    setUniqueConstraints,
     initialValues,
     setFieldValue,
     areThereAnyInstances,
@@ -64,6 +66,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
         preview: false,
         hide: false,
         unique: false,
+        uniqueCheckBox: false,
         options: [],
         optionColors: {},
         pattern: '',
@@ -205,9 +208,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
                                                         setFieldValue={setFieldDisplayValueWrapper(index) as FieldEditCardProps['setFieldValue']}
                                                         setValues={setDisplayValueWrapper(index)}
                                                         uniqueConstraints={uniqueConstraints}
-                                                        setUniqueConstraints={(newUniqueConstraints) => {
-                                                            setFieldValue('uniqueConstraints', newUniqueConstraints);
-                                                        }}
+                                                        setUniqueConstraints={setUniqueConstraints}
                                                     />
                                                 );
                                             }
