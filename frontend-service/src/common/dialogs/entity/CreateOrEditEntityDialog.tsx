@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Grid, Card, CardContent, Box, Divider, Button, IconButton, Link, Typography } from '@mui/material';
+import { Grid, Card, CardContent, Box, Divider, Button, IconButton } from '@mui/material';
 import { Done as DoneIcon, Clear as ClearIcon, Close as CloseIcon } from '@mui/icons-material';
 import { useMutation } from 'react-query';
 import i18next from 'i18next';
@@ -7,9 +7,9 @@ import { toast } from 'react-toastify';
 import { Form, Formik } from 'formik';
 import pickBy from 'lodash.pickby';
 import { AxiosError } from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { IEntity, IUniqueConstraint } from '../../../interfaces/entities';
+import { IEntity } from '../../../interfaces/entities';
 import { createEntityRequest, updateEntityRequestForMultiple } from '../../../services/entitiesService';
 import { EntityWizardValues } from '.';
 import { JSONSchemaFormik, ajvValidate } from '../../inputs/JSONSchemaFormik';
@@ -43,7 +43,9 @@ const CreateOrEditEntityDetails: React.FC<{
     onSuccessUpdate: (data: IEntity) => void;
     onCancelUpdate: () => void;
     onError: (entity: IEntity | EntityWizardValues) => void;
-}> = ({ isEditMode = false, entityTemplate, entity, onSuccessUpdate, onCancelUpdate, onError }) => {
+    filesTooBigError: boolean;
+    setFilesTooBigError: React.Dispatch<React.SetStateAction<boolean>>;
+}> = ({ isEditMode = false, entityTemplate, entity, onSuccessUpdate, onCancelUpdate, onError, filesTooBigError, setFilesTooBigError }) => {
     const [updateWithRuleBreachDialogState, setUpdateWithRuleBreachDialogState] = useState<{
         isOpen: boolean;
         brokenRules?: IRuleBreachPopulated['brokenRules'];
@@ -53,9 +55,7 @@ const CreateOrEditEntityDetails: React.FC<{
 
     const { templateFileKeys: initialTemplateFileKeys } = getEntityTemplateFilesFieldsInfo(entityTemplate);
     let newEntity = entity;
-    const [filesTooBigError, setFilesTooBigError] = useState(false);
-    // let filesTooBigError = false;
-    console.log({ entityTemplate });
+    let errorTooBig = false;
 
     // for initial values
     const fieldProperties = pickBy(entity.properties, (_value, key) => !initialTemplateFileKeys.includes(key)) as IEntity['properties'];
@@ -74,73 +74,46 @@ const CreateOrEditEntityDetails: React.FC<{
         ({ newEntityData, ignoredRules }: { newEntityData: EntityWizardValues; ignoredRules?: IRuleBreach['brokenRules'] }) =>
             updateEntityRequestForMultiple(entity.properties._id, newEntityData, ignoredRules),
         {
-            onSuccess: (data) => {
-                onSuccessUpdate(data);
-                onCancelUpdate();
-            },
+            onSuccess: (data) => onSuccessUpdate(data),
             onError: (err: AxiosError, { newEntityData: newEntityDate }) => {
-                const errorMetadata = err.response?.data?.metadata;
-                console.log({ err });
+                if (err.response?.status === 413) errorTooBig = true;
+                else {
+                    const errorMetadata = err.response?.data?.metadata;
 
-                console.log({ errorMetadata });
+                    if (errorMetadata?.errorCode === errorCodes.failedConstraintsValidation) {
+                        toastConstraintValidationError(errorMetadata, entityTemplate);
+                        return;
+                    }
 
-                if (errorMetadata?.errorCode === errorCodes.failedConstraintsValidation) {
-                    toastConstraintValidationError(errorMetadata, entityTemplate);
-                    return;
-                }
-
-                if (errorMetadata?.errorCode === errorCodes.ruleBlock) {
-                    setUpdateWithRuleBreachDialogState({
-                        isOpen: true,
-                        brokenRules: errorMetadata.brokenRules,
-                        rawBrokenRules: errorMetadata.rawBrokenRules,
-                        updateEntityFormData: newEntityDate,
-                    });
-                }
-
-                if (err.response?.status === 413) {
-                    console.log('hereeee');
-
-                    setFilesTooBigError(true);
-                    // filesTooBigError = true;
-                    toast.error(`${i18next.t('wizard.entity.failedToEdit')} ${i18next.t('wizard.entity.entityTooLargeError')}`);
+                    if (errorMetadata?.errorCode === errorCodes.ruleBlock) {
+                        setUpdateWithRuleBreachDialogState({
+                            isOpen: true,
+                            brokenRules: errorMetadata.brokenRules,
+                            rawBrokenRules: errorMetadata.rawBrokenRules,
+                            updateEntityFormData: newEntityDate,
+                        });
+                    }
                 }
             },
         },
     );
-    const navigate = useNavigate();
-
     const { mutateAsync: createMutation } = useMutation((entityToCreate: EntityWizardValues) => createEntityRequest(entityToCreate), {
         onSuccess: (currEntity: IEntity) => {
-            onCancelUpdate();
+            onSuccessUpdate(currEntity);
             newEntity = currEntity;
         },
         onError: (err: AxiosError, { template }: EntityWizardValues) => {
-            const errorMetadata = err.response?.data?.metadata;
-            console.log({ errorMetadata });
-            if (errorMetadata.constraint.type === 'UNIQUE') {
-                console.log('unique!!');
-
-                const { properties } = errorMetadata.constraint as Omit<IUniqueConstraint, 'constraintName'>;
-                console.log({ properties });
-
-                const constraintPropsDisplayNames = properties.map((prop) => entityTemplate.properties.properties[prop].title);
-                console.log({ constraintPropsDisplayNames });
-            }
-            if (errorMetadata?.errorCode === errorCodes.failedConstraintsValidation) {
-                toastConstraintValidationError(errorMetadata, template);
-            }
-            if (err.response?.status === 413) {
-                setFilesTooBigError(true);
-                // filesTooBigError = true;
-                toast.error(`${i18next.t('wizard.entity.failedToCreate')} ${i18next.t('wizard.entity.entityTooLargeError')}`);
+            if (err.response?.status === 413) errorTooBig = true;
+            else {
+                const errorMetadata = err.response?.data?.metadata;
+                if (errorMetadata?.errorCode === errorCodes.failedConstraintsValidation) {
+                    toastConstraintValidationError(errorMetadata, template);
+                }
             }
         },
     });
 
-    console.log({ filesTooBigError });
-    console.log({ entityTemplate });
-
+    const navigate = useNavigate();
     return (
         <Formik
             initialValues={{ properties: fieldProperties, attachmentsProperties: fileProperties, template: entityTemplate }}
@@ -159,17 +132,21 @@ const CreateOrEditEntityDetails: React.FC<{
                                     return (
                                         <>
                                             <span>
-                                                {`${i18next.t(`'wizard.entity.${isEditMode ? 'editedSuccessfully' : 'createdSuccessfully'}`)}. `}
+                                                {`${i18next.t(`wizard.entity.${isEditMode ? 'editedSuccefully' : 'createdSuccessfully'}`)}. `}
                                             </span>
-                                            <a
-                                                href={
-                                                    !values.properties._id || values.properties._id.length === 0
-                                                        ? `/entity/${newEntity.properties._id}`
-                                                        : `/entity/${values.properties._id}`
-                                                }
+                                            <Button
+                                                variant="text"
+                                                onClick={() => {
+                                                    navigate(
+                                                        !values.properties._id || values.properties._id.length === 0
+                                                            ? `/entity/${newEntity.properties._id}`
+                                                            : `/entity/${values.properties._id}`,
+                                                    );
+                                                }}
+                                                sx={{ marginRight: '10px' }}
                                             >
                                                 {i18next.t('entityPage.linkToEntityPage')}
-                                            </a>
+                                            </Button>
                                         </>
                                     );
                                 },
@@ -182,6 +159,7 @@ const CreateOrEditEntityDetails: React.FC<{
                                             <Button
                                                 variant="text"
                                                 onClick={() => {
+                                                    if (errorTooBig) setFilesTooBigError(true);
                                                     if (isEditMode) onError({ templateId: values.template._id, properties: values.properties });
                                                     else onError(values);
                                                 }}
@@ -211,8 +189,6 @@ const CreateOrEditEntityDetails: React.FC<{
             }}
         >
             {({ setFieldValue, values, errors, touched, setFieldTouched, dirty }) => {
-                console.log({ errors });
-
                 const { templateFilesProperties, templateFileKeys, requiredFilesNames } = getEntityTemplateFilesFieldsInfo(
                     values.template || entityTemplate,
                 );
@@ -240,7 +216,6 @@ const CreateOrEditEntityDetails: React.FC<{
                         });
                     }
                 }, [values.template]);
-                console.log({ dirty });
 
                 const propertiesComp = values.template?._id && (
                     <JSONSchemaFormik
@@ -260,10 +235,10 @@ const CreateOrEditEntityDetails: React.FC<{
                             title={i18next.t('wizard.entityTemplate.attachments')}
                             component="h6"
                             variant="h6"
-                            style={{ marginBottom: '12px', fontSize: '16px', fontWeight: '600' }}
+                            style={{ marginBottom: filesTooBigError ? '0px' : '12px', fontSize: '16px', fontWeight: '600' }}
                         />
                         {filesTooBigError && (
-                            <p id="error" style={{ color: '#d32f2f', margin: 0, padding: 0 }}>
+                            <p id="error" style={{ color: '#d32f2f', margin: 0, padding: 0, marginBottom: '12px' }}>
                                 {i18next.t('errorCodes.FILES_TOO_BIG')}
                             </p>
                         )}

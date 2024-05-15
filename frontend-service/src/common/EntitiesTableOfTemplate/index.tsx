@@ -147,7 +147,7 @@ export type EntitiesTableOfTemplateRef<Data> = {
     getExcelData: () => string | undefined;
     resetFilter: () => void;
     refreshServerSide: () => void;
-    updateRowDataClientSide: (data: Data) => void;
+    updateRowDataClientSide: (data: Data, isNewEntity: boolean) => void;
     isFiltered: () => boolean;
     getFilterModel: () => ReturnType<GridApi<Data>['getFilterModel']>;
     getSortModel: () => IServerSideGetRowsRequest['sortModel'];
@@ -211,12 +211,22 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                 refreshServerSide() {
                     gridRef.current?.api.refreshServerSide({ purge: true });
                 },
-                updateRowDataClientSide(data: Data) {
-                    gridRef.current?.api.forEachNode((rowNode) => {
-                        if (rowNode.data && getRowId(data) === getRowId(rowNode.data)) {
-                            rowNode.updateData(data);
-                        }
-                    });
+                updateRowDataClientSide(data: Data, isNewEntity: boolean) {
+                    if (isNewEntity) {
+                        gridRef.current?.api.refreshServerSide({ purge: true });
+                    } else {
+                        gridRef.current?.api.forEachNode((rowNode) => {
+                            // if (isNewEntity) {
+                            //     gridRef.current!.api.applyTransaction({
+                            //         add: [data],
+                            //         // addIndex: -1,
+                            //     })!;
+                            // } else
+                            if (rowNode.data && getRowId(data) === getRowId(rowNode.data)) {
+                                rowNode.updateData(data);
+                            }
+                        });
+                    }
                 },
                 isFiltered() {
                     const filters = gridRef.current?.api.getFilterModel();

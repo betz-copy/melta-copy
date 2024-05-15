@@ -28,7 +28,9 @@ const EditEntityDetails: React.FC<{
     entity: IEntity;
     onSuccessUpdate: (data: IEntity) => void;
     onCancelUpdate: () => void;
-}> = ({ entityTemplate, entity, onSuccessUpdate, onCancelUpdate }) => {
+    filesTooBigError: boolean;
+    setFilesTooBigError: React.Dispatch<React.SetStateAction<boolean>>;
+}> = ({ entityTemplate, entity, onSuccessUpdate, onCancelUpdate, filesTooBigError, setFilesTooBigError }) => {
     const [updateWithRuleBreachDialogState, setUpdateWithRuleBreachDialogState] = useState<{
         isOpen: boolean;
         brokenRules?: IRuleBreachPopulated['brokenRules'];
@@ -79,10 +81,9 @@ const EditEntityDetails: React.FC<{
                     });
                 }
                 if (err.response?.status === 413) {
-                    toast.error(`${i18next.t('wizard.entity.failedToEdit')} ${i18next.t('wizard.entity.entityTooLargeError')}`);
-                } else {
-                    toast.error(i18next.t('wizard.entity.failedToEdit'));
+                    setFilesTooBigError(true);
                 }
+                toast.error(i18next.t('wizard.entity.failedToEdit'));
             },
         },
     );
@@ -137,8 +138,20 @@ const EditEntityDetails: React.FC<{
                                                                 title={i18next.t('wizard.entityTemplate.attachments')}
                                                                 component="h6"
                                                                 variant="h6"
-                                                                style={{ marginBottom: '12px', fontSize: '16px', fontWeight: '600' }}
+                                                                style={{
+                                                                    marginBottom: filesTooBigError ? '0px' : '12px',
+                                                                    fontSize: '16px',
+                                                                    fontWeight: '600',
+                                                                }}
                                                             />
+                                                            {filesTooBigError && (
+                                                                <p
+                                                                    id="error"
+                                                                    style={{ color: '#d32f2f', margin: 0, padding: 0, marginBottom: '12px' }}
+                                                                >
+                                                                    {i18next.t('errorCodes.FILES_TOO_BIG')}
+                                                                </p>
+                                                            )}
                                                             <>
                                                                 {Object.entries(templateFilesProperties).map(([key, value], index) => (
                                                                     <Grid item key={key} marginTop={index > 0 ? 5 : 0}>

@@ -37,11 +37,10 @@ const TemplateTable = forwardRef<
         template: IMongoEntityTemplatePopulated;
         quickFilterText: string;
         page: string;
+        entitiesTableRef: React.RefObject<EntitiesTableOfTemplateRef<IEntity>>;
     }
->(({ template, quickFilterText, page }, ref) => {
+>(({ template, quickFilterText, page, entitiesTableRef }, ref) => {
     const theme = useTheme();
-
-    const entitiesTableRef = useRef<EntitiesTableOfTemplateRef<IEntity>>(null);
 
     useImperativeHandle(ref, () => ({
         getFilterModel: () => entitiesTableRef.current?.getFilterModel(),
@@ -72,7 +71,7 @@ const TemplateTable = forwardRef<
     );
 
     const [isFiltered, setIsFiltered] = useState(false);
-
+    const [filesTooBigError, setFilesTooBigError] = useState(false);
     const [editDialog, setEditDialog] = useState<{
         isOpen: boolean;
         entity?: IEntity;
@@ -148,6 +147,7 @@ const TemplateTable = forwardRef<
                         disabled={!userHasWritePermissions}
                         initialValues={{ template, properties: { disabled: false }, attachmentsProperties: {} }}
                         style={{ borderRadius: '5px' }}
+                        entitiesTableRef={entitiesTableRef}
                     >
                         <ImageWithDisable srcPath="/icons/add-entity.svg" disabled={!userHasWritePermissions} />
                     </AddEntityButton>
@@ -196,17 +196,24 @@ const TemplateTable = forwardRef<
                     isEditMode
                     entityTemplate={template}
                     entity={editDialog.entity!}
-                    onError={(currEntity) =>
+                    onError={(currEntity) => {
                         setEditDialog({
                             isOpen: true,
                             entity: currEntity as IEntity,
-                        })
-                    }
-                    onSuccessUpdate={(entity) => {
-                        entitiesTableRef.current?.updateRowDataClientSide(entity);
-                        setEditDialog((prev) => ({ ...prev, isOpen: false }));
+                        });
+                        if (filesTooBigError) setFilesTooBigError(false);
                     }}
-                    onCancelUpdate={() => setEditDialog((prev) => ({ ...prev, isOpen: false }))}
+                    onSuccessUpdate={(entity) => {
+                        entitiesTableRef.current?.updateRowDataClientSide(entity, false);
+                        setEditDialog((prev) => ({ ...prev, isOpen: false }));
+                        if (filesTooBigError) setFilesTooBigError(false);
+                    }}
+                    onCancelUpdate={() => {
+                        setEditDialog((prev) => ({ ...prev, isOpen: false }));
+                        if (filesTooBigError) setFilesTooBigError(false);
+                    }}
+                    filesTooBigError={filesTooBigError}
+                    setFilesTooBigError={setFilesTooBigError}
                 />
             </Dialog>
         </Grid>

@@ -43,6 +43,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
     const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
     const queryClient = useQueryClient();
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+    const [filesTooBigError, setFilesTooBigError] = useState(false);
 
     const darkMode = useSelector((state: RootState) => state.darkMode);
 
@@ -128,9 +129,14 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                             entity: data,
                         };
                     });
-                
+                    if (filesTooBigError) setFilesTooBigError(false);
                 }}
-                onCancelUpdate={() => setIsEditMode(false)}
+                onCancelUpdate={() => {
+                    setIsEditMode(false);
+                    if (filesTooBigError) setFilesTooBigError(false);
+                }}
+                filesTooBigError={filesTooBigError}
+                setFilesTooBigError={setFilesTooBigError}
             />
         );
     }
@@ -294,7 +300,6 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                     handleClose={closeDeleteDialog}
                     onYes={() => deleteMutation()}
                     isLoading={isDeleteLoading}
-
                 />
             </Card>
             {updateStatusWithRuleBreachDialogState.isOpen && (

@@ -13,8 +13,9 @@ import { EntitiesPageHeadline } from './Headline';
 import TemplateTablesView, { TemplateTablesViewRef } from './TemplateTablesView';
 import { exportEntitiesRequest } from '../../services/entitiesService';
 import CardsView, { CardsViewRef } from './CardsView';
-import { IExportEntitiesBody } from '../../interfaces/entities';
+import { IEntity, IExportEntitiesBody } from '../../interfaces/entities';
 import { filterModelToFilterOfTemplate, sortModelToSortOfSearchRequest } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
+import { EntitiesTableOfTemplateRef } from '../EntitiesTableOfTemplate';
 
 const EntitiesPage: React.FC<{
     templates: IMongoEntityTemplatePopulated[];
@@ -39,6 +40,7 @@ const EntitiesPage: React.FC<{
 }) => {
     const templateTablesViewRef = useRef<TemplateTablesViewRef>(null);
     const cardsViewRef = useRef<CardsViewRef>(null);
+    const entitiesTableRef = useRef<EntitiesTableOfTemplateRef<IEntity>>(null);
 
     const [urlSearchParams, setUrlSearchParams] = useSearchParams({
         search: '',
@@ -117,6 +119,7 @@ const EntitiesPage: React.FC<{
                                 setUrlSearchParams({ ...Object.fromEntries(urlSearchParams.entries()), viewMode: newViewMode }),
                         }}
                         pageTitle={pageTitle}
+                        entitiesTableRef={entitiesTableRef}
                     />
                 </Box>
                 <Grid container padding="0 2.5rem">
@@ -126,6 +129,7 @@ const EntitiesPage: React.FC<{
                             templates={templatesToShowCheckbox}
                             searchInput={urlSearchParams.get('search')!}
                             pageType={pageType}
+                            entitiesTableRef={entitiesTableRef}
                         />
                     )}
                     {urlSearchParams.get('viewMode') === 'cards-view' && (

@@ -14,6 +14,8 @@ import { BlueTitle } from '../BlueTitle';
 import { RootState } from '../../store';
 import { MeltaTooltip } from '../MeltaTooltip';
 import { environment } from '../../globals';
+import { EntitiesTableOfTemplateRef } from '../EntitiesTableOfTemplate';
+import { IEntity } from '../../interfaces/entities';
 
 export const GlobalSearchBar: React.FC<{
     inputValue?: string;
@@ -91,7 +93,8 @@ const EntitiesPageHeadline: React.FC<{
         setViewMode: (newViewMode: 'cards-view' | 'templates-tables-view') => void;
     };
     pageTitle: string;
-}> = ({ searchInput, setSearchInput, onSearch, entityTemplateSelectCheckboxProps, excelExportProps, viewModeProps, pageTitle }) => {
+    entitiesTableRef: React.RefObject<EntitiesTableOfTemplateRef<IEntity>>;
+}> = ({ searchInput, setSearchInput, onSearch, entityTemplateSelectCheckboxProps, excelExportProps, viewModeProps, pageTitle, entitiesTableRef }) => {
     const darkMode = useSelector((state: RootState) => state.darkMode);
     const theme = useTheme();
 
@@ -190,6 +193,7 @@ const EntitiesPageHeadline: React.FC<{
                         <AddEntityButton
                             disabledToolTip
                             style={{ background: theme.palette.primary.main, borderRadius: '7px', width: '135px', height: '35px' }}
+                            entitiesTableRef={entitiesTableRef}
                         >
                             <AddIcon htmlColor="white" />
                             <Typography fontSize={14} style={{ fontWeight: '400', padding: '0 5px', color: 'white' }}>

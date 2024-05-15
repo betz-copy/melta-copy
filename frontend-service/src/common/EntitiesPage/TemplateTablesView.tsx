@@ -10,6 +10,8 @@ import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates'
 import { TemplateTable, TemplateTableRef } from './TemplateTable';
 import { searchEntitiesOfTemplateRequest } from '../../services/entitiesService';
 import { environment } from '../../globals';
+import { EntitiesTableOfTemplateRef } from '../EntitiesTableOfTemplate';
+import { IEntity } from '../../interfaces/entities';
 
 const { tablesPerLoadingChunkSize } = environment.ganttSettings;
 type TemplateTablesViewResultsRef = {
@@ -23,8 +25,9 @@ const TemplateTablesViewResults = forwardRef<
         searchInput: string;
         pageSize?: number;
         pageType: string;
+        entitiesTableRef: React.RefObject<EntitiesTableOfTemplateRef<IEntity>>;
     }
->(({ templates, searchInput, pageType }, ref) => {
+>(({ templates, searchInput, pageType, entitiesTableRef }, ref) => {
     const templateTablesRefs = useRef<Record<string, TemplateTableRef>>({});
     const [visibleTemplatesCount, setVisibleTemplatesCount] = useState(tablesPerLoadingChunkSize);
     const loaderRef = useRef(null);
@@ -68,6 +71,7 @@ const TemplateTablesViewResults = forwardRef<
                         template={template}
                         quickFilterText={searchInput}
                         page={pageType}
+                        entitiesTableRef={entitiesTableRef}
                     />
                 </Grid>
             ))}
@@ -103,6 +107,7 @@ export interface TemplateTablesViewProps {
     templates: IMongoEntityTemplatePopulated[];
     searchInput: string;
     pageType: string;
+    entitiesTableRef: React.RefObject<EntitiesTableOfTemplateRef<IEntity>>;
 }
 
 export interface TemplateTablesViewRef {
@@ -110,57 +115,62 @@ export interface TemplateTablesViewRef {
     templateTablesRefs: Record<string, TemplateTableRef>;
 }
 
-const TemplateTablesView = forwardRef<TemplateTablesViewRef, TemplateTablesViewProps>(({ templates, searchInput, pageType }, ref) => {
-    const { setSteps } = useTour();
+const TemplateTablesView = forwardRef<TemplateTablesViewRef, TemplateTablesViewProps>(
+    ({ templates, searchInput, pageType, entitiesTableRef }, ref) => {
+        const { setSteps } = useTour();
 
-    const {
-        data: templatesFilteredByCount,
-        refetch: refetchTemplatesFilteredByCount,
-        isFetching: isLoadingTemplatesFilteredByCount,
-    } = useQuery(
-        ['filterEmptyTemplateTablesOnGlobalSearch', templates, searchInput],
-        () => filterEmptyTemplateTablesOnGlobalSearchRequest(templates, searchInput),
-        {
-            onSuccess: (data) => {
-                if (data.length === 0 && pageType === 'globalSearch') {
-                    // if there are no entities to show in the global search page, stop the tour
-                    setSteps!((currSteps) => currSteps.slice(0, 4));
-                }
+        const {
+            data: templatesFilteredByCount,
+            refetch: refetchTemplatesFilteredByCount,
+            isFetching: isLoadingTemplatesFilteredByCount,
+        } = useQuery(
+            ['filterEmptyTemplateTablesOnGlobalSearch', templates, searchInput],
+            () => filterEmptyTemplateTablesOnGlobalSearchRequest(templates, searchInput),
+            {
+                onSuccess: (data) => {
+                    if (data.length === 0 && pageType === 'globalSearch') {
+                        // if there are no entities to show in the global search page, stop the tour
+                        setSteps!((currSteps) => currSteps.slice(0, 4));
+                    }
+                },
+                onError(error) {
+                    console.log('Failed to load templates counts', error);
+                    toast.error(i18next.t('entitiesTableOfTemplate.failedToLoadData'));
+                },
             },
-            onError(error) {
-                console.log('Failed to load templates counts', error);
-                toast.error(i18next.t('entitiesTableOfTemplate.failedToLoadData'));
-            },
-        },
-    );
+        );
 
-    const templateTablesRefs = useRef<Record<string, TemplateTableRef>>({});
+        const templateTablesRefs = useRef<Record<string, TemplateTableRef>>({});
 
-    useImperativeHandle(ref, () => ({
-        refetch: refetchTemplatesFilteredByCount,
-        templateTablesRefs: templateTablesRefs.current,
-    }));
+        useImperativeHandle(ref, () => ({
+            refetch: refetchTemplatesFilteredByCount,
+            templateTablesRefs: templateTablesRefs.current,
+        }));
 
-    return (
-        <Grid container>
-            {isLoadingTemplatesFilteredByCount && (
-                <Grid container justifyContent="center">
-                    <CircularProgress />
-                </Grid>
-            )}
-            {!isLoadingTemplatesFilteredByCount && templatesFilteredByCount?.length === 0 && <Typography>{i18next.t('noSearchResults')}</Typography>}
-            {!isLoadingTemplatesFilteredByCount && templatesFilteredByCount && (
-                <TemplateTablesViewResults
-                    ref={(el) => {
-                        if (el) templateTablesRefs.current = el.templateTablesRefs;
-                    }}
-                    templates={templatesFilteredByCount}
-                    searchInput={searchInput}
-                    pageType={pageType}
-                />
-            )}
-        </Grid>
-    );
-});
+        return (
+            <Grid container>
+                {isLoadingTemplatesFilteredByCount && (
+                    <Grid container justifyContent="center">
+                        <CircularProgress />
+                    </Grid>
+                )}
+                {!isLoadingTemplatesFilteredByCount && templatesFilteredByCount?.length === 0 && (
+                    <Typography>{i18next.t('noSearchResults')}</Typography>
+                )}
+                {!isLoadingTemplatesFilteredByCount && templatesFilteredByCount && (
+                    <TemplateTablesViewResults
+                        ref={(el) => {
+                            if (el) templateTablesRefs.current = el.templateTablesRefs;
+                        }}
+                        templates={templatesFilteredByCount}
+                        searchInput={searchInput}
+                        pageType={pageType}
+                        entitiesTableRef={entitiesTableRef}
+                    />
+                )}
+            </Grid>
+        );
+    },
+);
 
 export default TemplateTablesView;
