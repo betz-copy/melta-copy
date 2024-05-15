@@ -70,15 +70,16 @@ services:
       - http.host=0.0.0.0
       - transport.host=0.0.0.0
       - xpack.security.enabled=false
-      - xpack.monitoring.enabled=false
+      # - xpack.monitoring.enabled=false
       - cluster.name=elasticsearch
       - bootstrap.memory_lock=true
+      # - xpack.monitoring.collection.enabled=false
     ports:
       - 9200:9200
     restart: always
 
   apm-server:
-    image: docker.elastic.co/apm/apm-server:7.9.1
+    image: docker.elastic.co/apm/apm-server:8.11.2
     container_name: apm-server
     user: root
     depends_on:
@@ -92,7 +93,7 @@ services:
     restart: always
 
   logstash:
-    image: logstash:7.9.1
+    image: logstash:8.11.2
     container_name: logstash
     ports:
       - "5044:5044"
@@ -110,6 +111,8 @@ services:
     volumes:
       - ./elk/kibana.yml:/usr/share/kibana/config/kibana.yml
       - kibana_data:/usr/share/kibana/data
+    # environment: 
+      # - xpack.monitoring.collection.enabled=false
     ports:
       - 5601:5601
     depends_on:
@@ -117,7 +120,7 @@ services:
     restart: always
 
   filebeat:
-    image: docker.elastic.co/beats/filebeat:7.9.1
+    image: docker.elastic.co/beats/filebeat:8.11.2
     container_name: filebeat
     user: root
     volumes:

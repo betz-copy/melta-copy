@@ -18,7 +18,7 @@
   "author": "Nadav Beladev",
   "license": "ISC",
   "dependencies": {
-    "@elastic/elasticsearch": "^8.13.1",
+    "@elastic/elasticsearch": "^8.10.0",
     "@types/mongodb": "^4.0.7",
     "@types/mongoose": "^5.11.97",
     "@types/supertest": "^2.0.12",

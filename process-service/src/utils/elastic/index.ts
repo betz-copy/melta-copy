@@ -1,7 +1,7 @@
 import { Client } from '@elastic/elasticsearch';
 
 class ElasticClient {
-    private elasticClient: Client;
+    private elasticClient;
 
     async initialize(url: string) {
         this.elasticClient = new Client({
