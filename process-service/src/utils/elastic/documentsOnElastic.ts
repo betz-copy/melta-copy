@@ -4,7 +4,7 @@ import { IMongoProcessInstancePopulated, IProcessInstance } from '../../express/
 import ElasticClient from './index';
 import { ServiceError } from '../../express/error';
 
-const createProcessTextChainToSearch = (process: LeanDocument<IProcessInstance & Document<any, any, any>> | IMongoProcessInstancePopulated) => {
+const createProcessTextChainToSearch = (process: object) => {
     let values = '';
     // eslint-disable-next-line no-restricted-syntax
     for (const [key, value] of Object.entries(process)) {
@@ -35,31 +35,35 @@ const createDocumentOnElastic = async (process: IMongoProcessInstancePopulated) 
             index: 'process-search',
             id: process._id,
             body: {
-                ProcessTextChain: valuesString.trim(),
+                processTextChain: valuesString.trim(),
             },
         })
         .catch((error) => logger.log(error));
 };
 
 const updateDocumentOnElastic = async (process: LeanDocument<IProcessInstance & Document<any, any, any>> | IMongoProcessInstancePopulated) => {
-    const elasticClient = ElasticClient.getClient();
-    const valuesString = createProcessTextChainToSearch(process);
-    const exists = await elasticClient.exists({
-        index: 'process-search',
-        id: process._id,
-    });
-    if (!exists) throw new ServiceError(404, 'process not exist');
-    await elasticClient
-        .update({
+    try {
+        const elasticClient = ElasticClient.getClient();
+
+        const exists = await elasticClient.exists({
+            index: 'process-search',
+            id: process._id,
+        });
+        if (!exists) throw new ServiceError(404, 'process not exist');
+
+        const valuesString = createProcessTextChainToSearch(process);
+        await elasticClient.update({
             index: 'process-search',
             id: process._id,
             body: {
                 doc: {
-                    ProcessTextChain: valuesString.trim(),
+                    processTextChain: valuesString.trim(),
                 },
             },
-        })
-        .catch((error) => logger.log(error));
+        });
+    } catch (err) {
+        logger.log({ err });
+    }
 };
 
 const deleteDocumentOnElastic = async (processId: string) => {
@@ -77,5 +81,32 @@ const deleteDocumentOnElastic = async (processId: string) => {
         })
         .catch((error) => logger.log(error));
 };
+const processGlobalSearch = async (searchText: string) => {
+    const elasticClient = ElasticClient.getClient();
+    const processes = await elasticClient.search({
+        index: 'process-search',
+        query: {
+            bool: {
+                should: [
+                    {
+                        match: {
+                            processTextChain: {
+                                query: searchText,
+                                minimum_should_match: '75%',
+                            },
+                        },
+                    },
+                    {
+                        wildcard: {
+                            processTextChain: `*${searchText}*`,
+                        },
+                    },
+                ],
+            },
+        },
+    });
 
-export { deleteDocumentOnElastic, createDocumentOnElastic, updateDocumentOnElastic };
+    return processes.hits.hits.map(({ _id }) => _id);
+};
+
+export { deleteDocumentOnElastic, createDocumentOnElastic, updateDocumentOnElastic, processGlobalSearch };

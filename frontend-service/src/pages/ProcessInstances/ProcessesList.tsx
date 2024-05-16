@@ -105,7 +105,7 @@ const ProcessesList: React.FC<{
                         queryKey={['searchProcesses', templatesToShowCheckbox, search, startDateInput, endDateInput, statusFilter]}
                         queryFunction={({ pageParam }) => {
                             return searchProcessesRequest({
-                                name: search,
+                                searchText: search,
                                 templateIds: templatesToShowCheckbox.map((template) => template._id),
                                 startDate: startDateInput ?? undefined,
                                 endDate: endDateInput ?? undefined,

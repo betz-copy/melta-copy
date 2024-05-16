@@ -63,7 +63,7 @@ export const deleteProcessInstanceSchema = Joi.object({
 export const searchProcessInstancesSchema = Joi.object({
     query: {},
     body: {
-        name: Joi.string(),
+        searchText: Joi.string(),
         templateIds: Joi.array().items(MongoIdSchema),
         ids: Joi.array().items(MongoIdSchema),
         startDate: Joi.date(),

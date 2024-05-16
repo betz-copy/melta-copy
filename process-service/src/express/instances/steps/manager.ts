@@ -59,7 +59,6 @@ export default class StepInstanceManager {
 
             const updatedProcess = await ProcessInstanceManager.getProcessById(processId, true);
             await updateDocumentOnElastic(updatedProcess);
-
             return updatedStep;
         }
 
@@ -79,19 +78,16 @@ export default class StepInstanceManager {
             return updatedStep;
         }
 
-        return transaction(async (session) => {
+        const updatedStep = await transaction(async (session) => {
             await ProcessInstanceManager.updateStatus(processId, updatedProcessStatus, session);
-            const updatedStep = await StepInstanceModel.findByIdAndUpdate(
-                id,
-                { properties, comments, ...statusReview, reviewedAt: new Date() },
-                { new: true, session },
-            )
+            return StepInstanceModel.findByIdAndUpdate(id, { properties, comments, ...statusReview, reviewedAt: new Date() }, { new: true, session })
                 .orFail(new NotFoundError('step', id))
                 .lean();
-            const updatedProcess = await ProcessInstanceManager.getProcessById(processId, true);
-            await updateDocumentOnElastic(updatedProcess);
-            return updatedStep;
         });
+
+        const updatedProcess = await ProcessInstanceManager.getProcessById(processId, true);
+        await updateDocumentOnElastic(updatedProcess);
+        return updatedStep;
     }
 
     static async deleteStepsByIds(stepIds: string[], session?: ClientSession) {

@@ -10,15 +10,19 @@ import {
     Status,
 } from './interface';
 import { NotFoundError, ServiceError } from '../../error';
-import StepInstanceManager from '../steps/manager';
 import { transaction, getTemplateAggregation, searchAllowedProcessInstanceForReviewerAggregation } from '../../../utils/mongoose';
 import ProcessTemplateManager from '../../templates/processes/manager';
 import config from '../../../config';
 import { validateStepIds } from './validator.template';
-import { escapeRegExp } from '../../../utils';
 import { IMongoProcessTemplate } from '../../templates/processes/interface';
 import { IMongoStepInstance } from '../steps/interface';
-import { createDocumentOnElastic, deleteDocumentOnElastic, updateDocumentOnElastic } from '../../../utils/elastic/documentsOnElastic';
+import {
+    createDocumentOnElastic,
+    deleteDocumentOnElastic,
+    processGlobalSearch,
+    updateDocumentOnElastic,
+} from '../../../utils/elastic/documentsOnElastic';
+import StepInstanceManager from '../steps/manager';
 
 type ProcessInstanceType<T extends boolean> = T extends true ? IMongoProcessInstancePopulated & Document : IMongoProcessInstance & Document;
 class ProcessInstanceManager {
@@ -97,23 +101,20 @@ class ProcessInstanceManager {
 
         validateStepIds(currProcess.steps, Object.keys(updatedData.steps));
 
-        return transaction(async (session) => {
+        const updatedProcess: IMongoProcessInstancePopulated = await transaction(async (session) => {
             await StepInstanceManager.updateStepsReviewers(stepsReviewers, session);
 
-            const { steps, ...updatedProcess } = updatedData;
-
-            const process = await ProcessInstanceModel.findByIdAndUpdate(id, updatedProcess, {
+            const { steps, ...processData } = updatedData;
+            return ProcessInstanceModel.findByIdAndUpdate(id, processData, {
                 new: true,
                 session,
             })
                 .populate(config.processFields.steps)
                 .orFail(new NotFoundError('process', id))
                 .lean();
-
-            await updateDocumentOnElastic(process);
-
-            return process;
         });
+        await updateDocumentOnElastic(updatedProcess);
+        return updatedProcess;
     }
 
     static getProcessStatus(process: IMongoProcessInstancePopulated, updatedStep?: IMongoStepInstance) {
@@ -130,7 +131,7 @@ class ProcessInstanceManager {
     }
 
     static async searchProcesses({
-        name,
+        searchText,
         reviewerId,
         ids,
         limit,
@@ -148,13 +149,17 @@ class ProcessInstanceManager {
         if (templateIds) query.templateId = { $in: templateIds };
         if (startDate) query.startDate = { $gte: startDate };
         if (endDate) query.endDate = { $lte: endDate };
-        if (name) query.name = { $regex: escapeRegExp(name) };
         if (ids) query._id = { $in: ids.map((id) => Types.ObjectId(id)) };
         if (status) query.status = { $in: status };
         if (reviewerId) {
             return searchAllowedProcessInstanceForReviewerAggregation(query, reviewerId, limit, skip);
         }
-
+        if (searchText) {
+            const processIds: string[] = await processGlobalSearch(searchText);
+            if (processIds.length > 0) {
+                query._id = { $in: processIds.map((id) => Types.ObjectId(id)) };
+            } else query._id = undefined;
+        }
         return ProcessInstanceModel.find(query, {}, { limit, skip, sort: { createdAt: -1 } })
             .populate(config.processFields.steps)
             .lean()

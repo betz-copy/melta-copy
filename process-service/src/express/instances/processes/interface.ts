@@ -41,7 +41,7 @@ export type CreateProcessReqBody = Pick<IProcessInstance, 'templateId' | 'name' 
 export type UpdateProcessReqBody = Partial<Omit<IProcessInstance, 'templateId' | 'steps' | 'status'> & { steps: Record<string, string[]> }>;
 
 export interface IProcessInstanceSearchProperties extends IBaseSearchProperties {
-    name?: string;
+    searchText?: string;
     templateIds?: string[];
     startDate?: Date;
     endDate?: Date;
