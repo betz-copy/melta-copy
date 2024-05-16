@@ -1,5 +1,4 @@
 import { Client } from '@elastic/elasticsearch';
-// import { once } from 'events';
 
 class ElasticClient {
     private elasticClient: Client;

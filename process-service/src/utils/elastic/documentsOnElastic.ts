@@ -81,6 +81,7 @@ const deleteDocumentOnElastic = async (processId: string) => {
         })
         .catch((error) => logger.log(error));
 };
+
 const processGlobalSearch = async (searchText: string) => {
     const elasticClient = ElasticClient.getClient();
     const processes = await elasticClient.search({
