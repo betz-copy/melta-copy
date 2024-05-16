@@ -68,6 +68,7 @@ interface JSONSchemaFormFormikProps {
     values: any;
     setValues: FormikHelpers<any>['setValues'];
     errors: FormikErrors<any>;
+    uniqueErrors?: FormikErrors<any>;
     touched: FormikTouched<any>;
     setFieldTouched: FormikHelpers<any>['setFieldTouched'];
     isEditMode?: boolean;
@@ -80,12 +81,27 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
     values,
     setValues,
     errors,
+    uniqueErrors,
     touched,
     setFieldTouched,
     isEditMode = false,
 }) => {
     const rjsfExtraErrors = formikErrorsToRjsfExtraErrors(errors as Record<string, string>);
+    const rjsfExtraUniqueErrors = formikErrorsToRjsfExtraErrors(uniqueErrors as Record<string, string>);
+    console.log({ rjsfExtraErrors });
+    console.log({ rjsfExtraUniqueErrors });
+
     const ajvExtraErrorsOnlyTouched: ErrorSchema<{}> = pickBy(rjsfExtraErrors, (_value, key) => touched[key]);
+    console.log({ ajvExtraErrorsOnlyTouched });
+
+    const ajvExtraUniqueErrorsOnlyTouched: ErrorSchema<{}> = pickBy(rjsfExtraUniqueErrors, (_value, key) => touched[key]);
+    console.log({ ajvExtraUniqueErrorsOnlyTouched });
+    const notTouchedUnique: ErrorSchema<{}> = pickBy(rjsfExtraUniqueErrors, (_value, key) => !touched[key]);
+
+    const mergedErrors: ErrorSchema<{}> = {
+        ...Object.keys(ajvExtraErrorsOnlyTouched).filter((error) => !Object.keys(ajvExtraUniqueErrorsOnlyTouched).includes(error)),
+        ...notTouchedUnique,
+    };
     return (
         <JSONSchemaForm
             id="json-schema"
@@ -123,7 +139,7 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
             }}
             noValidate
             validator={validator}
-            extraErrors={ajvExtraErrorsOnlyTouched}
+            extraErrors={mergedErrors}
             tagName="div"
             readonly={readonly}
             widgets={{

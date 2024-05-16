@@ -9,7 +9,7 @@ import pickBy from 'lodash.pickby';
 import { AxiosError } from 'axios';
 import { useNavigate } from 'react-router';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { IEntity } from '../../../interfaces/entities';
+import { IEntity, IUniqueConstraint } from '../../../interfaces/entities';
 import { createEntityRequest, updateEntityRequestForMultiple } from '../../../services/entitiesService';
 import { EntityWizardValues } from '.';
 import { JSONSchemaFormik, ajvValidate } from '../../inputs/JSONSchemaFormik';
@@ -43,9 +43,19 @@ const CreateOrEditEntityDetails: React.FC<{
     onSuccessUpdate: (data: IEntity) => void;
     onCancelUpdate: () => void;
     onError: (entity: IEntity | EntityWizardValues) => void;
-    filesTooBigError: boolean;
-    setFilesTooBigError: React.Dispatch<React.SetStateAction<boolean>>;
-}> = ({ isEditMode = false, entityTemplate, entity, onSuccessUpdate, onCancelUpdate, onError, filesTooBigError, setFilesTooBigError }) => {
+    externalErrors: {
+        files: boolean;
+        unique: {};
+    };
+    setExternalErrors: React.Dispatch<
+        React.SetStateAction<{
+            files: boolean;
+            unique: {};
+        }>
+    >;
+}> = ({ isEditMode = false, entityTemplate, entity, onSuccessUpdate, onCancelUpdate, onError, externalErrors, setExternalErrors }) => {
+    console.log({ externalErrors });
+
     const [updateWithRuleBreachDialogState, setUpdateWithRuleBreachDialogState] = useState<{
         isOpen: boolean;
         brokenRules?: IRuleBreachPopulated['brokenRules'];
@@ -55,7 +65,8 @@ const CreateOrEditEntityDetails: React.FC<{
 
     const { templateFileKeys: initialTemplateFileKeys } = getEntityTemplateFilesFieldsInfo(entityTemplate);
     let newEntity = entity;
-    let errorTooBig = false;
+    let errorTooBig = externalErrors.files;
+    let uniqueError = externalErrors.unique;
 
     // for initial values
     const fieldProperties = pickBy(entity.properties, (_value, key) => !initialTemplateFileKeys.includes(key)) as IEntity['properties'];
@@ -70,11 +81,15 @@ const CreateOrEditEntityDetails: React.FC<{
         }
     });
     const fileProperties = fileIdsProperties;
+
     const { isLoading: isUpdateLoading, mutateAsync: updateMutation } = useMutation(
         ({ newEntityData, ignoredRules }: { newEntityData: EntityWizardValues; ignoredRules?: IRuleBreach['brokenRules'] }) =>
             updateEntityRequestForMultiple(entity.properties._id, newEntityData, ignoredRules),
         {
-            onSuccess: (data) => onSuccessUpdate(data),
+            onSuccess: (data) => {
+                onSuccessUpdate(data);
+                uniqueError = {};
+            },
             onError: (err: AxiosError, { newEntityData: newEntityDate }) => {
                 if (err.response?.status === 413) errorTooBig = true;
                 else {
@@ -82,6 +97,14 @@ const CreateOrEditEntityDetails: React.FC<{
 
                     if (errorMetadata?.errorCode === errorCodes.failedConstraintsValidation) {
                         toastConstraintValidationError(errorMetadata, entityTemplate);
+                        const { properties } = errorMetadata.constraint as Omit<IUniqueConstraint, 'constraintName'>;
+                        const constraintPropsDisplayNames = properties.map((prop) => entityTemplate.properties.properties[prop].title);
+                        constraintPropsDisplayNames.forEach((uniqueProp) => {
+                            uniqueError = {
+                                ...uniqueError,
+                                [uniqueProp]: `${i18next.t('wizard.entity.someEntityAlreadyHasTheSameField')} ${uniqueProp}`,
+                            };
+                        });
                         return;
                     }
 
@@ -101,13 +124,22 @@ const CreateOrEditEntityDetails: React.FC<{
         onSuccess: (currEntity: IEntity) => {
             onSuccessUpdate(currEntity);
             newEntity = currEntity;
+            uniqueError = {};
         },
         onError: (err: AxiosError, { template }: EntityWizardValues) => {
             if (err.response?.status === 413) errorTooBig = true;
             else {
                 const errorMetadata = err.response?.data?.metadata;
                 if (errorMetadata?.errorCode === errorCodes.failedConstraintsValidation) {
-                    toastConstraintValidationError(errorMetadata, template);
+                    // toastConstraintValidationError(errorMetadata, template);
+                    const { properties } = errorMetadata.constraint as Omit<IUniqueConstraint, 'constraintName'>;
+                    const constraintPropsDisplayNames = properties.map((prop) => template.properties.properties[prop].title);
+                    constraintPropsDisplayNames.forEach((uniqueProp) => {
+                        uniqueError = {
+                            ...uniqueError,
+                            [uniqueProp]: `${i18next.t('wizard.entity.someEntityAlreadyHasTheSameField')} ${uniqueProp}`,
+                        };
+                    });
                 }
             }
         },
@@ -159,7 +191,10 @@ const CreateOrEditEntityDetails: React.FC<{
                                             <Button
                                                 variant="text"
                                                 onClick={() => {
-                                                    if (errorTooBig) setFilesTooBigError(true);
+                                                    console.log({ uniqueError });
+                                                    console.log({ externalErrors });
+
+                                                    setExternalErrors({ files: errorTooBig, unique: uniqueError });
                                                     if (isEditMode) onError({ templateId: values.template._id, properties: values.properties });
                                                     else onError(values);
                                                 }}
@@ -180,15 +215,24 @@ const CreateOrEditEntityDetails: React.FC<{
                 });
             }}
             validate={(values) => {
+                console.log({ values });
+                console.log({ uniqueError });
+                console.log({ externalErrors });
                 const nonAttachmentsSchema = filterAttachmentsAndEntitiesRefFromPropertiesSchema(values.template.properties);
                 const propertiesErrors = ajvValidate(nonAttachmentsSchema, values.properties);
+                // const mergedErrors = { ...propertiesErrors, ...externalErrors.unique };
+                // console.log({ mergedErrors });
+
                 if (Object.keys(propertiesErrors).length === 0) {
+                    console.log('no errors');
                     return {};
                 }
                 return { properties: propertiesErrors };
             }}
         >
             {({ setFieldValue, values, errors, touched, setFieldTouched, dirty }) => {
+                console.log({ touched });
+
                 const { templateFilesProperties, templateFileKeys, requiredFilesNames } = getEntityTemplateFilesFieldsInfo(
                     values.template || entityTemplate,
                 );
@@ -223,6 +267,7 @@ const CreateOrEditEntityDetails: React.FC<{
                         values={values}
                         setValues={(propertiesValues) => setFieldValue('properties', propertiesValues)}
                         errors={errors.properties ?? {}}
+                        uniqueErrors={{ ...externalErrors.unique, ...uniqueError }}
                         touched={touched.properties ?? {}}
                         setFieldTouched={(field) => setFieldTouched(`properties.${field}`)}
                         isEditMode={isEditMode}
@@ -235,9 +280,9 @@ const CreateOrEditEntityDetails: React.FC<{
                             title={i18next.t('wizard.entityTemplate.attachments')}
                             component="h6"
                             variant="h6"
-                            style={{ marginBottom: filesTooBigError ? '0px' : '12px', fontSize: '16px', fontWeight: '600' }}
+                            style={{ marginBottom: externalErrors.files ? '0px' : '12px', fontSize: '16px', fontWeight: '600' }}
                         />
-                        {filesTooBigError && (
+                        {externalErrors.files && (
                             <p id="error" style={{ color: '#d32f2f', margin: 0, padding: 0, marginBottom: '12px' }}>
                                 {i18next.t('errorCodes.FILES_TOO_BIG')}
                             </p>
@@ -354,7 +399,12 @@ const CreateOrEditEntityDetails: React.FC<{
                                                     style={{ borderRadius: '7px' }}
                                                     type="submit"
                                                     variant="contained"
-                                                    onClick={() => (Object.keys(errors || {}).length > 0 ? '' : onCancelUpdate())}
+                                                    onClick={() =>
+                                                        Object.keys({ ...errors.properties, ...externalErrors.unique, ...uniqueError } || {}).length >
+                                                        0
+                                                            ? ''
+                                                            : onCancelUpdate()
+                                                    }
                                                     startIcon={<DoneIcon />}
                                                     disabled={!dirty}
                                                 >

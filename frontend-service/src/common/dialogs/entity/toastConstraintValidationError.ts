@@ -8,6 +8,7 @@ export const toastConstraintValidationError = (
     entityTemplate: IMongoEntityTemplatePopulated,
 ) => {
     const { constraint } = errorMetadata;
+    console.log({ constraint });
 
     if (constraint.type === 'REQUIRED') {
         // shouldnt enter here. UI should block submit w/o required fields
@@ -18,6 +19,7 @@ export const toastConstraintValidationError = (
     } else {
         const { properties } = constraint as Omit<IUniqueConstraint, 'constraintName'>;
         const constraintPropsDisplayNames = properties.map((prop) => entityTemplate.properties.properties[prop].title);
+        console.log({ constraintPropsDisplayNames });
 
         const constraintPropsListString = constraintPropsDisplayNames.map((prop) => `"${prop}"`).join('+');
 

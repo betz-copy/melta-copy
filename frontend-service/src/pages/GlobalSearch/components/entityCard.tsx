@@ -40,7 +40,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
     variant = 'outlined',
 }) => {
     const [open, setOpen] = useState<boolean>(openCard);
-    const [filesTooBigError, setFilesTooBigError] = useState(false);
+    const [externalErrors, setExternalErrors] = useState({ files: false, unique: {} });
     const [editDialog, setEditDialog] = useState<{
         isOpen: boolean;
         entity?: IEntity;
@@ -211,21 +211,20 @@ const EntityCard: React.FC<EntityCardProps> = ({
                     entity={entity}
                     onSuccessUpdate={() => {
                         setEditDialog((prev) => ({ ...prev, isOpen: false }));
-                        if (filesTooBigError) setFilesTooBigError(false);
+                        setExternalErrors({ files: false, unique: {} });
                     }}
                     onCancelUpdate={() => {
                         setEditDialog((prev) => ({ ...prev, isOpen: false }));
-                        if (filesTooBigError) setFilesTooBigError(false);
+                        setExternalErrors({ files: false, unique: {} });
                     }}
                     onError={(currEntity) => {
                         setEditDialog({
                             isOpen: true,
                             entity: currEntity as IEntity,
                         });
-                        if (filesTooBigError) setFilesTooBigError(false);
                     }}
-                    filesTooBigError={filesTooBigError}
-                    setFilesTooBigError={setFilesTooBigError}
+                    externalErrors={externalErrors}
+                    setExternalErrors={setExternalErrors}
                 />
             </Dialog>
         </Card>

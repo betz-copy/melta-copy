@@ -19,7 +19,7 @@ const AddEntityButton: React.FC<{
     const [addEntityWizardState, setAddEntityWizardState] = useState<{ isOpen: boolean; initialStep?: number; initialValues?: EntityWizardValues }>({
         isOpen: false,
     });
-    const [filesTooBigError, setFilesTooBigError] = useState(false);
+    const [externalErrors, setExternalErrors] = useState({ files: false, unique: {} });
 
     return (
         <>
@@ -31,7 +31,7 @@ const AddEntityButton: React.FC<{
                 iconButtonProps={{
                     onClick: () => {
                         setAddEntityWizardState({ isOpen: true, initialStep, initialValues });
-                        setFilesTooBigError(false);
+                        setExternalErrors({ files: false, unique: {} });
                     },
                     style,
                 }}
@@ -76,11 +76,11 @@ const AddEntityButton: React.FC<{
                     onSuccessUpdate={(entity) => {
                         entitiesTableRef.current?.updateRowDataClientSide(entity, true);
                         setAddEntityWizardState((prev) => ({ ...prev, isOpen: false }));
-                        if (filesTooBigError) setFilesTooBigError(false);
+                        setExternalErrors({ files: false, unique: {} });
                     }}
                     onCancelUpdate={() => {
                         setAddEntityWizardState((prev) => ({ ...prev, isOpen: false }));
-                        if (filesTooBigError) setFilesTooBigError(false);
+                        setExternalErrors({ files: false, unique: {} });
                     }}
                     onError={(currEntity) => {
                         setAddEntityWizardState({
@@ -88,10 +88,9 @@ const AddEntityButton: React.FC<{
                             initialStep: 1,
                             initialValues: currEntity as EntityWizardValues,
                         });
-                        if (filesTooBigError) setFilesTooBigError(false);
                     }}
-                    filesTooBigError={filesTooBigError}
-                    setFilesTooBigError={setFilesTooBigError}
+                    externalErrors={externalErrors}
+                    setExternalErrors={setExternalErrors}
                 />
             </Dialog>
         </>

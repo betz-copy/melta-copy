@@ -71,7 +71,7 @@ const TemplateTable = forwardRef<
     );
 
     const [isFiltered, setIsFiltered] = useState(false);
-    const [filesTooBigError, setFilesTooBigError] = useState(false);
+    const [externalErrors, setExternalErrors] = useState({ files: false, unique: {} });
     const [editDialog, setEditDialog] = useState<{
         isOpen: boolean;
         entity?: IEntity;
@@ -201,19 +201,18 @@ const TemplateTable = forwardRef<
                             isOpen: true,
                             entity: currEntity as IEntity,
                         });
-                        if (filesTooBigError) setFilesTooBigError(false);
                     }}
                     onSuccessUpdate={(entity) => {
                         entitiesTableRef.current?.updateRowDataClientSide(entity, false);
                         setEditDialog((prev) => ({ ...prev, isOpen: false }));
-                        if (filesTooBigError) setFilesTooBigError(false);
+                        setExternalErrors({ files: false, unique: {} });
                     }}
                     onCancelUpdate={() => {
                         setEditDialog((prev) => ({ ...prev, isOpen: false }));
-                        if (filesTooBigError) setFilesTooBigError(false);
+                        setExternalErrors({ files: false, unique: {} });
                     }}
-                    filesTooBigError={filesTooBigError}
-                    setFilesTooBigError={setFilesTooBigError}
+                    externalErrors={externalErrors}
+                    setExternalErrors={setExternalErrors}
                 />
             </Dialog>
         </Grid>
