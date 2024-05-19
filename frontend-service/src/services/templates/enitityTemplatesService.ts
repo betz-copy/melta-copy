@@ -27,6 +27,7 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
         else if (value.pattern) type = 'pattern';
         else if (value.items?.enum) type = 'enumArray';
         else if (value.items?.format === 'fileId') type = 'multipleFiles';
+        // const uniqueConstraintGroupName = uniqueConstraints!.find((uniqueGroup) => uniqueGroup.properties.includes(name))?.groupName ?? '';
 
         const property: EntityTemplateFormInputProperties = {
             id: uuid(),
@@ -35,7 +36,10 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
             required: properties.required.includes(key),
             preview: propertiesPreview.includes(key),
             hide: properties.hide.includes(key),
-            unique: type !== 'serialNumber' && uniqueConstraints.filter((constraints) => constraints.properties.includes(key)).length > 0, // serials cant be marked unique
+            // unique: type !== 'serialNumber' && uniqueConstraints.filter((constraints) => constraints.properties.includes(key)).length > 0, // serials cant be marked unique
+            // uniqueConstraintGroupName: uniqueConstraints.find((constraint) => constraint.properties.includes(key))?.groupName!,
+            uniqueCheckbox: uniqueConstraints.some((constraint) => constraint.properties.includes(key) && constraint.groupName !== ''),
+            // uniqueCheckbox: uniqueConstraints.filter((constraints) => constraints.properties.includes(key)).length === 0,
             calculateTime: value.calculateTime ?? undefined,
             type,
             options: value.enum || value.items?.enum || [],
@@ -138,7 +142,6 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTem
             if (hide) schema.hide.push(name);
             if (preview) propertiesPreview.push(name);
             if (type === 'serialNumber') serialsUniqueConstraints.push([name]);
-
             if (type === 'enum' || type === 'enumArray') {
                 Object.entries(optionColors).forEach(([option, color]) => {
                     if (!color) return;

@@ -68,6 +68,7 @@ export class EntityManager {
             const uniqueConstraint: Omit<IUniqueConstraint, 'constraintName'> = {
                 type: 'UNIQUE',
                 templateId: label,
+                uniqueGroupName: '',
                 properties,
             };
 
@@ -413,18 +414,16 @@ export class EntityManager {
     }
 
     private static getConstraintFromName(constraintName: string): IConstraint {
-        const [constraintTypePrefix, constraintTemplateId, ...properties] = constraintName.split(config.constraintsNameDelimiter);
-
-        switch (constraintTypePrefix) {
-            case config.requiredConstraintsPrefixName: {
-                return { constraintName, type: 'REQUIRED', templateId: constraintTemplateId, property: properties[0] };
-            }
-            case config.uniqueConstraintsPrefixName: {
-                return { constraintName, type: 'UNIQUE', templateId: constraintTemplateId, properties };
-            }
-            default:
-                throw new Error('unknown constraint type for template (checked by constraint name)');
+        if (constraintName.startsWith('requiredConstraint')) {
+            const [_constraintTypePrefix, constraintTemplateId, property] = constraintName.split(config.constraintsNameDelimiter);
+            return { constraintName, type: 'REQUIRED', templateId: constraintTemplateId, property };
         }
+        if (constraintName.startsWith('uniqueConstraint')) {
+            const [_constraintTypePrefix, groupName, constraintTemplateId, propertiesStr] = constraintName.split(config.constraintsNameDelimiter);
+            const properties = propertiesStr.split(',');
+            return { constraintName, type: 'UNIQUE', templateId: constraintTemplateId, uniqueGroupName: groupName, properties };
+        }
+        throw new Error('unknown constraint type for template (checked by constraint name)');
     }
 
     private static buildConstraintsOfTemplate(templateId: string, constraints: IConstraint[]) {
@@ -433,7 +432,9 @@ export class EntityManager {
                 ...acc,
                 requiredConstraints: curr.type === 'REQUIRED' ? [...acc.requiredConstraints, curr.property] : acc.requiredConstraints,
                 uniqueConstraints:
-                    curr.type === 'UNIQUE' ? [...acc.uniqueConstraints, { groupName: '', properties: curr.properties }] : acc.uniqueConstraints,
+                    curr.type === 'UNIQUE'
+                        ? [...acc.uniqueConstraints, { groupName: curr.uniqueGroupName, properties: curr.properties }]
+                        : acc.uniqueConstraints,
             }),
             {
                 templateId,
@@ -532,14 +533,13 @@ export class EntityManager {
     ) {
         const existingUniqueConstraintsOfTemplate = existingUniqueConstraints.filter((constraint) => constraint.templateId === templateId);
 
-        const newUniqueConstraints: IUniqueConstraint[] = uniqueConstraints.flatMap((constraintGroup) =>
-            constraintGroup.properties.map((properties) => ({
-                type: 'UNIQUE',
-                constraintName: `${config.uniqueConstraintsPrefixName}${config.constraintsNameDelimiter}${templateId}${config.constraintsNameDelimiter}${properties}`,
-                templateId,
-                properties: [properties],
-            })),
-        );
+        const newUniqueConstraints: IUniqueConstraint[] = uniqueConstraints.flatMap((constraintGroup) => ({
+            type: 'UNIQUE',
+            constraintName: `${config.uniqueConstraintsPrefixName}${config.constraintsNameDelimiter}${constraintGroup.groupName}${config.constraintsNameDelimiter}${templateId}${config.constraintsNameDelimiter}${constraintGroup.properties}`,
+            templateId,
+            uniqueGroupName: constraintGroup.groupName,
+            properties: constraintGroup.properties,
+        }));
 
         const uniqueConstraintsToCreate = differenceWith(newUniqueConstraints, existingUniqueConstraintsOfTemplate, (constraintA, constraintB) =>
             arraysEqualsNonOrdered(constraintA.properties, constraintB.properties),

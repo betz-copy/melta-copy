@@ -19,6 +19,7 @@ export interface IUniqueConstraint {
     type: 'UNIQUE';
     constraintName: string;
     templateId: string;
+    uniqueGroupName: string;
     properties: string[];
 }
 

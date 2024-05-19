@@ -15,6 +15,8 @@ import pickBy from 'lodash.pickby';
 import { dateNotificationTypes, validPropertyTypes } from './AddFields';
 import { CommonFormInputProperties } from './commonInterfaces';
 import { MinimizedColorPicker } from '../../inputs/MinimizedColorPicker';
+import { MeltaCheckbox } from '../../MeltaCheckbox';
+import { MeltaTooltip } from '../../MeltaTooltip';
 
 export interface FieldEditCardProps {
     value: CommonFormInputProperties;
@@ -91,16 +93,14 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     const required = `properties[${index}].required`;
     const preview = `properties[${index}].preview`;
     const hide = `properties[${index}].hide`;
-    const unique = `properties[${index}].unique`;
-    const uniqueCheckBox = `properties[${index}].uniqueCheckBox`;
 
     const initialEnumOptions = initialValue?.options || [];
 
-    const uniqueGroupName = value.uniqueConstraints?.find((uniqueGroup) => uniqueGroup.properties.includes(value.name))?.groupName ?? '';
+    const unique =
+        value.type !== 'serialNumber' && uniqueConstraints!.filter((constraints) => constraints.properties.includes(value.name)).length > 0;
+    const uniqueConstraintGroupName = uniqueConstraints!.find((constraint) => constraint.properties.includes(value.name))?.groupName!;
 
     const createNewUniqueGroup = (groupName) => {
-        console.log('in here createNewUniqueGroup');
-
         if (groupName) {
             setUniqueConstraints!((prev) => {
                 const existingGroup = prev?.find((group) => group.groupName === groupName);
@@ -121,8 +121,6 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     };
 
     const addToProperties = (selectedGroupName) => {
-        console.log('in here addToProperties');
-
         setUniqueConstraints!((prev) => {
             const existingGroup = prev?.find((group) => group.groupName === selectedGroupName);
             const propertyExists = existingGroup?.properties.includes(value.name);
@@ -143,7 +141,6 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                             };
 
                             if (!updatedGroup.properties.length) {
-                                console.log('empty');
                                 return null;
                             }
                             return updatedGroup;
@@ -158,8 +155,6 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     };
 
     const createEmptyGroup = (fieldName) => {
-        console.log('in here createEmptyGroup');
-
         setUniqueConstraints!((prev) => {
             const existingGroup = prev?.find((group) => group.groupName === '' && group.properties.includes(fieldName));
 
@@ -175,29 +170,13 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
         });
     };
 
-    const deleteUniqueGroup = (groupName) => {
-        console.log('in here deleteUniqueGroup');
-        setUniqueConstraints!((prev) => {
-            const updatedConstraints = (prev || []).filter((group) => group.groupName !== groupName);
-
-            return updatedConstraints;
-        });
-    };
-    // console.log(uniqueGroupName);
-
     const deletePropFromUniqueConstraints = (groupName, fieldName) => {
-        console.log(groupName);
-
-        console.log('in here deletePropFromUniqueConstraints');
         setUniqueConstraints!((prev) => {
             const updatedConstraints = (prev || [])
                 .map((group) => {
                     if (group.groupName === groupName) {
-                        console.log('hello');
-
                         const updatedProperties = group.properties.filter((prop) => prop !== fieldName);
                         if (updatedProperties.length === 0) {
-                            console.log('Empty properties array, removing group');
                             return null;
                         }
                         return {
@@ -212,18 +191,62 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
         });
     };
 
-    const handleCheckboxChange = (isChecked) => {
-        console.log('in here handleCheckboxChange');
-        const fieldName = value.name;
-        if (!isChecked) {
-            createEmptyGroup(fieldName);
-            deletePropFromUniqueConstraints(uniqueGroupName, fieldName);
-        }
+    const movePropAndCreateGroup = (fieldName) => {
+        setUniqueConstraints!((prev) => {
+            const existingGroupIndex = prev?.findIndex((group) => group.properties.includes(fieldName));
+
+            if (existingGroupIndex !== -1) {
+                const updatedConstraints = [...prev];
+
+                const existingGroup = updatedConstraints[existingGroupIndex];
+                const updatedProperties = existingGroup.properties.filter((prop) => prop !== fieldName);
+                updatedConstraints[existingGroupIndex] = {
+                    ...existingGroup,
+                    properties: updatedProperties,
+                };
+
+                if (updatedProperties.length === 0) {
+                    updatedConstraints.splice(existingGroupIndex, 1);
+                }
+
+                const newGroup = {
+                    groupName: '',
+                    properties: [fieldName],
+                };
+                updatedConstraints.push(newGroup);
+
+                return updatedConstraints;
+            }
+            const newGroup = {
+                groupName: '',
+                properties: [fieldName],
+            };
+            const updatedConstraints = prev ? [...prev, newGroup] : [newGroup];
+            return updatedConstraints;
+        });
     };
 
-    console.log(uniqueConstraints);
+    const deleteAndCreateEmptyGroup = (groupName) => {
+        setUniqueConstraints!((prevConstraints) => {
+            const groupToDelete = prevConstraints.find((group) => group.groupName === groupName);
 
-    // console.log(value);
+            const updatedConstraints = prevConstraints.filter((group) => group.groupName !== groupName);
+
+            groupToDelete!.properties.forEach((fieldName) => {
+                const fieldInExistingGroup = updatedConstraints.some((group) => group.properties.includes(fieldName));
+                if (!fieldInExistingGroup) {
+                    updatedConstraints.push({ groupName: '', properties: [fieldName] });
+                }
+
+                setValues!((prevValues) => ({
+                    ...prevValues,
+                    [fieldName]: '',
+                }));
+            });
+
+            return updatedConstraints;
+        });
+    };
 
     const isNewProperty = !initialValue;
     const isDisabled = Boolean(isEditMode && !isNewProperty && areThereAnyInstances);
@@ -467,9 +490,11 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                 setValues((prevValue) => ({
                                                                     ...prevValue,
                                                                     required: checked,
-                                                                    // unique is allowed only if required=true, automatic uncheck 'unique' too
-                                                                    unique: !checked && prevValue.unique ? false : prevValue.unique,
                                                                 }));
+                                                                // unique is allowed only if required=true, automatic uncheck 'unique' too
+                                                                if (!checked && unique) {
+                                                                    deletePropFromUniqueConstraints(uniqueConstraintGroupName, value.name);
+                                                                }
                                                             }}
                                                             disabled={
                                                                 value.type === 'serialNumber' ||
@@ -514,36 +539,28 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                     label={i18next.t('validation.hide')}
                                                 />
                                             )}
-                                            {value.type !== 'serialNumber' && value.unique !== undefined && setValues && (
+                                            {unique !== undefined && setValues && value.type !== 'serialNumber' && (
                                                 <FormControlLabel
                                                     control={
                                                         <Switch
-                                                            id={unique}
-                                                            name={unique}
+                                                            id={String(unique)}
+                                                            name={String(unique)}
+                                                            checked={unique}
                                                             onChange={(_e, checked) => {
                                                                 setValues((prevValue) => ({
                                                                     ...prevValue,
-                                                                    unique: checked,
                                                                     required: checked ? true : prevValue.required,
                                                                 }));
-
-                                                                if (checked && !value.uniqueCheckBox) {
-                                                                    console.log('1');
+                                                                if (checked) {
                                                                     createEmptyGroup(value.name);
-                                                                } else if (checked && value.uniqueCheckBox) {
-                                                                    console.log('2');
-                                                                    deletePropFromUniqueConstraints(uniqueGroupName, value.name);
-                                                                } else if (!checked) {
-                                                                    console.log('3');
-                                                                    deletePropFromUniqueConstraints(uniqueGroupName, value.name);
+                                                                } else {
+                                                                    deletePropFromUniqueConstraints(uniqueConstraintGroupName, value.name);
                                                                 }
                                                             }}
-                                                            checked={value.unique}
                                                         />
                                                     }
                                                     label={i18next.t('validation.unique')}
                                                 />
-                                                // </MeltaTooltip>
                                             )}
                                             {(value.type === 'date' || value.type === 'date-time') && 'calculateTime' in value && (
                                                 <FormControlLabel
@@ -565,29 +582,30 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                         </IconButton>
                                     </Grid>
                                     <Grid item container justifyContent="space-between" alignItems="center" flexWrap="nowrap">
-                                        {value.unique && value.type !== 'serialNumber' && (
+                                        {unique && value.type !== 'serialNumber' && (
                                             <Grid container direction="row">
                                                 <Grid item container alignItems="center" flexWrap="nowrap">
-                                                    <FormControlLabel
-                                                        control={
-                                                            <Checkbox
-                                                                checked={value.uniqueCheckBox}
-                                                                onChange={(_e, checked) => {
-                                                                    // const isChecked = event.target.checked;
-
-                                                                    setValues!((prevValue) => ({
-                                                                        ...prevValue,
-                                                                        uniqueCheckBox: checked,
-                                                                    }));
-                                                                    handleCheckboxChange(checked);
-                                                                }}
-                                                                name="addUniqueGroupCheckbox"
-                                                            />
-                                                        }
-                                                        label={i18next.t('wizard.entityTemplate.createOrAddUniqueGroup')}
-                                                    />
+                                                    <MeltaTooltip title={i18next.t('validation.uniqueTooltipTitle')}>
+                                                        <FormControlLabel
+                                                            control={
+                                                                <MeltaCheckbox
+                                                                    checked={value.uniqueCheckbox}
+                                                                    onChange={(_e, checked) => {
+                                                                        setValues!((prevValue) => ({
+                                                                            ...prevValue,
+                                                                            uniqueCheckbox: checked,
+                                                                        }));
+                                                                        if (!checked) {
+                                                                            movePropAndCreateGroup(value.name);
+                                                                        }
+                                                                    }}
+                                                                />
+                                                            }
+                                                            label={i18next.t('wizard.entityTemplate.createOrAddUniqueGroup')}
+                                                        />
+                                                    </MeltaTooltip>
                                                 </Grid>
-                                                {value.uniqueCheckBox && (
+                                                {value.uniqueCheckbox && (
                                                     <Autocomplete
                                                         fullWidth
                                                         freeSolo
@@ -599,7 +617,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                       ?.map((group) => group.groupName)
                                                                 : []
                                                         }
-                                                        value={uniqueGroupName}
+                                                        value={uniqueConstraintGroupName}
                                                         onChange={(_event, newValue) => {
                                                             if (newValue !== null) {
                                                                 addToProperties(newValue);
@@ -626,14 +644,16 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                         endAdornment: (
                                                                             <>
                                                                                 {params.InputProps.endAdornment}
-                                                                                {uniqueGroupName &&
+                                                                                {uniqueConstraintGroupName &&
                                                                                     Array.isArray(uniqueConstraints) &&
                                                                                     uniqueConstraints?.some(
-                                                                                        (group) => group.groupName === uniqueGroupName,
+                                                                                        (group) => group.groupName === uniqueConstraintGroupName,
                                                                                     ) && (
                                                                                         <IconButton
                                                                                             aria-label="delete"
-                                                                                            onClick={() => deleteUniqueGroup(uniqueGroupName)}
+                                                                                            onClick={() =>
+                                                                                                deleteAndCreateEmptyGroup(uniqueConstraintGroupName)
+                                                                                            }
                                                                                         >
                                                                                             <DeleteIcon />
                                                                                         </IconButton>

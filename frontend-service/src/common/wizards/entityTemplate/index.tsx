@@ -31,7 +31,7 @@ export interface EntityTemplateFormInputProperties extends IBaseFormInputPropert
     preview: boolean;
     hide: boolean;
     id: string;
-    unique: boolean;
+    uniqueCheckbox: boolean;
     optionColors: Record<string, string>;
     dateNotification: string | null | undefined;
     calculateTime: boolean | null | undefined;
