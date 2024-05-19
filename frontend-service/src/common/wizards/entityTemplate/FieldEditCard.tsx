@@ -1,6 +1,6 @@
 import React, { memo, SetStateAction } from 'react';
 import { FormikErrors, FormikTouched } from 'formik';
-import { TextField, Box, MenuItem, Grid, Card, CardContent, Switch, FormControlLabel, IconButton, Chip, Autocomplete, Checkbox } from '@mui/material';
+import { TextField, Box, MenuItem, Grid, Card, CardContent, Switch, FormControlLabel, IconButton, Chip, Autocomplete } from '@mui/material';
 import {
     Delete as DeleteIcon,
     DragHandle as DragHandleIcon,
@@ -644,8 +644,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                         endAdornment: (
                                                                             <>
                                                                                 {params.InputProps.endAdornment}
-                                                                                {uniqueConstraintGroupName &&
-                                                                                    Array.isArray(uniqueConstraints) &&
+                                                                                {params.inputProps.value === uniqueConstraintGroupName &&
                                                                                     uniqueConstraints?.some(
                                                                                         (group) => group.groupName === uniqueConstraintGroupName,
                                                                                     ) && (
@@ -664,15 +663,12 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                 />
 
                                                                 {params.inputProps.value &&
-                                                                    Array.isArray(uniqueConstraints) &&
                                                                     !uniqueConstraints?.some(
                                                                         (group) => group.groupName === params.inputProps.value,
                                                                     ) && (
                                                                         <IconButton
                                                                             aria-label="create"
-                                                                            onClick={() => {
-                                                                                createNewUniqueGroup(params.inputProps.value);
-                                                                            }}
+                                                                            onClick={() => createNewUniqueGroup(params.inputProps.value)}
                                                                             style={{
                                                                                 position: 'absolute',
                                                                                 left: 10,
