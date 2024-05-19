@@ -4,15 +4,23 @@ import { ImageWithDisable } from './ImageWithDisable';
 
 interface AddIconWithTextProps {
     textStyle: React.CSSProperties;
-    onClick?: React.MouseEventHandler<HTMLDivElement>;
+    onClick?: () => void;
     ref?: React.RefObject<HTMLParagraphElement>;
     text?: string;
-    disabled: boolean;
+    disabled?: boolean;
     iconStyle: React.CSSProperties;
 }
-export const AddIconWithText = forwardRef<HTMLDivElement, AddIconWithTextProps>(({ textStyle, onClick, text, disabled, iconStyle }, ref) => {
+
+export const AddIconWithText = forwardRef<HTMLDivElement, AddIconWithTextProps>(({ textStyle, onClick, text, disabled = false, iconStyle }, ref) => {
     return (
-        <Typography onClick={onClick} ref={ref} component="p" color={disabled ? 'gray' : 'primary'} justifyContent="space-around" style={textStyle}>
+        <Typography
+            onClick={onClick}
+            ref={ref}
+            component="div"
+            color={disabled ? 'gray' : 'primary'}
+            justifyContent="space-around"
+            style={{ ...textStyle, cursor: 'pointer' }}
+        >
             <ImageWithDisable srcPath="/icons/icon-plus.svg" disabled={disabled} style={iconStyle} />
             {text}
         </Typography>

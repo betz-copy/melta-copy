@@ -127,6 +127,8 @@ const CreateFormula: React.FC<StepComponentProps<RelationshipTemplateRuleWizardV
     };
 
     const onChange = useCallback((immutableTree: ImmutableTree) => {
+        console.log(immutableTree);
+
         setFieldValue('formula', immutableTree);
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
 

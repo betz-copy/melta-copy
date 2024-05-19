@@ -132,6 +132,8 @@ export class RelationshipManager {
         ignoredRules: IBrokenRule[],
     ) {
         const { templateId, properties, sourceEntityId, destinationEntityId } = relationship;
+        console.log(templateId, properties, sourceEntityId, destinationEntityId);
+        console.log(relationshipTemplate);
 
         return Neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
             const countOfExistingRelationships = await runInTransactionAndNormalize(
@@ -163,10 +165,19 @@ export class RelationshipManager {
                 { relProps: { ...properties, ...generateDefaultProperties() } },
             );
 
+            // run code of action
+            const {
+                [`updated_${sourceEntityTemplate.name}`]: updatedSourceEntity,
+                [`updated_${destinationEntityEntityTemplate.name}`]: updateddestinationEntityEntity,
+            } = eval(relationshipTemplate.action);
+            if (updatedSourceEntity) {
+                
+            }
+
             const ruleFailuresAfterAction = await RelationshipManager.runRulesDependOnRelationship(
                 transaction,
                 relationshipTemplate,
-                sourceEntityId,
+                destinationEntityEntityId,
                 destinationEntityId,
                 createdRelationship.properties._id,
             );
