@@ -36,3 +36,7 @@ config:
       value: step-templates
     - name: MONGO_STEP_INSTANCES_COLLECTION_NAME
       value: step-instances
+    - name: ELASTIC_CLIENT_URL
+      value: http://elastic:9200
+    - name: ELASTIC_PROCESS_SEARCH_INDEX
+      value: process-search

@@ -1,20 +1,22 @@
 import { logger } from 'elastic-apm-node';
 import { Document, LeanDocument } from 'mongoose';
-import { IMongoProcessInstancePopulated, IProcessInstance } from '../../express/instances/processes/interface';
+import { IMongoProcessInstancePopulated, IProcessInstance, ProcessInstanceDocument } from '../../express/instances/processes/interface';
 import ElasticClient from './index';
 import { ServiceError } from '../../express/error';
+import config from '../../config';
 
-const createProcessTextChainToSearch = (process: object) => {
+const { elasticClient } = config;
+const createProcessTextChain = (process: object) => {
     let values = '';
     // eslint-disable-next-line no-restricted-syntax
     for (const [key, value] of Object.entries(process)) {
         if (key !== '_id' && key !== 'templateId' && key !== 'reviewers') {
             if (typeof value === 'object' && !Array.isArray(value)) {
-                values += createProcessTextChainToSearch(value);
+                values += createProcessTextChain(value);
             } else if (Array.isArray(value)) {
                 // eslint-disable-next-line no-loop-func
                 value.forEach((item) => {
-                    values += createProcessTextChainToSearch(item);
+                    values += createProcessTextChain(item);
                 });
             } else {
                 values += `${value} `;
@@ -25,14 +27,14 @@ const createProcessTextChainToSearch = (process: object) => {
     return values;
 };
 
-const createDocumentOnElastic = async (process: IMongoProcessInstancePopulated) => {
-    const elasticClient = ElasticClient.getClient();
+const createDocumentOnElastic = async (process: IMongoProcessInstancePopulated | LeanDocument<ProcessInstanceDocument>) => {
+    const elkClient = ElasticClient.getClient();
 
-    const valuesString = createProcessTextChainToSearch(process);
+    const valuesString = createProcessTextChain(process);
 
-    await elasticClient
+    await elkClient
         .index({
-            index: 'process-search',
+            index: elasticClient.index,
             id: process._id,
             body: {
                 processTextChain: valuesString.trim(),
@@ -43,17 +45,17 @@ const createDocumentOnElastic = async (process: IMongoProcessInstancePopulated) 
 
 const updateDocumentOnElastic = async (process: LeanDocument<IProcessInstance & Document<any, any, any>> | IMongoProcessInstancePopulated) => {
     try {
-        const elasticClient = ElasticClient.getClient();
+        const elkClient = ElasticClient.getClient();
 
-        const exists = await elasticClient.exists({
-            index: 'process-search',
+        const exists = await elkClient.exists({
+            index: elasticClient.index,
             id: process._id,
         });
         if (!exists) throw new ServiceError(404, 'process not exist');
 
-        const valuesString = createProcessTextChainToSearch(process);
-        await elasticClient.update({
-            index: 'process-search',
+        const valuesString = createProcessTextChain(process);
+        await elkClient.update({
+            index: elasticClient.index,
             id: process._id,
             body: {
                 doc: {
@@ -67,25 +69,25 @@ const updateDocumentOnElastic = async (process: LeanDocument<IProcessInstance & 
 };
 
 const deleteDocumentOnElastic = async (processId: string) => {
-    const elasticClient = ElasticClient.getClient();
-    const exists = await elasticClient.exists({
-        index: 'process-search',
+    const elkClient = ElasticClient.getClient();
+    const exists = await elkClient.exists({
+        index: elasticClient.index,
         id: processId,
     });
     if (!exists) throw new ServiceError(404, 'process not exist');
 
-    await elasticClient
+    await elkClient
         .delete({
-            index: 'process-search',
+            index: elasticClient.index,
             id: processId,
         })
         .catch((error) => logger.log(error));
 };
 
-const processGlobalSearch = async (searchText: string) => {
-    const elasticClient = ElasticClient.getClient();
-    const processes = await elasticClient.search({
-        index: 'process-search',
+const processSearchOnELastic = async (searchText: string) => {
+    const elkClient = ElasticClient.getClient();
+    const processes = await elkClient.search({
+        index: elasticClient.index,
         query: {
             bool: {
                 should: [
@@ -110,4 +112,4 @@ const processGlobalSearch = async (searchText: string) => {
     return processes.hits.hits.map(({ _id }) => _id);
 };
 
-export { deleteDocumentOnElastic, createDocumentOnElastic, updateDocumentOnElastic, processGlobalSearch };
+export { deleteDocumentOnElastic, createDocumentOnElastic, updateDocumentOnElastic, processSearchOnELastic as processGlobalSearch };

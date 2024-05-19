@@ -16,12 +16,7 @@ import config from '../../../config';
 import { validateStepIds } from './validator.template';
 import { IMongoProcessTemplate } from '../../templates/processes/interface';
 import { IMongoStepInstance } from '../steps/interface';
-import {
-    createDocumentOnElastic,
-    deleteDocumentOnElastic,
-    processGlobalSearch,
-    updateDocumentOnElastic,
-} from '../../../utils/elastic/documentsOnElastic';
+import { deleteDocumentOnElastic, processGlobalSearch, updateDocumentOnElastic } from '../../../utils/elastic/documentsOnElastic';
 import StepInstanceManager from '../steps/manager';
 
 type ProcessInstanceType<T extends boolean> = T extends true ? IMongoProcessInstancePopulated & Document : IMongoProcessInstance & Document;
@@ -29,11 +24,6 @@ class ProcessInstanceManager {
     static async getProcessById<T extends boolean = true>(id: string, shouldPopulate: T = true as T): Promise<ProcessInstanceType<T>> {
         const query = ProcessInstanceModel.findById(id).orFail(new NotFoundError('process', id)).lean();
         return (shouldPopulate ? query.populate(config.processFields.steps) : query).exec() as Promise<ProcessInstanceType<T>>;
-    }
-
-    static async getAllProcesses(): Promise<ProcessInstanceDocument[]> {
-        const query = ProcessInstanceModel.find({}); // .orFail(new ('')).lean();
-        return query.populate(config.processFields.steps); // : query).exec() as Promise<ProcessInstanceType<T>>;
     }
 
     static async getProcessesByTemplateId(id: string) {
@@ -66,7 +56,7 @@ class ProcessInstanceManager {
         });
 
         const populatedProcess: IMongoProcessInstancePopulated = await this.getProcessById(processId);
-        await createDocumentOnElastic(populatedProcess);
+        // await createDocumentOnElastic(populatedProcess);
         return populatedProcess;
     }
 

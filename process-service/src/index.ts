@@ -5,7 +5,7 @@ import config from './config';
 import logger from './utils/logger/logsLogger';
 import ElasticClient from './utils/elastic/index';
 
-const { mongo, service, logs } = config;
+const { mongo, service, logs, elasticClient } = config;
 
 if (logs.enableApm) {
     apm.start({
@@ -18,7 +18,12 @@ if (logs.enableApm) {
 const initializeMongo = async () => {
     logger.info('Connecting to Mongo...');
 
-    await mongoose.connect(mongo.url, { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false, useCreateIndex: true });
+    await mongoose.connect(mongo.url, {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+        useFindAndModify: false,
+        useCreateIndex: true,
+    });
 
     logger.info('Mongo connection established');
 };
@@ -26,8 +31,8 @@ const initializeMongo = async () => {
 const createProcessSearchIndex = async () => {
     try {
         const client = ElasticClient.getClient();
-        const isIndexExists = await client.indices.exists({ index: 'process-search' });
-        if (!isIndexExists) await client.indices.create({ index: 'process-search' });
+        const isIndexExists = await client.indices.exists({ index: elasticClient.index });
+        if (!isIndexExists) await client.indices.create({ index: elasticClient.index });
     } catch (error) {
         logger.error('Error checking or creating index:', error);
     }
@@ -36,7 +41,7 @@ const createProcessSearchIndex = async () => {
 const initializeElasticsearch = async () => {
     logger.info('Connecting to elastic...');
 
-    await ElasticClient.initialize('http://elastic:9200');
+    await ElasticClient.initialize(elasticClient.url);
 
     await createProcessSearchIndex();
 
