@@ -16,7 +16,7 @@ import config from '../../../config';
 import { validateStepIds } from './validator.template';
 import { IMongoProcessTemplate } from '../../templates/processes/interface';
 import { IMongoStepInstance } from '../steps/interface';
-import { deleteDocumentOnElastic, processGlobalSearch, updateDocumentOnElastic } from '../../../utils/elastic/documentsOnElastic';
+import { createDocumentOnElastic, deleteDocumentOnElastic, processGlobalSearch, updateDocumentOnElastic } from '../../../utils/elastic/documentsOnElastic';
 import StepInstanceManager from '../steps/manager';
 
 type ProcessInstanceType<T extends boolean> = T extends true ? IMongoProcessInstancePopulated & Document : IMongoProcessInstance & Document;
@@ -56,7 +56,7 @@ class ProcessInstanceManager {
         });
 
         const populatedProcess: IMongoProcessInstancePopulated = await this.getProcessById(processId);
-        // await createDocumentOnElastic(populatedProcess);
+        await createDocumentOnElastic(populatedProcess);
         return populatedProcess;
     }
 
