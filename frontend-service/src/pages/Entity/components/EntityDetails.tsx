@@ -43,7 +43,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
     const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
     const queryClient = useQueryClient();
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-    const [filesTooBigError, setFilesTooBigError] = useState(false);
+    const [externalErrors, setExternalErrors] = useState({ files: false, unique: {} });
 
     const darkMode = useSelector((state: RootState) => state.darkMode);
 
@@ -129,14 +129,14 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                             entity: data,
                         };
                     });
-                    if (filesTooBigError) setFilesTooBigError(false);
+                    setExternalErrors({ files: false, unique: {} });
                 }}
                 onCancelUpdate={() => {
                     setIsEditMode(false);
-                    if (filesTooBigError) setFilesTooBigError(false);
+                    setExternalErrors({ files: false, unique: {} });
                 }}
-                filesTooBigError={filesTooBigError}
-                setFilesTooBigError={setFilesTooBigError}
+                externalErrors={externalErrors}
+                setExternalErrors={setExternalErrors}
             />
         );
     }

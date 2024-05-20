@@ -193,7 +193,7 @@ const EntitiesPageHeadline: React.FC<{
                         <AddEntityButton
                             disabledToolTip
                             style={{ background: theme.palette.primary.main, borderRadius: '7px', width: '135px', height: '35px' }}
-                            entitiesTableRef={entitiesTableRef}
+                            updateRowDataClientSide={(entity) => entitiesTableRef.current?.updateRowDataClientSide(entity, true)}
                         >
                             <AddIcon htmlColor="white" />
                             <Typography fontSize={14} style={{ fontWeight: '400', padding: '0 5px', color: 'white' }}>

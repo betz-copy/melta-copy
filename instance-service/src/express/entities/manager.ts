@@ -42,8 +42,8 @@ export class EntityManager {
             throw err;
         }
 
-        const { message: neo4jMessage } = err;
-
+        const { message: neo4jMessage } = err;   
+             
         if (neo4jMessage.includes('must have the property')) {
             // neo4jMessage = Node(...) with label `someLabel...` must have the property `property1`
             const variableMatchesInMessage = neo4jMessage.matchAll(/`(.*?)`/g)!;
@@ -59,11 +59,20 @@ export class EntityManager {
                 constraint: requiredConstraint,
                 neo4jMessage,
             });
-        } else if (neo4jMessage.includes('already exists with')) {
-            // neo4jMessage = Node(...) already exists with label `someLabel...` and properties `property1` = ..., `property2` = ...
-            // support unique w/ multiple props
-            const variableMatchesInMessage = neo4jMessage.matchAll(/`(.*?)`/g)!;
-            const [label, ...properties] = Array.from(variableMatchesInMessage).map((match) => match[1]);
+        } else if (neo4jMessage.includes('already exists with') || neo4jMessage.includes('uniqueConstraint')) {
+            let label ='';
+            let properties: any[] = [];
+            if (neo4jMessage.includes('already exists with')) {
+                // neo4jMessage = Node(...) already exists with label `someLabel...` and properties `property1` = ..., `property2` = ...
+                // support unique w/ multiple props
+                const variableMatchesInMessage = neo4jMessage.matchAll(/`(.*?)`/g)!;            
+                [label, ...properties] = Array.from(variableMatchesInMessage).map((match) => match[1]);
+            }
+            else {
+                label = neo4jMessage.substr(neo4jMessage.indexOf(':') + 1, 24);
+                const keys = neo4jMessage.substring(neo4jMessage.indexOf('{') + 1, neo4jMessage.indexOf('}'));
+                properties = keys.split(',').map(key => key.trim());
+            }
 
             const uniqueConstraint: Omit<IUniqueConstraint, 'constraintName'> = {
                 type: 'UNIQUE',

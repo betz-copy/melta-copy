@@ -10,7 +10,7 @@ import { useLocation } from 'react-router';
 import { useNavigate } from 'react-router-dom';
 import { AxiosError } from 'axios';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { IEntity, IEntityExpanded } from '../../../interfaces/entities';
+import { IEntity, IEntityExpanded, IUniqueConstraint } from '../../../interfaces/entities';
 import { duplicateEntityRequest } from '../../../services/entitiesService';
 import { EntityWizardValues } from '../../../common/dialogs/entity';
 import { JSONSchemaFormik, ajvValidate } from '../../../common/inputs/JSONSchemaFormik';
@@ -18,7 +18,6 @@ import { BlueTitle } from '../../../common/BlueTitle';
 import { filterAttachmentsAndEntitiesRefFromPropertiesSchema } from '../../../utils/pickFieldsPropertiesSchema';
 import { DuplicateTopBar } from './DuplicateTopBar';
 import { environment } from '../../../globals';
-import { toastConstraintValidationError } from '../../../common/dialogs/entity/toastConstraintValidationError';
 import { InstanceFileInput } from '../../../common/inputs/InstanceFilesInput/InstanceFileInput';
 import { InstanceSingleFileInput } from '../../../common/inputs/InstanceFilesInput/InstanceSingleFileInput';
 
@@ -35,6 +34,8 @@ const DuplicateEntity: React.FC<{}> = () => {
     if (!state) {
         navigate(`/entity/${entity?.properties._id}`);
     }
+    const [errorTooBig, setErrorTooBig] = React.useState(false);
+    const [uniqueError, setUniqueError] = React.useState({});
 
     const { isLoading: isDuplicateLoading, mutateAsync: duplicateMutation } = useMutation(
         (newEntityDate: EntityWizardValues) => duplicateEntityRequest(entity.properties._id, newEntityDate),
@@ -42,11 +43,20 @@ const DuplicateEntity: React.FC<{}> = () => {
             onSuccess: (data) => {
                 toast.success(i18next.t('wizard.entity.duplicatedSuccessfully'));
                 navigate(`/entity/${data?.properties._id}`);
+                setUniqueError({});
             },
             onError: (err: AxiosError) => {
+                if (err.response?.status === 413) setErrorTooBig(true);
                 const errorMetadata = err.response?.data?.metadata;
-                if (errorMetadata?.errorCode === errorCodes.failedConstraintsValidation) {
-                    toastConstraintValidationError(errorMetadata, entityTemplate);
+                if (errorMetadata && errorMetadata?.errorCode === errorCodes.failedConstraintsValidation) {
+                    const { properties } = errorMetadata.constraint as Omit<IUniqueConstraint, 'constraintName'>;
+                    const constraintPropsDisplayNames = properties.map((prop) => entityTemplate.properties.properties[prop].title);
+                    constraintPropsDisplayNames.forEach((uniqueProp) => {
+                        setUniqueError({
+                            ...uniqueError,
+                            [uniqueProp]: `${i18next.t('wizard.entity.someEntityAlreadyHasTheSameField')} ${uniqueProp}`,
+                        });
+                    });
                     return;
                 }
 
@@ -114,6 +124,7 @@ const DuplicateEntity: React.FC<{}> = () => {
                                                                 values={values}
                                                                 setValues={(propertiesValues) => setFieldValue('properties', propertiesValues)}
                                                                 errors={errors.properties ?? {}}
+                                                                uniqueErrors={{ ...uniqueError }}
                                                                 touched={touched.properties ?? {}}
                                                                 setFieldTouched={(field) => setFieldTouched(`properties.${field}`)}
                                                             />
@@ -124,8 +135,18 @@ const DuplicateEntity: React.FC<{}> = () => {
                                                                     title={i18next.t('wizard.entityTemplate.attachments')}
                                                                     component="h6"
                                                                     variant="h6"
-                                                                    style={{ marginBottom: '22px' }}
+                                                                    style={{
+                                                                        marginBottom: errorTooBig ? '0px' : '12px',
+                                                                    }}
                                                                 />
+                                                                {errorTooBig && (
+                                                                    <p
+                                                                        id="error"
+                                                                        style={{ color: '#d32f2f', margin: 0, padding: 0, marginBottom: '12px' }}
+                                                                    >
+                                                                        {i18next.t('errorCodes.FILES_TOO_BIG')}
+                                                                    </p>
+                                                                )}
                                                                 <div style={{ color: '#666666', fontSize: '0.9rem', padding: '2%' }}>
                                                                     {i18next.t('wizard.entityTemplate.dragAndDropFile')}
                                                                 </div>

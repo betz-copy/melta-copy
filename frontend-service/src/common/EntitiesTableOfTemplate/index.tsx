@@ -211,17 +211,11 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                 refreshServerSide() {
                     gridRef.current?.api.refreshServerSide({ purge: true });
                 },
-                updateRowDataClientSide(data: Data, isNewEntity: boolean) {
+                updateRowDataClientSide(data: Data, isNewEntity?: boolean) {
                     if (isNewEntity) {
                         gridRef.current?.api.refreshServerSide({ purge: true });
                     } else {
                         gridRef.current?.api.forEachNode((rowNode) => {
-                            // if (isNewEntity) {
-                            //     gridRef.current!.api.applyTransaction({
-                            //         add: [data],
-                            //         // addIndex: -1,
-                            //     })!;
-                            // } else
                             if (rowNode.data && getRowId(data) === getRowId(rowNode.data)) {
                                 rowNode.updateData(data);
                             }

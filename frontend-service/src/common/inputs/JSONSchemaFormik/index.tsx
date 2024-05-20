@@ -73,6 +73,7 @@ interface JSONSchemaFormFormikProps {
     setFieldTouched: FormikHelpers<any>['setFieldTouched'];
     isEditMode?: boolean;
     readonly?: boolean;
+    isDialog?: boolean;
 }
 
 export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
@@ -85,23 +86,39 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
     touched,
     setFieldTouched,
     isEditMode = false,
+    isDialog = false,
 }) => {
-    const rjsfExtraErrors = formikErrorsToRjsfExtraErrors(errors as Record<string, string>);
-    const rjsfExtraUniqueErrors = formikErrorsToRjsfExtraErrors(uniqueErrors as Record<string, string>);
-    console.log({ rjsfExtraErrors });
-    console.log({ rjsfExtraUniqueErrors });
+    const newErrors: FormikErrors<any> = Object.entries(errors).reduce((acc, [key, message]) => {
+        if (typeof message === 'string' && message.includes('must match format "email"')) {
+            acc[key] = i18next.t('validation.mailIsntValid');
+        } else {
+            acc[key] = message;
+        }
+        return acc;
+    }, {} as FormikErrors<any>);
 
+    const rjsfExtraErrors = formikErrorsToRjsfExtraErrors(newErrors as Record<string, string>);
     const ajvExtraErrorsOnlyTouched: ErrorSchema<{}> = pickBy(rjsfExtraErrors, (_value, key) => touched[key]);
-    console.log({ ajvExtraErrorsOnlyTouched });
-
+    const rjsfExtraUniqueErrors = formikErrorsToRjsfExtraErrors(uniqueErrors as Record<string, string>);
     const ajvExtraUniqueErrorsOnlyTouched: ErrorSchema<{}> = pickBy(rjsfExtraUniqueErrors, (_value, key) => touched[key]);
-    console.log({ ajvExtraUniqueErrorsOnlyTouched });
-    const notTouchedUnique: ErrorSchema<{}> = pickBy(rjsfExtraUniqueErrors, (_value, key) => !touched[key]);
+    let mergedErrors: ErrorSchema<{}>;
 
-    const mergedErrors: ErrorSchema<{}> = {
-        ...Object.keys(ajvExtraErrorsOnlyTouched).filter((error) => !Object.keys(ajvExtraUniqueErrorsOnlyTouched).includes(error)),
-        ...notTouchedUnique,
-    };
+    if (isDialog) {
+        const notTouchedUnique: ErrorSchema<{}> = pickBy(rjsfExtraUniqueErrors, (_value, key) => !touched[key]);
+        mergedErrors = {
+            ...ajvExtraErrorsOnlyTouched,
+            ...Object.keys(notTouchedUnique).reduce((acc, key) => {
+                acc[key] = notTouchedUnique[key];
+                return acc;
+            }, {} as ErrorSchema<{}>),
+        };
+    } else {
+        mergedErrors = {
+            ...ajvExtraErrorsOnlyTouched,
+            ...ajvExtraUniqueErrorsOnlyTouched,
+        };
+    }
+
     return (
         <JSONSchemaForm
             id="json-schema"

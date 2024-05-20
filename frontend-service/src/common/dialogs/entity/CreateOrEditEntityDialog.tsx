@@ -17,7 +17,6 @@ import { BlueTitle } from '../../BlueTitle';
 import { filterAttachmentsAndEntitiesRefFromPropertiesSchema } from '../../../utils/pickFieldsPropertiesSchema';
 import { IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
 import { environment } from '../../../globals';
-import { toastConstraintValidationError } from './toastConstraintValidationError';
 import { InstanceFileInput } from '../../inputs/InstanceFilesInput/InstanceFileInput';
 import UpdateEntityWithRuleBreachDialog from '../../../pages/Entity/components/UpdateEntityWithRuleBreachDialog';
 import { ChooseTemplate } from './ChooseTemplate';
@@ -54,8 +53,6 @@ const CreateOrEditEntityDetails: React.FC<{
         }>
     >;
 }> = ({ isEditMode = false, entityTemplate, entity, onSuccessUpdate, onCancelUpdate, onError, externalErrors, setExternalErrors }) => {
-    console.log({ externalErrors });
-
     const [updateWithRuleBreachDialogState, setUpdateWithRuleBreachDialogState] = useState<{
         isOpen: boolean;
         brokenRules?: IRuleBreachPopulated['brokenRules'];
@@ -82,6 +79,23 @@ const CreateOrEditEntityDetails: React.FC<{
     });
     const fileProperties = fileIdsProperties;
 
+    const handleMutationError = (err: AxiosError, template: IMongoEntityTemplatePopulated) => {
+        if (err.response?.status === 413) errorTooBig = true;
+        const errorMetadata = err.response?.data?.metadata;
+
+        if (errorMetadata && errorMetadata?.errorCode === errorCodes.failedConstraintsValidation) {
+            const { properties } = errorMetadata.constraint as Omit<IUniqueConstraint, 'constraintName'>;
+            const constraintPropsDisplayNames = properties.map((prop) => template.properties.properties[prop].title);
+            constraintPropsDisplayNames.forEach((uniqueProp) => {
+                uniqueError = {
+                    ...uniqueError,
+                    [uniqueProp]: `${i18next.t('wizard.entity.someEntityAlreadyHasTheSameField')} ${uniqueProp}`,
+                };
+            });
+        }
+        return errorMetadata;
+    };
+
     const { isLoading: isUpdateLoading, mutateAsync: updateMutation } = useMutation(
         ({ newEntityData, ignoredRules }: { newEntityData: EntityWizardValues; ignoredRules?: IRuleBreach['brokenRules'] }) =>
             updateEntityRequestForMultiple(entity.properties._id, newEntityData, ignoredRules),
@@ -91,31 +105,14 @@ const CreateOrEditEntityDetails: React.FC<{
                 uniqueError = {};
             },
             onError: (err: AxiosError, { newEntityData: newEntityDate }) => {
-                if (err.response?.status === 413) errorTooBig = true;
-                else {
-                    const errorMetadata = err.response?.data?.metadata;
-
-                    if (errorMetadata?.errorCode === errorCodes.failedConstraintsValidation) {
-                        toastConstraintValidationError(errorMetadata, entityTemplate);
-                        const { properties } = errorMetadata.constraint as Omit<IUniqueConstraint, 'constraintName'>;
-                        const constraintPropsDisplayNames = properties.map((prop) => entityTemplate.properties.properties[prop].title);
-                        constraintPropsDisplayNames.forEach((uniqueProp) => {
-                            uniqueError = {
-                                ...uniqueError,
-                                [uniqueProp]: `${i18next.t('wizard.entity.someEntityAlreadyHasTheSameField')} ${uniqueProp}`,
-                            };
-                        });
-                        return;
-                    }
-
-                    if (errorMetadata?.errorCode === errorCodes.ruleBlock) {
-                        setUpdateWithRuleBreachDialogState({
-                            isOpen: true,
-                            brokenRules: errorMetadata.brokenRules,
-                            rawBrokenRules: errorMetadata.rawBrokenRules,
-                            updateEntityFormData: newEntityDate,
-                        });
-                    }
+                const errorMetadata = handleMutationError(err, entityTemplate);
+                if (errorMetadata?.errorCode === errorCodes.ruleBlock) {
+                    setUpdateWithRuleBreachDialogState({
+                        isOpen: true,
+                        brokenRules: errorMetadata.brokenRules,
+                        rawBrokenRules: errorMetadata.rawBrokenRules,
+                        updateEntityFormData: newEntityDate,
+                    });
                 }
             },
         },
@@ -126,23 +123,7 @@ const CreateOrEditEntityDetails: React.FC<{
             newEntity = currEntity;
             uniqueError = {};
         },
-        onError: (err: AxiosError, { template }: EntityWizardValues) => {
-            if (err.response?.status === 413) errorTooBig = true;
-            else {
-                const errorMetadata = err.response?.data?.metadata;
-                if (errorMetadata?.errorCode === errorCodes.failedConstraintsValidation) {
-                    // toastConstraintValidationError(errorMetadata, template);
-                    const { properties } = errorMetadata.constraint as Omit<IUniqueConstraint, 'constraintName'>;
-                    const constraintPropsDisplayNames = properties.map((prop) => template.properties.properties[prop].title);
-                    constraintPropsDisplayNames.forEach((uniqueProp) => {
-                        uniqueError = {
-                            ...uniqueError,
-                            [uniqueProp]: `${i18next.t('wizard.entity.someEntityAlreadyHasTheSameField')} ${uniqueProp}`,
-                        };
-                    });
-                }
-            }
-        },
+        onError: (err: AxiosError, { template }: EntityWizardValues) => handleMutationError(err, template),
     });
 
     const navigate = useNavigate();
@@ -191,9 +172,6 @@ const CreateOrEditEntityDetails: React.FC<{
                                             <Button
                                                 variant="text"
                                                 onClick={() => {
-                                                    console.log({ uniqueError });
-                                                    console.log({ externalErrors });
-
                                                     setExternalErrors({ files: errorTooBig, unique: uniqueError });
                                                     if (isEditMode) onError({ templateId: values.template._id, properties: values.properties });
                                                     else onError(values);
@@ -215,24 +193,16 @@ const CreateOrEditEntityDetails: React.FC<{
                 });
             }}
             validate={(values) => {
-                console.log({ values });
-                console.log({ uniqueError });
-                console.log({ externalErrors });
                 const nonAttachmentsSchema = filterAttachmentsAndEntitiesRefFromPropertiesSchema(values.template.properties);
                 const propertiesErrors = ajvValidate(nonAttachmentsSchema, values.properties);
-                // const mergedErrors = { ...propertiesErrors, ...externalErrors.unique };
-                // console.log({ mergedErrors });
 
                 if (Object.keys(propertiesErrors).length === 0) {
-                    console.log('no errors');
                     return {};
                 }
                 return { properties: propertiesErrors };
             }}
         >
             {({ setFieldValue, values, errors, touched, setFieldTouched, dirty }) => {
-                console.log({ touched });
-
                 const { templateFilesProperties, templateFileKeys, requiredFilesNames } = getEntityTemplateFilesFieldsInfo(
                     values.template || entityTemplate,
                 );
@@ -267,10 +237,11 @@ const CreateOrEditEntityDetails: React.FC<{
                         values={values}
                         setValues={(propertiesValues) => setFieldValue('properties', propertiesValues)}
                         errors={errors.properties ?? {}}
-                        uniqueErrors={{ ...externalErrors.unique, ...uniqueError }}
+                        uniqueErrors={{ ...externalErrors.unique }}
                         touched={touched.properties ?? {}}
                         setFieldTouched={(field) => setFieldTouched(`properties.${field}`)}
                         isEditMode={isEditMode}
+                        isDialog
                     />
                 );
 
@@ -399,12 +370,7 @@ const CreateOrEditEntityDetails: React.FC<{
                                                     style={{ borderRadius: '7px' }}
                                                     type="submit"
                                                     variant="contained"
-                                                    onClick={() =>
-                                                        Object.keys({ ...errors.properties, ...externalErrors.unique, ...uniqueError } || {}).length >
-                                                        0
-                                                            ? ''
-                                                            : onCancelUpdate()
-                                                    }
+                                                    onClick={() => (Object.keys(errors || {}).length > 0 ? '' : onCancelUpdate())}
                                                     startIcon={<DoneIcon />}
                                                     disabled={!dirty}
                                                 >

@@ -4,7 +4,6 @@ import { Dialog } from '@mui/material';
 import { EntityWizardValues } from '../dialogs/entity';
 import IconButtonWithPopover from '../IconButtonWithPopover';
 import { CreateOrEditEntityDetails } from '../dialogs/entity/CreateOrEditEntityDialog';
-import { EntitiesTableOfTemplateRef } from '../EntitiesTableOfTemplate';
 import { IEntity } from '../../interfaces/entities';
 
 const AddEntityButton: React.FC<{
@@ -14,8 +13,8 @@ const AddEntityButton: React.FC<{
     initialValues?: EntityWizardValues;
     disabledToolTip?: boolean;
     popoverText?: string;
-    entitiesTableRef: React.RefObject<EntitiesTableOfTemplateRef<IEntity>>;
-}> = ({ style, children, disabled, initialStep, initialValues, popoverText, disabledToolTip = false, entitiesTableRef }) => {
+    updateRowDataClientSide: (entity: IEntity) => void;
+}> = ({ style, children, disabled, initialStep, initialValues, popoverText, disabledToolTip = false, updateRowDataClientSide }) => {
     const [addEntityWizardState, setAddEntityWizardState] = useState<{ isOpen: boolean; initialStep?: number; initialValues?: EntityWizardValues }>({
         isOpen: false,
     });
@@ -74,7 +73,7 @@ const AddEntityButton: React.FC<{
                             : { properties: { disabled: false, _id: '', createdAt: '', updatedAt: '' }, templateId: '' }
                     }
                     onSuccessUpdate={(entity) => {
-                        entitiesTableRef.current?.updateRowDataClientSide(entity, true);
+                        updateRowDataClientSide(entity);
                         setAddEntityWizardState((prev) => ({ ...prev, isOpen: false }));
                         setExternalErrors({ files: false, unique: {} });
                     }}
