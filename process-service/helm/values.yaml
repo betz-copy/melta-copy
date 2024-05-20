@@ -39,4 +39,4 @@ config:
     - name: ELASTIC_CLIENT_URL
       value: http://elastic:9200
     - name: ELASTIC_PROCESS_SEARCH_INDEX
-      value: process-search
+      value: process-global-search

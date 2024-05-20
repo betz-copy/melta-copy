@@ -15,7 +15,7 @@ if (logs.enableApm) {
     });
 }
 
-const initializeMongo = async () => {
+export const initializeMongo = async () => {
     logger.info('Connecting to Mongo...');
 
     await mongoose.connect(mongo.url, {
@@ -38,7 +38,7 @@ const createProcessSearchIndex = async () => {
     }
 };
 
-const initializeElasticsearch = async () => {
+export const initializeElasticsearch = async () => {
     logger.info('Connecting to elastic...');
 
     await ElasticClient.initialize(elasticClient.url);
@@ -49,9 +49,9 @@ const initializeElasticsearch = async () => {
 };
 
 const main = async () => {
-    await initializeElasticsearch();
-
     await initializeMongo();
+
+    await initializeElasticsearch();
 
     const server = new Server(service.port);
 
