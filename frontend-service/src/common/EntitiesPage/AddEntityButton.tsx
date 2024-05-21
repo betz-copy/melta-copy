@@ -4,7 +4,6 @@ import { Dialog } from '@mui/material';
 import { EntityWizardValues } from '../dialogs/entity';
 import IconButtonWithPopover from '../IconButtonWithPopover';
 import { CreateOrEditEntityDetails } from '../dialogs/entity/CreateOrEditEntityDialog';
-import { IEntity } from '../../interfaces/entities';
 
 const AddEntityButton: React.FC<{
     style?: CSSProperties;
@@ -13,8 +12,8 @@ const AddEntityButton: React.FC<{
     initialValues?: EntityWizardValues;
     disabledToolTip?: boolean;
     popoverText?: string;
-    updateRowDataClientSide: (entity: IEntity) => void;
-}> = ({ style, children, disabled, initialStep, initialValues, popoverText, disabledToolTip = false, updateRowDataClientSide }) => {
+    refreshServerSide: () => void;
+}> = ({ style, children, disabled, initialStep, initialValues, popoverText, disabledToolTip = false, refreshServerSide }) => {
     const [addEntityWizardState, setAddEntityWizardState] = useState<{ isOpen: boolean; initialStep?: number; initialValues?: EntityWizardValues }>({
         isOpen: false,
     });
@@ -72,8 +71,8 @@ const AddEntityButton: React.FC<{
                             ? addEntityWizardState.initialValues
                             : { properties: { disabled: false, _id: '', createdAt: '', updatedAt: '' }, templateId: '' }
                     }
-                    onSuccessUpdate={(entity) => {
-                        updateRowDataClientSide(entity);
+                    onSuccessUpdate={() => {
+                        refreshServerSide();
                         setAddEntityWizardState((prev) => ({ ...prev, isOpen: false }));
                         setExternalErrors({ files: false, unique: {} });
                     }}

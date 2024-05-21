@@ -41,6 +41,8 @@ const EntitiesPage: React.FC<{
     const templateTablesViewRef = useRef<TemplateTablesViewRef>(null);
     const cardsViewRef = useRef<CardsViewRef>(null);
     const entitiesTableRef = useRef<EntitiesTableOfTemplateRef<IEntity>>(null);
+    console.log({ templateTablesViewRef });
+    console.log({ entitiesTableRef });
 
     const [urlSearchParams, setUrlSearchParams] = useSearchParams({
         search: '',

@@ -211,16 +211,12 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                 refreshServerSide() {
                     gridRef.current?.api.refreshServerSide({ purge: true });
                 },
-                updateRowDataClientSide(data: Data, isNewEntity?: boolean) {
-                    if (isNewEntity) {
-                        gridRef.current?.api.refreshServerSide({ purge: true });
-                    } else {
-                        gridRef.current?.api.forEachNode((rowNode) => {
-                            if (rowNode.data && getRowId(data) === getRowId(rowNode.data)) {
-                                rowNode.updateData(data);
-                            }
-                        });
-                    }
+                updateRowDataClientSide(data: Data) {
+                    gridRef.current?.api.forEachNode((rowNode) => {
+                        if (rowNode.data && getRowId(data) === getRowId(rowNode.data)) {
+                            rowNode.updateData(data);
+                        }
+                    });
                 },
                 isFiltered() {
                     const filters = gridRef.current?.api.getFilterModel();

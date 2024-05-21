@@ -1,4 +1,4 @@
-import React, { forwardRef, useImperativeHandle, useState } from 'react';
+import React, { forwardRef, useImperativeHandle, useRef, useState } from 'react';
 import { Grid, Box, CircularProgress, Dialog, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import { AppRegistration as DefaultEntityTemplateIcon } from '@mui/icons-material';
@@ -29,6 +29,7 @@ const { defaultRowHeight } = environment.agGrid;
 export type TemplateTableRef = {
     getFilterModel: () => ReturnType<GridApi<IEntity>['getFilterModel']> | undefined;
     getSortModel: () => IServerSideGetRowsRequest['sortModel'] | undefined;
+    refreshServerSide: () => void;
 };
 
 const TemplateTable = forwardRef<
@@ -45,6 +46,7 @@ const TemplateTable = forwardRef<
     useImperativeHandle(ref, () => ({
         getFilterModel: () => entitiesTableRef.current?.getFilterModel(),
         getSortModel: () => entitiesTableRef.current?.getSortModel(),
+        refreshServerSide: () => entitiesTableRef.current?.refreshServerSide(),
     }));
 
     const { isLoading: isExportingTableToExcelFile, mutateAsync: exportTemplateToExcel } = useMutation(
@@ -85,6 +87,7 @@ const TemplateTable = forwardRef<
     const queryClient = useQueryClient();
     const { instancesPermissions } = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
     const userHasWritePermissions = canUserWriteInstanceOfCategory(instancesPermissions, template.category);
+
     return (
         <Grid container minWidth="fit-content">
             <Grid container justifyContent="space-between" width="fit-content" minWidth="fit-content">
@@ -147,7 +150,7 @@ const TemplateTable = forwardRef<
                         disabled={!userHasWritePermissions}
                         initialValues={{ template, properties: { disabled: false }, attachmentsProperties: {} }}
                         style={{ borderRadius: '5px' }}
-                        updateRowDataClientSide={(entity) => entitiesTableRef.current?.updateRowDataClientSide(entity, true)}
+                        refreshServerSide={() => entitiesTableRef.current?.refreshServerSide()}
                     >
                         <ImageWithDisable srcPath="/icons/add-entity.svg" disabled={!userHasWritePermissions} />
                     </AddEntityButton>
@@ -203,6 +206,8 @@ const TemplateTable = forwardRef<
                         });
                     }}
                     onSuccessUpdate={(entity) => {
+                        console.log({ entitiesTableRef });
+
                         entitiesTableRef.current?.updateRowDataClientSide(entity, false);
                         setEditDialog((prev) => ({ ...prev, isOpen: false }));
                         setExternalErrors({ files: false, unique: {} });
