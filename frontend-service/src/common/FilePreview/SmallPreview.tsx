@@ -1,41 +1,40 @@
-import { Box, Card, CircularProgress, Grid, Skeleton, SxProps, Typography } from '@mui/material';
+import { Box, ButtonBase, Card, CircularProgress, Grid, Skeleton, SxProps, Typography } from '@mui/material';
 import i18next from 'i18next';
-import React, { CSSProperties, useMemo } from 'react';
+import React, { CSSProperties, useMemo, useState } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
+import RefreshIcon from '@mui/icons-material/Refresh';
 import { environment } from '../../globals';
 import { IFile } from '../../interfaces/preview';
 import { VideoPreview } from './VideoPreview';
+import { useFilePreview } from '../../utils/useFilePreview';
+import { PreviewDialog } from './PreviewDialog';
 
 pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.js';
 
 interface IPreviewProps {
-    data: string | undefined;
-    loading: boolean;
-    error: boolean;
-    contentType: IFile['contentType'];
+    file: IFile;
     height?: CSSProperties['maxHeight'];
     width?: CSSProperties['maxWidth'];
     sx?: SxProps;
 }
+const shouldDisplayImage = (type: string) => ['image'].includes(type);
+const shouldDisplayVideoOrAudio = (type: string) => ['video', 'audio'].includes(type);
+const shouldDisplayDocument = (type: string) => ['document', 'pdf'].includes(type);
+const isUnsupported = (type: string) => type === 'unsupported';
 
 const SmallPreview: React.FC<IPreviewProps> = ({
-    data,
-    loading,
-    contentType,
-    error,
+    file,
     width = '100%',
     height = `${environment.smallPreviewHeight.number}${environment.smallPreviewHeight.unit}`,
     sx,
 }) => {
-    const shouldDisplayImage = (type: string) => ['document', 'image'].includes(type);
-    const shouldDisplayVideoOrAudio = (type: string) => ['video', 'audio'].includes(type);
-    const shouldDisplayDocument = (type: string) => ['pdf'].includes(type);
+    const [noSuchKeyError, setNoSuchKeyError] = useState<boolean>(true);
+    const { data, isLoading: loading, isError: error } = useFilePreview(file.id, file.contentType, setNoSuchKeyError);
+    const { contentType } = file;
 
-    const shouldDisplayPdf = (type: string) => ['pdf'].includes(type);
-    const isUnsupported = (type: string) => type === 'unsupported';
-
+    const [isOpen, setIsOpen] = useState<boolean>(false);
     const previewContent = useMemo(() => {
         if (loading)
             return (
@@ -43,16 +42,50 @@ const SmallPreview: React.FC<IPreviewProps> = ({
                     <CircularProgress size={20} />
                 </Box>
             );
-
-        if (isUnsupported(contentType) || error || !data)
+        if (error || !data) {
             return (
-                <Card sx={{ borderRadius: '1rem', bgcolor: '#4c494c', display: 'grid', height, width }} elevation={10}>
-                    <Typography variant="body1" sx={{ color: 'white', marginTop: '10px', fontSize: '20px' }}>
+                <Card sx={{ height, width }} elevation={10}>
+                    <Typography
+                        style={{
+                            fontSize: '20px',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            height: '100%',
+                        }}
+                    >
+                        {noSuchKeyError ? i18next.t('entitiesCardView.previewRefetch') : i18next.t('errorPage.previewLoadingError')}
+
+                        {!noSuchKeyError ? null : <RefreshIcon />}
+                    </Typography>
+                </Card>
+            );
+        }
+        if (isUnsupported(contentType))
+            return (
+                <Card sx={{ bgcolor: '#4c494c', display: 'grid', height, width }} elevation={10}>
+                    <Typography
+                        variant="body1"
+                        sx={{
+                            padding: '0px 10px 0px 10px',
+                            color: 'white',
+                            fontSize: '18px',
+                            display: 'flex',
+                            alignItems: 'center',
+                        }}
+                    >
                         {i18next.t('errorPage.preview')}
                     </Typography>
                 </Card>
             );
 
+        if (shouldDisplayVideoOrAudio(contentType))
+            return (
+                <Box sx={{ display: 'flex', justifyContent: 'center', alignContent: 'center', alignItems: 'center', backgroundColor: 'black' }}>
+                    <VideoPreview data={data} maxHeight={height} maxWidth={width} />
+                </Box>
+            );
         if (shouldDisplayImage(contentType))
             return (
                 <Box sx={{ maxHeight: height, display: 'flex', alignItems: 'center', alignContent: 'center' }}>
@@ -70,27 +103,10 @@ const SmallPreview: React.FC<IPreviewProps> = ({
                     />
                 </Box>
             );
-
-        if (shouldDisplayPdf(contentType))
-            return (
-                <Document file={data}>
-                    <Page width={window.innerHeight * 0.145} pageNumber={1} renderTextLayer={false} />
-                </Document>
-            );
-
-        if (shouldDisplayVideoOrAudio(contentType))
-            return (
-                <Box sx={{ display: 'flex', justifyContent: 'center', alignContent: 'center', alignItems: 'center', backgroundColor: 'black' }}>
-                    <VideoPreview data={data} maxHeight={height} maxWidth={width} />
-                </Box>
-            );
-
         if (shouldDisplayDocument(contentType))
             return (
                 <Document file={data} onLoadError={() => null}>
-                    <Document key={data} file={data} loading={null}>
-                        <Page width={150} pageNumber={1} renderTextLayer={false} renderAnnotationLayer={false} />
-                    </Document>
+                    <Page width={150} pageNumber={1} renderTextLayer={false} renderAnnotationLayer={false} />
                 </Document>
             );
 
@@ -102,9 +118,19 @@ const SmallPreview: React.FC<IPreviewProps> = ({
     }, [loading, data]);
 
     return (
-        <Grid container sx={{ overflowY: 'hidden', overflowX: 'hidden', fontSize: 'small' }} justifyContent="center">
+        <Grid container sx={{ height: '100%', overflowY: 'hidden', overflowX: 'hidden', fontSize: 'small' }} justifyContent="center">
             <Grid item sx={sx}>
-                {previewContent}
+                <ButtonBase
+                    sx={{
+                        height,
+                        width,
+                    }}
+                    onClick={() => setIsOpen(true)}
+                >
+                    {previewContent}
+                </ButtonBase>
+
+                {isOpen && <PreviewDialog fileName={file.name} fileId={file.id} contentType={contentType} open={isOpen} setOpen={setIsOpen} />}
             </Grid>
         </Grid>
     );

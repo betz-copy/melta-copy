@@ -55,7 +55,7 @@ export class InstancesManager {
         });
 
         Object.keys(filesToUpload).forEach((key) => {
-            if (props?.[key] != undefined) {
+            if (props?.[key] !== undefined) {
                 if (Array.isArray(props[key])) {
                     props[key] = [...props[key], ...filesToUpload[key]];
                 } else {
@@ -125,7 +125,9 @@ export class InstancesManager {
     }
 
     static getFilePropertiesKeysByTemplate(template: IEntityTemplatePopulated) {
-        const filePropertiesEntries = Object.entries(template.properties.properties).filter(([_key, value]) => value.format === 'fileId');
+        const filePropertiesEntries = Object.entries(template.properties.properties).filter(
+            ([_key, value]) => value.format === 'fileId' || value.items?.format === 'fileId',
+        );
         return filePropertiesEntries.map(([key]) => key);
     }
 
@@ -180,20 +182,24 @@ export class InstancesManager {
     private static async deleteUnusedFiles(currentEntity: IEntity, instanceData: IEntity, files: Express.Multer.File[]) {
         const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(currentEntity.templateId);
         const newFilesKeys = files.map((file) => file.fieldname);
-
         const filePropertiesKeys = InstancesManager.getFilePropertiesKeysByTemplate(entityTemplate);
         const filesEntries = InstancesManager.getCurrentEntityFilesEntries(currentEntity.properties, filePropertiesKeys);
-
-        const filesEntriesToDelete = filesEntries.filter(([key]) => {
-            return !instanceData.properties[key] || newFilesKeys[key];
-        });
-
-        const filesToDelete = filesEntriesToDelete.map(([_key, value]) => value);
-
+        const filesToDelete: string[] = [];
+        for (const [key, value] of filesEntries) {
+            if (!Array.isArray(value)) {
+                if ((!instanceData.properties[key] && newFilesKeys.includes(key)) || (!newFilesKeys.includes(key) && instanceData.properties[key])) {
+                    continue;
+                }
+                filesToDelete.push(value);
+            } else {
+                const filesArray = instanceData.properties[key] || [];
+                const filesToDeleteFromArray = value.filter((file) => !filesArray.includes(file));
+                filesToDelete.push(...filesToDeleteFromArray);
+            }
+        }
         if (filesToDelete.length === 0) {
             return [];
         }
-
         return deleteFiles(filesToDelete);
     }
 
@@ -351,8 +357,7 @@ export class InstancesManager {
 
         const filePropertiesKeys = InstancesManager.getFilePropertiesKeysByTemplate(entityTemplate);
         const filesEntriesToRemove = InstancesManager.getCurrentEntityFilesEntries(currentEntity.properties, filePropertiesKeys);
-        const fileIdsToRemove = filesEntriesToRemove.map(([, value]) => value);
-
+        const fileIdsToRemove = filesEntriesToRemove.map(([, value]) => value).flat();
         if (fileIdsToRemove.length === 0) {
             return [];
         }

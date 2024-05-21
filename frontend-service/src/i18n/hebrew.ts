@@ -118,6 +118,7 @@ export default {
             chooseRelationship: 'בחירת קשרים',
             printOptions: 'הגדרות הדפסה',
         },
+        previewRefetch: 'קובץ בתהליך עיבוד, נסה שוב מאוחר יותר',
     },
     categoryPage: {
         disabledTemplate: 'תבנית לא פעילה',
@@ -130,11 +131,12 @@ export default {
         noPermissions: 'אין לך הרשאות לגשת לעמוד זה',
         disabledEntity: 'ישות לא פעילה',
         activeEntity: ' פעיל',
-        preview: 'תצוגה מקדימה אינה זמינה',
+        preview: 'קובץ לא נתמך לתצוגה מקדימה',
         fileDownloadError: 'נכשל להוריד קובץ, נסה שנית או פנה לתמיכה',
         duplicateValue: 'ערך זה כבר קיים',
         deleteFieldValue: 'לא ניתן למחוק ערך בשימוש',
         updateEnumField: 'לא ניתן לעדכן ערך זה',
+        previewLoadingError: 'שגיאה בטעינת הקובץ',
     },
     addRelationshipDialog: {
         title: 'הוסף קשר',
@@ -301,6 +303,7 @@ export default {
             approximately: 'כ-',
             results: 'תוצאות',
         },
+        previewRefetch: 'קובץ בתהליך עיבוד, נסה שוב בעוד מספר רגעים',
     },
     globalSearch: {
         searchLabel: 'חיפוש ישויות...',

@@ -21,7 +21,6 @@ const DownloadButton: React.FC<{ fileId: string }> = ({ fileId }) => {
                         withCredentials: true,
                     });
                 } catch (error) {
-                    console.error('Download error:', error);
                     toast.error(i18next.t('errorPage.fileDownloadError'));
                 }
             }}

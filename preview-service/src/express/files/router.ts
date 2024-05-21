@@ -5,6 +5,6 @@ import { getPreviewSchema } from './validator.schema';
 import { ValidateRequest } from '../../utils/joi';
 
 const filesRouter: Router = Router();
-filesRouter.get('/:fileId/:needsConversion', ValidateRequest(getPreviewSchema), wrapController(FilesController.createFilePreview));
+filesRouter.get('/:fileId', ValidateRequest(getPreviewSchema), wrapController(FilesController.getFilePreview));
 
 export { filesRouter };
