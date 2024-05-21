@@ -57,6 +57,8 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     supportChangeToRequiredWithInstances,
     supportArrayFields,
 }) => {
+    console.log({ value, errors, touched });
+
     const name = `properties[${index}].name`;
     const touchedName = touched?.name;
     const errorName = errors?.name;
@@ -644,7 +646,8 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                         endAdornment: (
                                                                             <>
                                                                                 {params.InputProps.endAdornment}
-                                                                                {params.inputProps.value === uniqueConstraintGroupName &&
+                                                                                {uniqueConstraintGroupName !== '' &&
+                                                                                    params.inputProps.value === uniqueConstraintGroupName &&
                                                                                     uniqueConstraints?.some(
                                                                                         (group) => group.groupName === uniqueConstraintGroupName,
                                                                                     ) && (

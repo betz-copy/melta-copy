@@ -67,6 +67,9 @@ const steps: StepsType<EntityTemplateWizardValues> = [
         label: i18next.t('wizard.entityTemplate.properties'),
         component: (props, { isEditMode, setBlock }) => <AddFields {...props} isEditMode={isEditMode} setBlock={setBlock} />,
         validationSchema: addFieldsSchema,
+        validate: values => {
+            
+        }
     },
 ];
 

@@ -35,6 +35,14 @@ export const propertiesBaseSchema = Yup.object({
         is: 'pattern',
         then: (schema) => schema.required(i18next.t('validation.required')),
     }),
+    // uniqueCheckbox: Yup.array().when('uniqueCheckbox', {
+    //     is: true,
+    //     then: Yup.array().of(
+    //         Yup.object().shape({
+    //             groupName: Yup.string().min(1, i18next.t('validation.required')),
+    //         }),
+    //     ),
+    // }),
 });
 
 export const attachmentPropertiesBaseSchema = Yup.object({
@@ -49,8 +57,6 @@ const addFieldsSchema = Yup.object({
                 required: Yup.boolean().required(i18next.t('validation.required')),
                 preview: Yup.boolean().required(i18next.t('validation.required')),
                 dateNotification: Yup.string().nullable().oneOf(dateNotificationTypes, i18next.t('validation.mustBeOneOfList')),
-                // uniqueNameNotification: Yup.string().nullable().oneOf([], i18next.t('validation.mustBeOneOfList')),
-
                 serialStarter: Yup.number()
                     .typeError(i18next.t('validation.invalidNumberField'))
                     .when('type', {

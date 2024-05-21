@@ -27,7 +27,6 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
         else if (value.pattern) type = 'pattern';
         else if (value.items?.enum) type = 'enumArray';
         else if (value.items?.format === 'fileId') type = 'multipleFiles';
-        // const uniqueConstraintGroupName = uniqueConstraints!.find((uniqueGroup) => uniqueGroup.properties.includes(name))?.groupName ?? '';
 
         const property: EntityTemplateFormInputProperties = {
             id: uuid(),
@@ -36,10 +35,7 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
             required: properties.required.includes(key),
             preview: propertiesPreview.includes(key),
             hide: properties.hide.includes(key),
-            // unique: type !== 'serialNumber' && uniqueConstraints.filter((constraints) => constraints.properties.includes(key)).length > 0, // serials cant be marked unique
-            // uniqueConstraintGroupName: uniqueConstraints.find((constraint) => constraint.properties.includes(key))?.groupName!,
             uniqueCheckbox: uniqueConstraints.some((constraint) => constraint.properties.includes(key) && constraint.groupName !== ''),
-            // uniqueCheckbox: uniqueConstraints.filter((constraints) => constraints.properties.includes(key)).length === 0,
             calculateTime: value.calculateTime ?? undefined,
             type,
             options: value.enum || value.items?.enum || [],
@@ -213,11 +209,11 @@ const createEntityTemplateRequest = async (newEntityTemplate: EntityTemplateWiza
     formData.append('propertiesOrder', JSON.stringify(entityTemplate.propertiesOrder));
     formData.append('propertiesTypeOrder', JSON.stringify(entityTemplate.propertiesTypeOrder));
     formData.append('propertiesPreview', JSON.stringify(entityTemplate.propertiesPreview));
-    const uniqueConstraints = entityTemplate.uniqueConstraints.map((constraint) => ({
-        groupName: constraint.groupName,
-        properties: constraint.properties,
-    }));
-    formData.append('uniqueConstraints', JSON.stringify(uniqueConstraints));
+    // const uniqueConstraints = entityTemplate.uniqueConstraints.map((constraint) => ({
+    //     groupName: constraint.groupName,
+    //     properties: constraint.properties,
+    // }));
+    formData.append('uniqueConstraints', JSON.stringify(entityTemplate.uniqueConstraints));
 
     const { data } = await axios.post<IMongoEntityTemplatePopulated>(entityTemplates, formData);
     return data;
@@ -255,11 +251,11 @@ const updateEntityTemplateRequest = async (entityTemplateId: string, updatedEnti
     formData.append('propertiesOrder', JSON.stringify(entityTemplate.propertiesOrder));
     formData.append('propertiesTypeOrder', JSON.stringify(entityTemplate.propertiesTypeOrder));
     formData.append('propertiesPreview', JSON.stringify(entityTemplate.propertiesPreview));
-    const uniqueConstraints = entityTemplate.uniqueConstraints.map((constraint) => ({
-        groupName: constraint.groupName,
-        properties: constraint.properties,
-    }));
-    formData.append('uniqueConstraints', JSON.stringify(uniqueConstraints));
+    // const uniqueConstraints = entityTemplate.uniqueConstraints.map((constraint) => ({
+    //     groupName: constraint.groupName,
+    //     properties: constraint.properties,
+    // }));
+    formData.append('uniqueConstraints', JSON.stringify(entityTemplate.uniqueConstraints));
 
     const { data } = await axios.put<IMongoEntityTemplatePopulated>(`${entityTemplates}/${entityTemplateId}`, formData);
     return data;
