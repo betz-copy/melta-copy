@@ -4,8 +4,17 @@ import React from 'react';
 import { getDisplayLabel, WidgetProps } from '@rjsf/utils';
 import validator from '@rjsf/validator-ajv8';
 import { TextField } from '@mui/material';
+import DirectionProvider, { DIRECTIONS } from 'react-with-direction/dist/DirectionProvider';
 import { convertToPlainText, containsHTMLTags } from '../../../utils/HtmlTagsStringValue';
 
+const setIsLRT = (value: string) => {
+    const uniqueCharsPattern = /^[^a-zA-Zא-ת]+/;
+    const cleanedStr = value.replace(uniqueCharsPattern, '');
+
+    const isHebrewLetter = /^[א-ת]/.test(cleanedStr.charAt(0));
+
+    return !isHebrewLetter;
+};
 const RjsfTextWidget = ({
     id,
     placeholder,
@@ -38,7 +47,12 @@ const RjsfTextWidget = ({
     const displayLabel = getDisplayLabel(validator, schema, uiSchema, rootSchema);
     const inputType = (type || schema.type) === 'string' ? 'text' : `${type || schema.type}`;
 
+    // let isLTR: boolean;
+    // if (schema.type === 'string' && value) {
+    //     isLTR = setIsLRT(value);
+    // } else
     const isLTR = schema.serialCurrent === undefined ? schema.type === 'number' || Boolean(schema.pattern) : false;
+
     const isTextArea = containsHTMLTags(value);
     let finalValue;
 
