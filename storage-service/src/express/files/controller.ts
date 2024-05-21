@@ -49,7 +49,7 @@ export class FilesController {
     }
 
     static async uploadFiles(req: express.Request, res: express.Response) {
-        res.json(FilesManager.uploadFiles(req.files as Express.Multer.File[]));
+        res.json(await FilesManager.uploadFiles(req.files as Express.Multer.File[]));
     }
 
     static async listFiles(_req: express.Request, res: express.Response) {

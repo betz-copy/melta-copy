@@ -40,4 +40,17 @@ export const config = {
             dirname: env.get('ROTATE_FILE_LOG_DIRNAME').default('./logs').asString(),
         },
     },
+    rabbit: {
+        url: env.get('RABBIT_URL').required().asUrlString(),
+        retryOptions: {
+            minTimeout: env.get('RABBIT_RETRY_MIN_TIMEOUT').default(1000).asIntPositive(),
+            retries: env.get('RABBIT_RETRY_RETRIES').default(10).asIntPositive(),
+            factor: env.get('RABBIT_RETRY_FACTOR').default(1.8).asFloatPositive(),
+        },
+        previewQueue: env.get('PREVIEW_QUEUE_NAME').default('preview-queue').asString(),
+    },
+    document: {
+        previewPrefix: env.get('DOCUMENT_PREVIEW_PREFIX').default('preview').asString(),
+        previewFileType: env.get('DOCUMENT_PREVIEW_FILE_TYPE').default('.pdf').asString(),
+    },
 };
