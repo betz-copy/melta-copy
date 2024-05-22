@@ -80,11 +80,11 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
     viewFirstLineOfLongText = false,
     isPrintingMode = false,
 }) => {
-    const [value, setValue] = React.useState('');
+    // const [value, setValue] = React.useState('');
 
-    const handleChange = (event) => {
-        setValue(event.target.value);
-    };
+    // const handleChange = (event) => {
+    //     setValue(event.target.value);
+    // };
     let propertiesOrderedToShow: string[];
     if (overridePropertiesToShow) {
         propertiesOrderedToShow = overridePropertiesToShow;
@@ -201,7 +201,6 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                                         <VerifyLink>{innerContent}</VerifyLink>
                                     </Typography>
                                 </MeltaTooltip>
-
                                 {/* <DirectionProvider direction={DIRECTIONS.LTR}>
                                     <DirectionProvider text={value}>
                                         <input

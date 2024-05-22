@@ -5,6 +5,10 @@ import MUIRichTextEditor, { TMUIRichTextEditorStyles } from 'mui-rte';
 import { EditorState, convertToRaw, ContentState, convertFromHTML } from 'draft-js';
 import { stateToHTML } from 'draft-js-export-html';
 import { createTheme } from '@mui/material/styles';
+import FormatAlignLeftIcon from '@mui/icons-material/FormatAlignLeft';
+import FormatAlignCenterIcon from '@mui/icons-material/FormatAlignCenter';
+import FormatAlignRightIcon from '@mui/icons-material/FormatAlignRight';
+import FormatAlignJustifyIcon from '@mui/icons-material/FormatAlignJustify';
 import { containsHTMLTags } from '../../../utils/HtmlTagsStringValue';
 
 const RjfsTextAreaWidget = ({ id, value, label, readonly, onChange, options }: WidgetProps) => {
@@ -35,6 +39,7 @@ const RjfsTextAreaWidget = ({ id, value, label, readonly, onChange, options }: W
         const newValue = state.getCurrentContent().getPlainText();
         const htmlContent = stateToHTML(state.getCurrentContent());
         onChange(newValue === '' ? options.emptyValue : htmlContent);
+        console.log(htmlContent);
     };
 
     const handleFocus = () => {
@@ -54,6 +59,7 @@ const RjfsTextAreaWidget = ({ id, value, label, readonly, onChange, options }: W
                     border: readonly ? 'none' : (showLabel && '1px solid #1E2775') || '1px solid #CCCFE5',
                     borderBottom: readonly ? '1px solid gray' : (showLabel && '1px solid #1E2775') || '1px solid #CCCFE5',
                     transition: 'border-color 0.3s',
+                    // direction: 'ltr',
                 },
                 container: {
                     display: 'flex',
@@ -111,9 +117,61 @@ const RjfsTextAreaWidget = ({ id, value, label, readonly, onChange, options }: W
                 )}
                 <MUIRichTextEditor
                     id={id}
+                    // inlineToolbar
                     readOnly={readonly}
                     label={label}
-                    controls={['title', 'bold', 'italic', 'underline', 'strikethrough', 'numberList', 'bulletList']}
+                    controls={[
+                        'title',
+                        'bold',
+                        'italic',
+                        'underline',
+                        'strikethrough',
+                        'numberList',
+                        'bulletList',
+                        'formatAlignLeft',
+                        'formatAlignCenter',
+                        'formatAlignRight',
+                        'formatAlignJustify',
+                    ]}
+                    customControls={[
+                        {
+                            name: 'formatAlignLeft',
+                            icon: <FormatAlignLeftIcon />,
+                            type: 'inline',
+                            // inlineStyle: {
+                            //     textAlign: 'left',
+                            // },
+                            inlineStyle: {
+                                backgroundColor: 'black',
+                                color: 'white',
+                            },
+                        },
+                        {
+                            name: 'formatAlignCenter',
+                            icon: <FormatAlignCenterIcon />,
+                            type: 'inline',
+                            inlineStyle: {
+                                textAlign: 'center',
+                            },
+                        },
+                        {
+                            name: 'formatAlignRight',
+                            icon: <FormatAlignRightIcon />,
+                            type: 'inline',
+
+                            inlineStyle: {
+                                textAlign: 'right',
+                            },
+                        },
+                        {
+                            name: 'formatAlignJustify',
+                            icon: <FormatAlignJustifyIcon />,
+                            type: 'inline',
+                            inlineStyle: {
+                                textAlign: 'justify',
+                            },
+                        },
+                    ]}
                     toolbar={!readonly}
                     onChange={handleChange}
                     defaultValue={rawContentState}

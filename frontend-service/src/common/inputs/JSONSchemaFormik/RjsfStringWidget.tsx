@@ -4,16 +4,21 @@ import React from 'react';
 import { getDisplayLabel, WidgetProps } from '@rjsf/utils';
 import validator from '@rjsf/validator-ajv8';
 import { TextField } from '@mui/material';
-import DirectionProvider, { DIRECTIONS } from 'react-with-direction/dist/DirectionProvider';
 import { convertToPlainText, containsHTMLTags } from '../../../utils/HtmlTagsStringValue';
+// import DirectionProvider from 'react-with-direction/dist/DirectionProvider';
 
-const setIsLRT = (value: string) => {
-    const uniqueCharsPattern = /^[^a-zA-Zא-ת]+/;
-    const cleanedStr = value.replace(uniqueCharsPattern, '');
+const setDirection = (value: string, schema) => {
+    if (schema.type === 'string' && value) {
+        const uniqueCharsPattern = /^[^a-zA-Zא-ת]+/;
+        const cleanedStr = value.replace(uniqueCharsPattern, '');
+        const isHebrewLetter = /^[א-ת]/.test(cleanedStr.charAt(0));
+        return isHebrewLetter ? 'rtl' : 'ltr';
+    }
 
-    const isHebrewLetter = /^[א-ת]/.test(cleanedStr.charAt(0));
-
-    return !isHebrewLetter;
+    if (schema.serialCurrent === undefined) {
+        if (schema.type === 'number' || Boolean(schema.pattern)) return 'ltr';
+        return 'rtl';
+    }
 };
 const RjsfTextWidget = ({
     id,
@@ -46,12 +51,6 @@ const RjsfTextWidget = ({
     const { rootSchema } = registry;
     const displayLabel = getDisplayLabel(validator, schema, uiSchema, rootSchema);
     const inputType = (type || schema.type) === 'string' ? 'text' : `${type || schema.type}`;
-
-    // let isLTR: boolean;
-    // if (schema.type === 'string' && value) {
-    //     isLTR = setIsLRT(value);
-    // } else
-    const isLTR = schema.serialCurrent === undefined ? schema.type === 'number' || Boolean(schema.pattern) : false;
 
     const isTextArea = containsHTMLTags(value);
     let finalValue;
@@ -86,7 +85,7 @@ const RjsfTextWidget = ({
             onWheel={(e) => {
                 if (inputType === 'number') (e.target as HTMLElement).blur(); // disable number input scroll to change value when focused, but blurring it
             }}
-            dir={isLTR ? 'ltr' : 'rtl'}
+            dir={setDirection(value, schema)}
         />
     );
 };
