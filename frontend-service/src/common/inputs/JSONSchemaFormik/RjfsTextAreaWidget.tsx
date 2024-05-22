@@ -14,6 +14,8 @@ import { containsHTMLTags } from '../../../utils/HtmlTagsStringValue';
 const RjfsTextAreaWidget = ({ id, value, label, readonly, onChange, options }: WidgetProps) => {
     const initialValue = () => {
         if (value) {
+            // console.log({ value });
+
             const checkHasHTMLTags = containsHTMLTags(value);
             if (checkHasHTMLTags) {
                 const contentBlock = convertFromHTML(value);
@@ -33,13 +35,51 @@ const RjfsTextAreaWidget = ({ id, value, label, readonly, onChange, options }: W
     useEffect(() => {
         setRawContentState(JSON.stringify(convertToRaw(editorValue.getCurrentContent())));
     }, []);
-
+    // const customStyleMap = {
+    //     FORMAT_ALIGN_LEFT: { textAlign: 'left' },
+    //     FORMAT_ALIGN_CENTER: { textAlign: 'center' },
+    //     FORMAT_ALIGN_RIGHT: { textAlign: 'right' },
+    //     FORMAT_ALIGN_JUSTIFY: { textAlign: 'justify' },
+    // };
     const handleChange = (state: EditorState) => {
         setEditorValue(state);
         const newValue = state.getCurrentContent().getPlainText();
-        const htmlContent = stateToHTML(state.getCurrentContent());
+        const x = convertToRaw(state.getCurrentContent());
+        const options1 = {
+            inlineStyles: {
+                // Override default element (`strong`).
+                FORMATALIGNLEFT: { style: { dir: 'right' } },
+                // formatAlignLeft,
+                // ITALIC: {
+                //     // Add custom attributes. You can also use React-style `className`.
+                //     attributes: { class: 'foo' },
+                //     // Use camel-case. Units (`px`) will be added where necessary.
+                //     style: { fontSize: 12 },
+                // },
+                // // Use a custom inline style. Default element is `span`.
+                // RED: { style: { color: '#900' } },
+            },
+        };
+        const htmlContent = stateToHTML(state.getCurrentContent(), options1);
+        console.log({ htmlContent });
+
+        // const htmlContent = stateToHTML(state.getCurrentContent(), {
+        // inlineStyles: customStyleMap,
+        // });
+        // const htmlContent = stateToHTML(state.getCurrentContent(), {
+        //     inlineStyles: (styles) => {
+        //         const styleObj = {};
+        //         styles.toArray().forEach((style) => {
+        //             if (customStyleMap[style]) {
+        //                 Object.assign(styleObj, customStyleMap[style]);
+        //             }
+        //         });
+        //         return { style: styleObj };
+        //     },
+        // });
+        console.log({ x });
+
         onChange(newValue === '' ? options.emptyValue : htmlContent);
-        console.log(htmlContent);
     };
 
     const handleFocus = () => {
@@ -59,7 +99,6 @@ const RjfsTextAreaWidget = ({ id, value, label, readonly, onChange, options }: W
                     border: readonly ? 'none' : (showLabel && '1px solid #1E2775') || '1px solid #CCCFE5',
                     borderBottom: readonly ? '1px solid gray' : (showLabel && '1px solid #1E2775') || '1px solid #CCCFE5',
                     transition: 'border-color 0.3s',
-                    // direction: 'ltr',
                 },
                 container: {
                     display: 'flex',
@@ -117,7 +156,6 @@ const RjfsTextAreaWidget = ({ id, value, label, readonly, onChange, options }: W
                 )}
                 <MUIRichTextEditor
                     id={id}
-                    // inlineToolbar
                     readOnly={readonly}
                     label={label}
                     controls={[
@@ -128,22 +166,20 @@ const RjfsTextAreaWidget = ({ id, value, label, readonly, onChange, options }: W
                         'strikethrough',
                         'numberList',
                         'bulletList',
+                        'highlight',
                         'formatAlignLeft',
                         'formatAlignCenter',
                         'formatAlignRight',
                         'formatAlignJustify',
+
                     ]}
                     customControls={[
                         {
                             name: 'formatAlignLeft',
                             icon: <FormatAlignLeftIcon />,
                             type: 'inline',
-                            // inlineStyle: {
-                            //     textAlign: 'left',
-                            // },
                             inlineStyle: {
-                                backgroundColor: 'black',
-                                color: 'white',
+                                textAlign: 'left',
                             },
                         },
                         {
@@ -158,7 +194,6 @@ const RjfsTextAreaWidget = ({ id, value, label, readonly, onChange, options }: W
                             name: 'formatAlignRight',
                             icon: <FormatAlignRightIcon />,
                             type: 'inline',
-
                             inlineStyle: {
                                 textAlign: 'right',
                             },

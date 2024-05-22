@@ -98,8 +98,6 @@ const EditEntityDetails: React.FC<{
             }}
         >
             {({ setFieldValue, values, errors, touched, setFieldTouched, dirty }) => {
-                console.log({ values });
-
                 return (
                     <>
                         <Form>
