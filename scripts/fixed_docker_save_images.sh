@@ -27,7 +27,7 @@ mkdir "$FOLDER_NAME"
 echo "The new folder $FOLDER_NAME just created."
 
 IMAGES=$(cat docker-compose.yml | grep "build:" | awk '{print $2}' | grep -v -F -f ./scripts/forbidden-images.txt |sed -e 's|^\./||' -e 's/^/melta_/' -e '/^melta_build:/d')
-ehco "\nImages list:\n$IMAGES"
+echo "\nImages list:\n$IMAGES"
 
 
 for image in $IMAGES; do
@@ -44,9 +44,9 @@ if [ -f "$SEVEN_Z_FILE" ]; then
 fi
 
 7z a "$SEVEN_Z_FILE" "$FOLDER_NAME/*"
-echo "Compressed the the folder $FOLDER_NAME with the builed images to file $SEVEN_Z_FILE."
+echo "Compressed the folder $FOLDER_NAME with the built images to file $SEVEN_Z_FILE."
 
 rm -rf "$FOLDER_NAME"
 echo "The folder $FOLDER_NAME just removed, after being compressed."
 
-echo "All images are ready to halbana if file $SEVEN_Z_FILE."
+echo "All images are ready to halbana in file $SEVEN_Z_FILE."
