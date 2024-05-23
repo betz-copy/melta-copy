@@ -3,7 +3,6 @@ import React, { ReactNode, useState } from 'react';
 import { environment } from '../../globals';
 import { getFileName } from '../../utils/getFileName';
 import { getFileExtension, getFileNameWithoutExtension, getPreviewContentType } from '../../utils/getFileType';
-import { useFilePreview } from '../../utils/useFilePreview';
 import FileIcon from './FileIcon';
 import { PreviewDialog } from './PreviewDialog';
 
@@ -43,13 +42,9 @@ const OpenPreview: React.FC<{
     const fileName = getFileName(fileId);
     const [open, setOpen] = useState(false);
     const contentType = getPreviewContentType(fileName);
-    const { data, refetch, isLoading, isError } = useFilePreview(fileId, contentType);
 
     const handleButtonClick = async () => {
         setOpen(true);
-        if (!data) {
-            await refetch();
-        }
     };
 
     return (
@@ -61,15 +56,7 @@ const OpenPreview: React.FC<{
             ) : (
                 <Box>
                     <OpenPreviewContent fileName={fileName} onClick={handleButtonClick} img={img} showText={showText} />
-                    <PreviewDialog
-                        data={data}
-                        fileId={fileId}
-                        setOpen={setOpen}
-                        open={open}
-                        loading={isLoading}
-                        fileName={fileName}
-                        error={isError}
-                    />
+                    {open && <PreviewDialog fileId={fileId} setOpen={setOpen} open={open} fileName={fileName} contentType={contentType} />}
                 </Box>
             )}
         </Grid>

@@ -1,19 +1,15 @@
 import * as express from 'express';
-import { finished } from 'stream/promises';
-import { FileExtensions } from './interface';
 import { FilesManager } from './manager';
 
 export class FilesController {
-    static async createFilePreview(req: express.Request, res: express.Response) {
-        const { fileId, needsConversion } = req.params;
-        const { targetExtension } = req.query as { targetExtension: FileExtensions };
+    static async getFilePreview(req: express.Request, res: express.Response) {
+        const { fileId } = req.params;
+        const contentType = req.query.contentType as string;
 
-        const resultStream = await FilesManager.createFilePreview(fileId, Boolean(needsConversion), targetExtension);
+        const resultStream = await FilesManager.getFilePreview(fileId, contentType);
 
-        res.attachment();
+        res.setHeader('Content-Type', 'application/pdf');
 
         resultStream.pipe(res);
-
-        await finished(res);
     }
 }

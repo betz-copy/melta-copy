@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { fetchPropertyFromRequest } from '../../utils/express';
+import { RequestWithQuery, fetchPropertyFromRequest } from '../../utils/express';
 import { IMongoEntityTemplate } from '../../externalServices/entityTemplateManager';
 import { EntityManager } from './manager';
 
@@ -51,6 +51,17 @@ class EntityController {
     static async updateEntityById(req: Request, res: Response) {
         const entityTemplate = fetchPropertyFromRequest<IMongoEntityTemplate>(req, 'entityTemplate');
         res.json(await EntityManager.updateEntityById(req.params.id, req.body.properties, entityTemplate, req.body.ignoredRules));
+    }
+
+    static async updateEnumFieldValue(req: Request, res: Response) {
+        const { newValue, oldValue, field } = req.body;
+        res.json(await EntityManager.updateEnumFieldValue(req.params.id, newValue, oldValue, field));
+    }
+
+    static async getIsFieldUsed(req:  RequestWithQuery<{ fieldValue: string, fieldName: string, type: string}>, res: Response) {
+        const { fieldValue, fieldName, type } = req.query; 
+        res.json(await EntityManager.getIsFieldUsed(req.params.id, fieldValue, fieldName, type));
+
     }
 
     static async getConstraintsOfTemplate(req: Request, res: Response) {

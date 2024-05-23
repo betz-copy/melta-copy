@@ -253,12 +253,12 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                                 schema={propertiesSchema}
                                                 values={{ ...values, properties: values.properties }}
                                                 setValues={(propertiesValues) => {
-                                                    setFieldValue('properties', propertiesValues);
+                                                    return setFieldValue('properties', propertiesValues);
                                                 }}
                                                 errors={errors.properties ?? {}}
                                                 touched={touched.properties ?? {}}
                                                 setFieldTouched={(field) => {
-                                                    setFieldTouched(`properties.${field}`);
+                                                    return setFieldTouched(`properties.${field}`);
                                                 }}
                                                 readonly={!isStepEditMode}
                                                 toPrint={toPrint}

@@ -40,7 +40,6 @@ const getEntityPropertyString = (
         return fileName;
     }
     // multiple
-
     const updatedFiles = value.map((file, index) => {
         const oldFile = oldValue ? oldValue[index] : undefined;
         const oldFileName = oldFile ? getFileName(oldFile) : undefined;

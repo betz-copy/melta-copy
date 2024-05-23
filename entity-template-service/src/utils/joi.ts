@@ -160,7 +160,6 @@ export const previewPropertiesSchema = Joi.array().unique().items(Joi.string()).
 
 const customEnumPropertiesColorsSchemaValidation: Joi.CustomValidator = (enumPropertiesColors: IEnumPropertiesColors, helpers) => {
     const { properties }: IEntityTemplate['properties'] = helpers.state.ancestors[0].properties;
-
     Object.entries(enumPropertiesColors).forEach(([key, value]) => {
         const property = properties[key];
 
@@ -175,6 +174,7 @@ const customEnumPropertiesColorsSchemaValidation: Joi.CustomValidator = (enumPro
 
     return enumPropertiesColors;
 };
+
 export const enumPropertiesColorsSchema = Joi.object()
     .pattern(Joi.string(), Joi.object().pattern(Joi.string(), ColorSchema))
     .custom(customEnumPropertiesColorsSchemaValidation);

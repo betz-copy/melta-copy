@@ -17,8 +17,14 @@ const FileToPrint: React.FC<{
     const fileRef = useRef<HTMLDivElement>(null);
     const [currentPage, setCurrentPage] = useState(1);
     const currentPageRef = useRef(currentPage);
+    const [noSuchKeyError, setNoSuchKeyError] = useState<boolean>(true);
 
-    const { data, refetch, isFetching: isPreviewLoading } = useFilePreview(file.id, file.contentType);
+    console.log({ file });
+
+    const { data, refetch, isFetching: isPreviewLoading } = useFilePreview(file.id, file.contentType, setNoSuchKeyError);
+
+    console.log({ data });
+    console.log({ isPreviewLoading });
 
     React.useEffect(() => {
         setSelectedFiles((prevFilesToPrint) => {
@@ -35,8 +41,10 @@ const FileToPrint: React.FC<{
     }, []);
 
     React.useEffect(() => {
-        if (isImage(file.contentType) && isPreviewLoading === false) onPreviewLoadingFinished();
-    }, [onPreviewLoadingFinished]);
+        if (isImage(file.contentType) && isPreviewLoading === false) {
+            onPreviewLoadingFinished();
+        }
+    }, [isPreviewLoading === true]);
 
     const onLoadSuccess = ({ numPages }: { numPages: number }) => {
         setNumOfPages(numPages);
@@ -93,7 +101,9 @@ const FileToPrint: React.FC<{
                                     width={750}
                                     pageNumber={i + 1}
                                     onRenderSuccess={() => {
-                                        if (numOfPages !== 0 && i + 1 === numOfPages && isPreviewLoading === false) onPreviewLoadingFinished();
+                                        if (numOfPages !== 0 && i + 1 === numOfPages && isPreviewLoading === false) {
+                                            onPreviewLoadingFinished();
+                                        }
                                     }}
                                     renderTextLayer={false}
                                 />

@@ -23,7 +23,6 @@ export const sideBarTransition = 'all 0.3s linear';
 export const lightTheme = createTheme({
     ...basicTheme,
     palette: {
-        mode: 'light',
         primary: { main: '#1E2775' },
     },
     components: {

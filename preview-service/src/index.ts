@@ -1,10 +1,12 @@
 import * as apm from 'elastic-apm-node';
+import menash from 'menashmq';
 import { Server } from './express/server';
 import { config } from './config';
 import { minioClient } from './utils/minio/minioClient';
 import logger from './utils/logger/logsLogger';
+import PreviewConsumer from './rabbit/consumer';
 
-const { logs } = config;
+const { logs, rabbit } = config;
 
 if (logs.enableApm) {
     apm.start({
@@ -14,7 +16,24 @@ if (logs.enableApm) {
     });
 }
 
+const initializeRabbitReceiver = async () => {
+    logger.info('Connecting to Rabbit for receiving messages...');
+
+    await menash.connect(rabbit.url, rabbit.retryOptions);
+
+    logger.info('Rabbit connected for receiving messages');
+
+    await menash.declareTopology({
+        queues: [{ name: rabbit.previewQueue, options: { durable: true, prefetch: 1 } }], // num of unack messages fetched at a time
+        consumers: [{ queueName: rabbit.previewQueue, onMessage: PreviewConsumer.createPreviewQueueReq, options: { noAck: false } }], // ack message only after processed
+    });
+
+    logger.info('Consumer initialized for receiving messages');
+};
+
 const main = async () => {
+    await initializeRabbitReceiver();
+
     const { url: endPoint, port, accessKey, secretKey, bucketName, useSSL } = config.minio;
     await minioClient.initialize(endPoint, port, accessKey, secretKey, bucketName, useSSL);
 
