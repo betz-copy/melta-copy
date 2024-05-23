@@ -1,6 +1,6 @@
 /* eslint-disable no-extra-boolean-cast */
 import { Clear as ClearIcon, Done as DoneIcon, Edit as EditIcon } from '@mui/icons-material';
-import { Box, Button, CircularProgress, Grid, TextField, Typography } from '@mui/material';
+import { Box, Button, CircularProgress, Grid, InputLabel, TextField, Typography } from '@mui/material';
 import { AxiosError } from 'axios';
 import { Field, Form, Formik } from 'formik';
 import i18next from 'i18next';
@@ -24,6 +24,77 @@ import ProcessStatus from '../ProcessSummaryStep/ProcessStatus';
 import { getStepValuesFromStepInstance } from './stepsFormik';
 import OpenPreview from '../../../FilePreview/OpenPreview';
 import { InstanceSingleFileInput } from '../../../inputs/InstanceFilesInput/InstanceSingleFileInput';
+
+export const CommentsDetails: FC<{ values: ProcessStepValues | IMongoStepInstancePopulated; toPrint?: boolean }> = ({ values, toPrint }) => {
+    if (!values.comments) {
+        return null;
+    }
+
+    return (
+        <div style={{ textAlign: toPrint ? 'right' : 'center' }}>
+            <BlueTitle title={i18next.t('wizard.processInstance.step.comment')} component="h6" variant={toPrint ? 'h6' : 'body1'} />
+            {toPrint ? (
+                <Typography variant="body1" sx={{ paddingY: '5px', paddingX: '10px' }}>
+                    {values.comments}
+                </Typography>
+            ) : (
+                <Typography height="18vh" sx={{ wordBreak: 'break-word', fontSize: '15px' }}>
+                    {values.comments}
+                </Typography>
+            )}
+        </div>
+    );
+};
+
+export const TextAreaProperty: FC<{
+    textArea: {
+        value: any;
+        key: string;
+        title: string;
+    };
+}> = ({ textArea }) => {
+    return (
+        <Box key={textArea.key} marginTop={2}>
+            <InputLabel
+                style={{
+                    fontFamily: 'Rubik',
+                    color: '#9398C2',
+                    fontSize: '1rem',
+                    fontWeight: 400,
+                    lineHeight: '1.4375em',
+                    transformOrigin: 'top right',
+                    padding: 0,
+                    display: 'block',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    maxWidth: '133%',
+                    position: 'relative',
+                    right: 0,
+                    top: 0,
+                }}
+                shrink
+            >
+                {textArea.title}
+            </InputLabel>
+            <Typography
+                fontSize="16px"
+                width={700}
+                color="black"
+                style={{
+                    textOverflow: 'ellipsis',
+                    fontFamily: 'Rubik',
+                    whiteSpace: 'pre-line',
+                    overflowWrap: 'anywhere',
+                    padding: '4px 0 5px 1rem',
+                    borderBottom: '1px solid grey',
+                }}
+            >
+                {textArea.value}
+            </Typography>
+        </Box>
+    );
+};
 
 interface ProcessStepProps {
     stepInstance: IMongoStepInstancePopulated;
@@ -98,6 +169,23 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                     propertiesOrder: stepTemplate.propertiesOrder,
                 });
 
+                const textAreaSchema = Object.entries(stepTemplate.properties.properties)
+                    .filter(([_key, property]) => property.format === 'text-area')
+                    .map(([key, property]) => ({
+                        key,
+                        title: property.title,
+                    }));
+
+                const textAreaValues = textAreaSchema.map((property) => {
+                    let value = values.properties[property.key];
+                    if (value) {
+                        value = value.replace(/<\/?p>/g, '');
+                        value = value.replace(/<br>/g, '\n');
+                        value = value.replace(/&nbsp;/g, '');
+                    }
+                    return { ...property, value };
+                });
+
                 return (
                     <Form>
                         <Grid container direction="column">
@@ -152,8 +240,8 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                             <Grid container spacing={2} justifyContent="space-between">
                                 <Grid
                                     item
-                                    xs={7}
-                                    maxHeight={550}
+                                    xs={toPrint ? 0 : 7}
+                                    maxHeight={toPrint ? undefined : 550}
                                     sx={{
                                         overflowY: 'auto',
                                     }}
@@ -173,7 +261,11 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                                     setFieldTouched(`properties.${field}`);
                                                 }}
                                                 readonly={!isStepEditMode}
+                                                toPrint={toPrint}
                                             />
+                                            {toPrint &&
+                                                textAreaValues.length > 0 &&
+                                                textAreaValues.map((textArea) => <TextAreaProperty key={textArea.key} textArea={textArea} />)}
                                         </Grid>
                                     )}
 
@@ -305,47 +397,37 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                         </Grid>
                                     )}
                                 </Grid>
-
-                                <Grid item container direction="column" xs={4.5} spacing={2} alignItems="center">
-                                    <Grid item>
-                                        <ProcessStatus
-                                            title={i18next.t('wizard.processInstance.step.stepStatus')}
-                                            instance={stepInstance}
-                                            editStatus={{ setFieldValue, isEditMode: isStepEditMode, values }}
-                                        />
-                                    </Grid>
-
-                                    <Grid item width={250}>
-                                        {isStepEditMode ? (
-                                            <TextField
-                                                label={i18next.t('wizard.processInstance.step.comment')}
-                                                multiline
-                                                rows={8}
-                                                value={values.comments}
-                                                onChange={(e) => {
-                                                    setFieldValue('comments', e.target.value);
-                                                }}
-                                                style={{ width: '100%' }}
-                                                InputProps={{
-                                                    style: { whiteSpace: 'pre-line', overflowWrap: 'break-word' },
-                                                }}
+                                {!toPrint && (
+                                    <Grid item container direction="column" xs={4.5} spacing={2} alignItems="center">
+                                        <Grid item>
+                                            <ProcessStatus
+                                                title={i18next.t('wizard.processInstance.step.stepStatus')}
+                                                instance={stepInstance}
+                                                editStatus={{ setFieldValue, isEditMode: isStepEditMode, values }}
                                             />
-                                        ) : (
-                                            values.comments && (
-                                                <div style={{ textAlign: 'center' }}>
-                                                    <BlueTitle
-                                                        title={i18next.t('wizard.processInstance.step.comment')}
-                                                        component="h6"
-                                                        variant="body1"
-                                                    />
-                                                    <Typography height="18vh" style={{ wordBreak: 'break-word', fontSize: '15px' }}>
-                                                        {values.comments}
-                                                    </Typography>
-                                                </div>
-                                            )
-                                        )}
+                                        </Grid>
+
+                                        <Grid item width={250}>
+                                            {isStepEditMode ? (
+                                                <TextField
+                                                    label={i18next.t('wizard.processInstance.step.comment')}
+                                                    multiline
+                                                    rows={8}
+                                                    value={values.comments}
+                                                    onChange={(e) => {
+                                                        setFieldValue('comments', e.target.value);
+                                                    }}
+                                                    style={{ width: '100%' }}
+                                                    InputProps={{
+                                                        style: { whiteSpace: 'pre-line', overflowWrap: 'break-word' },
+                                                    }}
+                                                />
+                                            ) : (
+                                                <CommentsDetails values={values} toPrint={toPrint} />
+                                            )}
+                                        </Grid>
                                     </Grid>
-                                </Grid>
+                                )}
                             </Grid>
                         </Grid>
                     </Form>

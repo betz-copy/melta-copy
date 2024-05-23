@@ -35,28 +35,30 @@ const ComponentToPrint = React.forwardRef<
 
     return (
         <Box ref={ref} margin="20px" style={{ direction: 'rtl' }}>
-            <Box paddingBottom="0.4rem" display="flex" justifyContent="space-between" alignItems="center">
-                <Box display="flex" alignItems="center">
-                    <Typography component="h4" variant="h4" color={theme.palette.primary.main} fontWeight="800">
-                        {entityTemplate.category.displayName}
-                    </Typography>
+            <Grid style={{ pageBreakInside: 'avoid' }}>
+                <Box paddingBottom="0.4rem" display="flex" justifyContent="space-between" alignItems="center">
+                    <Box display="flex" alignItems="center">
+                        <Typography component="h4" variant="h4" color={theme.palette.primary.main} fontWeight="800">
+                            {entityTemplate.category.displayName}
+                        </Typography>
 
-                    <Typography variant="h4" fontSize="30px" color="#d3d8df" marginLeft="5px" marginRight="5px">
-                        /
-                    </Typography>
+                        <Typography variant="h4" fontSize="30px" color="#d3d8df" marginLeft="5px" marginRight="5px">
+                            /
+                        </Typography>
 
-                    <Typography paddingBottom="2px" variant="h4" fontSize="28px" color={theme.palette.primary.main}>
-                        {entityTemplate.displayName}
-                    </Typography>
+                        <Typography paddingBottom="2px" variant="h4" fontSize="28px" color={theme.palette.primary.main}>
+                            {entityTemplate.displayName}
+                        </Typography>
+                    </Box>
+                    {options.showDate && <Box> {new Date().toLocaleDateString('en-uk')}</Box>}
                 </Box>
-                {options.showDate && <Box> {new Date().toLocaleDateString('en-uk')}</Box>}
-            </Box>
-            <EntityComponentToPrint
-                entityTemplate={entityTemplate}
-                entity={expandedEntity.entity}
-                showPreviewPropertiesOnly={options.showPreviewPropertiesOnly}
-                files={filesToPrint}
-            />
+                <EntityComponentToPrint
+                    entityTemplate={entityTemplate}
+                    entity={expandedEntity.entity}
+                    showPreviewPropertiesOnly={options.showPreviewPropertiesOnly}
+                    files={filesToPrint}
+                />
+            </Grid>
             {connectionsTemplatesToPrint.length !== 0 && (
                 <>
                     <BlueTitle title={i18next.t('entityPage.relationshipTitle')} component="h4" variant="h4" style={{ marginTop: '2rem' }} />

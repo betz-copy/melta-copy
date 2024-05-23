@@ -1,5 +1,5 @@
 import React, { CSSProperties, useState } from 'react';
-import { Box, Card, CardContent, Grid, Typography, styled, IconButton, Menu, Skeleton } from '@mui/material';
+import { Box, Card, CardContent, Grid, Typography, styled, IconButton, Menu, Skeleton, Button } from '@mui/material';
 import { ScatterPlotOutlined as HiveIcon, FiberManualRecordOutlined as StatusIcon, Unarchive } from '@mui/icons-material';
 import { useMutation, useQueryClient } from 'react-query';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -15,10 +15,13 @@ import { IMongoProcessInstancePopulated, Status } from '../../interfaces/process
 import { IMongoStepInstancePopulated } from '../../interfaces/processes/stepInstance';
 import { IProcessTemplateMap } from '../../interfaces/processes/processTemplate';
 import ProcessInstanceWizard from '../../common/wizards/processInstance';
-import { archiveProcessRequest, deleteProcessRequest } from '../../services/processesService';
+import { archiveProcessRequest, deleteProcessRequest, updateProcessRequest } from '../../services/processesService';
 import { MenuButton } from '../../common/MenuButton';
 import { AreYouSureDialog } from '../../common/dialogs/AreYouSureDialog';
 import { MeltaTooltip } from '../../common/MeltaTooltip';
+import { Print } from './print';
+import { ProcessDetailsValues } from '../../common/wizards/processInstance/ProcessDetails';
+import { ErrorToast } from '../../common/ErrorToast';
 
 export enum StatusColors {
     Pending = '#ff8f00',
@@ -170,6 +173,9 @@ const ProcessCard: React.FC<{
     };
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
     const [deleteDialogState, setDeleteDialogState] = useState<boolean>(false);
+    const [currProcessInstance, setCurrProcessInstance] = useState<IMongoProcessInstancePopulated>(processInstance);
+    const [isProcessChanged, setIsProcessChanged] = useState<boolean>(false);
+    const [isEditModeProcess, setIsEditMode] = useState<boolean>(false);
 
     const handleCloseMenu = (e: React.MouseEvent<HTMLLIElement, MouseEvent>) => {
         e.stopPropagation();
@@ -179,6 +185,23 @@ const ProcessCard: React.FC<{
         event.stopPropagation();
         setAnchorEl(event.currentTarget);
     };
+
+    const { isLoading: isLoadingUpdate, mutateAsync } = useMutation(
+        (processData: ProcessDetailsValues) => updateProcessRequest(processInstance._id, processData, processTemplate),
+        {
+            onSuccess: (processNewData) => {
+                toast.success(i18next.t('wizard.processInstance.editedSuccessfully'));
+                setIsProcessChanged(true);
+                setIsEditMode(false);
+                setCurrProcessInstance(processNewData);
+            },
+            onError: (error: AxiosError) => {
+                toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.processInstance.failedToEdit')} />);
+                console.log('failed to update process instance. error', error);
+            },
+        },
+    );
+
     const { mutateAsync: deleteProcessMutate, isLoading: isDeleteProcessLoading } = useMutation(
         (processId: string) => {
             return deleteProcessRequest(processId);
@@ -264,6 +287,14 @@ const ProcessCard: React.FC<{
                                                         )
                                                     }
                                                 />
+                                                <Print
+                                                    processInstance={currProcessInstance}
+                                                    processTemplate={processTemplatesMap.get(currProcessInstance.templateId)!}
+                                                    mutateAsync={mutateAsync}
+                                                    setCurrProcessInstance={setCurrProcessInstance}
+                                                    setIsProcessChanged={setIsProcessChanged}
+                                                    isProcessCard
+                                                />
                                             </Menu>
                                         </>
                                     )}
@@ -332,6 +363,14 @@ const ProcessCard: React.FC<{
                     processInstance={processInstance}
                     stepTemplate={open.defaultStepTemplate}
                     processTemplate={processTemplate}
+                    currProcessInstance={currProcessInstance}
+                    setCurrProcessInstance={setCurrProcessInstance}
+                    isLoading={isLoadingUpdate}
+                    mutateAsync={mutateAsync}
+                    isProcessChanged={isProcessChanged}
+                    setIsProcessChanged={setIsProcessChanged}
+                    isEditMode={isEditModeProcess}
+                    setIsEditMode={setIsEditMode}
                 />
             )}
         </div>

@@ -20,20 +20,46 @@ import { EntityReference } from '../EntityReference';
 import { ProcessStepValues } from '../ProcessSteps';
 import { initDetailsValues } from './detailsFormik';
 import { InstanceSingleFileInput } from '../../../inputs/InstanceFilesInput/InstanceSingleFileInput';
+import { TextAreaProperty } from '../ProcessSteps/processStep';
 
-export const SchemaForm = ({ viewMode, values, errors, touched, setFieldValue, setFieldTouched }) => {
+export const SchemaForm = ({ viewMode, values, errors, touched, setFieldValue, setFieldTouched, toPrint }) => {
+    const schema = pickProcessFieldsPropertiesSchema(values.template.details);
+    const textAreaSchema = Object.entries(schema.properties)
+        .filter(([_key, property]) => property.format === 'text-area')
+        .map(([key, property]) => ({
+            key,
+            title: property.title,
+        }));
+
+    const textAreaValues = textAreaSchema.map((property) => {
+        let value = values.details[property.key];
+        if (value) {
+            value = value.replace(/<\/?p>/g, '');
+            value = value.replace(/<br>/g, '\n');
+            value = value.replace(/&nbsp;/g, '');
+        }
+        return { ...property, value };
+    });
+
     return (
         <Box paddingTop={0.5} paddingLeft={1}>
-            <BlueTitle title={i18next.t('wizard.entityTemplate.properties')} component="h6" variant="h6" />
+            <BlueTitle
+                title={i18next.t('wizard.entityTemplate.properties')}
+                style={{ marginTop: toPrint ? '30px' : '' }}
+                component="h6"
+                variant="h6"
+            />
             <JSONSchemaFormik
-                schema={pickProcessFieldsPropertiesSchema(values.template.details)}
+                schema={schema}
                 values={{ ...values, properties: values.details }}
                 setValues={(propertiesValues) => setFieldValue('details', propertiesValues)}
                 errors={errors.details ?? {}}
                 touched={touched.details ?? {}}
                 setFieldTouched={(field) => setFieldTouched(`details.${field}`)}
                 readonly={viewMode}
+                toPrint={toPrint}
             />
+            {toPrint && textAreaValues.length > 0 && textAreaValues.map((textArea) => <TextAreaProperty key={textArea.key} textArea={textArea} />)}
         </Box>
     );
 };
@@ -204,7 +230,7 @@ const GeneralDetails: React.FC<IDetailsStepProp> = ({ detailsFormikData, onNext,
     return (
         <Card sx={{ border: 'none', boxShadow: 'none', background: 'transparent' }}>
             <CardContent sx={{ height: toPrint ? undefined : '56vh', overflowY: 'auto' }} key={`${values.name} - ${values.template?.name}`}>
-                <Grid container direction="column" paddingLeft={4} justifyContent="space-around">
+                <Grid container direction="column" paddingLeft={toPrint ? 0 : 4} justifyContent="space-around">
                     <Grid item>
                         <FormikProvider value={detailsFormikData}>
                             <Grid item container justifyContent="flex-start">
@@ -381,12 +407,12 @@ const GeneralDetails: React.FC<IDetailsStepProp> = ({ detailsFormikData, onNext,
                                         item
                                         sx={{
                                             overflowY: 'auto',
-                                            paddingLeft: 3,
+                                            paddingLeft: toPrint ? 0 : 3,
                                         }}
-                                        xs={7}
+                                        xs={toPrint ? 0 : 7}
                                     >
                                         {Object.keys(pickProcessFieldsPropertiesSchema(values.template.details).properties).length !== 0 && (
-                                            <SchemaForm {...{ viewMode, values, errors, touched, setFieldValue, setFieldTouched }} />
+                                            <SchemaForm {...{ viewMode, values, errors, touched, setFieldValue, setFieldTouched, toPrint }} />
                                         )}
                                         {Object.keys(templateFileProperties!).length !== 0 && (
                                             <FileAttachments

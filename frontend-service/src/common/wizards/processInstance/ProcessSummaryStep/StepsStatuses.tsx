@@ -57,68 +57,55 @@ const StepStatus: React.FC<{
                                 </div>
                             </MeltaTooltip>
 
-                            <>
-                                {stepInstance.reviewedAt ? (
-                                    <div style={{ paddingBottom: 30 }}>
-                                        <Typography textAlign="center" fontSize="14px">
-                                            {i18next.t('wizard.processInstance.summary.statusChangedBy')}
-                                        </Typography>
-                                        <Typography textAlign="center" fontSize="13px">{`${i18next.t(
-                                            'wizard.processInstance.summary.onDate',
-                                        )}: ${getLongDate(stepInstance.reviewedAt)} `}</Typography>
-                                        <Typography textAlign="center" fontSize="15px" fontWeight="bold">{`${i18next.t(
-                                            'wizard.processInstance.summary.by',
-                                        )}: ${stepInstance.reviewer?.fullName}`}</Typography>
-                                    </div>
-                                ) : (
-                                    <div style={{ paddingBottom: 70 }}>
-                                        <Typography textAlign="center" fontWeight="bold">
-                                            {i18next.t('wizard.processInstance.summary.StepStatusNotYetBeeUpdated')}
-                                        </Typography>
-                                    </div>
-                                )}
+                            {stepInstance.reviewedAt ? (
+                                <div style={{ paddingBottom: 30 }}>
+                                    <Typography textAlign="center" fontSize="14px">
+                                        {i18next.t('wizard.processInstance.summary.statusChangedBy')}
+                                    </Typography>
+                                    <Typography textAlign="center" fontSize="13px">{`${i18next.t(
+                                        'wizard.processInstance.summary.onDate',
+                                    )}: ${getLongDate(stepInstance.reviewedAt)} `}</Typography>
+                                    <Typography textAlign="center" fontSize="15px" fontWeight="bold">{`${i18next.t(
+                                        'wizard.processInstance.summary.by',
+                                    )}: ${stepInstance.reviewer?.fullName}`}</Typography>
+                                </div>
+                            ) : (
+                                <div style={{ paddingBottom: 70 }}>
+                                    <Typography textAlign="center" fontWeight="bold">
+                                        {i18next.t('wizard.processInstance.summary.StepStatusNotYetBeeUpdated')}
+                                    </Typography>
+                                </div>
+                            )}
+                            {!isPrinting && (
                                 <Grid item>
                                     {stepInstance.comments && (
                                         <>
-                                            {isPrinting ? (
-                                                <div style={{ textAlign: 'center' }}>
-                                                    <BlueTitle
-                                                        title={i18next.t('wizard.processInstance.step.comment')}
-                                                        component="h6"
-                                                        variant="body1"
-                                                    />
-                                                    <Typography fontSize="14px">{stepInstance.comments}</Typography>
-                                                </div>
-                                            ) : (
-                                                <>
-                                                    <div
-                                                        style={{
-                                                            transition: 'all 0.7s ease-in-out',
-                                                            maxHeight: open ? '350px' : '0',
-                                                            maxWidth: open ? '350px' : '0',
-                                                            overflowX: 'hidden',
-                                                            overflowY: 'auto',
-                                                        }}
-                                                    >
-                                                        {i18next.t('wizard.processInstance.step.comment')}:
-                                                        <Typography gutterBottom component="div" style={{ wordBreak: 'break-word', width: 350 }}>
-                                                            {stepInstance.comments}
-                                                        </Typography>
-                                                    </div>
-                                                    <Button
-                                                        size="small"
-                                                        color="inherit"
-                                                        onClick={handleClick}
-                                                        startIcon={open ? <KeyboardArrowUpIcon /> : <KeyboardArrowLeftIcon />}
-                                                    >
-                                                        {!open && i18next.t('wizard.processInstance.step.comment')}
-                                                    </Button>
-                                                </>
-                                            )}
+                                            <div
+                                                style={{
+                                                    transition: 'all 0.7s ease-in-out',
+                                                    maxHeight: open ? '350px' : '0',
+                                                    maxWidth: open ? '350px' : '0',
+                                                    overflowX: 'hidden',
+                                                    overflowY: 'auto',
+                                                }}
+                                            >
+                                                {i18next.t('wizard.processInstance.step.comment')}:
+                                                <Typography gutterBottom component="div" style={{ wordBreak: 'break-word', width: 350 }}>
+                                                    {stepInstance.comments}
+                                                </Typography>
+                                            </div>
+                                            <Button
+                                                size="small"
+                                                color="inherit"
+                                                onClick={handleClick}
+                                                startIcon={open ? <KeyboardArrowUpIcon /> : <KeyboardArrowLeftIcon />}
+                                            >
+                                                {!open && i18next.t('wizard.processInstance.step.comment')}
+                                            </Button>
                                         </>
                                     )}
                                 </Grid>
-                            </>
+                            )}
                         </CardContent>
                     </Grid>
                 </Grid>

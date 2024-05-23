@@ -12,6 +12,7 @@ import { MeltaTooltip } from '../../../common/MeltaTooltip';
 import { IMongoProcessTemplatePopulated } from '../../../interfaces/processes/processTemplate';
 import { ProcessDetailsValues } from '../../../common/wizards/processInstance/ProcessDetails';
 import { IFile } from '../../../interfaces/preview';
+import { MenuButton } from '../../../common/MenuButton';
 
 const Print: React.FC<{
     processTemplate: IMongoProcessTemplatePopulated;
@@ -19,7 +20,8 @@ const Print: React.FC<{
     mutateAsync: UseMutateAsyncFunction<IMongoProcessInstancePopulated, AxiosError<any, any>, ProcessDetailsValues, unknown>;
     setCurrProcessInstance: React.Dispatch<React.SetStateAction<IMongoProcessInstancePopulated>>;
     setIsProcessChanged: React.Dispatch<React.SetStateAction<boolean>>;
-}> = ({ processTemplate, processInstance, mutateAsync, setCurrProcessInstance, setIsProcessChanged }) => {
+    isProcessCard?: boolean;
+}> = ({ processTemplate, processInstance, mutateAsync, setCurrProcessInstance, setIsProcessChanged, isProcessCard }) => {
     const [openModal, setOpenModal] = React.useState(false);
     const handleOpen = () => setOpenModal(true);
     const handleClose = () => setOpenModal(false);
@@ -34,7 +36,6 @@ const Print: React.FC<{
     const [selectedFiles, setSelectedFiles] = React.useState(files);
 
     const [showSummary, setShowSummary] = React.useState(true);
-    const [showFiles, setShowFiles] = React.useState(false);
     const [filesLoadingStatus, setFilesLoadingStatus] = React.useState({});
 
     const getPageMargins = () => {
@@ -44,11 +45,23 @@ const Print: React.FC<{
 
     return (
         <>
-            <MeltaTooltip title={i18next.t('actions.print')}>
-                <IconButton onClick={() => handleOpen()}>
-                    <PrintIcon color="primary" />
-                </IconButton>
-            </MeltaTooltip>
+            {isProcessCard ? (
+                <MenuButton
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        handleOpen();
+                    }}
+                    text={i18next.t('actions.print')}
+                    icon={<PrintIcon color="action" />}
+                />
+            ) : (
+                <MeltaTooltip title={i18next.t('actions.print')}>
+                    <IconButton onClick={() => handleOpen()}>
+                        <PrintIcon color="primary" />
+                    </IconButton>
+                </MeltaTooltip>
+            )}
+
             <div style={{ display: 'none' }}>
                 <style>{getPageMargins()}</style>
                 <ComponentToPrint

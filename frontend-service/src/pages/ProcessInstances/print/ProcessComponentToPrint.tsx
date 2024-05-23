@@ -6,7 +6,7 @@ import { UseMutateAsyncFunction, useQueryClient } from 'react-query';
 import { IMongoProcessInstancePopulated } from '../../../interfaces/processes/processInstance';
 import GeneralDetails from '../../../common/wizards/processInstance/ProcessDetails/GeneralDetails';
 import { EntityDates } from '../../Entity/components/EntityDates';
-import { ProcessStep } from '../../../common/wizards/processInstance/ProcessSteps/processStep';
+import { CommentsDetails, ProcessStep } from '../../../common/wizards/processInstance/ProcessSteps/processStep';
 import { IMongoStepInstancePopulated } from '../../../interfaces/processes/stepInstance';
 import { IMongoStepTemplatePopulated } from '../../../interfaces/processes/stepTemplate';
 import { BlueTitle } from '../../../common/BlueTitle';
@@ -27,7 +27,7 @@ const ProcessComponentToPrint: React.FC<{
     const detailsFormikData = useProcessDetailsFormik(processInstance, processTemplatesMap, mutateAsync);
 
     return (
-        <Box border={`2px solid ${theme.palette.primary.main}`} borderRadius="20px" padding="1rem" style={{ pageBreakInside: 'avoid' }}>
+        <Box border={`2px solid ${theme.palette.primary.main}`} borderRadius="20px" padding="1rem">
             <Box padding="0.2rem">
                 <GeneralDetails
                     detailsFormikData={detailsFormikData}
@@ -59,7 +59,7 @@ const StepComponentToPrint: React.FC<{
     const reviewers = values.steps[getStepInstanceByStepTemplateId(stepTemplate._id, processInstance)!._id];
 
     return (
-        <Box border={`2px solid ${theme.palette.primary.main}`} borderRadius="20px" padding="1rem" style={{ pageBreakInside: 'avoid' }}>
+        <Box border={`2px solid ${theme.palette.primary.main}`} borderRadius="20px" padding="1rem">
             <Box padding="0.2rem">
                 <ProcessStep
                     stepInstance={stepInstance}
@@ -71,17 +71,18 @@ const StepComponentToPrint: React.FC<{
                     toPrint
                 />
             </Box>
-            <Box sx={{ paddingRight: '50px' }}>
+            <Box padding="0.2rem">
+                <CommentsDetails values={stepInstance} toPrint />
                 <BlueTitle title={i18next.t('wizard.processInstance.stepReviewers')} component="h6" variant="h6" />
                 <Box sx={{ display: 'flex', flexWrap: 'wrap', minHeight: '25px', width: '100%' }}>
                     {stepTemplate.reviewers.map((reviewer) => (
                         <Typography variant="body1" key={reviewer.id} sx={{ paddingY: '5px', paddingX: '10px' }}>
-                            {`- ${reviewer.firstName}`}
+                            {`- ${reviewer.displayName}`}
                         </Typography>
                     ))}
                     {reviewers.map((reviewer) => (
                         <Typography variant="body1" key={reviewer.id} sx={{ paddingY: '5px', paddingX: '10px' }}>
-                            {`- ${reviewer.firstName}`}
+                            {`- ${reviewer.displayName}`}
                         </Typography>
                     ))}
                 </Box>

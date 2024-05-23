@@ -89,13 +89,6 @@ const RjfsSelectWidget = ({
                 <TextField
                     {...textFieldProps}
                     {...params}
-                    sx={{
-                        '@media print textarea': {
-                            height: 'auto !important',
-                            maxHeight: 'auto !important',
-                            overflow: 'visible !important',
-                        },
-                    }}
                     required={required}
                     autoFocus={autofocus}
                     onBlur={_onBlur}

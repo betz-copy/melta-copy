@@ -67,7 +67,7 @@ export default {
         deleteOrArcivhed: 'מחיקה או שליחה לארכיון',
         unArchived: 'הוצא מארכיון',
         archived: 'הכנס לארכיון',
-        print: 'הדפס',
+        print: 'הדפסה',
         viewMore: 'הצג עוד...',
     },
     entityPage: {

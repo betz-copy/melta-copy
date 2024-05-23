@@ -80,7 +80,7 @@ export const StatusDisplay: React.FC<StatusDisplayProps> = ({ status, Icon, text
 };
 
 interface ProcessStatusProps {
-    title: string;
+    title?: string;
     instance: IMongoProcessInstancePopulated | IMongoStepInstancePopulated;
     editStatus?: {
         setFieldValue: FormikProps<ProcessStepValues>['setFieldValue'];
@@ -98,32 +98,34 @@ const ProcessStatus: React.FC<ProcessStatusProps> = ({ title, instance, editStat
         editStatus!.setFieldValue('status', newStatusToSet);
     };
     return (
-        <Grid container flexDirection="column" alignItems="stretch" spacing={2}>
-            <Grid item container flexDirection="row">
-                <Grid item container flexDirection="column" alignItems="center">
-                    <Grid item>
-                        <BlueTitle
-                            title={title}
-                            component="h4"
-                            variant={editStatus ? 'h5' : 'h4'}
-                            style={{ fontWeight: 600, opacity: 0.9, marginBottom: 7 }}
-                        />
-                    </Grid>
-
-                    {isPrinting && (
+        <Grid container flexDirection="column" alignItems="stretch" spacing={title ? 2 : 0}>
+            {title && (
+                <Grid item container flexDirection="row">
+                    <Grid item container flexDirection="column" alignItems="center">
                         <Grid item>
                             <BlueTitle
-                                title={'name' in instance ? instance.name : ''}
+                                title={title}
                                 component="h4"
-                                variant="h4"
+                                variant={editStatus ? 'h5' : 'h4'}
                                 style={{ fontWeight: 600, opacity: 0.9, marginBottom: 7 }}
                             />
                         </Grid>
-                    )}
-                </Grid>
-            </Grid>
 
-            <Grid item container alignItems="center" justifyContent="center" spacing={3}>
+                        {isPrinting && (
+                            <Grid item>
+                                <BlueTitle
+                                    title={'name' in instance ? instance.name : ''}
+                                    component="h4"
+                                    variant="h4"
+                                    style={{ fontWeight: 600, opacity: 0.9, marginBottom: 7 }}
+                                />
+                            </Grid>
+                        )}
+                    </Grid>
+                </Grid>
+            )}
+
+            <Grid item container alignItems={title ? 'center' : ''} justifyContent={title ? 'center' : ''} spacing={title ? 3 : 0}>
                 {editStatus?.isEditMode ? (
                     <>
                         <StatusButton

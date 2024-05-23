@@ -21,7 +21,7 @@ const EntityComponentToPrint: React.FC<{
     const darkMode = useSelector((state: RootState) => state.darkMode);
 
     return (
-        <Box border={`2px solid ${theme.palette.primary.main}`} borderRadius="20px" padding="1rem" style={{ pageBreakInside: 'avoid' }}>
+        <Box border={`2px solid ${theme.palette.primary.main}`} borderRadius="20px" padding="1rem">
             <Box padding="0.2rem">
                 <EntityPropertiesInternal
                     properties={entity.properties}

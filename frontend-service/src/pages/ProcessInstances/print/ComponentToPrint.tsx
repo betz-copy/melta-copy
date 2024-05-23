@@ -3,12 +3,11 @@ import { Box, Grid, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import { UseMutateAsyncFunction, useQueryClient } from 'react-query';
 import { AxiosError } from 'axios';
-import { AccessTimeFilled as AccessTimeFilledIcon, Cancel as CancelIcon, CheckCircle as CheckCircleIcon } from '@mui/icons-material';
 import { BlueTitle } from '../../../common/BlueTitle';
 import { IFile } from '../../../interfaces/preview';
-import { IMongoProcessInstancePopulated, Status } from '../../../interfaces/processes/processInstance';
+import { IMongoProcessInstancePopulated } from '../../../interfaces/processes/processInstance';
 import { IMongoProcessTemplatePopulated } from '../../../interfaces/processes/processTemplate';
-import { StatusDisplay } from '../../../common/wizards/processInstance/ProcessSummaryStep/ProcessStatus';
+import ProcessStatus from '../../../common/wizards/processInstance/ProcessSummaryStep/ProcessStatus';
 import ProcessSummary from '../../../common/wizards/processInstance/ProcessSummaryStep';
 import { ProcessComponentToPrint, StepComponentToPrint } from './ProcessComponentToPrint';
 import { IPermissionsOfUser } from '../../../services/permissionsService';
@@ -55,74 +54,68 @@ const ComponentToPrint = React.forwardRef<
         return (
             <Box ref={ref} margin="20px" style={{ direction: 'rtl' }}>
                 {options.showSummary && (
-                    <Box sx={{ minHeight: '1050px' }}>
+                    <Box sx={{ minHeight: '1000px' }}>
                         <ProcessSummary isPrinting processInstance={processInstance} processTemplate={processTemplate} />
                     </Box>
                 )}
-                <Box paddingBottom="0.4rem" display="flex" justifyContent="space-between" alignItems="center" marginBottom={1}>
-                    <Box display="flex" alignItems="center">
-                        <Typography component="h4" variant="h4" color={theme.palette.primary.main} fontWeight="800">
-                            {processInstance.name}
-                        </Typography>
+                <Grid style={{ pageBreakInside: 'avoid' }}>
+                    <Box paddingBottom="0.4rem" display="flex" justifyContent="space-between" alignItems="center" marginBottom={1} width="700px">
+                        <Box display="flex" alignItems="center" justifyItems="flex-end">
+                            <Typography component="h4" variant="h4" color={theme.palette.primary.main} fontWeight="800">
+                                {processInstance.name}
+                            </Typography>
 
-                        <Typography variant="h4" fontSize="30px" color="#d3d8df" marginLeft="5px" marginRight="5px">
-                            /
-                        </Typography>
+                            <Typography variant="h4" fontSize="30px" color="#d3d8df" marginLeft="5px" marginRight="5px">
+                                /
+                            </Typography>
 
-                        <Typography paddingBottom="2px" variant="h4" fontSize="28px" color={theme.palette.primary.main}>
-                            {processTemplate.displayName}
-                        </Typography>
+                            <Typography paddingBottom="2px" variant="h4" fontSize="28px" color={theme.palette.primary.main}>
+                                {processTemplate.displayName}
+                            </Typography>
+                        </Box>
+                        <Box display="flex" alignItems="center" justifyItems="flex-start" gap="10px">
+                            <Grid style={{ textAlign: 'left', width: '100%' }}>
+                                <Typography>{`${i18next.t('wizard.processInstance.summary.printedAt')} : ${new Date().toLocaleDateString(
+                                    'en-UK',
+                                )}`}</Typography>
+                                <Typography>{`${i18next.t('wizard.processInstance.summary.printedBy')} : ${myPermissions.user.fullName}`}</Typography>
+                            </Grid>
+                            <Grid width="5px">
+                                <ProcessStatus instance={processInstance} />
+                            </Grid>
+                        </Box>
                     </Box>
-                    <Box display="flex" alignItems="center" sx={{ gap: '20px' }}>
-                        <Grid style={{ textAlign: 'left', width: '95%' }}>
-                            <Typography>{`${i18next.t('wizard.processInstance.summary.printedAt')} : ${new Date().toLocaleDateString(
-                                'en-UK',
-                            )}`}</Typography>
-                            <Typography>{`${i18next.t('wizard.processInstance.summary.printedBy')} : ${myPermissions.user.fullName}`}</Typography>
-                        </Grid>
-                        {processInstance.status === Status.Approved && (
-                            <StatusDisplay
-                                Icon={CheckCircleIcon}
-                                text={i18next.t('wizard.processInstance.summary.processCompleted')}
-                                status={processInstance.status}
-                                fontSize={55}
-                            />
-                        )}
-                        {processInstance.status === Status.Rejected && (
-                            <StatusDisplay
-                                Icon={CancelIcon}
-                                text={i18next.t('wizard.processInstance.summary.processRejected')}
-                                status={processInstance.status}
-                                fontSize={55}
-                            />
-                        )}
-                        {processInstance.status === Status.Pending && (
-                            <StatusDisplay
-                                Icon={AccessTimeFilledIcon}
-                                text={i18next.t('wizard.processInstance.summary.processPending')}
-                                status={processInstance.status}
-                                fontSize={55}
-                            />
-                        )}
-                    </Box>
-                </Box>
-                <ProcessComponentToPrint processInstance={processInstance} mutateAsync={mutateAsync} />
+                    <ProcessComponentToPrint processInstance={processInstance} mutateAsync={mutateAsync} />
+                </Grid>
                 {processInstance.steps.map((stepInstance, index) => {
                     const stepTemplate = getStepTemplateByStepInstance(stepInstance, processTemplate);
                     return (
                         <Grid style={{ pageBreakInside: 'avoid' }} key={`${stepInstance._id}-${stepTemplate._id}`}>
-                            <Box paddingBottom="0.4rem" display="flex" justifyContent="flex-start" alignItems="center" marginTop={5} marginBottom={1}>
-                                <Typography component="h4" variant="h4" color={theme.palette.primary.main} fontWeight="800">
-                                    {stepTemplate.displayName}
-                                </Typography>
+                            <Box
+                                paddingBottom="0.4rem"
+                                display="flex"
+                                justifyContent="space-between"
+                                alignItems="center"
+                                marginTop={5}
+                                marginBottom={1}
+                                width="700px"
+                            >
+                                <Box display="flex" alignItems="center">
+                                    <Typography component="h4" variant="h4" color={theme.palette.primary.main} fontWeight="800">
+                                        {stepTemplate.displayName}
+                                    </Typography>
 
-                                <Typography variant="h4" fontSize="30px" color="#d3d8df" marginLeft="5px" marginRight="5px">
-                                    /
-                                </Typography>
+                                    <Typography variant="h4" fontSize="30px" color="#d3d8df" marginLeft="5px" marginRight="5px">
+                                        /
+                                    </Typography>
 
-                                <Typography paddingBottom="2px" variant="h4" fontSize="28px" color={theme.palette.primary.main}>
-                                    {`${i18next.t('wizard.processTemplate.level')} ${index + 1}`}
-                                </Typography>
+                                    <Typography paddingBottom="2px" variant="h4" fontSize="28px" color={theme.palette.primary.main}>
+                                        {`${i18next.t('wizard.processTemplate.level')} ${index + 1}`}
+                                    </Typography>
+                                </Box>
+                                <Grid width="5px">
+                                    <ProcessStatus instance={processInstance} />
+                                </Grid>
                             </Box>
                             <StepComponentToPrint
                                 stepInstance={stepInstance}
