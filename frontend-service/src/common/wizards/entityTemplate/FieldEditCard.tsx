@@ -28,6 +28,7 @@ export interface FieldEditCardProps {
     touched?: FormikTouched<CommonFormInputProperties>;
     errors?: FormikErrors<CommonFormInputProperties>;
     setFieldValue: (field: keyof CommonFormInputProperties, value: any) => void;
+    setOtherField: (field: string, getValue: (prev: any) => any) => void;
     onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
     remove: (index: number) => any;
     supportSerialNumberType: boolean;
@@ -49,6 +50,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     uniqueConstraints,
     setUniqueConstraints,
     setFieldValue,
+    setOtherField,
     setValues,
     onChange,
     remove,
@@ -101,6 +103,10 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     const unique =
         value.type !== 'serialNumber' && uniqueConstraints!.filter((constraints) => constraints.properties.includes(value.name)).length > 0;
     const uniqueConstraintGroupName = uniqueConstraints!.find((constraint) => constraint.properties.includes(value.name))?.groupName!;
+
+    const uniqueGroupName = `properties[${index}].groupName`;
+    const touchedUniqueGroupName = touched?.groupName;
+    const errorUniqueGroupName = errors?.groupName;
 
     const createNewUniqueGroup = (groupName) => {
         if (groupName) {
@@ -229,26 +235,26 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     };
 
     const deleteAndCreateEmptyGroup = (groupName) => {
+        console.log('im here3');
+
         setUniqueConstraints!((prevConstraints) => {
             const groupToDelete = prevConstraints.find((group) => group.groupName === groupName);
 
             const updatedConstraints = prevConstraints.filter((group) => group.groupName !== groupName);
-
             groupToDelete!.properties.forEach((fieldName) => {
                 const fieldInExistingGroup = updatedConstraints.some((group) => group.properties.includes(fieldName));
                 if (!fieldInExistingGroup) {
                     updatedConstraints.push({ groupName: '', properties: [fieldName] });
                 }
+                console.log(fieldName);
 
-                setValues!((prevValues) => ({
-                    ...prevValues,
-                    [fieldName]: '',
-                }));
+                setOtherField(fieldName, (prevValue) => ({ ...prevValue, groupName: '' }));
             });
 
             return updatedConstraints;
         });
     };
+    console.log({ uniqueConstraints });
 
     const isNewProperty = !initialValue;
     const isDisabled = Boolean(isEditMode && !isNewProperty && areThereAnyInstances);
@@ -552,6 +558,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                 setValues((prevValue) => ({
                                                                     ...prevValue,
                                                                     required: checked ? true : prevValue.required,
+                                                                    groupName: undefined,
                                                                 }));
                                                                 if (checked) {
                                                                     createEmptyGroup(value.name);
@@ -609,6 +616,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                 </Grid>
                                                 {value.uniqueCheckbox && (
                                                     <Autocomplete
+                                                        id={uniqueGroupName}
                                                         fullWidth
                                                         freeSolo
                                                         disableClearable
@@ -619,16 +627,13 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                       ?.map((group) => group.groupName)
                                                                 : []
                                                         }
-                                                        value={uniqueConstraintGroupName}
+                                                        value={value.groupName}
                                                         onChange={(_event, newValue) => {
                                                             if (newValue !== null) {
                                                                 addToProperties(newValue);
                                                                 setValues!((prevValue) => ({
                                                                     ...prevValue,
-                                                                    uniqueConstraints: [
-                                                                        ...(prevValue.uniqueConstraints || []),
-                                                                        { groupName: newValue, properties: [value.name] },
-                                                                    ],
+                                                                    groupName: newValue,
                                                                 }));
                                                             }
                                                         }}
@@ -637,8 +642,8 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                 <TextField
                                                                     {...params}
                                                                     label={i18next.t('wizard.entityTemplate.createOrAddUniqueGroup')}
-                                                                    error={touchedName && Boolean(errorName)}
-                                                                    helperText={touchedName && errorName}
+                                                                    error={touchedUniqueGroupName && Boolean(errorUniqueGroupName)}
+                                                                    helperText={touchedUniqueGroupName && errorUniqueGroupName}
                                                                     sx={{ marginRight: '5px' }}
                                                                     fullWidth
                                                                     InputProps={{
@@ -653,9 +658,13 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                                     ) && (
                                                                                         <IconButton
                                                                                             aria-label="delete"
-                                                                                            onClick={() =>
-                                                                                                deleteAndCreateEmptyGroup(uniqueConstraintGroupName)
-                                                                                            }
+                                                                                            onClick={() => {
+                                                                                                deleteAndCreateEmptyGroup(uniqueConstraintGroupName);
+                                                                                                // setValues!((prevValue) => ({
+                                                                                                //     ...prevValue,
+                                                                                                //     groupName: undefined,
+                                                                                                // }));
+                                                                                            }}
                                                                                         >
                                                                                             <DeleteIcon />
                                                                                         </IconButton>
@@ -671,7 +680,13 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                     ) && (
                                                                         <IconButton
                                                                             aria-label="create"
-                                                                            onClick={() => createNewUniqueGroup(params.inputProps.value)}
+                                                                            onClick={() => {
+                                                                                createNewUniqueGroup(params.inputProps.value);
+                                                                                setValues!((prevValue) => ({
+                                                                                    ...prevValue,
+                                                                                    groupName: String(params.inputProps.value),
+                                                                                }));
+                                                                            }}
                                                                             style={{
                                                                                 position: 'absolute',
                                                                                 left: 10,

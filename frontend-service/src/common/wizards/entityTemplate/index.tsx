@@ -32,6 +32,7 @@ export interface EntityTemplateFormInputProperties extends IBaseFormInputPropert
     hide: boolean;
     id: string;
     uniqueCheckbox: boolean;
+    groupName?: string;
     optionColors: Record<string, string>;
     dateNotification: string | null | undefined;
     calculateTime: boolean | null | undefined;
@@ -67,9 +68,6 @@ const steps: StepsType<EntityTemplateWizardValues> = [
         label: i18next.t('wizard.entityTemplate.properties'),
         component: (props, { isEditMode, setBlock }) => <AddFields {...props} isEditMode={isEditMode} setBlock={setBlock} />,
         validationSchema: addFieldsSchema,
-        validate: values => {
-            
-        }
     },
 ];
 

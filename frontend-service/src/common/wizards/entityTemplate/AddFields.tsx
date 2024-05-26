@@ -35,14 +35,7 @@ export const propertiesBaseSchema = Yup.object({
         is: 'pattern',
         then: (schema) => schema.required(i18next.t('validation.required')),
     }),
-    // uniqueCheckbox: Yup.array().when('uniqueCheckbox', {
-    //     is: true,
-    //     then: Yup.array().of(
-    //         Yup.object().shape({
-    //             groupName: Yup.string().min(1, i18next.t('validation.required')),
-    //         }),
-    //     ),
-    // }),
+    groupName: Yup.string().when('uniqueCheckbox', { is: true, then: (schema) => schema.required(i18next.t('validation.mustSelectUniqueGroup')) }),
 });
 
 export const attachmentPropertiesBaseSchema = Yup.object({
@@ -96,7 +89,6 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
             onError: (error: AxiosError) => {
                 // eslint-disable-next-line no-console
                 console.log('failed to check areThereInstancesByTemplateId. error:', error);
-
                 toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('systemManagement.defaultCantEdit')} />);
             },
         },
@@ -113,6 +105,7 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
 
         setFieldValue('propertiesTypeOrder', newPropertiesTypeOrder);
     };
+
     return (
         <DragDropContext onDragEnd={onDragEnd}>
             <Droppable droppableId="propertiesArea">

@@ -515,6 +515,7 @@ export default {
     validation: {
         required: 'חובה',
         preview: 'תצוגה מצומצמת',
+        mustSelectUniqueGroup: 'חובה לשייך לקבוצת ייחודיים',
         hide: 'הסתר',
         unique: 'ייחודי',
         calculateTime: 'הצגת הפרש זמן',
