@@ -5,11 +5,10 @@ import { getDisplayLabel, WidgetProps } from '@rjsf/utils';
 import validator from '@rjsf/validator-ajv8';
 import { TextField } from '@mui/material';
 import { convertToPlainText, containsHTMLTags } from '../../../utils/HtmlTagsStringValue';
-// import DirectionProvider from 'react-with-direction/dist/DirectionProvider';
 
 const setDirection = (value: string, schema) => {
     if (schema.type === 'string' && value) {
-        const uniqueCharsPattern = /^[^a-zA-Zא-ת]+/;
+        const uniqueCharsPattern = /^[^a-zA-Zא-ת]+|[^a-zA-Zא-ת]+$/g;
         const cleanedStr = value.replace(uniqueCharsPattern, '');
         const isHebrewLetter = /^[א-ת]/.test(cleanedStr.charAt(0));
         return isHebrewLetter ? 'rtl' : 'ltr';

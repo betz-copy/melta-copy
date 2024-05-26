@@ -14,8 +14,6 @@ import { containsHTMLTags } from '../../../utils/HtmlTagsStringValue';
 const RjfsTextAreaWidget = ({ id, value, label, readonly, onChange, options }: WidgetProps) => {
     const initialValue = () => {
         if (value) {
-            // console.log({ value });
-
             const checkHasHTMLTags = containsHTMLTags(value);
             if (checkHasHTMLTags) {
                 const contentBlock = convertFromHTML(value);
@@ -35,49 +33,22 @@ const RjfsTextAreaWidget = ({ id, value, label, readonly, onChange, options }: W
     useEffect(() => {
         setRawContentState(JSON.stringify(convertToRaw(editorValue.getCurrentContent())));
     }, []);
-    // const customStyleMap = {
-    //     FORMAT_ALIGN_LEFT: { textAlign: 'left' },
-    //     FORMAT_ALIGN_CENTER: { textAlign: 'center' },
-    //     FORMAT_ALIGN_RIGHT: { textAlign: 'right' },
-    //     FORMAT_ALIGN_JUSTIFY: { textAlign: 'justify' },
-    // };
+
     const handleChange = (state: EditorState) => {
         setEditorValue(state);
         const newValue = state.getCurrentContent().getPlainText();
-        const x = convertToRaw(state.getCurrentContent());
-        const options1 = {
-            inlineStyles: {
-                // Override default element (`strong`).
-                FORMATALIGNLEFT: { style: { dir: 'right' } },
-                // formatAlignLeft,
-                // ITALIC: {
-                //     // Add custom attributes. You can also use React-style `className`.
-                //     attributes: { class: 'foo' },
-                //     // Use camel-case. Units (`px`) will be added where necessary.
-                //     style: { fontSize: 12 },
-                // },
-                // // Use a custom inline style. Default element is `span`.
-                // RED: { style: { color: '#900' } },
-            },
-        };
-        const htmlContent = stateToHTML(state.getCurrentContent(), options1);
-        console.log({ htmlContent });
+        // console.log({ newValue });
 
-        // const htmlContent = stateToHTML(state.getCurrentContent(), {
-        // inlineStyles: customStyleMap,
-        // });
-        // const htmlContent = stateToHTML(state.getCurrentContent(), {
-        //     inlineStyles: (styles) => {
-        //         const styleObj = {};
-        //         styles.toArray().forEach((style) => {
-        //             if (customStyleMap[style]) {
-        //                 Object.assign(styleObj, customStyleMap[style]);
-        //             }
-        //         });
-        //         return { style: styleObj };
-        //     },
-        // });
+        const x = convertToRaw(state.getCurrentContent());
         console.log({ x });
+        // console.log('hi ', state.getCurrentInlineStyle());
+
+        const htmlContent = stateToHTML(state.getCurrentContent(), {
+            inlineStyles: {
+                FORMATALIGNLEFT: { style: { textAlign: 'left' } },
+            },
+        });
+        console.log({ htmlContent });
 
         onChange(newValue === '' ? options.emptyValue : htmlContent);
     };
@@ -171,40 +142,32 @@ const RjfsTextAreaWidget = ({ id, value, label, readonly, onChange, options }: W
                         'formatAlignCenter',
                         'formatAlignRight',
                         'formatAlignJustify',
-
                     ]}
                     customControls={[
                         {
                             name: 'formatAlignLeft',
                             icon: <FormatAlignLeftIcon />,
                             type: 'inline',
-                            inlineStyle: {
-                                textAlign: 'left',
-                            },
+                            inlineStyle: { textAlign: 'left' },
+                            blockWrapper: <div style={{ textAlign: 'left' }} />,
                         },
                         {
                             name: 'formatAlignCenter',
                             icon: <FormatAlignCenterIcon />,
-                            type: 'inline',
-                            inlineStyle: {
-                                textAlign: 'center',
-                            },
+                            type: 'block',
+                            blockWrapper: <div style={{ textAlign: 'center' }} />,
                         },
                         {
                             name: 'formatAlignRight',
                             icon: <FormatAlignRightIcon />,
-                            type: 'inline',
-                            inlineStyle: {
-                                textAlign: 'right',
-                            },
+                            type: 'block',
+                            blockWrapper: <div style={{ textAlign: 'right', direction: 'rtl' }} />,
                         },
                         {
                             name: 'formatAlignJustify',
                             icon: <FormatAlignJustifyIcon />,
-                            type: 'inline',
-                            inlineStyle: {
-                                textAlign: 'justify',
-                            },
+                            type: 'block',
+                            blockWrapper: <div style={{ textAlign: 'justify' }} />,
                         },
                     ]}
                     toolbar={!readonly}
