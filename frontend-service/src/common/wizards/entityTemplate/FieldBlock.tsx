@@ -137,7 +137,6 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
         } else {
             value = valueOrFunc;
         }
-        console.log({ value });
 
         displayValuesCopy[index] = value;
         setDisplayValues(displayValuesCopy);
@@ -153,12 +152,6 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
     const onChangeWrapper = (index: number) => (event: React.ChangeEvent<HTMLInputElement>) => onChange(index, event);
     const setFieldDisplayValueWrapper = (index: number) => (field: keyof Values, value: any) => setFieldDisplayValue(index, field, value);
     const setDisplayValueWrapper = (index: number) => (value: SetStateAction<CommonFormInputProperties>) => setDisplayValue(index, value);
-    const setOtherField = (fieldName: string, getValue: (prevValues: any) => any) => {
-        const fieldIndex = displayValues.findIndex(({ name: currName }) => currName === fieldName);
-        if (fieldIndex === -1) return;
-        const field = displayValues[fieldIndex];
-        setDisplayValue(fieldIndex, getValue(field));
-    };
     const isFieldBlockError = Boolean(touched?.[propertiesType]) && Boolean(errors?.[propertiesType]);
 
     return (
@@ -213,7 +206,6 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
                                                         setValues={setDisplayValueWrapper(index)}
                                                         uniqueConstraints={uniqueConstraints}
                                                         setUniqueConstraints={setUniqueConstraints}
-                                                        setOtherField={setOtherField}
                                                     />
                                                 );
                                             }
