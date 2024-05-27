@@ -29,4 +29,6 @@ export interface ISearchGanttsBody {
     search?: string;
     limit: number;
     step: number;
+    entityTemplateId?: string;
+    relationshipTemplateIds?: string[];
 }

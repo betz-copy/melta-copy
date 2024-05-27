@@ -14,13 +14,15 @@ import { IArgument, IPropertyOfVariable, isConstant, isPropertyOfVariable } from
 import { IFormula } from '../../express/rule/interfaces/formula';
 
 const checkPropertyInUsed = (propertyOfVariable: IPropertyOfVariable | ISumAggFunction, entityId: string, properties: string[]) => {
-    const variable = propertyOfVariable.variableName.split('.');
-    const id = variable.length > 1 ? variable[2] : propertyOfVariable.variableName;
-    if (id === entityId && properties.includes(propertyOfVariable.property)) {
+    const { variableName, property } = propertyOfVariable;
+
+    const variable = variableName.split('.');
+    const id = variable.length > 1 ? variable[2] : variableName;
+    if (id === entityId && properties.includes(property)) {
         throw new ServiceError(400, 'can not delete field that used in rules', {
             errorCode: config.errorCodes.failedToDeleteField,
             type: 'rules',
-            property: propertyOfVariable.property,
+            property,
         });
     }
 };

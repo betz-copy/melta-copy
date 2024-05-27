@@ -6,12 +6,22 @@ import { escapeRegExp } from '../../utils';
 import config from '../../config';
 
 export class GanttManager {
-    static searchGantts({ search, limit, step }: ISearchGanttsBody) {
+    static searchGantts({ search, limit, step, entityTemplateId, relationshipTemplateIds }: ISearchGanttsBody) {
         const query: FilterQuery<IGanttDocument> = {};
 
         if (search) {
             query.name = { $regex: escapeRegExp(search) };
         }
+
+        if (entityTemplateId) {
+            query['items.entityTemplate.id'] = entityTemplateId;
+        }
+
+        if (relationshipTemplateIds) {
+            query['items.connectedEntityTemplates.relationshipTemplateId'] = { $in: relationshipTemplateIds };
+        }
+
+        console.log({ query });
 
         return FolderModel.find(query)
             .limit(limit)
@@ -44,13 +54,36 @@ export class GanttManager {
 
         const propertyChecks = properties.map(async (property) => {
             const propertyInUsed = await FolderModel.exists({
-                'items.entityTemplate.id': templateId,
-                $or: [
-                    { 'items.entityTemplate.fieldsToShow': property },
-                    { 'items.entityTemplate.startDateField': property },
-                    { 'items.entityTemplate.endDateField': property },
-                ],
+                // 'items.entityTemplate.id': templateId,
+                // $or: [
+                //     { 'items.entityTemplate.fieldsToShow': property },
+                //     { 'items.entityTemplate.startDateField': property },
+                //     { 'items.entityTemplate.endDateField': property },
+                //     { 'items.connectedEntityTemplates.fieldsToShow': property },
+                // ],
+                items: {
+                    $elemMatch: {
+                        $or: [
+                            {
+                                'entityTemplate.id': templateId,
+                                'entityTemplate.fieldsToShow': property,
+                                'entityTemplate.startDateField': property,
+                                'entityTemplate.endDateField': property,
+                            },
+                            {
+                                connectedEntityTemplates: {
+                                    $elemMatch: {
+                                        // relationship.source/relationship.destination
+                                        relationshipTemplateId: templateId,
+                                        fieldsToShow: property,
+                                    },
+                                },
+                            },
+                        ],
+                    },
+                },
             });
+            // console.log({ propertyChecks });
 
             if (propertyInUsed) {
                 throw new ServiceError(400, 'can not delete field that used in gantts', {

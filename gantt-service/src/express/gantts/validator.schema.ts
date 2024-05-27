@@ -67,8 +67,12 @@ export const searchGanttsSchema = Joi.object({
     query: {},
     body: {
         search: Joi.string(),
+        // 'items.entityTemplate.id'
+        // 'items.connectedEntityTemplates.relationshipTemplateId'
         limit: Joi.number().integer().min(0).default(0),
         step: Joi.number().integer().min(0).default(0),
+        entityTemplateId: MongoIdSchema,
+        relationshipTemplateIds: Joi.array().items(MongoIdSchema),
     },
     params: {},
 });

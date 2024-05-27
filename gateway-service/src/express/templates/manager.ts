@@ -24,7 +24,7 @@ import { ProcessManagerService } from '../../externalServices/processService';
 import ProcessTemplatesManager from '../processes/processTemplates/manager';
 import { isProcessManager } from '../../externalServices/permissionsService';
 import { IPermissionsOfUser } from '../permissions/interfaces';
-import { GanttsService } from '../../externalServices/ganttsService';
+import { GanttsService, IMongoGantt } from '../../externalServices/ganttsService';
 
 const {
     categoryHasTemplates,
@@ -362,6 +362,62 @@ export class TemplatesManager {
         };
     }
 
+    static async isPropertyOfTemplateInUsedInGantts(templateId: string, properties: string[]) {
+        const sourceRelationShipTEmplatesIDs = await RelationshipsTemplateManagerService.searchRelationshipTemplates({
+            sourceEntityIds: [templateId],
+        });
+
+        const destinationRelationShipTEmplatesIDs = await RelationshipsTemplateManagerService.searchRelationshipTemplates({
+            destinationEntityIds: [templateId],
+        });
+
+        const relevantGantts = await GanttsService.searchGantts({
+            entityTemplateId: templateId,
+            limit: 100,
+            step: 0,
+        });
+
+        const relevantGantts1 = await GanttsService.searchGantts({
+            relationshipTemplateIds: [
+                ...sourceRelationShipTEmplatesIDs.map((relationShip) => relationShip._id),
+                ...destinationRelationShipTEmplatesIDs.map((relationShip) => relationShip._id),
+            ],
+            limit: 100,
+            step: 0,
+        });
+
+        const combinedRelevantGantts: IMongoGantt[] = relevantGantts.concat(relevantGantts1);
+
+        const allRelevantGanttsWithoutDuplicate = combinedRelevantGantts.reduce<IMongoGantt[]>((acc, current) => {
+            if (!acc.some((item) => item._id === current._id)) {
+                acc.push(current);
+            }
+            return acc;
+        }, []);
+
+        properties.map((property) => {
+            allRelevantGanttsWithoutDuplicate.map((gantt) => {
+                gantt.items.map((item) => {
+                    const { entityTemplate, connectedEntityTemplates } = item;
+                    if (
+                        (entityTemplate.id === templateId && entityTemplate.fieldsToShow.includes(property)) ||
+                        entityTemplate.startDateField === property ||
+                        entityTemplate.endDateField === property
+                    )
+                        throw new ServiceError(400, 'can not delete field that used in gantts', {
+                            errorCode: config.errorCodes.failedToDeleteField,
+                            type: 'gantss',
+                            property,
+                        });
+                        
+                    connectedEntityTemplates.map((connectedEntityTemplate) => {
+                        if(sourceRelationShipTEmplatesIDs.some((source)=>source._id===templateId))
+                    });
+                });
+            });
+        });
+    }
+
     static async updateEntityTemplate(
         id: string,
         updatedTemplateData: Omit<IEntityTemplateWithConstraints, 'disabled'> & { file?: string },
@@ -420,7 +476,8 @@ export class TemplatesManager {
             iconFileId = currTemplate.iconFileId;
         }
 
-        await GanttsService.isPropertyOfTemplateInUsed(id, Object.keys(removedProperties));
+        // await GanttsService.isPropertyOfTemplateInUsed(id, Object.keys(removedProperties));
+        await TemplatesManager.isPropertyOfTemplateInUsedInGantts(id, Object.keys(removedProperties));
 
         await RelationshipsTemplateManagerService.isPropertyOfTemplateInUsed(id, Object.keys(removedProperties));
 
