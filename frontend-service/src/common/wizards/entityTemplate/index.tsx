@@ -13,7 +13,7 @@ import { ChooseIcon } from './ChooseIcon';
 import fileDetails from '../../../interfaces/fileDetails';
 import { ErrorToast } from '../../ErrorToast';
 import { environment } from '../../../globals';
-import { IConstraint } from '../../../interfaces/entities';
+import { IConstraint, IUniqueConstraintOfTemplate } from '../../../interfaces/entities';
 
 const { errorCodes } = environment;
 
@@ -45,7 +45,7 @@ export interface EntityTemplateWizardValues
     > {
     properties: EntityTemplateFormInputProperties[];
     attachmentProperties: EntityTemplateFormInputProperties[];
-    uniqueConstraints?: { groupName: string; properties: string[] }[];
+    uniqueConstraints?: IUniqueConstraintOfTemplate[];
     icon?: fileDetails;
 }
 

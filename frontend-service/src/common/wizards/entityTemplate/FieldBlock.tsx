@@ -21,7 +21,7 @@ export const FieldBlockAccordion = styled(Accordion)({
 interface FieldBlockProps<PropertiesType extends string, Values extends Record<PropertiesType, CommonFormInputProperties[]>> {
     propertiesType: PropertiesType;
     values: Values;
-    uniqueConstraints?: { groupName: string; properties: string[] }[];
+    uniqueConstraints?: IUniqueConstraintOfTemplate[];
     setUniqueConstraints?: (uniqueConstraints: SetStateAction<IUniqueConstraintOfTemplate[]>) => void;
     initialValues: Values | undefined;
     setFieldValue: FormikHelpers<Values>['setFieldValue'];

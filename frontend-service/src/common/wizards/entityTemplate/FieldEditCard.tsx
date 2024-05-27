@@ -35,7 +35,7 @@ export interface FieldEditCardProps {
     supportEntityReferenceType: boolean;
     supportChangeToRequiredWithInstances: boolean;
     supportArrayFields: boolean;
-    uniqueConstraints?: { groupName: string; properties: string[] }[];
+    uniqueConstraints?: IUniqueConstraintOfTemplate[];
     setUniqueConstraints?: (uniqueConstraints: SetStateAction<IUniqueConstraintOfTemplate[]>) => void;
 }
 
