@@ -17,6 +17,7 @@ import { CommonFormInputProperties } from './commonInterfaces';
 import { MinimizedColorPicker } from '../../inputs/MinimizedColorPicker';
 import { MeltaCheckbox } from '../../MeltaCheckbox';
 import { MeltaTooltip } from '../../MeltaTooltip';
+import { IUniqueConstraintOfTemplate } from '../../../interfaces/entities';
 
 export interface FieldEditCardProps {
     value: CommonFormInputProperties;
@@ -35,7 +36,7 @@ export interface FieldEditCardProps {
     supportChangeToRequiredWithInstances: boolean;
     supportArrayFields: boolean;
     uniqueConstraints?: { groupName: string; properties: string[] }[];
-    setUniqueConstraints?: (uniqueConstraints: SetStateAction<{ groupName: string; properties: string[] }[]>) => void;
+    setUniqueConstraints?: (uniqueConstraints: SetStateAction<IUniqueConstraintOfTemplate[]>) => void;
 }
 
 export const FieldEditCard: React.FC<FieldEditCardProps> = ({

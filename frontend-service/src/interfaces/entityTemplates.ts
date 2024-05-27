@@ -1,4 +1,5 @@
 import { IMongoCategory } from './categories';
+import { IUniqueConstraintOfTemplate } from './entities';
 
 export interface IEntitySingleProperty {
     title: string;
@@ -37,7 +38,7 @@ export interface IEntityTemplate {
     propertiesTypeOrder: ('properties' | 'attachmentProperties')[];
     propertiesPreview: string[];
     enumPropertiesColors?: Record<string, Record<string, string>>; // { [fieldName]: { [enumOption1]: [color1], [enumOption2]: [color2] } }
-    uniqueConstraints: { groupName: string; properties: string[] }[];
+    uniqueConstraints: IUniqueConstraintOfTemplate[];
 }
 
 export interface IEntityTemplatePopulated extends Omit<IEntityTemplate, 'category'> {

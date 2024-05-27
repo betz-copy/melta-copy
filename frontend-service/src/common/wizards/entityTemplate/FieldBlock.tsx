@@ -10,6 +10,7 @@ import { FieldEditCardProps, MemoFieldEditCard } from './FieldEditCard';
 import { MemoAttachmentEditCard } from './AttachmentEditCard';
 import { StepComponentHelpers } from '..';
 import { CommonFormInputProperties } from './commonInterfaces';
+import { IUniqueConstraintOfTemplate } from '../../../interfaces/entities';
 
 export const FieldBlockAccordion = styled(Accordion)({
     width: '100%',
@@ -21,7 +22,7 @@ interface FieldBlockProps<PropertiesType extends string, Values extends Record<P
     propertiesType: PropertiesType;
     values: Values;
     uniqueConstraints?: { groupName: string; properties: string[] }[];
-    setUniqueConstraints?: (uniqueConstraints: SetStateAction<{ groupName: string; properties: string[] }[]>) => void;
+    setUniqueConstraints?: (uniqueConstraints: SetStateAction<IUniqueConstraintOfTemplate[]>) => void;
     initialValues: Values | undefined;
     setFieldValue: FormikHelpers<Values>['setFieldValue'];
     areThereAnyInstances: boolean;
