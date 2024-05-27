@@ -23,6 +23,7 @@ import {
     ISearchBatchBody,
     ISearchEntitiesOfTemplateBody,
     IUniqueConstraint,
+    IUniqueConstraintOfTemplate,
 } from './interface';
 import { NotFoundError, ServiceError } from '../error';
 import { getLatestGlobalSearchIndex, getLatestTemplateSearchIndex } from '../../utils/redis/getLatestIndex';
@@ -528,7 +529,7 @@ export class EntityManager {
     private static async updateUniqueConstraintsOfTemplate(
         transaction: Transaction,
         templateId: string,
-        uniqueConstraints: { groupName: string; properties: string[] }[],
+        uniqueConstraints: IUniqueConstraintOfTemplate[],
         existingUniqueConstraints: IUniqueConstraint[],
     ) {
         const existingUniqueConstraintsOfTemplate = existingUniqueConstraints.filter((constraint) => constraint.templateId === templateId);
@@ -568,7 +569,7 @@ export class EntityManager {
 
     static async updateConstraintsOfTemplate(
         templateId: string,
-        constraints: { requiredConstraints: string[]; uniqueConstraints: { groupName: string; properties: string[] }[] },
+        constraints: { requiredConstraints: string[]; uniqueConstraints: IUniqueConstraintOfTemplate[] },
     ) {
         return Neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
             const existingNeo4jConstraints = await runInTransactionAndNormalize(transaction, 'call db.constraints', normalizeGetDbConstraints);

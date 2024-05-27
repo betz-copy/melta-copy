@@ -10,7 +10,14 @@ import { addPropertyToRequest } from '../../utils/express';
 import config from '../../config';
 import { EntityTemplateManagerService, IEntitySingleProperty, IMongoEntityTemplate } from '../../externalServices/entityTemplateManager';
 import { trycatch } from '../../utils/lib';
-import { IFilterOfField, IFilterOfTemplate, ISearchFilter, ISearchBatchBody, ISearchEntitiesOfTemplateBody } from './interface';
+import {
+    IFilterOfField,
+    IFilterOfTemplate,
+    ISearchFilter,
+    ISearchBatchBody,
+    ISearchEntitiesOfTemplateBody,
+    IUniqueConstraintOfTemplate,
+} from './interface';
 import { IMongoRelationshipTemplate, RelationshipsTemplateManagerService } from '../../externalServices/relationshipTemplateManager';
 import { addDefaultFieldsToTemplate } from '../../utils/addDefaultsFieldsToEntityTemplate';
 
@@ -114,10 +121,7 @@ export const validateConstraintsOfTemplate = async (req: Request) => {
     const { properties } = await getEntityTemplateByIdOrThrowValidationError(req.params.templateId);
     const propertiesKeys = Object.keys(properties.properties);
 
-    const {
-        requiredConstraints,
-        uniqueConstraints,
-    }: { requiredConstraints: string[]; uniqueConstraints: { groupName: string; properties: string[] }[] } = req.body;
+    const { requiredConstraints, uniqueConstraints }: { requiredConstraints: string[]; uniqueConstraints: IUniqueConstraintOfTemplate[] } = req.body;
 
     requiredConstraints.forEach((constraintProp) => {
         const isConstraintPropertyUnknown = !propertiesKeys.includes(constraintProp);
