@@ -6,6 +6,7 @@ import { ColoredEnumChip } from '../../common/ColoredEnumChip';
 import { VerifyLink } from '../../common/VerifyLink';
 import { getFirstLine, getNumLines, containsHTMLTags, renderHTML } from '../HtmlTagsStringValue';
 import { CalculateDateDifference } from './CalculateDateDifference';
+import { setTextDirection } from '../../common/inputs/JSONSchemaFormik/RjsfStringWidget';
 
 const Value: React.FC<{
     hideValue: boolean;
@@ -62,7 +63,11 @@ const Value: React.FC<{
                     overflow: 'hidden',
                     whiteSpace: 'nowrap',
                     textOverflow: 'ellipsis',
-                    direction: isNumberField ? 'rtl' : undefined,
+                    direction: isNumberField
+                        ? 'rtl'
+                        : setTextDirection(value, {
+                              type: 'string',
+                          }),
                 }}
                 onDoubleClick={handleDoubleClick}
             >

@@ -9,6 +9,8 @@ import FormatAlignLeftIcon from '@mui/icons-material/FormatAlignLeft';
 import FormatAlignCenterIcon from '@mui/icons-material/FormatAlignCenter';
 import FormatAlignRightIcon from '@mui/icons-material/FormatAlignRight';
 import FormatAlignJustifyIcon from '@mui/icons-material/FormatAlignJustify';
+import htmlToDraft from 'html-to-draftjs';
+// import { stateFromHTML } from 'draft-js-import-html';
 import { containsHTMLTags } from '../../../utils/HtmlTagsStringValue';
 
 const RjfsTextAreaWidget = ({ id, value, label, readonly, onChange, options }: WidgetProps) => {
@@ -16,8 +18,11 @@ const RjfsTextAreaWidget = ({ id, value, label, readonly, onChange, options }: W
         if (value) {
             const checkHasHTMLTags = containsHTMLTags(value);
             if (checkHasHTMLTags) {
-                const contentBlock = convertFromHTML(value);
-                const contentState = ContentState.createFromBlockArray(contentBlock.contentBlocks);
+                const contentBlock = htmlToDraft(value);
+                console.log(contentBlock);
+                // const { contentBlocks, entityMap } = contentBlock;
+
+                const contentState = ContentState.createFromBlockArray(contentBlock.contentBlocks, contentBlock.entityMap);
                 return EditorState.createWithContent(contentState);
             }
             const contentState = ContentState.createFromText(value);
@@ -36,18 +41,34 @@ const RjfsTextAreaWidget = ({ id, value, label, readonly, onChange, options }: W
 
     const handleChange = (state: EditorState) => {
         setEditorValue(state);
+        console.log({ state });
+
         const newValue = state.getCurrentContent().getPlainText();
         // console.log({ newValue });
 
         const x = convertToRaw(state.getCurrentContent());
         console.log({ x });
         // console.log('hi ', state.getCurrentInlineStyle());
-
-        const htmlContent = stateToHTML(state.getCurrentContent(), {
-            inlineStyles: {
-                FORMATALIGNLEFT: { style: { textAlign: 'left' } },
+        const options1 = {
+            blockStyleFn: (block) => {
+                if (block.getType() === 'FORMATALIGNCENTER') {
+                    return {
+                        style: {
+                            textAlign: 'center',
+                        },
+                    };
+                }
+                return undefined;
             },
-        });
+        };
+
+        const htmlContent = stateToHTML(
+            state.getCurrentContent(),
+            options1,
+            // inlineStyles: {
+            //     FORMATALIGNLEFT: { style: { textAlign: 'left' } },
+            // },
+        );
         console.log({ htmlContent });
 
         onChange(newValue === '' ? options.emptyValue : htmlContent);
@@ -149,7 +170,7 @@ const RjfsTextAreaWidget = ({ id, value, label, readonly, onChange, options }: W
                             icon: <FormatAlignLeftIcon />,
                             type: 'inline',
                             inlineStyle: { textAlign: 'left' },
-                            blockWrapper: <div style={{ textAlign: 'left' }} />,
+                            // blockWrapper: <div style={{ textAlign: 'left' }} />,
                         },
                         {
                             name: 'formatAlignCenter',

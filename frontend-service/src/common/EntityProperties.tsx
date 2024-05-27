@@ -4,8 +4,8 @@ import i18next from 'i18next';
 import React, { CSSProperties } from 'react';
 import { pdfjs } from 'react-pdf';
 import { useSelector } from 'react-redux';
-// eslint-disable-next-line import/no-extraneous-dependencies
-import DirectionProvider, { DIRECTIONS } from 'react-with-direction/dist/DirectionProvider';
+// // eslint-disable-next-line import/no-extraneous-dependencies
+// import DirectionProvider, { DIRECTIONS } from 'react-with-direction/dist/DirectionProvider';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { IEntity } from '../interfaces/entities';
 import { ColoredEnumChip } from './ColoredEnumChip';
@@ -16,6 +16,7 @@ import { getFirstLine, getNumLines, containsHTMLTags, renderHTML } from '../util
 import { CalculateDateDifference } from '../utils/agGrid/CalculateDateDifference';
 import { environment } from '../globals';
 import { RootState } from '../store';
+import { setStringTextDirection, setTextDirection } from './inputs/JSONSchemaFormik/RjsfStringWidget';
 
 const { maxNumOfCharactersNotInFullWidth } = environment.entitiesProperties;
 
@@ -80,11 +81,6 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
     viewFirstLineOfLongText = false,
     isPrintingMode = false,
 }) => {
-    // const [value, setValue] = React.useState('');
-
-    // const handleChange = (event) => {
-    //     setValue(event.target.value);
-    // };
     let propertiesOrderedToShow: string[];
     if (overridePropertiesToShow) {
         propertiesOrderedToShow = overridePropertiesToShow;
@@ -196,22 +192,15 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                                             overflowY: 'auto',
                                             paddingLeft: '1rem',
                                             maxHeight: isPrintingMode ? undefined : '350px',
+                                            direction: setTextDirection(propertyValue, {
+                                                type: propertySchema.type,
+                                                serialCurrent: propertySchema.serialCurrent,
+                                            }),
                                         }}
                                     >
                                         <VerifyLink>{innerContent}</VerifyLink>
                                     </Typography>
                                 </MeltaTooltip>
-                                {/* <DirectionProvider direction={DIRECTIONS.LTR}>
-                                    <DirectionProvider text={value}>
-                                        <input
-                                            type="text"
-                                            value={value}
-                                            onChange={handleChange}
-                                            placeholder="Type here..."
-                                            style={{ width: '100%', padding: '8px', fontSize: '16px' }}
-                                        />
-                                    </DirectionProvider>
-                                </DirectionProvider> */}
                                 <Grid item>
                                     {hideField && (
                                         <IconButton

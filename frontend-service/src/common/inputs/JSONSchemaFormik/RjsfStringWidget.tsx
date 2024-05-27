@@ -6,18 +6,24 @@ import validator from '@rjsf/validator-ajv8';
 import { TextField } from '@mui/material';
 import { convertToPlainText, containsHTMLTags } from '../../../utils/HtmlTagsStringValue';
 
-const setDirection = (value: string, schema) => {
+export const setTextDirection = (value: string, schema) => {
     if (schema.type === 'string' && value) {
+        console.log({ schema }, { value });
+
         const uniqueCharsPattern = /^[^a-zA-Zא-ת]+|[^a-zA-Zא-ת]+$/g;
         const cleanedStr = value.replace(uniqueCharsPattern, '');
         const isHebrewLetter = /^[א-ת]/.test(cleanedStr.charAt(0));
+        console.log({ isHebrewLetter });
+
         return isHebrewLetter ? 'rtl' : 'ltr';
     }
+    console.log('dsjgggggggggggggggggggggggggggggfygf');
 
     if (schema.serialCurrent === undefined) {
         if (schema.type === 'number' || Boolean(schema.pattern)) return 'ltr';
         return 'rtl';
     }
+    return 'ltr';
 };
 const RjsfTextWidget = ({
     id,
@@ -84,7 +90,7 @@ const RjsfTextWidget = ({
             onWheel={(e) => {
                 if (inputType === 'number') (e.target as HTMLElement).blur(); // disable number input scroll to change value when focused, but blurring it
             }}
-            dir={setDirection(value, schema)}
+            dir={setTextDirection(value, schema)}
         />
     );
 };
