@@ -24,7 +24,7 @@ const customFormat: IWinstonFormat = format.combine(
             metadata.error = Object.getOwnPropertyNames(metadata.error).reduce((acc, key) => {
                 if (key !== 'stack') acc[key] = metadata.error[key];
                 return acc;
-            });
+            }, {} as Record<string, any>);
         }
 
         const printData: IPrintData = {

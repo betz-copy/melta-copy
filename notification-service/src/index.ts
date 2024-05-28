@@ -52,5 +52,5 @@ const main = async () => {
 };
 
 main().catch((error) => {
-    logger.error('Main error: ', { ...error });
+    logger.error('Main error: ', { error });
 });
