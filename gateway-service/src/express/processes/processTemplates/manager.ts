@@ -108,9 +108,9 @@ export class ProcessTemplatesManager {
         const iconsIds = steps.map((step) => {
             return step.iconFileId;
         });
-        await deleteFiles(iconsIds.filter((id) => id !== null).map((id) => id!)).catch((err) => {
-            logger.error('failed to delete icons images');
-            throw new ServiceError(500, `failed to delete process template, failed when deleting icon files: ${err}`);
+        await deleteFiles(iconsIds.filter((id) => id !== null).map((id) => id!)).catch((error) => {
+            logger.error('failed to delete icons images', { error });
+            throw new ServiceError(500, `failed to delete process template, failed when deleting icon files: ${error}`);
         });
         return this.getTemplateWithPopulatedStepReviewers(deletedTemplate);
     }

@@ -50,10 +50,10 @@ class Neo4jClient {
 
             return result;
         } finally {
-            const { err } = await trycatch(() => session.close());
+            const { err: error } = await trycatch(() => session.close());
 
-            if (err) {
-                logger.error('Failed to close session. Possible leak, Error:', err);
+            if (error) {
+                logger.error('Failed to close session. Possible leak, Error:', { error });
             }
         }
     }

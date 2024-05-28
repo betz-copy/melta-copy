@@ -271,9 +271,9 @@ export default class ProcessesInstancesManager {
         const process = await ProcessManagerService.getProcessInstanceById(processId, userId);
         const populatedProcess = await this.getPopulatedProcess(process, userId);
 
-        await ProcessesInstancesManager.deleteAllProcessFiles(process).catch((err) => {
-            logger.error(`failed to delete process files`);
-            throw new ServiceError(500, `failed to delete process instance, failed when deleting files: ${err}`);
+        await ProcessesInstancesManager.deleteAllProcessFiles(process).catch((error) => {
+            logger.error(`failed to delete process files`, { error });
+            throw new ServiceError(500, `failed to delete process instance, failed when deleting files: ${error}`);
         });
         await ProcessManagerService.deleteProcessInstance(processId);
 

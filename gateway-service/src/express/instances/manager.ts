@@ -369,10 +369,10 @@ export class InstancesManager {
         const currentEntity = await InstanceManagerService.getEntityInstanceById(id);
         const deletedInstance = await InstanceManagerService.deleteEntityInstance(id);
 
-        const { err } = await trycatch(() => InstancesManager.deleteAllEntityFiles(currentEntity));
+        const { err: error } = await trycatch(() => InstancesManager.deleteAllEntityFiles(currentEntity));
 
-        if (err) {
-            logger.error(`failed to delete files of instanceId ${id}`);
+        if (error) {
+            logger.error(`failed to delete files of instanceId ${id}`, { error });
         }
 
         return deletedInstance;

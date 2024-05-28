@@ -10,7 +10,7 @@ class PreviewConsumer {
             else await FilesManager.uploadFilePreview(msgContent.toString());
             msg.ack();
         } catch (err: any) {
-            logger.error(err);
+            logger.error('Rabbit consumer error: ', { error: err });
             msg.nack(false);
         }
     }

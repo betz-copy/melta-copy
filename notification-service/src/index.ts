@@ -51,4 +51,6 @@ const main = async () => {
     logger.info(`Server started on port: ${service.port}`);
 };
 
-main().catch((err) => logger.error(err));
+main().catch((error) => {
+    logger.error('Main error: ', { ...error });
+});
