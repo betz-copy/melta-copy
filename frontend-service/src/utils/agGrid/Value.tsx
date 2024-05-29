@@ -52,6 +52,7 @@ const Value: React.FC<{
     if (containsHtmlTags) popoverText = renderHTML(value);
     else if (calculateTime) popoverText = <CalculateDateDifference date={value} />;
     else popoverText = <VerifyLink>{value} </VerifyLink>;
+    console.log(renderHTML(value));
 
     return (
         <Grid container justifyContent="space-between" alignItems="center">
@@ -65,7 +66,7 @@ const Value: React.FC<{
                     textOverflow: 'ellipsis',
                     direction: isNumberField
                         ? 'rtl'
-                        : setTextDirection(value, {
+                        : setTextDirection(renderHTML(value), {
                               type: 'string',
                           }),
                 }}

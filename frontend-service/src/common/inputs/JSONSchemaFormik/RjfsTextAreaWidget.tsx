@@ -5,12 +5,6 @@ import MUIRichTextEditor, { TMUIRichTextEditorStyles } from 'mui-rte';
 import { EditorState, convertToRaw, ContentState, convertFromHTML } from 'draft-js';
 import { stateToHTML } from 'draft-js-export-html';
 import { createTheme } from '@mui/material/styles';
-import FormatAlignLeftIcon from '@mui/icons-material/FormatAlignLeft';
-import FormatAlignCenterIcon from '@mui/icons-material/FormatAlignCenter';
-import FormatAlignRightIcon from '@mui/icons-material/FormatAlignRight';
-import FormatAlignJustifyIcon from '@mui/icons-material/FormatAlignJustify';
-import htmlToDraft from 'html-to-draftjs';
-// import { stateFromHTML } from 'draft-js-import-html';
 import { containsHTMLTags } from '../../../utils/HtmlTagsStringValue';
 
 const RjfsTextAreaWidget = ({ id, value, label, readonly, onChange, options }: WidgetProps) => {
@@ -18,11 +12,8 @@ const RjfsTextAreaWidget = ({ id, value, label, readonly, onChange, options }: W
         if (value) {
             const checkHasHTMLTags = containsHTMLTags(value);
             if (checkHasHTMLTags) {
-                const contentBlock = htmlToDraft(value);
-                console.log(contentBlock);
-                // const { contentBlocks, entityMap } = contentBlock;
-
-                const contentState = ContentState.createFromBlockArray(contentBlock.contentBlocks, contentBlock.entityMap);
+                const contentBlock = convertFromHTML(value);
+                const contentState = ContentState.createFromBlockArray(contentBlock.contentBlocks);
                 return EditorState.createWithContent(contentState);
             }
             const contentState = ContentState.createFromText(value);
@@ -41,36 +32,8 @@ const RjfsTextAreaWidget = ({ id, value, label, readonly, onChange, options }: W
 
     const handleChange = (state: EditorState) => {
         setEditorValue(state);
-        console.log({ state });
-
         const newValue = state.getCurrentContent().getPlainText();
-        // console.log({ newValue });
-
-        const x = convertToRaw(state.getCurrentContent());
-        console.log({ x });
-        // console.log('hi ', state.getCurrentInlineStyle());
-        const options1 = {
-            blockStyleFn: (block) => {
-                if (block.getType() === 'FORMATALIGNCENTER') {
-                    return {
-                        style: {
-                            textAlign: 'center',
-                        },
-                    };
-                }
-                return undefined;
-            },
-        };
-
-        const htmlContent = stateToHTML(
-            state.getCurrentContent(),
-            options1,
-            // inlineStyles: {
-            //     FORMATALIGNLEFT: { style: { textAlign: 'left' } },
-            // },
-        );
-        console.log({ htmlContent });
-
+        const htmlContent = stateToHTML(state.getCurrentContent());
         onChange(newValue === '' ? options.emptyValue : htmlContent);
     };
 
@@ -150,47 +113,7 @@ const RjfsTextAreaWidget = ({ id, value, label, readonly, onChange, options }: W
                     id={id}
                     readOnly={readonly}
                     label={label}
-                    controls={[
-                        'title',
-                        'bold',
-                        'italic',
-                        'underline',
-                        'strikethrough',
-                        'numberList',
-                        'bulletList',
-                        'highlight',
-                        'formatAlignLeft',
-                        'formatAlignCenter',
-                        'formatAlignRight',
-                        'formatAlignJustify',
-                    ]}
-                    customControls={[
-                        {
-                            name: 'formatAlignLeft',
-                            icon: <FormatAlignLeftIcon />,
-                            type: 'inline',
-                            inlineStyle: { textAlign: 'left' },
-                            // blockWrapper: <div style={{ textAlign: 'left' }} />,
-                        },
-                        {
-                            name: 'formatAlignCenter',
-                            icon: <FormatAlignCenterIcon />,
-                            type: 'block',
-                            blockWrapper: <div style={{ textAlign: 'center' }} />,
-                        },
-                        {
-                            name: 'formatAlignRight',
-                            icon: <FormatAlignRightIcon />,
-                            type: 'block',
-                            blockWrapper: <div style={{ textAlign: 'right', direction: 'rtl' }} />,
-                        },
-                        {
-                            name: 'formatAlignJustify',
-                            icon: <FormatAlignJustifyIcon />,
-                            type: 'block',
-                            blockWrapper: <div style={{ textAlign: 'justify' }} />,
-                        },
-                    ]}
+                    controls={['title', 'bold', 'italic', 'underline', 'strikethrough', 'numberList', 'bulletList']}
                     toolbar={!readonly}
                     onChange={handleChange}
                     defaultValue={rawContentState}

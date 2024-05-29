@@ -8,7 +8,7 @@ import { convertToPlainText, containsHTMLTags } from '../../../utils/HtmlTagsStr
 
 export const setTextDirection = (value: string, schema) => {
     if (schema.type === 'string' && value) {
-        console.log({ schema }, { value });
+        // console.log({ schema }, { value });
 
         const uniqueCharsPattern = /^[^a-zA-Zא-ת]+|[^a-zA-Zא-ת]+$/g;
         const cleanedStr = value.replace(uniqueCharsPattern, '');
