@@ -54,18 +54,21 @@ export class InstancesManager {
             }
         });
 
+        const updatedProps = { ...props };
+
         Object.keys(filesToUpload).forEach((key) => {
             if (props?.[key] !== undefined) {
                 if (Array.isArray(props[key])) {
-                    props[key] = [...props[key], ...filesToUpload[key]];
+                    updatedProps[key] = [...props[key], ...filesToUpload[key]];
                 } else {
-                    props[key] = [props[key], ...filesToUpload[key]];
+                    updatedProps[key] = [props[key], ...filesToUpload[key]];
                 }
             } else if (props) {
-                props[key] = filesToUpload[key];
+                updatedProps[key] = filesToUpload[key];
             }
         });
-        return { props, files: filesToUpload };
+
+        return { props: updatedProps, files: filesToUpload };
     }
 
     static async exportEntities(exportEntitiesBody: IExportEntitiesBody) {
