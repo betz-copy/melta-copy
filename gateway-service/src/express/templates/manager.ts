@@ -370,6 +370,35 @@ export class TemplatesManager {
         };
     }
 
+    static async updateNewSerialNumberFields(
+        id: string,
+        updatedTemplateData: Omit<IEntityTemplateWithConstraints, 'disabled'>,
+        currTemplate: IMongoEntityTemplatePopulated,
+    ) {
+        const updatedSerialNumberFields = Object.keys(updatedTemplateData.properties.properties).filter(
+            (key) => updatedTemplateData.properties.properties[key].serialCurrent !== undefined,
+        );
+
+        // eslint-disable-next-line no-prototype-builtins
+        const newSerialNumberFields = updatedSerialNumberFields.filter((key) => !currTemplate.properties.properties.hasOwnProperty(key));
+
+        if (newSerialNumberFields.length) {
+            const newSerialNumberValues = {};
+            newSerialNumberFields.forEach((key) => {
+                newSerialNumberValues[key] = updatedTemplateData.properties.properties[key].serialCurrent;
+            });
+
+            const numOfInstancesUpdated: number = await InstanceManagerService.enumerateNewSerialNumberFields(id, newSerialNumberValues);
+
+            newSerialNumberFields.forEach((key) => {
+                // eslint-disable-next-line no-param-reassign
+                updatedTemplateData.properties.properties[key].serialCurrent! += numOfInstancesUpdated;
+            });
+        }
+
+        return updatedTemplateData;
+    }
+
     static async isPropertyOfTemplateInUsedInRules(templateId: string, properties: string[]) {
         const allRules = await RelationshipsTemplateManagerService.searchRules({});
         return allRules.forEach((rule) => checkPropertyInUsedFromFormula(rule.formula, templateId, properties));
@@ -440,33 +469,38 @@ export class TemplatesManager {
         });
     }
 
-    static async updateNewSerialNumberFields(
-        id: string,
-        updatedTemplateData: Omit<IEntityTemplateWithConstraints, 'disabled'>,
-        currTemplate: IMongoEntityTemplatePopulated,
-    ) {
-        const updatedSerialNumberFields = Object.keys(updatedTemplateData.properties.properties).filter(
-            (key) => updatedTemplateData.properties.properties[key].serialCurrent !== undefined,
-        );
+    static async deleteFilesOfDeletedFileProperty(templateId: string, removedFilesProperties: Record<string, boolean>, numOfInstances: number) {
+        const promises: Promise<void | AxiosResponse>[] = [];
+        const { searchEntitiesChunkSize } = config.service;
 
-        // eslint-disable-next-line no-prototype-builtins
-        const newSerialNumberFields = updatedSerialNumberFields.filter((key) => !currTemplate.properties.properties.hasOwnProperty(key));
+        for (let fileIndex = 0; numOfInstances - fileIndex > 0; fileIndex += searchEntitiesChunkSize) {
+            promises.push(
+                (async () => {
+                    const { entities } = await InstanceManagerService.searchEntitiesOfTemplateRequest(templateId, {
+                        limit: searchEntitiesChunkSize,
+                        skip: fileIndex,
+                    });
 
-        if (newSerialNumberFields.length) {
-            const newSerialNumberValues = {};
-            newSerialNumberFields.forEach((key) => {
-                newSerialNumberValues[key] = updatedTemplateData.properties.properties[key].serialCurrent;
-            });
+                    const filePaths: string[] = [];
 
-            const numOfInstancesUpdated: number = await InstanceManagerService.enumerateNewSerialNumberFields(id, newSerialNumberValues);
+                    entities.forEach(({ entity }) => {
+                        Object.entries(removedFilesProperties).forEach(([filePropertyName, isMultipleFiles]) => {
+                            const fileToRemove = entity.properties[filePropertyName];
+                            if (fileToRemove) {
+                                if (isMultipleFiles) filePaths.push(...fileToRemove);
+                                else filePaths.push(fileToRemove);
+                            }
+                        });
+                    });
 
-            newSerialNumberFields.forEach((key) => {
-                // eslint-disable-next-line no-param-reassign
-                updatedTemplateData.properties.properties[key].serialCurrent! += numOfInstancesUpdated;
-            });
+                    deleteFiles(filePaths).catch((error) => {
+                        logger.error('Failed to delete files', filePaths, error);
+                    });
+                })(),
+            );
         }
 
-        return updatedTemplateData;
+        await Promise.all(promises);
     }
 
     static async updateEntityTemplate(
@@ -482,7 +516,7 @@ export class TemplatesManager {
         if (currTemplate.disabled === true) throw new ServiceError(400, 'can not update disabled template');
 
         const removedProperties: Record<string, boolean> = {};
-        const removedFilesProperties: string[] = [];
+        const removedFilesProperties: Record<string, boolean> = {};
 
         if (count > 0) {
             if (updatedTemplateData.name !== currTemplate.name) throw new ServiceError(400, 'can not change template name');
@@ -492,7 +526,7 @@ export class TemplatesManager {
 
                 if (!newValue || ('newPropertyWithDeletedName' in newValue && newValue.newPropertyWithDeletedName)) {
                     removedProperties[key] = value.type === 'string';
-                    if (value.format === 'fileId') removedFilesProperties.push(key);
+                    if (value.format === 'fileId' || value.items?.format === 'fileId') removedFilesProperties[key] = value.items?.format === 'fileId';
                 } else {
                     if (value.serialCurrent !== undefined) {
                         // eslint-disable-next-line no-param-reassign
@@ -552,27 +586,8 @@ export class TemplatesManager {
             }
         });
 
-        if (removedFilesProperties.length > 0) {
-            const promises: Promise<void | AxiosResponse>[] = [];
-            const { searchEntitiesChunkSize } = config.service;
-
-            for (let fileIndex = 0; count - fileIndex > 0; fileIndex += searchEntitiesChunkSize) {
-                promises.push(
-                    (async () => {
-                        const filePaths = await InstanceManagerService.getFilePathsOfTemplate(id, {
-                            limit: searchEntitiesChunkSize,
-                            skip: fileIndex,
-                            properties: removedFilesProperties,
-                        });
-
-                        deleteFiles(filePaths).catch((error) => {
-                            logger.error('Failed to delete files', filePaths, error);
-                        });
-                    })(),
-                );
-            }
-
-            await Promise.all(promises);
+        if (Object.keys(removedFilesProperties).length > 0) {
+            await TemplatesManager.deleteFilesOfDeletedFileProperty(id, removedFilesProperties, count);
         }
 
         if (Object.keys(removedProperties).length > 0) {

@@ -73,7 +73,6 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
     const { properties, attachmentProperties, propertiesTypeOrder, ...restOfProperties } = values;
 
     const serialsUniqueConstraints: string[][] = [];
-
     const propertiesOrder: string[] = [];
     const attachmentPropertiesOrder: string[] = [];
     const propertiesPreview: string[] = [];
@@ -86,6 +85,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
     };
 
     let enumPropertiesColors: IEntityTemplate['enumPropertiesColors'];
+
     properties.forEach(
         ({
             id,
@@ -185,18 +185,18 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                     type: 'string',
                     format: 'fileId',
                 };
-
-                if (isEditMode) {
-                    schema.properties[name] = {
-                        ...schema.properties[name],
-                        newPropertyWithDeletedName: attachmentProperties.some((property) => property.id !== id && property.name === name),
-                    };
-                }
-
-                attachmentPropertiesOrder.push(name);
-
-                if (required) schema.required.push(name);
             }
+
+            if (isEditMode) {
+                schema.properties[name] = {
+                    ...schema.properties[name],
+                    newPropertyWithDeletedName: attachmentProperties.some((property) => property.id !== id && property.name === name),
+                };
+            }
+
+            attachmentPropertiesOrder.push(name);
+
+            if (required) schema.required.push(name);
         }
     });
 
