@@ -1,7 +1,7 @@
 import React, { memo } from 'react';
 import { FormikErrors, FormikTouched } from 'formik';
-import { TextField, Box, Grid, Card, CardContent, Switch, FormControlLabel, IconButton } from '@mui/material';
 import { Delete as DeleteIcon, DeleteForever as DeleteOff, DragHandle as DragHandleIcon } from '@mui/icons-material';
+import { TextField, Box, Grid, Card, CardContent, Switch, FormControlLabel, IconButton, MenuItem } from '@mui/material';
 import { Draggable } from 'react-beautiful-dnd';
 import i18next from 'i18next';
 import isEqual from 'lodash.isequal';
@@ -42,10 +42,9 @@ export const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
     const title = `attachmentProperties[${index}].title`;
     const touchedTitle = touched?.title;
     const errorTitle = errors?.title;
+    const type = `properties[${index}].type`;
 
-    // TODO: implement array field on files
-    // const type = `attachmentProperties[${index}].type`;
-
+    const validPropertyTypes = ['fileId', 'multipleFiles'];
     const required = `attachmentProperties[${index}].required`;
 
     const isNewProperty = !initialValue;
@@ -82,7 +81,7 @@ export const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
                                             error={touchedName && Boolean(errorName)}
                                             helperText={touchedName && errorName}
                                             disabled={isDisabled || value.deleted}
-                                            sx={{ width: '50%', marginRight: '5px' }}
+                                            sx={{ width: '70%', marginRight: '5px' }}
                                         />
                                         <TextField
                                             label={i18next.t('wizard.entityTemplate.attachmentDisplayName')}
@@ -92,9 +91,29 @@ export const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
                                             onChange={onChange}
                                             error={touchedTitle && Boolean(errorTitle)}
                                             helperText={touchedTitle && errorTitle}
-                                            sx={{ width: '50%', marginRight: '5px' }}
                                             disabled={value.deleted}
+                                            sx={{ width: '70%', marginRight: '5px' }}
                                         />
+                                        <TextField
+                                            select
+                                            type="text"
+                                            label={i18next.t('wizard.entityTemplate.propertyType')}
+                                            id={type}
+                                            name={type}
+                                            value={value.type}
+                                            onChange={onChange}
+                                            disabled={isDisabled}
+                                            sx={{ marginRight: '5px' }}
+                                            fullWidth
+                                        >
+                                            {validPropertyTypes.map((validType) => {
+                                                return (
+                                                    <MenuItem key={validType} value={validType}>
+                                                        {i18next.t(`propertyTypes.${validType}`)}
+                                                    </MenuItem>
+                                                );
+                                            })}
+                                        </TextField>
                                     </Grid>
                                     <Grid container justifyContent="space-between">
                                         <Box>

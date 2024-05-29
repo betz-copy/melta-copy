@@ -1,4 +1,4 @@
-version: '3.4'
+version: "3.4"
 
 services:
   entity-template-service:
@@ -14,6 +14,7 @@ services:
       STORAGE_SERVICE_DOWNLOAD_FILE_ROUTE: ${STORAGE_SERVICE_DOWNLOAD_FILE_ROUTE}
       STORAGE_SERVICE_DELETE_FILE_ROUTE: ${STORAGE_SERVICE_DELETE_FILE_ROUTE}
       RABBIT_URL: ${RABBIT_URL}
+      MAX_REQUEST_BYTE_SIZE: ${MAX_REQUEST_BYTE_SIZE}
 
   permission-service:
     build: ./permission-service
@@ -21,14 +22,18 @@ services:
       PORT: 8000
       MONGO_URL: ${PERMISSION_SERVICE_MONGO_URL}
       MONGO_PERMISSIONS_COLLECTION_NAME: permissions
+      MAX_REQUEST_BYTE_SIZE: ${MAX_REQUEST_BYTE_SIZE}
 
   storage-service:
     build: ./storage-service
-    environment: 
+    environment:
       MINIO_ENDPOINT: ${MINIO_ENDPOINT}
       MINIO_BUCKET_NAME: ${MINIO_BUCKET_NAME}
       MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
       MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
+      MAX_FILE_BYTE_SIZE: ${MAX_FILE_BYTE_SIZE}
+      MAX_REQUEST_BYTE_SIZE: ${MAX_REQUEST_BYTE_SIZE}
+      RABBIT_URL: ${RABBIT_URL}
 
   relationship-template-service:
     build: ./relationship-template-service
@@ -38,6 +43,7 @@ services:
       MONGO_RELATIONSHIP_TEMPLATES_COLLECTION_NAME: ${MONGO_RELATIONSHIP_TEMPLATES_COLLECTION_NAME}
       MONGO_RULES_COLLECTION_NAME: ${MONGO_RULES_COLLECTION_NAME}
       ENTITY_TEMPLATE_SERVICE_URL: ${ENTITY_TEMPLATE_SERVICE_URL}
+      MAX_REQUEST_BYTE_SIZE: ${MAX_REQUEST_BYTE_SIZE}
 
   instance-service:
     build: ./instance-service
@@ -50,6 +56,7 @@ services:
       ENTITY_TEMPLATE_SERVICE_URL: ${ENTITY_TEMPLATE_SERVICE_URL}
       RELATIONSHIP_TEMPLATE_SERVICE_URL: ${RELATIONSHIP_TEMPLATE_SERVICE_URL}
       REDIS_HOST: ${REDIS_HOST}
+      MAX_REQUEST_BYTE_SIZE: ${MAX_REQUEST_BYTE_SIZE}
 
   global-search-service:
     build: ./global-search-service
@@ -61,6 +68,7 @@ services:
       ENTITY_TEMPLATE_SERVICE_URL: ${ENTITY_TEMPLATE_SERVICE_URL}
       REDIS_HOST: ${REDIS_HOST}
       RABBIT_URL: ${RABBIT_URL}
+      MAX_REQUEST_BYTE_SIZE: ${MAX_REQUEST_BYTE_SIZE}
 
   activity-log-service:
     build: ./activity-log-service
@@ -69,6 +77,7 @@ services:
       MONGO_URL: ${ACTIVITY_LOG_SERVICE_MONGO_URL}
       MONGO_ACTIVITIES_COLLECTION_NAME: ${ACTIVITIES_COLLECTION_NAME}
       RABBIT_URL: ${RABBIT_URL}
+      MAX_REQUEST_BYTE_SIZE: ${MAX_REQUEST_BYTE_SIZE}
 
   notification-service:
     build: ./notification-service
@@ -77,6 +86,7 @@ services:
       MONGO_URL: ${NOTIFICATION_SERVICE_MONGO_URL}
       MONGO_NOTIFICATIONS_COLLECTION_NAME: ${MONGO_NOTIFICATIONS_COLLECTION_NAME}
       RABBIT_URL: ${RABBIT_URL}
+      MAX_REQUEST_BYTE_SIZE: ${MAX_REQUEST_BYTE_SIZE}
 
   rule-breach-service:
     build: ./rule-breach-service
@@ -85,6 +95,7 @@ services:
       MONGO_URL: ${RULE_BREACH_SERVICE_MONGO_URL}
       MONGO_RULE_BREACH_ALERTS_COLLECTION_NAME: ${MONGO_RULE_BREACH_ALERTS_COLLECTION_NAME}
       MONGO_RULE_BREACH_REQUESTS_COLLECTION_NAME: ${MONGO_RULE_BREACH_REQUESTS_COLLECTION_NAME}
+      MAX_REQUEST_BYTE_SIZE: ${MAX_REQUEST_BYTE_SIZE}
 
   process-service:
     build: ./process-service
@@ -95,6 +106,7 @@ services:
       MONGO_PROCESS_INSTANCES_COLLECTION_NAME: ${MONGO_PROCESS_INSTANCES_COLLECTION_NAME}
       MONGO_STEP_TEMPLATES_COLLECTION_NAME: ${MONGO_STEP_TEMPLATES_COLLECTION_NAME}
       MONGO_STEP_INSTANCES_COLLECTION_NAME: ${MONGO_STEP_INSTANCES_COLLECTION_NAME}
+      MAX_REQUEST_BYTE_SIZE: ${MAX_REQUEST_BYTE_SIZE}
 
   gantt-service:
     build: ./gantt-service
@@ -102,15 +114,20 @@ services:
       PORT: 8000
       MONGO_URL: ${GANTT_SERVICE_MONGO_URL}
       MONGO_GANTTS_COLLECTION_NAME: ${MONGO_GANTTS_COLLECTION_NAME}
+      MAX_REQUEST_BYTE_SIZE: ${MAX_REQUEST_BYTE_SIZE}
 
   preview-service:
     build: ./preview-service
-    environment: 
+    environment:
       PORT: 8000
       MINIO_ENDPOINT: ${MINIO_ENDPOINT}
       MINIO_BUCKET_NAME: ${MINIO_BUCKET_NAME}
       MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
       MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
+      MAX_FILE_BYTE_SIZE: ${MAX_FILE_BYTE_SIZE}
+      MAX_REQUEST_BYTE_SIZE: ${MAX_REQUEST_BYTE_SIZE}
+      RABBIT_URL: ${RABBIT_URL}
+
 
   gateway-service:
     build: ./gateway-service
@@ -135,14 +152,33 @@ services:
       NODE_TLS_REJECT_UNAUTHORIZED: 0
       RABBIT_URL: ${RABBIT_URL}
       PREVIEW_SERVICE_URL: ${PREVIEW_SERVICE_URL}
-      STORAGE_SERVICE_FILE_HYPER_LINK: ${STORAGE_SERVICE_FILE_HYPER_LINK}
+      SYSTEM_MELTA_BASE_URL: ${SYSTEM_MELTA_BASE_URL}
       BASIC_AUTHENTICATION_USERS: ${BASIC_AUTHENTICATION_USERS}
-      
+      NOTIFICATIONS_MAIL_FROM: ${MAIL_USER}
+      MAX_FILE_BYTE_SIZE: ${MAX_FILE_BYTE_SIZE}
+      MAX_REQUEST_BYTE_SIZE: ${MAX_REQUEST_BYTE_SIZE}
 
   # frontend-service:
-    # build: ./frontend-service
-  
+  #   build: ./frontend-service
+  #   volumes:
+  #     - ${MANIFEST_PATH}:/usr/share/nginx/html/manifest.json
+  #     - ${FAVICON_PATH}:/usr/share/nginx/html/favicon.ico
+  #     - ${MELTA_GOOGLE_LOGO_PATH}:/usr/share/nginx/html/icons/Melta_Google_Logo.svg
+  #     - ${MELTA_LOGO_PATH}:/usr/share/nginx/html/icons/Melta_Logo.svg
+  #     - ${MELTA_SHORT_LOGO_PATH}:/usr/share/nginx/html/icons/Melta_Short_Logo.svg
+
   nginx:
     image: nginx:alpine
     volumes:
       - ./nginx:/etc/nginx/conf.d
+
+  mailer-service:
+    image: registry.gitlab.com/yesodot/rnd/terminal-rabaz/dropbox/microservices/mailer-service:latest
+    environment:
+      PORT: 8000
+      MAIL_HOSTS: ${MAIL_HOSTS}
+      MAIL_USER: ${MAIL_USER}
+      MAIL_PASS: ${MAIL_PASS}
+      USE_AUTH: "true"
+      RABBIT_URI: ${RABBIT_URL}
+      REDIS_CONNECTION_URI: ${REDIS_HOST}

@@ -1,5 +1,5 @@
 import React, { CSSProperties } from 'react';
-import { Box, Divider, IconButton, Popper, Typography, Grid, ClickAwayListener, useTheme } from '@mui/material';
+import { Box, IconButton, Popper, Typography, Grid, ClickAwayListener, useTheme } from '@mui/material';
 import { CloseSharp } from '@mui/icons-material';
 import Slide from '@mui/material/Slide';
 import { useSelector } from 'react-redux';
@@ -10,19 +10,22 @@ const PopperSidebar: React.FC<{
     setOpen: React.Dispatch<React.SetStateAction<boolean>>;
     title: string;
     side: 'right' | 'left';
-    topButtons?: React.ReactNode;
     sideMargin?: CSSProperties['margin'];
     width?: CSSProperties['width'];
-}> = ({ children, open, setOpen, title, side, topButtons, sideMargin = 0, width = '22rem' }) => {
+    isCheckBoxClicked?: boolean;
+}> = ({ children, open, setOpen, title, side, sideMargin = 0, width = '22rem', isCheckBoxClicked = false }) => {
     const darkMode = useSelector((state: RootState) => state.darkMode);
     const theme = useTheme();
-
     return (
-        <Popper open={open} transition sx={{ left: side === 'right' ? 0 : 'auto', marginX: sideMargin }}>
+        <Popper open={open} transition sx={{ left: side === 'right' ? 0 : 'auto', marginX: sideMargin, zIndex: '200' }}>
             {({ TransitionProps }) => (
                 <Slide {...TransitionProps} direction={side === 'right' ? 'left' : 'right'}>
                     <Box paddingTop="3.8rem" paddingX="1.1rem">
-                        <ClickAwayListener onClickAway={() => setOpen(false)}>
+                        <ClickAwayListener
+                            onClickAway={() => {
+                                if (!isCheckBoxClicked) setOpen(false);
+                            }}
+                        >
                             <Grid
                                 container
                                 direction="column"
@@ -35,12 +38,8 @@ const PopperSidebar: React.FC<{
                                 position="sticky"
                                 overflow="none"
                             >
-                                <Grid item>
+                                <Grid item padding="15px">
                                     <Grid container alignItems="center" height="2.5rem" paddingX="0.2rem">
-                                        <IconButton onClick={() => setOpen(false)} size="small" sx={{ position: 'absolute' }}>
-                                            <CloseSharp />
-                                        </IconButton>
-
                                         <Typography
                                             color={theme.palette.primary.main}
                                             fontFamily="Rubik"
@@ -51,12 +50,15 @@ const PopperSidebar: React.FC<{
                                         >
                                             {title}
                                         </Typography>
-
-                                        <Box position="absolute" right={10}>
-                                            {topButtons}
-                                        </Box>
+                                        <IconButton
+                                            onClick={() => {
+                                                setOpen(false);
+                                            }}
+                                            size="small"
+                                        >
+                                            <CloseSharp />
+                                        </IconButton>
                                     </Grid>
-                                    <Divider sx={{ marginX: '10px' }} />
                                 </Grid>
 
                                 {children}

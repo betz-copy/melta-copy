@@ -11,7 +11,7 @@ export default class ProcessTemplatesController {
     }
 
     static async updateProcessTemplate(req: Request, res: Response) {
-        res.json(await ProcessTemplateManager.updateProcessTemplate(req.params.id, req.body, req.files as Express.Multer.File[]));
+        res.json(await ProcessTemplateManager.updateProcessTemplate(req.params.id, req.body, req.files as Express.Multer.File[], req.user!.id));
     }
 
     static async deleteProcessTemplate(req: Request, res: Response) {

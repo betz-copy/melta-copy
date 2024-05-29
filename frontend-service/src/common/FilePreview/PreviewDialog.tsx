@@ -7,23 +7,23 @@ import ReactPlayer from 'react-player';
 import i18next from 'i18next';
 import ZoomInIcon from '@mui/icons-material/ZoomIn';
 import ZoomOutIcon from '@mui/icons-material/ZoomOut';
+import RefreshIcon from '@mui/icons-material/Refresh';
 import { RootState } from '../../store';
 import FlexBox from '../FlexBox';
-import { getFileExtension, getPreviewContentType } from '../../utils/getFileType';
+import { getFileExtension } from '../../utils/getFileType';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import { DownloadButton } from '../DownloadButton';
+import { useFilePreview } from '../../utils/useFilePreview';
 
 pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.js';
 
 type PreviewProps = {
     open: boolean;
     fileId: string;
-    data: string | undefined;
     setOpen: (value: boolean) => void;
-    loading: boolean;
-    error: boolean;
     fileName: string;
+    contentType: 'image' | 'video' | 'audio' | 'unsupported' | 'pdf' | 'document';
 };
 
 const isImage = (type: string) => type === 'image';
@@ -31,7 +31,9 @@ const isVideoOrAudio = (type: string) => ['video', 'audio'].includes(type);
 const isUnsupported = (type: string) => type === 'unsupported';
 const isSpecial = (type: string) => !(isImage(type) || isVideoOrAudio(type) || isUnsupported(type));
 
-const Preview: React.FC<PreviewProps> = ({ open, fileId, data, setOpen, loading, fileName, error }) => {
+const PreviewDialog: React.FC<PreviewProps> = ({ fileId, contentType, open, setOpen, fileName }) => {
+    const [noSuchKeyError, setNoSuchKeyError] = useState<boolean>(true);
+    const { data, refetch, isLoading: loading, isError: error } = useFilePreview(fileId, contentType, setNoSuchKeyError);
     const darkMode = useSelector((state: RootState) => state.darkMode);
     const [numOfPages, setNumOfPages] = useState(1);
     const [currentPage, setCurrentPage] = useState(1);
@@ -39,7 +41,6 @@ const Preview: React.FC<PreviewProps> = ({ open, fileId, data, setOpen, loading,
     const [zoomLevel, setZoomLevel] = useState(1);
     const containerRef = useRef<HTMLDivElement>(null);
     const currentPageRef = useRef(currentPage);
-    const contentType = getPreviewContentType(fileName);
     const extension = getFileExtension(fileName);
     const onLoadSuccess = ({ numPages }: { numPages: number }) => {
         setNumOfPages(numPages);
@@ -51,6 +52,17 @@ const Preview: React.FC<PreviewProps> = ({ open, fileId, data, setOpen, loading,
 
     const handleZoomOut = () => {
         setZoomLevel((prevZoom) => Math.max(prevZoom - 0.1, 0.5));
+    };
+
+    const [isFetching, setIsFetching] = useState(false);
+
+    const handleRefetch = () => {
+        setIsFetching(true);
+        refetch();
+
+        setTimeout(() => {
+            setIsFetching(false);
+        }, 5000);
     };
 
     useEffect(() => {
@@ -105,15 +117,7 @@ const Preview: React.FC<PreviewProps> = ({ open, fileId, data, setOpen, loading,
     let previewContent;
     if (isImage(contentType)) {
         previewContent = (
-            <div
-                style={{
-                    overflow: 'auto',
-                    height: '95vh',
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                }}
-            >
+            <div style={{ overflow: 'auto', height: '95vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                 <img
                     src={data}
                     onLoad={(event) => {
@@ -130,29 +134,15 @@ const Preview: React.FC<PreviewProps> = ({ open, fileId, data, setOpen, loading,
                             img.style.width = 'auto';
                         }
                     }}
-                    style={{
-                        maxWidth: '100%',
-                        maxHeight: '95vh',
-                        transform: `scale(${zoomLevel})`,
-                        transformOrigin: 'center center',
-                    }}
+                    style={{ maxWidth: '100%', maxHeight: '95vh', transform: `scale(${zoomLevel})`, transformOrigin: 'center center' }}
                 />
             </div>
         );
     } else if (isVideoOrAudio(contentType)) {
         previewContent = <ReactPlayer style={{ marginTop: '65px' }} url={data} controls playing />;
-    } else if (isUnsupported(contentType) || error) {
+    } else if (isUnsupported(contentType)) {
         previewContent = (
-            <Card
-                sx={{
-                    borderRadius: 2,
-                    bgcolor: '#4c494c',
-                    display: 'grid',
-                    height: 150,
-                    padding: 3,
-                }}
-                elevation={10}
-            >
+            <Card sx={{ borderRadius: 2, bgcolor: '#4c494c', display: 'grid', height: 150, padding: 3 }} elevation={10}>
                 <Typography variant="body1" style={{ color: 'white', marginTop: '10px', fontSize: '20px' }}>
                     {i18next.t('errorPage.preview')}
                 </Typography>
@@ -160,6 +150,22 @@ const Preview: React.FC<PreviewProps> = ({ open, fileId, data, setOpen, loading,
                     <DownloadButton fileId={fileId} />
                 </Button>
             </Card>
+        );
+    } else if (error) {
+        previewContent = (
+            <Grid sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                <Typography
+                    style={{
+                        color: 'white',
+                        fontSize: '20px',
+                    }}
+                >
+                    {noSuchKeyError ? i18next.t('entityPage.previewRefetch') : i18next.t('errorPage.previewLoadingError')}
+                </Typography>
+                <Button onClick={handleRefetch} sx={{ color: 'white' }}>
+                    {isFetching || !noSuchKeyError ? null : <RefreshIcon />}
+                </Button>
+            </Grid>
         );
     } else if (loading || !data) {
         previewContent = <CircularProgress />;
@@ -169,7 +175,7 @@ const Preview: React.FC<PreviewProps> = ({ open, fileId, data, setOpen, loading,
                 <FlexBox direction="column" gap={5}>
                     {Array.from({ length: numOfPages }, (_, i) => (
                         <div key={`page-${i + 1}`} style={{ marginBottom: '20px', background: 'white', position: 'relative' }}>
-                            <Page width={950 * zoomLevel} pageNumber={i + 1} renderTextLayer={false} />
+                            <Page width={950 * zoomLevel} pageNumber={i + 1} renderAnnotationLayer renderTextLayer />
                         </div>
                     ))}
                 </FlexBox>
@@ -188,15 +194,7 @@ const Preview: React.FC<PreviewProps> = ({ open, fileId, data, setOpen, loading,
             <DialogContent sx={{ height: '100vh', position: 'relative', overflow: 'hidden' }}>
                 <FlexBox
                     direction="row"
-                    style={{
-                        paddingBottom: '10px',
-                        justifyContent: 'space-between',
-                        position: 'sticky',
-                        top: 5,
-                        left: 10,
-                        zIndex: 1,
-                        gap: '10px',
-                    }}
+                    sx={{ paddingBottom: '10px', justifyContent: 'space-between', position: 'sticky', top: 5, left: 10, zIndex: 1, gap: '10px' }}
                 >
                     <FlexBox
                         direction="row"
@@ -224,7 +222,7 @@ const Preview: React.FC<PreviewProps> = ({ open, fileId, data, setOpen, loading,
                         </IconButton>
                     </FlexBox>
                     {isSpecial(contentType) && extension !== 'pptx' && (
-                        <FlexBox direction="row" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <FlexBox direction="row" sx={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                             <TextField
                                 type="number"
                                 value={jumpToPage}
@@ -253,10 +251,7 @@ const Preview: React.FC<PreviewProps> = ({ open, fileId, data, setOpen, loading,
 
                 <Grid
                     ref={containerRef}
-                    style={{
-                        height: '95%',
-                        overflowY: isImage(contentType) || isVideoOrAudio(contentType) ? 'hidden' : 'scroll',
-                    }}
+                    sx={{ height: '95%', overflowY: isImage(contentType) || isVideoOrAudio(contentType) ? 'hidden' : 'scroll' }}
                     container
                     justifyContent="center"
                     alignItems="center"
@@ -268,4 +263,4 @@ const Preview: React.FC<PreviewProps> = ({ open, fileId, data, setOpen, loading,
     );
 };
 
-export { Preview };
+export { PreviewDialog };

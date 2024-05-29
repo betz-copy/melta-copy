@@ -5,13 +5,12 @@ import { useMutation } from 'react-query';
 import i18next from 'i18next';
 import { toast } from 'react-toastify';
 import { Form, Formik } from 'formik';
-import mapValues from 'lodash.mapvalues';
 import pickBy from 'lodash.pickby';
 import { AxiosError } from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IEntity } from '../../../interfaces/entities';
-import { createEntityRequest, updateEntityRequest } from '../../../services/entitiesService';
+import { createEntityRequest, updateEntityRequestForMultiple } from '../../../services/entitiesService';
 import { EntityWizardValues } from '.';
 import { JSONSchemaFormik, ajvValidate } from '../../inputs/JSONSchemaFormik';
 import { BlueTitle } from '../../BlueTitle';
@@ -22,11 +21,15 @@ import { toastConstraintValidationError } from './toastConstraintValidationError
 import { InstanceFileInput } from '../../inputs/InstanceFilesInput/InstanceFileInput';
 import UpdateEntityWithRuleBreachDialog from '../../../pages/Entity/components/UpdateEntityWithRuleBreachDialog';
 import { ChooseTemplate } from './ChooseTemplate';
+import { InstanceSingleFileInput } from '../../inputs/InstanceFilesInput/InstanceSingleFileInput';
 
 const { errorCodes } = environment;
 
 const getEntityTemplateFilesFieldsInfo = (entityTemplate: IMongoEntityTemplatePopulated) => {
-    const templateFilesProperties = pickBy(entityTemplate.properties.properties, (value) => value.format === 'fileId');
+    const templateFilesProperties = pickBy(
+        entityTemplate.properties.properties,
+        (value) => (value.type === 'array' && value.items?.format === 'fileId') || value.format === 'fileId',
+    );
     const templateFileKeys = Object.keys(templateFilesProperties);
     const requiredFilesNames = entityTemplate.properties.required.filter((name) => templateFileKeys.includes(name));
 
@@ -37,9 +40,10 @@ const CreateOrEditEntityDetails: React.FC<{
     isEditMode?: boolean;
     entityTemplate: IMongoEntityTemplatePopulated;
     entity: IEntity;
-    onSuccessUpdate: (data: IEntity) => void;
+    onSuccessUpdate?: (data: IEntity) => void;
     onCancelUpdate: () => void;
-}> = ({ isEditMode = false, entityTemplate, entity, onSuccessUpdate, onCancelUpdate }) => {
+    onSuccessCreate?: (entity: IEntity) => void;
+}> = ({ isEditMode = false, entityTemplate, entity, onSuccessUpdate, onCancelUpdate, onSuccessCreate }) => {
     const [updateWithRuleBreachDialogState, setUpdateWithRuleBreachDialogState] = useState<{
         isOpen: boolean;
         brokenRules?: IRuleBreachPopulated['brokenRules'];
@@ -52,15 +56,23 @@ const CreateOrEditEntityDetails: React.FC<{
     // for initial values
     const fieldProperties = pickBy(entity.properties, (_value, key) => !initialTemplateFileKeys.includes(key)) as IEntity['properties'];
     const fileIdsProperties = pickBy(entity.properties, (_value, key) => initialTemplateFileKeys.includes(key));
-    const fileProperties = mapValues(fileIdsProperties, (value) => ({ name: value })) as Record<string, File>;
-
+    Object.entries(fileIdsProperties)?.forEach(([key, value]) => {
+        if (Array.isArray(value)) {
+            fileIdsProperties[key] = value?.map((item) => {
+                return { name: item };
+            });
+        } else {
+            fileIdsProperties[key] = { name: value };
+        }
+    });
+    const fileProperties = fileIdsProperties;
     const { isLoading: isUpdateLoading, mutateAsync: updateMutation } = useMutation(
         ({ newEntityData, ignoredRules }: { newEntityData: EntityWizardValues; ignoredRules?: IRuleBreach['brokenRules'] }) =>
-            updateEntityRequest(entity.properties._id, newEntityData, ignoredRules),
+            updateEntityRequestForMultiple(entity.properties._id, newEntityData, ignoredRules),
         {
             onSuccess: (data) => {
                 toast.success(i18next.t('wizard.entity.editedSuccefully'));
-                onSuccessUpdate(data);
+                if (onSuccessUpdate) onSuccessUpdate(data);
                 onCancelUpdate();
             },
             onError: (err: AxiosError, { newEntityData: newEntityDate }) => {
@@ -90,7 +102,8 @@ const CreateOrEditEntityDetails: React.FC<{
             onSuccess: (newEntity) => {
                 toast.success(i18next.t('wizard.entity.createdSuccessfully'));
                 onCancelUpdate();
-                navigate(`/entity/${newEntity.properties._id}`);
+                if (onSuccessCreate) onSuccessCreate(newEntity);
+                else navigate(`/entity/${newEntity.properties._id}`);
             },
             onError: (err: AxiosError, { template }: EntityWizardValues) => {
                 const errorMetadata = err.response?.data?.metadata;
@@ -123,17 +136,17 @@ const CreateOrEditEntityDetails: React.FC<{
                 const { templateFilesProperties, templateFileKeys, requiredFilesNames } = getEntityTemplateFilesFieldsInfo(
                     values.template || entityTemplate,
                 );
-
                 const isPropertiesFirst = values.template?.propertiesTypeOrder[0] === 'properties';
                 const schema = filterAttachmentsAndEntitiesRefFromPropertiesSchema(values.template.properties);
 
+                // eslint-disable-next-line react-hooks/rules-of-hooks
                 useEffect(() => {
                     schema.required.forEach((field) => {
-                        const fieldProperties = schema.properties[field].enum;
+                        const fieldPropertiesEnum = schema.properties[field].enum;
                         const itemFieldProperties = schema.properties[field]?.items?.enum;
 
-                        if (fieldProperties?.length === 1 && fieldProperties[0] !== undefined) {
-                            setFieldValue(`properties.${field}`, fieldProperties[0]);
+                        if (fieldPropertiesEnum?.length === 1 && fieldPropertiesEnum[0] !== undefined) {
+                            setFieldValue(`properties.${field}`, fieldPropertiesEnum[0]);
                         }
                         if (itemFieldProperties?.length === 1 && itemFieldProperties[0] !== undefined) {
                             setFieldValue(`properties.${field}`, [itemFieldProperties[0]]);
@@ -141,9 +154,9 @@ const CreateOrEditEntityDetails: React.FC<{
                     });
 
                     if (!isEditMode) {
-                        Object.entries<object>(schema.properties).forEach(([propertyName, propertyValues]) => {
-                            if (propertyValues.hasOwnProperty('serialCurrent')) {
-                                setFieldValue(`properties.${propertyName}`, propertyValues['serialCurrent']);
+                        Object.entries(schema.properties).forEach(([propertyName, propertyValues]) => {
+                            if (propertyValues.serialCurrent !== undefined) {
+                                setFieldValue(`properties.${propertyName}`, propertyValues.serialCurrent);
                             }
                         });
                     }
@@ -169,17 +182,32 @@ const CreateOrEditEntityDetails: React.FC<{
                             variant="h6"
                             style={{ marginBottom: '12px', fontSize: '16px', fontWeight: '600' }}
                         />
-                        {Object.entries(templateFilesProperties).map(([key, value]) => (
-                            <InstanceFileInput
-                                key={key}
-                                fileFieldName={`attachmentsProperties.${key}`}
-                                fieldTemplateTitle={value.title}
-                                setFieldValue={setFieldValue}
-                                required={requiredFilesNames.includes(key)}
-                                value={values.attachmentsProperties[key]}
-                                error={errors.attachmentsProperties?.[key] as string}
-                                setFieldTouched={setFieldTouched}
-                            />
+                        {Object.entries(templateFilesProperties).map(([key, value], index) => (
+                            <Grid item key={key} marginTop={index > 0 ? 2 : 0}>
+                                {value.items ? (
+                                    <InstanceFileInput
+                                        key={key}
+                                        fileFieldName={`attachmentsProperties.${key}`}
+                                        fieldTemplateTitle={value.title}
+                                        setFieldValue={setFieldValue}
+                                        required={requiredFilesNames.includes(key)}
+                                        value={values.attachmentsProperties[key]}
+                                        error={errors.attachmentsProperties?.[key] as string}
+                                        setFieldTouched={setFieldTouched}
+                                    />
+                                ) : (
+                                    <InstanceSingleFileInput
+                                        key={key}
+                                        fileFieldName={`attachmentsProperties.${key}`}
+                                        fieldTemplateTitle={value.title}
+                                        setFieldValue={setFieldValue}
+                                        required={requiredFilesNames.includes(key)}
+                                        value={values.attachmentsProperties[key]}
+                                        error={errors.attachmentsProperties?.[key] as string}
+                                        setFieldTouched={setFieldTouched}
+                                    />
+                                )}
+                            </Grid>
                         ))}
                     </>
                 );
@@ -189,7 +217,7 @@ const CreateOrEditEntityDetails: React.FC<{
                             <Card>
                                 <CardContent>
                                     <Grid container justifyContent="center">
-                                        <Grid item xs={12}>
+                                        <Grid item container xs={12}>
                                             <Grid container flexDirection="column">
                                                 <Box width="100%">
                                                     <Grid item container justifyContent="space-between">
@@ -245,6 +273,7 @@ const CreateOrEditEntityDetails: React.FC<{
                                         </Grid>
                                         <Grid
                                             container
+                                            item
                                             flexDirection="row"
                                             flexWrap="nowrap"
                                             justifyContent="space-between"

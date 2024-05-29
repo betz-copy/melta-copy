@@ -1,15 +1,21 @@
-import React, { CSSProperties } from 'react';
+import { Visibility as VisibilityIcon, VisibilityOff as VisibilityOffIcon } from '@mui/icons-material';
 import { Grid, IconButton, Typography } from '@mui/material';
 import i18next from 'i18next';
-import { useSelector } from 'react-redux';
+import React, { CSSProperties } from 'react';
 import { pdfjs } from 'react-pdf';
-import { Visibility as VisibilityIcon, VisibilityOff as VisibilityOffIcon } from '@mui/icons-material';
-import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
+import { useSelector } from 'react-redux';
+import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { IEntity } from '../interfaces/entities';
-import { RootState } from '../store';
 import { ColoredEnumChip } from './ColoredEnumChip';
+import OpenPreview from './FilePreview/OpenPreview';
 import { MeltaTooltip } from './MeltaTooltip';
-import { OpenPreviewButton } from './FilePreview/OpenPreviewButton';
+import { VerifyLink } from './VerifyLink';
+import { getFirstLine, getNumLines, containsHTMLTags, renderHTML } from '../utils/HtmlTagsStringValue';
+import { CalculateDateDifference } from '../utils/agGrid/CalculateDateDifference';
+import { environment } from '../globals';
+import { RootState } from '../store';
+
+const { maxNumOfCharactersNotInFullWidth } = environment.entitiesProperties;
 
 pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.js';
 
@@ -18,6 +24,7 @@ export const formatToString = (
     valueType: 'string' | 'number' | 'boolean' | 'array',
     format?: string,
     keyEnumColors?: Record<string, string>,
+    propertySchema?: IEntitySingleProperty,
 ) => {
     if (value === null || value === undefined) return '-';
 
@@ -28,10 +35,13 @@ export const formatToString = (
     if (valueType === 'string') {
         if (format === 'date') return new Date(value).toLocaleDateString('en-uk');
         if (format === 'date-time') return new Date(value).toLocaleString('en-uk');
-        if (format === 'fileId') return <OpenPreviewButton fileId={value} />;
+        if (format === 'fileId') return <OpenPreview fileId={value} />;
     }
     if (keyEnumColors?.[value] && valueType === 'string') return <ColoredEnumChip label={value} color={keyEnumColors[value]} />;
     if (valueType === 'array') {
+        if (propertySchema?.items?.format === 'fileId') {
+            return value.map((val) => <OpenPreview fileId={val} key={val} />);
+        }
         return value.map((val) => (
             <ColoredEnumChip key={val} label={val} color={keyEnumColors?.[val] || 'default'} style={{ margin: '5px 0px 0px 5px' }} />
         ));
@@ -47,9 +57,12 @@ interface IEntityPropertiesProps {
     mode: 'normal' | 'white';
     showPreviewPropertiesOnly?: boolean;
     overridePropertiesToShow?: string[];
+    removeFiles?: boolean;
     style?: CSSProperties;
     innerStyle?: CSSProperties;
     textWrap?: boolean;
+    viewFirstLineOfLongText?: boolean;
+    isPrintingMode?: boolean;
 }
 
 export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkMode?: boolean }> = ({
@@ -58,19 +71,27 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
     mode,
     showPreviewPropertiesOnly = false,
     overridePropertiesToShow,
+    removeFiles = false,
     style,
     innerStyle,
     textWrap = false,
+    viewFirstLineOfLongText = false,
+    isPrintingMode = false,
 }) => {
     let propertiesOrderedToShow: string[];
     if (overridePropertiesToShow) {
         propertiesOrderedToShow = overridePropertiesToShow;
     } else if (showPreviewPropertiesOnly) {
         propertiesOrderedToShow = entityTemplate.propertiesOrder.filter((propertyKey) => entityTemplate.propertiesPreview!.includes(propertyKey));
+    } else if (removeFiles) {
+        propertiesOrderedToShow = entityTemplate.propertiesOrder.filter(
+            (propertyKey) =>
+                entityTemplate.properties.properties[propertyKey].format !== 'fileId' &&
+                entityTemplate.properties.properties[propertyKey].items?.format !== 'fileId',
+        );
     } else {
         propertiesOrderedToShow = entityTemplate.propertiesOrder;
     }
-
     const [hideFieldsToDisplay, setHideFieldsToDisplay] = React.useState(entityTemplate.properties.hide);
 
     return (
@@ -79,16 +100,52 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                 const propertySchema = entityTemplate.properties.properties[propertyKey];
                 const propertyValue = properties[propertyKey];
                 const hideField = entityTemplate.properties.hide.includes(propertyKey);
+                const containsHtmlTags = containsHTMLTags(propertyValue);
                 const stringFormatValue = formatToString(
                     propertyValue,
                     propertySchema.type,
                     propertySchema.format,
                     (propertySchema.enum || propertySchema.items?.enum) && entityTemplate.enumPropertiesColors?.[propertyKey],
+                    propertySchema,
                 );
+
+                let innerContent;
+                if (hideFieldsToDisplay.includes(propertyKey)) innerContent = <>••••••••</>;
+                else if (containsHtmlTags)
+                    innerContent = viewFirstLineOfLongText
+                        ? `${getFirstLine(stringFormatValue)}${getNumLines(stringFormatValue) > 1 ? '...' : ''}`
+                        : renderHTML(stringFormatValue);
+                else if (propertyValue && propertySchema.calculateTime) innerContent = <CalculateDateDifference date={stringFormatValue} />;
+                else innerContent = stringFormatValue;
+
+                let titleContent;
+                if (hideFieldsToDisplay.includes(propertyKey) || propertySchema.format === 'fileId') titleContent = '';
+                else if (containsHtmlTags) titleContent = renderHTML(stringFormatValue);
+                else titleContent = innerContent;
+
+                const overrideStyleInLongText =
+                    containsHtmlTags &&
+                    !viewFirstLineOfLongText &&
+                    propertyValue &&
+                    getNumLines(stringFormatValue) > 1 &&
+                    stringFormatValue.length >= maxNumOfCharactersNotInFullWidth;
+
                 return (
-                    <Grid key={propertyKey} item container flexDirection="row" style={innerStyle} alignItems={textWrap ? 'flex-start' : 'center'}>
-                        <Grid item container width="100%" flexWrap="nowrap" gap="15px" alignItems={textWrap ? 'flex-start' : 'center'}>
-                            <Grid item width="30%">
+                    <Grid
+                        key={propertyKey}
+                        item
+                        container
+                        flexDirection="row"
+                        style={overrideStyleInLongText ? { width: '100%' } : innerStyle}
+                        alignItems={textWrap ? 'flex-start' : 'center'}
+                    >
+                        <Grid item container width="100%" flexWrap="nowrap" alignItems={textWrap ? 'flex-start' : 'center'}>
+                            <Grid
+                                item
+                                style={{
+                                    width: overrideStyleInLongText ? '10%' : '30%',
+                                }}
+                            >
                                 <MeltaTooltip disableHoverListener={textWrap} placement="bottom" title={propertySchema.title}>
                                     <Typography
                                         style={{
@@ -108,20 +165,19 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                             <Grid
                                 item
                                 container
-                                width="70%"
                                 flexDirection="row"
                                 alignItems={textWrap ? 'flex-start' : 'center'}
                                 flexWrap="nowrap"
-                                justifyContent="space-between"
                                 style={{
                                     direction: 'rtl',
                                     textAlign: 'right',
+                                    width: overrideStyleInLongText ? '90%' : '70%',
                                 }}
                             >
                                 <MeltaTooltip
                                     disableHoverListener={textWrap}
                                     placement="bottom"
-                                    title={hideFieldsToDisplay.includes(propertyKey) || propertySchema.format === 'fileId' ? '' : stringFormatValue}
+                                    title={<Grid style={{ maxHeight: '500px', overflowY: 'auto' }}>{titleContent}</Grid>}
                                 >
                                     <Typography
                                         fontSize="14px"
@@ -129,10 +185,13 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                                         style={{
                                             textOverflow: 'ellipsis',
                                             whiteSpace: textWrap ? undefined : 'nowrap',
-                                            overflow: 'hidden',
+                                            overflowX: 'hidden',
+                                            overflowY: 'auto',
+                                            paddingLeft: '1rem',
+                                            maxHeight: isPrintingMode ? undefined : '350px',
                                         }}
                                     >
-                                        {hideFieldsToDisplay.includes(propertyKey) ? <>••••••••</> : stringFormatValue}
+                                        <VerifyLink>{innerContent}</VerifyLink>
                                     </Typography>
                                 </MeltaTooltip>
                                 <Grid item>

@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import i18next from 'i18next';
 import { Form, Formik, FormikErrors, FormikProps, yupToFormErrors } from 'formik';
 import * as Yup from 'yup';
-import { Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Grid, Typography } from '@mui/material';
-import { CompareArrows as CompareArrowsIcon } from '@mui/icons-material';
+import { Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Grid } from '@mui/material';
 import { useMutation } from 'react-query';
 import { toast } from 'react-toastify';
 import { AxiosError } from 'axios';
@@ -70,32 +69,6 @@ const validateForm = async (values: ICreateRelationshipValues): Promise<FormikEr
     return { ...validationSchemaErrors, ...nonSchemaErrors };
 };
 
-const SwitchSidesButton: React.FC<{ formikProps: FormikProps<ICreateRelationshipValues> }> = ({ formikProps }) => {
-    return (
-        <Button
-            variant="outlined"
-            onClick={() => {
-                formikProps.setValues((prevValues) => ({
-                    ...prevValues,
-                    sourceEntity: formikProps.values.destinationEntity,
-                    destinationEntity: formikProps.values.sourceEntity,
-                }));
-
-                if (formikProps.values.sourceEntity || formikProps.values.destinationEntity) {
-                    // dont trigger validate, validate will trigger from formikProps.setValues after changed
-                    formikProps.setFieldTouched('sourceEntity', true, false);
-                    formikProps.setFieldTouched('destinationEntity', true, false);
-                }
-            }}
-        >
-            <CompareArrowsIcon color="primary" />
-            <Typography fontSize={14} style={{ fontWeight: '500', paddingRight: '5px' }}>
-                {i18next.t('addRelationshipDialog.switchSidesBtn')}
-            </Typography>
-        </Button>
-    );
-};
-
 const shouldSwitchSourceAndDestinationOnRelationshipTemplateChange = (
     prevValues: ICreateRelationshipValues,
     chosenRelationshipTemplate: IMongoRelationshipTemplatePopulated | null,
@@ -154,7 +127,8 @@ const SourceOrDestinationEntityInput: React.FC<{
     field: 'sourceEntity' | 'destinationEntity';
     formikProps: FormikProps<ICreateRelationshipValues>;
     label: string;
-}> = ({ formikProps, field, label }) => {
+    addNewEntityLabel: string;
+}> = ({ formikProps, field, label, addNewEntityLabel }) => {
     return (
         <TemplateTableSelect
             entityTemplate={formikProps.values.relationshipTemplate?.[field]}
@@ -170,7 +144,9 @@ const SourceOrDestinationEntityInput: React.FC<{
             error={Boolean(formikProps.touched[field] && formikProps.errors[field])}
             helperText={formikProps.touched[field] ? formikProps.errors[field] : ''}
             label={label}
+            addNewEntityLabel={addNewEntityLabel}
             hideNonPreview
+            checkUsersPermissions="Write"
         />
     );
 };
@@ -266,14 +242,10 @@ const CreateRelationshipDialog: React.FC<{
                                             field="sourceEntity"
                                             formikProps={formikProps}
                                             label={i18next.t('addRelationshipDialog.selectSourceEntityLabel')}
+                                            addNewEntityLabel={i18next.t('addRelationshipDialog.addSourceEntityLabel')}
                                         />
                                     </Grid>
                                     <Grid item xs={4} container direction="column" alignItems="stretch" spacing={1}>
-                                        <Grid item container justifyContent="center">
-                                            <Grid item>
-                                                <SwitchSidesButton formikProps={formikProps} />
-                                            </Grid>
-                                        </Grid>
                                         <Grid item>
                                             <Box sx={{ margin: '5px' }}>
                                                 <RelationshipTemplateInput formikProps={formikProps} />
@@ -290,6 +262,7 @@ const CreateRelationshipDialog: React.FC<{
                                             field="destinationEntity"
                                             formikProps={formikProps}
                                             label={i18next.t('addRelationshipDialog.selectDestinationEntityLabel')}
+                                            addNewEntityLabel={i18next.t('addRelationshipDialog.addDestinationEntityLabel')}
                                         />
                                     </Grid>
                                 </Grid>

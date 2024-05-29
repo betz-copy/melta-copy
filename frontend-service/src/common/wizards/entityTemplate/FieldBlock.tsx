@@ -37,6 +37,7 @@ interface FieldBlockProps<PropertiesType extends string, Values extends Record<P
     supportChangeToRequiredWithInstances: boolean;
     supportArrayFields: boolean;
     supportDeleteForExistingInstances: boolean;
+    supportEditEnum?: boolean;
     draggable?: { isDraggable: false } | { isDraggable: true; dragHandleProps: DraggableProvided['dragHandleProps'] };
 }
 
@@ -57,6 +58,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
     supportChangeToRequiredWithInstances,
     supportArrayFields,
     supportDeleteForExistingInstances,
+    supportEditEnum,
     draggable = { isDraggable: false },
     initialFieldCardDataOnAdd = {
         name: '',
@@ -71,6 +73,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
         pattern: '',
         patternCustomErrorMessage: '',
         dateNotification: undefined,
+        calculateTime: undefined,
         serialStarter: 0,
     },
 }: React.PropsWithChildren<FieldBlockProps<PropertiesType, Values>>) => {
@@ -162,13 +165,10 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
         const inputValue = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
         setFieldDisplayValue(index, inputName as keyof Values, inputValue);
     };
-
     const onChangeWrapper = (index: number) => (event: React.ChangeEvent<HTMLInputElement>) => onChange(index, event);
     const setFieldDisplayValueWrapper = (index: number) => (field: keyof Values, value: any) => setFieldDisplayValue(index, field, value);
     const setDisplayValueWrapper = (index: number) => (value: SetStateAction<CommonFormInputProperties>) => setDisplayValue(index, value);
-
     const isFieldBlockError = Boolean(touched?.[propertiesType]) && Boolean(errors?.[propertiesType]);
-
     return (
         <FieldBlockAccordion style={{ border: isFieldBlockError ? '1px solid red' : '' }}>
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
@@ -197,6 +197,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
                                     >
                                         {displayValues.map((property, index) => {
                                             const props = {
+                                                entity: (values as any).displayName,
                                                 value: property,
                                                 index,
                                                 isEditMode,
@@ -209,8 +210,10 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
                                                 supportSerialNumberType,
                                                 supportEntityReferenceType,
                                                 supportChangeToRequiredWithInstances,
+                                                templateId: (values as any)._id,
                                                 supportArrayFields,
                                                 supportDeleteForExistingInstances,
+                                                supportEditEnum,
                                             };
 
                                             if (propertiesType === 'properties' || propertiesType === 'detailsProperties') {

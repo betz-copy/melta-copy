@@ -23,7 +23,6 @@ export const sideBarTransition = 'all 0.3s linear';
 export const lightTheme = createTheme({
     ...basicTheme,
     palette: {
-        mode: 'light',
         primary: { main: '#1E2775' },
     },
     components: {
@@ -31,7 +30,7 @@ export const lightTheme = createTheme({
             styleOverrides: {
                 fontFamily: 'Rubik',
                 '::-webkit-scrollbar': { background: 'transparent', width: 6, height: 6 },
-                '::-webkit-scrollbar-thumb': { background: 'gray', borderRadius: 20 },
+                '::-webkit-scrollbar-thumb': { background: '#787C9E', borderRadius: 20 },
                 '::-webkit-scrollbar-track': { background: 'lightgray', borderRadius: 20 },
 
                 '.ag-theme-material': {

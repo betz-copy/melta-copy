@@ -7,13 +7,19 @@ export enum ProcessPropertyFormats {
     Email = 'email',
     FileId = 'fileId',
     EntityReference = 'entityReference',
+    TextArea = 'text-area',
 }
 
 export interface IProcessSingleProperty {
     title: string;
-    type: 'string' | 'number' | 'boolean';
+    type: 'string' | 'number' | 'boolean' | 'array';
     format?: ProcessPropertyFormats;
     enum?: string[];
+    items?: {
+        type: 'string';
+        enum?: string[];
+        format?: 'fileId';
+    };
     pattern?: string;
     patternCustomErrorMessage?: string;
 }

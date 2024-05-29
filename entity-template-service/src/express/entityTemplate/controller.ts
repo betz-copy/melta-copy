@@ -18,19 +18,16 @@ class EntityTemplateController {
     static async deleteEntityTemplate(req: Request, res: Response) {
         // TODO: validate no instances exists before deleting
         const { templateId: id } = req.params;
-
         res.json(await EntityTemplateManager.deleteTemplate(id));
     }
 
     static async updateEntityTemplate(req: Request, res: Response) {
         const { templateId: id } = req.params;
-
         res.json(await EntityTemplateManager.updateEntityTemplate(id, req.body));
     }
 
     static async updateEntityTemplateStatus(req: Request, res: Response) {
         const { templateId: id } = req.params;
-
         res.json(await EntityTemplateManager.updateEntityTemplateStatus(id, req.body.disabled));
     }
 }

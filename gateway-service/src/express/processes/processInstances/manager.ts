@@ -14,7 +14,6 @@ import { InstancesManager } from '../../instances/manager';
 import { IProcessDetails, PropertyFormats } from '../../../externalServices/processService/interfaces/processTemplate';
 import { removeTmpFile } from '../../../utils/fs';
 import { ServiceError } from '../../error';
-import { NotificationService } from '../../../externalServices/notificationService';
 import {
     IArchiveProcessNotificationMetadata,
     IDeleteProcessNotificationMetadata,
@@ -25,7 +24,7 @@ import {
 } from '../../../externalServices/notificationService/interfaces';
 import { getPermissions, isProcessManager } from '../../../externalServices/permissionsService';
 import { filteredMap } from '../../../utils';
-import { IGenericStep } from '../../../externalServices/processService/interfaces';
+import { IGenericStepPopulated } from '../../../externalServices/processService/interfaces';
 import { IMongoStepInstance } from '../../../externalServices/processService/interfaces/stepInstance';
 import { InstanceManagerService } from '../../../externalServices/instanceService';
 import { EntityNotExist, NotFoundError } from '../error';
@@ -33,6 +32,15 @@ import { EntityTemplateManagerService } from '../../../externalServices/entityTe
 import PermissionsManager from '../../permissions/manager';
 import StepsInstancesManager from '../stepInstances/manager';
 import { IMongoStepTemplate } from '../../../externalServices/processService/interfaces/stepTemplate';
+import { rabbitCreateNotification } from '../../../utils/createNotification';
+import {
+    IArchiveProcessNotificationMetadataPopulated,
+    IDeleteProcessNotificationMetadataPopulated,
+    INewProcessNotificationMetadataPopulated,
+    IProcessStatusUpdateNotificationMetadataPopulated,
+} from '../../../externalServices/notificationService/interfaces/populated';
+import { IProcessReviewerUpdateMailNotificationMetadataPopulated } from '../../../utils/mailNotifications/interfaces';
+import logger from '../../../utils/logger/logsLogger';
 
 export default class ProcessesInstancesManager {
     static async getPropertiesWithEntities(properties: InstanceProperties, template: IProcessDetails['properties'], userId: string) {
@@ -120,20 +128,18 @@ export default class ProcessesInstancesManager {
 
     static async createProcessInstance(processData: IProcessInstance, files: Express.Multer.File[], userId: string) {
         const processTemplate = await ProcessManagerService.getProcessTemplateById(processData.templateId);
-
         this.checkEntityReferenceFields(processData.details, processTemplate.details.properties);
         if (!files.length) {
             const process = await ProcessManagerService.createProcessInstance(processData);
+            const populatedProcess = await this.getPopulatedProcess(process, userId);
 
             await Promise.allSettled([
-                this.sendNewProcessNotification(process._id),
-                this.sendProcessReviewerUpdateNotifications([process._id], process.steps),
+                this.sendNewProcessNotification(populatedProcess),
+                this.sendProcessReviewerUpdateNotification([process._id], populatedProcess.steps),
             ]);
-            return this.getPopulatedProcess(process, userId);
+            return populatedProcess;
         }
-        const filesProperties = await InstancesManager.uploadInstanceFiles(files);
-        const processDetails = { ...processData.details, ...filesProperties };
-
+        const { props: processDetails, files: filesToUpload } = await InstancesManager.uploadInstanceFiles(files, processData.details);
         await Promise.all(
             files.map((file) => {
                 return removeTmpFile(file.path);
@@ -141,18 +147,18 @@ export default class ProcessesInstancesManager {
         );
 
         const process = await ProcessManagerService.createProcessInstance({ ...processData, details: processDetails }).catch(async (error) => {
-            await deleteFiles(Object.values(filesProperties)).catch(() => {
-                // eslint-disable-next-line no-console
-                console.log('failed to delete process unused files');
+            await deleteFiles(Object.values(filesToUpload).flat(1) as string[]).catch(() => {
+                logger.error('failed to delete process unused files');
             });
             throw error;
         });
+        const populatedProcess = await this.getPopulatedProcess(process, userId);
 
         await Promise.allSettled([
-            this.sendNewProcessNotification(process._id),
-            this.sendProcessReviewerUpdateNotifications([process._id], process.steps),
+            this.sendNewProcessNotification(populatedProcess),
+            this.sendProcessReviewerUpdateNotification([process._id], populatedProcess.steps),
         ]);
-        return this.getPopulatedProcess(process, userId);
+        return populatedProcess;
     }
 
     static async removeUnusedFileIds(
@@ -164,31 +170,32 @@ export default class ProcessesInstancesManager {
         const newFileIds = new Set<string>(this.extractFileIdsFromProperties(templateProperties, newProperties));
 
         const idsToDelete = Array.from(oldFileIds).filter((id) => !newFileIds.has(id));
-        // eslint-disable-next-line no-console
-        if (idsToDelete.length) await deleteFiles(idsToDelete).catch(() => console.log(`failed to delete unused files: ${idsToDelete}`));
+        if (idsToDelete.length) await deleteFiles(idsToDelete).catch(() => logger.error(`failed to delete unused files: ${idsToDelete}`));
     }
 
     static async updateProcessInstance(processId: string, processData: IProcessInstance, files: Express.Multer.File[], userId: string) {
-        const currProcessInstance = await ProcessManagerService.getProcessInstanceById(processId);
+        const currProcessInstance = await this.getProcessInstance(processId, userId);
         const processTemplate = await ProcessManagerService.getProcessTemplateById(currProcessInstance.templateId);
 
         if (processData.details) this.checkEntityReferenceFields(processData.details, processTemplate.details.properties);
         if (!files.length) {
             const updatedProcess = await ProcessManagerService.updateProcessInstance(processId, processData);
+            const updatedPopulatedProcess = await this.getPopulatedProcess(updatedProcess, userId);
+
             await Promise.allSettled([
-                this.sendProcessReviewerUpdateNotifications([updatedProcess._id], updatedProcess.steps, currProcessInstance.steps),
+                this.sendProcessReviewerUpdateNotification([updatedProcess._id], updatedPopulatedProcess.steps, currProcessInstance.steps),
             ]);
-            return this.getPopulatedProcess(updatedProcess, userId);
+            return updatedPopulatedProcess;
         }
 
-        const filesProperties = await InstancesManager.uploadInstanceFiles(files);
+        const { props, files: filesToUpload } = await InstancesManager.uploadInstanceFiles(files, processData.details);
 
         const updatedProcessInstance = {
             ...processData,
-            details: { ...processData.details, ...filesProperties },
+            details: props,
         };
 
-        if (filesProperties) {
+        if (props) {
             await this.removeUnusedFileIds(processTemplate.details.properties, currProcessInstance.details, updatedProcessInstance.details);
         }
 
@@ -199,24 +206,26 @@ export default class ProcessesInstancesManager {
         );
 
         const updatedProcess = await ProcessManagerService.updateProcessInstance(processId, updatedProcessInstance).catch(async (error) => {
-            await deleteFiles(Object.values(filesProperties)).catch(() => {
-                // eslint-disable-next-line no-console
-                console.log('failed to delete process unused files');
+            await deleteFiles(Object.values(filesToUpload).flat(1) as string[]).catch(() => {
+                logger.error('failed to delete process unused files');
             });
             throw error;
         });
+        const updatedPopulatedProcess = await this.getPopulatedProcess(updatedProcess, userId);
+
         await Promise.allSettled([
-            this.sendProcessReviewerUpdateNotifications([updatedProcess._id], updatedProcess.steps, currProcessInstance.steps),
+            this.sendProcessReviewerUpdateNotification([updatedProcess._id], updatedPopulatedProcess.steps, currProcessInstance.steps),
         ]);
-        return this.getPopulatedProcess(updatedProcess, userId);
+        return updatedPopulatedProcess;
     }
 
     static async archiveProcess(id: string, { archived }, userId: string) {
         const updatedProcess = await ProcessManagerService.archivedProcess(id, archived);
+        const updatedPopulatedProcess = await ProcessesInstancesManager.getPopulatedProcess(updatedProcess, userId);
 
-        await Promise.allSettled([ProcessesInstancesManager.sendArchiveProcessNotification(updatedProcess, archived)]);
+        await Promise.allSettled([ProcessesInstancesManager.sendArchiveProcessNotification(updatedPopulatedProcess, archived)]);
 
-        return ProcessesInstancesManager.getPopulatedProcess(updatedProcess, userId);
+        return updatedPopulatedProcess;
     }
 
     private static async deleteAllProcessFiles({ templateId, steps, details }: IMongoProcessInstanceWithSteps) {
@@ -251,6 +260,8 @@ export default class ProcessesInstancesManager {
         Object.entries(templateProperties.properties).forEach(([key, value]) => {
             if (value.format === PropertyFormats.FileId && instanceProperties[key]) {
                 fileIds.push(instanceProperties[key]);
+            } else if (value.items?.format === PropertyFormats.FileId && instanceProperties[key]) {
+                fileIds.push(...instanceProperties[key]);
             }
         });
         return fileIds;
@@ -258,78 +269,101 @@ export default class ProcessesInstancesManager {
 
     static async deleteProcessInstance(processId: string, userId: string) {
         const process = await ProcessManagerService.getProcessInstanceById(processId, userId);
+        const populatedProcess = await this.getPopulatedProcess(process, userId);
+
         await ProcessesInstancesManager.deleteAllProcessFiles(process).catch((err) => {
-            // eslint-disable-next-line no-console
-            console.log(`failed to delete process files`);
+            logger.error(`failed to delete process files`);
             throw new ServiceError(500, `failed to delete process instance, failed when deleting files: ${err}`);
         });
         await ProcessManagerService.deleteProcessInstance(processId);
 
-        await Promise.allSettled([ProcessesInstancesManager.sendDeleteProcessNotification(process)]);
+        await Promise.allSettled([ProcessesInstancesManager.sendDeleteProcessNotification(populatedProcess)]);
 
-        return process;
+        return populatedProcess;
     }
 
     static async searchProcessInstances(searchBody: ISearchProcessInstancesBody, userId: string) {
         const query: ISearchProcessInstancesBody = { ...searchBody };
+
         if (!(await isProcessManager(userId))) query.reviewerId = userId;
         const processes = await ProcessManagerService.searchProcessInstances(query);
         return Promise.all(processes.map((process) => this.getPopulatedProcess(process, userId)));
     }
 
-    private static async sendNewProcessNotification(processId: string) {
+    private static async sendNewProcessNotification(process: IMongoProcessInstancePopulated) {
         const processPermissions = await getPermissions({ resourceType: 'Processes' });
         const processesManagersIds = processPermissions.map((processPermission) => processPermission.userId);
-
-        await NotificationService.rabbitCreateNotification<INewProcessNotificationMetadata>(processesManagersIds, NotificationType.newProcess, {
-            processId,
-        });
+        await rabbitCreateNotification<INewProcessNotificationMetadata, INewProcessNotificationMetadataPopulated>(
+            processesManagersIds,
+            NotificationType.newProcess,
+            {
+                processId: process._id,
+            },
+            { process },
+        );
     }
 
-    static async sendProcessStatusUpdateNotification(process: IMongoProcessInstanceWithSteps, status: Status, stepId?: string) {
+    static async sendProcessStatusUpdateNotification(process: IMongoProcessInstancePopulated, status: Status, stepId?: string) {
         const metadata: IProcessStatusUpdateNotificationMetadata = {
             processId: process._id,
             status,
         };
+        const metadataPopulated: IProcessStatusUpdateNotificationMetadataPopulated = {
+            process,
+            status,
+        };
 
-        if (stepId) metadata.stepId = stepId;
+        if (stepId) {
+            metadata.stepId = stepId;
+            metadataPopulated.step = process.steps.find(({ _id }) => _id === stepId)!;
+        }
 
-        await NotificationService.rabbitCreateNotification<IProcessStatusUpdateNotificationMetadata>(
+        await rabbitCreateNotification<IProcessStatusUpdateNotificationMetadata, IProcessStatusUpdateNotificationMetadataPopulated>(
             await this.getAllReviewersIds(process.steps, true),
             NotificationType.processStatusUpdate,
             metadata,
+            metadataPopulated,
         );
     }
 
-    static async sendDeleteProcessNotification(process: IMongoProcessInstanceWithSteps) {
-        await NotificationService.rabbitCreateNotification<IDeleteProcessNotificationMetadata>(
+    static async sendDeleteProcessNotification(process: IMongoProcessInstancePopulated) {
+        await rabbitCreateNotification<IDeleteProcessNotificationMetadata, IDeleteProcessNotificationMetadataPopulated>(
             await this.getAllReviewersIds(process.steps, true),
             NotificationType.deleteProcess,
             {
                 processName: process.name,
             },
+            { processName: process.name },
         );
     }
 
-    static async sendArchiveProcessNotification(process: IMongoProcessInstanceWithSteps, isArchived: boolean) {
-        await NotificationService.rabbitCreateNotification<IArchiveProcessNotificationMetadata>(
+    static async sendArchiveProcessNotification(process: IMongoProcessInstancePopulated, isArchived: boolean) {
+        await rabbitCreateNotification<IArchiveProcessNotificationMetadata, IArchiveProcessNotificationMetadataPopulated>(
             await this.getAllReviewersIds(process.steps, true),
             NotificationType.archivedProcess,
             {
                 processId: process._id,
                 isArchived,
             },
+            {
+                process,
+                isArchived,
+            },
         );
     }
 
-    static async sendProcessReviewerUpdateNotifications(affectedProcessInstanceIds: string[], steps: IGenericStep[], previousSteps?: IGenericStep[]) {
+    static async sendProcessReviewerUpdateNotification(
+        affectedProcessInstanceIds: string[],
+        steps: IGenericStepPopulated[],
+        previousSteps?: IGenericStepPopulated[],
+    ) {
         const [{ reviewersStepIds, reviewersIds }, { reviewersStepIds: previousReviewersStepIds, reviewersIds: previousReviewersId }] =
             await Promise.all([this.getReviewersStepIds(steps), this.getReviewersStepIds(previousSteps ?? [])]);
 
         const combinedReviewersIds = [...new Set([...reviewersIds, ...previousReviewersId])];
         const notifications: Promise<void>[] = [];
 
-        combinedReviewersIds.forEach((reviewerId) => {
+        combinedReviewersIds.forEach(async (reviewerId) => {
             const reviewerStepIds = reviewersStepIds[reviewerId] ?? [];
             const previousReviewerStepIds = previousReviewersStepIds[reviewerId] ?? [];
 
@@ -358,13 +392,35 @@ export default class ProcessesInstancesManager {
                 deletedStepIds: [...deletedStepIdsSet],
                 unchangedStepIds: [...unchangedStepIdsSet],
             };
+            const addedSteps: IMongoStepTemplate[] = await Promise.all(
+                filteredReviewerStepIds.addedStepIds.map(async (stepId) => {
+                    const step = await ProcessManagerService.getStepTemplateByStepInstanceId(stepId);
+                    return step;
+                }),
+            );
 
-            affectedProcessInstanceIds.forEach((processId) => {
+            const deletedSteps: IMongoStepTemplate[] = await Promise.all(
+                filteredReviewerStepIds.deletedStepIds.map(async (stepId) => {
+                    const step = await ProcessManagerService.getStepTemplateByStepInstanceId(stepId);
+                    return step;
+                }),
+            );
+            affectedProcessInstanceIds.forEach(async (processId) => {
+                const process = await ProcessManagerService.getProcessInstanceById(processId);
                 notifications.push(
-                    NotificationService.rabbitCreateNotification<IProcessReviewerUpdateNotificationMetadata>(
+                    rabbitCreateNotification<IProcessReviewerUpdateNotificationMetadata, IProcessReviewerUpdateMailNotificationMetadataPopulated>(
                         [reviewerId],
                         NotificationType.processReviewerUpdate,
-                        { processId, ...filteredReviewerStepIds },
+                        {
+                            processId,
+                            ...filteredReviewerStepIds,
+                        },
+                        {
+                            process,
+                            addedSteps,
+                            deletedSteps,
+                            unchangedStepIds: filteredReviewerStepIds.unchangedStepIds,
+                        },
                     ),
                 );
             });
@@ -373,7 +429,7 @@ export default class ProcessesInstancesManager {
         await Promise.allSettled(notifications);
     }
 
-    private static async getReviewersStepIds(steps: IGenericStep[]) {
+    private static async getReviewersStepIds(steps: IGenericStepPopulated[]) {
         const reviewersStepIds: Record<string, string[]> = {};
 
         const reviewersIds = await this.getAllReviewersIds(steps);
@@ -385,14 +441,14 @@ export default class ProcessesInstancesManager {
         return { reviewersStepIds, reviewersIds };
     }
 
-    private static getReviewerStepIds(steps: IGenericStep[], userId: string) {
+    private static getReviewerStepIds(steps: IGenericStepPopulated[], userId: string) {
         return filteredMap(steps, (step) => ({
-            include: step.reviewers.includes(userId),
+            include: step.reviewers.some(({ id }) => id === userId),
             value: step._id,
         }));
     }
 
-    private static async getAllReviewersIds(steps: IGenericStep[], withManagers?: boolean) {
+    private static async getAllReviewersIds(steps: IGenericStepPopulated[], withManagers?: boolean) {
         const reviewersIds = new Set<string>();
 
         if (withManagers) {
@@ -401,7 +457,7 @@ export default class ProcessesInstancesManager {
         }
 
         steps.forEach(({ reviewers }) => {
-            reviewers.forEach((reviewer) => reviewersIds.add(reviewer));
+            reviewers.forEach(({ id }) => reviewersIds.add(id));
         });
 
         return Array.from(reviewersIds);

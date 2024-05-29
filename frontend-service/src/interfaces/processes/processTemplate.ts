@@ -2,9 +2,14 @@ import { IMongoStepTemplate, IMongoStepTemplatePopulated, IStepTemplate } from '
 
 export interface IProcessSingleProperty {
     title: string;
-    type: 'string' | 'number' | 'boolean';
-    format?: 'date' | 'date-time' | 'email' | 'fileId' | 'entityReference';
+    type: 'string' | 'number' | 'boolean' | 'array';
+    format?: 'date' | 'date-time' | 'email' | 'fileId' | 'entityReference' | 'text-area';
     enum?: string[];
+    items?: {
+        type: 'string';
+        enum?: string[];
+        format?: 'fileId';
+    };
     pattern?: string;
     patternCustomErrorMessage?: string;
 }

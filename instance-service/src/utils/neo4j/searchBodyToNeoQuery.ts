@@ -20,7 +20,7 @@ export const escapeNeo4jQuerySpecialChars = (quickFilter: string) => {
     return quickFilter.replace(new RegExp(escapeNeo4jQueryRegexStr, 'g'), '\\$&');
 };
 
-type CypherQueryWithParameters = { cypherQuery: string; parameters: Record<string, any> };
+export type CypherQueryWithParameters = { cypherQuery: string; parameters: Record<string, any> };
 
 const simplePartFilterOfFieldToNeoQuery = (
     field: string,
@@ -304,7 +304,7 @@ const filterToNeoQuery = (
     };
 };
 
-const templatesFilterToNeoQuery = (
+export const templatesFilterToNeoQuery = (
     templatesFilter: ISearchBatchBody['templates'],
     entityTemplatesMap: Map<string, IMongoEntityTemplate>,
 ): CypherQueryWithParameters => {
@@ -326,7 +326,6 @@ const templatesFilterToNeoQuery = (
             parameters: { [templateId]: filterOfTemplateQuery.parameters },
         };
     });
-
     return {
         cypherQuery: templatesFiltersQueries.map(({ cypherQuery }) => `(${cypherQuery})`).join(' OR '),
         parameters: {
@@ -347,7 +346,6 @@ const normalSearchToNeoQuery = (
     calculateOverallCount = false,
 ) => {
     const filterQuery = templatesFilterToNeoQuery(searchBody.templates, entityTemplatesMap);
-
     if (calculateOverallCount) {
         return {
             cypherQuery: `

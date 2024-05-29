@@ -1,8 +1,9 @@
 import { IEntity } from '../../instanceService/interfaces/entities';
 import { IDeleteProcessNotificationMetadata, INotification, IProcessStatusUpdateNotificationMetadata } from '.';
-import { IMongoProcessInstancePopulated } from '../../processService/interfaces/processInstance';
+import { IMongoProcessInstancePopulated, IMongoProcessInstanceWithSteps } from '../../processService/interfaces/processInstance';
 import { IMongoStepInstancePopulated } from '../../processService/interfaces/stepInstance';
 import { IRuleBreachAlertPopulated, IRuleBreachRequestPopulated } from '../../ruleBreachService/interfaces/populated';
+import { IMongoStepTemplate } from '../../processService/interfaces/stepTemplate';
 
 export interface IRuleBreachAlertNotificationMetadataPopulated {
     alert: IRuleBreachAlertPopulated;
@@ -15,21 +16,22 @@ export interface IRuleBreachResponseNotificationMetadataPopulated {
 }
 
 export interface IProcessReviewerUpdateNotificationMetadataPopulated {
-    process: IMongoProcessInstancePopulated | null;
-    addedSteps: (IMongoStepInstancePopulated | null)[];
-    deletedSteps: (IMongoStepInstancePopulated | null)[];
+    process: IMongoProcessInstancePopulated | IMongoProcessInstanceWithSteps | null;
+    addedSteps: (IMongoStepInstancePopulated | IMongoStepTemplate | null)[];
+    deletedSteps: (IMongoStepInstancePopulated | IMongoStepTemplate | null)[];
     unchangedSteps: (IMongoStepInstancePopulated | null)[];
 }
+
 export interface IProcessStatusUpdateNotificationMetadataPopulated extends Pick<IProcessStatusUpdateNotificationMetadata, 'status'> {
-    process: IMongoProcessInstancePopulated | null;
-    step?: IMongoStepInstancePopulated | null;
+    process: IMongoProcessInstancePopulated | IMongoProcessInstanceWithSteps | null;
+    step?: IMongoStepInstancePopulated | IMongoStepTemplate | null;
 }
 export interface INewProcessNotificationMetadataPopulated {
-    process: IMongoProcessInstancePopulated | null;
+    process: IMongoProcessInstancePopulated | IMongoProcessInstanceWithSteps | null;
 }
 export interface IDeleteProcessNotificationMetadataPopulated extends IDeleteProcessNotificationMetadata {}
 export interface IArchiveProcessNotificationMetadataPopulated {
-    process: IMongoProcessInstancePopulated | null;
+    process: IMongoProcessInstancePopulated | IMongoProcessInstanceWithSteps | null;
     isArchived?: boolean;
 }
 export interface IDateAboutToExpireMetadataPopulated {

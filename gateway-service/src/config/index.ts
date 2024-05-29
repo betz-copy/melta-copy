@@ -4,9 +4,11 @@ import './dotenv';
 const config = {
     service: {
         port: env.get('PORT').required().asPortNumber(),
+        meltaBaseUrl: env.get('SYSTEM_MELTA_BASE_URL').required().asString(),
         systemUnavailableURL: env.get('SYSTEM_UNAVAILABLE_URL').required().asString(),
         uploadsFolderPath: env.get('UPLOADS_FOLDER_PATH').default('public/uploads/').asString(),
-        maxFileSize: env.get('MAX_FILE_SIZE').default(50000000).asInt(),
+        maxFileSize: env.get('MAX_FILE_BYTE_SIZE').required().asInt(),
+        maxRequestSize: env.get('MAX_REQUEST_BYTE_SIZE').required().asInt(),
         searchEntitiesChunkSize: env.get('SEARCH_ENTITIES_CHUNK_SIZE').default(50).asIntPositive(),
         excelFilePath: env.get('EXCEL_FILE_PATH').default('/usr/src/app').asString(),
         dateAlertTime: env.get('DATE_ALERT_TIME').default('0 0 * * *').asString(),
@@ -24,7 +26,7 @@ const config = {
         },
         basicAuthentication: {
             // userId must be users of kartoffel with permissions in our permissions-api DB
-            // for example: [{"userId": "5e5688324203fc40043591aa", "password": "noamisgod"}, {"userId": "5e5689514203fc40043591ae", "password":"iamtapuz"}]
+            // for example: [{"userId": "5e5688324203fc40043591aa", "password": "noamisgod"}]
             users: env.get('BASIC_AUTHENTICATION_USERS').required().asJsonArray() as Array<{ userId: string; password: string }>,
         },
     },
@@ -49,7 +51,6 @@ const config = {
         deleteFileRoute: env.get('STORAGE_SERVICE_DELETE_FILE_ROUTE').default('api/files').asString(),
         deleteFilesRoute: env.get('STORAGE_SERVICE_DELETE_FILES_ROUTE').default('api/files/delete-bulk').asString(),
         duplicateFilesRoute: env.get('STORAGE_SERVICE_DUPLICATE_FILES_ROUTE').default('api/files/duplicate-bulk').asString(),
-        fileHyperLink: env.get('STORAGE_SERVICE_FILE_HYPER_LINK').required().asString(),
         fileIdLength: env.get('STORAGE_SERVICE_FILE_ID_LENGTH').default(32).asIntPositive(),
     },
     instanceService: {
@@ -59,6 +60,7 @@ const config = {
         baseConstraintsRoute: env.get('INSTANCE_SERVICE_BASE_CONSTRAINTS_ROUTE').default('/api/instances/entities/constraints').asString(),
         searchOfTemplateRoute: env.get('INSTANCE_SERVICE_SEARCH_OF_TEMPLATE_ROUTE').default('/search/template').asString(),
         requestTimeout: env.get('INSTANCE_SERVICE_REQUEST_TIMEOUT').default(10000).asIntPositive(),
+        searchEntitiesFlowMaxLimit: env.get('SEARCH_ENTITIES_FLOW_MAX_LIMIT').default(10000).asIntPositive(),
     },
     permissionService: {
         baseUrl: env.get('PERMISSION_SERVICE_BASE_URL').required().asString(),
@@ -127,6 +129,35 @@ const config = {
             factor: env.get('RABBIT_RETRY_FACTOR').default(1.8).asFloatPositive(),
         },
         notificationQueue: env.get('NOTIFICATION_QUEUE_NAME').default('notifications-queue').asString(),
+        mailNotificationQueue: env.get('MAIL_NOTIFICATION_QUEUE_NAME').default('mail-notifications-queue').asString(),
+    },
+    mailerService: {
+        mailUser: env.get('NOTIFICATIONS_MAIL_FROM').default('hope39@ethereal.email').asString(),
+    },
+    logs: {
+        format: env.get('LOGGING_DATE_FORMAT').default('YYYY-MM-DD HH:mm:ss').asString(),
+        enableApm: env.get('ENABLE_APM').default('true').asBool(),
+        apmServerUrl: env.get('APM_SERVER_URL').default('http://apm-server:8200').asString(),
+        enableFile: env.get('ENABLE_FILE_LOGGING').default('false').asBool(),
+        enableRotateFile: env.get('ENABLE_ROTATE_FILE_LOGGING').default('true').asBool(),
+        label: env.get('LOG_LABEL').default('gateway').asString(),
+        extraDefault: {
+            serviceName: env.get('LOG_SERVICE_NAME').default('gateway-service').asString(),
+            environment: env.get('LOG_ENVIRONMENT').default('dev').required().asString(),
+        },
+        fileSettings: {
+            datePattern: env.get('FILE_LOG_DATE_PATTERN').default('YYYY-MM-DD').asString(),
+            maxSize: env.get('FILE_LOG_MAX_SIZE').default('3g').asString(),
+            maxFiles: env.get('FILE_LOG_MAX_FILES').default(3).asIntPositive(),
+            filename: env.get('FILE_LOG_FILENAME').default('log_file.log').asString(),
+            dirname: env.get('FILE_LOG_DIRNAME').default('./logs').asString(),
+        },
+        fileRotateSettings: {
+            datePattern: env.get('ROTATE_FILE_LOG_DATE_PATTERN').default('YYYY-MM-DD').asString(),
+            maxSize: env.get('ROTATE_FILE_LOG_MAX_SIZE').default('20m').asString(),
+            maxFiles: env.get('ROTATE_FILE_LOG_MAX_FILES').default('14d').asString(),
+            dirname: env.get('ROTATE_FILE_LOG_DIRNAME').default('./logs').asString(),
+        },
     },
 };
 

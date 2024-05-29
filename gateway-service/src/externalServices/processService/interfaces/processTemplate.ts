@@ -6,12 +6,18 @@ export enum PropertyFormats {
     Email = 'email',
     FileId = 'fileId',
     EntityReference = 'entityReference',
+    TextArea = 'text-area',
 }
 
 export interface IProcessSingleProperty {
     title: string;
-    type: 'string' | 'number' | 'boolean';
+    type: 'string' | 'number' | 'boolean' | 'array';
     format?: PropertyFormats;
+    items?: {
+        type: 'string';
+        enum?: string[];
+        format?: 'fileId';
+    };
     enum?: string[];
     pattern?: string;
     patternCustomErrorMessage?: string;
@@ -47,7 +53,7 @@ export interface IMongoProcessTemplateWithSteps extends IProcessTemplateWithStep
     updatedAt: string;
 }
 
-export interface IMongoProcessTemplatePopulated extends Omit<IProcessTemplateWithSteps, 'steps'> {
+export interface IMongoProcessTemplatePopulated extends Omit<IMongoProcessTemplateWithSteps, 'steps'> {
     steps: IMongoStepTemplatePopulated[];
 }
 

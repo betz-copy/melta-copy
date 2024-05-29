@@ -4,11 +4,12 @@ import { EntityTemplateFormInputProperties, EntityTemplateWizardValues } from '.
 import { environment } from '../../globals';
 import { IEntitySingleProperty, IEntityTemplate, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { getFileName } from '../../utils/getFileName';
+import { CommonFormInputProperties } from '../../common/wizards/entityTemplate/commonInterfaces';
 
 const { entityTemplates } = environment.api;
 export const basePropertyTypes = ['string', 'number', 'boolean'];
-export const stringFormats = ['date', 'date-time', 'email', 'fileId'];
-export const arrayTypes = ['fileIdArray', 'enumArray'];
+export const stringFormats = ['date', 'date-time', 'email', 'fileId', 'text-area'];
+export const arrayTypes = ['multipleFiles', 'enumArray'];
 
 const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTemplatePopulated | null): EntityTemplateWizardValues | undefined => {
     if (!entityTemplate) return undefined;
@@ -26,7 +27,8 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
         else if (value.enum) type = 'enum';
         else if (value.pattern) type = 'pattern';
         else if (value.items?.enum) type = 'enumArray';
-        else if (value.items?.format === 'fileId') type = 'fileIdArray';
+        else if (value.items?.format === 'fileId') type = 'multipleFiles';
+        else if (value.items?.format === 'text-area') type = 'text-area';
 
         const property: EntityTemplateFormInputProperties = {
             id: uuid(),
@@ -36,6 +38,7 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
             preview: propertiesPreview.includes(key),
             hide: properties.hide.includes(key),
             unique: type !== 'serialNumber' && uniqueConstraints.filter((constraints) => constraints.includes(key)).length > 0, // serials cant be marked unique
+            calculateTime: value.calculateTime ?? undefined,
             type,
             options: value.enum || value.items?.enum || [],
             optionColors: enumPropertiesColors?.[key] ? enumPropertiesColors[key] : {},
@@ -66,6 +69,7 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
 };
 
 export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode: boolean): IEntityTemplate => {
+    // change to support file types
     const { properties, attachmentProperties, propertiesTypeOrder, ...restOfProperties } = values;
 
     const serialsUniqueConstraints: string[][] = [];
@@ -95,6 +99,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
             pattern,
             patternCustomErrorMessage,
             dateNotification,
+            calculateTime,
             serialStarter,
             hide,
             unique,
@@ -117,6 +122,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                     default:
                         propertyType = 'string';
                 }
+
                 schema.properties[name] = {
                     title,
                     type: propertyType,
@@ -128,6 +134,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                     pattern: type === 'pattern' ? pattern : undefined,
                     patternCustomErrorMessage: type === 'pattern' ? patternCustomErrorMessage : undefined,
                     dateNotification: dateNotification as string | undefined,
+                    calculateTime: calculateTime ?? undefined,
                     serialStarter: type === 'serialNumber' ? serialStarter : undefined,
                     serialCurrent: type === 'serialNumber' ? serialStarter : undefined,
                 };
@@ -146,7 +153,6 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                 if (unique) uniqueConstraint.push(name);
                 if (preview) propertiesPreview.push(name);
                 if (type === 'serialNumber') serialsUniqueConstraints.push([name]);
-
                 if (type === 'enum' || type === 'enumArray') {
                     Object.entries(optionColors).forEach(([option, color]) => {
                         if (!color) return;
@@ -161,26 +167,39 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
         },
     );
 
-    attachmentProperties.forEach(({ id, name, title, required, deleted }) => {
+    attachmentProperties.forEach(({ id, name, title, required, type, deleted }) => {
         if (!deleted) {
-            schema.properties[name] = {
-                title,
-                type: 'string',
-                format: 'fileId',
-            };
-
-            if (isEditMode) {
+            if (type === 'multipleFiles') {
                 schema.properties[name] = {
-                    ...schema.properties[name],
-                    newPropertyWithDeletedName: attachmentProperties.some((property) => property.id !== id && property.name === name),
+                    title,
+                    type: 'array',
+                    items: {
+                        type: 'string',
+                        format: 'fileId',
+                    },
+                    minItems: 1,
                 };
+            } else {
+                schema.properties[name] = {
+                    title,
+                    type: 'string',
+                    format: 'fileId',
+                };
+
+                if (isEditMode) {
+                    schema.properties[name] = {
+                        ...schema.properties[name],
+                        newPropertyWithDeletedName: attachmentProperties.some((property) => property.id !== id && property.name === name),
+                    };
+                }
+
+                attachmentPropertiesOrder.push(name);
+
+                if (required) schema.required.push(name);
             }
-
-            attachmentPropertiesOrder.push(name);
-
-            if (required) schema.required.push(name);
         }
     });
+
     const uniqueConstraints = uniqueConstraint.length > 0 ? [uniqueConstraint, ...serialsUniqueConstraints] : serialsUniqueConstraints;
 
     return {
@@ -233,7 +252,6 @@ const updateEntityTemplateStatusRequest = async (entityTemplateId: string, disab
 
 const updateEntityTemplateRequest = async (entityTemplateId: string, updatedEntityTemplate: IEntityTemplate | EntityTemplateWizardValues) => {
     const formData = new FormData();
-
     const entityTemplate: IEntityTemplate =
         'attachmentProperties' in updatedEntityTemplate // its type is - EntityTemplateWizardValues
             ? formToJSONSchema(updatedEntityTemplate as EntityTemplateWizardValues, true)
@@ -258,7 +276,6 @@ const updateEntityTemplateRequest = async (entityTemplateId: string, updatedEnti
     formData.append('propertiesTypeOrder', JSON.stringify(entityTemplate.propertiesTypeOrder));
     formData.append('propertiesPreview', JSON.stringify(entityTemplate.propertiesPreview));
     formData.append('uniqueConstraints', JSON.stringify(entityTemplate.uniqueConstraints));
-
     const { data } = await axios.put<IMongoEntityTemplatePopulated>(`${entityTemplates}/${entityTemplateId}`, formData);
     return data;
 };
@@ -268,10 +285,30 @@ const deleteEntityTemplateRequest = async (entityTemplateId: string) => {
     return data;
 };
 
+const updateEnumFieldRequest = async (id: string, fieldValue: string, values: CommonFormInputProperties, field: string) => {
+    const { name, type, options } = values;
+    const partialInput = { name, type, options };
+    const { data } = await axios.put<IMongoEntityTemplatePopulated>(`${entityTemplates}/update-enum-field/${id}`, {
+        fieldValue,
+        partialInput,
+        field,
+    });
+    return data;
+};
+
+const deleteEnumFieldRequest = async (id: string, fieldValue: string, field: CommonFormInputProperties) => {
+    const { name, type, options } = field;
+    const partialInput = { name, type, options };
+    const { data } = await axios.patch<IMongoEntityTemplatePopulated>(`${entityTemplates}/delete-enum-field/${id}`, { fieldValue, partialInput });
+    return data;
+};
+
 export {
     createEntityTemplateRequest,
     updateEntityTemplateRequest,
     entityTemplateObjectToEntityTemplateForm,
     deleteEntityTemplateRequest,
     updateEntityTemplateStatusRequest,
+    updateEnumFieldRequest,
+    deleteEnumFieldRequest,
 };

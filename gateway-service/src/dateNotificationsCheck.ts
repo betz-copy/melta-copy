@@ -1,12 +1,13 @@
 import * as schedule from 'node-schedule';
-
-import { EntityTemplateManagerService } from './externalServices/entityTemplateService';
-import { InstanceManagerService } from './externalServices/instanceService';
-import { IEntityWithDirectRelationships } from './externalServices/instanceService/interfaces/entities';
-import { getPermissions } from './externalServices/permissionsService';
-import { NotificationService } from './externalServices/notificationService';
 import { IDateAboutToExpireNotificationMetadata, NotificationType } from './externalServices/notificationService/interfaces';
 import config from './config';
+import { rabbitCreateNotification } from './utils/createNotification';
+import { IDateAboutToExpireMetadataPopulated } from './externalServices/notificationService/interfaces/populated';
+import { IEntityWithDirectRelationships } from './externalServices/instanceService/interfaces/entities';
+import { InstanceManagerService } from './externalServices/instanceService';
+import { EntityTemplateManagerService } from './externalServices/entityTemplateService';
+import { getPermissions } from './externalServices/permissionsService';
+import logger from './utils/logger/logsLogger';
 
 enum dateNotificationOptions {
     day = 1,
@@ -31,7 +32,7 @@ const getAllInstances = async (entityTemplateId: string) => {
 
 export const checkForDateNotifications = async () => {
     schedule.scheduleJob(config.service.dateAlertTime, async () => {
-        console.log('Checking for Date Notifications...');
+        logger.info('Checking for Date Notifications...');
         const allEntityTemplates = await EntityTemplateManagerService.searchEntityTemplates();
 
         for (const entityTemplate of allEntityTemplates) {
@@ -55,7 +56,7 @@ export const checkForDateNotifications = async () => {
                     notificationDate.setDate(datePropertyValue.getDate() - dateNotificationOptions[property.dateNotification!]);
 
                     if (notificationDate.getTime() <= today.getTime()) {
-                        await NotificationService.rabbitCreateNotification<IDateAboutToExpireNotificationMetadata>(
+                        await rabbitCreateNotification<IDateAboutToExpireNotificationMetadata, IDateAboutToExpireMetadataPopulated>(
                             userIdsWithPermission,
                             NotificationType.dateAboutToExpire,
                             {
@@ -63,6 +64,7 @@ export const checkForDateNotifications = async () => {
                                 propertyName,
                                 datePropertyValue,
                             },
+                            { entity, propertyName, datePropertyValue },
                         );
                     }
                 });

@@ -99,3 +99,10 @@ export interface IGetFilePathsOfProperty {
     limit: number;
     properties: string[];
 }
+
+export interface IGetExpandedEntityBody {
+    disabled: boolean | null;
+    templateIds: string[];
+    expandedParams: { [entityId: string]: number };
+    filters: { [templateId: string]: { filter?: ISearchFilter<Record<string, any>>; showRelationships: boolean } };
+}

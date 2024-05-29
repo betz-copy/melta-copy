@@ -7,14 +7,13 @@ import { IEntityTemplate, IEnumPropertiesColors, IProperties } from '../express/
 
 const ajv = new Ajv();
 ajv.addFormat('fileId', /.*/);
+ajv.addFormat('text-area', /.*/);
 addFormats(ajv);
 ajv.addVocabulary(['patternCustomErrorMessage', 'hide']);
 ajv.addKeyword({
     keyword: 'dateNotification',
     type: 'string',
 });
-const stringFormats = ['date', 'date-time', 'email', 'fileId'];
-const allowedJSONSchemaTypes = ['string', 'number', 'boolean', 'array'];
 ajv.addKeyword({
     keyword: 'serialStarter',
     type: 'number',
@@ -23,6 +22,10 @@ ajv.addKeyword({
     keyword: 'serialCurrent',
     type: 'number',
 });
+ajv.addKeyword({ keyword: 'calculateTime', type: 'boolean' });
+
+const stringFormats = ['date', 'date-time', 'email', 'fileId', 'text-area'];
+const allowedJSONSchemaTypes = ['string', 'number', 'boolean', 'array'];
 
 const propertiesArraySchema = Joi.array()
     .items(
@@ -42,28 +45,31 @@ const propertiesArraySchema = Joi.array()
             items: Joi.object({
                 type: Joi.string().valid('string').required(),
                 format: Joi.string().valid('fileId'),
-                enum: Joi.array().items(Joi.string()).min(1),
-            })
-                .xor('format', 'enum')
-                .when('type', {
-                    is: 'array',
-                    then: Joi.required(),
-                    otherwise: Joi.forbidden(),
+                enum: Joi.when('format', {
+                    is: 'fileId',
+                    then: Joi.forbidden(), // If format is fileId, enum is not allowed
+                    otherwise: Joi.array().items(Joi.string()).min(1), // If format is not fileId, enum must have minimum length of 1
                 }),
+            }),
             minItems: Joi.valid(1).when('type', {
                 is: 'array',
                 then: Joi.required(),
                 otherwise: Joi.forbidden(),
             }),
-            uniqueItems: Joi.valid(true).when('type', {
-                is: 'array',
-                then: Joi.required(),
-                otherwise: Joi.forbidden(),
+            uniqueItems: Joi.when(Joi.ref('items.format'), {
+                is: 'fileId',
+                then: Joi.forbidden(),
+                otherwise: Joi.valid(true).when('type', {
+                    is: 'array',
+                    then: Joi.required(),
+                    otherwise: Joi.forbidden(),
+                }),
             }),
             dateNotification: Joi.string()
                 .valid('day', 'week', 'twoWeeks')
                 .when('format', { not: Joi.valid('date', 'date-time'), then: Joi.forbidden() })
                 .when('type', { not: 'string', then: Joi.forbidden() }),
+            calculateTime: Joi.boolean().when('format', { not: Joi.valid('date', 'date-time'), then: Joi.forbidden() }),
             serialStarter: Joi.number().when('type', { not: 'number', then: Joi.forbidden() }),
             serialCurrent: Joi.number().when('type', { not: 'number', then: Joi.forbidden() }),
         }).nand('pattern', 'enum'),
@@ -154,7 +160,6 @@ export const previewPropertiesSchema = Joi.array().unique().items(Joi.string()).
 
 const customEnumPropertiesColorsSchemaValidation: Joi.CustomValidator = (enumPropertiesColors: IEnumPropertiesColors, helpers) => {
     const { properties }: IEntityTemplate['properties'] = helpers.state.ancestors[0].properties;
-
     Object.entries(enumPropertiesColors).forEach(([key, value]) => {
         const property = properties[key];
 
@@ -169,6 +174,7 @@ const customEnumPropertiesColorsSchemaValidation: Joi.CustomValidator = (enumPro
 
     return enumPropertiesColors;
 };
+
 export const enumPropertiesColorsSchema = Joi.object()
     .pattern(Joi.string(), Joi.object().pattern(Joi.string(), ColorSchema))
     .custom(customEnumPropertiesColorsSchemaValidation);

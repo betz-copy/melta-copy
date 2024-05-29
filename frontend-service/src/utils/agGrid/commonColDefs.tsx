@@ -1,12 +1,13 @@
-import React from 'react';
 import { ColDef, ICellRendererParams, IDateFilterParams, ISetFilterParams, ValueFormatterParams, ValueGetterFunc } from '@ag-grid-community/core';
 import i18next from 'i18next';
-import { OpenPreviewButton } from '../../common/FilePreview/OpenPreviewButton';
-import { Value } from './Value';
-import { getDateWithoutTime, getLongDate } from '../date';
+import React from 'react';
+import OpenPreview from '../../common/FilePreview/OpenPreview';
 import { IEntity } from '../../interfaces/entities';
-import { agGridLocaleText } from './agGridLocaleText';
+import { getDateWithoutTime, getLongDate } from '../date';
 import OverflowWrapper from './OverflowWrapper';
+import { Value } from './Value';
+import { agGridLocaleText } from './agGridLocaleText';
+import { getFileName } from '../getFileName';
 
 export const numberColDef = <Data extends any = IEntity>(
     field: string,
@@ -82,7 +83,7 @@ export const fileColDef = <Data extends any = IEntity>(
         field,
         headerName: value.title,
         valueGetter,
-        cellRenderer: (props: ICellRendererParams<Data, string | undefined>) => (props.value ? <OpenPreviewButton fileId={props.value} /> : null),
+        cellRenderer: (props: ICellRendererParams<Data, string | undefined>) => (props.value ? <OpenPreview fileId={props.value} /> : null),
         filter: 'agTextColumnFilter',
         width: hardcodedWidth,
         flex: hardcodedWidth ? 0 : 1,
@@ -195,6 +196,48 @@ export const enumArrayColDef = <Data extends any = IEntity>(
         hide: hideColumn,
     };
 };
+
+export const enumFilesColDef = <Data extends any = IEntity>(
+    field: string,
+    valueGetter: ValueGetterFunc<Data>,
+    value: { title: string },
+    hardcodedWidth: number | undefined,
+    rowHeight: number,
+    hideColumn = false,
+): ColDef<Data> => {
+    const filterParams: ISetFilterParams<Data, string | undefined> = {
+        suppressMiniFilter: true,
+        values: [], // You may need to fetch enum values dynamically or provide them here
+    };
+
+    return {
+        field,
+        headerName: value.title,
+        valueGetter,
+        cellRenderer: (props) => {
+            const enumArray = valueGetter(props) as string[];
+            if (enumArray && enumArray.length > 0) {
+                const items = enumArray.map((file) => getFileName(file));
+                return (
+                    <OverflowWrapper
+                        items={enumArray}
+                        getItemKey={(item) => item}
+                        renderItem={(item) => <OpenPreview fileId={item} />}
+                        containerStyle={{ height: `${rowHeight}px` }}
+                        files={items}
+                    />
+                );
+            }
+            return null;
+        },
+        filter: 'agSetColumnFilter',
+        filterParams,
+        width: hardcodedWidth,
+        flex: hardcodedWidth ? 0 : 1,
+        hide: hideColumn,
+    };
+};
+
 export const dateColDef = <Data extends any = IEntity>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
@@ -202,6 +245,7 @@ export const dateColDef = <Data extends any = IEntity>(
     hardcodedWidth?: number,
     hideColumn = false,
     hideValue = false,
+    calculateTime = false,
 ): ColDef<Data> => {
     const { format } = value;
 
@@ -233,7 +277,9 @@ export const dateColDef = <Data extends any = IEntity>(
         field,
         headerName: value.title,
         valueGetter,
-        cellRenderer: (props: ICellRendererParams<Data, string | undefined>) => <Value hideValue={hideValue} value={formatDate(props.value)} />,
+        cellRenderer: (props: ICellRendererParams<Data, string | undefined>) => (
+            <Value hideValue={hideValue} value={formatDate(props.value)} calculateTime={calculateTime} />
+        ),
         filter: 'agDateColumnFilter',
         filterParams,
         minWidth: format === 'date-time' ? 220 : undefined,

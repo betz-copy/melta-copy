@@ -65,7 +65,6 @@ export const getGraphDataWithNodeSizes = (graphData: GraphData) => {
         const { id } = node;
         return { ...node, nodeSize: getSizeOfNodeByConnections(id, links) };
     });
-
     return { links, nodes: expendedNodes };
 };
 

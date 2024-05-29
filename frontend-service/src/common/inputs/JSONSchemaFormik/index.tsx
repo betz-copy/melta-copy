@@ -1,5 +1,5 @@
 /* eslint-disable import/no-extraneous-dependencies */
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Form as JSONSchemaForm } from '@rjsf/mui';
 import Ajv, { ErrorObject } from 'ajv';
 import addFormats from 'ajv-formats';
@@ -13,6 +13,7 @@ import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplat
 import { RjfsDateWidget, RjfsDateTimeWidget } from './RjfsDatesWidgets';
 import RjfsSelectWidget from './RjfsSelectWidget';
 import RjsfTextWidget from './RjsfStringWidget';
+import RjfsTextAreaWidget from './RjfsTextAreaWidget';
 import './form.css';
 
 const ajvErrorsToFormikErrors = (schema: IMongoEntityTemplatePopulated['properties'], ajvErrors: ErrorObject[]): FormikErrors<any> => {
@@ -23,6 +24,9 @@ const ajvErrorsToFormikErrors = (schema: IMongoEntityTemplatePopulated['properti
 
         const field = ajvError.instancePath.slice(1); // for example: /field1/subfield2
         const schemaOfField = schema.properties[field];
+        if (ajvError.keyword === 'format') {
+            return [field, `${i18next.t('validation.mustBeEqualToFormat')}  ${i18next.t(`propertyTypes.${ajvError.params.format}`)}`];
+        }
 
         if (ajvError.keyword === 'pattern') {
             return [field, schemaOfField.patternCustomErrorMessage!];
@@ -36,12 +40,14 @@ const ajvErrorsToFormikErrors = (schema: IMongoEntityTemplatePopulated['properti
 export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'], data: any): FormikErrors<any> => {
     const ajv = new Ajv({ allErrors: true });
     ajv.addFormat('fileId', /.*/);
+    ajv.addFormat('text-area', /.*/);
     addFormats(ajv);
     ajv.addVocabulary(['patternCustomErrorMessage', 'hide']);
     ajv.addKeyword({
         keyword: 'dateNotification',
         type: 'string',
     });
+    ajv.addKeyword({ keyword: 'calculateTime' });
     ajv.addKeyword({
         keyword: 'serialStarter',
     });
@@ -83,8 +89,19 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
     setFieldTouched,
     isEditMode = false,
 }) => {
+    useEffect(() => {
+        const containerDiv = document.querySelectorAll(
+            '#json-schema > .form-group.field.field-object > .MuiFormControl-root > .MuiGrid-root > .MuiGrid-root',
+        );
+        containerDiv.forEach((innerDiv) => {
+            const hasOtherField = innerDiv.querySelector('.other-field');
+            innerDiv.classList.add(hasOtherField ? 'has-other-field-child' : 'has-text-area-child');
+        });
+    }, [values.template]);
+
     const rjsfExtraErrors = formikErrorsToRjsfExtraErrors(errors as Record<string, string>);
     const ajvExtraErrorsOnlyTouched: ErrorSchema<{}> = pickBy(rjsfExtraErrors, (_value, key) => touched[key]);
+
     return (
         <JSONSchemaForm
             id="json-schema"
@@ -105,7 +122,15 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
                         'ui:options': { enumOptions: propertySchema.items!.enum.map((option) => ({ label: option, value: option })) },
                     };
                 }
-                return {};
+                if (propertySchema.format === 'text-area') {
+                    return {
+                        'ui:widget': 'TextAreaWidget',
+                        'ui:classNames': 'text-area',
+                    };
+                }
+                return {
+                    'ui:classNames': 'other-field',
+                };
             })}
             onChange={({ formData }) => {
                 setValues(formData);
@@ -116,6 +141,9 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
             onBlur={(id) => {
                 const [_, field] = id.split('root_');
                 setFieldTouched(field);
+            }}
+            experimental_defaultFormStateBehavior={{
+                emptyObjectFields: 'skipEmptyDefaults', // library has for array a default empty array ([]). disable this
             }}
             noValidate
             validator={validator}
@@ -128,9 +156,10 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
                 DateTimeWidget: RjfsDateTimeWidget,
                 TextWidget: RjsfTextWidget,
                 EmailWidget: RjsfTextWidget,
+                TextAreaWidget: RjfsTextAreaWidget,
             }}
         >
-            <div /> {/* remove the built in submit button */}
+            <div />
         </JSONSchemaForm>
     );
 };
