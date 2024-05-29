@@ -15,9 +15,6 @@ const config = {
         baseEntitiesRoute: env.get('ENTITY_TEMPLATE_SERVICE_ENTITIES_BASE_ROUTE').default('/api/templates/entities').asString(),
         requestTimeout: env.get('ENTITY_TEMPLATE_SERVICE_REQUEST_TIMEOUT').default(10000).asIntPositive(),
     },
-    errorCodes: {
-        failedToDeleteField: 'FAILED_DELETE_FIELD',
-    },
 };
 
 export default config;

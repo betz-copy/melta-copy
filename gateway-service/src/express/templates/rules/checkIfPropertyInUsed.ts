@@ -1,5 +1,5 @@
-import config from '../../config';
-import { ServiceError } from '../../express/error';
+import config from '../../../config';
+import { ServiceError } from '../../error';
 import {
     IEquation,
     ISumAggFunction,
@@ -9,9 +9,9 @@ import {
     isGroup,
     isRegularFunction,
     isSumAggFunction,
-} from '../../express/rule/interfaces';
-import { IArgument, IPropertyOfVariable, isConstant, isPropertyOfVariable } from '../../express/rule/interfaces/argument';
-import { IFormula } from '../../express/rule/interfaces/formula';
+} from './interfaces';
+import { IArgument, IPropertyOfVariable, isConstant, isPropertyOfVariable } from './interfaces/argument';
+import { IFormula } from './interfaces/formula';
 
 const checkPropertyInUsed = (propertyOfVariable: IPropertyOfVariable | ISumAggFunction, entityId: string, properties: string[]) => {
     const { variableName, property } = propertyOfVariable;

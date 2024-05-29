@@ -3,7 +3,6 @@ import FolderModel from './model';
 import { IGantt, IGanttDocument, ISearchGanttsBody } from './interface';
 import { ServiceError } from '../error';
 import { escapeRegExp } from '../../utils';
-import config from '../../config';
 
 export class GanttManager {
     static searchGantts({ search, limit, step, entityTemplateId, relationshipTemplateIds }: ISearchGanttsBody) {
@@ -20,8 +19,6 @@ export class GanttManager {
         if (relationshipTemplateIds) {
             query['items.connectedEntityTemplates.relationshipTemplateId'] = { $in: relationshipTemplateIds };
         }
-
-        console.log({ query });
 
         return FolderModel.find(query)
             .limit(limit)
@@ -47,54 +44,6 @@ export class GanttManager {
             .orFail(new ServiceError(404, 'Gantt not found'))
             .lean()
             .exec();
-    }
-
-    static async isPropertyOfTemplateInUsed(templateId: string, propertiesToRemove: { properties: string[] }) {
-        const { properties } = propertiesToRemove;
-
-        const propertyChecks = properties.map(async (property) => {
-            const propertyInUsed = await FolderModel.exists({
-                // 'items.entityTemplate.id': templateId,
-                // $or: [
-                //     { 'items.entityTemplate.fieldsToShow': property },
-                //     { 'items.entityTemplate.startDateField': property },
-                //     { 'items.entityTemplate.endDateField': property },
-                //     { 'items.connectedEntityTemplates.fieldsToShow': property },
-                // ],
-                items: {
-                    $elemMatch: {
-                        $or: [
-                            {
-                                'entityTemplate.id': templateId,
-                                'entityTemplate.fieldsToShow': property,
-                                'entityTemplate.startDateField': property,
-                                'entityTemplate.endDateField': property,
-                            },
-                            {
-                                connectedEntityTemplates: {
-                                    $elemMatch: {
-                                        // relationship.source/relationship.destination
-                                        relationshipTemplateId: templateId,
-                                        fieldsToShow: property,
-                                    },
-                                },
-                            },
-                        ],
-                    },
-                },
-            });
-            // console.log({ propertyChecks });
-
-            if (propertyInUsed) {
-                throw new ServiceError(400, 'can not delete field that used in gantts', {
-                    errorCode: config.errorCodes.failedToDeleteField,
-                    type: 'gantss',
-                    property,
-                });
-            }
-        });
-
-        await Promise.all(propertyChecks);
     }
 }
 

@@ -1,10 +1,11 @@
 import * as express from 'express';
 
 export class ServiceError extends Error {
-    constructor(public code: number, message: string, public metadata: object = {}) {
+    public code;
+
+    constructor(code: number, message: string) {
         super(message);
         this.code = code;
-        this.metadata = metadata;
     }
 }
 
@@ -18,7 +19,6 @@ export const errorMiddleware = (error: Error, _req: express.Request, res: expres
         res.status(error.code).send({
             type: error.name,
             message: error.message,
-            metadata: error.metadata,
         });
     } else {
         res.status(500).send({
@@ -27,7 +27,6 @@ export const errorMiddleware = (error: Error, _req: express.Request, res: expres
         });
     }
 
-    // TODO: add some logging
     console.log('Request failed with error: ', error);
 
     next();

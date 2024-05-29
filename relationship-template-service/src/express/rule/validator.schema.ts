@@ -78,14 +78,3 @@ export const searchRulesRequestSchema = Joi.object({
     query: {},
     params: {},
 });
-
-// POST /api/templates/rules/isPropertyOfTemplateInUsed/:entityId
-export const isPropertyOfTemplateInUsedSchema = Joi.object({
-    body: {
-        properties: Joi.array().items(Joi.string()).required(),
-    },
-    query: {},
-    params: {
-        templateId: Joi.string().required(),
-    },
-});

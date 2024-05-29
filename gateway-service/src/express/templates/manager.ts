@@ -25,6 +25,7 @@ import ProcessTemplatesManager from '../processes/processTemplates/manager';
 import { isProcessManager } from '../../externalServices/permissionsService';
 import { IPermissionsOfUser } from '../permissions/interfaces';
 import { GanttsService, IMongoGantt } from '../../externalServices/ganttsService';
+import { checkPropertyInUsedFromFormula } from './rules/checkIfPropertyInUsed';
 
 const {
     categoryHasTemplates,
@@ -362,6 +363,11 @@ export class TemplatesManager {
         };
     }
 
+    static async isPropertyOfTemplateInUsedInRules(templateId: string, properties: string[]) {
+        const allRules = await RelationshipsTemplateManagerService.searchRules({});
+        return allRules.forEach((rule) => checkPropertyInUsedFromFormula(rule.formula, templateId, properties));
+    }
+
     static async isPropertyOfTemplateInUsedInGantts(templateId: string, properties: string[]) {
         const sourceRelationShipTEmplatesIDs = await RelationshipsTemplateManagerService.searchRelationshipTemplates({
             sourceEntityIds: [templateId],
@@ -371,22 +377,21 @@ export class TemplatesManager {
             destinationEntityIds: [templateId],
         });
 
-        const relevantGantts = await GanttsService.searchGantts({
+        const allRelationShips = [...sourceRelationShipTEmplatesIDs, ...destinationRelationShipTEmplatesIDs];
+
+        const relevantGanttsWithEntityTemplate = await GanttsService.searchGantts({
             entityTemplateId: templateId,
-            limit: 100,
+            limit: 0,
             step: 0,
         });
 
-        const relevantGantts1 = await GanttsService.searchGantts({
-            relationshipTemplateIds: [
-                ...sourceRelationShipTEmplatesIDs.map((relationShip) => relationShip._id),
-                ...destinationRelationShipTEmplatesIDs.map((relationShip) => relationShip._id),
-            ],
-            limit: 100,
+        const ganttsWithConnectedRelationship = await GanttsService.searchGantts({
+            relationshipTemplateIds: allRelationShips.map((relationShip) => relationShip._id),
+            limit: 0,
             step: 0,
         });
 
-        const combinedRelevantGantts: IMongoGantt[] = relevantGantts.concat(relevantGantts1);
+        const combinedRelevantGantts: IMongoGantt[] = relevantGanttsWithEntityTemplate.concat(ganttsWithConnectedRelationship);
 
         const allRelevantGanttsWithoutDuplicate = combinedRelevantGantts.reduce<IMongoGantt[]>((acc, current) => {
             if (!acc.some((item) => item._id === current._id)) {
@@ -395,24 +400,34 @@ export class TemplatesManager {
             return acc;
         }, []);
 
-        properties.map((property) => {
-            allRelevantGanttsWithoutDuplicate.map((gantt) => {
-                gantt.items.map((item) => {
+        allRelevantGanttsWithoutDuplicate.forEach((gantt) => {
+            gantt.items.forEach((item) => {
+                properties.forEach((property) => {
                     const { entityTemplate, connectedEntityTemplates } = item;
+                    let found = false;
+
                     if (
                         (entityTemplate.id === templateId && entityTemplate.fieldsToShow.includes(property)) ||
                         entityTemplate.startDateField === property ||
                         entityTemplate.endDateField === property
                     )
+                        found = true;
+
+                    if (!found)
+                        found = connectedEntityTemplates.some((connectedEntityTemplate) => {
+                            const currentRelationShip = allRelationShips.find(
+                                (relationShip) => relationShip._id === connectedEntityTemplate.relationshipTemplateId,
+                            );
+
+                            return currentRelationShip?.destinationEntityId === templateId || currentRelationShip?.sourceEntityId === templateId;
+                        });
+
+                    if (found)
                         throw new ServiceError(400, 'can not delete field that used in gantts', {
                             errorCode: config.errorCodes.failedToDeleteField,
                             type: 'gantss',
                             property,
                         });
-                        
-                    connectedEntityTemplates.map((connectedEntityTemplate) => {
-                        if(sourceRelationShipTEmplatesIDs.some((source)=>source._id===templateId))
-                    });
                 });
             });
         });
@@ -476,10 +491,9 @@ export class TemplatesManager {
             iconFileId = currTemplate.iconFileId;
         }
 
-        // await GanttsService.isPropertyOfTemplateInUsed(id, Object.keys(removedProperties));
         await TemplatesManager.isPropertyOfTemplateInUsedInGantts(id, Object.keys(removedProperties));
 
-        await RelationshipsTemplateManagerService.isPropertyOfTemplateInUsed(id, Object.keys(removedProperties));
+        await TemplatesManager.isPropertyOfTemplateInUsedInRules(id, Object.keys(removedProperties));
 
         const { uniqueConstraints, properties, ...restOfTemplateData } = updatedTemplateData;
         const { required: requiredConstraints, ...restOfTemplatePropertiesObject } = properties;

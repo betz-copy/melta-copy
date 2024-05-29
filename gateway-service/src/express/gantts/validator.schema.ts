@@ -72,14 +72,3 @@ export const searchGanttsSchema = Joi.object({
     },
     params: {},
 });
-
-// POST /api/gantts/isPropertyOfTemplateInUsed/:templateId
-export const isPropertyOfTemplateInUsedSchema = Joi.object({
-    body: {
-        properties: Joi.array().items(Joi.string()).required(),
-    },
-    query: {},
-    params: {
-        templateId: Joi.string().required(),
-    },
-});

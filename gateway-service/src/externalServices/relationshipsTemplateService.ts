@@ -94,11 +94,4 @@ export class RelationshipsTemplateManagerService {
 
         return data;
     }
-
-    static async isPropertyOfTemplateInUsed(templateId: string, properties: string[]) {
-        const { data } = await this.RelationshipsTemplateManagerApi.post(`${baseRulesRoute}/isPropertyOfTemplateInUsed/${templateId}`, {
-            properties,
-        });
-        return data;
-    }
 }
