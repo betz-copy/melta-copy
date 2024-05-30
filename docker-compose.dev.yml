@@ -81,19 +81,19 @@ services:
         limits:
           memory: 1024m
 
-  # apm-server:
-  #   image: docker.elastic.co/apm/apm-server:7.9.1
-  #   container_name: apm-server
-  #   user: root
-  #   depends_on:
-  #     - elastic
-  #   ports:
-  #     - 8200:8200
-  #   volumes:
-  #     - ./elk/apm-server.yml:/usr/share/apm-server/apm-server.yml:ro
-  #   environment:
-  #     - output.elasticsearch.hosts=["elastic:9200"]
-  #   restart: always
+  apm-server:
+    image: docker.elastic.co/apm/apm-server:7.9.1
+    container_name: apm-server
+    user: root
+    depends_on:
+      - elastic
+    ports:
+      - 8200:8200
+    volumes:
+      - ./elk/apm-server.yml:/usr/share/apm-server/apm-server.yml:ro
+    environment:
+      - output.elasticsearch.hosts=["elastic:9200"]
+    restart: always
 
   logstash:
     image: logstash:7.9.1
