@@ -1,7 +1,7 @@
 import axios from 'axios';
 import config from '../../config';
 import { IBrokenRule } from '../ruleBreachService/interfaces';
-import { IConstraintsOfTemplate, IEntity, IGetFilePathsOfProperty, ISearchEntitiesOfTemplateBody, ISearchResult } from './interfaces/entities';
+import { IConstraintsOfTemplate, IEntity, ISearchEntitiesOfTemplateBody, ISearchResult } from './interfaces/entities';
 import { IRelationship } from './interfaces/relationships';
 import { IConnection } from './interfaces/rules';
 
@@ -114,12 +114,6 @@ export class InstanceManagerService {
 
     static async updateConstraintsOfTemplate(templateId: string, constraints: { requiredConstraints: string[]; uniqueConstraints: string[][] }) {
         const { data } = await this.InstanceManagerApi.put<IConstraintsOfTemplate[]>(`${baseConstraintsRoute}/${templateId}`, constraints);
-
-        return data;
-    }
-
-    static async getFilePathsOfTemplate(templateId: string, body: IGetFilePathsOfProperty) {
-        const { data } = await this.InstanceManagerApi.post<string[]>(`${baseEntitiesRoute}/getFilePathsOfTemplate/${templateId}`, body);
 
         return data;
     }

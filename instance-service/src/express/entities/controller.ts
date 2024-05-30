@@ -73,10 +73,6 @@ class EntityController {
         res.json(await EntityManager.deletePropertiesOfTemplate(req.params.templateId, req.body.properties));
     }
 
-    static async getFilePathsOfFilesPropertiesOfTemplate(req: Request, res: Response) {
-        res.json(await EntityManager.getFilePathsOfFilesPropertiesOfTemplate(req.params.templateId, req.body));
-    }
-
     static async enumerateNewSerialNumberFields(req: Request, res: Response) {
         res.json(await EntityManager.enumerateNewSerialNumberFields(req.params.templateId, req.body.newSerialNumberFields));
     }

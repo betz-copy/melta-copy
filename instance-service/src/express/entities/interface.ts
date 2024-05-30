@@ -94,12 +94,6 @@ export interface ISearchBatchBody {
     sort: ISearchSort;
 }
 
-export interface IGetFilePathsOfProperty {
-    skip: number;
-    limit: number;
-    properties: string[];
-}
-
 export interface IGetExpandedEntityBody {
     disabled: boolean | null;
     templateIds: string[];

@@ -256,17 +256,6 @@ export const deletePropertiesOfTemplateRequestSchema = Joi.object({
     },
 });
 
-/**
- * POST /api/instances/entities/getFilePathsOfTemplate/:templateId
- */
-export const getFilePathsOfTemplateRequestSchema = Joi.object({
-    body: {
-        skip: Joi.number().integer().min(0).default(0),
-        limit: Joi.number().integer().min(1).max(searchEntitiesMaxLimit).required(),
-        properties: Joi.array().items(Joi.string()).required(),
-    },
-});
-
 export const enumerateNewSerialNumberFieldsRequestSchema = Joi.object({
     body: Joi.object({
         newSerialNumberFields: Joi.object().required(),

@@ -15,13 +15,11 @@ import {
     normalizeGetDbConstraints,
     runInTransactionAndNormalize,
     normalizeSearchWithRelationships,
-    normalizeReturnedStringArray,
 } from '../../utils/neo4j/lib';
 import {
     IConstraint,
     IConstraintsOfTemplate,
     IEntity,
-    IGetFilePathsOfProperty,
     IGetExpandedEntityBody,
     IRequiredConstraint,
     ISearchBatchBody,
@@ -672,24 +670,6 @@ export class EntityManager {
             normalizeReturnedEntity('multipleResponses'),
             {
                 properties: propertiesToRemove,
-            },
-        );
-    }
-
-    static async getFilePathsOfFilesPropertiesOfTemplate(templateId: string, body: IGetFilePathsOfProperty) {
-        const { properties, skip, limit } = body;
-        const propertiesAsString = properties.map((property) => `e.${property}`).join(', ');
-
-        return Neo4jClient.readTransaction(
-            `MATCH (e: \`${templateId}\`)
-             WHERE ${propertiesAsString} IS NOT NULL
-             RETURN ${propertiesAsString} 
-             SKIP toInteger($skip)
-             LIMIT toInteger($limit)`,
-            normalizeReturnedStringArray,
-            {
-                skip,
-                limit,
             },
         );
     }

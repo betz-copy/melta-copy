@@ -98,9 +98,3 @@ export interface ISearchResult {
     count: number;
     entities: IEntityWithDirectRelationships[];
 }
-
-export interface IGetFilePathsOfProperty {
-    skip: number;
-    limit: number;
-    properties: string[];
-}
