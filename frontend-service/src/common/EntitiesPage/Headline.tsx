@@ -14,7 +14,6 @@ import { BlueTitle } from '../BlueTitle';
 import { RootState } from '../../store';
 import { MeltaTooltip } from '../MeltaTooltip';
 import { environment } from '../../globals';
-import { EntitiesTableOfTemplateRef } from '../EntitiesTableOfTemplate';
 import { IEntity } from '../../interfaces/entities';
 
 export const GlobalSearchBar: React.FC<{
@@ -93,10 +92,36 @@ const EntitiesPageHeadline: React.FC<{
         setViewMode: (newViewMode: 'cards-view' | 'templates-tables-view') => void;
     };
     pageTitle: string;
-    entitiesTableRef: React.RefObject<EntitiesTableOfTemplateRef<IEntity>>;
-}> = ({ searchInput, setSearchInput, onSearch, entityTemplateSelectCheckboxProps, excelExportProps, viewModeProps, pageTitle, entitiesTableRef }) => {
+    onAddEntity: (id: string) => void;
+    refreshServerSide: (templateId: string) => void;
+}> = ({
+    searchInput,
+    setSearchInput,
+    onSearch,
+    entityTemplateSelectCheckboxProps,
+    excelExportProps,
+    viewModeProps,
+    pageTitle,
+    onAddEntity,
+    refreshServerSide,
+}) => {
     const darkMode = useSelector((state: RootState) => state.darkMode);
     const theme = useTheme();
+
+    const onSuccessCreate = (entity: IEntity) => {
+        if (viewModeProps.viewMode === 'templates-tables-view') {
+            const template = entityTemplateSelectCheckboxProps.templates.find((entityTemplate) => entityTemplate._id === entity.templateId);
+            if (template) {
+                try {
+                    refreshServerSide(template._id);
+                } catch {
+                    onAddEntity(entity.templateId);
+                }
+            }
+        } else {
+            onAddEntity(entity.properties._id);
+        }
+    };
 
     return (
         <Grid
@@ -193,7 +218,7 @@ const EntitiesPageHeadline: React.FC<{
                         <AddEntityButton
                             disabledToolTip
                             style={{ background: theme.palette.primary.main, borderRadius: '7px', width: '135px', height: '35px' }}
-                            refreshServerSide={() => entitiesTableRef.current?.refreshServerSide()}
+                            onSuccessCreate={onSuccessCreate}
                         >
                             <AddIcon htmlColor="white" />
                             <Typography fontSize={14} style={{ fontWeight: '400', padding: '0 5px', color: 'white' }}>

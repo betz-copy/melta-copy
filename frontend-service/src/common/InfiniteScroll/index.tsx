@@ -1,27 +1,39 @@
-import React, { CSSProperties } from 'react';
-import { Grid } from '@mui/material';
+import { Grid, GridProps } from '@mui/material';
+import React, { CSSProperties, useMemo } from 'react';
 import { PureInfiniteScroll, PureInfiniteScrollProps } from './PureInfiniteScroll';
 
 interface InfiniteScrollProps<T> extends PureInfiniteScrollProps<T> {
     useContainer?: boolean;
+    direction?: GridProps['direction'];
+    wrap?: GridProps['wrap'];
+    spacing?: GridProps['spacing'];
     style?: CSSProperties;
 }
 
-export const InfiniteScroll = <T extends any>({ useContainer = true, style = {}, ...innerInfiniteScrollProps }: InfiniteScrollProps<T>) => {
+export const InfiniteScroll = <T extends any>({
+    useContainer = true,
+    direction = 'column',
+    wrap = 'nowrap',
+    spacing,
+    style = {},
+    ...innerInfiniteScrollProps
+}: InfiniteScrollProps<T>) => {
     if (!useContainer) return <PureInfiniteScroll {...innerInfiniteScrollProps} />;
 
+    const overflow = useMemo(() => {
+        switch (direction) {
+            case 'row':
+            case 'row-reverse':
+                return { overflowX: 'overlay', overflowY: 'hidden' };
+            case 'column':
+            case 'column-reverse':
+            default:
+                return { overflowX: 'hidden', overflowY: 'overlay' };
+        }
+    }, [direction]);
+
     return (
-        <Grid
-            container
-            direction="column"
-            wrap="nowrap"
-            marginBottom="3%"
-            sx={{
-                overflowX: 'hidden',
-                overflowY: 'overlay',
-                ...style,
-            }}
-        >
+        <Grid container direction={direction} wrap={wrap} spacing={spacing} marginBottom="3%" sx={{ ...overflow, ...style }}>
             <PureInfiniteScroll {...innerInfiniteScrollProps} />
         </Grid>
     );

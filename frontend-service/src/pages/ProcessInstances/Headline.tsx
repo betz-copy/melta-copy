@@ -64,6 +64,7 @@ const ProcessInstancesHeadline: React.FC<{
                             onEndDateChange={onSetEndDate}
                             startDateInput={startDateInput}
                             endDateInput={endDateInput}
+                            directionIsRow
                         />
                     </Grid>
                     <Grid item>

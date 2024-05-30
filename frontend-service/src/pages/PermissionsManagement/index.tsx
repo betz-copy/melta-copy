@@ -51,7 +51,7 @@ const PermissionsManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateA
             <Grid item container xs={12} spacing={1}>
                 <Grid item xs={12} container justifyContent="space-between" alignItems="center">
                     <Grid item flex={1} />
-                    <Grid item flex={1} style={{ width: '600px' }}>
+                    <Grid item flex={1}>
                         <TextField
                             value={quickFilterText}
                             onChange={(e) => setQuickFilterText(e.target.value)}

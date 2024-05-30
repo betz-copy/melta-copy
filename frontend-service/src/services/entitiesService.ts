@@ -7,23 +7,37 @@ import {
     ISearchResult,
     ISearchEntitiesOfTemplateBody,
     IExportEntitiesBody,
+    IGraphFilterBodyBatch,
 } from '../interfaces/entities';
 import { EntityWizardValues } from '../common/dialogs/entity';
 import { IRuleBreach } from '../interfaces/ruleBreaches/ruleBreach';
+import { filterModelToFilterOfGraph } from '../pages/Graph/GraphFilterToBackend';
 
 const { entities, relationships } = environment.api;
 
 export const exportEntitiesRequest = async (body: IExportEntitiesBody) => {
-    const { data } = await axios.post(`${entities}/export`, body, { responseType: 'blob', timeout: 120000 });
+    const { data } = await axios.post(`${entities}/export`, body, { responseType: 'blob' });
     return data;
 };
 
 export const getExpandedEntityByIdRequest = async (
     entityId: string,
-    options?: { disabled?: boolean; templateIds: string[]; numberOfConnections?: number },
+    expandedParams: { [key: string]: number },
+    options?: {
+        disabled?: boolean;
+        templateIds: string[];
+    },
+    filterRecord: IGraphFilterBodyBatch = {},
 ) => {
-    const { data } = await axios.post<IEntityExpanded>(`${entities}/expanded/${entityId}`, options);
-    return data;
+    const filters = filterModelToFilterOfGraph(filterRecord);
+    const batch = (
+        await axios.post<IEntityExpanded>(`${entities}/expanded/${entityId}`, {
+            ...options,
+            expandedParams,
+            filters,
+        })
+    ).data;
+    return batch;
 };
 
 export const getRelationshipInstancesCountByTemplateIdRequest = async (templateId: string) => {
@@ -70,7 +84,7 @@ export const updateEntityRequestForMultiple = async (
     const formData = new FormData();
 
     const filesToUpload: any = [];
-    const unchangedFiles: any = []; /////send single file as array to the back
+    const unchangedFiles: any = []; /// //send single file as array to the back
     Object.entries(newEntityData.attachmentsProperties).forEach(([key, value]: [string, any]) => {
         if (Array.isArray(value) && value) {
             value.forEach((file, index) => {

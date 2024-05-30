@@ -3,6 +3,7 @@ import { retry } from 'ts-retry-promise';
 
 import config from '../config';
 import { trycatch } from './index';
+import logger from './logger/logsLogger';
 
 interface Neo4jAuth {
     username: string;
@@ -28,7 +29,7 @@ class Neo4jClient {
 
         await this.verifyConnectivity();
 
-        console.log('[NEO4J]: client initialized');
+        logger.info('[NEO4J]: client initialized');
 
         this.isInitialized = true;
     }
@@ -52,7 +53,7 @@ class Neo4jClient {
             const { err } = await trycatch(() => session.close());
 
             if (err) {
-                console.error('Failed to close session. Possible leak, Error:', err);
+                logger.error('Failed to close session. Possible leak, Error:', err);
             }
         }
     }
@@ -66,7 +67,7 @@ class Neo4jClient {
     async verifyConnectivity() {
         const { connectionRetries, connectionRetryDelay } = config.neo4j;
 
-        await retry(() => this.driver.verifyConnectivity(), { retries: connectionRetries, delay: connectionRetryDelay, logger: console.log });
+        await retry(() => this.driver.verifyConnectivity(), { retries: connectionRetries, delay: connectionRetryDelay, logger: logger.info });
     }
 }
 

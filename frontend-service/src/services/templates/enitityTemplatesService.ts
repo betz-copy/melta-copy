@@ -4,10 +4,11 @@ import { EntityTemplateFormInputProperties, EntityTemplateWizardValues } from '.
 import { environment } from '../../globals';
 import { IEntitySingleProperty, IEntityTemplate, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { getFileName } from '../../utils/getFileName';
+import { CommonFormInputProperties } from '../../common/wizards/entityTemplate/commonInterfaces';
 
 const { entityTemplates } = environment.api;
 export const basePropertyTypes = ['string', 'number', 'boolean'];
-export const stringFormats = ['date', 'date-time', 'email', 'fileId'];
+export const stringFormats = ['date', 'date-time', 'email', 'fileId', 'text-area'];
 export const arrayTypes = ['multipleFiles', 'enumArray'];
 
 const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTemplatePopulated | null): EntityTemplateWizardValues | undefined => {
@@ -27,6 +28,7 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
         else if (value.pattern) type = 'pattern';
         else if (value.items?.enum) type = 'enumArray';
         else if (value.items?.format === 'fileId') type = 'multipleFiles';
+        else if (value.items?.format === 'text-area') type = 'text-area';
 
         const property: EntityTemplateFormInputProperties = {
             id: uuid(),
@@ -141,7 +143,6 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTem
             if (unique) uniqueConstraint.push(name);
             if (preview) propertiesPreview.push(name);
             if (type === 'serialNumber') serialsUniqueConstraints.push([name]);
-
             if (type === 'enum' || type === 'enumArray') {
                 Object.entries(optionColors).forEach(([option, color]) => {
                     if (!color) return;
@@ -253,7 +254,6 @@ const updateEntityTemplateRequest = async (entityTemplateId: string, updatedEnti
     formData.append('propertiesTypeOrder', JSON.stringify(entityTemplate.propertiesTypeOrder));
     formData.append('propertiesPreview', JSON.stringify(entityTemplate.propertiesPreview));
     formData.append('uniqueConstraints', JSON.stringify(entityTemplate.uniqueConstraints));
-
     const { data } = await axios.put<IMongoEntityTemplatePopulated>(`${entityTemplates}/${entityTemplateId}`, formData);
     return data;
 };
@@ -263,10 +263,30 @@ const deleteEntityTemplateRequest = async (entityTemplateId: string) => {
     return data;
 };
 
+const updateEnumFieldRequest = async (id: string, fieldValue: string, values: CommonFormInputProperties, field: string) => {
+    const { name, type, options } = values;
+    const partialInput = { name, type, options };
+    const { data } = await axios.put<IMongoEntityTemplatePopulated>(`${entityTemplates}/update-enum-field/${id}`, {
+        fieldValue,
+        partialInput,
+        field,
+    });
+    return data;
+};
+
+const deleteEnumFieldRequest = async (id: string, fieldValue: string, field: CommonFormInputProperties) => {
+    const { name, type, options } = field;
+    const partialInput = { name, type, options };
+    const { data } = await axios.patch<IMongoEntityTemplatePopulated>(`${entityTemplates}/delete-enum-field/${id}`, { fieldValue, partialInput });
+    return data;
+};
+
 export {
     createEntityTemplateRequest,
     updateEntityTemplateRequest,
     entityTemplateObjectToEntityTemplateForm,
     deleteEntityTemplateRequest,
     updateEntityTemplateStatusRequest,
+    updateEnumFieldRequest,
+    deleteEnumFieldRequest,
 };

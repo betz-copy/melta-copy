@@ -1,27 +1,28 @@
-import { Grid, Button, CircularProgress, Box, Typography, TextField } from '@mui/material';
-import { Formik, Form, Field } from 'formik';
+/* eslint-disable no-extra-boolean-cast */
+import { Clear as ClearIcon, Done as DoneIcon, Edit as EditIcon } from '@mui/icons-material';
+import { Box, Button, CircularProgress, Grid, TextField, Typography } from '@mui/material';
+import { AxiosError } from 'axios';
+import { Field, Form, Formik } from 'formik';
 import i18next from 'i18next';
 import pickBy from 'lodash.pickby';
 import React, { FC } from 'react';
-import { Done as DoneIcon, Clear as ClearIcon, Edit as EditIcon } from '@mui/icons-material';
-import { AxiosError } from 'axios';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import { IMongoStepInstancePopulated } from '../../../../interfaces/processes/stepInstance';
-import { pickProcessFieldsPropertiesSchema } from '../../../../utils/pickFieldsPropertiesSchema';
-import { InstanceFileInput } from '../../../inputs/InstanceFilesInput/InstanceFileInput';
-import { ajvValidate, JSONSchemaFormik } from '../../../inputs/JSONSchemaFormik';
-import { getStepValuesFromStepInstance } from './stepsFormik';
-import { updateStepRequest } from '../../../../services/processesService';
-import { ErrorToast } from '../../../ErrorToast';
-import ProcessStatus from '../ProcessSummaryStep/ProcessStatus';
-import { IMongoStepTemplatePopulated } from '../../../../interfaces/processes/stepTemplate';
 import { ProcessStepValues } from '.';
-import { IPermissionsOfUser } from '../../../../services/permissionsService';
 import { IMongoProcessInstancePopulated } from '../../../../interfaces/processes/processInstance';
-import { EntityReference } from '../EntityReference';
+import { IMongoStepInstancePopulated } from '../../../../interfaces/processes/stepInstance';
+import { IMongoStepTemplatePopulated } from '../../../../interfaces/processes/stepTemplate';
+import { IPermissionsOfUser } from '../../../../services/permissionsService';
+import { updateStepRequest } from '../../../../services/processesService';
+import { pickProcessFieldsPropertiesSchema } from '../../../../utils/pickFieldsPropertiesSchema';
 import { BlueTitle } from '../../../BlueTitle';
-import { OpenPreviewButton } from '../../../FilePreview/OpenPreviewButton';
+import { ErrorToast } from '../../../ErrorToast';
+import { InstanceFileInput } from '../../../inputs/InstanceFilesInput/InstanceFileInput';
+import { JSONSchemaFormik, ajvValidate } from '../../../inputs/JSONSchemaFormik';
+import { EntityReference } from '../EntityReference';
+import ProcessStatus from '../ProcessSummaryStep/ProcessStatus';
+import { getStepValuesFromStepInstance } from './stepsFormik';
+import OpenPreview from '../../../FilePreview/OpenPreview';
 import { InstanceSingleFileInput } from '../../../inputs/InstanceFilesInput/InstanceSingleFileInput';
 
 interface ProcessStepProps {
@@ -162,12 +163,12 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                                 schema={propertiesSchema}
                                                 values={{ ...values, properties: values.properties }}
                                                 setValues={(propertiesValues) => {
-                                                    setFieldValue('properties', propertiesValues);
+                                                    return setFieldValue('properties', propertiesValues);
                                                 }}
                                                 errors={errors.properties ?? {}}
                                                 touched={touched.properties ?? {}}
                                                 setFieldTouched={(field) => {
-                                                    setFieldTouched(`properties.${field}`);
+                                                    return setFieldTouched(`properties.${field}`);
                                                 }}
                                                 readonly={!isStepEditMode}
                                             />
@@ -227,11 +228,11 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                                             if (values.attachmentsProperties[fieldName] !== undefined) {
                                                                 if (Array.isArray(values.attachmentsProperties[fieldName])) {
                                                                     attachments = values.attachmentsProperties[fieldName].map((file) => (
-                                                                        <OpenPreviewButton fileId={file.name} key={file.name} />
+                                                                        <OpenPreview fileId={file.name} key={file.name} />
                                                                     ));
                                                                 } else {
                                                                     attachments = (
-                                                                        <OpenPreviewButton
+                                                                        <OpenPreview
                                                                             fileId={values.attachmentsProperties[fieldName].name}
                                                                             key={fieldName}
                                                                         />

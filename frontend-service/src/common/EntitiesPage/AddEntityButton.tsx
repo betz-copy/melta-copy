@@ -4,6 +4,7 @@ import { Dialog } from '@mui/material';
 import { EntityWizardValues } from '../dialogs/entity';
 import IconButtonWithPopover from '../IconButtonWithPopover';
 import { CreateOrEditEntityDetails } from '../dialogs/entity/CreateOrEditEntityDialog';
+import { IEntity } from '../../interfaces/entities';
 
 const AddEntityButton: React.FC<{
     style?: CSSProperties;
@@ -12,8 +13,8 @@ const AddEntityButton: React.FC<{
     initialValues?: EntityWizardValues;
     disabledToolTip?: boolean;
     popoverText?: string;
-    refreshServerSide: () => void;
-}> = ({ style, children, disabled, initialStep, initialValues, popoverText, disabledToolTip = false, refreshServerSide }) => {
+    onSuccessCreate?: (entity: IEntity) => void;
+}> = ({ style, children, disabled, initialStep, initialValues, popoverText, disabledToolTip = false, onSuccessCreate }) => {
     const [addEntityWizardState, setAddEntityWizardState] = useState<{ isOpen: boolean; initialStep?: number; initialValues?: EntityWizardValues }>({
         isOpen: false,
     });
@@ -23,7 +24,7 @@ const AddEntityButton: React.FC<{
         <>
             <IconButtonWithPopover
                 popoverText={
-                    popoverText || disabled ? i18next.t('permissions.dontHaveWritePermissions') : i18next.t('entitiesTableOfTemplate.addEntity')
+                    popoverText ?? (disabled ? i18next.t('permissions.dontHaveWritePermissions') : i18next.t('entitiesTableOfTemplate.addEntity'))
                 }
                 disabledToolTip={disabledToolTip}
                 iconButtonProps={{
@@ -72,7 +73,6 @@ const AddEntityButton: React.FC<{
                             : { properties: { disabled: false, _id: '', createdAt: '', updatedAt: '' }, templateId: '' }
                     }
                     onSuccessUpdate={() => {
-                        refreshServerSide();
                         setAddEntityWizardState((prev) => ({ ...prev, isOpen: false }));
                         setExternalErrors({ files: false, unique: {} });
                     }}
@@ -89,6 +89,7 @@ const AddEntityButton: React.FC<{
                     }}
                     externalErrors={externalErrors}
                     setExternalErrors={setExternalErrors}
+                    onSuccessCreate={onSuccessCreate}
                 />
             </Dialog>
         </>

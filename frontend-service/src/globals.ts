@@ -85,7 +85,10 @@ export const environment = {
         },
     },
     entitiesCardsView: {
-        infiniteScrollPageCount: 10,
+        infiniteScrollPageCount: 12,
+    },
+    entitiesProperties: {
+        maxNumOfCharactersNotInFullWidth: 700,
     },
     notifications: {
         updateInterval: 1000 * 60 * 10,
@@ -169,6 +172,7 @@ export const environment = {
         rowCount: 5,
         defaultExpandedRowCount: 13,
         defaultRowHeight: 50,
+        defaultFontSize: 14,
     },
     activityLog: {
         infiniteScrollPageCount: 10,
@@ -190,12 +194,16 @@ export const environment = {
         headlineTitleFontSize: '24px',
         headlineSubTitleFontSize: '14px',
     },
+    smallPreviewHeight: {
+        number: '150',
+        unit: 'px',
+    },
     iconSize: {
         width: '24px',
         height: '24px',
     },
     fileExtensions: {
-        image: ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'tiff', 'svg', 'webp', 'ico', 'psd', 'raw', 'heif', 'indd', 'ai', 'eps'],
+        image: ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'tiff', 'webp', 'ico', 'psd', 'raw', 'heif', 'indd', 'ai', 'eps'],
         video: ['mp4', 'mov', 'avi', 'wmv', 'flv', 'mkv', 'webm', 'avchd', '3gp', '3g2', '3gpp', '3gpp2', 'm4v'],
         audio: ['mp3', 'wav', 'ogg', 'flac', 'wma', 'aac', 'm4a'],
         document: [
@@ -214,6 +222,7 @@ export const environment = {
             'txt',
             'rtf',
             'csv',
+            'svg',
             'xml',
             'epub',
             'abap',
@@ -954,7 +963,6 @@ export const environment = {
             'sql',
             'db2',
             'ston',
-            'svg',
             'sage',
             'sagews',
             'sls',

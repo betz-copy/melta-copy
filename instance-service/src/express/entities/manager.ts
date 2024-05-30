@@ -1,3 +1,4 @@
+/* eslint-disable no-await-in-loop */
 import { Neo4jError, Transaction } from 'neo4j-driver';
 import pickBy from 'lodash.pickby';
 import differenceWith from 'lodash.differencewith';
@@ -19,6 +20,7 @@ import {
     IConstraint,
     IConstraintsOfTemplate,
     IEntity,
+    IGetExpandedEntityBody,
     IRequiredConstraint,
     ISearchBatchBody,
     ISearchEntitiesOfTemplateBody,
@@ -35,6 +37,7 @@ import { RelationshipsTemplateManagerService } from '../../externalServices/rela
 import { addStringFieldsAndNormalizeDateValues } from './validator.template';
 import { arraysEqualsNonOrdered } from '../../utils/lib';
 import { searchWithRelationshipsToNeoQuery } from '../../utils/neo4j/searchBodyToNeoQuery';
+import { getExpandedFilteredGraphRecursively, expandEntityToNeoQuery } from '../../utils/neo4j/getExpandedEntityByIdRecursive';
 
 export class EntityManager {
     private static throwServiceErrorIfFailedConstraintsValidation(err: unknown): never {
@@ -177,24 +180,36 @@ export class EntityManager {
 
         return node;
     }
-    static async getExpandedEntityById(id: string, disabled: boolean | null, templateIds: string[], numOfConnections: number) {
-        const nodeAndConnections = await Neo4jClient.readTransaction(
-            `MATCH (p {_id:'${id}'})
-             CALL apoc.path.expandConfig(p, {
-                labelFilter: '${templateIds.join('|')}',
-                minLevel: 0,
-                maxLevel: ${numOfConnections}
-             })
-             YIELD path
-             RETURN apoc.path.elements(path)`,
-            normalizeReturnedRelAndEntities(disabled),
-        );
 
-        if (!nodeAndConnections) {
+    static async getExpandedGraphById(
+        id: string,
+        reqBody: IGetExpandedEntityBody,
+        entityTemplatesMap: Map<string, IMongoEntityTemplate>,
+    ) {
+        const { disabled, templateIds, expandedParams, filters } = reqBody;
+        const fixSearchBody = filters ?? {};
+        const initialCypherQuery = await expandEntityToNeoQuery(fixSearchBody, id, templateIds, expandedParams, entityTemplatesMap, id);
+        const initialExpandedEntity = await Neo4jClient.readTransaction(
+            initialCypherQuery.cypherQuery,
+            normalizeReturnedRelAndEntities(disabled),
+            initialCypherQuery.parameters,
+        );
+        if (!initialExpandedEntity) {
             throw new NotFoundError(`[NEO4J] entity "${id}" not found`);
         }
+        if (JSON.stringify(expandedParams) === '{}') {
+            return initialExpandedEntity;
+        }
 
-        return nodeAndConnections;
+        const filterRes = await getExpandedFilteredGraphRecursively(
+            disabled || null,
+            initialExpandedEntity,
+            fixSearchBody,
+            templateIds,
+            expandedParams,
+            entityTemplatesMap,
+        );
+        return filterRes;
     }
 
     static async deleteEntityById(id: string, deleteAllRelationships: boolean) {
@@ -218,6 +233,21 @@ export class EntityManager {
 
             throw error;
         }
+    }
+
+    static async getIsFieldUsed(id: string, fieldValue: string, fieldName: string, type: string){
+        let node;
+        if(type === "array"){
+            node = await Neo4jClient.readTransaction(
+                `MATCH (e: \`${id}\`) WHERE '${fieldValue}' IN e.${fieldName} RETURN e`,
+                normalizeReturnedEntity('singleResponse'),
+            );       
+        }
+        else {node = await Neo4jClient.readTransaction(
+            `MATCH (e: \`${id}\`) WHERE e.${fieldName} = '${fieldValue}' RETURN e`,
+            normalizeReturnedEntity('singleResponse'),
+        );    }    
+        return node;
     }
 
     static async deleteByTemplateId(templateId: string) {
@@ -399,7 +429,7 @@ export class EntityManager {
             const ruleFailuresBeforeAction = await EntityManager.runRulesDependOnEntityUpdate(transaction, entity, updatedProperties);
             const updatedEntity = await runInTransactionAndNormalize(
                 transaction,
-                `MATCH (e {_id: $props._id})
+                `MATCH (e {_id: '${id}'})
                  WITH e.createdAt AS createdAt, e.disabled AS disabled, e AS e
                  SET e = $props 
                  SET e.createdAt = createdAt
@@ -418,6 +448,35 @@ export class EntityManager {
             throwIfActionCausedBrokenRules(ignoredRules, ruleFailuresBeforeAction, ruleFailuresAfterAction);
             return updatedEntity;
         }).catch(EntityManager.throwServiceErrorIfFailedConstraintsValidation); // constraint validation is performed on end of transaction
+    }
+
+    static async updateEnumFieldValue(id: string, newValue: string, oldValue: string, field: any) {
+        let node;
+        try {
+            if(field.type === "array"){
+                node = await Neo4jClient.writeTransaction(
+                    `MATCH (e: \`${id}\`)
+                    SET e.${field.name} = [val IN e.${field.name} WHERE val <> '${oldValue}'] + ['${newValue}']
+                    RETURN e`,
+                    normalizeReturnedEntity('singleResponse')
+                );
+                               
+            }
+            else { node = await Neo4jClient.writeTransaction(
+                `MATCH (e: \`${id}\`)
+                WHERE e.${field.name} = '${oldValue}'
+                SET e.${field.name} = '${newValue}'
+                RETURN e`,
+                normalizeReturnedEntity('singleResponse'),
+            );}
+            return node;
+        } catch (error) {
+            if (error instanceof NotFoundError) {
+                throw new NotFoundError(`[NEO4J] entity not found`);
+            } else {
+                throw new Error('Change failed');
+            }
+        }
     }
 
     private static getConstraintFromName(constraintName: string): IConstraint {
@@ -604,6 +663,23 @@ export class EntityManager {
             updateConstraintsPromises.push(updateUniqueConstraintsPromise);
 
             await Promise.all(updateConstraintsPromises);
+        });
+    }
+
+    static async enumerateNewSerialNumberFields(templateId: string, newSerialNumberFields: object) {
+        return Neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
+            const numOfEntitiesUpdated = `
+            MATCH (n: \`${templateId}\`) 
+            WITH n
+            ORDER BY n.createdAt
+            WITH collect(n) AS entities
+            UNWIND range(0, size(entities)-1) AS index
+            WITH entities[index] AS currentEntity,  index AS currentIndex
+            SET ${Object.entries(newSerialNumberFields)
+                .map(([key, value]) => `\`currentEntity\`.${key} = toFloat(currentIndex + ${value})`)
+                .join(', ')}
+            RETURN count(currentEntity) AS numEntitiesUpdated`;
+            return runInTransactionAndNormalize(transaction, numOfEntitiesUpdated, normalizeResponseCount);
         });
     }
 }

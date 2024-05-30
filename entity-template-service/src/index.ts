@@ -1,29 +1,38 @@
-/* eslint-disable no-console */
 import * as mongoose from 'mongoose';
+import * as apm from 'elastic-apm-node';
 import menash from 'menashmq';
 import Server from './express/server';
 import config from './config';
+import logger from './utils/logger/logsLogger';
 
-const { mongo, service, rabbit } = config;
+const { mongo, service, rabbit, logs } = config;
+
+if (logs.enableApm) {
+    apm.start({
+        serviceName: logs.extraDefault.serviceName,
+        serverUrl: logs.apmServerUrl,
+        environment: logs.extraDefault.environment,
+    });
+}
 
 const initializeMongo = async () => {
-    console.log('Connecting to Mongo...');
+    logger.info('Connecting to Mongo...');
 
     await mongoose.connect(mongo.url, { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false, useCreateIndex: true });
 
-    console.log('Mongo connection established');
+    logger.info('Mongo connection established');
 };
 
 const initializeRabbit = async () => {
-    console.log('Connecting to Rabbit...');
+    logger.info('Connecting to Rabbit...');
 
     await menash.connect(rabbit.url, rabbit.retryOptions);
 
-    console.log('Rabbit connected');
+    logger.info('Rabbit connected');
 
     await menash.declareQueue(rabbit.updateSearchIndexQueueName);
 
-    console.log('Rabbit initialized');
+    logger.info('Rabbit initialized');
 };
 
 const main = async () => {
@@ -35,7 +44,7 @@ const main = async () => {
 
     await server.start();
 
-    console.log(`Server started on port: ${service.port}`);
+    logger.info(`Server started on port: ${service.port}`);
 };
 
-main().catch((err) => console.error(err));
+main().catch((err) => logger.error(err));

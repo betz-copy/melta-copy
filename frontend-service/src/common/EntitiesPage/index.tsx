@@ -3,7 +3,7 @@ import i18next from 'i18next';
 import { Box, Grid } from '@mui/material';
 import _debounce from 'lodash.debounce';
 import mapValues from 'lodash.mapvalues';
-import { useMutation } from 'react-query';
+import { useMutation, useQueryClient } from 'react-query';
 import fileDownload from 'js-file-download';
 import { toast } from 'react-toastify';
 import { useSearchParams } from 'react-router-dom';
@@ -13,9 +13,8 @@ import { EntitiesPageHeadline } from './Headline';
 import TemplateTablesView, { TemplateTablesViewRef } from './TemplateTablesView';
 import { exportEntitiesRequest } from '../../services/entitiesService';
 import CardsView, { CardsViewRef } from './CardsView';
-import { IEntity, IExportEntitiesBody } from '../../interfaces/entities';
+import { IExportEntitiesBody } from '../../interfaces/entities';
 import { filterModelToFilterOfTemplate, sortModelToSortOfSearchRequest } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
-import { EntitiesTableOfTemplateRef } from '../EntitiesTableOfTemplate';
 
 const EntitiesPage: React.FC<{
     templates: IMongoEntityTemplatePopulated[];
@@ -40,9 +39,6 @@ const EntitiesPage: React.FC<{
 }) => {
     const templateTablesViewRef = useRef<TemplateTablesViewRef>(null);
     const cardsViewRef = useRef<CardsViewRef>(null);
-    const entitiesTableRef = useRef<EntitiesTableOfTemplateRef<IEntity>>(null);
-    console.log({ templateTablesViewRef });
-    console.log({ entitiesTableRef });
 
     const [urlSearchParams, setUrlSearchParams] = useSearchParams({
         search: '',
@@ -50,6 +46,9 @@ const EntitiesPage: React.FC<{
     });
 
     const [searchInput, setSearchInput] = useState(urlSearchParams.get('search')!);
+    const [loading, setLoading] = useState<Record<string, boolean>>({});
+
+    const queryClient = useQueryClient();
 
     useEffect(() => {
         setSearchInput(urlSearchParams.get('search') || '');
@@ -93,57 +92,71 @@ const EntitiesPage: React.FC<{
     };
 
     return (
-        <Grid container margin="0vh">
-            <Grid item xs={12}>
-                <Box marginBottom="3vh" position="sticky" style={{ top: 0, right: 0, zIndex: 1 }}>
-                    <EntitiesPageHeadline
-                        searchInput={searchInput}
-                        setSearchInput={setSearchInput}
-                        onSearch={onSearch}
-                        entityTemplateSelectCheckboxProps={{
-                            categories,
-                            templatesToShow: templatesToShowCheckbox,
-                            setTemplatesToShow: setTemplatesToShowCheckbox,
-                            templates,
-                            setTemplates,
-                            isDraggableDisabled: isTemplatesCheckboxDraggableDisabled,
-                        }}
-                        excelExportProps={{
-                            onExcelExport: () => {
-                                if (!templateTablesViewRef.current) return;
-                                exportTemplatesToExcel();
-                            },
-                            isLoadingExcel: isLoadingExcelExport,
-                        }}
-                        viewModeProps={{
-                            viewMode: urlSearchParams.get('viewMode') as 'templates-tables-view' | 'cards-view',
-                            setViewMode: (newViewMode) =>
-                                setUrlSearchParams({ ...Object.fromEntries(urlSearchParams.entries()), viewMode: newViewMode }),
-                        }}
-                        pageTitle={pageTitle}
-                        entitiesTableRef={entitiesTableRef}
+        <>
+            <Box marginBottom="3vh" position="sticky" style={{ top: 0, right: 0, zIndex: 1 }}>
+                <EntitiesPageHeadline
+                    searchInput={searchInput}
+                    setSearchInput={setSearchInput}
+                    onSearch={onSearch}
+                    entityTemplateSelectCheckboxProps={{
+                        categories,
+                        templatesToShow: templatesToShowCheckbox,
+                        setTemplatesToShow: setTemplatesToShowCheckbox,
+                        templates,
+                        setTemplates,
+                        isDraggableDisabled: isTemplatesCheckboxDraggableDisabled,
+                    }}
+                    excelExportProps={{
+                        onExcelExport: () => {
+                            if (!templateTablesViewRef.current) return;
+                            exportTemplatesToExcel();
+                        },
+                        isLoadingExcel: isLoadingExcelExport,
+                    }}
+                    onAddEntity={(id?: string) => {
+                        if (urlSearchParams.get('viewMode') === 'templates-tables-view') {
+                            if (id) {
+                                setLoading((prev) => ({ ...prev, [id]: true }));
+                                queryClient
+                                    .invalidateQueries(['filterEmptyTemplateTablesOnGlobalSearch', templates, searchInput])
+                                    .finally(() => setLoading((prev) => ({ ...prev, [id]: false })));
+                            } else queryClient.resetQueries({ queryKey: ['filterEmptyTemplateTablesOnGlobalSearch'] });
+                        } else if (id) {
+                            setLoading((prev) => ({ ...prev, [id]: true }));
+                            queryClient
+                                .invalidateQueries(['searchEntities', templatesToShowCheckbox.map(({ _id }) => _id), searchInput])
+                                .finally(() => setLoading((prev) => ({ ...prev, [id]: false })));
+                        } else queryClient.resetQueries({ queryKey: ['searchEntities'] });
+                    }}
+                    viewModeProps={{
+                        viewMode: urlSearchParams.get('viewMode') as 'templates-tables-view' | 'cards-view',
+                        setViewMode: (newViewMode) => setUrlSearchParams({ ...Object.fromEntries(urlSearchParams.entries()), viewMode: newViewMode }),
+                    }}
+                    pageTitle={pageTitle}
+                    refreshServerSide={(templateId: string) => {
+                        templateTablesViewRef.current?.templateTablesRefs?.[templateId].refreshServerSide();
+                    }}
+                />
+            </Box>
+
+            <Grid container padding="0 4rem" direction="column" marginBottom="2.5rem">
+                {urlSearchParams.get('viewMode') === 'templates-tables-view' && (
+                    <TemplateTablesView
+                        ref={templateTablesViewRef}
+                        templates={templatesToShowCheckbox}
+                        searchInput={urlSearchParams.get('search')!}
+                        pageType={pageType}
                     />
-                </Box>
-                <Grid container padding="0 2.5rem">
-                    {urlSearchParams.get('viewMode') === 'templates-tables-view' && (
-                        <TemplateTablesView
-                            ref={templateTablesViewRef}
-                            templates={templatesToShowCheckbox}
-                            searchInput={urlSearchParams.get('search')!}
-                            pageType={pageType}
-                            entitiesTableRef={entitiesTableRef}
-                        />
-                    )}
-                    {urlSearchParams.get('viewMode') === 'cards-view' && (
-                        <CardsView
-                            ref={cardsViewRef}
-                            templateIds={templatesToShowCheckbox.map(({ _id }) => _id)}
-                            searchInput={urlSearchParams.get('search')!}
-                        />
-                    )}
-                </Grid>
+                )}
+                {urlSearchParams.get('viewMode') === 'cards-view' && (
+                    <CardsView
+                        ref={cardsViewRef}
+                        templateIds={templatesToShowCheckbox.map(({ _id }) => _id)}
+                        searchInput={urlSearchParams.get('search')!}
+                    />
+                )}
             </Grid>
-        </Grid>
+        </>
     );
 };
 

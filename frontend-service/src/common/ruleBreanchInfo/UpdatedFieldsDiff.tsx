@@ -9,6 +9,7 @@ import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates'
 import { formatToString } from '../EntityProperties';
 import { getFileName } from '../../utils/getFileName';
 import { RootState } from '../../store';
+import { containsHTMLTags } from '../../utils/HtmlTagsStringValue';
 
 const getEntityPropertyString = (
     value: any,
@@ -20,6 +21,11 @@ const getEntityPropertyString = (
     if (value === null || value === undefined) {
         return '-';
     }
+
+    if (containsHTMLTags(value)) {
+        return new DOMParser().parseFromString(value, 'text/html').body.innerText;
+    }
+
     if (format !== 'fileId' && !items) {
         return formatToString(value, type, format);
     }
@@ -34,19 +40,17 @@ const getEntityPropertyString = (
         return fileName;
     }
     // multiple
-    else {
-        const updatedFiles = value.map((file, index) => {
-            const oldFile = oldValue ? oldValue[index] : undefined;
-            const oldFileName = oldFile ? getFileName(oldFile) : undefined;
-            const fileName = file instanceof File ? file.name : getFileName(file);
-            const fileContentChanged = file instanceof File || !oldValue || !oldValue.includes(file);
-            if (oldFileName === fileName && fileContentChanged) {
-                return `${fileName} (${i18next.t('ruleBreachInfo.updateEntityActionInfo.fileContentUpdated')})`;
-            }
-            return fileName;
-        });
-        return updatedFiles.join('\n');
-    }
+    const updatedFiles = value.map((file, index) => {
+        const oldFile = oldValue ? oldValue[index] : undefined;
+        const oldFileName = oldFile ? getFileName(oldFile) : undefined;
+        const fileName = file instanceof File ? file.name : getFileName(file);
+        const fileContentChanged = file instanceof File || !oldValue || !oldValue.includes(file);
+        if (oldFileName === fileName && fileContentChanged) {
+            return `${fileName} (${i18next.t('ruleBreachInfo.updateEntityActionInfo.fileContentUpdated')})`;
+        }
+        return fileName;
+    });
+    return updatedFiles.join('\n');
 };
 
 const getEntityPropertiesString = (

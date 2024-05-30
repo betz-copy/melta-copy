@@ -1,5 +1,5 @@
 import * as request from 'supertest';
-import * as mongoose from 'mongoose';
+import mongoose from 'mongoose';
 import { Express } from 'express';
 import Server from '../src/express/server';
 import processTemplateExample1 from './mock/templates';
@@ -14,6 +14,7 @@ import {
 import processInstanceExample1, { errStepsPropertiesExample1, stepsPropertiesExample1 } from './mock/instances';
 import { IMongoStepInstance, UpdateStepReqBody } from '../src/express/instances/steps/interface';
 import StepInstanceManager from '../src/express/instances/steps/manager';
+import logger from '../src/utils/logger/logsLogger';
 
 const testUrl = 'mongodb://localhost:27017/test';
 const randomMongoId = () => {
@@ -302,7 +303,7 @@ describe('Test Process Service', () => {
             it('Should try create instance with wrong templateId and return 404', async () => {
                 const instanceToCreate = prepareDataForCreateProcessInstance({ ...processTemplate, _id: randomMongoId() }, processInstanceExample1);
                 const response = await request(app).post('/api/processes/instances').send(instanceToCreate);
-                console.log(response.error);
+                logger.error(response.error);
 
                 expect(response.status).toBe(404);
                 expect(response.text).toContain('not found');
@@ -523,7 +524,7 @@ describe('Test Process Service', () => {
                                     processId: processInstance._id,
                                 },
                             } as UpdateStepReqBody);
-                        console.log(response.error);
+                        logger.error(response.error);
 
                         expect(response.status).toBe(200);
                         expect(response.body.status).toBe(Status.Rejected);

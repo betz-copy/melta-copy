@@ -5,7 +5,6 @@ import { AppRegistration as DefaultEntityTemplateIcon } from '@mui/icons-materia
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import fileDownload from 'js-file-download';
-import { GridApi, IServerSideGetRowsRequest } from '@ag-grid-community/core';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { AddEntityButton } from './AddEntityButton';
 import EntitiesTableOfTemplate, { EntitiesTableOfTemplateRef } from '../EntitiesTableOfTemplate';
@@ -19,35 +18,28 @@ import { environment } from '../../globals';
 import { filterModelToFilterOfTemplate, sortModelToSortOfSearchRequest } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
 import { getEntityTemplateColor } from '../../utils/colors';
 import { IPermissionsOfUser } from '../../services/permissionsService';
-import { canUserWriteInstanceOfCategory } from '../../utils/permissions/instancePermissions';
 import { EntityTemplateColor } from '../EntityTemplateColor';
 import { ImageWithDisable } from '../ImageWithDisable';
 import { CreateOrEditEntityDetails } from '../dialogs/entity/CreateOrEditEntityDialog';
+import { checkUserInstanceOfCategoryPermission } from '../../utils/permissions/instancePermissions';
 
-const { defaultRowHeight } = environment.agGrid;
+const { defaultRowHeight, defaultFontSize } = environment.agGrid;
 
-export type TemplateTableRef = {
-    getFilterModel: () => ReturnType<GridApi<IEntity>['getFilterModel']> | undefined;
-    getSortModel: () => IServerSideGetRowsRequest['sortModel'] | undefined;
-    refreshServerSide: () => void;
-};
+export type TemplateTableRef = EntitiesTableOfTemplateRef<IEntity>;
 
 const TemplateTable = forwardRef<
-    TemplateTableRef,
+    EntitiesTableOfTemplateRef<IEntity>,
     {
         template: IMongoEntityTemplatePopulated;
         quickFilterText: string;
         page: string;
-        entitiesTableRef: React.RefObject<EntitiesTableOfTemplateRef<IEntity>>;
     }
->(({ template, quickFilterText, page, entitiesTableRef }, ref) => {
+>(({ template, quickFilterText, page }, ref) => {
     const theme = useTheme();
 
-    useImperativeHandle(ref, () => ({
-        getFilterModel: () => entitiesTableRef.current?.getFilterModel(),
-        getSortModel: () => entitiesTableRef.current?.getSortModel(),
-        refreshServerSide: () => entitiesTableRef.current?.refreshServerSide(),
-    }));
+    const entitiesTableRef = useRef<EntitiesTableOfTemplateRef<IEntity>>();
+
+    useImperativeHandle(ref, () => entitiesTableRef.current!);
 
     const { isLoading: isExportingTableToExcelFile, mutateAsync: exportTemplateToExcel } = useMutation(
         async () => {
@@ -86,8 +78,7 @@ const TemplateTable = forwardRef<
 
     const queryClient = useQueryClient();
     const { instancesPermissions } = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
-    const userHasWritePermissions = canUserWriteInstanceOfCategory(instancesPermissions, template.category);
-
+    const userHasWritePermissions = checkUserInstanceOfCategoryPermission(instancesPermissions, template.category, 'Write');
     return (
         <Grid container minWidth="fit-content">
             <Grid container justifyContent="space-between" width="fit-content" minWidth="fit-content">
@@ -150,7 +141,7 @@ const TemplateTable = forwardRef<
                         disabled={!userHasWritePermissions}
                         initialValues={{ template, properties: { disabled: false }, attachmentsProperties: {} }}
                         style={{ borderRadius: '5px' }}
-                        refreshServerSide={() => entitiesTableRef.current?.refreshServerSide()}
+                        onSuccessCreate={() => entitiesTableRef.current?.refreshServerSide()}
                     >
                         <ImageWithDisable srcPath="/icons/add-entity.svg" disabled={!userHasWritePermissions} />
                     </AddEntityButton>
@@ -167,7 +158,7 @@ const TemplateTable = forwardRef<
                     rowModelType={isExpand ? 'infinite' : 'serverSide'}
                     quickFilterText={quickFilterText}
                     rowHeight={defaultRowHeight}
-                    fontSize="14px"
+                    fontSize={`${defaultFontSize}px`}
                     saveStorageProps={{
                         shouldSaveFilter: true,
                         shouldSaveWidth: true,
@@ -206,8 +197,6 @@ const TemplateTable = forwardRef<
                         });
                     }}
                     onSuccessUpdate={(entity) => {
-                        console.log({ entitiesTableRef });
-
                         entitiesTableRef.current?.updateRowDataClientSide(entity, false);
                         setEditDialog((prev) => ({ ...prev, isOpen: false }));
                         setExternalErrors({ files: false, unique: {} });

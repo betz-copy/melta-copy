@@ -39,9 +39,10 @@ const CreateOrEditEntityDetails: React.FC<{
     isEditMode?: boolean;
     entityTemplate: IMongoEntityTemplatePopulated;
     entity: IEntity;
-    onSuccessUpdate: (data: IEntity) => void;
+    onSuccessUpdate?: (data: IEntity) => void;
     onCancelUpdate: () => void;
     onError: (entity: IEntity | EntityWizardValues) => void;
+    onSuccessCreate?: (entity: IEntity) => void;
     externalErrors: {
         files: boolean;
         unique: {};
@@ -52,7 +53,17 @@ const CreateOrEditEntityDetails: React.FC<{
             unique: {};
         }>
     >;
-}> = ({ isEditMode = false, entityTemplate, entity, onSuccessUpdate, onCancelUpdate, onError, externalErrors, setExternalErrors }) => {
+}> = ({
+    isEditMode = false,
+    entityTemplate,
+    entity,
+    onSuccessUpdate,
+    onCancelUpdate,
+    onSuccessCreate,
+    onError,
+    externalErrors,
+    setExternalErrors,
+}) => {
     const [updateWithRuleBreachDialogState, setUpdateWithRuleBreachDialogState] = useState<{
         isOpen: boolean;
         brokenRules?: IRuleBreachPopulated['brokenRules'];
@@ -101,7 +112,7 @@ const CreateOrEditEntityDetails: React.FC<{
             updateEntityRequestForMultiple(entity.properties._id, newEntityData, ignoredRules),
         {
             onSuccess: (data) => {
-                onSuccessUpdate(data);
+                if (onSuccessUpdate) onSuccessUpdate(data);
                 uniqueError = {};
             },
             onError: (err: AxiosError, { newEntityData: newEntityDate }) => {
@@ -119,7 +130,8 @@ const CreateOrEditEntityDetails: React.FC<{
     );
     const { mutateAsync: createMutation } = useMutation((entityToCreate: EntityWizardValues) => createEntityRequest(entityToCreate), {
         onSuccess: (currEntity: IEntity) => {
-            onSuccessUpdate(currEntity);
+            if (onSuccessCreate) onSuccessCreate(currEntity);
+            if (onSuccessUpdate) onSuccessUpdate(currEntity);
             newEntity = currEntity;
             uniqueError = {};
         },
@@ -132,6 +144,7 @@ const CreateOrEditEntityDetails: React.FC<{
             initialValues={{ properties: fieldProperties, attachmentsProperties: fileProperties, template: entityTemplate }}
             onSubmit={async (values) => {
                 const mutationPromise = isEditMode ? updateMutation({ newEntityData: values }) : createMutation(values);
+                toast.dismiss();
 
                 await new Promise<void>((resolve) => {
                     toast.promise(
@@ -212,10 +225,11 @@ const CreateOrEditEntityDetails: React.FC<{
                 // eslint-disable-next-line react-hooks/rules-of-hooks
                 useEffect(() => {
                     schema.required.forEach((field) => {
-                        const properties = schema.properties[field].enum;
+                        const fieldPropertiesEnum = schema.properties[field].enum;
                         const itemFieldProperties = schema.properties[field]?.items?.enum;
-                        if (properties?.length === 1 && properties[0] !== undefined) {
-                            setFieldValue(`properties.${field}`, properties[0]);
+
+                        if (fieldPropertiesEnum?.length === 1 && fieldPropertiesEnum[0] !== undefined) {
+                            setFieldValue(`properties.${field}`, fieldPropertiesEnum[0]);
                         }
                         if (itemFieldProperties?.length === 1 && itemFieldProperties[0] !== undefined) {
                             setFieldValue(`properties.${field}`, [itemFieldProperties[0]]);

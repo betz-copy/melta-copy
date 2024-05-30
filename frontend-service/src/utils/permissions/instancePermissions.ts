@@ -1,18 +1,18 @@
 import { IMongoCategory } from '../../interfaces/categories';
-import { IPermissionsOfUser } from '../../services/permissionsService';
+import { IPermissionsOfUser, Scope } from '../../services/permissionsService';
 
-export const canUserWriteInstanceOfCategory = (
+export const checkUserInstanceOfCategoryPermission = (
     instancesPermissions: IPermissionsOfUser['instancesPermissions'],
     { _id: categoryId }: IMongoCategory,
+    scope: Scope,
 ) => {
-    return instancesPermissions.some(({ category, scopes }) => category === categoryId && scopes?.includes('Write'));
-};
+    return instancesPermissions.some(({ category, scopes }) => {
+        if (category !== categoryId) return false;
 
-export const canUserReadInstanceOfCategory = (
-    instancesPermissions: IPermissionsOfUser['instancesPermissions'],
-    { _id: categoryId }: IMongoCategory,
-) => {
-    return instancesPermissions.some(({ category, scopes }) => category === categoryId && (scopes?.includes('Write') || scopes?.includes('Read')));
+        if (scope === 'Write') return scopes.includes('Write');
+
+        return scopes.includes('Write') || scopes.includes('Read');
+    });
 };
 
 export const getUserPermissionScopeOfCategory = (instancesPermissions: IPermissionsOfUser['instancesPermissions'], categoryId: string) => {
