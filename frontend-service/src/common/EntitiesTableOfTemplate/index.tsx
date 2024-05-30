@@ -151,6 +151,7 @@ export type EntitiesTableOfTemplateRef<Data> = {
     isFiltered: () => boolean;
     getFilterModel: () => ReturnType<GridApi<Data>['getFilterModel']>;
     getSortModel: () => IServerSideGetRowsRequest['sortModel'];
+    scrollIntoView: () => void;
 };
 
 const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, EntitiesTableOfTemplateProps<unknown>>(
@@ -187,7 +188,9 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
 
         const navigate = useNavigate();
 
-        const gridRef = useRef<AgGridReact<Data>>(null);
+        const gridRef = useRef<AgGridReact<Data> & HTMLDivElement>(null);
+        const tableRef = useRef<HTMLDivElement>(null);
+
         // height of table includes statusbar and titles
         const minHeightTable = rowHeight * pageRowCount + rowHeight * 2;
         const [gridHeight, setGridHeight] = useState<number>(rowHeight * defaultExpandedRowCount);
@@ -227,6 +230,9 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                 },
                 getSortModel() {
                     return getSortModel();
+                },
+                scrollIntoView: () => {
+                    tableRef.current?.scrollIntoView({ behavior: 'smooth' });
                 },
             };
         });
@@ -336,6 +342,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                     borderRadius: '10px',
                     boxShadow: '-2px 2px 6px 0px rgba(30, 39, 117, 0.30)',
                 }}
+                ref={tableRef}
             >
                 <AgGridReact<Data>
                     ref={gridRef}

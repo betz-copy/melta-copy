@@ -120,6 +120,7 @@ const EntitiesPage: React.FC<{
                                 queryClient
                                     .invalidateQueries(['filterEmptyTemplateTablesOnGlobalSearch', templates, searchInput])
                                     .finally(() => setLoading((prev) => ({ ...prev, [id]: false })));
+                                templateTablesViewRef.current?.templateTablesRefs?.[id].scrollIntoView();
                             } else queryClient.resetQueries({ queryKey: ['filterEmptyTemplateTablesOnGlobalSearch'] });
                         } else if (id) {
                             setLoading((prev) => ({ ...prev, [id]: true }));
@@ -135,6 +136,7 @@ const EntitiesPage: React.FC<{
                     pageTitle={pageTitle}
                     refreshServerSide={(templateId: string) => {
                         templateTablesViewRef.current?.templateTablesRefs?.[templateId].refreshServerSide();
+                        templateTablesViewRef?.current?.templateTablesRefs?.[templateId].scrollIntoView();
                     }}
                 />
             </Box>
