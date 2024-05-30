@@ -352,7 +352,7 @@ export default {
             failedToUpdateRequiredConstraintsBecauseOfEntitiesWithMissing: 'נכשל לעדכן שדות חובה בגלל שקיימות ישיות שלא מוזן להם שדה',
             failedToUpdateUniqueConstraintsBecauseOfEntitiesWithDuplicates: 'נכשל לעדכן שדות יחודיים בגלל שקיימות ישויות עם שכפולים בשדות',
             failedToDeleteFieldThatUsedInRules: 'נכשל למחוק שדה אשר בשימוש בחוקים',
-            failedToDeleteFieldThatUsedInGantts: 'נכשל למחוק שדה אשר בשימוש במפת חום',
+            failedToDeleteFieldThatUsedInGantts: 'נכשל למחוק שדה אשר בשימוש בטבלאות',
             cantDeleteUniqueOrRequiredFields: 'לא ניתן למחוק שדה ייחודי או חובה',
             propertyName: 'שם שדה באנגלית',
             attachmentName: 'שם באנגלית',
