@@ -6,7 +6,7 @@ import { ColoredEnumChip } from '../../common/ColoredEnumChip';
 import { VerifyLink } from '../../common/VerifyLink';
 import { getFirstLine, getNumLines, containsHTMLTags, renderHTML } from '../HtmlTagsStringValue';
 import { CalculateDateDifference } from './CalculateDateDifference';
-import { setTextDirection } from '../../common/inputs/JSONSchemaFormik/RjsfStringWidget';
+import { setStringTextDirection } from '../../common/inputs/JSONSchemaFormik/RjsfStringWidget';
 
 const Value: React.FC<{
     hideValue: boolean;
@@ -52,7 +52,8 @@ const Value: React.FC<{
     if (containsHtmlTags) popoverText = renderHTML(value);
     else if (calculateTime) popoverText = <CalculateDateDifference date={value} />;
     else popoverText = <VerifyLink>{value} </VerifyLink>;
-    console.log(renderHTML(value));
+
+    const textDirection = setStringTextDirection(value);
 
     return (
         <Grid container justifyContent="space-between" alignItems="center">
@@ -64,11 +65,7 @@ const Value: React.FC<{
                     overflow: 'hidden',
                     whiteSpace: 'nowrap',
                     textOverflow: 'ellipsis',
-                    direction: isNumberField
-                        ? 'rtl'
-                        : setTextDirection(renderHTML(value), {
-                              type: 'string',
-                          }),
+                    direction: textDirection ? 'ltr' : 'rtl',
                 }}
                 onDoubleClick={handleDoubleClick}
             >
@@ -102,6 +99,8 @@ const Value: React.FC<{
                         whiteSpace: containsHtmlTags ? 'normal' : 'pre-wrap',
                         fontWeight: 200,
                         fontSize: '15px',
+                        // eslint-disable-next-line no-nested-ternary
+                        direction: textDirection ? 'rtl' : 'ltr',
                     }}
                 >
                     {popoverText}

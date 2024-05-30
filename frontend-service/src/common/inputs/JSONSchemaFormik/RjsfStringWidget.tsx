@@ -6,18 +6,17 @@ import validator from '@rjsf/validator-ajv8';
 import { TextField } from '@mui/material';
 import { convertToPlainText, containsHTMLTags } from '../../../utils/HtmlTagsStringValue';
 
+export const setStringTextDirection = (value: string) => {
+    const uniqueCharsPattern = /^[^a-zA-Zא-ת]+|[^a-zA-Zא-ת]+$/g;
+    const cleanedStr = value.replace(uniqueCharsPattern, '');
+    const isHebrewLetter = /^[א-ת]/.test(cleanedStr.charAt(0));
+
+    return isHebrewLetter;
+};
 export const setTextDirection = (value: string, schema) => {
     if (schema.type === 'string' && value) {
-        // console.log({ schema }, { value });
-
-        const uniqueCharsPattern = /^[^a-zA-Zא-ת]+|[^a-zA-Zא-ת]+$/g;
-        const cleanedStr = value.replace(uniqueCharsPattern, '');
-        const isHebrewLetter = /^[א-ת]/.test(cleanedStr.charAt(0));
-        console.log({ isHebrewLetter });
-
-        return isHebrewLetter ? 'rtl' : 'ltr';
+        return setStringTextDirection(value) ? 'rtl' : 'ltr';
     }
-    console.log('dsjgggggggggggggggggggggggggggggfygf');
 
     if (schema.serialCurrent === undefined) {
         if (schema.type === 'number' || Boolean(schema.pattern)) return 'ltr';

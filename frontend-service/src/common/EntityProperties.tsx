@@ -96,7 +96,6 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
         propertiesOrderedToShow = entityTemplate.propertiesOrder;
     }
     const [hideFieldsToDisplay, setHideFieldsToDisplay] = React.useState(entityTemplate.properties.hide);
-
     return (
         <Grid container style={{ ...style, alignItems: textWrap ? 'flex-start' : 'center', alignContent: 'center' }}>
             {propertiesOrderedToShow.map((propertyKey) => {
@@ -192,10 +191,13 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                                             overflowY: 'auto',
                                             paddingLeft: '1rem',
                                             maxHeight: isPrintingMode ? undefined : '350px',
-                                            direction: setTextDirection(propertyValue, {
-                                                type: propertySchema.type,
-                                                serialCurrent: propertySchema.serialCurrent,
-                                            }),
+                                            direction:
+                                                propertySchema.type === 'number'
+                                                    ? 'rtl'
+                                                    : setTextDirection(propertyValue, {
+                                                          type: propertySchema.type,
+                                                          serialCurrent: propertySchema.serialCurrent,
+                                                      }),
                                         }}
                                     >
                                         <VerifyLink>{innerContent}</VerifyLink>
