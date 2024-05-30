@@ -399,12 +399,12 @@ export class TemplatesManager {
         return updatedTemplateData;
     }
 
-    static async isPropertyOfTemplateInUsedInRules(templateId: string, properties: string[]) {
+    private static async isPropertyOfTemplateInUsedInRules(templateId: string, properties: string[]) {
         const allRules = await RelationshipsTemplateManagerService.searchRules({});
         return allRules.forEach((rule) => checkPropertyInUsedFromFormula(rule.formula, templateId, properties));
     }
 
-    static async isPropertyOfTemplateInUsedInGantts(templateId: string, properties: string[]) {
+    private static async isPropertyOfTemplateInUsedInGantts(templateId: string, properties: string[]) {
         const sourceRelationShipTEmplatesIDs = await RelationshipsTemplateManagerService.searchRelationshipTemplates({
             sourceEntityIds: [templateId],
         });
@@ -461,7 +461,7 @@ export class TemplatesManager {
                     if (found)
                         throw new ServiceError(400, 'can not delete field that used in gantts', {
                             errorCode: config.errorCodes.failedToDeleteField,
-                            type: 'gantss',
+                            type: 'gantts',
                             property,
                         });
                 });
@@ -469,7 +469,7 @@ export class TemplatesManager {
         });
     }
 
-    static async deleteFilesOfDeletedFileProperty(templateId: string, removedFilesProperties: Record<string, boolean>, numOfInstances: number) {
+    private static async deleteFilesOfDeletedProperty(templateId: string, removedFilesProperties: Record<string, boolean>, numOfInstances: number) {
         const promises: Promise<void | AxiosResponse>[] = [];
         const { searchEntitiesChunkSize } = config.service;
 
@@ -524,7 +524,7 @@ export class TemplatesManager {
             Object.entries(currTemplate.properties.properties).forEach(([key, value]) => {
                 const newValue = updatedTemplateData.properties.properties[key];
 
-                if (!newValue || ('newPropertyWithDeletedName' in newValue && newValue.newPropertyWithDeletedName)) {
+                if (!newValue || ('IsNewPropertyWithNameOfDeletedProperty' in newValue && newValue.IsNewPropertyWithNameOfDeletedProperty)) {
                     removedProperties[key] = value.type === 'string';
                     if (value.format === 'fileId' || value.items?.format === 'fileId') removedFilesProperties[key] = value.items?.format === 'fileId';
                 } else {
@@ -579,15 +579,15 @@ export class TemplatesManager {
         const { required: requiredConstraints, ...restOfTemplatePropertiesObject } = properties;
 
         Object.entries(restOfTemplatePropertiesObject.properties).forEach(([key, value]) => {
-            if ('newPropertyWithDeletedName' in value) {
+            if ('IsNewPropertyWithNameOfDeletedProperty' in value) {
                 const updatedProperty = { ...value };
-                delete updatedProperty.newPropertyWithDeletedName;
+                delete updatedProperty.IsNewPropertyWithNameOfDeletedProperty;
                 restOfTemplatePropertiesObject.properties[key] = updatedProperty;
             }
         });
 
         if (Object.keys(removedFilesProperties).length > 0) {
-            await TemplatesManager.deleteFilesOfDeletedFileProperty(id, removedFilesProperties, count);
+            await TemplatesManager.deleteFilesOfDeletedProperty(id, removedFilesProperties, count);
         }
 
         if (Object.keys(removedProperties).length > 0) {

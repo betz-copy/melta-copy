@@ -142,7 +142,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                 if (isEditMode) {
                     schema.properties[name] = {
                         ...schema.properties[name],
-                        newPropertyWithDeletedName: properties.some((property) => property.id !== id && property.name === name),
+                        IsNewPropertyWithNameOfDeletedProperty: properties.some((property) => property.id !== id && property.name === name),
                     };
                 }
 
@@ -190,7 +190,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
             if (isEditMode) {
                 schema.properties[name] = {
                     ...schema.properties[name],
-                    newPropertyWithDeletedName: attachmentProperties.some((property) => property.id !== id && property.name === name),
+                    IsNewPropertyWithNameOfDeletedProperty: attachmentProperties.some((property) => property.id !== id && property.name === name),
                 };
             }
 
