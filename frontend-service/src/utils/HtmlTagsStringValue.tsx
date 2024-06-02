@@ -1,21 +1,20 @@
 import React from 'react';
 import linkifyHtml from 'linkify-html';
 
-export const getTextContent = (value: string, splitValueToLines = false) => {
+const splitValueToLines = (value: string) => {
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = value;
-    if (splitValueToLines) return tempDiv.textContent?.split('\n');
-    return tempDiv.textContent;
+    return tempDiv.textContent?.split('\n');
 };
 
 export const getFirstLine = (value: string) => {
-    const allText = getTextContent(value, true);
+    const allText = splitValueToLines(value);
     return allText?.[0];
 };
 
 export const getNumLines = (value: string) => {
-    const lines = getTextContent(value, true);
-    const filteredLines = Array.isArray(lines) ? lines?.filter((line) => line.trim() && !line.trim().match(/^<p><br><\/p>$/)) : [];
+    const lines = splitValueToLines(value);
+    const filteredLines = lines?.filter((line) => line.trim() && !line.trim().match(/^<p><br><\/p>$/));
     return filteredLines?.length ?? 0;
 };
 
