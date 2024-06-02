@@ -12,9 +12,8 @@ const Value: React.FC<{
     hideValue: boolean;
     value: string;
     color?: string;
-    isNumberField?: boolean;
     calculateTime?: boolean;
-}> = ({ hideValue, value, color, isNumberField, calculateTime }) => {
+}> = ({ hideValue, value, color, calculateTime }) => {
     const containsHtmlTags = containsHTMLTags(value);
     const [hideField, setHideField] = React.useState(true);
     const [anchorEl, setAnchorEl] = React.useState<HTMLDivElement | HTMLButtonElement | null>(null);
@@ -53,7 +52,7 @@ const Value: React.FC<{
     else if (calculateTime) popoverText = <CalculateDateDifference date={value} />;
     else popoverText = <VerifyLink>{value} </VerifyLink>;
 
-    const textDirection = setStringTextDirection(value);
+    const textDirection = containsHtmlTags ? true : setStringTextDirection(value);
 
     return (
         <Grid container justifyContent="space-between" alignItems="center">
@@ -99,7 +98,6 @@ const Value: React.FC<{
                         whiteSpace: containsHtmlTags ? 'normal' : 'pre-wrap',
                         fontWeight: 200,
                         fontSize: '15px',
-                        // eslint-disable-next-line no-nested-ternary
                         direction: textDirection ? 'rtl' : 'ltr',
                     }}
                 >

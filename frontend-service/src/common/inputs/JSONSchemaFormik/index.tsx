@@ -107,7 +107,6 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
             id="json-schema"
             schema={schema}
             uiSchema={mapValues(schema.properties, (propertySchema): UiSchema => {
-                // const direction =  propertySchema.direction || 'ltr';;
                 if (propertySchema.serialCurrent !== undefined) {
                     return {
                         'ui:options': {
@@ -131,9 +130,6 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
                 }
                 return {
                     'ui:classNames': 'other-field',
-                    // 'ui:options': {
-                    //     dir: direction,
-                    // },
                 };
             })}
             onChange={({ formData }) => {

@@ -10,9 +10,11 @@ export const setStringTextDirection = (value: string) => {
     const uniqueCharsPattern = /^[^a-zA-Zא-ת]+|[^a-zA-Zא-ת]+$/g;
     const cleanedStr = value.replace(uniqueCharsPattern, '');
     const isHebrewLetter = /^[א-ת]/.test(cleanedStr.charAt(0));
+    console.log(isHebrewLetter, value);
 
     return isHebrewLetter;
 };
+
 export const setTextDirection = (value: string, schema) => {
     if (schema.type === 'string' && value) {
         return setStringTextDirection(value) ? 'rtl' : 'ltr';

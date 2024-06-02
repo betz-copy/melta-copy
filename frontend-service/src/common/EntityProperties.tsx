@@ -4,8 +4,6 @@ import i18next from 'i18next';
 import React, { CSSProperties } from 'react';
 import { pdfjs } from 'react-pdf';
 import { useSelector } from 'react-redux';
-// // eslint-disable-next-line import/no-extraneous-dependencies
-// import DirectionProvider, { DIRECTIONS } from 'react-with-direction/dist/DirectionProvider';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { IEntity } from '../interfaces/entities';
 import { ColoredEnumChip } from './ColoredEnumChip';
@@ -16,7 +14,7 @@ import { getFirstLine, getNumLines, containsHTMLTags, renderHTML } from '../util
 import { CalculateDateDifference } from '../utils/agGrid/CalculateDateDifference';
 import { environment } from '../globals';
 import { RootState } from '../store';
-import { setStringTextDirection, setTextDirection } from './inputs/JSONSchemaFormik/RjsfStringWidget';
+import { setTextDirection } from './inputs/JSONSchemaFormik/RjsfStringWidget';
 
 const { maxNumOfCharactersNotInFullWidth } = environment.entitiesProperties;
 
@@ -131,7 +129,13 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                     propertyValue &&
                     getNumLines(stringFormatValue) > 1 &&
                     stringFormatValue.length >= maxNumOfCharactersNotInFullWidth;
-
+                const textDirection =
+                    propertySchema.format !== 'text-area'
+                        ? setTextDirection(propertyValue, {
+                              type: propertySchema.type,
+                              serialCurrent: propertySchema.serialCurrent,
+                          })
+                        : 'rtl';
                 return (
                     <Grid
                         key={propertyKey}
@@ -191,13 +195,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                                             overflowY: 'auto',
                                             paddingLeft: '1rem',
                                             maxHeight: isPrintingMode ? undefined : '350px',
-                                            direction:
-                                                propertySchema.type === 'number'
-                                                    ? 'rtl'
-                                                    : setTextDirection(propertyValue, {
-                                                          type: propertySchema.type,
-                                                          serialCurrent: propertySchema.serialCurrent,
-                                                      }),
+                                            direction: propertySchema.type === 'number' ? 'rtl' : textDirection,
                                         }}
                                     >
                                         <VerifyLink>{innerContent}</VerifyLink>
