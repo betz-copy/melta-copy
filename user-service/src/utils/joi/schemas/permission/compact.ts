@@ -10,7 +10,7 @@ import {
 } from './metadata';
 import { UnknownPermissionTypeError } from '../../../../express/permissions/errors';
 
-const getCompactPermissionSchema = (allowNull: boolean = false) => {
+const getSubCompactPermissionSchema = (allowNull: boolean = false) => {
     return joi.custom((value) => {
         let schema: joi.ObjectSchema;
 
@@ -49,5 +49,6 @@ const getCompactPermissionSchema = (allowNull: boolean = false) => {
     });
 };
 
-export const CompactPermissionsSchema = getCompactPermissionSchema();
-export const CompactNullablePermissionsSchema = getCompactPermissionSchema(true);
+export const SubCompactPermissionSchema = getSubCompactPermissionSchema();
+export const CompactPermissionsSchema = joi.object().pattern(joi.string(), getSubCompactPermissionSchema());
+export const CompactNullablePermissionsSchema = joi.object().pattern(joi.string(), getSubCompactPermissionSchema(true));

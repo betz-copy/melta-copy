@@ -6,7 +6,7 @@ import { getCompactPermissionsOfUserRequestSchema, syncCompactPermissionsRequest
 
 export const permissionsRouter = Router();
 
-permissionsRouter.get(
+permissionsRouter.post(
     '/compact',
     ValidateRequest(getCompactPermissionsOfUserRequestSchema),
     wrapController(PermissionsController.getCompactPermissionsOfUser),

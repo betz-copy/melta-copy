@@ -25,6 +25,7 @@ export interface IBasePermission<
 > {
     _id: string;
     userId: string;
+    workspaceId: string;
     type: T;
     metadata: IPermissionMetadata<H, D>;
 }

@@ -4,7 +4,7 @@ import { UsersModel } from './model';
 import { PermissionsManager } from '../permissions/manager';
 import { typedObjectEntries } from '../../utils';
 import { UserDoesNotExistError } from './errors';
-import { ICompactPermissions } from '../permissions/interface/permissions';
+import { ISubCompactPermissions } from '../permissions/interface/permissions';
 
 export class UsersManager {
     static async getUserById(id: string): Promise<IUser> {
@@ -12,7 +12,7 @@ export class UsersManager {
         return this.appendPermissionsToUser(baseUser);
     }
 
-    static async searchUsers(search: string, permissions: ICompactPermissions, limit: number, step: number): Promise<IUser[]> {
+    static async searchUsers(search: string, permissions: ISubCompactPermissions, limit: number, step: number): Promise<IUser[]> {
         const query: FilterQuery<IBaseUser> = {};
 
         if (search) {
@@ -28,9 +28,15 @@ export class UsersManager {
         }
 
         if (permissions) {
-            const simplePermissions = await PermissionsManager.searchByCompactPermissions(permissions);
+            const simplePermissions = await PermissionsManager.searchBySubCompactPermissions(permissions);
+            const usersIds: string[] = [];
 
-            query.$in = simplePermissions.map(({ userId }) => userId);
+            simplePermissions.forEach(({ userId }) => {
+                if (usersIds.includes(userId)) return;
+                usersIds.push(userId);
+            });
+
+            query._id = { $in: usersIds };
         }
 
         const baseUsers = await UsersModel.find(query, { limit, skip: step * limit })

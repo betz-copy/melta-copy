@@ -11,6 +11,10 @@ const PermissionSchema = new Schema(
             type: String,
             required: true,
         },
+        workspaceId: {
+            type: String,
+            required: true,
+        },
         type: {
             type: String,
             enum: PermissionTypeOptions,
@@ -24,6 +28,6 @@ const PermissionSchema = new Schema(
     { timestamps: true, versionKey: false },
 );
 
-PermissionSchema.index({ userId: 1, type: 1 }, { unique: true });
+PermissionSchema.index({ userId: 1, workspaceId: 1, type: 1 }, { unique: true });
 
 export const PermissionsModel = model<IPermission>(permissionsCollectionName, PermissionSchema);

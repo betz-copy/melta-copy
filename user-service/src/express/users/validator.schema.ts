@@ -1,6 +1,6 @@
 import * as joi from 'joi';
 import { mongoIdSchema } from '../../utils/joi/schemas';
-import { CompactPermissionsSchema } from '../../utils/joi/schemas/permission/compact';
+import { SubCompactPermissionSchema } from '../../utils/joi/schemas/permission/compact';
 import { partialBaseUserSchema, userSchema } from '../../utils/joi/schemas/user';
 import { config } from '../../config';
 
@@ -20,7 +20,7 @@ export const searchUsersRequestSchema = joi.object({
     query: {},
     body: joi.object({
         search: joi.string(),
-        permissions: CompactPermissionsSchema,
+        permissions: SubCompactPermissionSchema,
         limit: joi.number().integer().min(1).max(maxFindLimit).required(),
         step: joi.number().integer().min(0).default(0),
     }),
