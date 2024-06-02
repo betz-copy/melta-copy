@@ -25,3 +25,10 @@ export interface IMongoEntityTemplateWithConstraintsPopulated extends IMongoEnti
     uniqueConstraints: IUniqueConstraintOfTemplate[];
     properties: IEntityTemplate['properties'] & { required: string[] };
 }
+
+export interface IUpdateOrDeleteEnumFieldReqData {
+    name: string;
+    type: string;
+    options: string[];
+    optionColors?: Record<string, string>;
+}

@@ -33,6 +33,7 @@ services:
       MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
       MAX_FILE_BYTE_SIZE: ${MAX_FILE_BYTE_SIZE}
       MAX_REQUEST_BYTE_SIZE: ${MAX_REQUEST_BYTE_SIZE}
+      RABBIT_URL: ${RABBIT_URL}
 
   relationship-template-service:
     build: ./relationship-template-service
@@ -125,6 +126,7 @@ services:
       MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
       MAX_FILE_BYTE_SIZE: ${MAX_FILE_BYTE_SIZE}
       MAX_REQUEST_BYTE_SIZE: ${MAX_REQUEST_BYTE_SIZE}
+      RABBIT_URL: ${RABBIT_URL}
 
   gateway-service:
     build: ./gateway-service
@@ -154,9 +156,15 @@ services:
       NOTIFICATIONS_MAIL_FROM: ${MAIL_USER}
       MAX_FILE_BYTE_SIZE: ${MAX_FILE_BYTE_SIZE}
       MAX_REQUEST_BYTE_SIZE: ${MAX_REQUEST_BYTE_SIZE}
-      
+
   # frontend-service:
   #   build: ./frontend-service
+  #   volumes:
+  #     - ${MANIFEST_PATH}:/usr/share/nginx/html/manifest.json
+  #     - ${FAVICON_PATH}:/usr/share/nginx/html/favicon.ico
+  #     - ${MELTA_GOOGLE_LOGO_PATH}:/usr/share/nginx/html/icons/Melta_Google_Logo.svg
+  #     - ${MELTA_LOGO_PATH}:/usr/share/nginx/html/icons/Melta_Logo.svg
+  #     - ${MELTA_SHORT_LOGO_PATH}:/usr/share/nginx/html/icons/Melta_Short_Logo.svg
 
   nginx:
     image: nginx:alpine

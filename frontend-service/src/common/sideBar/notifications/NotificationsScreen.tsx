@@ -207,6 +207,7 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                                         },
                                     },
                                 }}
+                                directionIsRow
                             />
 
                             <IconButtonWithPopover

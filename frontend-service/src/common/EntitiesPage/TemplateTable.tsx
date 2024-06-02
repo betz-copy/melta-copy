@@ -19,10 +19,10 @@ import { environment } from '../../globals';
 import { filterModelToFilterOfTemplate, sortModelToSortOfSearchRequest } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
 import { getEntityTemplateColor } from '../../utils/colors';
 import { IPermissionsOfUser } from '../../services/permissionsService';
-import { canUserWriteInstanceOfCategory } from '../../utils/permissions/instancePermissions';
 import { EntityTemplateColor } from '../EntityTemplateColor';
 import { ImageWithDisable } from '../ImageWithDisable';
 import { CreateOrEditEntityDetails } from '../dialogs/entity/CreateOrEditEntityDialog';
+import { checkUserInstanceOfCategoryPermission } from '../../utils/permissions/instancePermissions';
 
 const { defaultRowHeight, defaultFontSize } = environment.agGrid;
 
@@ -85,7 +85,7 @@ const TemplateTable = forwardRef<
 
     const queryClient = useQueryClient();
     const { instancesPermissions } = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
-    const userHasWritePermissions = canUserWriteInstanceOfCategory(instancesPermissions, template.category);
+    const userHasWritePermissions = checkUserInstanceOfCategoryPermission(instancesPermissions, template.category, 'Write');
     return (
         <Grid container minWidth="fit-content">
             <Grid container justifyContent="space-between" width="fit-content" minWidth="fit-content">

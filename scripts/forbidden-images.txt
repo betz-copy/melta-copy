@@ -5,3 +5,8 @@ redis
 neo4j
 minio
 nginx
+kibana
+logstash
+elastic
+apm-server
+filebeat

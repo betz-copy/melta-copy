@@ -1,3 +1,4 @@
+import { IMongoEntityTemplatePopulated } from './entityTemplates';
 import { IMongoRelationshipTemplate } from './relationshipTemplates';
 import { IRelationship } from './relationships';
 
@@ -118,4 +119,14 @@ export interface IExportEntitiesBody {
             sort?: ISearchSort;
         };
     };
+}
+
+export interface IGraphFilterBody {
+    selectedTemplate: IMongoEntityTemplatePopulated;
+    selectedProperty?: string;
+    filterField?: any;
+}
+
+export interface IGraphFilterBodyBatch {
+    [key: string]: IGraphFilterBody;
 }

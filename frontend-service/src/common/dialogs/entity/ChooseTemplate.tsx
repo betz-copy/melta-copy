@@ -7,8 +7,8 @@ import { useParams } from 'react-router-dom';
 import { FormikErrors, FormikTouched } from 'formik';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IPermissionsOfUser } from '../../../services/permissionsService';
-import { canUserWriteInstanceOfCategory } from '../../../utils/permissions/instancePermissions';
 import { EntityWizardValues } from '.';
+import { checkUserInstanceOfCategoryPermission } from '../../../utils/permissions/instancePermissions';
 
 const chooseTemplateSchema = Yup.object({
     template: Yup.object({
@@ -35,11 +35,14 @@ const ChooseTemplate: React.FC<{
 
     if (categoryId) {
         entityTemplatesFilteredByCategory = Array.from(entityTemplates.values()).filter((entity) => {
-            return entity.category._id === categoryId && canUserWriteInstanceOfCategory(myPermissions.instancesPermissions, entity.category);
+            return (
+                entity.category._id === categoryId &&
+                checkUserInstanceOfCategoryPermission(myPermissions.instancesPermissions, entity.category, 'Write')
+            );
         });
     } else {
         entityTemplatesFilteredByCategory = Array.from(entityTemplates.values()).filter((entity) => {
-            return canUserWriteInstanceOfCategory(myPermissions.instancesPermissions, entity.category);
+            return checkUserInstanceOfCategoryPermission(myPermissions.instancesPermissions, entity.category, 'Write');
         });
     }
 

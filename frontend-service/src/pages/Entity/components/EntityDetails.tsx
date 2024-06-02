@@ -28,10 +28,10 @@ import { EntityDates } from './EntityDates';
 import { RootState } from '../../../store';
 import { IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
 import UpdateStatusWithRuleBreachDialog from './UpdateStatusWithRuleBreachDialog';
-import { canUserWriteInstanceOfCategory } from '../../../utils/permissions/instancePermissions';
 import TooltipMenuButton from './TooltipMenuButton';
 import { ImageWithDisable } from '../../../common/ImageWithDisable';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
+import { checkUserInstanceOfCategoryPermission } from '../../../utils/permissions/instancePermissions';
 
 const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; expandedEntity: IEntityExpanded }> = ({
     entityTemplate,
@@ -76,7 +76,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
             updateEntityStatusRequest(currEntity.properties._id, disabled, JSON.stringify(ignoredRules)),
         {
             onSuccess: (data) => {
-                queryClient.setQueryData(['getExpandedEntity', entity.properties._id, { templateIds, numberOfConnections: 1 }], () => {
+                queryClient.setQueryData(['getExpandedEntity', entity.properties._id, { [entity.properties._id]: 1 }, { templateIds }], () => {
                     return {
                         ...expandedEntity,
                         entity: data,
@@ -122,20 +122,19 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                 entity={expandedEntity.entity}
                 onSuccessUpdate={(data) => {
                     setIsEditMode(false);
-                    queryClient.setQueryData(['getExpandedEntity', entity.properties._id, { templateIds, numberOfConnections: 1 }], () => {
+                    queryClient.setQueryData(['getExpandedEntity', entity.properties._id, { [entity.properties._id]: 1 }, { templateIds }], () => {
                         return {
                             ...expandedEntity,
                             entity: data,
                         };
                     });
-                
                 }}
                 onCancelUpdate={() => setIsEditMode(false)}
             />
         );
     }
 
-    const canWriteInstance = canUserWriteInstanceOfCategory(myPermissions.instancesPermissions, entityTemplate.category);
+    const canWriteInstance = checkUserInstanceOfCategoryPermission(myPermissions.instancesPermissions, entityTemplate.category, 'Write');
     const isEntityDisabled = expandedEntity.entity.properties.disabled;
     return (
         <>
@@ -294,7 +293,6 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                     handleClose={closeDeleteDialog}
                     onYes={() => deleteMutation()}
                     isLoading={isDeleteLoading}
-
                 />
             </Card>
             {updateStatusWithRuleBreachDialogState.isOpen && (

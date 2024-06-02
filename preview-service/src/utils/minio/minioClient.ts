@@ -1,4 +1,6 @@
 import * as minio from 'minio';
+import { Readable } from 'stream';
+import logger from '../logger/logsLogger';
 
 export class MinIOClient {
     minioClient: minio.Client;
@@ -17,12 +19,16 @@ export class MinIOClient {
 
         if (!(await this.minioClient.bucketExists(this.bucketName))) {
             await this.minioClient.makeBucket(this.bucketName, '');
-            console.log(`Bucket with name "${this.bucketName}" created successfully`);
+            logger.info(`Bucket with name "${this.bucketName}" created successfully`);
         }
     }
 
     downloadFileStream(filePath: string) {
         return this.minioClient.getObject(this.bucketName, filePath);
+    }
+
+    async uploadFileStream(filePath: Readable, objectName: string, metaData = {}) {
+        return this.minioClient.putObject(this.bucketName, objectName, filePath, metaData);
     }
 
     statFile(filePath: string) {
