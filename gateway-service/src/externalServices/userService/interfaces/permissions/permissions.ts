@@ -28,7 +28,7 @@ export type IPermission =
 
 export type ICompact<P extends IPermission> = P['metadata'];
 
-export type ICompactPermissions = {
+export type ISubCompactPermissions = {
     [PermissionType.admin]?: ICompact<IAdminPermission>;
     [PermissionType.rules]?: ICompact<IRulesPermission>;
     [PermissionType.permissions]?: ICompact<IPermissionsPermission>;
@@ -36,6 +36,13 @@ export type ICompactPermissions = {
     [PermissionType.templates]?: ICompact<ITemplatesPermission>;
     [PermissionType.instances]?: ICompact<IInstancesPermission>;
 };
-export type ICompactNullablePermissions = {
-    [K in keyof ICompactPermissions]: ICompactPermissions[K] | null;
-};
+
+// [workspaceId: string]: ISubCompactPermissions
+export type ICompactPermissions = Record<string, ISubCompactPermissions>;
+export type ICompactNullablePermissions = Record<
+    string,
+    | {
+          [K in keyof ISubCompactPermissions]: ISubCompactPermissions[K] | null;
+      }
+    | null
+>;
