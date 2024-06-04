@@ -83,26 +83,23 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
     isPrintingMode = false,
 }) => {
     let propertiesOrderedToShow: string[];
-    if (overridePropertiesToShow) {
-        propertiesOrderedToShow = overridePropertiesToShow;
-    } else if (showPreviewPropertiesOnly) {
+    if (overridePropertiesToShow) propertiesOrderedToShow = overridePropertiesToShow;
+    else if (showPreviewPropertiesOnly) {
         if (files) {
             propertiesOrderedToShow = entityTemplate.propertiesOrder.filter(
                 (propertyKey) =>
                     entityTemplate.propertiesPreview!.includes(propertyKey) || entityTemplate.properties.properties[propertyKey].format === 'fileId',
             );
-        } else {
+        } else
             propertiesOrderedToShow = entityTemplate.propertiesOrder.filter((propertyKey) => entityTemplate.propertiesPreview!.includes(propertyKey));
-        }
     } else if (removeFiles) {
         propertiesOrderedToShow = entityTemplate.propertiesOrder.filter(
             (propertyKey) =>
                 entityTemplate.properties.properties[propertyKey].format !== 'fileId' &&
                 entityTemplate.properties.properties[propertyKey].items?.format !== 'fileId',
         );
-    } else {
-        propertiesOrderedToShow = entityTemplate.propertiesOrder;
-    }
+    } else propertiesOrderedToShow = entityTemplate.propertiesOrder;
+
     const [hideFieldsToDisplay, setHideFieldsToDisplay] = React.useState(entityTemplate.properties.hide);
 
     return (
@@ -197,7 +194,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                                         style={{
                                             textOverflow: 'ellipsis',
                                             whiteSpace: textWrap ? undefined : 'nowrap',
-                                            overflow: 'hidden',
+                                            overflow: 'auto',
                                             paddingLeft: '1rem',
                                             maxHeight: isPrintingMode ? undefined : '350px',
                                         }}

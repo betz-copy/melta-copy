@@ -6,7 +6,7 @@ import { IMongoCategory } from '../../../../interfaces/categories';
 import { IEntityExpanded } from '../../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { ComponentToPrint } from './ComponentToPrint';
-import { PrintOptionsDialog } from './PrintOptionsDialog';
+import { PrintOptionsDialog } from '../../../../common/print/PrintOptionsDialog';
 import { IConnectionTemplateOfExpandedEntity } from '../..';
 import { IFile } from '../../../../interfaces/preview';
 
@@ -29,7 +29,7 @@ const Print: React.FC<{
     const [files, setFiles] = React.useState<IFile[]>([]);
     const [selectedFiles, setSelectedFiles] = React.useState(files);
 
-    const [selected, setSelected] = React.useState(connectionsTemplates);
+    const [selectedConnections, setSelectedConnections] = React.useState(connectionsTemplates);
     const [showDate, setShowDate] = React.useState(true);
     const [showDisabled, setShowDisabled] = React.useState(true);
     const [showEntityDates, setShowEntityDates] = React.useState(true);
@@ -57,7 +57,7 @@ const Print: React.FC<{
                     ref={componentRef}
                     entityTemplate={entityTemplate}
                     expandedEntity={expandedEntity}
-                    connectionsTemplatesToPrint={selected}
+                    connectionsTemplatesToPrint={selectedConnections}
                     filesToPrint={selectedFiles}
                     setSelectedFiles={setSelectedFiles}
                     setFilesLoadingStatus={setFilesLoadingStatus}
@@ -67,29 +67,32 @@ const Print: React.FC<{
             {openModal && (
                 <PrintOptionsDialog
                     open={openModal}
-                    expandedEntity={expandedEntity}
-                    entityTemplate={entityTemplate}
-                    connectionsTemplates={connectionsTemplates}
+                    entityConnections={{
+                        expandedEntity,
+                        connectionsTemplates,
+                        selectedConnections,
+                        setSelectedConnections,
+                        categoriesWithConnectionsTemplates,
+                    }}
+                    instanceProperties={expandedEntity.entity.properties}
+                    templateProperties={entityTemplate}
                     handleClose={handleClose}
-                    selected={selected}
-                    setSelected={setSelected}
                     files={files}
                     setFiles={setFiles}
                     selectedFiles={selectedFiles}
                     setSelectedFiles={setSelectedFiles}
                     filesLoadingStatus={filesLoadingStatus}
                     setFilesLoadingStatus={setFilesLoadingStatus}
-                    categoriesWithConnectionsTemplates={categoriesWithConnectionsTemplates}
                     onClick={handlePrint}
                     options={{
-                        setShowDate,
-                        showDate,
-                        showDisabled,
-                        setShowDisabled,
-                        showEntityDates,
-                        setShowEntityDates,
-                        showPreviewPropertiesOnly,
-                        setShowPreviewPropertiesOnly,
+                        date: { show: showDate, set: setShowDate, label: 'entityPage.print.showDate' },
+                        disabled: { show: showDisabled, set: setShowDisabled, label: 'entityPage.print.showDisabled' },
+                        entityDates: { show: showEntityDates, set: setShowEntityDates, label: 'entityPage.print.showEntityDates' },
+                        previewPropertiesOnly: {
+                            show: showPreviewPropertiesOnly,
+                            set: setShowPreviewPropertiesOnly,
+                            label: 'entityPage.print.showOnlyPreviewProperties',
+                        },
                     }}
                 />
             )}

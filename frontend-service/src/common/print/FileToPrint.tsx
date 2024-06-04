@@ -19,12 +19,11 @@ const FileToPrint: React.FC<{
     const currentPageRef = useRef(currentPage);
     const [noSuchKeyError, setNoSuchKeyError] = useState<boolean>(true);
 
-    console.log({ file });
-
     const { data, refetch, isFetching: isPreviewLoading } = useFilePreview(file.id, file.contentType, setNoSuchKeyError);
 
-    console.log({ data });
-    console.log({ isPreviewLoading });
+    const onLoadSuccess = ({ numPages }: { numPages: number }) => {
+        setNumOfPages(numPages);
+    };
 
     React.useEffect(() => {
         setSelectedFiles((prevFilesToPrint) => {
@@ -45,10 +44,6 @@ const FileToPrint: React.FC<{
             onPreviewLoadingFinished();
         }
     }, [isPreviewLoading === true]);
-
-    const onLoadSuccess = ({ numPages }: { numPages: number }) => {
-        setNumOfPages(numPages);
-    };
 
     useEffect(() => {
         const handleScroll = async () => {

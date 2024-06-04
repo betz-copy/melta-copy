@@ -2,15 +2,14 @@ import React from 'react';
 import { Dialog, DialogTitle, DialogContent, Grid, Button, FormControlLabel, DialogActions, IconButton, CircularProgress } from '@mui/material';
 import { PrintOutlined, CloseOutlined } from '@mui/icons-material';
 import i18next from 'i18next';
-import { toast } from 'react-toastify';
 import { MeltaCheckbox } from '../../../common/MeltaCheckbox';
 import { IFile } from '../../../interfaces/preview';
-import { getFileExtension, getPreviewContentType } from '../../../utils/getFileType';
-import { getFileName } from '../../../utils/getFileName';
+import { getFile } from '../../../utils/getFileType';
 import { IMongoProcessInstancePopulated } from '../../../interfaces/processes/processInstance';
 import { IMongoProcessTemplatePopulated } from '../../../interfaces/processes/processTemplate';
 import { isUnsupported, isVideoOrAudio } from '../../../common/FilePreview/PreviewDialog';
 import { SelectCheckbox } from '../../../common/SelectCheckbox';
+import { getFilesFromTemplate, handlePrintError } from '../../../common/print/PrintOptionsDialog';
 
 const PrintOptionsDialog: React.FC<{
     open: boolean;
@@ -42,72 +41,48 @@ const PrintOptionsDialog: React.FC<{
     onClick,
     options,
 }) => {
+    const [isLoading, setIsLoading] = React.useState(false);
+
     const getProcessPropertiesFiles = React.useCallback((): IFile[] => {
-        return processTemplate.details.propertiesOrder
-            .map((propertyKey) => {
-                const propertySchema = processTemplate.details.properties.properties[propertyKey];
-                const propertyValue = processInstance.details[propertyKey];
-                if (propertyValue && propertySchema.format === 'fileId') {
-                    const name = getFileName(propertyValue);
-                    return {
-                        id: propertyValue,
-                        name,
-                        contentType: getPreviewContentType(name),
-                        key: propertyKey,
-                        targetExtension: getFileExtension(name),
-                    } as IFile;
-                }
-                if (propertyValue && propertySchema.type === 'array' && propertySchema.items?.format === 'fileId') {
-                    return propertyValue.map((id: string) => {
-                        const name = getFileName(id);
-                        return {
-                            id,
-                            name,
-                            contentType: getPreviewContentType(name),
-                            targetExtension: getFileExtension(name),
-                        } as IFile;
-                    });
-                }
-                return undefined;
-            })
-            .flat()
-            .filter((file) => file !== undefined) as IFile[];
+        console.log('processTemplate.details', processTemplate.details);
+        console.log('processInstance.details', processInstance.details);
+
+        return getFilesFromTemplate(processTemplate.details, processInstance.details);
     }, [processTemplate, processInstance]);
 
     const getProcessStepsFiles = React.useCallback((): IFile[] => {
-        const stepsFiles: IFile[] = [];
-        processTemplate.steps.forEach((stepTemplate) => {
-            processInstance.steps.forEach((step) => {
-                stepTemplate.propertiesOrder.forEach((propertyKey) => {
-                    if (step.properties) {
-                        const propertySchema = stepTemplate.properties.properties[propertyKey];
-                        const propertyValue = step.properties[propertyKey];
-                        if (propertyValue && propertySchema.format === 'fileId') {
-                            const name = getFileName(propertyValue);
-                            stepsFiles.push({
-                                id: propertyValue,
-                                name,
-                                contentType: getPreviewContentType(name),
-                                targetExtension: getFileExtension(name),
-                            } as IFile);
+        return processTemplate.steps
+            .flatMap((stepTemplate) => {
+                return processInstance.steps.flatMap((step) => {
+                    return stepTemplate.propertiesOrder.flatMap((propertyKey) => {
+                        if (step.properties) {
+                            const propertySchema = stepTemplate.properties.properties[propertyKey];
+                            const propertyValue = step.properties[propertyKey];
+                            if (propertyValue) {
+                                if (propertySchema.format === 'fileId') return [getFile(propertyValue)];
+                                if (propertySchema.type === 'array' && propertySchema.items?.format === 'fileId')
+                                    return propertyValue.map((id: string) => getFile(id));
+                            }
                         }
-                        if (propertyValue && propertySchema.type === 'array' && propertySchema.items?.format === 'fileId') {
-                            propertyValue.forEach((id: string) => {
-                                const name = getFileName(id);
-                                stepsFiles.push({
-                                    id,
-                                    name,
-                                    contentType: getPreviewContentType(name),
-                                    targetExtension: getFileExtension(name),
-                                } as IFile);
-                            });
-                        }
-                    }
+                        return [];
+                    });
                 });
-            });
-        });
-        return stepsFiles;
+            })
+            .filter((file) => file !== undefined) as IFile[];
     }, [processTemplate.steps, processInstance.steps]);
+
+    // const getProcessStepsFiles = React.useCallback((): IFile[] => {
+    //     return processTemplate.steps
+    //         .flatMap((stepTemplate) => {
+    //             return processInstance.steps.flatMap((step) => {
+    //                 console.log({stepTemplate});
+    //                 console.log({step});
+
+    //                 return getFilesFromTemplate(stepTemplate, step);
+    //             });
+    //         })
+    //         .filter((file) => file !== undefined) as IFile[];
+    // }, [processTemplate.steps, processInstance.steps]);
 
     React.useEffect(() => {
         const currFiles = getProcessPropertiesFiles()
@@ -125,34 +100,10 @@ const PrintOptionsDialog: React.FC<{
         );
     }, [selectedFiles, setFilesLoadingStatus]);
 
-    const handlePrintError = async () => {
-        const refetchPromises = files.map((file) => {
-            if (file.refetch) return file.refetch();
-            return undefined;
-        });
-
-        const arrRefetch = await Promise.all(refetchPromises);
-
-        try {
-            arrRefetch.forEach((refetch) => {
-                if (!refetch) return;
-
-                if (refetch.isError) {
-                    setSelectedFiles([]);
-                    toast.error(i18next.t('errorPage.filePrintError'));
-                }
-            });
-        } catch {
-            setSelectedFiles([]);
-            toast.error(i18next.t('errorPage.filePrintError'));
-        }
-    };
-
     React.useEffect(() => {
-        handlePrintError();
-    }, [files]);
+        handlePrintError(selectedFiles, setSelectedFiles);
+    }, [selectedFiles]);
 
-    const [isLoading, setIsLoading] = React.useState(false);
     React.useEffect(() => {
         if (Object.keys(filesLoadingStatus).length === 0) {
             setIsLoading(false);

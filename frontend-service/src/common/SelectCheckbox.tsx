@@ -476,6 +476,7 @@ const SelectCheckbox = <Option extends any, Group extends any>({
     });
 
     let horizontalOrigin = 172;
+
     if (process) {
         horizontalOrigin = 178;
     } else if (title === i18next.t('systemManagement.destinationTemplates') || title === i18next.t('categories')) {

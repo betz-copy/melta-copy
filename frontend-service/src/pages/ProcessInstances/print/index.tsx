@@ -6,13 +6,13 @@ import { Print as PrintIcon } from '@mui/icons-material';
 import { AxiosError } from 'axios';
 import { UseMutateAsyncFunction } from 'react-query';
 import { ComponentToPrint } from './ComponentToPrint';
-import { PrintOptionsDialog } from './PrintOptionsDialog';
 import { IMongoProcessInstancePopulated } from '../../../interfaces/processes/processInstance';
 import { MeltaTooltip } from '../../../common/MeltaTooltip';
 import { IMongoProcessTemplatePopulated } from '../../../interfaces/processes/processTemplate';
 import { ProcessDetailsValues } from '../../../common/wizards/processInstance/ProcessDetails';
 import { IFile } from '../../../interfaces/preview';
 import { MenuButton } from '../../../common/MenuButton';
+import { PrintOptionsDialog } from '../../../common/print/PrintOptionsDialog';
 
 const Print: React.FC<{
     processTemplate: IMongoProcessTemplatePopulated;
@@ -42,6 +42,51 @@ const Print: React.FC<{
         // eslint-disable-next-line quotes
         return `@page { margin: 15px 10px 15px 10px !important; }`;
     };
+
+    // const getProcessStepsFiles = React.useCallback((): IFile[] => {
+    //     return processTemplate.steps
+    //         .flatMap((stepTemplate) => {
+    //             return processInstance.steps.flatMap((step) => {
+    //                 return stepTemplate.propertiesOrder.flatMap((propertyKey) => {
+    //                     if (step.properties) {
+    //                         const propertySchema = stepTemplate.properties.properties[propertyKey];
+    //                         const propertyValue = step.properties[propertyKey];
+    //                         if (propertyValue) {
+    //                             if (propertySchema.format === 'fileId') return [getFile(propertyValue)];
+    //                             if (propertySchema.type === 'array' && propertySchema.items?.format === 'fileId')
+    //                                 return propertyValue.map((id: string) => getFile(id));
+    //                         }
+    //                     }
+    //                     return [];
+    //                 });
+    //             });
+    //         })
+    //         .filter((file) => file !== undefined) as IFile[];
+    // }, [processTemplate.steps, processInstance.steps]);
+
+    // const getProcessStepsFiles = React.useCallback(
+    //     (template, instance): IFile[] => {
+    //         return template.steps
+    //             .flatMap((stepTemplate) => {
+    //                 return instance.steps.flatMap((step) => {
+    //                     return stepTemplate.propertiesOrder.flatMap((propertyKey) => {
+    //                         if (step.properties) {
+    //                             const propertySchema = stepTemplate.properties.properties[propertyKey];
+    //                             const propertyValue = step.properties[propertyKey];
+    //                             if (propertyValue) {
+    //                                 if (propertySchema.format === 'fileId') return [getFile(propertyValue)];
+    //                                 if (propertySchema.type === 'array' && propertySchema.items?.format === 'fileId')
+    //                                     return propertyValue.map((id: string) => getFile(id));
+    //                             }
+    //                         }
+    //                         return [];
+    //                     });
+    //                 });
+    //             })
+    //             .filter((file) => file !== undefined) as IFile[];
+    //     },
+    //     [processTemplate.steps, processInstance.steps],
+    // );
 
     return (
         <>
@@ -81,8 +126,8 @@ const Print: React.FC<{
                 <PrintOptionsDialog
                     open={openModal}
                     handleClose={handleClose}
-                    processInstance={processInstance}
-                    processTemplate={processTemplate}
+                    templateProperties={processTemplate.details}
+                    instanceProperties={processInstance.details}
                     files={files}
                     setFiles={setFiles}
                     selectedFiles={selectedFiles}
@@ -91,8 +136,7 @@ const Print: React.FC<{
                     setFilesLoadingStatus={setFilesLoadingStatus}
                     onClick={handlePrint}
                     options={{
-                        showSummary,
-                        setShowSummary,
+                        processSummary: { show: showSummary, set: setShowSummary, label: 'wizard.processInstance.print.showSummary' },
                     }}
                 />
             )}

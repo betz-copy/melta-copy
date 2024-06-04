@@ -33,15 +33,9 @@ export const CommentsDetails: FC<{ values: ProcessStepValues | IMongoStepInstanc
     return (
         <div style={{ textAlign: toPrint ? 'right' : 'center' }}>
             <BlueTitle title={i18next.t('wizard.processInstance.step.comment')} component="h6" variant={toPrint ? 'h6' : 'body1'} />
-            {toPrint ? (
-                <Typography variant="body1" sx={{ paddingY: '5px', paddingX: '10px' }}>
-                    {values.comments}
-                </Typography>
-            ) : (
-                <Typography height="18vh" sx={{ wordBreak: 'break-word', fontSize: '15px' }}>
-                    {values.comments}
-                </Typography>
-            )}
+            <Typography variant="body1" sx={{ paddingY: '5px', paddingX: '10px', wordBreak: 'break-word', fontSize: !toPrint ? '15px' : undefined }}>
+                {values.comments}
+            </Typography>
         </div>
     );
 };
@@ -177,12 +171,11 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                     }));
 
                 const textAreaValues = textAreaSchema.map((property) => {
-                    let value = values.properties[property.key];
-                    if (value) {
-                        value = value.replace(/<\/?p>/g, '');
-                        value = value.replace(/<br>/g, '\n');
-                        value = value.replace(/&nbsp;/g, '');
-                    }
+                    const value =
+                        values.properties[property.key]
+                            ?.replace(/<\/?p>/g, '')
+                            .replace(/<br>/g, '\n')
+                            .replace(/&nbsp;/g, '') || '';
                     return { ...property, value };
                 });
 

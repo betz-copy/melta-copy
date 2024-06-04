@@ -32,12 +32,11 @@ export const SchemaForm = ({ viewMode, values, errors, touched, setFieldValue, s
         }));
 
     const textAreaValues = textAreaSchema.map((property) => {
-        let value = values.details[property.key];
-        if (value) {
-            value = value.replace(/<\/?p>/g, '');
-            value = value.replace(/<br>/g, '\n');
-            value = value.replace(/&nbsp;/g, '');
-        }
+        const value =
+            values.details[property.key]
+                ?.replace(/<\/?p>/g, '')
+                .replace(/<br>/g, '\n')
+                .replace(/&nbsp;/g, '') || '';
         return { ...property, value };
     });
 
@@ -229,7 +228,7 @@ const GeneralDetails: React.FC<IDetailsStepProp> = ({ detailsFormikData, onNext,
 
     return (
         <Card sx={{ border: 'none', boxShadow: 'none', background: 'transparent' }}>
-            <CardContent sx={{ height: toPrint ? undefined : '56vh', overflowY: 'auto' }} key={`${values.name} - ${values.template?.name}`}>
+            <CardContent sx={{ height: !toPrint ? '56vh' : undefined, overflowY: 'auto' }} key={`${values.name} - ${values.template?.name}`}>
                 <Grid container direction="column" paddingLeft={toPrint ? 0 : 4} justifyContent="space-around">
                     <Grid item>
                         <FormikProvider value={detailsFormikData}>

@@ -8,7 +8,7 @@ import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../i
 import { EntityComponentToPrint } from './EntityComponentToPrint';
 import { IConnectionTemplateOfExpandedEntity } from '../..';
 import { IFile } from '../../../../interfaces/preview';
-import { FileToPrint } from '../../../../common/PrintFiles/FileToPrint';
+import { FileToPrint } from '../../../../common/print/FileToPrint';
 
 const ComponentToPrint = React.forwardRef<
     HTMLDivElement,

@@ -14,7 +14,7 @@ import { IPermissionsOfUser } from '../../../services/permissionsService';
 import { getStepTemplateByStepInstance } from '../../../utils/processWizard/steps';
 import { getProcessByIdRequest } from '../../../services/processesService';
 import { ProcessDetailsValues } from '../../../common/wizards/processInstance/ProcessDetails';
-import { FileToPrint } from '../../../common/PrintFiles/FileToPrint';
+import { FileToPrint } from '../../../common/print/FileToPrint';
 
 const ComponentToPrint = React.forwardRef<
     HTMLDivElement,
