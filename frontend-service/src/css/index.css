@@ -1,3 +1,7 @@
+body {
+    background-color: #1e2775 !important;
+}
+
 @font-face {
     font-family: 'Rubik';
     font-weight: 100;
@@ -40,8 +44,7 @@
     src: local('Rubik'), url(../assets/Rubik/Rubik-VariableFont_wght.ttf) format('woff');
 }
 
-
 @font-face {
     font-family: 'OpenSans';
-    src: local('OpenSans'), url(../assets/OpenSans/OpenSans-VariableFont_wdth,wght.ttf) format('woff');
+    src: local('OpenSans'), url(../assets/OpenSans/OpenSans-VariableFont_wdthwght.ttf) format('woff');
 }

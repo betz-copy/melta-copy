@@ -1,14 +1,13 @@
+import { Typography } from '@mui/material';
+import i18next from 'i18next';
+import pickBy from 'lodash.pickby';
 import React from 'react';
 import ReactDiffViewer from 'react-diff-viewer';
-import i18next from 'i18next';
-import { Typography } from '@mui/material';
-import pickBy from 'lodash.pickby';
-import { useSelector } from 'react-redux';
-import { IUpdateEntityMetadataPopulated } from '../../interfaces/ruleBreaches/actionMetadata';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
-import { formatToString } from '../EntityProperties';
+import { IUpdateEntityMetadataPopulated } from '../../interfaces/ruleBreaches/actionMetadata';
+import { useDarkModeStore } from '../../stores/darkMode';
 import { getFileName } from '../../utils/getFileName';
-import { RootState } from '../../store';
+import { formatToString } from '../EntityProperties';
 
 const getEntityPropertyString = (
     value: any,
@@ -20,9 +19,11 @@ const getEntityPropertyString = (
     if (value === null || value === undefined) {
         return '-';
     }
+
     if (format !== 'fileId' && !items) {
         return formatToString(value, type, format);
     }
+
     // single
     if (format === 'fileId') {
         const oldFileName = oldValue ? getFileName(oldValue) : undefined;
@@ -33,20 +34,20 @@ const getEntityPropertyString = (
         }
         return fileName;
     }
+
     // multiple
-    else {
-        const updatedFiles = value.map((file, index) => {
-            const oldFile = oldValue ? oldValue[index] : undefined;
-            const oldFileName = oldFile ? getFileName(oldFile) : undefined;
-            const fileName = file instanceof File ? file.name : getFileName(file);
-            const fileContentChanged = file instanceof File || !oldValue || !oldValue.includes(file);
-            if (oldFileName === fileName && fileContentChanged) {
-                return `${fileName} (${i18next.t('ruleBreachInfo.updateEntityActionInfo.fileContentUpdated')})`;
-            }
-            return fileName;
-        });
-        return updatedFiles.join('\n');
-    }
+    const updatedFiles = value.map((file, index: number) => {
+        const oldFile = oldValue ? oldValue[index] : undefined;
+        const oldFileName = oldFile ? getFileName(oldFile) : undefined;
+        const fileName = file instanceof File ? file.name : getFileName(file);
+        const fileContentChanged = file instanceof File || !oldValue || !oldValue.includes(file);
+        if (oldFileName === fileName && fileContentChanged) {
+            return `${fileName} (${i18next.t('ruleBreachInfo.updateEntityActionInfo.fileContentUpdated')})`;
+        }
+        return fileName;
+    });
+
+    return updatedFiles.join('\n');
 };
 
 const getEntityPropertiesString = (
@@ -70,7 +71,8 @@ export const UpdatedFieldsDiff: React.FC<{
     const { entity, before, updatedFields } = actionMetadata;
     const oldProperties = before ?? entity?.properties;
 
-    const darkMode = useSelector((state: RootState) => state.darkMode);
+    const darkMode = useDarkModeStore((state) => state.darkMode);
+
     const newPropertiesWithNulls = { ...oldProperties, ...updatedFields };
     // updatedFields specifies fields to remove w/ nulls. but shouldn't be in the IEntity properties
     const newProperties = pickBy(newPropertiesWithNulls, (property) => property !== null);

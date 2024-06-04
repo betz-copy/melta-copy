@@ -4,19 +4,18 @@ import { AccordionDetails, AccordionSummary, Box, Grid, Typography } from '@mui/
 import { FieldArray, FormikErrors } from 'formik';
 import { ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
 import _debounce from 'lodash.debounce';
-import { useSelector } from 'react-redux';
 import i18next from 'i18next';
-import { RootState } from '../../../store';
 import UserAutocomplete from '../../inputs/UserAutocomplete';
 import CreateUserCard from './ApproverCard';
 import { StepsGenericBlockProps } from './StepsBlocksInterface';
 import { FieldBlockAccordion } from '../entityTemplate/FieldBlock';
 import { ProcessTemplateWizardValues } from '.';
+import { useDarkModeStore } from '../../../stores/darkMode';
 
 const StepsApproversBlock: React.FC<StepsGenericBlockProps> = ({ title, values, propIndex, errors, touched }) => {
     const errorsOfStep = errors.steps?.[propIndex] as FormikErrors<ProcessTemplateWizardValues['steps'][number]> | undefined;
 
-    const darkMode = useSelector((state: RootState) => state.darkMode);
+    const darkMode = useDarkModeStore((state) => state.darkMode);
     const [userInputValue, setUserInputValue] = React.useState('');
 
     return (

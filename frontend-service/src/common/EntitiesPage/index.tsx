@@ -6,7 +6,6 @@ import mapValues from 'lodash.mapvalues';
 import { useMutation } from 'react-query';
 import fileDownload from 'js-file-download';
 import { toast } from 'react-toastify';
-import { useSearchParams } from 'react-router-dom';
 import { IMongoCategory } from '../../interfaces/categories';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { EntitiesPageHeadline } from './Headline';
@@ -15,6 +14,7 @@ import { exportEntitiesRequest } from '../../services/entitiesService';
 import CardsView, { CardsViewRef } from './CardsView';
 import { IExportEntitiesBody } from '../../interfaces/entities';
 import { filterModelToFilterOfTemplate, sortModelToSortOfSearchRequest } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
+import { useSearchParams } from '../../utils/hooks/useSearchParams';
 
 const EntitiesPage: React.FC<{
     templates: IMongoEntityTemplatePopulated[];
@@ -40,16 +40,14 @@ const EntitiesPage: React.FC<{
     const templateTablesViewRef = useRef<TemplateTablesViewRef>(null);
     const cardsViewRef = useRef<CardsViewRef>(null);
 
-    const [urlSearchParams, setUrlSearchParams] = useSearchParams({
-        search: '',
-        viewMode: 'templates-tables-view',
-    });
+    const [urlSearchParams, setUrlSearchParams] = useSearchParams({ search: '', viewMode: 'templates-tables-view' });
+    const search = urlSearchParams.get('search')!;
 
-    const [searchInput, setSearchInput] = useState(urlSearchParams.get('search')!);
+    const [searchInput, setSearchInput] = useState(search);
 
     useEffect(() => {
-        setSearchInput(urlSearchParams.get('search') || '');
-    }, [urlSearchParams.get('search')]);
+        setSearchInput(search || '');
+    }, [search]);
 
     const { mutateAsync: exportTemplatesToExcel, isLoading: isLoadingExcelExport } = useMutation(
         async () => {

@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
 import { Grid, IconButton, Typography } from '@mui/material';
-import { Preview } from './PreviewDialog';
+import React, { useState } from 'react';
+import { environment } from '../../globals';
 import { getFileName } from '../../utils/getFileName';
 import { getFileExtension, getFileNameWithoutExtension, getPreviewContentType } from '../../utils/getFileType';
-import { useFilePreview } from '../../utils/useFilePreview';
-import { environment } from '../../globals';
+import { useFilePreview } from '../../utils/hooks/useFilePreview';
 import FileIcon from './FileIcon';
+import { Preview } from './PreviewDialog';
 
 const OpenPreviewButton: React.FC<{ fileId: string }> = ({ fileId }) => {
     const fileName = getFileName(fileId);

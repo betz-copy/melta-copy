@@ -1,21 +1,21 @@
-import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, Collapse, Dialog, Grid, IconButton } from '@mui/material';
 import { AppRegistration as AppRegistrationIcon } from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
+import { Card, CardContent, CardHeader, Collapse, Dialog, Grid, IconButton } from '@mui/material';
 import i18next from 'i18next';
+import React, { useState } from 'react';
+import { useLocation } from 'wouter';
+import { BlueTitle } from '../../../common/BlueTitle';
 import { CustomIcon } from '../../../common/CustomIcon';
+import { CreateOrEditEntityDetails } from '../../../common/dialogs/entity/CreateOrEditEntityDialog';
+import { EntityProperties } from '../../../common/EntityProperties';
+import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
+import { environment } from '../../../globals';
 import { IEntity } from '../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { EntityProperties } from '../../../common/EntityProperties';
-import { EntityDisableCheckbox } from '../../Entity/components/EntityDisableCheckbox';
-import { EntityDates } from '../../Entity/components/EntityDates';
-import { BlueTitle } from '../../../common/BlueTitle';
-import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
 import { getEntityTemplateColor } from '../../../utils/colors';
-import { environment } from '../../../globals';
-import { CreateOrEditEntityDetails } from '../../../common/dialogs/entity/CreateOrEditEntityDialog';
+import { EntityDates } from '../../Entity/components/EntityDates';
+import { EntityDisableCheckbox } from '../../Entity/components/EntityDisableCheckbox';
 
 interface EntityCardProps {
     entity: IEntity;
@@ -48,7 +48,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
         isOpen: false,
     });
 
-    const navigate = useNavigate();
+    const [_, navigate] = useLocation();
 
     const entityTemplateColor = getEntityTemplateColor(entityTemplate);
 

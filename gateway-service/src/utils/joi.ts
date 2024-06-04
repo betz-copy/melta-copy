@@ -37,6 +37,12 @@ export const MongoIdSchema = Joi.string().regex(/^[0-9a-fA-F]{24}$/, 'valid Mong
 
 export const ColorSchema = Joi.string().regex(/^#[A-Fa-f0-9]{6}$/);
 
+export const FilePathSchema = Joi.string()
+    .regex(/^\/.*[^/]$/, 'valid file path')
+    .allow('/');
+
+export const HexColorSchema = Joi.string().regex(/^#(?:[0-9a-fA-F]{3}){1,2}$/, 'valid hex color');
+
 export const fileSchema = Joi.object({
     fieldname: Joi.string().required(),
     originalname: Joi.string().required(),

@@ -1,37 +1,40 @@
-import React from 'react';
-import { Grid, Card, CardContent, CircularProgress, Box, Divider, Button } from '@mui/material';
-import { Done as DoneIcon, Clear as ClearIcon } from '@mui/icons-material';
-import { useMutation } from 'react-query';
-import i18next from 'i18next';
-import { toast } from 'react-toastify';
-import { Form, Formik } from 'formik';
-import pickBy from 'lodash.pickby';
-import { useLocation } from 'react-router';
-import { useNavigate } from 'react-router-dom';
+import { Clear as ClearIcon, Done as DoneIcon } from '@mui/icons-material';
+import { Box, Button, Card, CardContent, CircularProgress, Divider, Grid } from '@mui/material';
 import { AxiosError } from 'axios';
-import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { IEntity, IEntityExpanded } from '../../../interfaces/entities';
-import { duplicateEntityRequest } from '../../../services/entitiesService';
-import { EntityWizardValues } from '../../../common/dialogs/entity';
-import { JSONSchemaFormik, ajvValidate } from '../../../common/inputs/JSONSchemaFormik';
+import { Form, Formik } from 'formik';
+import i18next from 'i18next';
+import pickBy from 'lodash.pickby';
+import React from 'react';
+import { useMutation } from 'react-query';
+import { toast } from 'react-toastify';
+import { useLocation } from 'wouter';
 import { BlueTitle } from '../../../common/BlueTitle';
-import { filterAttachmentsAndEntitiesRefFromPropertiesSchema } from '../../../utils/pickFieldsPropertiesSchema';
-import { DuplicateTopBar } from './DuplicateTopBar';
-import { environment } from '../../../globals';
+import { EntityWizardValues } from '../../../common/dialogs/entity';
 import { toastConstraintValidationError } from '../../../common/dialogs/entity/toastConstraintValidationError';
 import { InstanceFileInput } from '../../../common/inputs/InstanceFilesInput/InstanceFileInput';
 import { InstanceSingleFileInput } from '../../../common/inputs/InstanceFilesInput/InstanceSingleFileInput';
+import { ajvValidate, JSONSchemaFormik } from '../../../common/inputs/JSONSchemaFormik';
+import { environment } from '../../../globals';
+import { IEntity, IEntityExpanded } from '../../../interfaces/entities';
+import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { duplicateEntityRequest } from '../../../services/entitiesService';
+import { filterAttachmentsAndEntitiesRefFromPropertiesSchema } from '../../../utils/pickFieldsPropertiesSchema';
+import { DuplicateTopBar } from './DuplicateTopBar';
 
 const { errorCodes } = environment;
 
 const DuplicateEntity: React.FC<{}> = () => {
-    const { state } = useLocation();
-    const { entityTemplate, expandedEntity } = state as {
+    const { state } = window.history;
+
+    const {
+        entityTemplate,
+        expandedEntity: { entity },
+    } = state as {
         entityTemplate: IMongoEntityTemplatePopulated;
         expandedEntity: IEntityExpanded;
     };
-    const { entity } = expandedEntity;
-    const navigate = useNavigate();
+
+    const [_, navigate] = useLocation();
     if (!state) {
         navigate(`/entity/${entity?.properties._id}`);
     }

@@ -1,15 +1,15 @@
-import React, { isValidElement } from 'react';
-import { useParams, Navigate, useNavigate } from 'react-router-dom';
-import { useQuery } from 'react-query';
 import { CircularProgress } from '@mui/material';
 import { AxiosError } from 'axios';
-import { getExpandedEntityByIdRequest } from '../services/entitiesService';
-import { IEntityTemplateMap } from '../interfaces/entityTemplates';
-import { IPermissionsOfUser } from '../services/permissionsService';
+import React, { isValidElement } from 'react';
+import { useQuery } from 'react-query';
+import { Redirect, useLocation, useParams } from 'wouter';
+import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
+import { getExpandedEntityByIdRequest } from '../../services/entitiesService';
+import { IPermissionsOfUser } from '../../services/permissionsService';
 
 export const protectedRoute = (children: React.ReactNode, isAllowed: boolean) => {
     if (isAllowed) {
-        return <Navigate to="/" replace />;
+        return <Redirect href="/" replace />;
     }
 
     if (isValidElement(children)) {
@@ -20,7 +20,7 @@ export const protectedRoute = (children: React.ReactNode, isAllowed: boolean) =>
 };
 
 export const CategoryProtectedRoute: React.FC<{ permissions: IPermissionsOfUser }> = ({ children, permissions }) => {
-    const params = useParams();
+    const params = useParams<{ categoryId: string }>();
     const { categoryId } = params;
 
     return protectedRoute(children, !permissions.instancesPermissions.find((instance) => instance.category === categoryId));
@@ -31,9 +31,10 @@ export const EntityProtectedRoute: React.FC<{ permissions: IPermissionsOfUser; e
     permissions,
     entityTemplates,
 }) => {
-    const params = useParams();
+    const params = useParams<{ entityId: string }>();
     const { entityId } = params;
-    const navigate = useNavigate();
+
+    const [_, navigate] = useLocation();
 
     const templateIds = Array.from(entityTemplates.keys());
 

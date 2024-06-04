@@ -28,9 +28,12 @@ import { cerateWorksheet, createWorkbook, fixFileProperties, styleAWorksheet } f
 const { errorCodes } = config;
 
 export class InstancesManager {
-    static async uploadInstanceFiles(files: Express.Multer.File[], props: any): Promise<any> {
+    static async uploadInstanceFiles<TProps = Record<string, any>>(
+        files: Express.Multer.File[],
+        props: TProps = {} as TProps,
+    ): Promise<{ props: TProps; files: Record<string, any> }> {
         if (files.length === 0) {
-            return { props, files };
+            return { props, files: {} };
         }
 
         const fileIds = await uploadFiles(files);
@@ -38,7 +41,7 @@ export class InstancesManager {
             return [file.fieldname, fileIds[index]];
         });
 
-        const filesToUpload: any = {};
+        const filesToUpload: Record<string, any> = {};
         // not for image picker
         Object.entries(Object.fromEntries(filePropertiesEntries)).forEach(([key, value]) => {
             const [group, _index] = key.split('.');

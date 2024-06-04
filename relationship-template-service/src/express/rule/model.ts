@@ -53,4 +53,6 @@ RuleTemplateSchema.post(['find', 'findOne', 'findOneAndUpdate', 'findOneAndDelet
 
 const RuleModel = mongoose.model<IRule & mongoose.Document>(config.mongo.ruleCollectionName, RuleTemplateSchema);
 
+// const RuleConnModel = (db: string) => mongoose.connections[db].model<IRule & mongoose.Document>(config.mongo.ruleCollectionName, RuleTemplateSchema);
+
 export default RuleModel;

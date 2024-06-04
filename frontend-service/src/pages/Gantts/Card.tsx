@@ -1,8 +1,8 @@
-import React from 'react';
 import { Card, CardHeader } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
-import { IGantt } from '../../interfaces/gantts';
+import React from 'react';
+import { useLocation } from 'wouter';
 import { environment } from '../../globals';
+import { IGantt } from '../../interfaces/gantts';
 
 interface IGanttCardProps {
     gantt: IGantt;
@@ -12,12 +12,12 @@ const {
 } = environment.ganttSettings;
 
 export const GanttsCard: React.FC<IGanttCardProps> = ({ gantt }) => {
-    const navigate = useNavigate();
+    const [_, navigate] = useLocation();
 
     return (
         <Card
             onClick={() => {
-                navigate(gantt.groupBy ? `./${gantt._id}?${heatmapModeKey}=true` : `./${gantt._id}`);
+                navigate(gantt.groupBy ? `/${gantt._id}?${heatmapModeKey}=true` : `/${gantt._id}`);
             }}
             sx={{
                 ':hover': { transform: 'scale(1.05)' },

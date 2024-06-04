@@ -2,11 +2,11 @@
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 import i18next from 'i18next';
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router';
+import { useLocation } from 'wouter';
 import './index.css';
 
 const ErrorPage: React.FC<{ errorText: string }> = ({ errorText }) => {
-    const navigate = useNavigate();
+    const [_, navigate] = useLocation();
 
     const [showEasterEgg, setShowEasterEgg] = useState(false);
     const [showEasterEgg2, setShowEasterEgg2] = useState(false);

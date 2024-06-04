@@ -6,15 +6,14 @@ import React from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { AxiosError } from 'axios';
-import { useSelector } from 'react-redux';
 import RuleBreachInfo from '../../common/ruleBreanchInfo/RuleBreachInfo';
 import { IRuleBreachAlertPopulated } from '../../interfaces/ruleBreaches/ruleBreachAlert';
 import { IRuleBreachRequestPopulated, RuleBreachRequestStatus } from '../../interfaces/ruleBreaches/ruleBreachRequest';
 import { approveRuleBreachRequestRequest, cancelRuleBreachRequestRequest, denyRuleBreachRequestRequest } from '../../services/ruleBreachesService';
 import { BreachType } from '../../interfaces/ruleBreaches/ruleBreach';
 import { IPermissionsOfUser } from '../../services/permissionsService';
-import { RootState } from '../../store';
 import { environment } from '../../globals';
+import { useDarkModeStore } from '../../stores/darkMode';
 
 const { errorCodes } = environment;
 
@@ -29,7 +28,7 @@ const RuleBreachDialog: React.FC<{
     const queryClient = useQueryClient();
     const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
 
-    const darkMode = useSelector((state: RootState) => state.darkMode);
+    const darkMode = useDarkModeStore((state) => state.darkMode);
 
     const { rulesManagementId } = myPermissions;
 

@@ -11,13 +11,13 @@ export const getFileNameWithoutExtension = (name: string) => {
 };
 
 export const getPreviewContentType = (name: string) => {
-    const { video, audio, image } = environment.fileExtensions;
+    const { video, audio, image, document } = environment.fileExtensions;
     const extension = getFileExtension(name).toLowerCase();
 
     if (extension === 'pdf') return 'pdf';
-    if (video.includes(extension)) return 'video';
-    if (audio.includes(extension)) return 'audio';
-    if (image.includes(extension)) return 'image';
-    if (environment.fileExtensions.document.includes(extension)) return 'document';
+    if ((video as unknown as string[]).includes(extension)) return 'video';
+    if ((audio as unknown as string[]).includes(extension)) return 'audio';
+    if ((image as unknown as string[]).includes(extension)) return 'image';
+    if ((document as unknown as string[]).includes(extension)) return 'document';
     return 'unsupported';
 };

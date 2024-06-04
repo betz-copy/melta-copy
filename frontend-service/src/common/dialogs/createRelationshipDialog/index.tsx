@@ -7,7 +7,6 @@ import { CompareArrows as CompareArrowsIcon } from '@mui/icons-material';
 import { useMutation } from 'react-query';
 import { toast } from 'react-toastify';
 import { AxiosError } from 'axios';
-import { useSelector } from 'react-redux';
 import { IEntity } from '../../../interfaces/entities';
 import { IMongoRelationshipTemplatePopulated } from '../../../interfaces/relationshipTemplates';
 import RelationshipTemplateAutocomplete from '../../inputs/RelationshipTemplateAutocomplete';
@@ -20,8 +19,8 @@ import { ErrorToast } from '../../ErrorToast';
 import { IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
 import { ICreateRelationshipMetadataPopulated } from '../../../interfaces/ruleBreaches/actionMetadata';
 import CreateWithRuleBreachDialog from './CreateWithRuleBreachDialog';
-import { RootState } from '../../../store';
 import { environment } from '../../../globals';
+import { useDarkModeStore } from '../../../stores/darkMode';
 
 const { errorCodes } = environment;
 
@@ -192,7 +191,7 @@ const CreateRelationshipDialog: React.FC<{
 }> = ({ isOpen, handleClose, onSubmitSuccess = () => {}, initialValues: parentInitialValues }) => {
     const initialValues = { ...defaultInitialValues, ...parentInitialValues };
 
-    const darkMode = useSelector((state: RootState) => state.darkMode);
+    const darkMode = useDarkModeStore((state) => state.darkMode);
 
     const [createWithRuleBreachDialogState, setCreateWithRuleBreachDialogState] = useState<{
         isOpen: boolean;
