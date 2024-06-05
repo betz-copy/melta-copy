@@ -4,6 +4,9 @@ import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 import { wrapValidator } from './express';
 import { IEntityTemplate, IEnumPropertiesColors, IProperties } from '../express/entityTemplate/interface';
+import config from '../config';
+
+const { notifications } = config;
 
 const ajv = new Ajv();
 ajv.addFormat('fileId', /.*/);
@@ -23,6 +26,7 @@ ajv.addKeyword({
     type: 'number',
 });
 ajv.addKeyword({ keyword: 'calculateTime', type: 'boolean' });
+ajv.addKeyword({ keyword: 'isDailyAlert', type: 'boolean' });
 
 const stringFormats = ['date', 'date-time', 'email', 'fileId', 'text-area'];
 const allowedJSONSchemaTypes = ['string', 'number', 'boolean', 'array'];
@@ -65,8 +69,11 @@ const propertiesArraySchema = Joi.array()
                     otherwise: Joi.forbidden(),
                 }),
             }),
-            dateNotification: Joi.string()
-                .valid('day', 'week', 'twoWeeks')
+            dateNotification: Joi.number()
+                .valid(...notifications.dateAlertOptions)
+                .when('format', { not: Joi.valid('date', 'date-time'), then: Joi.forbidden() })
+                .when('type', { not: 'string', then: Joi.forbidden() }),
+            isDailyAlert: Joi.boolean()
                 .when('format', { not: Joi.valid('date', 'date-time'), then: Joi.forbidden() })
                 .when('type', { not: 'string', then: Joi.forbidden() }),
             calculateTime: Joi.boolean().when('format', { not: Joi.valid('date', 'date-time'), then: Joi.forbidden() }),
