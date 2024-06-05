@@ -13,6 +13,8 @@ import {
     Chip,
     Autocomplete,
     Typography,
+    ToggleButtonGroup,
+    ToggleButton,
     Popover,
     Backdrop,
     CircularProgress,
@@ -22,6 +24,8 @@ import {
     DragHandle as DragHandleIcon,
     NotificationsActive as NotificationsActiveIcon,
     NotificationsOff as NotificationsOffIcon,
+    Alarm as CustomAlertIcon,
+    Update as DailyAlertIcon,
 } from '@mui/icons-material';
 import { Draggable } from 'react-beautiful-dnd';
 import i18next from 'i18next';
@@ -30,7 +34,6 @@ import EditIcon from '@mui/icons-material/Edit';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { dateNotificationTypes, validPropertyTypes } from './AddFields';
-
 import { CommonFormInputProperties } from './commonInterfaces';
 import { MinimizedColorPicker } from '../../inputs/MinimizedColorPicker';
 import { deleteEnumFieldRequest, updateEnumFieldRequest } from '../../../services/templates/enitityTemplatesService';
@@ -38,12 +41,22 @@ import { AreYouSureDialog } from '../../dialogs/AreYouSureDialog';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { MeltaTooltip } from '../../MeltaTooltip';
 
-const UniqueCheckboxTooltipTitle = (
-    <Box sx={{ whiteSpace: 'pre-wrap' }}>
-        <Typography>{i18next.t('validation.uniqueTooltipTitle')}</Typography>
-    </Box>
-);
+enum dateNotificationOptions {
+    day = 1,
+    week = 7,
+    twoWeeks = 14,
+    month = 30,
+    threeMonths = 90,
+    halfYear = 180,
+}
 
+const TooltipTitleWithLinesSpace = (title: string) => {
+    return (
+        <Box sx={{ whiteSpace: 'pre-wrap' }}>
+            <Typography>{i18next.t(title)}</Typography>
+        </Box>
+    );
+};
 export interface FieldEditCardProps {
     entity: string;
     value: CommonFormInputProperties;
@@ -116,6 +129,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     const errorOptions = errors?.options;
 
     const dateNotification = `properties[${index}].dateNotification`;
+    const isDailyAlert = `properties[${index}].isDailyAlert`;
     const calculateTime = `properties[${index}].calculateTime`;
     const touchedDateNotification = touched?.dateNotification;
     const errorDateNotification = errors?.dateNotification;
@@ -631,6 +645,28 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                     >
                                                         <NotificationsActiveIcon />
                                                     </IconButton>
+                                                    <ToggleButtonGroup
+                                                        exclusive
+                                                        id={isDailyAlert}
+                                                        color="primary"
+                                                        size="small"
+                                                        sx={{ height: '35px', marginLeft: '10px' }}
+                                                        value={value.isDailyAlert ?? true}
+                                                        onChange={(_event: React.MouseEvent<HTMLElement>, newIsDailyAlert: boolean) => {
+                                                            setFieldValue('isDailyAlert', newIsDailyAlert);
+                                                        }}
+                                                    >
+                                                        <ToggleButton value>
+                                                            <MeltaTooltip title={i18next.t('wizard.entityTemplate.dailyAlert')}>
+                                                                <DailyAlertIcon />
+                                                            </MeltaTooltip>
+                                                        </ToggleButton>
+                                                        <ToggleButton value={false}>
+                                                            <MeltaTooltip title={TooltipTitleWithLinesSpace('wizard.entityTemplate.customAlert')}>
+                                                                <CustomAlertIcon />
+                                                            </MeltaTooltip>
+                                                        </ToggleButton>
+                                                    </ToggleButtonGroup>
                                                     <TextField
                                                         select
                                                         label={i18next.t('wizard.entityTemplate.dateNotification')}
@@ -640,11 +676,11 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                         onChange={onChange}
                                                         error={touchedDateNotification && Boolean(errorDateNotification)}
                                                         helperText={touchedDateNotification && errorDateNotification}
-                                                        sx={{ marginRight: '5px' }}
+                                                        sx={{ marginRight: '5px', marginTop: '5px' }}
                                                         fullWidth
                                                     >
                                                         {dateNotificationTypes.map((notificationType) => (
-                                                            <MenuItem key={notificationType} value={notificationType}>
+                                                            <MenuItem key={notificationType} value={dateNotificationOptions[notificationType]}>
                                                                 {i18next.t(`wizard.entityTemplate.dateNotificationTypes.${notificationType}`)}
                                                             </MenuItem>
                                                         ))}
@@ -731,7 +767,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                 />
                                             )}
                                             {value.type !== 'serialNumber' && value.unique !== undefined && setValues && (
-                                                <MeltaTooltip title={UniqueCheckboxTooltipTitle}>
+                                                <MeltaTooltip title={TooltipTitleWithLinesSpace('validation.uniqueTooltipTitle')}>
                                                     <FormControlLabel
                                                         control={
                                                             <Switch

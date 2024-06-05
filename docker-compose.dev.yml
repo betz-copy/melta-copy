@@ -76,6 +76,10 @@ services:
     ports:
       - 9200:9200
     restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 1024m
   
   apm-server:
     image: docker.elastic.co/apm/apm-server:7.9.1
