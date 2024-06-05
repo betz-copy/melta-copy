@@ -45,8 +45,8 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
     ajv.addVocabulary(['patternCustomErrorMessage', 'hide']);
     ajv.addKeyword({
         keyword: 'dateNotification',
-        type: 'string',
     });
+    ajv.addKeyword({ keyword: 'isDailyAlert' });
     ajv.addKeyword({ keyword: 'calculateTime' });
     ajv.addKeyword({
         keyword: 'serialStarter',
