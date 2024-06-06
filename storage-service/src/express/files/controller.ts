@@ -1,4 +1,5 @@
 import * as express from 'express';
+import * as archiver from 'archiver';
 import DefaultController from '../../utils/express/controller';
 import { getFileName } from '../../utils/generatePath';
 import { FilesManager } from './manager';
@@ -17,6 +18,35 @@ export default class FilesController extends DefaultController<FilesManager> {
         res.setHeader('Content-Disposition', `attachment; filename=${getFileName(path)}`);
 
         stream.pipe(res);
+    }
+
+    async downloadZip(req: express.Request, res: express.Response) {
+        try {
+            const { path } = req.params;
+            const fileIds = path.split('?');
+            const filesData = await this.manager.getFilesData(fileIds);
+
+            const archive = archiver('zip', {
+                zlib: { level: 9 },
+            });
+
+            res.setHeader('Content-Type', 'application/zip');
+            res.setHeader('Content-Disposition', `attachment; filename="filesZip${Date.now()}.zip"`);
+
+            archive.pipe(res);
+
+            for (let i = 0; i < fileIds.length; i++) {
+                const fileId = fileIds[i];
+                const fileData = filesData[i];
+                const fileName = fileId.toString().slice(32);
+                archive.append(fileData, { name: fileName });
+            }
+
+            archive.finalize();
+        } catch (error) {
+            console.error('Error downloading zip:', error);
+            res.status(500).send('Internal Server Error');
+        }
     }
 
     async uploadFile(req: express.Request, res: express.Response) {

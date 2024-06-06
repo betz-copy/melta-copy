@@ -5,7 +5,6 @@ import helmet from 'helmet';
 import logger from 'morgan';
 import passport from 'passport';
 import cookieParser from 'cookie-parser';
-
 import { initPassport } from '../utils/express/passport';
 import { errorMiddleware } from './error';
 import appRouter from './router';
@@ -27,8 +26,8 @@ class Server {
         const app = express();
 
         app.use(helmet());
-        app.use(express.json({ limit: config.service.maxFileSize }));
-        app.use(express.urlencoded({ extended: true, limit: config.service.maxFileSize }));
+        app.use(express.json({ limit: config.service.maxRequestSize }));
+        app.use(express.urlencoded({ extended: true, limit: config.service.maxRequestSize }));
         app.use(cookieParser());
 
         app.use(['/isAlive', '/isalive', '/health'], (_req, res) => {

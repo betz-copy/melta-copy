@@ -1,11 +1,10 @@
-import { useTheme } from '@mui/material';
+import { Grid, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
-import { useSelector } from 'react-redux';
-import { NavLink } from 'react-router-dom';
+import { Link } from 'wouter';
 import { IEntity } from '../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
-import { RootState } from '../store';
+import { useDarkModeStore } from '../stores/darkMode';
 import { EntityPropertiesInternal } from './EntityProperties';
 import { MeltaTooltip } from './MeltaTooltip';
 
@@ -19,7 +18,7 @@ export const EntityLink: React.FC<EntityLinkProps> = ({ entity, entityTemplate }
 
     const linkText = entityTemplate ? entityTemplate.displayName : i18next.t('ruleBreachInfo.updateEntityActionInfo.unknownEntity');
     const link = `/entity/${entity ? entity.properties._id : 'unknownEntity'}`;
-    const darkMode = useSelector((state: RootState) => state.darkMode);
+    const darkMode = useDarkModeStore((state) => state.darkMode);
     const tooltip =
         // eslint-disable-next-line no-nested-ternary
         !entityTemplate || !entity ? (
@@ -27,20 +26,23 @@ export const EntityLink: React.FC<EntityLinkProps> = ({ entity, entityTemplate }
         ) : !entityTemplate.propertiesPreview.length ? (
             i18next.t('graph.noPreviewProperties')
         ) : (
-            <EntityPropertiesInternal
-                properties={entity.properties}
-                entityTemplate={entityTemplate}
-                darkMode={darkMode}
-                showPreviewPropertiesOnly
-                mode="white"
-            />
+            <Grid style={{ maxHeight: '500px', overflowY: 'auto' }}>
+                <EntityPropertiesInternal
+                    properties={entity.properties}
+                    entityTemplate={entityTemplate}
+                    darkMode={darkMode}
+                    showPreviewPropertiesOnly
+                    mode="white"
+                    textWrap
+                />
+            </Grid>
         );
 
     return (
         <MeltaTooltip title={tooltip}>
-            <NavLink to={link} style={{ color: theme.palette.primary.main, textDecoration: 'inherit', fontWeight: 'bold' }}>
+            <Link href={link} style={{ color: theme.palette.primary.main, textDecoration: 'inherit', fontWeight: 'bold' }}>
                 {linkText}
-            </NavLink>
+            </Link>
         </MeltaTooltip>
     );
 };

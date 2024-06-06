@@ -1,41 +1,46 @@
 import React, { CSSProperties } from 'react';
-import { useSelector } from 'react-redux';
 import { environment } from '../globals';
-import { RootState } from '../store';
+import { useDarkModeStore } from '../stores/darkMode';
 
 interface CustomImageProps {
     imageUrl: string;
-    width: string;
-    height: string;
+    width: CSSProperties['width'];
+    height: CSSProperties['height'];
     color?: CSSProperties['color'];
+    preserveColor?: boolean;
     style?: CSSProperties;
 }
 
-export const CustomImage: React.FC<CustomImageProps> = ({ imageUrl, width, height, color, style }) => {
-    const darkMode = useSelector((state: RootState) => state.darkMode);
+export const CustomImage: React.FC<CustomImageProps> = ({ imageUrl, width, height, color, preserveColor, style }) => {
+    const darkMode = useDarkModeStore((state) => state.darkMode);
 
-    return (
-        <img
-            height={height}
-            width={width}
-            style={{
-                ...style,
-                backgroundColor: color || (darkMode ? '#FFFFFF' : '#000000'),
-                WebkitMaskImage: `url(${imageUrl})`,
-                WebkitMaskSize: 'contain',
-            }}
-        />
-    );
+    const customProps: React.ComponentProps<'img'> = preserveColor
+        ? { src: imageUrl, style }
+        : {
+              style: {
+                  ...style,
+                  backgroundColor: color || (darkMode ? '#FFFFFF' : '#000000'),
+                  WebkitMaskImage: `url(${imageUrl})`,
+                  WebkitMaskSize: 'contain',
+              },
+          };
+
+    return <img height={height} width={width} {...customProps} />;
 };
 
-interface CustomIconProps {
+interface CustomIconProps extends Omit<CustomImageProps, 'imageUrl'> {
     iconUrl: string;
-    width: string;
-    height: string;
-    color?: CSSProperties['color'];
-    style?: CSSProperties;
 }
 
-export const CustomIcon: React.FC<CustomIconProps> = ({ iconUrl, width, height, color, style }) => {
-    return <CustomImage imageUrl={`/api${environment.api.storage}/${iconUrl}`} width={width} height={height} color={color} style={style} />;
+export const CustomIcon: React.FC<CustomIconProps> = ({ iconUrl, width, height, color, preserveColor = false, style }) => {
+    return (
+        <CustomImage
+            imageUrl={`/api${environment.api.storage}/${iconUrl}`}
+            width={width}
+            height={height}
+            color={color}
+            preserveColor={preserveColor}
+            style={style}
+        />
+    );
 };

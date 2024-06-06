@@ -1,37 +1,40 @@
-import React from 'react';
-import { Grid, Card, CardContent, CircularProgress, Box, Divider, Button } from '@mui/material';
-import { Done as DoneIcon, Clear as ClearIcon } from '@mui/icons-material';
-import { useMutation } from 'react-query';
-import i18next from 'i18next';
-import { toast } from 'react-toastify';
-import { Form, Formik } from 'formik';
-import mapValues from 'lodash.mapvalues';
-import pickBy from 'lodash.pickby';
-import { useLocation } from 'react-router';
-import { useNavigate } from 'react-router-dom';
+import { Clear as ClearIcon, Done as DoneIcon } from '@mui/icons-material';
+import { Box, Button, Card, CardContent, CircularProgress, Divider, Grid } from '@mui/material';
 import { AxiosError } from 'axios';
-import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { IEntity, IEntityExpanded } from '../../../interfaces/entities';
-import { duplicateEntityRequest } from '../../../services/entitiesService';
-import { EntityWizardValues } from '../../../common/dialogs/entity';
-import { JSONSchemaFormik, ajvValidate } from '../../../common/inputs/JSONSchemaFormik';
+import { Form, Formik } from 'formik';
+import i18next from 'i18next';
+import pickBy from 'lodash.pickby';
+import React from 'react';
+import { useMutation } from 'react-query';
+import { toast } from 'react-toastify';
+import { useLocation } from 'wouter';
 import { BlueTitle } from '../../../common/BlueTitle';
-import { filterAttachmentsAndEntitiesRefFromPropertiesSchema } from '../../../utils/pickFieldsPropertiesSchema';
-import { DuplicateTopBar } from './DuplicateTopBar';
-import { environment } from '../../../globals';
+import { EntityWizardValues } from '../../../common/dialogs/entity';
 import { toastConstraintValidationError } from '../../../common/dialogs/entity/toastConstraintValidationError';
 import { InstanceFileInput } from '../../../common/inputs/InstanceFilesInput/InstanceFileInput';
+import { InstanceSingleFileInput } from '../../../common/inputs/InstanceFilesInput/InstanceSingleFileInput';
+import { ajvValidate, JSONSchemaFormik } from '../../../common/inputs/JSONSchemaFormik';
+import { environment } from '../../../globals';
+import { IEntity, IEntityExpanded } from '../../../interfaces/entities';
+import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { duplicateEntityRequest } from '../../../services/entitiesService';
+import { filterAttachmentsAndEntitiesRefFromPropertiesSchema } from '../../../utils/pickFieldsPropertiesSchema';
+import { DuplicateTopBar } from './DuplicateTopBar';
 
 const { errorCodes } = environment;
 
 const DuplicateEntity: React.FC<{}> = () => {
-    const { state } = useLocation();
-    const { entityTemplate, expandedEntity } = state as {
+    const { state } = window.history;
+
+    const {
+        entityTemplate,
+        expandedEntity: { entity },
+    } = state as {
         entityTemplate: IMongoEntityTemplatePopulated;
         expandedEntity: IEntityExpanded;
     };
-    const { entity } = expandedEntity;
-    const navigate = useNavigate();
+
+    const [_, navigate] = useLocation();
     if (!state) {
         navigate(`/entity/${entity?.properties._id}`);
     }
@@ -55,14 +58,25 @@ const DuplicateEntity: React.FC<{}> = () => {
         },
     );
 
-    const templateFilesProperties = pickBy(entityTemplate.properties.properties, (value) => value.format === 'fileId');
+    const templateFilesProperties = pickBy(
+        entityTemplate.properties.properties,
+        (value) => (value.type === 'array' && value.items?.format === 'fileId') || value.format === 'fileId',
+    );
     const templateFileKeys = Object.keys(templateFilesProperties);
     const requiredFilesNames = entityTemplate.properties.required.filter((name) => templateFileKeys.includes(name));
 
     const fieldProperties = pickBy(entity.properties, (_value, key) => !templateFileKeys.includes(key)) as IEntity['properties'];
     const fileIdsProperties = pickBy(entity.properties, (_value, key) => templateFileKeys.includes(key));
-    const fileProperties = mapValues(fileIdsProperties, (value) => ({ name: value })) as Record<string, File>;
-
+    Object.entries(fileIdsProperties).forEach(([key, value]) => {
+        if (Array.isArray(value)) {
+            fileIdsProperties[key] = value?.map((item) => {
+                return { name: item };
+            });
+        } else {
+            fileIdsProperties[key] = { name: value };
+        }
+    });
+    const fileProperties = fileIdsProperties;
     return (
         <Formik
             initialValues={{ properties: fieldProperties, attachmentsProperties: fileProperties }}
@@ -119,28 +133,40 @@ const DuplicateEntity: React.FC<{}> = () => {
                                                                     {i18next.t('wizard.entityTemplate.dragAndDropFile')}
                                                                 </div>
                                                                 <>
-                                                                    {Object.entries(templateFilesProperties).map(([key, value]) => (
-                                                                        <InstanceFileInput
-                                                                            key={key}
-                                                                            fileFieldName={`attachmentsProperties.${key}`}
-                                                                            fieldTemplateTitle={value.title}
-                                                                            setFieldValue={setFieldValue}
-                                                                            required={requiredFilesNames.includes(key)}
-                                                                            value={values.attachmentsProperties[key]}
-                                                                            error={
-                                                                                errors.attachmentsProperties?.[key]
-                                                                                    ? JSON.stringify(errors.attachmentsProperties?.[key])
-                                                                                    : undefined
-                                                                            }
-                                                                            setFieldTouched={setFieldTouched}
-                                                                        />
+                                                                    {Object.entries(templateFilesProperties).map(([key, value], index) => (
+                                                                        <Grid item key={key} marginTop={index > 0 ? 5 : 0}>
+                                                                            {value.items === undefined ? (
+                                                                                <InstanceSingleFileInput
+                                                                                    key={key}
+                                                                                    fileFieldName={`attachmentsProperties.${key}`}
+                                                                                    fieldTemplateTitle={value.title}
+                                                                                    setFieldValue={setFieldValue}
+                                                                                    required={requiredFilesNames.includes(key)}
+                                                                                    value={values.attachmentsProperties[key]}
+                                                                                    error={errors.attachmentsProperties?.[key] as string}
+                                                                                    setFieldTouched={setFieldTouched}
+                                                                                />
+                                                                            ) : (
+                                                                                <InstanceFileInput
+                                                                                    key={key}
+                                                                                    fileFieldName={`attachmentsProperties.${key}`}
+                                                                                    fieldTemplateTitle={value.title}
+                                                                                    setFieldValue={setFieldValue}
+                                                                                    required={requiredFilesNames.includes(key)}
+                                                                                    value={values.attachmentsProperties[key]}
+                                                                                    error={errors.attachmentsProperties?.[key] as string}
+                                                                                    setFieldTouched={setFieldTouched}
+                                                                                    multiple={!!value.items}
+                                                                                />
+                                                                            )}
+                                                                        </Grid>
                                                                     ))}
                                                                 </>
                                                             </Box>
                                                         )}
                                                     </Grid>
                                                 </Grid>
-                                                <Grid item xs={12}>
+                                                <Grid item xs={12} marginTop="50px">
                                                     <Divider />
                                                 </Grid>
                                                 <Grid item marginTop="20px">

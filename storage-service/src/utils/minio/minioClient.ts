@@ -1,8 +1,9 @@
 import { BucketItem, BucketItemStat, Client, CopyConditions } from 'minio';
 import { Readable, Stream } from 'stream';
+import * as http from 'http';
 import { config } from '../../config';
 
-const { url: endPoint, port, accessKey, secretKey, useSSL } = config.minio;
+const { url: endPoint, port, accessKey, secretKey, useSSL, transportAgent } = config.minio;
 
 export class MinIOClient {
     private static minioClient: Client;
@@ -23,7 +24,9 @@ export class MinIOClient {
             useSSL,
             accessKey,
             secretKey,
+            transport: new http.Agent(transportAgent),
         });
+
         MinIOClient.isInitialized = true;
     }
 

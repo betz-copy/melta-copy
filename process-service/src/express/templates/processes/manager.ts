@@ -96,9 +96,12 @@ export default class ProcessTemplateManager extends DefaultManagerMongo<IProcess
             updatedDetails.properties.required,
             currTemplate.details.properties.required,
         );
+
         if (updatedSteps.length !== currTemplate.steps.length) throw new ServiceError(400, 'can not delete or add steps');
+
         updatedSteps.forEach((step, index) => {
-            const currStep = currTemplate.steps[index];
+            const currStep = currTemplate.steps.find((currTemplateStep) => step._id.toString() === currTemplateStep._id.toString());
+            if (!currStep) throw new ServiceError(400, `can not add new step id ${step._id})`);
             if (step.name !== currStep.name) throw new ServiceError(400, `can not change step[${index}] name`);
             this.validateProperties(
                 step.properties.properties,

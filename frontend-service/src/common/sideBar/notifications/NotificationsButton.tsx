@@ -12,31 +12,32 @@ interface NotificationsButtonProps {
     onClick: React.MouseEventHandler<HTMLButtonElement>;
 }
 
-export const NotificationsButton: React.FC<NotificationsButtonProps> = ({ notificationCountDetails, text, isDrawerOpen, onClick }) => (
-    <Grid container direction="column" alignItems="center">
-        <MeltaTooltip
-            title={text}
-            placement="left"
-            disableHoverListener={isDrawerOpen} // when drawer is opened text is already shown, so no need for tooltip
-        >
-            <IconButton onClick={onClick} sx={{ borderRadius: 10, margin: '0.2rem', paddingBottom: '0', paddingX: '0.5rem' }}>
-                <Grid container alignItems="center" justifyContent="space-between" spacing={1}>
-                    <Grid item position="relative">
-                        <NotificationsIcon sx={{ color: 'white', fontSize: 30, width: '30px', height: '30px' }} />
-                        <NotificationCount
-                            notificationCount={notificationCountDetails.total}
-                            style={{
-                                position: 'absolute',
-                                top: '30%',
-                                left: '30%',
-                                transform: 'translate(-50%, -50%)',
-                                userSelect: 'none',
-                                backgroundColor: '#FF006B',
-                            }}
-                        />
+export const NotificationsButton: React.FC<NotificationsButtonProps> = ({ notificationCountDetails, text, isDrawerOpen, onClick }) => {
+    return (
+        <Grid container direction="column" alignItems="center">
+            <MeltaTooltip
+                title={text}
+                placement="left"
+                disableHoverListener={isDrawerOpen} // when drawer is opened text is already shown, so no need for tooltip
+            >
+                <IconButton onClick={onClick} sx={{ borderRadius: 10, margin: '0.2rem', paddingBottom: '0', paddingX: '0.5rem' }}>
+                    <Grid container alignItems="center" justifyContent="space-between" spacing={1}>
+                        <Grid item position="relative">
+                            <NotificationsIcon sx={{ color: 'white', fontSize: 30, width: '30px', height: '30px' }} />
+                            <NotificationCount
+                                notificationCount={notificationCountDetails.total}
+                                style={{
+                                    position: 'absolute',
+                                    top: '30%',
+                                    left: '30%',
+                                    transform: 'translate(-50%, -50%)',
+                                    userSelect: 'none',
+                                }}
+                            />
+                        </Grid>
                     </Grid>
-                </Grid>
-            </IconButton>
-        </MeltaTooltip>
-    </Grid>
-);
+                </IconButton>
+            </MeltaTooltip>
+        </Grid>
+    );
+};

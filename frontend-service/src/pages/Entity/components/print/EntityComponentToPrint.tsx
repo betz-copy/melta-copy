@@ -1,21 +1,21 @@
 import React from 'react';
 import { Box, useTheme } from '@mui/material';
-import { useSelector } from 'react-redux';
 import { EntityPropertiesInternal } from '../../../../common/EntityProperties';
 import { IEntity } from '../../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { EntityDisableCheckbox } from '../EntityDisableCheckbox';
 import { EntityDates } from '../EntityDates';
-import { RootState } from '../../../../store';
+import { useDarkModeStore } from '../../../../stores/darkMode';
 
-const EntityComponentToPrint: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; entity: IEntity; options?: { showDates?: boolean } }> = ({
-    entityTemplate,
-    entity,
-    options = { showDates: true },
-}) => {
+const EntityComponentToPrint: React.FC<{
+    entityTemplate: IMongoEntityTemplatePopulated;
+    entity: IEntity;
+    options?: { showDates?: boolean };
+}> = ({ entityTemplate, entity, options = { showDates: true } }) => {
     const theme = useTheme();
 
-    const darkMode = useSelector((state: RootState) => state.darkMode);
+    const darkMode = useDarkModeStore((state) => state.darkMode);
+
     return (
         <Box border={`2px solid ${theme.palette.primary.main}`} borderRadius="20px" padding="1rem" style={{ pageBreakInside: 'avoid' }}>
             <Box padding="0.2rem">
@@ -25,6 +25,7 @@ const EntityComponentToPrint: React.FC<{ entityTemplate: IMongoEntityTemplatePop
                     darkMode={darkMode}
                     showPreviewPropertiesOnly
                     mode="normal"
+                    textWrap
                 />
             </Box>
 
@@ -34,5 +35,4 @@ const EntityComponentToPrint: React.FC<{ entityTemplate: IMongoEntityTemplatePop
         </Box>
     );
 };
-
 export { EntityComponentToPrint };

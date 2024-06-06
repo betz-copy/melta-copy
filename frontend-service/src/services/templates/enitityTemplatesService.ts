@@ -8,7 +8,7 @@ import { getFileName } from '../../utils/getFileName';
 const { entityTemplates } = environment.api;
 export const basePropertyTypes = ['string', 'number', 'boolean'];
 export const stringFormats = ['date', 'date-time', 'email', 'fileId'];
-export const arrayTypes = ['fileIdArray', 'enumArray'];
+export const arrayTypes = ['multipleFiles', 'enumArray'];
 
 const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTemplatePopulated | null): EntityTemplateWizardValues | undefined => {
     if (!entityTemplate) return undefined;
@@ -26,7 +26,7 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
         else if (value.enum) type = 'enum';
         else if (value.pattern) type = 'pattern';
         else if (value.items?.enum) type = 'enumArray';
-        else if (value.items?.format === 'fileId') type = 'fileIdArray';
+        else if (value.items?.format === 'fileId') type = 'multipleFiles';
 
         const property: EntityTemplateFormInputProperties = {
             id: uuid(),
@@ -36,6 +36,7 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
             preview: propertiesPreview.includes(key),
             hide: properties.hide.includes(key),
             unique: type !== 'serialNumber' && uniqueConstraints.filter((constraints) => constraints.includes(key)).length > 0, // serials cant be marked unique
+            calculateTime: value.calculateTime,
             type,
             options: value.enum || value.items?.enum || [],
             optionColors: enumPropertiesColors?.[key] ? enumPropertiesColors[key] : {},
@@ -66,6 +67,7 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
 };
 
 export const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTemplate => {
+    //// change to support file types
     const { properties, attachmentProperties, propertiesTypeOrder, ...restOfProperties } = values;
     const serialsUniqueConstraints: string[][] = [];
 
@@ -94,6 +96,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTem
             pattern,
             patternCustomErrorMessage,
             dateNotification,
+            calculateTime,
             serialStarter,
             hide,
             unique,
@@ -126,6 +129,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTem
                 pattern: type === 'pattern' ? pattern : undefined,
                 patternCustomErrorMessage: type === 'pattern' ? patternCustomErrorMessage : undefined,
                 dateNotification: dateNotification as string | undefined,
+                calculateTime: calculateTime as boolean | undefined,
                 serialStarter: type === 'serialNumber' ? serialStarter : undefined,
                 serialCurrent: type === 'serialNumber' ? serialStarter : undefined,
             };
@@ -151,13 +155,24 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTem
         },
     );
 
-    attachmentProperties.forEach(({ name, title, required }) => {
-        schema.properties[name] = {
-            title,
-            type: 'string',
-            format: 'fileId',
-        };
-
+    attachmentProperties.forEach(({ name, title, required, type }) => {
+        if (type === 'multipleFiles') {
+            schema.properties[name] = {
+                title,
+                type: 'array',
+                items: {
+                    type: 'string',
+                    format: 'fileId',
+                },
+                minItems: 1,
+            };
+        } else {
+            schema.properties[name] = {
+                title,
+                type: 'string',
+                format: 'fileId',
+            };
+        }
         attachmentPropertiesOrder.push(name);
 
         if (required) schema.required.push(name);
@@ -214,7 +229,6 @@ const updateEntityTemplateStatusRequest = async (entityTemplateId: string, disab
 
 const updateEntityTemplateRequest = async (entityTemplateId: string, updatedEntityTemplate: IEntityTemplate | EntityTemplateWizardValues) => {
     const formData = new FormData();
-
     const entityTemplate: IEntityTemplate =
         'attachmentProperties' in updatedEntityTemplate // its type is - EntityTemplateWizardValues
             ? formToJSONSchema(updatedEntityTemplate as EntityTemplateWizardValues)

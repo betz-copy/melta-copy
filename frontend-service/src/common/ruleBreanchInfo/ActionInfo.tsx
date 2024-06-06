@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Box, Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
 import { useQueryClient } from 'react-query';
@@ -53,10 +53,7 @@ const CreateOrDeleteRelActionInfo: React.FC<{
 
     return (
         <Typography component="p" variant="body1">
-            <Box component="span">
-                {actionType === ActionTypes.CreateRelationship && i18next.t('ruleBreachInfo.relActionInfo.creation')}
-                {actionType === ActionTypes.DeleteRelationship && i18next.t('ruleBreachInfo.relActionInfo.deletion')}
-            </Box>{' '}
+            <Box component="span">{`${i18next.t(`ruleBreachInfo.relActionInfo.${actionType}`)} `}</Box>
             <RelationshipInfo
                 relationshipTemplatePopulated={relationshipTemplatePopulated}
                 sourceEntity={sourceEntity}
@@ -73,7 +70,6 @@ const UpdateEntityActionInfo: React.FC<{
     const queryClient = useQueryClient();
 
     const { entity } = actionMetadata;
-
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const entityTemplate = !entity ? null : entityTemplates.get(entity.templateId)!;
 

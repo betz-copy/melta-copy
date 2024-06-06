@@ -1,4 +1,4 @@
-import { Request } from 'express';
+import { Request, Response } from 'express';
 import * as Multer from 'multer';
 import { callbackify } from 'util';
 import { config } from '../../config';
@@ -30,11 +30,11 @@ export class MinioMulter extends DefaultController<MinioStorage> {
         super(new MinioStorage(dbName));
     }
 
-    uploadToMinio() {
+    uploadToMinio(_req: Request, _res: Response) {
         return Multer({ storage: this.manager, limits: { fileSize: config.service.maxFileSize } }).single(fileKeyName);
     }
 
-    uploadBulkToMinio() {
+    uploadBulkToMinio(_req: Request, _res: Response) {
         return Multer({ storage: this.manager, limits: { fileSize: config.service.maxFileSize } }).array(filesKeyName);
     }
 }

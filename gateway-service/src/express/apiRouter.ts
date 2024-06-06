@@ -11,6 +11,7 @@ import ActivityLogRouter from './activityLog/router';
 import notificationsRouter from './notifications/router';
 import RulesBreachesRouter from './ruleBreaches/router';
 import GanttsRouter from './gantts/router';
+import { workspaceRouter } from './workspaces/router';
 import config from '../config';
 
 const apiRouter = Router();
@@ -50,5 +51,7 @@ apiRouter.use('/notifications', notificationsRouter);
 apiRouter.use('/rule-breaches', RulesBreachesRouter);
 
 apiRouter.use('/gantts', GanttsRouter);
+
+apiRouter.use('/workspaces', workspaceRouter);
 
 export default apiRouter;

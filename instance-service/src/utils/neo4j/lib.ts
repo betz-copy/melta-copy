@@ -24,7 +24,7 @@ const normalizeFields = (properties: Record<string, any>): Record<string, any> =
         }
 
         if (value instanceof neo4j.types.LocalDateTime) {
-            props[key] = zonedTimeToUtc(new Date(value.toString()), 'Asia/Jerusalem');
+            props[key] = zonedTimeToUtc(new Date(value.toString()), 'Asia/Jerusalem').toISOString();
 
             return;
         }

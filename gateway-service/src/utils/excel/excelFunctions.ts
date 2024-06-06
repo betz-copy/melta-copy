@@ -72,18 +72,29 @@ export const getFileName = (fileId: string) => {
 
 const fixFileProperties = (rows: IEntity['properties'][], template: IEntityTemplatePopulated) => {
     const { properties } = template.properties;
-    Object.entries(properties)
-        .filter(([_key, value]) => value.format === 'fileId')
-        .forEach(([key]) => {
+    Object.entries(properties).forEach(([key, value]) => {
+        if (value.format === 'fileId') {
             rows.forEach((row) => {
                 if (row[key]) {
                     row[key] = {
                         text: getFileName(row[key]),
-                        hyperlink: `${config.storageService.fileHyperLink}/${encodeURIComponent(row[key])}`,
+                        hyperlink: `${config.service.meltaBaseUrl}/api/files/${encodeURIComponent(row[key])}`,
                     };
                 }
             });
-        });
+        } else if (value?.items?.format === 'fileId') {
+            rows.forEach((row, index) => {
+                if (row[key]) {
+                    const files = row[key].join('?');
+                    row[key] = {
+                        text: `attachmentZip${index}`,
+                        hyperlink: `${config.service.meltaBaseUrl}/api/files/zip/${encodeURIComponent(files)}`,
+                    };
+                }
+            });
+        }
+    });
+
     return rows;
 };
 
@@ -104,7 +115,7 @@ const styleAWorksheet = (worksheet: Excel.Worksheet) => {
                 const date = new Date(String(cell.value)).toLocaleString(excelConfig.DATE_LOCALES, {
                     timeZone: excelConfig.DATE_TIMEZONE,
                 });
-                cell.value = new Date(date);
+                cell.value = date;
             }
         });
     });

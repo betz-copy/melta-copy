@@ -1,13 +1,12 @@
 import React, { useMemo } from 'react';
 import { Grid, Typography } from '@mui/material';
 import { AppRegistration as DefaultEntityTemplateIcon } from '@mui/icons-material';
-import { useSelector } from 'react-redux';
 import { CSSProperties } from '@mui/styles';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { CustomIcon } from '../../../common/CustomIcon';
 import { FieldsDisplay } from './FieldsDisplay';
-import { RootState } from '../../../store';
 import { getEntityTemplateColor } from '../../../utils/colors';
+import { useDarkModeStore } from '../../../stores/darkMode';
 
 interface IEntityTemplateDisplayProps {
     entityTemplate: IMongoEntityTemplatePopulated;
@@ -30,7 +29,7 @@ export const EntityTemplateDisplay: React.FC<IEntityTemplateDisplayProps> = ({
     sideNote,
     main,
 }) => {
-    const darkMode = useSelector((state: RootState) => state.darkMode);
+    const darkMode = useDarkModeStore((state) => state.darkMode);
     const iconSize = main ? '35px' : '29px';
 
     const noteColor = darkMode ? 'lightgrey' : 'grey';
@@ -46,7 +45,14 @@ export const EntityTemplateDisplay: React.FC<IEntityTemplateDisplayProps> = ({
                 </Typography>
             )}
 
-            <Grid item container alignItems="center" justifyContent="center" flexWrap="nowrap">
+            <Grid
+                item
+                container
+                alignItems="center"
+                justifyContent="center"
+                flexWrap="nowrap"
+                sx={{ display: 'flex', justifyContent: 'center', alignContent: 'center' }}
+            >
                 {entityTemplate.iconFileId ? (
                     <CustomIcon iconUrl={entityTemplate.iconFileId} height={iconSize} width={iconSize} color={displayColor} />
                 ) : (

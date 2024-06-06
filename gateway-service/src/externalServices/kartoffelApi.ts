@@ -16,6 +16,7 @@ export interface IKartoffelUser {
     firstName: string;
     lastName: string;
     digitalIdentities: { uniqueId: string; source: string }[];
+    mail?: string;
 }
 
 export const wrapKartoffelRequestForUiSearch = async (func: () => Promise<IKartoffelUser>) => {

@@ -1,50 +1,49 @@
-import React, { useState } from 'react';
-import { Grid, Card, CardContent, IconButton, Menu } from '@mui/material';
 import {
-    Delete as DeleteIcon,
+    AccountTreeOutlined as GraphIcon,
     ContentCopy as DuplicateIcon,
-    MoreVertOutlined,
+    Delete as DeleteIcon,
     DoDisturbAlt,
     Edit as EditIcon,
-    AccountTreeOutlined as GraphIcon,
+    MoreVertOutlined,
 } from '@mui/icons-material';
-import { useMutation, useQueryClient } from 'react-query';
-import i18next from 'i18next';
-import { toast } from 'react-toastify';
-import { useNavigate } from 'react-router-dom';
+import { Card, CardContent, Grid, IconButton, Menu } from '@mui/material';
 import { AxiosError } from 'axios';
-import { useSelector } from 'react-redux';
-import { IMongoEntityTemplatePopulated, IEntityTemplateMap } from '../../../interfaces/entityTemplates';
-import { IEntity, IEntityExpanded } from '../../../interfaces/entities';
-import { deleteEntityRequest, updateEntityStatusRequest } from '../../../services/entitiesService';
+import i18next from 'i18next';
+import React, { useState } from 'react';
+import { useMutation, useQueryClient } from 'react-query';
+import { toast } from 'react-toastify';
+import { useLocation } from 'wouter';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
 import { EntityPropertiesInternal } from '../../../common/EntityProperties';
-import { IPermissionsOfUser } from '../../../services/permissionsService';
-import { EditEntityDetails } from './EditEntityDetails';
 import { ErrorToast } from '../../../common/ErrorToast';
-import { MenuButton } from '../../../common/MenuButton';
-import { EntityDisableCheckbox } from './EntityDisableCheckbox';
-import { EntityDates } from './EntityDates';
-import { RootState } from '../../../store';
-import { IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
-import UpdateStatusWithRuleBreachDialog from './UpdateStatusWithRuleBreachDialog';
-import { canUserWriteInstanceOfCategory } from '../../../utils/permissions/instancePermissions';
-import TooltipMenuButton from './TooltipMenuButton';
-import { ImageWithDisable } from '../../../common/ImageWithDisable';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
+import { ImageWithDisable } from '../../../common/ImageWithDisable';
+import { MenuButton } from '../../../common/MenuButton';
+import { IEntity, IEntityExpanded } from '../../../interfaces/entities';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
+import { deleteEntityRequest, updateEntityStatusRequest } from '../../../services/entitiesService';
+import { IPermissionsOfUser } from '../../../services/permissionsService';
+import { useDarkModeStore } from '../../../stores/darkMode';
+import { canUserWriteInstanceOfCategory } from '../../../utils/permissions/instancePermissions';
+import { EditEntityDetails } from './EditEntityDetails';
+import { EntityDates } from './EntityDates';
+import { EntityDisableCheckbox } from './EntityDisableCheckbox';
+import TooltipMenuButton from './TooltipMenuButton';
+import UpdateStatusWithRuleBreachDialog from './UpdateStatusWithRuleBreachDialog';
 
 const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; expandedEntity: IEntityExpanded }> = ({
     entityTemplate,
     expandedEntity,
 }) => {
     const { entity } = expandedEntity;
-    const navigate = useNavigate();
+    const [_, navigate] = useLocation();
     const [isEditMode, setIsEditMode] = useState(false);
     const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
     const queryClient = useQueryClient();
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
 
-    const darkMode = useSelector((state: RootState) => state.darkMode);
+    const darkMode = useDarkModeStore((state) => state.darkMode);
 
     const open = Boolean(anchorEl);
 
@@ -128,6 +127,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                             entity: data,
                         };
                     });
+                
                 }}
                 onCancelUpdate={() => setIsEditMode(false)}
             />
@@ -136,7 +136,6 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
 
     const canWriteInstance = canUserWriteInstanceOfCategory(myPermissions.instancesPermissions, entityTemplate.category);
     const isEntityDisabled = expandedEntity.entity.properties.disabled;
-
     return (
         <>
             <Card
@@ -148,40 +147,9 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                 }}
             >
                 <CardContent sx={{ '&:last-child': { padding: 0 } }}>
-                    <Grid item container flexDirection="row" flexWrap="nowrap" padding="20px">
-                        <Grid item container justifyContent="space-between" alignItems="stretch" padding="1rem" flexDirection="column">
-                            <Grid item width="100%">
-                                <EntityPropertiesInternal
-                                    entityTemplate={entityTemplate}
-                                    properties={entity.properties}
-                                    darkMode={darkMode}
-                                    style={{
-                                        display: 'flex',
-                                        flexDirection: 'row',
-                                        flexWrap: 'wrap',
-                                        rowGap: '20px',
-                                        columnGap: '20px',
-                                        alignItems: 'center',
-                                        width: '100%',
-                                    }}
-                                    innerStyle={{ width: '30%' }}
-                                    textWrap
-                                    mode="normal"
-                                />
-                            </Grid>
-                            <Grid container marginTop="20px">
-                                <EntityDisableCheckbox isEntityDisabled={isEntityDisabled}> </EntityDisableCheckbox>
-                            </Grid>
-                            <Grid marginTop="20px" container item justifyContent="space-between">
-                                <EntityDates
-                                    createdAt={expandedEntity.entity.properties.createdAt}
-                                    updatedAt={expandedEntity.entity.properties.updatedAt}
-                                />
-                            </Grid>
-                        </Grid>
-
+                    <Grid item container flexDirection="column" flexWrap="nowrap" padding="20px">
                         <Grid item>
-                            <Grid container flexDirection="row" flexWrap="nowrap">
+                            <Grid container flexDirection="row" flexWrap="nowrap" justifyContent="flex-end">
                                 <Grid
                                     onClick={() => {
                                         if (canWriteInstance && !isEntityDisabled) setIsEditMode(true);
@@ -287,6 +255,36 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                                 </Menu>
                             </Grid>
                         </Grid>
+
+                        <Grid item container justifyContent="space-between" alignItems="stretch" padding="1rem" flexDirection="column">
+                            <Grid item width="100%">
+                                <EntityPropertiesInternal
+                                    entityTemplate={entityTemplate}
+                                    properties={entity.properties}
+                                    darkMode={darkMode}
+                                    style={{
+                                        flexDirection: 'row',
+                                        flexWrap: 'wrap',
+                                        rowGap: '20px',
+                                        columnGap: '20px',
+                                        alignItems: 'center',
+                                        width: '100%',
+                                    }}
+                                    innerStyle={{ width: '32%' }}
+                                    textWrap
+                                    mode="normal"
+                                />
+                            </Grid>
+                            <Grid container marginTop="20px">
+                                <EntityDisableCheckbox isEntityDisabled={isEntityDisabled}> </EntityDisableCheckbox>
+                            </Grid>
+                            <Grid marginTop="20px" container item justifyContent="space-between">
+                                <EntityDates
+                                    createdAt={expandedEntity.entity.properties.createdAt}
+                                    updatedAt={expandedEntity.entity.properties.updatedAt}
+                                />
+                            </Grid>
+                        </Grid>
                     </Grid>
                 </CardContent>
 
@@ -295,6 +293,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                     handleClose={closeDeleteDialog}
                     onYes={() => deleteMutation()}
                     isLoading={isDeleteLoading}
+
                 />
             </Card>
             {updateStatusWithRuleBreachDialogState.isOpen && (

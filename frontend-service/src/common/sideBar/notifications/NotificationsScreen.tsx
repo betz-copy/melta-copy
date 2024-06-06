@@ -1,19 +1,21 @@
-import { CircularProgress, Grid, Menu, MenuItem, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
+import { LoadingButton } from '@mui/lab';
+import { CircularProgress, Grid, Tab, Tabs } from '@mui/material';
 import i18next from 'i18next';
 import React, { CSSProperties, useState } from 'react';
-import { toast } from 'react-toastify';
-import { InfoOutlined as InfoIcon } from '@mui/icons-material';
 import { useMutation } from 'react-query';
+import { toast } from 'react-toastify';
 import { environment } from '../../../globals';
-import { INotificationGroupCountDetails, INotificationPopulated } from '../../../interfaces/notifications';
+import { INotificationGroupCountDetails, INotificationPopulated, NotificationType } from '../../../interfaces/notifications';
 import { getMyNotificationsRequest, manyNotificationSeenRequest } from '../../../services/notificationService';
+import IconButtonWithPopover from '../../IconButtonWithPopover';
 import { InfiniteScroll } from '../../InfiniteScroll';
+import DateRange from '../../inputs/DateRange';
 import PopperSidebar from '../../PopperSidebar';
+import { SelectCheckbox } from '../../SelectCheckbox';
 import { NotificationCard } from './NotificationCard';
 import { NotificationCount } from './NotificationCount';
-import { MeltaTooltip } from '../../MeltaTooltip';
 
-const { infiniteScrollPageCount, groups } = environment.notifications;
+const { infiniteScrollPageCount, groups, notificationsMoreData } = environment.notifications;
 
 interface NotificationsScreenProps {
     open: boolean;
@@ -21,6 +23,22 @@ interface NotificationsScreenProps {
     sideBarWidth: CSSProperties['width'];
     notificationCountDetails: INotificationGroupCountDetails;
     updateNotificationCountDetails: () => void;
+}
+
+interface IGroups {
+    requests: NotificationType[];
+    general: NotificationType[];
+}
+
+interface IExpandedNotifications {
+    type: NotificationType;
+    color?: string;
+    displayName: () => string;
+}
+
+interface IExpandedGroups {
+    requests: IExpandedNotifications[];
+    general: IExpandedNotifications[];
 }
 
 export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
@@ -31,32 +49,52 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
     updateNotificationCountDetails,
 }) => {
     const groupNames = Object.keys(groups) as (keyof typeof groups)[];
-
     const [selectedGroup, setSelectedGroup] = useState<keyof typeof groups>('general');
+    const [startDate, setStartDate] = useState<Date | null>(null);
+    const [endDate, setEndDate] = useState<Date | null>(null);
+    const [openCalenders, setOpenCalendars] = useState<boolean>(false);
+    const [notificationsToShowCheckbox, setNotificationsToShowCheckbox] = useState(
+        (notificationsMoreData as unknown as IExpandedGroups)[selectedGroup],
+    );
+    const [isCheckBoxClicked, setIsCheckBoxClicked] = useState(false);
 
-    const [rightClickedGroup, setRightClickedGroup] = useState<keyof typeof groups>();
-    const [tabOptionsAnchor, setTabOptionsAnchor] = useState<HTMLElement>();
+    const onSetStartDate = (newStartDateInput: Date | null) => {
+        setStartDate(newStartDateInput);
+    };
 
-    const { mutate, isLoading } = useMutation((groupName: keyof typeof groups) => manyNotificationSeenRequest(groups[groupName]), {
-        onSuccess: (seenNotifications, groupName) => {
-            updateNotificationCountDetails();
+    const onSetEndDate = (newEndDateInput: Date | null) => {
+        setEndDate(newEndDateInput);
+    };
 
-            if (seenNotifications.length) {
-                toast.success(i18next.t('notifications.allSeen', { group: i18next.t(`notifications.groups.${groupName}`) }));
-            }
+    const filterCleaning = () => {
+        onSetStartDate(null);
+        onSetEndDate(null);
+        setOpenCalendars(false);
+    };
+
+    const { mutate, isLoading } = useMutation(
+        (groupName: keyof typeof groups) => manyNotificationSeenRequest((groups as unknown as IGroups)[groupName]),
+        {
+            onSuccess: (seenNotifications, groupName) => {
+                updateNotificationCountDetails();
+
+                if (seenNotifications.length) {
+                    toast.success(i18next.t('notifications.allSeen', { group: i18next.t(`notifications.groups.${groupName}`) }));
+                }
+            },
+            onError: (error, groupName) => {
+                const translatedGroupName = i18next.t(`notifications.groups.${groupName}`);
+
+                // eslint-disable-next-line no-console
+                console.log(`failed to set all notifications of group "${translatedGroupName}" as seen. error:`, error);
+                toast.error(i18next.t('notifications.failedSetAllAsSeen', { group: translatedGroupName }));
+            },
         },
-        onError: (error, groupName) => {
-            const translatedGroupName = i18next.t(`notifications.groups.${groupName}`);
+    );
 
-            // eslint-disable-next-line no-console
-            console.log(`failed to set all notifications of group "${translatedGroupName}" as seen. error:`, error);
-            toast.error(i18next.t('notifications.failedSetAllAsSeen', { group: translatedGroupName }));
-        },
-    });
-
-    const onCloseTabOptions = () => {
-        setRightClickedGroup(undefined);
-        setTabOptionsAnchor(undefined);
+    const handleGroupChange = (_event, newGroup) => {
+        if (!newGroup) return;
+        setSelectedGroup(newGroup);
     };
 
     return (
@@ -64,83 +102,199 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
             open={open}
             setOpen={setOpen}
             title={i18next.t('notifications.title')}
-            topButtons={
-                <MeltaTooltip title={i18next.t('notifications.infoRightClickTab')}>
-                    <InfoIcon sx={{ marginTop: '0.4rem' }} />
-                </MeltaTooltip>
-            }
             side="right"
             sideMargin={sideBarWidth}
+            isCheckBoxClicked={isCheckBoxClicked}
         >
-            <ToggleButtonGroup
-                exclusive
-                value={selectedGroup}
-                onChange={(_event, newGroup) => {
-                    if (!newGroup) return;
-                    setSelectedGroup(newGroup);
-                }}
-                sx={{ height: '2.5rem' }}
-                fullWidth
-            >
-                {groupNames.map((groupName) => (
-                    <ToggleButton
-                        key={groupName}
-                        value={groupName}
-                        sx={{ padding: '0.5rem' }}
-                        onContextMenu={(event) => {
-                            setRightClickedGroup(groupName);
-                            setTabOptionsAnchor(event.currentTarget);
-                            event.preventDefault();
-                        }}
-                    >
-                        <Grid container wrap="nowrap" alignItems="center" justifyContent="space-between">
-                            <Grid item>
-                                <Typography fontWeight="bold">{i18next.t(`notifications.groups.${groupName}`)}</Typography>
-                            </Grid>
-
-                            <Grid item>
-                                <NotificationCount notificationCount={notificationCountDetails.groups[groupName]} />
-                            </Grid>
-                        </Grid>
-                    </ToggleButton>
-                ))}
-            </ToggleButtonGroup>
+            <Grid>
+                <Tabs value={selectedGroup} onChange={handleGroupChange}>
+                    {groupNames.map((groupName) => (
+                        <Tab
+                            value={groupName}
+                            key={groupName}
+                            iconPosition="start"
+                            label={
+                                <Grid container gap="10px" display="flex" alignItems="center" justifyContent="space-around">
+                                    <img
+                                        src={
+                                            // eslint-disable-next-line no-nested-ternary
+                                            groupName === 'general'
+                                                ? selectedGroup === groupName
+                                                    ? '/icons/general-notification-clicked.svg'
+                                                    : '/icons/general-notification.svg'
+                                                : selectedGroup === groupName
+                                                ? '/icons/requests-notification-clicked.svg'
+                                                : '/icons/requests-notification.svg'
+                                        }
+                                    />
+                                    <Grid
+                                        item
+                                        color={selectedGroup !== groupName ? '#787C9E' : ''}
+                                        fontWeight={selectedGroup !== groupName ? 400 : undefined}
+                                    >
+                                        {i18next.t(`notifications.groups.${groupName}`)}
+                                    </Grid>
+                                    <Grid item>
+                                        <NotificationCount notificationCount={notificationCountDetails.groups[groupName]} />
+                                    </Grid>
+                                </Grid>
+                            }
+                            onClick={(event) => {
+                                setSelectedGroup(groupName);
+                                setNotificationsToShowCheckbox((notificationsMoreData as unknown as IExpandedGroups)[groupName]);
+                                event.preventDefault();
+                            }}
+                            sx={{
+                                width: '50%',
+                                '&:focus': {
+                                    color: '#1E2775',
+                                    fontWeight: '700',
+                                },
+                            }}
+                        />
+                    ))}
+                </Tabs>
+            </Grid>
 
             {isLoading ? (
                 <CircularProgress sx={{ marginX: 'auto', marginTop: '1rem' }} />
             ) : (
-                <InfiniteScroll<INotificationPopulated>
-                    queryKey={['getMyNotifications', selectedGroup]}
-                    queryFunction={({ pageParam }) =>
-                        getMyNotificationsRequest({
-                            limit: infiniteScrollPageCount,
-                            step: pageParam,
-                            types: groups[selectedGroup],
-                        })
-                    }
-                    onQueryError={(error) => {
-                        console.log('failed to get notifications. error:', error); // eslint-disable-line no-console
-                        toast.error(i18next.t('notifications.failedToGetNotifications'));
-                    }}
-                    endText={i18next.t('notifications.noNotificationsLeft')}
-                >
-                    {(notification) => <NotificationCard notification={notification} onSeen={updateNotificationCountDetails} />}
-                </InfiniteScroll>
-            )}
+                <>
+                    <Grid sx={{ display: 'flex', justifyContent: 'space-around', padding: '18px' }}>
+                        <Grid item sx={{ width: openCalenders ? '100%' : '80%' }}>
+                            <SelectCheckbox
+                                title={i18next.t('notifications.notificationType')}
+                                options={(notificationsMoreData as unknown as IExpandedGroups)[selectedGroup]}
+                                selectedOptions={notificationsToShowCheckbox}
+                                setSelectedOptions={setNotificationsToShowCheckbox}
+                                getOptionId={({ type }) => type}
+                                getOptionLabel={(option) => option.displayName()}
+                                size="small"
+                                horizontalOriginProp={openCalenders ? 70 : 101}
+                                overrideSx={{
+                                    '& .MuiSelect-select': {
+                                        backgroundColor: '#FFFF',
+                                        color: '#9398C2',
+                                        boxShadow: '-2px 2px 6px 0px #1E277540',
+                                        border: 0,
+                                        width: openCalenders ? '17rem' : '13rem',
+                                    },
+                                    '& .MuiOutlinedInput-notchedOutline': { border: 0 },
+                                    '&.MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline': {
+                                        border: 0,
+                                    },
+                                    '&.MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                                        border: 0,
+                                    },
+                                }}
+                                handleCheckboxClick={(value) => setIsCheckBoxClicked(value)}
+                                isDraggableDisabled
+                            />
+                        </Grid>
+                        {!openCalenders && (
+                            <Grid
+                                item
+                                sx={{
+                                    backgroundColor: 'white',
+                                    borderRadius: '10px',
+                                    display: 'flex',
+                                    padding: '8px',
+                                    boxShadow: '-2px 2px 6px 0px #1E277540',
+                                }}
+                                onClick={() => setOpenCalendars(!openCalenders)}
+                            >
+                                <img src="/icons/calendar.svg" style={{ height: '20px' }} />
+                            </Grid>
+                        )}
+                    </Grid>
+                    {openCalenders && (
+                        <Grid sx={{ padding: '17px' }}>
+                            <DateRange
+                                onStartDateChange={onSetStartDate}
+                                onEndDateChange={onSetEndDate}
+                                startDateInput={startDate}
+                                endDateInput={endDate}
+                                overrideSx={{
+                                    '& input': {
+                                        backgroundColor: '#FFFF',
+                                        fontSize: '15px',
+                                    },
 
-            {rightClickedGroup && tabOptionsAnchor && (
-                <Menu open={Boolean(rightClickedGroup)} onClose={onCloseTabOptions} anchorEl={tabOptionsAnchor}>
-                    <MenuItem
-                        onClick={() => {
-                            onCloseTabOptions();
+                                    '.MuiOutlinedInput-notchedOutline': {
+                                        border: 0,
+                                        boxShadow: '-2px 2px 6px 0px #1E277540',
+                                        borderRadius: '12px',
+                                    },
+                                    '& .MuiOutlinedInput-root': {
+                                        '&.Mui-focused fieldset': {
+                                            borderRadius: '15px',
+                                            boxShadow: '-2px 2px 6px 0px #1E277540',
+                                            border: 0,
+                                        },
+                                    },
+                                }}
+                            />
 
-                            if (!notificationCountDetails.groups[rightClickedGroup]) return;
-                            mutate(rightClickedGroup);
+                            <IconButtonWithPopover
+                                iconButtonProps={{ onClick: () => filterCleaning() }}
+                                popoverText=""
+                                disabled={!(startDate || endDate)}
+                                style={{
+                                    borderRadius: '5px',
+                                    padding: '6px, 4px, 6px, 4px',
+                                    marginRight: '208px',
+                                }}
+                            >
+                                {startDate || endDate ? <img src="/icons/delete-filters-enable.svg" /> : <img src="/icons/delete-filters.svg" />}
+                            </IconButtonWithPopover>
+                        </Grid>
+                    )}
+                    <InfiniteScroll<INotificationPopulated>
+                        queryKey={['getMyNotifications', selectedGroup, startDate, endDate, notificationsToShowCheckbox]}
+                        queryFunction={({ pageParam }) =>
+                            getMyNotificationsRequest({
+                                limit: infiniteScrollPageCount,
+                                step: pageParam,
+                                types: notificationsToShowCheckbox.map(({ type }) => type),
+                                startDate: startDate ?? undefined,
+                                endDate: endDate ?? undefined,
+                            })
+                        }
+                        onQueryError={(error) => {
+                            console.log('failed to get notifications. error:', error); // eslint-disable-line no-console
+                            toast.error(i18next.t('notifications.failedToGetNotifications'));
+                        }}
+                        endText={i18next.t('notifications.noNotificationsLeft')}
+                    >
+                        {(notification) => (
+                            <Grid item style={{ padding: '8px' }}>
+                                <NotificationCard notification={notification} onSeen={updateNotificationCountDetails} />
+                            </Grid>
+                        )}
+                    </InfiniteScroll>
+
+                    <Grid
+                        container
+                        sx={{
+                            position: 'absolute',
+                            bottom: 0,
+                            justifyContent: 'flex-end',
+                            padding: '8px',
+                            backgroundColor: 'white',
+                            borderRadius: '0px 0px 15px 15px',
                         }}
                     >
-                        {i18next.t('notifications.setAllAsSeen', { group: i18next.t(`notifications.groups.${rightClickedGroup}`) })}
-                    </MenuItem>
-                </Menu>
+                        <LoadingButton
+                            onClick={() => {
+                                if (!notificationCountDetails.groups[selectedGroup]) return;
+                                mutate(selectedGroup);
+                            }}
+                            loading={isLoading}
+                        >
+                            {i18next.t('notifications.setAllSeen')}
+                        </LoadingButton>
+                    </Grid>
+                </>
             )}
         </PopperSidebar>
     );

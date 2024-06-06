@@ -1,8 +1,9 @@
-import React, { memo } from 'react';
 import { ColDef, ValueGetterFunc } from '@ag-grid-community/core';
-import i18next from 'i18next';
-import { NavLink } from 'react-router-dom';
 import { Grid } from '@mui/material';
+import i18next from 'i18next';
+import React, { memo } from 'react';
+import { Link } from 'wouter';
+import { IButtonProps } from '.';
 import { IEntity } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import {
@@ -10,13 +11,13 @@ import {
     dateColDef,
     enumArrayColDef,
     enumColDef,
+    enumFilesColDef,
     fileColDef,
     numberColDef,
     regexColDef,
     stringColDef,
 } from '../../utils/agGrid/commonColDefs';
 import IconButtonWithPopover from '../IconButtonWithPopover';
-import { IButtonProps } from '.';
 import { ImageWithDisable } from '../ImageWithDisable';
 
 export interface IGetColumnDefsOptions<Data extends any> {
@@ -48,7 +49,7 @@ export const getColumnDefs = <Data extends any = IEntity>({
 }: IGetColumnDefsOptions<Data>): ColDef[] => {
     const columnDefs = template.propertiesOrder.map((property) => {
         const propertyTemplate = template.properties.properties[property];
-        const { type, format } = propertyTemplate;
+        const { type, format, calculateTime } = propertyTemplate;
 
         const hideField = template.properties.hide.includes(property);
 
@@ -62,7 +63,7 @@ export const getColumnDefs = <Data extends any = IEntity>({
         if (type === 'number') return numberColDef(property, valueGetter, propertyTemplate, defaultColumnWidths[property], hideColumn, hideField);
         if (type === 'boolean') return booleanColDef(property, valueGetter, propertyTemplate, defaultColumnWidths[property], hideColumn, hideField);
         if (format === 'date' || format === 'date-time')
-            return dateColDef(property, valueGetter, propertyTemplate, defaultColumnWidths[property], hideColumn, hideField);
+            return dateColDef(property, valueGetter, propertyTemplate, defaultColumnWidths[property], hideColumn, hideField, calculateTime);
         if (format === 'fileId') return fileColDef(property, valueGetter, propertyTemplate, defaultColumnWidths[property], hideColumn);
         if (propertyTemplate.enum)
             return enumColDef(
@@ -89,6 +90,9 @@ export const getColumnDefs = <Data extends any = IEntity>({
                 hideColumn,
                 hideField,
             );
+        if (propertyTemplate.items) {
+            return enumFilesColDef(property, valueGetter, { title: propertyTemplate.title }, defaultColumnWidths[property], rowHeight);
+        }
         return stringColDef(property, valueGetter, propertyTemplate, defaultColumnWidths[property], hideColumn, hideField);
     });
     columnDefs.push(
@@ -158,8 +162,8 @@ export const getColumnDefs = <Data extends any = IEntity>({
                 return (
                     <Grid flexWrap="nowrap">
                         {onNavigateToRow && (
-                            <NavLink
-                                to={`/entity/${getEntityPropertiesData(data)._id}`}
+                            <Link
+                                href={`/entity/${getEntityPropertiesData(data)._id}`}
                                 onClick={(e) => {
                                     if (!hasPermissionToCategory) e.preventDefault();
                                 }}
@@ -175,7 +179,7 @@ export const getColumnDefs = <Data extends any = IEntity>({
                                 >
                                     <img src="/icons/read-more-icon.svg" />
                                 </IconButtonWithPopover>
-                            </NavLink>
+                            </Link>
                         )}
                         {deleteRowButtonProps && (
                             <IconButtonWithPopover
@@ -201,8 +205,8 @@ export const getColumnDefs = <Data extends any = IEntity>({
                         )}
 
                         {onNavigateToRow && (
-                            <NavLink
-                                to={`/entity/${getEntityPropertiesData(data)._id}/graph`}
+                            <Link
+                                href={`/entity/${getEntityPropertiesData(data)._id}/graph`}
                                 onClick={(e) => {
                                     if (disabledEntity) e.preventDefault();
                                 }}
@@ -216,7 +220,7 @@ export const getColumnDefs = <Data extends any = IEntity>({
                                 >
                                     <img src="/icons/graph-icon.svg" />
                                 </IconButtonWithPopover>
-                            </NavLink>
+                            </Link>
                         )}
                     </Grid>
                 );

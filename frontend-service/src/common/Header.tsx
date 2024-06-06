@@ -1,11 +1,10 @@
 import React from 'react';
 import { Grid } from '@mui/material';
-import { useSelector } from 'react-redux';
 import { BlueTitle } from './BlueTitle';
-import { RootState } from '../store';
+import { useDarkModeStore } from '../stores/darkMode';
 
 const Header: React.FC<{ title: string }> = ({ title, children }) => {
-    const darkMode = useSelector((state: RootState) => state.darkMode);
+    const darkMode = useDarkModeStore((state) => state.darkMode);
 
     return (
         <Grid

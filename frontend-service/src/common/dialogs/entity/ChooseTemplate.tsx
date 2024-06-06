@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
-import { TextField, Autocomplete } from '@mui/material';
-import * as Yup from 'yup';
-import i18next from 'i18next';
-import { useQueryClient } from 'react-query';
-import { useParams } from 'react-router-dom';
+import { Autocomplete, TextField } from '@mui/material';
 import { FormikErrors, FormikTouched } from 'formik';
-import { EntityWizardValues } from './index';
+import i18next from 'i18next';
+import React, { useState } from 'react';
+import { useQueryClient } from 'react-query';
+import { useParams } from 'wouter';
+import * as Yup from 'yup';
+import { EntityWizardValues } from '.';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IPermissionsOfUser } from '../../../services/permissionsService';
 import { canUserWriteInstanceOfCategory } from '../../../utils/permissions/instancePermissions';
@@ -24,7 +24,7 @@ const ChooseTemplate: React.FC<{
     errors: FormikErrors<EntityWizardValues>;
     setFieldValue: (field: string, value: any, shouldValidate?: boolean | undefined) => void;
 }> = ({ values, touched, errors, setFieldValue }) => {
-    const param = useParams();
+    const param = useParams<{ categoryId: string }>();
     const { categoryId } = param;
     const queryClient = useQueryClient();
 

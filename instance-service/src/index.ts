@@ -1,3 +1,4 @@
+import axios from 'axios';
 import config from './config';
 import Server from './express/server';
 import Neo4jClient from './utils/neo4j';
@@ -16,6 +17,9 @@ const initializeRedis = async () => {
 const main = async () => {
     await initializeRedis();
     await Neo4jClient.initialize();
+
+    axios.defaults.maxBodyLength = service.maxRequestSize;
+    axios.defaults.maxContentLength = service.maxRequestSize;
 
     const server = new Server(service.port);
 

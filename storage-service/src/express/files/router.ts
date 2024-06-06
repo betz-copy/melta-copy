@@ -10,6 +10,8 @@ const filesRouter: Router = Router();
 const filesController = createController(FilesController);
 const multerController = createController(MinioMulter);
 
+filesRouter.get('/zip/:path', ValidateRequest(defaultSchema), filesController('downloadZip'));
+
 filesRouter.get('/', filesController('listFiles'));
 filesRouter.get('/:path', ValidateRequest(defaultSchema), filesController('downloadFile'));
 filesRouter.get('/:path/stats', ValidateRequest(defaultSchema), filesController('fileStat'));

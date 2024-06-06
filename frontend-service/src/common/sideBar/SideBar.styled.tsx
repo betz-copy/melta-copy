@@ -1,23 +1,18 @@
-import { styled, Drawer as MuiDrawer, Toolbar as MuiToolbar } from '@mui/material';
+import { Divider, Drawer as MuiDrawer, styled, Toolbar as MuiToolbar } from '@mui/material';
+import { sideBarTransition } from '../../theme';
 
 const drawerWidth = 240;
 
-const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' })(({ theme, open }) => ({
+export const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' })(({ theme, open }) => ({
     flexShrink: 0,
     width: drawerWidth,
     whiteSpace: 'nowrap',
     boxSizing: 'border-box',
-    transition: theme.transitions.create('width', {
-        easing: theme.transitions.easing.sharp,
-        duration: theme.transitions.duration.leavingScreen,
-    }),
+    transition: sideBarTransition,
     '& .MuiDrawer-paper': {
         width: drawerWidth,
         overflowX: 'hidden',
-        transition: theme.transitions.create('width', {
-            easing: theme.transitions.easing.sharp,
-            duration: theme.transitions.duration.leavingScreen,
-        }),
+        transition: sideBarTransition,
     },
     ...(!open && {
         ...{
@@ -25,18 +20,20 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
         },
         '& .MuiDrawer-paper': {
             width: `calc(${theme.spacing(10)} + 1px)`,
-            transition: theme.transitions.create('width', {
-                easing: theme.transitions.easing.sharp,
-                duration: theme.transitions.duration.leavingScreen,
-            }),
+            transition: sideBarTransition,
         },
     }),
 }));
 
-const Toolbar = styled(MuiToolbar)({
+export const DrawerDivider = styled(Divider)({
+    backgroundColor: 'white',
+    width: '85%',
+    alignSelf: 'center',
+    opacity: 0.8,
+});
+
+export const Toolbar = styled(MuiToolbar)({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'flex-end',
 });
-
-export { Drawer, Toolbar };

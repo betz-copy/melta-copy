@@ -1,14 +1,15 @@
-import React from 'react';
 import { Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Grid } from '@mui/material';
+import { useTour } from '@reactour/tour';
+import { Form, Formik, FormikProps } from 'formik';
 import i18next from 'i18next';
+import _cloneDeep from 'lodash.clonedeep';
+import React from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import _cloneDeep from 'lodash.clonedeep';
-import { useSelector } from 'react-redux';
-import { Form, Formik, FormikProps } from 'formik';
+import { useLocation } from 'wouter';
 import * as Yup from 'yup';
-import { useTour } from '@reactour/tour';
-import { useNavigate } from 'react-router-dom';
+import { ICategoryMap } from '../../interfaces/categories';
+import { IUser } from '../../services/kartoffelService';
 import {
     createPermissionsBulkRequest,
     deletePermissionsBulkRequest,
@@ -17,24 +18,23 @@ import {
     PermissionResourceType,
     updatePermissionsBulkRequest,
 } from '../../services/permissionsService';
-import UserAutocomplete from '../inputs/UserAutocomplete';
-import { IUser } from '../../services/kartoffelService';
-import { ICategoryMap } from '../../interfaces/categories';
-import ManagementPermissionsCard from './managementPermissionsCard';
-import InstancesPermissionsCard from './instancesPermissionsCard';
-import { RootState } from '../../store';
+import { useDarkModeStore } from '../../stores/darkMode';
+import { useUserStore } from '../../stores/user';
 import {
     canUserReadInstanceOfCategory,
     canUserWriteInstanceOfCategory,
     getUserPermissionScopeOfCategory,
 } from '../../utils/permissions/instancePermissions';
-import { IFormPermissionsOfUser } from './permissionsTypes';
 import {
     doesUserHaveNoPermissions,
     getPermissionsToDeleteUpdateAndCreate,
     isPermissionsChanged,
     permissionsToFormPermissions,
 } from '../../utils/permissions/permissionOfUserDialog';
+import UserAutocomplete from '../inputs/UserAutocomplete';
+import InstancesPermissionsCard from './instancesPermissionsCard';
+import ManagementPermissionsCard from './managementPermissionsCard';
+import { IFormPermissionsOfUser } from './permissionsTypes';
 
 const defaultEmptyPermissionsOfUser = {
     user: null,
@@ -113,11 +113,11 @@ const PermissionsOfUserDialog: React.FC<{
     mode: 'create' | 'edit' | 'view';
     existingPermissionsOfUser?: IPermissionsOfUser;
 }> = ({ isOpen, handleClose, mode, existingPermissionsOfUser }) => {
-    const currentUser = useSelector((state: RootState) => state.user);
-    const navigate = useNavigate();
+    const currentUser = useUserStore((state) => state.user);
+    const [_, navigate] = useLocation();
     const { setIsOpen, setCurrentStep } = useTour();
 
-    const darkMode = useSelector((state: RootState) => state.darkMode);
+    const darkMode = useDarkModeStore((state) => state.darkMode);
 
     const queryClient = useQueryClient();
     const allPermissions = queryClient.getQueryData<IPermissionsOfUser[]>('getAllPermissions');
@@ -402,7 +402,7 @@ const PermissionsOfUserDialog: React.FC<{
                                                 handleClose();
                                                 setIsOpen(true);
                                                 setCurrentStep(0);
-                                                navigate('/?search=&viewMode=templates-tables-view');
+                                                navigate('?search=&viewMode=templates-tables-view');
                                             }}
                                         >
                                             {i18next.t('showTour')}

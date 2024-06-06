@@ -3,18 +3,16 @@ import i18next from 'i18next';
 import { BaseTextFieldProps, CircularProgress, Grid, Icon, IconButton, ToggleButton, ToggleButtonGroup, Typography, useTheme } from '@mui/material';
 import CardsViewIcon from '@mui/icons-material/RecentActors';
 import AddIcon from '@mui/icons-material/Add';
-import SearchIcon from '@mui/icons-material/Search';
 import DownloadIcon from '@mui/icons-material/VerticalAlignBottomOutlined';
-import { useSelector } from 'react-redux';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import SearchInput from '../inputs/SearchInput';
 import { AddEntityButton } from './AddEntityButton';
 import { IMongoCategory } from '../../interfaces/categories';
 import TemplatesSelectCheckbox from '../templatesSelectCheckbox';
 import { BlueTitle } from '../BlueTitle';
-import { RootState } from '../../store';
 import { MeltaTooltip } from '../MeltaTooltip';
 import { environment } from '../../globals';
+import { useDarkModeStore } from '../../stores/darkMode';
 
 export const GlobalSearchBar: React.FC<{
     inputValue?: string;
@@ -24,7 +22,9 @@ export const GlobalSearchBar: React.FC<{
     placeholder?: string;
     size?: BaseTextFieldProps['size'];
     toTopBar?: boolean;
-}> = ({ inputValue, setInputValue, onSearch, borderRadius, placeholder, size, toTopBar = false }) => {
+    height?: string;
+    width?: string;
+}> = ({ inputValue, setInputValue, onSearch, borderRadius, placeholder, size, toTopBar = false, height, width }) => {
     const valueForSearchButtonRef = useRef(inputValue ?? '');
     const theme = useTheme();
 
@@ -47,13 +47,24 @@ export const GlobalSearchBar: React.FC<{
                     sx={{ padding: 0 }}
                     disableRipple
                 >
-                    <SearchIcon />
+                    <img
+                        color="#1E2775"
+                        width="14px"
+                        height="14px"
+                        style={{
+                            top: '7px',
+                            left: '8px',
+                        }}
+                        src="/icons/search-blue.svg"
+                    />
                 </IconButton>
             }
             placeholder={placeholder}
             size={size}
             borderRadius={borderRadius}
             toTopBar={toTopBar}
+            height={height}
+            width={width}
         />
     );
 };
@@ -80,7 +91,7 @@ const EntitiesPageHeadline: React.FC<{
     };
     pageTitle: string;
 }> = ({ searchInput, setSearchInput, onSearch, entityTemplateSelectCheckboxProps, excelExportProps, viewModeProps, pageTitle }) => {
-    const darkMode = useSelector((state: RootState) => state.darkMode);
+    const darkMode = useDarkModeStore((state) => state.darkMode);
     const theme = useTheme();
 
     return (
@@ -128,7 +139,7 @@ const EntitiesPageHeadline: React.FC<{
                 </Grid>
             </Grid>
             <Grid item>
-                <Grid container spacing={1} wrap="nowrap" alignItems="center">
+                <Grid container spacing={1} wrap="nowrap" alignItems="center" justifyContent="center">
                     <Grid item>
                         <ToggleButtonGroup
                             value={viewModeProps.viewMode}
@@ -140,6 +151,7 @@ const EntitiesPageHeadline: React.FC<{
                             exclusive
                             color="primary"
                             size="small"
+                            sx={{ height: '35px' }}
                         >
                             <ToggleButton value="cards-view">
                                 <MeltaTooltip title={i18next.t('cardsView')!}>
@@ -158,7 +170,7 @@ const EntitiesPageHeadline: React.FC<{
                     {excelExportProps && (
                         <Grid item>
                             <IconButton
-                                style={{ background: theme.palette.primary.main, borderRadius: '7px' }}
+                                style={{ background: theme.palette.primary.main, borderRadius: '7px', width: '135px', height: '35px' }}
                                 onClick={excelExportProps.onExcelExport}
                                 disabled={excelExportProps.isLoadingExcel}
                             >
@@ -167,16 +179,19 @@ const EntitiesPageHeadline: React.FC<{
                                 ) : (
                                     <DownloadIcon htmlColor="white" />
                                 )}
-                                <Typography fontSize={14} style={{ fontWeight: '500', padding: '0 10px', color: 'white' }}>
+                                <Typography fontSize={14} style={{ fontWeight: '400', padding: '0 5px', color: 'white' }}>
                                     {i18next.t('downloadMultipleTables')}
                                 </Typography>
                             </IconButton>
                         </Grid>
                     )}
                     <Grid item>
-                        <AddEntityButton disabledToolTip style={{ background: theme.palette.primary.main, borderRadius: '7px' }}>
+                        <AddEntityButton
+                            disabledToolTip
+                            style={{ background: theme.palette.primary.main, borderRadius: '7px', width: '135px', height: '35px' }}
+                        >
                             <AddIcon htmlColor="white" />
-                            <Typography fontSize={14} style={{ fontWeight: '500', padding: '0 10px', color: 'white' }}>
+                            <Typography fontSize={14} style={{ fontWeight: '400', padding: '0 5px', color: 'white' }}>
                                 {i18next.t('addEntity')}
                             </Typography>
                         </AddEntityButton>
