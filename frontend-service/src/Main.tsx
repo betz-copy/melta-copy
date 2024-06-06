@@ -59,6 +59,7 @@ const Main = () => {
     const queryClient = useQueryClient();
 
     const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
+
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
 
     const meltaPlus = useSelector((state: RootState) => state.meltaPlus);

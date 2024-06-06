@@ -12,5 +12,6 @@ services:
       PORT: 8000
       MONGO_URL: mongodb://mongo/gantt-service
       MONGO_GANTTS_COLLECTION_NAME: gantts
+      MONGO_IFRAMES_COLLECTION_NAME: iFrames
     ports:
       - 8001:8000

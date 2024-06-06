@@ -9,6 +9,7 @@ const config = {
     mongo: {
         url: env.get('MONGO_URL').required().asString(),
         ganttsCollectionName: env.get('MONGO_GANTTS_COLLECTION_NAME').required().asString(),
+        iFramesCollectionName: env.get('MONGO_IFRAMES_COLLECTION_NAME').required().asString(),
     },
     logs: {
         format: env.get('LOGGING_DATE_FORMAT').default('YYYY-MM-DD HH:mm:ss').asString(),
