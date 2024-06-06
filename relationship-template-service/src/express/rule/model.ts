@@ -1,8 +1,8 @@
 import * as mongoose from 'mongoose';
 
-import { IRule } from './interfaces';
-import { transformResultDocsObjectIdKeysToString } from '../../utils/mongoose';
 import config from '../../config';
+import { transformResultDocsObjectIdKeysToString } from '../../utils/mongo/mongoose';
+import { IRule } from './interfaces';
 
 const RuleTemplateSchema = new mongoose.Schema(
     {
@@ -51,7 +51,7 @@ RuleTemplateSchema.post(['find', 'findOne', 'findOneAndUpdate', 'findOneAndDelet
     transformResultDocsObjectIdKeysToString(res);
 });
 
-const RuleModel = mongoose.model<IRule & mongoose.Document>(config.mongo.ruleCollectionName, RuleTemplateSchema);
+const RuleModel = mongoose.model<IRule>(config.mongo.ruleCollectionName, RuleTemplateSchema);
 
 // const RuleConnModel = (db: string) => mongoose.connections[db].model<IRule & mongoose.Document>(config.mongo.ruleCollectionName, RuleTemplateSchema);
 

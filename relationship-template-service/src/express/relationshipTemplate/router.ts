@@ -1,37 +1,23 @@
 import { Router } from 'express';
-import RelationshipTemplateController from './controller';
-import { wrapController } from '../../utils/express';
+import { createController } from '../../utils/express';
 import ValidateRequest from '../../utils/joi';
+import RelationshipTemplateController from './controller';
 import {
-    getTemplateByIdRequestSchema,
-    updateTemplateByIdRequestSchema,
-    deleteTemplateByIdRequestSchema,
     createTemplateRequestSchema,
+    deleteTemplateByIdRequestSchema,
+    getTemplateByIdRequestSchema,
     searchTemplatesRequestSchema,
+    updateTemplateByIdRequestSchema,
 } from './validator.schema';
 
 const relationshipTemplateRouter: Router = Router();
 
-relationshipTemplateRouter.get(
-    '/:templateId',
-    ValidateRequest(getTemplateByIdRequestSchema),
-    wrapController(RelationshipTemplateController.getTemplateById),
-);
-relationshipTemplateRouter.put(
-    '/:templateId',
-    ValidateRequest(updateTemplateByIdRequestSchema),
-    wrapController(RelationshipTemplateController.updateTemplateById),
-);
-relationshipTemplateRouter.delete(
-    '/:templateId',
-    ValidateRequest(deleteTemplateByIdRequestSchema),
-    wrapController(RelationshipTemplateController.deleteTemplateById),
-);
-relationshipTemplateRouter.post('/', ValidateRequest(createTemplateRequestSchema), wrapController(RelationshipTemplateController.createTemplate));
-relationshipTemplateRouter.post(
-    '/search',
-    ValidateRequest(searchTemplatesRequestSchema),
-    wrapController(RelationshipTemplateController.searchTemplates),
-);
+const controller = createController(RelationshipTemplateController);
+
+relationshipTemplateRouter.get('/:templateId', ValidateRequest(getTemplateByIdRequestSchema), controller('getTemplateById'));
+relationshipTemplateRouter.put('/:templateId', ValidateRequest(updateTemplateByIdRequestSchema), controller('updateTemplateById'));
+relationshipTemplateRouter.delete('/:templateId', ValidateRequest(deleteTemplateByIdRequestSchema), controller('deleteTemplateById'));
+relationshipTemplateRouter.post('/', ValidateRequest(createTemplateRequestSchema), controller('createTemplate'));
+relationshipTemplateRouter.post('/search', ValidateRequest(searchTemplatesRequestSchema), controller('searchTemplates'));
 
 export default relationshipTemplateRouter;

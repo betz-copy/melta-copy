@@ -1,34 +1,55 @@
-import * as minio from 'minio';
+import { BucketItemStat, Client } from 'minio';
+import { Stream } from 'stream';
+import { config } from '../../config';
+
+const { url: endPoint, port, accessKey, secretKey, useSSL } = config.minio;
 
 export class MinIOClient {
-    minioClient: minio.Client;
+    private static minioClient: Client;
 
-    bucketName: string;
+    private static isInitialized: boolean = false;
 
-    async initialize(endPoint: string, port: number, accessKey: string, secretKey: string, bucketName = 'defaultbucket', useSSL = false) {
-        this.minioClient = new minio.Client({
+    private bucketName: string;
+
+    constructor(bucketName: string) {
+        this.bucketName = bucketName;
+        if (!MinIOClient.isInitialized) MinIOClient.initialize();
+    }
+
+    static initialize() {
+        MinIOClient.minioClient = new Client({
             endPoint,
             port,
             useSSL,
             accessKey,
             secretKey,
         });
-        this.bucketName = bucketName;
+        MinIOClient.isInitialized = true;
+    }
 
-        if (!(await this.minioClient.bucketExists(this.bucketName))) {
-            await this.minioClient.makeBucket(this.bucketName, '');
-            console.log(`Bucket with name "${this.bucketName}" created successfully`);
+    private async wrapDBNotExistsError(func: () => Promise<any>) {
+        try {
+            return await func();
+        } catch (err: any) {
+            // Check if the error is caused by non-existing bucket
+            if (err.code !== 'NoSuchBucket') throw err;
+
+            // Create the bucket if it doesn't exist
+            if (!(await MinIOClient.minioClient.bucketExists(this.bucketName))) {
+                await MinIOClient.minioClient.makeBucket(this.bucketName, '');
+                console.log(`Bucket with name "${this.bucketName}" created successfully`);
+            }
+
+            // Retry
+            return func();
         }
     }
 
-    downloadFileStream(filePath: string) {
-        return this.minioClient.getObject(this.bucketName, filePath);
+    downloadFileStream(filePath: string): Promise<Stream> {
+        return this.wrapDBNotExistsError(MinIOClient.minioClient.getObject.bind(this, this.bucketName, filePath));
     }
 
-    statFile(filePath: string) {
-        return this.minioClient.statObject(this.bucketName, filePath);
+    statFile(filePath: string): Promise<BucketItemStat> {
+        return this.wrapDBNotExistsError(MinIOClient.minioClient.statObject.bind(this, this.bucketName, filePath));
     }
 }
-
-const minioClient = new MinIOClient();
-export { minioClient };

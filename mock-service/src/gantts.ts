@@ -1,10 +1,10 @@
-import axios from 'axios';
 import config from './config';
 import { IMongoEntityTemplate } from './entityTemplates';
-import { getHardcodedRealGantts } from './mocks/gantts/hardcoded';
 import { getRandomGantts } from './mocks/gantts/generate';
+import { getHardcodedRealGantts } from './mocks/gantts/hardcoded';
 import { IMongoRelationshipTemplate } from './relationshipTemplates';
 import { trycatch } from './utils';
+import { Axios } from './utils/axios';
 
 const { url, baseRoute, isAliveRoute } = config.ganttService;
 
@@ -54,7 +54,7 @@ export const createGantts = (chance: Chance.Chance, entityTemplates: IMongoEntit
     const gantts = [...hardcodedRealGantts, ...randomGantts];
 
     const promises = gantts.map(async (gantt) => {
-        const { data: createdGantt } = await axios.post<IMongoGantt>(url + baseRoute, gantt);
+        const { data: createdGantt } = await Axios.post<IMongoGantt>(url + baseRoute, gantt);
         return createdGantt;
     });
 
@@ -62,7 +62,7 @@ export const createGantts = (chance: Chance.Chance, entityTemplates: IMongoEntit
 };
 
 export const isGanttsServiceAlive = async () => {
-    const { result, err } = await trycatch(() => axios.get(url + isAliveRoute));
+    const { result, err } = await trycatch(() => Axios.get(url + isAliveRoute));
 
     return { result, err };
 };

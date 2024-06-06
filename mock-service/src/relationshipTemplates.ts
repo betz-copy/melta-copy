@@ -1,7 +1,7 @@
-import axios from 'axios';
 import config from './config';
 import { IMongoEntityTemplate } from './entityTemplates';
 import { trycatch } from './utils';
+import { Axios } from './utils/axios';
 
 const { url, createRelationshipTemplateRoute, isAliveRoute } = config.relationshipTemplateService;
 
@@ -20,7 +20,7 @@ export interface IMongoRelationshipTemplate extends Omit<IRelationshipTemplate, 
 
 export const createRelationshipTemplates = async (relationshipTemplates: IRelationshipTemplate[], entityTemplates: IMongoEntityTemplate[]) => {
     const promises = relationshipTemplates.map((relationshipTemplate) => {
-        return axios.post<IMongoRelationshipTemplate>(url + createRelationshipTemplateRoute, {
+        return Axios.post<IMongoRelationshipTemplate>(url + createRelationshipTemplateRoute, {
             ...relationshipTemplate,
             sourceEntityId: entityTemplates.find((entityTemplate) => relationshipTemplate.sourceEntityId.name === entityTemplate.name)?._id,
             destinationEntityId: entityTemplates.find((entityTemplate) => relationshipTemplate.destinationEntityId.name === entityTemplate.name)?._id,
@@ -33,7 +33,7 @@ export const createRelationshipTemplates = async (relationshipTemplates: IRelati
 };
 
 export const isRelationshipTemplateServiceAlive = async () => {
-    const { result, err } = await trycatch(() => axios.get(url + isAliveRoute));
+    const { result, err } = await trycatch(() => Axios.get(url + isAliveRoute));
 
     return { result, err };
 };

@@ -2,6 +2,10 @@ import * as env from 'env-var';
 import './dotenv';
 
 const config = {
+    service: {
+        dbHeaderName: env.get('DB_HEADER_NAME').default('dbName').asString(),
+        dbMockName: env.get('DB_MOCK_NAME').default('mock-database').asString(),
+    },
     seed: env.get('SEED').asFloat(),
     permissionsService: {
         url: env.get('PERMISSION_SERVICE_URL').required().asString(),

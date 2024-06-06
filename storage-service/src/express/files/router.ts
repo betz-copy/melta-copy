@@ -1,29 +1,28 @@
 import { Router } from 'express';
-import { FilesController } from './controller';
-import { wrapController } from '../../utils/express';
-import { UploadBulkToMinio, UploadToMinio } from '../../utils/minio';
-import { defaultSchema, uploadFileRequestSchema, uploadFilesRequestSchema, bulkFilesRequestSchema } from './validator.schema';
+import { createController } from '../../utils/express';
 import { ValidateRequest } from '../../utils/joi';
-
-import { config } from '../../config';
-
-const { fileKeyName, filesKeyName } = config.multer;
+import { MinioMulter } from '../../utils/minio';
+import FilesController from './controller';
+import { bulkFilesRequestSchema, defaultSchema, uploadFileRequestSchema, uploadFilesRequestSchema } from './validator.schema';
 
 const filesRouter: Router = Router();
 
-filesRouter.get('/', wrapController(FilesController.listFiles));
-filesRouter.get('/:path', ValidateRequest(defaultSchema), wrapController(FilesController.downloadFile));
-filesRouter.get('/:path/stats', ValidateRequest(defaultSchema), wrapController(FilesController.fileStat));
+const filesController = createController(FilesController);
+const multerController = createController(MinioMulter);
 
-filesRouter.get('/zip/:path', ValidateRequest(defaultSchema), wrapController(FilesController.downloadZip));
+filesRouter.get('/zip/:path', ValidateRequest(defaultSchema), filesController('downloadZip'));
 
-filesRouter.post('/delete-bulk', ValidateRequest(bulkFilesRequestSchema), wrapController(FilesController.deleteFiles));
-filesRouter.delete('/:path', ValidateRequest(defaultSchema), wrapController(FilesController.deleteFile));
+filesRouter.get('/', filesController('listFiles'));
+filesRouter.get('/:path', ValidateRequest(defaultSchema), filesController('downloadFile'));
+filesRouter.get('/:path/stats', ValidateRequest(defaultSchema), filesController('fileStat'));
 
-filesRouter.post('/duplicate/:path', ValidateRequest(defaultSchema), wrapController(FilesController.duplicateFile));
-filesRouter.post('/duplicate-bulk', ValidateRequest(bulkFilesRequestSchema), wrapController(FilesController.duplicateFiles));
+filesRouter.post('/delete-bulk', ValidateRequest(bulkFilesRequestSchema), filesController('deleteFiles'));
+filesRouter.delete('/:path', ValidateRequest(defaultSchema), filesController('deleteFile'));
 
-filesRouter.post('/bulk', UploadBulkToMinio(filesKeyName), ValidateRequest(uploadFilesRequestSchema), wrapController(FilesController.uploadFiles));
-filesRouter.post('/', UploadToMinio(fileKeyName), ValidateRequest(uploadFileRequestSchema), wrapController(FilesController.uploadFile));
+filesRouter.post('/duplicate/:path', ValidateRequest(defaultSchema), filesController('duplicateFile'));
+filesRouter.post('/duplicate-bulk', ValidateRequest(bulkFilesRequestSchema), filesController('duplicateFiles'));
+
+filesRouter.post('/bulk', multerController('uploadBulkToMinio'), ValidateRequest(uploadFilesRequestSchema), filesController('uploadFiles'));
+filesRouter.post('/', multerController('uploadToMinio'), ValidateRequest(uploadFileRequestSchema), filesController('uploadFile'));
 
 export { filesRouter };

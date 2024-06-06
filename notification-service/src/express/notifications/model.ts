@@ -1,6 +1,6 @@
 import * as mongoose from 'mongoose';
-import { INotificationDocument } from './interface';
 import config from '../../config';
+import { INotification } from './interface';
 
 const NotificationsSchema = new mongoose.Schema(
     {
@@ -20,6 +20,6 @@ const NotificationsSchema = new mongoose.Schema(
     { timestamps: true, versionKey: false },
 );
 
-const NotificationsModel = mongoose.model<INotificationDocument>(config.mongo.notificationsCollectionName, NotificationsSchema);
+const NotificationsModel = mongoose.model<INotification>(config.mongo.notificationsCollectionName, NotificationsSchema);
 
 export default NotificationsModel;

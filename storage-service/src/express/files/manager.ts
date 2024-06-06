@@ -1,53 +1,53 @@
 import { Stream } from 'stream';
 import { generatePath } from '../../utils/generatePath';
-import { minioClient } from '../../utils/minio';
+import DefaultManagerMinio from '../../utils/minio/manager';
 
-export class FilesManager {
-    static uploadFile(file?: Express.Multer.File) {
+export class FilesManager extends DefaultManagerMinio {
+    uploadFile(file?: Express.Multer.File) {
         return file;
     }
 
-    static uploadFiles(files?: Express.Multer.File[]) {
+    uploadFiles(files?: Express.Multer.File[]) {
         return files;
     }
 
-    static downloadFile(path: string) {
-        return minioClient.downloadFileStream(path);
+    async downloadFile(path: string) {
+        return this.minioClient.downloadFileStream(path);
     }
 
-    static listFiles() {
-        return minioClient.getFilesList(true);
+    async listFiles() {
+        return this.minioClient.getFilesList(true);
     }
 
-    static fileStat(filePath: string) {
-        return minioClient.statFile(filePath);
+    async fileStat(filePath: string) {
+        return this.minioClient.statFile(filePath);
     }
 
-    static deleteFile(filePath: string) {
-        return minioClient.removeFile(filePath);
+    async deleteFile(filePath: string) {
+        return this.minioClient.removeFile(filePath);
     }
 
-    static async duplicateFile(sourceFilePath: string) {
+    async duplicateFile(sourceFilePath: string) {
         const destinationPath = generatePath(sourceFilePath.slice(32));
-        await minioClient.copyFile(sourceFilePath, destinationPath);
-        return { ...(await FilesManager.fileStat(destinationPath)), path: destinationPath };
+        await this.minioClient.copyFile(sourceFilePath, destinationPath);
+        return { ...(await this.fileStat(destinationPath)), path: destinationPath };
     }
 
-    static async duplicateFiles(sourceFilePaths: string[]) {
-        const copiedFiles = sourceFilePaths.map((path) => FilesManager.duplicateFile(path));
+    async duplicateFiles(sourceFilePaths: string[]) {
+        const copiedFiles = sourceFilePaths.map((path) => this.duplicateFile(path));
         const result = await Promise.all(copiedFiles);
 
         return result;
     }
 
-    static deleteFiles(filePaths: string[]) {
-        return minioClient.removeFiles(filePaths);
+    async deleteFiles(filePaths: string[]) {
+        return this.minioClient.removeFiles(filePaths);
     }
 
-    static async getFilesData(filePaths: string[]): Promise<Buffer[]> {
+    async getFilesData(filePaths: string[]): Promise<Buffer[]> {
         const fileStreams = await Promise.all(
             filePaths.map((filePath) => {
-                return minioClient.downloadFileStream(filePath.toString());
+                return this.minioClient.downloadFileStream(filePath.toString());
             }),
         );
         return Promise.all(fileStreams.map(streamToBuffer));

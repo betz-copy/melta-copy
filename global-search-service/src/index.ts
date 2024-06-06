@@ -1,12 +1,11 @@
 import menash from 'menashmq';
-
 import axios from 'axios';
-import Neo4jClient from './utils/neo4j';
-import RedisClient from './utils/redis';
 import config from './config';
 import { updateIndexConsumeFunction } from './rabbit/consumer';
+import Neo4jClient from './utils/neo4j/neo4j';
+import RedisClient from './utils/redis';
 
-const { rabbit, neo4j, redis, service } = config;
+const { service, rabbit } = config;
 
 const initializeRabbit = async () => {
     console.log('Connecting to Rabbit...');
@@ -26,7 +25,7 @@ const initializeRabbit = async () => {
 const initializeRedis = async () => {
     console.log('Connecting to Redis...');
 
-    await RedisClient.initialize(redis.url);
+    await RedisClient.initialize();
 
     console.log('Redis connection established');
 };
@@ -36,7 +35,7 @@ const main = async () => {
     axios.defaults.maxContentLength = service.maxRequestSize;
 
     await initializeRedis();
-    await Neo4jClient.initialize(neo4j.url, neo4j.auth, neo4j.database);
+    await Neo4jClient.initialize();
     await initializeRabbit();
 };
 

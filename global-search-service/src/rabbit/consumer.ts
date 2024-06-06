@@ -1,30 +1,33 @@
 import { ConsumerMessage } from 'menashmq';
-import { deleteTemplateSearchIndex, upsertChangedTemplateSearchIndex, upsertGlobalSearchIndex } from './manager';
 import { basicValidateRequest } from '../utils/joi';
 import { Action, IUpdateIndexRequest } from './interfaces';
+import Manager from './manager';
 import { requestSchema } from './validator.schema';
 
 export const updateIndexConsumeFunction = async (msg: ConsumerMessage) => {
     const msgContent = msg.getContent();
+    // Extract dbHeaderName from msg headers
+    const { dbHeaderName } = msg.properties.headers;
     const { action, templateId }: IUpdateIndexRequest = basicValidateRequest(requestSchema, msgContent);
+    const manager = new Manager(dbHeaderName);
 
     try {
         switch (action) {
             case Action.upsertGlobalIndex: {
                 console.log('Upserting global search index...');
-                await upsertGlobalSearchIndex();
+                await manager.upsertGlobalSearchIndex();
                 break;
             }
 
             case Action.upsertTemplateIndex: {
                 console.log(`Upserting search index of template "${templateId}"...`);
-                await upsertChangedTemplateSearchIndex(templateId!);
+                await manager.upsertChangedTemplateSearchIndex(templateId!);
                 break;
             }
 
             case Action.deleteTemplateIndex: {
                 console.log(`Deleting search index of template "${templateId}"...`);
-                await deleteTemplateSearchIndex(templateId!);
+                await manager.deleteTemplateSearchIndex(templateId!);
                 break;
             }
 

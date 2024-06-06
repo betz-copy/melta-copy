@@ -1,30 +1,36 @@
-import { FilterQuery, Document } from 'mongoose';
-import RelationshipTemplateModel from './model';
-import { IRelationshipTemplate } from './interface';
-import { ServiceError } from '../error';
+import { Document, FilterQuery } from 'mongoose';
 import { escapeRegExp } from '../../utils';
+import DefaultManagerMongo from '../../utils/mongo/manager';
+import { ServiceError } from '../error';
+import { IRelationshipTemplate } from './interface';
+import RelationshipTemplateModel from './model';
 
-export class RelationshipTemplateManager {
-    static getTemplateById(templateId: string) {
-        return RelationshipTemplateModel.findById(templateId).orFail(new ServiceError(404, 'Relationship Template not found')).lean().exec();
+export class RelationshipTemplateManager extends DefaultManagerMongo<IRelationshipTemplate> {
+    constructor(dbName: string) {
+        super(dbName, RelationshipTemplateModel);
     }
 
-    static async updateTemplateById(templateId: string, updatedFields: Partial<IRelationshipTemplate>) {
-        return RelationshipTemplateModel.findByIdAndUpdate(templateId, updatedFields, { new: true })
+    async getTemplateById(templateId: string) {
+        return this.model.findById(templateId).orFail(new ServiceError(404, 'Relationship Template not found')).lean().exec();
+    }
+
+    async updateTemplateById(templateId: string, updatedFields: Partial<IRelationshipTemplate>) {
+        return this.model
+            .findByIdAndUpdate(templateId, updatedFields, { new: true })
             .orFail(new ServiceError(404, 'Relationship Template not found'))
             .lean()
             .exec();
     }
 
-    static deleteTemplateById(templateId: string) {
-        return RelationshipTemplateModel.findByIdAndDelete(templateId).orFail(new ServiceError(404, 'Relationship Template not found')).lean().exec();
+    async deleteTemplateById(templateId: string) {
+        return this.model.findByIdAndDelete(templateId).orFail(new ServiceError(404, 'Relationship Template not found')).lean().exec();
     }
 
-    static async createTemplate(relationshipTemplate: IRelationshipTemplate) {
-        return RelationshipTemplateModel.create(relationshipTemplate);
+    async createTemplate(relationshipTemplate: IRelationshipTemplate) {
+        return this.model.create(relationshipTemplate);
     }
 
-    static searchTemplates(searchBody: {
+    async searchTemplates(searchBody: {
         search?: string;
         ids?: string[];
         sourceEntityIds?: string[];
@@ -51,7 +57,7 @@ export class RelationshipTemplateManager {
             query.destinationEntityId = { $in: destinationEntityIds };
         }
 
-        return RelationshipTemplateModel.find(query).limit(limit).skip(skip).lean().exec();
+        return this.model.find(query).limit(limit).skip(skip).lean().exec();
     }
 }
 

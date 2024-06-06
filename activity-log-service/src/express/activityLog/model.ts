@@ -26,10 +26,8 @@ const ActivityLogSchema = new mongoose.Schema({
     },
 });
 
-ActivityLogSchema.index({ entityId: 1, timestamp: -1 });
-
 ActivityLogSchema.index({ entityId: 1, userId: 1 }, { unique: true, partialFilterExpression: { action: { $eq: 'VIEW_ENTITY' } } });
 
-const ActivityLogModel = mongoose.model<IActivityLog & mongoose.Document>(config.mongo.activitiesCollectionName, ActivityLogSchema);
+const ActivityLogModel = mongoose.model<IActivityLog>(config.mongo.activitiesCollectionName, ActivityLogSchema);
 
 export default ActivityLogModel;

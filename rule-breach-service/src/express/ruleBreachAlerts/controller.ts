@@ -1,26 +1,30 @@
 import { Request, Response } from 'express';
-import { RuleBreachAlertsManager } from './manager';
+import DefaultController from '../../utils/express/controller';
+import { IRuleBreachAlert } from './interface';
+import RuleBreachAlertsManager from './manager';
 
-class RuleBreachAlertsController {
-    static async searchRuleBreachAlerts(req: Request, res: Response) {
-        res.json(await RuleBreachAlertsManager.searchRuleBreachAlerts(req.body));
+export default class RuleBreachAlertsController extends DefaultController<IRuleBreachAlert, RuleBreachAlertsManager> {
+    constructor(dbName: string) {
+        super(new RuleBreachAlertsManager(dbName));
     }
 
-    static async createRuleBreachAlert(req: Request, res: Response) {
-        res.json(await RuleBreachAlertsManager.createRuleBreachAlert(req.body));
+    async searchRuleBreachAlerts(req: Request, res: Response) {
+        res.json(await this.manager.searchRuleBreachAlerts(req.body));
     }
 
-    static async getRuleBreachAlertById(req: Request, res: Response) {
+    async createRuleBreachAlert(req: Request, res: Response) {
+        res.json(await this.manager.createRuleBreachAlert(req.body));
+    }
+
+    async getRuleBreachAlertById(req: Request, res: Response) {
         const { ruleBreachAlertId } = req.params;
 
-        res.json(await RuleBreachAlertsManager.getRuleBreachAlertsById(ruleBreachAlertId));
+        res.json(await this.manager.getRuleBreachAlertsById(ruleBreachAlertId));
     }
 
-    static async getRuleBreachAlertsByRuleId(req: Request, res: Response) {
+    async getRuleBreachAlertsByRuleId(req: Request, res: Response) {
         const { ruleId } = req.params;
 
-        res.json(await RuleBreachAlertsManager.getRuleBreachAlertsByRuleId(ruleId));
+        res.json(await this.manager.getRuleBreachAlertsByRuleId(ruleId));
     }
 }
-
-export default RuleBreachAlertsController;

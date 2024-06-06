@@ -1,5 +1,5 @@
-import axios from 'axios';
 import config from '../config';
+import DefaultExternalServiceApi from '../utils/express/externalService';
 
 const {
     entityTemplateService: { url, getByIdRoute, searchRoute, timeout },
@@ -54,18 +54,20 @@ export interface ISearchEntityTemplatesBody {
     skip?: number;
 }
 
-export class EntityTemplateManagerService {
-    static EntityTemplateManagerApi = axios.create({ baseURL: url, timeout });
+export class EntityTemplateManagerService extends DefaultExternalServiceApi {
+    constructor(dbName: string) {
+        super(dbName, { baseURL: url, timeout });
+    }
 
     // entity templates
-    static async getEntityTemplateById(id: string) {
-        const { data } = await this.EntityTemplateManagerApi.get<IMongoEntityTemplate>(`${getByIdRoute}/${id}`);
+    async getEntityTemplateById(id: string) {
+        const { data } = await this.api.get<IMongoEntityTemplate>(`${getByIdRoute}/${id}`);
 
         return data;
     }
 
-    static async searchEntityTemplates(body: ISearchEntityTemplatesBody = {}) {
-        const { data } = await this.EntityTemplateManagerApi.post<IMongoEntityTemplate[]>(searchRoute, body);
+    async searchEntityTemplates(body: ISearchEntityTemplatesBody = {}) {
+        const { data } = await this.api.post<IMongoEntityTemplate[]>(searchRoute, body);
 
         return data;
     }

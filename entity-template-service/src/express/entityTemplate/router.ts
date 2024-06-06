@@ -1,40 +1,30 @@
 import { Router } from 'express';
-import EntityTemplateController from './controller';
-import { wrapController } from '../../utils/express';
+import { createController } from '../../utils/express';
 import ValidateRequest from '../../utils/joi';
+import EntityTemplateController from './controller';
 import {
-    searchEntityTemplatesSchema,
+    createEntityTemplateSchema,
     deleteEntityTemplateSchema,
     getEntityTemplateByIdSchema,
-    createEntityTemplateSchema,
+    searchEntityTemplatesSchema,
     updateEntityTemplateSchema,
     updateEntityTemplateStatusSchema,
 } from './validator.schema';
 
 const entityTemplateRouter: Router = Router();
 
-entityTemplateRouter.post('/search', ValidateRequest(searchEntityTemplatesSchema), wrapController(EntityTemplateController.searchEntityTemplates));
+const controller = createController(EntityTemplateController);
 
-entityTemplateRouter.get(
-    '/:templateId',
-    ValidateRequest(getEntityTemplateByIdSchema),
-    wrapController(EntityTemplateController.getEntityTemplateById),
-);
+entityTemplateRouter.post('/search', ValidateRequest(searchEntityTemplatesSchema), controller('searchEntityTemplates'));
 
-entityTemplateRouter.post('/', ValidateRequest(createEntityTemplateSchema), wrapController(EntityTemplateController.createEntityTemplate));
+entityTemplateRouter.get('/:templateId', ValidateRequest(getEntityTemplateByIdSchema), controller('getEntityTemplateById'));
 
-entityTemplateRouter.delete(
-    '/:templateId',
-    ValidateRequest(deleteEntityTemplateSchema),
-    wrapController(EntityTemplateController.deleteEntityTemplate),
-);
+entityTemplateRouter.post('/', ValidateRequest(createEntityTemplateSchema), controller('createEntityTemplate'));
 
-entityTemplateRouter.put('/:templateId', ValidateRequest(updateEntityTemplateSchema), wrapController(EntityTemplateController.updateEntityTemplate));
+entityTemplateRouter.delete('/:templateId', ValidateRequest(deleteEntityTemplateSchema), controller('deleteEntityTemplate'));
 
-entityTemplateRouter.patch(
-    '/:templateId/status',
-    ValidateRequest(updateEntityTemplateStatusSchema),
-    wrapController(EntityTemplateController.updateEntityTemplateStatus),
-);
+entityTemplateRouter.put('/:templateId', ValidateRequest(updateEntityTemplateSchema), controller('updateEntityTemplate'));
+
+entityTemplateRouter.patch('/:templateId/status', ValidateRequest(updateEntityTemplateStatusSchema), controller('updateEntityTemplateStatus'));
 
 export default entityTemplateRouter;

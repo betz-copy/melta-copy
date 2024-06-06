@@ -1,6 +1,6 @@
 import * as mongoose from 'mongoose';
-import { IProcessInstance, ProcessInstanceDocument, Status } from './interface';
 import config from '../../../config';
+import { IProcessInstance, Status } from './interface';
 
 const ProcessInstanceSchema = new mongoose.Schema<IProcessInstance>(
     {
@@ -45,6 +45,6 @@ const ProcessInstanceSchema = new mongoose.Schema<IProcessInstance>(
 );
 
 ProcessInstanceSchema.index({ name: 1 }, { unique: true });
-const ProcessInstanceModel = mongoose.model<ProcessInstanceDocument>(config.mongo.processInstancesCollectionName, ProcessInstanceSchema);
+const ProcessInstanceModel = mongoose.model<IProcessInstance>(config.mongo.processInstancesCollectionName, ProcessInstanceSchema);
 
 export default ProcessInstanceModel;

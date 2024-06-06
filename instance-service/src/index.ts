@@ -1,10 +1,10 @@
 import axios from 'axios';
+import config from './config';
 import Server from './express/server';
 import Neo4jClient from './utils/neo4j';
 import RedisClient from './utils/redis';
-import config from './config';
 
-const { service, neo4j, redis } = config;
+const { service, redis } = config;
 
 const initializeRedis = async () => {
     console.log('Connecting to Redis...');
@@ -16,7 +16,7 @@ const initializeRedis = async () => {
 
 const main = async () => {
     await initializeRedis();
-    await Neo4jClient.initialize(neo4j.url, neo4j.auth, neo4j.database);
+    await Neo4jClient.initialize();
 
     axios.defaults.maxBodyLength = service.maxRequestSize;
     axios.defaults.maxContentLength = service.maxRequestSize;

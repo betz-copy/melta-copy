@@ -4,6 +4,7 @@ import './dotenv';
 const config = {
     service: {
         port: env.get('PORT').required().asPortNumber(),
+        dbHeaderName: env.get('DB_HEADER_NAME').default('dbName').asString(),
         maxRequestSize: env.get('MAX_REQUEST_BYTE_SIZE').required().asInt(),
     },
     mongo: {

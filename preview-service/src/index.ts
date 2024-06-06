@@ -1,14 +1,14 @@
-import { Server } from './express/server';
 import { config } from './config';
-import { minioClient } from './utils/minio/minioClient';
+import { Server } from './express/server';
+import { MinIOClient } from './utils/minio/minioClient';
+
+const { port: serverPort } = config.service;
 
 const main = async () => {
-    const { url: endPoint, port, accessKey, secretKey, bucketName, useSSL } = config.minio;
-    await minioClient.initialize(endPoint, port, accessKey, secretKey, bucketName, useSSL);
+    await MinIOClient.initialize();
 
     console.log(`Preview connection established!`);
 
-    const { port: serverPort } = config.service;
     const server = new Server(serverPort);
 
     await server.start();
