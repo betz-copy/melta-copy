@@ -194,6 +194,7 @@ export default {
         permissionsManagement: 'ניהול הרשאות ',
         ruleManagement: 'חריגות חוקה',
         processInstances: 'תהליכים',
+        iFrames: 'קישורים חיצוניים',
         gantts: 'טבלאות',
         fluidSimulation: '???',
     },

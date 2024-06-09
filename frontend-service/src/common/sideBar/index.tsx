@@ -9,8 +9,8 @@ import {
     Air as FluidSimulationIcon,
     Gavel as GavelIcon,
     CalendarMonth as CalendarIcon,
+    Code as CodeIcon,
 } from '@mui/icons-material';
-
 import i18next from 'i18next';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -272,7 +272,14 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                             </Box>
                         </Fade>
                     )}
-
+                    <NavButton
+                        to="/iFrames"
+                        text={i18next.t('pages.iFrames')}
+                        isDrawerOpen={isDrawerOpen}
+                        onChangeToActive={(isActive: boolean) => handleChangeActiveButton(isActive, 'iFrames')}
+                    >
+                        <CodeIcon fontSize="large" sx={{ color: activeButton === 'iFrames' ? '#545eb9' : 'white', ...environment.iconSize }} />
+                    </NavButton>
                     <NavButton
                         to="/rule-management"
                         text={i18next.t('pages.ruleManagement')}
