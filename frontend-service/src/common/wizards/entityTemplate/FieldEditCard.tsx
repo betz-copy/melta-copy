@@ -145,7 +145,6 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     const preview = `properties[${index}].preview`;
     const hide = `properties[${index}].hide`;
 
-    const initialEnumOptions = initialValue?.options || [];
     const unique =
         value.type !== 'serialNumber' && uniqueConstraints!.filter((constraints) => constraints.properties.includes(value.name)).length > 0;
     const uniqueConstraintGroupName = uniqueConstraints!.find((constraint) => constraint.properties.includes(value.name))?.groupName!;

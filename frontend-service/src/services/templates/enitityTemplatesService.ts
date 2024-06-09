@@ -215,10 +215,6 @@ const createEntityTemplateRequest = async (newEntityTemplate: EntityTemplateWiza
     formData.append('propertiesOrder', JSON.stringify(entityTemplate.propertiesOrder));
     formData.append('propertiesTypeOrder', JSON.stringify(entityTemplate.propertiesTypeOrder));
     formData.append('propertiesPreview', JSON.stringify(entityTemplate.propertiesPreview));
-    // const uniqueConstraints = entityTemplate.uniqueConstraints.map((constraint) => ({
-    //     groupName: constraint.groupName,
-    //     properties: constraint.properties,
-    // }));
     formData.append('uniqueConstraints', JSON.stringify(entityTemplate.uniqueConstraints));
 
     const { data } = await axios.post<IMongoEntityTemplatePopulated>(entityTemplates, formData);
@@ -257,10 +253,6 @@ const updateEntityTemplateRequest = async (entityTemplateId: string, updatedEnti
     formData.append('propertiesOrder', JSON.stringify(entityTemplate.propertiesOrder));
     formData.append('propertiesTypeOrder', JSON.stringify(entityTemplate.propertiesTypeOrder));
     formData.append('propertiesPreview', JSON.stringify(entityTemplate.propertiesPreview));
-    // const uniqueConstraints = entityTemplate.uniqueConstraints.map((constraint) => ({
-    //     groupName: constraint.groupName,
-    //     properties: constraint.properties,
-    // }));
     formData.append('uniqueConstraints', JSON.stringify(entityTemplate.uniqueConstraints));
     const { data } = await axios.put<IMongoEntityTemplatePopulated>(`${entityTemplates}/${entityTemplateId}`, formData);
     return data;
