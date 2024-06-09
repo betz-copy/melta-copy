@@ -25,7 +25,6 @@ import {
     ISearchBatchBody,
     ISearchEntitiesOfTemplateBody,
     IUniqueConstraint,
-    IUniqueConstraintOfTemplate,
 } from './interface';
 import { NotFoundError, ServiceError } from '../error';
 import { getLatestGlobalSearchIndex, getLatestTemplateSearchIndex } from '../../utils/redis/getLatestIndex';
@@ -72,7 +71,6 @@ export class EntityManager {
             const uniqueConstraint: Omit<IUniqueConstraint, 'constraintName'> = {
                 type: 'UNIQUE',
                 templateId: label,
-                uniqueGroupName: '',
                 properties,
             };
 
@@ -179,20 +177,6 @@ export class EntityManager {
         }
 
         return node;
-    }
-
-    static async getExpandedEntityById(id: string, disabled: boolean | null, templateIds: string[], numOfConnections: number) {
-        const nodeAndConnections = await Neo4jClient.readTransaction(
-            `MATCH (p {_id:'${id}'})
-             CALL apoc.path.expandConfig(p, {
-                labelFilter: '${templateIds.join('|')}',
-                minLevel: 0,
-                maxLevel: ${numOfConnections}
-             })
-             YIELD path
-             RETURN apoc.path.elements(path)`,
-            normalizeReturnedRelAndEntities(disabled),
-        );
     }
 
     static async getExpandedGraphById(id: string, reqBody: IGetExpandedEntityBody, entityTemplatesMap: Map<string, IMongoEntityTemplate>) {
@@ -491,16 +475,18 @@ export class EntityManager {
     }
 
     private static getConstraintFromName(constraintName: string): IConstraint {
-        if (constraintName.startsWith(config.requiredConstraint)) {
-            const [_constraintTypePrefix, constraintTemplateId, property] = constraintName.split(config.constraintsNameDelimiter);
-            return { constraintName, type: 'REQUIRED', templateId: constraintTemplateId, property };
+        const [constraintTypePrefix, constraintTemplateId, ...properties] = constraintName.split(config.constraintsNameDelimiter);
+
+        switch (constraintTypePrefix) {
+            case config.requiredConstraintsPrefixName: {
+                return { constraintName, type: 'REQUIRED', templateId: constraintTemplateId, property: properties[0] };
+            }
+            case config.uniqueConstraintsPrefixName: {
+                return { constraintName, type: 'UNIQUE', templateId: constraintTemplateId, properties };
+            }
+            default:
+                throw new Error('unknown constraint type for template (checked by constraint name)');
         }
-        if (constraintName.startsWith(config.uniqueConstraint)) {
-            const [_constraintTypePrefix, groupName, constraintTemplateId, propertiesStr] = constraintName.split(config.constraintsNameDelimiter);
-            const properties = propertiesStr.split(',');
-            return { constraintName, type: 'UNIQUE', templateId: constraintTemplateId, uniqueGroupName: groupName, properties };
-        }
-        throw new Error('unknown constraint type for template (checked by constraint name)');
     }
 
     private static buildConstraintsOfTemplate(templateId: string, constraints: IConstraint[]) {
@@ -508,10 +494,7 @@ export class EntityManager {
             (acc, curr) => ({
                 ...acc,
                 requiredConstraints: curr.type === 'REQUIRED' ? [...acc.requiredConstraints, curr.property] : acc.requiredConstraints,
-                uniqueConstraints:
-                    curr.type === 'UNIQUE'
-                        ? [...acc.uniqueConstraints, { groupName: curr.uniqueGroupName, properties: curr.properties }]
-                        : acc.uniqueConstraints,
+                uniqueConstraints: curr.type === 'UNIQUE' ? [...acc.uniqueConstraints, curr.properties] : acc.uniqueConstraints,
             }),
             {
                 templateId,
@@ -605,17 +588,18 @@ export class EntityManager {
     private static async updateUniqueConstraintsOfTemplate(
         transaction: Transaction,
         templateId: string,
-        uniqueConstraints: IUniqueConstraintOfTemplate[],
+        uniqueConstraintsProps: string[][],
         existingUniqueConstraints: IUniqueConstraint[],
     ) {
         const existingUniqueConstraintsOfTemplate = existingUniqueConstraints.filter((constraint) => constraint.templateId === templateId);
 
-        const newUniqueConstraints: IUniqueConstraint[] = uniqueConstraints.flatMap((constraintGroup) => ({
+        const newUniqueConstraints: IUniqueConstraint[] = uniqueConstraintsProps.map((uniqueConstraintProps) => ({
             type: 'UNIQUE',
-            constraintName: `${config.uniqueConstraintsPrefixName}${config.constraintsNameDelimiter}${constraintGroup.groupName}${config.constraintsNameDelimiter}${templateId}${config.constraintsNameDelimiter}${constraintGroup.properties}`,
+            constraintName: `${config.uniqueConstraintsPrefixName}${config.constraintsNameDelimiter}${templateId}${
+                config.constraintsNameDelimiter
+            }${uniqueConstraintProps.join(config.constraintsNameDelimiter)}`,
             templateId,
-            uniqueGroupName: constraintGroup.groupName,
-            properties: constraintGroup.properties,
+            properties: uniqueConstraintProps,
         }));
 
         const uniqueConstraintsToCreate = differenceWith(newUniqueConstraints, existingUniqueConstraintsOfTemplate, (constraintA, constraintB) =>
@@ -643,10 +627,7 @@ export class EntityManager {
         await Promise.all([...createUniqueConstraintsPromises, ...deleteConstraintsPromises]);
     }
 
-    static async updateConstraintsOfTemplate(
-        templateId: string,
-        constraints: { requiredConstraints: string[]; uniqueConstraints: IUniqueConstraintOfTemplate[] },
-    ) {
+    static async updateConstraintsOfTemplate(templateId: string, constraints: { requiredConstraints: string[]; uniqueConstraints: string[][] }) {
         return Neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
             const existingNeo4jConstraints = await runInTransactionAndNormalize(transaction, 'call db.constraints', normalizeGetDbConstraints);
 

@@ -32,7 +32,6 @@ import { ProcessManagerService } from '../../externalServices/processService';
 import ProcessTemplatesManager from '../processes/processTemplates/manager';
 import { isProcessManager } from '../../externalServices/permissionsService';
 import { IPermissionsOfUser } from '../permissions/interfaces';
-import { IUniqueConstraintOfTemplate } from '../../externalServices/instanceService/interfaces/entities';
 
 const {
     categoryHasTemplates,
@@ -270,7 +269,7 @@ export class TemplatesManager {
     private static populateTemplateConstraints(
         entityTemplate: IMongoEntityTemplatePopulated,
         requiredConstraints: string[],
-        uniqueConstraints: IUniqueConstraintOfTemplate[],
+        uniqueConstraints: string[][],
     ): IMongoEntityTemplateWithConstraintsPopulated {
         return {
             ...entityTemplate,

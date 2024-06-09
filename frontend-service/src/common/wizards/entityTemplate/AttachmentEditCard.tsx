@@ -41,7 +41,7 @@ export const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
     const errorTitle = errors?.title;
     const type = `properties[${index}].type`;
 
-    const validPropertyTypes = ['fileId', 'multipleFiles'];
+    const validPropertyTypes = ["fileId", "multipleFiles"];
     const required = `attachmentProperties[${index}].required`;
 
     const isNewProperty = !initialValue;
@@ -59,7 +59,7 @@ export const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
                                     <DragHandleIcon fontSize="large" />
                                 </Box>
 
-                                <Grid container direction="column">
+                                <Grid container direction="column" >
                                     <Grid container wrap="nowrap">
                                         <TextField
                                             label={i18next.t('wizard.entityTemplate.attachmentName')}
@@ -94,13 +94,13 @@ export const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
                                             sx={{ marginRight: '5px' }}
                                             fullWidth
                                         >
-                                            {validPropertyTypes.map((validType) => {
-                                                return (
+                                            {validPropertyTypes
+                                                .map((validType) => {
+                                                    return(
                                                     <MenuItem key={validType} value={validType}>
                                                         {i18next.t(`propertyTypes.${validType}`)}
                                                     </MenuItem>
-                                                );
-                                            })}
+                                                )})}
                                         </TextField>
                                     </Grid>
                                     <Grid container justifyContent="space-between">

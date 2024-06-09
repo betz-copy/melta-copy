@@ -207,6 +207,8 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                     /> */}
                 </Grid>
 
+                <Divider />
+
                 <Grid
                     item
                     container

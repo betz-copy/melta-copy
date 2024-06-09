@@ -1,7 +1,7 @@
 import axios from 'axios';
 import config from '../../config';
 import { IBrokenRule } from '../ruleBreachService/interfaces';
-import { IConstraintsOfTemplate, IEntity, ISearchEntitiesOfTemplateBody, ISearchResult, IUniqueConstraintOfTemplate } from './interfaces/entities';
+import { IConstraintsOfTemplate, IEntity, ISearchEntitiesOfTemplateBody, ISearchResult } from './interfaces/entities';
 import { IRelationship } from './interfaces/relationships';
 import { IConnection } from './interfaces/rules';
 
@@ -112,11 +112,9 @@ export class InstanceManagerService {
         return data;
     }
 
-    static async updateConstraintsOfTemplate(
-        templateId: string,
-        constraints: { requiredConstraints: string[]; uniqueConstraints: IUniqueConstraintOfTemplate[] },
-    ) {
+    static async updateConstraintsOfTemplate(templateId: string, constraints: { requiredConstraints: string[]; uniqueConstraints: string[][] }) {
         const { data } = await this.InstanceManagerApi.put<IConstraintsOfTemplate[]>(`${baseConstraintsRoute}/${templateId}`, constraints);
+
         return data;
     }
 
