@@ -2,30 +2,16 @@ import axios from 'axios';
 import config from '../config';
 
 const {
-    iFrameService: { url, baseRoute, requestTimeout },
+    ganttService: { url, iFramesBaseRoute: baseRoute, requestTimeout },
 } = config;
-
-export interface IFrameItem {
-    entityTemplate: {
-        id: string;
-        startDateField: string;
-        endDateField: string;
-        fieldsToShow: string[];
-    };
-    connectedEntityTemplates: {
-        relationshipTemplateId: string;
-        fieldsToShow: string[];
-    }[];
-    groupByRelationshipId?: string; // must exist if iframe has groupBy
-}
 
 export interface IFrame {
     name: string;
-    items: IFrameItem[];
-    groupBy?: {
-        entityTemplateId: string;
-        groupNameField: string; // must be unique
-    };
+    url: string;
+    categoryIds: string[];
+    height?: number;
+    width?: number;
+    placeInSideBar?: boolean;
 }
 
 export interface IMongoIFrame extends IFrame {

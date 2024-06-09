@@ -1,13 +1,11 @@
 import { Request } from 'express';
 import { IFrame, IFramesService } from '../../externalServices/iFramesService';
 import { ServiceError } from '../error';
-import { getAllowedEntityTemplatesForInstances } from '../instances/middlewares';
+import { getAllowedCategoriesForInstances } from '../instances/middlewares';
 import PermissionsManager from '../permissions/manager';
 
-const validateHasPermissionsToIFrameItems = async (iFrame: IFrame, allowedEntityTemplateIds: string[]) => {
-    const unauthorizedTemplates = iFrame.items
-        .map(({ entityTemplate: { id } }) => id)
-        .filter((templateId) => !allowedEntityTemplateIds.includes(templateId));
+const validateHasPermissionsToIFrameItems = async (iFrame: IFrame, allowedCategoriesIds: string[]) => {
+    const unauthorizedTemplates = iFrame.categoryIds.filter((id) => !allowedCategoriesIds.includes(id));
 
     if (unauthorizedTemplates.length > 0) {
         throw new ServiceError(403, 'user not authorized', {
@@ -23,15 +21,15 @@ export const validateUserHasPermissionsToIFrame = async (userId: string, newIFra
         throw new ServiceError(403, 'user not authorized', { metadata: `user is not templates manager to create/update/delete iframes` });
     }
 
-    const allowedEntityTemplates = await getAllowedEntityTemplatesForInstances(userPermissions);
-    const allowedEntityTemplateIds = allowedEntityTemplates.map((entityTemplate) => entityTemplate._id);
+    const allowedCategories = await getAllowedCategoriesForInstances(userPermissions);
+    const allowedCategoriesIds = allowedCategories.map((category) => category._id);
 
     if (newIFrame) {
-        await validateHasPermissionsToIFrameItems(newIFrame, allowedEntityTemplateIds);
+        await validateHasPermissionsToIFrameItems(newIFrame, allowedCategoriesIds);
     }
     if (existingIFrameId) {
         const existingIFrame = await IFramesService.getIFrameById(existingIFrameId);
-        await validateHasPermissionsToIFrameItems(existingIFrame, allowedEntityTemplateIds);
+        await validateHasPermissionsToIFrameItems(existingIFrame, allowedCategoriesIds);
     }
 };
 

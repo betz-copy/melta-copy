@@ -1,7 +1,7 @@
 import { Request } from 'express';
 import { IGantt, GanttsService } from '../../externalServices/ganttsService';
 import { ServiceError } from '../error';
-import { getAllowedEntityTemplatesForInstances } from '../instances/middlewares';
+import { getAllowedCategoriesForInstances } from '../instances/middlewares';
 import PermissionsManager from '../permissions/manager';
 
 const validateHasPermissionsToGanttItems = async (gantt: IGantt, allowedEntityTemplateIds: string[]) => {
@@ -23,7 +23,7 @@ export const validateUserHasPermissionsToGantt = async (userId: string, newGantt
         throw new ServiceError(403, 'user not authorized', { metadata: `user is not templates manager to create/update/delete gantts` });
     }
 
-    const allowedEntityTemplates = await getAllowedEntityTemplatesForInstances(userPermissions);
+    const allowedEntityTemplates = await getAllowedCategoriesForInstances(userPermissions);
     const allowedEntityTemplateIds = allowedEntityTemplates.map((entityTemplate) => entityTemplate._id);
 
     if (newGantt) {

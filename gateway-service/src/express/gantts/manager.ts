@@ -4,7 +4,7 @@ import { IGantt, ISearchGanttsBody, GanttsService, IMongoGantt, IGanttItem } fro
 import { InstanceManagerService } from '../../externalServices/instanceService';
 import { IRelationshipTemplate, RelationshipsTemplateManagerService } from '../../externalServices/relationshipsTemplateService';
 import { ServiceError } from '../error';
-import { getAllowedEntityTemplatesForInstances } from '../instances/middlewares';
+import { getAllowedCategoriesForInstances } from '../instances/middlewares';
 import { IPermissionsOfUser } from '../permissions/interfaces';
 
 export class GanttManager {
@@ -20,14 +20,14 @@ export class GanttManager {
     }
 
     static async searchGantts(searchBody: ISearchGanttsBody, permissionsOfUserId: Omit<IPermissionsOfUser, 'user'>) {
-        const allowedEntityTemplates = await getAllowedEntityTemplatesForInstances(permissionsOfUserId);
+        const allowedEntityTemplates = await getAllowedCategoriesForInstances(permissionsOfUserId);
 
         const gantts = await GanttsService.searchGantts(searchBody);
         return gantts.map((gantt) => this.filterGanttWithPermissions(gantt, allowedEntityTemplates));
     }
 
     static async getGanttById(ganttId: string, permissionsOfUserId: Omit<IPermissionsOfUser, 'user'>) {
-        const allowedEntityTemplates = await getAllowedEntityTemplatesForInstances(permissionsOfUserId);
+        const allowedEntityTemplates = await getAllowedCategoriesForInstances(permissionsOfUserId);
 
         const gantt = await GanttsService.getGanttById(ganttId);
 
