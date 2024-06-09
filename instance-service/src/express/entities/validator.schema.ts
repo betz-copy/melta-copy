@@ -15,6 +15,7 @@ export const getEntityByIdRequestSchema = Joi.object({
     },
 });
 
+
 const commonFormInputSchema = Joi.object({
     name: Joi.string().required(),
     type: Joi.string().required(),
@@ -35,6 +36,8 @@ export const updateEnumFieldRequestSchema = Joi.object({
     },
 });
 
+
+
 /**
  * GET /api/instances/entities/get-is-field-used/:id
  */
@@ -49,6 +52,7 @@ export const getIfValuefieldIsUsedRequestSchema = Joi.object({
         fieldName: Joi.string().required(),
     },
 });
+
 
 /**
  * DELETE /api/instances/entities/:id?deleteAllRelationships=true
@@ -116,6 +120,7 @@ const searchFilterSchema = Joi.object({
     $or: Joi.array().items(filterOfTemplateSchema).min(1),
 }).min(1);
 
+
 /**
  * POST /api/instances/entities/expanded/:id
  */
@@ -125,12 +130,10 @@ export const getExpandedGraphByIdRequestSchema = Joi.object({
         disabled: Joi.boolean().default(null),
         templateIds: Joi.array().items(Joi.string()).required(),
         numberOfConnections: Joi.number().default(0),
-        expandedParams: Joi.object().pattern(Joi.string(), Joi.number().min(1)).default({}),
-        filters: Joi.object()
-            .pattern(Joi.string(), {
-                filter: searchFilterSchema,
-            })
-            .default({}),
+        expandedParams: Joi.object().pattern(Joi.string(), Joi.number().min(1)).default({}),        
+        filters: Joi.object().pattern(Joi.string(), {
+            filter: searchFilterSchema,
+        }).default({}),
     },
     params: {
         id: Joi.string().required(),

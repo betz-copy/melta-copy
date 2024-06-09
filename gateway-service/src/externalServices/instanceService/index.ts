@@ -117,6 +117,7 @@ export class InstanceManagerService {
         constraints: { requiredConstraints: string[]; uniqueConstraints: IUniqueConstraintOfTemplate[] },
     ) {
         const { data } = await this.InstanceManagerApi.put<IConstraintsOfTemplate[]>(`${baseConstraintsRoute}/${templateId}`, constraints);
+
         return data;
     }
 
