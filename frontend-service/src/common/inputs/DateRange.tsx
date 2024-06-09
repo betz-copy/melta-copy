@@ -8,13 +8,21 @@ const DateRange: React.FC<{
     onEndDateChange: (newEndDateInput: Date | null) => void;
     startDateInput: Date | null;
     endDateInput: Date | null;
+    directionIsRow: boolean;
     overrideSx?: object;
-}> = ({ onStartDateChange, onEndDateChange, startDateInput, endDateInput, overrideSx }) => {
+}> = ({ onStartDateChange, onEndDateChange, startDateInput, endDateInput, overrideSx, directionIsRow }) => {
     // const darkMode = useSelector((state: RootState) => state.darkMode);
-
     return (
-        <Grid container justifyContent="center" alignItems="center" wrap="nowrap" spacing={overrideSx ? 2 : 0}>
-            <Grid item>
+        <Grid
+            container
+            justifyContent="center"
+            alignItems="center"
+            wrap="nowrap"
+            spacing={overrideSx ? 2 : 0}
+            display="flex"
+            flexDirection={directionIsRow ? 'row' : 'column'}
+        >
+            <Grid item style={{ paddingBottom: !directionIsRow ? '10px' : '0px' }}>
                 <DatePickerWrapper
                     label={i18next.t('processInstancesPage.startDate')}
                     value={startDateInput}
@@ -29,6 +37,7 @@ const DateRange: React.FC<{
                         }
                     }
                     isStartDate
+                    directionIsRow={directionIsRow}
                 />
             </Grid>
             <Grid item className="processList-dateContainer">
@@ -45,6 +54,7 @@ const DateRange: React.FC<{
                             OpenPickerIcon: () => <img src="/icons/calendar.svg" style={{ height: '20px' }} alt="calendar icon" />,
                         }
                     }
+                    directionIsRow={directionIsRow}
                 />
             </Grid>
         </Grid>

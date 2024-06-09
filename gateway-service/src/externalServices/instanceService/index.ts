@@ -1,7 +1,7 @@
 import axios from 'axios';
 import config from '../../config';
 import { IBrokenRule } from '../ruleBreachService/interfaces';
-import { IConstraintsOfTemplate, IEntity, ISearchEntitiesOfTemplateBody, ISearchResult } from './interfaces/entities';
+import { IConstraintsOfTemplate, IEntity, ISearchEntitiesOfTemplateBody, ISearchResult, IUniqueConstraintOfTemplate } from './interfaces/entities';
 import { IRelationship } from './interfaces/relationships';
 import { IConnection } from './interfaces/rules';
 
@@ -13,6 +13,22 @@ export class InstanceManagerService {
     private static InstanceManagerApi = axios.create({ baseURL: url, timeout: requestTimeout });
 
     // entity instances
+    static async updateEnumFieldOfEntity(id: string, newValue: string, oldValue: string, field: any) {
+        const { data } = await this.InstanceManagerApi.put<IEntity>(`${baseEntitiesRoute}/update-enum-field/${id}`, { newValue, oldValue, field });
+        return data;
+    }
+
+    static async getIfValuefieldIsUsed(id: string, fieldValue: string, fieldName: string, type: string) {
+        const { data } = await this.InstanceManagerApi.get<IEntity>(`${baseEntitiesRoute}/get-is-field-used/${id}`, {
+            params: {
+                fieldValue,
+                fieldName,
+                type,
+            },
+        });
+        return data;
+    }
+
     static async getEntityInstanceById(id: string) {
         const { data } = await this.InstanceManagerApi.get<IEntity>(`${baseEntitiesRoute}/${id}`);
         return data;
@@ -93,13 +109,21 @@ export class InstanceManagerService {
 
     static async getConstraintsOfTemplate(templateId: string) {
         const { data } = await this.InstanceManagerApi.get<IConstraintsOfTemplate>(`${baseConstraintsRoute}/${templateId}`);
-
         return data;
     }
 
-    static async updateConstraintsOfTemplate(templateId: string, constraints: { requiredConstraints: string[]; uniqueConstraints: string[][] }) {
+    static async updateConstraintsOfTemplate(
+        templateId: string,
+        constraints: { requiredConstraints: string[]; uniqueConstraints: IUniqueConstraintOfTemplate[] },
+    ) {
         const { data } = await this.InstanceManagerApi.put<IConstraintsOfTemplate[]>(`${baseConstraintsRoute}/${templateId}`, constraints);
+        return data;
+    }
 
+    static async enumerateNewSerialNumberFields(templateId: string, newSerialNumberFields: object) {
+        const { data } = await this.InstanceManagerApi.post<number>(`${baseConstraintsRoute}/enumerate-new-serial-number-fields/${templateId}`, {
+            newSerialNumberFields,
+        });
         return data;
     }
 }

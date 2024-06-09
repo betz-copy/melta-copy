@@ -10,7 +10,15 @@ import { addPropertyToRequest } from '../../utils/express';
 import config from '../../config';
 import { EntityTemplateManagerService, IEntitySingleProperty, IMongoEntityTemplate } from '../../externalServices/entityTemplateManager';
 import { trycatch } from '../../utils/lib';
-import { IFilterOfField, IFilterOfTemplate, ISearchFilter, ISearchBatchBody, ISearchEntitiesOfTemplateBody } from './interface';
+import {
+    IFilterOfField,
+    IFilterOfTemplate,
+    ISearchFilter,
+    ISearchBatchBody,
+    ISearchEntitiesOfTemplateBody,
+    IUniqueConstraintOfTemplate,
+    IGetExpandedEntityBody,
+} from './interface';
 import { IMongoRelationshipTemplate, RelationshipsTemplateManagerService } from '../../externalServices/relationshipTemplateManager';
 import { addDefaultFieldsToTemplate } from '../../utils/addDefaultsFieldsToEntityTemplate';
 
@@ -19,13 +27,15 @@ const { neo4j } = config;
 const ajv = new Ajv();
 
 ajv.addFormat('fileId', /.*/);
+ajv.addFormat('text-area', /.*/);
 addFormats(ajv);
 ajv.addVocabulary(['patternCustomErrorMessage', 'hide']);
 ajv.addKeyword({
     keyword: 'dateNotification',
-    type: 'string',
+    type: 'number',
 });
 ajv.addKeyword({ keyword: 'calculateTime', type: 'boolean' });
+ajv.addKeyword({ keyword: 'isDailyAlert', type: 'boolean' });
 ajv.addKeyword({
     keyword: 'serialStarter',
     type: 'number',
@@ -35,11 +45,10 @@ ajv.addKeyword({
     type: 'number',
 });
 
-const getEntityTemplateByIdOrThrowValidationError = async (templateId: string) => {
+export const getEntityTemplateByIdOrThrowValidationError = async (templateId: string) => {
     const { result: entityTemplate, err: getEntityTemplateByIdErr } = await trycatch(() =>
         EntityTemplateManagerService.getEntityTemplateById(templateId),
     );
-
     if (getEntityTemplateByIdErr || !entityTemplate) {
         if (axios.isAxiosError(getEntityTemplateByIdErr) && getEntityTemplateByIdErr.response?.status === 404) {
             throw new ValidationError(`Entity template doesnt exist (id: "${templateId}")`);
@@ -114,7 +123,7 @@ export const validateConstraintsOfTemplate = async (req: Request) => {
     const { properties } = await getEntityTemplateByIdOrThrowValidationError(req.params.templateId);
     const propertiesKeys = Object.keys(properties.properties);
 
-    const { requiredConstraints, uniqueConstraints }: { requiredConstraints: string[]; uniqueConstraints: string[][] } = req.body;
+    const { requiredConstraints, uniqueConstraints }: { requiredConstraints: string[]; uniqueConstraints: IUniqueConstraintOfTemplate[] } = req.body;
 
     requiredConstraints.forEach((constraintProp) => {
         const isConstraintPropertyUnknown = !propertiesKeys.includes(constraintProp);
@@ -123,7 +132,7 @@ export const validateConstraintsOfTemplate = async (req: Request) => {
         }
     });
     uniqueConstraints.forEach((constraintProps) => {
-        const unknownPropertyInConstraint = constraintProps.find((property) => !propertiesKeys.includes(property));
+        const unknownPropertyInConstraint = constraintProps.properties.find((property) => !propertiesKeys.includes(property));
         if (unknownPropertyInConstraint) {
             throw new ValidationError(
                 `unique constraint of ${constraintProps} contains unknown property "${unknownPropertyInConstraint}" in template`,
@@ -132,7 +141,7 @@ export const validateConstraintsOfTemplate = async (req: Request) => {
     });
 
     uniqueConstraints.forEach((uniqueConstraint) => {
-        const uniqueConstraintPropertyThatIsNotInRequired = uniqueConstraint.find((property) => !requiredConstraints.includes(property));
+        const uniqueConstraintPropertyThatIsNotInRequired = uniqueConstraint.properties.find((property) => !requiredConstraints.includes(property));
 
         if (uniqueConstraintPropertyThatIsNotInRequired) {
             // because neo4j 4.0 supports unique constraints but makes them required too
@@ -152,7 +161,6 @@ const validateSimplePartFilterOfField = (rhs: boolean | string | number | null, 
     if (rhs === null) return;
 
     const { type, format } = templateOfField;
-
     if (type === 'string' && format === 'date-time') {
         const isValid = strictIsValidDateString(rhs as string, "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
         if (!isValid) throw new ValidationError(`filter on field ${path} should be of date-time format (isostring)`);
@@ -324,7 +332,8 @@ export const validateSearchBatchBody = async (req: Request) => {
         throw new ValidationError(`some of the templates in search doesnt exist. found only [${entityTemplates.map(({ _id }) => _id)}]`);
     }
     const entityTemplatesMap = new Map(entityTemplates.map((entityTemplate) => [entityTemplate._id, entityTemplate]));
-    const entityTemplatesForValidationMap = new Map(
+
+    const entityTemplatesForValidationMap: Map<string, IMongoEntityTemplate> = new Map(
         entityTemplates.map((entityTemplate) => [entityTemplate._id, addDefaultFieldsToTemplate(entityTemplate)]),
     );
 
@@ -338,5 +347,25 @@ export const validateSearchBatchBody = async (req: Request) => {
 
     validateSortOfSearchBatch(searchBody, entityTemplatesForValidationMap);
 
+    addPropertyToRequest(req, 'entityTemplatesMap', entityTemplatesMap);
+};
+
+export const validateFilterBatchBody = async (req: Request) => {
+    const searchBody: IGetExpandedEntityBody['filters'] = req.body.filters;
+    const templateIds = Object.keys(searchBody);
+    const entityTemplates = await EntityTemplateManagerService.searchEntityTemplates({ ids: templateIds });
+    if (entityTemplates.length < templateIds.length) {
+        throw new ValidationError(`some of the templates in search doesnt exist. found only [${entityTemplates.map(({ _id }) => _id)}]`);
+    }
+    const entityTemplatesMap = new Map(entityTemplates.map((entityTemplate) => [entityTemplate._id, entityTemplate]));
+
+    const entityTemplatesForValidationMap: Map<string, IMongoEntityTemplate> = new Map(
+        entityTemplates.map((entityTemplate) => [entityTemplate._id, addDefaultFieldsToTemplate(entityTemplate)]),
+    );
+    Object.entries(searchBody).forEach(([templateId, { filter }]) => {
+        if (filter) {
+            validateFilter(filter, entityTemplatesForValidationMap.get(templateId)!, `filters.${templateId}.filter`);
+        }
+    });
     addPropertyToRequest(req, 'entityTemplatesMap', entityTemplatesMap);
 };

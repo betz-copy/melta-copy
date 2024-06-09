@@ -18,7 +18,6 @@ import { IEntityTemplateMap } from './interfaces/entityTemplates';
 import { IRelationshipTemplateMap } from './interfaces/relationshipTemplates';
 import ErrorPage from './pages/ErrorPage';
 import { environment } from './globals';
-import loadingAnimation from './assets/icons/Melta_Logo.svg';
 import './css/loading.css';
 import { IRuleMap } from './interfaces/rules';
 import { mapTemplates } from './utils/templates';
@@ -98,7 +97,7 @@ const App: React.FC = () => {
     if (isLoading) {
         return (
             <div style={{ display: 'flex', justifyContent: 'center', marginTop: '40vh' }}>
-                <img className="ld ld-bounce" src={loadingAnimation} width="300px" />
+                <img className="ld ld-bounce" src="/icons/Melta_Logo.svg" width="300px" />
             </div>
         );
     }

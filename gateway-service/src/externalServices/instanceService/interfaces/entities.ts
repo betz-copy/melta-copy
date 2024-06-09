@@ -31,10 +31,14 @@ export interface IRequiredConstraint {
 
 export type IConstraint = IRequiredConstraint | IUniqueConstraint;
 
+export interface IUniqueConstraintOfTemplate {
+    groupName: string;
+    properties: string[];
+}
 export interface IConstraintsOfTemplate {
     templateId: string;
     requiredConstraints: string[];
-    uniqueConstraints: string[][];
+    uniqueConstraints: IUniqueConstraintOfTemplate[];
 }
 
 export interface IEntityWithDirectRelationships {
@@ -97,4 +101,11 @@ export interface ISearchBatchBody {
 export interface ISearchResult {
     count: number;
     entities: IEntityWithDirectRelationships[];
+}
+
+export interface IFilterDatesRange {
+    propertyName: string;
+    dateNotificationValue: number;
+    isDateTime: boolean;
+    isDailyAlert: boolean;
 }

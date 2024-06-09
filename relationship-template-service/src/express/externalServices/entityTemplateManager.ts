@@ -16,7 +16,7 @@ export interface ICategory {
 export interface IEntitySingleProperty {
     title: string;
     type: 'string' | 'number' | 'boolean' | 'array';
-    format?: 'date' | 'date-time' | 'email' | 'fileId';
+    format?: 'date' | 'date-time' | 'email' | 'fileId' | 'text-area';
     enum?: string[];
     items?: {
         type: 'string';
@@ -27,7 +27,7 @@ export interface IEntitySingleProperty {
     uniqueItems?: true;
     pattern?: string;
     patternCustomErrorMessage?: string;
-    dateNotification?: 'day' | 'week' | 'twoWeeks';
+    dateNotification?: number;
 }
 
 export interface IEntityTemplate {

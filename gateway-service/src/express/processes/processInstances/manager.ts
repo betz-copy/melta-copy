@@ -32,7 +32,7 @@ import { EntityTemplateManagerService } from '../../../externalServices/entityTe
 import PermissionsManager from '../../permissions/manager';
 import StepsInstancesManager from '../stepInstances/manager';
 import { IMongoStepTemplate } from '../../../externalServices/processService/interfaces/stepTemplate';
-import { rabbitCreateNotification } from '../../../utils/createNotification';
+import { rabbitCreateNotification } from '../../../utils/notifications/createNotification';
 import {
     IArchiveProcessNotificationMetadataPopulated,
     IDeleteProcessNotificationMetadataPopulated,
@@ -40,6 +40,7 @@ import {
     IProcessStatusUpdateNotificationMetadataPopulated,
 } from '../../../externalServices/notificationService/interfaces/populated';
 import { IProcessReviewerUpdateMailNotificationMetadataPopulated } from '../../../utils/mailNotifications/interfaces';
+import logger from '../../../utils/logger/logsLogger';
 
 export default class ProcessesInstancesManager {
     static async getPropertiesWithEntities(properties: InstanceProperties, template: IProcessDetails['properties'], userId: string) {
@@ -147,8 +148,7 @@ export default class ProcessesInstancesManager {
 
         const process = await ProcessManagerService.createProcessInstance({ ...processData, details: processDetails }).catch(async (error) => {
             await deleteFiles(Object.values(filesToUpload).flat(1) as string[]).catch(() => {
-                // eslint-disable-next-line no-console
-                console.log('failed to delete process unused files');
+                logger.error('failed to delete process unused files');
             });
             throw error;
         });
@@ -170,8 +170,7 @@ export default class ProcessesInstancesManager {
         const newFileIds = new Set<string>(this.extractFileIdsFromProperties(templateProperties, newProperties));
 
         const idsToDelete = Array.from(oldFileIds).filter((id) => !newFileIds.has(id));
-        // eslint-disable-next-line no-console
-        if (idsToDelete.length) await deleteFiles(idsToDelete).catch(() => console.log(`failed to delete unused files: ${idsToDelete}`));
+        if (idsToDelete.length) await deleteFiles(idsToDelete).catch(() => logger.error(`failed to delete unused files: ${idsToDelete}`));
     }
 
     static async updateProcessInstance(processId: string, processData: IProcessInstance, files: Express.Multer.File[], userId: string) {
@@ -208,8 +207,7 @@ export default class ProcessesInstancesManager {
 
         const updatedProcess = await ProcessManagerService.updateProcessInstance(processId, updatedProcessInstance).catch(async (error) => {
             await deleteFiles(Object.values(filesToUpload).flat(1) as string[]).catch(() => {
-                // eslint-disable-next-line no-console
-                console.log('failed to delete process unused files');
+                logger.error('failed to delete process unused files');
             });
             throw error;
         });
@@ -274,8 +272,7 @@ export default class ProcessesInstancesManager {
         const populatedProcess = await this.getPopulatedProcess(process, userId);
 
         await ProcessesInstancesManager.deleteAllProcessFiles(process).catch((err) => {
-            // eslint-disable-next-line no-console
-            console.log(`failed to delete process files`);
+            logger.error(`failed to delete process files`);
             throw new ServiceError(500, `failed to delete process instance, failed when deleting files: ${err}`);
         });
         await ProcessManagerService.deleteProcessInstance(processId);

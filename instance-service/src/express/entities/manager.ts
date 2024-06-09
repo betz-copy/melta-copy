@@ -1,3 +1,4 @@
+/* eslint-disable no-await-in-loop */
 import { Neo4jError, Transaction } from 'neo4j-driver';
 import pickBy from 'lodash.pickby';
 import differenceWith from 'lodash.differencewith';
@@ -19,10 +20,12 @@ import {
     IConstraint,
     IConstraintsOfTemplate,
     IEntity,
+    IGetExpandedEntityBody,
     IRequiredConstraint,
     ISearchBatchBody,
     ISearchEntitiesOfTemplateBody,
     IUniqueConstraint,
+    IUniqueConstraintOfTemplate,
 } from './interface';
 import { NotFoundError, ServiceError } from '../error';
 import { getLatestGlobalSearchIndex, getLatestTemplateSearchIndex } from '../../utils/redis/getLatestIndex';
@@ -35,6 +38,7 @@ import { RelationshipsTemplateManagerService } from '../../externalServices/rela
 import { addStringFieldsAndNormalizeDateValues } from './validator.template';
 import { arraysEqualsNonOrdered } from '../../utils/lib';
 import { searchWithRelationshipsToNeoQuery } from '../../utils/neo4j/searchBodyToNeoQuery';
+import { getExpandedFilteredGraphRecursively, expandEntityToNeoQuery } from '../../utils/neo4j/getExpandedEntityByIdRecursive';
 
 export class EntityManager {
     private static throwServiceErrorIfFailedConstraintsValidation(err: unknown): never {
@@ -68,6 +72,7 @@ export class EntityManager {
             const uniqueConstraint: Omit<IUniqueConstraint, 'constraintName'> = {
                 type: 'UNIQUE',
                 templateId: label,
+                uniqueGroupName: '',
                 properties,
             };
 
@@ -188,12 +193,33 @@ export class EntityManager {
              RETURN apoc.path.elements(path)`,
             normalizeReturnedRelAndEntities(disabled),
         );
+    }
 
-        if (!nodeAndConnections) {
+    static async getExpandedGraphById(id: string, reqBody: IGetExpandedEntityBody, entityTemplatesMap: Map<string, IMongoEntityTemplate>) {
+        const { disabled, templateIds, expandedParams, filters } = reqBody;
+        const fixSearchBody = filters ?? {};
+        const initialCypherQuery = await expandEntityToNeoQuery(fixSearchBody, id, templateIds, expandedParams, entityTemplatesMap, id);
+        const initialExpandedEntity = await Neo4jClient.readTransaction(
+            initialCypherQuery.cypherQuery,
+            normalizeReturnedRelAndEntities(disabled),
+            initialCypherQuery.parameters,
+        );
+        if (!initialExpandedEntity) {
             throw new NotFoundError(`[NEO4J] entity "${id}" not found`);
         }
+        if (JSON.stringify(expandedParams) === '{}') {
+            return initialExpandedEntity;
+        }
 
-        return nodeAndConnections;
+        const filterRes = await getExpandedFilteredGraphRecursively(
+            disabled || null,
+            initialExpandedEntity,
+            fixSearchBody,
+            templateIds,
+            expandedParams,
+            entityTemplatesMap,
+        );
+        return filterRes;
     }
 
     static async deleteEntityById(id: string, deleteAllRelationships: boolean) {
@@ -217,6 +243,22 @@ export class EntityManager {
 
             throw error;
         }
+    }
+
+    static async getIsFieldUsed(id: string, fieldValue: string, fieldName: string, type: string) {
+        let node;
+        if (type === 'array') {
+            node = await Neo4jClient.readTransaction(
+                `MATCH (e: \`${id}\`) WHERE '${fieldValue}' IN e.${fieldName} RETURN e`,
+                normalizeReturnedEntity('singleResponse'),
+            );
+        } else {
+            node = await Neo4jClient.readTransaction(
+                `MATCH (e: \`${id}\`) WHERE e.${fieldName} = '${fieldValue}' RETURN e`,
+                normalizeReturnedEntity('singleResponse'),
+            );
+        }
+        return node;
     }
 
     static async deleteByTemplateId(templateId: string) {
@@ -398,7 +440,7 @@ export class EntityManager {
             const ruleFailuresBeforeAction = await EntityManager.runRulesDependOnEntityUpdate(transaction, entity, updatedProperties);
             const updatedEntity = await runInTransactionAndNormalize(
                 transaction,
-                `MATCH (e {_id: $props._id})
+                `MATCH (e {_id: '${id}'})
                  WITH e.createdAt AS createdAt, e.disabled AS disabled, e AS e
                  SET e = $props 
                  SET e.createdAt = createdAt
@@ -419,19 +461,46 @@ export class EntityManager {
         }).catch(EntityManager.throwServiceErrorIfFailedConstraintsValidation); // constraint validation is performed on end of transaction
     }
 
-    private static getConstraintFromName(constraintName: string): IConstraint {
-        const [constraintTypePrefix, constraintTemplateId, ...properties] = constraintName.split(config.constraintsNameDelimiter);
-
-        switch (constraintTypePrefix) {
-            case config.requiredConstraintsPrefixName: {
-                return { constraintName, type: 'REQUIRED', templateId: constraintTemplateId, property: properties[0] };
+    static async updateEnumFieldValue(id: string, newValue: string, oldValue: string, field: any) {
+        let node;
+        try {
+            if (field.type === 'array') {
+                node = await Neo4jClient.writeTransaction(
+                    `MATCH (e: \`${id}\`)
+                    SET e.${field.name} = [val IN e.${field.name} WHERE val <> '${oldValue}'] + ['${newValue}']
+                    RETURN e`,
+                    normalizeReturnedEntity('singleResponse'),
+                );
+            } else {
+                node = await Neo4jClient.writeTransaction(
+                    `MATCH (e: \`${id}\`)
+                WHERE e.${field.name} = '${oldValue}'
+                SET e.${field.name} = '${newValue}'
+                RETURN e`,
+                    normalizeReturnedEntity('singleResponse'),
+                );
             }
-            case config.uniqueConstraintsPrefixName: {
-                return { constraintName, type: 'UNIQUE', templateId: constraintTemplateId, properties };
+            return node;
+        } catch (error) {
+            if (error instanceof NotFoundError) {
+                throw new NotFoundError(`[NEO4J] entity not found`);
+            } else {
+                throw new Error('Change failed');
             }
-            default:
-                throw new Error('unknown constraint type for template (checked by constraint name)');
         }
+    }
+
+    private static getConstraintFromName(constraintName: string): IConstraint {
+        if (constraintName.startsWith(config.requiredConstraint)) {
+            const [_constraintTypePrefix, constraintTemplateId, property] = constraintName.split(config.constraintsNameDelimiter);
+            return { constraintName, type: 'REQUIRED', templateId: constraintTemplateId, property };
+        }
+        if (constraintName.startsWith(config.uniqueConstraint)) {
+            const [_constraintTypePrefix, groupName, constraintTemplateId, propertiesStr] = constraintName.split(config.constraintsNameDelimiter);
+            const properties = propertiesStr.split(',');
+            return { constraintName, type: 'UNIQUE', templateId: constraintTemplateId, uniqueGroupName: groupName, properties };
+        }
+        throw new Error('unknown constraint type for template (checked by constraint name)');
     }
 
     private static buildConstraintsOfTemplate(templateId: string, constraints: IConstraint[]) {
@@ -439,7 +508,10 @@ export class EntityManager {
             (acc, curr) => ({
                 ...acc,
                 requiredConstraints: curr.type === 'REQUIRED' ? [...acc.requiredConstraints, curr.property] : acc.requiredConstraints,
-                uniqueConstraints: curr.type === 'UNIQUE' ? [...acc.uniqueConstraints, curr.properties] : acc.uniqueConstraints,
+                uniqueConstraints:
+                    curr.type === 'UNIQUE'
+                        ? [...acc.uniqueConstraints, { groupName: curr.uniqueGroupName, properties: curr.properties }]
+                        : acc.uniqueConstraints,
             }),
             {
                 templateId,
@@ -533,18 +605,17 @@ export class EntityManager {
     private static async updateUniqueConstraintsOfTemplate(
         transaction: Transaction,
         templateId: string,
-        uniqueConstraintsProps: string[][],
+        uniqueConstraints: IUniqueConstraintOfTemplate[],
         existingUniqueConstraints: IUniqueConstraint[],
     ) {
         const existingUniqueConstraintsOfTemplate = existingUniqueConstraints.filter((constraint) => constraint.templateId === templateId);
 
-        const newUniqueConstraints: IUniqueConstraint[] = uniqueConstraintsProps.map((uniqueConstraintProps) => ({
+        const newUniqueConstraints: IUniqueConstraint[] = uniqueConstraints.flatMap((constraintGroup) => ({
             type: 'UNIQUE',
-            constraintName: `${config.uniqueConstraintsPrefixName}${config.constraintsNameDelimiter}${templateId}${
-                config.constraintsNameDelimiter
-            }${uniqueConstraintProps.join(config.constraintsNameDelimiter)}`,
+            constraintName: `${config.uniqueConstraintsPrefixName}${config.constraintsNameDelimiter}${constraintGroup.groupName}${config.constraintsNameDelimiter}${templateId}${config.constraintsNameDelimiter}${constraintGroup.properties}`,
             templateId,
-            properties: uniqueConstraintProps,
+            uniqueGroupName: constraintGroup.groupName,
+            properties: constraintGroup.properties,
         }));
 
         const uniqueConstraintsToCreate = differenceWith(newUniqueConstraints, existingUniqueConstraintsOfTemplate, (constraintA, constraintB) =>
@@ -572,7 +643,10 @@ export class EntityManager {
         await Promise.all([...createUniqueConstraintsPromises, ...deleteConstraintsPromises]);
     }
 
-    static async updateConstraintsOfTemplate(templateId: string, constraints: { requiredConstraints: string[]; uniqueConstraints: string[][] }) {
+    static async updateConstraintsOfTemplate(
+        templateId: string,
+        constraints: { requiredConstraints: string[]; uniqueConstraints: IUniqueConstraintOfTemplate[] },
+    ) {
         return Neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
             const existingNeo4jConstraints = await runInTransactionAndNormalize(transaction, 'call db.constraints', normalizeGetDbConstraints);
 
@@ -603,6 +677,23 @@ export class EntityManager {
             updateConstraintsPromises.push(updateUniqueConstraintsPromise);
 
             await Promise.all(updateConstraintsPromises);
+        });
+    }
+
+    static async enumerateNewSerialNumberFields(templateId: string, newSerialNumberFields: object) {
+        return Neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
+            const numOfEntitiesUpdated = `
+            MATCH (n: \`${templateId}\`) 
+            WITH n
+            ORDER BY n.createdAt
+            WITH collect(n) AS entities
+            UNWIND range(0, size(entities)-1) AS index
+            WITH entities[index] AS currentEntity,  index AS currentIndex
+            SET ${Object.entries(newSerialNumberFields)
+                .map(([key, value]) => `\`currentEntity\`.${key} = toFloat(currentIndex + ${value})`)
+                .join(', ')}
+            RETURN count(currentEntity) AS numEntitiesUpdated`;
+            return runInTransactionAndNormalize(transaction, numOfEntitiesUpdated, normalizeResponseCount);
         });
     }
 }

@@ -4,7 +4,7 @@
 /* eslint-disable no-restricted-syntax */
 import * as request from 'supertest';
 import { Express } from 'express';
-import * as mongoose from 'mongoose';
+import mongoose from 'mongoose';
 import Server from '../src/express/server';
 import config from '../src/config';
 // import { sleep } from '../src/utils';

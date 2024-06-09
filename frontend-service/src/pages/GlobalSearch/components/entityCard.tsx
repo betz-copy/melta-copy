@@ -23,9 +23,9 @@ import { getFileName } from '../../../utils/getFileName';
 import { getPreviewContentType } from '../../../utils/getFileType';
 import { EntityDates } from '../../Entity/components/EntityDates';
 import { EntityDisableCheckbox } from '../../Entity/components/EntityDisableCheckbox';
-import { canUserWriteInstanceOfCategory } from '../../../utils/permissions/instancePermissions';
 import { IPermissionsOfUser } from '../../../services/permissionsService';
 import { ImageWithDisable } from '../../../common/ImageWithDisable';
+import { checkUserInstanceOfCategoryPermission } from '../../../utils/permissions/instancePermissions';
 
 export const StyledCard = styled(Card)(({ theme }) => ({
     background: theme.palette.mode === 'light' ? '#FFFFFF 0% 0% no-repeat padding-box' : undefined,
@@ -69,7 +69,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
     const cardRef = useRef<HTMLDivElement>(null);
     const queryClient = useQueryClient();
     const { instancesPermissions } = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
-    const userHasWritePermissions = canUserWriteInstanceOfCategory(instancesPermissions, entityTemplate.category);
+    const userHasWritePermissions = checkUserInstanceOfCategoryPermission(instancesPermissions, entityTemplate.category, 'Write');
 
     const shouldDisplayFilePreview = useMemo(() => {
         return entityTemplate.propertiesOrder.some((propertyName) => {
@@ -135,7 +135,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
     const navigate = useNavigate();
     const entityTemplateColor = getEntityTemplateColor(entityTemplate);
     const first5PropsKeys: string[] = [
-        ...entityTemplate.propertiesPreview.slice(0, 5),
+        ...entityTemplate.propertiesPreview,
         ...entityTemplate.propertiesOrder
             .filter(
                 (property) =>
@@ -143,7 +143,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
                     entityTemplate.properties.properties[property].format !== 'fileId' &&
                     entityTemplate.properties.properties[property].items?.format !== 'fileId',
             )
-            .slice(0, 5 - entityTemplate.propertiesPreview.length),
+            .slice(0, Math.max(5 - entityTemplate.propertiesPreview.length, 0)),
     ];
 
     return (
@@ -156,7 +156,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
                 width: open ? 0.987 : '547px',
                 borderRadius: '15px',
                 overflow: 'hidden',
-                minHeight: '16rem',
+                paddingBottom: '10px',
                 ...customCardStyle,
             }}
         >
@@ -269,7 +269,15 @@ const EntityCard: React.FC<EntityCardProps> = ({
             <Divider style={{ border: '1px solid #EBEFFA', margin: '0 1% 2% 1%' }} />
 
             {!open && (
-                <Grid container sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                <Grid
+                    container
+                    sx={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        overflowY: 'auto',
+                        height: '206px',
+                    }}
+                >
                     <Grid item xs={8} container paddingLeft="4px" paddingBottom="14px" height="fit-content" minHeight="37px" alignItems="center">
                         <EntityProperties
                             entityTemplate={entityTemplate}
@@ -286,6 +294,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
                                 alignItems: 'center',
                                 width: '100%',
                             }}
+                            viewFirstLineOfLongText
                         />
                     </Grid>
                     {shouldDisplayFilePreview && (
@@ -366,7 +375,6 @@ const EntityCard: React.FC<EntityCardProps> = ({
                         <CardContent
                             style={{
                                 padding: '13px 50px 8px 20px',
-                                maxHeight: '300px',
                             }}
                         >
                             <EntityProperties
