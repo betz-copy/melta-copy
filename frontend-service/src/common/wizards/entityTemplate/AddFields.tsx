@@ -16,7 +16,7 @@ import { ErrorToast } from '../../ErrorToast';
 
 const processStringFormats = [...stringFormats, 'entityReference'];
 const validPropertyTypes = [...basePropertyTypes, ...processStringFormats, ...arrayTypes, 'enum', 'serialNumber', 'pattern'];
-const dateNotificationTypes: string[] = ['day', 'week', 'twoWeeks'];
+const dateNotificationTypes: string[] = ['day', 'week', 'twoWeeks', 'month', 'threeMonths', 'halfYear'];
 export const propertiesBaseSchema = Yup.object({
     name: Yup.string()
         .notOneOf(['createdAt', 'updatedAt', 'disable'], i18next.t('validation.fieldExist'))
@@ -49,7 +49,7 @@ const addFieldsSchema = Yup.object({
             propertiesBaseSchema.shape({
                 required: Yup.boolean().required(i18next.t('validation.required')),
                 preview: Yup.boolean().required(i18next.t('validation.required')),
-                dateNotification: Yup.string().nullable().oneOf(dateNotificationTypes, i18next.t('validation.mustBeOneOfList')),
+                dateNotification: Yup.number().nullable().oneOf([1, 7, 14, 30, 90, 180], i18next.t('validation.mustBeOneOfList')),
                 serialStarter: Yup.number()
                     .typeError(i18next.t('validation.invalidNumberField'))
                     .when('type', {

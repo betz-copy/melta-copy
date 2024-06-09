@@ -34,7 +34,8 @@ export interface EntityTemplateFormInputProperties extends IBaseFormInputPropert
     uniqueCheckbox?: boolean;
     groupName?: string;
     optionColors: Record<string, string>;
-    dateNotification: string | null | undefined;
+    dateNotification: number | null | undefined;
+    isDailyAlert: boolean | null | undefined;
     calculateTime: boolean | null | undefined;
     serialStarter: number | undefined;
 }

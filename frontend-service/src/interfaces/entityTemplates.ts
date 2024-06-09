@@ -15,8 +15,9 @@ export interface IEntitySingleProperty {
     uniqueItems?: true;
     pattern?: string;
     patternCustomErrorMessage?: string;
-    dateNotification?: string;
     uniqueCheckbox?: boolean;
+    dateNotification?: number;
+    isDailyAlert?: boolean;
     calculateTime?: boolean;
     serialStarter?: number;
     serialCurrent?: number;

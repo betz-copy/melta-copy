@@ -32,9 +32,10 @@ addFormats(ajv);
 ajv.addVocabulary(['patternCustomErrorMessage', 'hide']);
 ajv.addKeyword({
     keyword: 'dateNotification',
-    type: 'string',
+    type: 'number',
 });
 ajv.addKeyword({ keyword: 'calculateTime', type: 'boolean' });
+ajv.addKeyword({ keyword: 'isDailyAlert', type: 'boolean' });
 ajv.addKeyword({
     keyword: 'serialStarter',
     type: 'number',

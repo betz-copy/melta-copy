@@ -50,6 +50,9 @@ const config = {
             dirname: env.get('ROTATE_FILE_LOG_DIRNAME').default('./logs').asString(),
         },
     },
+    notifications: {
+        dateAlertOptions: env.get('DATE_NOTIFICATIONS_OPTIONS').default('1, 7, 14, 30, 90, 180').asArray(',').map(Number),
+    },
 };
 
 export default config;

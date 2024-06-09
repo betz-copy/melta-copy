@@ -3,7 +3,7 @@ import axios from 'axios';
 import apm from 'elastic-apm-node';
 import Server from './express/server';
 import config from './config';
-import { checkForDateNotifications } from './dateNotificationsCheck';
+import { checkForDateNotifications } from './utils/notifications/dateNotificationsCheck';
 import logger from './utils/logger/logsLogger';
 
 const { service, rabbit, logs } = config;

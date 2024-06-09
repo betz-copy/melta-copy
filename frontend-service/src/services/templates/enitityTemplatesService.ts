@@ -46,6 +46,7 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
             pattern: value.pattern || '',
             patternCustomErrorMessage: value.patternCustomErrorMessage || '',
             dateNotification: value.dateNotification,
+            isDailyAlert: value.isDailyAlert ?? undefined,
             serialStarter: value.serialStarter,
         };
 
@@ -98,6 +99,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTem
             pattern,
             patternCustomErrorMessage,
             dateNotification,
+            isDailyAlert,
             calculateTime,
             serialStarter,
             hide,
@@ -129,8 +131,9 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTem
                 uniqueItems: type === 'enumArray' ? true : undefined,
                 pattern: type === 'pattern' ? pattern : undefined,
                 patternCustomErrorMessage: type === 'pattern' ? patternCustomErrorMessage : undefined,
-                dateNotification: dateNotification as string | undefined,
+                dateNotification: dateNotification as number | undefined,
                 calculateTime: calculateTime ?? undefined,
+                isDailyAlert: isDailyAlert ?? (dateNotification !== undefined ? true : undefined),
                 serialStarter: type === 'serialNumber' ? serialStarter : undefined,
                 serialCurrent: type === 'serialNumber' ? serialStarter : undefined,
             };

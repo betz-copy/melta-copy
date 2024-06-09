@@ -32,7 +32,7 @@ import { EntityTemplateManagerService } from '../../../externalServices/entityTe
 import PermissionsManager from '../../permissions/manager';
 import StepsInstancesManager from '../stepInstances/manager';
 import { IMongoStepTemplate } from '../../../externalServices/processService/interfaces/stepTemplate';
-import { rabbitCreateNotification } from '../../../utils/createNotification';
+import { rabbitCreateNotification } from '../../../utils/notifications/createNotification';
 import {
     IArchiveProcessNotificationMetadataPopulated,
     IDeleteProcessNotificationMetadataPopulated,
