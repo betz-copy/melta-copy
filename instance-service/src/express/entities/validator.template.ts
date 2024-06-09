@@ -10,7 +10,14 @@ import { addPropertyToRequest } from '../../utils/express';
 import config from '../../config';
 import { EntityTemplateManagerService, IEntitySingleProperty, IMongoEntityTemplate } from '../../externalServices/entityTemplateManager';
 import { trycatch } from '../../utils/lib';
-import { IFilterOfField, IFilterOfTemplate, ISearchFilter, ISearchBatchBody, ISearchEntitiesOfTemplateBody, IGetExpandedEntityBody } from './interface';
+import {
+    IFilterOfField,
+    IFilterOfTemplate,
+    ISearchFilter,
+    ISearchBatchBody,
+    ISearchEntitiesOfTemplateBody,
+    IGetExpandedEntityBody,
+} from './interface';
 import { IMongoRelationshipTemplate, RelationshipsTemplateManagerService } from '../../externalServices/relationshipTemplateManager';
 import { addDefaultFieldsToTemplate } from '../../utils/addDefaultsFieldsToEntityTemplate';
 
@@ -24,9 +31,10 @@ addFormats(ajv);
 ajv.addVocabulary(['patternCustomErrorMessage', 'hide']);
 ajv.addKeyword({
     keyword: 'dateNotification',
-    type: 'string',
+    type: 'number',
 });
 ajv.addKeyword({ keyword: 'calculateTime', type: 'boolean' });
+ajv.addKeyword({ keyword: 'isDailyAlert', type: 'boolean' });
 ajv.addKeyword({
     keyword: 'serialStarter',
     type: 'number',
@@ -353,9 +361,9 @@ export const validateFilterBatchBody = async (req: Request) => {
     const entityTemplatesForValidationMap: Map<string, IMongoEntityTemplate> = new Map(
         entityTemplates.map((entityTemplate) => [entityTemplate._id, addDefaultFieldsToTemplate(entityTemplate)]),
     );
-    Object.entries(searchBody).forEach(([templateId, {filter}]) => {
-        if(filter){
-            validateFilter(filter, entityTemplatesForValidationMap.get(templateId)!, `filters.${templateId}.filter` )
+    Object.entries(searchBody).forEach(([templateId, { filter }]) => {
+        if (filter) {
+            validateFilter(filter, entityTemplatesForValidationMap.get(templateId)!, `filters.${templateId}.filter`);
         }
     });
     addPropertyToRequest(req, 'entityTemplatesMap', entityTemplatesMap);

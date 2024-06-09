@@ -364,8 +364,18 @@ export default {
             parameters: 'פרמטרים',
             attachments: 'קבצים',
             dragAndDropFile: 'לחץ או גרור להעלאת קובץ',
-            dateNotificationTypes: { day: 'יום לפני', week: 'שבוע לפני', twoWeeks: 'שבועיים לפני' },
+            dateNotificationTypes: {
+                day: 'יום לפני',
+                week: 'שבוע לפני',
+                twoWeeks: 'שבועיים לפני',
+                month: 'חודש לפני',
+                threeMonths: 'שלושה חודשים לפני',
+                halfYear: 'חצי שנה לפני',
+            },
             dateNotification: 'התראה לפני סיום',
+            dailyAlert: 'התראה יומית',
+            customAlert:
+                'התראה יורדת \nתתבצע התראה בתאריך שנבחר ובכל התאריכים הבאים \nלדוגמא נבחר התראה שבוע לפני אז תתבצע התראה שבוע יומיים ויום לפני',
             serialStarter: 'מספר סידורי התחלתי',
         },
         relationshipTemplate: {

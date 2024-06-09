@@ -11,7 +11,6 @@ const config = {
         maxRequestSize: env.get('MAX_REQUEST_BYTE_SIZE').required().asInt(),
         searchEntitiesChunkSize: env.get('SEARCH_ENTITIES_CHUNK_SIZE').default(50).asIntPositive(),
         excelFilePath: env.get('EXCEL_FILE_PATH').default('/usr/src/app').asString(),
-        dateAlertTime: env.get('DATE_ALERT_TIME').default('0 0 * * *').asString(),
     },
     authentication: {
         isRequired: env.get('IS_AUTHENTICATION_REQUIRED').default('true').asBool(),
@@ -158,6 +157,10 @@ const config = {
             maxFiles: env.get('ROTATE_FILE_LOG_MAX_FILES').default('14d').asString(),
             dirname: env.get('ROTATE_FILE_LOG_DIRNAME').default('./logs').asString(),
         },
+    },
+    notifications: {
+        dateAlertOptions: env.get('DATE_NOTIFICATIONS_OPTIONS').default('1, 7, 14, 30, 90, 180').asArray(',').map(Number),
+        dateAlertTime: env.get('DATE_ALERT_TIME').default('0 0 * * *').asString(),
     },
 };
 
