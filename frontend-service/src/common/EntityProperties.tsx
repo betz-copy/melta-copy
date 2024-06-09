@@ -14,7 +14,7 @@ import { getFirstLine, getNumLines, containsHTMLTags, renderHTML } from '../util
 import { CalculateDateDifference } from '../utils/agGrid/CalculateDateDifference';
 import { environment } from '../globals';
 import { RootState } from '../store';
-import { setTextDirection } from './inputs/JSONSchemaFormik/RjsfStringWidget';
+import { getTextDirection } from './inputs/JSONSchemaFormik/RjsfStringWidget';
 
 const { maxNumOfCharactersNotInFullWidth } = environment.entitiesProperties;
 
@@ -131,7 +131,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                     stringFormatValue.length >= maxNumOfCharactersNotInFullWidth;
                 const textDirection =
                     propertySchema.format !== 'text-area'
-                        ? setTextDirection(propertyValue, {
+                        ? getTextDirection(propertyValue, {
                               type: propertySchema.type,
                               serialCurrent: propertySchema.serialCurrent,
                           })

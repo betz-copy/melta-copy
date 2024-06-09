@@ -1,28 +1,26 @@
 /* eslint-disable import/no-extraneous-dependencies */
 /* eslint-disable no-underscore-dangle */
 import React from 'react';
-import { getDisplayLabel, WidgetProps } from '@rjsf/utils';
+import { getDisplayLabel, WidgetProps, RJSFSchema } from '@rjsf/utils';
 import validator from '@rjsf/validator-ajv8';
 import { TextField } from '@mui/material';
 import { convertToPlainText, containsHTMLTags } from '../../../utils/HtmlTagsStringValue';
 
-export const setStringTextDirection = (value: string) => {
-    const uniqueCharsPattern = /^[^a-zA-Zא-ת]+|[^a-zA-Zא-ת]+$/g;
+export const isStartWithHebrewLetter = (value: string) => {
+    const uniqueCharsPattern = /^[^a-zA-Z\u0590-\u05FF]+/g;
     const cleanedStr = value.replace(uniqueCharsPattern, '');
-    const isHebrewLetter = /^[א-ת]/.test(cleanedStr.charAt(0));
-    console.log(isHebrewLetter, value);
+    const isHebrewLetter = /^[\u0590-\u05FF]/.test(cleanedStr.charAt(0));
 
     return isHebrewLetter;
 };
 
-export const setTextDirection = (value: string, schema) => {
+export const getTextDirection = (value: string, schema: RJSFSchema): string => {
     if (schema.type === 'string' && value) {
-        return setStringTextDirection(value) ? 'rtl' : 'ltr';
+        return isStartWithHebrewLetter(value) ? 'rtl' : 'ltr';
     }
 
     if (schema.serialCurrent === undefined) {
-        if (schema.type === 'number' || Boolean(schema.pattern)) return 'ltr';
-        return 'rtl';
+        return schema.type === 'number' || Boolean(schema.pattern) ? 'ltr' : 'rtl';
     }
     return 'ltr';
 };
@@ -91,7 +89,7 @@ const RjsfTextWidget = ({
             onWheel={(e) => {
                 if (inputType === 'number') (e.target as HTMLElement).blur(); // disable number input scroll to change value when focused, but blurring it
             }}
-            dir={setTextDirection(value, schema)}
+            dir={getTextDirection(value, schema)}
         />
     );
 };

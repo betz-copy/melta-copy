@@ -6,7 +6,7 @@ import { ColoredEnumChip } from '../../common/ColoredEnumChip';
 import { VerifyLink } from '../../common/VerifyLink';
 import { getFirstLine, getNumLines, containsHTMLTags, renderHTML } from '../HtmlTagsStringValue';
 import { CalculateDateDifference } from './CalculateDateDifference';
-import { setStringTextDirection } from '../../common/inputs/JSONSchemaFormik/RjsfStringWidget';
+import { isStartWithHebrewLetter } from '../../common/inputs/JSONSchemaFormik/RjsfStringWidget';
 
 const Value: React.FC<{
     hideValue: boolean;
@@ -52,7 +52,7 @@ const Value: React.FC<{
     else if (calculateTime) popoverText = <CalculateDateDifference date={value} />;
     else popoverText = <VerifyLink>{value} </VerifyLink>;
 
-    const textDirection = containsHtmlTags ? true : setStringTextDirection(value);
+    const textDirection = containsHtmlTags ? true : isStartWithHebrewLetter(value);
 
     return (
         <Grid container justifyContent="space-between" alignItems="center">
