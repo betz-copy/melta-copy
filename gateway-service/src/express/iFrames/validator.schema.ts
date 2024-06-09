@@ -7,7 +7,7 @@ const iFrameSchema = Joi.object({
     categoryIds: Joi.array().items(Joi.string()).required(),
     height: Joi.number().default(100),
     width: Joi.number().default(100),
-    placeInSideBar: Joi.boolean(),
+    placeInSideBar: Joi.boolean().default(false),
 });
 
 // GET /api/iFrames/:iFrameId

@@ -7,7 +7,7 @@ class IFrameController {
     }
 
     static async getIFrameById(req: Request, res: Response) {
-        res.json(await IFrameManager.getIFrameById(req.params.iframeId));
+        res.json(await IFrameManager.getIFrameById(req.params.iFrameId));
     }
 
     static async getAllIFrames(_req: Request, res: Response) {
@@ -19,11 +19,11 @@ class IFrameController {
     }
 
     static async deleteIFrame(req: Request, res: Response) {
-        res.json(await IFrameManager.deleteIFrame(req.params.iframeId));
+        res.json(await IFrameManager.deleteIFrame(req.params.iFrameId));
     }
 
     static async updateIFrame(req: Request, res: Response) {
-        res.json(await IFrameManager.updateIFrame(req.params.iframeId, req.body));
+        res.json(await IFrameManager.updateIFrame(req.params.iFrameId, req.body));
     }
 }
 

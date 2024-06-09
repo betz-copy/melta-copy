@@ -1,6 +1,6 @@
 // import lodashIsEqual from 'lodash.isequal';
 import { IMongoEntityTemplatePopulated } from '../../externalServices/entityTemplateService';
-import { IFramesService, IMongoIFrame } from '../../externalServices/iFramesService';
+import { IFrame, IFramesService, IMongoIFrame, ISearchIFramesBody } from '../../externalServices/iFramesService';
 // import { InstanceManagerService } from '../../externalServices/instanceService';
 // import { IRelationshipTemplate, RelationshipsTemplateManagerService } from '../../externalServices/relationshipsTemplateService';
 // import { ServiceError } from '../error';
@@ -17,12 +17,13 @@ export class IFrameManager {
         return filteredIFrame;
     }
 
-    // static async searchIFrames(searchBody: ISearchIFramesBody, permissionsOfUserId: Omit<IPermissionsOfUser, 'user'>) {
-    //     const allowedEntityTemplates = await getAllowedEntityTemplatesForInstances(permissionsOfUserId);
+    static async searchIFrames(searchBody: ISearchIFramesBody, _permissionsOfUserId: Omit<IPermissionsOfUser, 'user'>) {
+        // const allowedEntityTemplates = await getAllowedEntityTemplatesForInstances(permissionsOfUserId);
 
-    //     const iFrames = await IFramesService.searchIFrames(searchBody);
-    //     return iFrames.map((iFrame) => this.filterIFrameWithPermissions(iFrame, allowedEntityTemplates));
-    // }
+        // const iFrames = await IFramesService.searchIFrames(searchBody);
+        // return iFrames.map((iFrame) => this.filterIFrameWithPermissions(iFrame, allowedEntityTemplates));
+        return IFramesService.searchIFrames(searchBody);
+    }
 
     static async getIFrameById(iFrameId: string, permissionsOfUserId: Omit<IPermissionsOfUser, 'user'>) {
         const allowedEntityTemplates = await getAllowedCategoriesForInstances(permissionsOfUserId);
@@ -214,19 +215,19 @@ export class IFrameManager {
     //     });
     // }
 
-    // static async createIFrame(iframe: IFrame) {
-    //     await this.validateTemplatesDataOfIFrame(iframe);
-    //     return IFramesService.createIFrame(iframe);
-    // }
+    static async createIFrame(iframe: IFrame) {
+        // await this.validateTemplatesDataOfIFrame(iframe);
+        return IFramesService.createIFrame(iframe);
+    }
 
-    // static deleteIFrame(iframeId: string) {
-    //     return IFramesService.deleteIFrame(iframeId);
-    // }
+    static deleteIFrame(iframeId: string) {
+        return IFramesService.deleteIFrame(iframeId);
+    }
 
-    // static async updateIFrame(iframeId: string, iframe: IFrame) {
-    //     await this.validateTemplatesDataOfIFrame(iframe);
-    //     return IFramesService.updateIFrame(iframeId, iframe);
-    // }
+    static async updateIFrame(iframeId: string, iframe: IFrame) {
+        // await this.validateTemplatesDataOfIFrame(iframe);
+        return IFramesService.updateIFrame(iframeId, iframe);
+    }
 }
 
 export default IFrameManager;
