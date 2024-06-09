@@ -238,9 +238,7 @@ export const getAllConstraintsRequestSchema = Joi.object({
 export const updateConstraintsOfTemplateRequestSchema = Joi.object({
     body: Joi.object({
         requiredConstraints: Joi.array().items(Joi.string()).required(),
-        uniqueConstraints: Joi.array()
-            .items(Joi.object({ groupName: Joi.string().allow(''), properties: Joi.array().items(Joi.string()) }))
-            .required(),
+        uniqueConstraints: Joi.array().items(Joi.array().items(Joi.string())).required(),
     }),
     query: {},
     params: {

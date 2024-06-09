@@ -37,8 +37,7 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
             required: properties.required.includes(key),
             preview: propertiesPreview.includes(key),
             hide: properties.hide.includes(key),
-            uniqueCheckbox: uniqueConstraints.some((constraint) => constraint.properties.includes(key) && constraint.groupName !== ''),
-            groupName: uniqueConstraints.find((constraint) => constraint.properties.includes(key) && constraint.groupName !== '')?.groupName,
+            unique: type !== 'serialNumber' && uniqueConstraints.filter((constraints) => constraints.includes(key)).length > 0, // serials cant be marked unique
             calculateTime: value.calculateTime ?? undefined,
             type,
             options: value.enum || value.items?.enum || [],
@@ -64,20 +63,21 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
             icon: { file, name: getFileName(iconFileId) },
             properties: propertiesArray,
             attachmentProperties,
-            uniqueConstraints,
         };
     }
 
-    return { ...restOfEntityTemplate, properties: propertiesArray, attachmentProperties, uniqueConstraints };
+    return { ...restOfEntityTemplate, properties: propertiesArray, attachmentProperties };
 };
 
 export const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTemplate => {
     // change to support file types
     const { properties, attachmentProperties, propertiesTypeOrder, ...restOfProperties } = values;
     const serialsUniqueConstraints: string[][] = [];
+
     const propertiesOrder: string[] = [];
     const attachmentPropertiesOrder: string[] = [];
     const propertiesPreview: string[] = [];
+    const uniqueConstraint: string[] = []; // UI supports only single unique constraint
     const schema: IEntityTemplate['properties'] = {
         type: 'object',
         properties: {},
@@ -103,6 +103,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTem
             calculateTime,
             serialStarter,
             hide,
+            unique,
         }) => {
             let propertyType: IEntitySingleProperty['type'];
             switch (type) {
@@ -142,6 +143,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTem
 
             if (required) schema.required.push(name);
             if (hide) schema.hide.push(name);
+            if (unique) uniqueConstraint.push(name);
             if (preview) propertiesPreview.push(name);
             if (type === 'serialNumber') serialsUniqueConstraints.push([name]);
             if (type === 'enum' || type === 'enumArray') {
@@ -179,6 +181,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTem
 
         if (required) schema.required.push(name);
     });
+    const uniqueConstraints = uniqueConstraint.length > 0 ? [uniqueConstraint, ...serialsUniqueConstraints] : serialsUniqueConstraints;
 
     return {
         ...restOfProperties,
@@ -191,7 +194,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTem
         propertiesTypeOrder,
         propertiesPreview,
         enumPropertiesColors,
-        uniqueConstraints: restOfProperties.uniqueConstraints || [],
+        uniqueConstraints,
     };
 };
 
@@ -215,10 +218,6 @@ const createEntityTemplateRequest = async (newEntityTemplate: EntityTemplateWiza
     formData.append('propertiesOrder', JSON.stringify(entityTemplate.propertiesOrder));
     formData.append('propertiesTypeOrder', JSON.stringify(entityTemplate.propertiesTypeOrder));
     formData.append('propertiesPreview', JSON.stringify(entityTemplate.propertiesPreview));
-    // const uniqueConstraints = entityTemplate.uniqueConstraints.map((constraint) => ({
-    //     groupName: constraint.groupName,
-    //     properties: constraint.properties,
-    // }));
     formData.append('uniqueConstraints', JSON.stringify(entityTemplate.uniqueConstraints));
 
     const { data } = await axios.post<IMongoEntityTemplatePopulated>(entityTemplates, formData);
@@ -257,10 +256,6 @@ const updateEntityTemplateRequest = async (entityTemplateId: string, updatedEnti
     formData.append('propertiesOrder', JSON.stringify(entityTemplate.propertiesOrder));
     formData.append('propertiesTypeOrder', JSON.stringify(entityTemplate.propertiesTypeOrder));
     formData.append('propertiesPreview', JSON.stringify(entityTemplate.propertiesPreview));
-    // const uniqueConstraints = entityTemplate.uniqueConstraints.map((constraint) => ({
-    //     groupName: constraint.groupName,
-    //     properties: constraint.properties,
-    // }));
     formData.append('uniqueConstraints', JSON.stringify(entityTemplate.uniqueConstraints));
     const { data } = await axios.put<IMongoEntityTemplatePopulated>(`${entityTemplates}/${entityTemplateId}`, formData);
     return data;

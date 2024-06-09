@@ -16,7 +16,6 @@ import {
     ISearchFilter,
     ISearchBatchBody,
     ISearchEntitiesOfTemplateBody,
-    IUniqueConstraintOfTemplate,
     IGetExpandedEntityBody,
 } from './interface';
 import { IMongoRelationshipTemplate, RelationshipsTemplateManagerService } from '../../externalServices/relationshipTemplateManager';
@@ -123,7 +122,7 @@ export const validateConstraintsOfTemplate = async (req: Request) => {
     const { properties } = await getEntityTemplateByIdOrThrowValidationError(req.params.templateId);
     const propertiesKeys = Object.keys(properties.properties);
 
-    const { requiredConstraints, uniqueConstraints }: { requiredConstraints: string[]; uniqueConstraints: IUniqueConstraintOfTemplate[] } = req.body;
+    const { requiredConstraints, uniqueConstraints }: { requiredConstraints: string[]; uniqueConstraints: string[][] } = req.body;
 
     requiredConstraints.forEach((constraintProp) => {
         const isConstraintPropertyUnknown = !propertiesKeys.includes(constraintProp);
@@ -132,7 +131,7 @@ export const validateConstraintsOfTemplate = async (req: Request) => {
         }
     });
     uniqueConstraints.forEach((constraintProps) => {
-        const unknownPropertyInConstraint = constraintProps.properties.find((property) => !propertiesKeys.includes(property));
+        const unknownPropertyInConstraint = constraintProps.find((property) => !propertiesKeys.includes(property));
         if (unknownPropertyInConstraint) {
             throw new ValidationError(
                 `unique constraint of ${constraintProps} contains unknown property "${unknownPropertyInConstraint}" in template`,
@@ -141,7 +140,7 @@ export const validateConstraintsOfTemplate = async (req: Request) => {
     });
 
     uniqueConstraints.forEach((uniqueConstraint) => {
-        const uniqueConstraintPropertyThatIsNotInRequired = uniqueConstraint.properties.find((property) => !requiredConstraints.includes(property));
+        const uniqueConstraintPropertyThatIsNotInRequired = uniqueConstraint.find((property) => !requiredConstraints.includes(property));
 
         if (uniqueConstraintPropertyThatIsNotInRequired) {
             // because neo4j 4.0 supports unique constraints but makes them required too
