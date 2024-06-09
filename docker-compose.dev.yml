@@ -5,14 +5,14 @@ services:
   #*   Service infrastructure dependencies:   #
   #-------------------------------------------#
   mongo:
-    image: mongo:5.0.11
+    image: mongo:4.4.1
     restart: always
     entrypoint: ['/usr/bin/mongod', '--bind_ip_all', '--replSet', 'rs0']
     ports:
       - 27017:27017
 
   mongosetup:
-    image: mongo:5.0.11
+    image: mongo:4.4.1
     depends_on:
       - mongo
     volumes:
@@ -142,7 +142,7 @@ services:
       STORAGE_SERVICE_URL: ${STORAGE_SERVICE_URL}
       GANTT_SERVICE_URL: ${GANTT_SERVICE_URL}
       PERMISSION_SERVICE_MANAGERS_KARTOFFEL_IDS: 5e5688324203fc40043591aa,61d37cb5e4de0300121e31ef
-      PROCESS_SERVICE_REVIEWERS_KARTOFFEL_IDS: 5e5688d54203fc40043591ac,626e4e5be8e4d7001101b794,5ebbd53f64fe6f2b1c5777ae
+      PROCESS_SERVICE_REVIEWERS_KARTOFFEL_IDS: 5e5688d54203fc40043591ac,5e5689514203fc40043591ae,6618026a26928782bb9c16ca
     depends_on:
       - neo4j
       - entity-template-service

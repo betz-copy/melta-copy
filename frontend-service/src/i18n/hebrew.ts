@@ -118,6 +118,7 @@ export default {
             chooseRelationship: 'בחירת קשרים',
             printOptions: 'הגדרות הדפסה',
         },
+        previewRefetch: 'קובץ בתהליך עיבוד, נסה שוב מאוחר יותר',
     },
     categoryPage: {
         disabledTemplate: 'תבנית לא פעילה',
@@ -130,11 +131,12 @@ export default {
         noPermissions: 'אין לך הרשאות לגשת לעמוד זה',
         disabledEntity: 'ישות לא פעילה',
         activeEntity: ' פעיל',
-        preview: 'תצוגה מקדימה אינה זמינה',
+        preview: 'קובץ לא נתמך לתצוגה מקדימה',
         fileDownloadError: 'נכשל להוריד קובץ, נסה שנית או פנה לתמיכה',
         duplicateValue: 'ערך זה כבר קיים',
         deleteFieldValue: 'לא ניתן למחוק ערך בשימוש',
         updateEnumField: 'לא ניתן לעדכן ערך זה',
+        previewLoadingError: 'שגיאה בטעינת הקובץ',
     },
     addRelationshipDialog: {
         title: 'הוסף קשר',
@@ -301,6 +303,7 @@ export default {
             approximately: 'כ-',
             results: 'תוצאות',
         },
+        previewRefetch: 'קובץ בתהליך עיבוד, נסה שוב בעוד מספר רגעים',
     },
     globalSearch: {
         searchLabel: 'חיפוש ישויות...',
@@ -361,8 +364,18 @@ export default {
             parameters: 'פרמטרים',
             attachments: 'קבצים',
             dragAndDropFile: 'לחץ או גרור להעלאת קובץ',
-            dateNotificationTypes: { day: 'יום לפני', week: 'שבוע לפני', twoWeeks: 'שבועיים לפני' },
+            dateNotificationTypes: {
+                day: 'יום לפני',
+                week: 'שבוע לפני',
+                twoWeeks: 'שבועיים לפני',
+                month: 'חודש לפני',
+                threeMonths: 'שלושה חודשים לפני',
+                halfYear: 'חצי שנה לפני',
+            },
             dateNotification: 'התראה לפני סיום',
+            dailyAlert: 'התראה יומית',
+            customAlert:
+                'התראה יורדת \nתתבצע התראה בתאריך שנבחר ובכל התאריכים הבאים \nלדוגמא נבחר התראה שבוע לפני אז תתבצע התראה שבוע יומיים ויום לפני',
             serialStarter: 'מספר סידורי התחלתי',
         },
         relationshipTemplate: {

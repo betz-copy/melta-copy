@@ -1,4 +1,5 @@
 import * as minio from 'minio';
+import { Readable } from 'stream';
 import logger from '../logger/logsLogger';
 
 export class MinIOClient {
@@ -24,6 +25,10 @@ export class MinIOClient {
 
     downloadFileStream(filePath: string) {
         return this.minioClient.getObject(this.bucketName, filePath);
+    }
+
+    async uploadFileStream(filePath: Readable, objectName: string, metaData = {}) {
+        return this.minioClient.putObject(this.bucketName, objectName, filePath, metaData);
     }
 
     statFile(filePath: string) {
