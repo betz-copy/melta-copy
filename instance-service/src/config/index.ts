@@ -54,6 +54,9 @@ const config = {
     createdRelationshipIdInBrokenRules: env.get('CREATED_RELATIONSHIP_ID_IN_BROKEN_RULES').default('created-relationship-id').asString(),
     uniqueConstraintsPrefixName: env.get('UNIQUE_CONSTRAINTS_PREFIX_NAME').default('uniqueConstraint').asString(),
     requiredConstraintsPrefixName: env.get('REQUIRED_CONSTRAINTS_PREFIX_NAME').default('requiredConstraint').asString(),
+    requiredConstraint: env.get('REQUIRED_CONSTRAINT').default('requiredConstraint').asString(),
+    uniqueConstraint: env.get('UNIQUE_CONSTRAINT').default('uniqueConstraint').asString(),
+
     constraintsNameDelimiter: env.get('CONSTRAINTS_NAME_DELIMITER').default('-').asString(), // default "-" because template properties cant have "-" chars (variableName format validation)
     searchEntitiesMaxLimit: env.get('SEARCH_ENTITIES_MAX_LIMIT').default(10000).asIntPositive(),
     logs: {

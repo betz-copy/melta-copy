@@ -174,20 +174,6 @@ export class EntityManager {
         return node;
     }
 
-    // static async getExpandedEntityById(id: string, disabled: boolean | null, templateIds: string[], numOfConnections: number) {
-    //     const nodeAndConnections = await Neo4jClient.readTransaction(
-    //         `MATCH (p {_id:'${id}'})
-    //          CALL apoc.path.expandConfig(p, {
-    //             labelFilter: '${templateIds.join('|')}',
-    //             minLevel: 0,
-    //             maxLevel: ${numOfConnections}
-    //          })
-    //          YIELD path
-    //          RETURN apoc.path.elements(path)`,
-    //         normalizeReturnedRelAndEntities(disabled),
-    //     );
-    // }
-
     static async getExpandedGraphById(id: string, reqBody: IGetExpandedEntityBody, entityTemplatesMap: Map<string, IMongoEntityTemplate>) {
         const { disabled, templateIds, expandedParams, filters } = reqBody;
         const fixSearchBody = filters ?? {};
@@ -484,11 +470,11 @@ export class EntityManager {
     }
 
     private static getConstraintFromName(constraintName: string): IConstraint {
-        if (constraintName.startsWith('requiredConstraint')) {
+        if (constraintName.startsWith(config.requiredConstraint)) {
             const [_constraintTypePrefix, constraintTemplateId, property] = constraintName.split(config.constraintsNameDelimiter);
             return { constraintName, type: 'REQUIRED', templateId: constraintTemplateId, property };
         }
-        if (constraintName.startsWith('uniqueConstraint')) {
+        if (constraintName.startsWith(config.uniqueConstraint)) {
             const [_constraintTypePrefix, groupName, constraintTemplateId, propertiesStr] = constraintName.split(config.constraintsNameDelimiter);
             const properties = propertiesStr.split(',');
             return { constraintName, type: 'UNIQUE', templateId: constraintTemplateId, uniqueGroupName: groupName, properties };
