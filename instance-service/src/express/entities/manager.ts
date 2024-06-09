@@ -175,6 +175,7 @@ export class EntityManager {
 
         return node;
     }
+
     static async getExpandedEntityById(id: string, disabled: boolean | null, templateIds: string[], numOfConnections: number) {
         const nodeAndConnections = await Neo4jClient.readTransaction(
             `MATCH (p {_id:'${id}'})

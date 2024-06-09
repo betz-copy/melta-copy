@@ -15,7 +15,7 @@ import { EntityWizardValues } from '.';
 import { JSONSchemaFormik, ajvValidate } from '../../inputs/JSONSchemaFormik';
 import { BlueTitle } from '../../BlueTitle';
 import { filterAttachmentsAndEntitiesRefFromPropertiesSchema } from '../../../utils/pickFieldsPropertiesSchema';
-import { IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
+import { IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
 import { environment } from '../../../globals';
 import { toastConstraintValidationError } from './toastConstraintValidationError';
 import { InstanceFileInput } from '../../inputs/InstanceFilesInput/InstanceFileInput';
@@ -46,7 +46,10 @@ const CreateOrEditEntityDetails: React.FC<{
     const [updateWithRuleBreachDialogState, setUpdateWithRuleBreachDialogState] = useState<{
         isOpen: boolean;
         brokenRules?: IRuleBreachPopulated['brokenRules'];
-        rawBrokenRules?: IRuleBreach['brokenRules'];
+        rawBrokenRules?: {
+            ruleId: string;
+            relationshipIds: string[];
+        }[];
         updateEntityFormData?: EntityWizardValues;
     }>({ isOpen: false });
 
@@ -66,8 +69,16 @@ const CreateOrEditEntityDetails: React.FC<{
     });
     const fileProperties = fileIdsProperties;
     const { isLoading: isUpdateLoading, mutateAsync: updateMutation } = useMutation(
-        ({ newEntityData, ignoredRules }: { newEntityData: EntityWizardValues; ignoredRules?: IRuleBreach['brokenRules'] }) =>
-            updateEntityRequestForMultiple(entity.properties._id, newEntityData, ignoredRules),
+        ({
+            newEntityData,
+            ignoredRules,
+        }: {
+            newEntityData: EntityWizardValues;
+            ignoredRules?: {
+                ruleId: string;
+                relationshipIds: string[];
+            }[];
+        }) => updateEntityRequestForMultiple(entity.properties._id, newEntityData, ignoredRules),
         {
             onSuccess: (data) => {
                 toast.success(i18next.t('wizard.entity.editedSuccefully'));

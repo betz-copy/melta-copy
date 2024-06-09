@@ -54,7 +54,7 @@ export class InstancesManager {
         });
 
         Object.keys(filesToUpload).forEach((key) => {
-            if (props?.[key] != undefined) {
+            if (props?.[key] !== undefined) {
                 if (Array.isArray(props[key])) {
                     props[key] = [...props[key], ...filesToUpload[key]];
                 } else {
@@ -205,11 +205,15 @@ export class InstancesManager {
             await RuleBreachesManager.createRuleBreachAlert<IUpdateEntityStatusMetadata>(
                 {
                     brokenRules: ignoredRules,
-                    actionType: ActionTypes.UpdateStatus,
-                    actionMetadata: {
-                        entityId: id,
-                        disabled: disabledStatus,
-                    },
+                    actions: [
+                        {
+                            actionType: ActionTypes.UpdateStatus,
+                            actionMetadata: {
+                                entityId: id,
+                                disabled: disabledStatus,
+                            },
+                        },
+                    ],
                 },
                 userId,
             );
@@ -324,12 +328,16 @@ export class InstancesManager {
             await RuleBreachesManager.createRuleBreachAlert<IUpdateEntityMetadata>(
                 {
                     brokenRules: ignoredRules,
-                    actionType: ActionTypes.UpdateEntity,
-                    actionMetadata: {
-                        entityId: id,
-                        before: currentEntity.properties,
-                        updatedFields,
-                    },
+                    actions: [
+                        {
+                            actionType: ActionTypes.UpdateEntity,
+                            actionMetadata: {
+                                entityId: id,
+                                before: currentEntity.properties,
+                                updatedFields,
+                            },
+                        },
+                    ],
                 },
                 userId,
             );
@@ -382,12 +390,16 @@ export class InstancesManager {
             await RuleBreachesManager.createRuleBreachAlert<ICreateRelationshipMetadata>(
                 {
                     brokenRules: ignoredRules,
-                    actionType: ActionTypes.CreateRelationship,
-                    actionMetadata: {
-                        relationshipTemplateId: relationship.templateId,
-                        sourceEntityId: relationship.sourceEntityId,
-                        destinationEntityId: relationship.destinationEntityId,
-                    },
+                    actions: [
+                        {
+                            actionType: ActionTypes.CreateRelationship,
+                            actionMetadata: {
+                                relationshipTemplateId: relationship.templateId,
+                                sourceEntityId: relationship.sourceEntityId,
+                                destinationEntityId: relationship.destinationEntityId,
+                            },
+                        },
+                    ],
                 },
                 userId,
             );
@@ -426,13 +438,17 @@ export class InstancesManager {
             await RuleBreachesManager.createRuleBreachAlert<IDeleteRelationshipMetadata>(
                 {
                     brokenRules: ignoredRules,
-                    actionType: ActionTypes.DeleteRelationship,
-                    actionMetadata: {
-                        relationshipTemplateId: relationship.templateId,
-                        relationshipId: relationship.properties._id,
-                        sourceEntityId: relationship.sourceEntityId,
-                        destinationEntityId: relationship.destinationEntityId,
-                    },
+                    actions: [
+                        {
+                            actionType: ActionTypes.DeleteRelationship,
+                            actionMetadata: {
+                                relationshipTemplateId: relationship.templateId,
+                                relationshipId: relationship.properties._id,
+                                sourceEntityId: relationship.sourceEntityId,
+                                destinationEntityId: relationship.destinationEntityId,
+                            },
+                        },
+                    ],
                 },
                 userId,
             );

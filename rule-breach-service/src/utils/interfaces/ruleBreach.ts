@@ -5,10 +5,14 @@ export interface IBrokenRule {
     relationshipIds: string[];
 }
 
-export interface IRuleBreach {
-    originUserId: string;
-    brokenRules: IBrokenRule[];
+export interface IAction {
     actionType: ActionTypes;
     actionMetadata: IActionMetadata;
+}
+
+export interface IRuleBreach {
+    originUserId: string;
+    actions: IAction[];
+    brokenRules: IBrokenRule[];
     createdAt: Date;
 }

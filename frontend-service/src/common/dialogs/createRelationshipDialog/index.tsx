@@ -17,7 +17,7 @@ import { trycatch } from '../../../utils/trycatch';
 import { createRelationshipRequest } from '../../../services/relationshipsService';
 import { IRelationship } from '../../../interfaces/relationships';
 import { ErrorToast } from '../../ErrorToast';
-import { IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
+import { IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
 import { ICreateRelationshipMetadataPopulated } from '../../../interfaces/ruleBreaches/actionMetadata';
 import CreateWithRuleBreachDialog from './CreateWithRuleBreachDialog';
 import { RootState } from '../../../store';
@@ -181,7 +181,10 @@ interface ICreateRelationshipBodyPopulated {
         sourceEntity: IEntity;
         destinationEntity: IEntity;
     };
-    rawBrokenRules?: IRuleBreach['brokenRules'];
+    rawBrokenRules?: {
+        ruleId: string;
+        relationshipIds: string[];
+    }[];
 }
 
 const CreateRelationshipDialog: React.FC<{
@@ -197,7 +200,10 @@ const CreateRelationshipDialog: React.FC<{
     const [createWithRuleBreachDialogState, setCreateWithRuleBreachDialogState] = useState<{
         isOpen: boolean;
         brokenRules?: IRuleBreachPopulated['brokenRules'];
-        rawBrokenRules?: IRuleBreach['brokenRules'];
+        rawBrokenRules?: {
+            ruleId: string;
+            relationshipIds: string[];
+        }[];
         actionMetadata?: ICreateRelationshipMetadataPopulated;
     }>({ isOpen: false });
 

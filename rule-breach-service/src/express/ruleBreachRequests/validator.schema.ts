@@ -40,11 +40,13 @@ export const updateRuleBreachRequestStatusRequestSchema = joi.object({
 export const updateRuleBreachRequestActionMetadataRequestSchema = joi.object({
     query: {},
     body: {
-        actionType: joi
-            .string()
-            .valid(...Object.values(ActionTypes))
-            .required(),
-        actionMetadata: joi.custom(validateActionMetadata).required(),
+        actions: joi.array().items({
+            actionType: joi
+                .string()
+                .valid(...Object.values(ActionTypes))
+                .required(),
+            actionMetadata: joi.custom(validateActionMetadata).required(),
+        }),
     },
     params: {
         ruleBreachRequestId: mongoIdSchema.required(),

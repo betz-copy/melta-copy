@@ -234,7 +234,7 @@ export class RelationshipManager {
                 } catch (error) {
                     if (error instanceof ServiceError && (error.metadata as any).errorCode === config.errorCodes.ruleBlock) {
                         results.push((error.metadata as any).brokenRules as IBrokenRule[]);
-                        brokenRules.push(...((error.metadata as any).brokenRules as IBrokenRule[]));
+                        brokenRules.push(...((error.metadata as any).brokenRules as IBrokenRule[])); // TODO - broken rules array foreach action
                     }
                 }
             }

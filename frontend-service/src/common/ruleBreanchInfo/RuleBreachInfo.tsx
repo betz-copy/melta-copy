@@ -1,5 +1,6 @@
 import React from 'react';
-import { Grid } from '@mui/material';
+import { Grid, Typography } from '@mui/material';
+import i18next from 'i18next';
 import { ActionTypes, IActionMetadataPopulated } from '../../interfaces/ruleBreaches/actionMetadata';
 import { IRuleBreachPopulated } from '../../interfaces/ruleBreaches/ruleBreach';
 import { ActionInfo } from './ActionInfo';
@@ -9,20 +10,53 @@ import { IUser } from '../../services/kartoffelService';
 const RuleBreachInfo: React.FC<{
     originUser?: IUser;
     brokenRules: IRuleBreachPopulated['brokenRules'];
-    actionType: ActionTypes;
-    actionMetadata: IActionMetadataPopulated;
+    actions: {
+        actionType: ActionTypes;
+        actionMetadata: IActionMetadataPopulated;
+    }[];
     isCompact: boolean;
-}> = ({ originUser, brokenRules, actionType, actionMetadata, isCompact }) => {
+}> = ({ originUser, brokenRules, actions, isCompact }) => {
     return (
         <Grid container direction="column" spacing={1}>
             <Grid item>
-                <ActionInfo originUser={originUser} actionType={actionType} actionMetadata={actionMetadata} isCompact={isCompact} />
+                {actions.length > 1 && (
+                    <Typography variant="body1" sx={{ textDecoration: 'underline' }}>{`${actions.length} ${i18next.t(
+                        'ruleBreachInfo.actionsBrokeTheFollowingRules',
+                    )}:`}</Typography>
+                )}
+                {actions.length === 1 && (
+                    <Typography variant="body1" sx={{ textDecoration: 'underline' }}>{`${i18next.t(
+                        'ruleBreachInfo.actionBrokeTheFollowingRules',
+                    )}:`}</Typography>
+                )}
             </Grid>
+            {actions.map((action, index) => {
+                return (
+                    // eslint-disable-next-line react/no-array-index-key
+                    <Grid item container key={index} borderBottom={actions.length > 1 ? 0.2 : 0} spacing={2}>
+                        {actions.length > 1 && (
+                            <Grid item>
+                                <Typography sx={{ textDecoration: 'underline' }}>{index + 1}</Typography>
+                            </Grid>
+                        )}
+
+                        <Grid item>
+                            <ActionInfo
+                                originUser={originUser}
+                                actionType={action.actionType}
+                                actionMetadata={action.actionMetadata}
+                                isCompact={isCompact}
+                            />
+                        </Grid>
+                    </Grid>
+                );
+            })}
             <Grid item>
-                <BrokenRulesInfo brokenRules={brokenRules} actionMetadata={actionMetadata} isCompact={isCompact} />
+                <BrokenRulesInfo brokenRules={brokenRules} actionMetadata={actions[0].actionMetadata} isCompact={isCompact} />
             </Grid>
         </Grid>
     );
 };
 
+// TODO - actionMetadata={actions[0].actionMetadata}...
 export default RuleBreachInfo;

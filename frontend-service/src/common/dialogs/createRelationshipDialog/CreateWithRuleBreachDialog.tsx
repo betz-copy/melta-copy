@@ -39,12 +39,16 @@ const CreateWithRuleBreachDialog: React.FC<{
         () => {
             return createRuleBreachRequestRequest({
                 brokenRules: rawBrokenRules,
-                actionType: ActionTypes.CreateRelationship,
-                actionMetadata: {
-                    relationshipTemplateId: actionMetadata.relationshipTemplateId,
-                    sourceEntityId: actionMetadata.sourceEntity!.properties._id,
-                    destinationEntityId: actionMetadata.destinationEntity!.properties._id,
-                } as ICreateRelationshipMetadata,
+                actions: [
+                    {
+                        actionType: ActionTypes.CreateRelationship,
+                        actionMetadata: {
+                            relationshipTemplateId: actionMetadata.relationshipTemplateId,
+                            sourceEntityId: actionMetadata.sourceEntity!.properties._id,
+                            destinationEntityId: actionMetadata.destinationEntity!.properties._id,
+                        } as ICreateRelationshipMetadata,
+                    },
+                ],
             });
         },
         {

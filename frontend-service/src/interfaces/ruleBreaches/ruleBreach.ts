@@ -5,12 +5,14 @@ import { ActionTypes, IActionMetadata, IActionMetadataPopulated } from './action
 export interface IRuleBreach {
     _id: string;
     originUserId: string;
+    actions: {
+        actionType: ActionTypes;
+        actionMetadata: IActionMetadata;
+    }[];
     brokenRules: {
         ruleId: string;
         relationshipIds: string[];
     }[];
-    actionType: ActionTypes;
-    actionMetadata: IActionMetadata;
     createdAt: Date;
 }
 
@@ -21,8 +23,10 @@ export interface IRuleBreachPopulated {
         ruleId: string;
         relationships: (IRelationshipPopulated | string | null)[];
     }[];
-    actionType: ActionTypes;
-    actionMetadata: IActionMetadataPopulated;
+    actions: {
+        actionType: ActionTypes;
+        actionMetadata: IActionMetadataPopulated;
+    }[];
     createdAt: Date;
 }
 

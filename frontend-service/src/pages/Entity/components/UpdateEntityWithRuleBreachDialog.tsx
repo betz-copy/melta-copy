@@ -75,11 +75,15 @@ const UpdateEntityWithRuleBreachDialog: React.FC<{
             return createRuleBreachRequestRequest(
                 {
                     brokenRules: rawBrokenRules,
-                    actionType: ActionTypes.UpdateEntity,
-                    actionMetadata: {
-                        entityId: actionMetadata.entity!.properties._id,
-                        updatedFields: actionMetadata.updatedFields,
-                    } as IUpdateEntityMetadata,
+                    actions: [
+                        {
+                            actionType: ActionTypes.UpdateEntity,
+                            actionMetadata: {
+                                entityId: actionMetadata.entity!.properties._id,
+                                updatedFields: actionMetadata.updatedFields,
+                            } as IUpdateEntityMetadata,
+                        },
+                    ],
                 },
                 updateEntityFormData.attachmentsProperties,
             );

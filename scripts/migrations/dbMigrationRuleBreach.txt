@@ -1,0 +1,86 @@
+########################### not in use!! ########################### 
+
+// db["rule-breach-requests"].updateMany({}, {$unset: {actionMetadata: 1}})
+
+const fieldsToMove: string[] = ['actionMetadata', 'actionType'];
+
+console.log('before');
+// TODO - here - run script of fix rules documents...
+
+// TODO - also on rule alerts...
+// const docs = await RuleBreachAlertsModel.find({}).lean();
+
+console.log('after');
+
+const promises: any[] = [];
+
+docs.forEach((doc) => {
+    // Check if the document has field A
+    if (!doc.hasOwnProperty('actions')) {
+        // Create a new field A as an array
+        doc.actions = [];
+
+        // Create a new object with fields b, c and add it to the array A
+        let obj = {};
+
+        console.log(doc[fieldsToMove[1]]);
+
+        fieldsToMove.forEach((field) => {
+            if (doc.hasOwnProperty(field)) {
+                obj[field] = doc[field];
+                delete doc[field]; // Remove the field from its original place
+            }
+        });
+        doc.actions.push(obj as IAction);
+
+        // Update the document in the collection
+        promises.push(RuleBreachAlertsModel.updateOne({_id: doc._id}, {$set: doc}));
+    }
+});
+
+
+########################### rule-breach-requests ############################
+
+const fieldsToMove = ['actionMetadata', 'actionType'];
+
+db["rule-breach-requests"].find({}).forEach(doc => {
+  if (!doc.hasOwnProperty('actions')) {
+    doc.actions = [];
+    let obj = {};
+    fieldsToMove.forEach((field) => {
+            if (doc.hasOwnProperty(field)) {
+                obj[field] = doc[field];
+                delete doc[field];
+            }
+    });
+    doc.actions.push(obj);
+    db["rule-breach-requests"].updateOne({_id: doc._id}, {
+      $set: doc,
+      $unset: {actionMetadata: 1, actionType: 1}
+    });
+    }
+  
+});
+
+########################### rule-breach-alerts ############################
+
+const fieldsToMove = ['actionMetadata', 'actionType'];
+
+db["rule-breach-alerts"].find({}).forEach(doc => {
+  if (!doc.hasOwnProperty('actions')) {
+    doc.actions = [];
+    let obj = {};
+    fieldsToMove.forEach((field) => {
+            if (doc.hasOwnProperty(field)) {
+                obj[field] = doc[field];
+                delete doc[field];
+            }
+    });
+    doc.actions.push(obj);
+    db["rule-breach-alerts"].updateOne({_id: doc._id}, {
+      $set: doc,
+      $unset: {actionMetadata: 1, actionType: 1}
+    });
+    }
+  
+});

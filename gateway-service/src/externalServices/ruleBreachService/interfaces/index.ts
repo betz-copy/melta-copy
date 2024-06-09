@@ -37,9 +37,11 @@ export interface IBrokenRule {
 
 export interface IRuleBreach<T = IActionMetadata> {
     originUserId: string;
-    brokenRules: IBrokenRule[];
-    actionType: ActionTypes;
-    actionMetadata: T;
+    actions: {
+        actionType: ActionTypes;
+        actionMetadata: T;
+    }[];
+    brokenRules: IBrokenRule[]; // TODO - heree - this is the right way!
     createdAt: Date;
     _id: string;
 }
@@ -58,11 +60,7 @@ export interface IRuleBreachRequest<T = IActionMetadata> extends IRuleBreach<T> 
     status: RuleBreachRequestStatus;
 }
 
-export const isCreateRelationshipRuleBreach = (ruleBreach: Partial<IRuleBreach>): ruleBreach is IRuleBreach<ICreateRelationshipMetadata> =>
-    ruleBreach.actionType === ActionTypes.CreateRelationship;
-export const isDeleteRelationshipRuleBreach = (ruleBreach: Partial<IRuleBreach>): ruleBreach is IRuleBreach<IDeleteRelationshipMetadata> =>
-    ruleBreach.actionType === ActionTypes.DeleteRelationship;
-export const isUpdateEntityRuleBreach = (ruleBreach: Partial<IRuleBreach>): ruleBreach is IRuleBreach<IUpdateEntityMetadata> =>
-    ruleBreach.actionType === ActionTypes.UpdateEntity;
-export const isUpdateEntityStatusRuleBreach = (ruleBreach: Partial<IRuleBreach>): ruleBreach is IRuleBreach<IUpdateEntityStatusMetadata> =>
-    ruleBreach.actionType === ActionTypes.UpdateStatus;
+export const isCreateRelationshipRuleBreach = (actionType: ActionTypes) => actionType === ActionTypes.CreateRelationship;
+export const isDeleteRelationshipRuleBreach = (actionType: ActionTypes) => actionType === ActionTypes.DeleteRelationship;
+export const isUpdateEntityRuleBreach = (actionType: ActionTypes) => actionType === ActionTypes.UpdateEntity;
+export const isUpdateEntityStatusRuleBreach = (actionType: ActionTypes) => actionType === ActionTypes.UpdateStatus;

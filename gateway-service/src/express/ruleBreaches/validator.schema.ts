@@ -8,8 +8,12 @@ export const brokenRuleSchema = joi.object({
 
 const ruleBreachSchema = joi.object({
     brokenRules: ExtendedJoi.stringToArray().items(brokenRuleSchema).min(1).required(),
-    actionType: joi.string().required(),
-    actionMetadata: ExtendedJoi.stringToObject().required(),
+    actions: ExtendedJoi.stringToArray().items(
+        joi.object({
+            actionType: joi.string().required(),
+            actionMetadata: joi.object().required(),
+        }),
+    ),
 });
 
 const agGridRequestSchema = joi.object({

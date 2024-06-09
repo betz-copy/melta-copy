@@ -235,23 +235,25 @@ export const getUpdateEntityStatusActionInfo = async ({ entity, disabled }: IUpd
     );
 };
 
-export const getActionInfoMessage = async (
+export const getActionsInfoMessages = async (
     ruleBreach: IRuleBreachAlertPopulated<IActionMetadataPopulated> | IRuleBreachRequestPopulated<IActionMetadataPopulated>,
 ) => {
-    if (ruleBreach.actionType === ActionTypes.CreateRelationship || ruleBreach.actionType === ActionTypes.DeleteRelationship) {
-        return getCreateOrDeleteRelActionInfo(
-            ruleBreach.actionType,
-            ruleBreach.actionMetadata as ICreateRelationshipMetadataPopulated | IDeleteRelationshipMetadataPopulated,
-        );
-    }
-    if (ruleBreach.actionType === ActionTypes.UpdateEntity) {
-        return getUpdateEntityActionInfo(ruleBreach.actionMetadata as IUpdateEntityMetadataPopulated);
-    }
+    return ruleBreach.actions.map((action) => {
+        if (action.actionType === ActionTypes.CreateRelationship || action.actionType === ActionTypes.DeleteRelationship) {
+            return getCreateOrDeleteRelActionInfo(
+                action.actionType,
+                action.actionMetadata as ICreateRelationshipMetadataPopulated | IDeleteRelationshipMetadataPopulated,
+            );
+        }
+        if (action.actionType === ActionTypes.UpdateEntity) {
+            return getUpdateEntityActionInfo(action.actionMetadata as IUpdateEntityMetadataPopulated);
+        }
 
-    if (ruleBreach.actionType === ActionTypes.UpdateStatus) {
-        return getUpdateEntityStatusActionInfo(ruleBreach.actionMetadata as IUpdateEntityStatusMetadataPopulated);
-    }
-    return null;
+        if (action.actionType === ActionTypes.UpdateStatus) {
+            return getUpdateEntityStatusActionInfo(action.actionMetadata as IUpdateEntityStatusMetadataPopulated);
+        }
+        return null;
+    });
 };
 
 const ruleBreachBodyMassage = async (
@@ -263,7 +265,7 @@ const ruleBreachBodyMassage = async (
 ) => {
     return (
         <>
-            {await getActionInfoMessage(ruleBreach)}
+            {await getActionsInfoMessages(ruleBreach)}
             <p>
                 {hebrew.ruleBreach.by}
                 <strong>{ruleBreach.originUser.fullName}</strong>

@@ -58,7 +58,7 @@ const OverflowWrapper = <T extends any>({ items, renderItem, getItemKey, contain
     let overflowItems = items.length > visibleItems.length ? items.slice(visibleItems.length) : [];
     if (files && files.length > 0) {
         overflowItems = items.length > visibleItems.length ? files.slice(visibleItems.length) : [];
-    }    
+    }
     return (
         <Grid ref={containerRef} container wrap="wrap" alignItems="center" justifyItems="center" gap={`${itemsGap}px`} style={containerStyle}>
             {visibleItems.map((item, index) => (

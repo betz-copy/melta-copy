@@ -122,12 +122,16 @@ const generateRuleBreachExample1 = (): IRuleBreachPopulated => ({
     _id: generateMongoId(),
     originUser: generateUser(),
     brokenRules: generateBrokenRules({ nullables: false, actionType: ActionTypes.CreateRelationship }),
-    actionType: ActionTypes.CreateRelationship,
-    actionMetadata: {
-        relationshipTemplateId: fliesOn._id,
-        sourceEntity: tourist1,
-        destinationEntity: flight,
-    } as ICreateRelationshipMetadataPopulated,
+    actions: [
+        {
+            actionType: ActionTypes.CreateRelationship,
+            actionMetadata: {
+                relationshipTemplateId: fliesOn._id,
+                sourceEntity: tourist1,
+                destinationEntity: flight,
+            } as ICreateRelationshipMetadataPopulated,
+        },
+    ],
     createdAt: new Date(),
 });
 
@@ -135,13 +139,17 @@ const generateRuleBreachExample2 = (): IRuleBreachPopulated => ({
     _id: generateMongoId(),
     originUser: generateUser(),
     brokenRules: generateBrokenRules({ nullables: false, actionType: ActionTypes.DeleteRelationship }),
-    actionType: ActionTypes.DeleteRelationship,
-    actionMetadata: {
-        relationshipId: '012345678901234567890001',
-        relationshipTemplateId: fliesOn._id,
-        sourceEntity: tourist1,
-        destinationEntity: flight,
-    } as IDeleteRelationshipMetadataPopulated,
+    actions: [
+        {
+            actionType: ActionTypes.DeleteRelationship,
+            actionMetadata: {
+                relationshipId: '012345678901234567890001',
+                relationshipTemplateId: fliesOn._id,
+                sourceEntity: tourist1,
+                destinationEntity: flight,
+            } as IDeleteRelationshipMetadataPopulated,
+        },
+    ],
     createdAt: new Date(),
 });
 
@@ -149,11 +157,15 @@ const generateRuleBreachExample3 = (): IRuleBreachPopulated => ({
     _id: generateMongoId(),
     originUser: generateUser(),
     brokenRules: generateBrokenRules({ nullables: false, actionType: ActionTypes.UpdateEntity }),
-    actionType: ActionTypes.UpdateEntity,
-    actionMetadata: {
-        entity: tourist1,
-        updatedFields: { lastName: 'קירלללללל' },
-    } as IUpdateEntityMetadataPopulated,
+    actions: [
+        {
+            actionType: ActionTypes.UpdateEntity,
+            actionMetadata: {
+                entity: tourist1,
+                updatedFields: { lastName: 'קירלללללל' },
+            } as IUpdateEntityMetadataPopulated,
+        },
+    ],
     createdAt: new Date(),
 });
 
@@ -161,13 +173,17 @@ const generateRuleBreachExampleNullables1 = (): IRuleBreachPopulated => ({
     _id: generateMongoId(),
     originUser: generateUser(),
     brokenRules: generateBrokenRules({ nullables: true, actionType: ActionTypes.DeleteRelationship }),
-    actionType: ActionTypes.DeleteRelationship,
-    actionMetadata: {
-        relationshipId: '012345678901234567890001',
-        relationshipTemplateId: fliesOn._id,
-        sourceEntity: null,
-        destinationEntity: null,
-    } as IDeleteRelationshipMetadataPopulated,
+    actions: [
+        {
+            actionType: ActionTypes.DeleteRelationship,
+            actionMetadata: {
+                relationshipId: '012345678901234567890001',
+                relationshipTemplateId: fliesOn._id,
+                sourceEntity: null,
+                destinationEntity: null,
+            } as IDeleteRelationshipMetadataPopulated,
+        },
+    ],
     createdAt: new Date(),
 });
 
@@ -175,11 +191,15 @@ const generateRuleBreachExampleNullables2 = (): IRuleBreachPopulated => ({
     _id: generateMongoId(),
     originUser: generateUser(),
     brokenRules: generateBrokenRules({ nullables: true, actionType: ActionTypes.UpdateEntity }),
-    actionType: ActionTypes.UpdateEntity,
-    actionMetadata: {
-        entity: null,
-        updatedFields: { lastName: 'קירלללללל' },
-    } as IUpdateEntityMetadataPopulated,
+    actions: [
+        {
+            actionType: ActionTypes.UpdateEntity,
+            actionMetadata: {
+                entity: null,
+                updatedFields: { lastName: 'קירלללללל' },
+            } as IUpdateEntityMetadataPopulated,
+        },
+    ],
     createdAt: new Date(),
 });
 
@@ -192,7 +212,7 @@ export const generateRuleBreach = (options?: { nullable?: boolean; actionType?: 
     }
 
     if (actionType) {
-        ruleBreaches = ruleBreaches.filter((ruleBreach) => ruleBreach.actionType === actionType);
+        ruleBreaches = ruleBreaches.filter((ruleBreach) => ruleBreach.actions.some((action) => action.actionType === actionType));
     }
 
     const ruleBreach = chance.pickone(ruleBreaches);

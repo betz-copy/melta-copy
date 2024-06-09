@@ -16,9 +16,11 @@ export const brokenRulesSchema = joi
 export const ruleBreachSchema = joi.object({
     originUserId: mongoIdSchema.required(),
     brokenRules: brokenRulesSchema.required(),
-    actionType: joi
-        .string()
-        .valid(...Object.values(ActionTypes))
-        .required(),
-    actionMetadata: joi.custom(validateActionMetadata).required(),
+    actions: joi.array().items({
+        actionType: joi
+            .string()
+            .valid(...Object.values(ActionTypes))
+            .required(),
+        actionMetadata: joi.custom(validateActionMetadata).required(),
+    }),
 });

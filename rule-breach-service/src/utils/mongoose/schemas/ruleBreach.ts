@@ -15,13 +15,21 @@ export const ruleBreachSchemaDefinition: SchemaDefinition = {
         required: true,
         _id: false,
     },
-    actionType: {
-        type: String,
+    actions: {
+        type: [
+            {
+                actionType: {
+                    type: String,
+                    required: true,
+                },
+                actionMetadata: {
+                    type: Object,
+                    required: true,
+                },
+            },
+        ],
         required: true,
-    },
-    actionMetadata: {
-        type: Object,
-        required: true,
+        _id: false,
     },
 };
 

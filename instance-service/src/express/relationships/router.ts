@@ -7,6 +7,7 @@ import {
     updateRelationshipByIdRequestSchema,
     getRelationshipsCountRequestSchema,
     getRelationshipsConnectionsByIdRequestSchema,
+    runBulkOfActionsInMultipleTransactionsSchema,
 } from './validator.schema';
 import ValidateRequest from '../../utils/joi';
 import RelationshipController from './controller';
@@ -26,7 +27,11 @@ relationshipRouter.get(
 );
 relationshipRouter.get('/:id', ValidateRequest(getRelationshipByIdRequestSchema), wrapController(RelationshipController.getRelationshipById));
 
-relationshipRouter.post('/bulk', wrapController(RelationshipController.runBulkOfActionsInMultipleTransactions));
+relationshipRouter.post(
+    '/bulk',
+    ValidateRequest(runBulkOfActionsInMultipleTransactionsSchema),
+    wrapController(RelationshipController.runBulkOfActionsInMultipleTransactions),
+);
 
 relationshipRouter.post(
     '/',

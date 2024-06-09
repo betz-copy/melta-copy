@@ -32,7 +32,10 @@ const EditEntityDetails: React.FC<{
     const [updateWithRuleBreachDialogState, setUpdateWithRuleBreachDialogState] = useState<{
         isOpen: boolean;
         brokenRules?: IRuleBreachPopulated['brokenRules'];
-        rawBrokenRules?: IRuleBreach['brokenRules'];
+        rawBrokenRules?: {
+            ruleId: string;
+            relationshipIds: string[];
+        }[];
         updateEntityFormData?: EntityWizardValues;
     }>({ isOpen: false });
 

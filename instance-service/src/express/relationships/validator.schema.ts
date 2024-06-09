@@ -12,6 +12,14 @@ export const getRelationshipByIdRequestSchema = Joi.object({
     },
 });
 
+export const runBulkOfActionsInMultipleTransactionsSchema = Joi.object({
+    query: {
+        dryRun: Joi.boolean().required(),
+    },
+    body: Joi.array().items(Joi.array().items(Joi.object())),
+    params: {},
+});
+
 /**
  * GET /api/instances/relationships/count?templateId
  */
