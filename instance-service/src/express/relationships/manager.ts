@@ -166,18 +166,18 @@ export class RelationshipManager {
             );
 
             // run code of action
-            const {
-                [`updated_${sourceEntityTemplate.name}`]: updatedSourceEntity,
-                [`updated_${destinationEntityEntityTemplate.name}`]: updateddestinationEntityEntity,
-            } = eval(relationshipTemplate.action);
-            if (updatedSourceEntity) {
-                
-            }
+            // const {
+            //     [`updated_${sourceEntityTemplate.name}`]: updatedSourceEntity,
+            //     [`updated_${destinationEntityEntityTemplate.name}`]: updateddestinationEntityEntity,
+            // } = eval(relationshipTemplate.action);
+            // if (updatedSourceEntity) {
+
+            // }
 
             const ruleFailuresAfterAction = await RelationshipManager.runRulesDependOnRelationship(
                 transaction,
                 relationshipTemplate,
-                destinationEntityEntityId,
+                sourceEntityId,
                 destinationEntityId,
                 createdRelationship.properties._id,
             );

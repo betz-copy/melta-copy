@@ -4,7 +4,7 @@ import { ImageWithDisable } from './ImageWithDisable';
 
 interface AddIconWithTextProps {
     textStyle: React.CSSProperties;
-    onClick?: () => void;
+    onClick?: React.MouseEventHandler<HTMLDivElement> | (() => void);
     ref?: React.RefObject<HTMLParagraphElement>;
     text?: string;
     disabled?: boolean;

@@ -68,6 +68,7 @@ export default {
         unArchived: 'הוצא מארכיון',
         archived: 'הכנס לארכיון',
         viewMore: 'הצג עוד...',
+        addActions: 'הוספת פעולות',
     },
     entityPage: {
         deleteRelationshipPopoverText: 'מחק קשר',
@@ -375,6 +376,9 @@ export default {
             failedToDelete: 'נכשל למחוק תבנית קשר',
             sourceEntity: 'תבנית ישות מקור',
             destinationEntity: 'תבנית ישות יעד',
+            action: 'פעולות',
+            details: 'פרטים בסיסיים',
+            addAction: 'הוספת פעולה',
         },
         processTemplate: {
             title: 'יצירת תבנית תהליך',
